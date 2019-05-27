@@ -1,0 +1,65 @@
+/*!
+ * Copyright (c) 2016-2019, Fraunhofer AISEC. All rights reserved.
+ *
+ *
+ *            $$\                           $$\ $$\   $$\
+ *            $$ |                          $$ |\__|  $$ |
+ *   $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+ *  $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+ *  $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ |  \__|
+ *  $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+ *  \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+ *   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+ *
+ * This file is part of Clouditor Community Edition.
+ *
+ * Clouditor Community Edition is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Clouditor Community Edition is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * long with Clouditor Community Edition.  If not, see <https://www.gnu.org/licenses/>
+ */
+
+.clouditor-main-content {
+  padding: 20px 20px 0px 20px;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.clouditor-fill-remaining-space {
+  flex: 1 1 auto;
+}
+
+.clouditor-aisec-logo {
+  margin-top: 10px;
+  height: 45px;
+}
+
+.clouditor-drawer-header {
+  text-align: center;
+}
+
+.clouditor-avatar {
+  height: 30px;
+  margin: 0 auto;
+  padding: 0 auto;
+}
+
+@media (max-width: 991.98px) {
+  .desktop-logout-button {
+    display: none;
+  }
+}
+@media (min-width: 992px) {
+  .mobile-logout-button {
+    display: none;
+  }
+}

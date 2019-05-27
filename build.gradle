@@ -1,0 +1,247 @@
+/*
+ * Copyright (c) 2016-2019, Fraunhofer AISEC. All rights reserved.
+ *
+ *
+ *            $$\                           $$\ $$\   $$\
+ *            $$ |                          $$ |\__|  $$ |
+ *   $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+ *  $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+ *  $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ |  \__|
+ *  $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+ *  \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+ *   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+ *
+ * This file is part of Clouditor Community Edition.
+ *
+ * Clouditor Community Edition is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Clouditor Community Edition is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * long with Clouditor Community Edition.  If not, see <https://www.gnu.org/licenses/>
+ */
+
+plugins {
+    id 'org.sonarqube' version '2.7.1'
+    id 'org.owasp.dependencycheck' version '3.3.4'
+    id 'com.diffplug.gradle.spotless' version '3.21.1'
+    id "com.github.ben-manes.versions" version '0.20.0'
+    id 'com.github.jk1.dependency-license-report' version '1.2'
+    id 'maven-publish'
+    id 'jacoco'
+}
+
+allprojects {
+    apply plugin: 'maven'
+    apply plugin: 'java'
+    apply plugin: 'jacoco'
+    apply plugin: 'maven-publish'
+    apply plugin: 'com.diffplug.gradle.spotless'
+
+    group = 'io.clouditor'
+
+    jacoco {
+        toolVersion = "0.8.4"
+    }
+
+    jacocoTestReport {
+        reports {
+            xml.enabled true
+        }
+    }
+
+    task sourcesJar(type: Jar) {
+        from sourceSets.main.allJava
+        classifier = 'sources'
+    }
+
+    task javadocJar(type: Jar) {
+        from javadoc
+        classifier = 'javadoc'
+    }
+
+    spotless {
+        java {
+            target project.fileTree(project.rootDir) {
+                include '**/*.java'
+                exclude '**/generated-src/**/*.*'
+            }
+            googleJavaFormat()
+        }
+    }
+
+    sonarqube {
+        properties {
+            property 'sonar.coverage.jacoco.xmlReportPaths', "$buildDir/reports/jacoco/test/jacocoTestReport.xml"
+            property 'sonar.jacoco.reportPath', null
+            property 'sonar.jacoco.reportPaths', null
+        }
+    }
+
+    // Get dependencies from Maven central repository
+    repositories {
+        mavenLocal() // needed currently for the eu-sec client
+        mavenCentral()
+    }
+
+    compileJava {
+        options.compilerArgs += ['-parameters']
+    }
+
+    sourceCompatibility = 1.11
+    targetCompatibility = 1.11
+
+    // Set library versions - useful for libraries with multiple packages
+    ext.libraryVersions = [
+            azure                : '1.21.0',
+            aws2                 : '2.4.4',
+            adal4j               : '1.6.3',
+            bson4jackson         : '2.9.2',
+            dockerjava           : '3.0.14',
+            commonsIo            : '2.6',
+            commonsLang3         : '3.8.1',
+            commonsConfiguration2: '2.3',
+            geoip2               : '2.12.0',
+            log4j                : '2.11.1',
+            slf4j                : '1.8.0-beta2',
+            jwt                  : '3.4.0',
+            jackson              : '2.9.7',
+            javassist            : '3.23.1-GA',
+            jersey               : '2.27',
+            JUnit                : '5.3.1',
+            jetty                : '9.4.12.v20180830',
+            mongo                : '3.6.0',
+            mockito              : '2+',
+            swaggerJersey2       : '1.5.21'
+    ]
+
+    dependencies {
+        // add JUnit5 dependencies for all projects
+        testImplementation "org.junit.jupiter:junit-jupiter-api:${libraryVersions.JUnit}"
+        testCompile "org.junit.jupiter:junit-jupiter-params:${libraryVersions.JUnit}"
+        testCompile "org.mockito:mockito-core:${libraryVersions.mockito}"
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${libraryVersions.JUnit}"
+    }
+
+    test {
+        failFast = true
+
+        useJUnitPlatform()
+    }
+
+    version = rootProject.file('version.txt').text.trim()
+}
+
+dependencyUpdates.resolutionStrategy {
+    componentSelection { rules ->
+        rules.all { ComponentSelection selection ->
+            boolean rejected = ['alpha', 'beta', 'rc', 'cr', 'm', 'preview'].any { qualifier ->
+                selection.candidate.version ==~ /(?i).*[.-]${qualifier}[.\d-]*/
+            }
+            if (rejected) {
+                selection.reject('Release candidate')
+            }
+        }
+    }
+}
+
+configure(subprojects.findAll {
+    !it.name.contains('commons') &&
+            !it.name.contains('core') &&
+            !it.name.contains('-aws') &&
+            !it.name.contains('-azure') &&
+            !it.name.contains('-eu-sec')
+}) {
+    task docker(type: Exec) {
+        description 'Builds a docker image based on the Dockerfile.'
+        dependsOn build
+
+        executable 'docker'
+        args 'build',
+                '-t', 'clouditor/' + project.name + ':' + gitCommit(),
+                '.'
+    }
+}
+
+task docker(type: Exec) {
+    description 'Builds a docker image based on the Dockerfile.'
+    // make sure, engine and dashboard are built
+    dependsOn ':clouditor-engine:docker'
+    dependsOn ':clouditor-dashboard:docker'
+
+    executable 'docker'
+    args 'build',
+            '-t', 'clouditor/' + project.name + ':' + gitCommit(),
+            '--build-arg', 'TAG=' + gitCommit(),
+            '.'
+}
+
+task combinedJavadoc(type: Javadoc) {
+    source subprojects.collect { project -> project.sourceSets.main.allJava }
+    classpath = files(subprojects.collect { project ->
+        [project.sourceSets.main.compileClasspath, project.sourceSets
+                .main.output]
+    })
+}
+
+tasks.javadoc.dependsOn(combinedJavadoc)
+
+task version() {
+    doLast {
+        print version
+    }
+}
+
+task branch() {
+    doLast {
+        print gitBranch()
+    }
+}
+
+task commit() {
+    doLast {
+        print gitCommit()
+    }
+}
+
+static def gitBranch() {
+    // default to develop
+    def branch = 'develop'
+
+    // check if branch was set externally
+    if (System.getenv('CI_COMMIT_REF_NAME')) {
+        branch = System.getenv('CI_COMMIT_REF_NAME')
+    } else {
+        // try to parse git (this does not work in CI environments)
+        def proc = 'git rev-parse --abbrev-ref HEAD'.execute()
+        proc.in.eachLine { line -> branch = line }
+        proc.err.eachLine { line -> println line }
+        proc.waitFor()
+    }
+
+    // replace / with - because SonarQube cannot handle slashes
+    branch.replaceAll('/', '-')
+}
+
+static def gitCommit() {
+    def commit = 'HEAD'
+
+    if (System.getenv('CI_COMMIT_SHA')) {
+        commit = System.getenv('CI_COMMIT_SHA')
+    } else {
+        def proc = 'git rev-parse HEAD'.execute()
+        proc.in.eachLine { line -> commit = line }
+        proc.err.eachLine { line -> println line }
+        proc.waitFor()
+    }
+
+    if (commit != 'HEAD') {
+        commit.substring(0, 8)
+    }
+}

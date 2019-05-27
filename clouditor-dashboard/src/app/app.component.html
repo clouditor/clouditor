@@ -1,0 +1,116 @@
+<!--
+  ~ Copyright (c) 2016-2019, Fraunhofer AISEC. All rights reserved.
+  ~
+  ~
+  ~            $$\                           $$\ $$\   $$\
+  ~            $$ |                          $$ |\__|  $$ |
+  ~   $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+  ~  $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+  ~  $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ |  \__|
+  ~  $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+  ~  \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+  ~   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+  ~
+  ~ This file is part of Clouditor Community Edition.
+  ~
+  ~ Clouditor Community Edition is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ Clouditor Community Edition is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ long with Clouditor Community Edition.  If not, see <https://www.gnu.org/licenses/>
+  -->
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark justify-content-between" *ngIf="auth.isLoggedIn()">
+  <a class="navbar-brand" href="#">
+    <img class="clouditor-avatar" src="assets/clouditor-avatar.png" />
+  </a>
+  <!-- TODO: use ngb-collapse -->
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown"
+    aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation"
+    (click)="navbarCollapsed = !navbarCollapsed">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <ul class="navbar-nav mobile-logout-button">
+    <li class="nav-item">
+      <a class="nav-link" (click)="logout()" href="#">Logout</a>
+    </li>
+  </ul>
+  <div class="collapse navbar-collapse" [ngbCollapse]="navbarCollapsed" id="navbarNavDropdown">
+    <ul class="navbar-nav">
+      <li class="nav-item" [routerLinkActive]="['active']">
+        <a class="nav-link" routerLink="/accounts">Accounts</a>
+      </li>
+      <li class="nav-item" [routerLinkActive]="['active']">
+        <a class="nav-link" routerLink="/discovery">Discovery</a>
+      </li>
+      <li class="nav-item" [routerLinkActive]="['active']">
+        <a class="nav-link" routerLink="/analysis">Assessment</a>
+      </li>
+      <li class="nav-item" [routerLinkActive]="['active']">
+        <a class="nav-link" routerLink="/compliance">Compliance</a>
+      </li>
+      <li class="nav-item" [routerLinkActive]="['active']">
+        <a class="nav-link" routerLink="/about">About</a>
+      </li>
+    </ul>
+  </div>
+  <ul class="navbar-nav desktop-logout-button">
+    <li class="nav-item">
+      <a class="nav-link" (click)="logout()" href="#">Logout</a>
+    </li>
+  </ul>
+</nav>
+<div class="clouditor-main-content">
+  <div class="alert alert-danger" role="alert" *ngIf="error.hasError()">
+    {{ error.get() }}
+  </div>
+  <router-outlet></router-outlet>
+</div>
+
+<!--<mat-sidenav-container fullscreen="true">
+  <mat-sidenav #snav class="docs-component-viewer-sidenav" [opened]="!isMobile.matches" [mode]="isMobile.matches ? 'over' : 'side'" [fixedInViewport]="isMobile.matches">
+    <header class="clouditor-drawer-header">
+      <img src="assets/clouditor-dark.png" class="clouditor-avatar">
+    </header>
+    <mat-nav-list>
+      <a mat-list-item routerLink="/dashboard">
+        <mat-icon matListIcon>home</mat-icon>
+        Dashboard
+      </a>
+      <a mat-list-item routerLink="/workflows">
+        <mat-icon matListIcon>autorenew</mat-icon>
+        Workflows
+      </a>
+      <a mat-list-item routerLink="/about">
+        About
+        <mat-icon matListIcon>info</mat-icon>
+      </a>
+    </mat-nav-list>
+    <mat-nav-list>
+      <a mat-list-item (click)="logout()" *ngIf="auth.isLoggedIn()">
+        <mat-icon matListIcon>home</mat-icon>
+        Logout
+      </a>
+    </mat-nav-list>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <mat-toolbar>
+      <button mat-icon-button (click)="snav.toggle()"><mat-icon>menu</mat-icon></button>
+
+      <span>{{ titleService.getTitle() }}</span>
+
+      <span class="clouditor-fill-remaining-space"></span>
+
+    </mat-toolbar>
+    <div class="clouditor-main-content">
+      <router-outlet></router-outlet>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>-->

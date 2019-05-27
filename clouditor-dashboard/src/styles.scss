@@ -1,0 +1,119 @@
+/*!
+ * Copyright (c) 2016-2019, Fraunhofer AISEC. All rights reserved.
+ *
+ *
+ *            $$\                           $$\ $$\   $$\
+ *            $$ |                          $$ |\__|  $$ |
+ *   $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+ *  $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+ *  $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ |  \__|
+ *  $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+ *  \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+ *   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+ *
+ * This file is part of Clouditor Community Edition.
+ *
+ * Clouditor Community Edition is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Clouditor Community Edition is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * long with Clouditor Community Edition.  If not, see <https://www.gnu.org/licenses/>
+ */
+
+@import "node_modules/bootstrap/scss/bootstrap";
+
+html {
+  font-family: Roboto, Helvetica, Arial, sans-serif;
+  margin: 0 auto;
+  font-size: 0.9rem;
+}
+
+/* These .network styles will only work in the global css file */
+.network line {
+  stroke: rgb(184, 192, 192);
+}
+
+.network text {
+  fill: white;
+  pointer-events: none;
+  font-size: 12pt;
+}
+
+.network rect {
+  fill: rgb(184, 192, 192);
+}
+
+.network .node.good rect {
+  fill: theme-color("success");
+}
+
+.network .node.warn rect {
+  fill: theme-color("warning");
+}
+
+.network .node.error rect {
+  fill: theme-color("danger");
+}
+
+.network .node.selected rect {
+  stroke: #555555;
+  stroke-width: 2px;
+}
+
+.clouditor-loading {
+  margin:auto;
+  max-width: 100%;
+}
+
+mat-selection-list a {
+  text-decoration: none;
+}
+
+.mat-card-content, .mat-card-header .mat-card-title {
+  font-size: 1.3em;
+}
+
+.mat-card-content, .mat-card-header .mat-card-subtitle {
+  font-size: 1em;
+}
+
+.test-overview-heatmap-test {
+  min-width: 180px;
+}
+
+.test-overview-heatmap-test a {
+  font-weight: bold;
+  color: rgb(117, 117, 117);
+  text-decoration: none;
+}
+
+#navbarNavDropdown {
+  text-align: center;
+} 
+
+#cal-heatmap {
+  float: right;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.azure {
+  color: #008AD7;
+}
+
+.aws {
+  color: #FF9900;
+}
+
+.salesforce {
+  color: #1798c1;
+}

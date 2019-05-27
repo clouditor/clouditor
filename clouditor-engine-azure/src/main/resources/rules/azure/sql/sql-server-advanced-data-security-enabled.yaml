@@ -1,0 +1,7 @@
+name: "Azure SQL Server: Advanced Data Security Enabled"
+description: "Checks, whether the SQL server has Advanced Data Security enabled"
+conditions:
+  - SQLServer has securityAlertPolicy.state == "Enabled"
+  - SQLServer has not empty securityAlertPolicy.storageEndpoint
+controls:
+  - "CIS Microsoft Azure Foundations Benchmark/Azure 4.1.2"

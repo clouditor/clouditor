@@ -1,0 +1,65 @@
+<!--
+  ~ Copyright (c) 2016-2019, Fraunhofer AISEC. All rights reserved.
+  ~
+  ~
+  ~            $$\                           $$\ $$\   $$\
+  ~            $$ |                          $$ |\__|  $$ |
+  ~   $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+  ~  $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+  ~  $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ |  \__|
+  ~  $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+  ~  \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+  ~   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+  ~
+  ~ This file is part of Clouditor Community Edition.
+  ~
+  ~ Clouditor Community Edition is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ Clouditor Community Edition is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ long with Clouditor Community Edition.  If not, see <https://www.gnu.org/licenses/>
+  -->
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a routerLink="/">Home</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Compliance</li>
+  </ol>
+</nav>
+<ng-container *ngFor="let item of importers | keyvalue">
+  <button style="margin-bottom: 15px; margin-right: 10px" class="button btn btn-primary" (click)="onImport(item.key)"
+    *ngIf="!importing[item.key]; else waiting">
+    Import {{ item.key }}
+  </button>
+  <ng-template #waiting>
+    <button style="margin-bottom: 15px; margin-right: 10px" class="button btn btn-secondary">
+      Import {{ item.key }}
+    </button>
+  </ng-template>
+</ng-container>
+
+<div class="card-columns">
+  <div class="card" *ngFor="let certification of certifications">
+    <div class="card-body">
+      <h5 class="card-title text-light"><a [routerLink]="['/compliance', certification._id]">{{ certification._id }}</a>
+      </h5>
+      <h6 class="card-subtitle mb-2 text-muted">{{ certification.publisher }}</h6>
+      <p class="card-text">{{ certification.description }}</p>
+      <p><a [href]="certification.website" target="_new">{{ certification.website }}</a></p>
+      <button type="button" class="btn btn-success" *ngIf="getGoodControls(certification).length > 0">
+        <span class="badge badge-light">{{ getGoodControls(certification).length }}</span> Passed Controls
+      </button>
+      <button type="button" class="btn btn-danger" style="margin-left: 8px"
+        *ngIf="getControlsWithWarnings(certification).length > 0">
+        <span class="badge badge-light">{{ getControlsWithWarnings(certification).length }}</span> Failed Controls
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,5 @@
+condition: FunctionDeclaration has not empty kmsKeyArn
+name: "AWS Lambda: Environment Variable Encryption"
+description: "Checks for all lambda functions if their environment variables are encrypted using KMS."
+controls:
+  - "BSI C5/KRY-03"

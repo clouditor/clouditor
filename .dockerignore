@@ -1,0 +1,14 @@
+**/build
+**/bin
+**/dist
+**/.volumes
+**/node_modules
+**/.DS_Store
+**/.classpath
+**/.dockerignore
+**/.git
+**/.gitignore
+**/.idea
+**/.project
+**/.settings
+showcase

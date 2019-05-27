@@ -1,0 +1,3 @@
+condition: 'BaseConfigurationItem has awsRegion within "eu-central-1" "eu-west-1" "global"'
+name: "AWS Resources: Allowed Regions"
+description: "Checks if the resources recorded by the AWS Config Service are located in the allowed regions (e.g., european economic space)"

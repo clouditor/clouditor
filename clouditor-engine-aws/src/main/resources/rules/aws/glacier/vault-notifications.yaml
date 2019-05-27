@@ -1,0 +1,3 @@
+condition: Vault has not empty notifications
+name: "AWS Glacier: Vault Notifications"
+description: "Checks if vault notifications are configured."

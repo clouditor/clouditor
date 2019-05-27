@@ -1,0 +1,3 @@
+condition: DBInstance has not publiclyAccessible == true
+name: "AWS RDS: Public Access"
+description: "Checks for all DB instances if they are publicly accessible."

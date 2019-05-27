@@ -1,0 +1,8 @@
+name: "Azure SQL Server: Restricted Network Access"
+description: "Checks if no SQL servers allow ingress from the internet."
+# TODO: should be an or?
+conditions:
+  - SQLServer has not properties.endIpAddress == "0.0.0.0" in all firewallRules
+  - SQLServer has not properties.startIpAddress == "0.0.0.0" in all firewallRules
+controls:
+  - "CIS Microsoft Azure Foundations Benchmark/Azure 6.3"

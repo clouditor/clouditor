@@ -1,0 +1,73 @@
+<!--
+  ~ Copyright (c) 2016-2019, Fraunhofer AISEC. All rights reserved.
+  ~
+  ~
+  ~            $$\                           $$\ $$\   $$\
+  ~            $$ |                          $$ |\__|  $$ |
+  ~   $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+  ~  $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+  ~  $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ |  \__|
+  ~  $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+  ~  \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+  ~   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+  ~
+  ~ This file is part of Clouditor Community Edition.
+  ~
+  ~ Clouditor Community Edition is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ Clouditor Community Edition is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ long with Clouditor Community Edition.  If not, see <https://www.gnu.org/licenses/>
+  -->
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a class="text-info" routerLink="/">Home</a></li>
+    <li class="breadcrumb-item"><a class="text-info" routerLink="/analysis">Analysis</a></li>
+    <li class="breadcrumb-item"><a class="text-info" routerLink="/analysis">{{ group }}</a></li>
+    <li class="breadcrumb-item"><a class="text-info" routerLink="/analysis">{{ service }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ assetType }}</li>
+  </ol>
+</nav>
+<h3>Assessment of <i>{{ assetType }}</i></h3>
+
+<ul class="list-group list-group-flush" *ngFor="let asset of assets">
+  <li class="list-group-item">
+    <div class="d-flex w-100">
+      <div class="mb-1 p-2">
+        <i *ngIf="!asset.compliant" class="fas fa-exclamation-circle text-danger" style="font-size: 32px"></i>
+        <i *ngIf="asset.compliant" class="fas fa-check-circle text-success" style="font-size: 32px"></i>
+      </div>
+      <div class="mt-auto mb-auto mr-auto p-2">
+        <b>{{ asset.type }} <i>{{ asset.name }}</i></b>
+        <div class="text-muted">{{ asset.id }}</div>
+        <div *ngFor="let result of asset.evaluationResults" [class.text-danger]="!result.ok"
+          [class.text-success]="result.ok"><i [class]="result.rule.icon" [class.mr-2]="true"></i>Rule
+          <i>{{ result.rule.name }}</i>
+          <span *ngIf="result.ok"> is ok</span>
+          <span *ngIf="!result.ok"> failed</span>
+          <div *ngFor="let condition of result.failedConditions"><code>{{ condition.source }}</code> is not
+            fulfilled.
+          </div>
+        </div>
+      </div>
+    </div>
+  </li>
+</ul>
+<ul class="list-group list-group-flush" *ngIf="assets.length == 0">
+  <li class="list-group-item pl-0 pr-0">
+    No assets were analyzed. This can have several reasons:
+    <ul>
+      <li>Did you enable it in the <a class="text-info" [routerLink]="['/discovery', assetType]">Discovery</a>
+        view?</li>
+      <li *ngIf="rules.length == 0">There are no rules configured.</li>
+      <li>The analysis is still running.</li>
+    </ul>
+  </li>
+</ul>

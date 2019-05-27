@@ -1,0 +1,7 @@
+# TODO: actually filter out external and master keys, since they cannot be rotated
+name: "AWS KMS: Key Rotation"
+description: "Checks if KMS keys have key rotation enabled. Only applies to non-external keys."
+filter: 'KeyMetadata has originAsType == "AWS_KMS"'
+condition: KeyMetadata has keyRotationEnabled == true
+controls:
+  - "BSI C5/KRY-04"

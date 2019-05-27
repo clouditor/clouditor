@@ -1,0 +1,89 @@
+/*
+ * Copyright (c) 2016-2019, Fraunhofer AISEC. All rights reserved.
+ *
+ *
+ *            $$\                           $$\ $$\   $$\
+ *            $$ |                          $$ |\__|  $$ |
+ *   $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+ *  $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+ *  $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ |  \__|
+ *  $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+ *  \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+ *   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+ *
+ * This file is part of Clouditor Community Edition.
+ *
+ * Clouditor Community Edition is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Clouditor Community Edition is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * long with Clouditor Community Edition.  If not, see <https://www.gnu.org/licenses/>
+ */
+
+.search-form:focus {
+    outline: none;
+}
+  
+.search-form {
+    border: none;
+    margin-left: 4px;
+}
+  
+.search-check {
+    margin-right: 4px;
+} 
+
+.card-title-textoverflow {
+    text-overflow: ellipsis;
+    overflow:hidden;
+    white-space: nowrap;
+    max-width: 98%;
+}
+.card-title-textoverflow:hover {
+    overflow: visible;
+}
+
+.mobile-card-title-textoverflow {
+    text-overflow: ellipsis;
+    overflow:hidden;
+    white-space: nowrap;
+    max-width: 60%;
+}
+
+.mobile-card-title-textoverflow:hover {
+    overflow: visible;
+}
+
+@media (max-width: 991.98px) {
+    .column-counter {
+        column-count: 1;
+    }
+    .card-width {
+        max-width: 100%;
+    }
+    .desktop-control-detail-view {
+        display:none;
+    }
+}
+
+@media (min-width: 992px) {
+
+    .card-width {
+        max-width: 50%;
+    }
+
+    .column-counter {
+        column-count: 2;
+    }
+
+    .mobile-control-detail-view {
+        display:none;
+    }
+}

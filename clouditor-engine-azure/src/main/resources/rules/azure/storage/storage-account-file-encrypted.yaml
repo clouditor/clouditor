@@ -1,0 +1,5 @@
+name: "Azure Storage Account: File Encryption"
+description: "Checks if a Azure StorageAccount is configured to use encryption for file storage service."
+condition: StorageAccount has File == true in encryptionStatuses
+controls:
+  - "CIS Microsoft Azure Foundations Benchmark/Azure 3.6"

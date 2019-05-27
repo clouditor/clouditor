@@ -1,0 +1,113 @@
+<!--
+  ~ Copyright (c) 2016-2019, Fraunhofer AISEC. All rights reserved.
+  ~
+  ~
+  ~            $$\                           $$\ $$\   $$\
+  ~            $$ |                          $$ |\__|  $$ |
+  ~   $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+  ~  $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+  ~  $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ |  \__|
+  ~  $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+  ~  \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+  ~   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+  ~
+  ~ This file is part of Clouditor Community Edition.
+  ~
+  ~ Clouditor Community Edition is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ Clouditor Community Edition is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ long with Clouditor Community Edition.  If not, see <https://www.gnu.org/licenses/>
+  -->
+
+<ng-template #loading>
+  Loading...
+</ng-template>
+
+<div class="row" *ngIf="assets; else loading">
+  <div class="col-12 mb-4">
+    Clouditor discovered
+    <b>{{ assets?.length }}</b> assets in your registered cloud accounts.
+  </div>
+  <div class="col-4">
+    <div class="list-group">
+      <a (click)="selectAsset(asset)" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+        *ngFor="let asset of assets">
+        <span>
+          <b>{{ asset.name }}</b>
+          <br />
+          <i>{{ asset.type }}</i>
+        </span>
+        <span class="badge badge-success" [ngPlural]="asset.seenByJobs?.length" *ngIf="asset.seenByJobs?.length > 0; else noJobs">
+          {{ asset.seenByJobs?.length }}
+          <ng-template ngPluralCase="=1">job</ng-template>
+          <ng-template ngPluralCase="other">jobs</ng-template>
+        </span>
+        <ng-template #noJobs>
+          <span class="badge badge-danger">no jobs</span>
+        </ng-template>
+      </a>
+    </div>
+  </div>
+  <div class="col-8" *ngIf="selectedAsset">
+    <div class="card">
+      <div class="card-header">{{ selectedAsset.type }} <b>{{ selectedAsset.name }}</b></div>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item d-flex justify-content-between align-items-right" *ngFor="let field of getFields(selectedAsset)">
+          <b>{{ field.name }}</b>
+          {{ field.value }}
+        </li>
+      </ul>
+    </div>
+    <div class="card mt-4">
+      <div class="card-header">
+        Configured Jobs
+      </div>
+      <div class="card-body">
+        <div class="text-muted" [ngPlural]="selectedAsset.seenByJobs?.length">
+          This asset is currently checked by
+          <b>{{ selectedAsset.seenByJobs?.length }}</b>
+          <ng-template ngPluralCase="=1"> job</ng-template>
+          <ng-template ngPluralCase="other"> jobs</ng-template>.
+        </div>
+      </div>
+      <div class="list-group list-group-flush">
+        <a [routerLink]="['/jobs', seen.job._id]" class="list-group-item list-group-item-action d-flex justify-content-between align-items-right"
+          *ngFor="let seen of selectedAsset.seenByJobs">
+          {{ seen.job.name }}
+          <span>{{ seen.date | amTimeAgo }}</span>
+        </a>
+      </div>
+    </div>
+    <div class="card mt-4 mb-4">
+      <div class="card-header">
+        There are
+        <b>{{ selectedAsset.checks?.length }}</b> checks availabe for the asset type
+        <i>{{ selectedAsset.type }}</i>.
+      </div>
+      <div class="list-group list-group-flush">
+        <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" *ngFor="let check of selectedAsset.checks">
+          <span>{{ check.name }}</span>
+          <span class="badge badge-success" *ngIf="check.scheduled; else notJobned">has configured jobs</span>
+          <ng-template #notJobned>
+            <span class="badge badge-danger">not scheduled</span>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-warning" role="alert" *ngIf="selectedAsset.jobnedChecks > selectedAsset.seenByJobs?.length">
+      Although
+      <b>{{ selectedAsset.jobnedChecks }}</b> checks have been scheduled for the asset type
+      <i>{{ selectedAsset.type }}</i> in total, this particular asset is only checked by
+      <b>{{ selectedAsset.seenByJobs?.length }}</b> job(s). Make sure, that all jobs include this asset.
+    </div>
+  </div>
+</div>

@@ -1,0 +1,8 @@
+name: "Azure SQL Server: Storage Configuration for Advanced Data Security"
+description: "Checks, whether the SQL server has proper storage configuration for Advanced Data Security"
+# TODO: retentionDays == 0 is also ok
+conditions:
+  - SQLServer has not empty securityAlertPolicy.storageEndpoint
+  - SQLServer has securityAlertPolicy.retentionDays >= 90
+controls:
+  - "CIS Microsoft Azure Foundations Benchmark/Azure 4.1.7"

@@ -1,0 +1,7 @@
+condition: Trail has not empty kmsKeyId
+description: Checks if CloudTrail trails are encrypted using KMS.
+name: "AWS CloudTrail: Trail Encryption"
+error: "The trail with ARN {} is not encrypted (it has no KMS Key ID set)"
+controls:
+  - AWS 2.7
+  - "BSI C5/RB-13"

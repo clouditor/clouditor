@@ -1,0 +1,4 @@
+# TODO merge together all key origin checks and parametrize the rule
+name: "AWS KMS: Key Origin (External)"
+description: "Checks if the KMS keys have the correct origin (default: 'external'). Master keys are exempted from this check."
+condition: 'KeyMetadata has originAsString == "EXTERNAL"'

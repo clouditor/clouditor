@@ -1,0 +1,6 @@
+name: "Azure SQL Database: Transparent Data Encryption"
+description: "Checks whether all databases in Azure SQL servers performs encryption and decryption of the database, associated backups, and transaction log files at rest."
+conditions:
+  - SQLDatabase has transparentDataEncryption.status == "Enabled"
+controls:
+  - "CIS Microsoft Azure Foundations Benchmark/Azure 4.2.6"

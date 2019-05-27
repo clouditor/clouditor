@@ -1,0 +1,3 @@
+condition: FunctionDeclaration has not policy contains "*"
+name: "AWS Lambda: Policy Security"
+description: "Checks for all lambda functions if their respective policy contains a wildcard."

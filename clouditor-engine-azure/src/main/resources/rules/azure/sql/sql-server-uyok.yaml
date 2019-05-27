@@ -1,0 +1,4 @@
+name: "Azure SQL Server: Use your own key"
+description: "Checks, whether certain Azure SQL servers have key vault keys stored in their encryption profile."
+condition: SQLServer has encryptionProtectors.serverKeyType == "AzureKeyVault"
+controls:

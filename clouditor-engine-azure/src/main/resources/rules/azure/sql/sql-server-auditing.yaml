@@ -1,0 +1,9 @@
+name: "Azure SQL Server: Auditing"
+description: "Checks whether SQL servers have auditing enabled."
+# TODO: retentionDays == 0 is also valid, since this means forever
+conditions:
+  - SQLServer has auditingPolicy.state == "Enabled"
+  - SQLServer has auditingPolicy.retentionDays >= 90
+controls:
+  - "CIS Microsoft Azure Foundations Benchmark/Azure 4.1.1"
+  - "CIS Microsoft Azure Foundations Benchmark/Azure 4.1.6"
