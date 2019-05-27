@@ -10,7 +10,7 @@ jobs:
       install: true
       script: 
         - ./gradlew --parallel build 
-        - docker build -t clouditor/engine
+        - cd clouditor-engine && docker build -t clouditor/engine .
       before_cache:
         - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
         - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
