@@ -1,11 +1,33 @@
+version: 2.1
 orbs:
   docker: circleci/docker@0.2.0
-version: 2.1
-workflows:
-  build-docker-image-only:
-    jobs:
+jobs:
+  build_engine:
+    docker:
+      - image: circleci/openjdk:11
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Gradle build
+          command: |            
+            ./gradlew --parallel build
+      - run:
+          name: Docker build
+          command: |            
+            cd clouditor-engine && docker build -t clouditor/engine .
+  build_ui:
+    steps:
       - docker/publish:
           deploy: false
           image: clouditor/ui
           dockerfile: clouditor-dashboard/Dockerfile
           path: clouditor-dashboard
+
+workflows:
+  build:
+    jobs:
+      - build_ui:
+          context: org-global
+      - build_engine:
+          context: org-global
