@@ -7,6 +7,10 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
+          name: Install git
+          command: |            
+            apt update && apt install -y git
+      - run:
           name: Gradle build
           command: |            
             ./gradlew --parallel build
