@@ -27,6 +27,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
+      - docker/check
       - docker/build:
           image: clouditor/ui
           tag: latest
@@ -41,16 +42,21 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
+      - docker/check
       - docker/build:
           image: clouditor/clouditor
           tag: latest
       - docker/build:
           image: clouditor/clouditor
-          tag: latest          
+          tag: latest 
 workflows:
-  build:
+  build_parallel:
     jobs:
       - build_ui:
           context: org-global
       - build_engine:
+          context: org-global
+  build_combined:
+    jobs:
+      - build_clouditor:
           context: org-global
