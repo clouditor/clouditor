@@ -32,5 +32,4 @@ rootProject.name = 'clouditor'
 include 'clouditor-engine',
         'clouditor-engine-core',
         'clouditor-engine-azure',
-        'clouditor-engine-aws',
-        'clouditor-dashboard'
+        'clouditor-engine-aws'

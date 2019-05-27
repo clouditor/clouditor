@@ -10,5 +10,11 @@ cache:
   directories:
   - $HOME/.gradle/caches/
   - $HOME/.gradle/wrapper/
-install: true
-script: ./gradlew --parallel clean docker
+
+jobs:
+  include:
+    - stage: "Build Engine"
+      install: true
+      script: ./gradlew --parallel clean docker
+    - stage: "Build UI"
+      script: cd clouditor-dashboard && docker build -t .
