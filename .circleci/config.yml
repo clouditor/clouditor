@@ -4,6 +4,7 @@ jobs:
     docker:
       - image: openjdk:11-jre-slim
     steps:
+      - checkout
       - run:
           name: Gradle build
           command: |            
@@ -16,6 +17,7 @@ jobs:
     docker:
       - image: node:11
     steps:
+      - checkout    
       - run:
           name: Docker build
           command: |            
