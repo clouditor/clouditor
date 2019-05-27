@@ -22,7 +22,6 @@
               "src/favicon.ico"
             ],
             "styles": [
-              "node_modules/c3/c3.css",
               "./node_modules/ngx-toastr/toastr.css",
               "src/fonts.css",
               "src/styles.scss",

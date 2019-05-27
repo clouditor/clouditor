@@ -1,4 +1,4 @@
-FROM node:11 AS build
+FROM node AS build
 
 MAINTAINER Christian Banse <christian.banse@aisec.fraunhofer.de>
 

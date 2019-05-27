@@ -11,7 +11,7 @@ jobs:
       - run:
           name: Gradle build
           command: |
-            ./gradlew --parallel docker sonarqube \
+            ./gradlew --parallel docker jacocoTestReport sonarqube \
             -Dsonar.projectKey=clouditor_clouditor \
             -Dsonar.organization=clouditor \
             -Dsonar.host.url=https://sonarcloud.io \

@@ -59,7 +59,6 @@ import { DiscoveryDetailComponent } from './discovery-detail/discovery-detail.co
 import { DiscoveryService } from './discovery.service';
 import { DiscoveryComponent } from './discovery/discovery.component';
 import { ErrorService } from './error.service';
-import { GaugeChartComponent } from './gauge-chart/gauge-chart.component';
 import { LoginComponent } from './login/login.component';
 import { MapComponent } from './map/map.component';
 import { ScanBadgesComponent } from './scan-badges/scan-badges.component';
@@ -78,7 +77,6 @@ import { TruncateMiddlePipe } from './truncate-middle.pipe';
     DiscoveryDetailComponent,
     DiscoveryComponent,
     LoginComponent,
-    GaugeChartComponent,
     ScoreComponent,
     MapComponent,
     AssetsComponent,
