@@ -1,14 +1,23 @@
-language: java
-jdk:
-  - openjdk11
 services:
   - docker
-before_cache:
-  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
-cache:
-  directories:
-  - $HOME/.gradle/caches/
-  - $HOME/.gradle/wrapper/
-install: true
-script: ./gradlew --parallel clean docker
+jobs:
+  include:
+    - stage: "Build"
+      name: "Build Engine"
+      language: java
+      jdk:
+      - openjdk11
+      install: true
+      script: 
+        - ./gradlew --parallel build 
+        - cd clouditor-engine && docker build -t clouditor/engine .
+      before_cache:
+        - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+        - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+      cache:
+        directories:
+        - $HOME/.gradle/caches/
+        - $HOME/.gradle/wrapper/
+    - name: "Build UI"    
+      language: bash
+      script: cd clouditor-ui && docker build -t clouditor/ui .

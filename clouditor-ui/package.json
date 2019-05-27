@@ -1,5 +1,5 @@
 {
-  "name": "clouditor-dashboard",
+  "name": "clouditor-ui",
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
@@ -32,6 +32,7 @@
     "ngx-moment": "^3.2.0",
     "ngx-toastr": "^10.0.4",
     "rxjs": "^6.3.3",
+    "sass": "^1.20.1",
     "viz.js": "^2.0.0",
     "zone.js": "^0.8.26"
   },
