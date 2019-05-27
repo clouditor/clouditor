@@ -13,8 +13,9 @@ cache:
 
 jobs:
   include:
-    - stage: "Build Engine"
+    - stage: "Build"
+      name: "Build Engine"
       install: true
       script: ./gradlew --parallel clean docker
-    - stage: "Build UI"
+    - name: "Build UI"    
       script: cd clouditor-dashboard && docker build -t .
