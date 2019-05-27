@@ -29,7 +29,7 @@
 
 plugins {
     id 'org.sonarqube' version '2.7.1'
-    id 'org.owasp.dependencycheck' version '3.3.4'
+    id 'org.owasp.dependencycheck' version '4.0.2'
     id 'com.diffplug.gradle.spotless' version '3.21.1'
     id "com.github.ben-manes.versions" version '0.20.0'
     id 'com.github.jk1.dependency-license-report' version '1.2'
@@ -108,10 +108,11 @@ allprojects {
             commonsLang3         : '3.8.1',
             commonsConfiguration2: '2.3',
             geoip2               : '2.12.0',
+            guava                : '27.1-jre',
             log4j                : '2.11.1',
             slf4j                : '1.8.0-beta2',
             jwt                  : '3.4.0',
-            jackson              : '2.9.7',
+            jackson              : '2.9.9',
             javassist            : '3.23.1-GA',
             jersey               : '2.27',
             JUnit                : '5.3.1',

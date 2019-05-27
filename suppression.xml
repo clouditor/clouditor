@@ -39,4 +39,39 @@
         <gav regex="false">com.github.docker-java:docker-java:3.0.13</gav>
         <cve>CVE-2017-7297</cve>
     </suppress>
+    <!-- de.bwaldvogel:mongo-java-server-core:1.16.0 incorrectly classified as old MongoDB -->
+    <suppress base="true">
+        <gav regex="false">de.bwaldvogel:mongo-java-server:1.16.0</gav>
+        <cve>CVE-2012-6619</cve>
+    </suppress>
+    <suppress base="true">
+        <gav regex="false">de.bwaldvogel:mongo-java-server:1.16.0</gav>
+        <cve>CVE-2013-1892</cve>
+    </suppress>
+    <suppress base="true">
+        <gav regex="false">de.bwaldvogel:mongo-java-server:1.16.0</gav>
+        <cve>CVE-2013-2132</cve>
+    </suppress>
+    <suppress base="true">
+        <gav regex="false">de.bwaldvogel:mongo-java-server:1.16.0</gav>
+        <cve>CVE-2014-8180</cve>
+    </suppress>
+    <suppress base="true">
+        <gav regex="false">de.bwaldvogel:mongo-java-server:1.16.0</gav>
+        <cve>CVE-2015-1609</cve>
+    </suppress>
+        <suppress base="true">
+        <gav regex="false">de.bwaldvogel:mongo-java-server:1.16.0</gav>
+        <cve>CVE-2017-2665</cve>
+    </suppress>
+    <!-- Amazon Flow incorrectly classified as an Etherum token project -->
+    <suppress base="true">
+        <gav regex="false">software.amazon:flow:1.7</gav>
+        <cve>CVE-2018-13525</cve>
+    </suppress>
+    <!-- wrongly classified as Processing Foundation Processing -->
+    <suppress base="true">
+        <gav regex="false">org.glassfish:javax.json:1.0.4</gav>
+        <cve>CVE-2018-1000840</cve>
+    </suppress>    
 </suppressions>

@@ -45,4 +45,7 @@ dependencies {
     // fetch newer version of adal4j, so we get a newer version of nimbus-jose-jwt
     // https://mvnrepository.com/artifact/com.microsoft.azure/adal4j
     compile("com.microsoft.azure:adal4j:${libraryVersions.adal4j}")
+
+    // fetch newer version of guava
+    compile group: 'com.google.guava', name: 'guava', version: libraryVersions.guava
 }
