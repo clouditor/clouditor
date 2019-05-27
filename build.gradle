@@ -165,7 +165,8 @@ configure(subprojects.findAll {
 
         executable 'docker'
         args 'build',
-                '-t', 'clouditor/' + project.name + ':' + gitCommit(),
+                '-t', 'clouditor/' + project.name.split('-')[1] + ':' + gitCommit(),
+                '-t', 'clouditor/' + project.name.split('-')[1],
                 '.'
     }
 }
@@ -174,10 +175,12 @@ task docker(type: Exec) {
     description 'Builds a docker image based on the Dockerfile.'
     // make sure, engine and dashboard are built
     dependsOn ':clouditor-engine:docker'
+    dependsOn ':clouditor-ui:docker'
 
     executable 'docker'
     args 'build',
             '-t', 'clouditor/' + project.name + ':' + gitCommit(),
+            '-t', 'clouditor/' + project.name,
             '--build-arg', 'TAG=' + gitCommit(),
             '.'
 }
