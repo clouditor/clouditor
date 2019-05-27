@@ -17,7 +17,7 @@ jobs:
           command: |            
             cd clouditor-engine && docker build -t clouditor/engine .
   build_ui:
-    executor: machine
+    machine: true
     steps:
       - checkout
       - docker/build:
