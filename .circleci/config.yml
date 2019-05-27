@@ -12,19 +12,22 @@ jobs:
           name: Gradle build
           command: |            
             ./gradlew --parallel build
-      - run:
-          name: Docker build
-          command: |            
-            cd clouditor-engine && docker build -t clouditor/engine .
+      - docker/check
+      - docker/build:
+          image: clouditor/engine
+          dockerfile: clouditor-engine/Dockerfile
+          path: clouditor-engine
   build_ui:
-    machine: true
+    docker:
+      - image: docker
     steps:
       - checkout
-      - docker/check
+      - setup_remote_docker
       - docker/build:
           image: clouditor/ui
           dockerfile: clouditor-dashboard/Dockerfile
           path: clouditor-dashboard
+          use-remote-docker: true
       - docker/push:
           image: clouditor/ui
           tag: latest
