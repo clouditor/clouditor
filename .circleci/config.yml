@@ -50,13 +50,14 @@ jobs:
           image: clouditor/clouditor
           tag: latest 
 workflows:
-  build_parallel:
+  build:
     jobs:
       - build_ui:
           context: org-global
       - build_engine:
           context: org-global
-  build_combined:
-    jobs:
       - build_clouditor:
+          requires:
+            - build_ui
+            - build_engine
           context: org-global
