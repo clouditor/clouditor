@@ -1,4 +1,4 @@
-# Clouditor Community Edition
+# Clouditor Community Edition [![CircleCI](https://circleci.com/gh/clouditor/clouditor.svg?style=svg)](https://circleci.com/gh/clouditor/clouditor)
 
 The Clouditor is a tool to support continuous cloud assurance.
 
