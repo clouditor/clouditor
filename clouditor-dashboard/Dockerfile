@@ -9,7 +9,7 @@ WORKDIR /tmp
 # this should hopefully trigger Docker to only update npm if dependencies have changed
 ADD *.json ./
 ADD *.lock ./
-RUN yarn install
+RUN yarn install --ignore-optional
 
 # add the rest of the files
 ADD . .

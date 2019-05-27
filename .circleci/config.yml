@@ -7,9 +7,9 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-          name: Install git
-          command: |            
-            apt update && apt install -y git
+          name: Install dependencies
+          command: |
+            apt update && apt install -y --no-install-recommends git docker
       - run:
           name: Gradle build
           command: |            
