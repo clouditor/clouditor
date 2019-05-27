@@ -1,4 +1,6 @@
 version: 2.1
+orbs:
+  docker: circleci/docker@0.2.0
 jobs:
   build_engine:
     docker:
@@ -18,12 +20,11 @@ jobs:
     docker:
       - image: docker
     steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Docker build
-          command: |            
-            cd clouditor-dashboard && docker build -t clouditor/ui .      
+      - docker/publish:
+          deploy: false
+          image: clouditor/ui
+          path: clouditor-dashboard
+
 workflows:
   build:
     jobs:
