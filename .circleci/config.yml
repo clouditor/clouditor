@@ -5,6 +5,7 @@ jobs:
       - image: openjdk:11-jre-slim
     steps:
       - checkout
+      - setup_remote_docker
       - run:
           name: Gradle build
           command: |            
@@ -15,9 +16,10 @@ jobs:
             cd clouditor-engine && docker build -t clouditor/engine .
   build_ui:
     docker:
-      - image: node:11
+      - image: docker
     steps:
-      - checkout    
+      - checkout
+      - setup_remote_docker
       - run:
           name: Docker build
           command: |            
