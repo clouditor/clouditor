@@ -56,12 +56,10 @@ public abstract class AbstractAPI<C extends Component> extends ResourceConfig {
   private int port;
 
   /** The context path */
-  @NotNull
-  private String contextPath;
+  @NotNull private String contextPath;
 
   /** The associated Clouditor component */
-  @NotNull
-  private C component;
+  @NotNull private C component;
 
   AbstractAPI(C component, int port, String contextPath) {
     this.component = component;
@@ -70,7 +68,7 @@ public abstract class AbstractAPI<C extends Component> extends ResourceConfig {
 
     BeanConfig beanConfig = new BeanConfig();
     beanConfig.setVersion("1.0.0");
-    beanConfig.setSchemes(new String[] { "http" });
+    beanConfig.setSchemes(new String[] {"http"});
     beanConfig.setHost("clouditor.io");
     beanConfig.setBasePath(contextPath);
     beanConfig.setResourcePackage(this.getClass().getPackage().getName());
@@ -97,9 +95,13 @@ public abstract class AbstractAPI<C extends Component> extends ResourceConfig {
   public void start() {
     LOGGER.info("Starting {}...", this.getClass().getSimpleName());
 
-    this.httpServer = GrizzlyHttpServerFactory.createHttpServer(UriBuilder
-        .fromUri("http://" + NetworkListener.DEFAULT_NETWORK_HOST + "/" + this.contextPath).port(this.port).build(),
-        this);
+    this.httpServer =
+        GrizzlyHttpServerFactory.createHttpServer(
+            UriBuilder.fromUri(
+                    "http://" + NetworkListener.DEFAULT_NETWORK_HOST + "/" + this.contextPath)
+                .port(this.port)
+                .build(),
+            this);
 
     LOGGER.info("{} successfully started.", this.getClass().getSimpleName());
 

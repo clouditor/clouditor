@@ -48,7 +48,14 @@ import javax.ws.rs.ApplicationPath;
  */
 @ApplicationPath(EngineAPI.CONTEXT_PATH)
 @RolesAllowed(UserContext.ROLE_USERS)
-@SwaggerDefinition(securityDefinition = @SecurityDefinition(apiKeyAuthDefintions = @ApiKeyAuthDefinition(key = "token", name = "Authorization", in = ApiKeyLocation.HEADER)))
+@SwaggerDefinition(
+    securityDefinition =
+        @SecurityDefinition(
+            apiKeyAuthDefintions =
+                @ApiKeyAuthDefinition(
+                    key = "token",
+                    name = "Authorization",
+                    in = ApiKeyLocation.HEADER)))
 public class EngineAPI extends AbstractAPI<Engine> {
 
   static final String CONTEXT_PATH = "engine";
@@ -63,7 +70,7 @@ public class EngineAPI extends AbstractAPI<Engine> {
 
     var beanConfig = new BeanConfig();
     beanConfig.setVersion("1.0.0");
-    beanConfig.setSchemes(new String[] { "http" });
+    beanConfig.setSchemes(new String[] {"http"});
     beanConfig.setHost("clouditor.io");
     beanConfig.setBasePath(EngineAPI.CONTEXT_PATH);
     beanConfig.setResourcePackage(EngineAPI.class.getPackage().getName());
