@@ -20,3 +20,10 @@ jobs:
           name: Docker build
           command: |            
             cd clouditor-dashboard && docker build -t clouditor/ui .      
+workflows:
+  build:
+    jobs:
+      - build_ui:
+          context: org-global
+      - build_engine:
+          context: org-global
