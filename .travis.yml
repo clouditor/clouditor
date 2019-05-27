@@ -20,4 +20,4 @@ jobs:
         - $HOME/.gradle/wrapper/
     - name: "Build UI"    
       language: bash
-      script: cd clouditor-dashboard && docker build -t clouditor/ui .
+      script: cd clouditor-ui && docker build -t clouditor/ui .

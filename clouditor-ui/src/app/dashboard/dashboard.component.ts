@@ -37,7 +37,7 @@ import { catchError } from 'rxjs/operators';
 import { empty, throwError, EMPTY } from 'rxjs';
 
 @Component({
-  selector: 'clouditor-dashboard',
+  selector: 'clouditor-ui',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })

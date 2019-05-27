@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "clouditor-dashboard": {
+    "clouditor-ui": {
       "root": "",
       "sourceRoot": "src",
       "projectType": "application",
@@ -55,18 +55,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "clouditor-dashboard:build"
+            "browserTarget": "clouditor-ui:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "clouditor-dashboard:build:production"
+              "browserTarget": "clouditor-ui:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "clouditor-dashboard:build"
+            "browserTarget": "clouditor-ui:build"
           }
         },
         "lint": {
@@ -83,7 +83,7 @@
       }
     }
   },
-  "defaultProject": "clouditor-dashboard",
+  "defaultProject": "clouditor-ui",
   "schematics": {
     "@schematics/angular:class": {
       "spec": false
