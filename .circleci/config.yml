@@ -20,8 +20,8 @@ jobs:
     docker:
       - image: docker
     steps:
-      - docker/publish:
-          deploy: false
+      - checkout
+      - docker/build:
           image: clouditor/ui
           path: clouditor-dashboard
 
