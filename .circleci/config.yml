@@ -7,4 +7,5 @@ workflows:
       - docker/publish:
           deploy: false
           image: clouditor/ui
-          path: "clouditor-dashboard"
+          dockerfile: clouditor-dashboard/Dockerfile
+          path: clouditor-dashboard
