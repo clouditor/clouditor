@@ -27,7 +27,6 @@ jobs:
           image: clouditor/ui
           dockerfile: clouditor-dashboard/Dockerfile
           path: clouditor-dashboard
-          use-remote-docker: true
       - docker/push:
           image: clouditor/ui
           tag: latest
