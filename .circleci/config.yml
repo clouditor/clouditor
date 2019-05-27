@@ -20,10 +20,14 @@ jobs:
     machine: true
     steps:
       - checkout
+      - docker/check
       - docker/build:
           image: clouditor/ui
           dockerfile: clouditor-dashboard/Dockerfile
           path: clouditor-dashboard
+      - docker/push:
+          image: clouditor/ui
+          tag: latest
 
 workflows:
   build:
