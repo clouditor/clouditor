@@ -17,9 +17,10 @@ jobs:
           command: |            
             cd clouditor-engine && docker build -t clouditor/engine .
   build_ui:
+    executor: machine
     steps:
-      - docker/publish:
-          deploy: false
+      - checkout
+      - docker/build:
           image: clouditor/ui
           dockerfile: clouditor-dashboard/Dockerfile
           path: clouditor-dashboard
