@@ -1,0 +1,22 @@
+version: 2.1
+jobs:
+  build_engine:
+    docker:
+      - image: openjdk:11-jre-slim
+    steps:
+      - run:
+          name: Gradle build
+          command: |            
+            ./gradlew --parallel build
+      - run:
+          name: Docker build
+          command: |            
+            cd clouditor-engine && docker build -t clouditor/engine .
+  build_ui:
+    docker:
+      - image: node:11
+    steps:
+      - run:
+          name: Docker build
+          command: |            
+            cd clouditor-dashboard && docker build -t clouditor/ui .      
