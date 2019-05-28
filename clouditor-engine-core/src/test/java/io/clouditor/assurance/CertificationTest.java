@@ -56,6 +56,8 @@ class CertificationTest extends AbstractEngineUnitTest {
     // TODO: inject service into test
     var discoveryService = this.engine.getService(DiscoveryService.class);
 
+    var certificationService = this.engine.getService(CertificationService.class);
+
     var properties = new AssetProperties();
     properties.put("property", true);
 
@@ -73,7 +75,7 @@ class CertificationTest extends AbstractEngineUnitTest {
     control.setAutomated(true);
     control.setControlId("good-control-id");
     control.setRules(List.of(rule));
-    this.engine.startMonitoring(control);
+    certificationService.startMonitoring(control);
 
     control.evaluate(this.engine.getServiceLocator());
 

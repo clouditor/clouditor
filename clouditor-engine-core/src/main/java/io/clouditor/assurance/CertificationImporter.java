@@ -36,11 +36,7 @@ public abstract class CertificationImporter {
 
   protected static final Logger LOGGER = LogManager.getLogger();
 
-  protected RuleService ruleService;
-
-  public CertificationImporter(RuleService ruleService) {
-    this.ruleService = ruleService;
-  }
+  public CertificationImporter() {}
 
   abstract Certification load();
 

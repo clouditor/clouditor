@@ -85,11 +85,8 @@ public class CertificationService {
                   clazz -> !Modifier.isAbstract(clazz.getModifiers()) && !clazz.isAnonymousClass())
               .collect(Collectors.toList());
 
-      var ruleService = this.locator.getService(RuleService.class);
-
       for (Class<? extends CertificationImporter> clazz : importerClasses) {
-        CertificationImporter importer =
-            clazz.getDeclaredConstructor(RuleService.class).newInstance(ruleService);
+        CertificationImporter importer = clazz.getDeclaredConstructor().newInstance();
         this.importers.put(importer.getName(), importer);
       }
     } catch (NoSuchMethodException
@@ -107,7 +104,43 @@ public class CertificationService {
       return null;
     }
 
-    return importer.load();
+    var ruleService = this.locator.getService(RuleService.class);
+
+    var certification = importer.load();
+
+    // loop through all controls and
+    // a) look for associated rules
+    // b) start monitoring controls which have associated rules
+
+    for (var control : certification.getControls()) {
+      // find associated rules
+      control.setRules(ruleService.getRulesForControl("BSI C5/" + control.getControlId()));
+
+      if (!control.getRules().isEmpty()) {
+        control.setAutomated(true);
+
+        startMonitoring(control);
+      }
+    }
+
+    return certification;
+  }
+
+  public void startMonitoring(Control control) {
+    if (!control.isAutomated()) {
+      LOGGER.error("Non-automated control {} cannot be enabled. Ignoring.", control.getControlId());
+      return;
+    }
+
+    control.setActive(true);
+
+    // previous results could already be there, try to update the control
+    this.updateCertification(Collections.singletonList(control.getControlId()));
+  }
+
+  public void stopMonitoring(Control control) {
+    // TODO: actually stop all associated jobs
+    control.setActive(false);
   }
 
   public Map<String, CertificationImporter> getImporters() {
