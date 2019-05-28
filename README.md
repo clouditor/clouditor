@@ -45,4 +45,4 @@ To enable auto-discovery for AWS or Azure credentials stored in your home folder
 docker run -v $HOME/.aws:/root/.aws -v $HOME/.azure:/root/.azure -p 9999:9999 clouditor/clouditor
 ```
 
-Then open a web browser at http://localhost:9999.
+Then open a web browser at http://localhost:9999. Login with user `clouditor` and the default password `clouditor`.
