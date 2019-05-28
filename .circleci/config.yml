@@ -2,7 +2,7 @@ version: 2.1
 orbs:
   docker: circleci/docker@0.2.0
 jobs:
-  build_with_gradle:
+  build_and_push:
     docker:
       - image: circleci/openjdk:11
     steps:
@@ -25,9 +25,31 @@ jobs:
           tag: latest
       - docker/push:
           image: clouditor/clouditor
-          tag: latest          
+          tag: latest
+  build:
+    docker:
+      - image: circleci/openjdk:11
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Gradle build
+          command: |
+            ./gradlew --parallel docker jacocoTestReport sonarqube \
+            -Dsonar.projectKey=clouditor_clouditor \
+            -Dsonar.organization=clouditor \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.login=$SONAR_TOKEN
 workflows:
-  build_with_gradle:
+  build_and_push:
     jobs:
-      - build_with_gradle:
+      - build_and_push:
           context: org-global
+          filters:
+            branches:
+              only: master
+      - build:
+          context: org-global
+          filters:
+            branches:
+              ignore: master
