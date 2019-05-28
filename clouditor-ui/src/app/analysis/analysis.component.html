@@ -34,12 +34,25 @@
 </nav>
 <h3>Rules</h3>
 
-The following resource types have been analyzed. Click on a resourc type to show the respective rules.
-
-<div class="float-right p-2">
+<div class="float-right pl-2">
   <button (click)="configuring = true" class="btn btn-outline-secondary" disabled><i class="fas fa-cog"></i>
-    Configure rules</button>
+    Configure</button>
 </div>
+
+<p>
+  Each resource discovered by Clouditor is evaluated against a set of <b>rules</b>. Each rule has a
+  <code>condition</code>
+  which it needs to fulfill, written in the Cloud Compliance Language (CCL). Rules are also the basis for the
+  fulfillment of individual <b>controls</b> of a <a class="text-info" [routerLink]="['/compliance']">Compliance</a>
+  catalog.
+  Clouditor includes a set of pre-defined rules for different Cloud resources.
+</p>
+<p>
+  The following resource types are enabled according to <a class="text-info"
+    [routerLink]="['/discovery']">Discovery</a>. Click on a
+  resource
+  type to show the respective <b>rules</b>.
+</p>
 
 <form #searchForm="ngForm">
   <div class="input-group mt-2">
@@ -63,7 +76,7 @@ The following resource types have been analyzed. Click on a resourc type to show
     <li class="list-group-item pl-0 pr-0">
       There are no resources to be shown. This can have several reasons:
       <ul>
-        <li>No scan is enabled in the <a class="text-info" [routerLink]="['/discovery', assetType]">Discovery</a>
+        <li>No scan is enabled in the <a class="text-info" [routerLink]="['/discovery']">Discovery</a>
           view</li>
         <li>The analysis is still running</li>
         <li>All resources are filtered out</li>
@@ -88,8 +101,8 @@ The following resource types have been analyzed. Click on a resourc type to show
           </clouditor-assessment-badges>
         </div>
         <div class="mt-auto mb-auto">
-          <button [routerLink]="['/analysis', scan.group, scan.service, scan.assetType]"
-            class="btn btn-outline-primary">View Latest Results <i class="fas fa-forward"></i></button>
+          <button [routerLink]="['/analysis', scan.group, scan.service, scan.assetType]" class="btn btn-outline-info"><i
+              class="far fa-chart-bar"></i> Evaluation Results</button>
         </div>
       </div>
       <div *ngIf="selectedScan == scan">

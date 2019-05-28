@@ -53,12 +53,10 @@ export class AssessmentBadgesComponent implements OnInit {
       let compliantAssets = 0;
       let nonCompliantAssets = 0;
       assetArr.forEach(asset => {
-        for (const result of asset.evaluationResults) {
-          if (result.failedConditions.length > 0) {
-            nonCompliantAssets += 1;
-          } else {
-            compliantAssets += 1;
-          }
+        if (!asset.compliant) {
+          nonCompliantAssets += 1;
+        } else {
+          compliantAssets += 1;
         }
         this.compliantAssets = compliantAssets;
         this.nonCompliantAssets = nonCompliantAssets;
