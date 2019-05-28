@@ -60,6 +60,7 @@ export class AnalysisComponent implements OnInit {
   filtered: Scan[] = [];
 
   processing: Map<string, boolean> = new Map();
+  configuring: boolean;
 
   constructor(private checkService: DiscoveryService,
     private titleService: Title,
@@ -105,6 +106,8 @@ export class AnalysisComponent implements OnInit {
 
   ngOnInit() {
     this.titleService.setTitle('Analysis');
+
+    this.configuring = false;
 
     this.updateScans();
 

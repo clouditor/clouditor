@@ -31,11 +31,13 @@
     triggers="mouseenter:mouseleave" *ngIf="scan.enabled"><i class="fas fa-undo"></i>
     {{ scan.interval | amDuration:'seconds' }}</span>
   <span class="pointer text-muted pr-3" *ngIf="!scan.enabled">Stopped</span>
-  <span class="pointer text-muted pr-3" triggers="mouseenter:mouseleave" *ngIf="nonCompliantAssets > 0"><i
+  <span class="pointer text-muted pr-3" ngbPopover="{{ compliantAssets + nonCompliantAssets }} assets analyzed in total"
+    triggers="mouseenter:mouseleave" *ngIf="nonCompliantAssets > 0"><i
       class="fas fa-exclamation-circle text-danger"></i> {{ nonCompliantAssets }} non-compliant assets found</span>
-  <span class="pointer text-muted pr-3" triggers="mouseenter:mouseleave" *ngIf="nonCompliantAssets == 0"><i
-      class="fas fa-check-circle" [class.text-success]="scan.enabled">
-    </i> no non-compliant assets found</span>
+  <span class="pointer text-muted pr-3" ngbPopover="{{ compliantAssets + nonCompliantAssets }} assets analyzed in total"
+    triggers="mouseenter:mouseleave" *ngIf="nonCompliantAssets == 0"><i class="fas fa-check-circle"
+      [class.text-success]="scan.enabled">
+    </i> compliant</span>
   <span class="text-muted" ngbPopover="{{ scan.lastResult.timestamp | date:'medium' }}" triggers="mouseenter:mouseleave"
     *ngIf="!scan.isDiscovering">Updated {{ scan.lastResult.timestamp | amTimeAgo }}</span>
 </ng-container>

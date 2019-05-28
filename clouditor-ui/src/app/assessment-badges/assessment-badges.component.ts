@@ -42,6 +42,7 @@ export class AssessmentBadgesComponent implements OnInit {
 
   @Input() scan: Scan;
   @Input() assetType: string;
+  compliantAssets: number;
   nonCompliantAssets: number;
 
   constructor(private assetService: AssetService) { }
@@ -49,14 +50,17 @@ export class AssessmentBadgesComponent implements OnInit {
   ngOnInit() {
     this.assetService.getAssetsWithType(this.assetType).subscribe(assets => {
       const assetArr: any[] = assets;
+      let compliantAssets = 0;
       let nonCompliantAssets = 0;
       assetArr.forEach(asset => {
         for (const result of asset.evaluationResults) {
           if (result.failedConditions.length > 0) {
             nonCompliantAssets += 1;
-            break;
+          } else {
+            compliantAssets += 1;
           }
         }
+        this.compliantAssets = compliantAssets;
         this.nonCompliantAssets = nonCompliantAssets;
       });
     });
