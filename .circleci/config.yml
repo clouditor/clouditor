@@ -41,7 +41,7 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.login=$SONAR_TOKEN
 workflows:
-  build_and_push:
+  build:
     jobs:
       - build_and_push:
           context: org-global
