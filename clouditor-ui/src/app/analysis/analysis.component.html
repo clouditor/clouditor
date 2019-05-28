@@ -29,12 +29,30 @@
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a class="text-info" routerLink="/">Home</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Assessment</li>
+    <li class="breadcrumb-item active" aria-current="page">Rules</li>
   </ol>
 </nav>
-<h3>Assessment</h3>
+<h3>Rules</h3>
 
-The following asset types have been analyzed.
+<div class="float-right pl-2">
+  <button (click)="configuring = true" class="btn btn-outline-secondary" disabled><i class="fas fa-cog"></i>
+    Configure</button>
+</div>
+
+<p>
+  Each resource discovered by Clouditor is evaluated against a set of <b>rules</b>. Each rule has a
+  <code>condition</code>
+  which it needs to fulfill, written in the Cloud Compliance Language (CCL). Rules are also the basis for the
+  fulfillment of individual <b>controls</b> of a <a class="text-info" [routerLink]="['/compliance']">Compliance</a>
+  catalog.
+  Clouditor includes a set of pre-defined rules for different Cloud resources.
+</p>
+<p>
+  The following resource types are enabled according to <a class="text-info"
+    [routerLink]="['/discovery']">Discovery</a>. Click on a
+  resource
+  type to show the respective <b>rules</b>.
+</p>
 
 <form #searchForm="ngForm">
   <div class="input-group mt-2">
@@ -56,11 +74,12 @@ The following asset types have been analyzed.
 <div>
   <ul class="list-group list-group-flush" *ngIf="filtered.length == 0">
     <li class="list-group-item pl-0 pr-0">
-      No assets were analyzed. This can have several reasons:
+      There are no resources to be shown. This can have several reasons:
       <ul>
-        <li>No scan is enabled in the <a class="text-info" [routerLink]="['/discovery', assetType]">Discovery</a>
+        <li>No scan is enabled in the <a class="text-info" [routerLink]="['/discovery']">Discovery</a>
           view</li>
         <li>The analysis is still running</li>
+        <li>All resources are filtered out</li>
       </ul>
     </li>
   </ul>
@@ -82,16 +101,16 @@ The following asset types have been analyzed.
           </clouditor-assessment-badges>
         </div>
         <div class="mt-auto mb-auto">
-          <button [routerLink]="['/analysis', scan.group, scan.service, scan.assetType]"
-            class="btn btn-outline-primary">View Results <i class="fas fa-forward"></i></button>
+          <button [routerLink]="['/analysis', scan.group, scan.service, scan.assetType]" class="btn btn-outline-info"><i
+              class="far fa-chart-bar"></i> Evaluation Results</button>
         </div>
       </div>
-      <div class="d-flex w-100" *ngIf="selectedScan == scan">
+      <div *ngIf="selectedScan == scan">
         <ul>
           <div class="mb-auto mt-auto" *ngIf="getRulesForAssetType(scan.assetType) == 0">No rules available</div>
           <li *ngFor="let rule of getRulesForAssetType(scan.assetType)">
             <div class="mt-auto mb-auto mr-auto p-2 row">
-              <div class="col-9">
+              <div class="col-8">
                 <b>{{ rule.name }}</b>
                 <div class="text-muted">{{ rule.description }}</div>
                 <!-- single condition -->
@@ -110,21 +129,21 @@ The following asset types have been analyzed.
                     class="text-info mr-1" [routerLink]="['/compliance', control.split('/')[0]]"
                     *ngFor="let control of rule.controls">{{ control }}</a> </div>
               </div>
-              <div class="mb-auto mt-0 col-3">
-                <button (click)="onConfigure(rule)" class="btn btn-outline-secondary" disabled><i
+              <div class="mb-auto mt-auto col-4">
+                <button (click)="onConfigure(rule)" class="btn btn-outline-secondary" *ngIf="configuring" disabled><i
                     class="fas fa-cog"></i>
                   Configure</button>
-                <button (click)="onEnableRule(rule)" class="btn btn-outline-secondary" *ngIf="!rule.enabled" disabled><i
-                    class="fas fa-play"></i>
-                  Enable</button>
-                <button (click)="onDisableRule(rule)" class="btn btn-outline-secondary" *ngIf="rule.enabled" disabled><i
+                <!--<button (click)="onEnableRule(rule)" class="btn btn-outline-secondary"
+                  *ngIf="configuring && !rule.enabled" disabled><i class="fas fa-play"></i>
+                  Enable</button>-->
+                <button (click)="onDisableRule(rule)" class="btn btn-outline-secondary" *ngIf="configuring" disabled><i
                     class="fas fa-stop"></i>
-                  Stop Rule</button>
+                  Stop</button>
               </div>
             </div>
           </li>
-          <hr>
-          <div class="mt-auto mb-auto">
+          <div *ngIf="configuring">
+            <hr>
             <button (click)="createRule()" class="btn btn-outline-secondary" disabled><i class="fas fa-plus"></i>
               Create new Rule</button>
           </div>
