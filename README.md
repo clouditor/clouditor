@@ -36,6 +36,12 @@ To build all necessary docker images, run the following command:
 To run the Clouditor in a demo-like mode, with no persisted database:
 
 ```
+docker run -p 9999:9999 clouditor/clouditor
+```
+
+To enable auto-discovery for AWS or Azure credentials stored in your home folder, you can use:
+
+```
 docker run -v $HOME/.aws:/root/.aws -v $HOME/.azure:/root/.azure -p 9999:9999 clouditor/clouditor
 ```
 
