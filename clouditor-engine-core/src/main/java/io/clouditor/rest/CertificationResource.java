@@ -101,9 +101,9 @@ public class CertificationResource {
     var control = first.get();
 
     if (!request.status && control.isActive()) {
-      this.engine.stopMonitoring(control);
+      this.service.stopMonitoring(control);
     } else if (request.status && !control.isActive()) {
-      this.engine.startMonitoring(control);
+      this.service.startMonitoring(control);
     }
   }
 

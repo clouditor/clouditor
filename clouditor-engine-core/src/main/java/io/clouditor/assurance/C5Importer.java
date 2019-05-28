@@ -36,13 +36,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class C5Importer extends CertificationImporter {
 
-  public C5Importer(RuleService ruleService) {
-    super(ruleService);
-  }
-
   @Override
   public Certification load() {
-
     var url =
         "https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/CloudComputing/ComplianceControlsCatalogue/ComplianceControlsCatalogue_tables_editable.xlsx?__blob=publicationFile&v=8";
 
@@ -63,13 +58,6 @@ public class C5Importer extends CertificationImporter {
         control.setControlId(sheet.getRow(i).getCell(1).toString().trim());
         control.setName(sheet.getRow(i).getCell(2).toString());
         control.setDescription(sheet.getRow(i).getCell(3).toString());
-
-        // find associated rules
-        control.setRules(this.ruleService.getRulesForControl("BSI C5/" + control.getControlId()));
-
-        if (!control.getRules().isEmpty()) {
-          control.setAutomated(true);
-        }
 
         controls.add(control);
       }

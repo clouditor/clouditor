@@ -63,10 +63,6 @@ public class AzureCISBenchmarkImporter extends CertificationImporter {
     domains.put("Azure 8", "Other Security Considerations");
   }
 
-  public AzureCISBenchmarkImporter(RuleService ruleService) {
-    super(ruleService);
-  }
-
   public String getName() {
     return "CIS Microsoft Azure Foundations Benchmark";
   }
@@ -234,15 +230,6 @@ public class AzureCISBenchmarkImporter extends CertificationImporter {
     control.setDescription(description);
 
     this.skipUntilAfter(reader, "CIS Controls:");
-
-    // find associated rules
-    control.setRules(
-        this.ruleService.getRulesForControl(
-            "CIS Microsoft Azure Foundations Benchmark/" + control.getControlId()));
-
-    if (!control.getRules().isEmpty()) {
-      control.setAutomated(true);
-    }
 
     return control;
   }

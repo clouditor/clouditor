@@ -32,13 +32,11 @@ package io.clouditor;
 import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
 import io.clouditor.assurance.CertificationService;
-import io.clouditor.assurance.Control;
 import io.clouditor.assurance.RuleService;
 import io.clouditor.discovery.DiscoveryService;
 import io.clouditor.rest.EngineAPI;
 import io.clouditor.util.FileSystemManager;
 import io.clouditor.util.PersistenceManager;
-import java.util.Collections;
 import org.jvnet.hk2.annotations.Service;
 import org.kohsuke.args4j.Option;
 
@@ -167,19 +165,6 @@ public class Engine extends Component {
     this.getService(CertificationService.class).loadCertifications();
   }
 
-  public void startMonitoring(Control control) {
-    if (!control.isAutomated()) {
-      LOGGER.error("Non-automated control {} cannot be enabled. Ignoring.", control.getControlId());
-      return;
-    }
-
-    control.setActive(true);
-
-    // previous results could already be there, try to update the control
-    this.getService(CertificationService.class)
-        .updateCertification(Collections.singletonList(control.getControlId()));
-  }
-
   public void initDB() {
     if (this.dbInMemory) {
       var server = new MongoServer(new MemoryBackend());
@@ -248,10 +233,5 @@ public class Engine extends Component {
     if (this.api != null) {
       this.api.stop();
     }
-  }
-
-  public void stopMonitoring(Control control) {
-    // TODO: actually stop all associated jobs
-    control.setActive(false);
   }
 }
