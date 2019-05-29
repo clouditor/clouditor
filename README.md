@@ -46,7 +46,7 @@ Then open a web browser at http://localhost:9999. Login with user `clouditor` an
 
 ### Overview of rule-based assessment 
 
-![Rule assessment](images/Assessment-2.png "Assessment")
+![Rule assessment](images/Rules.png "Assessment")
 
 ### View details of failed rules
 

@@ -51,7 +51,7 @@ import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
 import software.amazon.awssdk.services.s3.model.ListBucketsRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
-@ScannerInfo(assetType = "Bucket", group = "AWS", service = "S3")
+@ScannerInfo(assetType = "Bucket", group = "AWS", service = "S3", assetIcon = "fas fa-archive")
 public class AwsS3BucketScanner extends AwsScanner<S3Client, S3ClientBuilder, Bucket> {
 
   private Map<String, S3Client> regionClients = new HashMap<>();

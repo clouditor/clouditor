@@ -36,6 +36,7 @@ import { Scan } from '../scan';
 import { NgForm } from '@angular/forms';
 import { RuleService } from '../rule.service';
 import { Rule } from '../rule';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'clouditor-rules',
@@ -65,7 +66,8 @@ export class RulesComponent implements OnInit {
 
   constructor(private checkService: DiscoveryService,
     private titleService: Title,
-    private ruleService: RuleService) {
+    private ruleService: RuleService,
+    private route: ActivatedRoute) {
     this.search = localStorage.getItem('search-analysis');
     if (this.search === null) {
       this.search = '';
@@ -106,7 +108,7 @@ export class RulesComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.titleService.setTitle('Analysis');
+    this.titleService.setTitle('Rules');
 
     this.configuring = false;
 
@@ -182,7 +184,23 @@ export class RulesComponent implements OnInit {
         if (this.filtered.length > 0) {
           this.selectScan(this.filtered[0]);
         }
+
+        this.route.queryParams.subscribe(params => {
+          if (params['selected']) {
+            const selected = params['selected'];
+            const scan = this.getScanByAssetType(this.filtered, selected);
+            if (scan) {
+              this.selectScan(scan);
+            }
+          }
+        });
       });
+  }
+
+  getScanByAssetType(list: Scan[], assetType: string) {
+    const filtered = list.filter(scan => scan.assetType === assetType);
+
+    return filtered.length === 1 ? filtered[0] : null;
   }
 
   updateFiltered() {
@@ -210,7 +228,6 @@ export class RulesComponent implements OnInit {
         for (const rule of rules) {
           this.ruleService.getStatus(rule.assetType, rule.id).subscribe(status => {
             this.status[rule.id] = status;
-            console.log(this.status[rule.id]);
           });
         }
       });

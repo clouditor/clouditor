@@ -51,26 +51,28 @@
       Stop Discovery</button>
   </div>
   <div class="mt-2" *ngIf="scan.lastResult">
-    <h5>Discovered Assets (<a class="text-info"
-        [routerLink]="['/analysis', scan.group, scan.service, scan.assetType]">Show Assessment</a>)
-    </h5>
-    <ul class="list-group list-group-flush" *ngFor="let asset of scan.lastResult.discoveredAssets">
+    <h5>Discovered Resources</h5>
+    <ul class="list-group list-group-flush fa-ul" *ngFor="let asset of scan.lastResult.discoveredAssets">
       <li class="list-group-item">
         <div class="d-flex w-100">
+          <span ngbPopover="Show properties" triggers="mouseenter:mouseleave" class="fa-li pt-2" style="cursor: pointer"
+            (click)="isExpanded[asset.id] = !isExpanded[asset.id]"><i class="fas"
+              [class.fa-angle-right]="!isExpanded[asset.id]" [class.fa-angle-down]="isExpanded[asset.id]"></i></span>
           <div class="mb-1 p-2">
-            <i [class]="scan.assetIcon" style="font-size: 32px"></i>
+            <i [class]="scan.assetIcon" [class.azure]="scan.group === 'Azure'" [class.aws]="scan.group === 'AWS'"
+              style="font-size: 32px"></i>
           </div>
           <div class="mt-auto mb-auto mr-auto p-2">
             {{ asset.type }} / <b>{{ asset.name }}</b>
-            <div class="text-muted">{{ asset.id }} <i ngbPopover="Show properties" triggers="mouseenter:mouseleave"
-                (click)="isExpanded[asset.id] = !isExpanded[asset.id]" class="fas"
-                [class.fa-angle-double-down]="!isExpanded[asset.id]" [class.fa-angle-double-up]="isExpanded[asset.id]"
-                style="cursor: pointer"></i>
+            <div class="text-muted">{{ asset.id }}
               <pre class="mt-2 properties" [ngbCollapse]="!isExpanded[asset.id]">{{ asset.properties | json }}</pre>
             </div>
           </div>
         </div>
       </li>
     </ul>
+    <div class="pt-2"><a class="text-info" [routerLink]="['/rules']" [queryParams]="{selected: scan.assetType}">Show
+        rules for
+        {{ scan.assetType }}</a></div>
   </div>
 </div>

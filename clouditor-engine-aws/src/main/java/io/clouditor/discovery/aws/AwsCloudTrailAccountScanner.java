@@ -38,7 +38,11 @@ import software.amazon.awssdk.services.cloudtrail.CloudTrailClientBuilder;
 import software.amazon.awssdk.services.cloudtrail.model.GetEventSelectorsRequest;
 import software.amazon.awssdk.services.cloudtrail.model.GetTrailStatusRequest;
 
-@ScannerInfo(assetType = "Account", group = "AWS", service = "CloudTrail")
+@ScannerInfo(
+    assetType = "Account",
+    group = "AWS",
+    service = "CloudTrail",
+    assetIcon = "fas fa-sitemap")
 public class AwsCloudTrailAccountScanner
     extends AwsScanner<CloudTrailClient, CloudTrailClientBuilder, Account> {
 

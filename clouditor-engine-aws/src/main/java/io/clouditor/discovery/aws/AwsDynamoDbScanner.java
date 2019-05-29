@@ -37,7 +37,7 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClientBuilder;
 import software.amazon.awssdk.services.dynamodb.model.DescribeTableRequest;
 import software.amazon.awssdk.services.dynamodb.model.TableDescription;
 
-@ScannerInfo(assetType = "Table", group = "AWS", service = "DynamoDB")
+@ScannerInfo(assetType = "Table", group = "AWS", service = "DynamoDB", assetIcon = "fas fa-table")
 public class AwsDynamoDbScanner
     extends AwsScanner<DynamoDbClient, DynamoDbClientBuilder, TableDescription> {
 

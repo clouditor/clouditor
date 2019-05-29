@@ -103,7 +103,7 @@
       </div>
       <div *ngIf="selectedScan == scan">
         <ul class="list-group list-group-flush">
-          <div class="mb-auto mt-auto" *ngIf="getRulesForAssetType(scan.assetType) == 0">No rules available</div>
+          <div class="mb-auto mt-auto" *ngIf="getRulesForAssetType(scan.assetType) == 0">No rules configured</div>
           <li class="list-group-item" *ngFor="let rule of getRulesForAssetType(scan.assetType)">
             <div class="mt-auto mb-auto mr-auto p-2 row">
               <div class="col-9">
@@ -113,7 +113,7 @@
                   <a class="text-info mr-1" [routerLink]="['/compliance', control.split('/')[0]]"
                     *ngFor="let control of rule.controls">{{ control }}</a> </small>
               </div>
-              <div class="mb-auto mt-auto col-3">
+              <div class="mb-auto mt-auto col-3" *ngIf="status[rule.id]">
                 <span class="pointer pr-3 text-danger"
                   [routerLink]="['/analysis', scan.group, scan.service, scan.assetType]"
                   ngbPopover="{{ status[rule.id].numberOfNonCompliant }} out of {{ status[rule.id].numberOfCompliant + status[rule.id].numberOfNonCompliant }} resource(s) have rule violations"

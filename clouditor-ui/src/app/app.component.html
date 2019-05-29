@@ -73,44 +73,16 @@
   </div>
   <router-outlet></router-outlet>
 </div>
-
-<!--<mat-sidenav-container fullscreen="true">
-  <mat-sidenav #snav class="docs-component-viewer-sidenav" [opened]="!isMobile.matches" [mode]="isMobile.matches ? 'over' : 'side'" [fixedInViewport]="isMobile.matches">
-    <header class="clouditor-drawer-header">
-      <img src="assets/clouditor-dark.png" class="clouditor-avatar">
-    </header>
-    <mat-nav-list>
-      <a mat-list-item routerLink="/dashboard">
-        <mat-icon matListIcon>home</mat-icon>
-        Dashboard
-      </a>
-      <a mat-list-item routerLink="/workflows">
-        <mat-icon matListIcon>autorenew</mat-icon>
-        Workflows
-      </a>
-      <a mat-list-item routerLink="/about">
-        About
-        <mat-icon matListIcon>info</mat-icon>
-      </a>
-    </mat-nav-list>
-    <mat-nav-list>
-      <a mat-list-item (click)="logout()" *ngIf="auth.isLoggedIn()">
-        <mat-icon matListIcon>home</mat-icon>
-        Logout
-      </a>
-    </mat-nav-list>
-  </mat-sidenav>
-  <mat-sidenav-content>
-    <mat-toolbar>
-      <button mat-icon-button (click)="snav.toggle()"><mat-icon>menu</mat-icon></button>
-
-      <span>{{ titleService.getTitle() }}</span>
-
-      <span class="clouditor-fill-remaining-space"></span>
-
-    </mat-toolbar>
-    <div class="clouditor-main-content">
-      <router-outlet></router-outlet>
-    </div>
-  </mat-sidenav-content>
-</mat-sidenav-container>-->
+<footer class="footer">
+  <div class="text-center">
+    <span class="text-muted">
+      Clouditor is developed by <a class="text-info" href="https://www.aisec.fraunhofer.de" target="_new">Fraunhofer
+        AISEC</a>.
+    </span>
+    <span class="text-muted">
+      Community Edition - <a class="text-info" href="https://github.com/clouditor/clouditor/blob/master/LICENSE.md"
+        target="_new">License</a> - <a class="text-info" href="https://github.com/clouditor/clouditor"
+        target="_new">GitHub</a>
+    </span>
+  </div>
+</footer>

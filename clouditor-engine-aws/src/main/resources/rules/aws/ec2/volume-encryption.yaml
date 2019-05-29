@@ -1,5 +1,5 @@
 condition: Volume has encrypted == true
 description: Checks whether AWS EBS volumes are encrypted.
-name: "Encrypt EC2 Volumes"
+name: "Encrypt Volumes"
 controls:
   - "BSI C5/KRY-03"
