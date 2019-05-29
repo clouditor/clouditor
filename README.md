@@ -18,6 +18,23 @@ Key features are:
 * descriptive development of custom rules using [Cloud Compliance Language (CCL)](clouditor-engine-azure/src/main/resources/rules/azure/compute/vm-data-encryption.md) to support individual evaluation scenarios
 * integration of custom security requirements and mapping to rules
 
+# Usage
+
+To run the Clouditor in a demo-like mode, with no persisted database:
+
+```
+docker run -p 9999:9999 clouditor/clouditor
+```
+
+To enable auto-discovery for AWS or Azure credentials stored in your home folder, you can use:
+
+```
+docker run -v $HOME/.aws:/root/.aws -v $HOME/.azure:/root/.azure -p 9999:9999 clouditor/clouditor
+```
+
+Then open a web browser at http://localhost:9999. Login with user `clouditor` and the default password `clouditor`.
+
+
 # Screenshots
 
 ### Configuring an account
@@ -52,7 +69,7 @@ You can use the hook in `style/pre-commit` to check for formatting errors:
 cp style/pre-commit .git/hooks
 ```
 
-# Build (gradle)
+## Build (gradle)
 
 To build the Clouditor, you can use the following gradle commands:
 
@@ -60,26 +77,10 @@ To build the Clouditor, you can use the following gradle commands:
 ./gradlew clean build
 ```
 
-# Build (Docker)
+## Build (Docker)
 
 To build all necessary docker images, run the following command:
 
 ```
 ./gradlew docker
 ```
-
-# Run (Docker)
-
-To run the Clouditor in a demo-like mode, with no persisted database:
-
-```
-docker run -p 9999:9999 clouditor/clouditor
-```
-
-To enable auto-discovery for AWS or Azure credentials stored in your home folder, you can use:
-
-```
-docker run -v $HOME/.aws:/root/.aws -v $HOME/.azure:/root/.azure -p 9999:9999 clouditor/clouditor
-```
-
-Then open a web browser at http://localhost:9999. Login with user `clouditor` and the default password `clouditor`.
