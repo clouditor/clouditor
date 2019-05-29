@@ -1,37 +1,24 @@
+![clouditor](images/claudi.png "Clouditor")
+
 # Clouditor Community Edition [![CircleCI](https://circleci.com/gh/clouditor/clouditor.svg?style=svg)](https://circleci.com/gh/clouditor/clouditor) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=clouditor_clouditor&metric=alert_status)](https://sonarcloud.io/dashboard?id=clouditor_clouditor) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=clouditor_clouditor&metric=coverage)](https://sonarcloud.io/dashboard?id=clouditor_clouditor) [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=clouditor_clouditor&metric=bugs)](https://sonarcloud.io/dashboard?id=clouditor_clouditor) [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=clouditor_clouditor&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=clouditor_clouditor)
 
-The Clouditor is a tool to support continuous cloud assurance.
+# Introduction
 
-# Development
+Clouditor is a tool which supports continuous cloud assurance. Its main goal is to continuously evaluate if a cloud-based application (built using, e.g., Amazon Web Services (AWS) or Microsoft Azure) is configured in a secure way and thus complies with security requirements defined by, e.g., Cloud Computing Compliance Controls Catalogue (C5) issued by the German Office for Information Security (BSI) or the Cloud Control Matrix (CCM) published by the Cloud Security Alliance (CSA).
 
-## Code Style
+# Features
 
-We use [Google Java Style](https://github.com/google/google-java-format) as a formatting. Please install the appropriate plugin for your IDE.
+Clouditor currently supports over 60 checks for Amazon Web Services (AWS), Microsoft Azure and OpenStack. Results of these checks are evaluated against security requirements of the BSI C5 and CSA CCM.
 
-## Git Hooks
+Key features are:
 
-You can use the hook in `style/pre-commit` to check for formatting errors:
-```
-cp style/pre-commit .git/hooks
-```
+* automated compliance rules for AWS and MS Azure
+* granular report of detected non-compliant configurations
+* quick and adaptive integration with existing service through automated service discovery
+* descriptive development of custom rules using [Cloud Compliance Language (CCL)](clouditor-engine-azure/src/main/resources/rules/azure/compute/vm-data-encryption.md) to support individual evaluation scenarios
+* integration of custom security requirements and mapping to rules
 
-# Build (gradle)
-
-To build the Clouditor, you can use the following gradle commands:
-
-```
-./gradlew clean build
-```
-
-# Build (Docker)
-
-To build all necessary docker images, run the following command:
-
-```
-./gradlew docker
-```
-
-# Run (Docker)
+# Usage
 
 To run the Clouditor in a demo-like mode, with no persisted database:
 
@@ -46,3 +33,54 @@ docker run -v $HOME/.aws:/root/.aws -v $HOME/.azure:/root/.azure -p 9999:9999 cl
 ```
 
 Then open a web browser at http://localhost:9999. Login with user `clouditor` and the default password `clouditor`.
+
+
+# Screenshots
+
+### Configuring an account
+![Account configuration](images/Accounts.png "Accounts")
+
+### Discovering resources of cloud-based application
+
+![Discovery view](/images/Discovery.png "Discovery")
+
+### Overview of rule-based assessment 
+
+![Rule assessment](images/Assessment-2.png "Assessment")
+
+### View details of failed rules
+
+![Rule assessment](images/Assessment.png "Assessment")
+
+### Load and map compliance requirements
+
+![Compliance overview](images/Compliance.png "Compliance")
+
+# Development
+
+## Code Style
+
+We use [Google Java Style](https://github.com/google/google-java-format) as a formatting. Please install the appropriate plugin for your IDE.
+
+## Git Hooks
+
+You can use the hook in `style/pre-commit` to check for formatting errors:
+```
+cp style/pre-commit .git/hooks
+```
+
+## Build (gradle)
+
+To build the Clouditor, you can use the following gradle commands:
+
+```
+./gradlew clean build
+```
+
+## Build (Docker)
+
+To build all necessary docker images, run the following command:
+
+```
+./gradlew docker
+```
