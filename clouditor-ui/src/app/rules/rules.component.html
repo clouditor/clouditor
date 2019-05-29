@@ -100,10 +100,6 @@
           <clouditor-assessment-badges [scan]="scan" [assetType]="scan.assetType">
           </clouditor-assessment-badges>
         </div>
-        <div class="mt-auto mb-auto">
-          <button [routerLink]="['/analysis', scan.group, scan.service, scan.assetType]" class="btn btn-outline-info"><i
-              class="far fa-chart-bar"></i> Evaluation Results</button>
-        </div>
       </div>
       <div *ngIf="selectedScan == scan">
         <ul class="list-group list-group-flush">

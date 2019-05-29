@@ -210,6 +210,7 @@ export class RulesComponent implements OnInit {
         for (const rule of rules) {
           this.ruleService.getStatus(rule.assetType, rule.id).subscribe(status => {
             this.status[rule.id] = status;
+            console.log(this.status[rule.id]);
           });
         }
       });

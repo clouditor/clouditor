@@ -33,11 +33,11 @@ public class RuleStatus {
 
   @JsonProperty
   public long getNumberOfCompliant() {
-    return this.compliance.values().stream().filter(status -> !status).count();
+    return this.compliance.values().stream().filter(status -> status).count();
   }
 
   @JsonProperty
   public long getNumberOfNonCompliant() {
-    return this.compliance.values().stream().filter(status -> status).count();
+    return this.compliance.values().stream().filter(status -> !status).count();
   }
 }
