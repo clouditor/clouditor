@@ -1,6 +1,43 @@
 # Clouditor Community Edition [![CircleCI](https://circleci.com/gh/clouditor/clouditor.svg?style=svg)](https://circleci.com/gh/clouditor/clouditor) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=clouditor_clouditor&metric=alert_status)](https://sonarcloud.io/dashboard?id=clouditor_clouditor) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=clouditor_clouditor&metric=coverage)](https://sonarcloud.io/dashboard?id=clouditor_clouditor) [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=clouditor_clouditor&metric=bugs)](https://sonarcloud.io/dashboard?id=clouditor_clouditor) [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=clouditor_clouditor&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=clouditor_clouditor)
 
-The Clouditor is a tool to support continuous cloud assurance.
+![clouditor](images/claudi.png "Clouditor")
+
+# Introduction
+
+Clouditor is a tool which supports continuous cloud assurance. Its main goal is to continuously evaluate if a cloud-based application (built using, e.g., Amazon Web Services (AWS) or Microsoft Azure) is configured in a secure way and thus complies with security requirements defined by, e.g., Cloud Computing Compliance Controls Catalogue (C5) issued by the German Office for Information Security (BSI) or the Cloud Control Matrix (CCM) published by the Cloud Security Alliance (CSA).
+
+# Features
+
+Clouditor currently supports over 60 checks for Amazon Web Services (AWS), Microsoft Azure and OpenStack. Results of these checks are evaluated against security requirements of the BSI C5 and CSA CCM.
+
+Key features are:
+
+* automated compliance rules for AWS and MS Azure
+* granular report of detected non-compliant configurations
+* quick and adaptive integration with existing service through automated service discovery
+* descriptive development of custom rules using [Cloud Compliance Language (CCL)](clouditor-engine-azure/src/main/resources/rules/azure/compute/vm-data-encryption.md) to support individual evaluation scenarios
+* integration of custom security requirements and mapping to rules
+
+# Screenshots
+
+### Configuring an account
+![Account configuration](images/Accounts.png "Accounts")
+
+### Discovering resources of cloud-based application
+
+![Discovery view](/images/Discovery.png "Discovery")
+
+### Overview of rule-based assessment 
+
+![Rule assessment](images/Assessment-2.png "Assessment")
+
+### View details of failed rules
+
+![Rule assessment](images/Assessment.png "Assessment")
+
+### Load and map compliance requirements
+
+![Compliance overview](images/Compliance.png "Compliance")
 
 # Development
 
