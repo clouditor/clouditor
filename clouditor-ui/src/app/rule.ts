@@ -32,6 +32,8 @@ export class Rule {
   condition: string;
   conditions: string[];
   name: string;
+  id: string;
+  assetType: string;
   description: string;
   controls: string[];
 

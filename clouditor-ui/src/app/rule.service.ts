@@ -45,4 +45,10 @@ export class RuleService {
       return entries.map(entry => Object.assign(new Rule(), entry));
     }));
   }
+
+  getStatus(type: string, id: string): Observable<Object> {
+    return this.http.get<any>(this.config.get().apiUrl + '/rules/' + type + '/' + id).pipe(map(data => {
+      return data;
+    }));
+  }
 }

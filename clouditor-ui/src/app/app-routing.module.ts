@@ -41,7 +41,7 @@ import { ControlDetailComponent } from './control-detail/control-detail.componen
 import { AuthGuard } from './auth.guard';
 import { ConfigService } from './config.service';
 import { DiscoveryDetailComponent } from './discovery-detail/discovery-detail.component';
-import { AnalysisComponent } from './analysis/analysis.component';
+import { RulesComponent } from './rules/rules.component';
 import { AnalysisDetailComponent } from './analysis-detail/analysis-detail.component';
 import { ConfigureAccountComponent } from './configure-account/configure-account.component';
 
@@ -54,7 +54,7 @@ const routes: Routes = [
   { path: 'assets', component: AssetsComponent, canActivate: [AuthGuard] },
   { path: 'discovery', component: DiscoveryComponent, canActivate: [AuthGuard] },
   { path: 'discovery/:id', component: DiscoveryDetailComponent, canActivate: [AuthGuard] },
-  { path: 'analysis', component: AnalysisComponent, canActivate: [AuthGuard] },
+  { path: 'rules', component: RulesComponent, canActivate: [AuthGuard] },
   { path: 'analysis/:group/:service/:assetType', component: AnalysisDetailComponent, canActivate: [AuthGuard] },
   { path: 'login', component: LoginComponent },
   { path: 'about', component: AboutComponent },

@@ -38,7 +38,7 @@ import { ToastrModule } from 'ngx-toastr';
 import { AboutComponent } from './about/about.component';
 import { AccountsService } from './accounts.service';
 import { AnalysisDetailComponent } from './analysis-detail/analysis-detail.component';
-import { AnalysisComponent } from './analysis/analysis.component';
+import { RulesComponent } from './rules/rules.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AssessmentBadgesComponent } from './assessment-badges/assessment-badges.component';
@@ -70,7 +70,7 @@ import { TruncateMiddlePipe } from './truncate-middle.pipe';
 @NgModule({
   declarations: [
     AboutComponent,
-    AnalysisComponent,
+    RulesComponent,
     AnalysisDetailComponent,
     AppComponent,
     DashboardComponent,

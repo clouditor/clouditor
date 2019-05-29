@@ -31,6 +31,7 @@ package io.clouditor.rest;
 
 import io.clouditor.assurance.Rule;
 import io.clouditor.assurance.RuleService;
+import io.clouditor.assurance.RuleStatus;
 import io.clouditor.auth.UserContext;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.Authorization;
@@ -40,6 +41,7 @@ import java.util.Set;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -73,5 +75,19 @@ public class RulesResource {
     }
 
     return rules;
+  }
+
+  @Produces(MediaType.APPLICATION_JSON)
+  @GET
+  @Path("{assetType}/{ruleId}")
+  public RuleStatus getStatus(
+      @PathParam("assetType") String assetType, @PathParam("ruleId") String ruleId) {
+    var rule = this.ruleService.getWithId(assetType, ruleId);
+
+    if (rule == null) {
+      throw new NotFoundException();
+    }
+
+    return this.ruleService.getStatus(rule);
   }
 }

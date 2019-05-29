@@ -106,30 +106,31 @@
         </div>
       </div>
       <div *ngIf="selectedScan == scan">
-        <ul>
+        <ul class="list-group list-group-flush">
           <div class="mb-auto mt-auto" *ngIf="getRulesForAssetType(scan.assetType) == 0">No rules available</div>
-          <li *ngFor="let rule of getRulesForAssetType(scan.assetType)">
+          <li class="list-group-item" *ngFor="let rule of getRulesForAssetType(scan.assetType)">
             <div class="mt-auto mb-auto mr-auto p-2 row">
-              <div class="col-8">
+              <div class="col-9">
                 <b>{{ rule.name }}</b>
                 <div class="text-muted">{{ rule.description }}</div>
-                <!-- single condition -->
-                <div *ngIf="rule.conditions">
-                  <code>
-                {{ rule.condition }}
-              </code>
-                </div>
-                <!-- list of conditions -->
-                <div *ngFor="let condition of rule.conditions">
-                  <code>
-              {{ condition }}
-              </code>
-                </div>
-                <div *ngIf="rule.controls?.length > 0">The rule addresses the following controls: <a
-                    class="text-info mr-1" [routerLink]="['/compliance', control.split('/')[0]]"
-                    *ngFor="let control of rule.controls">{{ control }}</a> </div>
+                <small *ngIf="rule.controls?.length > 0" class="text-muted">The rule addresses the following controls:
+                  <a class="text-info mr-1" [routerLink]="['/compliance', control.split('/')[0]]"
+                    *ngFor="let control of rule.controls">{{ control }}</a> </small>
               </div>
-              <div class="mb-auto mt-auto col-4">
+              <div class="mb-auto mt-auto col-3">
+                <span class="pointer pr-3 text-danger"
+                  [routerLink]="['/analysis', scan.group, scan.service, scan.assetType]"
+                  ngbPopover="{{ status[rule.id].numberOfNonCompliant }} out of {{ status[rule.id].numberOfCompliant + status[rule.id].numberOfNonCompliant }} resource(s) have rule violations"
+                  triggers="mouseenter:mouseleave" *ngIf="status[rule.id].numberOfNonCompliant > 0"><i
+                    class="fas fa-exclamation-circle"></i>
+                  {{ status[rule.id].numberOfNonCompliant }} violations</span>
+                <span class="pointer text-success pr-3"
+                  ngbPopover="{{ status[rule.id].numberOfCompliant + status[rule.id].numberOfNonCompliant }} resources analyzed in total"
+                  triggers="mouseenter:mouseleave" *ngIf="status[rule.id].numberOfNonCompliant == 0"><i
+                    class="fas fa-check-circle">
+                  </i> All resources compliant</span>
+              </div>
+              <div class="mb-auto mt-auto col-2">
                 <button (click)="onConfigure(rule)" class="btn btn-outline-secondary" *ngIf="configuring" disabled><i
                     class="fas fa-cog"></i>
                   Configure</button>

@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -123,6 +124,34 @@ public class RuleService extends DiscoveryResultSubscriber {
     doc.accept(new RuleVisitor(rule));
 
     return rule;
+  }
+
+  public RuleStatus getStatus(Rule rule) {
+    var status = new RuleStatus(rule);
+
+    var assets = this.assetService.getAssetsWithType(rule.getAssetType());
+
+    for (var asset : assets) {
+      var o =
+          asset.getEvaluationResults().stream()
+              .filter(result -> Objects.equals(result.getRule().getId(), rule.getId()))
+              .findAny();
+
+      if (o.isPresent() && o.get().isOk()) {
+        status.addCompliant(asset);
+      } else {
+        status.addNonCompliant(asset);
+      }
+    }
+
+    return status;
+  }
+
+  public Rule getWithId(String assetType, String id) {
+    return this.rules.get(assetType).stream()
+        .filter(rule -> Objects.equals(rule.getId(), id))
+        .findFirst()
+        .orElse(null);
   }
 
   public static class RuleVisitor extends AbstractVisitor {
