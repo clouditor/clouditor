@@ -4,7 +4,7 @@ condition: >-
     not empty applyServerSideEncryptionByDefault.sseAlgorithmAsString
   in all
     bucketEncryption.rules
-name: "AWS S3: Bucket Default Encryption"
+name: "Enable Default Encryption in Buckets"
 description: Buckets should have default encryption using a strong cipher, such as AES-256.
 controls:
   - "BSI C5/KRY-03"

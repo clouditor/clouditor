@@ -1,4 +1,4 @@
-name: "AWS Cloud Trail: Active in all Regions"
+name: "Enable CloudTrail in all Regions"
 description: "Checks if trails exists, that are active in all regions and record management events (read and write)."
 condition: Account has cloudTrailActive == true
 controls:

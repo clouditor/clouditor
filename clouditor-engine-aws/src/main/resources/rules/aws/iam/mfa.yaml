@@ -1,6 +1,6 @@
 condition: User has not empty mfaDevices
 description: Checks if Multi-Factor Authentication (MFA) is enabled for all users.
-name: "AWS IAM: Enable Multi-Factor Authentication"
+name: "Enable Multi-Factor Authentication"
 controls:
   - "IAM-09"
   - "AWS 1.2"
