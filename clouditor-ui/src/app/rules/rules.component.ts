@@ -180,17 +180,17 @@ export class RulesComponent implements OnInit {
         // update filtered scans
         this.updateFiltered();
 
-        // select the first filtered scan (if any)
-        if (this.filtered.length > 0) {
-          this.selectScan(this.filtered[0]);
-        }
-
         this.route.queryParams.subscribe(params => {
           if (params['selected']) {
             const selected = params['selected'];
             const scan = this.getScanByAssetType(this.filtered, selected);
             if (scan) {
               this.selectScan(scan);
+            }
+          } else {
+            // select the first filtered scan (if any)
+            if (this.filtered.length > 0) {
+              this.selectScan(this.filtered[0]);
             }
           }
         });
@@ -226,8 +226,8 @@ export class RulesComponent implements OnInit {
         this.assetRules.set(scan.assetType, rules);
 
         for (const rule of rules) {
-          this.ruleService.getStatus(rule.assetType, rule.id).subscribe(status => {
-            this.status[rule.id] = status;
+          this.ruleService.getRuleEvaluation(rule.id).subscribe(evaluation => {
+            this.status[rule.id] = evaluation;
           });
         }
       });

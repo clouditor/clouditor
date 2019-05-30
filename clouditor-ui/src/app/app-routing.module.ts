@@ -42,7 +42,7 @@ import { AuthGuard } from './auth.guard';
 import { ConfigService } from './config.service';
 import { DiscoveryDetailComponent } from './discovery-detail/discovery-detail.component';
 import { RulesComponent } from './rules/rules.component';
-import { AnalysisDetailComponent } from './analysis-detail/analysis-detail.component';
+import { RuleDetailComponent } from './rule-detail/rule-detail.component';
 import { ConfigureAccountComponent } from './configure-account/configure-account.component';
 
 const routes: Routes = [
@@ -55,7 +55,7 @@ const routes: Routes = [
   { path: 'discovery', component: DiscoveryComponent, canActivate: [AuthGuard] },
   { path: 'discovery/:id', component: DiscoveryDetailComponent, canActivate: [AuthGuard] },
   { path: 'rules', component: RulesComponent, canActivate: [AuthGuard] },
-  { path: 'analysis/:group/:service/:assetType', component: AnalysisDetailComponent, canActivate: [AuthGuard] },
+  { path: 'rules/:id', component: RuleDetailComponent, canActivate: [AuthGuard] },
   { path: 'login', component: LoginComponent },
   { path: 'about', component: AboutComponent },
   { path: '', redirectTo: '/accounts', pathMatch: 'full', resolve: { config: ConfigService } },

@@ -126,8 +126,8 @@ public class RuleService extends DiscoveryResultSubscriber {
     return rule;
   }
 
-  public RuleStatus getStatus(Rule rule) {
-    var status = new RuleStatus(rule);
+  public RuleEvaluation getStatus(Rule rule) {
+    var status = new RuleEvaluation(rule);
 
     var assets = this.assetService.getAssetsWithType(rule.getAssetType());
 
@@ -147,9 +147,9 @@ public class RuleService extends DiscoveryResultSubscriber {
     return status;
   }
 
-  public Rule getWithId(String assetType, String id) {
-    return this.rules.get(assetType).stream()
-        .filter(rule -> Objects.equals(rule.getId(), id))
+  public Rule getWithId(String id) {
+    return rules.entrySet().stream()
+        .flatMap(e -> e.getValue().stream().filter(rule -> Objects.equals(rule.getId(), id)))
         .findFirst()
         .orElse(null);
   }

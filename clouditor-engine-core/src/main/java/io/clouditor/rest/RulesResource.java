@@ -30,8 +30,8 @@
 package io.clouditor.rest;
 
 import io.clouditor.assurance.Rule;
+import io.clouditor.assurance.RuleEvaluation;
 import io.clouditor.assurance.RuleService;
-import io.clouditor.assurance.RuleStatus;
 import io.clouditor.auth.UserContext;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.Authorization;
@@ -66,7 +66,7 @@ public class RulesResource {
   }
 
   @GET
-  @Path("{assetType}")
+  @Path("assets/{assetType}")
   public Set<Rule> getRules(@PathParam("assetType") String assetType) {
     var rules = this.ruleService.getRules().get(assetType);
 
@@ -79,10 +79,9 @@ public class RulesResource {
 
   @Produces(MediaType.APPLICATION_JSON)
   @GET
-  @Path("{assetType}/{ruleId}")
-  public RuleStatus getStatus(
-      @PathParam("assetType") String assetType, @PathParam("ruleId") String ruleId) {
-    var rule = this.ruleService.getWithId(assetType, ruleId);
+  @Path("{ruleId}")
+  public RuleEvaluation get(@PathParam("ruleId") String ruleId) {
+    var rule = this.ruleService.getWithId(ruleId);
 
     if (rule == null) {
       throw new NotFoundException();

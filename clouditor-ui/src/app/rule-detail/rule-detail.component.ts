@@ -29,37 +29,61 @@
 
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Scan } from '../scan';
 import { Rule } from '../rule';
 import { RuleService } from '../rule.service';
 import { AssetService } from '../asset.service';
+import { RuleEvaluation } from '../rule-evaluation';
+import { Asset } from '../asset';
+import { DiscoveryService } from '../discovery.service';
+import { Scan } from '../scan';
 
 @Component({
-  selector: 'clouditor-analysis-detail',
-  templateUrl: './analysis-detail.component.html',
-  styleUrls: ['./analysis-detail.component.css']
+  selector: 'clouditor-rule-detail',
+  templateUrl: './rule-detail.component.html',
+  styleUrls: ['./rule-detail.component.css']
 })
-export class AnalysisDetailComponent implements OnInit {
+export class RuleDetailComponent implements OnInit {
+  evaluation: RuleEvaluation;
+  rule: Rule;
   scan: Scan;
-  rules: Rule[] = [];
-  assets: any[] = [];
-  assetType: string;
-  service: string;
-  group: string;
+  resources: Asset[] = [];
+
+  isExpanded: Map<string, boolean> = new Map();
 
   constructor(private ruleService: RuleService,
     private assetService: AssetService,
+    private discoveryService: DiscoveryService,
     private route: ActivatedRoute) {
     this.route.params.subscribe(params => {
-      this.group = params['group'];
-      this.service = params['service'];
-      this.assetType = params['assetType'];
+      const ruleId = params['id'];
 
-      this.assetService.getAssetsWithType(this.assetType).subscribe(assets => this.assets = assets);
-      this.ruleService.getRules(this.assetType).subscribe(rules => this.rules = rules);
+      this.ruleService.getRuleEvaluation(ruleId).subscribe(evaluation => {
+        this.evaluation = evaluation;
+        this.rule = evaluation.rule;
+
+        // fetch associated assets
+        this.assetService.getAssetsWithType(this.rule.assetType).subscribe(resources => {
+          this.resources = resources;
+        });
+
+        // fetch associated scan
+        this.discoveryService.getScan(this.rule.assetType).subscribe(scan => {
+          this.scan = scan;
+        });
+
+        /*for (const resourceId of Object.keys(evaluation.compliance)) {
+          this.assetService.getAsset(resourceId).subscribe(resource => {
+            this.resources.push(resource);
+          });
+        }*/
+      });
     });
   }
 
   ngOnInit(): void {
+  }
+
+  isResourceOk(id: string) {
+    return this.evaluation.compliance[id];
   }
 }

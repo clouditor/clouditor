@@ -7,15 +7,15 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.validation.constraints.NotNull;
 
-public class RuleStatus {
+public class RuleEvaluation {
 
   /** The rule. */
-  @NotNull private Rule rule;
+  @JsonProperty @NotNull private Rule rule;
 
-  private Map<String, Boolean> compliance = new HashMap<>();
+  @JsonProperty private Map<String, Boolean> compliance = new HashMap<>();
 
   @JsonCreator
-  public RuleStatus(@JsonProperty("rule") Rule rule) {
+  public RuleEvaluation(@JsonProperty("rule") Rule rule) {
     this.rule = rule;
   }
 

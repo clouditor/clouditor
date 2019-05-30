@@ -37,7 +37,7 @@ import { MomentModule } from 'ngx-moment';
 import { ToastrModule } from 'ngx-toastr';
 import { AboutComponent } from './about/about.component';
 import { AccountsService } from './accounts.service';
-import { AnalysisDetailComponent } from './analysis-detail/analysis-detail.component';
+import { RuleDetailComponent } from './rule-detail/rule-detail.component';
 import { RulesComponent } from './rules/rules.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -71,7 +71,7 @@ import { TruncateMiddlePipe } from './truncate-middle.pipe';
   declarations: [
     AboutComponent,
     RulesComponent,
-    AnalysisDetailComponent,
+    RuleDetailComponent,
     AppComponent,
     DashboardComponent,
     DiscoveryDetailComponent,
@@ -97,7 +97,6 @@ import { TruncateMiddlePipe } from './truncate-middle.pipe';
     NgbModule,
     MomentModule,
     ToastrModule.forRoot({ positionClass: 'toast-bottom-left', timeOut: 0, extendedTimeOut: 0 })
-
   ],
   providers: [
     AccountsService,

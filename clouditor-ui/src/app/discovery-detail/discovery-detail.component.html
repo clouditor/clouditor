@@ -52,8 +52,8 @@
   </div>
   <div class="mt-2" *ngIf="scan.lastResult">
     <h5>Discovered Resources</h5>
-    <ul class="list-group list-group-flush fa-ul" *ngFor="let asset of scan.lastResult.discoveredAssets">
-      <li class="list-group-item">
+    <ul class="list-group list-group-flush fa-ul">
+      <li class="list-group-item" *ngFor="let asset of scan.lastResult.discoveredAssets">
         <div class="d-flex w-100">
           <span ngbPopover="Show properties" triggers="mouseenter:mouseleave" class="fa-li pt-2" style="cursor: pointer"
             (click)="isExpanded[asset.id] = !isExpanded[asset.id]"><i class="fas"

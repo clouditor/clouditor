@@ -107,7 +107,7 @@
           <li class="list-group-item" *ngFor="let rule of getRulesForAssetType(scan.assetType)">
             <div class="mt-auto mb-auto mr-auto p-2 row">
               <div class="col-9">
-                <b>{{ rule.name }}</b>
+                <b><a class="text-dark" [routerLink]="['/rules',rule.id]">{{ rule.name }}</a></b>
                 <div class="text-muted">{{ rule.description }}</div>
                 <small *ngIf="rule.controls?.length > 0" class="text-muted">The rule addresses the following controls:
                   <a class="text-info mr-1" [routerLink]="['/compliance', control.split('/')[0]]"

@@ -1,3 +1,5 @@
+import { Rule } from './rule';
+
 /*
  * Copyright (c) 2016-2019, Fraunhofer AISEC. All rights reserved.
  *
@@ -27,23 +29,10 @@
  * long with Clouditor Community Edition.  If not, see <https://www.gnu.org/licenses/>
  */
 
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-
-import { ConfigService } from './config.service';
-import { Observable } from 'rxjs';
-import { Asset } from './asset';
-
-@Injectable()
-export class AssetService {
-  constructor(private http: HttpClient,
-    private config: ConfigService) { }
-
-  getAssets() {
-    return this.http.get(this.config.get().apiUrl + '/assets/');
-  }
-
-  getAssetsWithType(type: string): Observable<Asset[]> {
-    return this.http.get<any[]>(this.config.get().apiUrl + '/assets/' + type);
-  }
+export class RuleEvaluation {
+    rule: Rule;
+    compliance: Object;
+    numberOfCompliant: number;
+    numberOfNonCompliant: number;
 }
+
