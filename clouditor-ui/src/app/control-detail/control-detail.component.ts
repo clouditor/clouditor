@@ -42,7 +42,7 @@ import { Control, Certification } from '../certification';
   styleUrls: ['./control-detail.component.css']
 })
 export class ControlDetailComponent implements OnInit, OnDestroy {
-  @ViewChild('filterForm') filterForm: NgForm;
+  @ViewChild('filterForm', { static: true }) filterForm: NgForm;
   control: Control;
 
   viewedOnMobileDevice: Boolean;

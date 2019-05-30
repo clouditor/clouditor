@@ -36,7 +36,6 @@ import { DiscoveryService } from '../discovery.service';
 import { Scan } from '../scan';
 import { NgForm } from '@angular/forms';
 import { componentDestroyed } from '@w11k/ngx-componentdestroyed';
-import { setRootDomAdapter } from '@angular/platform-browser/src/dom/dom_adapter';
 
 @Component({
   selector: 'clouditor-discovery',
@@ -47,7 +46,7 @@ export class DiscoveryComponent implements OnInit, OnDestroy {
   scans: Scan[] = [];
   groups: string[] = [];
 
-  @ViewChild('searchForm') searchForm: NgForm;
+  @ViewChild('searchForm', { static: true }) searchForm: NgForm;
 
   search: string;
   // to work around the issue, that by default everything should

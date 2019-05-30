@@ -43,7 +43,7 @@ import { componentDestroyed } from '@w11k/ngx-componentdestroyed';
 })
 export class ComplianceDetailComponent implements OnInit, OnDestroy {
 
-    @ViewChild('searchForm') searchForm: NgForm;
+    @ViewChild('searchForm', { static: true }) searchForm: NgForm;
 
     selected = {};
     isCollapsed = false;
