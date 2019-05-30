@@ -65,10 +65,17 @@
         <div class="mt-auto mb-auto mr-auto p-2">
           {{ resource.type }} / <b>{{ resource.name }}</b>
           <div class="text-muted">{{ resource.id }}
-            <pre class="mt-2 properties" [ngbCollapse]="!isExpanded[resource.id]">{{resource.properties | json }}</pre>
+            <table class="table mt-2" [ngbCollapse]="!isExpanded[resource.id]">
+              <tbody>
+                <tr *ngFor="let entry of resource.flattenedProperties | keyvalue">
+                  <th scope="row">{{ entry.key }}</th>
+                  <td>{{ entry.value }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
-        <div class="mt-auto mb-auto p-2">
+        <div class="mt-2 p-2">
           <span class="pointer text-success pr-3" ngbPopover="Resource is compliant to the configured rule"
             triggers="mouseenter:mouseleave" *ngIf="isResourceOk(resource.id)"><i class="fas fa-check-circle">
             </i> Resource is compliant</span>

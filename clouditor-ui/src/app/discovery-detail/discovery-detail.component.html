@@ -53,19 +53,27 @@
   <div class="mt-2" *ngIf="scan.lastResult">
     <h5>Discovered Resources</h5>
     <ul class="list-group list-group-flush fa-ul">
-      <li class="list-group-item" *ngFor="let asset of scan.lastResult.discoveredAssets">
+      <li class="list-group-item" *ngFor="let resource of scan.lastResult.discoveredAssets">
         <div class="d-flex w-100">
           <span ngbPopover="Show properties" triggers="mouseenter:mouseleave" class="fa-li pt-2" style="cursor: pointer"
-            (click)="isExpanded[asset.id] = !isExpanded[asset.id]"><i class="fas"
-              [class.fa-angle-right]="!isExpanded[asset.id]" [class.fa-angle-down]="isExpanded[asset.id]"></i></span>
+            (click)="isExpanded[resource.id] = !isExpanded[resource.id]"><i class="fas"
+              [class.fa-angle-right]="!isExpanded[resource.id]"
+              [class.fa-angle-down]="isExpanded[resource.id]"></i></span>
           <div class="mb-1 p-2">
             <i [class]="scan.assetIcon" [class.azure]="scan.group === 'Azure'" [class.aws]="scan.group === 'AWS'"
               style="font-size: 32px"></i>
           </div>
           <div class="mt-auto mb-auto mr-auto p-2">
-            {{ asset.type }} / <b>{{ asset.name }}</b>
-            <div class="text-muted">{{ asset.id }}
-              <pre class="mt-2 properties" [ngbCollapse]="!isExpanded[asset.id]">{{ asset.properties | json }}</pre>
+            {{ resource.type }} / <b>{{ resource.name }}</b>
+            <div class="text-muted">{{ resource.id }}
+              <table class="table mt-2" [ngbCollapse]="!isExpanded[resource.id]">
+                <tbody>
+                  <tr *ngFor="let entry of resource.flattenedProperties | keyvalue">
+                    <th scope="row">{{ entry.key }}</th>
+                    <td>{{ entry.value }}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

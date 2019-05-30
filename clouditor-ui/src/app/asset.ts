@@ -28,7 +28,37 @@
  */
 
 export class Asset {
-    name: string;
-    id: string;
-    properties: any;
+  name: string;
+  id: string;
+  properties: any;
+
+  get flattenedProperties(): Object {
+    return Asset.flattenProperties(this.properties);
+  }
+
+  static flattenProperties(object: Object): Object {
+    const ret = new Object();
+
+    for (const index in object) {
+      if (!object.hasOwnProperty(index)) {
+        continue;
+      }
+
+      if (typeof object[index] === 'object') {
+        const flat = this.flattenProperties(object[index]);
+
+        for (const x in flat) {
+          if (!flat.hasOwnProperty(x)) {
+            continue;
+          }
+
+          ret[index + '.' + x] = flat[x];
+        }
+      } else {
+        ret[index] = object[index];
+      }
+    }
+
+    return ret;
+  }
 }

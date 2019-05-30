@@ -33,6 +33,7 @@ import { HttpClient } from '@angular/common/http';
 import { ConfigService } from './config.service';
 import { Observable } from 'rxjs';
 import { Asset } from './asset';
+import { map } from 'rxjs/operators';
 
 @Injectable()
 export class AssetService {
@@ -44,6 +45,9 @@ export class AssetService {
   }
 
   getAssetsWithType(type: string): Observable<Asset[]> {
-    return this.http.get<any[]>(this.config.get().apiUrl + '/assets/' + type);
+    return this.http.get<any[]>(this.config.get().apiUrl + '/assets/' + type).pipe(map((entries => {
+      return entries.map(entry => Object.assign(new Asset(), entry));
+    })));
   }
+
 }

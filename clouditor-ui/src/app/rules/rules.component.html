@@ -115,11 +115,10 @@
               </div>
               <div class="mb-auto mt-auto col-3" *ngIf="status[rule.id]">
                 <span class="pointer pr-3 text-danger"
-                  [routerLink]="['/analysis', scan.group, scan.service, scan.assetType]"
                   ngbPopover="{{ status[rule.id].numberOfNonCompliant }} out of {{ status[rule.id].numberOfCompliant + status[rule.id].numberOfNonCompliant }} resource(s) have rule violations"
                   triggers="mouseenter:mouseleave" *ngIf="status[rule.id].numberOfNonCompliant > 0"><i
                     class="fas fa-exclamation-circle"></i>
-                  {{ status[rule.id].numberOfNonCompliant }} violations</span>
+                  {{ status[rule.id].numberOfNonCompliant }} violation(s)</span>
                 <span class="pointer text-success pr-3"
                   ngbPopover="{{ status[rule.id].numberOfCompliant + status[rule.id].numberOfNonCompliant }} resources analyzed in total"
                   triggers="mouseenter:mouseleave" *ngIf="status[rule.id].numberOfNonCompliant == 0"><i
