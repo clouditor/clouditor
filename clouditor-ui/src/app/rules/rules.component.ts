@@ -51,7 +51,7 @@ export class RulesComponent implements OnInit {
 
   selectedScan: Scan = new Scan();
 
-  @ViewChild('searchForm') searchForm: NgForm;
+  @ViewChild('searchForm', { static: true }) searchForm: NgForm;
 
   search: string;
   // to work around the issue, that by default everything should
