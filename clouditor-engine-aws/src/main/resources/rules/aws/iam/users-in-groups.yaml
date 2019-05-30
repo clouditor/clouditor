@@ -1,5 +1,5 @@
 condition: User has not empty groups
 description: Checks for every user if she is assigned to a group.
-name: "AWS IAM: Users assigned to Groups"
+name: "Assign all Users to Groups"
 controls:
   - "BSI C5/IDM-01"

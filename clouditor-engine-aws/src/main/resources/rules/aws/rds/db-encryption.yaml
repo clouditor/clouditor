@@ -1,5 +1,5 @@
-condition: DBInstance has storageEncrypted == true
-name: "AWS RDS: Database Encryption"
+condition: Database has storageEncrypted == true
+name: "Encrypt Database Instances"
 description: "Checks for all DB instances if they are encrypted."
 controls:
   - "BSI C5/IDM-01"

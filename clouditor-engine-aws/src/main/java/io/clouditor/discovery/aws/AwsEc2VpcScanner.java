@@ -37,7 +37,7 @@ import software.amazon.awssdk.services.ec2.model.DescribeStaleSecurityGroupsRequ
 import software.amazon.awssdk.services.ec2.model.DescribeStaleSecurityGroupsResponse;
 import software.amazon.awssdk.services.ec2.model.Vpc;
 
-@ScannerInfo(assetType = "VPC", group = "AWS", service = "EC2")
+@ScannerInfo(assetType = "VPC", group = "AWS", service = "EC2", assetIcon = "fas fa-network-wired")
 public class AwsEc2VpcScanner extends AwsEc2Scanner<Vpc> {
 
   private static final String ARN_RESOURCE_TYPE_VPC = "vpc";

@@ -31,10 +31,10 @@
     triggers="mouseenter:mouseleave" *ngIf="scan.enabled"><i class="fas fa-undo"></i>
     {{ scan.interval | amDuration:'seconds' }}</span>
   <span class="text-muted pr-3" *ngIf="!scan.enabled">Stopped</span>
-  <span class="pointer text-muted pr-3" [routerLink]="['/analysis', scan.group, scan.service, scan.assetType]"
+  <span class="pointer pr-3 text-danger"
     ngbPopover="{{ nonCompliantAssets }} out of {{ compliantAssets + nonCompliantAssets }} resource(s) have rule violations"
-    triggers="mouseenter:mouseleave" *ngIf="nonCompliantAssets > 0"><i
-      class="fas fa-exclamation-circle text-danger"></i> {{ nonCompliantAssets }} violations</span>
+    triggers="mouseenter:mouseleave" *ngIf="nonCompliantAssets > 0"><i class="fas fa-exclamation-circle"></i>
+    {{ nonCompliantAssets }} violations</span>
   <span class="pointer text-muted pr-3"
     ngbPopover="{{ compliantAssets + nonCompliantAssets }} resources analyzed in total" triggers="mouseenter:mouseleave"
     *ngIf="nonCompliantAssets == 0"><i class="fas fa-check-circle" [class.text-success]="scan.enabled">

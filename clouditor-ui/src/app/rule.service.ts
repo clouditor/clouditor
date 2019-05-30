@@ -34,6 +34,7 @@ import { ConfigService } from './config.service';
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { Rule } from './rule';
+import { RuleEvaluation } from './rule-evaluation';
 
 @Injectable({ providedIn: 'root' })
 export class RuleService {
@@ -41,8 +42,17 @@ export class RuleService {
     private config: ConfigService) { }
 
   getRules(type: string): Observable<Rule[]> {
-    return this.http.get<any>(this.config.get().apiUrl + '/rules/' + type).pipe(map(entries => {
+    return this.http.get<any>(this.config.get().apiUrl + '/rules/assets/' + type).pipe(map(entries => {
       return entries.map(entry => Object.assign(new Rule(), entry));
+    }));
+  }
+
+  getRuleEvaluation(id: string): Observable<RuleEvaluation> {
+    return this.http.get<RuleEvaluation>(this.config.get().apiUrl + '/rules/' + id).pipe(map(data => {
+      const evaluation = Object.assign(new RuleEvaluation(), data);
+      evaluation.rule = Object.assign(new Rule(), data.rule);
+
+      return evaluation;
     }));
   }
 }

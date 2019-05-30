@@ -46,7 +46,7 @@ import software.amazon.awssdk.services.iam.model.ListMfaDevicesRequest;
 import software.amazon.awssdk.services.iam.model.ListMfaDevicesResponse;
 import software.amazon.awssdk.services.iam.model.User;
 
-@ScannerInfo(assetType = "User", group = "AWS", service = "IAM")
+@ScannerInfo(assetType = "User", group = "AWS", service = "IAM", assetIcon = "fas fa-user")
 public class AwsIamUserScanner extends AwsIamScanner<User> {
 
   public AwsIamUserScanner() {

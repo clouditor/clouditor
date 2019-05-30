@@ -1,4 +1,6 @@
-/*!
+import { Rule } from './rule';
+
+/*
  * Copyright (c) 2016-2019, Fraunhofer AISEC. All rights reserved.
  *
  *
@@ -27,16 +29,10 @@
  * long with Clouditor Community Edition.  If not, see <https://www.gnu.org/licenses/>
  */
 
-.azure {
-    color: #008AD7;
-}
-.aws {
-    color: #FF9900;
-}
-.eu-sec {
-    color: #003399;
+export class RuleEvaluation {
+    rule: Rule;
+    compliance: Object;
+    numberOfCompliant: number;
+    numberOfNonCompliant: number;
 }
 
-.check-icon {
-    font-size: 18px;
-}

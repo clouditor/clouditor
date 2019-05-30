@@ -36,13 +36,14 @@ import { Scan } from '../scan';
 import { NgForm } from '@angular/forms';
 import { RuleService } from '../rule.service';
 import { Rule } from '../rule';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
-  selector: 'clouditor-analysis',
-  templateUrl: './analysis.component.html',
-  styleUrls: ['./analysis.component.scss']
+  selector: 'clouditor-rules',
+  templateUrl: './rules.component.html',
+  styleUrls: ['./rules.component.scss']
 })
-export class AnalysisComponent implements OnInit {
+export class RulesComponent implements OnInit {
   scans: Scan[] = [];
   groups: string[] = [];
   assets: any[] = [];
@@ -59,12 +60,14 @@ export class AnalysisComponent implements OnInit {
 
   filtered: Scan[] = [];
 
-  processing: Map<string, boolean> = new Map();
+  status = new Object();
+
   configuring: boolean;
 
   constructor(private checkService: DiscoveryService,
     private titleService: Title,
-    private ruleService: RuleService) {
+    private ruleService: RuleService,
+    private route: ActivatedRoute) {
     this.search = localStorage.getItem('search-analysis');
     if (this.search === null) {
       this.search = '';
@@ -105,7 +108,7 @@ export class AnalysisComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.titleService.setTitle('Analysis');
+    this.titleService.setTitle('Rules');
 
     this.configuring = false;
 
@@ -146,12 +149,6 @@ export class AnalysisComponent implements OnInit {
       localStorage.setItem('search-scan', this.search);
 
       this.updateFiltered();
-
-      this.filtered.forEach(scan => {
-        this.ruleService.getRules(scan.assetType).subscribe(rules => {
-          this.assetRules.set(scan.assetType, rules);
-        });
-      });
     });
   }
 
@@ -182,7 +179,28 @@ export class AnalysisComponent implements OnInit {
 
         // update filtered scans
         this.updateFiltered();
+
+        this.route.queryParams.subscribe(params => {
+          if (params['selected']) {
+            const selected = params['selected'];
+            const scan = this.getScanByAssetType(this.filtered, selected);
+            if (scan) {
+              this.selectScan(scan);
+            }
+          } else {
+            // select the first filtered scan (if any)
+            if (this.filtered.length > 0) {
+              this.selectScan(this.filtered[0]);
+            }
+          }
+        });
       });
+  }
+
+  getScanByAssetType(list: Scan[], assetType: string) {
+    const filtered = list.filter(scan => scan.assetType === assetType);
+
+    return filtered.length === 1 ? filtered[0] : null;
   }
 
   updateFiltered() {
@@ -202,27 +220,17 @@ export class AnalysisComponent implements OnInit {
 
     // set it
     this.filtered = filtered;
-  }
 
-  onEnable(scan: Scan) {
-    this.processing[scan._id] = true;
+    this.filtered.forEach(scan => {
+      this.ruleService.getRules(scan.assetType).subscribe(rules => {
+        this.assetRules.set(scan.assetType, rules);
 
-    this.checkService.enableScan(scan).subscribe(() => {
-      this.processing[scan._id] = false;
-
-      // would actually be enough to just update this particular scan
-      this.updateScans();
-    });
-  }
-
-  onDisable(scan: Scan) {
-    this.processing[scan._id] = true;
-
-    this.checkService.disableScan(scan).subscribe(() => {
-      this.processing[scan._id] = false;
-
-      // would actually be enough to just update this particular scan
-      this.updateScans();
+        for (const rule of rules) {
+          this.ruleService.getRuleEvaluation(rule.id).subscribe(evaluation => {
+            this.status[rule.id] = evaluation;
+          });
+        }
+      });
     });
   }
 

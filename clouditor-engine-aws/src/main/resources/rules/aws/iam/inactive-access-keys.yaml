@@ -1,6 +1,6 @@
 condition: User has statusAsString != "Inactive" in all accessKeys
 description: Checks if there are inactive access keys.
-name: "AWS IAM: Inactive Access Keys"
+name: "Remove Inactive Access Keys"
 controls:
   - "BSI C5/KRY-04"
   - "BSI C5/IDM-01"

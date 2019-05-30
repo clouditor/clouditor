@@ -33,7 +33,7 @@ import io.clouditor.discovery.ScannerInfo;
 import java.util.List;
 import software.amazon.awssdk.services.ec2.model.Volume;
 
-@ScannerInfo(assetType = "Volume", group = "AWS", service = "EC2")
+@ScannerInfo(assetType = "Volume", group = "AWS", service = "EC2", assetIcon = "fas fa-hdd")
 public class AwsEc2VolumeScanner extends AwsEc2Scanner<Volume> {
 
   private static final String ARN_RESOURCE_TYPE_VOLUME = "volume";

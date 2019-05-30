@@ -86,6 +86,7 @@ public class Control {
 
     // retrieve assets that belong to a rule within the control
     for (var rule : this.rules) {
+      // TODO: use the new function in RulesService#get
       var assets = locator.getService(AssetService.class).getAssetsWithType(rule.getAssetType());
 
       for (var asset : assets) {
