@@ -36,6 +36,7 @@ import { DiscoveryService } from '../discovery.service';
 import { Scan } from '../scan';
 import { NgForm } from '@angular/forms';
 import { componentDestroyed } from '@w11k/ngx-componentdestroyed';
+import { AccountsService } from '../accounts.service';
 
 @Component({
   selector: 'clouditor-discovery',
@@ -56,8 +57,10 @@ export class DiscoveryComponent implements OnInit, OnDestroy {
   filtered: Scan[] = [];
 
   processing: Map<string, boolean> = new Map();
+  accountsConfigured: Map<string, boolean> = new Map();
 
   constructor(private discoveryService: DiscoveryService,
+    private accountsService: AccountsService,
     private titleService: Title) {
     this.search = localStorage.getItem('search-scans');
     if (this.search === null) {
@@ -98,8 +101,21 @@ export class DiscoveryComponent implements OnInit, OnDestroy {
     }
   }
 
+  isAccountConfigured(provider: string) {
+    const configured = this.accountsConfigured.get(provider);
+
+    return configured !== undefined && configured;
+  }
+
   ngOnInit() {
     this.titleService.setTitle('Discovery');
+
+    // quickly fetch the current account status, to see whether we need to redirect the user to the account page
+    this.accountsService.getAccounts().subscribe(accounts => {
+      for (const entry of accounts) {
+        this.accountsConfigured.set(entry[0], true);
+      }
+    });
 
     timer(0, 30000)
       .pipe(
