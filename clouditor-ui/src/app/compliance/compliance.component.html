@@ -29,13 +29,13 @@
 
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a routerLink="/">Home</a></li>
+    <li class="breadcrumb-item"><a class="text-info" routerLink="/">Home</a></li>
     <li class="breadcrumb-item active" aria-current="page">Compliance</li>
   </ol>
 </nav>
 <ng-container *ngFor="let item of importers | keyvalue">
-  <button style="margin-bottom: 15px; margin-right: 10px" class="button btn btn-primary" (click)="onImport(item.key)"
-    *ngIf="!importing[item.key]; else waiting">
+  <button style="margin-bottom: 15px; margin-right: 10px" class="button btn btn-outline-info"
+    (click)="onImport(item.key)" *ngIf="!importing[item.key]; else waiting">
     Import {{ item.key }}
   </button>
   <ng-template #waiting>
@@ -48,11 +48,12 @@
 <div class="card-columns">
   <div class="card" *ngFor="let certification of certifications">
     <div class="card-body">
-      <h5 class="card-title text-light"><a [routerLink]="['/compliance', certification._id]">{{ certification._id }}</a>
+      <h5 class="card-title text-light"><a class="text-info"
+          [routerLink]="['/compliance', certification._id]">{{ certification._id }}</a>
       </h5>
       <h6 class="card-subtitle mb-2 text-muted">{{ certification.publisher }}</h6>
       <p class="card-text">{{ certification.description }}</p>
-      <p><a [href]="certification.website" target="_new">{{ certification.website }}</a></p>
+      <p><a class="text-info" [href]="certification.website" target="_new">{{ certification.website }}</a></p>
       <button type="button" class="btn btn-success" *ngIf="getGoodControls(certification).length > 0">
         <span class="badge badge-light">{{ getGoodControls(certification).length }}</span> Passed Controls
       </button>
