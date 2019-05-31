@@ -42,9 +42,9 @@ import io.clouditor.assurance.grammar.CCLParser;
 import io.clouditor.assurance.grammar.CCLParser.BinaryComparisonContext;
 import io.clouditor.assurance.grammar.CCLParser.ConditionContext;
 import io.clouditor.assurance.grammar.CCLParser.EmptyExpressionContext;
-import io.clouditor.assurance.grammar.CCLParser.ExpressionContext;
 import io.clouditor.assurance.grammar.CCLParser.InExpressionContext;
 import io.clouditor.assurance.grammar.CCLParser.NotExpressionContext;
+import io.clouditor.assurance.grammar.CCLParser.SimpleExpressionContext;
 import io.clouditor.assurance.grammar.CCLParser.TimeComparisonContext;
 import io.clouditor.assurance.grammar.CCLParser.ValueContext;
 import io.clouditor.assurance.grammar.CCLParser.WithinExpressionContext;
@@ -87,14 +87,17 @@ public class CCLDeserializer extends StdDeserializer<Condition> {
   private static class ExpressionListener extends CCLBaseVisitor<Expression> {
 
     @Override
-    public Expression visitExpression(ExpressionContext ctx) {
+    public Expression visitSimpleExpression(SimpleExpressionContext ctx) {
       if (ctx.comparison() != null) {
         return ctx.comparison().accept(this);
       } else if (ctx.emptyExpression() != null) {
         return ctx.emptyExpression().accept(this);
+      } else if (ctx.expression() != null) {
+        // just a simple wrapped expression with parenthesis
+        return ctx.expression().accept(this);
       }
 
-      return super.visitExpression(ctx);
+      return super.visitSimpleExpression(ctx);
     }
 
     @Override
@@ -156,10 +159,10 @@ public class CCLDeserializer extends StdDeserializer<Condition> {
 
     @Override
     public Expression visitInExpression(InExpressionContext ctx) {
-      if (ctx.field() != null && ctx.scope() != null && ctx.innerExpression() != null) {
+      if (ctx.field() != null && ctx.scope() != null && ctx.simpleExpression() != null) {
         var expression = new InExpression();
         expression.setField(ctx.field().getText());
-        expression.setExpression(ctx.innerExpression().accept(this));
+        expression.setExpression(ctx.simpleExpression().accept(this));
         expression.setScope(Scope.of(ctx.scope().getText()));
 
         return expression;

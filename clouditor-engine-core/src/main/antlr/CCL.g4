@@ -5,9 +5,13 @@ condition: assetType 'has' expression EOF;
 assetType : Identifier;
 field : Identifier;
 expression:
+  simpleExpression |
+  inExpression ;
+
+simpleExpression:
+  '(' expression ')' |
   notExpression |
   emptyExpression |
-  inExpression |
   withinExpression |
   comparison;
 
@@ -30,11 +34,8 @@ unit:
   'days' |
   'months';
 
-inExpression: innerExpression 'in' scope field;
-innerExpression: notExpression |
-                   emptyExpression |
-                   withinExpression |
-                   comparison;
+inExpression: simpleExpression 'in' scope field;
+
 scope:
   'any' |
   'all';

@@ -37,6 +37,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.clouditor.assurance.ccl.BinaryComparison;
 import io.clouditor.assurance.ccl.CCLDeserializer;
+import io.clouditor.discovery.Asset;
 import io.clouditor.discovery.AssetProperties;
 import io.clouditor.rest.ObjectMapperResolver;
 import java.io.IOException;
@@ -193,5 +194,71 @@ class CCLDeserializerTest {
     asset.put("name", "Some name");
 
     assertTrue(condition.evaluate(asset));
+  }
+
+  @Test
+  void testAmbiguous() {
+    var ccl = new CCLDeserializer();
+    var rule = new Rule();
+    rule.setConditions(
+        List.of(ccl.parse("Storage has (not empty policy.algorithm) in any encryption.rules")));
+
+    // asset does
+    // - not have field 'encryption.rules' at all
+    var asset = new Asset(null, null, null, AssetProperties.of());
+    assertFalse(rule.evaluate(asset).isOk());
+
+    // asset does
+    // - have field 'encryption'
+    // - not have field 'encryption.rules'
+    asset = new Asset(null, null, null, AssetProperties.of("encryption", AssetProperties.of()));
+    assertFalse(rule.evaluate(asset).isOk());
+
+    // asset does
+    // - have field 'encryption'
+    // - have field 'encryption.rules'
+    // - not have inner field 'policy'
+    asset =
+        new Asset(
+            null,
+            null,
+            null,
+            AssetProperties.of("encryption", AssetProperties.of("rules", List.of())));
+    assertFalse(rule.evaluate(asset).isOk());
+
+    // asset does
+    // - have field 'encryption'
+    // - have field 'encryption.rules'
+    // - have inner field 'policy'
+    // - not have inner field 'policy.algorithm'
+    asset =
+        new Asset(
+            null,
+            null,
+            null,
+            AssetProperties.of(
+                "encryption",
+                AssetProperties.of(
+                    "rules", List.of(AssetProperties.of("policy", AssetProperties.of())))));
+    assertFalse(rule.evaluate(asset).isOk());
+
+    // asset does
+    // - have field 'encryption'
+    // - have field 'encryption.rules'
+    // - have inner field 'policy'
+    // - have inner field 'policy.algorithm' (with a value)
+    asset =
+        new Asset(
+            null,
+            null,
+            null,
+            AssetProperties.of(
+                "encryption",
+                AssetProperties.of(
+                    "rules",
+                    List.of(
+                        AssetProperties.of(
+                            "policy", AssetProperties.of("algorithm", "AES-265"))))));
+    assertTrue(rule.evaluate(asset).isOk());
   }
 }

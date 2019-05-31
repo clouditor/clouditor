@@ -148,4 +148,8 @@ public class Rule {
   public List<Condition> getConditions() {
     return this.conditions;
   }
+
+  public void setConditions(List<Condition> conditions) {
+    this.conditions = conditions;
+  }
 }
