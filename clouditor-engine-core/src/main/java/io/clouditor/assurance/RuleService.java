@@ -123,6 +123,13 @@ public class RuleService extends DiscoveryResultSubscriber {
 
     doc.accept(new RuleVisitor(rule));
 
+    rule.setId(
+        path.getParent().getParent().getFileName()
+            + "-"
+            + path.getParent().getFileName()
+            + "-"
+            + path.getFileName().toString().split("\\.")[0]);
+
     return rule;
   }
 
