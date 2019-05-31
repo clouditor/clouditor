@@ -56,8 +56,7 @@ export class DiscoveryDetailComponent implements OnInit, OnDestroy {
   constructor(private discoveryService: DiscoveryService,
     private ruleService: RuleService,
     private assetService: AssetService,
-    private route: ActivatedRoute,
-    private config: ConfigService) {
+    private route: ActivatedRoute) {
     this.route.params.subscribe(params => {
       timer(0, 10000)
         .pipe(
@@ -100,13 +99,12 @@ export class DiscoveryDetailComponent implements OnInit, OnDestroy {
   updateScan(id: string): any {
     this.discoveryService.getScan(id).subscribe(scan => {
       this.scan = scan;
+      this.assets = scan.lastResult.discoveredAssets;
 
       /*const source = new EventSource(this.config.get().apiUrl + '/assets/' + scan.assetType + '/subscribe');
       source.addEventListener('message', (e) => {
         console.log(e);
       });*/
-
-      this.assetService.getAssetsWithType(this.scan.assetType).subscribe(assets => this.assets = assets);
     });
   }
 
