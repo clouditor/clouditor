@@ -36,7 +36,7 @@
   </ol>
 </nav>
 <div *ngIf="scan">
-  <h3>{{ scan.assetType }}</h3>
+  <h3>{{ scan.assetType }}s</h3>
   <div class="text-muted mb-2">
     <i>{{ scan.assetType }}</i> is a resource type, which can be discovered in the {{ scan.group }} /
     {{ scan.service }} service.
@@ -75,6 +75,23 @@
                 </tbody>
               </table>
             </div>
+          </div>
+          <div class="mt-auto mb-auto mr-2">
+            <span ngbPopover="{{ resource.type }} {{ resource.name }} is compliant to all rules"
+              triggers="mouseenter:mouseleave" style="font-size: 32px" *ngIf="resource.compliant"><i class=" fas
+              fa-poll text-success"></i></span>
+            <span ngbPopover="{{ resource.type }} {{ resource.name }} is not compliant to all rules"
+              triggers="mouseenter:mouseleave" style="font-size: 32px" *ngIf="!resource.compliant"><i
+                class="fas fa-poll text-danger"></i></span>
+          </div>
+          <div *ngFor="let result of resource.evaluationResults" class="mt-auto mb-auto">
+            <span class="pointer text-success pl-1 pr-1"
+              ngbPopover="Resource is compliant to rule {{ result.rule.name }}" triggers="mouseenter:mouseleave"
+              *ngIf="result.ok"><i [routerLink]="['/rules', result.rule.id]" class="fas fa-check-circle">
+              </i></span>
+            <span class="pointer text-danger pl-1 pr-1" ngbPopover="Resource is vialoting rule {{ result.rule.name }}"
+              triggers="mouseenter:mouseleave" *ngIf="!result.ok"><i [routerLink]="['/rules', result.rule.id]"
+                class="fas fa-exclamation-circle "></i></span>
           </div>
         </div>
       </li>

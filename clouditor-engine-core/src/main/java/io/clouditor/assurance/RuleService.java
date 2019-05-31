@@ -130,6 +130,8 @@ public class RuleService extends DiscoveryResultSubscriber {
             + "-"
             + path.getFileName().toString().split("\\.")[0]);
 
+    rule.setActive(true);
+
     return rule;
   }
 

@@ -64,7 +64,8 @@
             style="font-size: 32px"></i>
         </div>
         <div class="mt-auto mb-auto mr-auto p-2">
-          {{ resource.type }} / <b>{{ resource.name }}</b>
+          {{ resource.type }} / <a [routerLink]="['/discovery', resource.type]"
+            class="text-dark"><b>{{ resource.name }}</b></a>
           <div class="text-muted">{{ resource.id }}
             <table class="table mt-2" [ngbCollapse]="!isExpanded[resource.id]">
               <tbody>
@@ -77,11 +78,11 @@
           </div>
         </div>
         <div class="mt-2 p-2">
-          <span class="pointer text-success pr-3" ngbPopover="Resource is compliant to the configured rule"
+          <span class="text-success pr-3" ngbPopover="Resource is compliant to the configured rule"
             triggers="mouseenter:mouseleave" *ngIf="isResourceOk(resource.id)"><i class="fas fa-check-circle">
             </i> Resource is compliant</span>
-          <span class="pointer text-danger pr-3" ngbPopover="Resource is vialoting the rule"
-            triggers="mouseenter:mouseleave" *ngIf="!isResourceOk(resource.id)"><i class="fas fa-exclamation-circle">
+          <span class="text-danger pr-3" ngbPopover="Resource is vialoting the rule" triggers="mouseenter:mouseleave"
+            *ngIf="!isResourceOk(resource.id)"><i class="fas fa-exclamation-circle">
             </i> Resource is vialoting the rule</span>
         </div>
       </div>
