@@ -31,4 +31,28 @@ package io.clouditor.discovery;
 
 import java.util.HashMap;
 
-public class AssetProperties extends HashMap<String, Object> {}
+public class AssetProperties extends HashMap<String, Object> {
+
+  public AssetProperties() {}
+
+  public AssetProperties(String k1, Object v1) {
+    this.put(k1, v1);
+  }
+
+  public AssetProperties(String k1, Object v1, String k2, Object v2) {
+    this.put(k1, v1);
+    this.put(k2, v2);
+  }
+
+  public static AssetProperties of() {
+    return new AssetProperties();
+  }
+
+  public static AssetProperties of(String k1, Object v1) {
+    return new AssetProperties(k1, v1);
+  }
+
+  public static AssetProperties of(String k1, Object v1, String k2, Object v2) {
+    return new AssetProperties(k1, v1, k2, v2);
+  }
+}
