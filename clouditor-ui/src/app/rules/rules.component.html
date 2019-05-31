@@ -96,7 +96,7 @@
         </div>
         <div class="mt-auto mb-auto mr-auto p-2">
           {{scan.service }} /
-          <a class="text-dark"><b>{{ scan.assetType }}</b></a><br />
+          <a [routerLink]="['/discovery', scan._id]" class="text-dark"><b>{{ scan.assetType }}</b></a><br />
           <clouditor-assessment-badges [scan]="scan" [assetType]="scan.assetType">
           </clouditor-assessment-badges>
         </div>
@@ -117,13 +117,14 @@
                 <span class="pointer pr-3 text-danger"
                   ngbPopover="{{ status[rule.id].numberOfNonCompliant }} out of {{ status[rule.id].numberOfCompliant + status[rule.id].numberOfNonCompliant }} resource(s) have rule violations"
                   triggers="mouseenter:mouseleave" *ngIf="status[rule.id].numberOfNonCompliant > 0"><i
-                    class="fas fa-exclamation-circle"></i>
-                  {{ status[rule.id].numberOfNonCompliant }} violation(s)</span>
+                    class="fas fa-exclamation-circle"></i>&nbsp;
+                  <a class="text-danger" [routerLink]="['/rules',rule.id]">
+                    {{ status[rule.id].numberOfNonCompliant }} resource(s) violate this rule</a></span>
                 <span class="pointer text-success pr-3"
                   ngbPopover="{{ status[rule.id].numberOfCompliant + status[rule.id].numberOfNonCompliant }} resources analyzed in total"
                   triggers="mouseenter:mouseleave" *ngIf="status[rule.id].numberOfNonCompliant == 0"><i
-                    class="fas fa-check-circle">
-                  </i> All resources compliant</span>
+                    class="fas fa-check-circle"></i>&nbsp;<a class="text-success" [routerLink]="['/rules',rule.id]">All
+                    resources compliant to this rule</a></span>
               </div>
               <div class="mb-auto mt-auto col-2">
                 <button (click)="onConfigure(rule)" class="btn btn-outline-secondary" *ngIf="configuring" disabled><i
