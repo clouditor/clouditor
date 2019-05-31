@@ -39,16 +39,16 @@
 <ng-container *ngIf="rule && scan">
   <h3>{{ rule.name }}</h3>
 
-  {{ rule.description }}
+  <span [innerHTML]="rule.description"></span>
 
   <div>
     <code *ngIf="rule.condition">{{ rule.condition }}</code>
     <div *ngFor="let condition of rule.conditions">
-      <code>{{ condition.source }}</code>
+      <code>{{ condition }}</code>
     </div>
   </div>
 
-  <div *ngIf="rule.controls?.length > 0" class="text-muted">The rule addresses the following controls:
+  <div *ngIf="rule.controls?.length > 0" class="text-muted pt-4">The rule addresses the following controls:
     <a class="text-info mr-1" [routerLink]="['/compliance', control.split('/')[0]]"
       *ngFor="let control of rule.controls">{{ control }}</a> </div>
 
