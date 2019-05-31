@@ -29,6 +29,7 @@
 
 package io.clouditor.discovery.aws;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
@@ -155,6 +156,6 @@ class AwsS3BucketScannerTest extends AwsScannerTest {
     var bucketC = assets.get("arn:aws:s3:::Bucket-C");
 
     assertNotNull(bucketC);
-    assertTrue(rule.evaluate(bucketC).isOk());
+    assertFalse(rule.evaluate(bucketC).isOk());
   }
 }
