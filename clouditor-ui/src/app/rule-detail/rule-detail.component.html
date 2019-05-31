@@ -30,8 +30,9 @@
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a class="text-info" routerLink="/">Home</a></li>
+    <li class="breadcrumb-item"><a class="text-info" routerLink="/rules">Rules</a></li>
     <li class="breadcrumb-item"><a class="text-info" routerLink="/rules"
-        [queryParams]="{selected: rule?.assetType}">Rules</a></li>
+        [queryParams]="{selected: rule?.assetType}">{{ rule?.assetType }}</a></li>
     <li class="breadcrumb-item active" aria-current="page">{{ rule?.name }}</li>
   </ol>
 </nav>

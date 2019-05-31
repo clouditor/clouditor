@@ -73,12 +73,19 @@ VM or storage. The interval of the scan can be adjusted to the individual needs.
           <clouditor-scan-badges [scan]="scan"></clouditor-scan-badges>
         </div>
         <div class="mt-auto mb-auto">
-          <button [disabled]="processing[scan._id]" (click)="onEnable(scan)" class="btn btn-outline-secondary"
-            *ngIf="!scan.enabled"><i class="fas fa-play"></i>
-            Start Discovery</button>
-          <button [disabled]="processing[scan._id]" (click)="onDisable(scan)" class="btn btn-outline-secondary"
-            *ngIf="scan.enabled"><i class="fas fa-stop"></i>
-            Stop Discovery</button>
+          <ng-container *ngIf="isAccountConfigured(scan.group); else notConfigured">
+            <button [disabled]="processing[scan._id]" (click)="onEnable(scan)" class="btn btn-outline-secondary"
+              *ngIf="!scan.enabled"><i class="fas fa-play"></i>
+              Start Discovery</button>
+            <button [disabled]="processing[scan._id]" (click)="onDisable(scan)" class="btn btn-outline-secondary"
+              *ngIf="scan.enabled"><i class="fas fa-stop"></i>
+              Stop Discovery</button>
+          </ng-container>
+          <ng-template #notConfigured>
+            <button [routerLink]="['/accounts', 'configure', scan.group]" class="btn btn-outline-secondary"><i
+                class="fas fa-cogs"></i>
+              Configure {{ scan.group }}</button>
+          </ng-template>
         </div>
       </div>
     </li>
