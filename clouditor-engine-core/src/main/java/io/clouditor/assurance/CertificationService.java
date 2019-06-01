@@ -114,7 +114,8 @@ public class CertificationService {
 
     for (var control : certification.getControls()) {
       // find associated rules
-      control.setRules(ruleService.getRulesForControl("BSI C5/" + control.getControlId()));
+      control.setRules(
+          ruleService.getRulesForControl(certificationId + "/" + control.getControlId()));
 
       if (!control.getRules().isEmpty()) {
         control.setAutomated(true);
