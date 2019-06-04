@@ -58,7 +58,8 @@
         <span class="badge badge-light">{{ getGoodControls(certification).length }}</span> Passed Controls
       </button>
       <button type="button" class="btn btn-danger" style="margin-left: 8px"
-        *ngIf="getControlsWithWarnings(certification).length > 0">
+        *ngIf="getControlsWithWarnings(certification).length > 0" [routerLink]="['/compliance', certification._id]"
+        [queryParams]="{failed: true}">
         <span class="badge badge-light">{{ getControlsWithWarnings(certification).length }}</span> Failed Controls
       </button>
     </div>

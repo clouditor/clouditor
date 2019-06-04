@@ -41,33 +41,28 @@
         <span class="input-group-text">
           <i class="fas fa-search"></i>
         </span>
-        <div class="input-group-text">
-          <label class="form-check-label"><input class="search-check" type="checkbox" name="filterWaiting"
-              [ngModel]="filterOptions.waiting">
-            <span class="badge badge-dark badge-">Not enough data</span></label>
-        </div>
-        <div class="input-group-text">
-          <label class="form-check-label"><input class="search-check" type="checkbox" name="filterNotMonitored"
-              [(ngModel)]="filterOptions.notMonitored"><span class="badge badge-light">Not
-              Monitored</span></label>
-        </div>
-        <div class="input-group-text">
-          <label class="form-check-label"><input class="search-check" type="checkbox" name="filterPassed"
-              [ngModel]="filterOptions.passed"><span class="badge badge-success">Passed</span></label>
-        </div>
-        <div class="input-group-text">
-          <label class="form-check-label"><input class="search-check" type="checkbox" name="filterFailed"
-              [ngModel]="filterOptions.failed"><span class="badge badge-danger">Failed</span></label>
+        <div class="btn-group btn-group-toggle" data-toggle="buttons">
+          <label class="btn btn-primary" [ngClass]="{'active': filter === 'all'}">
+            <input type="checkbox" name="options" autocomplete="off" (click)="filter='all'; updateFilteredControls()">
+            All
+          </label>
+          <label class="btn btn-primary" [ngClass]="{'active': filter === 'passed'}">
+            <input type="checkbox" name="options" autocomplete="off"
+              (click)="filter='passed'; updateFilteredControls()"> Passed
+          </label>
+          <label class="btn btn-primary active" [ngClass]="{'active': filter === 'failed'}">
+            <input type="checkbox" name="options" autocomplete="off"
+              (click)="filter='failed'; updateFilteredControls()"> Failed
+          </label>
         </div>
       </div>
-      <!--<div class="form-control d-flex">
-        <input class="search-form" type="search" [(ngModel)]="search" name="search" #searchInput="ngModel" placeholder="Search..."
-          aria-label="Search">
-      </div>-->
       <input type="search" [ngModel]="search" name="search" #searchInput="ngModel" class="form-control"
         placeholder="Search..." aria-label="Search">
     </div>
     <div class="card-columns">
+      <div *ngIf="filteredControls.length === 0">
+        There are no controls that match this filter.
+      </div>
       <div class="card text-dark" [class.bg-secondary]="control.isNotEvaluated()"
         [class.border-danger]="control.hasWarning()" [class.border-success]="control.isGood()"
         [class.bg-light]="!control.active" [class.text-muted]="!control.active"
@@ -95,7 +90,7 @@
           </div>
           <!-- TODO: do proper plurals -->
           <div *ngFor="let rule of control.rules" class="mt-2"><i [class]="rule.icon" [class.mr-2]="true"></i><a
-              class="text-info" [routerLink]="['/analysis','..', '..', rule.assetType]"><i>{{ rule.name }}</i></a> for
+              class="text-info" [routerLink]="['/rules', rule.id]"><i>{{ rule.name }}</i></a> for
             {{ rule.assetType }}s</div>
           <!--<button type="button" style="margin-top: 5px" class="btn btn-warning clickable" *ngIf="control.hasWarning()"
             [routerLink]="['/compliance', certification._id, control.controlId]">

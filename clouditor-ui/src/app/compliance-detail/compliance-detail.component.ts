@@ -50,14 +50,9 @@ export class ComplianceDetailComponent implements OnInit, OnDestroy {
     certification: Certification;
 
     search: string;
-    filterOptions = {
-        waiting: true, // not enough data
-        notMonitored: true,
-        passed: true,
-        failed: true
-    };
+    filter = 'all';
 
-    filteredControls: Control[];
+    filteredControls: Control[] = [];
     processing: Map<string, boolean> = new Map();
 
     constructor(private route: ActivatedRoute, private certificationService: CertificationService) {
@@ -71,41 +66,21 @@ export class ComplianceDetailComponent implements OnInit, OnDestroy {
                 .subscribe(x => {
                     this.updateCertification(params['id']);
                 });
-
-
-            this.search = localStorage.getItem('search');
-            if (this.search === null) {
-                this.search = '';
-            }
-
-            const options = localStorage.getItem('filterOptions');
-            if (options !== null) {
-                this.filterOptions = JSON.parse(options);
-            }
         });
     }
 
     ngOnInit() {
-        this.searchForm.form.valueChanges.subscribe(params => {
-            if (params.search != null &&
-                params.filterWaiting != null &&
-                params.filterNotMonitored != null &&
-                params.filterPassed != null &&
-                params.filterFailed != null) {
-                this.search = params.search;
-                localStorage.setItem('search', this.search);
-
-                this.filterOptions = {
-                    waiting: params.filterWaiting,
-                    notMonitored: params.filterNotMonitored,
-                    passed: params.filterPassed,
-                    failed: params.filterFailed
-                };
-                localStorage.setItem('filterOptions', JSON.stringify(this.filterOptions));
-
-                this.updateFilteredControls();
+        this.route.queryParams.subscribe(params => {
+            if (params['passed']) {
+                this.filter = 'passed';
+            } else if (params['failed']) {
+                this.filter = 'failed';
             }
         });
+
+        // TODO subscribe to search field and update filtered results accordingly
+
+        this.updateFilteredControls();
     }
 
     ngOnDestroy(): void {
@@ -139,11 +114,9 @@ export class ComplianceDetailComponent implements OnInit, OnDestroy {
         }
 
         this.filteredControls = this.filteredControls.filter((control: Control) => {
-            return (this.filterOptions.waiting && control.isNotEvaluated()) ||
-                (this.filterOptions.notMonitored && !control.active) ||
-                (this.filterOptions.passed && control.isGood()) ||
-                (this.filterOptions.failed && control.hasWarning())
-                ;
+            return (this.filter === 'all') ||
+                (this.filter === 'passed' && control.isGood()) ||
+                (this.filter === 'failed' && control.hasWarning());
         });
     }
 
