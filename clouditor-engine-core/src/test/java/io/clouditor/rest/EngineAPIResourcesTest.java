@@ -129,7 +129,9 @@ class EngineAPIResourcesTest extends JerseyTest {
     var success =
         target("authenticate")
             .request()
-            .post(Entity.json(new User(engine.getAPIUsername(), engine.getAPIPassword())));
+            .post(
+                Entity.json(
+                    new User(engine.getDefaultApiUsername(), engine.getDefaultApiPassword())));
 
     assertEquals(200, success.getStatus());
   }

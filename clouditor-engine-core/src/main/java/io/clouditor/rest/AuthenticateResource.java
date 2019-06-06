@@ -29,12 +29,11 @@
 
 package io.clouditor.rest;
 
-import io.clouditor.Component;
 import io.clouditor.auth.TokenResponse;
 import io.clouditor.auth.User;
+import io.clouditor.auth.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
-import java.util.Objects;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.NotAuthorizedException;
@@ -54,11 +53,11 @@ import javax.ws.rs.core.Response;
 @Api
 public class AuthenticateResource {
 
-  private final Component component;
+  private final UserService service;
 
   @Inject
-  public AuthenticateResource(Component component) {
-    this.component = component;
+  public AuthenticateResource(UserService service) {
+    this.service = service;
   }
 
   @POST
@@ -67,12 +66,11 @@ public class AuthenticateResource {
   public Response login(@ApiParam(value = "The user credentials", required = true) User user) {
     TokenResponse payload = new TokenResponse();
 
-    if (!(Objects.equals(user.getUsername(), this.component.getAPIUsername())
-        && Objects.equals(user.getPassword(), this.component.getAPIPassword()))) {
+    if (!service.verifyUser(user)) {
       throw new NotAuthorizedException("Invalid user and/or password");
     }
 
-    payload.setToken(user.createToken());
+    payload.setToken(service.createToken(user));
 
     // TODO: max age, etc.
     return Response.ok(payload).cookie(new NewCookie("authorization", payload.getToken())).build();

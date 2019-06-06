@@ -32,6 +32,7 @@ package io.clouditor.rest;
 import io.clouditor.Component;
 import io.clouditor.auth.User;
 import io.clouditor.auth.UserContext;
+import io.clouditor.auth.UserService;
 import java.util.Objects;
 import javax.annotation.Priority;
 import javax.annotation.security.RolesAllowed;
@@ -51,6 +52,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
   public static final String HEADER_AUTHORIZATION = "Authorization";
   protected static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationFilter.class);
   @Inject private Component component;
+  @Inject private UserService userService;
 
   @Context private ResourceInfo resourceInfo;
 
@@ -82,10 +84,20 @@ public class AuthenticationFilter implements ContainerRequestFilter {
       }
     }
 
+    if (authorization == null || !authorization.startsWith("Bearer")) {
+      throw new NotAuthorizedException("No token was specified");
+    }
+
+    String[] rr = authorization.split(" ");
+
+    if (rr.length != 2) {
+      throw new NotAuthorizedException("Invalid authentication format");
+    }
+
+    String token = rr[1];
+
     try {
-      User user =
-          User.verifyAuthentication(
-              this.component.getAPIUsername(), this.component.getAPIPassword(), authorization);
+      User user = userService.verifyToken(token);
 
       LOGGER.debug(
           "Authenticated API access to {} as {}",

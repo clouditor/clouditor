@@ -35,7 +35,6 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import io.clouditor.AbstractEngineUnitTest;
-import io.clouditor.rest.AuthenticationFilter;
 import org.junit.jupiter.api.Test;
 
 class UserTest extends AbstractEngineUnitTest {
@@ -60,15 +59,15 @@ class UserTest extends AbstractEngineUnitTest {
 
   @Test
   void testVerifyAuthentication() {
+    var service = this.engine.getService(UserService.class);
+
     var user = new User("user", "mypass");
 
-    var token = user.createToken();
+    var token = service.createToken(user);
 
     assertNotNull(token);
 
-    var authorization = AuthenticationFilter.createAuthorization(token);
-
-    var decodedUser = User.verifyAuthentication("user", "mypass", authorization);
+    var decodedUser = service.verifyToken(token);
 
     assertEquals(user, decodedUser);
 

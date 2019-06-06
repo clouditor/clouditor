@@ -33,6 +33,7 @@ import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
 import io.clouditor.assurance.CertificationService;
 import io.clouditor.assurance.RuleService;
+import io.clouditor.auth.UserService;
 import io.clouditor.discovery.DiscoveryService;
 import io.clouditor.rest.EngineAPI;
 import io.clouditor.util.FileSystemManager;
@@ -133,6 +134,9 @@ public class Engine extends Component {
   /** Initializes the Clouditor Engine, i.e. loads all configuration files. */
   @Override
   public void init() {
+    // init user service
+    this.getService(UserService.class).init();
+
     // load the certificate importers
     this.getService(CertificationService.class).loadImporters();
 

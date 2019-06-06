@@ -29,61 +29,26 @@
 
 package io.clouditor.auth;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.clouditor.util.PersistentObject;
 import java.security.Principal;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import javax.ws.rs.NotAuthorizedException;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class User implements Principal {
+public class User implements Principal, PersistentObject<String> {
 
   private String username;
   private String password;
 
   public User() {}
 
+  public User(String username) {
+    this.username = username;
+  }
+
   public User(String username, String password) {
     this.username = username;
     this.password = password;
-  }
-
-  public static User verifyAuthentication(String username, String password, String authorization) {
-    if (authorization == null || !authorization.startsWith("Bearer")) {
-      throw new NotAuthorizedException("No token was specified");
-    }
-
-    String[] rr = authorization.split(" ");
-
-    if (rr.length != 2) {
-      throw new NotAuthorizedException("Invalid authentication format");
-    }
-
-    String token = rr[1];
-
-    try {
-      // for now we use the api password as JWT secret. in the future we need to see if this makes
-      // sense
-      Algorithm algorithm = Algorithm.HMAC256(password);
-
-      JWTVerifier verifier =
-          JWT.require(algorithm)
-              .withSubject(username)
-              .withIssuer(UserContext.ISSUER)
-              .build(); // Reusable verifier instance
-      DecodedJWT jwt = verifier.verify(token);
-
-      return new User(jwt.getSubject(), password);
-    } catch (JWTVerificationException ex) {
-      throw new NotAuthorizedException("Invalid token", ex);
-    }
   }
 
   @Override
@@ -98,10 +63,8 @@ public class User implements Principal {
 
     User user = (User) o;
 
-    return new EqualsBuilder()
-        .append(username, user.username)
-        .append(password, user.password)
-        .isEquals();
+    // the comparison of a user is just done by the name and attributes, not the password!
+    return new EqualsBuilder().append(username, user.username).isEquals();
   }
 
   @Override
@@ -131,13 +94,8 @@ public class User implements Principal {
     return this.username;
   }
 
-  public String createToken() {
-    Algorithm algorithm = Algorithm.HMAC256(this.password);
-
-    return JWT.create()
-        .withIssuer(UserContext.ISSUER)
-        .withSubject(this.getName())
-        .withExpiresAt(Date.from(Instant.now().plus(1, ChronoUnit.DAYS)))
-        .sign(algorithm);
+  @Override
+  public String getId() {
+    return this.username;
   }
 }
