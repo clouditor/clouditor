@@ -37,6 +37,13 @@ plugins {
     id 'jacoco'
 }
 
+sonarqube {
+    properties {
+        property 'sonar.branch.name', gitBranch()
+        property 'sonar.branch.target', gitBranch() == 'master' ? null : 'master'
+    }
+}
+
 allprojects {
     apply plugin: 'maven'
     apply plugin: 'java'
@@ -214,12 +221,12 @@ task commit() {
 }
 
 static def gitBranch() {
-    // default to develop
-    def branch = 'develop'
+    // default to master
+    def branch = 'master'
 
     // check if branch was set externally
-    if (System.getenv('CI_COMMIT_REF_NAME')) {
-        branch = System.getenv('CI_COMMIT_REF_NAME')
+    if (System.getenv('CIRCLE_BRANCH')) {
+        branch = System.getenv('CIRCLE_BRANCH')
     } else {
         // try to parse git (this does not work in CI environments)
         def proc = 'git rev-parse --abbrev-ref HEAD'.execute()
@@ -235,8 +242,8 @@ static def gitBranch() {
 static def gitCommit() {
     def commit = 'HEAD'
 
-    if (System.getenv('CI_COMMIT_SHA')) {
-        commit = System.getenv('CI_COMMIT_SHA')
+    if (System.getenv('CIRCLE_SHA1')) {
+        commit = System.getenv('CIRCLE_SHA1')
     } else {
         def proc = 'git rev-parse HEAD'.execute()
         proc.in.eachLine { line -> commit = line }
