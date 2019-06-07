@@ -55,7 +55,7 @@ public class InjectionBridge implements Feature {
     return true;
   }
 
-  public static void setComponentServiceLocator(ServiceLocator componentServiceLocator) {
+  static void setComponentServiceLocator(ServiceLocator componentServiceLocator) {
     InjectionBridge.COMPONENT_SERVICE_LOCATOR = componentServiceLocator;
   }
 }

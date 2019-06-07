@@ -27,9 +27,23 @@
  * long with Clouditor Community Edition.  If not, see <https://www.gnu.org/licenses/>
  */
 
-export class User {
-  constructor(
-    public username?: string,
-    public password?: string
-  ) { }
+import { Component, OnInit } from '@angular/core';
+import { UserService } from '../user.service';
+import { User } from '../user';
+
+@Component({
+  selector: 'clouditor-users',
+  templateUrl: './users.component.html',
+  styleUrls: ['./users.component.css']
+})
+export class UsersComponent implements OnInit {
+
+  users: User[];
+
+  constructor(private userService: UserService) { }
+
+  ngOnInit() {
+    this.userService.getUsers().subscribe(users => this.users = users);
+  }
+
 }

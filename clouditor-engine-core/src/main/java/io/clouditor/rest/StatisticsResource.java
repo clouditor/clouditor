@@ -29,16 +29,15 @@
 
 package io.clouditor.rest;
 
+import static io.clouditor.auth.AuthenticationService.ROLE_USER;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.clouditor.Engine;
 import io.clouditor.assurance.Certification;
 import io.clouditor.assurance.CertificationService;
 import io.clouditor.assurance.Control;
-import io.clouditor.auth.UserContext;
 import io.clouditor.discovery.DiscoveryService;
 import io.clouditor.discovery.Scan;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.Authorization;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.security.RolesAllowed;
@@ -49,8 +48,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 @Path("statistics")
-@Api(authorizations = @Authorization(value = "token"))
-@RolesAllowed(UserContext.ROLE_USERS)
+@RolesAllowed(ROLE_USER)
 public class StatisticsResource {
 
   @Inject private Engine engine;

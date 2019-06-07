@@ -29,12 +29,11 @@
 
 package io.clouditor.rest;
 
+import static io.clouditor.auth.AuthenticationService.ROLE_USER;
+
 import io.clouditor.assurance.Rule;
 import io.clouditor.assurance.RuleEvaluation;
 import io.clouditor.assurance.RuleService;
-import io.clouditor.auth.UserContext;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.Authorization;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -48,8 +47,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 @Path("rules")
-@Api(authorizations = @Authorization(value = "BearerAuth"))
-@RolesAllowed(UserContext.ROLE_USERS)
+@RolesAllowed(ROLE_USER)
 public class RulesResource {
 
   private final RuleService ruleService;

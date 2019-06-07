@@ -27,33 +27,13 @@
   ~ long with Clouditor Community Edition.  If not, see <https://www.gnu.org/licenses/>
   -->
 
-<div class="row justify-content-center">
-  <img style="width: 340px; height: 147px" src="/assets/clouditor-big.png" />
-</div>
-
-<div class="clouditor-login-form row justify-content-center">
-  <div class="card clouditor-login-card">
-    <div class="card-header">Login to Clouditor</div>
-    <div class="card-body">
-      <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
-        <div class="form-group">
-          <input placeholder="Username" class="form-control" #username="ngModel" [(ngModel)]="model.username"
-            name="username" required>
-        </div>
-
-        <div class="form-group">
-          <input placeholder="Password" type="password" class="form-control" id="password" #password="ngModel"
-            [(ngModel)]="model.password" name="password" required>
-        </div>
-
-        <button class="btn btn-secondary" [disabled]="!loginForm.form.valid">Login</button>
-        <!--<button (click)="onOpenID()" class="btn btn-secondary ml-2"><i class="fab fa-openid pr-2"></i>Login with
-          OpenID</button>-->
-      </form>
-      <ng-container *ngIf="oAuthEnabled">
-        <a [href]="getOAuthLogin()"><button class="btn btn-secondary mt-2"><i class="fab fa-openid pr-2"></i>Login
-            with
-            OpenID</button></a>
-      </ng-container>
-    </div>
-  </div>
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a class="text-info" routerLink="/">Home</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Users</li>
+  </ol>
+</nav>
+<h3>Users</h3>
+<p *ngFor="let user of users">
+  {{ user | json }}
+</p>

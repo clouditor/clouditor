@@ -59,7 +59,7 @@ class UserTest extends AbstractEngineUnitTest {
 
   @Test
   void testVerifyAuthentication() {
-    var service = this.engine.getService(UserService.class);
+    var service = this.engine.getService(AuthenticationService.class);
 
     var user = new User("user", "mypass");
 

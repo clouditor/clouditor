@@ -29,11 +29,9 @@
 
 package io.clouditor.rest;
 
-import io.clouditor.auth.TokenResponse;
+import io.clouditor.auth.AuthenticationService;
+import io.clouditor.auth.LoginResponse;
 import io.clouditor.auth.User;
-import io.clouditor.auth.UserService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiParam;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.NotAuthorizedException;
@@ -50,21 +48,20 @@ import javax.ws.rs.core.Response;
  * @author Christian Banse
  */
 @Path("authenticate")
-@Api
 public class AuthenticateResource {
 
-  private final UserService service;
+  private final AuthenticationService service;
 
   @Inject
-  public AuthenticateResource(UserService service) {
+  public AuthenticateResource(AuthenticationService service) {
     this.service = service;
   }
 
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response login(@ApiParam(value = "The user credentials", required = true) User user) {
-    TokenResponse payload = new TokenResponse();
+  public Response login(User user) {
+    var payload = new LoginResponse();
 
     if (!service.verifyUser(user)) {
       throw new NotAuthorizedException("Invalid user and/or password");

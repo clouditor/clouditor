@@ -35,11 +35,11 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import io.clouditor.AbstractEngineUnitTest;
 import org.junit.jupiter.api.Test;
 
-class TokenResponseTest extends AbstractEngineUnitTest {
+class LoginResponseTest extends AbstractEngineUnitTest {
 
   @Test
   void testEquals() {
-    var tokenResponse = new TokenResponse();
+    var tokenResponse = new LoginResponse();
     tokenResponse.setToken("sometoken");
 
     // compare with self
@@ -49,7 +49,7 @@ class TokenResponseTest extends AbstractEngineUnitTest {
     assertNotEquals(tokenResponse, null);
 
     // compare with other
-    assertNotEquals(tokenResponse, new TokenResponse());
+    assertNotEquals(tokenResponse, new LoginResponse());
 
     // compare with wrong class
     assertNotEquals(tokenResponse, new Object());

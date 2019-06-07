@@ -29,7 +29,7 @@
 
 package io.clouditor;
 
-import io.clouditor.auth.TokenResponse;
+import io.clouditor.auth.LoginResponse;
 import io.clouditor.auth.User;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
@@ -153,7 +153,7 @@ public abstract class Component {
         target
             .path("authenticate")
             .request()
-            .post(Entity.json(new User(username, password)), TokenResponse.class);
+            .post(Entity.json(new User(username, password)), LoginResponse.class);
 
     if (response != null) {
       return response.getToken();

@@ -8,4 +8,4 @@
 
 [io.clouditor.credentials.AccountService]S
 
-[io.clouditor.auth.UserService]S
+[io.clouditor.auth.AuthenticationService]S

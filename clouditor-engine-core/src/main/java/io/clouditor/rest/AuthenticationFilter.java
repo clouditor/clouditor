@@ -30,13 +30,14 @@
 package io.clouditor.rest;
 
 import io.clouditor.Component;
+import io.clouditor.auth.AuthenticationService;
 import io.clouditor.auth.User;
 import io.clouditor.auth.UserContext;
-import io.clouditor.auth.UserService;
 import java.util.Objects;
 import javax.annotation.Priority;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -52,7 +53,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
   public static final String HEADER_AUTHORIZATION = "Authorization";
   protected static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationFilter.class);
   @Inject private Component component;
-  @Inject private UserService userService;
+  @Inject private AuthenticationService authenticationService;
 
   @Context private ResourceInfo resourceInfo;
 
@@ -63,7 +64,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
   @Override
   public void filter(ContainerRequestContext requestContext) {
     // ignore filter for classes that do not have @RolesAllowed
-    RolesAllowed rolesAllowed = resourceInfo.getResourceClass().getAnnotation(RolesAllowed.class);
+    var rolesAllowed = resourceInfo.getResourceClass().getAnnotation(RolesAllowed.class);
 
     if (rolesAllowed == null) {
       return;
@@ -97,16 +98,32 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     String token = rr[1];
 
     try {
-      User user = userService.verifyToken(token);
+      User user = authenticationService.verifyToken(token);
 
       LOGGER.debug(
           "Authenticated API access to {} as {}",
           requestContext.getUriInfo().getPath(),
           user.getName());
 
-      requestContext.setSecurityContext(
-          new UserContext(user, requestContext.getSecurityContext().isSecure()));
-    } catch (NotAuthorizedException ex) {
+      var ctx = new UserContext(user, requestContext.getSecurityContext().isSecure());
+
+      requestContext.setSecurityContext(ctx);
+
+      var authorized = false;
+
+      for (var role : rolesAllowed.value()) {
+        if (ctx.isUserInRole(role)) {
+          authorized = true;
+          break;
+        }
+      }
+
+      if (!authorized) {
+        throw new ForbiddenException(
+            "User " + user.getName() + " does not have appropriate role to view resource.");
+      }
+
+    } catch (NotAuthorizedException | ForbiddenException ex) {
       // log the error
       LOGGER.error(
           "API access to {} was denied: {}",

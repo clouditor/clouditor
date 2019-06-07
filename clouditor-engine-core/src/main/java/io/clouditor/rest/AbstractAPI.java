@@ -30,16 +30,16 @@
 package io.clouditor.rest;
 
 import io.clouditor.Component;
-import io.swagger.jaxrs.config.BeanConfig;
-import io.swagger.jaxrs.listing.ApiListingResource;
-import io.swagger.jaxrs.listing.SwaggerSerializers;
+import io.clouditor.oauth.OAuthResource;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.UriBuilder;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
 import org.glassfish.grizzly.http.server.StaticHttpHandler;
+import org.glassfish.grizzly.servlet.WebappContext;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,19 +66,9 @@ public abstract class AbstractAPI<C extends Component> extends ResourceConfig {
     this.port = port;
     this.contextPath = contextPath;
 
-    BeanConfig beanConfig = new BeanConfig();
-    beanConfig.setVersion("1.0.0");
-    beanConfig.setSchemes(new String[] {"http"});
-    beanConfig.setHost("clouditor.io");
-    beanConfig.setBasePath(contextPath);
-    beanConfig.setResourcePackage(this.getClass().getPackage().getName());
-    beanConfig.setScan(true);
-
     // set the component service locator
     InjectionBridge.setComponentServiceLocator(this.component.getServiceLocator());
 
-    this.register(ApiListingResource.class);
-    this.register(SwaggerSerializers.class);
     this.register(CORSResponseFilter.class);
     this.register(ObjectMapperResolver.class);
     this.register(AuthenticationFilter.class);
@@ -109,6 +99,15 @@ public abstract class AbstractAPI<C extends Component> extends ResourceConfig {
     if (this.port == 0) {
       component.setAPIPort(this.httpServer.getListener("grizzly").getPort());
     }
+
+    var config = new ResourceConfig();
+    config.register(OAuthResource.class);
+    config.register(InjectionBridge.class);
+
+    var context = new WebappContext("WebappContext", "/oauth2");
+    var registration = context.addServlet("OAuth2 Client", new ServletContainer(config));
+    registration.addMapping("/*");
+    context.deploy(httpServer);
 
     this.httpServer.getServerConfiguration().addHttpHandler(new StaticHttpHandler("html"), "/");
   }

@@ -29,6 +29,8 @@
 
 import { Injectable } from '@angular/core';
 import { JwtHelperService } from '@auth0/angular-jwt';
+import { Router, ActivatedRoute } from '@angular/router';
+import { HttpParams } from '@angular/common/http';
 
 export const TOKEN_NAME = 'token';
 
@@ -36,7 +38,17 @@ const helper = new JwtHelperService();
 
 @Injectable()
 export class AuthService {
-  constructor() { }
+  constructor(private router: Router, private route: ActivatedRoute) {
+    const params = new HttpParams({ fromString: window.location.hash.replace('#?', '') });
+
+
+    const token = params.get('token');
+
+    if (token) {
+      this.login(token);
+      this.router.navigate(['/']);
+    }
+  }
 
   isLoggedIn() {
     return !helper.isTokenExpired(this.getToken());

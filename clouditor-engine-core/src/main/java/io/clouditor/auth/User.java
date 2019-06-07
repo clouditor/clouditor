@@ -29,16 +29,29 @@
 
 package io.clouditor.auth;
 
+import static io.clouditor.auth.AuthenticationService.ROLE_GUEST;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonView;
+import io.clouditor.rest.ObjectMapperResolver.DatabaseOnly;
 import io.clouditor.util.PersistentObject;
 import java.security.Principal;
+import java.util.List;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class User implements Principal, PersistentObject<String> {
 
   private String username;
+
+  @JsonView(DatabaseOnly.class)
   private String password;
+
+  @JsonProperty private boolean shadow = false;
+
+  /** The roles of this users. Defaults to {@link AuthenticationService#ROLE_GUEST}. */
+  @JsonProperty private List<String> roles = List.of(ROLE_GUEST);
 
   public User() {}
 
@@ -97,5 +110,21 @@ public class User implements Principal, PersistentObject<String> {
   @Override
   public String getId() {
     return this.username;
+  }
+
+  public void setRoles(List<String> roles) {
+    this.roles = roles;
+  }
+
+  public boolean hasRole(String role) {
+    return this.roles.contains(role);
+  }
+
+  public boolean isShadow() {
+    return shadow;
+  }
+
+  public void setShadow(boolean shadow) {
+    this.shadow = shadow;
   }
 }

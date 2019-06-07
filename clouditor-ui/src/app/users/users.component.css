@@ -26,10 +26,3 @@
  * You should have received a copy of the GNU General Public License
  * long with Clouditor Community Edition.  If not, see <https://www.gnu.org/licenses/>
  */
-
-export class User {
-  constructor(
-    public username?: string,
-    public password?: string
-  ) { }
-}

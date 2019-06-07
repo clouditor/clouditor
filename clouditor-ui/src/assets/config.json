@@ -1,3 +1,4 @@
 {
-  "apiUrl": "/engine"
+  "apiUrl": "/engine",
+  "authUrl": "/oauth2"
 }

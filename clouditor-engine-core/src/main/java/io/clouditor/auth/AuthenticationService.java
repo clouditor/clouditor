@@ -13,7 +13,10 @@ import io.clouditor.Engine;
 import io.clouditor.util.PersistenceManager;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.ws.rs.NotAuthorizedException;
 import org.jvnet.hk2.annotations.Service;
@@ -21,14 +24,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Service
-public class UserService {
+public class AuthenticationService {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
+  public static final String ISSUER = "clouditor";
+
+  public static final String ROLE_GUEST = "guest";
+  public static final String ROLE_USER = "user";
+  public static final String ROLE_ADMIN = "admin";
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationService.class);
 
   private Engine engine;
 
   @Inject
-  public UserService(Engine engine) {
+  public AuthenticationService(Engine engine) {
     this.engine = engine;
   }
 
@@ -41,6 +50,9 @@ public class UserService {
     }
   }
 
+  /**
+   * Creates the default admin user according to the credentials configured in the {@link Engine}.
+   */
   private void createDefaultUser() {
     var user = new User();
     user.setUsername(engine.getDefaultApiUsername());
@@ -54,6 +66,7 @@ public class UserService {
             .saltLength(16)
             .hashLength(16);
 
+    user.setRoles(List.of(ROLE_ADMIN, ROLE_USER));
     user.setPassword(hasher.password(engine.getDefaultApiPassword().getBytes()).encodedHash());
 
     PersistenceManager.getInstance().persist(user);
@@ -65,7 +78,7 @@ public class UserService {
     Algorithm algorithm = Algorithm.HMAC256(this.engine.getApiSecret());
 
     return JWT.create()
-        .withIssuer(UserContext.ISSUER)
+        .withIssuer(ISSUER)
         .withSubject(user.getName())
         .withExpiresAt(Date.from(Instant.now().plus(1, ChronoUnit.DAYS)))
         .sign(algorithm);
@@ -73,17 +86,19 @@ public class UserService {
 
   public User verifyToken(String token) {
     try {
-      // for now we use the api password as JWT secret. in the future we need to see if this makes
-      // sense
       Algorithm algorithm = Algorithm.HMAC256(this.engine.getApiSecret());
 
       JWTVerifier verifier =
-          JWT.require(algorithm)
-              .withIssuer(UserContext.ISSUER)
-              .build(); // Reusable verifier instance
+          JWT.require(algorithm).withIssuer(ISSUER).build(); // Reusable verifier instance
       DecodedJWT jwt = verifier.verify(token);
 
-      return new User(jwt.getSubject());
+      var user = PersistenceManager.getInstance().getById(User.class, jwt.getSubject());
+
+      if (user == null) {
+        throw new NotAuthorizedException("User does not exist anymore");
+      }
+
+      return user;
     } catch (JWTVerificationException ex) {
       throw new NotAuthorizedException("Invalid token", ex);
     }
@@ -101,5 +116,13 @@ public class UserService {
         .hash(reference.getPassword())
         .password(user.getPassword().getBytes())
         .verifyEncoded();
+  }
+
+  public List<User> getUsers() {
+    var users = new ArrayList<User>();
+
+    PersistenceManager.getInstance().find(User.class).forEach((Consumer<? super User>) users::add);
+
+    return users;
   }
 }

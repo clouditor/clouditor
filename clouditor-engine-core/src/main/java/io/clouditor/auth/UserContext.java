@@ -30,14 +30,9 @@
 package io.clouditor.auth;
 
 import java.security.Principal;
-import java.util.Objects;
 import javax.ws.rs.core.SecurityContext;
 
 public class UserContext implements SecurityContext {
-
-  public static final String ISSUER = "clouditor";
-
-  public static final String ROLE_USERS = "users";
 
   private User user;
 
@@ -55,7 +50,7 @@ public class UserContext implements SecurityContext {
 
   @Override
   public boolean isUserInRole(String role) {
-    return Objects.equals(role, ROLE_USERS);
+    return this.user.hasRole(role);
   }
 
   @Override
