@@ -39,7 +39,7 @@ import io.clouditor.assurance.Certification;
 import io.clouditor.assurance.CertificationService;
 import io.clouditor.assurance.Rule;
 import io.clouditor.assurance.RuleService;
-import io.clouditor.auth.User;
+import io.clouditor.auth.LoginRequest;
 import io.clouditor.discovery.Asset;
 import io.clouditor.discovery.AssetProperties;
 import io.clouditor.discovery.AssetService;
@@ -122,7 +122,8 @@ class EngineAPIResourcesTest extends JerseyTest {
 
   @Test
   void testAuthenticate() {
-    var fail = target("authenticate").request().post(Entity.json(new User("wrong", "password")));
+    var fail =
+        target("authenticate").request().post(Entity.json(new LoginRequest("wrong", "password")));
 
     assertEquals(401, fail.getStatus());
 
@@ -131,7 +132,8 @@ class EngineAPIResourcesTest extends JerseyTest {
             .request()
             .post(
                 Entity.json(
-                    new User(engine.getDefaultApiUsername(), engine.getDefaultApiPassword())));
+                    new LoginRequest(
+                        engine.getDefaultApiUsername(), engine.getDefaultApiPassword())));
 
     assertEquals(200, success.getStatus());
   }

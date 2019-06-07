@@ -30,8 +30,8 @@
 package io.clouditor.rest;
 
 import io.clouditor.auth.AuthenticationService;
+import io.clouditor.auth.LoginRequest;
 import io.clouditor.auth.LoginResponse;
-import io.clouditor.auth.User;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.NotAuthorizedException;
@@ -60,14 +60,14 @@ public class AuthenticateResource {
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response login(User user) {
+  public Response login(LoginRequest request) {
     var payload = new LoginResponse();
 
-    if (!service.verifyUser(user)) {
+    if (!service.verifyLogin(request)) {
       throw new NotAuthorizedException("Invalid user and/or password");
     }
 
-    payload.setToken(service.createToken(user));
+    payload.setToken(service.createToken(request.getUsername()));
 
     // TODO: max age, etc.
     return Response.ok(payload).cookie(new NewCookie("authorization", payload.getToken())).build();

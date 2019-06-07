@@ -68,7 +68,7 @@ public class OAuthResource {
     // issue token for our API
     var payload = new LoginResponse();
 
-    payload.setToken(service.createToken(user));
+    payload.setToken(service.createToken(user.getUsername()));
 
     // TODO: max age, etc.
     /* angular is particular about the hash! it needs to be included.

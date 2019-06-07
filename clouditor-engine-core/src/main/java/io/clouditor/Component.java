@@ -29,8 +29,8 @@
 
 package io.clouditor;
 
+import io.clouditor.auth.LoginRequest;
 import io.clouditor.auth.LoginResponse;
-import io.clouditor.auth.User;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -153,7 +153,7 @@ public abstract class Component {
         target
             .path("authenticate")
             .request()
-            .post(Entity.json(new User(username, password)), LoginResponse.class);
+            .post(Entity.json(new LoginRequest(username, password)), LoginResponse.class);
 
     if (response != null) {
       return response.getToken();

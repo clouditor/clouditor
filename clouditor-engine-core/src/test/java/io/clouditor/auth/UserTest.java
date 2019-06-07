@@ -29,15 +29,29 @@
 
 package io.clouditor.auth;
 
+import static io.clouditor.auth.AuthenticationService.ROLE_ADMIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.clouditor.AbstractEngineUnitTest;
+import io.clouditor.util.PersistenceManager;
+import java.util.List;
+import javax.ws.rs.NotAuthorizedException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class UserTest extends AbstractEngineUnitTest {
+
+  @Override
+  @BeforeEach
+  protected void setUp() {
+    super.setUp();
+
+    this.engine.initDB();
+  }
 
   @Test
   void testEquals() {
@@ -62,8 +76,11 @@ class UserTest extends AbstractEngineUnitTest {
     var service = this.engine.getService(AuthenticationService.class);
 
     var user = new User("user", "mypass");
+    user.setRoles(List.of(ROLE_ADMIN));
 
-    var token = service.createToken(user);
+    PersistenceManager.getInstance().persist(user);
+
+    var token = service.createToken(user.getUsername());
 
     assertNotNull(token);
 
@@ -75,8 +92,16 @@ class UserTest extends AbstractEngineUnitTest {
 
     assertEquals(user, ctx.getUserPrincipal());
 
-    // no roles implemented yet
+    assertTrue(ctx.isUserInRole(ROLE_ADMIN));
+  }
 
-    assertFalse(ctx.isUserInRole("fake_role"));
+  @Test
+  void testUserNotFound() {
+    var service = this.engine.getService(AuthenticationService.class);
+
+    var token = service.createToken("maybe-existed-before-but-not-anymore");
+
+    // the token itself is valid, but verification should fail since the user is not in the DB
+    assertThrows(NotAuthorizedException.class, () -> service.verifyToken(token));
   }
 }

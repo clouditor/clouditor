@@ -33,6 +33,7 @@ public class AuthenticationService {
   public static final String ROLE_ADMIN = "admin";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationService.class);
+  public static final String ERROR_MESSAGE_USER_NOT_FOUND = "User does not exist";
 
   private Engine engine;
 
@@ -74,12 +75,12 @@ public class AuthenticationService {
     LOGGER.info("Created default user {}.", user.getUsername());
   }
 
-  public String createToken(User user) {
+  public String createToken(String subject) {
     Algorithm algorithm = Algorithm.HMAC256(this.engine.getApiSecret());
 
     return JWT.create()
         .withIssuer(ISSUER)
-        .withSubject(user.getName())
+        .withSubject(subject)
         .withExpiresAt(Date.from(Instant.now().plus(1, ChronoUnit.DAYS)))
         .sign(algorithm);
   }
@@ -95,7 +96,7 @@ public class AuthenticationService {
       var user = PersistenceManager.getInstance().getById(User.class, jwt.getSubject());
 
       if (user == null) {
-        throw new NotAuthorizedException("User does not exist anymore");
+        throw new NotAuthorizedException(ERROR_MESSAGE_USER_NOT_FOUND);
       }
 
       return user;
@@ -104,9 +105,9 @@ public class AuthenticationService {
     }
   }
 
-  public boolean verifyUser(User user) {
+  public boolean verifyLogin(LoginRequest request) {
     // fetch user from database
-    var reference = PersistenceManager.getInstance().getById(User.class, user.getId());
+    var reference = PersistenceManager.getInstance().getById(User.class, request.getUsername());
 
     if (reference == null) {
       return false;
@@ -114,7 +115,7 @@ public class AuthenticationService {
 
     return jargon2Verifier()
         .hash(reference.getPassword())
-        .password(user.getPassword().getBytes())
+        .password(request.getPassword().getBytes())
         .verifyEncoded();
   }
 
