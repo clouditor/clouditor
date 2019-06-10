@@ -45,6 +45,7 @@ import { RulesComponent } from './rules/rules.component';
 import { RuleDetailComponent } from './rule-detail/rule-detail.component';
 import { ConfigureAccountComponent } from './configure-account/configure-account.component';
 import { UsersComponent } from './users/users.component';
+import { EditUserComponent } from './edit-user/edit-user.component';
 
 const routes: Routes = [
   { path: 'accounts', component: DashboardComponent, canActivate: [AuthGuard] },
@@ -59,6 +60,7 @@ const routes: Routes = [
   { path: 'rules/:id', component: RuleDetailComponent, canActivate: [AuthGuard] },
   { path: 'login', component: LoginComponent },
   { path: 'users', component: UsersComponent },
+  { path: 'users/:id', component: EditUserComponent },
   { path: 'about', component: AboutComponent },
   { path: '', redirectTo: '/accounts', pathMatch: 'full', resolve: { config: ConfigService } },
 ];

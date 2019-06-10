@@ -67,6 +67,7 @@ import { ServiceDescriptionService } from './service-description.service';
 import { StatisticService } from './statistic.service';
 import { TruncateMiddlePipe } from './truncate-middle.pipe';
 import { UsersComponent } from './users/users.component';
+import { EditUserComponent } from './edit-user/edit-user.component';
 
 @NgModule({
   declarations: [
@@ -89,6 +90,7 @@ import { UsersComponent } from './users/users.component';
     ConfigureAccountComponent,
     AssessmentBadgesComponent,
     UsersComponent,
+    EditUserComponent
   ],
   imports: [
     BrowserModule,

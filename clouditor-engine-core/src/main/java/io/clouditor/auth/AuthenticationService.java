@@ -58,6 +58,15 @@ public class AuthenticationService {
     var user = new User();
     user.setUsername(engine.getDefaultApiUsername());
 
+    user.setRoles(List.of(ROLE_ADMIN, ROLE_USER));
+    user.setPassword(hashPassword(engine.getDefaultApiPassword()));
+
+    PersistenceManager.getInstance().persist(user);
+
+    LOGGER.info("Created default user {}.", user.getUsername());
+  }
+
+  private String hashPassword(String password) {
     var hasher =
         jargon2Hasher()
             .type(Type.ARGON2id)
@@ -67,12 +76,7 @@ public class AuthenticationService {
             .saltLength(16)
             .hashLength(16);
 
-    user.setRoles(List.of(ROLE_ADMIN, ROLE_USER));
-    user.setPassword(hasher.password(engine.getDefaultApiPassword().getBytes()).encodedHash());
-
-    PersistenceManager.getInstance().persist(user);
-
-    LOGGER.info("Created default user {}.", user.getUsername());
+    return hasher.password(password.getBytes()).encodedHash();
   }
 
   public String createToken(String subject) {
@@ -113,6 +117,10 @@ public class AuthenticationService {
       return false;
     }
 
+    if (reference.getPassword() == null) {
+      return false;
+    }
+
     return jargon2Verifier()
         .hash(reference.getPassword())
         .password(request.getPassword().getBytes())
@@ -125,5 +133,54 @@ public class AuthenticationService {
     PersistenceManager.getInstance().find(User.class).forEach((Consumer<? super User>) users::add);
 
     return users;
+  }
+
+  /**
+   * Creates a new user in the database
+   *
+   * @param user the {@link User} to be created.
+   * @return false, if the user already exists
+   */
+  public boolean createUser(User user) {
+    // check, if user already exists
+    var ref = PersistenceManager.getInstance().getById(User.class, user.getId());
+
+    if (ref != null) {
+      return false;
+    }
+
+    // create the new user
+    PersistenceManager.getInstance().persist(user);
+
+    LOGGER.info("Created user {}.", user.getId());
+
+    return true;
+  }
+
+  public User getUser(String id) {
+    return PersistenceManager.getInstance().getById(User.class, id);
+  }
+
+  public void updateUser(String id, User user) {
+    // fetch existing
+    var ref = PersistenceManager.getInstance().getById(User.class, id);
+
+    if (ref == null) {
+      return;
+    }
+
+    // make sure, identifiers match
+    user.setUsername(id);
+
+    // if password is empty, it means that we do not update it
+    if (user.getPassword() == null) {
+      user.setPassword(ref.getPassword());
+    } else {
+      // encode hash
+      user.setPassword(hashPassword(user.getPassword()));
+    }
+
+    // store it
+    PersistenceManager.getInstance().persist(user);
   }
 }

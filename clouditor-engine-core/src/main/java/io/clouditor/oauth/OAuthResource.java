@@ -3,6 +3,7 @@ package io.clouditor.oauth;
 import io.clouditor.Engine;
 import io.clouditor.auth.AuthenticationService;
 import io.clouditor.auth.LoginResponse;
+import io.clouditor.auth.User;
 import io.clouditor.util.PersistenceManager;
 import java.net.URI;
 import java.util.Base64;
@@ -61,9 +62,12 @@ public class OAuthResource {
 
     LOGGER.info("Decoded access token as user {}", user.getUsername());
 
-    // persist the user
-    // TODO: override existing?
-    PersistenceManager.getInstance().persist(user);
+    // try to find the user
+    var ref = PersistenceManager.getInstance().getById(User.class, user.getId());
+
+    if (ref == null) {
+      service.createUser(user);
+    }
 
     // issue token for our API
     var payload = new LoginResponse();

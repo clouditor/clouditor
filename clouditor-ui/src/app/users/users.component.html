@@ -34,6 +34,20 @@
   </ol>
 </nav>
 <h3>Users</h3>
-<p *ngFor="let user of users">
-  {{ user | json }}
-</p>
+<table class="table">
+  <thead>
+    <th scope="row">Username</th>
+    <th scope="row">Roles</th>
+    <th></th>
+  </thead>
+  <tbody>
+    <tr *ngFor="let user of users">
+      <td>{{ user.username }}</td>
+      <td>{{ user.roles | json }} </td>
+      <td><button [routerLink]="['/users/', user._id]" class="btn btn-secondary"><i class="fas fa-edit"></i></button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<button [routerLink]="['/users/', 'new']" class="btn btn-secondary"><i class="fas fa-edit"></i> New User</button>

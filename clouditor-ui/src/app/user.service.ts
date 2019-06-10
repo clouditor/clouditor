@@ -47,4 +47,18 @@ export class UserService {
       return users.map(user => Object.assign(new User(), user));
     }));
   }
+
+  getUser(id: string): Observable<User> {
+    return this.http.get<User>(this.config.get().apiUrl + '/users/' + id).pipe(map(user => {
+      return Object.assign(new User(), user);
+    }));
+  }
+
+  updateUser(id: string, user: User): Observable<any> {
+    return this.http.put(this.config.get().apiUrl + '/users/' + id, user);
+  }
+
+  createUser(user: User): Observable<any> {
+    return this.http.post(this.config.get().apiUrl + '/users/', user);
+  }
 }
