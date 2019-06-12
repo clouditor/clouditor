@@ -40,6 +40,7 @@ import io.clouditor.assurance.CertificationService;
 import io.clouditor.assurance.Rule;
 import io.clouditor.assurance.RuleService;
 import io.clouditor.auth.LoginRequest;
+import io.clouditor.auth.User;
 import io.clouditor.discovery.Asset;
 import io.clouditor.discovery.AssetProperties;
 import io.clouditor.discovery.AssetService;
@@ -240,5 +241,75 @@ class EngineAPIResourcesTest extends JerseyTest {
     var rule = rules.get("Asset").toArray()[0];
 
     assertNotNull(rule);
+  }
+
+  @Test
+  void testUsers() throws IOException {
+    var users =
+        target("users")
+            .request()
+            .header(
+                AuthenticationFilter.HEADER_AUTHORIZATION,
+                AuthenticationFilter.createAuthorization(this.token))
+            .get(new GenericType<List<User>>() {});
+
+    assertNotNull(users);
+
+    assertFalse(users.isEmpty());
+
+    // store number of users (we need it later)
+    var numberOfUsers = users.size();
+
+    // add a user
+    var guest = new User();
+    guest.setPassword("test");
+    guest.setUsername("test");
+
+    var resp =
+        target("users")
+            .request()
+            .header(
+                AuthenticationFilter.HEADER_AUTHORIZATION,
+                AuthenticationFilter.createAuthorization(this.token))
+            .post(Entity.json(guest));
+
+    assertEquals(200, resp.getStatus());
+
+    // retrieve user
+
+    var guest2 =
+        target("users")
+            .path("test")
+            .request()
+            .header(
+                AuthenticationFilter.HEADER_AUTHORIZATION,
+                AuthenticationFilter.createAuthorization(this.token))
+            .get(User.class);
+
+    assertNotNull(guest2);
+
+    assertEquals(guest, guest2);
+
+    // delete user again
+    target("users")
+        .path("test")
+        .request()
+        .header(
+            AuthenticationFilter.HEADER_AUTHORIZATION,
+            AuthenticationFilter.createAuthorization(this.token))
+        .delete();
+
+    // number of users should be back to beginning
+    var users2 =
+        target("users")
+            .request()
+            .header(
+                AuthenticationFilter.HEADER_AUTHORIZATION,
+                AuthenticationFilter.createAuthorization(this.token))
+            .get(new GenericType<List<User>>() {});
+
+    assertNotNull(users2);
+
+    assertEquals(numberOfUsers, users2.size());
   }
 }
