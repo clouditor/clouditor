@@ -88,16 +88,11 @@ public class Engine extends Component {
   @Option(name = "--oauth-client-secret")
   private String oAuthClientSecret;
 
-  @Option(name = "--oauth-uri")
-  private String oAuthUri;
+  @Option(name = "--oauth-token-url")
+  private String oAuthTokenUrl;
 
-  /**
-   * If specified, this OAuth URI is used for the OAuth client within the Engine. The normal URI is
-   * used for the user to redirect. This is especially useful for Self-Sovereign Identities (SSI)
-   * that use special name systems.
-   */
-  @Option(name = "--oauth-uri-for-client")
-  private String oAuthUriForClient;
+  @Option(name = "--oauth-auth-url")
+  private String oAuthAuthUrl;
 
   @Option(name = "--oauth-jwt-secret")
   private String oAuthJwtSecret;
@@ -129,16 +124,16 @@ public class Engine extends Component {
     return oAuthClientSecret;
   }
 
-  public String getOAuthUri() {
-    return oAuthUri;
+  public String getOAuthTokenUrl() {
+    return oAuthTokenUrl;
   }
 
   public String getOAuthJwtSecret() {
     return oAuthJwtSecret;
   }
 
-  public String getOAuthUriForClient() {
-    return this.oAuthUriForClient;
+  public String getOAuthAuthUrl() {
+    return this.oAuthAuthUrl;
   }
 
   /**

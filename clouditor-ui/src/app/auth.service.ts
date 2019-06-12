@@ -38,9 +38,9 @@ const helper = new JwtHelperService();
 
 @Injectable()
 export class AuthService {
+
   constructor(private router: Router, private route: ActivatedRoute) {
     const params = new HttpParams({ fromString: window.location.hash.replace('#?', '') });
-
 
     const token = params.get('token');
 
@@ -56,6 +56,10 @@ export class AuthService {
 
   getToken() {
     return localStorage.getItem(TOKEN_NAME);
+  }
+
+  getUser() {
+    return helper.decodeToken(this.getToken()).sub;
   }
 
   logout() {

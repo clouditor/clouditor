@@ -34,17 +34,25 @@
   </ol>
 </nav>
 <h3>Users</h3>
-<table class="table">
-  <thead>
+The following users are defined to have access to Clouditor. Three pre-defined roles (<b>guest</b>, <b>user</b> and
+<b>admin</b>) can be used for fine-grained access control.
+
+<table class="table table-striped mt-2">
+  <thead class="thead-light">
     <th scope="row">Username</th>
     <th scope="row">Roles</th>
     <th></th>
   </thead>
   <tbody>
     <tr *ngFor="let user of users">
-      <td>{{ user.username }}</td>
-      <td>{{ user.roles | json }} </td>
-      <td><button [routerLink]="['/users/', user._id]" class="btn btn-secondary"><i class="fas fa-edit"></i></button>
+      <td class="align-middle">{{ user.username }}</td>
+      <td class="align-middle">{{ user.roles.join(', ') }} </td>
+      <td class="align-middle">
+        <button [routerLink]="['/users/', user._id]" class="btn btn-secondary mr-2"><i class="fas fa-edit"></i>
+        </button>
+        <button (click)="onDeleteUser(user._id)" class="btn btn-secondary" [disabled]="auth.getUser() === user._id"><i
+            class="fas fa-trash"></i>
+        </button>
       </td>
     </tr>
   </tbody>

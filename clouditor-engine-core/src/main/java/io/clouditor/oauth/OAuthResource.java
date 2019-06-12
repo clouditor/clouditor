@@ -42,7 +42,8 @@ public class OAuthResource {
     profile.setEnabled(
         this.engine.getOAuthClientId() != null
             && this.engine.getOAuthClientSecret() != null
-            && this.engine.getOAuthUri() != null
+            && this.engine.getOAuthAuthUrl() != null
+            && this.engine.getOAuthTokenUrl() != null
             && this.engine.getOAuthJwtSecret() != null);
 
     return profile;
@@ -85,13 +86,12 @@ public class OAuthResource {
   }
 
   private TokenResponse retrieveAccessToken(String code) {
-    var baseUri = this.getOAuthUriForClient();
+    var tokenUrl = this.engine.getOAuthTokenUrl();
 
-    LOGGER.info("Trying to retrieve access token from {}", baseUri);
+    LOGGER.info("Trying to retrieve access token from {}", tokenUrl);
 
     var uri =
-        UriBuilder.fromUri(baseUri)
-            .path("token")
+        UriBuilder.fromUri(tokenUrl)
             .queryParam("grant_type", "authorization_code")
             .queryParam("code", code)
             .build();
@@ -129,8 +129,7 @@ public class OAuthResource {
     var nonce = 25;
 
     var uri =
-        UriBuilder.fromUri(this.engine.getOAuthUri())
-            .path("authorize")
+        UriBuilder.fromUri(this.engine.getOAuthAuthUrl())
             .queryParam("redirect_uri", this.engine.getBaseUrl() + "/oauth2/callback")
             .queryParam("client_id", this.engine.getOAuthClientId())
             .queryParam("response_type", "code")
@@ -139,12 +138,6 @@ public class OAuthResource {
             .build();
 
     return Response.temporaryRedirect(uri).build();
-  }
-
-  private String getOAuthUriForClient() {
-    return this.engine.getOAuthUriForClient() != null
-        ? this.engine.getOAuthUriForClient()
-        : this.engine.getOAuthUri();
   }
 
   @GET

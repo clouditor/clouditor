@@ -3,7 +3,7 @@
 Checks if Azure resources are only deployed within allowed regions.
 
 ```ccl
-AzureResource has westeurope within "westeurope", "northeurope"
+AzureResource has location within "westeurope", "northeurope"
 ```
 
 # Controls

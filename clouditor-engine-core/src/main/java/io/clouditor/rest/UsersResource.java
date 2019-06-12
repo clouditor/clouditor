@@ -8,6 +8,7 @@ import java.util.List;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
@@ -54,6 +55,13 @@ public class UsersResource {
   @Path("{id}")
   public void updateUser(@PathParam("id") String id, User user) {
     this.service.updateUser(id, user);
+  }
+
+  @DELETE
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Path("{id}")
+  public void deleteUser(@PathParam("id") String id) {
+    this.service.deleteUser(id);
   }
 
   @POST

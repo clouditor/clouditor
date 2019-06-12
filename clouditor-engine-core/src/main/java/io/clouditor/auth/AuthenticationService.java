@@ -183,4 +183,9 @@ public class AuthenticationService {
     // store it
     PersistenceManager.getInstance().persist(user);
   }
+
+  public void deleteUser(String id) {
+    // delete it from database
+    PersistenceManager.getInstance().delete(User.class, id);
+  }
 }

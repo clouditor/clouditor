@@ -61,4 +61,8 @@ export class UserService {
   createUser(user: User): Observable<any> {
     return this.http.post(this.config.get().apiUrl + '/users/', user);
   }
+
+  deleteUser(id: string): Observable<any> {
+    return this.http.delete(this.config.get().apiUrl + '/users/' + id);
+  }
 }

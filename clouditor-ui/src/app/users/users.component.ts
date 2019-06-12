@@ -30,6 +30,7 @@
 import { Component, OnInit } from '@angular/core';
 import { UserService } from '../user.service';
 import { User } from '../user';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'clouditor-users',
@@ -40,10 +41,15 @@ export class UsersComponent implements OnInit {
 
   users: User[];
 
-  constructor(private userService: UserService) { }
+  constructor(public auth: AuthService, private userService: UserService) { }
 
   ngOnInit() {
     this.userService.getUsers().subscribe(users => this.users = users);
   }
 
+  onDeleteUser(id: string) {
+    if (confirm('test')) {
+      this.userService.deleteUser(id).subscribe(_ => _);
+    }
+  }
 }
