@@ -29,7 +29,8 @@
 
 package io.clouditor.rest;
 
-import io.clouditor.auth.UserContext;
+import static io.clouditor.auth.AuthenticationService.ROLE_ADMIN;
+
 import io.clouditor.credentials.AccountService;
 import io.clouditor.credentials.CloudAccount;
 import java.io.IOException;
@@ -47,7 +48,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 @Path("accounts")
-@RolesAllowed(UserContext.ROLE_USERS)
+@RolesAllowed(ROLE_ADMIN)
 public class AccountsResource {
 
   private AccountService service;

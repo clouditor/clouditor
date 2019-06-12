@@ -47,8 +47,9 @@ import { ErrorService } from '../error.service';
 })
 export class LoginComponent implements OnInit {
 
-  model = new User('', '');
+  model = new User();
   submitted = false;
+  oAuthEnabled = false;
 
   constructor(titleService: Title,
     private router: Router,
@@ -60,7 +61,13 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.http.get<any>(this.config.get().authUrl + '/profile').subscribe(profile => {
+      this.oAuthEnabled = profile.enabled;
+    });
+  }
 
+  getOAuthLogin() {
+    return this.config.get().authUrl + '/login';
   }
 
   onSubmit() {

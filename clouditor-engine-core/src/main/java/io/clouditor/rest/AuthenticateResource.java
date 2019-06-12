@@ -29,12 +29,9 @@
 
 package io.clouditor.rest;
 
-import io.clouditor.Component;
-import io.clouditor.auth.TokenResponse;
-import io.clouditor.auth.User;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiParam;
-import java.util.Objects;
+import io.clouditor.auth.AuthenticationService;
+import io.clouditor.auth.LoginRequest;
+import io.clouditor.auth.LoginResponse;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.NotAuthorizedException;
@@ -51,28 +48,26 @@ import javax.ws.rs.core.Response;
  * @author Christian Banse
  */
 @Path("authenticate")
-@Api
 public class AuthenticateResource {
 
-  private final Component component;
+  private final AuthenticationService service;
 
   @Inject
-  public AuthenticateResource(Component component) {
-    this.component = component;
+  public AuthenticateResource(AuthenticationService service) {
+    this.service = service;
   }
 
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response login(@ApiParam(value = "The user credentials", required = true) User user) {
-    TokenResponse payload = new TokenResponse();
+  public Response login(LoginRequest request) {
+    var payload = new LoginResponse();
 
-    if (!(Objects.equals(user.getUsername(), this.component.getAPIUsername())
-        && Objects.equals(user.getPassword(), this.component.getAPIPassword()))) {
+    if (!service.verifyLogin(request)) {
       throw new NotAuthorizedException("Invalid user and/or password");
     }
 
-    payload.setToken(user.createToken());
+    payload.setToken(service.createToken(request.getUsername()));
 
     // TODO: max age, etc.
     return Response.ok(payload).cookie(new NewCookie("authorization", payload.getToken())).build();

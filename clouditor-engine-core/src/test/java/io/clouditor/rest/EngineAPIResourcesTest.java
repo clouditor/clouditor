@@ -39,6 +39,7 @@ import io.clouditor.assurance.Certification;
 import io.clouditor.assurance.CertificationService;
 import io.clouditor.assurance.Rule;
 import io.clouditor.assurance.RuleService;
+import io.clouditor.auth.LoginRequest;
 import io.clouditor.auth.User;
 import io.clouditor.discovery.Asset;
 import io.clouditor.discovery.AssetProperties;
@@ -122,14 +123,18 @@ class EngineAPIResourcesTest extends JerseyTest {
 
   @Test
   void testAuthenticate() {
-    var fail = target("authenticate").request().post(Entity.json(new User("wrong", "password")));
+    var fail =
+        target("authenticate").request().post(Entity.json(new LoginRequest("wrong", "password")));
 
     assertEquals(401, fail.getStatus());
 
     var success =
         target("authenticate")
             .request()
-            .post(Entity.json(new User(engine.getAPIUsername(), engine.getAPIPassword())));
+            .post(
+                Entity.json(
+                    new LoginRequest(
+                        engine.getDefaultApiUsername(), engine.getDefaultApiPassword())));
 
     assertEquals(200, success.getStatus());
   }
@@ -236,5 +241,75 @@ class EngineAPIResourcesTest extends JerseyTest {
     var rule = rules.get("Asset").toArray()[0];
 
     assertNotNull(rule);
+  }
+
+  @Test
+  void testUsers() throws IOException {
+    var users =
+        target("users")
+            .request()
+            .header(
+                AuthenticationFilter.HEADER_AUTHORIZATION,
+                AuthenticationFilter.createAuthorization(this.token))
+            .get(new GenericType<List<User>>() {});
+
+    assertNotNull(users);
+
+    assertFalse(users.isEmpty());
+
+    // store number of users (we need it later)
+    var numberOfUsers = users.size();
+
+    // add a user
+    var guest = new User();
+    guest.setPassword("test");
+    guest.setUsername("test");
+
+    var resp =
+        target("users")
+            .request()
+            .header(
+                AuthenticationFilter.HEADER_AUTHORIZATION,
+                AuthenticationFilter.createAuthorization(this.token))
+            .post(Entity.json(guest));
+
+    assertEquals(200, resp.getStatus());
+
+    // retrieve user
+
+    var guest2 =
+        target("users")
+            .path("test")
+            .request()
+            .header(
+                AuthenticationFilter.HEADER_AUTHORIZATION,
+                AuthenticationFilter.createAuthorization(this.token))
+            .get(User.class);
+
+    assertNotNull(guest2);
+
+    assertEquals(guest, guest2);
+
+    // delete user again
+    target("users")
+        .path("test")
+        .request()
+        .header(
+            AuthenticationFilter.HEADER_AUTHORIZATION,
+            AuthenticationFilter.createAuthorization(this.token))
+        .delete();
+
+    // number of users should be back to beginning
+    var users2 =
+        target("users")
+            .request()
+            .header(
+                AuthenticationFilter.HEADER_AUTHORIZATION,
+                AuthenticationFilter.createAuthorization(this.token))
+            .get(new GenericType<List<User>>() {});
+
+    assertNotNull(users2);
+
+    assertEquals(numberOfUsers, users2.size());
   }
 }

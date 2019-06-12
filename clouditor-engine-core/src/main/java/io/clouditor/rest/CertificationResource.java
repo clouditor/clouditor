@@ -29,15 +29,14 @@
 
 package io.clouditor.rest;
 
+import static io.clouditor.auth.AuthenticationService.ROLE_USER;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.clouditor.Engine;
 import io.clouditor.assurance.Certification;
 import io.clouditor.assurance.CertificationImporter;
 import io.clouditor.assurance.CertificationService;
 import io.clouditor.assurance.Control;
-import io.clouditor.auth.UserContext;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.Authorization;
 import java.util.Map;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
@@ -57,8 +56,7 @@ import org.slf4j.LoggerFactory;
  * @author Christian Banse
  */
 @Path("certification")
-@Api(authorizations = @Authorization(value = "token"))
-@RolesAllowed(UserContext.ROLE_USERS)
+@RolesAllowed(ROLE_USER)
 public class CertificationResource {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CertificationResource.class);

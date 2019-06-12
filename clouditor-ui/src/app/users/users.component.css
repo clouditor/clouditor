@@ -26,36 +26,3 @@
  * You should have received a copy of the GNU General Public License
  * long with Clouditor Community Edition.  If not, see <https://www.gnu.org/licenses/>
  */
-
-package io.clouditor.rest;
-
-import javax.inject.Inject;
-import javax.ws.rs.core.Feature;
-import javax.ws.rs.core.FeatureContext;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.extras.ExtrasUtilities;
-
-public class InjectionBridge implements Feature {
-
-  private static ServiceLocator COMPONENT_SERVICE_LOCATOR;
-
-  private final ServiceLocator servletServiceLocator;
-
-  @Inject
-  private InjectionBridge(ServiceLocator serviceLocator) {
-    this.servletServiceLocator = serviceLocator;
-  }
-
-  @Override
-  public boolean configure(FeatureContext context) {
-    if (COMPONENT_SERVICE_LOCATOR != null) {
-      ExtrasUtilities.bridgeServiceLocator(this.servletServiceLocator, COMPONENT_SERVICE_LOCATOR);
-    }
-
-    return true;
-  }
-
-  static void setComponentServiceLocator(ServiceLocator componentServiceLocator) {
-    InjectionBridge.COMPONENT_SERVICE_LOCATOR = componentServiceLocator;
-  }
-}

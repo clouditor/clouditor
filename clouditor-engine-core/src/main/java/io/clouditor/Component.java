@@ -29,8 +29,8 @@
 
 package io.clouditor;
 
-import io.clouditor.auth.TokenResponse;
-import io.clouditor.auth.User;
+import io.clouditor.auth.LoginRequest;
+import io.clouditor.auth.LoginResponse;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -62,6 +62,7 @@ public abstract class Component {
   private static final boolean DEFAULT_IS_DAEMON = true;
   private static final String DEFAULT_API_USERNAME = "clouditor";
   private static final String DEFAULT_API_PW = "clouditor";
+  private static final String DEFAULT_API_SECRET = "changeme";
   private static final String DEFAULT_API_ALLOWED_ORIGIN = "*";
 
   /** Specifies whether the component is running as a daemon. */
@@ -72,12 +73,16 @@ public abstract class Component {
   boolean isDaemon = DEFAULT_IS_DAEMON;
 
   /** Specifies the API username. */
-  @Option(name = "--api-user", usage = "specifies the API username")
-  String apiUsername = DEFAULT_API_USERNAME;
+  @Option(name = "--api-default-user", usage = "specifies the API username")
+  String defaultApiUsername = DEFAULT_API_USERNAME;
 
   /** Specifies the API password. */
-  @Option(name = "--api-password", usage = "specifies the API password")
-  String apiPw = DEFAULT_API_PW;
+  @Option(name = "--api-default-password", usage = "specifies the API password")
+  String defaultApiPw = DEFAULT_API_PW;
+
+  /** Specifies the secret used by API tokens. */
+  @Option(name = "--api-secret", usage = "specifies the secret used by API tokens")
+  String apiSecret = DEFAULT_API_SECRET;
 
   /** Specifies the allowed origin for API requests. */
   @Option(name = "--api-allowed-origin", usage = "specifies the allowed origin for API requests")
@@ -85,9 +90,12 @@ public abstract class Component {
 
   // TODO: somehow use the one that is already there in the api
   /** The service locator from HK2 */
-  private ServiceLocator locator = ServiceLocatorUtilities.createAndPopulateServiceLocator();
+  private ServiceLocator locator;
 
   public Component() {
+    this.locator = ServiceLocatorUtilities.createAndPopulateServiceLocator();
+    ServiceLocatorUtilities.addOneConstant(this.locator, this);
+
     // Optionally remove existing handlers attached to j.u.l root logger
     SLF4JBridgeHandler.removeHandlersForRootLogger();
 
@@ -95,12 +103,12 @@ public abstract class Component {
     SLF4JBridgeHandler.install();
   }
 
-  public String getAPIUsername() {
-    return this.apiUsername;
+  public String getDefaultApiUsername() {
+    return this.defaultApiUsername;
   }
 
-  public String getAPIPassword() {
-    return this.apiPw;
+  public String getDefaultApiPassword() {
+    return this.defaultApiPw;
   }
 
   public String getAPIAllowedOrigin() {
@@ -145,7 +153,7 @@ public abstract class Component {
         target
             .path("authenticate")
             .request()
-            .post(Entity.json(new User(username, password)), TokenResponse.class);
+            .post(Entity.json(new LoginRequest(username, password)), LoginResponse.class);
 
     if (response != null) {
       return response.getToken();
@@ -160,5 +168,9 @@ public abstract class Component {
 
   public ServiceLocator getServiceLocator() {
     return this.locator;
+  }
+
+  public String getApiSecret() {
+    return this.apiSecret;
   }
 }

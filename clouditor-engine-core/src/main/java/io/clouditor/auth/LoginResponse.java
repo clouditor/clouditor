@@ -27,64 +27,40 @@
  * long with Clouditor Community Edition.  If not, see <https://www.gnu.org/licenses/>
  */
 
-package io.clouditor.rest;
+package io.clouditor.auth;
 
-import static io.clouditor.auth.AuthenticationService.ROLE_USER;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import io.clouditor.assurance.Rule;
-import io.clouditor.assurance.RuleEvaluation;
-import io.clouditor.assurance.RuleService;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import javax.annotation.security.RolesAllowed;
-import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+public class LoginResponse {
 
-@Path("rules")
-@RolesAllowed(ROLE_USER)
-public class RulesResource {
+  private String token;
 
-  private final RuleService ruleService;
-
-  @Inject
-  public RulesResource(RuleService ruleService) {
-    this.ruleService = ruleService;
-  }
-
-  @Produces(MediaType.APPLICATION_JSON)
-  @GET
-  public Map<String, Set<Rule>> getRules() {
-    return this.ruleService.getRules();
-  }
-
-  @GET
-  @Path("assets/{assetType}")
-  public Set<Rule> getRules(@PathParam("assetType") String assetType) {
-    var rules = this.ruleService.getRules().get(assetType);
-
-    if (rules == null) {
-      rules = new HashSet<>();
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
     }
 
-    return rules;
-  }
-
-  @Produces(MediaType.APPLICATION_JSON)
-  @GET
-  @Path("{ruleId}")
-  public RuleEvaluation get(@PathParam("ruleId") String ruleId) {
-    var rule = this.ruleService.getWithId(ruleId);
-
-    if (rule == null) {
-      throw new NotFoundException();
+    if (o == null || getClass() != o.getClass()) {
+      return false;
     }
 
-    return this.ruleService.getStatus(rule);
+    LoginResponse that = (LoginResponse) o;
+
+    return new EqualsBuilder().append(token, that.token).isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37).append(token).toHashCode();
+  }
+
+  public String getToken() {
+    return token;
+  }
+
+  public void setToken(String token) {
+    this.token = token;
   }
 }

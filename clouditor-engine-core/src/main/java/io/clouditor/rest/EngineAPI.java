@@ -30,15 +30,6 @@
 package io.clouditor.rest;
 
 import io.clouditor.Engine;
-import io.clouditor.auth.UserContext;
-import io.swagger.annotations.ApiKeyAuthDefinition;
-import io.swagger.annotations.ApiKeyAuthDefinition.ApiKeyLocation;
-import io.swagger.annotations.SecurityDefinition;
-import io.swagger.annotations.SwaggerDefinition;
-import io.swagger.jaxrs.config.BeanConfig;
-import io.swagger.jaxrs.listing.ApiListingResource;
-import io.swagger.jaxrs.listing.SwaggerSerializers;
-import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.ApplicationPath;
 
 /**
@@ -47,15 +38,6 @@ import javax.ws.rs.ApplicationPath;
  * @author Banse, Christian
  */
 @ApplicationPath(EngineAPI.CONTEXT_PATH)
-@RolesAllowed(UserContext.ROLE_USERS)
-@SwaggerDefinition(
-    securityDefinition =
-        @SecurityDefinition(
-            apiKeyAuthDefintions =
-                @ApiKeyAuthDefinition(
-                    key = "token",
-                    name = "Authorization",
-                    in = ApiKeyLocation.HEADER)))
 public class EngineAPI extends AbstractAPI<Engine> {
 
   static final String CONTEXT_PATH = "engine";
@@ -67,16 +49,5 @@ public class EngineAPI extends AbstractAPI<Engine> {
    */
   public EngineAPI(Engine engine) {
     super(engine, engine.getAPIPort(), CONTEXT_PATH);
-
-    var beanConfig = new BeanConfig();
-    beanConfig.setVersion("1.0.0");
-    beanConfig.setSchemes(new String[] {"http"});
-    beanConfig.setHost("clouditor.io");
-    beanConfig.setBasePath(EngineAPI.CONTEXT_PATH);
-    beanConfig.setResourcePackage(EngineAPI.class.getPackage().getName());
-    beanConfig.setScan(true);
-
-    this.register(ApiListingResource.class);
-    this.register(SwaggerSerializers.class);
   }
 }

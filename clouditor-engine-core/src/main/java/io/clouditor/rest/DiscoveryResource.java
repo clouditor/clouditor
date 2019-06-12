@@ -29,11 +29,10 @@
 
 package io.clouditor.rest;
 
-import io.clouditor.auth.UserContext;
+import static io.clouditor.auth.AuthenticationService.ROLE_USER;
+
 import io.clouditor.discovery.DiscoveryService;
 import io.clouditor.discovery.Scan;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.Authorization;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,8 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Path("discovery")
-@Api(authorizations = @Authorization(value = "BearerAuth"))
-@RolesAllowed(UserContext.ROLE_USERS)
+@RolesAllowed(ROLE_USER)
 public class DiscoveryResource {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DiscoveryResource.class);

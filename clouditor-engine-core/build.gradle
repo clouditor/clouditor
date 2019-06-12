@@ -65,7 +65,9 @@ dependencies {
     api "org.glassfish.jersey.containers:jersey-container-grizzly2-servlet:${libraryVersions.jersey}"
     api "org.glassfish.jersey.media:jersey-media-sse:${libraryVersions.jersey}"
     api "org.glassfish.jersey.media:jersey-media-json-jackson:${libraryVersions.jersey}"
-    api "io.swagger:swagger-jersey2-jaxrs:${libraryVersions.swaggerJersey2}"
+
+    implementation group: 'com.kosprov.jargon2', name: 'jargon2-api', version: '1.1.1'
+    implementation group: 'com.kosprov.jargon2', name: 'jargon2-native-ri-backend', version: '1.1.1'
 
     implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '3.17'
 

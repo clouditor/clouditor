@@ -33,6 +33,7 @@ import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
 import io.clouditor.assurance.CertificationService;
 import io.clouditor.assurance.RuleService;
+import io.clouditor.auth.AuthenticationService;
 import io.clouditor.discovery.DiscoveryService;
 import io.clouditor.rest.EngineAPI;
 import io.clouditor.util.FileSystemManager;
@@ -78,6 +79,24 @@ public class Engine extends Component {
       usage = "specifies port for REST API")
   private int apiPort = DEFAULT_API_PORT;
 
+  @Option(name = "--server-base-url")
+  private String baseUrl = "http://localhost:" + DEFAULT_API_PORT;
+
+  @Option(name = "--oauth-client-id")
+  private String oAuthClientId;
+
+  @Option(name = "--oauth-client-secret")
+  private String oAuthClientSecret;
+
+  @Option(name = "--oauth-token-url")
+  private String oAuthTokenUrl;
+
+  @Option(name = "--oauth-auth-url")
+  private String oAuthAuthUrl;
+
+  @Option(name = "--oauth-jwt-secret")
+  private String oAuthJwtSecret;
+
   /** The web api. */
   private EngineAPI api;
 
@@ -97,28 +116,24 @@ public class Engine extends Component {
     this.dbInMemory = dbInMemory;
   }
 
-  public String getDbHost() {
-    return dbHost;
+  public String getOAuthClientId() {
+    return oAuthClientId;
   }
 
-  public void setDbHost(String dbHost) {
-    this.dbHost = dbHost;
+  public String getOAuthClientSecret() {
+    return oAuthClientSecret;
   }
 
-  public String getDbName() {
-    return dbName;
+  public String getOAuthTokenUrl() {
+    return oAuthTokenUrl;
   }
 
-  public void setDbName(String dbName) {
-    this.dbName = dbName;
+  public String getOAuthJwtSecret() {
+    return oAuthJwtSecret;
   }
 
-  public int getDbPort() {
-    return dbPort;
-  }
-
-  public void setDbPort(int dbPort) {
-    this.dbPort = dbPort;
+  public String getOAuthAuthUrl() {
+    return this.oAuthAuthUrl;
   }
 
   /**
@@ -133,6 +148,9 @@ public class Engine extends Component {
   /** Initializes the Clouditor Engine, i.e. loads all configuration files. */
   @Override
   public void init() {
+    // init user service
+    this.getService(AuthenticationService.class).init();
+
     // load the certificate importers
     this.getService(CertificationService.class).loadImporters();
 
@@ -233,5 +251,9 @@ public class Engine extends Component {
     if (this.api != null) {
       this.api.stop();
     }
+  }
+
+  public String getBaseUrl() {
+    return baseUrl;
   }
 }

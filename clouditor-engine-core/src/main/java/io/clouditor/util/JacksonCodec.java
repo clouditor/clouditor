@@ -32,6 +32,7 @@ package io.clouditor.util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoException;
+import io.clouditor.rest.ObjectMapperResolver.DatabaseOnly;
 import java.io.IOException;
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
@@ -57,7 +58,10 @@ public class JacksonCodec<T> implements Codec<T> {
   public T decode(BsonReader reader, DecoderContext decoderContext) {
     RawBsonDocument doc = codec.decode(reader, decoderContext);
     try {
-      return mapper.readValue(doc.getByteBuffer().array(), this.clazz);
+      return mapper
+          .readerWithView(DatabaseOnly.class)
+          .forType(this.clazz)
+          .readValue(doc.getByteBuffer().array());
     } catch (IOException e) {
       throw new MongoException(e.getMessage());
     }
@@ -66,7 +70,7 @@ public class JacksonCodec<T> implements Codec<T> {
   @Override
   public void encode(BsonWriter writer, T value, EncoderContext encoderContext) {
     try {
-      byte[] data = mapper.writeValueAsBytes(value);
+      byte[] data = mapper.writerWithView(DatabaseOnly.class).writeValueAsBytes(value);
       codec.encode(writer, new RawBsonDocument(data), encoderContext);
     } catch (JsonProcessingException e) {
       throw new MongoException(e.getMessage());

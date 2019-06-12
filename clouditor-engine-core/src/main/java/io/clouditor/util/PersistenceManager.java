@@ -80,6 +80,7 @@ public class PersistenceManager {
 
     var mapper = new ObjectMapper(factory);
     ObjectMapperResolver.configureObjectMapper(mapper);
+
     mapper.registerModule(module);
 
     this.codecRegistry =

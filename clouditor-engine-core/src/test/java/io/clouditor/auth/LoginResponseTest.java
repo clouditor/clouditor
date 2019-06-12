@@ -29,79 +29,29 @@
 
 package io.clouditor.auth;
 
-import static io.clouditor.auth.AuthenticationService.ROLE_ADMIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.clouditor.AbstractEngineUnitTest;
-import io.clouditor.util.PersistenceManager;
-import java.util.List;
-import javax.ws.rs.NotAuthorizedException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class UserTest extends AbstractEngineUnitTest {
-
-  @Override
-  @BeforeEach
-  protected void setUp() {
-    super.setUp();
-
-    this.engine.initDB();
-  }
+class LoginResponseTest extends AbstractEngineUnitTest {
 
   @Test
   void testEquals() {
-    var user = new User();
-    user.setUsername("clouditor");
+    var tokenResponse = new LoginResponse();
+    tokenResponse.setToken("sometoken");
 
     // compare with self
-    assertEquals(user, user);
+    assertEquals(tokenResponse, tokenResponse);
 
     // compare with null
-    assertNotEquals(user, null);
+    assertNotEquals(tokenResponse, null);
 
     // compare with other
-    assertNotEquals(user, new User());
+    assertNotEquals(tokenResponse, new LoginResponse());
 
     // compare with wrong class
-    assertNotEquals(user, new Object());
-  }
-
-  @Test
-  void testVerifyAuthentication() {
-    var service = this.engine.getService(AuthenticationService.class);
-
-    var user = new User("user", "mypass");
-    user.setRoles(List.of(ROLE_ADMIN));
-
-    PersistenceManager.getInstance().persist(user);
-
-    var token = service.createToken(user.getUsername());
-
-    assertNotNull(token);
-
-    var decodedUser = service.verifyToken(token);
-
-    assertEquals(user, decodedUser);
-
-    var ctx = new UserContext(decodedUser, false);
-
-    assertEquals(user, ctx.getUserPrincipal());
-
-    assertTrue(ctx.isUserInRole(ROLE_ADMIN));
-  }
-
-  @Test
-  void testUserNotFound() {
-    var service = this.engine.getService(AuthenticationService.class);
-
-    var token = service.createToken("maybe-existed-before-but-not-anymore");
-
-    // the token itself is valid, but verification should fail since the user is not in the DB
-    assertThrows(NotAuthorizedException.class, () -> service.verifyToken(token));
+    assertNotEquals(tokenResponse, new Object());
   }
 }

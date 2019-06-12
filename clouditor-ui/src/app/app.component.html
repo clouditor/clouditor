@@ -31,7 +31,6 @@
   <a class="navbar-brand" href="#">
     <img class="clouditor-avatar" src="assets/clouditor-avatar.png" />
   </a>
-  <!-- TODO: use ngb-collapse -->
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown"
     aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation"
     (click)="navbarCollapsed = !navbarCollapsed">
@@ -57,11 +56,17 @@
         <a class="nav-link" routerLink="/compliance">Compliance</a>
       </li>
       <li class="nav-item" [routerLinkActive]="['active']">
+        <a class="nav-link" routerLink="/users">Users</a>
+      </li>
+      <li class="nav-item" [routerLinkActive]="['active']">
         <a class="nav-link" routerLink="/about">About</a>
       </li>
     </ul>
   </div>
   <ul class="navbar-nav desktop-logout-button">
+    <li class="nav-item">
+      <a class="nav-link" href="#">{{ auth.getUser() }}</a>
+    </li>
     <li class="nav-item">
       <a class="nav-link" (click)="logout()" href="#">Logout</a>
     </li>

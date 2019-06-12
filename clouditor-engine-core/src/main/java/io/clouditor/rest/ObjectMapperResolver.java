@@ -45,6 +45,10 @@ import org.reflections.util.ConfigurationBuilder;
 /** A {@link ContextResolver} used to resolve {@link ObjectMapper} for Jersey server and clients. */
 public class ObjectMapperResolver implements ContextResolver<ObjectMapper> {
 
+  public static class DatabaseOnly {}
+
+  public static class ApiOnly {}
+
   private static final Reflections REFLECTIONS_SUBTYPE_SCANNER =
       new Reflections(
           new ConfigurationBuilder()
@@ -64,6 +68,7 @@ public class ObjectMapperResolver implements ContextResolver<ObjectMapper> {
     mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
     mapper.enable(SerializationFeature.INDENT_OUTPUT);
     mapper.setSerializationInclusion(Include.NON_NULL);
+    mapper.setConfig(mapper.getSerializationConfig().withView(ApiOnly.class));
 
     // add all sub types of CloudAccount
     for (var type : REFLECTIONS_SUBTYPE_SCANNER.getSubTypesOf(CloudAccount.class)) {

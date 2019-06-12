@@ -27,40 +27,42 @@
  * long with Clouditor Community Edition.  If not, see <https://www.gnu.org/licenses/>
  */
 
-package io.clouditor.auth;
+import { Injectable } from '@angular/core';
+import { User } from './user';
+import { Observable } from 'rxjs';
+import { ConfigService } from './config.service';
+import { HttpClient } from '@angular/common/http';
+import { map } from 'rxjs/operators';
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
+@Injectable({
+  providedIn: 'root'
+})
+export class UserService {
 
-public class TokenResponse {
+  constructor(private http: HttpClient,
+    private config: ConfigService) { }
 
-  private String token;
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    TokenResponse that = (TokenResponse) o;
-
-    return new EqualsBuilder().append(token, that.token).isEquals();
+  getUsers(): Observable<User[]> {
+    return this.http.get<any>(this.config.get().apiUrl + '/users').pipe(map(users => {
+      return users.map(user => Object.assign(new User(), user));
+    }));
   }
 
-  @Override
-  public int hashCode() {
-    return new HashCodeBuilder(17, 37).append(token).toHashCode();
+  getUser(id: string): Observable<User> {
+    return this.http.get<User>(this.config.get().apiUrl + '/users/' + id).pipe(map(user => {
+      return Object.assign(new User(), user);
+    }));
   }
 
-  public String getToken() {
-    return token;
+  updateUser(id: string, user: User): Observable<any> {
+    return this.http.put(this.config.get().apiUrl + '/users/' + id, user);
   }
 
-  public void setToken(String token) {
-    this.token = token;
+  createUser(user: User): Observable<any> {
+    return this.http.post(this.config.get().apiUrl + '/users/', user);
+  }
+
+  deleteUser(id: string): Observable<any> {
+    return this.http.delete(this.config.get().apiUrl + '/users/' + id);
   }
 }

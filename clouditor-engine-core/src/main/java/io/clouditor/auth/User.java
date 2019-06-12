@@ -29,61 +29,39 @@
 
 package io.clouditor.auth;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.DecodedJWT;
+import static io.clouditor.auth.AuthenticationService.ROLE_GUEST;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonView;
+import io.clouditor.rest.ObjectMapperResolver.DatabaseOnly;
+import io.clouditor.util.PersistentObject;
 import java.security.Principal;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import javax.ws.rs.NotAuthorizedException;
+import java.util.List;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class User implements Principal {
+public class User implements Principal, PersistentObject<String> {
 
   private String username;
+
+  @JsonView(DatabaseOnly.class)
   private String password;
 
+  @JsonProperty private boolean shadow = false;
+
+  /** The roles of this users. Defaults to {@link AuthenticationService#ROLE_GUEST}. */
+  @JsonProperty private List<String> roles = List.of(ROLE_GUEST);
+
   public User() {}
+
+  public User(String username) {
+    this.username = username;
+  }
 
   public User(String username, String password) {
     this.username = username;
     this.password = password;
-  }
-
-  public static User verifyAuthentication(String username, String password, String authorization) {
-    if (authorization == null || !authorization.startsWith("Bearer")) {
-      throw new NotAuthorizedException("No token was specified");
-    }
-
-    String[] rr = authorization.split(" ");
-
-    if (rr.length != 2) {
-      throw new NotAuthorizedException("Invalid authentication format");
-    }
-
-    String token = rr[1];
-
-    try {
-      // for now we use the api password as JWT secret. in the future we need to see if this makes
-      // sense
-      Algorithm algorithm = Algorithm.HMAC256(password);
-
-      JWTVerifier verifier =
-          JWT.require(algorithm)
-              .withSubject(username)
-              .withIssuer(UserContext.ISSUER)
-              .build(); // Reusable verifier instance
-      DecodedJWT jwt = verifier.verify(token);
-
-      return new User(jwt.getSubject(), password);
-    } catch (JWTVerificationException ex) {
-      throw new NotAuthorizedException("Invalid token", ex);
-    }
   }
 
   @Override
@@ -98,10 +76,8 @@ public class User implements Principal {
 
     User user = (User) o;
 
-    return new EqualsBuilder()
-        .append(username, user.username)
-        .append(password, user.password)
-        .isEquals();
+    // the comparison of a user is just done by the name and attributes, not the password!
+    return new EqualsBuilder().append(username, user.username).isEquals();
   }
 
   @Override
@@ -131,13 +107,24 @@ public class User implements Principal {
     return this.username;
   }
 
-  public String createToken() {
-    Algorithm algorithm = Algorithm.HMAC256(this.password);
+  @Override
+  public String getId() {
+    return this.username;
+  }
 
-    return JWT.create()
-        .withIssuer(UserContext.ISSUER)
-        .withSubject(this.getName())
-        .withExpiresAt(Date.from(Instant.now().plus(1, ChronoUnit.DAYS)))
-        .sign(algorithm);
+  public void setRoles(List<String> roles) {
+    this.roles = roles;
+  }
+
+  public boolean hasRole(String role) {
+    return this.roles.contains(role);
+  }
+
+  public boolean isShadow() {
+    return shadow;
+  }
+
+  public void setShadow(boolean shadow) {
+    this.shadow = shadow;
   }
 }

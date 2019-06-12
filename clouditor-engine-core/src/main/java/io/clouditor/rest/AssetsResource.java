@@ -29,12 +29,11 @@
 
 package io.clouditor.rest;
 
-import io.clouditor.auth.UserContext;
+import static io.clouditor.auth.AuthenticationService.ROLE_USER;
+
 import io.clouditor.discovery.Asset;
 import io.clouditor.discovery.AssetService;
 import io.clouditor.discovery.DiscoveryService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.Authorization;
 import java.util.Set;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
@@ -47,8 +46,7 @@ import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.SseFeature;
 
 @Path("assets")
-@Api(authorizations = @Authorization(value = "BearerAuth"))
-@RolesAllowed(UserContext.ROLE_USERS)
+@RolesAllowed(ROLE_USER)
 public class AssetsResource {
 
   @Inject private AssetService service;

@@ -27,33 +27,35 @@
   ~ long with Clouditor Community Edition.  If not, see <https://www.gnu.org/licenses/>
   -->
 
-<div class="row justify-content-center">
-  <img style="width: 340px; height: 147px" src="/assets/clouditor-big.png" />
-</div>
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a class="text-info" routerLink="/">Home</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Users</li>
+  </ol>
+</nav>
+<h3>Users</h3>
+The following users are defined to have access to Clouditor. Three pre-defined roles (<b>guest</b>, <b>user</b> and
+<b>admin</b>) can be used for fine-grained access control.
 
-<div class="clouditor-login-form row justify-content-center">
-  <div class="card clouditor-login-card">
-    <div class="card-header">Login to Clouditor</div>
-    <div class="card-body">
-      <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
-        <div class="form-group">
-          <input placeholder="Username" class="form-control" #username="ngModel" [(ngModel)]="model.username"
-            name="username" required>
-        </div>
+<table class="table table-striped mt-2">
+  <thead class="thead-light">
+    <th scope="row">Username</th>
+    <th scope="row">Roles</th>
+    <th></th>
+  </thead>
+  <tbody>
+    <tr *ngFor="let user of users">
+      <td class="align-middle">{{ user.username }}</td>
+      <td class="align-middle">{{ user.roles.join(', ') }} </td>
+      <td class="align-middle">
+        <button [routerLink]="['/users/', user._id]" class="btn btn-secondary mr-2"><i class="fas fa-edit"></i>
+        </button>
+        <button (click)="onDeleteUser(user._id)" class="btn btn-secondary" [disabled]="auth.getUser() === user._id"><i
+            class="fas fa-trash"></i>
+        </button>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
-        <div class="form-group">
-          <input placeholder="Password" type="password" class="form-control" id="password" #password="ngModel"
-            [(ngModel)]="model.password" name="password" required>
-        </div>
-
-        <button class="btn btn-secondary" [disabled]="!loginForm.form.valid">Login</button>
-        <!--<button (click)="onOpenID()" class="btn btn-secondary ml-2"><i class="fab fa-openid pr-2"></i>Login with
-          OpenID</button>-->
-      </form>
-      <ng-container *ngIf="oAuthEnabled">
-        <a [href]="getOAuthLogin()"><button class="btn btn-secondary mt-2"><i class="fab fa-openid pr-2"></i>Login
-            with
-            OpenID</button></a>
-      </ng-container>
-    </div>
-  </div>
+<button [routerLink]="['/users/', 'new']" class="btn btn-secondary"><i class="fas fa-edit"></i> New User</button>

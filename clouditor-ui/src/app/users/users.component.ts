@@ -27,31 +27,29 @@
  * long with Clouditor Community Edition.  If not, see <https://www.gnu.org/licenses/>
  */
 
-package io.clouditor.auth;
+import { Component, OnInit } from '@angular/core';
+import { UserService } from '../user.service';
+import { User } from '../user';
+import { AuthService } from '../auth.service';
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+@Component({
+  selector: 'clouditor-users',
+  templateUrl: './users.component.html',
+  styleUrls: ['./users.component.css']
+})
+export class UsersComponent implements OnInit {
 
-import io.clouditor.AbstractEngineUnitTest;
-import org.junit.jupiter.api.Test;
+  users: User[];
 
-class TokenResponseTest extends AbstractEngineUnitTest {
+  constructor(public auth: AuthService, private userService: UserService) { }
 
-  @Test
-  void testEquals() {
-    var tokenResponse = new TokenResponse();
-    tokenResponse.setToken("sometoken");
+  ngOnInit() {
+    this.userService.getUsers().subscribe(users => this.users = users);
+  }
 
-    // compare with self
-    assertEquals(tokenResponse, tokenResponse);
-
-    // compare with null
-    assertNotEquals(tokenResponse, null);
-
-    // compare with other
-    assertNotEquals(tokenResponse, new TokenResponse());
-
-    // compare with wrong class
-    assertNotEquals(tokenResponse, new Object());
+  onDeleteUser(id: string) {
+    if (confirm('test')) {
+      this.userService.deleteUser(id).subscribe(_ => _);
+    }
   }
 }

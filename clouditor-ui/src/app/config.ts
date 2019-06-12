@@ -28,5 +28,5 @@
  */
 
 export class Config {
-  constructor(public apiUrl: string) {}
+  constructor(public apiUrl: string, public authUrl: string) { }
 }
