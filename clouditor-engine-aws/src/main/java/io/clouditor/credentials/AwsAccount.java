@@ -77,6 +77,11 @@ public class AwsAccount extends CloudAccount<AwsCredentials>
     }
   }
 
+  /**
+   * Discovers an AWS account.
+   *
+   * @return null, if no account was discovered. Otherwise the discovered {@link AwsAccount}.
+   */
   public static AwsAccount discover() {
     try {
       var account = new AwsAccount();
@@ -121,5 +126,13 @@ public class AwsAccount extends CloudAccount<AwsCredentials>
 
   public String getRegion() {
     return this.region;
+  }
+
+  public void setAccessKeyId(String accessKeyId) {
+    this.accessKeyId = accessKeyId;
+  }
+
+  public void setSecretAccessKey(String secretAccessKey) {
+    this.secretAccessKey = secretAccessKey;
   }
 }

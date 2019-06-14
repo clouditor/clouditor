@@ -106,6 +106,18 @@ public class AzureAccount extends CloudAccount<AzureTokenCredentials> {
             "AZURE_AUTH_LOCATION", System.getProperty("user.home") + "/.azure/clouditor.azureauth");
   }
 
+  public void setClientId(String clientId) {
+    this.clientId = clientId;
+  }
+
+  public void setTenantId(String tenantId) {
+    this.tenantId = tenantId;
+  }
+
+  public void setClientSecret(String clientSecret) {
+    this.clientSecret = clientSecret;
+  }
+
   @JsonProperty
   public String getAuthFile() {
     return defaultAuthFile();
