@@ -41,6 +41,7 @@ sonarqube {
     properties {
         property 'sonar.branch.name', gitBranch()
         property 'sonar.branch.target', gitBranch() == 'master' ? null : 'master'
+        property 'sonar.coverage.jacoco.xmlReportPaths', "${buildDir}/reports/jacoco/jacocoRootReport/jacocoRootReport.xml"
     }
 }
 
@@ -55,12 +56,6 @@ allprojects {
 
     jacoco {
         toolVersion = "0.8.4"
-    }
-
-    jacocoTestReport {
-        reports {
-            xml.enabled true
-        }
     }
 
     task sourcesJar(type: Jar) {
@@ -85,7 +80,6 @@ allprojects {
 
     sonarqube {
         properties {
-            property 'sonar.coverage.jacoco.xmlReportPaths', "$buildDir/reports/jacoco/test/jacocoTestReport.xml"
             property 'sonar.jacoco.reportPath', null
             property 'sonar.jacoco.reportPaths', null
         }
@@ -156,6 +150,24 @@ dependencyUpdates.resolutionStrategy {
                 selection.reject('Release candidate')
             }
         }
+    }
+}
+
+task jacocoRootReport(type: JacocoReport) {
+    dependsOn(subprojects.test)
+
+    getAdditionalSourceDirs().setFrom(subprojects.sourceSets.main.allSource.srcDirs)
+    getSourceDirectories().setFrom(subprojects.sourceSets.main.allSource.srcDirs)
+    getClassDirectories().setFrom(subprojects.sourceSets.main.output)
+    getExecutionData().setFrom(subprojects.jacocoTestReport.executionData)
+
+    reports {
+        html.enabled = true
+        xml.enabled = true
+    }
+
+    doFirst {
+        getExecutionData().setFrom(executionData.findAll { it.exists() })
     }
 }
 
