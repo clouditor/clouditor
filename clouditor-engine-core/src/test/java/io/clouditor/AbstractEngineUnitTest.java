@@ -39,7 +39,6 @@ public abstract class AbstractEngineUnitTest {
   @BeforeEach
   protected void setUp() {
     this.engine = new Engine();
-    this.engine.setDaemon(false);
 
     // set in-memory db for testing
     this.engine.setDbInMemory(true);

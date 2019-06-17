@@ -69,14 +69,12 @@ public abstract class AbstractAPI<C extends Component> extends ResourceConfig {
     // set the component service locator
     InjectionBridge.setComponentServiceLocator(this.component.getServiceLocator());
 
+    // bridges the service locator of the engine with the one of the REST web service
+    this.register(InjectionBridge.class);
+
     this.register(CORSResponseFilter.class);
     this.register(ObjectMapperResolver.class);
     this.register(AuthenticationFilter.class);
-
-    // registers the component itself as a service in the service locator
-    // TODO: this might be obsolete now
-    this.register(new ComponentFeature(component));
-    this.register(InjectionBridge.class);
 
     this.packages(this.getClass().getPackage().toString());
   }

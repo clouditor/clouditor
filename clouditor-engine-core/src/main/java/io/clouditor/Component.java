@@ -39,7 +39,6 @@ import org.jvnet.hk2.annotations.Contract;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
-import org.kohsuke.args4j.spi.ExplicitBooleanOptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -52,25 +51,12 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 @Contract
 public abstract class Component {
 
-  public static final String CONFIG_API_PORT = "api.port";
-  public static final String CONFIG_API_USERNAME = "api.username";
-  public static final String CONFIG_API_PW = "api.password";
-  public static final String CONFIG_API_ALLOWED_ORIGIN = "api.allowedOrigin";
-
   protected static final Logger LOGGER = LoggerFactory.getLogger(Component.class);
 
-  private static final boolean DEFAULT_IS_DAEMON = true;
   private static final String DEFAULT_API_USERNAME = "clouditor";
   private static final String DEFAULT_API_PW = "clouditor";
   private static final String DEFAULT_API_SECRET = "changeme";
   private static final String DEFAULT_API_ALLOWED_ORIGIN = "*";
-
-  /** Specifies whether the component is running as a daemon. */
-  @Option(
-      name = "-D",
-      usage = "specifies whether to run as daemon",
-      handler = ExplicitBooleanOptionHandler.class)
-  boolean isDaemon = DEFAULT_IS_DAEMON;
 
   /** Specifies the API username. */
   @Option(name = "--api-default-user", usage = "specifies the API username")
@@ -120,14 +106,6 @@ public abstract class Component {
   public abstract void setAPIPort(int port);
 
   public abstract void init();
-
-  public boolean isDaemon() {
-    return this.isDaemon;
-  }
-
-  public void setDaemon(boolean daemon) {
-    this.isDaemon = daemon;
-  }
 
   public boolean parseArgs(String[] args) {
     var parser = new CmdLineParser(this);
