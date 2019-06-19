@@ -1,7 +1,13 @@
 ![clouditor](images/claudi.png "Clouditor")
 
 # Clouditor Community Edition
-[![CircleCI](https://circleci.com/gh/clouditor/clouditor.svg?style=shield)](https://circleci.com/gh/clouditor/clouditor) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=clouditor_clouditor&metric=alert_status)](https://sonarcloud.io/dashboard?id=clouditor_clouditor) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=clouditor_clouditor&metric=coverage)](https://sonarcloud.io/dashboard?id=clouditor_clouditor) [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=clouditor_clouditor&metric=bugs)](https://sonarcloud.io/dashboard?id=clouditor_clouditor) [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=clouditor_clouditor&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=clouditor_clouditor)
+[![CircleCI](https://circleci.com/gh/clouditor/clouditor.svg?style=shield)](https://circleci.com/gh/clouditor/clouditor) 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=clouditor_clouditor&metric=alert_status)](https://sonarcloud.io/dashboard?id=clouditor_clouditor) 
+[![Docker Pulls](https://img.shields.io/docker/pulls/clouditor/clouditor.svg)](https://hub.docker.com/r/clouditor/clouditor)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=clouditor_clouditor&metric=coverage)](https://sonarcloud.io/dashboard?id=clouditor_clouditor) 
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=clouditor_clouditor&metric=bugs)](https://sonarcloud.io/dashboard?id=clouditor_clouditor) 
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=clouditor_clouditor&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=clouditor_clouditor)
+
 
 # Introduction
 
