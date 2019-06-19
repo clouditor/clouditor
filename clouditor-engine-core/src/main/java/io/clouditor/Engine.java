@@ -97,6 +97,9 @@ public class Engine extends Component {
   @Option(name = "--oauth-jwt-secret")
   private String oAuthJwtSecret;
 
+  @Option(name = "--oauth-jwt-issuer")
+  private String oAuthJwtIssuer;
+
   /** The web api. */
   private EngineAPI api;
 
@@ -255,5 +258,9 @@ public class Engine extends Component {
 
   public String getBaseUrl() {
     return baseUrl;
+  }
+
+  public String getoAuthJwtIssuer() {
+    return oAuthJwtIssuer;
   }
 }

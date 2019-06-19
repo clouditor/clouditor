@@ -19,14 +19,10 @@ public class TokenResponse {
   @JsonProperty("id_token")
   private String idToken;
 
-  public User decode() {
-    // TODO: where is this coming from?
-    var jwtSecret = "secret";
-    var jwtIssuer = "https://api.reclaim";
+  User decode(String secret, String issuer) {
+    var algorithm = Algorithm.HMAC512(secret);
 
-    var algorithm = Algorithm.HMAC512(jwtSecret);
-
-    var verifier = JWT.require(algorithm).withIssuer(jwtIssuer).build();
+    var verifier = JWT.require(algorithm).withIssuer(issuer).build();
     var jwt = verifier.verify(this.idToken);
 
     var user = new User();

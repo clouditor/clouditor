@@ -54,7 +54,7 @@ public class OAuthResource {
   public Response callback(@QueryParam("code") String code) {
     var token = retrieveAccessToken(code);
 
-    var user = token.decode();
+    var user = token.decode(this.engine.getOAuthJwtSecret(), this.engine.getoAuthJwtIssuer());
 
     if (user == null) {
       // redirect back to the beginning
