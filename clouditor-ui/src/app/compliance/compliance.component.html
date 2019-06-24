@@ -54,12 +54,13 @@
       <h6 class="card-subtitle mb-2 text-muted">{{ certification.publisher }}</h6>
       <p class="card-text">{{ certification.description }}</p>
       <p><a class="text-info" [href]="certification.website" target="_new">{{ certification.website }}</a></p>
-      <button type="button" class="btn btn-success" *ngIf="getGoodControls(certification).length > 0">
+      <button type="button" class="btn btn-success" *ngIf="getGoodControls(certification).length > 0"
+        [routerLink]="['/compliance', certification._id]" [queryParams]="{filter: true, passed: true}">
         <span class="badge badge-light">{{ getGoodControls(certification).length }}</span> Passed Controls
       </button>
       <button type="button" class="btn btn-danger" style="margin-left: 8px"
         *ngIf="getControlsWithWarnings(certification).length > 0" [routerLink]="['/compliance', certification._id]"
-        [queryParams]="{failed: true}">
+        [queryParams]="{filter: true, failed: true}">
         <span class="badge badge-light">{{ getControlsWithWarnings(certification).length }}</span> Failed Controls
       </button>
     </div>
