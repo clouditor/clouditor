@@ -41,19 +41,23 @@
         <span class="input-group-text">
           <i class="fas fa-search"></i>
         </span>
-        <div class="btn-group btn-group-toggle" data-toggle="buttons">
-          <label class="btn btn-primary" [ngClass]="{'active': filter === 'all'}">
-            <input type="checkbox" name="options" autocomplete="off" (click)="filter='all'; updateFilteredControls()">
-            All
-          </label>
-          <label class="btn btn-primary" [ngClass]="{'active': filter === 'passed'}">
-            <input type="checkbox" name="options" autocomplete="off"
-              (click)="filter='passed'; updateFilteredControls()"> Passed
-          </label>
-          <label class="btn btn-primary active" [ngClass]="{'active': filter === 'failed'}">
-            <input type="checkbox" name="options" autocomplete="off"
-              (click)="filter='failed'; updateFilteredControls()"> Failed
-          </label>
+        <div class="input-group-text">
+          <label class="form-check-label"><input class="search-check" type="checkbox" name="filterWaiting"
+              [ngModel]="filterOptions.waiting">
+            <span class="badge badge-dark badge-">Not enough data</span></label>
+        </div>
+        <div class="input-group-text">
+          <label class="form-check-label"><input class="search-check" type="checkbox" name="filterNotMonitored"
+              [(ngModel)]="filterOptions.notMonitored"><span class="badge badge-light">Not
+              Monitored</span></label>
+        </div>
+        <div class="input-group-text">
+          <label class="form-check-label"><input class="search-check" type="checkbox" name="filterPassed"
+              [ngModel]="filterOptions.passed"><span class="badge badge-success">Passed</span></label>
+        </div>
+        <div class="input-group-text">
+          <label class="form-check-label"><input class="search-check" type="checkbox" name="filterFailed"
+              [ngModel]="filterOptions.failed"><span class="badge badge-danger">Failed</span></label>
         </div>
       </div>
       <input type="search" [ngModel]="search" name="search" #searchInput="ngModel" class="form-control"
@@ -70,8 +74,8 @@
         <div class="card-header">
           <div class="d-flex w-100 justify-content-between">
             <h5 class="mb-1 clickable" [routerLink]="['/compliance', certification._id, control.controlId]">{{
-              control.controlId
-              }} <span class="badge badge-dark text-white" *ngIf="control.isNotEvaluated()">Not
+                control.controlId
+                }} <span class="badge badge-dark text-white" *ngIf="control.isNotEvaluated()">Not
                 enough data</span><span class="badge badge-success" *ngIf="control.isGood()">Passed</span><span
                 class="badge badge-danger" *ngIf="control.hasWarning()">Failed</span></h5>
             <i class="fas fa-spinner" *ngIf="processing[control.controlId]; else notprocessing"></i>
@@ -93,9 +97,9 @@
               class="text-info" [routerLink]="['/rules', rule.id]"><i>{{ rule.name }}</i></a> for
             {{ rule.assetType }}s</div>
           <!--<button type="button" style="margin-top: 5px" class="btn btn-warning clickable" *ngIf="control.hasWarning()"
-            [routerLink]="['/compliance', certification._id, control.controlId]">
-            <span class="badge badge-light">{{ control.violations }}</span> Non-compliant Assets
-          </button>-->
+              [routerLink]="['/compliance', certification._id, control.controlId]">
+              <span class="badge badge-light">{{ control.violations }}</span> Non-compliant Assets
+            </button>-->
         </div>
       </div>
     </div>
