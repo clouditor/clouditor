@@ -29,11 +29,15 @@
 
 package io.clouditor.assurance.ccl;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Value<T> {
 
   private T value;
 
-  public Value(T value) {
+  @JsonCreator
+  public Value(@JsonProperty("value") T value) {
     this.value = value;
   }
 
