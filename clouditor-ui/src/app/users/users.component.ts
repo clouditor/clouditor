@@ -44,12 +44,18 @@ export class UsersComponent implements OnInit {
   constructor(public auth: AuthService, private userService: UserService) { }
 
   ngOnInit() {
+    this.updateUser();
+  }
+
+  updateUser() {
     this.userService.getUsers().subscribe(users => this.users = users);
   }
 
   onDeleteUser(id: string) {
-    if (confirm('test')) {
-      this.userService.deleteUser(id).subscribe(_ => _);
+    if (confirm('Do you really want to delete user "' + id + '"?')) {
+      this.userService.deleteUser(id).subscribe(_ => {
+        this.updateUser();
+      });
     }
   }
 }
