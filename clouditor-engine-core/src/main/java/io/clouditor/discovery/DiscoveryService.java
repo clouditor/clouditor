@@ -251,6 +251,10 @@ public class DiscoveryService {
 
     this.scheduler.setCorePoolSize(size);
     LOGGER.info("Adjusting thread pool size to {}", this.scheduler.getCorePoolSize());
+
+    // clean up associated objects
+    this.futures.remove(scan.getId());
+    this.scanners.remove(scan.getId());
   }
 
   public void subscribe(DiscoveryResultSubscriber subscriber) {
