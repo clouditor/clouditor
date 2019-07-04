@@ -29,9 +29,9 @@
 
 package io.clouditor.discovery;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.clouditor.util.PersistentObject;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * A {@link Scan} holds information and configuration about a scan that is regularly executed. The
@@ -39,10 +39,13 @@ import io.clouditor.util.PersistentObject;
  */
 public class Scan implements PersistentObject<String> {
 
+  static final String FIELD_SCANNER_CLASS = "scannerClass";
+
   private static final long DEFAULT_INTERVAL = 5 * 60L;
 
-  /** The executing {@link Scanner}. */
-  @JsonIgnore private Scanner scanner;
+  /** The associated {@link Scanner} class. */
+  @JsonProperty(FIELD_SCANNER_CLASS)
+  private Class<? extends Scanner> scannerClass;
 
   /**
    * The asset type, this scan is targeting. This is automatically parsed from the {@link
@@ -82,10 +85,10 @@ public class Scan implements PersistentObject<String> {
 
   public Scan() {}
 
-  public static Scan fromScanner(Scanner scanner) {
+  public static Scan fromScanner(Class<? extends Scanner> clazz) {
     var scan = new Scan();
 
-    var info = scanner.getClass().getAnnotation(ScannerInfo.class);
+    var info = clazz.getAnnotation(ScannerInfo.class);
 
     if (info != null) {
       scan.assetType = info.assetType();
@@ -95,7 +98,7 @@ public class Scan implements PersistentObject<String> {
       scan.description = info.description();
     }
 
-    scan.scanner = scanner;
+    scan.scannerClass = clazz;
 
     return scan;
   }
@@ -110,10 +113,6 @@ public class Scan implements PersistentObject<String> {
 
   public long getInterval() {
     return interval;
-  }
-
-  public Scanner getScanner() {
-    return this.scanner;
   }
 
   public boolean isEnabled() {
@@ -152,5 +151,18 @@ public class Scan implements PersistentObject<String> {
 
   public String getService() {
     return service;
+  }
+
+  public Class<? extends Scanner> getScannerClass() {
+    return scannerClass;
+  }
+
+  public Scanner instantiateScanner()
+      throws NoSuchMethodException, IllegalAccessException, InvocationTargetException,
+          InstantiationException {
+    var constructor = scannerClass.getConstructor();
+    constructor.setAccessible(true);
+
+    return constructor.newInstance();
   }
 }

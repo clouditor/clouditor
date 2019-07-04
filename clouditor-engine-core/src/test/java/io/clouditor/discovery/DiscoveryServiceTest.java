@@ -57,7 +57,7 @@ class DiscoveryServiceTest extends AbstractEngineUnitTest {
 
     assertNotNull(scanService);
 
-    scanService.load();
+    scanService.init();
 
     var scans = scanService.getScans();
 

@@ -60,7 +60,7 @@ public abstract class Scanner<C, T> {
 
   protected ScannerPostProcessor<?, T> postProcessor;
 
-  protected final Supplier<C> supplier;
+  private final Supplier<C> supplier;
   private final Function<T, String> idGenerator;
   private final Function<T, String> nameGenerator;
 
@@ -174,5 +174,9 @@ public abstract class Scanner<C, T> {
 
   public boolean getInitialized() {
     return initialized;
+  }
+
+  public ScannerInfo getInfo() {
+    return this.getClass().getAnnotation(ScannerInfo.class);
   }
 }
