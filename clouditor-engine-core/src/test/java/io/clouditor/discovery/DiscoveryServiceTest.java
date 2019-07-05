@@ -72,8 +72,6 @@ class DiscoveryServiceTest extends AbstractEngineUnitTest {
 
     var scan = scanService.getScan("fake");
 
-    assertTrue(scan.getScanner() instanceof FakeScanner);
-
     scanService.enableScan(scan);
 
     assertTrue(scan.isEnabled());
