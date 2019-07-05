@@ -158,16 +158,16 @@ public class Engine extends Component {
     this.getService(CertificationService.class).loadImporters();
 
     loadRules();
-    loadScans();
+    initDiscoveryService();
     loadCertifications();
     loadSubscribers();
 
     this.getService(CertificationService.class).updateCertification();
   }
 
-  private void loadScans() {
+  private void initDiscoveryService() {
     var service = this.getService(DiscoveryService.class);
-    service.load();
+    service.init();
   }
 
   public void loadRules() {

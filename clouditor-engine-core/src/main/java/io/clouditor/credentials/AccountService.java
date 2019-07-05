@@ -102,11 +102,11 @@ public class AccountService {
 
     // since we changed the account (potentially), we need to make sure the scanners associated with
     // this provider re-authenticate properly
-    for (var scan : this.discoveryService.getScans().values()) {
-      var scanner = scan.getScanner();
+    for (var scanner : this.discoveryService.getScanners()) {
+      var info = scanner.getInfo();
 
-      if (scanner.getInitialized() && Objects.equals(scan.getGroup(), provider)) {
-        LOGGER.info("Forcing scanner {} / {} to re-authenticate.", scan.getService(), scan.getId());
+      if (scanner.getInitialized() && Objects.equals(info.group(), provider)) {
+        LOGGER.info("Forcing scanner {} to re-authenticate.", scanner.getId());
         scanner.setInitialized(false);
       }
     }

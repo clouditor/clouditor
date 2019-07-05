@@ -57,7 +57,7 @@ class DiscoveryServiceTest extends AbstractEngineUnitTest {
 
     assertNotNull(scanService);
 
-    scanService.load();
+    scanService.init();
 
     var scans = scanService.getScans();
 
@@ -71,8 +71,6 @@ class DiscoveryServiceTest extends AbstractEngineUnitTest {
     Assertions.assertFalse(scans.isEmpty());
 
     var scan = scanService.getScan("fake");
-
-    assertTrue(scan.getScanner() instanceof FakeScanner);
 
     scanService.enableScan(scan);
 

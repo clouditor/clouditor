@@ -29,10 +29,13 @@
 
 package io.clouditor.discovery;
 
+import static com.mongodb.client.model.Filters.eq;
+
 import io.clouditor.events.DiscoveryResultSubscriber;
 import io.clouditor.util.PersistenceManager;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -43,6 +46,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.SubmissionPublisher;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.media.sse.EventOutput;
@@ -62,9 +66,8 @@ public class DiscoveryService {
           new ConfigurationBuilder()
               .addUrls(ClasspathHelper.forPackage(Scanner.class.getPackage().getName()))
               .setScanners(new SubTypesScanner()));
-
-  private Map<String, Scan> scans = new HashMap<>();
   private Map<String, ScheduledFuture<?>> futures = new HashMap<>();
+  private Map<String, Scanner> scanners = new HashMap<>();
 
   private final ScheduledThreadPoolExecutor scheduler =
       (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1);
@@ -76,51 +79,57 @@ public class DiscoveryService {
     LOGGER.info("Initializing {}", this.getClass().getSimpleName());
   }
 
-  public void load() {
-    // TODO: load from database
+  public void init() {
+    var scans = PersistenceManager.getInstance().find(Scan.class);
 
-    // first, load checks from Java via reflections
+    // first, init list of scanner classes from Java via reflections
     var classes =
         REFLECTIONS_SUBTYPE_SCANNER.getSubTypesOf(Scanner.class).stream()
             .filter(
                 clazz -> !Modifier.isAbstract(clazz.getModifiers()) && !clazz.isAnonymousClass())
             .collect(Collectors.toList());
 
-    // loop through all Scanner classes, to make sure a Scan object exists for each class
-    for (var clazz : classes) {
-      try {
-        var constructor = clazz.getDeclaredConstructor();
-        constructor.setAccessible(true);
-        var scan = Scan.fromScanner(constructor.newInstance());
+    // loop through existing scans to make sure that the associated scanner still exists
+    for (var scan : scans) {
+      if (!classes.contains(scan.getScannerClass())) {
+        LOGGER.info(
+            "Scan {} contains old or invalid scanner class {}. Removing entry from database.",
+            scan.getId(),
+            scan.getScannerClass());
 
-        // update database
-        PersistenceManager.getInstance().persist(scan);
-
-        // TODO: do not overwrite custom settings from DB (maybe load db later?)
-        this.scans.put(scan.getId(), scan);
-      } catch (InstantiationException
-          | IllegalAccessException
-          | InvocationTargetException
-          | NoSuchMethodException e) {
-        LOGGER.error("Ignoring instantiate scanner class {}: {}", clazz.getName(), e);
-        continue;
+        PersistenceManager.getInstance().delete(Scan.class, scan.getId());
       }
     }
 
-    LOGGER.info("Loaded {} scans", this.scans.size());
+    // loop through all Scanner classes, to make sure a Scan object exists for each class
+    for (var clazz : classes) {
+      var scan =
+          PersistenceManager.getInstance()
+              .find(Scan.class, eq(Scan.FIELD_SCANNER_CLASS, clazz.getName()))
+              .limit(1)
+              .first();
 
-    // adjust the thread pool
-    this.scheduler.setCorePoolSize(this.scans.size());
-    LOGGER.info("Adjusting thread pool size to {}", this.scheduler.getCorePoolSize());
+      if (scan == null) {
+        // create new scanner object
+        scan = Scan.fromScanner(clazz);
+
+        // update database
+        PersistenceManager.getInstance().persist(scan);
+      }
+    }
   }
 
   public Map<String, Scan> getScans() {
-    return this.scans;
+    return StreamSupport.stream(
+            PersistenceManager.getInstance().find(Scan.class).spliterator(), false)
+        .collect(Collectors.toMap(Scan::getId, scan -> scan));
   }
 
   public void start() {
+    var scans = PersistenceManager.getInstance().find(Scan.class);
+
     // loop through all enabled scans and start them
-    for (var scan : this.scans.values()) {
+    for (var scan : scans) {
       if (scan.isEnabled()) {
         this.startScan(scan);
       }
@@ -128,64 +137,90 @@ public class DiscoveryService {
   }
 
   private void startScan(Scan scan) {
-    var scanner = scan.getScanner();
+    LOGGER.info("Starting scan {}", scan.getId());
 
-    // check, if it is somehow already running, and cancel it
-    var future = this.futures.get(scan.getId());
-    if (future != null) {
-      LOGGER.info("It seems this scan is already running, cancelling previous execution.");
-      future.cancel(true);
+    try {
+      // create the associated scanner object, that handles the actual scanning
+      var scanner = scan.instantiateScanner();
+
+      // check, if it is somehow already running, and cancel it
+      var future = this.futures.get(scan.getId());
+      if (future != null) {
+        LOGGER.info("It seems this scan is already running, cancelling previous execution.");
+        future.cancel(true);
+      }
+
+      // increase thread pool size
+      int size =
+          Math.min(this.scheduler.getCorePoolSize() + 1, this.scheduler.getMaximumPoolSize());
+
+      this.scheduler.setCorePoolSize(size);
+      LOGGER.info("Adjusting thread pool size to {}", this.scheduler.getCorePoolSize());
+
+      LOGGER.info("Starting scan {}. Now waiting for next execution", scan.getId());
+
+      future =
+          scheduler.scheduleAtFixedRate(
+              () -> {
+                // set discovering flag to enable its indication in the discovery view
+                scan.setDiscovering(true);
+
+                // scan
+                var result = scanner.scan();
+
+                submit(scan, result);
+
+                // TODO: route this through pub/sub
+                /*var subscribers = this.subscriptions.get(scanner.getId());
+                for (Iterator<EventOutput> iterator = subscribers.iterator(); iterator.hasNext(); ) {
+                  var subscriber = iterator.next();
+                  var event =
+                      new OutboundEvent.Builder()
+                          .mediaType(MediaType.APPLICATION_JSON_TYPE)
+                          .name("discovery-complete")
+                          .data(DiscoveryResult.class, result)
+                          .build();
+
+                  try {
+                    if (!subscriber.isClosed()) {
+                      subscriber.write(event);
+                    }
+                    if (subscriber.isClosed()) {
+                      LOGGER.debug("Removing " + subscriber + " for type " + scanner.getId() + "...");
+                      iterator.remove();
+                    }
+
+                  } catch (IOException e) {
+                    LOGGER.error("Could not send event {} to subscriber", event.getName());
+                  }
+                }*/
+
+                scan.setLastResult(result);
+
+                LOGGER.info("Scan {} is now waiting for next execution.", scan.getId());
+                scan.setDiscovering(false);
+
+                // update database
+                PersistenceManager.getInstance().persist(scan);
+              },
+              0,
+              scan.getInterval(),
+              TimeUnit.SECONDS);
+
+      // store the future, so we can cancel it later
+      this.futures.put(scan.getId(), future);
+
+      // store the scanner, so we can access it later
+      this.scanners.put(scan.getId(), scanner);
+    } catch (InstantiationException
+        | IllegalAccessException
+        | InvocationTargetException
+        | NoSuchMethodException e) {
+      LOGGER.error("Cannot instantiate scanner from {}: {}", scan.getId(), e.getMessage());
+
+      // disable it again
+      disableScan(scan);
     }
-
-    LOGGER.info("Starting scan {}. Now waiting for next execution", scan.getId());
-
-    // store the future, so we can cancel it later
-    future =
-        scheduler.scheduleAtFixedRate(
-            () -> {
-              // set discovering flag to enable its indication in the discovery view
-              scan.setDiscovering(true);
-
-              // scan
-              var result = scanner.scan();
-
-              submit(scan, result);
-
-              // TODO: route this through pub/sub
-              /*var subscribers = this.subscriptions.get(scanner.getId());
-              for (Iterator<EventOutput> iterator = subscribers.iterator(); iterator.hasNext(); ) {
-                var subscriber = iterator.next();
-                var event =
-                    new OutboundEvent.Builder()
-                        .mediaType(MediaType.APPLICATION_JSON_TYPE)
-                        .name("discovery-complete")
-                        .data(DiscoveryResult.class, result)
-                        .build();
-
-                try {
-                  if (!subscriber.isClosed()) {
-                    subscriber.write(event);
-                  }
-                  if (subscriber.isClosed()) {
-                    LOGGER.debug("Removing " + subscriber + " for type " + scanner.getId() + "...");
-                    iterator.remove();
-                  }
-
-                } catch (IOException e) {
-                  LOGGER.error("Could not send event {} to subscriber", event.getName());
-                }
-              }*/
-
-              scan.setLastResult(result);
-
-              LOGGER.info("Scan {} is now waiting for next execution.", scan.getId());
-              scan.setDiscovering(false);
-            },
-            0,
-            scan.getInterval(),
-            TimeUnit.SECONDS);
-
-    this.futures.put(scanner.getId(), future);
   }
 
   public int submit(Scan scan, DiscoveryResult result) {
@@ -210,6 +245,16 @@ public class DiscoveryService {
     future.cancel(true);
 
     LOGGER.info("Stopped scan {}", scan.getId());
+
+    // decrease thread pool size
+    int size = Math.max(this.scheduler.getCorePoolSize() - 1, 0);
+
+    this.scheduler.setCorePoolSize(size);
+    LOGGER.info("Adjusting thread pool size to {}", this.scheduler.getCorePoolSize());
+
+    // clean up associated objects
+    this.futures.remove(scan.getId());
+    this.scanners.remove(scan.getId());
   }
 
   public void subscribe(DiscoveryResultSubscriber subscriber) {
@@ -217,17 +262,23 @@ public class DiscoveryService {
   }
 
   public Scan getScan(String id) {
-    return this.scans.get(id);
+    return PersistenceManager.getInstance().getById(Scan.class, id);
   }
 
   public void enableScan(Scan scan) {
     scan.setEnabled(true);
+
+    // update database
+    PersistenceManager.getInstance().persist(scan);
 
     this.startScan(scan);
   }
 
   public void disableScan(Scan scan) {
     scan.setEnabled(false);
+
+    // update database
+    PersistenceManager.getInstance().persist(scan);
 
     this.stopScan(scan);
   }
@@ -238,12 +289,17 @@ public class DiscoveryService {
 
     // add to the subscription map for given asset type
 
-    // make sure a hashset exists
+    // make sure a hash set exists
     var set = this.subscriptions.putIfAbsent(assetType, new HashSet<>());
     Objects.requireNonNull(set).add(output);
 
     LOGGER.info("Subscribed an SSE client to asset type {}", assetType);
 
     return output;
+  }
+
+  /** Returns a list of currently running scanners. */
+  public Collection<Scanner> getScanners() {
+    return this.scanners.values();
   }
 }
