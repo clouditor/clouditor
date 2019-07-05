@@ -33,11 +33,23 @@
     <li class="breadcrumb-item active" aria-current="page">Compliance</li>
   </ol>
 </nav>
+
+<h3>Compliance</h3>
+
+<p>
+  Clouditor supports the management of various compliance catalogs related to Cloud security. Click on a button below,
+  to initially import a supported catalog. Afterwards, a list of all configured catalogs is displayed. The compliance
+  status of suitable controls within a catolog is automatically updated according to the result of configured <a
+    class="text-info" [routerLink]="['/rules']">Rules</a>.
+</p>
+
 <ng-container *ngFor="let item of importers | keyvalue">
-  <button style="margin-bottom: 15px; margin-right: 10px" class="button btn btn-outline-info"
-    (click)="onImport(item.key)" *ngIf="!importing[item.key]; else waiting">
-    Import {{ item.key }}
-  </button>
+  <ng-container *ngIf="!importing[item.key]; else waiting">
+    <button style="margin-bottom: 15px; margin-right: 10px" class="button btn btn-outline-info"
+      (click)="onImport(item.key)">
+      Import {{ item.key }}
+    </button>
+  </ng-container>
   <ng-template #waiting>
     <button style="margin-bottom: 15px; margin-right: 10px" class="button btn btn-secondary">
       Import {{ item.key }}
@@ -45,7 +57,11 @@
   </ng-template>
 </ng-container>
 
-<div class="card-columns">
+<div *ngIf="!certifications || certifications.length == 0">
+  No catalogs imported yet.
+</div>
+
+<div class="card-columns" *ngIf="certifications && certifications.length > 0">
   <div class="card" *ngFor="let certification of certifications">
     <div class="card-body">
       <h5 class="card-title text-light"><a class="text-info"
