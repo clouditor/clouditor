@@ -162,6 +162,12 @@ export class ComplianceDetailComponent implements OnInit, OnDestroy {
         });
     }
 
+    getMonitoredControls(certification: Certification) {
+        return certification.controls.filter(control => {
+            return control.active;
+        });
+    }
+
     getInactiveControls(certification: Certification) {
         return certification.controls.filter(control => {
             return !control.active;

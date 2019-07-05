@@ -36,6 +36,18 @@
         <li class="breadcrumb-item active" aria-current="page">{{ certification._id }}</li>
       </ol>
     </nav>
+
+    <h3>{{ certification._id }}</h3>
+
+    <p>
+      <b>{{ certification._id }}</b> is a compliance catalog, published by <b>{{ certification.publisher }}</b> and
+      encompasses <b>{{ certification.controls.length }} controls</b> in total.
+      <b>{{ getMonitoredControls(certification).length }} controls</b> are configured to be monitored by Clouditor. For
+      each control, the list of associated rules is displayed. A control is regarded as <span
+        class="badge badge-success">Passed</span> if no resource violates the associated rules and as <span
+        class="badge badge-danger">Failed</span>, if at least one resource violates at least one associated rule.
+    </p>
+
     <div class="input-group mb-3">
       <div class="input-group-prepend">
         <span class="input-group-text">
