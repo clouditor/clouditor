@@ -30,10 +30,10 @@
 package io.clouditor.rest;
 
 import static io.clouditor.auth.AuthenticationService.ROLE_USER;
+import static io.clouditor.rest.AbstractAPI.sanitize;
 
 import io.clouditor.discovery.DiscoveryService;
 import io.clouditor.discovery.Scan;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.security.RolesAllowed;
@@ -70,16 +70,20 @@ public class DiscoveryResource {
   @GET
   @Path("{id}")
   public Scan getScan(@PathParam("id") String id) {
+    id = sanitize(id);
+
     return this.service.getScan(id);
   }
 
   @POST
   @Path("{id}/enable")
-  public void enable(@PathParam("id") String id) throws IOException {
+  public void enable(@PathParam("id") String id) {
+    id = sanitize(id);
+
     var scan = service.getScan(id);
 
     if (scan == null) {
-      LOGGER.error("Could not find scan with id {}", id);
+      LOGGER.error("Could not find scan with id {}", sanitize(id));
       throw new NotFoundException("Could not find scan with id " + id);
     }
 
@@ -89,6 +93,8 @@ public class DiscoveryResource {
   @POST
   @Path("{id}/disable")
   public void disable(@PathParam("id") String id) {
+    id = sanitize(id);
+
     var scan = service.getScan(id);
 
     if (scan == null) {

@@ -1,6 +1,7 @@
 package io.clouditor.rest;
 
 import static io.clouditor.auth.AuthenticationService.ROLE_ADMIN;
+import static io.clouditor.rest.AbstractAPI.sanitize;
 
 import io.clouditor.auth.AuthenticationService;
 import io.clouditor.auth.User;
@@ -41,6 +42,8 @@ public class UsersResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("{id}")
   public User getUser(@PathParam("id") String id) {
+    id = sanitize(id);
+
     var user = this.service.getUser(id);
 
     if (user == null) {
@@ -54,6 +57,8 @@ public class UsersResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @Path("{id}")
   public void updateUser(@PathParam("id") String id, User user) {
+    id = sanitize(id);
+
     this.service.updateUser(id, user);
   }
 
@@ -61,6 +66,8 @@ public class UsersResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @Path("{id}")
   public void deleteUser(@PathParam("id") String id) {
+    id = sanitize(id);
+
     this.service.deleteUser(id);
   }
 

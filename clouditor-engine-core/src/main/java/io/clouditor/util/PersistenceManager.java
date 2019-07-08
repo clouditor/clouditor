@@ -30,6 +30,7 @@
 package io.clouditor.util;
 
 import static com.mongodb.client.model.Filters.eq;
+import static io.clouditor.rest.AbstractAPI.sanitize;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -184,9 +185,10 @@ public class PersistenceManager {
     var result = coll.deleteOne(new Document(FIELD_ID, id));
 
     if (result.wasAcknowledged()) {
-      LOGGER.info("Deleted id {} (Type: {}) from database", id, clazz.getSimpleName());
+      LOGGER.info("Deleted id {} (Type: {}) from database", sanitize(id), clazz.getSimpleName());
     } else {
-      LOGGER.error("Could not delete id {} (Type: {}) from database", id, clazz.getSimpleName());
+      LOGGER.error(
+          "Could not delete id {} (Type: {}) from database", sanitize(id), clazz.getSimpleName());
     }
   }
 

@@ -30,6 +30,7 @@
 package io.clouditor.rest;
 
 import static io.clouditor.auth.AuthenticationService.ROLE_USER;
+import static io.clouditor.rest.AbstractAPI.sanitize;
 
 import io.clouditor.assurance.Rule;
 import io.clouditor.assurance.RuleEvaluation;
@@ -66,6 +67,8 @@ public class RulesResource {
   @GET
   @Path("assets/{assetType}")
   public Set<Rule> getRules(@PathParam("assetType") String assetType) {
+    assetType = sanitize(assetType);
+
     var rules = this.ruleService.getRules().get(assetType);
 
     if (rules == null) {
@@ -79,6 +82,8 @@ public class RulesResource {
   @GET
   @Path("{ruleId}")
   public RuleEvaluation get(@PathParam("ruleId") String ruleId) {
+    ruleId = sanitize(ruleId);
+
     var rule = this.ruleService.getWithId(ruleId);
 
     if (rule == null) {

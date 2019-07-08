@@ -30,6 +30,7 @@
 package io.clouditor.rest;
 
 import static io.clouditor.auth.AuthenticationService.ROLE_USER;
+import static io.clouditor.rest.AbstractAPI.sanitize;
 
 import io.clouditor.discovery.Asset;
 import io.clouditor.discovery.AssetService;
@@ -56,6 +57,8 @@ public class AssetsResource {
   @Path("{assetType}")
   @Produces(MediaType.APPLICATION_JSON)
   public Set<Asset> getAssetsWithType(@PathParam("assetType") String assetType) {
+    assetType = sanitize(assetType);
+
     return this.service.getAssetsWithType(assetType);
   }
 
@@ -63,6 +66,8 @@ public class AssetsResource {
   @GET
   @Produces(SseFeature.SERVER_SENT_EVENTS)
   public EventOutput getServerSentEvents(@PathParam("assetType") String assetType) {
+    assetType = sanitize(assetType);
+
     return this.discoveryService.subscribeToEvents(assetType);
   }
 }

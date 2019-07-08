@@ -1,12 +1,10 @@
 version: 2.1
 orbs:
   docker: circleci/docker@0.2.0
-jobs:
-  build_and_push:
-    docker:
-      - image: circleci/openjdk:11
-    environment:
-      GRADLE_OPTS: -Xmx2048m -Dorg.gradle.daemon=false
+environment:
+  GRADLE_OPTS: -Xmx2048m -Dorg.gradle.daemon=false
+commands:
+  build:
     steps:
       - checkout
       - setup_remote_docker
@@ -28,52 +26,61 @@ jobs:
           path: ~/test-results
       - store_artifacts:
           path: ~/test-results/junit
+  push:
+    parameters:
+      tag:
+        type: string
+        default: "latest"
+    steps:
       - docker/check
       - docker/push:
           image: clouditor/engine
-          tag: latest
+          tag: << parameters.tag >>
       - docker/push:
           image: clouditor/ui
-          tag: latest
+          tag: << parameters.tag >>
       - docker/push:
           image: clouditor/clouditor
-          tag: latest
-  build:
+          tag: << parameters.tag >>
+jobs:
+  build_only:
     docker:
       - image: circleci/openjdk:11
-    environment:
-      GRADLE_OPTS: -Xmx2048m -Dorg.gradle.daemon=false
     steps:
-      - checkout
-      - setup_remote_docker
+      - build
+  build_and_push:
+    docker:
+      - image: circleci/openjdk:11
+    steps:
+      - build
+      - push
+  build_and_push_release:
+    docker:
+      - image: circleci/openjdk:11
+    steps:
+      - build
       - run:
-          name: Gradle build
           command: |
-            ./gradlew --parallel docker jacocoTestReport sonarqube \
-            -Dsonar.projectKey=clouditor_clouditor \
-            -Dsonar.organization=clouditor \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.login=$SONAR_TOKEN
-      - run:
-          name: Save test results
-          command: |
-            mkdir -p ~/test-results/junit/
-            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/test-results/junit/ \;
-          when: always
-      - store_test_results:
-          path: ~/test-results
-      - store_artifacts:
-          path: ~/test-results/junit
+            docker tag clouditor/clouditor clouditor/clouditor:$CIRCLE_TAG
+      - push:
+          tag: $CIRCLE_TAG
 workflows:
   build:
     jobs:
+      - build_only:
+          context: org-global
+          filters:
+            branches:
+              ignore: master
       - build_and_push:
           context: org-global
           filters:
             branches:
               only: master
-      - build:
+      - build_and_push_release:
           context: org-global
           filters:
+            tags:
+              only: /^v.*/
             branches:
-              ignore: master
+              ignore: /.*/

@@ -30,6 +30,7 @@
 package io.clouditor.rest;
 
 import static io.clouditor.auth.AuthenticationService.ROLE_USER;
+import static io.clouditor.rest.AbstractAPI.sanitize;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.clouditor.Engine;
@@ -81,15 +82,19 @@ public class CertificationResource {
       @PathParam("certificationId") String certificationId,
       @PathParam("controlId") String controlId,
       ControlStatusRequest request) {
+    certificationId = sanitize(certificationId);
+    controlId = sanitize(controlId);
+
     var certification = this.getCertification(certificationId);
 
     if (certification == null) {
       throw new NotFoundException();
     }
 
+    String finalControlId = controlId;
     var first =
         certification.getControls().stream()
-            .filter(control -> control.getControlId().equals(controlId))
+            .filter(control -> control.getControlId().equals(finalControlId))
             .findFirst();
 
     if (!first.isPresent()) {
@@ -115,6 +120,8 @@ public class CertificationResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("{id}/")
   public Certification getCertification(@PathParam(value = "id") String certificationId) {
+    certificationId = sanitize(certificationId);
+
     var certifications = this.service.getCertifications();
 
     var certification = certifications.get(certificationId);
@@ -131,11 +138,15 @@ public class CertificationResource {
   public Control getControl(
       @PathParam("certificationId") String certificationId,
       @PathParam("controlId") String controlId) {
+    certificationId = sanitize(certificationId);
+    controlId = sanitize(controlId);
+
     var certification = getCertification(certificationId);
 
+    String finalControlId = controlId;
     var any =
         certification.getControls().stream()
-            .filter(control -> control.getControlId().equals(controlId))
+            .filter(control -> control.getControlId().equals(finalControlId))
             .findAny();
 
     if (!any.isPresent()) {
@@ -148,6 +159,8 @@ public class CertificationResource {
   @POST
   @Path("import/{certificationId}")
   public void importCertification(@PathParam("certificationId") String certificationId) {
+    certificationId = sanitize(certificationId);
+
     var certification = this.service.load(certificationId);
 
     if (certification == null) {

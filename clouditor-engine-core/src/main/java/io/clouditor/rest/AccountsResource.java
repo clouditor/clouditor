@@ -30,6 +30,7 @@
 package io.clouditor.rest;
 
 import static io.clouditor.auth.AuthenticationService.ROLE_ADMIN;
+import static io.clouditor.rest.AbstractAPI.sanitize;
 
 import io.clouditor.credentials.AccountService;
 import io.clouditor.credentials.CloudAccount;
@@ -66,6 +67,8 @@ public class AccountsResource {
   @GET
   @Path("{provider}")
   public CloudAccount getAccount(@PathParam("provider") String provider) {
+    provider = sanitize(provider);
+
     var account = this.service.getAccount(provider);
 
     if (account == null) {
@@ -78,6 +81,8 @@ public class AccountsResource {
   @POST
   @Path("discover/{provider}")
   public CloudAccount discover(@PathParam("provider") String provider) {
+    provider = sanitize(provider);
+
     var account = this.service.discover(provider);
 
     if (account == null) {
@@ -90,6 +95,8 @@ public class AccountsResource {
   @PUT
   @Path("{provider}")
   public void putAccount(@PathParam("provider") String provider, CloudAccount account) {
+    provider = sanitize(provider);
+
     try {
       this.service.addAccount(provider, account);
     } catch (IOException ex) {

@@ -79,6 +79,16 @@ public abstract class AbstractAPI<C extends Component> extends ResourceConfig {
     this.packages(this.getClass().getPackage().toString());
   }
 
+  /**
+   * Sanitizes input for several factors: a) to not break the log file pattern.
+   *
+   * @param input the untrusted input
+   * @return the sanitized output
+   */
+  public static String sanitize(String input) {
+    return input == null ? null : input.replaceAll("[\n|\r\t]", "_");
+  }
+
   /** Starts the API. */
   public void start() {
     LOGGER.info("Starting {}...", this.getClass().getSimpleName());
