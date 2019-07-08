@@ -61,6 +61,8 @@ jobs:
       - build
       - run:
           command: |
+            docker tag clouditor/engine clouditor/engine:$CIRCLE_TAG
+            docker tag clouditor/ui clouditor/ui:$CIRCLE_TAG
             docker tag clouditor/clouditor clouditor/clouditor:$CIRCLE_TAG
       - push:
           tag: $CIRCLE_TAG
