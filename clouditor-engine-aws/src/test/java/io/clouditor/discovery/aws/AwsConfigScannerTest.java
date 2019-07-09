@@ -183,7 +183,7 @@ class AwsConfigScannerTest extends AwsScannerTest {
             .getService(RuleService.class)
             .loadRule(
                 FileSystemManager.getInstance()
-                    .getPathForResource("rules/aws/config/resources-region-eu.yaml"));
+                    .getPathForResource("rules/aws/config/resources-region-eu.md"));
 
     assertNotNull(rule);
 

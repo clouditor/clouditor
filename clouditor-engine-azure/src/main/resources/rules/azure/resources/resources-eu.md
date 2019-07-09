@@ -8,4 +8,4 @@ AzureResource has location within "westeurope", "northeurope"
 
 # Controls
 
-CIS Microsoft Azure Foundations Benchmark/Azure 8.2
+* CIS Microsoft Azure Foundations Benchmark/Azure 8.2

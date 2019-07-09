@@ -1,8 +1,0 @@
-name: "Azure SQL Server: eMail Configuration for Advanced Data Security"
-description: "Checks, whether the SQL server has proper email configuration for Advanced Data Security"
-conditions:
-  - SQLServer has not empty securityAlertPolicy.emailAddresses
-  - SQLServer has securityAlertPolicy.emailAccountAdmins == true
-controls:
-  - "CIS Microsoft Azure Foundations Benchmark/Azure 4.1.4"
-  - "CIS Microsoft Azure Foundations Benchmark/Azure 4.1.5"

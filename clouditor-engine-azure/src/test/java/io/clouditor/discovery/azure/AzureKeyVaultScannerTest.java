@@ -110,7 +110,7 @@ class AzureKeyVaultScannerTest extends AzureScannerTest {
     var rule =
         this.engine
             .getService(RuleService.class)
-            .parseFromMarkDown(
+            .loadRule(
                 FileSystemManager.getInstance()
                     .getPathForResource("rules/azure/keyvault/key-expiry.md"));
 
@@ -128,7 +128,7 @@ class AzureKeyVaultScannerTest extends AzureScannerTest {
     var rule =
         this.engine
             .getService(RuleService.class)
-            .parseFromMarkDown(
+            .loadRule(
                 FileSystemManager.getInstance()
                     .getPathForResource("rules/azure/keyvault/vault-logging.md"));
 

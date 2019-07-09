@@ -14,4 +14,5 @@ Asset has property == "value"
 
 ## Controls
 
-Catalog 1 (1.1), Catalog 2 (2.2)
+* Catalog 1 (1.1)
+* Catalog 2 (2.2)

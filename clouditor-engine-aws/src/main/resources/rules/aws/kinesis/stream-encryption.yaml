@@ -1,6 +1,0 @@
-conditions: 
-  - StreamDescription has encryptionTypeAsString == "KMS"
-name: "Encrypt Kinesis Streams"
-description: "Checks for all streams if they are encrypted with KMS."
-controls:
-  - "BSI C5/KRY-03"

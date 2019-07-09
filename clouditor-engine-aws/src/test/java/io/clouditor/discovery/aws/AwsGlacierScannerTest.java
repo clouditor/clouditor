@@ -91,7 +91,7 @@ class AwsGlacierScannerTest extends AwsScannerTest {
             .getService(RuleService.class)
             .loadRule(
                 FileSystemManager.getInstance()
-                    .getPathForResource("rules/aws/glacier/vault-notifications.yaml"));
+                    .getPathForResource("rules/aws/glacier/vault-notifications.md"));
 
     assertNotNull(rule);
 

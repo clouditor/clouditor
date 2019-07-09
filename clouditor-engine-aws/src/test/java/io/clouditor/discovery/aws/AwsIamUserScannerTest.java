@@ -153,7 +153,7 @@ class AwsIamUserScannerTest extends AwsScannerTest {
     var rule =
         this.engine
             .getService(RuleService.class)
-            .loadRule(FileSystemManager.getInstance().getPathForResource("rules/aws/iam/mfa.yaml"));
+            .loadRule(FileSystemManager.getInstance().getPathForResource("rules/aws/iam/mfa.md"));
 
     // user1 has no MFA
     assertFalse(rule.evaluate(assets.get(USER1_ARN)).isOk());
@@ -169,7 +169,7 @@ class AwsIamUserScannerTest extends AwsScannerTest {
             .getService(RuleService.class)
             .loadRule(
                 FileSystemManager.getInstance()
-                    .getPathForResource("rules/aws/iam/users-in-groups.yaml"));
+                    .getPathForResource("rules/aws/iam/users-in-groups.md"));
 
     // user3 has no groups
     assertFalse(rule.evaluate(assets.get(USER3_ARN)).isOk());
@@ -182,7 +182,7 @@ class AwsIamUserScannerTest extends AwsScannerTest {
             .getService(RuleService.class)
             .loadRule(
                 FileSystemManager.getInstance()
-                    .getPathForResource("rules/aws/iam/access-key-rotation.yaml"));
+                    .getPathForResource("rules/aws/iam/access-key-rotation.md"));
 
     // user2 has an very old access key
     assertFalse(rule.evaluate(assets.get(USER2_ARN)).isOk());
@@ -195,7 +195,7 @@ class AwsIamUserScannerTest extends AwsScannerTest {
             .getService(RuleService.class)
             .loadRule(
                 FileSystemManager.getInstance()
-                    .getPathForResource("rules/aws/iam/inactive-access-keys.yaml"));
+                    .getPathForResource("rules/aws/iam/inactive-access-keys.md"));
 
     // user3 has inactive access keys
     assertFalse(rule.evaluate(assets.get(USER3_ARN)).isOk());

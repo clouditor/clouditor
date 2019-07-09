@@ -12,4 +12,4 @@ VirtualMachine has dataDiskEncryption == "Encrypted"
 
 ## Controls
 
-CIS Microsoft Azure Foundations Benchmark/Azure 7.3
+* CIS Microsoft Azure Foundations Benchmark/Azure 7.3

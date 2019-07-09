@@ -74,7 +74,7 @@ class AzureVmScannerTest extends AzureScannerTest {
     var rule =
         this.engine
             .getService(RuleService.class)
-            .parseFromMarkDown(
+            .loadRule(
                 FileSystemManager.getInstance()
                     .getPathForResource("rules/azure/compute/vm-data-encryption.md"));
 
@@ -96,7 +96,7 @@ class AzureVmScannerTest extends AzureScannerTest {
     var rule =
         this.engine
             .getService(RuleService.class)
-            .parseFromMarkDown(
+            .loadRule(
                 FileSystemManager.getInstance()
                     .getPathForResource("rules/azure/compute/vm-os-encryption.md"));
 

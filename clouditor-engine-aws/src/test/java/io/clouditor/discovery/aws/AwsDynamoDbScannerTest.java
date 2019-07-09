@@ -126,7 +126,7 @@ class AwsDynamoDbScannerTest extends AwsScannerTest {
             .getService(RuleService.class)
             .loadRule(
                 FileSystemManager.getInstance()
-                    .getPathForResource("rules/aws/dynamodb/table-encrypted.yaml"));
+                    .getPathForResource("rules/aws/dynamodb/table-encrypted.md"));
 
     assertNotNull(rule);
 

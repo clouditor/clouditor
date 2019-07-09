@@ -1,3 +1,0 @@
-condition: Vault has not empty notifications
-name: "Configure Vault Notifications in Glacier"
-description: "Checks if vault notifications are configured."

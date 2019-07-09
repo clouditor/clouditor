@@ -1,7 +1,0 @@
-condition: User has not empty mfaDevices
-description: Checks if Multi-Factor Authentication (MFA) is enabled for all users.
-name: "Enable Multi-Factor Authentication"
-controls:
-  - "IAM-09"
-  - "AWS 1.2"
-  - "BSI C5/IDM-08"

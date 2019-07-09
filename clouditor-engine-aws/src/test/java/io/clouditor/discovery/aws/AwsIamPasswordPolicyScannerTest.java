@@ -44,7 +44,7 @@ import software.amazon.awssdk.services.iam.model.PasswordPolicy;
 class AwsIamPasswordPolicyScannerTest extends AwsScannerTest {
 
   @BeforeAll
-  static void setUpOnce() throws IOException {
+  static void setUpOnce() {
     discoverAssets(
         IamClient.class,
         AwsIamPasswordPolicyScanner::new,
@@ -76,7 +76,7 @@ class AwsIamPasswordPolicyScannerTest extends AwsScannerTest {
             .getService(RuleService.class)
             .loadRule(
                 FileSystemManager.getInstance()
-                    .getPathForResource("rules/aws/iam/password-policy.yaml"));
+                    .getPathForResource("rules/aws/iam/password-policy.md"));
 
     assertTrue(rule.evaluate(policy).isOk());
   }

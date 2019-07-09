@@ -49,8 +49,7 @@ class RuleServiceTest {
     var rule =
         this.engine
             .getService(RuleService.class)
-            .parseFromMarkDown(
-                FileSystemManager.getInstance().getPathForResource("rules/test/test.md"));
+            .loadRule(FileSystemManager.getInstance().getPathForResource("rules/test/test.md"));
 
     assertNotNull(rule);
     assertEquals("Title", rule.getName());

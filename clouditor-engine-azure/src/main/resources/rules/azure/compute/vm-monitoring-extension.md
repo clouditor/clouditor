@@ -9,4 +9,4 @@ VirtualMachine has name == "MicrosoftMonitoringAgent" in extensions
 
 ## Controls
 
-CIS Microsoft Azure Foundations Benchmark/Azure 7.1
+* CIS Microsoft Azure Foundations Benchmark/Azure 7.1

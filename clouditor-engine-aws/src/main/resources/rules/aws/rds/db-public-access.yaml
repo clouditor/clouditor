@@ -1,3 +1,0 @@
-condition: Database has not publiclyAccessible == true
-name: "Deny Public Access to Database Instances"
-description: "Checks for all DB instances if they are publicly accessible."

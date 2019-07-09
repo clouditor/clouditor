@@ -10,4 +10,4 @@ NetworkSecurityGroup has flowLogSettings.retentionPolicy.days >= 90
 
 ## Controls
 
-CIS Microsoft Azure Foundations Benchmark/Azure 6.4
+* CIS Microsoft Azure Foundations Benchmark/Azure 6.4
