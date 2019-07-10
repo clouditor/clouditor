@@ -1,5 +1,0 @@
-name: "Azure SQL Server: Use Azure AD Authentication"
-description: "Checks whether Azure Active Directory Authentication is used with the sql server."
-condition: SQLServer has not empty activeDirectoryAdmin
-controls:
-  - "CIS Microsoft Azure Foundations Benchmark/Azure 4.1.8"

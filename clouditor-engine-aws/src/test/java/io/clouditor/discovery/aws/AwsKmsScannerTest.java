@@ -128,7 +128,7 @@ class AwsKmsScannerTest extends AwsScannerTest {
             .getService(RuleService.class)
             .loadRule(
                 FileSystemManager.getInstance()
-                    .getPathForResource("rules/aws/kms/key-origin-external.yaml"));
+                    .getPathForResource("rules/aws/kms/key-origin-external.md"));
 
     assertNotNull(rule);
 
@@ -150,7 +150,7 @@ class AwsKmsScannerTest extends AwsScannerTest {
             .getService(RuleService.class)
             .loadRule(
                 FileSystemManager.getInstance()
-                    .getPathForResource("rules/aws/kms/key-origin-kms.yaml"));
+                    .getPathForResource("rules/aws/kms/key-origin-kms.md"));
 
     assertNotNull(rule);
 
@@ -172,7 +172,7 @@ class AwsKmsScannerTest extends AwsScannerTest {
             .getService(RuleService.class)
             .loadRule(
                 FileSystemManager.getInstance()
-                    .getPathForResource("rules/aws/kms/key-origin-kms.yaml"));
+                    .getPathForResource("rules/aws/kms/key-origin-kms.md"));
 
     assertNotNull(rule);
 

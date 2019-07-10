@@ -139,7 +139,7 @@ class AwsS3BucketScannerTest extends AwsScannerTest {
             .getService(RuleService.class)
             .loadRule(
                 FileSystemManager.getInstance()
-                    .getPathForResource("rules/aws/s3/bucket-default-encryption.yaml"));
+                    .getPathForResource("rules/aws/s3/bucket-default-encryption.md"));
 
     assertNotNull(rule);
 

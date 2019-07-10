@@ -1,5 +1,0 @@
-condition: Table has sseDescription.statusAsString == "ENABLED"
-description: "Checks if the tables of DynamoDB are encrypted."
-name: "Encrypt DynamoDB Tables"
-controls:
-  - "BSI C5/KRY-03"

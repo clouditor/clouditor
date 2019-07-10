@@ -9,4 +9,4 @@ Subscription has retentionPolicy.days >= 365 in all logProfiles
 
 ## Controls
 
-CIS Microsoft Azure Foundations Benchmark/Azure 5.2
+* CIS Microsoft Azure Foundations Benchmark/Azure 5.2

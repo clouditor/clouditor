@@ -69,7 +69,7 @@ class AzureAadUserScannerTest extends AzureScannerTest {
     var rule =
         this.engine
             .getService(RuleService.class)
-            .parseFromMarkDown(
+            .loadRule(
                 FileSystemManager.getInstance()
                     .getPathForResource("rules/azure/aad/aad-no-guest-user.md"));
 

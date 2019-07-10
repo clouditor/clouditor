@@ -86,7 +86,7 @@ class AwsEc2VolumeScannerTest extends AwsScannerTest {
             .getService(RuleService.class)
             .loadRule(
                 FileSystemManager.getInstance()
-                    .getPathForResource("/rules/aws/ec2/volume-encryption.yaml"));
+                    .getPathForResource("/rules/aws/ec2/volume-encryption.md"));
 
     assertFalse(rule.evaluate(volume).isOk());
 

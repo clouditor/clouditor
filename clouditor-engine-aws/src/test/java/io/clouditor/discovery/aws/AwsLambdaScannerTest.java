@@ -48,7 +48,7 @@ import software.amazon.awssdk.services.lambda.model.ListFunctionsResponse;
 class AwsLambdaScannerTest extends AwsScannerTest {
 
   @BeforeAll
-  static void setUpOnce() throws IOException {
+  static void setUpOnce() {
     discoverAssets(
         LambdaClient.class,
         AwsLambdaScanner::new,
@@ -85,7 +85,7 @@ class AwsLambdaScannerTest extends AwsScannerTest {
             .getService(RuleService.class)
             .loadRule(
                 FileSystemManager.getInstance()
-                    .getPathForResource("rules/aws/lambda/function-env-encryption.yaml"));
+                    .getPathForResource("rules/aws/lambda/function-env-encryption.md"));
 
     assertNotNull(rule);
 
@@ -107,7 +107,7 @@ class AwsLambdaScannerTest extends AwsScannerTest {
             .getService(RuleService.class)
             .loadRule(
                 FileSystemManager.getInstance()
-                    .getPathForResource("rules/aws/lambda/function-policy-wildcard.yaml"));
+                    .getPathForResource("rules/aws/lambda/function-policy-wildcard.md"));
 
     assertNotNull(rule);
 

@@ -68,7 +68,7 @@ class AzureStorageAccountScannerTest extends AzureScannerTest {
             .loadRule(
                 FileSystemManager.getInstance()
                     .getPathForResource(
-                        "rules/azure/storage/storage-account-enforce-secure-transfer.yaml"));
+                        "rules/azure/storage/storage-account-enforce-secure-transfer.md"));
 
     var account =
         assets.get(
@@ -85,7 +85,7 @@ class AzureStorageAccountScannerTest extends AzureScannerTest {
             .getService(RuleService.class)
             .loadRule(
                 FileSystemManager.getInstance()
-                    .getPathForResource("rules/azure/storage/storage-account-blob-encrypted.yaml"));
+                    .getPathForResource("rules/azure/storage/storage-account-blob-encrypted.md"));
 
     var account =
         assets.get(

@@ -1,5 +1,0 @@
-name: "Azure Storage Account: Secure Transfer"
-description: "Checks if Azure StorageAccount only supports secure transfer."
-condition: StorageAccount has properties.supportsHttpsTrafficOnly == true
-controls:
-  - "CIS Microsoft Azure Foundations Benchmark/Azure 3.1"

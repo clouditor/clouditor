@@ -1,3 +1,0 @@
-condition: Vpc has empty staleSecurityGroups
-description: Checks if there are stale security groups in a VPC. A stale security group e.g. references a deleted peer VPC.
-name: "Delete Stale Security Groups"

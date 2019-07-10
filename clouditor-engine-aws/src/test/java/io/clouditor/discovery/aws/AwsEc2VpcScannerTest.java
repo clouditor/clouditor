@@ -79,7 +79,7 @@ class AwsEc2VpcScannerTest extends AwsScannerTest {
             .getService(RuleService.class)
             .loadRule(
                 FileSystemManager.getInstance()
-                    .getPathForResource("rules/aws/ec2/vpc-stale-security-groups.yaml"));
+                    .getPathForResource("rules/aws/ec2/vpc-stale-security-groups.md"));
 
     assertFalse(rule.evaluate(vpc).isOk());
   }

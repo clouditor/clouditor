@@ -8,4 +8,4 @@ ActiveDirectoryUser has not userPrincipalName contains "#EXT#"
 
 ## Controls
 
-CIS Microsoft Azure Foundations Benchmark/Azure 1.3
+* CIS Microsoft Azure Foundations Benchmark/Azure 1.3

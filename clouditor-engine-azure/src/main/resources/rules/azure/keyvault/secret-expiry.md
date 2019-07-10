@@ -6,6 +6,6 @@ Checks if all secrets in Azure Key Vault have an expiry time set and is less tha
 KeyVault has attributes.exp before 365 days in all secrets
 ```
 
-condition: 
-controls:
-  - "CIS Microsoft Azure Foundations Benchmark/Azure 8.2"
+## Controls
+
+* CIS Microsoft Azure Foundations Benchmark/Azure 8.2

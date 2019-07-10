@@ -89,7 +89,7 @@ class AwsSqsScannerTest extends AwsScannerTest {
             .getService(RuleService.class)
             .loadRule(
                 FileSystemManager.getInstance()
-                    .getPathForResource("rules/aws/sqs/queue-visibility-timeout.yaml"));
+                    .getPathForResource("rules/aws/sqs/queue-visibility-timeout.md"));
 
     assertNotNull(rule);
 

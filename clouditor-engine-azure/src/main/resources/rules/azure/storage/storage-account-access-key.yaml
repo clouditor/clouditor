@@ -1,5 +1,0 @@
-name: "Azure Storage Account: Access Key Rotation"
-description: "Checks if storage account access keys are regenerated periodically."
-condition: StorageAccount has keyRegenerated == true
-controls:
-  - "CIS Microsoft Azure Foundations Benchmark/Azure 3.3"

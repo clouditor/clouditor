@@ -29,20 +29,17 @@
 
 package io.clouditor.assurance;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import static io.clouditor.assurance.RuleService.RuleVisitor.renderText;
+
 import io.clouditor.assurance.ccl.CCLDeserializer;
 import io.clouditor.discovery.AssetService;
 import io.clouditor.discovery.DiscoveryResult;
 import io.clouditor.events.DiscoveryResultSubscriber;
-import io.clouditor.rest.ObjectMapperResolver;
 import io.clouditor.util.FileSystemManager;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -54,6 +51,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import org.commonmark.node.AbstractVisitor;
+import org.commonmark.node.BulletList;
 import org.commonmark.node.FencedCodeBlock;
 import org.commonmark.node.Heading;
 import org.commonmark.node.Node;
@@ -82,18 +80,13 @@ public class RuleService extends DiscoveryResultSubscriber {
 
         try (var stream = Files.list(path)) {
           for (var p : stream.collect(Collectors.toList())) {
-            if (Files.isDirectory(path) || p.endsWith(".yaml") || p.endsWith(".md")) {
+            if (Files.isDirectory(path) || p.endsWith(".md")) {
               this.load(p);
             }
           }
         }
       } else {
-        Rule rule;
-        if (path.getFileName().toString().endsWith(".md")) {
-          rule = this.parseFromMarkDown(path);
-        } else {
-          rule = loadRule(path);
-        }
+        var rule = loadRule(path);
 
         if (rule.getAssetType() != null) {
           // make sure, the set exists
@@ -110,29 +103,6 @@ public class RuleService extends DiscoveryResultSubscriber {
     } catch (IOException ex) {
       LOGGER.error("Could not load file or path {}: {}", path, ex.getMessage());
     }
-  }
-
-  public Rule parseFromMarkDown(Path path) throws IOException {
-    var rule = new Rule();
-
-    LOGGER.info("Trying to load rule from {}...", path.getFileName());
-
-    var parser = Parser.builder().build();
-
-    var doc = parser.parseReader(new InputStreamReader(Files.newInputStream(path)));
-
-    doc.accept(new RuleVisitor(rule));
-
-    rule.setId(
-        path.getParent().getParent().getFileName()
-            + "-"
-            + path.getParent().getFileName()
-            + "-"
-            + path.getFileName().toString().split("\\.")[0]);
-
-    rule.setActive(true);
-
-    return rule;
   }
 
   public RuleEvaluation getStatus(Rule rule) {
@@ -163,11 +133,33 @@ public class RuleService extends DiscoveryResultSubscriber {
         .orElse(null);
   }
 
+  public static class ControlsVisitor extends AbstractVisitor {
+
+    private Rule rule;
+
+    ControlsVisitor(Rule rule) {
+      this.rule = rule;
+    }
+
+    @Override
+    public void visit(BulletList bulletList) {
+      var node = bulletList.getFirstChild();
+
+      this.rule.getControls().add(renderText(node.getFirstChild()));
+
+      while (node.getNext() != null) {
+        node = node.getNext();
+
+        this.rule.getControls().add(renderText(node.getFirstChild()));
+      }
+    }
+  }
+
   public static class RuleVisitor extends AbstractVisitor {
 
     private Rule rule;
 
-    public RuleVisitor(Rule rule) {
+    RuleVisitor(Rule rule) {
       this.rule = rule;
     }
 
@@ -194,11 +186,9 @@ public class RuleService extends DiscoveryResultSubscriber {
           break;
         case 2:
           if (title.equals("Controls")) {
-            var text = renderText(heading.getNext());
+            var node = heading.getNext();
 
-            var controls = text.split(",");
-
-            this.rule.setControls(Arrays.asList(controls));
+            node.accept(new ControlsVisitor(this.rule));
           }
           break;
         default:
@@ -227,49 +217,47 @@ public class RuleService extends DiscoveryResultSubscriber {
       }
     }
 
-    private String renderHTML(Node node) {
+    private static String renderHTML(Node node) {
       var renderer = HtmlRenderer.builder().build();
 
       return renderer.render(node);
     }
 
-    private String renderText(Node node) {
+    static String renderText(Node node) {
       var renderer = TextContentRenderer.builder().build();
 
       return renderer.render(node);
     }
   }
 
+  /**
+   * Loads a rule from a Markdown-style document specified by the path.
+   *
+   * @param path The path to the Markdown file
+   * @return a parsed {@link Rule}
+   * @throws IOException if a parsing error occurred
+   */
   public Rule loadRule(Path path) throws IOException {
+    var rule = new Rule();
+
     LOGGER.info("Trying to load rule from {}...", path.getFileName());
 
-    var mapper = new ObjectMapper(new YAMLFactory());
-    ObjectMapperResolver.configureObjectMapper(mapper);
+    var parser = Parser.builder().build();
 
-    try (var input = Files.newInputStream(path, StandardOpenOption.READ)) {
-      var b = new byte[Math.toIntExact((Long) Files.getAttribute(path, "size"))];
-      var bytes = input.read(b);
+    var doc = parser.parseReader(new InputStreamReader(Files.newInputStream(path)));
 
-      if (bytes != b.length) {
-        throw new IOException("Could not fully read rule.");
-      }
+    doc.accept(new RuleVisitor(rule));
 
-      var rule = mapper.readValue(b, Rule.class);
+    rule.setId(
+        path.getParent().getParent().getFileName()
+            + "-"
+            + path.getParent().getFileName()
+            + "-"
+            + path.getFileName().toString().split("\\.")[0]);
 
-      // set as active
-      rule.setActive(true);
+    rule.setActive(true);
 
-      // set an id
-      // TODO: not really the best way, but works for now
-      rule.setId(
-          path.getParent().getParent().getFileName()
-              + "-"
-              + path.getParent().getFileName()
-              + "-"
-              + path.getFileName().toString().split("\\.")[0]);
-
-      return rule;
-    }
+    return rule;
   }
 
   public Set<Rule> get(String assetType) {

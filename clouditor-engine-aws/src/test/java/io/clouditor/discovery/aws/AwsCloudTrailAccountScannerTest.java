@@ -109,7 +109,7 @@ class AwsCloudTrailAccountScannerTest extends AwsScannerTest {
             .getService(RuleService.class)
             .loadRule(
                 FileSystemManager.getInstance()
-                    .getPathForResource("rules/aws/cloudtrail/account-cloud-trail-active.yaml"));
+                    .getPathForResource("rules/aws/cloudtrail/account-cloud-trail-active.md"));
 
     assertNotNull(rule);
 

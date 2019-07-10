@@ -1,5 +1,0 @@
-name: "Azure Storage Account: Blob Encryption"
-description: "Checks if a Azure StorageAccount is configured to use encryption for blob storage service."
-condition: StorageAccount has encryptionStatuses.Blob.enabled == true
-controls:
-  - "CIS Microsoft Azure Foundations Benchmark/Azure 3.2"

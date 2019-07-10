@@ -216,7 +216,10 @@ public class CCLDeserializer extends StdDeserializer<Condition> {
     var visitor = new ConditionVisitor();
 
     var condition = visitor.visit(parser.condition());
-    condition.setSource(source);
+
+    if (condition != null) {
+      condition.setSource(source);
+    }
 
     return condition;
   }

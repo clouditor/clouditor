@@ -91,7 +91,7 @@ class AwsKinesisScannerTest extends AwsScannerTest {
             .getService(RuleService.class)
             .loadRule(
                 FileSystemManager.getInstance()
-                    .getPathForResource("rules/aws/kinesis/stream-encryption.yaml"));
+                    .getPathForResource("rules/aws/kinesis/stream-encryption.md"));
 
     assertNotNull(rule);
 

@@ -79,7 +79,7 @@ class AwsCloudTrailScannerTest extends AwsScannerTest {
             .getService(RuleService.class)
             .loadRule(
                 FileSystemManager.getInstance()
-                    .getPathForResource("rules/aws/cloudtrail/trail-encrypted.yaml"));
+                    .getPathForResource("rules/aws/cloudtrail/trail-encrypted.md"));
 
     assertNotNull(rule);
 

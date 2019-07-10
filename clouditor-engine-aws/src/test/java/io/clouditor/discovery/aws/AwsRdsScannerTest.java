@@ -69,7 +69,7 @@ class AwsRdsScannerTest extends AwsScannerTest {
             .getService(RuleService.class)
             .loadRule(
                 FileSystemManager.getInstance()
-                    .getPathForResource("rules/aws/rds/db-encryption.yaml"));
+                    .getPathForResource("rules/aws/rds/db-encryption.md"));
 
     assertNotNull(rule);
 
@@ -86,7 +86,7 @@ class AwsRdsScannerTest extends AwsScannerTest {
             .getService(RuleService.class)
             .loadRule(
                 FileSystemManager.getInstance()
-                    .getPathForResource("rules/aws/rds/db-public-access.yaml"));
+                    .getPathForResource("rules/aws/rds/db-public-access.md"));
 
     assertNotNull(rule);
 

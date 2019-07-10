@@ -1,3 +1,0 @@
-condition: Queue has queueAttributes.VisibilityTimeout <= 30
-description: "Checks for all queues if they have a visibility timeout of at most 30 seconds set."
-name: "Configure a Visibility Timeout for Queues"
