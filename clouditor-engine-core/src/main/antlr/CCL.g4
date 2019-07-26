@@ -26,7 +26,9 @@ binaryComparison: field operator value;
 timeComparison: field timeOperator (time unit | nowOperator);
 timeOperator:
   BeforeOperator |
-  AfterOperator;
+  AfterOperator |
+  YoungerOperator |
+  OlderOperator;
 nowOperator: 'now';
 time: Number;
 unit:
@@ -66,6 +68,8 @@ ContainsOperator: 'contains';
 
 BeforeOperator: 'before';
 AfterOperator: 'after';
+YoungerOperator: 'younger';
+OlderOperator: 'older';
 
 BooleanLiteral:
   True |
