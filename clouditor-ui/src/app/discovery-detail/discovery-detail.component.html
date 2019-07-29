@@ -91,7 +91,7 @@
               ngbPopover="Resource is compliant to rule {{ result.rule.name }}" triggers="mouseenter:mouseleave"
               *ngIf="result.ok"><i [routerLink]="['/rules', result.rule.id]" class="fas fa-check-circle">
               </i></span>
-            <span class="pointer text-danger pl-1 pr-1" ngbPopover="Resource is vialoting rule {{ result.rule.name }}"
+            <span class="pointer text-danger pl-1 pr-1" ngbPopover="Resource is violating rule {{ result.rule.name }}"
               triggers="mouseenter:mouseleave" *ngIf="!result.ok"><i [routerLink]="['/rules', result.rule.id]"
                 class="fas fa-exclamation-circle "></i></span>
           </div>
