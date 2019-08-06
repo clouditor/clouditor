@@ -285,8 +285,13 @@ public class RuleService extends DiscoveryResultSubscriber {
       // evaluate all rules
       rulesForAsset.forEach(
           rule -> {
-            var eval = rule.evaluate(asset);
-
+            EvaluationResult eval;
+            if (!rule.evaluateApplicability(asset)) {
+              // simply add an empty EvaluationResult
+              eval = new EvaluationResult(rule, asset.getProperties());
+            } else {
+              eval = rule.evaluate(asset);
+            }
             // TODO: can we really update the asset?
             asset.addEvaluationResult(eval);
             if (!eval.isOk()) {

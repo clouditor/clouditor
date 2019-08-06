@@ -2,18 +2,25 @@ grammar CCL;
 
 condition: assetType 'has' expression EOF;
 
-assetType : Identifier;
+assetType :
+    simpleAsset |
+    groupedAsset;
+
+simpleAsset: field;
+
+groupedAsset: field 'with' expression;
+
 field : Identifier;
 expression:
   simpleExpression |
-  inExpression ;
+  notExpression |
+  inExpression;
 
 simpleExpression:
-  '(' expression ')' |
-  notExpression |
   emptyExpression |
   withinExpression |
-  comparison;
+  comparison |
+  '(' expression ')' ;
 
 notExpression: 'not' expression;
 

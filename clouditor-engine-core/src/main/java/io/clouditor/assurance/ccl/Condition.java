@@ -33,7 +33,7 @@ import io.clouditor.discovery.AssetProperties;
 
 public class Condition {
 
-  private String assetType;
+  private AssetType assetType;
 
   private Expression expression;
 
@@ -47,11 +47,11 @@ public class Condition {
     this.expression = expression;
   }
 
-  public String getAssetType() {
+  public AssetType getAssetType() {
     return assetType;
   }
 
-  public void setAssetType(String assetType) {
+  public void setAssetType(AssetType assetType) {
     this.assetType = assetType;
   }
 
