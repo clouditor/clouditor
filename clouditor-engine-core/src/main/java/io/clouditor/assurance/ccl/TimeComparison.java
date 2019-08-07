@@ -50,6 +50,10 @@ public class TimeComparison extends Comparison {
 
     Instant instant;
 
+    if (fieldValue == null) {
+      return false;
+    }
+
     if (fieldValue instanceof Long) {
       instant = Instant.ofEpochSecond((Long) fieldValue);
     } else if ((fieldValue instanceof Map) && ((Map) fieldValue).get("epochSecond") != null) {
@@ -68,9 +72,14 @@ public class TimeComparison extends Comparison {
       }
     }
 
-    var value = Instant.now().minus(relativeValue, timeUnit);
+    Instant value;
+    if (this.timeOperator == TimeOperator.BEFORE || this.timeOperator == TimeOperator.AFTER) {
+      value = Instant.now().plus(relativeValue, timeUnit);
+    } else {
+      value = Instant.now().minus(relativeValue, timeUnit);
+    }
 
-    if (this.timeOperator == TimeOperator.BEFORE || this.timeOperator == TimeOperator.YOUNGER) {
+    if (this.timeOperator == TimeOperator.YOUNGER || this.timeOperator == TimeOperator.AFTER) {
       return instant.isAfter(value);
     } else {
       return instant.isBefore(value);
