@@ -129,7 +129,7 @@ class CCLDeserializerTest {
   @Test
   void testIsBeforeComparison() {
     var ccl = new CCLDeserializer();
-    var condition = ccl.parse("User has createDate before now");
+    var condition = ccl.parse("User has createDate older 10 days");
 
     var asset = new AssetProperties();
     asset.put("createDate", Map.of("epochSecond", 1550131042, "nano", 1));
@@ -142,10 +142,6 @@ class CCLDeserializerTest {
 
     assertFalse(condition.evaluate(asset));
 
-    condition = ccl.parse("User has createDate after now");
-
-    assertTrue(condition.evaluate(asset));
-
     // something older than 90 days
     asset.put(
         "createDate",
@@ -153,7 +149,7 @@ class CCLDeserializerTest {
             "epochSecond", Instant.now().minus(100, ChronoUnit.DAYS).getEpochSecond(), "nano", 0));
 
     // user create date should not be older than 90 days
-    condition = ccl.parse("User has not createDate before 90 days");
+    condition = ccl.parse("User has createDate younger 90 days");
 
     assertFalse(condition.evaluate(asset));
   }

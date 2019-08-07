@@ -184,7 +184,7 @@ class AwsIamUserScannerTest extends AwsScannerTest {
                 FileSystemManager.getInstance()
                     .getPathForResource("rules/aws/iam/access-key-rotation.md"));
 
-    // user2 has an very old access key
+    // user2 has a very old access key
     assertFalse(rule.evaluate(assets.get(USER2_ARN)).isOk());
   }
 
