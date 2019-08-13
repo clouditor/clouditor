@@ -138,7 +138,9 @@ class CCLDeserializerTest {
 
     asset.clear();
 
-    asset.put("expiry", Map.of("epochSecond", Instant.now().plus(20, ChronoUnit.DAYS).getEpochSecond(), "nano", 1));
+    asset.put(
+        "expiry",
+        Map.of("epochSecond", Instant.now().plus(20, ChronoUnit.DAYS).getEpochSecond(), "nano", 1));
 
     assertFalse(condition.evaluate(asset));
   }
@@ -149,7 +151,9 @@ class CCLDeserializerTest {
     var condition = ccl.parse("AccessKey has expiry after 10 days");
 
     var asset = new AssetProperties();
-    asset.put("expiry", Map.of("epochSecond", Instant.now().plus(20, ChronoUnit.DAYS).getEpochSecond(), "nano", 1));
+    asset.put(
+        "expiry",
+        Map.of("epochSecond", Instant.now().plus(20, ChronoUnit.DAYS).getEpochSecond(), "nano", 1));
 
     assertTrue(condition.evaluate(asset));
 
@@ -172,7 +176,10 @@ class CCLDeserializerTest {
 
     asset.clear();
     // something in the future
-    asset.put("createDate", Map.of("epochSecond", Instant.now().minus(20, ChronoUnit.DAYS).getEpochSecond(), "nano", 1));
+    asset.put(
+        "createDate",
+        Map.of(
+            "epochSecond", Instant.now().minus(20, ChronoUnit.DAYS).getEpochSecond(), "nano", 1));
 
     assertFalse(condition.evaluate(asset));
   }
@@ -184,7 +191,10 @@ class CCLDeserializerTest {
 
     var asset = new AssetProperties();
 
-    asset.put("createDate", Map.of("epochSecond", Instant.now().minus(20, ChronoUnit.DAYS).getEpochSecond(), "nano", 1));
+    asset.put(
+        "createDate",
+        Map.of(
+            "epochSecond", Instant.now().minus(20, ChronoUnit.DAYS).getEpochSecond(), "nano", 1));
 
     assertTrue(condition.evaluate(asset));
 
