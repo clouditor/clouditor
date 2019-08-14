@@ -3,7 +3,7 @@
 Checks if Multi-Factor Authentication (MFA) is enabled for all users.
 
 ```ccl
-condition: User has not empty mfaDevices
+User has not empty mfaDevices
 ```
 
 ## Controls
