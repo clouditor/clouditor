@@ -60,11 +60,11 @@ public class Rule {
   public boolean evaluateApplicability(Asset asset) {
 
     if (this.condition != null) {
-      if (this.condition.getAssetType() instanceof GroupedAsset) {
+      if (this.condition.getAssetType() instanceof FilteredAssetType) {
         return this.condition.getAssetType().evaluate(asset.getProperties());
       }
     } else if (this.conditions != null) {
-      if (this.conditions.get(0).getAssetType() instanceof GroupedAsset) {
+      if (this.conditions.get(0).getAssetType() instanceof FilteredAssetType) {
         return this.conditions.get(0).getAssetType().evaluate(asset.getProperties());
       }
     }
@@ -96,7 +96,7 @@ public class Rule {
   public String getAssetType() {
     // single condition
     if (this.condition != null && this.condition.getAssetType() != null) {
-      return this.condition.getAssetType().getField();
+      return this.condition.getAssetType().getValue();
     }
 
     // multiple conditions
@@ -104,7 +104,7 @@ public class Rule {
         && !this.conditions.isEmpty()
         && this.conditions.get(0).getAssetType() != null) {
       // take the first one
-      return this.conditions.get(0).getAssetType().getField();
+      return this.conditions.get(0).getAssetType().getValue();
     }
 
     // no asset type found, we cannot really use this rule then

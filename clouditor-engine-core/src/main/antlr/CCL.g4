@@ -3,12 +3,12 @@ grammar CCL;
 condition: assetType 'has' expression EOF;
 
 assetType :
-    simpleAsset |
-    groupedAsset;
+    simpleAssetType |
+    filteredAssetType;
 
-simpleAsset: field;
+simpleAssetType: field;
 
-groupedAsset: field 'with' expression;
+filteredAssetType: field 'with' expression;
 
 field : Identifier;
 expression:
