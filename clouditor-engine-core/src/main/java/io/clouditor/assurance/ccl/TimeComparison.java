@@ -50,24 +50,36 @@ public class TimeComparison extends Comparison {
 
     Instant instant;
 
+    if (fieldValue == null) {
+      return false;
+    }
+
     if (fieldValue instanceof Long) {
       instant = Instant.ofEpochSecond((Long) fieldValue);
-    } else {
+    } else if ((fieldValue instanceof Map) && ((Map) fieldValue).get("epochSecond") != null) {
       // field values are not really instants but serialized Instant in the form of epochSecond
       // and nano, we need to re-create the Instant
-      if (!(fieldValue instanceof Map) || ((Map) fieldValue).get("epochSecond") == null) {
-        return false;
-      }
 
       instant =
           Instant.ofEpochSecond(
               ((Number) ((Map) fieldValue).get("epochSecond")).longValue(),
               ((Number) ((Map) fieldValue).get("nano")).longValue());
+    } else {
+      try {
+        instant = Instant.parse((String) fieldValue);
+      } catch (ClassCastException e) {
+        return false;
+      }
     }
 
-    var value = Instant.now().plus(relativeValue, timeUnit);
+    Instant value;
+    if (this.timeOperator == TimeOperator.BEFORE || this.timeOperator == TimeOperator.AFTER) {
+      value = Instant.now().plus(relativeValue, timeUnit);
+    } else {
+      value = Instant.now().minus(relativeValue, timeUnit);
+    }
 
-    if (this.timeOperator == TimeOperator.AFTER) {
+    if (this.timeOperator == TimeOperator.YOUNGER || this.timeOperator == TimeOperator.AFTER) {
       return instant.isAfter(value);
     } else {
       return instant.isBefore(value);
@@ -96,6 +108,8 @@ public class TimeComparison extends Comparison {
 
   public enum TimeOperator {
     BEFORE,
-    AFTER
+    AFTER,
+    YOUNGER,
+    OLDER
   }
 }

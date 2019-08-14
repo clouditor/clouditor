@@ -2,18 +2,25 @@ grammar CCL;
 
 condition: assetType 'has' expression EOF;
 
-assetType : Identifier;
+assetType :
+    simpleAssetType |
+    filteredAssetType;
+
+simpleAssetType: field;
+
+filteredAssetType: field 'with' expression;
+
 field : Identifier;
 expression:
   simpleExpression |
-  inExpression ;
+  notExpression |
+  inExpression;
 
 simpleExpression:
-  '(' expression ')' |
-  notExpression |
   emptyExpression |
   withinExpression |
-  comparison;
+  comparison |
+  '(' expression ')' ;
 
 notExpression: 'not' expression;
 
@@ -26,7 +33,9 @@ binaryComparison: field operator value;
 timeComparison: field timeOperator (time unit | nowOperator);
 timeOperator:
   BeforeOperator |
-  AfterOperator;
+  AfterOperator |
+  YoungerOperator |
+  OlderOperator;
 nowOperator: 'now';
 time: Number;
 unit:
@@ -66,6 +75,8 @@ ContainsOperator: 'contains';
 
 BeforeOperator: 'before';
 AfterOperator: 'after';
+YoungerOperator: 'younger';
+OlderOperator: 'older';
 
 BooleanLiteral:
   True |

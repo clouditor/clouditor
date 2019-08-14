@@ -32,9 +32,7 @@ package io.clouditor.assurance;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import io.clouditor.assurance.ccl.CCLDeserializer;
-import io.clouditor.assurance.ccl.CCLSerializer;
-import io.clouditor.assurance.ccl.Condition;
+import io.clouditor.assurance.ccl.*;
 import io.clouditor.discovery.Asset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,6 +56,20 @@ public class Rule {
   @JsonProperty private String icon = "far fa-file-alt";
   @JsonProperty private List<String> controls = new ArrayList<>();
   @JsonProperty private String id;
+
+  public boolean evaluateApplicability(Asset asset) {
+
+    if (this.condition != null) {
+      if (this.condition.getAssetType() instanceof FilteredAssetType) {
+        return this.condition.getAssetType().evaluate(asset.getProperties());
+      }
+    } else if (this.conditions != null) {
+      if (this.conditions.get(0).getAssetType() instanceof FilteredAssetType) {
+        return this.conditions.get(0).getAssetType().evaluate(asset.getProperties());
+      }
+    }
+    return true;
+  }
 
   public EvaluationResult evaluate(Asset asset) {
     var eval = new EvaluationResult(this, asset.getProperties());
@@ -83,14 +95,16 @@ public class Rule {
 
   public String getAssetType() {
     // single condition
-    if (this.condition != null) {
-      return this.condition.getAssetType();
+    if (this.condition != null && this.condition.getAssetType() != null) {
+      return this.condition.getAssetType().getValue();
     }
 
     // multiple conditions
-    if (this.conditions != null && !this.conditions.isEmpty()) {
+    if (this.conditions != null
+        && !this.conditions.isEmpty()
+        && this.conditions.get(0).getAssetType() != null) {
       // take the first one
-      return this.conditions.get(0).getAssetType();
+      return this.conditions.get(0).getAssetType().getValue();
     }
 
     // no asset type found, we cannot really use this rule then

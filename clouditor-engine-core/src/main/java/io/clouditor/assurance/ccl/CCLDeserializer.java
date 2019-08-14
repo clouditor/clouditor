@@ -74,13 +74,40 @@ public class CCLDeserializer extends StdDeserializer<Condition> {
       if (ctx.assetType() != null && ctx.expression() != null) {
         var condition = new Condition();
 
-        condition.setAssetType(ctx.assetType().getText());
+        condition.setAssetType(ctx.assetType().accept(new AssetTypeListener()));
         condition.setExpression(ctx.expression().accept(new ExpressionListener()));
 
         return condition;
       }
 
       return super.visitCondition(ctx);
+    }
+  }
+
+  private static class AssetTypeListener extends CCLBaseVisitor<AssetType> {
+
+    @Override
+    public AssetType visitAssetType(CCLParser.AssetTypeContext ctx) {
+      if (ctx.simpleAssetType() != null) {
+        var simpleAsset = new SimpleAssetType();
+        simpleAsset.setValue(ctx.simpleAssetType().field().getText());
+        return simpleAsset;
+      } else if (ctx.filteredAssetType() != null) {
+        return ctx.filteredAssetType().accept(this);
+      }
+
+      return super.visitAssetType(ctx);
+    }
+
+    @Override
+    public AssetType visitFilteredAssetType(CCLParser.FilteredAssetTypeContext ctx) {
+      if (ctx.expression() != null) {
+        var asset = new FilteredAssetType();
+        asset.setValue(ctx.field().getText());
+        asset.setAssetExpression(ctx.expression().accept(new ExpressionListener()));
+        return asset;
+      }
+      return super.visitFilteredAssetType(ctx);
     }
   }
 

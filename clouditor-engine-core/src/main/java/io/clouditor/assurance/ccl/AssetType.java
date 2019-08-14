@@ -29,41 +29,13 @@
 
 package io.clouditor.assurance.ccl;
 
-import io.clouditor.discovery.AssetProperties;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import java.util.Map;
 
-public class Condition {
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "@class")
+public abstract class AssetType {
 
-  private AssetType assetType;
+  public abstract boolean evaluate(Map properties);
 
-  private Expression expression;
-
-  private String source;
-
-  public Expression getExpression() {
-    return expression;
-  }
-
-  public void setExpression(Expression expression) {
-    this.expression = expression;
-  }
-
-  public AssetType getAssetType() {
-    return assetType;
-  }
-
-  public void setAssetType(AssetType assetType) {
-    this.assetType = assetType;
-  }
-
-  public boolean evaluate(AssetProperties properties) {
-    return this.expression.evaluate(properties);
-  }
-
-  public void setSource(String source) {
-    this.source = source;
-  }
-
-  public String getSource() {
-    return source;
-  }
+  public abstract String getValue();
 }

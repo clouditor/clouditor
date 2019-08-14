@@ -29,41 +29,22 @@
 
 package io.clouditor.assurance.ccl;
 
-import io.clouditor.discovery.AssetProperties;
+import java.util.Map;
 
-public class Condition {
+public class SimpleAssetType extends AssetType {
 
-  private AssetType assetType;
+  private String value;
 
-  private Expression expression;
-
-  private String source;
-
-  public Expression getExpression() {
-    return expression;
+  public String getValue() {
+    return this.value;
   }
 
-  public void setExpression(Expression expression) {
-    this.expression = expression;
+  public void setValue(String value) {
+    this.value = value;
   }
 
-  public AssetType getAssetType() {
-    return assetType;
-  }
-
-  public void setAssetType(AssetType assetType) {
-    this.assetType = assetType;
-  }
-
-  public boolean evaluate(AssetProperties properties) {
-    return this.expression.evaluate(properties);
-  }
-
-  public void setSource(String source) {
-    this.source = source;
-  }
-
-  public String getSource() {
-    return source;
+  @Override
+  public boolean evaluate(Map properties) {
+    return true;
   }
 }
