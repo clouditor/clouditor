@@ -38,5 +38,4 @@ public abstract class AssetType {
   public abstract boolean evaluate(Map properties);
 
   public abstract String getValue();
-
 }
