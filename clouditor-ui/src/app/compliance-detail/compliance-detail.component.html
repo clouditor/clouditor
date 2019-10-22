@@ -1,6 +1,17 @@
 <!--
-  ~ Copyright (c) 2016-2019, Fraunhofer AISEC. All rights reserved.
+  ~ Copyright 2016-2019 Fraunhofer AISEC
   ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
   ~
   ~            $$\                           $$\ $$\   $$\
   ~            $$ |                          $$ |\__|  $$ |
@@ -12,19 +23,6 @@
   ~   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
   ~
   ~ This file is part of Clouditor Community Edition.
-  ~
-  ~ Clouditor Community Edition is free software: you can redistribute it and/or modify
-  ~ it under the terms of the GNU General Public License as published by
-  ~ the Free Software Foundation, either version 3 of the License, or
-  ~ (at your option) any later version.
-  ~
-  ~ Clouditor Community Edition is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  ~ GNU General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU General Public License
-  ~ long with Clouditor Community Edition.  If not, see <https://www.gnu.org/licenses/>
   -->
 
 <form #searchForm="ngForm">
@@ -32,7 +30,8 @@
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
         <li class="breadcrumb-item"><a class="text-info" routerLink="/">Home</a></li>
-        <li class="breadcrumb-item"><a class="text-info" routerLink="/compliance">Compliance</a></li>
+        <li class="breadcrumb-item"><a class="text-info" routerLink="/compliance">Compliance</a>
+        </li>
         <li class="breadcrumb-item active" aria-current="page">{{ certification._id }}</li>
       </ol>
     </nav>
@@ -40,12 +39,16 @@
     <h3>{{ certification._id }}</h3>
 
     <p>
-      <b>{{ certification._id }}</b> is a compliance catalog, published by <b>{{ certification.publisher }}</b> and
+      <b>{{ certification._id }}</b> is a compliance catalog, published by <b>{{
+      certification.publisher }}</b> and
       encompasses <b>{{ certification.controls.length }} controls</b> in total.
-      <b>{{ getMonitoredControls(certification).length }} controls</b> are configured to be monitored by Clouditor. For
+      <b>{{ getMonitoredControls(certification).length }} controls</b> are configured to be
+      monitored by Clouditor. For
       each control, the list of associated rules is displayed. A control is regarded as <span
-        class="badge badge-success">Passed</span> if no resource violates the associated rules and as <span
-        class="badge badge-danger">Failed</span>, if at least one resource violates at least one associated rule.
+      class="badge badge-success">Passed</span> if no resource violates the associated rules and as
+      <span
+        class="badge badge-danger">Failed</span>, if at least one resource violates at least one
+      associated rule.
     </p>
 
     <div class="input-group mb-3">
@@ -54,60 +57,74 @@
           <i class="fas fa-search"></i>
         </span>
         <div class="input-group-text">
-          <label class="form-check-label"><input class="search-check" type="checkbox" name="filterWaiting"
-              [ngModel]="filterOptions.waiting">
+          <label class="form-check-label"><input class="search-check" type="checkbox"
+                                                 name="filterWaiting"
+                                                 [ngModel]="filterOptions.waiting">
             <span class="badge badge-dark badge-">Not enough data</span></label>
         </div>
         <div class="input-group-text">
-          <label class="form-check-label"><input class="search-check" type="checkbox" name="filterNotMonitored"
-              [(ngModel)]="filterOptions.notMonitored"><span class="badge badge-light">Not
+          <label class="form-check-label"><input class="search-check" type="checkbox"
+                                                 name="filterNotMonitored"
+                                                 [(ngModel)]="filterOptions.notMonitored"><span
+            class="badge badge-light">Not
               Monitored</span></label>
         </div>
         <div class="input-group-text">
-          <label class="form-check-label"><input class="search-check" type="checkbox" name="filterPassed"
-              [ngModel]="filterOptions.passed"><span class="badge badge-success">Passed</span></label>
+          <label class="form-check-label"><input class="search-check" type="checkbox"
+                                                 name="filterPassed"
+                                                 [ngModel]="filterOptions.passed"><span
+            class="badge badge-success">Passed</span></label>
         </div>
         <div class="input-group-text">
-          <label class="form-check-label"><input class="search-check" type="checkbox" name="filterFailed"
-              [ngModel]="filterOptions.failed"><span class="badge badge-danger">Failed</span></label>
+          <label class="form-check-label"><input class="search-check" type="checkbox"
+                                                 name="filterFailed"
+                                                 [ngModel]="filterOptions.failed"><span
+            class="badge badge-danger">Failed</span></label>
         </div>
       </div>
-      <input type="search" [ngModel]="search" name="search" #searchInput="ngModel" class="form-control"
-        placeholder="Search..." aria-label="Search">
+      <input type="search" [ngModel]="search" name="search" #searchInput="ngModel"
+             class="form-control"
+             placeholder="Search..." aria-label="Search">
     </div>
     <div class="card-columns">
       <div *ngIf="filteredControls.length === 0">
         There are no controls that match this filter.
       </div>
       <div class="card text-dark" [class.bg-secondary]="control.isNotEvaluated()"
-        [class.border-danger]="control.hasWarning()" [class.border-success]="control.isGood()"
-        [class.bg-light]="!control.active" [class.text-muted]="!control.active"
-        *ngFor="let control of filteredControls">
+           [class.border-danger]="control.hasWarning()" [class.border-success]="control.isGood()"
+           [class.bg-light]="!control.active" [class.text-muted]="!control.active"
+           *ngFor="let control of filteredControls">
         <div class="card-header">
           <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1 clickable" [routerLink]="['/compliance', certification._id, control.controlId]">{{
-                control.controlId
-                }} <span class="badge badge-dark text-white" *ngIf="control.isNotEvaluated()">Not
-                enough data</span><span class="badge badge-success" *ngIf="control.isGood()">Passed</span><span
+            <h5 class="mb-1 clickable"
+                [routerLink]="['/compliance', certification._id, control.controlId]">{{
+              control.controlId
+              }} <span class="badge badge-dark text-white" *ngIf="control.isNotEvaluated()">Not
+                enough data</span><span class="badge badge-success"
+                                        *ngIf="control.isGood()">Passed</span><span
                 class="badge badge-danger" *ngIf="control.hasWarning()">Failed</span></h5>
             <i class="fas fa-spinner" *ngIf="processing[control.controlId]; else notprocessing"></i>
             <ng-template #notprocessing>
               <i class="fas fa-stop clickable" *ngIf="control.automated && control.active"
-                (click)="doEnable(control.controlId, false)"></i>
+                 (click)="doEnable(control.controlId, false)"></i>
               <i class="fas fa-play clickable" *ngIf="control.automated && !control.active"
-                (click)="doEnable(control.controlId, true)"></i>
+                 (click)="doEnable(control.controlId, true)"></i>
             </ng-template>
           </div>
         </div>
         <div class="card-body">
           <div class="mb-1">
-            <ngb-highlight [result]="control.domain.name" [term]="search"></ngb-highlight>: <ngb-highlight
+            <ngb-highlight [result]="control.domain.name" [term]="search"></ngb-highlight>
+            :
+            <ngb-highlight
               [result]="control.name" [term]="search"></ngb-highlight>
           </div>
           <!-- TODO: do proper plurals -->
-          <div *ngFor="let rule of control.rules" class="mt-2"><i [class]="rule.icon" [class.mr-2]="true"></i><a
-              class="text-info" [routerLink]="['/rules', rule.id]"><i>{{ rule.name }}</i></a> for
-            {{ rule.assetType }}s</div>
+          <div *ngFor="let rule of control.rules" class="mt-2"><i [class]="rule.icon"
+                                                                  [class.mr-2]="true"></i><a
+            class="text-info" [routerLink]="['/rules', rule.id]"><i>{{ rule.name }}</i></a> for
+            {{ rule.assetType }}s
+          </div>
           <!--<button type="button" style="margin-top: 5px" class="btn btn-warning clickable" *ngIf="control.hasWarning()"
               [routerLink]="['/compliance', certification._id, control.controlId]">
               <span class="badge badge-light">{{ control.violations }}</span> Non-compliant Assets

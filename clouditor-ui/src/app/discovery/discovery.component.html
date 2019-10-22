@@ -1,6 +1,17 @@
 <!--
-  ~ Copyright (c) 2016-2019, Fraunhofer AISEC. All rights reserved.
+  ~ Copyright 2016-2019 Fraunhofer AISEC
   ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
   ~
   ~            $$\                           $$\ $$\   $$\
   ~            $$ |                          $$ |\__|  $$ |
@@ -12,26 +23,11 @@
   ~   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
   ~
   ~ This file is part of Clouditor Community Edition.
-  ~
-  ~ Clouditor Community Edition is free software: you can redistribute it and/or modify
-  ~ it under the terms of the GNU General Public License as published by
-  ~ the Free Software Foundation, either version 3 of the License, or
-  ~ (at your option) any later version.
-  ~
-  ~ Clouditor Community Edition is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  ~ GNU General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU General Public License
-  ~ long with Clouditor Community Edition.  If not, see <https://www.gnu.org/licenses/>
-  -->
-
-<nav aria-label="breadcrumb">
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a class="text-info" routerLink="/">Home</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Discovery</li>
-  </ol>
+  -->nav aria-label="breadcrumb">
+<ol class="breadcrumb">
+  <li class="breadcrumb-item"><a class="text-info" routerLink="/">Home</a></li>
+  <li class="breadcrumb-item active" aria-current="page">Discovery</li>
+</ol>
 </nav>
 <h3>Discovery</h3>
 
@@ -48,43 +44,52 @@ VM or storage. The interval of the scan can be adjusted to the individual needs.
       </span>
       <div class="input-group-text" *ngFor="let group of groups">
         <label class="p-0 m-0"><input class="mr-2" type="checkbox" name="selected:{{group}}"
-            [ngModel]="!deselected[group]">
-          <i [ngbPopover]="group" triggers="mouseenter:mouseleave" [class]="getClassForGroup(group, true)"
-            [class.check-icon]="true"></i></label>
+                                      [ngModel]="!deselected[group]">
+          <i [ngbPopover]="group" triggers="mouseenter:mouseleave"
+             [class]="getClassForGroup(group, true)"
+             [class.check-icon]="true"></i></label>
       </div>
     </div>
-    <input type="search" [ngModel]="search" name="search" #searchInput="ngModel" class="mb-auto mt-auto form-control"
-      placeholder="Search..." aria-label="Search">
+    <input type="search" [ngModel]="search" name="search" #searchInput="ngModel"
+           class="mb-auto mt-auto form-control"
+           placeholder="Search..." aria-label="Search">
   </div>
 </form>
 <div>
   <ul class="list-group list-group-flush">
     <li class="list-group-item flex-column align-items-start" [class.text-muted]="!scan.enabled"
-      *ngFor="let scan of filtered">
+        *ngFor="let scan of filtered">
       <div class="d-flex w-100">
         <div class="mb-1 p-2">
-          <div [ngbPopover]="group" triggers="mouseenter:mouseleave" style="text-align: center; width: 40px">
+          <div [ngbPopover]="group" triggers="mouseenter:mouseleave"
+               style="text-align: center; width: 40px">
             <i style="font-size: 32px" [class]="getClassForGroup(scan.group, scan.enabled)"></i>
           </div>
         </div>
         <div class="mt-auto mb-auto mr-auto p-2">
           {{ scan.service }} / <a [routerLink]="['/discovery', scan._id]"
-            class="text-dark"><b>{{ scan.assetType }}</b></a><br />
+                                  class="text-dark"><b>{{ scan.assetType }}</b></a><br/>
           <clouditor-scan-badges [scan]="scan"></clouditor-scan-badges>
         </div>
         <div class="mt-auto mb-auto">
           <ng-container *ngIf="isAccountConfigured(scan.group); else notConfigured">
-            <button [disabled]="processing[scan._id]" (click)="onEnable(scan)" class="btn btn-outline-secondary"
-              *ngIf="!scan.enabled"><i class="fas fa-play"></i>
-              Start Discovery</button>
-            <button [disabled]="processing[scan._id]" (click)="onDisable(scan)" class="btn btn-outline-secondary"
-              *ngIf="scan.enabled"><i class="fas fa-stop"></i>
-              Stop Discovery</button>
+            <button [disabled]="processing[scan._id]" (click)="onEnable(scan)"
+                    class="btn btn-outline-secondary"
+                    *ngIf="!scan.enabled"><i class="fas fa-play"></i>
+              Start Discovery
+            </button>
+            <button [disabled]="processing[scan._id]" (click)="onDisable(scan)"
+                    class="btn btn-outline-secondary"
+                    *ngIf="scan.enabled"><i class="fas fa-stop"></i>
+              Stop Discovery
+            </button>
           </ng-container>
           <ng-template #notConfigured>
-            <button [routerLink]="['/accounts', 'configure', scan.group]" class="btn btn-outline-secondary"><i
-                class="fas fa-cogs"></i>
-              Configure {{ scan.group }}</button>
+            <button [routerLink]="['/accounts', 'configure', scan.group]"
+                    class="btn btn-outline-secondary"><i
+              class="fas fa-cogs"></i>
+              Configure {{ scan.group }}
+            </button>
           </ng-template>
         </div>
       </div>

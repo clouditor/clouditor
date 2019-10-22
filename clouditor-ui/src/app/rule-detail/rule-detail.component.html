@@ -1,6 +1,17 @@
 <!--
-  ~ Copyright (c) 2016-2019, Fraunhofer AISEC. All rights reserved.
+  ~ Copyright 2016-2019 Fraunhofer AISEC
   ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
   ~
   ~            $$\                           $$\ $$\   $$\
   ~            $$ |                          $$ |\__|  $$ |
@@ -12,19 +23,6 @@
   ~   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
   ~
   ~ This file is part of Clouditor Community Edition.
-  ~
-  ~ Clouditor Community Edition is free software: you can redistribute it and/or modify
-  ~ it under the terms of the GNU General Public License as published by
-  ~ the Free Software Foundation, either version 3 of the License, or
-  ~ (at your option) any later version.
-  ~
-  ~ Clouditor Community Edition is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  ~ GNU General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU General Public License
-  ~ long with Clouditor Community Edition.  If not, see <https://www.gnu.org/licenses/>
   -->
 
 <nav aria-label="breadcrumb">
@@ -32,7 +30,8 @@
     <li class="breadcrumb-item"><a class="text-info" routerLink="/">Home</a></li>
     <li class="breadcrumb-item"><a class="text-info" routerLink="/rules">Rules</a></li>
     <li class="breadcrumb-item"><a class="text-info" routerLink="/rules"
-        [queryParams]="{selected: rule?.assetType}">{{ rule?.assetType }}</a></li>
+                                   [queryParams]="{selected: rule?.assetType}">{{ rule?.assetType
+      }}</a></li>
     <li class="breadcrumb-item active" aria-current="page">{{ rule?.name }}</li>
   </ol>
 </nav>
@@ -48,41 +47,47 @@
     </div>
   </div>
 
-  <div *ngIf="rule.controls?.length > 0" class="text-muted pt-4">The rule addresses the following controls:
+  <div *ngIf="rule.controls?.length > 0" class="text-muted pt-4">The rule addresses the following
+    controls:
     <a class="text-info mr-1" [routerLink]="['/compliance', control.split('/')[0]]"
-      *ngFor="let control of rule.controls">{{ control }}</a> </div>
+       *ngFor="let control of rule.controls">{{ control }}</a> 
+  </div>
 
   <ul class="list-group list-group-flush fa-ul pt-2">
     <li class="list-group-item flex-column align-items-start" *ngFor="let resource of resources">
       <div class="d-flex w-100">
-        <span ngbPopover="Show properties" triggers="mouseenter:mouseleave" class="fa-li pt-2" style="cursor: pointer"
-          (click)="isExpanded[resource.id] = !isExpanded[resource.id]"><i class="fas"
-            [class.fa-angle-right]="!isExpanded[resource.id]"
-            [class.fa-angle-down]="isExpanded[resource.id]"></i></span>
+        <span ngbPopover="Show properties" triggers="mouseenter:mouseleave" class="fa-li pt-2"
+              style="cursor: pointer"
+              (click)="isExpanded[resource.id] = !isExpanded[resource.id]"><i class="fas"
+                                                                              [class.fa-angle-right]="!isExpanded[resource.id]"
+                                                                              [class.fa-angle-down]="isExpanded[resource.id]"></i></span>
         <div class="mb-1 p-2">
-          <i [class]="scan.assetIcon" [class.azure]="scan.group === 'Azure'" [class.aws]="scan.group === 'AWS'"
-            style="font-size: 32px"></i>
+          <i [class]="scan.assetIcon" [class.azure]="scan.group === 'Azure'"
+             [class.aws]="scan.group === 'AWS'"
+             style="font-size: 32px"></i>
         </div>
         <div class="mt-auto mb-auto mr-auto p-2">
           {{ resource.type }} / <a [routerLink]="['/discovery', resource.type]"
-            class="text-dark"><b>{{ resource.name }}</b></a>
+                                   class="text-dark"><b>{{ resource.name }}</b></a>
           <div class="text-muted">{{ resource.id }}
             <table class="table mt-2" [ngbCollapse]="!isExpanded[resource.id]">
               <tbody>
-                <tr *ngFor="let entry of resource.flattenedProperties | keyvalue">
-                  <th scope="row">{{ entry.key }}</th>
-                  <td>{{ entry.value }}</td>
-                </tr>
+              <tr *ngFor="let entry of resource.flattenedProperties | keyvalue">
+                <th scope="row">{{ entry.key }}</th>
+                <td>{{ entry.value }}</td>
+              </tr>
               </tbody>
             </table>
           </div>
         </div>
         <div class="mt-2 p-2">
           <span class="text-success pr-3" ngbPopover="Resource is compliant to the configured rule"
-            triggers="mouseenter:mouseleave" *ngIf="isResourceOk(resource.id)"><i class="fas fa-check-circle">
+                triggers="mouseenter:mouseleave" *ngIf="isResourceOk(resource.id)"><i
+            class="fas fa-check-circle">
             </i> Resource is compliant</span>
-          <span class="text-danger pr-3" ngbPopover="Resource is violating the rule" triggers="mouseenter:mouseleave"
-            *ngIf="!isResourceOk(resource.id)"><i class="fas fa-exclamation-circle">
+          <span class="text-danger pr-3" ngbPopover="Resource is violating the rule"
+                triggers="mouseenter:mouseleave"
+                *ngIf="!isResourceOk(resource.id)"><i class="fas fa-exclamation-circle">
             </i> Resource is violating the rule</span>
         </div>
       </div>

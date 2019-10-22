@@ -1,6 +1,17 @@
 <!--
-  ~ Copyright (c) 2016-2019, Fraunhofer AISEC. All rights reserved.
+  ~ Copyright 2016-2019 Fraunhofer AISEC
   ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
   ~
   ~            $$\                           $$\ $$\   $$\
   ~            $$ |                          $$ |\__|  $$ |
@@ -12,19 +23,6 @@
   ~   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
   ~
   ~ This file is part of Clouditor Community Edition.
-  ~
-  ~ Clouditor Community Edition is free software: you can redistribute it and/or modify
-  ~ it under the terms of the GNU General Public License as published by
-  ~ the Free Software Foundation, either version 3 of the License, or
-  ~ (at your option) any later version.
-  ~
-  ~ Clouditor Community Edition is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  ~ GNU General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU General Public License
-  ~ long with Clouditor Community Edition.  If not, see <https://www.gnu.org/licenses/>
   -->
 
 <ng-template #loading>
@@ -38,14 +36,16 @@
   </div>
   <div class="col-4">
     <div class="list-group">
-      <a (click)="selectAsset(asset)" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-        *ngFor="let asset of assets">
+      <a (click)="selectAsset(asset)"
+         class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+         *ngFor="let asset of assets">
         <span>
           <b>{{ asset.name }}</b>
-          <br />
+          <br/>
           <i>{{ asset.type }}</i>
         </span>
-        <span class="badge badge-success" [ngPlural]="asset.seenByJobs?.length" *ngIf="asset.seenByJobs?.length > 0; else noJobs">
+        <span class="badge badge-success" [ngPlural]="asset.seenByJobs?.length"
+              *ngIf="asset.seenByJobs?.length > 0; else noJobs">
           {{ asset.seenByJobs?.length }}
           <ng-template ngPluralCase="=1">job</ng-template>
           <ng-template ngPluralCase="other">jobs</ng-template>
@@ -60,7 +60,8 @@
     <div class="card">
       <div class="card-header">{{ selectedAsset.type }} <b>{{ selectedAsset.name }}</b></div>
       <ul class="list-group list-group-flush">
-        <li class="list-group-item d-flex justify-content-between align-items-right" *ngFor="let field of getFields(selectedAsset)">
+        <li class="list-group-item d-flex justify-content-between align-items-right"
+            *ngFor="let field of getFields(selectedAsset)">
           <b>{{ field.name }}</b>
           {{ field.value }}
         </li>
@@ -75,12 +76,14 @@
           This asset is currently checked by
           <b>{{ selectedAsset.seenByJobs?.length }}</b>
           <ng-template ngPluralCase="=1"> job</ng-template>
-          <ng-template ngPluralCase="other"> jobs</ng-template>.
+          <ng-template ngPluralCase="other"> jobs</ng-template>
+          .
         </div>
       </div>
       <div class="list-group list-group-flush">
-        <a [routerLink]="['/jobs', seen.job._id]" class="list-group-item list-group-item-action d-flex justify-content-between align-items-right"
-          *ngFor="let seen of selectedAsset.seenByJobs">
+        <a [routerLink]="['/jobs', seen.job._id]"
+           class="list-group-item list-group-item-action d-flex justify-content-between align-items-right"
+           *ngFor="let seen of selectedAsset.seenByJobs">
           {{ seen.job.name }}
           <span>{{ seen.date | amTimeAgo }}</span>
         </a>
@@ -93,7 +96,9 @@
         <i>{{ selectedAsset.type }}</i>.
       </div>
       <div class="list-group list-group-flush">
-        <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" *ngFor="let check of selectedAsset.checks">
+        <div
+          class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+          *ngFor="let check of selectedAsset.checks">
           <span>{{ check.name }}</span>
           <span class="badge badge-success" *ngIf="check.scheduled; else notJobned">has configured jobs</span>
           <ng-template #notJobned>
@@ -103,11 +108,13 @@
       </div>
     </div>
 
-    <div class="alert alert-warning" role="alert" *ngIf="selectedAsset.jobnedChecks > selectedAsset.seenByJobs?.length">
+    <div class="alert alert-warning" role="alert"
+         *ngIf="selectedAsset.jobnedChecks > selectedAsset.seenByJobs?.length">
       Although
       <b>{{ selectedAsset.jobnedChecks }}</b> checks have been scheduled for the asset type
       <i>{{ selectedAsset.type }}</i> in total, this particular asset is only checked by
-      <b>{{ selectedAsset.seenByJobs?.length }}</b> job(s). Make sure, that all jobs include this asset.
+      <b>{{ selectedAsset.seenByJobs?.length }}</b> job(s). Make sure, that all jobs include this
+      asset.
     </div>
   </div>
 </div>
