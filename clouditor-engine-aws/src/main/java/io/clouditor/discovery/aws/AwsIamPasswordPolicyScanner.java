@@ -43,7 +43,7 @@ public class AwsIamPasswordPolicyScanner extends AwsIamScanner<PasswordPolicy> {
    */
   static final String ARN_AWS_IAM_PW_POLICY = "arn:aws:iam:::password-policy";
 
-  AwsIamPasswordPolicyScanner() {
+  public AwsIamPasswordPolicyScanner() {
     super(policy -> ARN_AWS_IAM_PW_POLICY, policy -> "Password Policy");
   }
 
