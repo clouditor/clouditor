@@ -23,28 +23,28 @@
   ~   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
   ~
   ~ This file is part of Clouditor Community Edition.
-  -->form #filterForm="ngForm">
-<div *ngIf="control">
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a routerLink="/">Home</a></li>
-      <li class="breadcrumb-item"><a routerLink="/compliance">Compliance</a></li>
-      <li class="breadcrumb-item"><a [routerLink]="['/compliance', certification._id]">{{
+  -->
+
+<form #filterForm="ngForm">
+  <div *ngIf="control">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a routerLink="/">Home</a></li>
+        <li class="breadcrumb-item"><a routerLink="/compliance">Compliance</a></li>
+        <li class="breadcrumb-item"><a [routerLink]="['/compliance', certification._id]">{{
         certification._id }}</a>
-      </li>
-      <li class="breadcrumb-item active" aria-current="page">{{ control.controlId }}</li>
-    </ol>
-  </nav>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">{{ control.controlId }}</li>
+      </ol>
+    </nav>
 
-  <h2>{{control.controlId}} <span class="badge badge-dark text-white"
-                                  *ngIf="control.isNotEvaluated()">Not
-        enough data</span><span class="badge badge-success"
-                                *ngIf="control.isGood()">Passed</span><span
-    class="badge badge-danger" *ngIf="control.hasWarning()">Failed</span></h2>
-  <h5>{{control.domain.name}}: {{control.name}}</h5>
+    <h2>{{control.controlId}} <span class="badge badge-dark text-white" *ngIf="control.isNotEvaluated()">Not
+        enough data</span><span class="badge badge-success" *ngIf="control.isGood()">Passed</span><span
+        class="badge badge-danger" *ngIf="control.hasWarning()">Failed</span></h2>
+    <h5>{{control.domain.name}}: {{control.name}}</h5>
 
-  <p>
-    {{control.description}}
-  </p>
-</div>
+    <p>
+      {{control.description}}
+    </p>
+  </div>
 </form>

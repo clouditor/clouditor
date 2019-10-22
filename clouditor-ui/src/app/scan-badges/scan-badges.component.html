@@ -24,30 +24,24 @@
   ~
   ~ This file is part of Clouditor Community Edition.
   -->
+
 <ng-container *ngIf="scan.lastResult">
-  <span class="text-muted pr-3"
-        ngbPopover="Executed every {{ scan.interval | amDuration:'seconds' }}"
-        triggers="mouseenter:mouseleave" *ngIf="scan.enabled"><i class="fas fa-undo"></i>
+  <span class="text-muted pr-3" ngbPopover="Executed every {{ scan.interval | amDuration:'seconds' }}"
+    triggers="mouseenter:mouseleave" *ngIf="scan.enabled"><i class="fas fa-undo"></i>
     {{ scan.interval | amDuration:'seconds' }}</span>
   <span class="text-muted pr-3" *ngIf="!scan.enabled">Stopped</span>
   <span class="text-muted pr-3"
-        ngbPopover="Discovered {{ scan.lastResult.discoveredAssets.length }} asset(s) in last scan"
-        triggers="mouseenter:mouseleave"><i class="fas fa-cloud"></i>
+    ngbPopover="Discovered {{ scan.lastResult.discoveredAssets.length }} asset(s) in last scan"
+    triggers="mouseenter:mouseleave"><i class="fas fa-cloud"></i>
     {{ scan.lastResult.discoveredAssets.length }}</span>
-  <span class="pr-3" *ngIf="scan.lastResult.failed"
-        ngbPopover="Discovery failed with {{ scan.lastResult.error }}"
-        triggers="mouseenter:mouseleave"><i
-    class="fas fa-exclamation-circle text-danger"></i></span>
+  <span class="pr-3" *ngIf="scan.lastResult.failed" ngbPopover="Discovery failed with {{ scan.lastResult.error }}"
+    triggers="mouseenter:mouseleave"><i class="fas fa-exclamation-circle text-danger"></i></span>
   <span class="pr-3" *ngIf="!scan.lastResult.failed" ngbPopover="Discovery was successful"
-        triggers="mouseenter:mouseleave"><i class="fas fa-check-circle"
-                                            [class.text-success]="scan.enabled"></i></span>
-  <span class="text-muted" ngbPopover="{{ scan.lastResult.timestamp | date:'medium' }}"
-        triggers="mouseenter:mouseleave"
-        *ngIf="!scan.isDiscovering">Updated {{ scan.lastResult.timestamp | amTimeAgo }}</span>
+    triggers="mouseenter:mouseleave"><i class="fas fa-check-circle" [class.text-success]="scan.enabled"></i></span>
+  <span class="text-muted" ngbPopover="{{ scan.lastResult.timestamp | date:'medium' }}" triggers="mouseenter:mouseleave"
+    *ngIf="!scan.isDiscovering">Updated {{ scan.lastResult.timestamp | amTimeAgo }}</span>
 </ng-container>
 
-<span class="pointer text-muted pr-3"
-      ngbPopover="Executed every {{ scan.interval | amDuration:'seconds' }}"
-      triggers="mouseenter:mouseleave" *ngIf="scan.isDiscovering"><i
-  class="fas fa-circle-notch fa-spin"></i>
+<span class="pointer text-muted pr-3" ngbPopover="Executed every {{ scan.interval | amDuration:'seconds' }}"
+  triggers="mouseenter:mouseleave" *ngIf="scan.isDiscovering"><i class="fas fa-circle-notch fa-spin"></i>
   Scanning...</span>

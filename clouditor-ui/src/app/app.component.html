@@ -23,50 +23,52 @@
   ~   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
   ~
   ~ This file is part of Clouditor Community Edition.
-  -->nav class="navbar navbar-expand-lg navbar-dark bg-dark justify-content-between" *ngIf="auth.isLoggedIn()">
-<a class="navbar-brand" href="#">
-  <img class="clouditor-avatar" src="assets/clouditor-avatar.png"/>
-</a>
-<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown"
-        aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation"
-        (click)="navbarCollapsed = !navbarCollapsed">
-  <span class="navbar-toggler-icon"></span>
-</button>
-<ul class="navbar-nav mobile-logout-button">
-  <li class="nav-item">
-    <a class="nav-link" (click)="logout()" href="#">Logout</a>
-  </li>
-</ul>
-<div class="collapse navbar-collapse" [ngbCollapse]="navbarCollapsed" id="navbarNavDropdown">
-  <ul class="navbar-nav">
-    <li class="nav-item" [routerLinkActive]="['active']">
-      <a class="nav-link" routerLink="/accounts">Accounts</a>
-    </li>
-    <li class="nav-item" [routerLinkActive]="['active']">
-      <a class="nav-link" routerLink="/discovery">Discovery</a>
-    </li>
-    <li class="nav-item" [routerLinkActive]="['active']">
-      <a class="nav-link" routerLink="/rules">Rules</a>
-    </li>
-    <li class="nav-item" [routerLinkActive]="['active']">
-      <a class="nav-link" routerLink="/compliance">Compliance</a>
-    </li>
-    <li class="nav-item" [routerLinkActive]="['active']">
-      <a class="nav-link" routerLink="/users">Users</a>
-    </li>
-    <li class="nav-item" [routerLinkActive]="['active']">
-      <a class="nav-link" routerLink="/about">About</a>
+  -->
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark justify-content-between" *ngIf="auth.isLoggedIn()">
+  <a class="navbar-brand" href="#">
+    <img class="clouditor-avatar" src="assets/clouditor-avatar.png" />
+  </a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown"
+    aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation"
+    (click)="navbarCollapsed = !navbarCollapsed">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <ul class="navbar-nav mobile-logout-button">
+    <li class="nav-item">
+      <a class="nav-link" (click)="logout()" href="#">Logout</a>
     </li>
   </ul>
-</div>
-<ul class="navbar-nav desktop-logout-button">
-  <li class="nav-item">
-    <a class="nav-link" href="#">{{ auth.getUser() }}</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" (click)="logout()" href="#">Logout</a>
-  </li>
-</ul>
+  <div class="collapse navbar-collapse" [ngbCollapse]="navbarCollapsed" id="navbarNavDropdown">
+    <ul class="navbar-nav">
+      <li class="nav-item" [routerLinkActive]="['active']">
+        <a class="nav-link" routerLink="/accounts">Accounts</a>
+      </li>
+      <li class="nav-item" [routerLinkActive]="['active']">
+        <a class="nav-link" routerLink="/discovery">Discovery</a>
+      </li>
+      <li class="nav-item" [routerLinkActive]="['active']">
+        <a class="nav-link" routerLink="/rules">Rules</a>
+      </li>
+      <li class="nav-item" [routerLinkActive]="['active']">
+        <a class="nav-link" routerLink="/compliance">Compliance</a>
+      </li>
+      <li class="nav-item" [routerLinkActive]="['active']">
+        <a class="nav-link" routerLink="/users">Users</a>
+      </li>
+      <li class="nav-item" [routerLinkActive]="['active']">
+        <a class="nav-link" routerLink="/about">About</a>
+      </li>
+    </ul>
+  </div>
+  <ul class="navbar-nav desktop-logout-button">
+    <li class="nav-item">
+      <a class="nav-link" href="#">{{ auth.getUser() }}</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" (click)="logout()" href="#">Logout</a>
+    </li>
+  </ul>
 </nav>
 <div class="clouditor-main-content">
   <div class="alert alert-danger" role="alert" *ngIf="error.hasError()">
@@ -77,16 +79,13 @@
 <footer class="footer">
   <div class="text-center">
     <span class="text-muted">
-      Clouditor is developed by <a class="text-info" href="https://www.aisec.fraunhofer.de"
-                                   target="_new">Fraunhofer
+      Clouditor is developed by <a class="text-info" href="https://www.aisec.fraunhofer.de" target="_new">Fraunhofer
         AISEC</a>.
     </span>
     <span class="text-muted">
-      Community Edition - <a class="text-info"
-                             href="https://github.com/clouditor/clouditor/blob/master/LICENSE.md"
-                             target="_new">License</a> - <a class="text-info"
-                                                            href="https://github.com/clouditor/clouditor"
-                                                            target="_new">GitHub</a>
+      Community Edition - <a class="text-info" href="https://github.com/clouditor/clouditor/blob/master/LICENSE.md"
+        target="_new">License</a> - <a class="text-info" href="https://github.com/clouditor/clouditor"
+        target="_new">GitHub</a>
     </span>
   </div>
 </footer>

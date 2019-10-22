@@ -23,11 +23,13 @@
   ~   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
   ~
   ~ This file is part of Clouditor Community Edition.
-  -->nav aria-label="breadcrumb">
-<ol class="breadcrumb">
-  <li class="breadcrumb-item"><a class="text-info" routerLink="/">Home</a></li>
-  <li class="breadcrumb-item active" aria-current="page">Compliance</li>
-</ol>
+  -->
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a class="text-info" routerLink="/">Home</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Compliance</li>
+  </ol>
 </nav>
 
 <h3>Compliance</h3>
@@ -38,14 +40,13 @@
   to initially import a supported catalog. Afterwards, a list of all configured catalogs is
   displayed. The compliance
   status of suitable controls within a catolog is automatically updated according to the result of
-  configured <a
-  class="text-info" [routerLink]="['/rules']">Rules</a>.
+  configured <a class="text-info" [routerLink]="['/rules']">Rules</a>.
 </p>
 
 <ng-container *ngFor="let item of importers | keyvalue">
   <ng-container *ngIf="!importing[item.key]; else waiting">
     <button style="margin-bottom: 15px; margin-right: 10px" class="button btn btn-outline-info"
-            (click)="onImport(item.key)">
+      (click)="onImport(item.key)">
       Import {{ item.key }}
     </button>
   </ng-container>
@@ -63,25 +64,21 @@
 <div class="card-columns" *ngIf="certifications && certifications.length > 0">
   <div class="card" *ngFor="let certification of certifications">
     <div class="card-body">
-      <h5 class="card-title text-light"><a class="text-info"
-                                           [routerLink]="['/compliance', certification._id]">{{ certification._id
+      <h5 class="card-title text-light"><a class="text-info" [routerLink]="['/compliance', certification._id]">{{ certification._id
         }}</a>
       </h5>
       <h6 class="card-subtitle mb-2 text-muted">{{ certification.publisher }}</h6>
       <p class="card-text">{{ certification.description }}</p>
       <p><a class="text-info" [href]="certification.website" target="_new">{{ certification.website
         }}</a></p>
-      <button type="button" class="btn btn-success"
-              *ngIf="getGoodControls(certification).length > 0"
-              [routerLink]="['/compliance', certification._id]"
-              [queryParams]="{filter: true, passed: true}">
+      <button type="button" class="btn btn-success" *ngIf="getGoodControls(certification).length > 0"
+        [routerLink]="['/compliance', certification._id]" [queryParams]="{filter: true, passed: true}">
         <span class="badge badge-light">{{ getGoodControls(certification).length }}</span> Passed
         Controls
       </button>
       <button type="button" class="btn btn-danger" style="margin-left: 8px"
-              *ngIf="getControlsWithWarnings(certification).length > 0"
-              [routerLink]="['/compliance', certification._id]"
-              [queryParams]="{filter: true, failed: true}">
+        *ngIf="getControlsWithWarnings(certification).length > 0" [routerLink]="['/compliance', certification._id]"
+        [queryParams]="{filter: true, failed: true}">
         <span class="badge badge-light">{{ getControlsWithWarnings(certification).length }}</span>
         Failed Controls
       </button>

@@ -23,11 +23,13 @@
   ~   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
   ~
   ~ This file is part of Clouditor Community Edition.
-  -->nav aria-label="breadcrumb">
-<ol class="breadcrumb">
-  <li class="breadcrumb-item"><a class="text-info" routerLink="/">Home</a></li>
-  <li class="breadcrumb-item active" aria-current="page">Accounts</li>
-</ol>
+  -->
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a class="text-info" routerLink="/">Home</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Accounts</li>
+  </ol>
 </nav>
 <h3>Accounts</h3>
 
@@ -52,8 +54,7 @@ The following accounts are configured to be continuously scanned by Clouditor.
           </div>
         </ng-template>
         <a [routerLink]="['/accounts', 'configure', 'AWS']">
-          <button class="btn btn-outline-secondary mt-4"><i
-            class="fas fa-cogs"></i>
+          <button class="btn btn-outline-secondary mt-4"><i class="fas fa-cogs"></i>
             Configure
           </button>
         </a>
@@ -76,8 +77,7 @@ The following accounts are configured to be continuously scanned by Clouditor.
           </div>
         </ng-template>
         <a [routerLink]="['/accounts', 'configure', 'Azure']">
-          <button class="btn btn-outline-secondary mt-4"><i
-            class="fas fa-cogs"></i> Configure
+          <button class="btn btn-outline-secondary mt-4"><i class="fas fa-cogs"></i> Configure
           </button>
         </a>
       </div>
