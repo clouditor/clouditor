@@ -57,7 +57,7 @@ export class AuthService {
   }
 
   getUser() {
-    return helper.decodeToken(this.getToken()).sub;
+    return helper.decodeToken(this.getToken());
   }
 
   logout() {

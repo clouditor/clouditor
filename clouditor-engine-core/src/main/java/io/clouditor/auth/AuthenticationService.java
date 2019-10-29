@@ -107,12 +107,14 @@ public class AuthenticationService {
     return hasher.password(password.getBytes()).encodedHash();
   }
 
-  public String createToken(String subject) {
+  public String createToken(User user) {
     Algorithm algorithm = Algorithm.HMAC256(this.engine.getApiSecret());
 
     return JWT.create()
         .withIssuer(ISSUER)
-        .withSubject(subject)
+        .withSubject(user.getUsername())
+        .withClaim("full_name", user.getFullName())
+        .withClaim("email", user.getEmail())
         .withExpiresAt(Date.from(Instant.now().plus(1, ChronoUnit.DAYS)))
         .sign(algorithm);
   }

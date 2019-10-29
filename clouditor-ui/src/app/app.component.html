@@ -63,7 +63,7 @@
   </div>
   <ul class="navbar-nav desktop-logout-button">
     <li class="nav-item">
-      <a class="nav-link" href="#">{{ auth.getUser() }}</a>
+      <a class="nav-link" href="#">{{ auth.getUser().full_name }}</a>
     </li>
     <li class="nav-item">
       <a class="nav-link" (click)="logout()" href="#">Logout</a>

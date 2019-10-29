@@ -30,6 +30,8 @@ package io.clouditor.rest;
 import io.clouditor.auth.AuthenticationService;
 import io.clouditor.auth.LoginRequest;
 import io.clouditor.auth.LoginResponse;
+import io.clouditor.auth.User;
+import io.clouditor.util.PersistenceManager;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.NotAuthorizedException;
@@ -65,7 +67,9 @@ public class AuthenticateResource {
       throw new NotAuthorizedException("Invalid user and/or password");
     }
 
-    payload.setToken(service.createToken(request.getUsername()));
+    var user = PersistenceManager.getInstance().getById(User.class, request.getUsername());
+
+    payload.setToken(service.createToken(user));
 
     // TODO: max age, etc.
     return Response.ok(payload).cookie(new NewCookie("authorization", payload.getToken())).build();
