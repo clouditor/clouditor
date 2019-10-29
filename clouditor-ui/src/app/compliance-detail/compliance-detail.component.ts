@@ -53,8 +53,8 @@ export class ComplianceDetailComponent implements OnInit, OnDestroy {
     filterOptions = {
         waiting: true, // not enough data
         notMonitored: false,
-        passed: true,
-        failed: true
+        compliant: true,
+        nonCompliant: true
     };
 
     filteredControls: Control[] = [];
@@ -81,16 +81,16 @@ export class ComplianceDetailComponent implements OnInit, OnDestroy {
                 this.filterOptions = {
                     waiting: false,
                     notMonitored: false,
-                    passed: false,
-                    failed: false
+                    compliant: false,
+                    nonCompliant: false
                 };
 
-                if ('passed' in params) {
-                    this.filterOptions['passed'] = true;
+                if ('compliant' in params) {
+                    this.filterOptions['compliant'] = true;
                 }
 
-                if ('failed' in params) {
-                    this.filterOptions['failed'] = true;
+                if ('nonCompliant' in params) {
+                    this.filterOptions['nonCompliant'] = true;
                 }
 
                 if ('waiting' in params) {
@@ -107,14 +107,14 @@ export class ComplianceDetailComponent implements OnInit, OnDestroy {
             if (params.search != null &&
                 params.filterWaiting != null &&
                 params.filterNotMonitored != null &&
-                params.filterPassed != null &&
-                params.filterFailed != null) {
+                params.filterCompliant != null &&
+                params.filterNonCompliant != null) {
                 this.search = params.search;
                 this.filterOptions = {
                     waiting: params.filterWaiting,
                     notMonitored: params.filterNotMonitored,
-                    passed: params.filterPassed,
-                    failed: params.filterFailed
+                    compliant: params.filterCompliant,
+                    nonCompliant: params.filterNonCompliant
                 };
                 this.updateFilteredControls();
             }
@@ -154,8 +154,8 @@ export class ComplianceDetailComponent implements OnInit, OnDestroy {
         this.filteredControls = this.filteredControls.filter((control: Control) => {
             return (this.filterOptions.waiting && control.isNotEvaluated()) ||
                 (this.filterOptions.notMonitored && !control.active) ||
-                (this.filterOptions.passed && control.isGood()) ||
-                (this.filterOptions.failed && control.hasWarning())
+                (this.filterOptions.compliant && control.isGood()) ||
+                (this.filterOptions.nonCompliant && control.hasWarning())
                 ;
         });
     }
@@ -172,13 +172,13 @@ export class ComplianceDetailComponent implements OnInit, OnDestroy {
         });
     }
 
-    getFailedControls(certification: Certification) {
+    getNonCompliantControls(certification: Certification) {
         return certification.controls.filter(control => {
             return control.active && control.fulfilled === Fulfillment.WARNING;
         });
     }
 
-    getPassedControls(certification: Certification) {
+    getCompliantControls(certification: Certification) {
         return certification.controls.filter(control => {
             return control.active && control.fulfilled === Fulfillment.GOOD;
         });

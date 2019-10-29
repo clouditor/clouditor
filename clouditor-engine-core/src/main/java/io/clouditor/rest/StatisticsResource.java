@@ -65,7 +65,7 @@ public class StatisticsResource {
     stats.numActiveScanners =
         (int) discoveryService.getScans().values().stream().map(Scan::isEnabled).count();
     stats.numCertifications = certifications.size();
-    stats.numPassedControls =
+    stats.numCompliantControls =
         certifications.values().stream()
             .map(Certification::getControls)
             .map(controls -> controls.stream().filter(Control::isGood).collect(Collectors.toList()))
@@ -90,6 +90,6 @@ public class StatisticsResource {
     @JsonProperty int numActiveScanners;
     @JsonProperty int numCertifications;
     @JsonProperty int numFailedControls;
-    @JsonProperty int numPassedControls;
+    @JsonProperty int numCompliantControls;
   }
 }

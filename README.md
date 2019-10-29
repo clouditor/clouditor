@@ -55,7 +55,7 @@ Then open a web browser at http://localhost:9999. Login with user `clouditor` an
 
 ![Rule assessment](images/Rules.png "Assessment")
 
-### View details of failed rules
+### View details of rules
 
 ![Rule assessment](images/Assessment.png "Assessment")
 

@@ -39,8 +39,8 @@
     </nav>
 
     <h2>{{control.controlId}} <span class="badge badge-dark text-white" *ngIf="control.isNotEvaluated()">Not
-        enough data</span><span class="badge badge-success" *ngIf="control.isGood()">Passed</span><span
-        class="badge badge-danger" *ngIf="control.hasWarning()">Failed</span></h2>
+        enough data</span><span class="badge badge-success" *ngIf="control.isGood()">compliant</span><span
+        class="badge badge-danger" *ngIf="control.hasWarning()">non-compliant</span></h2>
     <h5>{{control.domain.name}}: {{control.name}}</h5>
 
     <p>

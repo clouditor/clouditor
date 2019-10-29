@@ -72,15 +72,15 @@
       <p><a class="text-info" [href]="certification.website" target="_new">{{ certification.website
         }}</a></p>
       <button type="button" class="btn btn-success" *ngIf="getGoodControls(certification).length > 0"
-        [routerLink]="['/compliance', certification._id]" [queryParams]="{filter: true, passed: true}">
-        <span class="badge badge-light">{{ getGoodControls(certification).length }}</span> Passed
+        [routerLink]="['/compliance', certification._id]" [queryParams]="{filter: true, compliant: true}">
+        <span class="badge badge-light">{{ getGoodControls(certification).length }}</span> Compliant
         Controls
       </button>
       <button type="button" class="btn btn-danger" style="margin-left: 8px"
         *ngIf="getControlsWithWarnings(certification).length > 0" [routerLink]="['/compliance', certification._id]"
         [queryParams]="{filter: true, failed: true}">
         <span class="badge badge-light">{{ getControlsWithWarnings(certification).length }}</span>
-        Failed Controls
+        Non-Compliant Controls
       </button>
     </div>
   </div>

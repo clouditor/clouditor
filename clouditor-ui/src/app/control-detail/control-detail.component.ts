@@ -25,7 +25,7 @@
  * This file is part of Clouditor Community Edition.
  */
 
-import { Component, OnInit, OnDestroy, ViewChild} from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { CertificationService } from '../certification.service';
@@ -52,20 +52,20 @@ export class ControlDetailComponent implements OnInit, OnDestroy {
   assetsWithWarningsFiltered: Map<string, any>;
 
   certification: Certification;
-  hasPassedAssets: Boolean;
+  hasCompliantAssets: Boolean;
   controlStatistics = {
-    passedAssets: 0,
-    failedAssets: 0,
+    compliantAssets: 0,
+    nonCompliantAssets: 0,
     timestamp: '-'
   };
 
   filterOptions = {
-    filterPassed: true,
-    filterFailed: true,
+    filterCompliant: true,
+    filterNonCompliant: true,
     searchTerm: ''
   };
 
-constructor(private route: ActivatedRoute, private certificationService: CertificationService) {
+  constructor(private route: ActivatedRoute, private certificationService: CertificationService) {
     this.route.params.subscribe(params => {
       this.certificationService.getCertification(params['certificationId']).subscribe(certification => {
         this.certification = certification;
@@ -81,14 +81,14 @@ constructor(private route: ActivatedRoute, private certificationService: Certifi
           this.updateControl(control);
           this.certificationService.getCompliantAssets(params['certificationId'], params['controlId']).subscribe(goodAssets => {
             this.goodAssets = goodAssets;
-            this.controlStatistics.passedAssets = goodAssets.size;
-            this.hasPassedAssets = (this.goodAssets.size > 0);
+            this.controlStatistics.compliantAssets = goodAssets.size;
+            this.hasCompliantAssets = (this.goodAssets.size > 0);
             this.filterControlDetails();
           });
 
           this.certificationService.getNonCompliantAssets(params['certificationId'], params['controlId']).subscribe(assetsWithWarnings => {
             this.assetsWithWarnings = assetsWithWarnings;
-            this.controlStatistics.failedAssets = assetsWithWarnings.size;
+            this.controlStatistics.nonCompliantAssets = assetsWithWarnings.size;
             this.filterControlDetails();
           });
           this.controlStatistics.timestamp = control.objectives[0]['result']['endTime'];
@@ -111,38 +111,38 @@ constructor(private route: ActivatedRoute, private certificationService: Certifi
   }
 
   filterControlDetails() {
-      if (this.filterOptions.searchTerm !== null && this.filterOptions.searchTerm !== '') {
-        this.goodAssetsFiltered = new Map<string, any>();
-        this.assetsWithWarningsFiltered = new Map<string, any>();
-        if (this.assetsWithWarnings !== null) {
-          for (const key of Array.from( this.assetsWithWarnings.keys())) {
-            if (JSON.parse(key)['name'].toLowerCase().includes(this.filterOptions.searchTerm.toLowerCase())) {
+    if (this.filterOptions.searchTerm !== null && this.filterOptions.searchTerm !== '') {
+      this.goodAssetsFiltered = new Map<string, any>();
+      this.assetsWithWarningsFiltered = new Map<string, any>();
+      if (this.assetsWithWarnings !== null) {
+        for (const key of Array.from(this.assetsWithWarnings.keys())) {
+          if (JSON.parse(key)['name'].toLowerCase().includes(this.filterOptions.searchTerm.toLowerCase())) {
+            this.assetsWithWarningsFiltered.set(key, this.assetsWithWarnings.get(key));
+          } else {
+            const details = this.assetsWithWarnings.get(key);
+            if (details !== null &&
+              details['message'] !== null &&
+              details.message.toLowerCase().includes(this.filterOptions.searchTerm.toLowerCase())) {
               this.assetsWithWarningsFiltered.set(key, this.assetsWithWarnings.get(key));
-            } else {
-              const details = this.assetsWithWarnings.get(key);
-              if (details !== null &&
-                  details['message'] !== null &&
-                  details.message.toLowerCase().includes(this.filterOptions.searchTerm.toLowerCase())) {
-                this.assetsWithWarningsFiltered.set(key, this.assetsWithWarnings.get(key));
-              }
             }
           }
         }
+      }
 
-        if (this.goodAssets !== null) {
-          for (const key of Array.from( this.goodAssets.keys()) ) {
-            if (JSON.parse(key)['name'].toLowerCase().includes(this.filterOptions.searchTerm.toLowerCase())) {
+      if (this.goodAssets !== null) {
+        for (const key of Array.from(this.goodAssets.keys())) {
+          if (JSON.parse(key)['name'].toLowerCase().includes(this.filterOptions.searchTerm.toLowerCase())) {
+            this.goodAssetsFiltered.set(key, this.goodAssets.get(key));
+          } else {
+            const details = this.goodAssets.get(key);
+            if (details !== null &&
+              details['message'] !== null &&
+              details.message.toLowerCase().includes(this.filterOptions.searchTerm.toLowerCase())) {
               this.goodAssetsFiltered.set(key, this.goodAssets.get(key));
-            } else {
-              const details = this.goodAssets.get(key);
-              if (details !== null &&
-                  details['message'] !== null &&
-                  details.message.toLowerCase().includes(this.filterOptions.searchTerm.toLowerCase())) {
-                this.goodAssetsFiltered.set(key, this.goodAssets.get(key));
-              }
             }
           }
         }
+      }
     } else {
       this.assetsWithWarningsFiltered = new Map<string, any>(this.assetsWithWarnings);
       this.goodAssetsFiltered = new Map<string, any>(this.goodAssets);
