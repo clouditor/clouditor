@@ -40,4 +40,5 @@ dependencyCheck {
 dependencies {
     compile project(":clouditor-engine-aws")
     compile project(":clouditor-engine-azure")
+    compile project(":clouditor-engine-k8s")
 }

@@ -71,7 +71,6 @@ public class AwsAccount extends CloudAccount<AwsCredentials>
   public void validate() throws IOException {
     try {
       // use STS to find account id and user
-
       var builder = StsClient.builder();
 
       if (!this.isAutoDiscovered()) {

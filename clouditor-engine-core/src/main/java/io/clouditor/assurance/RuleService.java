@@ -397,6 +397,7 @@ public class RuleService extends DiscoveryResultSubscriber {
     try {
       load(FileSystemManager.getInstance().getPathForResource("rules/aws"));
       load(FileSystemManager.getInstance().getPathForResource("rules/azure"));
+      load(FileSystemManager.getInstance().getPathForResource("rules/k8s"));
     } catch (IOException e) {
       LOGGER.error("Could not load rules", e);
     }
