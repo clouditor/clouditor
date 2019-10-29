@@ -62,6 +62,6 @@ public class AwsScannerTest {
     // force the api
     scanner.setApi(api);
 
-    assets = scanner.scan();
+    assets = scanner.scan(null);
   }
 }

@@ -164,7 +164,7 @@ public class DiscoveryService {
                 scan.setDiscovering(true);
 
                 // scan
-                var result = scanner.scan();
+                var result = scanner.scan(scan.getId());
 
                 submit(scan, result);
 

@@ -81,8 +81,8 @@ public abstract class Scanner<C, T> {
   protected abstract List<T> list() throws ScanException;
 
   @JsonIgnore
-  public DiscoveryResult scan() {
-    var result = new DiscoveryResult();
+  public DiscoveryResult scan(String scanId) {
+    var result = new DiscoveryResult(scanId);
 
     try {
 

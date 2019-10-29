@@ -115,7 +115,7 @@ public abstract class AzureScannerTest {
 
     scanner.setApi(api);
 
-    assets = scanner.scan();
+    assets = scanner.scan(null);
 
     assertNotNull(assets);
 

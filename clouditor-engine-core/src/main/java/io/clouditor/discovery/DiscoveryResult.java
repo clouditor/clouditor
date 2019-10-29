@@ -27,6 +27,8 @@
 
 package io.clouditor.discovery;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,6 +42,8 @@ public class DiscoveryResult {
   private boolean failed = false;
   private String error;
 
+  @JsonProperty private String scanId;
+
   public void setTimestamp(Instant timestamp) {
     this.timestamp = timestamp;
   }
@@ -48,8 +52,10 @@ public class DiscoveryResult {
     return timestamp;
   }
 
-  public DiscoveryResult() {
+  @JsonCreator
+  public DiscoveryResult(@JsonProperty(value = "scanId") String scanId) {
     this.timestamp = Instant.now();
+    this.scanId = scanId;
   }
 
   public void setDiscoveredAssets(Map<String, Asset> discoveredAssets) {
@@ -88,5 +94,13 @@ public class DiscoveryResult {
         .append("failed", failed)
         .append("error", error)
         .toString();
+  }
+
+  public String getScanId() {
+    return this.scanId;
+  }
+
+  public void setScanId(String scanId) {
+    this.scanId = scanId;
   }
 }

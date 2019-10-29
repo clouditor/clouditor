@@ -32,8 +32,10 @@ import static io.clouditor.assurance.RuleService.RuleVisitor.renderText;
 import io.clouditor.assurance.ccl.CCLDeserializer;
 import io.clouditor.discovery.AssetService;
 import io.clouditor.discovery.DiscoveryResult;
+import io.clouditor.discovery.DiscoveryService;
 import io.clouditor.events.DiscoveryResultSubscriber;
 import io.clouditor.util.FileSystemManager;
+import io.clouditor.util.PersistenceManager;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
@@ -64,6 +66,7 @@ public class RuleService extends DiscoveryResultSubscriber {
 
   @Inject private AssetService assetService;
   @Inject private CertificationService certificationService;
+  @Inject private DiscoveryService discoveryService;
 
   private Map<String, Set<Rule>> rules = new HashMap<>();
 
@@ -308,6 +311,15 @@ public class RuleService extends DiscoveryResultSubscriber {
     // now all assets should be evaluated, now we can update the certification
     // TODO: would be nice to only update relevant controls
     this.certificationService.updateCertification();
+
+    // update the scanner with latest result
+    var scan = this.discoveryService.getScan(result.getScanId());
+
+    if (scan != null) {
+      scan.setLastResult(result);
+
+      PersistenceManager.getInstance().persist(scan);
+    }
   }
 
   public Map<String, Set<Rule>> getRules() {

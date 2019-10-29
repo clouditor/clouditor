@@ -78,7 +78,7 @@ class UserTest extends AbstractEngineUnitTest {
 
     PersistenceManager.getInstance().persist(user);
 
-    var token = service.createToken(user.getUsername());
+    var token = service.createToken(user);
 
     assertNotNull(token);
 
@@ -97,7 +97,7 @@ class UserTest extends AbstractEngineUnitTest {
   void testUserNotFound() {
     var service = this.engine.getService(AuthenticationService.class);
 
-    var token = service.createToken("maybe-existed-before-but-not-anymore");
+    var token = service.createToken(new User("maybe-existed-before-but-not-anymore"));
 
     // the token itself is valid, but verification should fail since the user is not in the DB
     assertThrows(NotAuthorizedException.class, () -> service.verifyToken(token));

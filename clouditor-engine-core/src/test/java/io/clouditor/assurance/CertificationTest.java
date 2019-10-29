@@ -60,7 +60,7 @@ class CertificationTest extends AbstractEngineUnitTest {
     properties.put("property", true);
 
     var asset = new Asset("MockAsset", "id", "name", properties);
-    var discovery = new DiscoveryResult();
+    var discovery = new DiscoveryResult("id");
     discovery.setDiscoveredAssets(Map.of(asset.getId(), asset));
 
     // pipe it through the discovery pipeline
