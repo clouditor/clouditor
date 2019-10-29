@@ -56,6 +56,18 @@ public class TokenResponse {
     user.setShadow(true);
     user.setUsername(jwt.getSubject());
 
+    var claim = jwt.getClaim("full_name");
+    if (!claim.isNull()) {
+      user.setFullName(claim.asString());
+    } else {
+      user.setFullName(user.getUsername());
+    }
+
+    claim = jwt.getClaim("email");
+    if (!claim.isNull()) {
+      user.setEmail(claim.asString());
+    }
+
     return user;
   }
 }

@@ -46,6 +46,10 @@ public class User implements Principal, PersistentObject<String> {
   @JsonView(DatabaseOnly.class)
   private String password;
 
+  private String fullName;
+
+  private String email;
+
   @JsonProperty private boolean shadow = false;
 
   /** The roles of this users. Defaults to {@link AuthenticationService#ROLE_GUEST}. */
@@ -124,5 +128,21 @@ public class User implements Principal, PersistentObject<String> {
 
   public void setShadow(boolean shadow) {
     this.shadow = shadow;
+  }
+
+  public String getFullName() {
+    return fullName;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
+  }
+
+  public void setFullName(String fullName) {
+    this.fullName = fullName;
+  }
+
+  public String getEmail() {
+    return email;
   }
 }

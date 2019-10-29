@@ -93,8 +93,8 @@ allprojects {
         options.compilerArgs += ['-parameters']
     }
 
-    sourceCompatibility = 1.11
-    targetCompatibility = 1.11
+    sourceCompatibility = 1.13
+    targetCompatibility = 1.13
 
     // Set library versions - useful for libraries with multiple packages
     ext.libraryVersions = [

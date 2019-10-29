@@ -84,6 +84,7 @@ public class AuthenticationService {
   private void createDefaultUser() {
     var user = new User();
     user.setUsername(engine.getDefaultApiUsername());
+    user.setFullName(engine.getDefaultApiUsername());
 
     user.setRoles(List.of(ROLE_ADMIN, ROLE_USER));
     user.setPassword(hashPassword(engine.getDefaultApiPassword()));
