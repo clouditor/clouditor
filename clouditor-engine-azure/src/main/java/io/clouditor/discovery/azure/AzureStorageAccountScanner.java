@@ -57,6 +57,10 @@ public class AzureStorageAccountScanner extends AzureScanner<StorageAccount> {
         "encryptionStatuses",
         MAPPER.convertValue(account.encryptionStatuses(), AssetProperties.class));
 
+    asset.setProperty("isAccessAllowedFromAllNetworks", account.isAccessAllowedFromAllNetworks());
+
+    asset.setProperty("isAccessAllowedFromAzureServices", account.canAccessFromAzureServices());
+
     var isKeyRegenerated = false;
 
     /*List<EventData> accountLogs =
