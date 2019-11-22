@@ -39,7 +39,7 @@ import java.util.List;
 @ScannerInfo(assetType = "Subscription", group = "Azure", service = "Account")
 public class AzureSubscriptionScanner extends AzureScanner<Subscription> {
 
-  AzureSubscriptionScanner() {
+  public AzureSubscriptionScanner() {
     super(Subscription::subscriptionId, Subscription::displayName);
   }
 
