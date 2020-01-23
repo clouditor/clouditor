@@ -37,7 +37,7 @@ public class C5Importer extends CertificationImporter {
   @Override
   public Certification load() {
     var url =
-        "https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/CloudComputing/ComplianceControlsCatalogue/ComplianceControlsCatalogue_tables_editable.xlsx?__blob=publicationFile&v=8";
+        "https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/CloudComputing/ComplianceControlsCatalogue/2016/ComplianceControlsCatalogue_tables_editable.xlsx?__blob=publicationFile&v=8";
 
     LOGGER.info("Fetching BSI C5 from {}...", url);
 
@@ -69,7 +69,7 @@ public class C5Importer extends CertificationImporter {
     certification.setDescription(
         "The Cloud Computing Compliance Controls Catalogue (abbreviated \"C5\") is intended primarily for professional cloud service providers, their auditors and customers of the cloud service providers. It is defined which requirements (also referred to as controls in this context) the cloud providers have to comply with or which minimum requirements the cloud providers should be obliged to meet.\n");
     certification.setWebsite(
-        "https://www.bsi.bund.de/EN/Topics/CloudComputing/Compliance_Controls_Catalogue/Compliance_Controls_Catalogue_node.html");
+        "https://www.bsi.bund.de/DE/Themen/DigitaleGesellschaft/CloudComputing/Kriterienkatalog/C5_Archiv/C5_Archiv_node.html");
 
     certification.setControls(controls);
 
