@@ -67,7 +67,7 @@ dependencies {
     implementation group: 'com.kosprov.jargon2', name: 'jargon2-api', version: '1.1.1'
     implementation group: 'com.kosprov.jargon2', name: 'jargon2-native-ri-backend', version: '1.1.1'
 
-    implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '3.17'
+    implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
 
     testCompile group: 'org.awaitility', name: 'awaitility', version: '3.1.2'
 
