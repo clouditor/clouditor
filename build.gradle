@@ -117,7 +117,7 @@ allprojects {
             JUnit                : '5.3.1',
             jetty                : '9.4.12.v20180830',
             mongo                : '3.6.0',
-            mockito              : '2+',
+            mockito              : '3.3.0',
             swaggerJersey2       : '1.5.21'
     ]
 
