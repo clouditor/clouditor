@@ -32,14 +32,14 @@ import { CertificationService } from '../certification.service';
 import { NgForm } from '@angular/forms';
 import { timer } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { componentDestroyed } from '@w11k/ngx-componentdestroyed';
+import { OnDestroyMixin, untilComponentDestroyed } from '@w11k/ngx-componentdestroyed';
 
 @Component({
     selector: 'clouditor-compliance-detail',
     templateUrl: './compliance-detail.component.html',
     styleUrls: ['./compliance-detail.component.scss']
 })
-export class ComplianceDetailComponent implements OnInit, OnDestroy {
+export class ComplianceDetailComponent extends OnDestroyMixin implements OnInit, OnDestroy {
 
     @ViewChild('searchForm', { static: true }) searchForm: NgForm;
 
@@ -61,10 +61,12 @@ export class ComplianceDetailComponent implements OnInit, OnDestroy {
     processing: Map<string, boolean> = new Map();
 
     constructor(private route: ActivatedRoute, private certificationService: CertificationService) {
+        super();
+
         this.route.params.subscribe(params => {
             timer(0, 10000)
                 .pipe(
-                    takeUntil(componentDestroyed(this)),
+                    untilComponentDestroyed(this)
                     // TODO: it would make sense to handle this globally for all components
                     // catchError(this.onError.bind(this))
                 )
