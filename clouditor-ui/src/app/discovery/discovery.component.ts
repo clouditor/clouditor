@@ -33,7 +33,7 @@ import { timer } from 'rxjs';
 import { DiscoveryService } from '../discovery.service';
 import { Scan } from '../scan';
 import { NgForm } from '@angular/forms';
-import { componentDestroyed } from '@w11k/ngx-componentdestroyed';
+import { componentDestroyed, OnDestroyMixin, untilComponentDestroyed } from '@w11k/ngx-componentdestroyed';
 import { AccountsService } from '../accounts.service';
 
 @Component({
@@ -41,7 +41,7 @@ import { AccountsService } from '../accounts.service';
   templateUrl: './discovery.component.html',
   styleUrls: ['./discovery.component.scss']
 })
-export class DiscoveryComponent implements OnInit, OnDestroy {
+export class DiscoveryComponent extends OnDestroyMixin implements OnInit, OnDestroy {
   scans: Scan[] = [];
   groups: string[] = [];
 
@@ -60,6 +60,8 @@ export class DiscoveryComponent implements OnInit, OnDestroy {
   constructor(private discoveryService: DiscoveryService,
     private accountsService: AccountsService,
     private titleService: Title) {
+    super();
+
     this.search = localStorage.getItem('search-scans');
     if (this.search === null) {
       this.search = '';
@@ -117,7 +119,7 @@ export class DiscoveryComponent implements OnInit, OnDestroy {
 
     timer(0, 30000)
       .pipe(
-        takeUntil(componentDestroyed(this)),
+        untilComponentDestroyed(this),
       )
       .subscribe(() => this.updateScans());
 

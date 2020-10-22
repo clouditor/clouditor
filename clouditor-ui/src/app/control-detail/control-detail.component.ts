@@ -30,8 +30,8 @@ import { NgForm } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { CertificationService } from '../certification.service';
 import { timer } from 'rxjs';
-import { takeUntil, flatMap } from 'rxjs/operators';
-import { componentDestroyed } from '@w11k/ngx-componentdestroyed';
+import { flatMap } from 'rxjs/operators';
+import { OnDestroyMixin, untilComponentDestroyed } from '@w11k/ngx-componentdestroyed';
 import { Control, Certification } from '../certification';
 
 @Component({
@@ -39,7 +39,7 @@ import { Control, Certification } from '../certification';
   templateUrl: './control-detail.component.html',
   styleUrls: ['./control-detail.component.css']
 })
-export class ControlDetailComponent implements OnInit, OnDestroy {
+export class ControlDetailComponent extends OnDestroyMixin implements OnInit, OnDestroy {
   @ViewChild('filterForm', { static: true }) filterForm: NgForm;
   control: Control;
 
@@ -66,13 +66,15 @@ export class ControlDetailComponent implements OnInit, OnDestroy {
   };
 
   constructor(private route: ActivatedRoute, private certificationService: CertificationService) {
+    super();
+
     this.route.params.subscribe(params => {
       this.certificationService.getCertification(params['certificationId']).subscribe(certification => {
         this.certification = certification;
       });
       timer(0, 10000)
         .pipe(
-          takeUntil(componentDestroyed(this)),
+          untilComponentDestroyed(this),
           flatMap(() => {
             return this.certificationService.getControl(params['certificationId'], params['controlId']);
           }),
