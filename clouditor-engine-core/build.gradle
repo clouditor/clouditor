@@ -69,7 +69,7 @@ dependencies {
 
     implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
 
-    compile group: 'postgresql', name: 'postgresql', version: libraryVersions.postgresql
+    compile group: 'org.postgresql', name: 'postgresql', version: libraryVersions.postgresql
     compile group: 'org.hibernate', name: 'hibernate-core', version: libraryVersions.hibernate
     compile group: 'com.vladmihalcea', name: 'hibernate-types-52', version: libraryVersions.hibernate_types_52
 

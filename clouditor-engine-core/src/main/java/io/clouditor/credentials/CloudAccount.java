@@ -52,8 +52,8 @@ public abstract class CloudAccount<T> implements PersistentObject<String> {
   @Column(name = "account_id")
   protected String accountId;
 
-  @Column(name = "user") // TODO: rename
-  protected String user; // not a user from the class User
+  @Column(name = "user")
+  protected String credential;
 
   /**
    * Specifies that this account was auto-discovered and that credentials are provided by the
@@ -71,12 +71,12 @@ public abstract class CloudAccount<T> implements PersistentObject<String> {
     this.accountId = accountId;
   }
 
-  public String getUser() {
-    return user;
+  public String getCredential() {
+    return credential;
   }
 
-  public void setUser(String user) {
-    this.user = user;
+  public void setCredential(String credential) {
+    this.credential = credential;
   }
 
   public void setAutoDiscovered(boolean autoDiscovered) {
@@ -102,7 +102,7 @@ public abstract class CloudAccount<T> implements PersistentObject<String> {
    * such as the connected user.
    *
    * <p>Additionally, it should update the {@link CloudAccount#accountId} and {@link
-   * CloudAccount#user} fields with recent information.
+   * CloudAccount#credential} fields with recent information.
    *
    * @throws IOException
    */

@@ -119,7 +119,7 @@ allprojects {
             mongo                : '3.6.0',
             mockito              : '3.3.0',
             swaggerJersey2       : '1.5.21',
-            postgresql           : '9.1-901-1.jdbc4',
+            postgresql           : '42.2.18',
             hibernate            : '5.4.5.Final',
             hibernate_types_52   : '2.9.7'
     ]

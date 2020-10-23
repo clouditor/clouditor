@@ -82,9 +82,9 @@ public class AwsAccount extends CloudAccount<AwsCredentials>
       var identity = stsClient.getCallerIdentity();
 
       this.accountId = identity.account();
-      this.user = identity.arn();
+      this.credential = identity.arn();
 
-      LOGGER.info("Account {} validated with user {}.", this.accountId, this.user);
+      LOGGER.info("Account {} validated with user {}.", this.accountId, this.credential);
     } catch (SdkClientException | StsException ex) {
       // TODO: log error, etc.
       throw new IOException(ex.getMessage());
@@ -107,7 +107,7 @@ public class AwsAccount extends CloudAccount<AwsCredentials>
 
       account.setAutoDiscovered(true);
       account.setAccountId(identity.account());
-      account.setUser(identity.arn());
+      account.setCredential(identity.arn());
 
       return account;
     } catch (SdkClientException ex) {
