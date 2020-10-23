@@ -37,8 +37,6 @@ plugins {
 
 sonarqube {
     properties {
-        property 'sonar.branch.name', gitBranch()
-        property 'sonar.branch.target', gitBranch() == 'master' ? null : 'master'
         property 'sonar.coverage.jacoco.xmlReportPaths', "${buildDir}/reports/jacoco/jacocoRootReport/jacocoRootReport.xml"
     }
 }
@@ -217,37 +215,6 @@ task version() {
     doLast {
         print version
     }
-}
-
-task branch() {
-    doLast {
-        print gitBranch()
-    }
-}
-
-task commit() {
-    doLast {
-        print gitCommit()
-    }
-}
-
-static def gitBranch() {
-    // default to master
-    def branch = 'master'
-
-    // check if branch was set externally
-    if (System.getenv('CIRCLE_BRANCH')) {
-        branch = System.getenv('CIRCLE_BRANCH')
-    } else {
-        // try to parse git (this does not work in CI environments)
-        def proc = 'git rev-parse --abbrev-ref HEAD'.execute()
-        proc.in.eachLine { line -> branch = line }
-        proc.err.eachLine { line -> println line }
-        proc.waitFor()
-    }
-
-    // replace / with - because SonarQube cannot handle slashes
-    branch.replaceAll('/', '-')
 }
 
 static def gitCommit() {

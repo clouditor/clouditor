@@ -122,11 +122,11 @@ public class AuthenticationFilter implements ContainerRequestFilter {
       }
 
     } catch (NotAuthorizedException | ForbiddenException ex) {
+      // Replace pattern-breaking characters
+      var path = requestContext.getUriInfo().getPath().replaceAll("[\n|\r|\t]", "_");
+
       // log the error
-      LOGGER.error(
-          "API access to {} was denied: {}",
-          requestContext.getUriInfo().getPath(),
-          ex.getMessage());
+      LOGGER.error("API access to {} was denied: {}", path, ex.getMessage());
 
       // re-throw it
       throw ex;
