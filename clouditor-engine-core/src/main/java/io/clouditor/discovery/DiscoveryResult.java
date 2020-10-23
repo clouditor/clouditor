@@ -35,14 +35,29 @@ import java.util.Map;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import javax.persistence.*;
+
+@Entity(name = "discovery_result")
+@Table(name = "discovery_result")
 public class DiscoveryResult {
 
+  @Id
+  @Column(name = "time_stamp")
   private Instant timestamp;
+
+  @ManyToMany
+  @Embedded
   private Map<String, Asset> discoveredAssets = new HashMap<>();
+
+  @Column(name = "failed")
   private boolean failed = false;
+
+  @Column(name = "error")
   private String error;
 
-  @JsonProperty private String scanId;
+  @JsonProperty
+  @OneToOne
+  private final Scan scanId;
 
   public void setTimestamp(Instant timestamp) {
     this.timestamp = timestamp;
@@ -55,7 +70,9 @@ public class DiscoveryResult {
   @JsonCreator
   public DiscoveryResult(@JsonProperty(value = "scanId") String scanId) {
     this.timestamp = Instant.now();
-    this.scanId = scanId;
+
+    this.scanId = new Scan();
+    this.scanId.setAssetType(scanId);
   }
 
   public void setDiscoveredAssets(Map<String, Asset> discoveredAssets) {
@@ -97,10 +114,10 @@ public class DiscoveryResult {
   }
 
   public String getScanId() {
-    return this.scanId;
+    return this.scanId.getId();
   }
 
   public void setScanId(String scanId) {
-    this.scanId = scanId;
+    this.scanId.setAssetType(scanId);
   }
 }

@@ -29,19 +29,56 @@ package io.clouditor.assurance;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;  // TODO: check for licence: not gpl
+
 import io.clouditor.assurance.ccl.Condition;
 import io.clouditor.discovery.AssetProperties;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
-public class EvaluationResult {
+@Entity(name = "evaluation_result")
+@Table(name = "evaluation_result")
+@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
+public class EvaluationResult implements Serializable {
+
+  private static final long serialVersionUID = 7255742076812915308L;
+
+  @Id
+  @Column(name = "time_stamp")
+  private final String timeStamp = new Date().toString();
 
   /** The rule according to which this was evaluated. */
-  @NotNull @JsonProperty private Rule rule;
+  @NotNull
+  @JsonProperty
+  @Id
+  @ManyToOne
+  @JoinColumn(name = "rule_id")
+  private final Rule rule;
 
-  @JsonProperty private AssetProperties evaluatedProperties;
+  @JsonProperty
+  @Type(type = "jsonb")
+  @Column(name = "asset_properties")
+  private final AssetProperties evaluatedProperties;
 
+  @ManyToMany
+  @JoinTable(name="condition_to_evaluation_result",
+          joinColumns = {
+                  @JoinColumn(name = "time_stamp", referencedColumnName = "time_stamp"),
+                  @JoinColumn(name = "rule_id", referencedColumnName = "rule_id")
+          },
+          inverseJoinColumns = {
+                  @JoinColumn(name = "source", referencedColumnName = "source"),
+                  @JoinColumn(name = "type_value", referencedColumnName = "type_value"),
+          }
+  )
   private List<Condition> failedConditions = new ArrayList<>();
 
   @JsonCreator

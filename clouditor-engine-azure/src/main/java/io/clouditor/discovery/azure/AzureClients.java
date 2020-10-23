@@ -32,8 +32,10 @@ import com.microsoft.azure.management.monitor.implementation.MonitorManager;
 import com.microsoft.rest.RestClient;
 import com.microsoft.rest.RestClient.Builder;
 import io.clouditor.credentials.AzureAccount;
-import io.clouditor.util.PersistenceManager;
+
 import java.io.IOException;
+
+import io.clouditor.util.PersistenceManager;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.slf4j.Logger;

@@ -41,6 +41,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
+import java.io.IOException;
+import java.sql.SQLException;
+
 /**
  * The base class for different Clouditor components, such as the Engine or Explorer.
  *
@@ -118,7 +121,7 @@ public abstract class Component {
 
   public abstract void shutdown();
 
-  public abstract void start(String[] args) throws InterruptedException;
+  public abstract void start(String[] args) throws InterruptedException, IOException, SQLException;
 
   public abstract void startAPI();
 

@@ -29,10 +29,13 @@ package io.clouditor;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.sql.SQLException;
+
 class EngineMainTest {
 
   @Test
-  void testMain() {
+  void testMain() throws IOException, SQLException {
     var engine = new Engine();
 
     engine.start(new String[] {"--port", "0", "--db-in-memory", "-D=false"});

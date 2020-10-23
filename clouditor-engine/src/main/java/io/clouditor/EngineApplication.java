@@ -27,6 +27,9 @@
 
 package io.clouditor;
 
+import java.io.IOException;
+import java.sql.SQLException;
+
 public class EngineApplication {
 
   /**
@@ -34,7 +37,7 @@ public class EngineApplication {
    *
    * @param args command line arguments
    */
-  public static void main(String[] args) throws InterruptedException {
+  public static void main(String[] args) throws InterruptedException, IOException, SQLException {
     var engine = new Engine();
 
     engine.start(args);

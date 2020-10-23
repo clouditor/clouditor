@@ -34,18 +34,39 @@ import com.microsoft.azure.credentials.ApplicationTokenCredentials;
 import com.microsoft.azure.credentials.AzureCliCredentials;
 import com.microsoft.azure.credentials.AzureTokenCredentials;
 import com.microsoft.azure.management.Azure;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.io.File;
 import java.io.IOException;
 
+@Entity(name = "azure_account")
+@Table(name = "azure_account")
 @JsonTypeName("Azure")
 public class AzureAccount extends CloudAccount<AzureTokenCredentials> {
 
-  @JsonProperty private String clientId;
-  @JsonProperty private String tenantId;
-  @JsonProperty private String domain;
+  private static final long serialVersionUID = 1737969287469590217L;
+  @Id //  enable the access to the property accessKeyId through the getter method by default
+  @Column(name = "client_id")
+  @JsonProperty
+  private String clientId;
+
+  @Column(name = "tenant_id")
+  @JsonProperty
+  private String tenantId;
+
+  @Column(name = "domain")
+  @JsonProperty
+  private String domain;
+
   // TODO: might be needed again if an account has multiple subscriptions to find the correct one
   // @JsonProperty private String subscriptionId;
-  @JsonProperty private String clientSecret;
+
+  @Column(name = "client_secret")
+  @JsonProperty
+  private String clientSecret;
 
   public static AzureAccount discover() throws IOException {
     var account = new AzureAccount();
@@ -89,6 +110,7 @@ public class AzureAccount extends CloudAccount<AzureTokenCredentials> {
     }
   }
 
+  @Override
   public AzureTokenCredentials resolveCredentials() throws IOException {
     if (this.isAutoDiscovered()) {
       return AzureAccount.defaultCredentialProviderChain();
@@ -103,6 +125,7 @@ public class AzureAccount extends CloudAccount<AzureTokenCredentials> {
         .getOrDefault(
             "AZURE_AUTH_LOCATION", System.getProperty("user.home") + "/.azure/clouditor.azureauth");
   }
+
 
   public void setClientId(String clientId) {
     this.clientId = clientId;

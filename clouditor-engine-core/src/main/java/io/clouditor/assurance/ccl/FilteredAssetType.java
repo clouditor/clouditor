@@ -27,20 +27,25 @@
 
 package io.clouditor.assurance.ccl;
 
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+
+import javax.persistence.*;
 import java.util.Map;
 
+@Entity
+@Table(name = "filtered_asset_type")
+@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class FilteredAssetType extends AssetType {
 
-  private String value;
+  public FilteredAssetType() {
+    super();
+  }
+
+  @Column(name = "expression")
+  @Type(type = "jsonb")
   private Expression assetExpression;
-
-  public String getValue() {
-    return this.value;
-  }
-
-  public void setValue(String value) {
-    this.value = value;
-  }
 
   public void setAssetExpression(Expression assetExpression) {
     this.assetExpression = assetExpression;
@@ -50,4 +55,5 @@ public class FilteredAssetType extends AssetType {
   public boolean evaluate(Map properties) {
     return this.assetExpression.evaluate(properties);
   }
+
 }

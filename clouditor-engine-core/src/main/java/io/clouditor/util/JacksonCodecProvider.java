@@ -34,7 +34,7 @@ import org.bson.codecs.configuration.CodecRegistry;
 
 public class JacksonCodecProvider implements CodecProvider {
 
-  private ObjectMapper mapper;
+  private final ObjectMapper mapper;
 
   public JacksonCodecProvider(ObjectMapper mapper) {
     this.mapper = mapper;

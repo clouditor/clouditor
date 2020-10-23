@@ -32,6 +32,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.clouditor.AbstractEngineUnitTest;
 import io.clouditor.assurance.RuleService;
+
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Assertions;
@@ -43,7 +46,7 @@ class DiscoveryServiceTest extends AbstractEngineUnitTest {
   private static final String OBJECT_ID_FAKE = "fake";
 
   @BeforeEach
-  protected void setUp() {
+  protected void setUp() throws IOException, SQLException {
     super.setUp();
 
     this.engine.initDB();

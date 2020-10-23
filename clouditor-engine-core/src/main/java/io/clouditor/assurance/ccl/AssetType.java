@@ -28,12 +28,34 @@
 package io.clouditor.assurance.ccl;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import java.io.Serializable;
 import java.util.Map;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "@class")
-public abstract class AssetType {
+@Entity(name = "asset_type")
+@Table(name = "asset_type")
+public class AssetType implements Serializable {
 
-  public abstract boolean evaluate(Map properties);
+  private static final long serialVersionUID = 5799337361597734304L;
 
-  public abstract String getValue();
+  @Id
+  @Column(name = "type_value")
+  private String value;
+
+  public String getValue() {
+    return this.value;
+  }
+
+  public void setValue(String value) {
+    this.value = value;
+  }
+
+  public boolean evaluate(Map properties) {
+    return true;
+  }
 }

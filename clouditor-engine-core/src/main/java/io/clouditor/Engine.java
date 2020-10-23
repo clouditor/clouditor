@@ -39,6 +39,9 @@ import io.clouditor.util.PersistenceManager;
 import org.jvnet.hk2.annotations.Service;
 import org.kohsuke.args4j.Option;
 
+import java.io.IOException;
+import java.sql.SQLException;
+
 /**
  * The main Clouditor Engine class.
  *
@@ -55,7 +58,7 @@ public class Engine extends Component {
 
   private static final short DEFAULT_API_PORT = 9999;
 
-  private static final boolean DEFAULT_DB_IN_MEMORY = false;
+  private static final boolean DEFAULT_DB_IN_MEMORY = true;
 
   @Option(name = "--db-host", usage = "provides address of database")
   private String dbHost = DEFAULT_DB_HOST;
@@ -184,7 +187,8 @@ public class Engine extends Component {
     this.getService(CertificationService.class).loadCertifications();
   }
 
-  public void initDB() {
+  public void initDB() throws IOException, SQLException {
+
     if (this.dbInMemory) {
       var server = new MongoServer(new MemoryBackend());
 
@@ -199,6 +203,33 @@ public class Engine extends Component {
     }
 
     PersistenceManager.getInstance().init(this.dbName, this.dbHost, this.dbPort);
+
+    /*
+    final int serverPort = 50051;
+    final DBServer metricStorage;
+
+    if (this.dbInMemory) {
+      final Connection connection = EmbeddedPostgres.start()
+              .getPostgresDatabase()
+              .getConnection();
+      metricStorage = new PostgresDB(Table.init(connection));
+    } else
+      metricStorage = new PostgresDB("postgres", "postgres", "Erf32mg!!");
+
+    final MetricsApplicationServer metricsApplicationServer = new MetricsApplicationServer(serverPort, metricStorage);
+    metricsApplicationServer.start();
+
+    LOGGER.info("Starting database purely in-memory...");
+
+    this.dbHost = metricStorage.getDefaultHost();
+    this.dbPort = metricStorage.getDefaultPort();
+
+    final BoomingRunnable stop = () -> {
+      metricsApplicationServer.stop();
+      metricStorage.close();
+    };
+    Runtime.getRuntime().addShutdownHook(new Thread(stop.handleException()));
+    */
   }
 
   /** Shuts down the Clouditor Engine */
@@ -211,9 +242,6 @@ public class Engine extends Component {
 
     // stop the API
     this.stopAPI();
-
-    // destroy the persistence manager
-    PersistenceManager.getInstance().destroy();
   }
 
   /**
@@ -221,7 +249,7 @@ public class Engine extends Component {
    * call will block until all tasks are done.
    */
   @Override
-  public void start(String[] args) {
+  public void start(String[] args) throws IOException, SQLException {
     // parse command line args
     this.parseArgs(args);
 

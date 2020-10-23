@@ -39,21 +39,37 @@ import java.util.List;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import javax.persistence.*;
+
+@Entity(name = "cloud_user")
+@Table(name = "cloud_user")
 public class User implements Principal, PersistentObject<String> {
 
+  private static final long serialVersionUID = -1503934816997542987L;
+  @Id
+  @Column(name = "user_name")
   private String username;
 
   @JsonView(DatabaseOnly.class)
+  @Column(name = "password")
   private String password;
 
+  @Column(name = "full_name")
   private String fullName;
 
+  @Column(name = "email")
   private String email;
 
-  @JsonProperty private boolean shadow = false;
+  @JsonProperty
+  @Column(name = "shadow")
+  private boolean shadow = false;
 
   /** The roles of this users. Defaults to {@link AuthenticationService#ROLE_GUEST}. */
-  @JsonProperty private List<String> roles = List.of(ROLE_GUEST);
+  @JsonProperty
+  @ElementCollection(targetClass = String.class)
+  @CollectionTable(name = "role", joinColumns = @JoinColumn(name = "user_name"))
+  @Column(name = "role_name")
+  private List<String> roles = List.of(ROLE_GUEST);
 
   public User() {}
 

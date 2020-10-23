@@ -57,7 +57,7 @@ public class PersistenceManager {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(PersistenceManager.class);
 
-  private static PersistenceManager instance;
+  private static final  PersistenceManager instance = new PersistenceManager();
 
   private String host;
 
@@ -65,7 +65,7 @@ public class PersistenceManager {
 
   private MongoClient mongo;
   private MongoDatabase mongoDatabase;
-  private CodecRegistry codecRegistry;
+  private final CodecRegistry codecRegistry;
 
   private boolean initialized = false;
 
@@ -87,10 +87,7 @@ public class PersistenceManager {
             MongoClient.getDefaultCodecRegistry(), fromProviders(new JacksonCodecProvider(mapper)));
   }
 
-  public static synchronized PersistenceManager getInstance() {
-    if (instance == null) {
-      instance = new PersistenceManager();
-    }
+  public static PersistenceManager getInstance() {
     return instance;
   }
 
@@ -119,7 +116,9 @@ public class PersistenceManager {
   }
 
   public <T> T getById(Class<T> clazz, String id) {
-    return this.find(clazz, eq(FIELD_ID, id)).limit(1).first();
+    return this.find(clazz, eq(FIELD_ID, id))
+            .limit(1)
+            .first();
   }
 
   public String getHost() {

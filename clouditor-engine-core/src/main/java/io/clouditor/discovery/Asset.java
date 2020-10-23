@@ -28,20 +28,37 @@
 package io.clouditor.discovery;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import io.clouditor.assurance.EvaluationResult;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 
+import javax.persistence.*;
+
+@Entity(name = "asset")
+@Table(name = "asset")
+@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class Asset {
 
+  @ManyToMany(targetEntity = EvaluationResult.class)
   private List<EvaluationResult> evaluationResults = new ArrayList<>();
 
+  @Type(type = "jsonb")
+  @Column(name = "asset_properties")
   private AssetProperties properties = new AssetProperties();
 
+  @Id
+  @Column(name = "asset_id")
   private String id;
+
+  @Column(name = "asset_name")
   private String name;
+
+  @Column(name = "type_value")
   private String type;
 
   public Asset() {
@@ -66,6 +83,7 @@ public class Asset {
   public void setProperties(AssetProperties properties) {
     this.properties = properties;
   }
+
 
   public String getId() {
     return id;

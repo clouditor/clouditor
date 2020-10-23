@@ -31,6 +31,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.clouditor.util.PersistentObject;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.*;
 import javax.validation.Valid;
 import javax.validation.constraints.Size;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -38,18 +39,35 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-public class Certification implements PersistentObject {
+@Entity(name = "certification")
+@Table(name = "certification")
+public class Certification implements PersistentObject<String> {
+
+  private static final long serialVersionUID = 5983205960445678160L;
 
   /** A unique identifier for each certification, such as CSA CCM or Azure CIS. */
+  @Column(name = "certification_id")
+  @Id
   private String id;
+
   /** A list of controls in the certificate */
   @Size(min = 1)
   @Valid
   @JsonProperty
+  @ManyToMany(targetEntity = Control.class)
+  @JoinTable(name="control_to_certification",
+          joinColumns = @JoinColumn(name = "certification_id", referencedColumnName = "certification_id"),
+          inverseJoinColumns = @JoinColumn(name = "control_id", referencedColumnName = "control_id")
+  )
   private List<Control> controls = new ArrayList<>();
 
+  @Column(name = "certification_description")
   private String description;
+
+  @Column(name = "publisher")
   private String publisher;
+
+  @Column(name = "website")
   private String website;
 
   @Override
@@ -101,6 +119,7 @@ public class Certification implements PersistentObject {
         .toString();
   }
 
+  @Override
   public String getId() {
     return id;
   }

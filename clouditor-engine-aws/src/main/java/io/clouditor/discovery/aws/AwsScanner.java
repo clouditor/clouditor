@@ -31,12 +31,14 @@ import io.clouditor.credentials.AwsAccount;
 import io.clouditor.discovery.Asset;
 import io.clouditor.discovery.AssetProperties;
 import io.clouditor.discovery.Scanner;
-import io.clouditor.util.PersistenceManager;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import io.clouditor.util.PersistenceManager;
 import software.amazon.awssdk.awscore.AwsRequest;
 import software.amazon.awssdk.awscore.AwsResponse;
 import software.amazon.awssdk.awscore.client.builder.AwsClientBuilder;
@@ -54,7 +56,7 @@ public abstract class AwsScanner<
   static final String ARN_SEPARATOR = ":";
   static final String RESOURCE_TYPE_SEPARATOR = "/";
 
-  private Supplier<AwsClientBuilder<B, C>> builderSupplier;
+  private final Supplier<AwsClientBuilder<B, C>> builderSupplier;
 
   protected C api;
 

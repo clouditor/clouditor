@@ -32,9 +32,9 @@ import javax.ws.rs.core.SecurityContext;
 
 public class UserContext implements SecurityContext {
 
-  private User user;
+  private final User user;
 
-  private boolean isSecure;
+  private final boolean isSecure;
 
   public UserContext(User user, boolean isSecure) {
     this.user = user;

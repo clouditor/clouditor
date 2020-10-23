@@ -1,0 +1,214 @@
+syntax = "proto3";
+
+package clouditorV2;
+
+// Package for go implementation
+option go_package = ".;pb";
+// Package for java implementation
+option java_package = "io.clouditor.metric_api.pb";
+option java_multiple_files = true;
+
+import "metric_message.proto";
+
+service MetricsAPIService {
+  //  SCALE
+  rpc GetScale(GetScaleRequest)
+      returns (GetScaleResponse) {};
+  rpc ListScales(ListScaleRequest)
+      returns (ListScaleResponse) {};
+  rpc AddNewScale(AddNewScaleRequest)
+      returns (AddNewScaleResponse) {};
+  rpc DeleteScale(DeleteScaleRequest)
+      returns (DeleteScaleResponse) {};
+
+  //  METRIC
+  rpc GetMetric(GetMetricRequest)
+      returns (GetMetricResponse) {};
+  rpc ListMetrics(ListMetricsRequest)
+      returns (ListMetricsResponse) {};
+  rpc AddNewMetric(AddNewMetricRequest)
+      returns (AddNewMetricResponse) {};
+  rpc DeleteMetric(DeleteMetricRequest)
+      returns (DeleteMetricResponse) {};
+
+  //  ASSET
+  rpc GetAsset(GetAssetRequest)
+      returns (GetAssetResponse) {};
+  rpc ListAssets(ListAssetsRequest)
+      returns (ListAssetsResponse) {};
+  rpc AddNewAsset(AddNewAssetRequest)
+      returns (AddNewAssetResponse) {};
+  rpc DeleteAsset(DeleteAssetRequest)
+      returns (DeleteAssetResponse) {};
+
+  //  EVALUATION
+  rpc GetEvaluation(GetEvaluationRequest)
+      returns (GetEvaluationResponse) {};
+  rpc ListEvaluation(ListEvaluationRequest)
+      returns (ListEvaluationResponse) {};
+  rpc AddNewEvaluation(AddNewEvaluationRequest)
+      returns (AddNewEvaluationResponse) {};
+  rpc DeleteEvaluation(DeleteEvaluationRequest)
+      returns (DeleteEvaluationResponse) {};
+
+  //  EVALUATION_TO_ASSET
+  rpc GetEvaluationToAsset(GetEvaluationToAssetRequest)
+      returns (GetEvaluationToAssetResponse) {};
+  rpc ListEvaluationToAsset(ListEvaluationToAssetRequest)
+      returns (ListEvaluationToAssetResponse) {};
+  rpc AddNewEvaluationToAsset(AddNewEvaluationToAssetRequest)
+      returns (AddNewEvaluationToAssetResponse) {};
+  rpc DeleteEvaluationToAsset(DeleteEvaluationToAssetRequest)
+      returns (DeleteEvaluationToAssetResponse) {};
+}
+
+
+//
+//  SCALE
+//
+
+message GetScaleRequest {
+  int32 lower_bound = 1;
+  int32 upper_bound = 2;
+}
+message GetScaleResponse {
+  Scale scale = 1;
+}
+
+message ListScaleRequest {}
+message ListScaleResponse {
+  repeated Scale scales = 1;
+}
+
+message AddNewScaleRequest {
+  Scale scale = 1;
+}
+message AddNewScaleResponse {}
+
+message DeleteScaleRequest {
+  int32 lower_bound = 1;
+  int32 upper_bound = 2;
+}
+message DeleteScaleResponse {}
+
+
+//
+//  METRIC
+//
+
+message GetMetricRequest {
+  string metric_name = 1;
+}
+message GetMetricResponse {
+  Metric metric = 1;
+}
+
+message ListMetricsRequest {}
+// Alternatively implementing as stream
+message ListMetricsResponse {
+  repeated Metric metrics = 1;
+}
+
+message AddNewMetricRequest {
+  Metric metric = 1;
+}
+// Response via Commandline
+message AddNewMetricResponse {}
+
+message DeleteMetricRequest { string metric_name = 1; }
+message DeleteMetricResponse {}
+
+
+//
+//  ASSET
+//
+
+message GetAssetRequest {
+  string asset_name = 1;
+}
+message GetAssetResponse {
+  Asset asset = 1;
+}
+
+message ListAssetsRequest {}
+// Alternatively implementing as stream
+message ListAssetsResponse {
+  repeated Asset assets = 1;
+}
+
+message AddNewAssetRequest {
+  Asset asset = 1;
+}
+// Response via Commandline
+message AddNewAssetResponse {}
+
+message DeleteAssetRequest {
+  string asset_name = 1;
+}
+message DeleteAssetResponse {}
+
+
+//
+//  EVALUATION
+//
+
+message GetEvaluationRequest {
+  string metric_name = 1;
+  string time_stamp = 2;
+
+}
+message GetEvaluationResponse {
+  Evaluation evaluation = 1;
+}
+
+message ListEvaluationRequest {}
+// Alternatively implementing as stream
+message ListEvaluationResponse {
+  repeated Evaluation evaluations = 1;
+}
+
+
+// Setting specific value
+message AddNewEvaluationRequest {
+  Evaluation evaluation = 1;
+}
+// Response via Commandline
+message AddNewEvaluationResponse {}
+
+message DeleteEvaluationRequest {
+  string metric_name = 1;
+  string time_stamp = 2;
+}
+message DeleteEvaluationResponse {}
+
+
+//
+//  EVALUATION_TO_ASSET
+//
+
+message GetEvaluationToAssetRequest {
+  string metric_name = 1;
+  string time_stamp = 2;
+  string asset_name = 3;
+
+}
+message GetEvaluationToAssetResponse {
+  EvaluationToAsset evaluation_to_asset = 1;
+}
+
+message ListEvaluationToAssetRequest {}
+message ListEvaluationToAssetResponse {
+  repeated EvaluationToAsset evaluations_to_assets = 1;
+}
+
+message AddNewEvaluationToAssetRequest {
+  EvaluationToAsset evaluation_to_asset = 1;
+}
+message AddNewEvaluationToAssetResponse {}
+
+message DeleteEvaluationToAssetRequest {
+  string metric_name = 1;
+  string time_stamp = 2;
+  string asset_name = 3;
+}
+message DeleteEvaluationToAssetResponse {}

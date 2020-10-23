@@ -36,21 +36,35 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+@Entity(name = "cloud_account")
+@Table(name = "cloud_account")
+
 @JsonTypeInfo(use = Id.NAME, property = "provider")
 @Collection("accounts")
-public abstract class CloudAccount<T> implements PersistentObject {
+public abstract class CloudAccount<T> implements PersistentObject<String> {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(CloudAccount.class);
+  private static final long serialVersionUID = 7868522749211998981L;
 
+  @javax.persistence.Id
+  @Column(name = "account_id")
   protected String accountId;
-  protected String user;
+
+  @Column(name = "user") // TODO: rename
+  protected String user; // not a user from the class User
 
   /**
    * Specifies that this account was auto-discovered and that credentials are provided by the
    * default chain provided by the Cloud provider client API library. Thus credential fields are
    * ignored.
    */
+  @Column(name = "auto_discovered")
   private boolean autoDiscovered;
+
 
   public String getAccountId() {
     return accountId;

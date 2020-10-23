@@ -43,8 +43,8 @@ import org.bson.codecs.configuration.CodecRegistry;
 public class JacksonCodec<T> implements Codec<T> {
 
   private final Class<T> clazz;
-  private ObjectMapper mapper;
-  private Codec<RawBsonDocument> codec;
+  private final ObjectMapper mapper;
+  private final Codec<RawBsonDocument> codec;
 
   JacksonCodec(ObjectMapper mapper, Class<T> clazz, CodecRegistry registry) {
     this.mapper = mapper;

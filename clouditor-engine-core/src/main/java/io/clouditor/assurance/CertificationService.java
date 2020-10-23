@@ -29,7 +29,7 @@ package io.clouditor.assurance;
 
 import io.clouditor.events.CertificationSubscriber;
 import io.clouditor.events.SubscriptionManager;
-import io.clouditor.util.PersistenceManager;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
@@ -39,6 +39,8 @@ import java.util.Map;
 import java.util.concurrent.SubmissionPublisher;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
+
+import io.clouditor.util.PersistenceManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -60,14 +62,14 @@ public class CertificationService {
                   ClasspathHelper.forPackage(CertificationService.class.getPackage().getName()))
               .setScanners(new SubTypesScanner()));
 
-  private Map<String, CertificationImporter> importers = new HashMap<>();
+  private final Map<String, CertificationImporter> importers = new HashMap<>();
 
-  private SubmissionPublisher<Certification> certificationPublisher = new SubmissionPublisher<>();
+  private final SubmissionPublisher<Certification> certificationPublisher = new SubmissionPublisher<>();
 
   /** The certifications objective */
-  private Map<String, Certification> certifications = new HashMap<>();
+  private final Map<String, Certification> certifications = new HashMap<>();
 
-  private ServiceLocator locator;
+  private final ServiceLocator locator;
 
   @Inject
   public CertificationService(ServiceLocator locator) {

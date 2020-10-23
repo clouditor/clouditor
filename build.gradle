@@ -31,6 +31,7 @@ plugins {
     id 'com.diffplug.gradle.spotless' version '3.27.2'
     id "com.github.ben-manes.versions" version '0.28.0'
     id 'com.github.jk1.dependency-license-report' version '1.2'
+    id "com.google.protobuf" version "0.8.10"
     id 'maven-publish'
     id 'jacoco'
 }
@@ -118,7 +119,14 @@ allprojects {
             jetty                : '9.4.12.v20180830',
             mongo                : '3.6.0',
             mockito              : '3.3.0',
-            swaggerJersey2       : '1.5.21'
+            swaggerJersey2       : '1.5.21',
+            postgresql           : '9.1-901-1.jdbc4',
+            grpc                 : '1.30.2',
+            gson                 : '2.8.6',
+            protobuf_java        : '3.12.2',
+            otj_pg_embedded      : '0.13.3',
+            hibernate            : '5.4.5.Final',
+            hibernate_types_52   : '2.9.7'
     ]
 
     dependencies {

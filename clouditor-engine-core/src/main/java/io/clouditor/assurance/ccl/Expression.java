@@ -46,7 +46,7 @@ public abstract class Expression {
     var names = fieldName.split("\\.");
 
     var base = asset;
-    var value = (Object) null;
+    Object value = null;
 
     for (var name : names) {
       value = base.get(name);

@@ -30,12 +30,15 @@ package io.clouditor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
+import java.io.IOException;
+import java.sql.SQLException;
+
 public abstract class AbstractEngineUnitTest {
 
   protected Engine engine;
 
   @BeforeEach
-  protected void setUp() {
+  protected void setUp() throws IOException, SQLException {
     this.engine = new Engine();
 
     // set in-memory db for testing

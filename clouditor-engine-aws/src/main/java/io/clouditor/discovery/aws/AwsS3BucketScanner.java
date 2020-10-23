@@ -28,13 +28,18 @@
 package io.clouditor.discovery.aws;
 
 import io.clouditor.credentials.AwsAccount;
+import io.clouditor.data_access_layer.Persistence;
 import io.clouditor.discovery.Asset;
 import io.clouditor.discovery.ScanException;
 import io.clouditor.discovery.ScannerInfo;
-import io.clouditor.util.PersistenceManager;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
+import io.clouditor.util.PersistenceManager;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -55,7 +60,7 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 @ScannerInfo(assetType = "Bucket", group = "AWS", service = "S3", assetIcon = "fas fa-archive")
 public class AwsS3BucketScanner extends AwsScanner<S3Client, S3ClientBuilder, Bucket> {
 
-  private Map<String, S3Client> regionClients = new HashMap<>();
+  private final Map<String, S3Client> regionClients = new HashMap<>();
 
   static final String ARN_PREFIX_S3 = "arn:aws:s3:::";
 
@@ -86,6 +91,8 @@ public class AwsS3BucketScanner extends AwsScanner<S3Client, S3ClientBuilder, Bu
         // needed, as long as https://github.com/aws/aws-sdk-java-v2/issues/52 is not fixed
         LOGGER.info("Switching to region-specific S3 client ({})", region);
 
+
+
         var account = PersistenceManager.getInstance().getById(AwsAccount.class, "AWS");
 
         if (account == null) {
@@ -93,10 +100,22 @@ public class AwsS3BucketScanner extends AwsScanner<S3Client, S3ClientBuilder, Bu
         }
 
         client =
+                regionClients.getOrDefault(
+                        region,
+                        S3Client.builder().credentialsProvider(account).region(Region.of(region)).build());
+      }/*
+        final Class<AwsAccount> resultType = AwsAccount.class;
+        final Optional<AwsAccount> account = new Persistence().get(resultType, "AWS");
+
+        if (account.isEmpty()) {
+          throw SdkClientException.create("AWS account not configured");
+        }
+
+        client =
             regionClients.getOrDefault(
                 region,
-                S3Client.builder().credentialsProvider(account).region(Region.of(region)).build());
-      }
+                S3Client.builder().credentialsProvider(account.get()).region(Region.of(region)).build());
+      }*/
     }
 
     enrich(

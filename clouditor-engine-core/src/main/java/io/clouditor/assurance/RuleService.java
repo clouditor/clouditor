@@ -35,7 +35,7 @@ import io.clouditor.discovery.DiscoveryResult;
 import io.clouditor.discovery.DiscoveryService;
 import io.clouditor.events.DiscoveryResultSubscriber;
 import io.clouditor.util.FileSystemManager;
-import io.clouditor.util.PersistenceManager;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
@@ -48,8 +48,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
+
+import io.clouditor.util.PersistenceManager;
 import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.BulletList;
 import org.commonmark.node.FencedCodeBlock;
@@ -136,7 +140,7 @@ public class RuleService extends DiscoveryResultSubscriber {
 
   public static class ControlsVisitor extends AbstractVisitor {
 
-    private Rule rule;
+    private final Rule rule;
 
     ControlsVisitor(Rule rule) {
       this.rule = rule;
@@ -146,19 +150,25 @@ public class RuleService extends DiscoveryResultSubscriber {
     public void visit(BulletList bulletList) {
       var node = bulletList.getFirstChild();
 
-      this.rule.getControls().add(renderText(node.getFirstChild()));
+      final Function<Node, Control> getControl = n -> {
+        Control control = new Control();
+        control.setControlId(renderText(n.getFirstChild()));
+        return control;
+      };
+
+
+      this.rule.getControls().add(getControl.apply(node));
 
       while (node.getNext() != null) {
         node = node.getNext();
-
-        this.rule.getControls().add(renderText(node.getFirstChild()));
+        this.rule.getControls().add(getControl.apply(node));
       }
     }
   }
 
   public static class RuleVisitor extends AbstractVisitor {
 
-    private Rule rule;
+    private final Rule rule;
 
     RuleVisitor(Rule rule) {
       this.rule = rule;
@@ -329,7 +339,10 @@ public class RuleService extends DiscoveryResultSubscriber {
   public List<Rule> getRulesForControl(String controlId) {
     return this.rules.values().stream()
         .flatMap(Collection::stream)
-        .filter(rule -> rule.getControls() != null && rule.getControls().contains(controlId))
+        .filter(
+                rule -> rule.getControls() != null
+                        && rule.containsControl(controlId)
+        )
         .collect(Collectors.toList());
   }
 

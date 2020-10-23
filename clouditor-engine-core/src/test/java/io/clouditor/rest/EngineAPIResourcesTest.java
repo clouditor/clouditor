@@ -46,6 +46,7 @@ import io.clouditor.discovery.DiscoveryService;
 import io.clouditor.discovery.Scan;
 import io.clouditor.util.FileSystemManager;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -78,7 +79,7 @@ class EngineAPIResourcesTest extends JerseyTest {
   }
 
   @BeforeAll
-  static void startUpOnce() {
+  static void startUpOnce() throws IOException, SQLException {
     engine.setDbInMemory(true);
 
     // init db

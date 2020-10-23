@@ -30,7 +30,7 @@ package io.clouditor.discovery;
 import static com.mongodb.client.model.Filters.eq;
 
 import io.clouditor.events.DiscoveryResultSubscriber;
-import io.clouditor.util.PersistenceManager;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
@@ -45,6 +45,8 @@ import java.util.concurrent.SubmissionPublisher;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
+import io.clouditor.util.PersistenceManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.media.sse.EventOutput;
@@ -64,14 +66,14 @@ public class DiscoveryService {
           new ConfigurationBuilder()
               .addUrls(ClasspathHelper.forPackage(Scanner.class.getPackage().getName()))
               .setScanners(new SubTypesScanner()));
-  private Map<String, ScheduledFuture<?>> futures = new HashMap<>();
-  private Map<String, Scanner> scanners = new HashMap<>();
+  private final Map<String, ScheduledFuture<?>> futures = new HashMap<>();
+  private final Map<String, Scanner> scanners = new HashMap<>();
 
   private final ScheduledThreadPoolExecutor scheduler =
       (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1);
 
-  private SubmissionPublisher<DiscoveryResult> assetPublisher = new SubmissionPublisher<>();
-  private Map<String, HashSet<EventOutput>> subscriptions = new HashMap<>();
+  private final SubmissionPublisher<DiscoveryResult> assetPublisher = new SubmissionPublisher<>();
+  private final Map<String, HashSet<EventOutput>> subscriptions = new HashMap<>();
 
   public DiscoveryService() {
     LOGGER.info("Initializing {}", this.getClass().getSimpleName());

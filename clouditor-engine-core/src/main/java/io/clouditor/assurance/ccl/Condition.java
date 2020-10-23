@@ -27,15 +27,30 @@
 
 package io.clouditor.assurance.ccl;
 
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import io.clouditor.discovery.AssetProperties;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 
+import javax.persistence.*;
+import java.io.Serializable;
+
+@Entity(name = "condition")
+@Table(name = "condition")
+@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class Condition {
 
-  private AssetType assetType;
+  @Id
+  @Embedded
+  private final ConditionPK conditionPK = new ConditionPK();
 
+  @Column(name = "expression")
+  @Type(type = "jsonb")
   private Expression expression;
 
-  private String source;
+  public ConditionPK getConditionPK() {
+    return conditionPK;
+  }
 
   public Expression getExpression() {
     return expression;
@@ -46,11 +61,11 @@ public class Condition {
   }
 
   public AssetType getAssetType() {
-    return assetType;
+    return getConditionPK().getAssetType();
   }
 
   public void setAssetType(AssetType assetType) {
-    this.assetType = assetType;
+    getConditionPK().setAssetType(assetType);
   }
 
   public boolean evaluate(AssetProperties properties) {
@@ -58,10 +73,39 @@ public class Condition {
   }
 
   public void setSource(String source) {
-    this.source = source;
+    getConditionPK().setSource(source);
   }
 
   public String getSource() {
-    return source;
+    return getConditionPK().getSource();
+  }
+
+  @Embeddable
+  static final class ConditionPK implements Serializable {
+
+    private static final long serialVersionUID = -503140484349205605L;
+
+    @Column(name = "source")
+    private String source;
+
+    @ManyToOne
+    @JoinColumn(name = "type_value")
+    private AssetType assetType;
+
+    private String getSource() {
+      return source;
+    }
+
+    private AssetType getAssetType() {
+      return assetType;
+    }
+
+    private void setSource(String source) {
+      this.source = source;
+    }
+
+    private void setAssetType(AssetType assetType) {
+      this.assetType = assetType;
+    }
   }
 }

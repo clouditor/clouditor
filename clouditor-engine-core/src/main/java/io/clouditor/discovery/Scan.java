@@ -28,13 +28,18 @@
 package io.clouditor.discovery;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.clouditor.assurance.ccl.AssetType;
 import io.clouditor.util.PersistentObject;
+
+import javax.persistence.*;
 import java.lang.reflect.InvocationTargetException;
 
 /**
  * A {@link Scan} holds information and configuration about a scan that is regularly executed. The
  * actual "scanning" is done by an implementing {@link Scanner} class.
  */
+@Entity(name = "scan")
+@Table(name = "scan")
 public class Scan implements PersistentObject<String> {
 
   static final String FIELD_SCANNER_CLASS = "scannerClass";
@@ -43,43 +48,62 @@ public class Scan implements PersistentObject<String> {
 
   /** The associated {@link Scanner} class. */
   @JsonProperty(FIELD_SCANNER_CLASS)
+  @Column(name = "scanner_class")
   private Class<? extends Scanner> scannerClass;
 
   /**
    * The asset type, this scan is targeting. This is automatically parsed from the {@link
    * ScannerInfo}.
    */
-  @JsonProperty private String assetType;
+  @JsonProperty
+  @Id
+  @ManyToOne
+  @JoinColumn(name = "type_value")
+  private AssetType assetType;
 
   /**
    * The asset icon of the asset, this scan is targeting. This is automatically parsed from the
    * {@link ScannerInfo}.
    */
-  @JsonProperty private String assetIcon;
+  @JsonProperty
+  @Column(name = "asset_icon")
+  private String assetIcon;
 
   /**
    * The group, or cloud provider this scan is belonging to.This is automatically parsed from the
    * {@link ScannerInfo}.
    */
-  @JsonProperty private String group;
+  @JsonProperty
+  @Column(name = "scan_group")
+  private String group;
 
   /** The description of the scan. This is automatically parsed from the {@link ScannerInfo}. */
-  @JsonProperty private String description;
+  @JsonProperty
+  @Column(name = "scan_description")
+  private String description;
 
   /** The discovery state of the scan. */
-  @JsonProperty private boolean isDiscovering;
+  @JsonProperty
+  @Column(name = "is_discovering")
+  private boolean isDiscovering;
 
   /**
    * The service this scan is belonging to. This is automatically parsed from the {@link
    * ScannerInfo}.
    */
-  @JsonProperty private String service;
+  @JsonProperty
+  @Column(name = "service")
+  private String service;
 
+  @OneToOne
+  @JoinColumn(name = "type_value")
   private DiscoveryResult lastResult;
 
+  @Column(name = "enabled")
   private boolean enabled;
 
-  private long interval = DEFAULT_INTERVAL;
+  @Column(name = "scan_interval")
+  private final long interval = DEFAULT_INTERVAL;
 
   public Scan() {}
 
@@ -89,7 +113,8 @@ public class Scan implements PersistentObject<String> {
     var info = clazz.getAnnotation(ScannerInfo.class);
 
     if (info != null) {
-      scan.assetType = info.assetType();
+      scan.assetType = new AssetType();
+      scan.assetType.setValue(info.assetType());
       scan.assetIcon = info.assetIcon();
       scan.group = info.group();
       scan.service = info.service();
@@ -121,10 +146,11 @@ public class Scan implements PersistentObject<String> {
     return this.isDiscovering;
   }
 
+  @Override
   public String getId() {
     // TODO: short asset types are not really unique, in the long run we might need to add group and
     // service as well or create a dedicated asset type class
-    return this.assetType;
+    return this.assetType.getValue();
   }
 
   public void setEnabled(boolean enabled) {
@@ -136,11 +162,11 @@ public class Scan implements PersistentObject<String> {
   }
 
   public String getAssetType() {
-    return this.assetType;
+    return this.assetType.getValue();
   }
 
   public void setAssetType(String assetType) {
-    this.assetType = assetType;
+    this.assetType.setValue(assetType);
   }
 
   public String getGroup() {

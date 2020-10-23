@@ -38,6 +38,13 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sts.StsClient;
 import software.amazon.awssdk.services.sts.model.StsException;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity(name = "aws_account")
+@Table(name = "aws_account")
 @JsonTypeName(value = "AWS")
 public class AwsAccount extends CloudAccount<AwsCredentials>
     implements AwsCredentials, AwsCredentialsProvider {
@@ -45,9 +52,20 @@ public class AwsAccount extends CloudAccount<AwsCredentials>
   private static final DefaultCredentialsProvider DEFAULT_PROVIDER =
       DefaultCredentialsProvider.create();
 
-  @JsonProperty private String accessKeyId;
-  @JsonProperty private String secretAccessKey;
-  @JsonProperty private String region;
+  private static final long serialVersionUID = 1928775323719265066L;
+
+
+  @Column(name = "access_key_id")
+  @JsonProperty
+  private String accessKeyId;
+
+  @Column(name = "secret_access_key")
+  @JsonProperty
+  private String secretAccessKey;
+
+  @Column(name = "region")
+  @JsonProperty
+  private String region;
 
   @Override
   public void validate() throws IOException {
@@ -112,6 +130,7 @@ public class AwsAccount extends CloudAccount<AwsCredentials>
     return this;
   }
 
+  @Id //  enable the access to the property accessKeyId through the getter method by default
   @Override
   public String accessKeyId() {
     return this.accessKeyId;

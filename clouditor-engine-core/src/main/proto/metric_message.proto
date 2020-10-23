@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package clouditorV2;
+
+// Package for go implementation
+option go_package = ".;pb";
+// Package for java implementation
+option java_package = "io.clouditor.metric_api.pb";
+option java_multiple_files = true;
+
+message Scale {
+  int32 lower_bound = 1;
+  int32  upper_bound = 2;
+  string description = 3;
+}
+
+message Metric {
+  string metric_name = 1;
+  string description = 2;
+  int32 lower_bound = 3;
+  int32 upper_bound = 4;
+}
+
+message Asset {
+  string asset_name = 1;
+  string asset_type = 2;
+}
+
+message Evaluation {
+  string metric_name = 1;
+  string time_stamp = 2;
+  string result_value = 3;
+}
+
+message EvaluationToAsset {
+  string metric_name = 1;
+  string time_stamp = 2;
+  string asset_name = 3;
+}
+
+// TODO: Property and AssetToProperty
+

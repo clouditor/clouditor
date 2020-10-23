@@ -39,36 +39,63 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.glassfish.hk2.api.ServiceLocator;
 
+import javax.persistence.*;
+
+@Entity(name = "control")
+@Table(name = "control")
 public class Control {
 
   /**
    * The rules associated with this control. This is actually redundant a little bit since its
    * already stored in the {@link Rule}.
    */
+  @ManyToMany(mappedBy = "controls")
   private List<Rule> rules = new ArrayList<>();
 
   /** The last evaluation results */
-  private List<EvaluationResult> results = new ArrayList<>();
+  @OneToMany
+  @JoinColumn(name = "time_stamp")
+  private final List<EvaluationResult> results = new ArrayList<>();
 
   /** The id of the control this objective is referring to, i.e. a CCM control id. */
-  @JsonProperty private String controlId;
+  @JsonProperty
+  @Id
+  @Column(name = "control_id")
+  private String controlId;
 
   /** A short description. */
-  @JsonProperty private String description;
+  @JsonProperty
+  @Column(name = "control_description")
+  private String description;
 
   /** Is this control ok or not? By default we start in the NOT_EVALUATED state. */
-  @JsonProperty private Fulfillment fulfilled = Fulfillment.NOT_EVALUATED;
+  @JsonProperty
+  @Enumerated(EnumType.ORDINAL)
+  @Column(name = "fulfillment_value")
+  private Fulfillment fulfilled = Fulfillment.NOT_EVALUATED;
 
-  @JsonProperty private Domain domain;
-  @JsonProperty private String name;
+  @JsonProperty
+  @ManyToOne
+  @JoinColumn(name = "domain_name")
+  private Domain domain;
+
+  @JsonProperty
+  @Column(name = "control_name")
+  private String name;
 
   /** Describes, whether the control can be automated or not. */
-  @JsonProperty private boolean automated;
+  @JsonProperty
+  @Column(name = "automated")
+  private boolean automated;
 
   /** Is the control actively monitored? */
-  @JsonProperty private boolean active = false;
+  @JsonProperty
+  @Column(name = "active")
+  private boolean active = false;
 
-  @JsonProperty private int violations;
+  @JsonProperty
+  @Column(name = "violations")
+  private int violations = 0;
 
   public void evaluate(ServiceLocator locator) {
     // clear old results
@@ -155,6 +182,7 @@ public class Control {
     this.fulfilled = fulfilled;
   }
 
+  /*
   @Override
   public String toString() {
     return new ToStringBuilder(this, ToStringStyle.JSON_STYLE)
@@ -164,7 +192,7 @@ public class Control {
         .append("fulfilled", fulfilled)
         .toString();
   }
-
+*/
   public void setDomain(Domain domain) {
     this.domain = domain;
   }

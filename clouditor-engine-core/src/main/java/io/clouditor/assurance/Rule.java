@@ -32,29 +32,75 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.clouditor.assurance.ccl.*;
 import io.clouditor.discovery.Asset;
+
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Entity(name = "rule")
+@Table(name = "rule")
 public class Rule {
 
   @JsonDeserialize(using = CCLDeserializer.class)
   @JsonSerialize(using = CCLSerializer.class)
+  @ManyToOne
+  @JoinTable(name="condition_to_rule",
+          joinColumns = @JoinColumn(name = "rule_id", referencedColumnName = "rule_id"),
+          inverseJoinColumns = {
+                  @JoinColumn(name = "source", referencedColumnName = "source"),
+                  @JoinColumn(name = "type_value", referencedColumnName = "type_value"),
+          }
+  )
   private Condition condition;
 
   @JsonDeserialize(contentUsing = CCLDeserializer.class)
   @JsonSerialize(contentUsing = CCLSerializer.class)
+  @ManyToMany
+  @JoinTable(name="condition_to_many_rules",
+          joinColumns = @JoinColumn(name = "rule_id", referencedColumnName = "rule_id"),
+          inverseJoinColumns = {
+                  @JoinColumn(name = "source", referencedColumnName = "source"),
+                  @JoinColumn(name = "type_value", referencedColumnName = "type_value"),
+          }
+  )
   private List<Condition> conditions = new ArrayList<>();
 
+  @Column(name = "active")
   private boolean active;
 
-  @JsonProperty private String name;
-  @JsonProperty private String description;
-  @JsonProperty private String icon = "far fa-file-alt";
-  @JsonProperty private List<String> controls = new ArrayList<>();
-  @JsonProperty private String id;
+  @JsonProperty
+  @Column(name = "rule_name")
+  private String name;
 
+  @JsonProperty
+  @Column(name = "rule_description")
+  private String description;
+
+  @JsonProperty
+  @Column(name = "icon")
+  private final String icon = "far fa-file-alt";
+
+  @JsonProperty
+  @ManyToMany
+  @JoinTable(name="rule_to_control",
+          joinColumns = @JoinColumn(name="rule_id", referencedColumnName="rule_id"),
+          inverseJoinColumns = @JoinColumn(name="control_id", referencedColumnName="control_id")
+  )
+  private final List<Control> controls = new ArrayList<>();
+
+  @JsonProperty
+  @Id
+  @Column(name = "rule_id")
+  private String id;
+
+
+  /**
+   * TOTO: what does it do?
+   * @param asset
+   * @return
+   */
   public boolean evaluateApplicability(Asset asset) {
 
     if (this.condition != null) {
@@ -133,12 +179,8 @@ public class Rule {
     this.id = id;
   }
 
-  public List<String> getControls() {
+  public List<Control> getControls() {
     return this.controls;
-  }
-
-  public void setControls(List<String> controls) {
-    this.controls = controls;
   }
 
   public String getId() {
@@ -163,5 +205,15 @@ public class Rule {
 
   public void setConditions(List<Condition> conditions) {
     this.conditions = conditions;
+  }
+
+  public boolean containsControl(final String controlId) {
+    return getControls()
+            .stream()
+            .anyMatch(
+                    control -> control
+                            .getControlId()
+                            .equals(controlId)
+            );
   }
 }
