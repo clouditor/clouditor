@@ -59,7 +59,7 @@ public class Scan implements PersistentObject<String> {
   @Id
   @ManyToOne
   @JoinColumn(name = "type_value")
-  private AssetType assetType;
+  private AssetType assetType = new AssetType();
 
   /**
    * The asset icon of the asset, this scan is targeting. This is automatically parsed from the
