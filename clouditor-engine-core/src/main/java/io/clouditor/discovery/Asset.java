@@ -32,12 +32,11 @@ import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import io.clouditor.assurance.EvaluationResult;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.*;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
-
-import javax.persistence.*;
 
 @Entity(name = "asset")
 @Table(name = "asset")
@@ -83,7 +82,6 @@ public class Asset {
   public void setProperties(AssetProperties properties) {
     this.properties = properties;
   }
-
 
   public String getId() {
     return id;

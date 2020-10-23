@@ -37,7 +37,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.kosprov.jargon2.api.Jargon2.Type;
 import io.clouditor.Engine;
-
+import io.clouditor.util.PersistenceManager;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -46,8 +46,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.ws.rs.NotAuthorizedException;
-
-import io.clouditor.util.PersistenceManager;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

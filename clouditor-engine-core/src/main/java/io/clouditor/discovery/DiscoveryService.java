@@ -30,7 +30,7 @@ package io.clouditor.discovery;
 import static com.mongodb.client.model.Filters.eq;
 
 import io.clouditor.events.DiscoveryResultSubscriber;
-
+import io.clouditor.util.PersistenceManager;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
@@ -45,8 +45,6 @@ import java.util.concurrent.SubmissionPublisher;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
-import io.clouditor.util.PersistenceManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.media.sse.EventOutput;

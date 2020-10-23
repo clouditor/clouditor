@@ -39,9 +39,6 @@ import io.clouditor.util.PersistenceManager;
 import org.jvnet.hk2.annotations.Service;
 import org.kohsuke.args4j.Option;
 
-import java.io.IOException;
-import java.sql.SQLException;
-
 /**
  * The main Clouditor Engine class.
  *

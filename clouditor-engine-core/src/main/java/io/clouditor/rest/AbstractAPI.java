@@ -51,8 +51,6 @@ public abstract class AbstractAPI<C extends Component> extends ResourceConfig {
   protected HttpServer httpServer;
 
   /** The API port. */
-
-
   private final int port;
 
   /** The context path */

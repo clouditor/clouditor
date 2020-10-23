@@ -28,11 +28,10 @@
 package io.clouditor.assurance.ccl;
 
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import java.util.Map;
+import javax.persistence.*;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
-
-import javax.persistence.*;
-import java.util.Map;
 
 @Entity
 @Table(name = "filtered_asset_type")
@@ -55,5 +54,4 @@ public class FilteredAssetType extends AssetType {
   public boolean evaluate(Map properties) {
     return this.assetExpression.evaluate(properties);
   }
-
 }

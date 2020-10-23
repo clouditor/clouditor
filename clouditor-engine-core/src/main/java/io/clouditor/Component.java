@@ -29,6 +29,8 @@ package io.clouditor;
 
 import io.clouditor.auth.LoginRequest;
 import io.clouditor.auth.LoginResponse;
+import java.io.IOException;
+import java.sql.SQLException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -40,9 +42,6 @@ import org.kohsuke.args4j.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
-
-import java.io.IOException;
-import java.sql.SQLException;
 
 /**
  * The base class for different Clouditor components, such as the Engine or Explorer.

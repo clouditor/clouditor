@@ -55,10 +55,11 @@ public class Certification implements PersistentObject<String> {
   @Valid
   @JsonProperty
   @ManyToMany(targetEntity = Control.class)
-  @JoinTable(name="control_to_certification",
-          joinColumns = @JoinColumn(name = "certification_id", referencedColumnName = "certification_id"),
-          inverseJoinColumns = @JoinColumn(name = "control_id", referencedColumnName = "control_id")
-  )
+  @JoinTable(
+      name = "control_to_certification",
+      joinColumns =
+          @JoinColumn(name = "certification_id", referencedColumnName = "certification_id"),
+      inverseJoinColumns = @JoinColumn(name = "control_id", referencedColumnName = "control_id"))
   private List<Control> controls = new ArrayList<>();
 
   @Column(name = "certification_description")

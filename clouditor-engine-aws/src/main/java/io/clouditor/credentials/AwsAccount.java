@@ -30,6 +30,10 @@ package io.clouditor.credentials;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import java.io.IOException;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
@@ -37,11 +41,6 @@ import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sts.StsClient;
 import software.amazon.awssdk.services.sts.model.StsException;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
 
 @Entity(name = "aws_account")
 @Table(name = "aws_account")
@@ -53,7 +52,6 @@ public class AwsAccount extends CloudAccount<AwsCredentials>
       DefaultCredentialsProvider.create();
 
   private static final long serialVersionUID = 1928775323719265066L;
-
 
   @Column(name = "access_key_id")
   @JsonProperty

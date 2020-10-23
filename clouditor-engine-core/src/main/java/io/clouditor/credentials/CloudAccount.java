@@ -33,16 +33,14 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.clouditor.util.Collection;
 import io.clouditor.util.PersistentObject;
 import java.io.IOException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Entity(name = "cloud_account")
 @Table(name = "cloud_account")
-
 @JsonTypeInfo(use = Id.NAME, property = "provider")
 @Collection("accounts")
 public abstract class CloudAccount<T> implements PersistentObject<String> {
@@ -64,7 +62,6 @@ public abstract class CloudAccount<T> implements PersistentObject<String> {
    */
   @Column(name = "auto_discovered")
   private boolean autoDiscovered;
-
 
   public String getAccountId() {
     return accountId;

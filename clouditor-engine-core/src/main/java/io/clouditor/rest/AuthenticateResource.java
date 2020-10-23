@@ -32,7 +32,6 @@ import io.clouditor.auth.LoginRequest;
 import io.clouditor.auth.LoginResponse;
 import io.clouditor.auth.User;
 import io.clouditor.util.PersistenceManager;
-
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.NotAuthorizedException;

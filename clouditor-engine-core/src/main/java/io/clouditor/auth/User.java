@@ -36,16 +36,16 @@ import io.clouditor.rest.ObjectMapperResolver.DatabaseOnly;
 import io.clouditor.util.PersistentObject;
 import java.security.Principal;
 import java.util.List;
+import javax.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-
-import javax.persistence.*;
 
 @Entity(name = "cloud_user")
 @Table(name = "cloud_user")
 public class User implements Principal, PersistentObject<String> {
 
   private static final long serialVersionUID = -1503934816997542987L;
+
   @Id
   @Column(name = "user_name")
   private String username;

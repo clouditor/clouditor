@@ -32,10 +32,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import javax.persistence.*;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-
-import javax.persistence.*;
 
 @Entity(name = "discovery_result")
 @Table(name = "discovery_result")
@@ -45,9 +44,7 @@ public class DiscoveryResult {
   @Column(name = "time_stamp")
   private Instant timestamp;
 
-  @ManyToMany
-  @Embedded
-  private Map<String, Asset> discoveredAssets = new HashMap<>();
+  @ManyToMany @Embedded private Map<String, Asset> discoveredAssets = new HashMap<>();
 
   @Column(name = "failed")
   private boolean failed = false;
@@ -55,9 +52,7 @@ public class DiscoveryResult {
   @Column(name = "error")
   private String error;
 
-  @JsonProperty
-  @OneToOne
-  private final Scan scanId;
+  @JsonProperty @OneToOne private final Scan scanId;
 
   public void setTimestamp(Instant timestamp) {
     this.timestamp = timestamp;

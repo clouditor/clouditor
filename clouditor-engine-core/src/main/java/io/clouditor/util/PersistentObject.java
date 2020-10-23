@@ -28,7 +28,6 @@
 package io.clouditor.util;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.io.Serializable;
 
 /** This class represents an object that we can persist in a not-specified form, i.e. a Database. */

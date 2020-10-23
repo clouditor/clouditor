@@ -32,7 +32,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.clouditor.AbstractEngineUnitTest;
 import io.clouditor.assurance.RuleService;
-
 import java.util.concurrent.TimeUnit;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Assertions;

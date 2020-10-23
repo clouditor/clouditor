@@ -35,7 +35,7 @@ import io.clouditor.discovery.DiscoveryResult;
 import io.clouditor.discovery.DiscoveryService;
 import io.clouditor.events.DiscoveryResultSubscriber;
 import io.clouditor.util.FileSystemManager;
-
+import io.clouditor.util.PersistenceManager;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
@@ -49,11 +49,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
-
-import io.clouditor.util.PersistenceManager;
 import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.BulletList;
 import org.commonmark.node.FencedCodeBlock;
@@ -150,12 +147,12 @@ public class RuleService extends DiscoveryResultSubscriber {
     public void visit(BulletList bulletList) {
       var node = bulletList.getFirstChild();
 
-      final Function<Node, Control> getControl = n -> {
-        Control control = new Control();
-        control.setControlId(renderText(n.getFirstChild()));
-        return control;
-      };
-
+      final Function<Node, Control> getControl =
+          n -> {
+            Control control = new Control();
+            control.setControlId(renderText(n.getFirstChild()));
+            return control;
+          };
 
       this.rule.getControls().add(getControl.apply(node));
 
@@ -339,10 +336,7 @@ public class RuleService extends DiscoveryResultSubscriber {
   public List<Rule> getRulesForControl(String controlId) {
     return this.rules.values().stream()
         .flatMap(Collection::stream)
-        .filter(
-                rule -> rule.getControls() != null
-                        && rule.containsControl(controlId)
-        )
+        .filter(rule -> rule.getControls() != null && rule.containsControl(controlId))
         .collect(Collectors.toList());
   }
 

@@ -29,20 +29,17 @@ package io.clouditor.assurance.ccl;
 
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import io.clouditor.discovery.AssetProperties;
+import java.io.Serializable;
+import javax.persistence.*;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
-
-import javax.persistence.*;
-import java.io.Serializable;
 
 @Entity(name = "condition")
 @Table(name = "condition")
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class Condition {
 
-  @Id
-  @Embedded
-  private final ConditionPK conditionPK = new ConditionPK();
+  @Id @Embedded private final ConditionPK conditionPK = new ConditionPK();
 
   @Column(name = "expression")
   @Type(type = "jsonb")

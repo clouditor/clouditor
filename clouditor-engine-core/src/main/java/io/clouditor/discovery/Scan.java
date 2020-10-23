@@ -30,9 +30,8 @@ package io.clouditor.discovery;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.clouditor.assurance.ccl.AssetType;
 import io.clouditor.util.PersistentObject;
-
-import javax.persistence.*;
 import java.lang.reflect.InvocationTargetException;
+import javax.persistence.*;
 
 /**
  * A {@link Scan} holds information and configuration about a scan that is regularly executed. The

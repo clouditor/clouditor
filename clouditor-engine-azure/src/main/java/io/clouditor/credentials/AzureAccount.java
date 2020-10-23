@@ -34,13 +34,12 @@ import com.microsoft.azure.credentials.ApplicationTokenCredentials;
 import com.microsoft.azure.credentials.AzureCliCredentials;
 import com.microsoft.azure.credentials.AzureTokenCredentials;
 import com.microsoft.azure.management.Azure;
-
+import java.io.File;
+import java.io.IOException;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.io.File;
-import java.io.IOException;
 
 @Entity(name = "azure_account")
 @Table(name = "azure_account")
@@ -48,6 +47,7 @@ import java.io.IOException;
 public class AzureAccount extends CloudAccount<AzureTokenCredentials> {
 
   private static final long serialVersionUID = 1737969287469590217L;
+
   @Id //  enable the access to the property accessKeyId through the getter method by default
   @Column(name = "client_id")
   @JsonProperty
@@ -125,7 +125,6 @@ public class AzureAccount extends CloudAccount<AzureTokenCredentials> {
         .getOrDefault(
             "AZURE_AUTH_LOCATION", System.getProperty("user.home") + "/.azure/clouditor.azureauth");
   }
-
 
   public void setClientId(String clientId) {
     this.clientId = clientId;

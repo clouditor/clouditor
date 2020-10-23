@@ -31,7 +31,7 @@ import io.clouditor.Engine;
 import io.clouditor.auth.AuthenticationService;
 import io.clouditor.auth.LoginResponse;
 import io.clouditor.auth.User;
-
+import io.clouditor.util.PersistenceManager;
 import java.net.URI;
 import java.util.Base64;
 import javax.inject.Inject;
@@ -44,8 +44,6 @@ import javax.ws.rs.client.ClientResponseFilter;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
-
-import io.clouditor.util.PersistenceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

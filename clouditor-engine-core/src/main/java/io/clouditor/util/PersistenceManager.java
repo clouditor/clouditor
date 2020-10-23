@@ -57,7 +57,7 @@ public class PersistenceManager {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(PersistenceManager.class);
 
-  private static final  PersistenceManager instance = new PersistenceManager();
+  private static final PersistenceManager instance = new PersistenceManager();
 
   private String host;
 
@@ -116,9 +116,7 @@ public class PersistenceManager {
   }
 
   public <T> T getById(Class<T> clazz, String id) {
-    return this.find(clazz, eq(FIELD_ID, id))
-            .limit(1)
-            .first();
+    return this.find(clazz, eq(FIELD_ID, id)).limit(1).first();
   }
 
   public String getHost() {

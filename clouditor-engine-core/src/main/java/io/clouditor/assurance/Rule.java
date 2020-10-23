@@ -32,12 +32,11 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.clouditor.assurance.ccl.*;
 import io.clouditor.discovery.Asset;
-
-import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.persistence.*;
 
 @Entity(name = "rule")
 @Table(name = "rule")
@@ -46,25 +45,25 @@ public class Rule {
   @JsonDeserialize(using = CCLDeserializer.class)
   @JsonSerialize(using = CCLSerializer.class)
   @ManyToOne
-  @JoinTable(name="condition_to_rule",
-          joinColumns = @JoinColumn(name = "rule_id", referencedColumnName = "rule_id"),
-          inverseJoinColumns = {
-                  @JoinColumn(name = "source", referencedColumnName = "source"),
-                  @JoinColumn(name = "type_value", referencedColumnName = "type_value"),
-          }
-  )
+  @JoinTable(
+      name = "condition_to_rule",
+      joinColumns = @JoinColumn(name = "rule_id", referencedColumnName = "rule_id"),
+      inverseJoinColumns = {
+        @JoinColumn(name = "source", referencedColumnName = "source"),
+        @JoinColumn(name = "type_value", referencedColumnName = "type_value"),
+      })
   private Condition condition;
 
   @JsonDeserialize(contentUsing = CCLDeserializer.class)
   @JsonSerialize(contentUsing = CCLSerializer.class)
   @ManyToMany
-  @JoinTable(name="condition_to_many_rules",
-          joinColumns = @JoinColumn(name = "rule_id", referencedColumnName = "rule_id"),
-          inverseJoinColumns = {
-                  @JoinColumn(name = "source", referencedColumnName = "source"),
-                  @JoinColumn(name = "type_value", referencedColumnName = "type_value"),
-          }
-  )
+  @JoinTable(
+      name = "condition_to_many_rules",
+      joinColumns = @JoinColumn(name = "rule_id", referencedColumnName = "rule_id"),
+      inverseJoinColumns = {
+        @JoinColumn(name = "source", referencedColumnName = "source"),
+        @JoinColumn(name = "type_value", referencedColumnName = "type_value"),
+      })
   private List<Condition> conditions = new ArrayList<>();
 
   @Column(name = "active")
@@ -84,10 +83,10 @@ public class Rule {
 
   @JsonProperty
   @ManyToMany
-  @JoinTable(name="rule_to_control",
-          joinColumns = @JoinColumn(name="rule_id", referencedColumnName="rule_id"),
-          inverseJoinColumns = @JoinColumn(name="control_id", referencedColumnName="control_id")
-  )
+  @JoinTable(
+      name = "rule_to_control",
+      joinColumns = @JoinColumn(name = "rule_id", referencedColumnName = "rule_id"),
+      inverseJoinColumns = @JoinColumn(name = "control_id", referencedColumnName = "control_id"))
   private final List<Control> controls = new ArrayList<>();
 
   @JsonProperty
@@ -95,9 +94,9 @@ public class Rule {
   @Column(name = "rule_id")
   private String id;
 
-
   /**
    * TOTO: what does it do?
+   *
    * @param asset
    * @return
    */
@@ -208,12 +207,6 @@ public class Rule {
   }
 
   public boolean containsControl(final String controlId) {
-    return getControls()
-            .stream()
-            .anyMatch(
-                    control -> control
-                            .getControlId()
-                            .equals(controlId)
-            );
+    return getControls().stream().anyMatch(control -> control.getControlId().equals(controlId));
   }
 }
