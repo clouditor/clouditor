@@ -71,10 +71,6 @@ dependencies {
     implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
 
     compile group: 'postgresql', name: 'postgresql', version: libraryVersions.postgresql
-    compile group: 'io.grpc', name: 'grpc-all', version: libraryVersions.grpc
-    compile group: 'com.google.code.gson', name: 'gson', version: libraryVersions.gson
-    compile group: 'com.google.protobuf', name: 'protobuf-java', version: libraryVersions.protobuf_java
-    compile group: 'com.opentable.components', name: 'otj-pg-embedded', version: libraryVersions.otj_pg_embedded
     compile group: 'org.hibernate', name: 'hibernate-core', version: libraryVersions.hibernate
     compile group: 'com.vladmihalcea', name: 'hibernate-types-52', version: libraryVersions.hibernate_types_52
 
@@ -84,53 +80,7 @@ dependencies {
     testImplementation "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:${libraryVersions.jersey}"
 }
 
-sourceSets {
-    main {
-        java {
-            srcDirs 'build/generated/source/proto/main/grpc'
-            srcDirs 'build/generated/source/proto/main/java'
-        }
-    }
-
-    test {
-        'build/generated/source/proto/test/java'
-    }
-}
-
 generateGrammarSource {
     outputDirectory = file("${project.buildDir}/generated-src/antlr/main/io/clouditor/assurance/grammar")
     arguments += ["-visitor", "-package", "io.clouditor.assurance.grammar"]
-}
-
-// Set up protobuf compiler (for the case protoc isn't installed yet)
-// From https://github.com/google/protobuf-gradle-plugin
-protobuf {
-    // Configure the protoc executable
-    protoc {
-        // Download from repositories
-        // Replaced version with the newest one from
-        // https://mvnrepository.com/artifact/com.google.protobuf/protoc
-        // -> 3.12.3
-        artifact = 'com.google.protobuf:protoc:3.12.3'
-    }
-
-    // From https://github.com/google/protobuf-gradle-plugin
-    // Locate the codegen plugins
-    plugins {
-        // Locate a plugin with name 'grpc'. This step is optional.
-        // If you don't locate it, protoc will try to use "protoc-gen-grpc" from
-        // system search path.
-        grpc {
-            // Newest version from
-            // https://mvnrepository.com/artifact/io.grpc/protoc-gen-grpc-java
-            artifact = 'io.grpc:protoc-gen-grpc-java:1.30.2'
-        }
-    }
-
-    // To guide protoc to use grpc plugin
-    generateProtoTasks {
-        all()*.plugins {
-            grpc{}
-        }
-    }
 }
