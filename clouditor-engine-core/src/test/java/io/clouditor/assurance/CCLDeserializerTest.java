@@ -31,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.clouditor.assurance.ccl.BinaryComparison;
@@ -38,7 +39,6 @@ import io.clouditor.assurance.ccl.CCLDeserializer;
 import io.clouditor.discovery.Asset;
 import io.clouditor.discovery.AssetProperties;
 import io.clouditor.rest.ObjectMapperResolver;
-import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -49,7 +49,7 @@ import org.junit.jupiter.api.Test;
 class CCLDeserializerTest {
 
   @Test
-  void testFromYAML() throws IOException {
+  void testFromYAML() throws JsonProcessingException {
     var mapper = new ObjectMapper(new YAMLFactory());
     ObjectMapperResolver.configureObjectMapper(mapper);
 

@@ -36,8 +36,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.clouditor.AbstractEngineUnitTest;
 
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.List;
 import javax.ws.rs.NotAuthorizedException;
 
@@ -49,7 +47,7 @@ class UserTest extends AbstractEngineUnitTest {
 
   @Override
   @BeforeEach
-  protected void setUp() throws IOException, SQLException {
+  protected void setUp() {
     super.setUp();
 
     this.engine.initDB();

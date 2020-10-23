@@ -187,7 +187,7 @@ public class Engine extends Component {
     this.getService(CertificationService.class).loadCertifications();
   }
 
-  public void initDB() throws IOException, SQLException {
+  public void initDB() {
 
     if (this.dbInMemory) {
       var server = new MongoServer(new MemoryBackend());
@@ -249,7 +249,7 @@ public class Engine extends Component {
    * call will block until all tasks are done.
    */
   @Override
-  public void start(String[] args) throws IOException, SQLException {
+  public void start(String[] args) {
     // parse command line args
     this.parseArgs(args);
 
