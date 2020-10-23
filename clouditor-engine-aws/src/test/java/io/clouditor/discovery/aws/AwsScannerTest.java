@@ -37,7 +37,7 @@ import software.amazon.awssdk.awscore.client.builder.AwsClientBuilder;
 import software.amazon.awssdk.core.SdkClient;
 import software.amazon.awssdk.utils.builder.ToCopyableBuilder;
 
-public class AwsScannerTest {
+public abstract class AwsScannerTest {
 
   Engine engine = new Engine();
 

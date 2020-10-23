@@ -61,9 +61,10 @@ public class AzureStorageAccountScanner extends AzureScanner<StorageAccount> {
 
     asset.setProperty("isAccessAllowedFromAzureServices", account.canAccessFromAzureServices());
 
+    /*
     var isKeyRegenerated = false;
 
-    /*List<EventData> accountLogs =
+    List<EventData> accountLogs =
         this.api
             .monitor()
             .activityLogs()

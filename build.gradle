@@ -74,6 +74,10 @@ allprojects {
         }
     }
 
+    tasks.named("compileJava") {
+        it.dependsOn(":spotlessApply")
+    }
+
     sonarqube {
         properties {
             property 'sonar.jacoco.reportPath', null

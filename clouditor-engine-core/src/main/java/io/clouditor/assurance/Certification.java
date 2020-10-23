@@ -38,10 +38,11 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-public class Certification implements PersistentObject {
+public class Certification implements PersistentObject<String> {
 
   /** A unique identifier for each certification, such as CSA CCM or Azure CIS. */
   private String id;
+
   /** A list of controls in the certificate */
   @Size(min = 1)
   @Valid
