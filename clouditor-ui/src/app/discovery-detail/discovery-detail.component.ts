@@ -33,16 +33,14 @@ import { Rule } from '../rule';
 import { RuleService } from '../rule.service';
 import { AssetService } from '../asset.service';
 import { timer } from 'rxjs';
-import { componentDestroyed } from '@w11k/ngx-componentdestroyed';
-import { takeUntil } from 'rxjs/operators';
-import { ConfigService } from '../config.service';
+import { OnDestroyMixin, untilComponentDestroyed } from '@w11k/ngx-componentdestroyed';
 
 @Component({
   selector: 'clouditor-scan-detail',
   templateUrl: './discovery-detail.component.html',
   styleUrls: ['./discovery-detail.component.css']
 })
-export class DiscoveryDetailComponent implements OnInit, OnDestroy {
+export class DiscoveryDetailComponent extends OnDestroyMixin implements OnInit, OnDestroy {
   scan: Scan;
   rules: Rule[];
   assets: any[];
@@ -52,15 +50,15 @@ export class DiscoveryDetailComponent implements OnInit, OnDestroy {
   processing: Map<string, boolean> = new Map();
 
   constructor(private discoveryService: DiscoveryService,
-    private ruleService: RuleService,
-    private assetService: AssetService,
     private route: ActivatedRoute) {
+    super();
+
     this.route.params.subscribe(params => {
       timer(0, 10000)
         .pipe(
-          takeUntil(componentDestroyed(this)),
+          untilComponentDestroyed(this),
         )
-        .subscribe(x => {
+        .subscribe(() => {
           this.updateScan(params['id']);
         });
     });
