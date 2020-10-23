@@ -24,24 +24,25 @@
  *
  * This file is part of Clouditor Community Edition.
  */
+package io.clouditor
 
-package io.clouditor;
-
-public class EngineApplication {
+object EngineApplication {
 
   /**
    * The main entry point for the Clouditor Engine Application.
    *
    * @param args command line arguments
    */
-  public static void main(String[] args) throws InterruptedException {
-    var engine = new Engine();
+  @Throws(InterruptedException::class)
+  @JvmStatic
+  fun main(args: Array<String>) {
+    val engine = Engine()
+    engine.start(args)
 
-    engine.start(args);
-
-    Thread.currentThread().join();
+    Thread.currentThread().join()
 
     // shutdown if finished
-    Runtime.getRuntime().addShutdownHook(new Thread(engine::shutdown));
+    Runtime.getRuntime().addShutdownHook(Thread { engine.shutdown() })
   }
+
 }
