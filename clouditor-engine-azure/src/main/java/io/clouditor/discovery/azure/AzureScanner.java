@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
 
 public abstract class AzureScanner<T extends HasInner> extends Scanner<AzureClients, T> {
 
+  public static final String PROPERTIES_KEY_PREFIX = "properties.";
   protected String resourceGroup;
 
   AzureScanner(Function<T, String> idGenerator, Function<T, String> nameGenerator) {
@@ -89,7 +90,7 @@ public abstract class AzureScanner<T extends HasInner> extends Scanner<AzureClie
     properties.putAll(
         tmp.entrySet().stream()
             .collect(
-                Collectors.toMap(e -> e.getKey().replace("properties.", ""), Entry::getValue)));
+                Collectors.toMap(e -> e.getKey().replace(PROPERTIES_KEY_PREFIX, ""), Entry::getValue)));
 
     properties.put("id", idGenerator.apply(object));
     properties.put("name", nameGenerator.apply(object));

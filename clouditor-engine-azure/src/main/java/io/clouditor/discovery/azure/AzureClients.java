@@ -46,14 +46,9 @@ public class AzureClients {
 
   Azure azure;
 
-  // exposing restClient and baseUrl is necessary, since BYOK is not exposed in the Java REST API
-  private RestClient restClient;
-
   MonitorManager monitor;
 
   protected Builder builder;
-
-  private String baseUrl;
 
   AzureClients() {}
 

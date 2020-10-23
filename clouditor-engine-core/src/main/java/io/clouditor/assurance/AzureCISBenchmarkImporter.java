@@ -27,6 +27,10 @@
 
 package io.clouditor.assurance;
 
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.apache.pdfbox.text.PDFTextStripperByArea;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
@@ -38,9 +42,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.text.PDFTextStripper;
-import org.apache.pdfbox.text.PDFTextStripperByArea;
 
 public class AzureCISBenchmarkImporter extends CertificationImporter {
   private static final String BENCHMARK_PREFIX = "Ensure that ";
@@ -154,21 +155,22 @@ public class AzureCISBenchmarkImporter extends CertificationImporter {
     }
   }
 
-  private List<Control> process(BufferedReader reader) throws IOException, URISyntaxException {
+  private List<Control> process(BufferedReader reader) throws IOException {
     List<Control> controls = new ArrayList<>();
 
-    // first line is the name (TODO: Skip the number)
-    var line = reader.readLine();
+    /*
+        // first line is the name (TODO: Skip the number)
+        var line = reader.readLine();
 
-    // TODO: only works for the first one currently
-    // Domain domain = new Domain();
-    // domain.setName(line);
+        // TODO: only works for the first one currently
+        Domain domain = new Domain();
+        domain.setName(line);
 
-    // next lines are the description, until the next sub-chapter
-    var description = readUntilBeforeSection(reader);
+        // next lines are the description, until the next sub-chapter
+        var description = readUntilBeforeSection(reader);
 
-    // domain.setDescription(description);
-
+        domain.setDescription(description);
+    */
     // now lets read the individual controls
     // TODO: sometimes we have a sub-group
     while (true) {

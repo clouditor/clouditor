@@ -34,7 +34,7 @@ public abstract class CertificationImporter {
 
   protected static final Logger LOGGER = LogManager.getLogger();
 
-  public CertificationImporter() {}
+  protected CertificationImporter() {}
 
   abstract Certification load();
 

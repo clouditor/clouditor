@@ -83,7 +83,7 @@ public class AwsCloudTrailAccountScanner
        - inactive or
        - are not "multiRegion", i.e. is not active in all regions
       */
-      if (!isActive || !trail.isMultiRegionTrail()) {
+      if (!isActive || Boolean.FALSE.equals(trail.isMultiRegionTrail())) {
         continue;
       }
 
@@ -91,7 +91,7 @@ public class AwsCloudTrailAccountScanner
           this.api
               .getEventSelectors(GetEventSelectorsRequest.builder().trailName(trail.name()).build())
               .eventSelectors()) {
-        if (selector.includeManagementEvents()) {
+        if (Boolean.TRUE.equals(selector.includeManagementEvents())) {
           switch (selector.readWriteType()) {
             case READ_ONLY:
               hasActiveAllRegionManagementReadTrail = true;
