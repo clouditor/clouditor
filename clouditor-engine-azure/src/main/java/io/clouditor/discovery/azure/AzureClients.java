@@ -29,7 +29,6 @@ package io.clouditor.discovery.azure;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.monitor.implementation.MonitorManager;
-import com.microsoft.rest.RestClient;
 import com.microsoft.rest.RestClient.Builder;
 import io.clouditor.credentials.AzureAccount;
 import io.clouditor.util.PersistenceManager;

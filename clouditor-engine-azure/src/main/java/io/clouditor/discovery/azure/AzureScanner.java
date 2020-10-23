@@ -90,7 +90,8 @@ public abstract class AzureScanner<T extends HasInner> extends Scanner<AzureClie
     properties.putAll(
         tmp.entrySet().stream()
             .collect(
-                Collectors.toMap(e -> e.getKey().replace(PROPERTIES_KEY_PREFIX, ""), Entry::getValue)));
+                Collectors.toMap(
+                    e -> e.getKey().replace(PROPERTIES_KEY_PREFIX, ""), Entry::getValue)));
 
     properties.put("id", idGenerator.apply(object));
     properties.put("name", nameGenerator.apply(object));
