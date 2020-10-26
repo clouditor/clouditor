@@ -57,11 +57,11 @@ class CCLDeserializerTest {
 
     assertNotNull(rule);
 
-    var condition = rule.getCondition();
+    var conditions = rule.getConditions();
 
-    assertNotNull(condition);
+    assertNotNull(conditions);
 
-    assertTrue(condition.getExpression() instanceof BinaryComparison);
+    assertTrue(conditions.get(0).getExpression() instanceof BinaryComparison);
   }
 
   @Test
