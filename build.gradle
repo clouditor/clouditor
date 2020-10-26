@@ -33,6 +33,7 @@ plugins {
     id 'com.github.jk1.dependency-license-report' version '1.2'
     id 'maven-publish'
     id 'jacoco'
+    id 'org.jetbrains.kotlin.jvm' version '1.4.10'
 }
 
 sonarqube {
@@ -47,6 +48,7 @@ allprojects {
     apply plugin: 'jacoco'
     apply plugin: 'maven-publish'
     apply plugin: 'com.diffplug.gradle.spotless'
+    apply plugin: 'kotlin'
 
     group = 'io.clouditor'
 
@@ -74,6 +76,10 @@ allprojects {
         }
     }
 
+    tasks.named("compileJava") {
+        it.dependsOn(":spotlessApply")
+    }
+
     sonarqube {
         properties {
             property 'sonar.jacoco.reportPath', null
@@ -85,6 +91,18 @@ allprojects {
     repositories {
         mavenLocal() // needed currently for the eu-sec client
         mavenCentral()
+    }
+
+    compileKotlin {
+        kotlinOptions {
+            jvmTarget = "13"
+        }
+    }
+
+    compileTestKotlin {
+        kotlinOptions {
+            jvmTarget = "13"
+        }
     }
 
     compileJava {

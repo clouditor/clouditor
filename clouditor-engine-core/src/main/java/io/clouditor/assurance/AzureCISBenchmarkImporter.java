@@ -154,21 +154,22 @@ public class AzureCISBenchmarkImporter extends CertificationImporter {
     }
   }
 
-  private List<Control> process(BufferedReader reader) throws IOException, URISyntaxException {
+  private List<Control> process(BufferedReader reader) throws IOException {
     List<Control> controls = new ArrayList<>();
 
-    // first line is the name (TODO: Skip the number)
-    var line = reader.readLine();
+    /*
+        // first line is the name (TODO: Skip the number)
+        var line = reader.readLine();
 
-    // TODO: only works for the first one currently
-    // Domain domain = new Domain();
-    // domain.setName(line);
+        // TODO: only works for the first one currently
+        Domain domain = new Domain();
+        domain.setName(line);
 
-    // next lines are the description, until the next sub-chapter
-    var description = readUntilBeforeSection(reader);
+        // next lines are the description, until the next sub-chapter
+        var description = readUntilBeforeSection(reader);
 
-    // domain.setDescription(description);
-
+        domain.setDescription(description);
+    */
     // now lets read the individual controls
     // TODO: sometimes we have a sub-group
     while (true) {

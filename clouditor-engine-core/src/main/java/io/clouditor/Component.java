@@ -76,9 +76,9 @@ public abstract class Component {
 
   // TODO: somehow use the one that is already there in the api
   /** The service locator from HK2 */
-  private ServiceLocator locator;
+  private final ServiceLocator locator;
 
-  public Component() {
+  protected Component() {
     this.locator = ServiceLocatorUtilities.createAndPopulateServiceLocator();
     ServiceLocatorUtilities.addOneConstant(this.locator, this);
 

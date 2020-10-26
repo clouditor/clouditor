@@ -56,8 +56,6 @@ public abstract class AwsScanner<
 
   private final Supplier<AwsClientBuilder<B, C>> builderSupplier;
 
-  protected C api;
-
   public AwsScanner(
       Supplier<AwsClientBuilder<B, C>> builderSupplier,
       Function<T, String> idGenerator,
@@ -174,6 +172,7 @@ public abstract class AwsScanner<
     return api;
   }
 
+  @Override
   public void setApi(C api) {
     this.api = api;
   }
