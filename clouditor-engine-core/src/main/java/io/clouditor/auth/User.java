@@ -40,8 +40,8 @@ import javax.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-@Entity(name = "cloud_user")
-@Table(name = "cloud_user")
+@Entity(name = "c_user")
+@Table(name = "c_user")
 public class User implements Principal, PersistentObject<String> {
 
   private static final long serialVersionUID = -1503934816997542987L;

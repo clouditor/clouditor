@@ -1,9 +1,7 @@
 package io.clouditor.data_access_layer;
 
 import io.clouditor.assurance.*;
-import io.clouditor.assurance.ccl.AssetType;
-import io.clouditor.assurance.ccl.Condition;
-import io.clouditor.assurance.ccl.FilteredAssetType;
+import io.clouditor.assurance.ccl.*;
 import io.clouditor.auth.User;
 import io.clouditor.discovery.Asset;
 import io.clouditor.discovery.DiscoveryResult;
@@ -100,7 +98,7 @@ public class Persistence implements Closeable {
     sut.setFullName("fullName");
     sut.setEmail("username@test.edu");
     sut.setShadow(true);
-    final String tableName = "cloud_user";
+    final String tableName = "c_user";
 
     final String domainID = "domain_name";
     final Domain domain = new Domain(domainID);
@@ -127,41 +125,106 @@ public class Persistence implements Closeable {
     certification.setControls(List.of(control));
     final String certificationTableName = "certification";
 
+    final String assetTypeID = "asset_type_id";
+    final AssetType assetType = new AssetType();
+    assetType.setValue(assetTypeID);
+    final String assetTypeTableName = "asset_type";
+
+    final String filteredAssetTypeID = "filtered_asset_type_ID";
+    final FilteredAssetType filteredAssetType = new FilteredAssetType();
+    filteredAssetType.setValue(filteredAssetTypeID);
+    final String filteredAssetTypTableName = "filtered_asset_type";
+    System.out.println(filteredAssetType);
+    System.out.println(filteredAssetType.getAssetExpression());
+
+    final String ruleID = "rule_id";
+    final Rule rule = new Rule();
+    rule.setId(ruleID);
+    rule.setActive(true);
+    rule.setName("rule name");
+    rule.setDescription("rule description");
+    rule.getControls().add(control);
+    final String ruleTableName = "rule";
+
+    final Condition condition = new Condition();
+    condition.setAssetType(assetType);
+    condition.setSource("source");
+    final Condition.ConditionPK conditionID = condition.getConditionPK();
+    final String conditionTableName = "condition";
+
+    final Class<Condition> conditionClass = Condition.class;
+
     test(
         persistence,
         sut,
+        User.class,
         sutPK,
         tableName,
         () ->
             test(
                 persistence,
                 domain,
+                Domain.class,
                 domainID,
                 domainTableName,
                 () ->
                     test(
                         persistence,
                         control,
+                        Control.class,
                         controlID,
                         controlTableName,
                         () ->
                             test(
                                 persistence,
                                 certification,
+                                Certification.class,
                                 certificationID,
                                 certificationTableName,
-                                () -> {}))));
+                                    () -> test(
+                                            persistence,
+                                            assetType,
+                                            AssetType.class,
+                                            assetTypeID,
+                                            assetTypeTableName,
+                                            () -> test(
+                                                    persistence,
+                                                    rule,
+                                                    Rule.class,
+                                                    ruleID,
+                                                    ruleTableName,
+                                                    () -> test(
+                                                            persistence,
+                                                            filteredAssetType,
+                                                            FilteredAssetType.class,
+                                                            filteredAssetTypeID,
+                                                            filteredAssetTypTableName,
+                                                            () -> test(
+                                                                    persistence,
+                                                                    condition,
+                                                                    Condition.class,
+                                                                    conditionID,
+                                                                    conditionTableName,
+                                                                    () -> {}
+                                                            )
+                                                    )
+                                            )
+                                    )
+                            )
+                    )
+            )
+    );
     persistence.close();
   }
 
   private static <T> void test(
       final Persistence persistence,
       final T sut,
+      final Class<T> type,
       final Serializable sutPK,
       final String tableName,
       final Runnable runnable) {
-    final Class<T> type = (Class<T>) sut.getClass();
-    System.out.println(tableName + persistence.listAll(tableName, type));
+    // System.out.println(tableName + persistence.listAll(tableName, type));
 
     boolean isPresent = persistence.get(type, sutPK).isPresent();
     System.out.println(tableName + " IS_PRESENT: " + isPresent);

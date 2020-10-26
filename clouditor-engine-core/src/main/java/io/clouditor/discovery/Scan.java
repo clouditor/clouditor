@@ -56,7 +56,7 @@ public class Scan implements PersistentObject<String> {
    */
   @JsonProperty
   @Id
-  @ManyToOne
+  @ManyToOne(cascade = CascadeType.ALL)
   @JoinColumn(name = "type_value")
   private AssetType assetType = new AssetType();
 
@@ -94,7 +94,7 @@ public class Scan implements PersistentObject<String> {
   @Column(name = "service")
   private String service;
 
-  @OneToOne
+  @OneToOne(cascade = CascadeType.ALL)
   @JoinColumn(name = "type_value")
   private DiscoveryResult lastResult;
 

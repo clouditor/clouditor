@@ -29,7 +29,7 @@ package io.clouditor.assurance;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType; // TODO: check for licence: not gpl
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import io.clouditor.assurance.ccl.Condition;
 import io.clouditor.discovery.AssetProperties;
 import java.io.Serializable;
@@ -56,7 +56,7 @@ public class EvaluationResult implements Serializable {
   @NotNull
   @JsonProperty
   @Id
-  @ManyToOne
+  @ManyToOne(cascade = CascadeType.ALL)
   @JoinColumn(name = "rule_id")
   private final Rule rule;
 

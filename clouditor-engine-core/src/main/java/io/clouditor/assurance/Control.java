@@ -50,7 +50,7 @@ public class Control {
   private List<Rule> rules = new ArrayList<>();
 
   /** The last evaluation results */
-  @OneToMany
+  @OneToMany(cascade = CascadeType.ALL)
   @JoinColumn(name = "time_stamp")
   private final List<EvaluationResult> results = new ArrayList<>();
 
@@ -72,7 +72,7 @@ public class Control {
   private Fulfillment fulfilled = Fulfillment.NOT_EVALUATED;
 
   @JsonProperty
-  @ManyToOne
+  @ManyToOne(cascade = CascadeType.ALL)
   @JoinColumn(name = "domain_name")
   private Domain domain;
 

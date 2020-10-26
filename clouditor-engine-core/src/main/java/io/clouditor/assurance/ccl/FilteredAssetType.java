@@ -27,23 +27,21 @@
 
 package io.clouditor.assurance.ccl;
 
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import java.util.Map;
 import javax.persistence.*;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 
-@Entity
+@Entity(name = "filtered_asset_type")
 @Table(name = "filtered_asset_type")
-@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
+@PrimaryKeyJoinColumn(name = "type_value")
 public class FilteredAssetType extends AssetType {
+
+  private static final long serialVersionUID = -2355408351894740425L;
 
   public FilteredAssetType() {
     super();
   }
 
-  @Column(name = "expression")
-  @Type(type = "jsonb")
+  @Transient
   private Expression assetExpression;
 
   public void setAssetExpression(Expression assetExpression) {
@@ -52,6 +50,15 @@ public class FilteredAssetType extends AssetType {
 
   @Override
   public boolean evaluate(Map properties) {
-    return this.assetExpression.evaluate(properties);
+    return this.getAssetExpression().evaluate(properties);
+  }
+
+  @Override
+  public String toString() {
+    return "TYPE_VALUE: " + super.getValue() + ", EXPRESSION: " + getAssetExpression() + ".";
+  }
+
+  public Expression getAssetExpression() {
+    return assetExpression;
   }
 }

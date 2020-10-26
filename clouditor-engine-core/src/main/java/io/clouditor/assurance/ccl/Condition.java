@@ -27,22 +27,20 @@
 
 package io.clouditor.assurance.ccl;
 
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import io.clouditor.discovery.AssetProperties;
 import java.io.Serializable;
+import java.util.Objects;
 import javax.persistence.*;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 
 @Entity(name = "condition")
 @Table(name = "condition")
-@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class Condition {
 
-  @Id @Embedded private final ConditionPK conditionPK = new ConditionPK();
+  @Id
+  @Embedded
+  private final ConditionPK conditionPK = new ConditionPK();
 
-  @Column(name = "expression")
-  @Type(type = "jsonb")
+  @Transient
   private Expression expression;
 
   public ConditionPK getConditionPK() {
@@ -77,16 +75,20 @@ public class Condition {
     return getConditionPK().getSource();
   }
 
+  public ConditionPK getKey() {
+    return conditionPK;
+  }
+
   @Embeddable
-  static final class ConditionPK implements Serializable {
+  public static class ConditionPK implements Serializable {
 
     private static final long serialVersionUID = -503140484349205605L;
 
     @Column(name = "source")
     private String source;
 
-    @ManyToOne
-    @JoinColumn(name = "type_value")
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "type_value", insertable = false, updatable = false)
     private AssetType assetType;
 
     private String getSource() {
@@ -103,6 +105,20 @@ public class Condition {
 
     private void setAssetType(AssetType assetType) {
       this.assetType = assetType;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      ConditionPK that = (ConditionPK) o;
+      return Objects.equals(getSource(), that.getSource()) &&
+              Objects.equals(getAssetType(), that.getAssetType());
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(getSource(), getAssetType());
     }
   }
 }

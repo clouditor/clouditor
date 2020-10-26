@@ -52,7 +52,7 @@ public abstract class CloudAccount<T> implements PersistentObject<String> {
   @Column(name = "account_id")
   protected String accountId;
 
-  @Column(name = "user")
+  @Column(name = "credential")
   protected String credential;
 
   /**

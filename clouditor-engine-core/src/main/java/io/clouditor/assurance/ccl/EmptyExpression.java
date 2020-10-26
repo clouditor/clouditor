@@ -62,4 +62,9 @@ public class EmptyExpression extends Expression {
     // TODO: what to do if fieldValue is not an array or string
     return false;
   }
+
+  @Override
+  public String toString() {
+    return field;
+  }
 }

@@ -41,6 +41,7 @@ import org.hibernate.annotations.TypeDef;
 @Entity(name = "asset")
 @Table(name = "asset")
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
+@Inheritance(strategy = InheritanceType.JOINED)
 public class Asset {
 
   @ManyToMany(targetEntity = EvaluationResult.class)

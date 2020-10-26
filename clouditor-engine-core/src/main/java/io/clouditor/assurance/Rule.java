@@ -44,7 +44,7 @@ public class Rule {
 
   @JsonDeserialize(using = CCLDeserializer.class)
   @JsonSerialize(using = CCLSerializer.class)
-  @ManyToOne
+  @ManyToOne(cascade = CascadeType.ALL)
   @JoinTable(
       name = "condition_to_rule",
       joinColumns = @JoinColumn(name = "rule_id", referencedColumnName = "rule_id"),
