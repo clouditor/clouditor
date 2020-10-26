@@ -36,12 +36,9 @@ import javax.persistence.*;
 @Table(name = "condition")
 public class Condition {
 
-  @Id
-  @Embedded
-  private final ConditionPK conditionPK = new ConditionPK();
+  @Id @Embedded private final ConditionPK conditionPK = new ConditionPK();
 
-  @Transient
-  private Expression expression;
+  @Transient private Expression expression;
 
   public ConditionPK getConditionPK() {
     return conditionPK;
@@ -112,8 +109,8 @@ public class Condition {
       if (this == o) return true;
       if (o == null || getClass() != o.getClass()) return false;
       ConditionPK that = (ConditionPK) o;
-      return Objects.equals(getSource(), that.getSource()) &&
-              Objects.equals(getAssetType(), that.getAssetType());
+      return Objects.equals(getSource(), that.getSource())
+          && Objects.equals(getAssetType(), that.getAssetType());
     }
 
     @Override

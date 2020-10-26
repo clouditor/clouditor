@@ -181,39 +181,35 @@ public class Persistence implements Closeable {
                                 Certification.class,
                                 certificationID,
                                 certificationTableName,
-                                    () -> test(
-                                            persistence,
-                                            assetType,
-                                            AssetType.class,
-                                            assetTypeID,
-                                            assetTypeTableName,
-                                            () -> test(
-                                                    persistence,
-                                                    rule,
-                                                    Rule.class,
-                                                    ruleID,
-                                                    ruleTableName,
-                                                    () -> test(
-                                                            persistence,
-                                                            filteredAssetType,
-                                                            FilteredAssetType.class,
-                                                            filteredAssetTypeID,
-                                                            filteredAssetTypTableName,
-                                                            () -> test(
-                                                                    persistence,
-                                                                    condition,
-                                                                    Condition.class,
-                                                                    conditionID,
-                                                                    conditionTableName,
-                                                                    () -> {}
-                                                            )
-                                                    )
-                                            )
-                                    )
-                            )
-                    )
-            )
-    );
+                                () ->
+                                    test(
+                                        persistence,
+                                        assetType,
+                                        AssetType.class,
+                                        assetTypeID,
+                                        assetTypeTableName,
+                                        () ->
+                                            test(
+                                                persistence,
+                                                rule,
+                                                Rule.class,
+                                                ruleID,
+                                                ruleTableName,
+                                                () ->
+                                                    test(
+                                                        persistence,
+                                                        filteredAssetType,
+                                                        FilteredAssetType.class,
+                                                        filteredAssetTypeID,
+                                                        filteredAssetTypTableName,
+                                                        () ->
+                                                            test(
+                                                                persistence,
+                                                                condition,
+                                                                Condition.class,
+                                                                conditionID,
+                                                                conditionTableName,
+                                                                () -> {}))))))));
     persistence.close();
   }
 

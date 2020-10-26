@@ -44,9 +44,7 @@ public class DiscoveryResult {
   @Column(name = "time_stamp")
   private Instant timestamp;
 
-  @ManyToMany
-  @Embedded
-  private Map<String, Asset> discoveredAssets = new HashMap<>();
+  @ManyToMany @Embedded private Map<String, Asset> discoveredAssets = new HashMap<>();
 
   @Column(name = "failed")
   private boolean failed = false;

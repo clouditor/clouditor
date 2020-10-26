@@ -41,8 +41,7 @@ public class FilteredAssetType extends AssetType {
     super();
   }
 
-  @Transient
-  private Expression assetExpression;
+  @Transient private Expression assetExpression;
 
   public void setAssetExpression(Expression assetExpression) {
     this.assetExpression = assetExpression;
