@@ -51,7 +51,7 @@ public class Engine extends Component {
 
   private static final String DEFAULT_DB_NAME = "clouditor";
 
-  private static final int DEFAULT_DB_PORT = 27017;
+  private static final int DEFAULT_DB_PORT = 5432;
 
   private static final short DEFAULT_API_PORT = 9999;
 
@@ -199,34 +199,8 @@ public class Engine extends Component {
       Runtime.getRuntime().addShutdownHook(new Thread(server::shutdown));
     }
 
+    // Persistence.init(this.dbHost, this.dbPort);
     PersistenceManager.getInstance().init(this.dbName, this.dbHost, this.dbPort);
-
-    /*
-    final int serverPort = 50051;
-    final DBServer metricStorage;
-
-    if (this.dbInMemory) {
-      final Connection connection = EmbeddedPostgres.start()
-              .getPostgresDatabase()
-              .getConnection();
-      metricStorage = new PostgresDB(Table.init(connection));
-    } else
-      metricStorage = new PostgresDB("postgres", "postgres", "Erf32mg!!");
-
-    final MetricsApplicationServer metricsApplicationServer = new MetricsApplicationServer(serverPort, metricStorage);
-    metricsApplicationServer.start();
-
-    LOGGER.info("Starting database purely in-memory...");
-
-    this.dbHost = metricStorage.getDefaultHost();
-    this.dbPort = metricStorage.getDefaultPort();
-
-    final BoomingRunnable stop = () -> {
-      metricsApplicationServer.stop();
-      metricStorage.close();
-    };
-    Runtime.getRuntime().addShutdownHook(new Thread(stop.handleException()));
-    */
   }
 
   /** Shuts down the Clouditor Engine */

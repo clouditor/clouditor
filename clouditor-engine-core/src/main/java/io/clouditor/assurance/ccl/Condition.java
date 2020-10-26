@@ -34,7 +34,7 @@ import javax.persistence.*;
 
 @Entity(name = "condition")
 @Table(name = "condition")
-public class Condition {
+public class Condition implements Serializable {
 
   @Id @Embedded private final ConditionPK conditionPK = new ConditionPK();
 
@@ -70,10 +70,6 @@ public class Condition {
 
   public String getSource() {
     return getConditionPK().getSource();
-  }
-
-  public ConditionPK getKey() {
-    return conditionPK;
   }
 
   @Embeddable

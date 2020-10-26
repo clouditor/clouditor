@@ -1,12 +1,14 @@
 package io.clouditor.data_access_layer;
 
+import com.opentable.db.postgres.embedded.EmbeddedPostgres;
 import io.clouditor.assurance.*;
 import io.clouditor.assurance.ccl.*;
 import io.clouditor.auth.User;
 import io.clouditor.discovery.Asset;
 import io.clouditor.discovery.DiscoveryResult;
 import io.clouditor.discovery.Scan;
-import java.io.Closeable;
+import io.clouditor.util.PersistenceManager;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Consumer;
@@ -17,10 +19,15 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class Persistence implements Closeable {
+public class Persistence implements AutoCloseable {
 
-  private final SessionFactory factory =
+  private static final String USER_NAME = "postgres";
+  private static final String PASSWORD = "postgres";
+
+  private static final Configuration CONFIGURATION =
       new Configuration()
           .configure()
           .addAnnotatedClass(Domain.class)
@@ -35,17 +42,64 @@ public class Persistence implements Closeable {
           .addAnnotatedClass(Scan.class)
           .addAnnotatedClass(DiscoveryResult.class)
           .addAnnotatedClass(User.class)
-          .buildSessionFactory();
+          .setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQL94Dialect")
+          .setProperty("hibernate.connection.driver_class", "org.postgresql.Driver")
+          .setProperty("hibernate.connection.username", USER_NAME)
+          .setProperty("hibernate.connection.password", PASSWORD)
+          .setProperty("hibernate.enable_lazy_load_no_trans", "true")
+          .setProperty("hibernate.hbm2ddl.auto", "create");
 
-  private SessionFactory getFactory() {
-    return factory;
+  private static SessionFactory sessionFactory;
+  private static EmbeddedPostgres embeddedPostgres;
+
+  protected static final Logger LOGGER = LoggerFactory.getLogger(PersistenceManager.class);
+
+  private static SessionFactory getSessionFactory() {
+    return sessionFactory;
+  }
+
+  public static void init() {
+    init("localhost", 5432, "postgres");
+  }
+
+  public static void init(final String host, final int port, final String dbName) {
+    Objects.requireNonNull(host);
+    Objects.requireNonNull(dbName);
+    if (port < 1024 || port > 60000) throw new IllegalArgumentException();
+    sessionFactory =
+        CONFIGURATION
+            .setProperty(
+                "hibernate.connection.url", "jdbc:postgresql://" + host + ":" + port + "/" + dbName)
+            .buildSessionFactory();
+  }
+
+  public static void init(
+      // final int port,
+      final String embeddedDestination) {
+    Objects.requireNonNull(embeddedDestination);
+    try {
+      embeddedPostgres =
+          EmbeddedPostgres.builder()
+              .setDataDirectory(embeddedDestination)
+              // .setPort(port)
+              .start();
+    } catch (IOException e) {
+      e.printStackTrace();
+      throw new AssertionError("Unable to start embedded PostgreSQL");
+    }
+    sessionFactory =
+        CONFIGURATION
+            .setProperty("hibernate.connection.url", "jdbc:hsqldb:mem:" + embeddedDestination)
+            .buildSessionFactory();
   }
 
   private <T> Optional<T> exec(final Function<Session, T> function) {
     Objects.requireNonNull(function);
+    if (getSessionFactory() == null)
+      throw new IllegalStateException("The Database Connection is not initialized.");
     Optional<T> result = Optional.empty();
     Optional<Transaction> transaction = Optional.empty();
-    try (final Session session = getFactory().openSession()) {
+    try (final Session session = sessionFactory.openSession()) {
       transaction = Optional.of(session.beginTransaction());
       result = Optional.ofNullable(function.apply(session));
       transaction.ifPresent(EntityTransaction::commit);
@@ -86,11 +140,20 @@ public class Persistence implements Closeable {
   }
 
   @Override
-  public void close() {
-    this.getFactory().close();
+  public void close() throws IOException {
+    if (sessionFactory != null) {
+      sessionFactory.close();
+      sessionFactory = null;
+    }
+    if (embeddedPostgres != null) {
+      embeddedPostgres.close();
+      embeddedPostgres = null;
+    }
   }
 
   public static void main(final String... args) {
+    init();
+
     final Persistence persistence = new Persistence();
 
     final String sutPK = "username";
@@ -134,8 +197,6 @@ public class Persistence implements Closeable {
     final FilteredAssetType filteredAssetType = new FilteredAssetType();
     filteredAssetType.setValue(filteredAssetTypeID);
     final String filteredAssetTypTableName = "filtered_asset_type";
-    System.out.println(filteredAssetType);
-    System.out.println(filteredAssetType.getAssetExpression());
 
     final String ruleID = "rule_id";
     final Rule rule = new Rule();
@@ -151,8 +212,6 @@ public class Persistence implements Closeable {
     condition.setSource("source");
     final Condition.ConditionPK conditionID = condition.getConditionPK();
     final String conditionTableName = "condition";
-
-    final Class<Condition> conditionClass = Condition.class;
 
     test(
         persistence,
@@ -209,8 +268,15 @@ public class Persistence implements Closeable {
                                                                 Condition.class,
                                                                 conditionID,
                                                                 conditionTableName,
-                                                                () -> {}))))))));
-    persistence.close();
+                                                                () ->
+                                                                    LOGGER.info(
+                                                                        "OTHER INSTANCE: "
+                                                                            + new Persistence()
+                                                                                .listAll(
+                                                                                    conditionTableName,
+                                                                                    Condition
+                                                                                        .class))))))))));
+    sessionFactory.close();
   }
 
   private static <T> void test(
@@ -220,25 +286,25 @@ public class Persistence implements Closeable {
       final Serializable sutPK,
       final String tableName,
       final Runnable runnable) {
-    // System.out.println(tableName + persistence.listAll(tableName, type));
+    LOGGER.info(tableName + persistence.listAll(tableName, type));
 
     boolean isPresent = persistence.get(type, sutPK).isPresent();
-    System.out.println(tableName + " IS_PRESENT: " + isPresent);
+    LOGGER.info(tableName + " IS_PRESENT: " + isPresent);
 
     if (!isPresent) persistence.save(sut);
 
-    System.out.println(tableName + persistence.listAll(tableName, type));
+    LOGGER.info(tableName + persistence.listAll(tableName, type));
 
     var storedValue = persistence.get(type, sutPK);
-    System.out.println(tableName + " STORED_VALUE: " + storedValue);
+    LOGGER.info(tableName + " STORED_VALUE: " + storedValue);
 
     runnable.run();
 
     storedValue.ifPresent(persistence::delete);
 
     isPresent = persistence.get(type, sutPK).isPresent();
-    System.out.println(tableName + " IS_PRESENT: " + isPresent);
+    LOGGER.info(tableName + " IS_PRESENT: " + isPresent);
 
-    System.out.println(tableName + persistence.listAll(tableName, type));
+    LOGGER.info(tableName + persistence.listAll(tableName, type));
   }
 }

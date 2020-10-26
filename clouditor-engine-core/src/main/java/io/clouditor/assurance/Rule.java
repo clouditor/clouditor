@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.clouditor.assurance.ccl.*;
 import io.clouditor.discovery.Asset;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,7 +41,7 @@ import javax.persistence.*;
 
 @Entity(name = "rule")
 @Table(name = "rule")
-public class Rule {
+public class Rule implements Serializable {
 
   @JsonDeserialize(using = CCLDeserializer.class)
   @JsonSerialize(using = CCLSerializer.class)

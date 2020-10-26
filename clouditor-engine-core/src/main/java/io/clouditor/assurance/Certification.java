@@ -29,6 +29,7 @@ package io.clouditor.assurance;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.clouditor.util.PersistentObject;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.*;
@@ -41,7 +42,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 @Entity(name = "certification")
 @Table(name = "certification")
-public class Certification implements PersistentObject<String> {
+public class Certification implements PersistentObject<String>, Serializable {
 
   private static final long serialVersionUID = 5983205960445678160L;
 

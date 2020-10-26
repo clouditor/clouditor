@@ -70,6 +70,7 @@ dependencies {
     implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
 
     compile group: 'org.postgresql', name: 'postgresql', version: libraryVersions.postgresql
+    compile group: 'com.opentable.components', name: 'otj-pg-embedded', version: '0.13.3'
     compile group: 'org.hibernate', name: 'hibernate-core', version: libraryVersions.hibernate
     compile group: 'com.vladmihalcea', name: 'hibernate-types-52', version: libraryVersions.hibernate_types_52
 

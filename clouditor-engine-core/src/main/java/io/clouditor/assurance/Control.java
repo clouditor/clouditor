@@ -36,6 +36,8 @@ import java.util.stream.Collectors;
 import javax.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.glassfish.hk2.api.ServiceLocator;
 
 @Entity(name = "control")
@@ -179,17 +181,16 @@ public class Control {
     this.fulfilled = fulfilled;
   }
 
-  /*
-    @Override
-    public String toString() {
-      return new ToStringBuilder(this, ToStringStyle.JSON_STYLE)
-          .append("objectives", rules)
-          .append("controlId", controlId)
-          .append("description", description)
-          .append("fulfilled", fulfilled)
-          .toString();
-    }
-  */
+  @Override
+  public String toString() {
+    return new ToStringBuilder(this, ToStringStyle.JSON_STYLE)
+        .append("objectives", rules)
+        .append("controlId", controlId)
+        .append("description", description)
+        .append("fulfilled", fulfilled)
+        .toString();
+  }
+
   public void setDomain(Domain domain) {
     this.domain = domain;
   }
