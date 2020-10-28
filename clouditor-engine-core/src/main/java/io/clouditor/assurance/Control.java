@@ -52,7 +52,7 @@ public class Control implements Serializable {
   private List<Rule> rules = new ArrayList<>();
 
   /** The last evaluation results */
-  @OneToMany(cascade = CascadeType.ALL)
+  @OneToMany
   @JoinTable(
       joinColumns = @JoinColumn(name = "control_id", referencedColumnName = "control_id"),
       inverseForeignKey = @ForeignKey(name = "time_stamp"))

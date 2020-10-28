@@ -75,11 +75,6 @@ public class EvaluationResult implements Serializable {
       })
   private List<Condition> failedConditions = new ArrayList<>();
 
-  public EvaluationResult() { // TODO: is this a problem?
-    rule = null;
-    evaluatedProperties = null;
-  }
-
   @JsonCreator
   public EvaluationResult(
       @JsonProperty("rule") Rule rule,
