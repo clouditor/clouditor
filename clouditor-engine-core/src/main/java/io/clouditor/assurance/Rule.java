@@ -38,6 +38,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.persistence.*;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 @Entity(name = "rule")
 @Table(name = "rule")
@@ -209,5 +211,39 @@ public class Rule implements Serializable {
 
   public boolean containsControl(final String controlId) {
     return getControls().stream().anyMatch(control -> control.getControlId().equals(controlId));
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Rule rule = (Rule) o;
+
+    return new EqualsBuilder()
+        .append(isActive(), rule.isActive())
+        .append(getCondition(), rule.getCondition())
+        .append(getConditions(), rule.getConditions())
+        .append(getName(), rule.getName())
+        .append(getDescription(), rule.getDescription())
+        .append(icon, rule.icon)
+        .append(getControls(), rule.getControls())
+        .append(getId(), rule.getId())
+        .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37)
+        .append(getCondition())
+        .append(getConditions())
+        .append(isActive())
+        .append(getName())
+        .append(getDescription())
+        .append(icon)
+        .append(getControls())
+        .append(getId())
+        .toHashCode();
   }
 }

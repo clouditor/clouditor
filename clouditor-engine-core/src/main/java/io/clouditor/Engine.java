@@ -27,15 +27,13 @@
 
 package io.clouditor;
 
-import de.bwaldvogel.mongo.MongoServer;
-import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
 import io.clouditor.assurance.CertificationService;
 import io.clouditor.assurance.RuleService;
 import io.clouditor.auth.AuthenticationService;
+import io.clouditor.data_access_layer.HibernatePersistence;
 import io.clouditor.discovery.DiscoveryService;
 import io.clouditor.rest.EngineAPI;
 import io.clouditor.util.FileSystemManager;
-import io.clouditor.util.PersistenceManager;
 import org.jvnet.hk2.annotations.Service;
 import org.kohsuke.args4j.Option;
 
@@ -185,22 +183,10 @@ public class Engine extends Component {
   }
 
   public void initDB() {
+    if (this.dbInMemory) HibernatePersistence.init(this.dbName);
+    else HibernatePersistence.init(this.dbHost, this.dbPort, this.dbName);
 
-    if (this.dbInMemory) {
-      var server = new MongoServer(new MemoryBackend());
-
-      var address = server.bind();
-
-      LOGGER.info("Starting database purely in-memory...");
-
-      this.dbHost = address.getHostName();
-      this.dbPort = address.getPort();
-
-      Runtime.getRuntime().addShutdownHook(new Thread(server::shutdown));
-    }
-
-    // Persistence.init(this.dbHost, this.dbPort);
-    PersistenceManager.getInstance().init(this.dbName, this.dbHost, this.dbPort);
+    Runtime.getRuntime().addShutdownHook(new Thread(HibernatePersistence::close));
   }
 
   /** Shuts down the Clouditor Engine */

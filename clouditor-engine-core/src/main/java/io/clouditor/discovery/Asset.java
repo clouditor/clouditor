@@ -28,26 +28,27 @@
 package io.clouditor.discovery;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import io.clouditor.assurance.EvaluationResult;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import javax.persistence.*;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 
 @Entity(name = "asset")
 @Table(name = "asset")
-@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 @Inheritance(strategy = InheritanceType.JOINED)
-public class Asset {
+public class Asset implements Serializable {
+
+  private static final long serialVersionUID = -2382328140875227410L;
 
   @ManyToMany(targetEntity = EvaluationResult.class)
   private List<EvaluationResult> evaluationResults = new ArrayList<>();
 
-  @Type(type = "jsonb")
+  @CollectionTable(name = "asset_properties", joinColumns = @JoinColumn(name = "key_id"))
+  @MapKeyColumn(name = "mapKey")
   @Column(name = "asset_properties")
   private AssetProperties properties = new AssetProperties();
 
@@ -134,5 +135,22 @@ public class Asset {
         .append("name", name)
         .append("type", type)
         .toString();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Asset asset = (Asset) o;
+    return Objects.equals(getEvaluationResults(), asset.getEvaluationResults())
+        && Objects.equals(getProperties(), asset.getProperties())
+        && Objects.equals(getId(), asset.getId())
+        && Objects.equals(getName(), asset.getName())
+        && Objects.equals(getType(), asset.getType());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getEvaluationResults(), getProperties(), getId(), getName(), getType());
   }
 }

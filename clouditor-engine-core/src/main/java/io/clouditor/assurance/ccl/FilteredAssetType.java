@@ -28,6 +28,7 @@
 package io.clouditor.assurance.ccl;
 
 import java.util.Map;
+import java.util.Objects;
 import javax.persistence.*;
 
 @Entity(name = "filtered_asset_type")
@@ -59,5 +60,19 @@ public class FilteredAssetType extends AssetType {
 
   public Expression getAssetExpression() {
     return assetExpression;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    if (!super.equals(o)) return false;
+    FilteredAssetType that = (FilteredAssetType) o;
+    return Objects.equals(getAssetExpression(), that.getAssetExpression());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), getAssetExpression());
   }
 }

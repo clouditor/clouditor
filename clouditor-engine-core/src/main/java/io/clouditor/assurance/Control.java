@@ -29,6 +29,7 @@ package io.clouditor.assurance;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.clouditor.discovery.AssetService;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -36,14 +37,13 @@ import java.util.stream.Collectors;
 import javax.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.glassfish.hk2.api.ServiceLocator;
 
 @Entity(name = "control")
 @Table(name = "control")
-public class Control {
+public class Control implements Serializable {
 
+  private static final long serialVersionUID = -6926507274525122348L;
   /**
    * The rules associated with this control. This is actually redundant a little bit since its
    * already stored in the {@link Rule}.
@@ -53,7 +53,9 @@ public class Control {
 
   /** The last evaluation results */
   @OneToMany(cascade = CascadeType.ALL)
-  @JoinColumn(name = "time_stamp")
+  @JoinTable(
+      joinColumns = @JoinColumn(name = "control_id", referencedColumnName = "control_id"),
+      inverseForeignKey = @ForeignKey(name = "time_stamp"))
   private final List<EvaluationResult> results = new ArrayList<>();
 
   /** The id of the control this objective is referring to, i.e. a CCM control id. */
@@ -181,16 +183,6 @@ public class Control {
     this.fulfilled = fulfilled;
   }
 
-  @Override
-  public String toString() {
-    return new ToStringBuilder(this, ToStringStyle.JSON_STYLE)
-        .append("objectives", rules)
-        .append("controlId", controlId)
-        .append("description", description)
-        .append("fulfilled", fulfilled)
-        .toString();
-  }
-
   public void setDomain(Domain domain) {
     this.domain = domain;
   }
@@ -237,6 +229,35 @@ public class Control {
 
   public List<EvaluationResult> getResults() {
     return this.results;
+  }
+
+  @Override
+  public String toString() {
+    return "Control{"
+        + "rules="
+        + rules
+        + ", results="
+        + results
+        + ", controlId='"
+        + controlId
+        + '\''
+        + ", description='"
+        + description
+        + '\''
+        + ", fulfilled="
+        + fulfilled
+        + ", domain="
+        + domain
+        + ", name='"
+        + name
+        + '\''
+        + ", automated="
+        + automated
+        + ", active="
+        + active
+        + ", violations="
+        + violations
+        + '}';
   }
 
   public enum Fulfillment {

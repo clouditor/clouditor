@@ -33,6 +33,6 @@ import java.io.Serializable;
 /** This class represents an object that we can persist in a not-specified form, i.e. a Database. */
 public interface PersistentObject<T> extends Serializable {
 
-  @JsonProperty(PersistenceManager.FIELD_ID)
+  @JsonProperty("_id")
   T getId();
 }

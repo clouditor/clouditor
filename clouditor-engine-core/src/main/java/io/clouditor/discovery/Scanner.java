@@ -30,6 +30,7 @@ package io.clouditor.discovery;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.clouditor.assurance.Rule;
+import io.clouditor.assurance.ccl.AssetType;
 import io.clouditor.rest.ObjectMapperResolver;
 import java.io.IOException;
 import java.util.HashMap;
@@ -81,7 +82,7 @@ public abstract class Scanner<C, T> {
   protected abstract List<T> list() throws ScanException;
 
   @JsonIgnore
-  public DiscoveryResult scan(String scanId) {
+  public DiscoveryResult scan(AssetType scanId) {
     var result = new DiscoveryResult(scanId);
 
     try {

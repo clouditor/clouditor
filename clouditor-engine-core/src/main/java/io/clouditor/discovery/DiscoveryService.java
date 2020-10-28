@@ -27,10 +27,8 @@
 
 package io.clouditor.discovery;
 
-import static com.mongodb.client.model.Filters.eq;
-
+import io.clouditor.data_access_layer.HibernatePersistence;
 import io.clouditor.events.DiscoveryResultSubscriber;
-import io.clouditor.util.PersistenceManager;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
@@ -44,7 +42,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.SubmissionPublisher;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.media.sse.EventOutput;
@@ -65,7 +62,7 @@ public class DiscoveryService {
               .addUrls(ClasspathHelper.forPackage(Scanner.class.getPackage().getName()))
               .setScanners(new SubTypesScanner()));
   private final Map<String, ScheduledFuture<?>> futures = new HashMap<>();
-  private final Map<String, Scanner> scanners = new HashMap<>();
+  private final Map<String, Scanner<?, ?>> scanners = new HashMap<>();
 
   private final ScheduledThreadPoolExecutor scheduler =
       (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1);
@@ -78,7 +75,8 @@ public class DiscoveryService {
   }
 
   public void init() {
-    var scans = PersistenceManager.getInstance().find(Scan.class);
+    final HibernatePersistence hibernatePersistence = new HibernatePersistence();
+    var scans = hibernatePersistence.listAll(Scan.class);
 
     // first, init list of scanner classes from Java via reflections
     var classes =
@@ -95,36 +93,34 @@ public class DiscoveryService {
             scan.getId(),
             scan.getScannerClass());
 
-        PersistenceManager.getInstance().delete(Scan.class, scan.getId());
+        hibernatePersistence.delete(scan);
       }
     }
 
     // loop through all Scanner classes, to make sure a Scan object exists for each class
     for (var clazz : classes) {
-      var scan =
-          PersistenceManager.getInstance()
-              .find(Scan.class, eq(Scan.FIELD_SCANNER_CLASS, clazz.getName()))
-              .limit(1)
-              .first();
+      var hasNoScannerForClass =
+          hibernatePersistence.listAll(Scan.class).stream()
+              .noneMatch(scan -> scan.getScannerClass().equals(clazz));
 
-      if (scan == null) {
+      if (hasNoScannerForClass) {
         // create new scanner object
-        scan = Scan.fromScanner(clazz);
+        var scan = Scan.fromScanner(clazz);
 
         // update database
-        PersistenceManager.getInstance().persist(scan);
+        hibernatePersistence.saveOrUpdate(scan.getAssetType());
+        hibernatePersistence.saveOrUpdate(scan);
       }
     }
   }
 
   public Map<String, Scan> getScans() {
-    return StreamSupport.stream(
-            PersistenceManager.getInstance().find(Scan.class).spliterator(), false)
-        .collect(Collectors.toMap(Scan::getId, scan -> scan));
+    return new HibernatePersistence()
+        .listAll(Scan.class).stream().collect(Collectors.toMap(Scan::getId, scan -> scan));
   }
 
   public void start() {
-    var scans = PersistenceManager.getInstance().find(Scan.class);
+    var scans = new HibernatePersistence().listAll(Scan.class);
 
     // loop through all enabled scans and start them
     for (var scan : scans) {
@@ -164,7 +160,7 @@ public class DiscoveryService {
                 scan.setDiscovering(true);
 
                 // scan
-                var result = scanner.scan(scan.getId());
+                var result = scanner.scan(scan.getAssetType());
 
                 submit(scan, result);
 
@@ -199,7 +195,7 @@ public class DiscoveryService {
                 scan.setDiscovering(false);
 
                 // update database
-                PersistenceManager.getInstance().persist(scan);
+                new HibernatePersistence().saveOrUpdate(scan);
               },
               0,
               scan.getInterval(),
@@ -225,9 +221,7 @@ public class DiscoveryService {
     var assets = result.getDiscoveredAssets();
 
     LOGGER.info(
-        "Publishing discovery result with {} asset(s) of type {}.",
-        assets.size(),
-        scan.getAssetType());
+        "Publishing discovery result with {} asset(s) of type {}.", assets.size(), scan.getId());
 
     return this.assetPublisher.submit(result);
   }
@@ -260,14 +254,14 @@ public class DiscoveryService {
   }
 
   public Scan getScan(String id) {
-    return PersistenceManager.getInstance().getById(Scan.class, id);
+    return new HibernatePersistence().get(Scan.class, id).orElse(null);
   }
 
   public void enableScan(Scan scan) {
     scan.setEnabled(true);
 
     // update database
-    PersistenceManager.getInstance().persist(scan);
+    new HibernatePersistence().saveOrUpdate(scan);
 
     this.startScan(scan);
   }
@@ -276,7 +270,7 @@ public class DiscoveryService {
     scan.setEnabled(false);
 
     // update database
-    PersistenceManager.getInstance().persist(scan);
+    new HibernatePersistence().saveOrUpdate(scan);
 
     this.stopScan(scan);
   }
@@ -297,7 +291,7 @@ public class DiscoveryService {
   }
 
   /** Returns a list of currently running scanners. */
-  public Collection<Scanner> getScanners() {
+  public Collection<Scanner<?, ?>> getScanners() {
     return this.scanners.values();
   }
 }

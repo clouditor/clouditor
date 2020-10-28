@@ -30,6 +30,7 @@ package io.clouditor.assurance.ccl;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Objects;
 import javax.persistence.*;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "@class")
@@ -54,5 +55,18 @@ public class AssetType implements Serializable {
 
   public boolean evaluate(Map properties) {
     return true;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    AssetType assetType = (AssetType) o;
+    return Objects.equals(getValue(), assetType.getValue());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getValue());
   }
 }

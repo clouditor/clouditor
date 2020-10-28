@@ -161,4 +161,26 @@ public class User implements Principal, PersistentObject<String> {
   public String getEmail() {
     return email;
   }
+
+  @Override
+  public String toString() {
+    return "User{"
+        + "username='"
+        + username
+        + '\''
+        + ", password='"
+        + password
+        + '\''
+        + ", fullName='"
+        + fullName
+        + '\''
+        + ", email='"
+        + email
+        + '\''
+        + ", shadow="
+        + shadow
+        + ", roles="
+        + roles
+        + '}';
+  }
 }

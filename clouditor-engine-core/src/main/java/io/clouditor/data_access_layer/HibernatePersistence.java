@@ -1,19 +1,18 @@
 package io.clouditor.data_access_layer;
 
-import com.opentable.db.postgres.embedded.EmbeddedPostgres;
 import io.clouditor.assurance.*;
 import io.clouditor.assurance.ccl.*;
 import io.clouditor.auth.User;
 import io.clouditor.discovery.Asset;
+import io.clouditor.discovery.AssetProperties;
 import io.clouditor.discovery.DiscoveryResult;
 import io.clouditor.discovery.Scan;
-import io.clouditor.util.PersistenceManager;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.persistence.*;
+import javax.persistence.criteria.CriteriaQuery;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -22,10 +21,11 @@ import org.hibernate.cfg.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Persistence implements AutoCloseable {
+public class HibernatePersistence {
 
   private static final String USER_NAME = "postgres";
   private static final String PASSWORD = "postgres";
+  private static final String DB_NAME = "postgres";
 
   private static final Configuration CONFIGURATION =
       new Configuration()
@@ -42,24 +42,22 @@ public class Persistence implements AutoCloseable {
           .addAnnotatedClass(Scan.class)
           .addAnnotatedClass(DiscoveryResult.class)
           .addAnnotatedClass(User.class)
-          .setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQL94Dialect")
-          .setProperty("hibernate.connection.driver_class", "org.postgresql.Driver")
           .setProperty("hibernate.connection.username", USER_NAME)
           .setProperty("hibernate.connection.password", PASSWORD)
           .setProperty("hibernate.enable_lazy_load_no_trans", "true")
-          .setProperty("hibernate.hbm2ddl.auto", "create");
+          .setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQL94Dialect")
+          .setProperty("hibernate.hbm2ddl.auto", "create-drop");
 
   private static SessionFactory sessionFactory;
-  private static EmbeddedPostgres embeddedPostgres;
 
-  protected static final Logger LOGGER = LoggerFactory.getLogger(PersistenceManager.class);
+  protected static final Logger LOGGER = LoggerFactory.getLogger(HibernatePersistence.class);
 
   private static SessionFactory getSessionFactory() {
     return sessionFactory;
   }
 
   public static void init() {
-    init("localhost", 5432, "postgres");
+    init("localhost", 5432, DB_NAME);
   }
 
   public static void init(final String host, final int port, final String dbName) {
@@ -68,28 +66,18 @@ public class Persistence implements AutoCloseable {
     if (port < 1024 || port > 60000) throw new IllegalArgumentException();
     sessionFactory =
         CONFIGURATION
+            .setProperty("hibernate.connection.driver_class", "org.postgresql.Driver")
             .setProperty(
                 "hibernate.connection.url", "jdbc:postgresql://" + host + ":" + port + "/" + dbName)
             .buildSessionFactory();
   }
 
-  public static void init(
-      // final int port,
-      final String embeddedDestination) {
-    Objects.requireNonNull(embeddedDestination);
-    try {
-      embeddedPostgres =
-          EmbeddedPostgres.builder()
-              .setDataDirectory(embeddedDestination)
-              // .setPort(port)
-              .start();
-    } catch (IOException e) {
-      e.printStackTrace();
-      throw new AssertionError("Unable to start embedded PostgreSQL");
-    }
+  public static void init(final String dbName) {
+    Objects.requireNonNull(dbName);
     sessionFactory =
         CONFIGURATION
-            .setProperty("hibernate.connection.url", "jdbc:hsqldb:mem:" + embeddedDestination)
+            .setProperty("hibernate.connection.driver_class", "org.h2.Driver")
+            .setProperty("hibernate.connection.url", "jdbc:h2:~/" + dbName)
             .buildSessionFactory();
   }
 
@@ -122,16 +110,21 @@ public class Persistence implements AutoCloseable {
         });
   }
 
-  public <T> void save(final T toSave) {
-    exec(session -> session.save(toSave));
+  public <T> void saveOrUpdate(final T toSave) {
+    execConsumer(session -> session.saveOrUpdate(toSave));
   }
 
   public <T> Optional<T> get(final Class<T> resultType, final Serializable primaryKey) {
     return exec(session -> session.get(resultType, primaryKey));
   }
 
-  public <T> List<T> listAll(final String tableName, final Class<T> resultType) {
-    return exec(session -> session.createQuery("FROM " + tableName, resultType).getResultList())
+  public <T> List<T> listAll(final Class<T> resultType) {
+    return exec(session -> {
+          final CriteriaQuery<T> criteriaQuery =
+              session.getCriteriaBuilder().createQuery(resultType);
+          criteriaQuery.from(resultType);
+          return session.createQuery(criteriaQuery).getResultList();
+        })
         .orElseThrow();
   }
 
@@ -139,22 +132,22 @@ public class Persistence implements AutoCloseable {
     execConsumer(session -> session.delete(toDelete));
   }
 
-  @Override
-  public void close() throws IOException {
-    if (sessionFactory != null) {
-      sessionFactory.close();
-      sessionFactory = null;
-    }
-    if (embeddedPostgres != null) {
-      embeddedPostgres.close();
-      embeddedPostgres = null;
-    }
+  public <T> void delete(final Class<T> deleteType, final Serializable id) {
+    execConsumer(session -> session.delete(session.load(deleteType, id)));
+  }
+
+  public <T> int count(final Class<T> countType) {
+    return listAll(countType).size();
+  }
+
+  public static void close() {
+    if (sessionFactory != null) sessionFactory.close();
   }
 
   public static void main(final String... args) {
-    init();
+    init(DB_NAME);
 
-    final Persistence persistence = new Persistence();
+    final HibernatePersistence persistence = new HibernatePersistence();
 
     final String sutPK = "username";
     final User sut = new User(sutPK, "password");
@@ -162,6 +155,22 @@ public class Persistence implements AutoCloseable {
     sut.setEmail("username@test.edu");
     sut.setShadow(true);
     final String tableName = "c_user";
+
+    final String assetTypeID = "asset_type_id";
+    final AssetType assetType = new AssetType();
+    assetType.setValue(assetTypeID);
+    final String assetTypeTableName = "asset_type";
+
+    final String filteredAssetTypeID = "filtered_asset_type_ID";
+    final FilteredAssetType filteredAssetType = new FilteredAssetType();
+    filteredAssetType.setValue(filteredAssetTypeID);
+    final String filteredAssetTypTableName = "filtered_asset_type";
+
+    final Condition condition = new Condition();
+    condition.setAssetType(assetType);
+    condition.setSource("source");
+    final Condition.ConditionPK conditionID = condition.getConditionPK();
+    final String conditionTableName = "condition";
 
     final String domainID = "domain_name";
     final Domain domain = new Domain(domainID);
@@ -179,6 +188,16 @@ public class Persistence implements AutoCloseable {
     control.setActive(true);
     final String controlTableName = "control";
 
+    final String ruleID = "rule_id";
+    final Rule rule = new Rule();
+    rule.setId(ruleID);
+    rule.setActive(true);
+    rule.setName("rule name");
+    rule.setDescription("rule description");
+    rule.getControls().add(control);
+    rule.setCondition(condition);
+    final String ruleTableName = "rule";
+
     final String certificationID = "certification_id";
     final Certification certification = new Certification();
     certification.setId(certificationID);
@@ -188,30 +207,24 @@ public class Persistence implements AutoCloseable {
     certification.setControls(List.of(control));
     final String certificationTableName = "certification";
 
-    final String assetTypeID = "asset_type_id";
-    final AssetType assetType = new AssetType();
-    assetType.setValue(assetTypeID);
-    final String assetTypeTableName = "asset_type";
+    final AssetProperties assetProperties = new AssetProperties("TEST_KEY", "TEST_VALUE");
+    final EvaluationResult evaluationResult = new EvaluationResult(rule, assetProperties);
+    final String evaluationResultTableName = "evaluation_result";
+    final String evaluationResultID = evaluationResult.getTimeStamp();
 
-    final String filteredAssetTypeID = "filtered_asset_type_ID";
-    final FilteredAssetType filteredAssetType = new FilteredAssetType();
-    filteredAssetType.setValue(filteredAssetTypeID);
-    final String filteredAssetTypTableName = "filtered_asset_type";
-
-    final String ruleID = "rule_id";
-    final Rule rule = new Rule();
-    rule.setId(ruleID);
-    rule.setActive(true);
-    rule.setName("rule name");
-    rule.setDescription("rule description");
-    rule.getControls().add(control);
-    final String ruleTableName = "rule";
-
-    final Condition condition = new Condition();
-    condition.setAssetType(assetType);
-    condition.setSource("source");
-    final Condition.ConditionPK conditionID = condition.getConditionPK();
-    final String conditionTableName = "condition";
+    /*
+    persistence.saveOrUpdate(
+            sut,
+            domain,
+            control,
+            certification,
+            assetType,
+            filteredAssetType,
+            condition,
+            rule,
+            evaluationResult
+        );
+    */
 
     test(
         persistence,
@@ -222,78 +235,83 @@ public class Persistence implements AutoCloseable {
         () ->
             test(
                 persistence,
-                domain,
-                Domain.class,
-                domainID,
-                domainTableName,
+                assetType,
+                AssetType.class,
+                assetTypeID,
+                assetTypeTableName,
                 () ->
                     test(
                         persistence,
-                        control,
-                        Control.class,
-                        controlID,
-                        controlTableName,
+                        filteredAssetType,
+                        FilteredAssetType.class,
+                        filteredAssetTypeID,
+                        filteredAssetTypTableName,
                         () ->
                             test(
                                 persistence,
-                                certification,
-                                Certification.class,
-                                certificationID,
-                                certificationTableName,
+                                condition,
+                                Condition.class,
+                                conditionID,
+                                conditionTableName,
                                 () ->
                                     test(
                                         persistence,
-                                        assetType,
-                                        AssetType.class,
-                                        assetTypeID,
-                                        assetTypeTableName,
+                                        domain,
+                                        Domain.class,
+                                        domainID,
+                                        domainTableName,
                                         () ->
                                             test(
                                                 persistence,
-                                                rule,
-                                                Rule.class,
-                                                ruleID,
-                                                ruleTableName,
+                                                control,
+                                                Control.class,
+                                                controlID,
+                                                controlTableName,
                                                 () ->
                                                     test(
                                                         persistence,
-                                                        filteredAssetType,
-                                                        FilteredAssetType.class,
-                                                        filteredAssetTypeID,
-                                                        filteredAssetTypTableName,
+                                                        rule,
+                                                        Rule.class,
+                                                        ruleID,
+                                                        ruleTableName,
                                                         () ->
                                                             test(
                                                                 persistence,
-                                                                condition,
-                                                                Condition.class,
-                                                                conditionID,
-                                                                conditionTableName,
-                                                                () ->
-                                                                    LOGGER.info(
-                                                                        "OTHER INSTANCE: "
-                                                                            + new Persistence()
-                                                                                .listAll(
-                                                                                    conditionTableName,
-                                                                                    Condition
-                                                                                        .class))))))))));
+                                                                certification,
+                                                                Certification.class,
+                                                                certificationID,
+                                                                certificationTableName,
+                                                                () -> {
+                                                                  control
+                                                                      .getResults()
+                                                                      .add(evaluationResult);
+                                                                  persistence.saveOrUpdate(control);
+                                                                  test(
+                                                                      persistence,
+                                                                      evaluationResult,
+                                                                      EvaluationResult.class,
+                                                                      evaluationResultID,
+                                                                      evaluationResultTableName,
+                                                                      () -> {});
+                                                                }))))))));
     sessionFactory.close();
   }
 
   private static <T> void test(
-      final Persistence persistence,
+      final HibernatePersistence persistence,
       final T sut,
       final Class<T> type,
       final Serializable sutPK,
       final String tableName,
       final Runnable runnable) {
-    LOGGER.info(tableName + persistence.listAll(tableName, type));
+    LOGGER.info(tableName + " " + persistence.listAll(type));
 
     boolean isPresent = persistence.get(type, sutPK).isPresent();
     LOGGER.info(tableName + " IS_PRESENT: " + isPresent);
 
-    if (!isPresent) persistence.save(sut);
+    if (!isPresent) persistence.saveOrUpdate(sut);
 
-    LOGGER.info(tableName + persistence.listAll(tableName, type));
+    LOGGER.info(tableName + " " + persistence.listAll(type));
 
     var storedValue = persistence.get(type, sutPK);
     LOGGER.info(tableName + " STORED_VALUE: " + storedValue);
@@ -305,6 +323,6 @@ public class Persistence implements AutoCloseable {
     isPresent = persistence.get(type, sutPK).isPresent();
     LOGGER.info(tableName + " IS_PRESENT: " + isPresent);
 
-    LOGGER.info(tableName + persistence.listAll(tableName, type));
+    LOGGER.info(tableName + " " + persistence.listAll(type));
   }
 }

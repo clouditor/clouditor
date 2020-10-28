@@ -28,12 +28,12 @@
 package io.clouditor.events;
 
 import io.clouditor.assurance.Certification;
-import io.clouditor.util.PersistenceManager;
+import io.clouditor.data_access_layer.HibernatePersistence;
 
 public class PersistenceCertificationSubscriber extends CertificationSubscriber {
 
   @Override
   public void handle(Certification item) {
-    PersistenceManager.getInstance().persist(item);
+    new HibernatePersistence().saveOrUpdate(item);
   }
 }

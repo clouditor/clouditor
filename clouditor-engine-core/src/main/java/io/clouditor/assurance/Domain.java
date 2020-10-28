@@ -27,16 +27,18 @@
 
 package io.clouditor.assurance;
 
+import java.io.Serializable;
+import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 @Entity(name = "cloud_domain")
 @Table(name = "cloud_domain")
-public class Domain {
+public class Domain implements Serializable {
+
+  private static final long serialVersionUID = -653828659002481929L;
 
   @Column(name = "domain_description")
   private String description;
@@ -53,29 +55,6 @@ public class Domain {
     this.name = name;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    var domain = (Domain) o;
-
-    return new EqualsBuilder()
-        .append(description, domain.description)
-        .append(name, domain.name)
-        .isEquals();
-  }
-
-  @Override
-  public int hashCode() {
-    return new HashCodeBuilder(17, 37).append(description).append(name).toHashCode();
-  }
-
   public String getName() {
     return name;
   }
@@ -86,5 +65,19 @@ public class Domain {
 
   public void setDescription(String description) {
     this.description = description;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Domain domain = (Domain) o;
+    return Objects.equals(description, domain.description)
+        && Objects.equals(getName(), domain.getName());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(description, getName());
   }
 }

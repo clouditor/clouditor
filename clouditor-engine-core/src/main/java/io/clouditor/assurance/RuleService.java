@@ -30,12 +30,12 @@ package io.clouditor.assurance;
 import static io.clouditor.assurance.RuleService.RuleVisitor.renderText;
 
 import io.clouditor.assurance.ccl.CCLDeserializer;
+import io.clouditor.data_access_layer.HibernatePersistence;
 import io.clouditor.discovery.AssetService;
 import io.clouditor.discovery.DiscoveryResult;
 import io.clouditor.discovery.DiscoveryService;
 import io.clouditor.events.DiscoveryResultSubscriber;
 import io.clouditor.util.FileSystemManager;
-import io.clouditor.util.PersistenceManager;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
@@ -320,12 +320,12 @@ public class RuleService extends DiscoveryResultSubscriber {
     this.certificationService.updateCertification();
 
     // update the scanner with latest result
-    var scan = this.discoveryService.getScan(result.getScanId());
+    var scan = result.getScanId();
 
     if (scan != null) {
       scan.setLastResult(result);
 
-      PersistenceManager.getInstance().persist(scan);
+      new HibernatePersistence().saveOrUpdate(scan);
     }
   }
 

@@ -31,7 +31,7 @@ import io.clouditor.auth.AuthenticationService;
 import io.clouditor.auth.LoginRequest;
 import io.clouditor.auth.LoginResponse;
 import io.clouditor.auth.User;
-import io.clouditor.util.PersistenceManager;
+import io.clouditor.data_access_layer.HibernatePersistence;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.NotAuthorizedException;
@@ -67,7 +67,7 @@ public class AuthenticateResource {
       throw new NotAuthorizedException("Invalid user and/or password");
     }
 
-    var user = PersistenceManager.getInstance().getById(User.class, request.getUsername());
+    var user = new HibernatePersistence().get(User.class, request.getUsername()).orElseThrow();
 
     payload.setToken(service.createToken(user));
 

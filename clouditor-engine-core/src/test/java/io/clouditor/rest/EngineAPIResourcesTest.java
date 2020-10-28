@@ -39,6 +39,7 @@ import io.clouditor.assurance.Rule;
 import io.clouditor.assurance.RuleService;
 import io.clouditor.auth.LoginRequest;
 import io.clouditor.auth.User;
+import io.clouditor.data_access_layer.HibernatePersistence;
 import io.clouditor.discovery.Asset;
 import io.clouditor.discovery.AssetProperties;
 import io.clouditor.discovery.AssetService;
@@ -46,7 +47,6 @@ import io.clouditor.discovery.DiscoveryService;
 import io.clouditor.discovery.Scan;
 import io.clouditor.util.FileSystemManager;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -79,7 +79,7 @@ class EngineAPIResourcesTest extends JerseyTest {
   }
 
   @BeforeAll
-  static void startUpOnce() throws IOException, SQLException {
+  static void startUpOnce() {
     engine.setDbInMemory(true);
 
     // init db
@@ -167,7 +167,7 @@ class EngineAPIResourcesTest extends JerseyTest {
                 AuthenticationFilter.createAuthorization(this.token))
             .get(new GenericType<Map<String, Certification>>() {});
 
-    assertEquals(service.getCertifications(), certifications);
+    assertEquals(service.getCertifications().get("mock-cert"), certifications.get("mock-cert"));
 
     assertTrue(certifications.containsKey(mockCert.getId()));
 
@@ -243,7 +243,7 @@ class EngineAPIResourcesTest extends JerseyTest {
   }
 
   @Test
-  void testUsers() throws IOException {
+  void testUsers() {
     var users =
         target("users")
             .request()
@@ -258,6 +258,8 @@ class EngineAPIResourcesTest extends JerseyTest {
 
     // store number of users (we need it later)
     var numberOfUsers = users.size();
+
+    System.out.println("BEFORE ADD USER: " + new HibernatePersistence().listAll(User.class));
 
     // add a user
     var guest = new User();
@@ -308,7 +310,6 @@ class EngineAPIResourcesTest extends JerseyTest {
             .get(new GenericType<List<User>>() {});
 
     assertNotNull(users2);
-
     assertEquals(numberOfUsers, users2.size());
   }
 }

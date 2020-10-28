@@ -29,6 +29,8 @@ package io.clouditor.discovery;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.clouditor.assurance.ccl.AssetType;
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,7 +40,9 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 @Entity(name = "discovery_result")
 @Table(name = "discovery_result")
-public class DiscoveryResult {
+public class DiscoveryResult implements Serializable {
+
+  private static final long serialVersionUID = -7032902561471865653L;
 
   @Id
   @Column(name = "time_stamp")
@@ -65,7 +69,7 @@ public class DiscoveryResult {
   }
 
   @JsonCreator
-  public DiscoveryResult(@JsonProperty(value = "scanId") String scanId) {
+  public DiscoveryResult(@JsonProperty(value = "scanId") AssetType scanId) {
     this.timestamp = Instant.now();
 
     this.scanId = new Scan();
@@ -110,11 +114,11 @@ public class DiscoveryResult {
         .toString();
   }
 
-  public String getScanId() {
-    return this.scanId.getId();
+  public Scan getScanId() {
+    return this.scanId;
   }
 
-  public void setScanId(String scanId) {
+  public void setScanId(AssetType scanId) {
     this.scanId.setAssetType(scanId);
   }
 }

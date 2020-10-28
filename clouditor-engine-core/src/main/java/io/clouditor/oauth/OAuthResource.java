@@ -31,7 +31,7 @@ import io.clouditor.Engine;
 import io.clouditor.auth.AuthenticationService;
 import io.clouditor.auth.LoginResponse;
 import io.clouditor.auth.User;
-import io.clouditor.util.PersistenceManager;
+import io.clouditor.data_access_layer.HibernatePersistence;
 import java.net.URI;
 import java.util.Base64;
 import javax.inject.Inject;
@@ -91,9 +91,9 @@ public class OAuthResource {
     LOGGER.info("Decoded access token as user {}", user.getUsername());
 
     // try to find the user
-    var ref = PersistenceManager.getInstance().getById(User.class, user.getId());
+    var ref = new HibernatePersistence().get(User.class, user.getId());
 
-    if (ref == null) {
+    if (ref.isEmpty()) {
       service.createUser(user);
     }
 

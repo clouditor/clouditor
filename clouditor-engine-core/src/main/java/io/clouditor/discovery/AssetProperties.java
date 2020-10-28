@@ -29,8 +29,9 @@ package io.clouditor.discovery;
 
 import java.util.HashMap;
 
-// TODO: represent the AssetProperties in the Postgre DB
 public class AssetProperties extends HashMap<String, Object> {
+
+  private static final long serialVersionUID = -8160610715094945380L;
 
   public AssetProperties() {}
 

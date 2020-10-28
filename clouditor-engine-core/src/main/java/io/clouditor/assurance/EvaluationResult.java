@@ -29,21 +29,18 @@ package io.clouditor.assurance;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import io.clouditor.assurance.ccl.Condition;
 import io.clouditor.discovery.AssetProperties;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 
 @Entity(name = "evaluation_result")
 @Table(name = "evaluation_result")
-@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class EvaluationResult implements Serializable {
 
   private static final long serialVersionUID = 7255742076812915308L;
@@ -55,13 +52,13 @@ public class EvaluationResult implements Serializable {
   /** The rule according to which this was evaluated. */
   @NotNull
   @JsonProperty
-  @Id
   @ManyToOne(cascade = CascadeType.ALL)
   @JoinColumn(name = "rule_id")
   private final Rule rule;
 
   @JsonProperty
-  @Type(type = "jsonb")
+  @CollectionTable(name = "asset_properties", joinColumns = @JoinColumn(name = "key_id"))
+  @MapKeyColumn(name = "mapKey")
   @Column(name = "asset_properties")
   private final AssetProperties evaluatedProperties;
 
@@ -77,6 +74,11 @@ public class EvaluationResult implements Serializable {
         @JoinColumn(name = "type_value", referencedColumnName = "type_value"),
       })
   private List<Condition> failedConditions = new ArrayList<>();
+
+  public EvaluationResult() { // TODO: is this a problem?
+    rule = null;
+    evaluatedProperties = null;
+  }
 
   @JsonCreator
   public EvaluationResult(
@@ -104,5 +106,25 @@ public class EvaluationResult implements Serializable {
 
   public boolean hasFailedConditions() {
     return !this.failedConditions.isEmpty();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    EvaluationResult that = (EvaluationResult) o;
+    return Objects.equals(getTimeStamp(), that.getTimeStamp())
+        && Objects.equals(getRule(), that.getRule())
+        && Objects.equals(evaluatedProperties, that.evaluatedProperties)
+        && Objects.equals(getFailedConditions(), that.getFailedConditions());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getTimeStamp(), getRule(), evaluatedProperties, getFailedConditions());
+  }
+
+  public String getTimeStamp() {
+    return timeStamp;
   }
 }

@@ -27,8 +27,8 @@
 
 package io.clouditor.credentials;
 
+import io.clouditor.data_access_layer.HibernatePersistence;
 import io.clouditor.discovery.DiscoveryService;
-import io.clouditor.util.PersistenceManager;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -84,7 +84,7 @@ public class AccountService {
   }
 
   public CloudAccount getAccount(String provider) {
-    return PersistenceManager.getInstance().getById(CloudAccount.class, provider);
+    return new HibernatePersistence().get(CloudAccount.class, provider).orElse(null);
   }
 
   public void addAccount(String provider, CloudAccount account) throws IOException {
@@ -96,7 +96,7 @@ public class AccountService {
 
     // TODO: check, if something actually has changed
 
-    PersistenceManager.getInstance().persist(account);
+    new HibernatePersistence().saveOrUpdate(account);
 
     // since we changed the account (potentially), we need to make sure the scanners associated with
     // this provider re-authenticate properly
@@ -113,8 +113,8 @@ public class AccountService {
   public Map<String, CloudAccount> getAccounts() {
     var accounts = new HashMap<String, CloudAccount>();
 
-    PersistenceManager.getInstance()
-        .find(CloudAccount.class)
+    new HibernatePersistence()
+        .listAll(CloudAccount.class)
         .forEach(
             (Consumer<? super CloudAccount>)
                 account -> accounts.put(account.getProvider(), account));

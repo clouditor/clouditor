@@ -31,6 +31,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.clouditor.assurance.ccl.AssetType;
 import io.clouditor.util.PersistentObject;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Objects;
 import javax.persistence.*;
 
 /**
@@ -41,13 +42,15 @@ import javax.persistence.*;
 @Table(name = "scan")
 public class Scan implements PersistentObject<String> {
 
-  static final String FIELD_SCANNER_CLASS = "scannerClass";
+  static final String FIELD_SCANNER_CLASS = "scanner_class"; // "scannerClass"
 
   private static final long DEFAULT_INTERVAL = 5 * 60L;
+  private static final long serialVersionUID = 4612570095809897261L;
 
   /** The associated {@link Scanner} class. */
   @JsonProperty(FIELD_SCANNER_CLASS)
   @Column(name = "scanner_class")
+  @Convert(converter = ScannerConverter.class)
   private Class<? extends Scanner> scannerClass;
 
   /**
@@ -55,9 +58,10 @@ public class Scan implements PersistentObject<String> {
    * ScannerInfo}.
    */
   @JsonProperty
-  @Id
   @ManyToOne(cascade = CascadeType.ALL)
   @JoinColumn(name = "type_value")
+  @MapKey
+  @Id
   private AssetType assetType = new AssetType();
 
   /**
@@ -95,7 +99,6 @@ public class Scan implements PersistentObject<String> {
   private String service;
 
   @OneToOne(cascade = CascadeType.ALL)
-  @JoinColumn(name = "type_value")
   private DiscoveryResult lastResult;
 
   @Column(name = "enabled")
@@ -160,12 +163,12 @@ public class Scan implements PersistentObject<String> {
     this.isDiscovering = discovering;
   }
 
-  public String getAssetType() {
-    return this.assetType.getValue();
+  public AssetType getAssetType() {
+    return this.assetType;
   }
 
-  public void setAssetType(String assetType) {
-    this.assetType.setValue(assetType);
+  public void setAssetType(AssetType assetType) {
+    this.assetType = assetType;
   }
 
   public String getGroup() {
@@ -180,12 +183,66 @@ public class Scan implements PersistentObject<String> {
     return scannerClass;
   }
 
-  public Scanner instantiateScanner()
+  public Scanner<?, ?> instantiateScanner()
       throws NoSuchMethodException, IllegalAccessException, InvocationTargetException,
           InstantiationException {
     var constructor = scannerClass.getConstructor();
     constructor.setAccessible(true);
 
     return constructor.newInstance();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Scan scan = (Scan) o;
+    return isDiscovering() == scan.isDiscovering()
+        && isEnabled() == scan.isEnabled()
+        && getInterval() == scan.getInterval()
+        && Objects.equals(getScannerClass(), scan.getScannerClass())
+        && Objects.equals(getId(), scan.getId())
+        && Objects.equals(assetIcon, scan.assetIcon)
+        && Objects.equals(getGroup(), scan.getGroup())
+        && Objects.equals(description, scan.description)
+        && Objects.equals(getService(), scan.getService())
+        && Objects.equals(getLastResult(), scan.getLastResult());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        getScannerClass(),
+        getId(),
+        assetIcon,
+        getGroup(),
+        description,
+        isDiscovering(),
+        getService(),
+        getLastResult(),
+        isEnabled(),
+        getInterval());
+  }
+
+  @Converter
+  private static class ScannerConverter
+      implements AttributeConverter<Class<? extends Scanner>, String> {
+
+    @Override
+    public String convertToDatabaseColumn(final Class<? extends Scanner> attribute) {
+      return attribute.getCanonicalName();
+    }
+
+    @Override
+    public Class<? extends Scanner> convertToEntityAttribute(final String dbData) {
+      Class<? extends Scanner> resultValue;
+      try {
+        resultValue = (Class<? extends Scanner>) Class.forName(dbData);
+      } catch (ClassNotFoundException e) {
+        e.printStackTrace();
+        throw new IllegalStateException();
+      }
+      return resultValue;
+    }
   }
 }

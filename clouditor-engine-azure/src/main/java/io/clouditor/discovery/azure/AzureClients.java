@@ -31,7 +31,7 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.monitor.implementation.MonitorManager;
 import com.microsoft.rest.RestClient.Builder;
 import io.clouditor.credentials.AzureAccount;
-import io.clouditor.util.PersistenceManager;
+import io.clouditor.data_access_layer.HibernatePersistence;
 import java.io.IOException;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -61,11 +61,10 @@ public class AzureClients {
    */
   private void authenticate() throws IOException {
     // fetch information about the account
-    var account = PersistenceManager.getInstance().getById(AzureAccount.class, "Azure");
-
-    if (account == null) {
-      throw new IOException("Azure not configured");
-    }
+    var account =
+        new HibernatePersistence()
+            .get(AzureAccount.class, "Azure")
+            .orElseThrow(() -> new IOException("Azure not configured"));
 
     var credentials = account.resolveCredentials();
 

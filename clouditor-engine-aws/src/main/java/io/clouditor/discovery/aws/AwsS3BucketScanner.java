@@ -28,10 +28,10 @@
 package io.clouditor.discovery.aws;
 
 import io.clouditor.credentials.AwsAccount;
+import io.clouditor.data_access_layer.HibernatePersistence;
 import io.clouditor.discovery.Asset;
 import io.clouditor.discovery.ScanException;
 import io.clouditor.discovery.ScannerInfo;
-import io.clouditor.util.PersistenceManager;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,11 +86,10 @@ public class AwsS3BucketScanner extends AwsScanner<S3Client, S3ClientBuilder, Bu
         // needed, as long as https://github.com/aws/aws-sdk-java-v2/issues/52 is not fixed
         LOGGER.info("Switching to region-specific S3 client ({})", region);
 
-        var account = PersistenceManager.getInstance().getById(AwsAccount.class, "AWS");
-
-        if (account == null) {
-          throw SdkClientException.create("AWS account not configured");
-        }
+        var account =
+            new HibernatePersistence()
+                .get(AwsAccount.class, "AWS")
+                .orElseThrow(() -> SdkClientException.create("AWS account not configured"));
 
         client =
             regionClients.getOrDefault(
