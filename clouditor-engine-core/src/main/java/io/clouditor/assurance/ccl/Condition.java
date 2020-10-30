@@ -29,12 +29,15 @@ package io.clouditor.assurance.ccl;
 
 import io.clouditor.discovery.AssetProperties;
 import java.io.Serializable;
-import java.util.Objects;
 import javax.persistence.*;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 @Entity(name = "condition")
 @Table(name = "condition")
 public class Condition implements Serializable {
+
+  private static final long serialVersionUID = -7530930851665073637L;
 
   @Id @Embedded private final ConditionPK conditionPK = new ConditionPK();
 
@@ -72,6 +75,28 @@ public class Condition implements Serializable {
     return getConditionPK().getSource();
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Condition condition = (Condition) o;
+
+    return new EqualsBuilder()
+        .append(getConditionPK(), condition.getConditionPK())
+        .append(getExpression(), condition.getExpression())
+        .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37)
+        .append(getConditionPK())
+        .append(getExpression())
+        .toHashCode();
+  }
+
   @Embeddable
   public static class ConditionPK implements Serializable {
 
@@ -103,15 +128,20 @@ public class Condition implements Serializable {
     @Override
     public boolean equals(Object o) {
       if (this == o) return true;
+
       if (o == null || getClass() != o.getClass()) return false;
+
       ConditionPK that = (ConditionPK) o;
-      return Objects.equals(getSource(), that.getSource())
-          && Objects.equals(getAssetType(), that.getAssetType());
+
+      return new EqualsBuilder()
+          .append(getSource(), that.getSource())
+          .append(getAssetType(), that.getAssetType())
+          .isEquals();
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(getSource(), getAssetType());
+      return new HashCodeBuilder(17, 37).append(getSource()).append(getAssetType()).toHashCode();
     }
   }
 }

@@ -28,9 +28,10 @@
 package io.clouditor.assurance;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.clouditor.util.PersistentObject;
+import io.clouditor.data_access_layer.PersistentObject;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.persistence.*;
 import javax.validation.Valid;
@@ -57,7 +58,10 @@ public class Certification implements PersistentObject<String>, Serializable {
   @JoinTable(
       name = "control_to_certification",
       joinColumns =
-          @JoinColumn(name = "certification_id", referencedColumnName = "certification_id"),
+          @JoinColumn(
+              name = "certification_id",
+              referencedColumnName = "certification_id",
+              nullable = false),
       inverseJoinColumns = @JoinColumn(name = "control_id", referencedColumnName = "control_id"))
   private List<Control> controls = new ArrayList<>();
 
@@ -73,7 +77,7 @@ public class Certification implements PersistentObject<String>, Serializable {
   // TODO: startDate, endDate
 
   public List<Control> getControls() {
-    return controls;
+    return Collections.unmodifiableList(controls);
   }
 
   public void setControls(@Size(min = 1) @Valid List<Control> controls) {

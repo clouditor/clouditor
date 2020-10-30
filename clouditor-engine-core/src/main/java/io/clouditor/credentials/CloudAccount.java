@@ -30,8 +30,8 @@ package io.clouditor.credentials;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.clouditor.data_access_layer.PersistentObject;
 import io.clouditor.util.Collection;
-import io.clouditor.util.PersistentObject;
 import java.io.IOException;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -52,7 +52,7 @@ public abstract class CloudAccount<T> implements PersistentObject<String> {
   @Column(name = "account_id")
   protected String accountId;
 
-  @Column(name = "credential")
+  @Column(name = "user")
   protected String user;
 
   /**

@@ -29,7 +29,7 @@ package io.clouditor.discovery;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.clouditor.assurance.ccl.AssetType;
-import io.clouditor.util.PersistentObject;
+import io.clouditor.data_access_layer.PersistentObject;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 import javax.persistence.*;
@@ -183,7 +183,7 @@ public class Scan implements PersistentObject<String> {
     return scannerClass;
   }
 
-  public Scanner<?, ?> instantiateScanner()
+  public Scanner instantiateScanner()
       throws NoSuchMethodException, IllegalAccessException, InvocationTargetException,
           InstantiationException {
     var constructor = scannerClass.getConstructor();

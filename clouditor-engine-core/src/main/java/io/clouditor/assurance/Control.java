@@ -31,6 +31,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.clouditor.discovery.AssetService;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -48,15 +49,10 @@ public class Control implements Serializable {
    * The rules associated with this control. This is actually redundant a little bit since its
    * already stored in the {@link Rule}.
    */
-  @ManyToMany(mappedBy = "controls")
-  private List<Rule> rules = new ArrayList<>();
+  @ManyToMany private List<Rule> rules = new ArrayList<>();
 
   /** The last evaluation results */
-  @OneToMany
-  @JoinTable(
-      joinColumns = @JoinColumn(name = "control_id", referencedColumnName = "control_id"),
-      inverseForeignKey = @ForeignKey(name = "time_stamp"))
-  private final List<EvaluationResult> results = new ArrayList<>();
+  @OneToMany private final List<EvaluationResult> results = new ArrayList<>();
 
   /** The id of the control this objective is referring to, i.e. a CCM control id. */
   @JsonProperty
@@ -228,7 +224,17 @@ public class Control implements Serializable {
   }
 
   public List<EvaluationResult> getResults() {
-    return this.results;
+    return Collections.unmodifiableList(this.results);
+  }
+
+  public void setResults(final EvaluationResult... evaluationResults) {
+    final List<EvaluationResult> evaluationResultList = List.of(evaluationResults);
+    this.results.addAll(evaluationResultList);
+  }
+
+  public void removeResults(final EvaluationResult... evaluationResults) {
+    final List<EvaluationResult> evaluationResultList = List.of(evaluationResults);
+    this.results.removeAll(evaluationResultList);
   }
 
   @Override
@@ -236,8 +242,8 @@ public class Control implements Serializable {
     return "Control{"
         + "rules="
         + rules
-        + ", results="
-        + results
+        + ", resultsLength="
+        + results.size()
         + ", controlId='"
         + controlId
         + '\''

@@ -31,6 +31,7 @@ import io.clouditor.assurance.CertificationService;
 import io.clouditor.assurance.RuleService;
 import io.clouditor.auth.AuthenticationService;
 import io.clouditor.data_access_layer.HibernatePersistence;
+import io.clouditor.data_access_layer.HibernateUtils;
 import io.clouditor.discovery.DiscoveryService;
 import io.clouditor.rest.EngineAPI;
 import io.clouditor.util.FileSystemManager;
@@ -45,6 +46,10 @@ import org.kohsuke.args4j.Option;
 @Service
 public class Engine extends Component {
 
+  private static final String DEFAULT_DB_USER_NAME = "postgres";
+
+  private static final String DEFAULT_DB_PASSWORD = "postgres";
+
   private static final String DEFAULT_DB_HOST = "localhost";
 
   private static final String DEFAULT_DB_NAME = "clouditor";
@@ -54,6 +59,12 @@ public class Engine extends Component {
   private static final short DEFAULT_API_PORT = 9999;
 
   private static final boolean DEFAULT_DB_IN_MEMORY = true;
+
+  @Option(name = "--db-user-name", usage = "provides user name of database")
+  private String dbUserName = DEFAULT_DB_USER_NAME;
+
+  @Option(name = "--db-password", usage = "provides password of database")
+  private String dbPassword = DEFAULT_DB_PASSWORD;
 
   @Option(name = "--db-host", usage = "provides address of database")
   private String dbHost = DEFAULT_DB_HOST;
@@ -183,10 +194,12 @@ public class Engine extends Component {
   }
 
   public void initDB() {
-    if (this.dbInMemory) HibernatePersistence.init(this.dbName);
-    else HibernatePersistence.init(this.dbHost, this.dbPort, this.dbName);
+    if (this.dbInMemory) HibernateUtils.init(this.dbName, this.dbUserName, this.dbPassword);
+    else
+      HibernateUtils.init(
+          this.dbHost, this.dbPort, this.dbName, this.dbUserName, this.dbPassword);
 
-    Runtime.getRuntime().addShutdownHook(new Thread(HibernatePersistence::close));
+    Runtime.getRuntime().addShutdownHook(new Thread(HibernateUtils::close));
   }
 
   /** Shuts down the Clouditor Engine */

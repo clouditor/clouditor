@@ -30,18 +30,19 @@ package io.clouditor.assurance;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.clouditor.assurance.ccl.Condition;
+import io.clouditor.data_access_layer.PersistentObject;
 import io.clouditor.discovery.AssetProperties;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 @Entity(name = "evaluation_result")
 @Table(name = "evaluation_result")
-public class EvaluationResult implements Serializable {
+public class EvaluationResult implements PersistentObject<String> {
 
   private static final long serialVersionUID = 7255742076812915308L;
 
@@ -52,8 +53,8 @@ public class EvaluationResult implements Serializable {
   /** The rule according to which this was evaluated. */
   @NotNull
   @JsonProperty
-  @ManyToOne(cascade = CascadeType.ALL)
-  @JoinColumn(name = "rule_id")
+  @ManyToOne(cascade = CascadeType.REMOVE)
+  @JoinColumn(name = "rule_id", nullable = false)
   private final Rule rule;
 
   @JsonProperty
@@ -65,15 +66,20 @@ public class EvaluationResult implements Serializable {
   @ManyToMany
   @JoinTable(
       name = "condition_to_evaluation_result",
-      joinColumns = {
-        @JoinColumn(name = "time_stamp", referencedColumnName = "time_stamp"),
-        @JoinColumn(name = "rule_id", referencedColumnName = "rule_id")
-      },
+      joinColumns = {@JoinColumn(name = "time_stamp", referencedColumnName = "time_stamp")},
       inverseJoinColumns = {
         @JoinColumn(name = "source", referencedColumnName = "source"),
         @JoinColumn(name = "type_value", referencedColumnName = "type_value"),
       })
   private List<Condition> failedConditions = new ArrayList<>();
+
+  public EvaluationResult() {
+    rule =
+        new Rule() {
+          private static final long serialVersionUID = 4722006617102464025L;
+        };
+    evaluatedProperties = null;
+  }
 
   @JsonCreator
   public EvaluationResult(
@@ -103,23 +109,38 @@ public class EvaluationResult implements Serializable {
     return !this.failedConditions.isEmpty();
   }
 
+  public String getTimeStamp() {
+    return timeStamp;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
+
     if (o == null || getClass() != o.getClass()) return false;
+
     EvaluationResult that = (EvaluationResult) o;
-    return Objects.equals(getTimeStamp(), that.getTimeStamp())
-        && Objects.equals(getRule(), that.getRule())
-        && Objects.equals(evaluatedProperties, that.evaluatedProperties)
-        && Objects.equals(getFailedConditions(), that.getFailedConditions());
+
+    return new EqualsBuilder()
+        .append(getTimeStamp(), that.getTimeStamp())
+        .append(getRule(), that.getRule())
+        .append(evaluatedProperties, that.evaluatedProperties)
+        .append(getFailedConditions(), that.getFailedConditions())
+        .isEquals();
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getTimeStamp(), getRule(), evaluatedProperties, getFailedConditions());
+    return new HashCodeBuilder(17, 37)
+        .append(getTimeStamp())
+        .append(getRule())
+        .append(evaluatedProperties)
+        .append(getFailedConditions())
+        .toHashCode();
   }
 
-  public String getTimeStamp() {
-    return timeStamp;
+  @Override
+  public String getId() {
+    return this.timeStamp;
   }
 }

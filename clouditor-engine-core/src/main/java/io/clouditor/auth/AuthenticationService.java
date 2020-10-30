@@ -38,6 +38,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.kosprov.jargon2.api.Jargon2.Type;
 import io.clouditor.Engine;
 import io.clouditor.data_access_layer.HibernatePersistence;
+import io.clouditor.data_access_layer.PersistenceManager;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -69,7 +70,8 @@ public class AuthenticationService {
 
   public void init() {
     // check, if users exist, otherwise create the default user
-    var users = new HibernatePersistence().count(User.class);
+    final PersistenceManager persistenceManager = new HibernatePersistence();
+    var users = persistenceManager.count(User.class);
 
     if (users == 0) {
       createDefaultUser();

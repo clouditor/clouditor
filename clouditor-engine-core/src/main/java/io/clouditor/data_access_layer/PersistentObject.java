@@ -25,13 +25,13 @@
  * This file is part of Clouditor Community Edition.
  */
 
-package io.clouditor.util;
+package io.clouditor.data_access_layer;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 
 /** This class represents an object that we can persist in a not-specified form, i.e. a Database. */
-public interface PersistentObject<T> extends Serializable {
+public interface PersistentObject<T extends Serializable> extends Serializable {
 
   @JsonProperty("_id")
   T getId();
