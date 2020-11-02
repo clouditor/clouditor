@@ -53,15 +53,15 @@ class CCLDeserializerTest {
     var mapper = new ObjectMapper(new YAMLFactory());
     ObjectMapperResolver.configureObjectMapper(mapper);
 
-    var rule = mapper.readValue("condition: \"User has field == true\"", Rule.class);
+    var rule = mapper.readValue("conditions: \n - \"User has field == true\"", Rule.class);
 
     assertNotNull(rule);
 
-    var condition = rule.getCondition();
+    var conditions = rule.getConditions();
 
-    assertNotNull(condition);
+    assertNotNull(conditions);
 
-    assertTrue(condition.getExpression() instanceof BinaryComparison);
+    assertTrue(conditions.get(0).getExpression() instanceof BinaryComparison);
   }
 
   @Test

@@ -26,7 +26,6 @@
  */
 
 export class Rule {
-  condition: string;
   conditions: string[];
   name: string;
   id: string;

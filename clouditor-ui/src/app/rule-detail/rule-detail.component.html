@@ -41,7 +41,6 @@
   <span [innerHTML]="rule.description"></span>
 
   <div>
-    <code *ngIf="rule.condition">{{ rule.condition }}</code>
     <div *ngFor="let condition of rule.conditions">
       <code>{{ condition }}</code>
     </div>

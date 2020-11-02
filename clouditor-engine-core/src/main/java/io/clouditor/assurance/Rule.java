@@ -33,15 +33,10 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.clouditor.assurance.ccl.*;
 import io.clouditor.discovery.Asset;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class Rule {
-
-  @JsonDeserialize(using = CCLDeserializer.class)
-  @JsonSerialize(using = CCLSerializer.class)
-  private Condition condition;
 
   @JsonDeserialize(contentUsing = CCLDeserializer.class)
   @JsonSerialize(contentUsing = CCLSerializer.class)
@@ -55,53 +50,33 @@ public class Rule {
   @JsonProperty private List<String> controls = new ArrayList<>();
   @JsonProperty private String id;
 
-  public boolean evaluateApplicability(Asset asset) {
-
-    if (this.condition != null) {
-      if (this.condition.getAssetType() instanceof FilteredAssetType) {
-        return this.condition.getAssetType().evaluate(asset.getProperties());
-      }
-    } else if (this.conditions != null) {
+  public boolean isAssetFiltered(Asset asset) {
+    if (!this.conditions.isEmpty()) {
+      // Theoretically, a list of conditions could have different asset types each, but we assume
+      // they are all equal
       if (this.conditions.get(0).getAssetType() instanceof FilteredAssetType) {
-        return this.conditions.get(0).getAssetType().evaluate(asset.getProperties());
+        return !this.conditions.get(0).getAssetType().evaluate(asset.getProperties());
       }
     }
-    return true;
+    return false;
   }
 
   public EvaluationResult evaluate(Asset asset) {
     var eval = new EvaluationResult(this, asset.getProperties());
 
     if (!this.conditions.isEmpty()) {
-      // get those conditions with evaluate as false
+      // get those conditions which evaluate to false
       eval.setFailedConditions(
           this.conditions.stream()
               .filter(c -> !c.evaluate(asset.getProperties()))
               .collect(Collectors.toList()));
-    } else {
-      if (!this.condition.evaluate(asset.getProperties())) {
-        eval.setFailedConditions(Collections.singletonList(this.condition));
-      }
     }
 
     return eval;
   }
 
-  public void setCondition(Condition condition) {
-    this.condition = condition;
-  }
-
   public String getAssetType() {
-    // single condition
-    if (this.condition != null && this.condition.getAssetType() != null) {
-      return this.condition.getAssetType().getValue();
-    }
-
-    // multiple conditions
-    if (this.conditions != null
-        && !this.conditions.isEmpty()
-        && this.conditions.get(0).getAssetType() != null) {
-      // take the first one
+    if (!this.conditions.isEmpty() && this.conditions.get(0).getAssetType() != null) {
       return this.conditions.get(0).getAssetType().getValue();
     }
 
@@ -115,10 +90,6 @@ public class Rule {
 
   public void setActive(boolean active) {
     this.active = active;
-  }
-
-  public Condition getCondition() {
-    return this.condition;
   }
 
   public String getName() {
