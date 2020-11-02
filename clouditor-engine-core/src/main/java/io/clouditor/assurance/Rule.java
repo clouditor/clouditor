@@ -34,7 +34,6 @@ import io.clouditor.assurance.ccl.*;
 import io.clouditor.discovery.Asset;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.persistence.*;
@@ -44,18 +43,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 @Entity(name = "rule")
 @Table(name = "rule")
 public class Rule implements Serializable {
-
-  @JsonDeserialize(using = CCLDeserializer.class)
-  @JsonSerialize(using = CCLSerializer.class)
-  @ManyToOne(cascade = CascadeType.ALL)
-  @JoinTable(
-      name = "condition_to_rule",
-      joinColumns = @JoinColumn(name = "rule_id", referencedColumnName = "rule_id"),
-      inverseJoinColumns = {
-        @JoinColumn(name = "source", referencedColumnName = "source"),
-        @JoinColumn(name = "type_value", referencedColumnName = "type_value"),
-      })
-  private Condition condition;
 
   @JsonDeserialize(contentUsing = CCLDeserializer.class)
   @JsonSerialize(contentUsing = CCLSerializer.class)
@@ -92,64 +79,33 @@ public class Rule implements Serializable {
       inverseJoinColumns = @JoinColumn(name = "control_id", referencedColumnName = "control_id"))
   private final List<Control> controls = new ArrayList<>();
 
-  @JsonProperty
-  @Id
-  @Column(name = "rule_id")
-  private String id;
-
-  /**
-   * TOTO: what does it do?
-   *
-   * @param asset
-   * @return
-   */
-  public boolean evaluateApplicability(Asset asset) {
-
-    if (this.condition != null) {
-      if (this.condition.getAssetType() instanceof FilteredAssetType) {
-        return this.condition.getAssetType().evaluate(asset.getProperties());
-      }
-    } else if (this.conditions != null) {
+  public boolean isAssetFiltered(Asset asset) {
+    if (!this.conditions.isEmpty()) {
+      // Theoretically, a list of conditions could have different asset types each, but we assume
+      // they are all equal
       if (this.conditions.get(0).getAssetType() instanceof FilteredAssetType) {
-        return this.conditions.get(0).getAssetType().evaluate(asset.getProperties());
+        return !this.conditions.get(0).getAssetType().evaluate(asset.getProperties());
       }
     }
-    return true;
+    return false;
   }
 
   public EvaluationResult evaluate(Asset asset) {
     var eval = new EvaluationResult(this, asset.getProperties());
 
     if (!this.conditions.isEmpty()) {
-      // get those conditions with evaluate as false
+      // get those conditions which evaluate to false
       eval.setFailedConditions(
           this.conditions.stream()
               .filter(c -> !c.evaluate(asset.getProperties()))
               .collect(Collectors.toList()));
-    } else {
-      if (!this.condition.evaluate(asset.getProperties())) {
-        eval.setFailedConditions(Collections.singletonList(this.condition));
-      }
     }
 
     return eval;
   }
 
-  public void setCondition(Condition condition) {
-    this.condition = condition;
-  }
-
   public String getAssetType() {
-    // single condition
-    if (this.condition != null && this.condition.getAssetType() != null) {
-      return this.condition.getAssetType().getValue();
-    }
-
-    // multiple conditions
-    if (this.conditions != null
-        && !this.conditions.isEmpty()
-        && this.conditions.get(0).getAssetType() != null) {
-      // take the first one
+    if (!this.conditions.isEmpty() && this.conditions.get(0).getAssetType() != null) {
       return this.conditions.get(0).getAssetType().getValue();
     }
 
@@ -165,10 +121,6 @@ public class Rule implements Serializable {
     this.active = active;
   }
 
-  public Condition getCondition() {
-    return this.condition;
-  }
-
   public String getName() {
     return this.name;
   }
@@ -181,8 +133,12 @@ public class Rule implements Serializable {
     this.id = id;
   }
 
-  public List<Control> getControls() {
+  public List<String> getControls() {
     return this.controls;
+  }
+
+  public void setControls(List<String> controls) {
+    this.controls = controls;
   }
 
   public String getId() {
@@ -207,43 +163,5 @@ public class Rule implements Serializable {
 
   public void setConditions(List<Condition> conditions) {
     this.conditions = conditions;
-  }
-
-  public boolean containsControl(final String controlId) {
-    return getControls().stream().anyMatch(control -> control.getControlId().equals(controlId));
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-
-    if (o == null || getClass() != o.getClass()) return false;
-
-    Rule rule = (Rule) o;
-
-    return new EqualsBuilder()
-        .append(isActive(), rule.isActive())
-        .append(getCondition(), rule.getCondition())
-        .append(getConditions(), rule.getConditions())
-        .append(getName(), rule.getName())
-        .append(getDescription(), rule.getDescription())
-        .append(icon, rule.icon)
-        .append(getControls(), rule.getControls())
-        .append(getId(), rule.getId())
-        .isEquals();
-  }
-
-  @Override
-  public int hashCode() {
-    return new HashCodeBuilder(17, 37)
-        .append(getCondition())
-        .append(getConditions())
-        .append(isActive())
-        .append(getName())
-        .append(getDescription())
-        .append(icon)
-        .append(getControls())
-        .append(getId())
-        .toHashCode();
   }
 }

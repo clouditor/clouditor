@@ -46,7 +46,7 @@ class CertificationTest extends AbstractEngineUnitTest {
   void testEvaluate() {
     // build a simple rule
     var rule = new Rule();
-    rule.setCondition(new CCLDeserializer().parse("MockAsset has property == true"));
+    rule.addCondition(new CCLDeserializer().parse("MockAsset has property == true"));
 
     var ruleService = this.engine.getService(RuleService.class);
     ruleService.getRules().put("MockAsset", Set.of(rule));

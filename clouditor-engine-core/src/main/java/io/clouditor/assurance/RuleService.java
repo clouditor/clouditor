@@ -294,7 +294,7 @@ public class RuleService extends DiscoveryResultSubscriber {
       rulesForAsset.forEach(
           rule -> {
             EvaluationResult eval;
-            if (!rule.evaluateApplicability(asset)) {
+            if (rule.isAssetFiltered(asset)) {
               // simply add an empty EvaluationResult
               eval = new EvaluationResult(rule, asset.getProperties());
             } else {
