@@ -8,4 +8,4 @@ FunctionDeclaration has not empty kmsKeyArn
 
 # Controls
 
-* BSI C5/KRY-03
+* BSI C5/CRY-03

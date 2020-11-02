@@ -8,4 +8,4 @@ Volume has encrypted == true
 
 ## Controls
 
-* BSI C5/KRY-03
+* BSI C5/CRY-03
