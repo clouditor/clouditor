@@ -11,3 +11,4 @@ SQLServer has securityAlertPolicy.emailAccountAdmins == true
 
 * CIS Microsoft Azure Foundations Benchmark/Azure 4.1.4
 * CIS Microsoft Azure Foundations Benchmark/Azure 4.1.5
+* BSI C5/OPS-13

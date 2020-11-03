@@ -9,3 +9,4 @@ StorageAccount has keyRegenerated == true
 ## Controls
 
 * CIS Microsoft Azure Foundations Benchmark/Azure 3.3
+* BSI C5/CRY-04

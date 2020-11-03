@@ -10,5 +10,3 @@ Account has cloudTrailActive == true
 
 * AWS 2.1
 * BSI C5/OPS-10
-* BSI C5/OPS-11
-* BSI C5/OPS-13

@@ -10,3 +10,5 @@ SQLServer has not empty securityAlertPolicy.storageEndpoint
 ## Cntrols
 
 * CIS Microsoft Azure Foundations Benchmark/Azure 4.1.2
+* BSI C5/OPS-10
+* BSI C5/OPS-13

@@ -10,5 +10,6 @@ SQLServer has securityAlertPolicy.retentionDays >= 90
 ## Controls
 
 * CIS Microsoft Azure Foundations Benchmark/Azure 4.1.7
+* BSI C5/OPS-14
 
 [comment]: # TODO: retentionDays == 0 is also ok

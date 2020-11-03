@@ -10,3 +10,4 @@ KeyVault has retentionPolicy.days >= 180 in any logs
 ## Controls
 
 * CIS Microsoft Azure Foundations Benchmark/Azure 5.13
+* BSI C5/OPS-10

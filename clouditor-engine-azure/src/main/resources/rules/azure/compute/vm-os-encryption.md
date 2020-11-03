@@ -9,3 +9,4 @@ VirtualMachine has osDiskEncryption == "Encrypted"
 ## Controls
 
 * CIS Microsoft Azure Foundations Benchmark/Azure 7.2
+* BSI C5/CRY-03
