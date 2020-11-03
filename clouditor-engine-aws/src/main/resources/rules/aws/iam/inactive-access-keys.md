@@ -8,5 +8,5 @@ User has statusAsString != "Inactive" in all accessKeys
 
 ## Controls
 
-* BSI C5/KRY-04
+* BSI C5/CRY-04
 * BSI C5/IDM-01

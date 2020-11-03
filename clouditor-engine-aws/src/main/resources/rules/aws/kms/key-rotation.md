@@ -8,7 +8,7 @@ KeyMetadata has keyRotationEnabled == true
 
 ## Controls:
 
-* BSI C5/KRY-04
+* BSI C5/CRY-04
 
 [comment]: # TODO: actually filter out external and master keys, since they cannot be rotated
 [comment]: # filter: 'KeyMetadata has originAsType == "AWS_KMS"'

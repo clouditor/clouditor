@@ -9,3 +9,5 @@ Subscription has enabled == true in all watchers
 ## Controls
 
 * CIS Microsoft Azure Foundations Benchmark/Azure 6.5
+* BSI C5/OPS-10
+* BSI C5/OPS-13
