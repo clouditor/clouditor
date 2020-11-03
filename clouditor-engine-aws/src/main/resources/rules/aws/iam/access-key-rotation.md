@@ -10,4 +10,4 @@ User has createDate younger 90 days in all accessKeys
 
 * IAM-02
 * AWS 1.4
-* BSI C5/KRY-04
+* BSI C5/CRY-04

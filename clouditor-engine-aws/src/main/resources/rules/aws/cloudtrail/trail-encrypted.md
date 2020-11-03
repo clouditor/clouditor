@@ -13,4 +13,4 @@ The trail with ARN {} is not encrypted (it has no KMS Key ID set)
 ## Controls
 
 * AWS 2.7
-* BSI C5/RB-13
+* BSI C5/OPS-14

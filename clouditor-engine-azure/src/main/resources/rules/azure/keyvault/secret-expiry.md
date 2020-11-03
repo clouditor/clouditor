@@ -9,3 +9,4 @@ KeyVault has attributes.exp before 365 days in all secrets
 ## Controls
 
 * CIS Microsoft Azure Foundations Benchmark/Azure 8.2
+* BSI C5/CRY-04

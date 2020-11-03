@@ -9,3 +9,4 @@ SQLDatabase has transparentDataEncryption.status == "Enabled"
 # Controls
 
 * CIS Microsoft Azure Foundations Benchmark/Azure 4.2.6
+* BSI C5/CRY-03

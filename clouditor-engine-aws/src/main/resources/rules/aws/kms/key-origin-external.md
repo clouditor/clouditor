@@ -6,4 +6,7 @@ Checks if the KMS keys have the correct origin (default: 'external'). Master key
 KeyMetadata has originAsString == "EXTERNAL"
 ```
 
+## Controls
+* BSI C5/CRY-04
+
 [comment]: # TODO merge together all key origin checks and parametrize the rule

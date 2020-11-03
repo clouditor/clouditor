@@ -11,5 +11,6 @@ SQLDatabase has auditingPolicy.retentionDays > 90
 
 * CIS Microsoft Azure Foundations Benchmark/Azure 4.2.1
 * CIS Microsoft Azure Foundations Benchmark/Azure 4.2.7
+* BSI C5/OPS-10
 
 [comment]: # TODO: retentionDays == 0 is also valid, since this means forever

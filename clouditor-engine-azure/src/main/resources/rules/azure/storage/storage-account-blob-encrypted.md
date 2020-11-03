@@ -9,3 +9,4 @@ StorageAccount has encryptionStatuses.Blob.enabled == true
 ## Controls
 
 * CIS Microsoft Azure Foundations Benchmark/Azure 3.2
+* BSI C5/CRY-03
