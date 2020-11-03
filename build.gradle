@@ -53,7 +53,7 @@ allprojects {
     group = 'io.clouditor'
 
     jacoco {
-        toolVersion = "0.8.4"
+        toolVersion = "0.8.6"
     }
 
     task sourcesJar(type: Jar) {
