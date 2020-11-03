@@ -39,6 +39,8 @@ import javax.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity(name = "control")
 @Table(name = "control")
@@ -49,7 +51,9 @@ public class Control implements Serializable {
    * The rules associated with this control. This is actually redundant a little bit since its
    * already stored in the {@link Rule}.
    */
-  @ManyToMany private List<Rule> rules = new ArrayList<>();
+  @ManyToMany
+  @LazyCollection(LazyCollectionOption.FALSE)
+  private List<Rule> rules = new ArrayList<>();
 
   /** The last evaluation results */
   @OneToMany private final List<EvaluationResult> results = new ArrayList<>();
@@ -152,7 +156,7 @@ public class Control implements Serializable {
     var control = (Control) o;
 
     return new EqualsBuilder()
-        .append(rules, control.rules)
+        .append(new ArrayList<>(rules), new ArrayList<>(control.rules))
         .append(controlId, control.controlId)
         .append(description, control.description)
         .append(domain, control.domain)
@@ -163,7 +167,7 @@ public class Control implements Serializable {
   @Override
   public int hashCode() {
     return new HashCodeBuilder(17, 37)
-        .append(rules)
+        .append(List.of(rules))
         .append(controlId)
         .append(description)
         .append(domain)

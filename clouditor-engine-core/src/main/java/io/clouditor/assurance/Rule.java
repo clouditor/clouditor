@@ -39,14 +39,19 @@ import java.util.stream.Collectors;
 import javax.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity(name = "rule")
 @Table(name = "rule")
 public class Rule implements Serializable {
 
+  private static final long serialVersionUID = -5934273783785749037L;
+
   @JsonDeserialize(contentUsing = CCLDeserializer.class)
   @JsonSerialize(contentUsing = CCLSerializer.class)
   @ManyToMany
+  @LazyCollection(LazyCollectionOption.FALSE)
   @JoinTable(
       name = "condition_to_many_rules",
       joinColumns = @JoinColumn(name = "rule_id", referencedColumnName = "rule_id"),
@@ -73,11 +78,17 @@ public class Rule implements Serializable {
 
   @JsonProperty
   @ManyToMany
+  @LazyCollection(LazyCollectionOption.FALSE)
   @JoinTable(
       name = "rule_to_control",
       joinColumns = @JoinColumn(name = "rule_id", referencedColumnName = "rule_id"),
       inverseJoinColumns = @JoinColumn(name = "control_id", referencedColumnName = "control_id"))
   private final List<Control> controls = new ArrayList<>();
+
+  @JsonProperty
+  @Id
+  @Column(name = "rule_id")
+  private String id;
 
   public boolean isAssetFiltered(Asset asset) {
     if (!this.conditions.isEmpty()) {
@@ -133,12 +144,17 @@ public class Rule implements Serializable {
     this.id = id;
   }
 
-  public List<String> getControls() {
+  public List<Control> getControls() {
     return this.controls;
   }
 
-  public void setControls(List<String> controls) {
-    this.controls = controls;
+  public void addControls(final Control... controls) {
+    final List<Control> controlList = List.of(controls);
+    this.controls.addAll(controlList);
+  }
+
+  public boolean containsControl(final String controlId) {
+    return getControls().stream().anyMatch(c -> c.getControlId().equals(controlId));
   }
 
   public String getId() {
@@ -163,5 +179,61 @@ public class Rule implements Serializable {
 
   public void setConditions(List<Condition> conditions) {
     this.conditions = conditions;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Rule rule = (Rule) o;
+
+    return new EqualsBuilder()
+        .append(isActive(), rule.isActive())
+        .append(new ArrayList<>(getConditions()), new ArrayList<>(rule.getConditions()))
+        .append(getName(), rule.getName())
+        .append(getDescription(), rule.getDescription())
+        .append(icon, rule.icon)
+        .append(new ArrayList<>(getControls()), new ArrayList<>(rule.getControls()))
+        .append(getId(), rule.getId())
+        .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37)
+        .append(getConditions())
+        .append(isActive())
+        .append(getName())
+        .append(getDescription())
+        .append(icon)
+        .append(getControls())
+        .append(getId())
+        .toHashCode();
+  }
+
+  @Override
+  public String toString() {
+    return "Rule{"
+        + "conditions="
+        + conditions
+        + ", active="
+        + active
+        + ", name='"
+        + name
+        + '\''
+        + ", description='"
+        + description
+        + '\''
+        + ", icon='"
+        + icon
+        + '\''
+        + ", controls="
+        + controls
+        + ", id='"
+        + id
+        + '\''
+        + '}';
   }
 }

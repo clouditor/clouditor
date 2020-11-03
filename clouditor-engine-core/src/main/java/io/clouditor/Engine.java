@@ -30,7 +30,6 @@ package io.clouditor;
 import io.clouditor.assurance.CertificationService;
 import io.clouditor.assurance.RuleService;
 import io.clouditor.auth.AuthenticationService;
-import io.clouditor.data_access_layer.HibernatePersistence;
 import io.clouditor.data_access_layer.HibernateUtils;
 import io.clouditor.discovery.DiscoveryService;
 import io.clouditor.rest.EngineAPI;
@@ -195,11 +194,10 @@ public class Engine extends Component {
 
   public void initDB() {
     if (this.dbInMemory) HibernateUtils.init(this.dbName, this.dbUserName, this.dbPassword);
-    else
-      HibernateUtils.init(
-          this.dbHost, this.dbPort, this.dbName, this.dbUserName, this.dbPassword);
-
-    Runtime.getRuntime().addShutdownHook(new Thread(HibernateUtils::close));
+    else {
+      HibernateUtils.init(this.dbHost, this.dbPort, this.dbName, this.dbUserName, this.dbPassword);
+      Runtime.getRuntime().addShutdownHook(new Thread(HibernateUtils::close));
+    }
   }
 
   /** Shuts down the Clouditor Engine */

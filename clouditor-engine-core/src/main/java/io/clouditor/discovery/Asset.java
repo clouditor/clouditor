@@ -32,10 +32,13 @@ import io.clouditor.assurance.EvaluationResult;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import javax.persistence.*;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity(name = "asset")
 @Table(name = "asset")
@@ -45,6 +48,7 @@ public class Asset implements Serializable {
   private static final long serialVersionUID = -2382328140875227410L;
 
   @ManyToMany(targetEntity = EvaluationResult.class)
+  @LazyCollection(LazyCollectionOption.FALSE)
   private List<EvaluationResult> evaluationResults = new ArrayList<>();
 
   @CollectionTable(name = "asset_properties", joinColumns = @JoinColumn(name = "key_id"))
@@ -140,17 +144,29 @@ public class Asset implements Serializable {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
+
     if (o == null || getClass() != o.getClass()) return false;
+
     Asset asset = (Asset) o;
-    return Objects.equals(getEvaluationResults(), asset.getEvaluationResults())
-        && Objects.equals(getProperties(), asset.getProperties())
-        && Objects.equals(getId(), asset.getId())
-        && Objects.equals(getName(), asset.getName())
-        && Objects.equals(getType(), asset.getType());
+
+    return new EqualsBuilder()
+        .append(
+            new ArrayList<>(getEvaluationResults()), new ArrayList<>(asset.getEvaluationResults()))
+        .append(getProperties(), asset.getProperties())
+        .append(getId(), asset.getId())
+        .append(getName(), asset.getName())
+        .append(getType(), asset.getType())
+        .isEquals();
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getEvaluationResults(), getProperties(), getId(), getName(), getType());
+    return new HashCodeBuilder(17, 37)
+        .append(getEvaluationResults())
+        .append(getProperties())
+        .append(getId())
+        .append(getName())
+        .append(getType())
+        .toHashCode();
   }
 }

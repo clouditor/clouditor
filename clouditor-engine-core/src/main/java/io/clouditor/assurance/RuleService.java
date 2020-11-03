@@ -154,11 +154,11 @@ public class RuleService extends DiscoveryResultSubscriber {
             return control;
           };
 
-      this.rule.getControls().add(getControl.apply(node));
+      this.rule.addControls(getControl.apply(node));
 
       while (node.getNext() != null) {
         node = node.getNext();
-        this.rule.getControls().add(getControl.apply(node));
+        this.rule.addControls(getControl.apply(node));
       }
     }
   }

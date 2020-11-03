@@ -28,11 +28,12 @@
 package io.clouditor.assurance;
 
 import java.io.Serializable;
-import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 @Entity(name = "cloud_domain")
 @Table(name = "cloud_domain")
@@ -70,14 +71,19 @@ public class Domain implements Serializable {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
+
     if (o == null || getClass() != o.getClass()) return false;
+
     Domain domain = (Domain) o;
-    return Objects.equals(description, domain.description)
-        && Objects.equals(getName(), domain.getName());
+
+    return new EqualsBuilder()
+        .append(description, domain.description)
+        .append(getName(), domain.getName())
+        .isEquals();
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(description, getName());
+    return new HashCodeBuilder(17, 37).append(description).append(getName()).toHashCode();
   }
 }

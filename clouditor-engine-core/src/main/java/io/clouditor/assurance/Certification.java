@@ -38,6 +38,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.Size;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity(name = "certification")
 @Table(name = "certification")
@@ -55,6 +57,7 @@ public class Certification implements PersistentObject<String>, Serializable {
   @Valid
   @JsonProperty
   @ManyToMany(targetEntity = Control.class)
+  @LazyCollection(LazyCollectionOption.FALSE)
   @JoinTable(
       name = "control_to_certification",
       joinColumns =

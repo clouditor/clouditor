@@ -61,8 +61,8 @@ public class DiscoveryService {
           new ConfigurationBuilder()
               .addUrls(ClasspathHelper.forPackage(Scanner.class.getPackage().getName()))
               .setScanners(new SubTypesScanner()));
-  private final Map<String, ScheduledFuture<?>> futures = new HashMap<>();
-  private final Map<String, Scanner<?, ?>> scanners = new HashMap<>();
+  private final Map<String, ScheduledFuture> futures = new HashMap<>();
+  private final Map<String, Scanner> scanners = new HashMap<>();
 
   private final ScheduledThreadPoolExecutor scheduler =
       (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1);
@@ -291,7 +291,7 @@ public class DiscoveryService {
   }
 
   /** Returns a list of currently running scanners. */
-  public Collection<Scanner<?, ?>> getScanners() {
+  public Collection<Scanner> getScanners() {
     return this.scanners.values();
   }
 }

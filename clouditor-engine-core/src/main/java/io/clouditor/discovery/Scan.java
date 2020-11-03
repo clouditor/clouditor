@@ -237,6 +237,7 @@ public class Scan implements PersistentObject<String> {
     public Class<? extends Scanner> convertToEntityAttribute(final String dbData) {
       Class<? extends Scanner> resultValue;
       try {
+        // noinspection unchecked
         resultValue = (Class<? extends Scanner>) Class.forName(dbData);
       } catch (ClassNotFoundException e) {
         e.printStackTrace();

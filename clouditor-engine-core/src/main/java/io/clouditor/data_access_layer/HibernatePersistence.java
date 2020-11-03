@@ -52,8 +52,7 @@ public class HibernatePersistence implements PersistenceManager {
   }
 
   @Override
-  public <T> Optional<T> get(
-      final Class<T> resultType, final Serializable primaryKey) {
+  public <T> Optional<T> get(final Class<T> resultType, final Serializable primaryKey) {
     Objects.requireNonNull(resultType);
     Objects.requireNonNull(primaryKey);
     return exec(session -> session.get(resultType, primaryKey));
@@ -63,13 +62,13 @@ public class HibernatePersistence implements PersistenceManager {
   public <T> List<T> listAll(final Class<T> type) {
     Objects.requireNonNull(type);
     return exec(session -> {
-      // Create a JPA CriteriaQuery wit the result type T.
-      final CriteriaQuery<T> criteriaQuery =
-              session.getCriteriaBuilder().createQuery(type);
-      // Set the datasource to the Entity relation to T.
-      criteriaQuery.from(type);
-      return session.createQuery(criteriaQuery).getResultList();
-    }).orElseThrow();
+          // Create a JPA CriteriaQuery wit the result type T.
+          final CriteriaQuery<T> criteriaQuery = session.getCriteriaBuilder().createQuery(type);
+          // Set the datasource to the Entity relation to T.
+          criteriaQuery.from(type);
+          return session.createQuery(criteriaQuery).getResultList();
+        })
+        .orElseThrow();
   }
 
   @Override
@@ -79,14 +78,14 @@ public class HibernatePersistence implements PersistenceManager {
   }
 
   @Override
-  public <T> void delete(
-      final Class<T> deleteType, final Serializable id) {
+  public <T> void delete(final Class<T> deleteType, final Serializable id) {
     Objects.requireNonNull(deleteType);
     Objects.requireNonNull(id);
-    execConsumer(session -> session.delete(
-            // Get a proxied instance of the object to delete.
-            session.load(deleteType, id)
-    ));
+    execConsumer(
+        session ->
+            session.delete(
+                // Get a proxied instance of the object to delete.
+                session.load(deleteType, id)));
   }
 
   @Override
@@ -96,27 +95,26 @@ public class HibernatePersistence implements PersistenceManager {
   }
 
   /**
-   * Wrapper for the exec method, to be able to execute methods without a return value lieke
-   * save, update or delete.
+   * Wrapper for the exec method, to be able to execute methods without a return value lieke save,
+   * update or delete.
    *
-   * @param consumer the operation to execute.
-   *                 The input value is an open Hibernate <code>Session</code>.
-   *                 See: https://docs.jboss.org/hibernate/orm/5.0/javadocs.
+   * @param consumer the operation to execute. The input value is an open Hibernate <code>Session
+   *     </code>. See: https://docs.jboss.org/hibernate/orm/5.0/javadocs.
    * @throws NullPointerException if the <code>consumer</code> is null.
    */
   private void execConsumer(final Consumer<Session> consumer) {
-    exec(session -> {
-              consumer.accept(session);
-              return new Object(); // The result is ignored.
-            });
+    exec(
+        session -> {
+          consumer.accept(session);
+          return new Object(); // The result is ignored.
+        });
   }
 
   /**
    * Executes some operation on the database in a transaction with an open session.
    *
-   * @param function the operation to execute.
-   *                 The input value is an open Hibernate <code>Session</code>.
-   *                 See: https://docs.jboss.org/hibernate/orm/5.0/javadocs.
+   * @param function the operation to execute. The input value is an open Hibernate <code>Session
+   *     </code>. See: https://docs.jboss.org/hibernate/orm/5.0/javadocs.
    * @param <T> The result type of the operation.
    * @return the result of the operation.
    * @throws NullPointerException if the <code>function</code> is null.
@@ -134,8 +132,7 @@ public class HibernatePersistence implements PersistenceManager {
     } catch (final HibernateException exception) {
       exception.printStackTrace();
       // Undo the operation if something went wrong.
-      transaction.filter(t -> t.getStatus().canRollback())
-              .ifPresent(EntityTransaction::rollback);
+      transaction.filter(t -> t.getStatus().canRollback()).ifPresent(EntityTransaction::rollback);
     }
     return result;
   }

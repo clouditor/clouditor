@@ -53,8 +53,7 @@ public interface PersistenceManager {
    * @param resultType the result type of the object to load.
    * @param primaryKey the primaryKey to identify the dataset.
    * @param <T> the generic type of the object to load.
-   * @return a new instance of the object of type T,
-   *          filled with the data from the database.
+   * @return a new instance of the object of type T, filled with the data from the database.
    * @throws NullPointerException if <code>resultType</code> or <code>primaryKey</code> is null.
    */
   <T> Optional<T> get(final Class<T> resultType, final Serializable primaryKey);
@@ -64,8 +63,7 @@ public interface PersistenceManager {
    *
    * @param resultType the type of the stored objects.
    * @param <T> the generic type of the object to load.
-   * @return a list containing new instances of the type t,
-   *          filled with the data from the database.
+   * @return a list containing new instances of the type t, filled with the data from the database.
    * @throws NullPointerException if the <code>resultType</code> is null.
    */
   <T> List<T> listAll(final Class<T> resultType);
@@ -87,8 +85,7 @@ public interface PersistenceManager {
    * @param <T> the generic type of the object to delete.
    * @throws NullPointerException if <code>deleteType</code> or <code>id</code> is null.
    */
-  <T> void delete(
-      final Class<T> deleteType, final Serializable id);
+  <T> void delete(final Class<T> deleteType, final Serializable id);
 
   /**
    * Counts the datasets of the type T that are stored in the database.

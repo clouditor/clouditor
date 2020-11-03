@@ -31,12 +31,16 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.clouditor.assurance.ccl.AssetType;
 import java.io.Serializable;
-import java.time.Instant;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import javax.persistence.*;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity(name = "discovery_result")
 @Table(name = "discovery_result")
@@ -46,9 +50,12 @@ public class DiscoveryResult implements Serializable {
 
   @Id
   @Column(name = "time_stamp")
-  private Instant timestamp;
+  private final String timestamp = new Date().toString();;
 
-  @ManyToMany @Embedded private Map<String, Asset> discoveredAssets = new HashMap<>();
+  @ManyToMany
+  @LazyCollection(LazyCollectionOption.FALSE)
+  @Embedded
+  private Map<String, Asset> discoveredAssets = new HashMap<>();
 
   @Column(name = "failed")
   private boolean failed = false;
@@ -60,20 +67,22 @@ public class DiscoveryResult implements Serializable {
   @OneToOne(cascade = CascadeType.ALL)
   private final Scan scanId;
 
-  public void setTimestamp(Instant timestamp) {
-    this.timestamp = timestamp;
-  }
-
-  public Instant getTimestamp() {
+  public String getTimestamp() {
     return timestamp;
   }
 
   @JsonCreator
   public DiscoveryResult(@JsonProperty(value = "scanId") AssetType scanId) {
-    this.timestamp = Instant.now();
-
     this.scanId = new Scan();
     this.scanId.setAssetType(scanId);
+  }
+
+  public DiscoveryResult(final Scan scan) {
+    this.scanId = scan;
+  }
+
+  public DiscoveryResult() {
+    this.scanId = new Scan();
   }
 
   public void setDiscoveredAssets(Map<String, Asset> discoveredAssets) {
@@ -120,5 +129,33 @@ public class DiscoveryResult implements Serializable {
 
   public void setScanId(AssetType scanId) {
     this.scanId.setAssetType(scanId);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+
+    if (o == null || getClass() != o.getClass()) return false;
+
+    DiscoveryResult that = (DiscoveryResult) o;
+
+    return new EqualsBuilder()
+        .append(isFailed(), that.isFailed())
+        .append(getTimestamp(), that.getTimestamp())
+        .append(getDiscoveredAssets(), that.getDiscoveredAssets())
+        .append(getError(), that.getError())
+        .append(getScanId(), that.getScanId())
+        .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37)
+        .append(getTimestamp())
+        .append(getDiscoveredAssets())
+        .append(isFailed())
+        .append(getError())
+        .append(getScanId())
+        .toHashCode();
   }
 }

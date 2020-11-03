@@ -39,6 +39,8 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity(name = "evaluation_result")
 @Table(name = "evaluation_result")
@@ -53,7 +55,7 @@ public class EvaluationResult implements PersistentObject<String> {
   /** The rule according to which this was evaluated. */
   @NotNull
   @JsonProperty
-  @ManyToOne(cascade = CascadeType.REMOVE)
+  @ManyToOne(cascade = CascadeType.ALL)
   @JoinColumn(name = "rule_id", nullable = false)
   private final Rule rule;
 
@@ -64,6 +66,7 @@ public class EvaluationResult implements PersistentObject<String> {
   private final AssetProperties evaluatedProperties;
 
   @ManyToMany
+  @LazyCollection(LazyCollectionOption.FALSE)
   @JoinTable(
       name = "condition_to_evaluation_result",
       joinColumns = {@JoinColumn(name = "time_stamp", referencedColumnName = "time_stamp")},
@@ -125,7 +128,7 @@ public class EvaluationResult implements PersistentObject<String> {
         .append(getTimeStamp(), that.getTimeStamp())
         .append(getRule(), that.getRule())
         .append(evaluatedProperties, that.evaluatedProperties)
-        .append(getFailedConditions(), that.getFailedConditions())
+        .append(new ArrayList<>(getFailedConditions()), new ArrayList<>(that.getFailedConditions()))
         .isEquals();
   }
 
@@ -142,5 +145,20 @@ public class EvaluationResult implements PersistentObject<String> {
   @Override
   public String getId() {
     return this.timeStamp;
+  }
+
+  @Override
+  public String toString() {
+    return "EvaluationResult{"
+        + "timeStamp='"
+        + timeStamp
+        + '\''
+        + ", rule="
+        + rule
+        + ", evaluatedProperties="
+        + evaluatedProperties
+        + ", failedConditions="
+        + failedConditions
+        + '}';
   }
 }
