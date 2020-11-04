@@ -39,7 +39,6 @@ import io.clouditor.assurance.Rule;
 import io.clouditor.assurance.RuleService;
 import io.clouditor.auth.LoginRequest;
 import io.clouditor.auth.User;
-import io.clouditor.data_access_layer.HibernatePersistence;
 import io.clouditor.discovery.Asset;
 import io.clouditor.discovery.AssetProperties;
 import io.clouditor.discovery.AssetService;
@@ -57,10 +56,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -199,6 +195,7 @@ class EngineAPIResourcesTest extends JerseyTest {
 
   @Test
   void testGetScans() {
+
     var service = engine.getService(DiscoveryService.class);
 
     var fakeScan = service.getScan(ASSET_TYPE);
@@ -212,6 +209,8 @@ class EngineAPIResourcesTest extends JerseyTest {
                 AuthenticationFilter.HEADER_AUTHORIZATION,
                 AuthenticationFilter.createAuthorization(this.token))
             .get(new GenericType<List<Scan>>() {});
+
+    // new HibernatePersistence().delete(fakeScan);
 
     assertNotNull(scans);
     assertFalse(scans.isEmpty());
@@ -259,8 +258,6 @@ class EngineAPIResourcesTest extends JerseyTest {
     // store number of users (we need it later)
     var numberOfUsers = users.size();
 
-    System.out.println("BEFORE ADD USER: " + new HibernatePersistence().listAll(User.class));
-
     // add a user
     var guest = new User();
     guest.setPassword("test");
@@ -277,7 +274,6 @@ class EngineAPIResourcesTest extends JerseyTest {
     assertEquals(200, resp.getStatus());
 
     // retrieve user
-
     var guest2 =
         target("users")
             .path("test")

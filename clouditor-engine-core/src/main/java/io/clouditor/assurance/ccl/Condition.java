@@ -102,10 +102,10 @@ public class Condition implements Serializable {
 
     private static final long serialVersionUID = -503140484349205605L;
 
-    @Column(name = "source")
+    @Column(name = "source", nullable = false)
     private String source;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "type_value", insertable = false, updatable = false)
     private AssetType assetType;
 

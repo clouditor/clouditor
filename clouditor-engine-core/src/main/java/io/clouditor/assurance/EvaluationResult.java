@@ -49,13 +49,13 @@ public class EvaluationResult implements PersistentObject<String> {
   private static final long serialVersionUID = 7255742076812915308L;
 
   @Id
-  @Column(name = "time_stamp")
+  @Column(name = "time_stamp", nullable = false)
   private final String timeStamp = new Date().toString();
 
   /** The rule according to which this was evaluated. */
   @NotNull
   @JsonProperty
-  @ManyToOne(cascade = CascadeType.ALL)
+  @ManyToOne
   @JoinColumn(name = "rule_id", nullable = false)
   private final Rule rule;
 

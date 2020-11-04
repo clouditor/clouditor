@@ -13,23 +13,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class PersistenceManagerTest extends AbstractEngineUnitTest {
 
-  @Override
-  @BeforeEach
-  protected void setUp() {
-    super.setUp();
-    this.engine.setDbInMemory(true);
-    this.engine.setAPIPort(0);
-    this.engine.initDB();
-  }
-
   @Test
   void testUser() {
     // arrange
+    this.engine.initDB();
+
     final PersistenceManager sut = new HibernatePersistence();
     final String userId1 = "user_name1";
     final User user1 = new User(userId1, "password");
@@ -70,6 +63,8 @@ public class PersistenceManagerTest extends AbstractEngineUnitTest {
   @Test
   void testComplexRelations() {
     // arrange
+    this.engine.initDB();
+
     final PersistenceManager sut = new HibernatePersistence();
 
     final String domainID = "domain_name";
@@ -101,8 +96,6 @@ public class PersistenceManagerTest extends AbstractEngineUnitTest {
     final String filteredAssetTypeID = "filtered_asset_type_ID";
     final FilteredAssetType filteredAssetType = new FilteredAssetType();
     filteredAssetType.setValue(filteredAssetTypeID);
-    System.out.println(filteredAssetType);
-    System.out.println(filteredAssetType.getAssetExpression());
 
     final Condition condition = new Condition();
     condition.setAssetType(assetType);
@@ -195,5 +188,39 @@ public class PersistenceManagerTest extends AbstractEngineUnitTest {
     assertEquals(asset, haveAsset);
     assertEquals(scan, haveScan);
     assertEquals(discoveryResult, haveDiscoveryResult);
+  }
+
+  @Test
+  void connectToDB() {
+    this.engine.setDbInMemory(false);
+    this.engine.initDB();
+  }
+
+  @Test
+  void closeDB() {
+    this.engine.initDB();
+    HibernateUtils.close();
+  }
+
+  @Test
+  void closeDBTwice() {
+    this.engine.initDB();
+    HibernateUtils.close();
+    HibernateUtils.close();
+  }
+
+  @Test
+  void getUninitializedSessionFactoryBooms() {
+    // arrange// act
+    //noinspection ResultOfMethodCallIgnored
+    Assertions.assertThrows(IllegalStateException.class, HibernateUtils::getSessionFactory);
+  }
+
+  @Test
+  void initWithFalsePortBooms() {
+    // arrange // act
+    Assertions.assertThrows(
+        IllegalArgumentException.class,
+        () -> HibernateUtils.init("host", -1, "dbName", "userName", "password"));
   }
 }

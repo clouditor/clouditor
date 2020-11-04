@@ -128,6 +128,7 @@ public class HibernatePersistence implements PersistenceManager {
       transaction = Optional.of(session.beginTransaction());
       // Execute the function.
       result = Optional.ofNullable(function.apply(session));
+      session.flush();
       transaction.ifPresent(EntityTransaction::commit);
     } catch (final HibernateException exception) {
       exception.printStackTrace();

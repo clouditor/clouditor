@@ -87,7 +87,7 @@ public class Rule implements Serializable {
 
   @JsonProperty
   @Id
-  @Column(name = "rule_id")
+  @Column(name = "rule_id", nullable = false)
   private String id;
 
   public boolean isAssetFiltered(Asset asset) {

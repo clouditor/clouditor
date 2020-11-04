@@ -61,7 +61,7 @@ public class Control implements Serializable {
   /** The id of the control this objective is referring to, i.e. a CCM control id. */
   @JsonProperty
   @Id
-  @Column(name = "control_id")
+  @Column(name = "control_id", nullable = false)
   private String controlId;
 
   /** A short description. */
@@ -76,7 +76,7 @@ public class Control implements Serializable {
   private Fulfillment fulfilled = Fulfillment.NOT_EVALUATED;
 
   @JsonProperty
-  @ManyToOne(cascade = CascadeType.ALL)
+  @ManyToOne
   @JoinColumn(name = "domain_name")
   private Domain domain;
 

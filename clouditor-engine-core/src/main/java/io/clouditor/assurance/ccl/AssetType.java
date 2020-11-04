@@ -28,6 +28,7 @@
 package io.clouditor.assurance.ccl;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import io.clouditor.data_access_layer.PersistentObject;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
@@ -37,12 +38,12 @@ import javax.persistence.*;
 @Entity(name = "asset_type")
 @Table(name = "asset_type")
 @Inheritance(strategy = InheritanceType.JOINED)
-public class AssetType implements Serializable {
+public class AssetType implements Serializable, PersistentObject<String> {
 
   private static final long serialVersionUID = 5799337361597734304L;
 
   @Id
-  @Column(name = "type_value")
+  @Column(name = "type_value", nullable = false)
   private String value;
 
   public String getValue() {
@@ -68,5 +69,15 @@ public class AssetType implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(getValue());
+  }
+
+  @Override
+  public String toString() {
+    return "AssetType{" + "value='" + value + '\'' + '}';
+  }
+
+  @Override
+  public String getId() {
+    return value;
   }
 }

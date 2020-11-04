@@ -142,6 +142,7 @@ public class HibernateUtils {
   /** Closes the session factory. */
   public static void close() {
     if (sessionFactory != null) sessionFactory.close();
+    sessionFactory = null;
   }
 
   private static void setUserNameAndPassword(final String userName, final String password) {

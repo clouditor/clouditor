@@ -31,7 +31,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.clouditor.data_access_layer.PersistentObject;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.persistence.*;
 import javax.validation.Valid;
@@ -48,7 +47,7 @@ public class Certification implements PersistentObject<String>, Serializable {
   private static final long serialVersionUID = 5983205960445678160L;
 
   /** A unique identifier for each certification, such as CSA CCM or Azure CIS. */
-  @Column(name = "certification_id")
+  @Column(name = "certification_id", nullable = false)
   @Id
   private String id;
 
@@ -80,7 +79,7 @@ public class Certification implements PersistentObject<String>, Serializable {
   // TODO: startDate, endDate
 
   public List<Control> getControls() {
-    return Collections.unmodifiableList(controls);
+    return controls;
   }
 
   public void setControls(@Size(min = 1) @Valid List<Control> controls) {

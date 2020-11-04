@@ -31,8 +31,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.clouditor.assurance.ccl.AssetType;
 import io.clouditor.data_access_layer.PersistentObject;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Objects;
 import javax.persistence.*;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * A {@link Scan} holds information and configuration about a scan that is regularly executed. The
@@ -58,19 +59,11 @@ public class Scan implements PersistentObject<String> {
    * ScannerInfo}.
    */
   @JsonProperty
-  @ManyToOne(cascade = CascadeType.ALL)
-  @JoinColumn(name = "type_value")
+  @ManyToOne
+  @JoinColumn(name = "type_value", nullable = false)
   @MapKey
   @Id
   private AssetType assetType = new AssetType();
-
-  /**
-   * The asset icon of the asset, this scan is targeting. This is automatically parsed from the
-   * {@link ScannerInfo}.
-   */
-  @JsonProperty
-  @Column(name = "asset_icon")
-  private String assetIcon;
 
   /**
    * The group, or cloud provider this scan is belonging to.This is automatically parsed from the
@@ -79,6 +72,14 @@ public class Scan implements PersistentObject<String> {
   @JsonProperty
   @Column(name = "scan_group")
   private String group;
+
+  /**
+   * The asset icon of the asset, this scan is targeting. This is automatically parsed from the
+   * {@link ScannerInfo}.
+   */
+  @JsonProperty
+  @Column(name = "asset_icon")
+  private String assetIcon;
 
   /** The description of the scan. This is automatically parsed from the {@link ScannerInfo}. */
   @JsonProperty
@@ -98,8 +99,7 @@ public class Scan implements PersistentObject<String> {
   @Column(name = "service")
   private String service;
 
-  @OneToOne(cascade = CascadeType.ALL)
-  private DiscoveryResult lastResult;
+  @ManyToOne private DiscoveryResult lastResult;
 
   @Column(name = "enabled")
   private boolean enabled;
@@ -193,35 +193,71 @@ public class Scan implements PersistentObject<String> {
   }
 
   @Override
+  public String toString() {
+    return "Scan{"
+        + "scannerClass="
+        + scannerClass
+        + ", assetType="
+        + assetType
+        + ", assetIcon='"
+        + assetIcon
+        + '\''
+        + ", group='"
+        + group
+        + '\''
+        + ", description='"
+        + description
+        + '\''
+        + ", isDiscovering="
+        + isDiscovering
+        + ", service='"
+        + service
+        + '\''
+        + ", lastResult="
+        + (lastResult == null ? null : lastResult.getClass())
+        + ", enabled="
+        + enabled
+        + ", interval="
+        + interval
+        + '}';
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) return true;
+
     if (o == null || getClass() != o.getClass()) return false;
+
     Scan scan = (Scan) o;
-    return isDiscovering() == scan.isDiscovering()
-        && isEnabled() == scan.isEnabled()
-        && getInterval() == scan.getInterval()
-        && Objects.equals(getScannerClass(), scan.getScannerClass())
-        && Objects.equals(getId(), scan.getId())
-        && Objects.equals(assetIcon, scan.assetIcon)
-        && Objects.equals(getGroup(), scan.getGroup())
-        && Objects.equals(description, scan.description)
-        && Objects.equals(getService(), scan.getService())
-        && Objects.equals(getLastResult(), scan.getLastResult());
+
+    return new EqualsBuilder()
+        .append(isDiscovering(), scan.isDiscovering())
+        .append(isEnabled(), scan.isEnabled())
+        .append(getInterval(), scan.getInterval())
+        .append(getScannerClass(), scan.getScannerClass())
+        .append(getAssetType(), scan.getAssetType())
+        .append(getGroup(), scan.getGroup())
+        .append(assetIcon, scan.assetIcon)
+        .append(description, scan.description)
+        .append(getService(), scan.getService())
+        .append(getLastResult(), scan.getLastResult())
+        .isEquals();
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(
-        getScannerClass(),
-        getId(),
-        assetIcon,
-        getGroup(),
-        description,
-        isDiscovering(),
-        getService(),
-        getLastResult(),
-        isEnabled(),
-        getInterval());
+    return new HashCodeBuilder(17, 37)
+        .append(getScannerClass())
+        .append(getAssetType())
+        .append(getGroup())
+        .append(assetIcon)
+        .append(description)
+        .append(isDiscovering())
+        .append(getService())
+        .append(getLastResult())
+        .append(isEnabled())
+        .append(getInterval())
+        .toHashCode();
   }
 
   @Converter
@@ -230,14 +266,16 @@ public class Scan implements PersistentObject<String> {
 
     @Override
     public String convertToDatabaseColumn(final Class<? extends Scanner> attribute) {
-      return attribute.getCanonicalName();
+      if (attribute == null) return "";
+      else return attribute.getCanonicalName();
     }
 
     @Override
     public Class<? extends Scanner> convertToEntityAttribute(final String dbData) {
       Class<? extends Scanner> resultValue;
       try {
-        // noinspection unchecked
+        if (dbData.equals("")) resultValue = null;
+        else // noinspection unchecked
         resultValue = (Class<? extends Scanner>) Class.forName(dbData);
       } catch (ClassNotFoundException e) {
         e.printStackTrace();

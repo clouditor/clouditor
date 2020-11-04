@@ -48,8 +48,8 @@ public class AzureAccount extends CloudAccount<AzureTokenCredentials> {
 
   private static final long serialVersionUID = 1737969287469590217L;
 
-  @Id //  enable the access to the property accessKeyId through the getter method by default
-  @Column(name = "client_id")
+  @Id
+  @Column(name = "client_id", nullable = false)
   @JsonProperty
   private String clientId;
 

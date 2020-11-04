@@ -57,7 +57,7 @@ public class Asset implements Serializable {
   private AssetProperties properties = new AssetProperties();
 
   @Id
-  @Column(name = "asset_id")
+  @Column(name = "asset_id", nullable = false)
   private String id;
 
   @Column(name = "asset_name")

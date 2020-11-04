@@ -54,7 +54,8 @@ public class AwsAccount extends CloudAccount<AwsCredentials>
 
   private static final long serialVersionUID = 1928775323719265066L;
 
-  @Column(name = "access_key_id")
+  @Column(name = "access_key_id", nullable = false)
+  @Id
   @JsonProperty
   private String accessKeyId;
 
@@ -129,7 +130,6 @@ public class AwsAccount extends CloudAccount<AwsCredentials>
     return this;
   }
 
-  @Id //  enable the access to the property accessKeyId through the getter method by default
   @Override
   public String accessKeyId() {
     return this.accessKeyId;

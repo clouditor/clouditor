@@ -40,7 +40,7 @@ import org.apache.logging.log4j.core.appender.AbstractAppender;
 
 public class StringLogAppender extends AbstractAppender {
 
-  private List<String> lines = new ArrayList<>();
+  private final List<String> lines = new ArrayList<>();
 
   public StringLogAppender(String name, Filter filter, Layout<? extends Serializable> layout) {
     super(name, filter, layout);

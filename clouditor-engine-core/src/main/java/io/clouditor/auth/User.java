@@ -47,7 +47,7 @@ public class User implements Principal, PersistentObject<String> {
   private static final long serialVersionUID = -1503934816997542987L;
 
   @Id
-  @Column(name = "user_name")
+  @Column(name = "user_name", nullable = false)
   private String username;
 
   @JsonView(DatabaseOnly.class)

@@ -49,8 +49,8 @@ public class DiscoveryResult implements Serializable {
   private static final long serialVersionUID = -7032902561471865653L;
 
   @Id
-  @Column(name = "time_stamp")
-  private final String timestamp = new Date().toString();;
+  @Column(name = "time_stamp", nullable = false)
+  private final String timestamp = new Date().toString();
 
   @ManyToMany
   @LazyCollection(LazyCollectionOption.FALSE)
@@ -63,9 +63,7 @@ public class DiscoveryResult implements Serializable {
   @Column(name = "error")
   private String error;
 
-  @JsonProperty
-  @OneToOne(cascade = CascadeType.ALL)
-  private final Scan scanId;
+  @JsonProperty @OneToOne private final Scan scanId;
 
   public String getTimestamp() {
     return timestamp;

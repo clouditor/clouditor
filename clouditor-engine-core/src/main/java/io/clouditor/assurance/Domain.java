@@ -45,7 +45,7 @@ public class Domain implements Serializable {
   private String description;
 
   @Id
-  @Column(name = "domain_name")
+  @Column(name = "domain_name", nullable = false)
   private String name;
 
   public Domain() {
