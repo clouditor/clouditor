@@ -150,12 +150,6 @@ public class PersistenceManagerTest extends AbstractEngineUnitTest {
   }
 
   @Test
-  void connectToDB() {
-    this.engine.setDbInMemory(false);
-    this.engine.initDB();
-  }
-
-  @Test
   void closeDB() {
     this.engine.setDBName("PersistenceManagerTestCloseDB");
     this.engine.initDB();
