@@ -168,14 +168,15 @@ public class AuthenticationService {
    */
   public boolean createUser(User user) {
     // check, if user already exists
-    var ref = new HibernatePersistence().get(User.class, user.getId());
+    final PersistenceManager persistenceManager = new HibernatePersistence();
+    var ref = persistenceManager.get(User.class, user.getId());
 
     if (ref.isPresent()) {
       return false;
     }
 
     // create the new user
-    new HibernatePersistence().saveOrUpdate(user);
+    persistenceManager.saveOrUpdate(user);
 
     LOGGER.info("Created user {}.", user.getId());
 
@@ -187,8 +188,9 @@ public class AuthenticationService {
   }
 
   public void updateUser(String id, User user) {
+    final PersistenceManager persistenceManager = new HibernatePersistence();
     // fetch existing
-    var ref = new HibernatePersistence().get(User.class, id);
+    var ref = persistenceManager.get(User.class, id);
 
     if (ref.isEmpty()) {
       return;
@@ -206,7 +208,7 @@ public class AuthenticationService {
     }
 
     // store it
-    new HibernatePersistence().saveOrUpdate(user);
+    persistenceManager.saveOrUpdate(user);
   }
 
   public void deleteUser(String id) {

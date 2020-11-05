@@ -36,6 +36,7 @@ import io.clouditor.discovery.Asset;
 import io.clouditor.discovery.DiscoveryResult;
 import io.clouditor.discovery.Scan;
 import java.util.Objects;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
@@ -67,21 +68,20 @@ public class HibernateUtils {
           .setProperty("hibernate.enable_lazy_load_no_trans", "true")
           .setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQL94Dialect")
           // Enable an automatic generation of the data model.
-          .setProperty("hibernate.hbm2ddl.auto", "create-drop");
+          .setProperty("hibernate.hbm2ddl.auto", "create");
 
   private static SessionFactory sessionFactory;
+  private static Session session;
 
   /**
-   * Getter for the session factory
+   * Getter for the current session. If there is no current session, it opens a new session.
    *
-   * @return the session factory. Not null.
-   * @throws IllegalStateException if the session factory was not initialized by one of the init
-   *     functions.
+   * @return the current session
+   * @throws IllegalStateException if the database was not initialized.
    */
-  public static SessionFactory getSessionFactory() {
-    if (sessionFactory == null)
-      throw new IllegalStateException("The Database Connection is not initialized.");
-    return sessionFactory;
+  public static Session getSession() {
+    if (session == null) setSession(getSessionFactory().openSession());
+    return session;
   }
 
   /**
@@ -140,9 +140,9 @@ public class HibernateUtils {
   }
 
   /** Closes the session factory. */
-  public static void close() {
-    if (sessionFactory != null) sessionFactory.close();
-    sessionFactory = null;
+  public static synchronized void close() {
+    getSession().close();
+    setSession(null);
   }
 
   private static void setUserNameAndPassword(final String userName, final String password) {
@@ -152,6 +152,20 @@ public class HibernateUtils {
   }
 
   private static void buildSessionFactory() {
-    sessionFactory = CONFIGURATION.buildSessionFactory();
+    setSessionFactory(CONFIGURATION.buildSessionFactory());
+  }
+
+  private static void setSession(final Session sessionToSet) {
+    session = sessionToSet;
+  }
+
+  private static SessionFactory getSessionFactory() {
+    if (sessionFactory == null)
+      throw new IllegalStateException("The Database Connection is not initialized.");
+    return sessionFactory;
+  }
+
+  private static void setSessionFactory(final SessionFactory sessionFactoryToSet) {
+    sessionFactory = sessionFactoryToSet;
   }
 }

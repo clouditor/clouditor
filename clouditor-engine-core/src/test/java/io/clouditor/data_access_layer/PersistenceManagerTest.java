@@ -21,6 +21,7 @@ public class PersistenceManagerTest extends AbstractEngineUnitTest {
   @Test
   void testUser() {
     // arrange
+    this.engine.setDBName("PersistenceManagerTestUserDB");
     this.engine.initDB();
 
     final PersistenceManager sut = new HibernatePersistence();
@@ -41,7 +42,7 @@ public class PersistenceManagerTest extends AbstractEngineUnitTest {
     user3.setFullName("asdf");
     user3.setEmail("asdf");
     user3.setShadow(true);
-    user3.setRoles(List.of("asdf", "qwer", "ycxv", "jklö"));
+    user3.setRoles(List.of("asdf", "qwer", "ycxv", "jkl"));
     sut.saveOrUpdate(user1);
     sut.saveOrUpdate(user2);
     sut.saveOrUpdate(user3);
@@ -58,11 +59,14 @@ public class PersistenceManagerTest extends AbstractEngineUnitTest {
     assertEquals(wantUser1, haveUser1);
     assertEquals(haveUser2, wantUser2);
     assertEquals(user1, have1.orElseThrow());
+
+    this.engine.shutdown();
   }
 
   @Test
   void testComplexRelations() {
     // arrange
+    this.engine.setDBName("PersistenceManagerTestComplexDB");
     this.engine.initDB();
 
     final PersistenceManager sut = new HibernatePersistence();
@@ -127,7 +131,7 @@ public class PersistenceManagerTest extends AbstractEngineUnitTest {
     scan.setDiscovering(true);
     scan.setEnabled(true);
 
-    final DiscoveryResult discoveryResult = new DiscoveryResult(scan);
+    final DiscoveryResult discoveryResult = new DiscoveryResult(scan.getId());
     discoveryResult.setFailed(true);
     discoveryResult.setError("error");
     final Map<String, Asset> discoveredAssets = new HashMap<>();
@@ -188,6 +192,8 @@ public class PersistenceManagerTest extends AbstractEngineUnitTest {
     assertEquals(asset, haveAsset);
     assertEquals(scan, haveScan);
     assertEquals(discoveryResult, haveDiscoveryResult);
+
+    this.engine.shutdown();
   }
 
   @Test
@@ -198,6 +204,7 @@ public class PersistenceManagerTest extends AbstractEngineUnitTest {
 
   @Test
   void closeDB() {
+    this.engine.setDBName("PersistenceManagerTestCloseDB");
     this.engine.initDB();
     HibernateUtils.close();
   }
@@ -205,15 +212,9 @@ public class PersistenceManagerTest extends AbstractEngineUnitTest {
   @Test
   void closeDBTwice() {
     this.engine.initDB();
+    this.engine.setDBName("PersistenceManagerTestCloseTwiceDB");
     HibernateUtils.close();
     HibernateUtils.close();
-  }
-
-  @Test
-  void getUninitializedSessionFactoryBooms() {
-    // arrange// act
-    //noinspection ResultOfMethodCallIgnored
-    Assertions.assertThrows(IllegalStateException.class, HibernateUtils::getSessionFactory);
   }
 
   @Test

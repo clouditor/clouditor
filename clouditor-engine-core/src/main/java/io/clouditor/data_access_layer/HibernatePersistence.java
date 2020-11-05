@@ -31,11 +31,9 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import javax.persistence.*;
 import javax.persistence.criteria.CriteriaQuery;
-import org.hibernate.HibernateException;
+import org.hibernate.NonUniqueObjectException;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
 /**
@@ -45,10 +43,20 @@ import org.hibernate.Transaction;
  */
 public class HibernatePersistence implements PersistenceManager {
 
+  private static final Object LOCK = new Object();
+
   @Override
   public <T> void saveOrUpdate(final T toSave) {
     Objects.requireNonNull(toSave);
-    execConsumer(session -> session.saveOrUpdate(toSave));
+    execConsumer(
+        session -> {
+          try {
+            session.saveOrUpdate(toSave);
+          } catch (NonUniqueObjectException exception) {
+            session.clear();
+            session.saveOrUpdate(toSave);
+          }
+        });
   }
 
   @Override
@@ -90,6 +98,7 @@ public class HibernatePersistence implements PersistenceManager {
 
   @Override
   public <T> int count(final Class<T> countType) {
+    System.out.println("DB: COUNT: countType= " + countType);
     Objects.requireNonNull(countType);
     return listAll(countType).size();
   }
@@ -120,21 +129,15 @@ public class HibernatePersistence implements PersistenceManager {
    * @throws NullPointerException if the <code>function</code> is null.
    */
   private <T> Optional<T> exec(final Function<Session, T> function) {
-    Objects.requireNonNull(function);
-    final SessionFactory sessionFactory = HibernateUtils.getSessionFactory();
-    Optional<T> result = Optional.empty();
-    Optional<Transaction> transaction = Optional.empty();
-    try (final Session session = sessionFactory.openSession()) {
-      transaction = Optional.of(session.beginTransaction());
+    synchronized (LOCK) {
+      final Session session = HibernateUtils.getSession();
+      Transaction transaction = session.getTransaction();
+      if (!transaction.isActive()) transaction = session.beginTransaction();
       // Execute the function.
-      result = Optional.ofNullable(function.apply(session));
+      final Optional<T> result = Optional.ofNullable(function.apply(session));
       session.flush();
-      transaction.ifPresent(EntityTransaction::commit);
-    } catch (final HibernateException exception) {
-      exception.printStackTrace();
-      // Undo the operation if something went wrong.
-      transaction.filter(t -> t.getStatus().canRollback()).ifPresent(EntityTransaction::rollback);
+      if (transaction.isActive()) transaction.commit();
+      return result;
     }
-    return result;
   }
 }

@@ -28,6 +28,7 @@
 package io.clouditor.discovery;
 
 import io.clouditor.data_access_layer.HibernatePersistence;
+import io.clouditor.data_access_layer.PersistenceManager;
 import io.clouditor.events.DiscoveryResultSubscriber;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -152,6 +153,7 @@ public class DiscoveryService {
       future =
           scheduler.scheduleAtFixedRate(
               () -> {
+
                 // set discovering flag to enable its indication in the discovery view
                 scan.setDiscovering(true);
 
@@ -185,13 +187,20 @@ public class DiscoveryService {
                   }
                 }*/
 
+                final PersistenceManager persistenceManager = new HibernatePersistence();
+                for (final Asset asset : result.getDiscoveredAssets().values()) {
+                  persistenceManager.get(Asset.class, asset.getId());
+                  persistenceManager.saveOrUpdate(asset);
+                }
+                persistenceManager.saveOrUpdate(result);
                 scan.setLastResult(result);
 
                 LOGGER.info("Scan {} is now waiting for next execution.", scan.getId());
                 scan.setDiscovering(false);
 
                 // update database
-                new HibernatePersistence().saveOrUpdate(scan);
+
+                persistenceManager.saveOrUpdate(scan);
               },
               0,
               scan.getInterval(),

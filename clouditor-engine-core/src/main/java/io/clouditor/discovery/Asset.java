@@ -51,13 +51,14 @@ public class Asset implements Serializable {
   @LazyCollection(LazyCollectionOption.FALSE)
   private List<EvaluationResult> evaluationResults = new ArrayList<>();
 
-  @CollectionTable(name = "asset_properties", joinColumns = @JoinColumn(name = "key_id"))
+  @CollectionTable(name = "asset_properties", joinColumns = @JoinColumn(name = "asset_id"))
   @MapKeyColumn(name = "mapKey")
+  @LazyCollection(LazyCollectionOption.FALSE)
   @Column(name = "asset_properties")
   private AssetProperties properties = new AssetProperties();
 
   @Id
-  @Column(name = "asset_id", nullable = false)
+  @Column(name = "asset_id")
   private String id;
 
   @Column(name = "asset_name")
@@ -78,7 +79,7 @@ public class Asset implements Serializable {
   }
 
   public void setEvaluationResults(List<EvaluationResult> evaluationResults) {
-    this.evaluationResults = evaluationResults;
+    this.evaluationResults = new ArrayList<>(evaluationResults);
   }
 
   public AssetProperties getProperties() {

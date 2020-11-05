@@ -43,7 +43,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 @Table(name = "scan")
 public class Scan implements PersistentObject<String> {
 
-  static final String FIELD_SCANNER_CLASS = "scanner_class"; // "scannerClass"
+  static final String FIELD_SCANNER_CLASS = "scannerClass";
 
   private static final long DEFAULT_INTERVAL = 5 * 60L;
   private static final long serialVersionUID = 4612570095809897261L;
@@ -99,7 +99,9 @@ public class Scan implements PersistentObject<String> {
   @Column(name = "service")
   private String service;
 
-  @ManyToOne private DiscoveryResult lastResult;
+  @ManyToOne
+  @JoinColumn(name = "last_result")
+  private DiscoveryResult lastResult;
 
   @Column(name = "enabled")
   private boolean enabled;
@@ -214,7 +216,7 @@ public class Scan implements PersistentObject<String> {
         + service
         + '\''
         + ", lastResult="
-        + (lastResult == null ? null : lastResult.getClass())
+        + lastResult
         + ", enabled="
         + enabled
         + ", interval="

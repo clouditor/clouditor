@@ -47,7 +47,7 @@ class UserTest extends AbstractEngineUnitTest {
   @BeforeEach
   protected void setUp() {
     super.setUp();
-
+    this.engine.setDBName("UserTestDB");
     this.engine.initDB();
   }
 

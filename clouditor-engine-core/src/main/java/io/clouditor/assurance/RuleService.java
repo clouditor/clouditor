@@ -31,9 +31,8 @@ import static io.clouditor.assurance.RuleService.RuleVisitor.renderText;
 
 import io.clouditor.assurance.ccl.CCLDeserializer;
 import io.clouditor.data_access_layer.HibernatePersistence;
-import io.clouditor.discovery.AssetService;
-import io.clouditor.discovery.DiscoveryResult;
-import io.clouditor.discovery.DiscoveryService;
+import io.clouditor.data_access_layer.PersistenceManager;
+import io.clouditor.discovery.*;
 import io.clouditor.events.DiscoveryResultSubscriber;
 import io.clouditor.util.FileSystemManager;
 import java.io.IOException;
@@ -69,7 +68,7 @@ public class RuleService extends DiscoveryResultSubscriber {
   @Inject private CertificationService certificationService;
   @Inject private DiscoveryService discoveryService;
 
-  private Map<String, Set<Rule>> rules = new HashMap<>();
+  private final Map<String, Set<Rule>> rules = new HashMap<>();
 
   private RuleService() {
     LOGGER.info("Initializing {}...", this.getClass().getSimpleName());
@@ -276,6 +275,7 @@ public class RuleService extends DiscoveryResultSubscriber {
 
   @Override
   public void handle(DiscoveryResult result) {
+    final PersistenceManager persistenceManager = new HibernatePersistence();
     LOGGER.info("Handling scan result from {}", result.getTimestamp());
 
     for (var asset : result.getDiscoveredAssets().values()) {
@@ -313,6 +313,8 @@ public class RuleService extends DiscoveryResultSubscriber {
             // update asset
             assetService.update(asset);
           });
+      persistenceManager.get(Asset.class, asset.getId());
+      persistenceManager.saveOrUpdate(asset);
     }
 
     // now all assets should be evaluated, now we can update the certification
@@ -320,12 +322,15 @@ public class RuleService extends DiscoveryResultSubscriber {
     this.certificationService.updateCertification();
 
     // update the scanner with latest result
-    var scan = result.getScanId();
+    var scanId = result.getScanId();
 
-    if (scan != null) {
+    if (scanId != null) {
+      for (final Asset asset : result.getDiscoveredAssets().values())
+        persistenceManager.saveOrUpdate(asset);
+      persistenceManager.saveOrUpdate(result);
+      final Scan scan = persistenceManager.get(Scan.class, scanId).orElseThrow();
       scan.setLastResult(result);
-
-      new HibernatePersistence().saveOrUpdate(scan);
+      persistenceManager.saveOrUpdate(scan);
     }
   }
 

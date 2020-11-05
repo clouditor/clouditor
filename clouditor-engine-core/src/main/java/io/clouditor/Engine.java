@@ -113,6 +113,14 @@ public class Engine extends Component {
     // Nothing to do
   }
 
+  public String getDbName() {
+    return this.dbName;
+  }
+
+  public void setDBName(final String dbname) {
+    this.dbName = dbname;
+  }
+
   public int getAPIPort() {
     return this.apiPort;
   }

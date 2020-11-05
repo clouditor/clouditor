@@ -39,11 +39,7 @@ import io.clouditor.assurance.Rule;
 import io.clouditor.assurance.RuleService;
 import io.clouditor.auth.LoginRequest;
 import io.clouditor.auth.User;
-import io.clouditor.discovery.Asset;
-import io.clouditor.discovery.AssetProperties;
-import io.clouditor.discovery.AssetService;
-import io.clouditor.discovery.DiscoveryService;
-import io.clouditor.discovery.Scan;
+import io.clouditor.discovery.*;
 import io.clouditor.util.FileSystemManager;
 import java.io.IOException;
 import java.util.List;
@@ -77,6 +73,8 @@ class EngineAPIResourcesTest extends JerseyTest {
   @BeforeAll
   static void startUpOnce() {
     engine.setDbInMemory(true);
+
+    engine.setDBName("EngineAPIResorcesTestDB");
 
     // init db
     engine.initDB();
@@ -176,7 +174,7 @@ class EngineAPIResourcesTest extends JerseyTest {
   void testGetAssets() {
     var service = engine.getService(AssetService.class);
 
-    var asset = new Asset("ASSET_TYPE", "some-id", "some-name", new AssetProperties());
+    var asset = new Asset(ASSET_TYPE, "some-id", "some-name", new AssetProperties());
 
     service.update(asset);
 
@@ -194,13 +192,14 @@ class EngineAPIResourcesTest extends JerseyTest {
   }
 
   @Test
-  void testGetScans() {
-
+  void testGetScans() throws InterruptedException {
     var service = engine.getService(DiscoveryService.class);
 
     var fakeScan = service.getScan(ASSET_TYPE);
 
     service.enableScan(fakeScan);
+
+    Thread.sleep(fakeScan.getInterval());
 
     var scans =
         target("discovery")
@@ -209,8 +208,6 @@ class EngineAPIResourcesTest extends JerseyTest {
                 AuthenticationFilter.HEADER_AUTHORIZATION,
                 AuthenticationFilter.createAuthorization(this.token))
             .get(new GenericType<List<Scan>>() {});
-
-    // new HibernatePersistence().delete(fakeScan);
 
     assertNotNull(scans);
     assertFalse(scans.isEmpty());

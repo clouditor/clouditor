@@ -47,6 +47,7 @@ public class Certification implements PersistentObject<String>, Serializable {
   private static final long serialVersionUID = 5983205960445678160L;
 
   /** A unique identifier for each certification, such as CSA CCM or Azure CIS. */
+  @JsonProperty
   @Column(name = "certification_id", nullable = false)
   @Id
   private String id;
@@ -67,12 +68,15 @@ public class Certification implements PersistentObject<String>, Serializable {
       inverseJoinColumns = @JoinColumn(name = "control_id", referencedColumnName = "control_id"))
   private List<Control> controls = new ArrayList<>();
 
+  @JsonProperty
   @Column(name = "certification_description")
   private String description;
 
+  @JsonProperty
   @Column(name = "publisher")
   private String publisher;
 
+  @JsonProperty
   @Column(name = "website")
   private String website;
 

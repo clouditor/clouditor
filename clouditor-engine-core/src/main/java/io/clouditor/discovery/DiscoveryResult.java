@@ -29,7 +29,6 @@ package io.clouditor.discovery;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.clouditor.assurance.ccl.AssetType;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -63,25 +62,20 @@ public class DiscoveryResult implements Serializable {
   @Column(name = "error")
   private String error;
 
-  @JsonProperty @OneToOne private final Scan scanId;
+  @JsonProperty
+  @Column(name = "scan_id")
+  private String scanId;
 
   public String getTimestamp() {
     return timestamp;
   }
 
   @JsonCreator
-  public DiscoveryResult(@JsonProperty(value = "scanId") AssetType scanId) {
-    this.scanId = new Scan();
-    this.scanId.setAssetType(scanId);
+  public DiscoveryResult(@JsonProperty(value = "scanId") String scanId) {
+    this.scanId = scanId;
   }
 
-  public DiscoveryResult(final Scan scan) {
-    this.scanId = scan;
-  }
-
-  public DiscoveryResult() {
-    this.scanId = new Scan();
-  }
+  public DiscoveryResult() {}
 
   public void setDiscoveredAssets(Map<String, Asset> discoveredAssets) {
     this.discoveredAssets = discoveredAssets;
@@ -121,12 +115,12 @@ public class DiscoveryResult implements Serializable {
         .toString();
   }
 
-  public Scan getScanId() {
+  public String getScanId() {
     return this.scanId;
   }
 
-  public void setScanId(AssetType scanId) {
-    this.scanId.setAssetType(scanId);
+  public void setScanId(final String scanId) {
+    this.scanId = scanId;
   }
 
   @Override
