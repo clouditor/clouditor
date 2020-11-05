@@ -83,7 +83,7 @@ public abstract class Scanner<C, T> {
 
   @JsonIgnore
   public DiscoveryResult scan(AssetType scanId) {
-    var result = new DiscoveryResult(scanId.getValue());
+    var result = new DiscoveryResult(scanId == null ? null : scanId.getValue());
 
     try {
 
