@@ -7,61 +7,14 @@ import io.clouditor.assurance.*;
 import io.clouditor.assurance.ccl.AssetType;
 import io.clouditor.assurance.ccl.Condition;
 import io.clouditor.assurance.ccl.FilteredAssetType;
-import io.clouditor.auth.User;
 import io.clouditor.discovery.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class PersistenceManagerTest extends AbstractEngineUnitTest {
-
-  @Test
-  void testUser() {
-    // arrange
-    this.engine.setDBName("PersistenceManagerTestUserDB");
-    this.engine.initDB();
-
-    final PersistenceManager sut = new HibernatePersistence();
-    final String userId1 = "user_name1";
-    final User user1 = new User(userId1, "password");
-    user1.setFullName("full_name");
-    user1.setEmail("user.email@mail.de");
-    user1.setShadow(true);
-    user1.setRoles(List.of("role1", "role2", "role3", "role4"));
-    final String userId2 = "user_name2";
-    final User user2 = new User(userId2, "password");
-    user2.setFullName("full_name");
-    user2.setEmail("user.email@mail.de");
-    user2.setShadow(true);
-    user2.setRoles(List.of("role1", "role2", "role3", "role4"));
-    final String userId3 = "user_name3";
-    final User user3 = new User(userId3, "asdf");
-    user3.setFullName("asdf");
-    user3.setEmail("asdf");
-    user3.setShadow(true);
-    user3.setRoles(List.of("asdf", "qwer", "ycxv", "jkl"));
-    sut.saveOrUpdate(user1);
-    sut.saveOrUpdate(user2);
-    sut.saveOrUpdate(user3);
-    final List<User> wantUser1 = List.of(user1, user2, user3);
-    final List<User> wantUser2 = List.of();
-    // act
-    final List<User> haveUser1 = sut.listAll(User.class);
-    final Optional<User> have1 = sut.get(User.class, userId1);
-    sut.delete(user1);
-    sut.delete(User.class, userId2);
-    sut.delete(user3);
-    final List<User> haveUser2 = sut.listAll(User.class);
-    // assert
-    assertEquals(wantUser1, haveUser1);
-    assertEquals(haveUser2, wantUser2);
-    assertEquals(user1, have1.orElseThrow());
-
-    this.engine.shutdown();
-  }
 
   @Test
   void testComplexRelations() {
