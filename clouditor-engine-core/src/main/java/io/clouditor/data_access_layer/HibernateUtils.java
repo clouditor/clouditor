@@ -27,18 +27,13 @@
 
 package io.clouditor.data_access_layer;
 
-import io.clouditor.assurance.*;
-import io.clouditor.assurance.ccl.AssetType;
-import io.clouditor.assurance.ccl.Condition;
-import io.clouditor.assurance.ccl.FilteredAssetType;
-import io.clouditor.auth.User;
-import io.clouditor.discovery.Asset;
-import io.clouditor.discovery.DiscoveryResult;
-import io.clouditor.discovery.Scan;
 import java.util.Objects;
+import java.util.Set;
+import javax.persistence.Entity;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+import org.reflections.Reflections;
 
 /**
  * An Utility class to initialize and configure Hibernate.
@@ -52,19 +47,6 @@ public class HibernateUtils {
   private static final Configuration CONFIGURATION =
       new Configuration()
           .configure()
-          // Add all Entities.
-          .addAnnotatedClass(Domain.class)
-          .addAnnotatedClass(Certification.class)
-          .addAnnotatedClass(Control.class)
-          .addAnnotatedClass(Rule.class)
-          .addAnnotatedClass(EvaluationResult.class)
-          .addAnnotatedClass(AssetType.class)
-          .addAnnotatedClass(FilteredAssetType.class)
-          .addAnnotatedClass(Asset.class)
-          .addAnnotatedClass(Condition.class)
-          .addAnnotatedClass(Scan.class)
-          .addAnnotatedClass(DiscoveryResult.class)
-          .addAnnotatedClass(User.class)
           .setProperty("hibernate.enable_lazy_load_no_trans", "true")
           .setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQL94Dialect")
           // Enable an automatic generation of the data model.
@@ -116,8 +98,7 @@ public class HibernateUtils {
         .setProperty("hibernate.connection.driver_class", "org.postgresql.Driver")
         .setProperty(
             "hibernate.connection.url", "jdbc:postgresql://" + host + ":" + port + "/" + dbName);
-    setUserNameAndPassword(userName, password);
-    buildSessionFactory();
+    finishSessionFactory(userName, password);
   }
 
   /**
@@ -138,8 +119,7 @@ public class HibernateUtils {
     CONFIGURATION
         .setProperty("hibernate.connection.driver_class", "org.h2.Driver")
         .setProperty("hibernate.connection.url", "jdbc:h2:~/" + dbName);
-    setUserNameAndPassword(userName, password);
-    buildSessionFactory();
+    finishSessionFactory(userName, password);
   }
 
   /** Closes the session factory. */
@@ -148,10 +128,24 @@ public class HibernateUtils {
     setSession(null);
   }
 
+  private static void finishSessionFactory(final String userName, final String password) {
+    setUserNameAndPassword(userName, password);
+    setAnnotatedClasses();
+    buildSessionFactory();
+  }
+
   private static void setUserNameAndPassword(final String userName, final String password) {
     CONFIGURATION
         .setProperty("hibernate.connection.username", userName)
         .setProperty("hibernate.connection.password", password);
+  }
+
+  private static void setAnnotatedClasses() {
+    final Reflections reflections = new Reflections("io.clouditor");
+    final Set<Class<?>> entities = reflections.getTypesAnnotatedWith(Entity.class);
+    for (final Class<?> clazz : entities) {
+      CONFIGURATION.addAnnotatedClass(clazz);
+    }
   }
 
   private static void buildSessionFactory() {

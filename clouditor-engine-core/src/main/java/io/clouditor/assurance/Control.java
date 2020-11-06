@@ -28,8 +28,8 @@
 package io.clouditor.assurance;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.clouditor.data_access_layer.PersistentObject;
 import io.clouditor.discovery.AssetService;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -45,7 +45,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity(name = "control")
 @Table(name = "control")
-public class Control implements Serializable {
+public class Control implements PersistentObject<String> {
 
   private static final long serialVersionUID = -6926507274525122348L;
   /**
@@ -98,6 +98,11 @@ public class Control implements Serializable {
   @JsonProperty
   @Column(name = "violations")
   private int violations = 0;
+
+  @Override
+  public String getId() {
+    return this.controlId;
+  }
 
   public void evaluate(ServiceLocator locator) {
     // clear old results

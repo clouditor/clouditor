@@ -31,8 +31,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.clouditor.assurance.ccl.*;
+import io.clouditor.data_access_layer.PersistentObject;
 import io.clouditor.discovery.Asset;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,7 +45,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity(name = "rule")
 @Table(name = "rule")
-public class Rule implements Serializable {
+public class Rule implements PersistentObject<String> {
 
   private static final long serialVersionUID = -5934273783785749037L;
 
@@ -158,6 +158,7 @@ public class Rule implements Serializable {
     return getControls().stream().anyMatch(c -> c.getControlId().equals(controlId));
   }
 
+  @Override
   public String getId() {
     return this.id;
   }

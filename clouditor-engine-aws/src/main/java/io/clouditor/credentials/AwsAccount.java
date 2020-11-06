@@ -35,6 +35,9 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
@@ -150,5 +153,40 @@ public class AwsAccount extends CloudAccount<AwsCredentials>
 
   public void setSecretAccessKey(String secretAccessKey) {
     this.secretAccessKey = secretAccessKey;
+  }
+
+  @Override
+  public String toString() {
+    return new ToStringBuilder(this)
+        .append("accessKeyId", accessKeyId)
+        .append("secretAccessKey", secretAccessKey)
+        .append("region", region)
+        .append("accountId", accountId)
+        .append("user", user)
+        .toString();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+
+    if (o == null || getClass() != o.getClass()) return false;
+
+    AwsAccount that = (AwsAccount) o;
+
+    return new EqualsBuilder()
+        .append(accessKeyId, that.accessKeyId)
+        .append(secretAccessKey, that.secretAccessKey)
+        .append(region, that.region)
+        .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37)
+        .append(accessKeyId)
+        .append(secretAccessKey)
+        .append(region)
+        .toHashCode();
   }
 }

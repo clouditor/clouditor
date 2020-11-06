@@ -33,9 +33,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.clouditor.data_access_layer.PersistentObject;
 import io.clouditor.util.Collection;
 import java.io.IOException;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +41,7 @@ import org.slf4j.LoggerFactory;
 @Table(name = "cloud_account")
 @JsonTypeInfo(use = Id.NAME, property = "provider")
 @Collection("accounts")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public abstract class CloudAccount<T> implements PersistentObject<String> {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(CloudAccount.class);

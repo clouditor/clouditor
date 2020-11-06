@@ -29,7 +29,7 @@ package io.clouditor.discovery;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.clouditor.assurance.EvaluationResult;
-import java.io.Serializable;
+import io.clouditor.data_access_layer.PersistentObject;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.*;
@@ -43,7 +43,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 @Entity(name = "asset")
 @Table(name = "asset")
 @Inheritance(strategy = InheritanceType.JOINED)
-public class Asset implements Serializable {
+public class Asset implements PersistentObject<String> {
 
   private static final long serialVersionUID = -2382328140875227410L;
 
@@ -90,6 +90,7 @@ public class Asset implements Serializable {
     this.properties = properties;
   }
 
+  @Override
   public String getId() {
     return id;
   }

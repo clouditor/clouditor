@@ -30,7 +30,6 @@ package io.clouditor.assurance.ccl;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.clouditor.data_access_layer.PersistentObject;
 import io.clouditor.discovery.AssetProperties;
-import java.io.Serializable;
 import javax.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -40,7 +39,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 @Entity(name = "asset_type")
 @Table(name = "asset_type")
 @Inheritance(strategy = InheritanceType.JOINED)
-public class AssetType implements Serializable, PersistentObject<String> {
+public class AssetType implements PersistentObject<String> {
 
   private static final long serialVersionUID = 5799337361597734304L;
 

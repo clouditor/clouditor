@@ -40,6 +40,9 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 @Entity(name = "azure_account")
 @Table(name = "azure_account")
@@ -145,5 +148,43 @@ public class AzureAccount extends CloudAccount<AzureTokenCredentials> {
 
   public void setDomain(String domain) {
     this.domain = domain;
+  }
+
+  @Override
+  public String toString() {
+    return new ToStringBuilder(this)
+        .append("clientId", clientId)
+        .append("tenantId", tenantId)
+        .append("domain", domain)
+        .append("clientSecret", clientSecret)
+        .append("accountId", accountId)
+        .append("user", user)
+        .toString();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+
+    if (o == null || getClass() != o.getClass()) return false;
+
+    AzureAccount that = (AzureAccount) o;
+
+    return new EqualsBuilder()
+        .append(clientId, that.clientId)
+        .append(tenantId, that.tenantId)
+        .append(domain, that.domain)
+        .append(clientSecret, that.clientSecret)
+        .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37)
+        .append(clientId)
+        .append(tenantId)
+        .append(domain)
+        .append(clientSecret)
+        .toHashCode();
   }
 }

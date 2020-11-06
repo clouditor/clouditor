@@ -27,7 +27,7 @@
 
 package io.clouditor.assurance;
 
-import java.io.Serializable;
+import io.clouditor.data_access_layer.PersistentObject;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -38,7 +38,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 @Entity(name = "cloud_domain")
 @Table(name = "cloud_domain")
-public class Domain implements Serializable {
+public class Domain implements PersistentObject<String> {
 
   private static final long serialVersionUID = -653828659002481929L;
 
@@ -55,6 +55,11 @@ public class Domain implements Serializable {
 
   public Domain(String name) {
     this.name = name;
+  }
+
+  @Override
+  public String getId() {
+    return this.name;
   }
 
   public String getName() {

@@ -198,7 +198,7 @@ public class Scan implements PersistentObject<String> {
   @Override
   public String toString() {
     return new ToStringBuilder(this)
-        .append("scannerClass", scannerClass)
+        .append(FIELD_SCANNER_CLASS, scannerClass)
         .append("assetType", assetType)
         .append("group", group)
         .append("assetIcon", assetIcon)
