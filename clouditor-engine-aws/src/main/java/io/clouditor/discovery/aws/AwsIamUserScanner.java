@@ -82,6 +82,7 @@ public class AwsIamUserScanner extends AwsIamScanner<User> {
         ListAccessKeysRequest.builder().userName(user.userName()).build());
 
     // TODO: this should probably be in a separate scanner
+    // noinspection unchecked
     var keys =
         (ArrayList<AssetProperties>)
             asset.getProperties().getOrDefault("accessKeys", Collections.emptyList());

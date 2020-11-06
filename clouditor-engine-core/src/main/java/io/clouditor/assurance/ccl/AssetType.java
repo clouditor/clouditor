@@ -29,8 +29,8 @@ package io.clouditor.assurance.ccl;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.clouditor.data_access_layer.PersistentObject;
+import io.clouditor.discovery.AssetProperties;
 import java.io.Serializable;
-import java.util.Map;
 import java.util.Objects;
 import javax.persistence.*;
 
@@ -54,7 +54,7 @@ public class AssetType implements Serializable, PersistentObject<String> {
     this.value = value;
   }
 
-  public boolean evaluate() {
+  public boolean evaluate(AssetProperties properties) {
     return true;
   }
 
