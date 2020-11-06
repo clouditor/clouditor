@@ -192,7 +192,7 @@ class EngineAPIResourcesTest extends JerseyTest {
   }
 
   @Test
-  void testGetScans() throws InterruptedException {
+  void testGetScans() {
     var service = engine.getService(DiscoveryService.class);
 
     var fakeScan = service.getScan(ASSET_TYPE);
