@@ -28,7 +28,6 @@
 package io.clouditor.data_access_layer;
 
 import java.util.Objects;
-import java.util.Set;
 import javax.persistence.Entity;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -43,14 +42,6 @@ import org.reflections.Reflections;
 public class HibernateUtils {
 
   private HibernateUtils() {}
-
-  private static final Configuration CONFIGURATION =
-      new Configuration()
-          .configure()
-          .setProperty("hibernate.enable_lazy_load_no_trans", "true")
-          .setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQL94Dialect")
-          // Enable an automatic generation of the data model.
-          .setProperty("hibernate.hbm2ddl.auto", "create");
 
   private static SessionFactory sessionFactory;
   private static Session session;
@@ -94,11 +85,12 @@ public class HibernateUtils {
     if (port < 1024 || port > 49151)
       throw new IllegalArgumentException(
           "The given port: " + port + ", was not in range [1024; 49151].");
-    CONFIGURATION
+    final Configuration configuration = new Configuration();
+    configuration
         .setProperty("hibernate.connection.driver_class", "org.postgresql.Driver")
         .setProperty(
             "hibernate.connection.url", "jdbc:postgresql://" + host + ":" + port + "/" + dbName);
-    finishSessionFactory(userName, password);
+    buildSessionFactory(configuration, userName, password);
   }
 
   /**
@@ -116,10 +108,11 @@ public class HibernateUtils {
     Objects.requireNonNull(dbName);
     Objects.requireNonNull(userName);
     Objects.requireNonNull(password);
-    CONFIGURATION
-        .setProperty("hibernate.connection.driver_class", "org.h2.Driver")
-        .setProperty("hibernate.connection.url", "jdbc:h2:~/" + dbName);
-    finishSessionFactory(userName, password);
+    final Configuration configuration = new Configuration();
+    configuration.configure()
+            .setProperty("hibernate.connection.driver_class", "org.h2.Driver")
+            .setProperty("hibernate.connection.url", "jdbc:h2:~/" + dbName);
+    buildSessionFactory(configuration, userName, password);
   }
 
   /** Closes the session factory. */
@@ -128,28 +121,17 @@ public class HibernateUtils {
     setSession(null);
   }
 
-  private static void finishSessionFactory(final String userName, final String password) {
-    setUserNameAndPassword(userName, password);
-    setAnnotatedClasses();
-    buildSessionFactory();
-  }
-
-  private static void setUserNameAndPassword(final String userName, final String password) {
-    CONFIGURATION
-        .setProperty("hibernate.connection.username", userName)
-        .setProperty("hibernate.connection.password", password);
-  }
-
-  private static void setAnnotatedClasses() {
-    final Reflections reflections = new Reflections("io.clouditor");
-    final Set<Class<?>> entities = reflections.getTypesAnnotatedWith(Entity.class);
-    for (final Class<?> clazz : entities) {
-      CONFIGURATION.addAnnotatedClass(clazz);
-    }
-  }
-
-  private static void buildSessionFactory() {
-    setSessionFactory(CONFIGURATION.buildSessionFactory());
+  private static void buildSessionFactory(final Configuration configuration, final String userName, final String password) {
+    configuration
+            .setProperty("hibernate.enable_lazy_load_no_trans", "true")
+            .setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQL94Dialect")
+            .setProperty("hibernate.hbm2ddl.auto", "create")
+            .setProperty("hibernate.connection.username", userName)
+            .setProperty("hibernate.connection.password", password);
+    new Reflections("io.clouditor")
+            .getTypesAnnotatedWith(Entity.class)
+            .forEach(configuration::addAnnotatedClass);
+    setSessionFactory(configuration.buildSessionFactory());
   }
 
   private static void setSession(final Session sessionToSet) {
