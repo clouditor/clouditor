@@ -263,9 +263,9 @@ public class Scan implements PersistentObject<String> {
   }
 
   /**
-   * A converter for the field <code>scannerClass</code>.
-   * It converts the entity type <code>Class<? expends Scanner></code>
-   * in to the database column type <code>String</code> and back again.
+   * A converter for the field <code>scannerClass</code>. It converts the entity type <code>
+   * Class<? expends Scanner></code> in to the database column type <code>String</code> and back
+   * again.
    *
    * @author Andreas Hager, andreas.hager@aisec.fraunhofer.de
    */
@@ -274,12 +274,11 @@ public class Scan implements PersistentObject<String> {
       implements AttributeConverter<Class<? extends Scanner>, String> {
 
     /**
-     * Converts the value stored in the field <code>scannerClass</code> into the
-     * data representation of a fully qualified class name (FQCN) string to be stored in the database.
+     * Converts the value stored in the field <code>scannerClass</code> into the data representation
+     * of a fully qualified class name (FQCN) string to be stored in the database.
      *
-     * @param attribute  the field value to be converted
-     * @return  the converted string to be stored in the database
-     *          column
+     * @param attribute the field value to be converted
+     * @return the converted string to be stored in the database column
      */
     @Override
     public String convertToDatabaseColumn(final Class<? extends Scanner> attribute) {
@@ -288,12 +287,11 @@ public class Scan implements PersistentObject<String> {
     }
 
     /**
-     * Converts the FQCN String stored in the database column into the
-     * <code>Class<? expends Scanner></code> to be stored in the entity attribute.
+     * Converts the FQCN String stored in the database column into the <code>
+     * Class<? expends Scanner></code> to be stored in the entity attribute.
      *
-     * @param dbData  the FQCN String from the database column to be
-     *                converted
-     * @return  the converted value to be stored in the field
+     * @param dbData the FQCN String from the database column to be converted
+     * @return the converted value to be stored in the field
      */
     @SuppressWarnings("noinspection unchecked")
     @Override
