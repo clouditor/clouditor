@@ -272,13 +272,13 @@ public class Scan implements PersistentObject<String> {
       else return attribute.getCanonicalName();
     }
 
+    @SuppressWarnings("noinspection unchecked")
     @Override
     public Class<? extends Scanner> convertToEntityAttribute(final String dbData) {
       Class<? extends Scanner> resultValue;
       try {
         if (dbData.equals("")) resultValue = null;
-        else // noinspection unchecked
-        resultValue = (Class<? extends Scanner>) Class.forName(dbData);
+        else resultValue = (Class<? extends Scanner>) Class.forName(dbData);
       } catch (ClassNotFoundException e) {
         throw new IllegalStateException(
             "Unable to convert the FQCN: " + dbData + ", to Class<? extends Scanner>.");
