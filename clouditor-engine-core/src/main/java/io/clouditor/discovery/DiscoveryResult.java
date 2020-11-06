@@ -30,7 +30,7 @@ package io.clouditor.discovery;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import javax.persistence.*;
@@ -49,7 +49,7 @@ public class DiscoveryResult implements Serializable {
 
   @Id
   @Column(name = "time_stamp", nullable = false)
-  private final String timestamp = new Date().toString();
+  private final Instant timestamp = Instant.now();
 
   @ManyToMany
   @LazyCollection(LazyCollectionOption.FALSE)
@@ -66,7 +66,7 @@ public class DiscoveryResult implements Serializable {
   @Column(name = "scan_id")
   private String scanId;
 
-  public String getTimestamp() {
+  public Instant getTimestamp() {
     return timestamp;
   }
 

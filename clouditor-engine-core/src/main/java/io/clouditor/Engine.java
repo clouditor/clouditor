@@ -201,7 +201,8 @@ public class Engine extends Component {
   }
 
   public void initDB() {
-    if (this.dbInMemory) HibernateUtils.init(this.dbName, this.dbUserName, this.dbPassword);
+    if (this.dbInMemory)
+      HibernateUtils.initInMemoryH2(this.dbName, this.dbUserName, this.dbPassword);
     else {
       HibernateUtils.init(this.dbHost, this.dbPort, this.dbName, this.dbUserName, this.dbPassword);
       Runtime.getRuntime().addShutdownHook(new Thread(HibernateUtils::close));

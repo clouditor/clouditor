@@ -128,7 +128,8 @@ public class HibernateUtils {
    * @throws NullPointerException if <code>dbName</code>, <code>userName</code> or <code>password
    *     </code> is null.
    */
-  public static void init(final String dbName, final String userName, final String password) {
+  public static void initInMemoryH2(
+      final String dbName, final String userName, final String password) {
     Objects.requireNonNull(dbName);
     Objects.requireNonNull(userName);
     Objects.requireNonNull(password);

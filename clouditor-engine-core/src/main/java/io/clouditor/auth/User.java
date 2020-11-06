@@ -183,7 +183,6 @@ public class User implements Principal, PersistentObject<String> {
     return new EqualsBuilder()
         .append(isShadow(), user.isShadow())
         .append(getUsername(), user.getUsername())
-        .append(getPassword(), user.getPassword())
         .append(getFullName(), user.getFullName())
         .append(getEmail(), user.getEmail())
         .append(roles, user.roles)
