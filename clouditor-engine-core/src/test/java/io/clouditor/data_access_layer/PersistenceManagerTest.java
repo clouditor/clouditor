@@ -14,7 +14,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class PersistenceManagerTest extends AbstractEngineUnitTest {
+class PersistenceManagerTest extends AbstractEngineUnitTest {
 
   @Test
   void testComplexRelations() {
@@ -150,25 +150,18 @@ public class PersistenceManagerTest extends AbstractEngineUnitTest {
   }
 
   @Test
-  void closeDB() {
-    this.engine.setDBName("PersistenceManagerTestCloseDB");
-    this.engine.initDB();
-    HibernateUtils.close();
-  }
-
-  @Test
-  void closeDBTwice() {
-    this.engine.initDB();
-    this.engine.setDBName("PersistenceManagerTestCloseTwiceDB");
-    HibernateUtils.close();
-    HibernateUtils.close();
-  }
-
-  @Test
   void initWithFalsePortBooms() {
     // arrange // act
     Assertions.assertThrows(
         IllegalArgumentException.class,
         () -> HibernateUtils.init("host", -1, "dbName", "userName", "password"));
+  }
+
+  @Test
+  void initWithFalsePortBooms2() {
+    // arrange // act
+    Assertions.assertThrows(
+            IllegalArgumentException.class,
+            () -> HibernateUtils.init("host", 999999, "dbName", "userName", "password"));
   }
 }

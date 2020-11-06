@@ -53,6 +53,9 @@ public class HibernatePersistence implements PersistenceManager {
           try {
             session.saveOrUpdate(toSave);
           } catch (NonUniqueObjectException exception) {
+            // There are different objects (by reference)
+            // with the same PrimaryKey  (@javax.persistence.Id)
+            // then the session must be cleared to avoid collisions.
             session.clear();
             session.saveOrUpdate(toSave);
           }
@@ -98,7 +101,6 @@ public class HibernatePersistence implements PersistenceManager {
 
   @Override
   public <T> int count(final Class<T> countType) {
-    System.out.println("DB: COUNT: countType= " + countType);
     Objects.requireNonNull(countType);
     return listAll(countType).size();
   }
@@ -136,7 +138,7 @@ public class HibernatePersistence implements PersistenceManager {
       // Execute the function.
       final Optional<T> result = Optional.ofNullable(function.apply(session));
       session.flush();
-      if (transaction.isActive()) transaction.commit();
+      transaction.commit();
       return result;
     }
   }
