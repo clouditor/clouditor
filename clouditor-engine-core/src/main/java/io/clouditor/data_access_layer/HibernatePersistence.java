@@ -43,8 +43,6 @@ import org.hibernate.Transaction;
  */
 public class HibernatePersistence implements PersistenceManager {
 
-  private static final Object LOCK = new Object();
-
   @Override
   public <T> void saveOrUpdate(final T toSave) {
     Objects.requireNonNull(toSave);
@@ -131,7 +129,7 @@ public class HibernatePersistence implements PersistenceManager {
    * @throws NullPointerException if the <code>function</code> is null.
    */
   private <T> Optional<T> exec(final Function<Session, T> function) {
-    synchronized (LOCK) {
+    synchronized (HibernateUtils.LOCK) {
       final Session session = HibernateUtils.getSession();
       Transaction transaction = session.getTransaction();
       if (!transaction.isActive()) transaction = session.beginTransaction();

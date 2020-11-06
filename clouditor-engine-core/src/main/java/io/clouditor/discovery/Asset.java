@@ -151,23 +151,22 @@ public class Asset implements Serializable {
     Asset asset = (Asset) o;
 
     return new EqualsBuilder()
-        .append(
-            new ArrayList<>(getEvaluationResults()), new ArrayList<>(asset.getEvaluationResults()))
-        .append(getProperties(), asset.getProperties())
-        .append(getId(), asset.getId())
-        .append(getName(), asset.getName())
-        .append(getType(), asset.getType())
+        .append(new ArrayList<>(evaluationResults), new ArrayList<>(asset.evaluationResults))
+        .append(properties, asset.properties)
+        .append(id, asset.id)
+        .append(name, asset.name)
+        .append(type, asset.type)
         .isEquals();
   }
 
   @Override
   public int hashCode() {
     return new HashCodeBuilder(17, 37)
-        .append(getEvaluationResults())
-        .append(getProperties())
-        .append(getId())
-        .append(getName())
-        .append(getType())
+        .append(evaluationResults)
+        .append(properties)
+        .append(id)
+        .append(name)
+        .append(type)
         .toHashCode();
   }
 }

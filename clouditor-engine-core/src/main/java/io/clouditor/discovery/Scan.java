@@ -34,6 +34,7 @@ import java.lang.reflect.InvocationTargetException;
 import javax.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
  * A {@link Scan} holds information and configuration about a scan that is regularly executed. The
@@ -196,32 +197,18 @@ public class Scan implements PersistentObject<String> {
 
   @Override
   public String toString() {
-    return "Scan{"
-        + "scannerClass="
-        + scannerClass
-        + ", assetType="
-        + assetType
-        + ", assetIcon='"
-        + assetIcon
-        + '\''
-        + ", group='"
-        + group
-        + '\''
-        + ", description='"
-        + description
-        + '\''
-        + ", isDiscovering="
-        + isDiscovering
-        + ", service='"
-        + service
-        + '\''
-        + ", lastResult="
-        + lastResult
-        + ", enabled="
-        + enabled
-        + ", interval="
-        + interval
-        + '}';
+    return new ToStringBuilder(this)
+        .append("scannerClass", scannerClass)
+        .append("assetType", assetType)
+        .append("group", group)
+        .append("assetIcon", assetIcon)
+        .append("description", description)
+        .append("isDiscovering", isDiscovering)
+        .append("service", service)
+        .append("lastResult", lastResult)
+        .append("enabled", enabled)
+        .append("interval", interval)
+        .toString();
   }
 
   @Override
@@ -233,32 +220,32 @@ public class Scan implements PersistentObject<String> {
     Scan scan = (Scan) o;
 
     return new EqualsBuilder()
-        .append(isDiscovering(), scan.isDiscovering())
-        .append(isEnabled(), scan.isEnabled())
-        .append(getInterval(), scan.getInterval())
-        .append(getScannerClass(), scan.getScannerClass())
-        .append(getAssetType(), scan.getAssetType())
-        .append(getGroup(), scan.getGroup())
+        .append(isDiscovering, scan.isDiscovering)
+        .append(enabled, scan.enabled)
+        .append(interval, scan.interval)
+        .append(scannerClass, scan.scannerClass)
+        .append(assetType, scan.assetType)
+        .append(group, scan.group)
         .append(assetIcon, scan.assetIcon)
         .append(description, scan.description)
-        .append(getService(), scan.getService())
-        .append(getLastResult(), scan.getLastResult())
+        .append(service, scan.service)
+        .append(lastResult, scan.lastResult)
         .isEquals();
   }
 
   @Override
   public int hashCode() {
     return new HashCodeBuilder(17, 37)
-        .append(getScannerClass())
-        .append(getAssetType())
-        .append(getGroup())
+        .append(scannerClass)
+        .append(assetType)
+        .append(group)
         .append(assetIcon)
         .append(description)
-        .append(isDiscovering())
-        .append(getService())
-        .append(getLastResult())
-        .append(isEnabled())
-        .append(getInterval())
+        .append(isDiscovering)
+        .append(service)
+        .append(lastResult)
+        .append(enabled)
+        .append(interval)
         .toHashCode();
   }
 

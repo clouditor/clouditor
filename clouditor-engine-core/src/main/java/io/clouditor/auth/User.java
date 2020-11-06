@@ -38,6 +38,7 @@ import java.util.List;
 import javax.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
@@ -152,24 +153,13 @@ public class User implements Principal, PersistentObject<String> {
 
   @Override
   public String toString() {
-    return "User{"
-        + "username='"
-        + username
-        + '\''
-        + ", password='"
-        + password
-        + '\''
-        + ", fullName='"
-        + fullName
-        + '\''
-        + ", email='"
-        + email
-        + '\''
-        + ", shadow="
-        + shadow
-        + ", roles="
-        + roles
-        + '}';
+    return new ToStringBuilder(this)
+        .append("username", username)
+        .append("fullName", fullName)
+        .append("email", email)
+        .append("shadow", shadow)
+        .append("roles", roles)
+        .toString();
   }
 
   @Override
@@ -181,22 +171,21 @@ public class User implements Principal, PersistentObject<String> {
     User user = (User) o;
 
     return new EqualsBuilder()
-        .append(isShadow(), user.isShadow())
-        .append(getUsername(), user.getUsername())
-        .append(getFullName(), user.getFullName())
-        .append(getEmail(), user.getEmail())
-        .append(roles, user.roles)
+        .append(shadow, user.shadow)
+        .append(username, user.username)
+        .append(fullName, user.fullName)
+        .append(email, user.email)
+        .append(new ArrayList<>(roles), new ArrayList<>(user.roles))
         .isEquals();
   }
 
   @Override
   public int hashCode() {
     return new HashCodeBuilder(17, 37)
-        .append(getUsername())
-        .append(getPassword())
-        .append(getFullName())
-        .append(getEmail())
-        .append(isShadow())
+        .append(username)
+        .append(fullName)
+        .append(email)
+        .append(shadow)
         .append(roles)
         .toHashCode();
   }

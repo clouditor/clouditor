@@ -34,6 +34,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 @Entity(name = "cloud_domain")
 @Table(name = "cloud_domain")
@@ -69,6 +70,14 @@ public class Domain implements Serializable {
   }
 
   @Override
+  public String toString() {
+    return new ToStringBuilder(this)
+        .append("description", description)
+        .append("name", name)
+        .toString();
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) return true;
 
@@ -78,12 +87,12 @@ public class Domain implements Serializable {
 
     return new EqualsBuilder()
         .append(description, domain.description)
-        .append(getName(), domain.getName())
+        .append(name, domain.name)
         .isEquals();
   }
 
   @Override
   public int hashCode() {
-    return new HashCodeBuilder(17, 37).append(description).append(getName()).toHashCode();
+    return new HashCodeBuilder(17, 37).append(description).append(name).toHashCode();
   }
 }

@@ -73,6 +73,8 @@ public class HibernateUtils {
   private static SessionFactory sessionFactory;
   private static Session session;
 
+  static final Object LOCK = new Object();
+
   /**
    * Getter for the current session. If there is no current session, it opens a new session.
    *

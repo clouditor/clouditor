@@ -30,7 +30,7 @@ package io.clouditor.discovery;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
-import java.time.Instant;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import javax.persistence.*;
@@ -49,7 +49,7 @@ public class DiscoveryResult implements Serializable {
 
   @Id
   @Column(name = "time_stamp", nullable = false)
-  private final Instant timestamp = Instant.now();
+  private Date date;
 
   @ManyToMany
   @LazyCollection(LazyCollectionOption.FALSE)
@@ -66,13 +66,18 @@ public class DiscoveryResult implements Serializable {
   @Column(name = "scan_id")
   private String scanId;
 
-  public Instant getTimestamp() {
-    return timestamp;
-  }
-
   @JsonCreator
   public DiscoveryResult(@JsonProperty(value = "scanId") String scanId) {
     this.scanId = scanId;
+    date = new Date();
+  }
+
+  public Date getDate() {
+    return date;
+  }
+
+  public void setDate(final Date date) {
+    this.date = date;
   }
 
   public DiscoveryResult() {}
@@ -105,22 +110,22 @@ public class DiscoveryResult implements Serializable {
     this.error = error;
   }
 
-  @Override
-  public String toString() {
-    return new ToStringBuilder(this, ToStringStyle.JSON_STYLE)
-        .append("timestamp", timestamp)
-        .append("discoveredAssets", discoveredAssets)
-        .append("failed", failed)
-        .append("error", error)
-        .toString();
-  }
-
   public String getScanId() {
     return this.scanId;
   }
 
   public void setScanId(final String scanId) {
     this.scanId = scanId;
+  }
+
+  @Override
+  public String toString() {
+    return new ToStringBuilder(this, ToStringStyle.JSON_STYLE)
+        .append("timestamp", date)
+        .append("discoveredAssets", discoveredAssets)
+        .append("failed", failed)
+        .append("error", error)
+        .toString();
   }
 
   @Override
@@ -132,22 +137,22 @@ public class DiscoveryResult implements Serializable {
     DiscoveryResult that = (DiscoveryResult) o;
 
     return new EqualsBuilder()
-        .append(isFailed(), that.isFailed())
-        .append(getTimestamp(), that.getTimestamp())
-        .append(getDiscoveredAssets(), that.getDiscoveredAssets())
-        .append(getError(), that.getError())
-        .append(getScanId(), that.getScanId())
+        .append(failed, that.failed)
+        .append(date, that.date)
+        .append(discoveredAssets, that.discoveredAssets)
+        .append(error, that.error)
+        .append(scanId, that.scanId)
         .isEquals();
   }
 
   @Override
   public int hashCode() {
     return new HashCodeBuilder(17, 37)
-        .append(getTimestamp())
-        .append(getDiscoveredAssets())
-        .append(isFailed())
-        .append(getError())
-        .append(getScanId())
+        .append(date)
+        .append(discoveredAssets)
+        .append(failed)
+        .append(error)
+        .append(scanId)
         .toHashCode();
   }
 }

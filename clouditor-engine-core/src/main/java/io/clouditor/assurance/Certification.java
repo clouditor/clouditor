@@ -37,6 +37,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Size;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
@@ -125,22 +126,13 @@ public class Certification implements PersistentObject<String>, Serializable {
 
   @Override
   public String toString() {
-    return "Certification{"
-        + "id='"
-        + id
-        + '\''
-        + ", controls="
-        + controls
-        + ", description='"
-        + description
-        + '\''
-        + ", publisher='"
-        + publisher
-        + '\''
-        + ", website='"
-        + website
-        + '\''
-        + '}';
+    return new ToStringBuilder(this)
+        .append("id", id)
+        .append("controls", controls)
+        .append("description", description)
+        .append("publisher", publisher)
+        .append("website", website)
+        .toString();
   }
 
   @Override
@@ -152,22 +144,22 @@ public class Certification implements PersistentObject<String>, Serializable {
     Certification that = (Certification) o;
 
     return new EqualsBuilder()
-        .append(getId(), that.getId())
-        .append(new ArrayList<>(getControls()), new ArrayList<>(that.getControls()))
-        .append(getDescription(), that.getDescription())
-        .append(getPublisher(), that.getPublisher())
-        .append(getWebsite(), that.getWebsite())
+        .append(id, that.id)
+        .append(new ArrayList<>(controls), new ArrayList<>(that.controls))
+        .append(description, that.description)
+        .append(publisher, that.publisher)
+        .append(website, that.website)
         .isEquals();
   }
 
   @Override
   public int hashCode() {
     return new HashCodeBuilder(17, 37)
-        .append(getId())
-        .append(getControls())
-        .append(getDescription())
-        .append(getPublisher())
-        .append(getWebsite())
+        .append(id)
+        .append(controls)
+        .append(description)
+        .append(publisher)
+        .append(website)
         .toHashCode();
   }
 }

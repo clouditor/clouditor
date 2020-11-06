@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 import javax.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
@@ -182,6 +183,19 @@ public class Rule implements Serializable {
   }
 
   @Override
+  public String toString() {
+    return new ToStringBuilder(this)
+        .append("conditions", conditions)
+        .append("active", active)
+        .append("name", name)
+        .append("description", description)
+        .append("icon", icon)
+        .append("controls", controls)
+        .append("id", id)
+        .toString();
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) return true;
 
@@ -190,50 +204,26 @@ public class Rule implements Serializable {
     Rule rule = (Rule) o;
 
     return new EqualsBuilder()
-        .append(isActive(), rule.isActive())
-        .append(new ArrayList<>(getConditions()), new ArrayList<>(rule.getConditions()))
-        .append(getName(), rule.getName())
-        .append(getDescription(), rule.getDescription())
+        .append(active, rule.active)
+        .append(new ArrayList<>(conditions), new ArrayList<>(rule.conditions))
+        .append(name, rule.name)
+        .append(description, rule.description)
         .append(icon, rule.icon)
-        .append(new ArrayList<>(getControls()), new ArrayList<>(rule.getControls()))
-        .append(getId(), rule.getId())
+        .append(new ArrayList<>(controls), new ArrayList<>(rule.controls))
+        .append(id, rule.id)
         .isEquals();
   }
 
   @Override
   public int hashCode() {
     return new HashCodeBuilder(17, 37)
-        .append(getConditions())
-        .append(isActive())
-        .append(getName())
-        .append(getDescription())
+        .append(conditions)
+        .append(active)
+        .append(name)
+        .append(description)
         .append(icon)
-        .append(getControls())
-        .append(getId())
+        .append(controls)
+        .append(id)
         .toHashCode();
-  }
-
-  @Override
-  public String toString() {
-    return "Rule{"
-        + "conditions="
-        + conditions
-        + ", active="
-        + active
-        + ", name='"
-        + name
-        + '\''
-        + ", description='"
-        + description
-        + '\''
-        + ", icon='"
-        + icon
-        + '\''
-        + ", controls="
-        + controls
-        + ", id='"
-        + id
-        + '\''
-        + '}';
   }
 }

@@ -39,6 +39,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
@@ -117,6 +118,21 @@ public class EvaluationResult implements PersistentObject<String> {
   }
 
   @Override
+  public String getId() {
+    return this.timeStamp;
+  }
+
+  @Override
+  public String toString() {
+    return new ToStringBuilder(this)
+        .append("timeStamp", timeStamp)
+        .append("rule", rule)
+        .append("evaluatedProperties", evaluatedProperties)
+        .append("failedConditions", failedConditions)
+        .toString();
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) return true;
 
@@ -125,40 +141,20 @@ public class EvaluationResult implements PersistentObject<String> {
     EvaluationResult that = (EvaluationResult) o;
 
     return new EqualsBuilder()
-        .append(getTimeStamp(), that.getTimeStamp())
-        .append(getRule(), that.getRule())
+        .append(timeStamp, that.timeStamp)
+        .append(rule, that.rule)
         .append(evaluatedProperties, that.evaluatedProperties)
-        .append(new ArrayList<>(getFailedConditions()), new ArrayList<>(that.getFailedConditions()))
+        .append(new ArrayList<>(failedConditions), new ArrayList<>(that.failedConditions))
         .isEquals();
   }
 
   @Override
   public int hashCode() {
     return new HashCodeBuilder(17, 37)
-        .append(getTimeStamp())
-        .append(getRule())
+        .append(timeStamp)
+        .append(rule)
         .append(evaluatedProperties)
-        .append(getFailedConditions())
+        .append(failedConditions)
         .toHashCode();
-  }
-
-  @Override
-  public String getId() {
-    return this.timeStamp;
-  }
-
-  @Override
-  public String toString() {
-    return "EvaluationResult{"
-        + "timeStamp='"
-        + timeStamp
-        + '\''
-        + ", rule="
-        + rule
-        + ", evaluatedProperties="
-        + evaluatedProperties
-        + ", failedConditions="
-        + failedConditions
-        + '}';
   }
 }

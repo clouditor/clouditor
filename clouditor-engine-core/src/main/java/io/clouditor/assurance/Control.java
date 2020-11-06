@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 import javax.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
@@ -143,38 +144,6 @@ public class Control implements Serializable {
     this.controlId = controlId;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    var control = (Control) o;
-
-    return new EqualsBuilder()
-        .append(new ArrayList<>(rules), new ArrayList<>(control.rules))
-        .append(controlId, control.controlId)
-        .append(description, control.description)
-        .append(domain, control.domain)
-        .append(name, control.name)
-        .isEquals();
-  }
-
-  @Override
-  public int hashCode() {
-    return new HashCodeBuilder(17, 37)
-        .append(List.of(rules))
-        .append(controlId)
-        .append(description)
-        .append(domain)
-        .append(name)
-        .toHashCode();
-  }
-
   public Fulfillment getFulfilled() {
     return fulfilled;
   }
@@ -243,31 +212,56 @@ public class Control implements Serializable {
 
   @Override
   public String toString() {
-    return "Control{"
-        + "rules="
-        + rules
-        + ", resultsLength="
-        + results.size()
-        + ", controlId='"
-        + controlId
-        + '\''
-        + ", description='"
-        + description
-        + '\''
-        + ", fulfilled="
-        + fulfilled
-        + ", domain="
-        + domain
-        + ", name='"
-        + name
-        + '\''
-        + ", automated="
-        + automated
-        + ", active="
-        + active
-        + ", violations="
-        + violations
-        + '}';
+    return new ToStringBuilder(this)
+        .append("rules", rules)
+        .append("results", results)
+        .append("controlId", controlId)
+        .append("description", description)
+        .append("fulfilled", fulfilled)
+        .append("domain", domain)
+        .append("name", name)
+        .append("automated", automated)
+        .append("active", active)
+        .append("violations", violations)
+        .toString();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Control control = (Control) o;
+
+    return new EqualsBuilder()
+        .append(automated, control.automated)
+        .append(active, control.active)
+        .append(violations, control.violations)
+        .append(new ArrayList<>(rules), new ArrayList<>(control.rules))
+        .append(results, control.results)
+        .append(controlId, control.controlId)
+        .append(description, control.description)
+        .append(fulfilled, control.fulfilled)
+        .append(domain, control.domain)
+        .append(name, control.name)
+        .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37)
+        .append(rules)
+        .append(results)
+        .append(controlId)
+        .append(description)
+        .append(fulfilled)
+        .append(domain)
+        .append(name)
+        .append(automated)
+        .append(active)
+        .append(violations)
+        .toHashCode();
   }
 
   public enum Fulfillment {

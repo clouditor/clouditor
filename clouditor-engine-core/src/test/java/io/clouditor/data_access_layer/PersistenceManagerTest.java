@@ -8,7 +8,7 @@ import io.clouditor.assurance.ccl.AssetType;
 import io.clouditor.assurance.ccl.Condition;
 import io.clouditor.assurance.ccl.FilteredAssetType;
 import io.clouditor.discovery.*;
-import java.time.Instant;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,7 +91,7 @@ class PersistenceManagerTest extends AbstractEngineUnitTest {
     final Map<String, Asset> discoveredAssets = new HashMap<>();
     discoveredAssets.put(assetID, asset);
     discoveryResult.setDiscoveredAssets(discoveredAssets);
-    final Instant discoverResultID = discoveryResult.getTimestamp();
+    final Date discoverResultID = discoveryResult.getDate();
 
     // act
     sut.saveOrUpdate(domain);

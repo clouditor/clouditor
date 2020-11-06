@@ -31,8 +31,10 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.clouditor.data_access_layer.PersistentObject;
 import io.clouditor.discovery.AssetProperties;
 import java.io.Serializable;
-import java.util.Objects;
 import javax.persistence.*;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "@class")
 @Entity(name = "asset_type")
@@ -59,25 +61,28 @@ public class AssetType implements Serializable, PersistentObject<String> {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    AssetType assetType = (AssetType) o;
-    return Objects.equals(getValue(), assetType.getValue());
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(getValue());
+  public String getId() {
+    return value;
   }
 
   @Override
   public String toString() {
-    return "AssetType{" + "value='" + value + '\'' + '}';
+    return new ToStringBuilder(this).append("value", value).toString();
   }
 
   @Override
-  public String getId() {
-    return value;
+  public boolean equals(Object o) {
+    if (this == o) return true;
+
+    if (o == null || getClass() != o.getClass()) return false;
+
+    AssetType assetType = (AssetType) o;
+
+    return new EqualsBuilder().append(value, assetType.value).isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37).append(value).toHashCode();
   }
 }
