@@ -56,6 +56,7 @@ public class AwsIamUserScanner extends AwsIamScanner<User> {
     return this.api.listUsers().users();
   }
 
+  @SuppressWarnings("noinspection unchecked")
   @Override
   public Asset transform(User user) throws ScanException {
     var asset = super.transform(user);
@@ -82,7 +83,6 @@ public class AwsIamUserScanner extends AwsIamScanner<User> {
         ListAccessKeysRequest.builder().userName(user.userName()).build());
 
     // TODO: this should probably be in a separate scanner
-    // noinspection unchecked
     var keys =
         (ArrayList<AssetProperties>)
             asset.getProperties().getOrDefault("accessKeys", Collections.emptyList());

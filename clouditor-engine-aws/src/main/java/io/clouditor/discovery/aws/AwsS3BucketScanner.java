@@ -95,19 +95,7 @@ public class AwsS3BucketScanner extends AwsScanner<S3Client, S3ClientBuilder, Bu
             regionClients.getOrDefault(
                 region,
                 S3Client.builder().credentialsProvider(account).region(Region.of(region)).build());
-      } /*
-          final Class<AwsAccount> resultType = AwsAccount.class;
-          final Optional<AwsAccount> account = new Persistence().get(resultType, "AWS");
-
-          if (account.isEmpty()) {
-            throw SdkClientException.create("AWS account not configured");
-          }
-
-          client =
-              regionClients.getOrDefault(
-                  region,
-                  S3Client.builder().credentialsProvider(account.get()).region(Region.of(region)).build());
-        }*/
+      }
     }
 
     enrich(
