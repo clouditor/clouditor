@@ -35,7 +35,16 @@ import io.clouditor.discovery.AssetProperties;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import javax.persistence.*;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.MapKeyColumn;
+import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -78,10 +87,7 @@ public class EvaluationResult implements PersistentObject<String> {
   private List<Condition> failedConditions = new ArrayList<>();
 
   public EvaluationResult() {
-    rule =
-        new Rule() {
-          private static final long serialVersionUID = 4722006617102464025L;
-        };
+    rule = new Rule();
     evaluatedProperties = null;
   }
 
