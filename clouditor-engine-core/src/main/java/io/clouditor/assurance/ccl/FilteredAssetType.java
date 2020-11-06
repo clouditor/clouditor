@@ -48,7 +48,6 @@ public class FilteredAssetType extends AssetType {
     this.assetExpression = assetExpression;
   }
 
-  @Override
   public boolean evaluate(Map properties) {
     return this.getAssetExpression().evaluate(properties);
   }

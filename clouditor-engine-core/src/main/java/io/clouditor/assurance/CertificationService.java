@@ -170,9 +170,6 @@ public class CertificationService {
       this.startMonitoring(control);
     }*/
 
-    // persist it
-    // new HibernatePersistence().saveOrUpdate(certification);
-
     // update
     this.updateCertification();
   }

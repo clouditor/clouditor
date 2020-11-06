@@ -54,7 +54,7 @@ public class AssetType implements Serializable, PersistentObject<String> {
     this.value = value;
   }
 
-  public boolean evaluate(Map properties) {
+  public boolean evaluate() {
     return true;
   }
 

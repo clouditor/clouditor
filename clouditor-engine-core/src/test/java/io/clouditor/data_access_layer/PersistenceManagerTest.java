@@ -161,7 +161,7 @@ class PersistenceManagerTest extends AbstractEngineUnitTest {
   void initWithFalsePortBooms2() {
     // arrange // act
     Assertions.assertThrows(
-            IllegalArgumentException.class,
-            () -> HibernateUtils.init("host", 999999, "dbName", "userName", "password"));
+        IllegalArgumentException.class,
+        () -> HibernateUtils.init("host", 999999, "dbName", "userName", "password"));
   }
 }

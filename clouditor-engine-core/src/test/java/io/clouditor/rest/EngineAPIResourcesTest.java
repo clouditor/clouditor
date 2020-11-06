@@ -199,8 +199,6 @@ class EngineAPIResourcesTest extends JerseyTest {
 
     service.enableScan(fakeScan);
 
-    Thread.sleep(fakeScan.getInterval());
-
     var scans =
         target("discovery")
             .request()

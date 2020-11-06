@@ -278,9 +278,10 @@ public class Scan implements PersistentObject<String> {
       try {
         if (dbData.equals("")) resultValue = null;
         else // noinspection unchecked
-          resultValue = (Class<? extends Scanner>) Class.forName(dbData);
+        resultValue = (Class<? extends Scanner>) Class.forName(dbData);
       } catch (ClassNotFoundException e) {
-        throw new IllegalStateException("Unable to convert the FQCN: " + dbData + ", to Class<? extends Scanner>.");
+        throw new IllegalStateException(
+            "Unable to convert the FQCN: " + dbData + ", to Class<? extends Scanner>.");
       }
       return resultValue;
     }
