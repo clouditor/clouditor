@@ -30,7 +30,7 @@ package io.clouditor.discovery;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import javax.persistence.*;
@@ -48,19 +48,17 @@ public class DiscoveryResult implements Serializable {
   private static final long serialVersionUID = -7032902561471865653L;
 
   @Id
-  @Column(name = "time_stamp", nullable = false)
-  private Date date;
+  @Column(nullable = false)
+  private Instant timestamp;
 
   @ManyToMany
   @LazyCollection(LazyCollectionOption.FALSE)
   @Embedded
   private Map<String, Asset> discoveredAssets = new HashMap<>();
 
-  @Column(name = "failed")
-  private boolean failed = false;
+  @Column() private boolean failed = false;
 
-  @Column(name = "error")
-  private String error;
+  @Column() private String error;
 
   @JsonProperty
   @Column(name = "scan_id")
@@ -68,16 +66,16 @@ public class DiscoveryResult implements Serializable {
 
   @JsonCreator
   public DiscoveryResult(@JsonProperty(value = "scanId") String scanId) {
+    this.timestamp = Instant.now();
     this.scanId = scanId;
-    date = new Date();
   }
 
-  public Date getDate() {
-    return date;
+  public Instant getTimestamp() {
+    return timestamp;
   }
 
-  public void setDate(final Date date) {
-    this.date = date;
+  public void setTimestamp(final Instant timestamp) {
+    this.timestamp = timestamp;
   }
 
   public DiscoveryResult() {}
@@ -121,7 +119,7 @@ public class DiscoveryResult implements Serializable {
   @Override
   public String toString() {
     return new ToStringBuilder(this, ToStringStyle.JSON_STYLE)
-        .append("timestamp", date)
+        .append("timestamp", timestamp)
         .append("discoveredAssets", discoveredAssets)
         .append("failed", failed)
         .append("error", error)
@@ -138,7 +136,7 @@ public class DiscoveryResult implements Serializable {
 
     return new EqualsBuilder()
         .append(failed, that.failed)
-        .append(date, that.date)
+        .append(timestamp, that.timestamp)
         .append(discoveredAssets, that.discoveredAssets)
         .append(error, that.error)
         .append(scanId, that.scanId)
@@ -148,7 +146,7 @@ public class DiscoveryResult implements Serializable {
   @Override
   public int hashCode() {
     return new HashCodeBuilder(17, 37)
-        .append(date)
+        .append(timestamp)
         .append(discoveredAssets)
         .append(failed)
         .append(error)

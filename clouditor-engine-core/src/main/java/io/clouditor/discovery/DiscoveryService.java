@@ -105,7 +105,6 @@ public class DiscoveryService {
         var scan = Scan.fromScanner(clazz);
 
         // update database
-        hibernatePersistence.saveOrUpdate(scan.getAssetType());
         hibernatePersistence.saveOrUpdate(scan);
       }
     }
@@ -135,7 +134,7 @@ public class DiscoveryService {
       var scanner = scan.instantiateScanner();
 
       // check, if it is somehow already running, and cancel it
-      var future = this.futures.get(scan.getAssetType().getValue());
+      var future = this.futures.get(scan.getAssetType());
       if (future != null) {
         LOGGER.info("It seems this scan is already running, cancelling previous execution.");
         future.cancel(true);
@@ -207,10 +206,10 @@ public class DiscoveryService {
               TimeUnit.SECONDS);
 
       // store the future, so we can cancel it later
-      this.futures.put(scan.getAssetType().getValue(), future);
+      this.futures.put(scan.getAssetType(), future);
 
       // store the scanner, so we can access it later
-      this.scanners.put(scan.getAssetType().getValue(), scanner);
+      this.scanners.put(scan.getAssetType(), scanner);
     } catch (InstantiationException
         | IllegalAccessException
         | InvocationTargetException
@@ -233,7 +232,7 @@ public class DiscoveryService {
 
   private void stopScan(Scan scan) {
     // look for a future
-    var future = this.futures.get(scan.getAssetType().getValue());
+    var future = this.futures.get(scan.getAssetType());
     if (future == null) {
       LOGGER.info("It seems this scan is not running, no need to stop it.");
       return;
@@ -250,8 +249,8 @@ public class DiscoveryService {
     LOGGER.info("Adjusting thread pool size to {}", this.scheduler.getCorePoolSize());
 
     // clean up associated objects
-    this.futures.remove(scan.getAssetType().getValue());
-    this.scanners.remove(scan.getAssetType().getValue());
+    this.futures.remove(scan.getAssetType());
+    this.scanners.remove(scan.getAssetType());
   }
 
   public void subscribe(DiscoveryResultSubscriber subscriber) {

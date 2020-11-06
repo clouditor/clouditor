@@ -276,7 +276,7 @@ public class RuleService extends DiscoveryResultSubscriber {
   @Override
   public void handle(DiscoveryResult result) {
     final PersistenceManager persistenceManager = new HibernatePersistence();
-    LOGGER.info("Handling scan result from {}", result.getDate());
+    LOGGER.info("Handling scan result from {}", result.getTimestamp());
 
     for (var asset : result.getDiscoveredAssets().values()) {
       // find rules for the asset
