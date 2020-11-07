@@ -35,7 +35,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -67,7 +75,7 @@ public class Control implements PersistentObject<String> {
 
   /** A short description. */
   @JsonProperty
-  @Column(name = "control_description")
+  @Column(name = "control_description", columnDefinition = "TEXT")
   private String description;
 
   /** Is this control ok or not? By default we start in the NOT_EVALUATED state. */
@@ -76,10 +84,7 @@ public class Control implements PersistentObject<String> {
   @Column(name = "fulfillment_value")
   private Fulfillment fulfilled = Fulfillment.NOT_EVALUATED;
 
-  @JsonProperty
-  @ManyToOne
-  @JoinColumn(name = "domain_name")
-  private Domain domain;
+  @Embedded private Domain domain;
 
   @JsonProperty
   @Column(name = "control_name")
@@ -267,6 +272,10 @@ public class Control implements PersistentObject<String> {
         .append(active)
         .append(violations)
         .toHashCode();
+  }
+
+  public Domain getDomain() {
+    return this.domain;
   }
 
   public enum Fulfillment {

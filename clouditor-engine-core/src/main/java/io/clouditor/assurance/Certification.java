@@ -56,7 +56,7 @@ public class Certification implements PersistentObject<String> {
   @Size(min = 1)
   @Valid
   @JsonProperty
-  @ManyToMany(targetEntity = Control.class)
+  @ManyToMany(targetEntity = Control.class, cascade = CascadeType.ALL)
   @LazyCollection(LazyCollectionOption.FALSE)
   @JoinTable(
       name = "control_to_certification",
@@ -69,7 +69,7 @@ public class Certification implements PersistentObject<String> {
   private List<Control> controls = new ArrayList<>();
 
   @JsonProperty
-  @Column(name = "certification_description")
+  @Column(name = "certification_description", columnDefinition = "TEXT")
   private String description;
 
   @JsonProperty

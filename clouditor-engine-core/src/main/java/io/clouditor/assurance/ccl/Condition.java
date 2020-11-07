@@ -33,8 +33,7 @@ import javax.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-@Entity(name = "condition")
-@Table(name = "condition")
+@Embeddable
 public class Condition implements Serializable {
 
   private static final long serialVersionUID = -7530930851665073637L;

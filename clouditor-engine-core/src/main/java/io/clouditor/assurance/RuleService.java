@@ -99,6 +99,8 @@ public class RuleService extends DiscoveryResultSubscriber {
           set.add(rule);
 
           LOGGER.info("Added rule {} for asset type {}", path.getFileName(), rule.getAssetType());
+
+          new HibernatePersistence().saveOrUpdate(rule);
         }
       }
     } catch (IOException ex) {
@@ -153,11 +155,11 @@ public class RuleService extends DiscoveryResultSubscriber {
             return control;
           };
 
-      this.rule.addControls(getControl.apply(node));
+      this.rule.addControls(getControl.apply(node).getControlId());
 
       while (node.getNext() != null) {
         node = node.getNext();
-        this.rule.addControls(getControl.apply(node));
+        this.rule.addControls(getControl.apply(node).getControlId());
       }
     }
   }
@@ -302,6 +304,7 @@ public class RuleService extends DiscoveryResultSubscriber {
             }
             // TODO: can we really update the asset?
             asset.addEvaluationResult(eval);
+            persistenceManager.saveOrUpdate(eval);
             if (!eval.isOk()) {
               LOGGER.info(
                   "The following rule failed for asset {} with {} failed conditions: {}",
