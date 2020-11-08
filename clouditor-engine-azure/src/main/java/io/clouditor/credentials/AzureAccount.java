@@ -37,21 +37,16 @@ import com.microsoft.azure.management.Azure;
 import java.io.File;
 import java.io.IOException;
 import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-@Entity(name = "azure_account")
-@Table(name = "azure_account")
+// @Entity(name = "azure_account")
 @JsonTypeName("Azure")
 public class AzureAccount extends CloudAccount<AzureTokenCredentials> {
 
   private static final long serialVersionUID = 1737969287469590217L;
 
-  @Id
   @Column(name = "client_id", nullable = false)
   @JsonProperty
   private String clientId;

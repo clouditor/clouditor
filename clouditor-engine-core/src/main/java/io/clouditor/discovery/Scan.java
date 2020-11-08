@@ -28,7 +28,6 @@
 package io.clouditor.discovery;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.clouditor.assurance.ccl.AssetType;
 import io.clouditor.data_access_layer.PersistentObject;
 import java.lang.reflect.InvocationTargetException;
 import javax.persistence.*;
@@ -59,12 +58,7 @@ public class Scan implements PersistentObject<String> {
    * The asset type, this scan is targeting. This is automatically parsed from the {@link
    * ScannerInfo}.
    */
-  @JsonProperty
-  @ManyToOne
-  @JoinColumn(name = "type_value", nullable = false)
-  @MapKey
-  @Id
-  private AssetType assetType = new AssetType();
+  @Id @JsonProperty private String assetType;
 
   /**
    * The group, or cloud provider this scan is belonging to.This is automatically parsed from the
@@ -118,8 +112,7 @@ public class Scan implements PersistentObject<String> {
     var info = clazz.getAnnotation(ScannerInfo.class);
 
     if (info != null) {
-      scan.assetType = new AssetType();
-      scan.assetType.setValue(info.assetType());
+      scan.assetType = info.assetType();
       scan.assetIcon = info.assetIcon();
       scan.group = info.group();
       scan.service = info.service();
@@ -155,7 +148,7 @@ public class Scan implements PersistentObject<String> {
   public String getId() {
     // TODO: short asset types are not really unique, in the long run we might need to add group and
     // service as well or create a dedicated asset type class
-    return this.assetType.getValue();
+    return this.assetType;
   }
 
   public void setEnabled(boolean enabled) {
@@ -166,11 +159,11 @@ public class Scan implements PersistentObject<String> {
     this.isDiscovering = discovering;
   }
 
-  public AssetType getAssetType() {
+  public String getAssetType() {
     return this.assetType;
   }
 
-  public void setAssetType(AssetType assetType) {
+  public void setAssetType(String assetType) {
     this.assetType = assetType;
   }
 

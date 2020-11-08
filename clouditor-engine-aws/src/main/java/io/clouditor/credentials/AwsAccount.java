@@ -33,8 +33,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -47,7 +45,6 @@ import software.amazon.awssdk.services.sts.StsClient;
 import software.amazon.awssdk.services.sts.model.StsException;
 
 @Entity(name = "aws_account")
-@Table(name = "aws_account")
 @JsonTypeName(value = "AWS")
 public class AwsAccount extends CloudAccount<AwsCredentials>
     implements AwsCredentials, AwsCredentialsProvider, Serializable {
@@ -58,7 +55,6 @@ public class AwsAccount extends CloudAccount<AwsCredentials>
   private static final long serialVersionUID = 1928775323719265066L;
 
   @Column(name = "access_key_id", nullable = false)
-  @Id
   @JsonProperty
   private String accessKeyId;
 

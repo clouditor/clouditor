@@ -35,13 +35,19 @@ import io.clouditor.discovery.AssetProperties;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import javax.persistence.*;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MapKeyColumn;
+import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity(name = "evaluation_result")
 @Table(name = "evaluation_result")
@@ -50,7 +56,7 @@ public class EvaluationResult implements PersistentObject<String> {
   private static final long serialVersionUID = 7255742076812915308L;
 
   @Id
-  @Column(name = "time_stamp", nullable = false)
+  @Column(nullable = false)
   private final String timeStamp = new Date().toString();
 
   /** The rule according to which this was evaluated. */
@@ -66,22 +72,10 @@ public class EvaluationResult implements PersistentObject<String> {
   @Column(name = "asset_properties")
   private final AssetProperties evaluatedProperties;
 
-  @ManyToMany
-  @LazyCollection(LazyCollectionOption.FALSE)
-  @JoinTable(
-      name = "condition_to_evaluation_result",
-      joinColumns = {@JoinColumn(name = "time_stamp", referencedColumnName = "time_stamp")},
-      inverseJoinColumns = {
-        @JoinColumn(name = "source", referencedColumnName = "source"),
-        @JoinColumn(name = "type_value", referencedColumnName = "type_value"),
-      })
-  private List<Condition> failedConditions = new ArrayList<>();
+  @Embedded private List<Condition> failedConditions = new ArrayList<>();
 
   public EvaluationResult() {
-    rule =
-        new Rule() {
-          private static final long serialVersionUID = 4722006617102464025L;
-        };
+    rule = new Rule();
     evaluatedProperties = null;
   }
 

@@ -34,6 +34,8 @@ public class PersistenceCertificationSubscriber extends CertificationSubscriber 
 
   @Override
   public void handle(Certification item) {
-    new HibernatePersistence().saveOrUpdate(item);
+    var persistence = new HibernatePersistence();
+
+    persistence.saveOrUpdate(item);
   }
 }

@@ -109,9 +109,10 @@ public class HibernateUtils {
     Objects.requireNonNull(userName);
     Objects.requireNonNull(password);
     final Configuration configuration = new Configuration();
-    configuration.configure()
-            .setProperty("hibernate.connection.driver_class", "org.h2.Driver")
-            .setProperty("hibernate.connection.url", "jdbc:h2:~/" + dbName);
+    configuration
+        .configure()
+        .setProperty("hibernate.connection.driver_class", "org.h2.Driver")
+        .setProperty("hibernate.connection.url", "jdbc:h2:~/" + dbName);
     buildSessionFactory(configuration, userName, password);
   }
 
@@ -121,16 +122,17 @@ public class HibernateUtils {
     setSession(null);
   }
 
-  private static void buildSessionFactory(final Configuration configuration, final String userName, final String password) {
+  private static void buildSessionFactory(
+      final Configuration configuration, final String userName, final String password) {
     configuration
-            .setProperty("hibernate.enable_lazy_load_no_trans", "true")
-            .setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQL94Dialect")
-            .setProperty("hibernate.hbm2ddl.auto", "create")
-            .setProperty("hibernate.connection.username", userName)
-            .setProperty("hibernate.connection.password", password);
+        .setProperty("hibernate.enable_lazy_load_no_trans", "true")
+        .setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQL94Dialect")
+        .setProperty("hibernate.hbm2ddl.auto", "create")
+        .setProperty("hibernate.connection.username", userName)
+        .setProperty("hibernate.connection.password", password);
     new Reflections("io.clouditor")
-            .getTypesAnnotatedWith(Entity.class)
-            .forEach(configuration::addAnnotatedClass);
+        .getTypesAnnotatedWith(Entity.class)
+        .forEach(configuration::addAnnotatedClass);
     setSessionFactory(configuration.buildSessionFactory());
   }
 

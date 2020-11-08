@@ -40,8 +40,6 @@ import javax.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity(name = "rule")
 @Table(name = "rule")
@@ -51,15 +49,7 @@ public class Rule implements PersistentObject<String> {
 
   @JsonDeserialize(contentUsing = CCLDeserializer.class)
   @JsonSerialize(contentUsing = CCLSerializer.class)
-  @ManyToMany
-  @LazyCollection(LazyCollectionOption.FALSE)
-  @JoinTable(
-      name = "condition_to_many_rules",
-      joinColumns = @JoinColumn(name = "rule_id", referencedColumnName = "rule_id"),
-      inverseJoinColumns = {
-        @JoinColumn(name = "source", referencedColumnName = "source"),
-        @JoinColumn(name = "type_value", referencedColumnName = "type_value"),
-      })
+  @Embedded
   private List<Condition> conditions = new ArrayList<>();
 
   @Column(name = "active")
@@ -77,14 +67,7 @@ public class Rule implements PersistentObject<String> {
   @Column(name = "icon")
   private final String icon = "far fa-file-alt";
 
-  @JsonProperty
-  @ManyToMany
-  @LazyCollection(LazyCollectionOption.FALSE)
-  @JoinTable(
-      name = "rule_to_control",
-      joinColumns = @JoinColumn(name = "rule_id", referencedColumnName = "rule_id"),
-      inverseJoinColumns = @JoinColumn(name = "control_id", referencedColumnName = "control_id"))
-  private final List<Control> controls = new ArrayList<>();
+  @Embedded @JsonProperty private final List<String> controls = new ArrayList<>();
 
   @JsonProperty
   @Id
@@ -92,7 +75,7 @@ public class Rule implements PersistentObject<String> {
   private String id;
 
   public boolean isAssetFiltered(Asset asset) {
-    if (!this.conditions.isEmpty()) {
+    if (this.conditions != null && !this.conditions.isEmpty()) {
       // Theoretically, a list of conditions could have different asset types each, but we assume
       // they are all equal
       if (this.conditions.get(0).getAssetType() instanceof FilteredAssetType) {
@@ -117,7 +100,9 @@ public class Rule implements PersistentObject<String> {
   }
 
   public String getAssetType() {
-    if (!this.conditions.isEmpty() && this.conditions.get(0).getAssetType() != null) {
+    if (this.conditions != null
+        && !this.conditions.isEmpty()
+        && this.conditions.get(0).getAssetType() != null) {
       return this.conditions.get(0).getAssetType().getValue();
     }
 
@@ -145,17 +130,17 @@ public class Rule implements PersistentObject<String> {
     this.id = id;
   }
 
-  public List<Control> getControls() {
+  public List<String> getControls() {
     return this.controls;
   }
 
-  public void addControls(final Control... controls) {
-    final List<Control> controlList = List.of(controls);
+  public void addControls(final String... controls) {
+    final List<String> controlList = List.of(controls);
     this.controls.addAll(controlList);
   }
 
   public boolean containsControl(final String controlId) {
-    return getControls().stream().anyMatch(c -> c.getControlId().equals(controlId));
+    return getControls().stream().anyMatch(c -> c.equals(controlId));
   }
 
   @Override

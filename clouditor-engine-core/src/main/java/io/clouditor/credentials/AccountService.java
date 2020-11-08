@@ -116,8 +116,7 @@ public class AccountService {
     new HibernatePersistence()
         .listAll(CloudAccount.class)
         .forEach(
-            (Consumer<? super CloudAccount>)
-                account -> accounts.put(account.getProvider(), account));
+            (Consumer<? super CloudAccount>) account -> accounts.put(account.getId(), account));
 
     return accounts;
   }

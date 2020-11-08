@@ -29,15 +29,12 @@ package io.clouditor.assurance;
 
 import io.clouditor.data_access_layer.PersistentObject;
 import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.Embeddable;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-@Entity(name = "cloud_domain")
-@Table(name = "cloud_domain")
+@Embeddable
 public class Domain implements PersistentObject<String> {
 
   private static final long serialVersionUID = -653828659002481929L;
@@ -45,7 +42,7 @@ public class Domain implements PersistentObject<String> {
   @Column(name = "domain_description")
   private String description;
 
-  @Id
+  // @Id
   @Column(name = "domain_name", nullable = false)
   private String name;
 
