@@ -122,7 +122,6 @@ class PersistenceManagerTest extends AbstractEngineUnitTest {
     sut.delete(asset);
     sut.delete(evaluationResult);
     sut.delete(rule);
-    sut.delete(condition);
     sut.delete(filteredAssetType);
     sut.delete(assetType);
     sut.delete(certification);

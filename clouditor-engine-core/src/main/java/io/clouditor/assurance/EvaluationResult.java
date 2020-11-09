@@ -35,19 +35,13 @@ import io.clouditor.discovery.AssetProperties;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.MapKeyColumn;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity(name = "evaluation_result")
 @Table(name = "evaluation_result")
@@ -72,7 +66,10 @@ public class EvaluationResult implements PersistentObject<Instant> {
   @Column(name = "asset_properties")
   private final AssetProperties evaluatedProperties;
 
-  @Embedded private List<Condition> failedConditions = new ArrayList<>();
+  @Embedded
+  @ElementCollection(targetClass = Condition.class)
+  @LazyCollection(LazyCollectionOption.FALSE)
+  private List<Condition> failedConditions = new ArrayList<>();
 
   public EvaluationResult() {
     timeStamp = Instant.ofEpochMilli(Instant.now().toEpochMilli());

@@ -38,17 +38,16 @@ public class Condition implements Serializable {
 
   private static final long serialVersionUID = -7530930851665073637L;
 
-  // @Id
-  @Embedded private final ConditionPK conditionPK = new ConditionPK();
+  @Column private String source;
+
+  @ManyToOne
+  @JoinColumn(name = "type_value")
+  private AssetType assetType;
 
   @Transient private Expression expression;
 
-  public ConditionPK getConditionPK() {
-    return conditionPK;
-  }
-
   public Expression getExpression() {
-    return expression;
+    return this.expression;
   }
 
   public void setExpression(Expression expression) {
@@ -56,11 +55,11 @@ public class Condition implements Serializable {
   }
 
   public AssetType getAssetType() {
-    return getConditionPK().getAssetType();
+    return this.assetType;
   }
 
   public void setAssetType(AssetType assetType) {
-    getConditionPK().setAssetType(assetType);
+    this.assetType = assetType;
   }
 
   public boolean evaluate(AssetProperties properties) {
@@ -68,11 +67,11 @@ public class Condition implements Serializable {
   }
 
   public void setSource(String source) {
-    getConditionPK().setSource(source);
+    this.source = source;
   }
 
   public String getSource() {
-    return getConditionPK().getSource();
+    return this.source;
   }
 
   @Override
@@ -84,64 +83,18 @@ public class Condition implements Serializable {
     Condition condition = (Condition) o;
 
     return new EqualsBuilder()
-        .append(getConditionPK(), condition.getConditionPK())
-        .append(getExpression(), condition.getExpression())
+        .append(source, condition.source)
+        .append(assetType, condition.assetType)
+        .append(expression, condition.expression)
         .isEquals();
   }
 
   @Override
   public int hashCode() {
     return new HashCodeBuilder(17, 37)
-        .append(getConditionPK())
-        .append(getExpression())
+        .append(source)
+        .append(assetType)
+        .append(expression)
         .toHashCode();
-  }
-
-  @Embeddable
-  public static class ConditionPK implements Serializable {
-
-    private static final long serialVersionUID = -503140484349205605L;
-
-    @Column(name = "source", nullable = false)
-    private String source;
-
-    @ManyToOne
-    @JoinColumn(name = "type_value", insertable = false, updatable = false)
-    private AssetType assetType;
-
-    private String getSource() {
-      return source;
-    }
-
-    private AssetType getAssetType() {
-      return assetType;
-    }
-
-    private void setSource(String source) {
-      this.source = source;
-    }
-
-    private void setAssetType(AssetType assetType) {
-      this.assetType = assetType;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-
-      if (o == null || getClass() != o.getClass()) return false;
-
-      ConditionPK that = (ConditionPK) o;
-
-      return new EqualsBuilder()
-          .append(getSource(), that.getSource())
-          .append(getAssetType(), that.getAssetType())
-          .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-      return new HashCodeBuilder(17, 37).append(getSource()).append(getAssetType()).toHashCode();
-    }
   }
 }

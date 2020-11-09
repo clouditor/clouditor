@@ -99,8 +99,10 @@ public class RuleService extends DiscoveryResultSubscriber {
           set.add(rule);
 
           LOGGER.info("Added rule {} for asset type {}", path.getFileName(), rule.getAssetType());
-
-          new HibernatePersistence().saveOrUpdate(rule);
+          final PersistenceManager persistenceManager = new HibernatePersistence();
+          rule.getConditions()
+              .forEach(condition -> persistenceManager.saveOrUpdate(condition.getAssetType()));
+          persistenceManager.saveOrUpdate(rule);
         }
       }
     } catch (IOException ex) {

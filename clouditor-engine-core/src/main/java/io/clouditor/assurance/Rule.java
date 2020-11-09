@@ -40,6 +40,8 @@ import javax.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity(name = "rule")
 @Table(name = "rule")
@@ -50,6 +52,8 @@ public class Rule implements PersistentObject<String> {
   @JsonDeserialize(contentUsing = CCLDeserializer.class)
   @JsonSerialize(contentUsing = CCLSerializer.class)
   @Embedded
+  @ElementCollection(targetClass = Condition.class)
+  @LazyCollection(LazyCollectionOption.FALSE)
   private List<Condition> conditions = new ArrayList<>();
 
   @Column(name = "active")
@@ -67,7 +71,11 @@ public class Rule implements PersistentObject<String> {
   @Column(name = "icon")
   private final String icon = "far fa-file-alt";
 
-  @Embedded @JsonProperty private List<String> controls = new ArrayList<>();
+  @JsonProperty
+  @Embedded
+  @ElementCollection(targetClass = String.class)
+  @LazyCollection(LazyCollectionOption.FALSE)
+  private List<String> controls = new ArrayList<>();
 
   @JsonProperty
   @Id
