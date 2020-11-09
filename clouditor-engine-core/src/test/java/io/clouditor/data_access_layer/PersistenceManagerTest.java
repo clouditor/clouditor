@@ -128,25 +128,25 @@ class PersistenceManagerTest extends AbstractEngineUnitTest {
     sut.delete(control);
 
     // assert
-    assertEquals(control, haveControl);
-    assertEquals(certification, haveCertification);
-    assertEquals(assetType, haveAssetType);
-    assertEquals(filteredAssetType, haveFilteredAssetType);
-    assertEquals(rule, haveRule);
-    assertEquals(evaluationResult, haveEvaluationResult);
-    assertEquals(asset, haveAsset);
-    assertEquals(scan, haveScan);
-    assertEquals(discoveryResult, haveDiscoveryResult);
+    assertEquals(haveControl, control);
+    assertEquals(haveCertification, certification);
+    assertEquals(haveAssetType, assetType);
+    assertEquals(haveFilteredAssetType, filteredAssetType);
+    assertEquals(haveRule, rule);
+    assertEquals(haveEvaluationResult, evaluationResult);
+    assertEquals(haveAsset, asset);
+    assertEquals(haveScan, scan);
+    assertEquals(haveDiscoveryResult, discoveryResult);
 
     assertNotNull(haveRule.getConditions());
-    assertEquals(haveRule.getConditions().size(), 1);
-    assertEquals(haveRule.getConditions().get(0), condition);
+    assertEquals(1, haveRule.getConditions().size());
+    assertEquals(condition, haveRule.getConditions().get(0));
 
     assertNotNull(haveEvaluationResult.getFailedConditions());
-    assertEquals(haveEvaluationResult.getFailedConditions().size(), 1);
-    assertEquals(haveEvaluationResult.getFailedConditions().get(0), condition);
+    assertEquals(1, haveEvaluationResult.getFailedConditions().size());
+    assertEquals(condition, haveEvaluationResult.getFailedConditions().get(0));
 
-    assertEquals(haveControl.getDomain(), domain);
+    assertEquals(domain, haveControl.getDomain());
 
     this.engine.shutdown();
   }
