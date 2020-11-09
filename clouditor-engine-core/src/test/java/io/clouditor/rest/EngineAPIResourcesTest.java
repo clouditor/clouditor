@@ -167,9 +167,6 @@ class EngineAPIResourcesTest extends JerseyTest {
 
     var cert = certifications.get(mockCert.getId());
 
-    System.out.println(mockCert.getControls().getClass());
-    System.out.println(cert.getControls().getClass());
-
     assertEquals(mockCert, cert);
   }
 
