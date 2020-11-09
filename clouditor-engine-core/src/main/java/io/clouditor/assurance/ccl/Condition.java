@@ -38,7 +38,8 @@ public class Condition implements Serializable {
 
   private static final long serialVersionUID = -7530930851665073637L;
 
-  @Id @Embedded private final ConditionPK conditionPK = new ConditionPK();
+  // @Id
+  @Embedded private final ConditionPK conditionPK = new ConditionPK();
 
   @Transient private Expression expression;
 

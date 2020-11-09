@@ -1,6 +1,7 @@
 package io.clouditor.data_access_layer;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import io.clouditor.AbstractEngineUnitTest;
 import io.clouditor.assurance.*;
@@ -25,8 +26,7 @@ class PersistenceManagerTest extends AbstractEngineUnitTest {
 
     final PersistenceManager sut = new HibernatePersistence();
 
-    final String domainID = "domain_name";
-    final Domain domain = new Domain(domainID);
+    final Domain domain = new Domain("domain_name");
     domain.setDescription("domain description");
 
     final String controlID = "control_id";
@@ -58,7 +58,6 @@ class PersistenceManagerTest extends AbstractEngineUnitTest {
     final Condition condition = new Condition();
     condition.setAssetType(assetType);
     condition.setSource("source");
-    final Condition.ConditionPK conditionID = condition.getConditionPK();
 
     final String ruleID = "rule_id";
     final Rule rule = new Rule();
@@ -66,7 +65,7 @@ class PersistenceManagerTest extends AbstractEngineUnitTest {
     rule.setActive(true);
     rule.setName("rule name");
     rule.setDescription("rule description");
-    rule.getControls().add(control);
+    rule.addControls(control.getControlId());
     rule.setConditions(List.of(condition));
 
     final AssetProperties assetProperties = new AssetProperties();
@@ -74,7 +73,7 @@ class PersistenceManagerTest extends AbstractEngineUnitTest {
 
     final EvaluationResult evaluationResult = new EvaluationResult(rule, assetProperties);
     evaluationResult.setFailedConditions(List.of(condition));
-    final String evaluationResultID = evaluationResult.getId();
+    final Instant evaluationResultID = evaluationResult.getId();
 
     final String assetID = "asset_id";
     final Asset asset = new Asset("asset_type", assetID, "asset_name", assetProperties);
@@ -94,26 +93,22 @@ class PersistenceManagerTest extends AbstractEngineUnitTest {
     final Instant discoverResultID = discoveryResult.getTimestamp();
 
     // act
-    sut.saveOrUpdate(domain);
     sut.saveOrUpdate(control);
     sut.saveOrUpdate(certification);
     sut.saveOrUpdate(assetType);
     sut.saveOrUpdate(filteredAssetType);
-    sut.saveOrUpdate(condition);
     sut.saveOrUpdate(rule);
     sut.saveOrUpdate(evaluationResult);
     sut.saveOrUpdate(asset);
     sut.saveOrUpdate(scan);
     sut.saveOrUpdate(discoveryResult);
 
-    final Domain haveDomain = sut.get(Domain.class, domainID).orElseThrow();
     final Control haveControl = sut.get(Control.class, controlID).orElseThrow();
     final Certification haveCertification =
         sut.get(Certification.class, certificationID).orElseThrow();
     final AssetType haveAssetType = sut.get(AssetType.class, assetTypeID).orElseThrow();
     final FilteredAssetType haveFilteredAssetType =
         sut.get(FilteredAssetType.class, filteredAssetTypeID).orElseThrow();
-    final Condition haveCondition = sut.get(Condition.class, conditionID).orElseThrow();
     final Rule haveRule = sut.get(Rule.class, ruleID).orElseThrow();
     final EvaluationResult haveEvaluationResult =
         sut.get(EvaluationResult.class, evaluationResultID).orElseThrow();
@@ -132,20 +127,27 @@ class PersistenceManagerTest extends AbstractEngineUnitTest {
     sut.delete(assetType);
     sut.delete(certification);
     sut.delete(control);
-    sut.delete(domain);
 
     // assert
-    assertEquals(domain, haveDomain);
     assertEquals(control, haveControl);
     assertEquals(certification, haveCertification);
     assertEquals(assetType, haveAssetType);
     assertEquals(filteredAssetType, haveFilteredAssetType);
-    assertEquals(condition, haveCondition);
     assertEquals(rule, haveRule);
     assertEquals(evaluationResult, haveEvaluationResult);
     assertEquals(asset, haveAsset);
     assertEquals(scan, haveScan);
     assertEquals(discoveryResult, haveDiscoveryResult);
+
+    assertNotNull(haveRule.getConditions());
+    assertEquals(haveRule.getConditions().size(), 1);
+    assertEquals(haveRule.getConditions().get(0), condition);
+
+    assertNotNull(haveEvaluationResult.getFailedConditions());
+    assertEquals(haveEvaluationResult.getFailedConditions().size(), 1);
+    assertEquals(haveEvaluationResult.getFailedConditions().get(0), condition);
+
+    assertEquals(haveControl.getDomain(), domain);
 
     this.engine.shutdown();
   }

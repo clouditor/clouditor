@@ -67,7 +67,7 @@ public class Rule implements PersistentObject<String> {
   @Column(name = "icon")
   private final String icon = "far fa-file-alt";
 
-  @Embedded @JsonProperty private final List<String> controls = new ArrayList<>();
+  @Embedded @JsonProperty private List<String> controls = new ArrayList<>();
 
   @JsonProperty
   @Id
@@ -132,6 +132,10 @@ public class Rule implements PersistentObject<String> {
 
   public List<String> getControls() {
     return this.controls;
+  }
+
+  public void setControls(final List<String> controls) {
+    this.controls = controls;
   }
 
   public void addControls(final String... controls) {

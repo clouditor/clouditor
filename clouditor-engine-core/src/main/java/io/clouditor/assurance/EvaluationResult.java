@@ -32,8 +32,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.clouditor.assurance.ccl.Condition;
 import io.clouditor.data_access_layer.PersistentObject;
 import io.clouditor.discovery.AssetProperties;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -51,13 +51,13 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 @Entity(name = "evaluation_result")
 @Table(name = "evaluation_result")
-public class EvaluationResult implements PersistentObject<String> {
+public class EvaluationResult implements PersistentObject<Instant> {
 
   private static final long serialVersionUID = 7255742076812915308L;
 
   @Id
   @Column(nullable = false)
-  private final String timeStamp = new Date().toString();
+  private Instant timeStamp;
 
   /** The rule according to which this was evaluated. */
   @NotNull
@@ -75,6 +75,7 @@ public class EvaluationResult implements PersistentObject<String> {
   @Embedded private List<Condition> failedConditions = new ArrayList<>();
 
   public EvaluationResult() {
+    timeStamp = Instant.ofEpochMilli(Instant.now().toEpochMilli());
     rule = new Rule();
     evaluatedProperties = null;
   }
@@ -83,6 +84,7 @@ public class EvaluationResult implements PersistentObject<String> {
   public EvaluationResult(
       @JsonProperty("rule") Rule rule,
       @JsonProperty("evaluatedProperties") AssetProperties evaluatedProperties) {
+    this.timeStamp = Instant.ofEpochMilli(Instant.now().toEpochMilli());
     this.rule = rule;
     this.evaluatedProperties = evaluatedProperties;
   }
@@ -107,12 +109,16 @@ public class EvaluationResult implements PersistentObject<String> {
     return !this.failedConditions.isEmpty();
   }
 
-  public String getTimeStamp() {
+  public Instant getTimeStamp() {
     return timeStamp;
   }
 
+  public void setTimeStamp(final Instant timeStamp) {
+    this.timeStamp = Instant.ofEpochMilli(timeStamp.toEpochMilli());
+  }
+
   @Override
-  public String getId() {
+  public Instant getId() {
     return this.timeStamp;
   }
 

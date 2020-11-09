@@ -64,9 +64,12 @@ public class DiscoveryResult implements Serializable {
   @Column(name = "scan_id")
   private String scanId;
 
+  public DiscoveryResult() {}
+
   @JsonCreator
   public DiscoveryResult(@JsonProperty(value = "scanId") String scanId) {
-    this.timestamp = Instant.now();
+    // round the Instant to epoch milli seconds (To be consistent with the PostgreSQL DB)
+    this.timestamp = Instant.ofEpochMilli(Instant.now().toEpochMilli());
     this.scanId = scanId;
   }
 
@@ -75,10 +78,9 @@ public class DiscoveryResult implements Serializable {
   }
 
   public void setTimestamp(final Instant timestamp) {
-    this.timestamp = timestamp;
+    // round the Instant to epoch milli seconds (To be consistent with the PostgreSQL DB)
+    this.timestamp = Instant.ofEpochMilli(timestamp.toEpochMilli());
   }
-
-  public DiscoveryResult() {}
 
   public void setDiscoveredAssets(Map<String, Asset> discoveredAssets) {
     this.discoveredAssets = discoveredAssets;
