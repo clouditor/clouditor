@@ -35,13 +35,24 @@ import io.clouditor.discovery.AssetProperties;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import javax.persistence.*;
+import java.util.UUID;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MapKeyColumn;
+import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
+import org.jetbrains.annotations.Nullable;
 
 @Entity(name = "evaluation_result")
 @Table(name = "evaluation_result")
@@ -49,9 +60,10 @@ public class EvaluationResult implements PersistentObject<Instant> {
 
   private static final long serialVersionUID = 7255742076812915308L;
 
-  @Id
+  @NotNull @Id private String id;
+
   @Column(nullable = false)
-  private Instant timeStamp;
+  private Instant timestamp;
 
   /** The rule according to which this was evaluated. */
   @NotNull
@@ -71,17 +83,20 @@ public class EvaluationResult implements PersistentObject<Instant> {
   @LazyCollection(LazyCollectionOption.FALSE)
   private List<Condition> failedConditions = new ArrayList<>();
 
-  public EvaluationResult() {
-    timeStamp = Instant.ofEpochMilli(Instant.now().toEpochMilli());
-    rule = new Rule();
-    evaluatedProperties = null;
+  public EvaluationResult(Rule rule, AssetProperties evaluatedProperties) {
+    this(rule, evaluatedProperties, null);
   }
 
   @JsonCreator
   public EvaluationResult(
       @JsonProperty("rule") Rule rule,
-      @JsonProperty("evaluatedProperties") AssetProperties evaluatedProperties) {
-    this.timeStamp = Instant.ofEpochMilli(Instant.now().toEpochMilli());
+      @JsonProperty("evaluatedProperties") AssetProperties evaluatedProperties,
+      @Nullable @JsonProperty("id") String id) {
+    if (id == null) {
+      this.id = UUID.randomUUID().toString();
+    }
+
+    this.timestamp = Instant.now();
     this.rule = rule;
     this.evaluatedProperties = evaluatedProperties;
   }
@@ -106,23 +121,23 @@ public class EvaluationResult implements PersistentObject<Instant> {
     return !this.failedConditions.isEmpty();
   }
 
-  public Instant getTimeStamp() {
-    return timeStamp;
+  public Instant getTimestamp() {
+    return timestamp;
   }
 
-  public void setTimeStamp(final Instant timeStamp) {
-    this.timeStamp = Instant.ofEpochMilli(timeStamp.toEpochMilli());
+  public void setTimestamp(final Instant timestamp) {
+    this.timestamp = Instant.ofEpochMilli(timestamp.toEpochMilli());
   }
 
   @Override
   public Instant getId() {
-    return this.timeStamp;
+    return this.timestamp;
   }
 
   @Override
   public String toString() {
     return new ToStringBuilder(this)
-        .append("timeStamp", timeStamp)
+        .append("timeStamp", timestamp)
         .append("rule", rule)
         .append("evaluatedProperties", evaluatedProperties)
         .append("failedConditions", failedConditions)
@@ -138,7 +153,7 @@ public class EvaluationResult implements PersistentObject<Instant> {
     EvaluationResult that = (EvaluationResult) o;
 
     return new EqualsBuilder()
-        .append(timeStamp, that.timeStamp)
+        .append(timestamp, that.timestamp)
         .append(rule, that.rule)
         .append(evaluatedProperties, that.evaluatedProperties)
         .append(new ArrayList<>(failedConditions), new ArrayList<>(that.failedConditions))
@@ -148,7 +163,7 @@ public class EvaluationResult implements PersistentObject<Instant> {
   @Override
   public int hashCode() {
     return new HashCodeBuilder(17, 37)
-        .append(timeStamp)
+        .append(timestamp)
         .append(rule)
         .append(evaluatedProperties)
         .append(failedConditions)

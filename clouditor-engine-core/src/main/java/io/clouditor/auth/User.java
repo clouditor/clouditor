@@ -42,8 +42,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
-@Entity(name = "c_user")
-@Table(name = "c_user")
+@Entity
+@Table(name = "user")
 public class User implements Principal, PersistentObject<String> {
 
   private static final long serialVersionUID = -1503934816997542987L;
