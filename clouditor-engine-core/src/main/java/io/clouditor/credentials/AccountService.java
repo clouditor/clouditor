@@ -34,7 +34,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Consumer;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
@@ -114,8 +113,7 @@ public class AccountService {
 
     new HibernatePersistence()
         .listAll(CloudAccount.class)
-        .forEach(
-            (Consumer<? super CloudAccount>) account -> accounts.put(account.getId(), account));
+        .forEach(account -> accounts.put(account.getId(), account));
 
     return accounts;
   }
