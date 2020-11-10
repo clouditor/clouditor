@@ -28,47 +28,87 @@
 package io.clouditor.assurance;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.clouditor.data_access_layer.PersistentObject;
 import io.clouditor.discovery.AssetService;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.Table;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
-public class Control {
+@Entity(name = "control")
+@Table(name = "control")
+public class Control implements PersistentObject<String> {
 
+  private static final long serialVersionUID = -6926507274525122348L;
   /**
    * The rules associated with this control. This is actually redundant a little bit since its
    * already stored in the {@link Rule}.
    */
+  @ManyToMany
+  @LazyCollection(LazyCollectionOption.FALSE)
   private List<Rule> rules = new ArrayList<>();
 
   /** The last evaluation results */
-  private List<EvaluationResult> results = new ArrayList<>();
+  @ManyToMany
+  @LazyCollection(LazyCollectionOption.FALSE)
+  private final List<EvaluationResult> results = new ArrayList<>();
 
   /** The id of the control this objective is referring to, i.e. a CCM control id. */
-  @JsonProperty private String controlId;
+  @JsonProperty
+  @Id
+  @Column(name = "control_id", nullable = false)
+  private String controlId;
 
   /** A short description. */
-  @JsonProperty private String description;
+  @JsonProperty
+  @Column(name = "control_description", length = 65535)
+  private String description;
 
   /** Is this control ok or not? By default we start in the NOT_EVALUATED state. */
-  @JsonProperty private Fulfillment fulfilled = Fulfillment.NOT_EVALUATED;
+  @JsonProperty
+  @Enumerated(EnumType.ORDINAL)
+  @Column(name = "fulfillment_value")
+  private Fulfillment fulfilled = Fulfillment.NOT_EVALUATED;
 
-  @JsonProperty private Domain domain;
-  @JsonProperty private String name;
+  @Embedded private Domain domain;
+
+  @JsonProperty
+  @Column(name = "control_name")
+  private String name;
 
   /** Describes, whether the control can be automated or not. */
-  @JsonProperty private boolean automated;
+  @JsonProperty
+  @Column(name = "automated")
+  private boolean automated;
 
   /** Is the control actively monitored? */
-  @JsonProperty private boolean active = false;
+  @JsonProperty
+  @Column(name = "active")
+  private boolean active = false;
 
-  @JsonProperty private int violations;
+  @JsonProperty
+  @Column(name = "violations")
+  private int violations = 0;
+
+  @Override
+  public String getId() {
+    return this.controlId;
+  }
 
   public void evaluate(ServiceLocator locator) {
     // clear old results
@@ -115,54 +155,12 @@ public class Control {
     this.controlId = controlId;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    var control = (Control) o;
-
-    return new EqualsBuilder()
-        .append(rules, control.rules)
-        .append(controlId, control.controlId)
-        .append(description, control.description)
-        .append(domain, control.domain)
-        .append(name, control.name)
-        .isEquals();
-  }
-
-  @Override
-  public int hashCode() {
-    return new HashCodeBuilder(17, 37)
-        .append(rules)
-        .append(controlId)
-        .append(description)
-        .append(domain)
-        .append(name)
-        .toHashCode();
-  }
-
   public Fulfillment getFulfilled() {
     return fulfilled;
   }
 
   public void setFulfilled(Fulfillment fulfilled) {
     this.fulfilled = fulfilled;
-  }
-
-  @Override
-  public String toString() {
-    return new ToStringBuilder(this, ToStringStyle.JSON_STYLE)
-        .append("objectives", rules)
-        .append("controlId", controlId)
-        .append("description", description)
-        .append("fulfilled", fulfilled)
-        .toString();
   }
 
   public void setDomain(Domain domain) {
@@ -210,7 +208,75 @@ public class Control {
   }
 
   public List<EvaluationResult> getResults() {
-    return this.results;
+    return Collections.unmodifiableList(this.results);
+  }
+
+  public void setResults(final EvaluationResult... evaluationResults) {
+    final List<EvaluationResult> evaluationResultList = List.of(evaluationResults);
+    this.results.addAll(evaluationResultList);
+  }
+
+  public void removeResults(final EvaluationResult... evaluationResults) {
+    final List<EvaluationResult> evaluationResultList = List.of(evaluationResults);
+    this.results.removeAll(evaluationResultList);
+  }
+
+  @Override
+  public String toString() {
+    return new ToStringBuilder(this)
+        .append("rules", rules)
+        .append("results", results)
+        .append("controlId", controlId)
+        .append("description", description)
+        .append("fulfilled", fulfilled)
+        .append("domain", domain)
+        .append("name", name)
+        .append("automated", automated)
+        .append("active", active)
+        .append("violations", violations)
+        .toString();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Control control = (Control) o;
+
+    return new EqualsBuilder()
+        .append(automated, control.automated)
+        .append(active, control.active)
+        .append(violations, control.violations)
+        .append(new ArrayList<>(rules), new ArrayList<>(control.rules))
+        .append(results, control.results)
+        .append(controlId, control.controlId)
+        .append(description, control.description)
+        .append(fulfilled, control.fulfilled)
+        .append(domain, control.domain)
+        .append(name, control.name)
+        .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37)
+        .append(rules)
+        .append(results)
+        .append(controlId)
+        .append(description)
+        .append(fulfilled)
+        .append(domain)
+        .append(name)
+        .append(automated)
+        .append(active)
+        .append(violations)
+        .toHashCode();
+  }
+
+  public Domain getDomain() {
+    return this.domain;
   }
 
   public enum Fulfillment {

@@ -27,12 +27,23 @@
 
 package io.clouditor.assurance;
 
+import io.clouditor.data_access_layer.PersistentObject;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
-public class Domain {
+@Embeddable
+public class Domain implements PersistentObject<String> {
 
+  private static final long serialVersionUID = -653828659002481929L;
+
+  @Column(name = "domain_description")
   private String description;
+
+  // @Id
+  @Column(name = "domain_name", nullable = false)
   private String name;
 
   public Domain() {
@@ -44,26 +55,8 @@ public class Domain {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    var domain = (Domain) o;
-
-    return new EqualsBuilder()
-        .append(description, domain.description)
-        .append(name, domain.name)
-        .isEquals();
-  }
-
-  @Override
-  public int hashCode() {
-    return new HashCodeBuilder(17, 37).append(description).append(name).toHashCode();
+  public String getId() {
+    return this.name;
   }
 
   public String getName() {
@@ -76,5 +69,32 @@ public class Domain {
 
   public void setDescription(String description) {
     this.description = description;
+  }
+
+  @Override
+  public String toString() {
+    return new ToStringBuilder(this)
+        .append("description", description)
+        .append("name", name)
+        .toString();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Domain domain = (Domain) o;
+
+    return new EqualsBuilder()
+        .append(description, domain.description)
+        .append(name, domain.name)
+        .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37).append(description).append(name).toHashCode();
   }
 }

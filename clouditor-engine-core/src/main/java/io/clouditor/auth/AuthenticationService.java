@@ -37,13 +37,12 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.kosprov.jargon2.api.Jargon2.Type;
 import io.clouditor.Engine;
-import io.clouditor.util.PersistenceManager;
+import io.clouditor.data_access_layer.HibernatePersistence;
+import io.clouditor.data_access_layer.PersistenceManager;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.ws.rs.NotAuthorizedException;
 import org.jvnet.hk2.annotations.Service;
@@ -71,7 +70,8 @@ public class AuthenticationService {
 
   public void init() {
     // check, if users exist, otherwise create the default user
-    var users = PersistenceManager.getInstance().count(User.class);
+    final PersistenceManager persistenceManager = new HibernatePersistence();
+    var users = persistenceManager.count(User.class);
 
     if (users == 0) {
       createDefaultUser();
@@ -89,7 +89,7 @@ public class AuthenticationService {
     user.setRoles(List.of(ROLE_ADMIN, ROLE_USER));
     user.setPassword(hashPassword(engine.getDefaultApiPassword()));
 
-    PersistenceManager.getInstance().persist(user);
+    new HibernatePersistence().saveOrUpdate(user);
 
     LOGGER.info("Created default user {}.", user.getUsername());
   }
@@ -127,13 +127,10 @@ public class AuthenticationService {
           JWT.require(algorithm).withIssuer(ISSUER).build(); // Reusable verifier instance
       DecodedJWT jwt = verifier.verify(token);
 
-      var user = PersistenceManager.getInstance().getById(User.class, jwt.getSubject());
+      return new HibernatePersistence()
+          .get(User.class, jwt.getSubject())
+          .orElseThrow(() -> new NotAuthorizedException(ERROR_MESSAGE_USER_NOT_FOUND));
 
-      if (user == null) {
-        throw new NotAuthorizedException(ERROR_MESSAGE_USER_NOT_FOUND);
-      }
-
-      return user;
     } catch (JWTVerificationException ex) {
       throw new NotAuthorizedException("Invalid token", ex);
     }
@@ -141,11 +138,13 @@ public class AuthenticationService {
 
   public boolean verifyLogin(LoginRequest request) {
     // fetch user from database
-    var reference = PersistenceManager.getInstance().getById(User.class, request.getUsername());
+    var referenceOptional = new HibernatePersistence().get(User.class, request.getUsername());
 
-    if (reference == null) {
+    if (referenceOptional.isEmpty()) {
       return false;
     }
+
+    var reference = referenceOptional.get();
 
     if (reference.getPassword() == null) {
       return false;
@@ -158,11 +157,7 @@ public class AuthenticationService {
   }
 
   public List<User> getUsers() {
-    var users = new ArrayList<User>();
-
-    PersistenceManager.getInstance().find(User.class).forEach((Consumer<? super User>) users::add);
-
-    return users;
+    return new HibernatePersistence().listAll(User.class);
   }
 
   /**
@@ -173,14 +168,15 @@ public class AuthenticationService {
    */
   public boolean createUser(User user) {
     // check, if user already exists
-    var ref = PersistenceManager.getInstance().getById(User.class, user.getId());
+    final PersistenceManager persistenceManager = new HibernatePersistence();
+    var ref = persistenceManager.get(User.class, user.getId());
 
-    if (ref != null) {
+    if (ref.isPresent()) {
       return false;
     }
 
     // create the new user
-    PersistenceManager.getInstance().persist(user);
+    persistenceManager.saveOrUpdate(user);
 
     LOGGER.info("Created user {}.", user.getId());
 
@@ -188,14 +184,15 @@ public class AuthenticationService {
   }
 
   public User getUser(String id) {
-    return PersistenceManager.getInstance().getById(User.class, id);
+    return new HibernatePersistence().get(User.class, id).orElse(null);
   }
 
   public void updateUser(String id, User user) {
+    final PersistenceManager persistenceManager = new HibernatePersistence();
     // fetch existing
-    var ref = PersistenceManager.getInstance().getById(User.class, id);
+    var ref = persistenceManager.get(User.class, id);
 
-    if (ref == null) {
+    if (ref.isEmpty()) {
       return;
     }
 
@@ -204,18 +201,18 @@ public class AuthenticationService {
 
     // if password is empty, it means that we do not update it
     if (user.getPassword() == null) {
-      user.setPassword(ref.getPassword());
+      user.setPassword(ref.get().getPassword());
     } else {
       // encode hash
       user.setPassword(hashPassword(user.getPassword()));
     }
 
     // store it
-    PersistenceManager.getInstance().persist(user);
+    persistenceManager.saveOrUpdate(user);
   }
 
   public void deleteUser(String id) {
     // delete it from database
-    PersistenceManager.getInstance().delete(User.class, id);
+    new HibernatePersistence().delete(User.class, id);
   }
 }

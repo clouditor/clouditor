@@ -31,29 +31,51 @@ import static io.clouditor.auth.AuthenticationService.ROLE_GUEST;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonView;
-import io.clouditor.rest.ObjectMapperResolver.DatabaseOnly;
-import io.clouditor.util.PersistentObject;
+import io.clouditor.data_access_layer.PersistentObject;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
+@Entity
+@Table(name = "user")
 public class User implements Principal, PersistentObject<String> {
 
+  private static final long serialVersionUID = -1503934816997542987L;
+
+  @JsonProperty
+  @Id
+  @Column(name = "user_name", nullable = false)
   private String username;
 
-  @JsonView(DatabaseOnly.class)
+  @JsonProperty
+  @Column(name = "password")
   private String password;
 
+  @JsonProperty
+  @Column(name = "full_name")
   private String fullName;
 
+  @JsonProperty
+  @Column(name = "email")
   private String email;
 
-  @JsonProperty private boolean shadow = false;
+  @JsonProperty
+  @Column(name = "shadow")
+  private boolean shadow = false;
 
   /** The roles of this users. Defaults to {@link AuthenticationService#ROLE_GUEST}. */
-  @JsonProperty private List<String> roles = List.of(ROLE_GUEST);
+  @JsonProperty
+  @ElementCollection(targetClass = String.class)
+  @CollectionTable(name = "role", joinColumns = @JoinColumn(name = "user_name"))
+  @LazyCollection(LazyCollectionOption.FALSE)
+  @Column(name = "role_name")
+  private List<String> roles = new ArrayList<>(List.of(ROLE_GUEST));
 
   public User() {}
 
@@ -64,27 +86,6 @@ public class User implements Principal, PersistentObject<String> {
   public User(String username, String password) {
     this.username = username;
     this.password = password;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    User user = (User) o;
-
-    // the comparison of a user is just done by the name and attributes, not the password!
-    return new EqualsBuilder().append(username, user.username).isEquals();
-  }
-
-  @Override
-  public int hashCode() {
-    return new HashCodeBuilder(17, 37).append(username).append(password).toHashCode();
   }
 
   public String getUsername() {
@@ -112,6 +113,10 @@ public class User implements Principal, PersistentObject<String> {
   @Override
   public String getId() {
     return this.username;
+  }
+
+  public List<String> getRoles() {
+    return this.roles;
   }
 
   public void setRoles(List<String> roles) {
@@ -144,5 +149,44 @@ public class User implements Principal, PersistentObject<String> {
 
   public String getEmail() {
     return email;
+  }
+
+  @Override
+  public String toString() {
+    return new ToStringBuilder(this)
+        .append("username", username)
+        .append("fullName", fullName)
+        .append("email", email)
+        .append("shadow", shadow)
+        .append("roles", roles)
+        .toString();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+
+    if (o == null || getClass() != o.getClass()) return false;
+
+    User user = (User) o;
+
+    return new EqualsBuilder()
+        .append(shadow, user.shadow)
+        .append(username, user.username)
+        .append(fullName, user.fullName)
+        .append(email, user.email)
+        .append(new ArrayList<>(roles), new ArrayList<>(user.roles))
+        .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37)
+        .append(username)
+        .append(fullName)
+        .append(email)
+        .append(shadow)
+        .append(roles)
+        .toHashCode();
   }
 }

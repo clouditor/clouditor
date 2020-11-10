@@ -87,7 +87,7 @@ public class CCLDeserializer extends StdDeserializer<Condition> {
     @Override
     public AssetType visitAssetType(CCLParser.AssetTypeContext ctx) {
       if (ctx.simpleAssetType() != null) {
-        var simpleAsset = new SimpleAssetType();
+        var simpleAsset = new AssetType();
         simpleAsset.setValue(ctx.simpleAssetType().field().getText());
         return simpleAsset;
       } else if (ctx.filteredAssetType() != null) {

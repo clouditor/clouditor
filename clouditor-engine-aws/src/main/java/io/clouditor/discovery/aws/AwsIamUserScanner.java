@@ -56,6 +56,7 @@ public class AwsIamUserScanner extends AwsIamScanner<User> {
     return this.api.listUsers().users();
   }
 
+  @SuppressWarnings("noinspection unchecked")
   @Override
   public Asset transform(User user) throws ScanException {
     var asset = super.transform(user);

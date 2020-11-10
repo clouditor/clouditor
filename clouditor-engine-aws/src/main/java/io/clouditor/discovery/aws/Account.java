@@ -32,7 +32,7 @@ import software.amazon.awssdk.utils.builder.ToCopyableBuilder;
 
 public class Account implements ToCopyableBuilder<Account.Builder, Account> {
 
-  private String id;
+  private final String id;
 
   private Account(BuilderImpl builder) {
     this.id = builder.id;

@@ -35,8 +35,12 @@ class EngineMainTest {
   void testMain() {
     var engine = new Engine();
 
-    engine.start(new String[] {"--port", "0", "--db-in-memory", "-D=false"});
+    engine.start(
+        new String[] {
+          "--port", "0", "--db-in-memory", "-D=false", "--db-host", "EngineMainTestDB"
+        });
 
+    engine.shutdown();
     // TODO: find proper assert
   }
 }

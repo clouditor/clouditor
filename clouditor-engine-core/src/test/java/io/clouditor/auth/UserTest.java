@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.clouditor.AbstractEngineUnitTest;
-import io.clouditor.util.PersistenceManager;
+import io.clouditor.data_access_layer.HibernatePersistence;
 import java.util.List;
 import javax.ws.rs.NotAuthorizedException;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,7 +47,7 @@ class UserTest extends AbstractEngineUnitTest {
   @BeforeEach
   protected void setUp() {
     super.setUp();
-
+    this.engine.setDBName("UserTestDB");
     this.engine.initDB();
   }
 
@@ -76,7 +76,7 @@ class UserTest extends AbstractEngineUnitTest {
     var user = new User("user", "mypass");
     user.setRoles(List.of(ROLE_ADMIN));
 
-    PersistenceManager.getInstance().persist(user);
+    new HibernatePersistence().saveOrUpdate(user);
 
     var token = service.createToken(user);
 

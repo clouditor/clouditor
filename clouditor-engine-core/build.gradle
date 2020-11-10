@@ -41,11 +41,8 @@ dependencies {
     implementation "com.auth0:java-jwt:${libraryVersions.jwt}"
     implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
 
-    implementation group: 'de.bwaldvogel', name: 'mongo-java-server', version: '1.16.0'
-
     api group: 'org.apache.pdfbox', name: 'pdfbox', version: '2.0.12'
     api group: 'args4j', name: 'args4j', version: '2.33'
-    api group: 'org.mongodb', name: 'mongo-java-driver', version: libraryVersions.mongo
     api "org.apache.commons:commons-configuration2:${libraryVersions.commonsConfiguration2}"
     api group: 'org.slf4j', name: 'jul-to-slf4j', version: libraryVersions.slf4j
     api group: 'org.slf4j', name: 'slf4j-api', version: libraryVersions.slf4j
@@ -68,6 +65,10 @@ dependencies {
     implementation group: 'com.kosprov.jargon2', name: 'jargon2-native-ri-backend', version: '1.1.1'
 
     implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
+
+    compile group: 'org.postgresql', name: 'postgresql', version: libraryVersions.postgresql
+    compile group: 'org.hibernate', name: 'hibernate-core', version: libraryVersions.hibernate
+    compile group: 'com.h2database', name: 'h2', version: '1.4.200'
 
     testCompile group: 'org.awaitility', name: 'awaitility', version: '3.1.2'
 

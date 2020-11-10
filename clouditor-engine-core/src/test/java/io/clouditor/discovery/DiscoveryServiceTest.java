@@ -45,7 +45,7 @@ class DiscoveryServiceTest extends AbstractEngineUnitTest {
   @BeforeEach
   protected void setUp() {
     super.setUp();
-
+    this.engine.setDBName("DiscoveryServiceTestDB");
     this.engine.initDB();
   }
 
@@ -73,7 +73,6 @@ class DiscoveryServiceTest extends AbstractEngineUnitTest {
     scanService.enableScan(scan);
 
     assertTrue(scan.isEnabled());
-
     Awaitility.await()
         .atMost(5, TimeUnit.SECONDS)
         .until(() -> this.engine.getService(AssetService.class).get(OBJECT_ID_FAKE) != null);

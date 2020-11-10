@@ -28,58 +28,81 @@
 package io.clouditor.discovery;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.clouditor.util.PersistentObject;
+import io.clouditor.data_access_layer.PersistentObject;
 import java.lang.reflect.InvocationTargetException;
+import javax.persistence.*;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
  * A {@link Scan} holds information and configuration about a scan that is regularly executed. The
  * actual "scanning" is done by an implementing {@link Scanner} class.
  */
+@Entity(name = "scan")
+@Table(name = "scan")
 public class Scan implements PersistentObject<String> {
 
   static final String FIELD_SCANNER_CLASS = "scannerClass";
 
   private static final long DEFAULT_INTERVAL = 5 * 60L;
+  private static final long serialVersionUID = 4612570095809897261L;
 
   /** The associated {@link Scanner} class. */
   @JsonProperty(FIELD_SCANNER_CLASS)
+  @Column(name = "scanner_class")
+  @Convert(converter = ScannerConverter.class)
   private Class<? extends Scanner> scannerClass;
 
   /**
    * The asset type, this scan is targeting. This is automatically parsed from the {@link
    * ScannerInfo}.
    */
-  @JsonProperty private String assetType;
-
-  /**
-   * The asset icon of the asset, this scan is targeting. This is automatically parsed from the
-   * {@link ScannerInfo}.
-   */
-  @JsonProperty private String assetIcon;
+  @Id @JsonProperty private String assetType;
 
   /**
    * The group, or cloud provider this scan is belonging to.This is automatically parsed from the
    * {@link ScannerInfo}.
    */
-  @JsonProperty private String group;
+  @JsonProperty
+  @Column(name = "scan_group")
+  private String group;
+
+  /**
+   * The asset icon of the asset, this scan is targeting. This is automatically parsed from the
+   * {@link ScannerInfo}.
+   */
+  @JsonProperty
+  @Column(name = "asset_icon")
+  private String assetIcon;
 
   /** The description of the scan. This is automatically parsed from the {@link ScannerInfo}. */
-  @JsonProperty private String description;
+  @JsonProperty
+  @Column(name = "scan_description")
+  private String description;
 
   /** The discovery state of the scan. */
-  @JsonProperty private boolean isDiscovering;
+  @JsonProperty
+  @Column(name = "is_discovering")
+  private boolean isDiscovering;
 
   /**
    * The service this scan is belonging to. This is automatically parsed from the {@link
    * ScannerInfo}.
    */
-  @JsonProperty private String service;
+  @JsonProperty
+  @Column(name = "service")
+  private String service;
 
+  @ManyToOne
+  @JoinColumn(name = "last_result")
   private DiscoveryResult lastResult;
 
+  @Column(name = "enabled")
   private boolean enabled;
 
-  private long interval = DEFAULT_INTERVAL;
+  @Column(name = "scan_interval")
+  private final long interval = DEFAULT_INTERVAL;
 
   public Scan() {}
 
@@ -121,6 +144,7 @@ public class Scan implements PersistentObject<String> {
     return this.isDiscovering;
   }
 
+  @Override
   public String getId() {
     // TODO: short asset types are not really unique, in the long run we might need to add group and
     // service as well or create a dedicated asset type class
@@ -162,5 +186,105 @@ public class Scan implements PersistentObject<String> {
     constructor.setAccessible(true);
 
     return constructor.newInstance();
+  }
+
+  @Override
+  public String toString() {
+    return new ToStringBuilder(this)
+        .append(FIELD_SCANNER_CLASS, scannerClass)
+        .append("assetType", assetType)
+        .append("group", group)
+        .append("assetIcon", assetIcon)
+        .append("description", description)
+        .append("isDiscovering", isDiscovering)
+        .append("service", service)
+        .append("lastResult", lastResult)
+        .append("enabled", enabled)
+        .append("interval", interval)
+        .toString();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Scan scan = (Scan) o;
+
+    return new EqualsBuilder()
+        .append(isDiscovering, scan.isDiscovering)
+        .append(enabled, scan.enabled)
+        .append(interval, scan.interval)
+        .append(scannerClass, scan.scannerClass)
+        .append(assetType, scan.assetType)
+        .append(group, scan.group)
+        .append(assetIcon, scan.assetIcon)
+        .append(description, scan.description)
+        .append(service, scan.service)
+        .append(lastResult, scan.lastResult)
+        .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37)
+        .append(scannerClass)
+        .append(assetType)
+        .append(group)
+        .append(assetIcon)
+        .append(description)
+        .append(isDiscovering)
+        .append(service)
+        .append(lastResult)
+        .append(enabled)
+        .append(interval)
+        .toHashCode();
+  }
+
+  /**
+   * A converter for the field <code>scannerClass</code>. It converts the entity type <code>
+   * Class<? expends Scanner></code> in to the database column type <code>String</code> and back
+   * again.
+   *
+   * @author Andreas Hager, andreas.hager@aisec.fraunhofer.de
+   */
+  @Converter
+  private static class ScannerConverter
+      implements AttributeConverter<Class<? extends Scanner>, String> {
+
+    /**
+     * Converts the value stored in the field <code>scannerClass</code> into the data representation
+     * of a fully qualified class name (FQCN) string to be stored in the database.
+     *
+     * @param attribute the field value to be converted
+     * @return the converted string to be stored in the database column
+     */
+    @Override
+    public String convertToDatabaseColumn(final Class<? extends Scanner> attribute) {
+      if (attribute == null) return "";
+      else return attribute.getCanonicalName();
+    }
+
+    /**
+     * Converts the FQCN String stored in the database column into the <code>
+     * Class<? expends Scanner></code> to be stored in the entity attribute.
+     *
+     * @param dbData the FQCN String from the database column to be converted
+     * @return the converted value to be stored in the field
+     */
+    @SuppressWarnings("noinspection unchecked")
+    @Override
+    public Class<? extends Scanner> convertToEntityAttribute(final String dbData) {
+      Class<? extends Scanner> resultValue;
+      try {
+        if (dbData.equals("")) resultValue = null;
+        else resultValue = (Class<? extends Scanner>) Class.forName(dbData);
+      } catch (ClassNotFoundException e) {
+        throw new IllegalStateException(
+            "Unable to convert the FQCN: " + dbData + ", to Class<? extends Scanner>.");
+      }
+      return resultValue;
+    }
   }
 }

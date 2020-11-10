@@ -31,6 +31,8 @@ import java.util.HashMap;
 
 public class AssetProperties extends HashMap<String, Object> {
 
+  private static final long serialVersionUID = -8160610715094945380L;
+
   public AssetProperties() {}
 
   public AssetProperties(String k1, Object v1) {

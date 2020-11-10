@@ -39,7 +39,7 @@ public class RuleEvaluation {
   /** The rule. */
   @JsonProperty @NotNull private Rule rule;
 
-  @JsonProperty private Map<String, Boolean> compliance = new HashMap<>();
+  @JsonProperty private final Map<String, Boolean> compliance = new HashMap<>();
 
   @JsonCreator
   public RuleEvaluation(@JsonProperty("rule") Rule rule) {

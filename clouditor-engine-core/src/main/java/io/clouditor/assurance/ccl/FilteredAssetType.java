@@ -28,26 +28,50 @@
 package io.clouditor.assurance.ccl;
 
 import java.util.Map;
+import java.util.Objects;
+import javax.persistence.*;
 
+@Entity(name = "filtered_asset_type")
+@Table(name = "filtered_asset_type")
+@PrimaryKeyJoinColumn(name = "type_value")
 public class FilteredAssetType extends AssetType {
 
-  private String value;
-  private Expression assetExpression;
+  private static final long serialVersionUID = -2355408351894740425L;
 
-  public String getValue() {
-    return this.value;
+  public FilteredAssetType() {
+    super();
   }
 
-  public void setValue(String value) {
-    this.value = value;
-  }
+  @Transient private Expression assetExpression;
 
   public void setAssetExpression(Expression assetExpression) {
     this.assetExpression = assetExpression;
   }
 
-  @Override
   public boolean evaluate(Map properties) {
-    return this.assetExpression.evaluate(properties);
+    return this.getAssetExpression().evaluate(properties);
+  }
+
+  @Override
+  public String toString() {
+    return "TYPE_VALUE: " + super.getValue() + ", EXPRESSION: " + getAssetExpression() + ".";
+  }
+
+  public Expression getAssetExpression() {
+    return assetExpression;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    if (!super.equals(o)) return false;
+    FilteredAssetType that = (FilteredAssetType) o;
+    return Objects.equals(getAssetExpression(), that.getAssetExpression());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), getAssetExpression());
   }
 }

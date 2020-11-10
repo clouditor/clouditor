@@ -28,29 +28,50 @@
 package io.clouditor.credentials;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.clouditor.data_access_layer.PersistentObject;
 import io.clouditor.util.Collection;
-import io.clouditor.util.PersistentObject;
 import java.io.IOException;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@JsonTypeInfo(use = Id.NAME, property = "provider")
+@Entity(name = "cloud_account")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "provider")
 @Collection("accounts")
-public abstract class CloudAccount<T> implements PersistentObject {
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+public abstract class CloudAccount<T> implements PersistentObject<String> {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(CloudAccount.class);
+  private static final long serialVersionUID = 7868522749211998981L;
 
+  // this will be set as the id once https://github.com/clouditor/clouditor/issues/64 for full
+  // multi-account support
+  @Column(name = "account_id")
   protected String accountId;
+
+  @Column(name = "cloud_user")
   protected String user;
+
+  @Column @Id protected String provider;
 
   /**
    * Specifies that this account was auto-discovered and that credentials are provided by the
    * default chain provided by the Cloud provider client API library. Thus credential fields are
    * ignored.
    */
+  @Column(name = "auto_discovered")
   private boolean autoDiscovered;
+
+  protected CloudAccount() {
+    var typeName = this.getClass().getAnnotation(JsonTypeName.class);
+
+    this.provider = typeName != null ? typeName.value() : null;
+  }
 
   public String getAccountId() {
     return accountId;
@@ -76,14 +97,8 @@ public abstract class CloudAccount<T> implements PersistentObject {
     return autoDiscovered;
   }
 
-  public String getProvider() {
-    var typeName = this.getClass().getAnnotation(JsonTypeName.class);
-
-    return typeName != null ? typeName.value() : null;
-  }
-
   public String getId() {
-    return this.getProvider();
+    return this.provider;
   }
 
   /**

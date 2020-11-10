@@ -30,6 +30,12 @@ package io.clouditor.credentials;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import java.io.IOException;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
@@ -38,6 +44,8 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sts.StsClient;
 import software.amazon.awssdk.services.sts.model.StsException;
 
+@Table(name = "aws_account")
+@Entity(name = "aws_account")
 @JsonTypeName(value = "AWS")
 public class AwsAccount extends CloudAccount<AwsCredentials>
     implements AwsCredentials, AwsCredentialsProvider {
@@ -45,9 +53,19 @@ public class AwsAccount extends CloudAccount<AwsCredentials>
   private static final DefaultCredentialsProvider DEFAULT_PROVIDER =
       DefaultCredentialsProvider.create();
 
-  @JsonProperty private String accessKeyId;
-  @JsonProperty private String secretAccessKey;
-  @JsonProperty private String region;
+  private static final long serialVersionUID = 1928775323719265066L;
+
+  @Column(name = "access_key_id", nullable = false)
+  @JsonProperty
+  private String accessKeyId;
+
+  @Column(name = "secret_access_key")
+  @JsonProperty
+  private String secretAccessKey;
+
+  @Column(name = "region")
+  @JsonProperty
+  private String region;
 
   @Override
   public void validate() throws IOException {
@@ -132,5 +150,40 @@ public class AwsAccount extends CloudAccount<AwsCredentials>
 
   public void setSecretAccessKey(String secretAccessKey) {
     this.secretAccessKey = secretAccessKey;
+  }
+
+  @Override
+  public String toString() {
+    return new ToStringBuilder(this)
+        .append("accessKeyId", accessKeyId)
+        .append("secretAccessKey", secretAccessKey)
+        .append("region", region)
+        .append("accountId", accountId)
+        .append("user", user)
+        .toString();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+
+    if (o == null || getClass() != o.getClass()) return false;
+
+    AwsAccount that = (AwsAccount) o;
+
+    return new EqualsBuilder()
+        .append(accessKeyId, that.accessKeyId)
+        .append(secretAccessKey, that.secretAccessKey)
+        .append(region, that.region)
+        .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37)
+        .append(accessKeyId)
+        .append(secretAccessKey)
+        .append(region)
+        .toHashCode();
   }
 }

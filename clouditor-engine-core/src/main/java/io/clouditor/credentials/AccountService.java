@@ -27,14 +27,13 @@
 
 package io.clouditor.credentials;
 
+import io.clouditor.data_access_layer.HibernatePersistence;
 import io.clouditor.discovery.DiscoveryService;
-import io.clouditor.util.PersistenceManager;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Consumer;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
@@ -43,7 +42,7 @@ import org.slf4j.LoggerFactory;
 @Service
 public class AccountService {
 
-  private DiscoveryService discoveryService;
+  private final DiscoveryService discoveryService;
 
   @Inject
   public AccountService(DiscoveryService discoveryService) {
@@ -84,7 +83,7 @@ public class AccountService {
   }
 
   public CloudAccount getAccount(String provider) {
-    return PersistenceManager.getInstance().getById(CloudAccount.class, provider);
+    return new HibernatePersistence().get(CloudAccount.class, provider).orElse(null);
   }
 
   public void addAccount(String provider, CloudAccount account) throws IOException {
@@ -95,8 +94,7 @@ public class AccountService {
     LOGGER.info("Adding account for provider {} with id {}", provider, account.getId());
 
     // TODO: check, if something actually has changed
-
-    PersistenceManager.getInstance().persist(account);
+    new HibernatePersistence().saveOrUpdate(account);
 
     // since we changed the account (potentially), we need to make sure the scanners associated with
     // this provider re-authenticate properly
@@ -113,11 +111,9 @@ public class AccountService {
   public Map<String, CloudAccount> getAccounts() {
     var accounts = new HashMap<String, CloudAccount>();
 
-    PersistenceManager.getInstance()
-        .find(CloudAccount.class)
-        .forEach(
-            (Consumer<? super CloudAccount>)
-                account -> accounts.put(account.getProvider(), account));
+    new HibernatePersistence()
+        .listAll(CloudAccount.class)
+        .forEach(account -> accounts.put(account.getId(), account));
 
     return accounts;
   }

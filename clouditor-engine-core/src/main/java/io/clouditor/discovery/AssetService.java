@@ -36,7 +36,7 @@ import org.jvnet.hk2.annotations.Service;
 @Service
 public class AssetService {
 
-  private HashMap<String, Asset> assets = new HashMap<>();
+  private final HashMap<String, Asset> assets = new HashMap<>();
 
   public void update(Asset asset) {
     this.assets.put(asset.getId(), asset);

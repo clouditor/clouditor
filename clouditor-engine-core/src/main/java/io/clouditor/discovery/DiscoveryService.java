@@ -27,24 +27,18 @@
 
 package io.clouditor.discovery;
 
-import static com.mongodb.client.model.Filters.eq;
-
+import io.clouditor.data_access_layer.HibernatePersistence;
+import io.clouditor.data_access_layer.PersistenceManager;
 import io.clouditor.events.DiscoveryResultSubscriber;
-import io.clouditor.util.PersistenceManager;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.SubmissionPublisher;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.media.sse.EventOutput;
@@ -64,21 +58,22 @@ public class DiscoveryService {
           new ConfigurationBuilder()
               .addUrls(ClasspathHelper.forPackage(Scanner.class.getPackage().getName()))
               .setScanners(new SubTypesScanner()));
-  private Map<String, ScheduledFuture<?>> futures = new HashMap<>();
-  private Map<String, Scanner> scanners = new HashMap<>();
+  private final Map<String, ScheduledFuture> futures = new HashMap<>();
+  private final Map<String, Scanner> scanners = new HashMap<>();
 
   private final ScheduledThreadPoolExecutor scheduler =
       (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1);
 
-  private SubmissionPublisher<DiscoveryResult> assetPublisher = new SubmissionPublisher<>();
-  private Map<String, HashSet<EventOutput>> subscriptions = new HashMap<>();
+  private final SubmissionPublisher<DiscoveryResult> assetPublisher = new SubmissionPublisher<>();
+  private final Map<String, HashSet<EventOutput>> subscriptions = new HashMap<>();
 
   public DiscoveryService() {
     LOGGER.info("Initializing {}", this.getClass().getSimpleName());
   }
 
   public void init() {
-    var scans = PersistenceManager.getInstance().find(Scan.class);
+    final HibernatePersistence hibernatePersistence = new HibernatePersistence();
+    var scans = hibernatePersistence.listAll(Scan.class);
 
     // first, init list of scanner classes from Java via reflections
     var classes =
@@ -95,36 +90,33 @@ public class DiscoveryService {
             scan.getId(),
             scan.getScannerClass());
 
-        PersistenceManager.getInstance().delete(Scan.class, scan.getId());
+        hibernatePersistence.delete(scan);
       }
     }
 
     // loop through all Scanner classes, to make sure a Scan object exists for each class
     for (var clazz : classes) {
-      var scan =
-          PersistenceManager.getInstance()
-              .find(Scan.class, eq(Scan.FIELD_SCANNER_CLASS, clazz.getName()))
-              .limit(1)
-              .first();
+      var hasNoScannerForClass =
+          hibernatePersistence.listAll(Scan.class).stream()
+              .noneMatch(scan -> scan.getScannerClass().equals(clazz));
 
-      if (scan == null) {
+      if (hasNoScannerForClass) {
         // create new scanner object
-        scan = Scan.fromScanner(clazz);
+        var scan = Scan.fromScanner(clazz);
 
         // update database
-        PersistenceManager.getInstance().persist(scan);
+        hibernatePersistence.saveOrUpdate(scan);
       }
     }
   }
 
   public Map<String, Scan> getScans() {
-    return StreamSupport.stream(
-            PersistenceManager.getInstance().find(Scan.class).spliterator(), false)
-        .collect(Collectors.toMap(Scan::getId, scan -> scan));
+    return new HibernatePersistence()
+        .listAll(Scan.class).stream().collect(Collectors.toMap(Scan::getId, scan -> scan));
   }
 
   public void start() {
-    var scans = PersistenceManager.getInstance().find(Scan.class);
+    var scans = new HibernatePersistence().listAll(Scan.class);
 
     // loop through all enabled scans and start them
     for (var scan : scans) {
@@ -142,7 +134,7 @@ public class DiscoveryService {
       var scanner = scan.instantiateScanner();
 
       // check, if it is somehow already running, and cancel it
-      var future = this.futures.get(scan.getId());
+      var future = this.futures.get(scan.getAssetType());
       if (future != null) {
         LOGGER.info("It seems this scan is already running, cancelling previous execution.");
         future.cancel(true);
@@ -160,11 +152,12 @@ public class DiscoveryService {
       future =
           scheduler.scheduleAtFixedRate(
               () -> {
+
                 // set discovering flag to enable its indication in the discovery view
                 scan.setDiscovering(true);
 
                 // scan
-                var result = scanner.scan(scan.getId());
+                var result = scanner.scan(scan.getAssetType());
 
                 submit(scan, result);
 
@@ -193,23 +186,30 @@ public class DiscoveryService {
                   }
                 }*/
 
+                final PersistenceManager persistenceManager = new HibernatePersistence();
+                for (final Asset asset : result.getDiscoveredAssets().values()) {
+                  persistenceManager.get(Asset.class, asset.getId());
+                  persistenceManager.saveOrUpdate(asset);
+                }
+                persistenceManager.saveOrUpdate(result);
                 scan.setLastResult(result);
 
                 LOGGER.info("Scan {} is now waiting for next execution.", scan.getId());
                 scan.setDiscovering(false);
 
                 // update database
-                PersistenceManager.getInstance().persist(scan);
+
+                persistenceManager.saveOrUpdate(scan);
               },
               0,
               scan.getInterval(),
               TimeUnit.SECONDS);
 
       // store the future, so we can cancel it later
-      this.futures.put(scan.getId(), future);
+      this.futures.put(scan.getAssetType(), future);
 
       // store the scanner, so we can access it later
-      this.scanners.put(scan.getId(), scanner);
+      this.scanners.put(scan.getAssetType(), scanner);
     } catch (InstantiationException
         | IllegalAccessException
         | InvocationTargetException
@@ -225,16 +225,14 @@ public class DiscoveryService {
     var assets = result.getDiscoveredAssets();
 
     LOGGER.info(
-        "Publishing discovery result with {} asset(s) of type {}.",
-        assets.size(),
-        scan.getAssetType());
+        "Publishing discovery result with {} asset(s) of type {}.", assets.size(), scan.getId());
 
     return this.assetPublisher.submit(result);
   }
 
   private void stopScan(Scan scan) {
     // look for a future
-    var future = this.futures.get(scan.getId());
+    var future = this.futures.get(scan.getAssetType());
     if (future == null) {
       LOGGER.info("It seems this scan is not running, no need to stop it.");
       return;
@@ -251,23 +249,23 @@ public class DiscoveryService {
     LOGGER.info("Adjusting thread pool size to {}", this.scheduler.getCorePoolSize());
 
     // clean up associated objects
-    this.futures.remove(scan.getId());
-    this.scanners.remove(scan.getId());
+    this.futures.remove(scan.getAssetType());
+    this.scanners.remove(scan.getAssetType());
   }
 
   public void subscribe(DiscoveryResultSubscriber subscriber) {
     this.assetPublisher.subscribe(subscriber);
   }
 
-  public Scan getScan(String id) {
-    return PersistenceManager.getInstance().getById(Scan.class, id);
+  public Scan getScan(final String assetTypeID) {
+    return new HibernatePersistence().get(Scan.class, assetTypeID).orElse(null);
   }
 
   public void enableScan(Scan scan) {
     scan.setEnabled(true);
 
     // update database
-    PersistenceManager.getInstance().persist(scan);
+    new HibernatePersistence().saveOrUpdate(scan);
 
     this.startScan(scan);
   }
@@ -276,7 +274,7 @@ public class DiscoveryService {
     scan.setEnabled(false);
 
     // update database
-    PersistenceManager.getInstance().persist(scan);
+    new HibernatePersistence().saveOrUpdate(scan);
 
     this.stopScan(scan);
   }

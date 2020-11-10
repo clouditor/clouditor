@@ -27,9 +27,10 @@
 
 package io.clouditor.assurance;
 
+import io.clouditor.data_access_layer.HibernatePersistence;
+import io.clouditor.data_access_layer.PersistenceManager;
 import io.clouditor.events.CertificationSubscriber;
 import io.clouditor.events.SubscriptionManager;
-import io.clouditor.util.PersistenceManager;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
@@ -60,14 +61,15 @@ public class CertificationService {
                   ClasspathHelper.forPackage(CertificationService.class.getPackage().getName()))
               .setScanners(new SubTypesScanner()));
 
-  private Map<String, CertificationImporter> importers = new HashMap<>();
+  private final Map<String, CertificationImporter> importers = new HashMap<>();
 
-  private SubmissionPublisher<Certification> certificationPublisher = new SubmissionPublisher<>();
+  private final SubmissionPublisher<Certification> certificationPublisher =
+      new SubmissionPublisher<>();
 
   /** The certifications objective */
-  private Map<String, Certification> certifications = new HashMap<>();
+  private final Map<String, Certification> certifications = new HashMap<>();
 
-  private ServiceLocator locator;
+  private final ServiceLocator locator;
 
   @Inject
   public CertificationService(ServiceLocator locator) {
@@ -149,7 +151,7 @@ public class CertificationService {
   public void loadCertifications() {
     LOGGER.info("Loading certifications and controls...");
 
-    for (var certification : PersistenceManager.getInstance().find(Certification.class)) {
+    for (var certification : new HibernatePersistence().listAll(Certification.class)) {
       loadCertification(certification);
     }
 
@@ -169,9 +171,6 @@ public class CertificationService {
       this.startMonitoring(control);
     }*/
 
-    // persist it
-    PersistenceManager.getInstance().persist(certification);
-
     // update
     this.updateCertification();
   }
@@ -185,6 +184,7 @@ public class CertificationService {
   }
 
   public void updateCertification(List<String> controlIds) {
+    final PersistenceManager persistenceManager = new HibernatePersistence();
     for (var certification : this.certifications.values()) {
       for (var control : certification.getControls()) {
         // only update certain controls, or all if the list is empty
@@ -199,6 +199,9 @@ public class CertificationService {
 
         control.evaluate(this.locator);
 
+        control.getResults().forEach(persistenceManager::saveOrUpdate);
+        persistenceManager.saveOrUpdate(control);
+
         LOGGER.info(
             "Evaluated fulfillment of control {} as {}",
             control.getControlId(),
@@ -207,9 +210,8 @@ public class CertificationService {
         LOGGER.debug("Control {} is now {}", control.getControlId(), control);
       }
 
+      persistenceManager.saveOrUpdate(certification);
       this.certificationPublisher.submit(certification);
-
-      PersistenceManager.getInstance().persist(certification);
     }
   }
 

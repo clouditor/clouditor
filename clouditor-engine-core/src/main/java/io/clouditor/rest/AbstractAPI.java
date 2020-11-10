@@ -51,13 +51,13 @@ public abstract class AbstractAPI<C extends Component> extends ResourceConfig {
   protected HttpServer httpServer;
 
   /** The API port. */
-  private int port;
+  private final int port;
 
   /** The context path */
-  @NotNull private String contextPath;
+  @NotNull private final String contextPath;
 
   /** The associated Clouditor component */
-  @NotNull private C component;
+  @NotNull private final C component;
 
   AbstractAPI(C component, int port, String contextPath) {
     this.component = component;

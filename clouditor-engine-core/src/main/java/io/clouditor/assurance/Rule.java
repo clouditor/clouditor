@@ -31,27 +31,59 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.clouditor.assurance.ccl.*;
+import io.clouditor.data_access_layer.PersistentObject;
 import io.clouditor.discovery.Asset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.persistence.*;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
-public class Rule {
+@Entity(name = "rule")
+@Table(name = "rule")
+public class Rule implements PersistentObject<String> {
+
+  private static final long serialVersionUID = -5934273783785749037L;
 
   @JsonDeserialize(contentUsing = CCLDeserializer.class)
   @JsonSerialize(contentUsing = CCLSerializer.class)
+  @Embedded
+  @ElementCollection(targetClass = Condition.class)
+  @LazyCollection(LazyCollectionOption.FALSE)
   private List<Condition> conditions = new ArrayList<>();
 
+  @Column(name = "active")
   private boolean active;
 
-  @JsonProperty private String name;
-  @JsonProperty private String description;
-  @JsonProperty private String icon = "far fa-file-alt";
-  @JsonProperty private List<String> controls = new ArrayList<>();
-  @JsonProperty private String id;
+  @JsonProperty
+  @Column(name = "rule_name")
+  private String name;
+
+  @JsonProperty
+  @Column(name = "rule_description")
+  private String description;
+
+  @JsonProperty
+  @Column(name = "icon")
+  private final String icon = "far fa-file-alt";
+
+  @JsonProperty
+  @Embedded
+  @ElementCollection(targetClass = String.class)
+  @LazyCollection(LazyCollectionOption.FALSE)
+  private List<String> controls = new ArrayList<>();
+
+  @JsonProperty
+  @Id
+  @Column(name = "rule_id", nullable = false)
+  private String id;
 
   public boolean isAssetFiltered(Asset asset) {
-    if (!this.conditions.isEmpty()) {
+    if (this.conditions != null && !this.conditions.isEmpty()) {
       // Theoretically, a list of conditions could have different asset types each, but we assume
       // they are all equal
       if (this.conditions.get(0).getAssetType() instanceof FilteredAssetType) {
@@ -76,7 +108,9 @@ public class Rule {
   }
 
   public String getAssetType() {
-    if (!this.conditions.isEmpty() && this.conditions.get(0).getAssetType() != null) {
+    if (this.conditions != null
+        && !this.conditions.isEmpty()
+        && this.conditions.get(0).getAssetType() != null) {
       return this.conditions.get(0).getAssetType().getValue();
     }
 
@@ -108,10 +142,20 @@ public class Rule {
     return this.controls;
   }
 
-  public void setControls(List<String> controls) {
+  public void setControls(final List<String> controls) {
     this.controls = controls;
   }
 
+  public void addControls(final String... controls) {
+    final List<String> controlList = List.of(controls);
+    this.controls.addAll(controlList);
+  }
+
+  public boolean containsControl(final String controlId) {
+    return getControls().stream().anyMatch(c -> c.equals(controlId));
+  }
+
+  @Override
   public String getId() {
     return this.id;
   }
@@ -134,5 +178,50 @@ public class Rule {
 
   public void setConditions(List<Condition> conditions) {
     this.conditions = conditions;
+  }
+
+  @Override
+  public String toString() {
+    return new ToStringBuilder(this)
+        .append("conditions", conditions)
+        .append("active", active)
+        .append("name", name)
+        .append("description", description)
+        .append("icon", icon)
+        .append("controls", controls)
+        .append("id", id)
+        .toString();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Rule rule = (Rule) o;
+
+    return new EqualsBuilder()
+        .append(active, rule.active)
+        .append(new ArrayList<>(conditions), new ArrayList<>(rule.conditions))
+        .append(name, rule.name)
+        .append(description, rule.description)
+        .append(icon, rule.icon)
+        .append(new ArrayList<>(controls), new ArrayList<>(rule.controls))
+        .append(id, rule.id)
+        .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37)
+        .append(conditions)
+        .append(active)
+        .append(name)
+        .append(description)
+        .append(icon)
+        .append(controls)
+        .append(id)
+        .toHashCode();
   }
 }

@@ -28,10 +28,10 @@
 package io.clouditor.discovery.aws;
 
 import io.clouditor.credentials.AwsAccount;
+import io.clouditor.data_access_layer.HibernatePersistence;
 import io.clouditor.discovery.Asset;
 import io.clouditor.discovery.AssetProperties;
 import io.clouditor.discovery.Scanner;
-import io.clouditor.util.PersistenceManager;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Function;
@@ -54,7 +54,7 @@ public abstract class AwsScanner<
   static final String ARN_SEPARATOR = ":";
   static final String RESOURCE_TYPE_SEPARATOR = "/";
 
-  private Supplier<AwsClientBuilder<B, C>> builderSupplier;
+  private final Supplier<AwsClientBuilder<B, C>> builderSupplier;
 
   public AwsScanner(
       Supplier<AwsClientBuilder<B, C>> builderSupplier,
@@ -152,11 +152,10 @@ public abstract class AwsScanner<
 
     var builder = this.builderSupplier.get();
 
-    var account = PersistenceManager.getInstance().getById(AwsAccount.class, "AWS");
-
-    if (account == null) {
-      throw SdkClientException.create("AWS account not configured");
-    }
+    var account =
+        new HibernatePersistence()
+            .get(AwsAccount.class, "AWS")
+            .orElseThrow(() -> SdkClientException.create("AWS account not configured"));
 
     // TODO: find a generic way to find which client is global
     if (!account.isAutoDiscovered() && !(builder instanceof IamClientBuilder)) {

@@ -28,12 +28,60 @@
 package io.clouditor.assurance.ccl;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import java.util.Map;
+import io.clouditor.data_access_layer.PersistentObject;
+import io.clouditor.discovery.AssetProperties;
+import javax.persistence.*;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "@class")
-public abstract class AssetType {
+@Entity(name = "asset_type")
+@Table(name = "asset_type")
+@Inheritance(strategy = InheritanceType.JOINED)
+public class AssetType implements PersistentObject<String> {
 
-  public abstract boolean evaluate(Map properties);
+  private static final long serialVersionUID = 5799337361597734304L;
 
-  public abstract String getValue();
+  @Id
+  @Column(name = "type_value", nullable = false)
+  private String value;
+
+  public String getValue() {
+    return this.value;
+  }
+
+  public void setValue(String value) {
+    this.value = value;
+  }
+
+  public boolean evaluate(AssetProperties properties) {
+    return true;
+  }
+
+  @Override
+  public String getId() {
+    return value;
+  }
+
+  @Override
+  public String toString() {
+    return new ToStringBuilder(this).append("value", value).toString();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+
+    if (o == null || getClass() != o.getClass()) return false;
+
+    AssetType assetType = (AssetType) o;
+
+    return new EqualsBuilder().append(value, assetType.value).isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37).append(value).toHashCode();
+  }
 }

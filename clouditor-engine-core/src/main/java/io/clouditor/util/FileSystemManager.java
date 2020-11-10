@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.FileSystems;
@@ -137,18 +136,17 @@ public final class FileSystemManager {
    * Returns the content of a private key file as an array of characters.
    *
    * @param keyName the path to the key file
-   * @return the char array
    * @throws IOException if the key file is not found
    */
-  public char[] getPrivateKey(String keyName) throws IOException {
+  public void getPrivateKey(String keyName) throws IOException {
 
     /*
      * this is still not a very good approach to handle this because
      * this way the SSH key file always needs to be bundled with the
      * test case, which does not make too much sense
      */
-    Path path = this.getPathForResource(KEYS_DIR + keyName);
+    final Path path = this.getPathForResource(KEYS_DIR + keyName);
 
-    return new String(Files.readAllBytes(path), StandardCharsets.UTF_8).toCharArray();
+    Files.readString(path);
   }
 }

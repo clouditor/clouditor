@@ -29,19 +29,42 @@ package io.clouditor.discovery;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.clouditor.assurance.EvaluationResult;
+import io.clouditor.data_access_layer.PersistentObject;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.*;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
-public class Asset {
+@Entity(name = "asset")
+@Table(name = "asset")
+@Inheritance(strategy = InheritanceType.JOINED)
+public class Asset implements PersistentObject<String> {
 
+  private static final long serialVersionUID = -2382328140875227410L;
+
+  @ManyToMany(targetEntity = EvaluationResult.class)
+  @LazyCollection(LazyCollectionOption.FALSE)
   private List<EvaluationResult> evaluationResults = new ArrayList<>();
 
+  @CollectionTable(name = "asset_properties", joinColumns = @JoinColumn(name = "asset_id"))
+  @MapKeyColumn(name = "mapKey")
+  @LazyCollection(LazyCollectionOption.FALSE)
+  @Column(name = "asset_properties")
   private AssetProperties properties = new AssetProperties();
 
+  @Id
+  @Column(name = "asset_id")
   private String id;
+
+  @Column(name = "asset_name")
   private String name;
+
+  @Column(name = "type_value")
   private String type;
 
   public Asset() {
@@ -56,7 +79,7 @@ public class Asset {
   }
 
   public void setEvaluationResults(List<EvaluationResult> evaluationResults) {
-    this.evaluationResults = evaluationResults;
+    this.evaluationResults = new ArrayList<>(evaluationResults);
   }
 
   public AssetProperties getProperties() {
@@ -67,6 +90,7 @@ public class Asset {
     this.properties = properties;
   }
 
+  @Override
   public String getId() {
     return id;
   }
@@ -117,5 +141,33 @@ public class Asset {
         .append("name", name)
         .append("type", type)
         .toString();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Asset asset = (Asset) o;
+
+    return new EqualsBuilder()
+        .append(new ArrayList<>(evaluationResults), new ArrayList<>(asset.evaluationResults))
+        .append(properties, asset.properties)
+        .append(id, asset.id)
+        .append(name, asset.name)
+        .append(type, asset.type)
+        .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37)
+        .append(evaluationResults)
+        .append(properties)
+        .append(id)
+        .append(name)
+        .append(type)
+        .toHashCode();
   }
 }

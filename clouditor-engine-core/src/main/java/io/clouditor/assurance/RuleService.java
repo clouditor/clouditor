@@ -30,12 +30,11 @@ package io.clouditor.assurance;
 import static io.clouditor.assurance.RuleService.RuleVisitor.renderText;
 
 import io.clouditor.assurance.ccl.CCLDeserializer;
-import io.clouditor.discovery.AssetService;
-import io.clouditor.discovery.DiscoveryResult;
-import io.clouditor.discovery.DiscoveryService;
+import io.clouditor.data_access_layer.HibernatePersistence;
+import io.clouditor.data_access_layer.PersistenceManager;
+import io.clouditor.discovery.*;
 import io.clouditor.events.DiscoveryResultSubscriber;
 import io.clouditor.util.FileSystemManager;
-import io.clouditor.util.PersistenceManager;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
@@ -48,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import org.commonmark.node.AbstractVisitor;
@@ -68,7 +68,7 @@ public class RuleService extends DiscoveryResultSubscriber {
   @Inject private CertificationService certificationService;
   @Inject private DiscoveryService discoveryService;
 
-  private Map<String, Set<Rule>> rules = new HashMap<>();
+  private final Map<String, Set<Rule>> rules = new HashMap<>();
 
   private RuleService() {
     LOGGER.info("Initializing {}...", this.getClass().getSimpleName());
@@ -99,6 +99,10 @@ public class RuleService extends DiscoveryResultSubscriber {
           set.add(rule);
 
           LOGGER.info("Added rule {} for asset type {}", path.getFileName(), rule.getAssetType());
+          final PersistenceManager persistenceManager = new HibernatePersistence();
+          rule.getConditions()
+              .forEach(condition -> persistenceManager.saveOrUpdate(condition.getAssetType()));
+          persistenceManager.saveOrUpdate(rule);
         }
       }
     } catch (IOException ex) {
@@ -136,7 +140,7 @@ public class RuleService extends DiscoveryResultSubscriber {
 
   public static class ControlsVisitor extends AbstractVisitor {
 
-    private Rule rule;
+    private final Rule rule;
 
     ControlsVisitor(Rule rule) {
       this.rule = rule;
@@ -146,19 +150,25 @@ public class RuleService extends DiscoveryResultSubscriber {
     public void visit(BulletList bulletList) {
       var node = bulletList.getFirstChild();
 
-      this.rule.getControls().add(renderText(node.getFirstChild()));
+      final Function<Node, Control> getControl =
+          n -> {
+            Control control = new Control();
+            control.setControlId(renderText(n.getFirstChild()));
+            return control;
+          };
+
+      this.rule.addControls(getControl.apply(node).getControlId());
 
       while (node.getNext() != null) {
         node = node.getNext();
-
-        this.rule.getControls().add(renderText(node.getFirstChild()));
+        this.rule.addControls(getControl.apply(node).getControlId());
       }
     }
   }
 
   public static class RuleVisitor extends AbstractVisitor {
 
-    private Rule rule;
+    private final Rule rule;
 
     RuleVisitor(Rule rule) {
       this.rule = rule;
@@ -269,6 +279,7 @@ public class RuleService extends DiscoveryResultSubscriber {
 
   @Override
   public void handle(DiscoveryResult result) {
+    final PersistenceManager persistenceManager = new HibernatePersistence();
     LOGGER.info("Handling scan result from {}", result.getTimestamp());
 
     for (var asset : result.getDiscoveredAssets().values()) {
@@ -282,11 +293,10 @@ public class RuleService extends DiscoveryResultSubscriber {
       assetService.update(asset);
 
       LOGGER.debug("Evaluating {} rules for asset {}", rulesForAsset.size(), asset.getId());
-
       // evaluate all rules
       rulesForAsset.forEach(
           rule -> {
-            EvaluationResult eval;
+            final EvaluationResult eval;
             if (rule.isAssetFiltered(asset)) {
               // simply add an empty EvaluationResult
               eval = new EvaluationResult(rule, asset.getProperties());
@@ -294,6 +304,13 @@ public class RuleService extends DiscoveryResultSubscriber {
               eval = rule.evaluate(asset);
             }
             // TODO: can we really update the asset?
+            eval.getRule()
+                .getConditions()
+                .forEach(condition -> persistenceManager.saveOrUpdate(condition.getAssetType()));
+            persistenceManager.saveOrUpdate(eval.getRule());
+            eval.getFailedConditions()
+                .forEach(condition -> persistenceManager.saveOrUpdate(condition.getAssetType()));
+            persistenceManager.saveOrUpdate(eval);
             asset.addEvaluationResult(eval);
             if (!eval.isOk()) {
               LOGGER.info(
@@ -306,6 +323,7 @@ public class RuleService extends DiscoveryResultSubscriber {
             // update asset
             assetService.update(asset);
           });
+      persistenceManager.saveOrUpdate(asset);
     }
 
     // now all assets should be evaluated, now we can update the certification
@@ -313,12 +331,13 @@ public class RuleService extends DiscoveryResultSubscriber {
     this.certificationService.updateCertification();
 
     // update the scanner with latest result
-    var scan = this.discoveryService.getScan(result.getScanId());
+    var scanId = result.getScanId();
 
-    if (scan != null) {
+    if (scanId != null) {
+      persistenceManager.saveOrUpdate(result);
+      final Scan scan = persistenceManager.get(Scan.class, scanId).orElseThrow();
       scan.setLastResult(result);
-
-      PersistenceManager.getInstance().persist(scan);
+      persistenceManager.saveOrUpdate(scan);
     }
   }
 
@@ -329,7 +348,7 @@ public class RuleService extends DiscoveryResultSubscriber {
   public List<Rule> getRulesForControl(String controlId) {
     return this.rules.values().stream()
         .flatMap(Collection::stream)
-        .filter(rule -> rule.getControls() != null && rule.getControls().contains(controlId))
+        .filter(rule -> rule.getControls() != null && rule.containsControl(controlId))
         .collect(Collectors.toList());
   }
 

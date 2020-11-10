@@ -33,7 +33,7 @@ import software.amazon.awssdk.utils.builder.ToCopyableBuilder;
 
 public class Queue implements ToCopyableBuilder<Queue.Builder, Queue> {
 
-  private String url;
+  private final String url;
 
   private Queue(BuilderImpl builder) {
     this.url = builder.url;

@@ -28,64 +28,59 @@
 package io.clouditor.assurance;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.clouditor.util.PersistentObject;
+import io.clouditor.data_access_layer.PersistentObject;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.*;
 import javax.validation.Valid;
 import javax.validation.constraints.Size;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
+@Entity(name = "certification")
+@Table(name = "certification")
 public class Certification implements PersistentObject<String> {
 
+  private static final long serialVersionUID = 5983205960445678160L;
+
   /** A unique identifier for each certification, such as CSA CCM or Azure CIS. */
+  @JsonProperty
+  @Column(name = "certification_id", nullable = false)
+  @Id
   private String id;
 
   /** A list of controls in the certificate */
   @Size(min = 1)
   @Valid
   @JsonProperty
+  @ManyToMany(targetEntity = Control.class, cascade = CascadeType.ALL)
+  @LazyCollection(LazyCollectionOption.FALSE)
+  @JoinTable(
+      name = "control_to_certification",
+      joinColumns =
+          @JoinColumn(
+              name = "certification_id",
+              referencedColumnName = "certification_id",
+              nullable = false),
+      inverseJoinColumns = @JoinColumn(name = "control_id", referencedColumnName = "control_id"))
   private List<Control> controls = new ArrayList<>();
 
+  @JsonProperty
+  @Column(name = "certification_description", length = 65535)
   private String description;
+
+  @JsonProperty
+  @Column(name = "publisher")
   private String publisher;
+
+  @JsonProperty
+  @Column(name = "website")
   private String website;
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    var that = (Certification) o;
-
-    return new EqualsBuilder()
-        .append(id, that.id)
-        .append(controls, that.controls)
-        .append(description, that.description)
-        .append(publisher, that.publisher)
-        .append(website, that.website)
-        .isEquals();
-  }
-
   // TODO: startDate, endDate
-
-  @Override
-  public int hashCode() {
-    return new HashCodeBuilder(17, 37)
-        .append(id)
-        .append(controls)
-        .append(description)
-        .append(publisher)
-        .append(website)
-        .toHashCode();
-  }
 
   public List<Control> getControls() {
     return controls;
@@ -96,12 +91,6 @@ public class Certification implements PersistentObject<String> {
   }
 
   @Override
-  public String toString() {
-    return new ToStringBuilder(this, ToStringStyle.JSON_STYLE)
-        .append("controls", controls)
-        .toString();
-  }
-
   public String getId() {
     return id;
   }
@@ -132,5 +121,44 @@ public class Certification implements PersistentObject<String> {
 
   public void setWebsite(String website) {
     this.website = website;
+  }
+
+  @Override
+  public String toString() {
+    return new ToStringBuilder(this)
+        .append("id", id)
+        .append("controls", controls)
+        .append("description", description)
+        .append("publisher", publisher)
+        .append("website", website)
+        .toString();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Certification that = (Certification) o;
+
+    return new EqualsBuilder()
+        .append(id, that.id)
+        .append(new ArrayList<>(controls), new ArrayList<>(that.controls))
+        .append(description, that.description)
+        .append(publisher, that.publisher)
+        .append(website, that.website)
+        .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37)
+        .append(id)
+        .append(controls)
+        .append(description)
+        .append(publisher)
+        .append(website)
+        .toHashCode();
   }
 }

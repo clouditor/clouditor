@@ -29,10 +29,13 @@ package io.clouditor.assurance.ccl;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
+import java.io.Serializable;
 import java.util.Map;
 
 @JsonTypeInfo(use = Id.CLASS, property = "@class")
-public abstract class Expression {
+public abstract class Expression implements Serializable {
+
+  private static final long serialVersionUID = 4659631107025548821L;
 
   public abstract boolean evaluate(Map properties);
 
@@ -46,7 +49,7 @@ public abstract class Expression {
     var names = fieldName.split("\\.");
 
     var base = asset;
-    var value = (Object) null;
+    Object value = null;
 
     for (var name : names) {
       value = base.get(name);

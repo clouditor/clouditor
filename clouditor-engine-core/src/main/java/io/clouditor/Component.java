@@ -29,6 +29,8 @@ package io.clouditor;
 
 import io.clouditor.auth.LoginRequest;
 import io.clouditor.auth.LoginResponse;
+import java.io.IOException;
+import java.sql.SQLException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -118,7 +120,7 @@ public abstract class Component {
 
   public abstract void shutdown();
 
-  public abstract void start(String[] args) throws InterruptedException;
+  public abstract void start(String[] args) throws InterruptedException, IOException, SQLException;
 
   public abstract void startAPI();
 

@@ -28,17 +28,26 @@
 package io.clouditor.assurance.ccl;
 
 import io.clouditor.discovery.AssetProperties;
+import java.io.Serializable;
+import javax.persistence.*;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class Condition {
+@Embeddable
+public class Condition implements Serializable {
 
+  private static final long serialVersionUID = -7530930851665073637L;
+
+  @Column private String source;
+
+  @ManyToOne
+  @JoinColumn(name = "type_value")
   private AssetType assetType;
 
-  private Expression expression;
-
-  private String source;
+  @Transient private Expression expression;
 
   public Expression getExpression() {
-    return expression;
+    return this.expression;
   }
 
   public void setExpression(Expression expression) {
@@ -46,7 +55,7 @@ public class Condition {
   }
 
   public AssetType getAssetType() {
-    return assetType;
+    return this.assetType;
   }
 
   public void setAssetType(AssetType assetType) {
@@ -62,6 +71,30 @@ public class Condition {
   }
 
   public String getSource() {
-    return source;
+    return this.source;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Condition condition = (Condition) o;
+
+    return new EqualsBuilder()
+        .append(source, condition.source)
+        .append(assetType, condition.assetType)
+        .append(expression, condition.expression)
+        .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37)
+        .append(source)
+        .append(assetType)
+        .append(expression)
+        .toHashCode();
   }
 }

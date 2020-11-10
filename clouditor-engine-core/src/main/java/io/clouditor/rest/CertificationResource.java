@@ -95,7 +95,7 @@ public class CertificationResource {
             .filter(control -> control.getControlId().equals(finalControlId))
             .findFirst();
 
-    if (!first.isPresent()) {
+    if (first.isEmpty()) {
       throw new NotFoundException();
     }
 
@@ -147,7 +147,7 @@ public class CertificationResource {
             .filter(control -> control.getControlId().equals(finalControlId))
             .findAny();
 
-    if (!any.isPresent()) {
+    if (any.isEmpty()) {
       throw new NotFoundException();
     }
 

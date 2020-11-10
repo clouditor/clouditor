@@ -40,7 +40,7 @@ import org.junit.jupiter.api.Test;
 
 class RuleServiceTest {
 
-  private Engine engine = new Engine();
+  private final Engine engine = new Engine();
 
   @Test
   void testParseMarkdown() throws IOException {

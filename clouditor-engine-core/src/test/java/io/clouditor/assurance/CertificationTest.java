@@ -28,6 +28,7 @@
 package io.clouditor.assurance;
 
 import io.clouditor.AbstractEngineUnitTest;
+import io.clouditor.assurance.ccl.AssetType;
 import io.clouditor.assurance.ccl.CCLDeserializer;
 import io.clouditor.discovery.Asset;
 import io.clouditor.discovery.AssetProperties;
@@ -59,8 +60,12 @@ class CertificationTest extends AbstractEngineUnitTest {
     var properties = new AssetProperties();
     properties.put("property", true);
 
+    final String assetTypeID = "id";
+    final AssetType assetType = new AssetType();
+    assetType.setValue(assetTypeID);
+
     var asset = new Asset("MockAsset", "id", "name", properties);
-    var discovery = new DiscoveryResult("id");
+    var discovery = new DiscoveryResult(assetType.getValue());
     discovery.setDiscoveredAssets(Map.of(asset.getId(), asset));
 
     // pipe it through the discovery pipeline

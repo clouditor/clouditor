@@ -29,33 +29,57 @@ package io.clouditor.discovery;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import javax.persistence.*;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
-public class DiscoveryResult {
+@Entity(name = "discovery_result")
+@Table(name = "discovery_result")
+public class DiscoveryResult implements Serializable {
 
+  private static final long serialVersionUID = -7032902561471865653L;
+
+  @Id
+  @Column(nullable = false)
   private Instant timestamp;
+
+  @ManyToMany
+  @LazyCollection(LazyCollectionOption.FALSE)
+  @Embedded
   private Map<String, Asset> discoveredAssets = new HashMap<>();
-  private boolean failed = false;
-  private String error;
 
-  @JsonProperty private String scanId;
+  @Column() private boolean failed = false;
 
-  public void setTimestamp(Instant timestamp) {
-    this.timestamp = timestamp;
+  @Column() private String error;
+
+  @JsonProperty
+  @Column(name = "scan_id")
+  private String scanId;
+
+  public DiscoveryResult() {}
+
+  @JsonCreator
+  public DiscoveryResult(@JsonProperty(value = "scanId") String scanId) {
+    // round the Instant to epoch milli seconds (To be consistent with the PostgreSQL DB)
+    this.timestamp = Instant.ofEpochMilli(Instant.now().toEpochMilli());
+    this.scanId = scanId;
   }
 
   public Instant getTimestamp() {
     return timestamp;
   }
 
-  @JsonCreator
-  public DiscoveryResult(@JsonProperty(value = "scanId") String scanId) {
-    this.timestamp = Instant.now();
-    this.scanId = scanId;
+  public void setTimestamp(final Instant timestamp) {
+    // round the Instant to epoch milli seconds (To be consistent with the PostgreSQL DB)
+    this.timestamp = Instant.ofEpochMilli(timestamp.toEpochMilli());
   }
 
   public void setDiscoveredAssets(Map<String, Asset> discoveredAssets) {
@@ -86,6 +110,14 @@ public class DiscoveryResult {
     this.error = error;
   }
 
+  public String getScanId() {
+    return this.scanId;
+  }
+
+  public void setScanId(final String scanId) {
+    this.scanId = scanId;
+  }
+
   @Override
   public String toString() {
     return new ToStringBuilder(this, ToStringStyle.JSON_STYLE)
@@ -96,11 +128,31 @@ public class DiscoveryResult {
         .toString();
   }
 
-  public String getScanId() {
-    return this.scanId;
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+
+    if (o == null || getClass() != o.getClass()) return false;
+
+    DiscoveryResult that = (DiscoveryResult) o;
+
+    return new EqualsBuilder()
+        .append(failed, that.failed)
+        .append(timestamp, that.timestamp)
+        .append(discoveredAssets, that.discoveredAssets)
+        .append(error, that.error)
+        .append(scanId, that.scanId)
+        .isEquals();
   }
 
-  public void setScanId(String scanId) {
-    this.scanId = scanId;
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37)
+        .append(timestamp)
+        .append(discoveredAssets)
+        .append(failed)
+        .append(error)
+        .append(scanId)
+        .toHashCode();
   }
 }

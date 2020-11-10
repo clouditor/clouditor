@@ -27,15 +27,13 @@
 
 package io.clouditor;
 
-import de.bwaldvogel.mongo.MongoServer;
-import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
 import io.clouditor.assurance.CertificationService;
 import io.clouditor.assurance.RuleService;
 import io.clouditor.auth.AuthenticationService;
+import io.clouditor.data_access_layer.HibernateUtils;
 import io.clouditor.discovery.DiscoveryService;
 import io.clouditor.rest.EngineAPI;
 import io.clouditor.util.FileSystemManager;
-import io.clouditor.util.PersistenceManager;
 import org.jvnet.hk2.annotations.Service;
 import org.kohsuke.args4j.Option;
 
@@ -47,15 +45,25 @@ import org.kohsuke.args4j.Option;
 @Service
 public class Engine extends Component {
 
+  private static final String DEFAULT_DB_USER_NAME = "postgres";
+
+  private static final String DEFAULT_DB_PASSWORD = "postgres";
+
   private static final String DEFAULT_DB_HOST = "localhost";
 
-  private static final String DEFAULT_DB_NAME = "clouditor";
+  private static final String DEFAULT_DB_NAME = "postgres";
 
-  private static final int DEFAULT_DB_PORT = 27017;
+  private static final int DEFAULT_DB_PORT = 5432;
 
   private static final short DEFAULT_API_PORT = 9999;
 
   private static final boolean DEFAULT_DB_IN_MEMORY = false;
+
+  @Option(name = "--db-user-name", usage = "provides user name of database")
+  private String dbUserName = DEFAULT_DB_USER_NAME;
+
+  @Option(name = "--db-password", usage = "provides password of database")
+  private String dbPassword = DEFAULT_DB_PASSWORD;
 
   @Option(name = "--db-host", usage = "provides address of database")
   private String dbHost = DEFAULT_DB_HOST;
@@ -103,6 +111,14 @@ public class Engine extends Component {
 
   public Engine() {
     // Nothing to do
+  }
+
+  public String getDbName() {
+    return this.dbName;
+  }
+
+  public void setDBName(final String dbname) {
+    this.dbName = dbname;
   }
 
   public int getAPIPort() {
@@ -185,20 +201,12 @@ public class Engine extends Component {
   }
 
   public void initDB() {
-    if (this.dbInMemory) {
-      var server = new MongoServer(new MemoryBackend());
-
-      var address = server.bind();
-
-      LOGGER.info("Starting database purely in-memory...");
-
-      this.dbHost = address.getHostName();
-      this.dbPort = address.getPort();
-
-      Runtime.getRuntime().addShutdownHook(new Thread(server::shutdown));
+    if (this.dbInMemory)
+      HibernateUtils.initInMemoryH2(this.dbName, this.dbUserName, this.dbPassword);
+    else {
+      HibernateUtils.init(this.dbHost, this.dbPort, this.dbName, this.dbUserName, this.dbPassword);
+      Runtime.getRuntime().addShutdownHook(new Thread(HibernateUtils::close));
     }
-
-    PersistenceManager.getInstance().init(this.dbName, this.dbHost, this.dbPort);
   }
 
   /** Shuts down the Clouditor Engine */
@@ -211,9 +219,6 @@ public class Engine extends Component {
 
     // stop the API
     this.stopAPI();
-
-    // destroy the persistence manager
-    PersistenceManager.getInstance().destroy();
   }
 
   /**

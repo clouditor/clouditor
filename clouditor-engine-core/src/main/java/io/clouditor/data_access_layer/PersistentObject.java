@@ -25,26 +25,14 @@
  * This file is part of Clouditor Community Edition.
  */
 
-package io.clouditor.util;
+package io.clouditor.data_access_layer;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import java.io.IOException;
-import java.time.Instant;
-import java.util.Date;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 
-public class BsonInstantDeserializer extends JsonDeserializer<Instant> {
+/** This class represents an object that we can persist in a not-specified form, i.e. a Database. */
+public interface PersistentObject<T extends Serializable> extends Serializable {
 
-  @Override
-  public Instant deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-    // the ISODate is already parsed as a Date object in an embedded object from the BsonParser
-    if (p.getCurrentToken() == JsonToken.VALUE_EMBEDDED_OBJECT) {
-      return Instant.ofEpochMilli(((Date) p.getEmbeddedObject()).getTime());
-    } else {
-      // otherwise, maybe somebody left a unix timestamp for us
-      return Instant.ofEpochMilli(p.getLongValue());
-    }
-  }
+  @JsonProperty("_id")
+  T getId();
 }

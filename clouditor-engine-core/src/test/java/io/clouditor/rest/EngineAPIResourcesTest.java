@@ -39,11 +39,7 @@ import io.clouditor.assurance.Rule;
 import io.clouditor.assurance.RuleService;
 import io.clouditor.auth.LoginRequest;
 import io.clouditor.auth.User;
-import io.clouditor.discovery.Asset;
-import io.clouditor.discovery.AssetProperties;
-import io.clouditor.discovery.AssetService;
-import io.clouditor.discovery.DiscoveryService;
-import io.clouditor.discovery.Scan;
+import io.clouditor.discovery.*;
 import io.clouditor.util.FileSystemManager;
 import java.io.IOException;
 import java.util.List;
@@ -56,10 +52,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -80,6 +73,8 @@ class EngineAPIResourcesTest extends JerseyTest {
   @BeforeAll
   static void startUpOnce() {
     engine.setDbInMemory(true);
+
+    engine.setDBName("EngineAPIResorcesTestDB");
 
     // init db
     engine.initDB();
@@ -166,7 +161,7 @@ class EngineAPIResourcesTest extends JerseyTest {
                 AuthenticationFilter.createAuthorization(this.token))
             .get(new GenericType<Map<String, Certification>>() {});
 
-    assertEquals(service.getCertifications(), certifications);
+    assertEquals(service.getCertifications().get("mock-cert"), certifications.get("mock-cert"));
 
     assertTrue(certifications.containsKey(mockCert.getId()));
 
@@ -179,7 +174,7 @@ class EngineAPIResourcesTest extends JerseyTest {
   void testGetAssets() {
     var service = engine.getService(AssetService.class);
 
-    var asset = new Asset("ASSET_TYPE", "some-id", "some-name", new AssetProperties());
+    var asset = new Asset(ASSET_TYPE, "some-id", "some-name", new AssetProperties());
 
     service.update(asset);
 
@@ -242,7 +237,7 @@ class EngineAPIResourcesTest extends JerseyTest {
   }
 
   @Test
-  void testUsers() throws IOException {
+  void testUsers() {
     var users =
         target("users")
             .request()
@@ -274,7 +269,6 @@ class EngineAPIResourcesTest extends JerseyTest {
     assertEquals(200, resp.getStatus());
 
     // retrieve user
-
     var guest2 =
         target("users")
             .path("test")
@@ -307,7 +301,6 @@ class EngineAPIResourcesTest extends JerseyTest {
             .get(new GenericType<List<User>>() {});
 
     assertNotNull(users2);
-
     assertEquals(numberOfUsers, users2.size());
   }
 }
