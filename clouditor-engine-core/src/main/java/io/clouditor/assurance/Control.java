@@ -76,7 +76,7 @@ public class Control implements PersistentObject<String> {
 
   /** A short description. */
   @JsonProperty
-  @Column(name = "control_description", columnDefinition = "TEXT")
+  @Column(name = "control_description", columnDefinition = "text")
   private String description;
 
   /** Is this control ok or not? By default we start in the NOT_EVALUATED state. */

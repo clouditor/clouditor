@@ -51,13 +51,13 @@ public class Engine extends Component {
 
   private static final String DEFAULT_DB_HOST = "localhost";
 
-  private static final String DEFAULT_DB_NAME = "clouditor";
+  private static final String DEFAULT_DB_NAME = "postgres";
 
   private static final int DEFAULT_DB_PORT = 5432;
 
   private static final short DEFAULT_API_PORT = 9999;
 
-  private static final boolean DEFAULT_DB_IN_MEMORY = true;
+  private static final boolean DEFAULT_DB_IN_MEMORY = false;
 
   @Option(name = "--db-user-name", usage = "provides user name of database")
   private String dbUserName = DEFAULT_DB_USER_NAME;

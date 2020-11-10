@@ -127,6 +127,7 @@ public class HibernateUtils {
     configuration
         .setProperty("hibernate.enable_lazy_load_no_trans", "true")
         .setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQL94Dialect")
+        .setProperty("hibernate.globally_quoted_identifiers", "true")
         .setProperty("hibernate.hbm2ddl.auto", "create")
         .setProperty("hibernate.connection.username", userName)
         .setProperty("hibernate.connection.password", password);
