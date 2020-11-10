@@ -73,7 +73,7 @@ class PersistenceManagerTest extends AbstractEngineUnitTest {
 
     final EvaluationResult evaluationResult = new EvaluationResult(rule, assetProperties);
     evaluationResult.setFailedConditions(List.of(condition));
-    final Instant evaluationResultID = evaluationResult.getId();
+    final String evaluationResultID = evaluationResult.getId();
 
     final String assetID = "asset_id";
     final Asset asset = new Asset("asset_type", assetID, "asset_name", assetProperties);

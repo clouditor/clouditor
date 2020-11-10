@@ -56,7 +56,7 @@ import org.jetbrains.annotations.Nullable;
 
 @Entity(name = "evaluation_result")
 @Table(name = "evaluation_result")
-public class EvaluationResult implements PersistentObject<Instant> {
+public class EvaluationResult implements PersistentObject<String> {
 
   private static final long serialVersionUID = 7255742076812915308L;
 
@@ -130,8 +130,8 @@ public class EvaluationResult implements PersistentObject<Instant> {
   }
 
   @Override
-  public Instant getId() {
-    return this.timestamp;
+  public String getId() {
+    return this.id;
   }
 
   @Override
