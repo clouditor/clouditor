@@ -69,7 +69,7 @@ public class Certification implements PersistentObject<String> {
   private List<Control> controls = new ArrayList<>();
 
   @JsonProperty
-  @Column(name = "certification_description", columnDefinition = "text")
+  @Column(name = "certification_description", length = 65535)
   private String description;
 
   @JsonProperty
