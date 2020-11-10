@@ -42,7 +42,6 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -65,7 +64,9 @@ public class Control implements PersistentObject<String> {
   private List<Rule> rules = new ArrayList<>();
 
   /** The last evaluation results */
-  @OneToMany private final List<EvaluationResult> results = new ArrayList<>();
+  @ManyToMany
+  @LazyCollection(LazyCollectionOption.FALSE)
+  private final List<EvaluationResult> results = new ArrayList<>();
 
   /** The id of the control this objective is referring to, i.e. a CCM control id. */
   @JsonProperty

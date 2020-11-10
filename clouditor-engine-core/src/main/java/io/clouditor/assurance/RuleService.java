@@ -293,11 +293,10 @@ public class RuleService extends DiscoveryResultSubscriber {
       assetService.update(asset);
 
       LOGGER.debug("Evaluating {} rules for asset {}", rulesForAsset.size(), asset.getId());
-
       // evaluate all rules
       rulesForAsset.forEach(
           rule -> {
-            EvaluationResult eval;
+            final EvaluationResult eval;
             if (rule.isAssetFiltered(asset)) {
               // simply add an empty EvaluationResult
               eval = new EvaluationResult(rule, asset.getProperties());
@@ -305,8 +304,14 @@ public class RuleService extends DiscoveryResultSubscriber {
               eval = rule.evaluate(asset);
             }
             // TODO: can we really update the asset?
-            asset.addEvaluationResult(eval);
+            eval.getRule()
+                .getConditions()
+                .forEach(condition -> persistenceManager.saveOrUpdate(condition.getAssetType()));
+            persistenceManager.saveOrUpdate(eval.getRule());
+            eval.getFailedConditions()
+                .forEach(condition -> persistenceManager.saveOrUpdate(condition.getAssetType()));
             persistenceManager.saveOrUpdate(eval);
+            asset.addEvaluationResult(eval);
             if (!eval.isOk()) {
               LOGGER.info(
                   "The following rule failed for asset {} with {} failed conditions: {}",
@@ -318,7 +323,6 @@ public class RuleService extends DiscoveryResultSubscriber {
             // update asset
             assetService.update(asset);
           });
-      persistenceManager.get(Asset.class, asset.getId());
       persistenceManager.saveOrUpdate(asset);
     }
 
@@ -330,8 +334,6 @@ public class RuleService extends DiscoveryResultSubscriber {
     var scanId = result.getScanId();
 
     if (scanId != null) {
-      for (final Asset asset : result.getDiscoveredAssets().values())
-        persistenceManager.saveOrUpdate(asset);
       persistenceManager.saveOrUpdate(result);
       final Scan scan = persistenceManager.get(Scan.class, scanId).orElseThrow();
       scan.setLastResult(result);

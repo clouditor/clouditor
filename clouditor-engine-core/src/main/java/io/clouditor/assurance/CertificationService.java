@@ -28,6 +28,7 @@
 package io.clouditor.assurance;
 
 import io.clouditor.data_access_layer.HibernatePersistence;
+import io.clouditor.data_access_layer.PersistenceManager;
 import io.clouditor.events.CertificationSubscriber;
 import io.clouditor.events.SubscriptionManager;
 import java.lang.reflect.InvocationTargetException;
@@ -183,7 +184,7 @@ public class CertificationService {
   }
 
   public void updateCertification(List<String> controlIds) {
-    final HibernatePersistence hibernatePersistence = new HibernatePersistence();
+    final PersistenceManager persistenceManager = new HibernatePersistence();
     for (var certification : this.certifications.values()) {
       for (var control : certification.getControls()) {
         // only update certain controls, or all if the list is empty
@@ -198,6 +199,9 @@ public class CertificationService {
 
         control.evaluate(this.locator);
 
+        control.getResults().forEach(persistenceManager::saveOrUpdate);
+        persistenceManager.saveOrUpdate(control);
+
         LOGGER.info(
             "Evaluated fulfillment of control {} as {}",
             control.getControlId(),
@@ -206,9 +210,8 @@ public class CertificationService {
         LOGGER.debug("Control {} is now {}", control.getControlId(), control);
       }
 
+      persistenceManager.saveOrUpdate(certification);
       this.certificationPublisher.submit(certification);
-
-      hibernatePersistence.saveOrUpdate(certification);
     }
   }
 

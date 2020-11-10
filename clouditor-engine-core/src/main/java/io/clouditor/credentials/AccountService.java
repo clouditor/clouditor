@@ -95,7 +95,6 @@ public class AccountService {
     LOGGER.info("Adding account for provider {} with id {}", provider, account.getId());
 
     // TODO: check, if something actually has changed
-
     new HibernatePersistence().saveOrUpdate(account);
 
     // since we changed the account (potentially), we need to make sure the scanners associated with

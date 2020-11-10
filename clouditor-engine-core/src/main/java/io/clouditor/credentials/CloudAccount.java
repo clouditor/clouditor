@@ -37,15 +37,13 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
-import javax.persistence.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Entity(name = "cloud_account")
-@Table(name = "cloud_account")
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "provider")
 @Collection("accounts")
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public abstract class CloudAccount<T> implements PersistentObject<String> {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(CloudAccount.class);
@@ -56,7 +54,7 @@ public abstract class CloudAccount<T> implements PersistentObject<String> {
   @Column(name = "account_id")
   protected String accountId;
 
-  @Column(name = "user")
+  @Column(name = "cloud_user")
   protected String user;
 
   @Column @Id protected String provider;
