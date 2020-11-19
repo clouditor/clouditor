@@ -14,3 +14,7 @@ log
 .volumes
 out
 gradle.properties
+
+*.pb.go
+*.pb.gw.go
+

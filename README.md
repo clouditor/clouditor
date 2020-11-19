@@ -91,3 +91,20 @@ To build all necessary docker images, run the following command:
 ```
 ./gradlew docker
 ```
+
+## Build (Go components)
+
+Install necessary protobuf tools.
+
+```
+go install google.golang.org/protobuf/cmd/protoc-gen-go \
+google.golang.org/grpc/cmd/protoc-gen-go-grpc \
+github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway
+```
+
+Also make sure that `$HOME/go/bin` is on your `$PATH` and build:
+
+```
+go generate ./...
+go build ./...
+```

@@ -7,5 +7,10 @@
 			"path": "clouditor-ui"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"cSpell.words": [
+			"clouditor",
+			"grpc"
+		]
+	}
 }
