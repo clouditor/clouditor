@@ -1,5 +1,6 @@
 **/build
 **/bin
+**/log
 **/dist
 **/.volumes
 **/node_modules
