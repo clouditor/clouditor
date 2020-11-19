@@ -92,7 +92,7 @@ To build all necessary docker images, run the following command:
 ./gradlew docker
 ```
 
-## Build (Go components)
+## Build (Go components) - Experimental
 
 Install necessary protobuf tools.
 
@@ -109,7 +109,13 @@ go generate ./...
 go build ./...
 ```
 
-To test, start a local PostgreSQL db:
+To test, start the engine with an in-memory DB
+
+```
+./engine --db-in-memory
+```
+
+Alternatively, be sure to start a postgre DB:
 
 ```
 docker run -e POSTGRES_HOST_AUTH_METHOD=trust -d -p 5432:5432 postgres 

@@ -66,15 +66,18 @@ func RunServer(ctx context.Context, grpcPort int, httpPort int) error {
 	go func() {
 		for range c {
 			// sig is a ^C, handle it
+			break
 		}
 
 		_, cancel := context.WithTimeout(ctx, 5*time.Second)
 		defer cancel()
 
+		log.Printf("Shutting down REST gateway on :%d\n", httpPort)
+
 		_ = srv.Shutdown(ctx)
 	}()
 
-	log.Printf("Starting REST gateway on :%d ...\n", httpPort)
+	log.Printf("Starting REST gateway on :%d\n", httpPort)
 
 	return srv.ListenAndServe()
 }

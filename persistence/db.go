@@ -29,34 +29,33 @@ package persistence
 
 import (
 	"fmt"
+	"log"
 
 	"clouditor.io/clouditor"
-	"github.com/plgd-dev/kit/log"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 func init() {
-	inMemory = true
+
 }
 
-var inMemory bool
 var db *gorm.DB
 
-func InitPostgreSQL(host string) (err error) {
+func InitDB(inMemory bool, host string, port int16) (err error) {
 	if inMemory {
 		if db, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{}); err != nil {
 			return err
 		}
 
-		log.Infof("Using in-memory DB")
+		log.Println("Using in-memory DB")
 	} else {
-		if db, err = gorm.Open(postgres.Open(fmt.Sprintf("postgres://postgres@%s/postgres?sslmode=disable", host)), &gorm.Config{}); err != nil {
+		if db, err = gorm.Open(postgres.Open(fmt.Sprintf("postgres://postgres@%s:%d/postgres?sslmode=disable", host, port)), &gorm.Config{}); err != nil {
 			return err
 		}
 
-		log.Infof("Using postgres DB @ %s", host)
+		log.Printf("Using postgres DB @ %s\n", host)
 	}
 
 	db.AutoMigrate(&clouditor.User{})

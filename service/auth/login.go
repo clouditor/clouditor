@@ -43,12 +43,15 @@ import (
 
 //go:generate protoc -I ../../proto -I ../../third_party auth.proto --go_out=../.. --go-grpc_out=../..
 
-var apiSecret = "changeme"
-var apiIssuer = "clouditor"
+const (
+	Issuer = "clouditor"
+)
 
 // Service is an implementation of the gRPC Authentication service
 type Service struct {
 	clouditor.UnimplementedAuthenticationServer
+
+	TokenSecret string
 }
 
 // UserClaims extend jwt.StandardClaims with more detailed claims about a user
@@ -75,7 +78,7 @@ func (s Service) Login(ctx context.Context, request *clouditor.LoginRequest) (re
 
 	var token string
 
-	if token, err = issueToken(user.Username, user.FullName, user.Email, time.Now().Add(1*3600*24)); err != nil {
+	if token, err = s.issueToken(user.Username, user.FullName, user.Email, time.Now().Add(1*3600*24)); err != nil {
 		return nil, grpc.Errorf(codes.Internal, "token issue failed: %w", err)
 	}
 
@@ -128,8 +131,8 @@ func (s Service) HashPassword(password string) ([]byte, error) {
 }
 
 // issueToken issues a JWT token
-func issueToken(subject string, fullName string, email string, expiry time.Time) (token string, err error) {
-	key := []byte(apiSecret)
+func (s Service) issueToken(subject string, fullName string, email string, expiry time.Time) (token string, err error) {
+	key := []byte(s.TokenSecret)
 
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		&UserClaims{
@@ -137,7 +140,7 @@ func issueToken(subject string, fullName string, email string, expiry time.Time)
 			EMail:    email,
 			StandardClaims: jwt.StandardClaims{
 				ExpiresAt: expiry.Unix(),
-				Issuer:    apiIssuer,
+				Issuer:    Issuer,
 				Subject:   subject,
 			}},
 	)
