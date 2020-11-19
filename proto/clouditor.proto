@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package clouditor;
+
+option go_package = ".;clouditor";
+
+message Metric { int32 id = 1; }
