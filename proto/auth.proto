@@ -36,8 +36,9 @@ option go_package = ".;clouditor";
 message User {
   string username = 1;
   string password = 2;
-  string full_name = 3;
-  bool shadow = 4;
+  string email = 3;
+  string full_name = 4;
+  bool shadow = 5;
 }
 
 message LoginRequest {

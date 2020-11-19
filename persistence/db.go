@@ -25,56 +25,46 @@
  * This file is part of Clouditor Community Edition.
  */
 
-package rest
+package persistence
 
 import (
-	"context"
 	"fmt"
-	"log"
-	"net/http"
-	"os"
-	"os/signal"
-	"time"
 
 	"clouditor.io/clouditor"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"google.golang.org/grpc"
+	"github.com/plgd-dev/kit/log"
+	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
-//go:generate protoc -I ../proto -I ../third_party auth.proto --grpc-gateway_out=../ --grpc-gateway_opt logtostderr=true
+func init() {
+	inMemory = true
+}
 
-func RunServer(ctx context.Context, grpcPort int, httpPort int) error {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+var inMemory bool
+var db *gorm.DB
 
-	mux := runtime.NewServeMux()
-
-	opts := []grpc.DialOption{grpc.WithInsecure()}
-
-	if err := clouditor.RegisterAuthenticationHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), opts); err != nil {
-		return fmt.Errorf("failed to connect to authentication gRPC service %w", err)
-	}
-
-	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%d", httpPort),
-		Handler: mux,
-	}
-
-	// graceful shutdown
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	go func() {
-		for range c {
-			// sig is a ^C, handle it
+func InitPostgreSQL(host string) (err error) {
+	if inMemory {
+		if db, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{}); err != nil {
+			return err
 		}
 
-		_, cancel := context.WithTimeout(ctx, 5*time.Second)
-		defer cancel()
+		log.Infof("Using in-memory DB")
+	} else {
+		if db, err = gorm.Open(postgres.Open(fmt.Sprintf("postgres://postgres@%s/postgres?sslmode=disable", host)), &gorm.Config{}); err != nil {
+			return err
+		}
 
-		_ = srv.Shutdown(ctx)
-	}()
+		log.Infof("Using postgres DB @ %s", host)
+	}
 
-	log.Printf("Starting REST gateway on :%d ...\n", httpPort)
+	db.AutoMigrate(&clouditor.User{})
 
-	return srv.ListenAndServe()
+	return nil
+}
+
+// GetDatabase returns the database
+func GetDatabase() *gorm.DB {
+	return db
 }

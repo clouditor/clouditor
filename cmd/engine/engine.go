@@ -34,6 +34,7 @@ import (
 	"net"
 
 	"clouditor.io/clouditor"
+	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/rest"
 	"clouditor.io/clouditor/service/auth"
 	"google.golang.org/grpc"
@@ -41,20 +42,26 @@ import (
 )
 
 var server *grpc.Server
+var authService auth.Service
 
 func main() {
+	persistence.InitPostgreSQL("localhost")
+
+	createDefaultUser()
+
 	fmt.Printf("Welcome to new Clouditor 2.0\n\n")
 
 	grpcPort := 9090
 	httpPort := 8080
 
+	// create a new socket for gRPC communication
 	sock, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
 	if err != nil {
 		log.Fatalf("could not listen: %v", err)
 	}
 
 	server = grpc.NewServer()
-	clouditor.RegisterAuthenticationServer(server, &auth.Service{})
+	clouditor.RegisterAuthenticationServer(server, &authService)
 
 	// enable reflection, primary for testing in early stages
 	reflection.Register(server)
@@ -66,7 +73,29 @@ func main() {
 		}
 	}()
 
+	// serve the gRPC socket
 	if err := server.Serve(sock); err != nil {
 		log.Fatalf("failed to serve gRPC endpoint: %v", err)
+	}
+}
+
+func createDefaultUser() {
+	db := persistence.GetDatabase()
+
+	var count int64
+	db.Model(&clouditor.User{}).Count(&count)
+
+	if count == 0 {
+		password, _ := authService.HashPassword("clouditor")
+
+		user := clouditor.User{
+			Username: "clouditor",
+			FullName: "clouditor",
+			Password: string(password),
+		}
+
+		log.Printf("Creating default user %s\n", user.Username)
+
+		db.Create(&user)
 	}
 }

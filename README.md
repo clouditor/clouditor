@@ -108,3 +108,9 @@ Also make sure that `$HOME/go/bin` is on your `$PATH` and build:
 go generate ./...
 go build ./...
 ```
+
+To test, start a local PostgreSQL db:
+
+```
+docker run -e POSTGRES_HOST_AUTH_METHOD=trust -d -p 5432:5432 postgres 
+```
