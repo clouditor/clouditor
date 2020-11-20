@@ -19,4 +19,5 @@ gradle.properties
 *.pb.gw.go
 
 __debug_bin
+engine
 
