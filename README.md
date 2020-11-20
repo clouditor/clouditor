@@ -91,3 +91,32 @@ To build all necessary docker images, run the following command:
 ```
 ./gradlew docker
 ```
+
+## Build (Go components) - Experimental
+
+Install necessary protobuf tools.
+
+```
+go install google.golang.org/protobuf/cmd/protoc-gen-go \
+google.golang.org/grpc/cmd/protoc-gen-go-grpc \
+github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway
+```
+
+Also make sure that `$HOME/go/bin` is on your `$PATH` and build:
+
+```
+go generate ./...
+go build ./...
+```
+
+To test, start the engine with an in-memory DB
+
+```
+./engine --db-in-memory
+```
+
+Alternatively, be sure to start a postgre DB:
+
+```
+docker run -e POSTGRES_HOST_AUTH_METHOD=trust -d -p 5432:5432 postgres 
+```
