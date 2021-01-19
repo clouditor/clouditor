@@ -132,6 +132,7 @@ public class CertificationResource {
   }
 
   @GET
+  @Produces(MediaType.APPLICATION_JSON)
   @Path("{certificationId}/{controlId}")
   public Control getControl(
       @PathParam("certificationId") String certificationId,
@@ -164,11 +165,11 @@ public class CertificationResource {
     if (certification == null) {
       throw new NotFoundException();
     }
-
     this.service.modifyCertification(certification);
   }
 
   @GET
+  @Produces(MediaType.APPLICATION_JSON)
   @Path("importers")
   public Map<String, CertificationImporter> getImporters() {
     return this.service.getImporters();
