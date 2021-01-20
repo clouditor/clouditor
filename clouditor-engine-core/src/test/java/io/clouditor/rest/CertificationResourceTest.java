@@ -32,7 +32,7 @@ public class CertificationResourceTest extends JerseyTest {
   static void startUpOnce() {
     engine.setDbInMemory(true);
 
-    engine.setDBName("EngineAPIResourcesTestDB");
+    engine.setDBName("CertificationResourceTestDB");
 
     // init db
     engine.initDB();
@@ -541,8 +541,7 @@ public class CertificationResourceTest extends JerseyTest {
   // ToDo: After each test, clean up everything (some tests fail when not executed individually)
   @AfterEach
   @Disabled
-  public void reset() {
-  }
+  public void reset() {}
 
   @Override
   protected Application configure() {
