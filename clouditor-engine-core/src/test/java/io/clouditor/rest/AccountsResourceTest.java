@@ -7,7 +7,6 @@ import io.clouditor.Engine;
 import io.clouditor.credentials.AccountService;
 import io.clouditor.credentials.CloudAccount;
 import io.clouditor.discovery.DiscoveryService;
-
 import java.io.IOException;
 import java.util.Map;
 import javax.persistence.Entity;
@@ -16,243 +15,233 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
 import org.junit.jupiter.api.*;
 
 public class AccountsResourceTest extends JerseyTest {
-    private static final Engine engine = new Engine();
-    private String token;
-    private static final String accountsPrefix = "/accounts/";
+  private static final Engine engine = new Engine();
+  private String token;
+  private static final String accountsPrefix = "/accounts/";
 
-    /**
-     * Tests
-     */
+  /** Tests */
+  @Test
+  public void givenGetAccounts_whenNoAccountsAvailable_thenStatusOkAndResponseEmpty() {
+    // Request
+    Response response =
+        target(accountsPrefix)
+            .request()
+            .header(
+                AuthenticationFilter.HEADER_AUTHORIZATION,
+                AuthenticationFilter.createAuthorization(token))
+            .get();
 
-    @Test
-    public void givenGetAccounts_whenNoAccountsAvailable_thenStatusOkAndResponseEmpty() {
-        // Request
-        Response response =
-                target(accountsPrefix)
-                        .request()
-                        .header(
-                                AuthenticationFilter.HEADER_AUTHORIZATION,
-                                AuthenticationFilter.createAuthorization(token))
-                        .get();
+    // Assertions
+    Assertions.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+    Map<?, ?> accountsResource = response.readEntity(Map.class);
+    Assertions.assertTrue(accountsResource.isEmpty());
+  }
 
-        // Assertions
-        Assertions.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-        Map<?, ?> accountsResource = response.readEntity(Map.class);
-        Assertions.assertTrue(accountsResource.isEmpty());
+  // ToDo: responded provider is "Mock Cloud" instead of "Mock Provider"
+  @Test
+  public void givenGetAccounts_whenOneAccountAvailable_thenRespondWithAccount() {
+    // Create account
+    AccountService accService = engine.getService(AccountService.class);
+    CloudAccount mockCloudAccount = new MockCloudAccount();
+    String provider = "Mock Provider";
+    try {
+      accService.addAccount(provider, mockCloudAccount);
+    } catch (IOException e) {
+      e.printStackTrace();
     }
 
-    // ToDo: responded provider is "Mock Cloud" instead of "Mock Provider"
-    @Test
-    public void givenGetAccounts_whenOneAccountAvailable_thenRespondWithAccount() {
-        // Create account
-        AccountService accService = engine.getService(AccountService.class);
-        CloudAccount mockCloudAccount = new MockCloudAccount();
-        String provider = "Mock Provider";
-        try {
-            accService.addAccount(provider, mockCloudAccount);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    // Request
+    Response response =
+        target(accountsPrefix)
+            .request()
+            .header(
+                AuthenticationFilter.HEADER_AUTHORIZATION,
+                AuthenticationFilter.createAuthorization(token))
+            .get();
 
-        // Request
-        Response response =
-                target(accountsPrefix)
-                        .request()
-                        .header(
-                                AuthenticationFilter.HEADER_AUTHORIZATION,
-                                AuthenticationFilter.createAuthorization(token))
-                        .get();
+    // Assertions
+    Assertions.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+    Map<?, Map> accounts = response.readEntity(Map.class);
+    Assertions.assertEquals(mockCloudAccount.getId(), accounts.get("Mock Cloud").get("_id"));
+    // Assertions.assertEquals(provider, accounts.get("Mock Cloud").get("provider"));
+    Assertions.assertEquals(
+        mockCloudAccount.isAutoDiscovered(), accounts.get("Mock Cloud").get("autoDiscovered"));
+  }
 
-        // Assertions
-        Assertions.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-        Map<?, Map> accounts = response.readEntity(Map.class);
-        Assertions.assertEquals(mockCloudAccount.getId(), accounts.get("Mock Cloud").get("_id"));
-        // Assertions.assertEquals(provider, accounts.get("Mock Cloud").get("provider"));
-        Assertions.assertEquals(
-                mockCloudAccount.isAutoDiscovered(), accounts.get("Mock Cloud").get("autoDiscovered"));
+  @Test
+  public void givenGetAccount_whenNoAccountAvailable_then404AndNull() {
+    // Request
+    Response response =
+        target(accountsPrefix + "provider")
+            .request()
+            .header(
+                AuthenticationFilter.HEADER_AUTHORIZATION,
+                AuthenticationFilter.createAuthorization(token))
+            .get();
+
+    // Assertions
+    Assertions.assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
+    Assertions.assertNull(response.readEntity(CloudAccount.class));
+
+    assertThrows(
+        NotFoundException.class,
+        () ->
+            target(accountsPrefix + "provider")
+                .request()
+                .header(
+                    AuthenticationFilter.HEADER_AUTHORIZATION,
+                    AuthenticationFilter.createAuthorization(token))
+                .get(CloudAccount.class));
+  }
+
+  @Test
+  public void givenGetAccount_whenOneAccountAvailable_then200AndResponseWithAccount() {
+    // Create account
+    AccountService accService = engine.getService(AccountService.class);
+    CloudAccount mockCloudAccount = new MockCloudAccount();
+    String provider = "Mock Provider";
+    try {
+      accService.addAccount(provider, mockCloudAccount);
+    } catch (IOException e) {
+      e.printStackTrace();
     }
 
-    @Test
-    public void givenGetAccount_whenNoAccountAvailable_then404AndNull() {
-        // Request
-        Response response =
-                target(accountsPrefix + "provider")
-                        .request()
-                        .header(
-                                AuthenticationFilter.HEADER_AUTHORIZATION,
-                                AuthenticationFilter.createAuthorization(token))
-                        .get();
+    // Request
+    Response response =
+        target(accountsPrefix + "Mock Cloud")
+            .request()
+            .header(
+                AuthenticationFilter.HEADER_AUTHORIZATION,
+                AuthenticationFilter.createAuthorization(token))
+            .get();
 
-        // Assertions
-        Assertions.assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
-        Assertions.assertNull(response.readEntity(CloudAccount.class));
+    CloudAccount responseCloudAccount = response.readEntity(MockCloudAccount.class);
+    Assertions.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+    Assertions.assertEquals(mockCloudAccount.getId(), responseCloudAccount.getId());
+  }
 
-        assertThrows(
-                NotFoundException.class,
-                () ->
-                        target(accountsPrefix + "provider")
-                                .request()
-                                .header(
-                                        AuthenticationFilter.HEADER_AUTHORIZATION,
-                                        AuthenticationFilter.createAuthorization(token))
-                                .get(CloudAccount.class));
-    }
+  // ToDo: AssertThrow
+  @Test
+  public void givenDiscover_whenNoAccountAvailable_Then404AndNull() {
+    // Request
+    Response response =
+        target(accountsPrefix + "discover/Mock Cloud")
+            .request()
+            .header(
+                AuthenticationFilter.HEADER_AUTHORIZATION,
+                AuthenticationFilter.createAuthorization(token))
+            .post(javax.ws.rs.client.Entity.json("{}"));
 
-    @Test
-    public void givenGetAccount_whenOneAccountAvailable_then200AndResponseWithAccount() {
-        // Create account
-        AccountService accService = engine.getService(AccountService.class);
-        CloudAccount mockCloudAccount = new MockCloudAccount();
-        String provider = "Mock Provider";
-        try {
-            accService.addAccount(provider, mockCloudAccount);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    // Assertions
+    Assertions.assertNull(response.readEntity(CloudAccount.class));
+    Assertions.assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
 
-        // Request
-        Response response =
-                target(accountsPrefix + "Mock Cloud")
-                        .request()
-                        .header(
-                                AuthenticationFilter.HEADER_AUTHORIZATION,
-                                AuthenticationFilter.createAuthorization(token))
-                        .get();
+    //    assertThrows(
+    //        NotFoundException.class,
+    //        () ->
+    //            target(accountsPrefix + "discover/Mock Cloud")
+    //                .request()
+    //                .header(
+    //                    AuthenticationFilter.HEADER_AUTHORIZATION,
+    //                    AuthenticationFilter.createAuthorization(token))
+    //                .post(javax.ws.rs.client.Entity.json("{}")));
+  }
 
-        CloudAccount responseCloudAccount = response.readEntity(MockCloudAccount.class);
-        Assertions.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-        Assertions.assertEquals(mockCloudAccount.getId(), responseCloudAccount.getId());
-    }
+  // ToDo: Discover AWS. Problem: ClassNotFound, because it is in other module?
+  @Test
+  public void givenDiscover_whenProviderAvailable_thenResponse() {
 
-    // ToDo: AssertThrow
-    @Test
-    public void givenDiscover_whenNoAccountAvailable_Then404AndNull() {
-        // Request
-        Response response =
-                target(accountsPrefix + "discover/Mock Cloud")
-                        .request()
-                        .header(
-                                AuthenticationFilter.HEADER_AUTHORIZATION,
-                                AuthenticationFilter.createAuthorization(token))
-                        .post(javax.ws.rs.client.Entity.json("{}"));
+    // Request
+    Response response =
+        target(accountsPrefix + "discover/AWS")
+            .request()
+            .header(
+                AuthenticationFilter.HEADER_AUTHORIZATION,
+                AuthenticationFilter.createAuthorization(token))
+            .post(javax.ws.rs.client.Entity.json("{}"));
 
-        // Assertions
-        Assertions.assertNull(response.readEntity(CloudAccount.class));
-        Assertions.assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
+    System.out.println(response);
+    Assertions.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+  }
 
-        //    assertThrows(
-        //        NotFoundException.class,
-        //        () ->
-        //            target(accountsPrefix + "discover/Mock Cloud")
-        //                .request()
-        //                .header(
-        //                    AuthenticationFilter.HEADER_AUTHORIZATION,
-        //                    AuthenticationFilter.createAuthorization(token))
-        //                .post(javax.ws.rs.client.Entity.json("{}")));
-    }
+  // ToDo: Passing on the request parameter CloudAccount object does not work. (With other object
+  // types it works)
+  @Test
+  public void givenPutAccount() {
+    // Create Account
+    CloudAccount mockCloudAccount = new MockCloudAccount();
 
-    // ToDo: Discover AWS. Problem: ClassNotFound, because it is in other module?
-    @Test
-    public void givenDiscover_whenProviderAvailable_thenResponse() {
+    // Request with account and provider as PathParam
+    Response response =
+        target(accountsPrefix + "AWS")
+            .request()
+            .header(
+                AuthenticationFilter.HEADER_AUTHORIZATION,
+                AuthenticationFilter.createAuthorization(token))
+            .put(
+                javax.ws.rs.client.Entity.entity(
+                    mockCloudAccount, MediaType.APPLICATION_JSON_TYPE));
 
-        // Request
-        Response response =
-                target(accountsPrefix + "discover/AWS")
-                        .request()
-                        .header(
-                                AuthenticationFilter.HEADER_AUTHORIZATION,
-                                AuthenticationFilter.createAuthorization(token))
-                        .post(javax.ws.rs.client.Entity.json("{}"));
+    Assertions.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+  }
 
-        System.out.println(response);
-        Assertions.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-    }
-
-    // ToDo: Passing on the request parameter CloudAccount object does not work. (With other object types it works)
-    @Test
-    public void givenPutAccount() {
-        // Create Account
-        CloudAccount mockCloudAccount = new MockCloudAccount();
-
-        // Request with account and provider as PathParam
-        Response response =
-                target(accountsPrefix + "AWS")
-                        .request()
-                        .header(
-                                AuthenticationFilter.HEADER_AUTHORIZATION,
-                                AuthenticationFilter.createAuthorization(token))
-                        .put(
-                                javax.ws.rs.client.Entity.entity(
-                                        mockCloudAccount, MediaType.APPLICATION_JSON_TYPE));
-
-        Assertions.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-    }
-
-    /**
-     * Helper classes and methods
-     */
-
-    @Table(name = "mock_account")
-    @Entity(name = "mock_account")
-    @JsonTypeName(value = "Mock Cloud")
-    private static class MockCloudAccount extends CloudAccount {
-
-        @Override
-        public void validate() {
-            System.out.println("Mock Cloud Account validated.");
-        }
-
-        @Override
-        public Object resolveCredentials() {
-            return null;
-        }
-    }
-
-
-    /**
-     * Test Settings
-     */
+  /** Helper classes and methods */
+  @Table(name = "mock_account")
+  @Entity(name = "mock_account")
+  @JsonTypeName(value = "Mock Cloud")
+  private static class MockCloudAccount extends CloudAccount {
 
     @Override
-    protected Application configure() {
-        // CONTAINER_PORT = 0 means first available port is used
-        forceSet(TestProperties.CONTAINER_PORT, "0");
-        return new EngineAPI(engine);
+    public void validate() {
+      System.out.println("Mock Cloud Account validated.");
     }
 
-    @BeforeEach
-    public void startUp() {
-        // Init DB
-        engine.setDbInMemory(true);
-        engine.setDBName("AccountsResourceTestDB");
-        engine.initDB();
-
-        // Init everything else
-        engine.init();
-
-        // Start DiscoveryService
-        engine.getService(DiscoveryService.class).start();
+    @Override
+    public Object resolveCredentials() {
+      return null;
     }
+  }
 
-    @AfterEach
-    public void cleanUp() {
-        engine.shutdown();
+  /** Test Settings */
+  @Override
+  protected Application configure() {
+    // CONTAINER_PORT = 0 means first available port is used
+    forceSet(TestProperties.CONTAINER_PORT, "0");
+    return new EngineAPI(engine);
+  }
+
+  @BeforeEach
+  public void startUp() {
+    // Init DB
+    engine.setDbInMemory(true);
+    engine.setDBName("AccountsResourceTestDB");
+    engine.initDB();
+
+    // Init everything else
+    engine.init();
+
+    // Start DiscoveryService
+    engine.getService(DiscoveryService.class).start();
+  }
+
+  @AfterEach
+  public void cleanUp() {
+    engine.shutdown();
+  }
+
+  @BeforeEach
+  public void setUp() throws Exception {
+    super.setUp();
+
+    client().register(ObjectMapperResolver.class);
+
+    if (this.token == null) {
+      this.token = engine.authenticateAPI(target(), "clouditor", "clouditor");
     }
-
-    @BeforeEach
-    public void setUp() throws Exception {
-        super.setUp();
-
-        client().register(ObjectMapperResolver.class);
-
-        if (this.token == null) {
-            this.token = engine.authenticateAPI(target(), "clouditor", "clouditor");
-        }
-    }
+  }
 }
