@@ -32,22 +32,22 @@ applicationName = "engine"
 
 // Project dependencies
 dependencies {
-    compile project(":clouditor-engine-core")
+    implementation project(":clouditor-engine-core")
 
     // Amazon SDKs
-    compile group: 'software.amazon.awssdk', name: 'ec2', version: libraryVersions.aws2
-    compile group: 'software.amazon.awssdk', name: 'sts', version: libraryVersions.aws2
-    compile group: 'software.amazon.awssdk', name: 's3', version: libraryVersions.aws2
-    compile group: 'software.amazon.awssdk', name: 'glacier', version: libraryVersions.aws2
-    compile group: 'software.amazon.awssdk', name: 'iam', version: libraryVersions.aws2
-    compile group: 'software.amazon.awssdk', name: 'dynamodb', version: libraryVersions.aws2
-    compile group: 'software.amazon.awssdk', name: 'config', version: libraryVersions.aws2
-    compile group: 'software.amazon.awssdk', name: 'cloudtrail', version: libraryVersions.aws2
-    compile group: 'software.amazon.awssdk', name: 'kinesis', version: libraryVersions.aws2
-    compile group: 'software.amazon.awssdk', name: 'kms', version: libraryVersions.aws2
-    compile group: 'software.amazon.awssdk', name: 'lambda', version: libraryVersions.aws2
-    compile group: 'software.amazon.awssdk', name: 'rds', version: libraryVersions.aws2
-    compile group: 'software.amazon.awssdk', name: 'sqs', version: libraryVersions.aws2
+    implementation group: 'software.amazon.awssdk', name: 'ec2', version: libraryVersions.aws2
+    implementation group: 'software.amazon.awssdk', name: 'sts', version: libraryVersions.aws2
+    implementation group: 'software.amazon.awssdk', name: 's3', version: libraryVersions.aws2
+    implementation group: 'software.amazon.awssdk', name: 'glacier', version: libraryVersions.aws2
+    implementation group: 'software.amazon.awssdk', name: 'iam', version: libraryVersions.aws2
+    implementation group: 'software.amazon.awssdk', name: 'dynamodb', version: libraryVersions.aws2
+    implementation group: 'software.amazon.awssdk', name: 'config', version: libraryVersions.aws2
+    implementation group: 'software.amazon.awssdk', name: 'cloudtrail', version: libraryVersions.aws2
+    implementation group: 'software.amazon.awssdk', name: 'kinesis', version: libraryVersions.aws2
+    implementation group: 'software.amazon.awssdk', name: 'kms', version: libraryVersions.aws2
+    implementation group: 'software.amazon.awssdk', name: 'lambda', version: libraryVersions.aws2
+    implementation group: 'software.amazon.awssdk', name: 'rds', version: libraryVersions.aws2
+    implementation group: 'software.amazon.awssdk', name: 'sqs', version: libraryVersions.aws2
 
-    compile group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.9'
+    implementation group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.9'
 }

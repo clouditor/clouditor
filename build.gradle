@@ -43,7 +43,7 @@ sonarqube {
 }
 
 allprojects {
-    apply plugin: 'maven'
+    apply plugin: 'maven-publish'
     apply plugin: 'java'
     apply plugin: 'jacoco'
     apply plugin: 'maven-publish'
@@ -141,8 +141,8 @@ allprojects {
     dependencies {
         // add JUnit5 dependencies for all projects
         testImplementation "org.junit.jupiter:junit-jupiter-api:${libraryVersions.JUnit}"
-        testCompile "org.junit.jupiter:junit-jupiter-params:${libraryVersions.JUnit}"
-        testCompile "org.mockito:mockito-core:${libraryVersions.mockito}"
+        testImplementation "org.junit.jupiter:junit-jupiter-params:${libraryVersions.JUnit}"
+        testImplementation "org.mockito:mockito-core:${libraryVersions.mockito}"
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${libraryVersions.JUnit}"
     }
 

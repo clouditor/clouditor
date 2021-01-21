@@ -66,11 +66,11 @@ dependencies {
 
     implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
 
-    compile group: 'org.postgresql', name: 'postgresql', version: libraryVersions.postgresql
-    compile group: 'org.hibernate', name: 'hibernate-core', version: libraryVersions.hibernate
-    compile group: 'com.h2database', name: 'h2', version: '1.4.200'
+    implementation group: 'org.postgresql', name: 'postgresql', version: libraryVersions.postgresql
+    implementation group: 'org.hibernate', name: 'hibernate-core', version: libraryVersions.hibernate
+    implementation group: 'com.h2database', name: 'h2', version: '1.4.200'
 
-    testCompile group: 'org.awaitility', name: 'awaitility', version: '3.1.2'
+    testImplementation group: 'org.awaitility', name: 'awaitility', version: '3.1.2'
 
     testImplementation "org.glassfish.jersey.test-framework:jersey-test-framework-core:${libraryVersions.jersey}"
     testImplementation "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:${libraryVersions.jersey}"
