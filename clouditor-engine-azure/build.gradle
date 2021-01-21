@@ -37,15 +37,15 @@ dependencies {
     implementation project(":clouditor-engine-core")
 
     // Azure SDKs
-    implementation("com.microsoft.azure:azure:${libraryVersions.azure}") {
+    compile("com.microsoft.azure:azure:${libraryVersions.azure}") {
         // do not include slf4j-simple, Microsoft should have included the dependency to the slf4j-api but not an implementation
         exclude group: "org.slf4j", module: "slf4j-simple"
     }
 
     // fetch newer version of adal4j, so we get a newer version of nimbus-jose-jwt
     // https://mvnrepository.com/artifact/com.microsoft.azure/adal4j
-    implementation("com.microsoft.azure:adal4j:${libraryVersions.adal4j}")
+    compile("com.microsoft.azure:adal4j:${libraryVersions.adal4j}")
 
     // fetch newer version of guava
-    implementation group: 'com.google.guava', name: 'guava', version: libraryVersions.guava
+    compile group: 'com.google.guava', name: 'guava', version: libraryVersions.guava
 }

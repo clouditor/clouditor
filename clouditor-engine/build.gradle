@@ -38,6 +38,6 @@ dependencyCheck {
 
 // Project dependencies
 dependencies {
-    implementation project(":clouditor-engine-aws")
-    implementation project(":clouditor-engine-azure")
+    compile project(":clouditor-engine-aws")
+    compile project(":clouditor-engine-azure")
 }
