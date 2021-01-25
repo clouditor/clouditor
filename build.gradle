@@ -148,7 +148,8 @@ allprojects {
 
     test {
         failFast = true
-
+        // Todo: Remove this line after test issues fixed
+        beforeTest { descriptor -> logger.lifecycle("Running test: ${descriptor}")}
         useJUnitPlatform()
     }
 
