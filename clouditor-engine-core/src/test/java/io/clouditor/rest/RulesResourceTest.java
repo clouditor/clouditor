@@ -18,6 +18,7 @@ import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
 import org.junit.jupiter.api.*;
 
+@Disabled
 public class RulesResourceTest extends JerseyTest {
   private static final Engine engine = new Engine();
   private String token;
