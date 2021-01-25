@@ -212,15 +212,8 @@ public class AccountsResourceTest extends JerseyTest {
   }
 
   /** Test Settings */
-  @Override
-  protected Application configure() {
-    // CONTAINER_PORT = 0 means first available port is used
-    forceSet(TestProperties.CONTAINER_PORT, "0");
-    return new EngineAPI(engine);
-  }
-
-  @BeforeEach
-  public void startUp() {
+  @BeforeAll
+  static void startUp() {
     // Init DB
     engine.setDbInMemory(true);
     engine.setDBName("AccountsResourceTestDB");
@@ -233,11 +226,6 @@ public class AccountsResourceTest extends JerseyTest {
     engine.getService(DiscoveryService.class).start();
   }
 
-  @AfterEach
-  public void cleanUp() {
-    engine.shutdown();
-  }
-
   @BeforeEach
   public void setUp() throws Exception {
     super.setUp();
@@ -247,5 +235,17 @@ public class AccountsResourceTest extends JerseyTest {
     if (this.token == null) {
       this.token = engine.authenticateAPI(target(), "clouditor", "clouditor");
     }
+  }
+
+  @AfterEach
+  public void cleanUp() {
+    engine.shutdown();
+  }
+
+  @Override
+  protected Application configure() {
+    // CONTAINER_PORT = 0 means first available port is used
+    forceSet(TestProperties.CONTAINER_PORT, "0");
+    return new EngineAPI(engine);
   }
 }
