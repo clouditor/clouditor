@@ -109,10 +109,19 @@ public class HibernateUtils {
     Objects.requireNonNull(userName);
     Objects.requireNonNull(password);
     final Configuration configuration = new Configuration();
+
+    // NOTE: While it may seem that each call of this function will provide a different H2 database,
+    // i.e.
+    // in different tests, the reality is that because tests share the same JVM, they will share the
+    // same H2
+    // database as well because of the singleton approach in HibernateUtils. This needs to be taken
+    // into
+    // consideration, especially for tests that modify users.
     configuration
         .configure()
         .setProperty("hibernate.connection.driver_class", "org.h2.Driver")
         .setProperty("hibernate.connection.url", "jdbc:h2:~/" + dbName);
+
     buildSessionFactory(configuration, userName, password);
   }
 

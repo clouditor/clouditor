@@ -91,6 +91,11 @@ class UserTest extends AbstractEngineUnitTest {
     assertEquals(user, ctx.getUserPrincipal());
 
     assertTrue(ctx.isUserInRole(ROLE_ADMIN));
+
+    // remove the user again, otherwise, other tests that may be based on the existence of
+    // a clean user DB might fail
+
+    new HibernatePersistence().delete(user);
   }
 
   @Test
