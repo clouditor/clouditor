@@ -222,4 +222,12 @@ public class CertificationService {
       this.certificationPublisher.subscribe(subscriber);
     }
   }
+
+  // For testing purposes (remove certifications when previous test suites added some)
+  public void removeAllCertifications() {
+    for (Certification certification : getCertifications().values()) {
+      new HibernatePersistence().delete(certification);
+      certifications.remove(certification.getId());
+    }
+  }
 }

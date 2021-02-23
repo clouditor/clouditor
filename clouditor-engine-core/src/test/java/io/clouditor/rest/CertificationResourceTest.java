@@ -542,6 +542,9 @@ public class CertificationResourceTest extends JerseyTest {
 
     // start the DiscoveryService
     engine.getService(DiscoveryService.class).start();
+
+    // Clean all certificates from previous test suites
+    engine.getService(CertificationService.class).removeAllCertifications();
   }
 
   @AfterAll
