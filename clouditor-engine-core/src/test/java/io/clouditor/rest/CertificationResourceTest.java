@@ -23,6 +23,49 @@ public class CertificationResourceTest extends JerseyTest {
   private static final Engine engine = new Engine();
   private String token;
 
+  /** Test Settings */
+  @BeforeAll
+  static void startUpOnce() {
+    engine.setDbInMemory(true);
+
+    engine.setDBName("CertificationResourceTestDB");
+
+    // init db
+    engine.initDB();
+
+    // initialize every else
+    engine.init();
+
+    // start the DiscoveryService
+    engine.getService(DiscoveryService.class).start();
+
+    // Clean all certificates from previous test suites
+    engine.getService(CertificationService.class).removeAllCertifications();
+  }
+
+  @AfterAll
+  static void cleanUpOnce() {
+    engine.shutdown();
+  }
+
+  @BeforeEach
+  public void setUp() throws Exception {
+    super.setUp();
+
+    client().register(ObjectMapperResolver.class);
+
+    if (this.token == null) {
+      this.token = engine.authenticateAPI(target(), "clouditor", "clouditor");
+    }
+  }
+
+  @Override
+  protected Application configure() {
+    // Find first available port.
+    forceSet(TestProperties.CONTAINER_PORT, "0");
+    return new EngineAPI(engine);
+  }
+
   /** Tests */
   @Test
   public void testCertificationResource_constructor() {
@@ -37,7 +80,7 @@ public class CertificationResourceTest extends JerseyTest {
   @Test
   @Order(1)
   public void
-      givenGetCertifications_whenNoCertificationsAvailable_thenStatusOKButEmptyResponseContent() {
+      testGetCertifications_whenNoCertificationsAvailable_thenStatusOKButEmptyResponseContent() {
     // Execute request
     Response response =
         target("/certification")
@@ -57,7 +100,7 @@ public class CertificationResourceTest extends JerseyTest {
   // Unreachable: The first if condition cannot be evaluated to true since getCertification(cert)
   // would do -> Change in Code
   @Test
-  public void givenModifyControlStatus_whenCertificationIsNullAndControlIsNull_thenNotFound() {
+  public void testModifyControlStatus_whenCertificationIsNullAndControlIsNull_thenNotFound() {
     // Tests
     Response response =
         target("certification/1/1/status")
@@ -74,7 +117,7 @@ public class CertificationResourceTest extends JerseyTest {
   // ToDo: Catch Exception (commented out): Throw of exception is covered but not asserted.
   @Test
   public void
-      givenModifyControlStatus_whenCertificationNotNullAndControlIsNull_thenThrowException() {
+      testModifyControlStatus_whenCertificationNotNullAndControlIsNull_thenThrowException() {
     //    assertThrows(
     //        NotFoundException.class,
     //        () -> {
@@ -110,7 +153,7 @@ public class CertificationResourceTest extends JerseyTest {
   }
 
   @Test
-  public void givenModifyControlStatus_whenCertificationNotNullAndControlNotNull_thenStatus204() {
+  public void testModifyControlStatus_whenCertificationNotNullAndControlNotNull_thenStatus204() {
     // Create mock of certification  with id=1 (the one that will be searched for in
     // testModifyControlStatus())
     CertificationService certService = engine.getService(CertificationService.class);
@@ -147,7 +190,7 @@ public class CertificationResourceTest extends JerseyTest {
   }
 
   @Test
-  public void givenModifyControlStatus_whenStatusFalseAndControlActiveTrue_thenStopMonitoring() {
+  public void testModifyControlStatus_whenStatusFalseAndControlActiveTrue_thenStopMonitoring() {
     // Create mock of certification  with id=1 (the one that will be searched for in
     // testModifyControlStatus())
     CertificationService certService = engine.getService(CertificationService.class);
@@ -189,7 +232,7 @@ public class CertificationResourceTest extends JerseyTest {
   }
 
   @Test
-  public void givenModifyControlStatus_whenStatusTrueAndControlActiveFalse_thenStartMonitoring() {
+  public void testModifyControlStatus_whenStatusTrueAndControlActiveFalse_thenStartMonitoring() {
     // Create mock of certification  with id=1 (the one that will be searched for in
     // testModifyControlStatus())
     CertificationService certService = engine.getService(CertificationService.class);
@@ -237,7 +280,7 @@ public class CertificationResourceTest extends JerseyTest {
   }
 
   @Test
-  public void givenGetCertifications_whenCorrectRequest_thenResponseIsOkAndContainsCertificate() {
+  public void testGetCertifications_whenCorrectRequest_thenResponseIsOkAndContainsCertificate() {
     CertificationService certService = engine.getService(CertificationService.class);
     Certification mockCertification = new Certification();
     mockCertification.setId("Mock1");
@@ -258,7 +301,7 @@ public class CertificationResourceTest extends JerseyTest {
   }
 
   @Test
-  public void givenGetCertifications_whenTwoCertificationsAvailable_thenStatusOkAndReturnBoth() {
+  public void testGetCertifications_whenTwoCertificationsAvailable_thenStatusOkAndReturnBoth() {
     // Create two mocks of certification  with id=1 and id=2
     var id1 = "1";
     var id2 = "2";
@@ -294,7 +337,7 @@ public class CertificationResourceTest extends JerseyTest {
   }
 
   @Test
-  public void givenGetCertification_whenCertificationAvailable_thenStatusOkAndReturnIt() {
+  public void testGetCertification_whenCertificationAvailable_thenStatusOkAndReturnIt() {
     // Create one mock of certification  with id=1
     var id = "1";
     var description = "Test Description";
@@ -320,7 +363,7 @@ public class CertificationResourceTest extends JerseyTest {
 
   @Test
   public void
-      givenGetCertification_whenNoCertificationAvailableWithGivenId_thenStatus404AndThrowException() {
+      testGetCertification_whenNoCertificationAvailableWithGivenId_thenStatus404AndThrowException() {
 
     // Execute first get request asserting the status code
     Response response =
@@ -348,7 +391,7 @@ public class CertificationResourceTest extends JerseyTest {
   }
 
   @Test
-  public void givenGetControl_whenNoControlAvailableWithGivenId_thenStatus404AndThrowException() {
+  public void testGetControl_whenNoControlAvailableWithGivenId_thenStatus404AndThrowException() {
     Certification mockCertification = new Certification();
     mockCertification.setId("1");
     CertificationService certService = engine.getService(CertificationService.class);
@@ -379,7 +422,7 @@ public class CertificationResourceTest extends JerseyTest {
   }
 
   @Test
-  public void givenGetControl_whenControlAvailableWithGivenId_thenStatusOkAndReturnIt() {
+  public void testGetControl_whenControlAvailableWithGivenId_thenStatusOkAndReturnIt() {
     // Create mock of certification  with id=1 (the one that will be searched for in
     // testModifyControlStatus())
     var certificationId = "1";
@@ -417,7 +460,7 @@ public class CertificationResourceTest extends JerseyTest {
   // ToDo: Catch Exception (commented out): Throw of exception is covered but not asserted.
   @Test
   public void
-      givenImportCertification_whenNoCertificationAvailable_thenStatus404AndThrowException() {
+      testImportCertification_whenNoCertificationAvailable_thenStatus404AndThrowException() {
     //    CertificationService certService = engine.getService(CertificationService.class);
 
     //    assertTrue(certService.getCertifications().isEmpty());
@@ -444,7 +487,7 @@ public class CertificationResourceTest extends JerseyTest {
 
   @Test
   public void
-      givenImportCertification_whenCertificationAvailableWithGivenId_thenStatusOkAndCertificateThere() {
+      testImportCertification_whenCertificationAvailableWithGivenId_thenStatusOkAndCertificateThere() {
     // Get CertificationService
     CertificationService certService = engine.getService(CertificationService.class);
     // Get Importers and create iterator for receiving one importer
@@ -473,7 +516,7 @@ public class CertificationResourceTest extends JerseyTest {
   }
 
   @Test
-  public void givenGetImporters_when_then() {
+  public void testGetImporters_when_then() {
     // Get CertificationService
     CertificationService certService = engine.getService(CertificationService.class);
     // Get Importers
@@ -525,53 +568,5 @@ public class CertificationResourceTest extends JerseyTest {
       return false;
     } else
       return expectedControls.isEmpty() || expectedControls == actualCertification.get("controls");
-  }
-
-  /** Test Settings */
-  @BeforeAll
-  static void startUpOnce() {
-    engine.setDbInMemory(true);
-
-    engine.setDBName("CertificationResourceTestDB");
-
-    // init db
-    engine.initDB();
-
-    // initialize every else
-    engine.init();
-
-    // start the DiscoveryService
-    engine.getService(DiscoveryService.class).start();
-
-    // Clean all certificates from previous test suites
-    engine.getService(CertificationService.class).removeAllCertifications();
-  }
-
-  @AfterAll
-  static void cleanUpOnce() {
-    engine.shutdown();
-  }
-
-  @BeforeEach
-  public void setUp() throws Exception {
-    super.setUp();
-
-    client().register(ObjectMapperResolver.class);
-
-    if (this.token == null) {
-      this.token = engine.authenticateAPI(target(), "clouditor", "clouditor");
-    }
-  }
-
-  // ToDo: After each test, clean up everything (some tests fail when not executed individually)
-  @AfterEach
-  @Disabled
-  public void reset() {}
-
-  @Override
-  protected Application configure() {
-    // Find first available port.
-    forceSet(TestProperties.CONTAINER_PORT, "0");
-    return new EngineAPI(engine);
   }
 }

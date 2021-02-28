@@ -27,7 +27,7 @@ public class UsersResourceTest extends JerseyTest {
 
   /** Tests */
   @Test
-  void givenGetUsers() {
+  void testGetUsers() {
     AuthenticationService authenticationService = engine.getService(AuthenticationService.class);
 
     // Request
@@ -46,7 +46,7 @@ public class UsersResourceTest extends JerseyTest {
   }
 
   @Test
-  void givenGetUser_whenUserNotExist_thenStatusNotFound() {
+  void testGetUser_whenUserNotExist_thenStatusNotFound() {
     // Request
     Response response =
         target(prefix + "Non-Existent User")
@@ -61,7 +61,7 @@ public class UsersResourceTest extends JerseyTest {
   }
 
   @Test
-  void givenGetUser_whenUserExist_thenStatusNotFound() {
+  void testGetUser_whenUserExist_thenStatusNotFound() {
     // Request
     Response response =
         target(prefix + mockUserName)
@@ -78,7 +78,7 @@ public class UsersResourceTest extends JerseyTest {
   }
 
   @Test
-  void givenUpdateUser() {
+  void testUpdateUser() {
     // Preparation
     ObjectMapper objectMapper = new ObjectMapper();
     ObjectNode userAsJson = objectMapper.createObjectNode();
@@ -105,7 +105,7 @@ public class UsersResourceTest extends JerseyTest {
   }
 
   @Test
-  void givenDeleteUser() {
+  void testDeleteUser() {
     // Pre assertion
     AuthenticationService authenticationService = engine.getService(AuthenticationService.class);
     assertNotNull(authenticationService.getUser(mockUser2Name));
@@ -125,7 +125,7 @@ public class UsersResourceTest extends JerseyTest {
   }
 
   @Test
-  void givenCreateUser_whenUserAlreadyExists_StatusBadRequest() {
+  void testCreateUser_whenUserAlreadyExists_StatusBadRequest() {
     // Preparation
     ObjectMapper objectMapper = new ObjectMapper();
     ObjectNode userAsJson = objectMapper.createObjectNode();
@@ -146,7 +146,7 @@ public class UsersResourceTest extends JerseyTest {
   }
 
   @Test
-  void givenCreateUser_whenUserNotAlreadyExists_StatusOk() {
+  void testCreateUser_whenUserNotAlreadyExists_StatusOk() {
     // Preparation
     ObjectMapper objectMapper = new ObjectMapper();
     ObjectNode userAsJson = objectMapper.createObjectNode();

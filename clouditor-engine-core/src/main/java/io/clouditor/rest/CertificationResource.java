@@ -85,6 +85,7 @@ public class CertificationResource {
 
     var certification = this.getCertification(certificationId);
 
+    // ToDo: Verify that is ok to remove this part
     // Is catched in getCertification
     //    if (certification == null) {
     //      throw new NotFoundException();

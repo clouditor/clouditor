@@ -18,7 +18,7 @@ public class DiscoveryResourceTest extends JerseyTest {
 
   /** Tests */
   @Test
-  public void givenGetScans_whenOneScannerAvailable_thenStatusOkAndResponseNotEmpty() {
+  public void testGetScans_whenOneScannerAvailable_thenStatusOkAndResponseNotEmpty() {
     // Request
     Response response =
         target(targetPrefix)
@@ -35,7 +35,7 @@ public class DiscoveryResourceTest extends JerseyTest {
   }
 
   @Test
-  public void givenGetScan_whenRequestedScannerAvailable_thenStatusOkAndRespondIt() {
+  public void testGetScan_whenRequestedScannerAvailable_thenStatusOkAndRespondIt() {
     // Preparation
     String id = "fake";
     DiscoveryService discoveryService = engine.getService(DiscoveryService.class);
@@ -57,7 +57,7 @@ public class DiscoveryResourceTest extends JerseyTest {
   }
 
   @Test
-  public void givenGetScan_whenRequestedScannerNotAvailable_thenStatusOkAndRespondIt() {
+  public void testGetScan_whenRequestedScannerNotAvailable_thenStatusOkAndRespondIt() {
     // Preparation
     String id = "I Am Not There";
     DiscoveryService discoveryService = engine.getService(DiscoveryService.class);
@@ -79,7 +79,7 @@ public class DiscoveryResourceTest extends JerseyTest {
   }
 
   @Test
-  public void givenEnable_whenScannerIsAvailable_thenStatusNoContent() {
+  public void testEnable_whenScannerIsAvailable_thenStatusNoContent() {
     // Preparation
     String id = "fake";
     DiscoveryService discoveryService = engine.getService(DiscoveryService.class);
@@ -102,7 +102,7 @@ public class DiscoveryResourceTest extends JerseyTest {
   }
 
   @Test
-  public void givenEnable_whenScannerIsNotAvailable_thenStatusNotFound() {
+  public void testEnable_whenScannerIsNotAvailable_thenStatusNotFound() {
     // Request
     String id = "I am Not There";
     Response response =
@@ -118,7 +118,7 @@ public class DiscoveryResourceTest extends JerseyTest {
   }
 
   @Test
-  public void givenDisable_whenScannerIsAvailable_thenStatusNoContent() {
+  public void testDisable_whenScannerIsAvailable_thenStatusNoContent() {
     // Preparation
     String id = "fake";
     DiscoveryService discoveryService = engine.getService(DiscoveryService.class);
@@ -141,7 +141,7 @@ public class DiscoveryResourceTest extends JerseyTest {
   }
 
   @Test
-  public void givenDisable_whenScannerIsNotAvailable_thenStatusNotFound() {
+  public void testDisable_whenScannerIsNotAvailable_thenStatusNotFound() {
     // Request
     String id = "I am Not There";
     Response response =

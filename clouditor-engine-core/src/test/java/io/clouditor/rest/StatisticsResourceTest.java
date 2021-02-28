@@ -18,7 +18,7 @@ public class StatisticsResourceTest extends JerseyTest {
 
   /** Tests */
   @Test
-  public void givenGetStatistic_when_then() {
+  public void testGetStatistic_when_then() {
     // Preparation: Add a certification
     CertificationService certificationService = engine.getService(CertificationService.class);
     Certification mockCertification = new Certification();

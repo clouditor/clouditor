@@ -29,7 +29,7 @@ public class RulesResourceTest extends JerseyTest {
   // ToDo: UI check if removing rules is possible (otherwise test can fail due to other tests)
   @Test
   @Order(1)
-  public void givenGetRules_whenNoRulesAvailable_thenStatusOkAndResponseEmpty() {
+  public void testGetRules_whenNoRulesAvailable_thenStatusOkAndResponseEmpty() {
     // Request
     Response response =
         target(targetPrefix)
@@ -45,7 +45,7 @@ public class RulesResourceTest extends JerseyTest {
   }
 
   @Test
-  public void givenGetRules_thenAmountOfRulesIsEqual() {
+  public void testGetRules_thenAmountOfRulesIsEqual() {
     // Preparation
     RuleService ruleService = engine.getService(RuleService.class);
     try {
@@ -70,7 +70,7 @@ public class RulesResourceTest extends JerseyTest {
   }
 
   @Test
-  public void givenGetRules_whenNoRulesWithAssetTypeAvailable_thenStatusOkAndResponseEmpty() {
+  public void testGetRules_whenNoRulesWithAssetTypeAvailable_thenStatusOkAndResponseEmpty() {
     // Request
     Response response =
         target(targetPrefix + "assets/NoAssetWithThisName")
@@ -86,7 +86,7 @@ public class RulesResourceTest extends JerseyTest {
   }
 
   @Test
-  public void givenGetRules_whenRulesWithAssetTypeAvailable_thenStatusOkAndResponseEqual() {
+  public void testGetRules_whenRulesWithAssetTypeAvailable_thenStatusOkAndResponseEqual() {
     // Preparation
     RuleService ruleService = engine.getService(RuleService.class);
     try {
@@ -117,7 +117,7 @@ public class RulesResourceTest extends JerseyTest {
   }
 
   @Test
-  public void givenGet_whenNoRuleWithIdAvailable_thenStatusNotFound() {
+  public void testGet_whenNoRuleWithIdAvailable_thenStatusNotFound() {
     // Request
     Response response =
         target(targetPrefix + "No Id With This Name")
@@ -133,7 +133,7 @@ public class RulesResourceTest extends JerseyTest {
   }
 
   @Test
-  public void givenGet_whenRuleWithIdAvailable_thenStatusOkAndRespondIt() {
+  public void testGet_whenRuleWithIdAvailable_thenStatusOkAndRespondIt() {
     // Preparation
     RuleService ruleService = engine.getService(RuleService.class);
     try {
