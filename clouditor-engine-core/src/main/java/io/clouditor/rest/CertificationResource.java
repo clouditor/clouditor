@@ -85,9 +85,10 @@ public class CertificationResource {
 
     var certification = this.getCertification(certificationId);
 
-    if (certification == null) {
-      throw new NotFoundException();
-    }
+    // Is catched in getCertification
+    //    if (certification == null) {
+    //      throw new NotFoundException();
+    //    }
 
     String finalControlId = controlId;
     var first =

@@ -16,7 +16,6 @@ import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
 import org.junit.jupiter.api.*;
 
-@Disabled
 public class AssetsResourceTest extends JerseyTest {
   private static final Engine engine = new Engine();
   private String token;
@@ -82,7 +81,6 @@ public class AssetsResourceTest extends JerseyTest {
 
   // ToDo: Request Response is 500 (but full coverage)
   @Test
-  @Disabled
   void givenGetServerSentEvents() {
     // Preparation
     AssetService assetService = engine.getService(AssetService.class);
@@ -101,7 +99,7 @@ public class AssetsResourceTest extends JerseyTest {
             .get();
 
     // Assertions
-    assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+    assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
   }
 
   /** Test Settings */

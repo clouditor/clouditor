@@ -18,14 +18,12 @@ import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
 import org.junit.jupiter.api.*;
 
-@Disabled
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class CertificationResourceTest extends JerseyTest {
   private static final Engine engine = new Engine();
   private String token;
 
   /** Tests */
-
-  // ToDo: Check if private fields Engine engine and CertificationService service are not null
   @Test
   public void testCertificationResource_constructor() {
     target("certification")
@@ -36,9 +34,8 @@ public class CertificationResourceTest extends JerseyTest {
         .get();
   }
 
-  // Not needed for full coverage. Fails when other tests are executed before
   @Test
-  @Disabled
+  @Order(1)
   public void
       givenGetCertifications_whenNoCertificationsAvailable_thenStatusOKButEmptyResponseContent() {
     // Execute request
@@ -58,20 +55,20 @@ public class CertificationResourceTest extends JerseyTest {
   }
 
   // Unreachable: The first if condition cannot be evaluated to true since getCertification(cert)
-  // would do
+  // would do -> Change in Code
   @Test
-  @Disabled
-  public void givenModifyControlStatus_whenCertificationIsNullAndControlIsNull_thenThrowError() {
+  public void givenModifyControlStatus_whenCertificationIsNullAndControlIsNull_thenNotFound() {
+    // Tests
+    Response response =
+        target("certification/1/1/status")
+            .request()
+            .header(
+                AuthenticationFilter.HEADER_AUTHORIZATION,
+                AuthenticationFilter.createAuthorization(token))
+            .post(Entity.json("{}"));
 
-    assertThrows(
-        NotFoundException.class,
-        () ->
-            target("certification/1/1/status")
-                .request()
-                .header(
-                    AuthenticationFilter.HEADER_AUTHORIZATION,
-                    AuthenticationFilter.createAuthorization(token))
-                .post(Entity.json("{}")));
+    // Assertions
+    Assertions.assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
   }
 
   // ToDo: Catch Exception (commented out): Throw of exception is covered but not asserted.

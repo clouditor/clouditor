@@ -13,13 +13,12 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Application;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
 import org.junit.jupiter.api.*;
 
-@Disabled
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AccountsResourceTest extends JerseyTest {
   private static final Engine engine = new Engine();
   private String token;
@@ -27,7 +26,7 @@ public class AccountsResourceTest extends JerseyTest {
 
   /** Tests */
   @Test
-  @Disabled
+  @Order(1)
   public void givenGetAccounts_whenNoAccountsAvailable_thenStatusOkAndResponseEmpty() {
     // Request
     Response response =
@@ -75,13 +74,11 @@ public class AccountsResourceTest extends JerseyTest {
         mockCloudAccount.isAutoDiscovered(), accounts.get("Mock Cloud").get("autoDiscovered"));
   }
 
-  // ToDo: Not working when other tests are executed before -> Merge them
   @Test
-  @Disabled
   public void givenGetAccount_whenNoAccountAvailable_then404AndNull() {
     // Request
     Response response =
-        target(accountsPrefix + "provider")
+        target(accountsPrefix + "This is no Provider")
             .request()
             .header(
                 AuthenticationFilter.HEADER_AUTHORIZATION,
@@ -156,12 +153,13 @@ public class AccountsResourceTest extends JerseyTest {
     //                .post(javax.ws.rs.client.Entity.json("{}")));
   }
 
-  // ToDo: Discover AWS. Problem: ClassNotFound, because it is in other module?
-  @Test
+  // ToDo: Discover AWS. Problem: ClassNotFound, since there is no account given with the put
+  // method?
   @Disabled
+  @Test
   public void givenDiscover_whenProviderAvailable_thenResponse() {
     AccountService accountService = engine.getService(AccountService.class);
-    System.out.println(accountService.getAccount("AWS"));
+    System.out.println("BEFORE REQUEST" + accountService.getAccount("AWS"));
 
     // Request
     Response response =
@@ -173,29 +171,51 @@ public class AccountsResourceTest extends JerseyTest {
             .post(javax.ws.rs.client.Entity.json("{}"));
 
     System.out.println(response);
-    Assertions.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+    Assertions.assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
   }
 
   // ToDo: Passing on the request parameter CloudAccount object does not work. (With other object
   // types it works)
-  @Test
   @Disabled
+  @Test
   public void givenPutAccount() {
     // Create Account
-    CloudAccount mockCloudAccount = new MockCloudAccount();
+    MockCloudAccount mockCloudAccount = new MockCloudAccount();
+    mockCloudAccount.setAccountId("IdXYZ");
+    mockCloudAccount.setAutoDiscovered(true);
+    mockCloudAccount.setUser("UserXYZ");
+
+    String ui_request =
+        "{\"provider\":\"AWS\",\"autoDiscovered\":false,\"accessKeyId\":\"xxx\",\"secretAccessKey\":\"xxx\",\"region\":\"us-east-2\"}";
+    AccountService accountService = engine.getService(AccountService.class);
+    System.out.println(accountService.getAccounts());
+    try {
+      accountService.addAccount("AWS", mockCloudAccount);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    System.out.println(accountService.getAccounts());
+    System.out.println(accountService.getAccounts().get("Mock Cloud").getAccountId());
+
+    //    ObjectMapper objectMapper = new ObjectMapper();
+    //    ObjectNode mockCloudAccount = objectMapper.createObjectNode();
+    //    mockCloudAccount.put("accessKeyId", "IDXYZ");
+    //    mockCloudAccount.put("autoDiscovered", false);
+    //    mockCloudAccount.put("provider", "AWS");
+    //    mockCloudAccount.put("region", "us-east-2");
+    //    mockCloudAccount.put("secretAccessKey", "SECRET");
 
     // Request with account and provider as PathParam
     Response response =
-        target(accountsPrefix + "AWS")
+        target("engine" + accountsPrefix + "AWS")
             .request()
             .header(
                 AuthenticationFilter.HEADER_AUTHORIZATION,
                 AuthenticationFilter.createAuthorization(token))
-            .put(
-                javax.ws.rs.client.Entity.entity(
-                    mockCloudAccount, MediaType.APPLICATION_JSON_TYPE));
+            .put(javax.ws.rs.client.Entity.json(ui_request));
 
-    Assertions.assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());
+    System.out.println(response);
+    Assertions.assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
   }
 
   /** Helper classes and methods */

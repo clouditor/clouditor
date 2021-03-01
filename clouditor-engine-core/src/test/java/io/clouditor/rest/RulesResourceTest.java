@@ -18,7 +18,7 @@ import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
 import org.junit.jupiter.api.*;
 
-@Disabled
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class RulesResourceTest extends JerseyTest {
   private static final Engine engine = new Engine();
   private String token;
@@ -28,7 +28,7 @@ public class RulesResourceTest extends JerseyTest {
 
   // ToDo: UI check if removing rules is possible (otherwise test can fail due to other tests)
   @Test
-  @Disabled
+  @Order(1)
   public void givenGetRules_whenNoRulesAvailable_thenStatusOkAndResponseEmpty() {
     // Request
     Response response =
