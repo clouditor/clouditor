@@ -16,6 +16,46 @@ public class DiscoveryResourceTest extends JerseyTest {
   private String token;
   private static final String targetPrefix = "/discovery/";
 
+  /** Test Settings */
+  @BeforeAll
+  static void startUpOnce() {
+    engine.setDbInMemory(true);
+
+    engine.setDBName("CertificationResourceTestDB");
+
+    // init db
+    engine.initDB();
+
+    // initialize every else
+    engine.init();
+
+    // start the DiscoveryService
+    engine.getService(DiscoveryService.class).start();
+  }
+
+  @AfterAll
+  static void cleanUpOnce() {
+    engine.shutdown();
+  }
+
+  @BeforeEach
+  public void setUp() throws Exception {
+    super.setUp();
+
+    client().register(ObjectMapperResolver.class);
+
+    if (this.token == null) {
+      this.token = engine.authenticateAPI(target(), "clouditor", "clouditor");
+    }
+  }
+
+  @Override
+  protected Application configure() {
+    // Find first available port.
+    forceSet(TestProperties.CONTAINER_PORT, "0");
+    return new EngineAPI(engine);
+  }
+
   /** Tests */
   @Test
   public void testGetScans_whenOneScannerAvailable_thenStatusOkAndResponseNotEmpty() {
@@ -154,45 +194,5 @@ public class DiscoveryResourceTest extends JerseyTest {
 
     // Assertions
     Assertions.assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
-  }
-
-  /** Test Settings */
-  @BeforeAll
-  static void startUpOnce() {
-    engine.setDbInMemory(true);
-
-    engine.setDBName("CertificationResourceTestDB");
-
-    // init db
-    engine.initDB();
-
-    // initialize every else
-    engine.init();
-
-    // start the DiscoveryService
-    engine.getService(DiscoveryService.class).start();
-  }
-
-  @AfterAll
-  static void cleanUpOnce() {
-    engine.shutdown();
-  }
-
-  @BeforeEach
-  public void setUp() throws Exception {
-    super.setUp();
-
-    client().register(ObjectMapperResolver.class);
-
-    if (this.token == null) {
-      this.token = engine.authenticateAPI(target(), "clouditor", "clouditor");
-    }
-  }
-
-  @Override
-  protected Application configure() {
-    // Find first available port.
-    forceSet(TestProperties.CONTAINER_PORT, "0");
-    return new EngineAPI(engine);
   }
 }

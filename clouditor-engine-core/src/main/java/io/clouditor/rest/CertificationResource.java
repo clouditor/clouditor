@@ -46,8 +46,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A resource end-point for {@link Certification}.
@@ -57,10 +55,6 @@ import org.slf4j.LoggerFactory;
 @Path("certification")
 @RolesAllowed(ROLE_USER)
 public class CertificationResource {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(CertificationResource.class);
-
-  private final Engine engine;
   private final CertificationService service;
 
   /**
@@ -69,8 +63,7 @@ public class CertificationResource {
    * @param engine the Clouditor Engine
    */
   @Inject
-  public CertificationResource(Engine engine, CertificationService service) {
-    this.engine = engine;
+  public CertificationResource(CertificationService service) {
     this.service = service;
   }
 
@@ -84,12 +77,6 @@ public class CertificationResource {
     controlId = sanitize(controlId);
 
     var certification = this.getCertification(certificationId);
-
-    // ToDo: Verify that is ok to remove this part
-    // Is catched in getCertification
-    //    if (certification == null) {
-    //      throw new NotFoundException();
-    //    }
 
     String finalControlId = controlId;
     var first =
@@ -180,7 +167,5 @@ public class CertificationResource {
   public static class ControlStatusRequest {
 
     @JsonProperty private boolean status;
-
-    public ControlStatusRequest() {}
   }
 }

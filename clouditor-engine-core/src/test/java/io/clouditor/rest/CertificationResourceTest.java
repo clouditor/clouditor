@@ -97,8 +97,6 @@ public class CertificationResourceTest extends JerseyTest {
     Assertions.assertTrue(responseCertifications.isEmpty());
   }
 
-  // Unreachable: The first if condition cannot be evaluated to true since getCertification(cert)
-  // would do -> Change in Code
   @Test
   public void testModifyControlStatus_whenCertificationIsNullAndControlIsNull_thenNotFound() {
     // Tests
@@ -114,25 +112,9 @@ public class CertificationResourceTest extends JerseyTest {
     Assertions.assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
   }
 
-  // ToDo: Catch Exception (commented out): Throw of exception is covered but not asserted.
   @Test
   public void
       testModifyControlStatus_whenCertificationNotNullAndControlIsNull_thenThrowException() {
-    //    assertThrows(
-    //        NotFoundException.class,
-    //        () -> {
-    //          CertificationService certService = engine.getService(CertificationService.class);
-    //          Certification mockCertification = new Certification();
-    //          mockCertification.setId("1");
-    //          certService.modifyCertification(mockCertification);
-    //
-    //          target("certification/1/1/status")
-    //              .request()
-    //              .header(
-    //                  AuthenticationFilter.HEADER_AUTHORIZATION,
-    //                  AuthenticationFilter.createAuthorization(token))
-    //              .post(Entity.json("{}"));
-    //        });
 
     // Request
     CertificationService certService = engine.getService(CertificationService.class);
@@ -457,13 +439,9 @@ public class CertificationResourceTest extends JerseyTest {
     assertEquals(response.readEntity(Control.class).getId(), controlId);
   }
 
-  // ToDo: Catch Exception (commented out): Throw of exception is covered but not asserted.
   @Test
   public void
       testImportCertification_whenNoCertificationAvailable_thenStatus404AndThrowException() {
-    //    CertificationService certService = engine.getService(CertificationService.class);
-
-    //    assertTrue(certService.getCertifications().isEmpty());
     // Execute first Post Request (for status)
     Response response =
         target("certification/import/1")
@@ -473,16 +451,6 @@ public class CertificationResourceTest extends JerseyTest {
                 AuthenticationFilter.createAuthorization(this.token))
             .post(Entity.json("{}"));
     Assertions.assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
-
-    //    assertThrows(
-    //        NotFoundException.class,
-    //        () ->
-    //            target("certification/import/1")
-    //                .request()
-    //                .header(
-    //                    AuthenticationFilter.HEADER_AUTHORIZATION,
-    //                    AuthenticationFilter.createAuthorization(token))
-    //                .post(Entity.json("{}")));
   }
 
   @Test
@@ -490,11 +458,6 @@ public class CertificationResourceTest extends JerseyTest {
       testImportCertification_whenCertificationAvailableWithGivenId_thenStatusOkAndCertificateThere() {
     // Get CertificationService
     CertificationService certService = engine.getService(CertificationService.class);
-    // Get Importers and create iterator for receiving one importer
-    //    var importers = certService.getImporters();
-    //    Iterator<Map.Entry<String, CertificationImporter>> iterator =
-    // importers.entrySet().iterator();
-    //    Map.Entry<String, CertificationImporter> firstCertificationImporter = iterator.next();
 
     // Verify that there are no certifications currently available (by checking the hash map of
     // certifications)
@@ -537,7 +500,7 @@ public class CertificationResourceTest extends JerseyTest {
 
   /** Helper classes and methods */
 
-  // Created, since the corresponding inner class of CertificationResource does not allow to change
+  // The corresponding inner class of CertificationResource does not allow to change
   // the status
   public static class ControlStatusRequest {
 

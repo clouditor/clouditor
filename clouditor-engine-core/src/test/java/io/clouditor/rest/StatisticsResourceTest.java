@@ -15,34 +15,7 @@ public class StatisticsResourceTest extends JerseyTest {
   private static final Engine engine = new Engine();
   private String token;
   private static final String targetPrefix = "/statistics/";
-
-  /** Tests */
-  @Test
-  public void testGetStatistic_when_then() {
-    // Preparation: Add a certification
-    CertificationService certificationService = engine.getService(CertificationService.class);
-    Certification mockCertification = new Certification();
-    mockCertification.setId("1");
-    mockCertification.setDescription("I am a Mock Certification");
-    certificationService.modifyCertification(mockCertification);
-    Map<String, Certification> certifications = certificationService.getCertifications();
-
-    // Request
-    Response response =
-        target(targetPrefix)
-            .request()
-            .header(
-                AuthenticationFilter.HEADER_AUTHORIZATION,
-                AuthenticationFilter.createAuthorization(token))
-            .get();
-
-    System.out.println(response.getStatus());
-    System.out.println(response);
-
-    // Assertions
-    Assertions.assertFalse(certifications.isEmpty());
-    Assertions.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-  }
+  private static CertificationService certificationService;
 
   /** Test Settings */
   @BeforeAll
@@ -59,6 +32,10 @@ public class StatisticsResourceTest extends JerseyTest {
 
     // start the DiscoveryService
     engine.getService(DiscoveryService.class).start();
+
+    // Clean all certificates from previous test suites
+    certificationService = engine.getService(CertificationService.class);
+    certificationService.removeAllCertifications();
   }
 
   @AfterAll
@@ -82,5 +59,29 @@ public class StatisticsResourceTest extends JerseyTest {
     // Find first available port.
     forceSet(TestProperties.CONTAINER_PORT, "0");
     return new EngineAPI(engine);
+  }
+
+  /** Tests */
+  @Test
+  public void testGetStatistic() {
+    // Preparation: Add a certification
+    Certification mockCertification = new Certification();
+    mockCertification.setId("1");
+    mockCertification.setDescription("I am a Mock Certification");
+    certificationService.modifyCertification(mockCertification);
+    Map<String, Certification> certifications = certificationService.getCertifications();
+
+    // Request
+    Response response =
+        target(targetPrefix)
+            .request()
+            .header(
+                AuthenticationFilter.HEADER_AUTHORIZATION,
+                AuthenticationFilter.createAuthorization(token))
+            .get();
+
+    // Assertions
+    Assertions.assertFalse(certifications.isEmpty());
+    Assertions.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
   }
 }

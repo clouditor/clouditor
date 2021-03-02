@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.clouditor.Engine;
 import io.clouditor.auth.AuthenticationService;
 import io.clouditor.auth.User;
+import io.clouditor.data_access_layer.HibernatePersistence;
 import io.clouditor.discovery.DiscoveryService;
 import java.util.List;
 import javax.ws.rs.client.Entity;
@@ -21,9 +22,65 @@ public class UsersResourceTest extends JerseyTest {
   private static final Engine engine = new Engine();
   private String token;
   private static final String prefix = "/users/";
+  private static AuthenticationService authenticationService;
   private final String clouditorUserName = "clouditor";
-  private static String mockUserName = "MockUser";
-  private static String mockUser2Name = "MockUser2";
+  private static final String MOCK_USER_NAME = "MockUser";
+  private static final String MOCK_USER_2_NAME = "MockUser2";
+
+  /** Test Settings */
+  @BeforeAll
+  static void startUpOnce() {
+    engine.setDbInMemory(true);
+
+    engine.setDBName("CertificationResourceTestDB");
+
+    // init db
+    engine.initDB();
+
+    // initialize every else
+    engine.init();
+
+    // start the DiscoveryService
+    engine.getService(DiscoveryService.class).start();
+
+    // Creating a second user
+    authenticationService = engine.getService(AuthenticationService.class);
+    User mockUser = new User(MOCK_USER_NAME, MOCK_USER_NAME);
+    mockUser.setEmail("");
+    authenticationService.createUser(mockUser);
+    User mockUser2 = new User(MOCK_USER_2_NAME, MOCK_USER_2_NAME);
+    authenticationService.createUser(mockUser2);
+    mockUser2.setEmail("");
+  }
+
+  // Delete users from DB so that they do not potentially affect other test suites
+  @AfterAll
+  static void cleanUpOnce() {
+    if (authenticationService.getUser(MOCK_USER_NAME) != null) {
+      new HibernatePersistence().delete(User.class, MOCK_USER_NAME);
+    }
+    if (authenticationService.getUser(MOCK_USER_2_NAME) != null) {
+      new HibernatePersistence().delete(User.class, MOCK_USER_2_NAME);
+    }
+  }
+
+  @BeforeEach
+  public void setUp() throws Exception {
+    super.setUp();
+
+    client().register(ObjectMapperResolver.class);
+
+    if (this.token == null) {
+      this.token = engine.authenticateAPI(target(), clouditorUserName, "clouditor");
+    }
+  }
+
+  @Override
+  protected Application configure() {
+    // Find first available port.
+    forceSet(TestProperties.CONTAINER_PORT, "0");
+    return new EngineAPI(engine);
+  }
 
   /** Tests */
   @Test
@@ -64,7 +121,7 @@ public class UsersResourceTest extends JerseyTest {
   void testGetUser_whenUserExist_thenStatusNotFound() {
     // Request
     Response response =
-        target(prefix + mockUserName)
+        target(prefix + MOCK_USER_NAME)
             .request()
             .header(
                 AuthenticationFilter.HEADER_AUTHORIZATION,
@@ -74,32 +131,30 @@ public class UsersResourceTest extends JerseyTest {
     // Assertions
     assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
     User actualUser = response.readEntity(User.class);
-    assertEquals(mockUserName, actualUser.getName());
+    assertEquals(MOCK_USER_NAME, actualUser.getName());
   }
 
   @Test
   void testUpdateUser() {
     // Preparation
-    ObjectMapper objectMapper = new ObjectMapper();
-    ObjectNode userAsJson = objectMapper.createObjectNode();
-    String mockUserEmail = "mock@email.de";
-    userAsJson.put("email", mockUserEmail);
+    String mockUserEmail = "mock@mail.io";
+    User user = new User();
+    user.setEmail(mockUserEmail);
     AuthenticationService authenticationService = engine.getService(AuthenticationService.class);
-    //        User clouditor = authenticationService.getUser(clouditorUserName);
-    String mockUserMailBeforeUpdate = authenticationService.getUser(mockUserName).getEmail();
+    String mockUserMailBeforeUpdate = authenticationService.getUser(MOCK_USER_NAME).getEmail();
 
     // Request
     Response response =
-        target(prefix + mockUserName)
+        target(prefix + MOCK_USER_NAME)
             .request(MediaType.APPLICATION_JSON_TYPE)
             .header(
                 AuthenticationFilter.HEADER_AUTHORIZATION,
                 AuthenticationFilter.createAuthorization(token))
-            .put(Entity.json(userAsJson));
+            .put(Entity.json(user));
 
     // Assertions
     assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());
-    User mockUser = authenticationService.getUser(mockUserName);
+    User mockUser = authenticationService.getUser(MOCK_USER_NAME);
     assertEquals(mockUserEmail, mockUser.getEmail());
     assertNotEquals(mockUserMailBeforeUpdate, mockUser.getEmail());
   }
@@ -108,11 +163,11 @@ public class UsersResourceTest extends JerseyTest {
   void testDeleteUser() {
     // Pre assertion
     AuthenticationService authenticationService = engine.getService(AuthenticationService.class);
-    assertNotNull(authenticationService.getUser(mockUser2Name));
+    assertNotNull(authenticationService.getUser(MOCK_USER_2_NAME));
 
     // Request
     Response response =
-        target(prefix + mockUser2Name)
+        target(prefix + MOCK_USER_2_NAME)
             .request(MediaType.APPLICATION_JSON_TYPE)
             .header(
                 AuthenticationFilter.HEADER_AUTHORIZATION,
@@ -121,7 +176,7 @@ public class UsersResourceTest extends JerseyTest {
 
     // Post assertion
     assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());
-    assertNull(authenticationService.getUser(mockUser2Name));
+    assertNull(authenticationService.getUser(MOCK_USER_2_NAME));
   }
 
   @Test
@@ -129,8 +184,8 @@ public class UsersResourceTest extends JerseyTest {
     // Preparation
     ObjectMapper objectMapper = new ObjectMapper();
     ObjectNode userAsJson = objectMapper.createObjectNode();
-    userAsJson.put("username", mockUserName);
-    userAsJson.put("password", mockUserName);
+    userAsJson.put("username", MOCK_USER_NAME);
+    userAsJson.put("password", MOCK_USER_NAME);
 
     // Request
     Response response =
@@ -169,52 +224,5 @@ public class UsersResourceTest extends JerseyTest {
     // Assertions
     assertNotNull(authenticationService.getUser(newUserUsername));
     assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-  }
-
-  /** Test Settings */
-  @BeforeAll
-  static void startUpOnce() {
-    engine.setDbInMemory(true);
-
-    engine.setDBName("CertificationResourceTestDB");
-
-    // init db
-    engine.initDB();
-
-    // initialize every else
-    engine.init();
-
-    // start the DiscoveryService
-    engine.getService(DiscoveryService.class).start();
-
-    // Creating a second user
-    AuthenticationService authenticationService = engine.getService(AuthenticationService.class);
-    User mockUser = new User(mockUserName, mockUserName);
-    authenticationService.createUser(mockUser);
-    User mockUser2 = new User(mockUser2Name, mockUser2Name);
-    authenticationService.createUser(mockUser2);
-  }
-
-  @AfterAll
-  static void cleanUpOnce() {
-    engine.shutdown();
-  }
-
-  @BeforeEach
-  public void setUp() throws Exception {
-    super.setUp();
-
-    client().register(ObjectMapperResolver.class);
-
-    if (this.token == null) {
-      this.token = engine.authenticateAPI(target(), clouditorUserName, "clouditor");
-    }
-  }
-
-  @Override
-  protected Application configure() {
-    // Find first available port.
-    forceSet(TestProperties.CONTAINER_PORT, "0");
-    return new EngineAPI(engine);
   }
 }

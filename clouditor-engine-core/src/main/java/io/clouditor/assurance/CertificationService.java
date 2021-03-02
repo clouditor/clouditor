@@ -230,4 +230,12 @@ public class CertificationService {
       certifications.remove(certification.getId());
     }
   }
+
+  public boolean removeCertification(Certification certification) {
+    return removeCertification(certification.getId());
+  }
+
+  public boolean removeCertification(String certificationId) {
+    return certifications.remove(certificationId) != null;
+  }
 }

@@ -103,35 +103,11 @@ public class AssetsResourceTest extends JerseyTest {
     assertEquals(mockAsset.getId(), actualAsset.get("_id"));
   }
 
-  // ToDo: Should response type be  "no content" instead of "internal error"?
   @Test
   void testGetServerSentEvents_whenAssetTypeNotExistent_thenResponse500() {
     // Request
     Response response =
         target(prefix + "Non-existent Asset Type" + "/subscribe")
-            .request(MediaType.SERVER_SENT_EVENTS_TYPE)
-            .header(
-                AuthenticationFilter.HEADER_AUTHORIZATION,
-                AuthenticationFilter.createAuthorization(token))
-            .get();
-
-    // Assertions
-    assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
-  }
-
-  // ToDo: Request Response is 500 (but full coverage)
-  @Test
-  void testGetServerSentEvents() {
-    // Preparation
-    AssetService assetService = engine.getService(AssetService.class);
-    Asset mockAsset = new Asset();
-    mockAsset.setId("Mock Asset");
-    mockAsset.setType("Mock Asset Type");
-    assetService.update(mockAsset);
-
-    // Request
-    Response response =
-        target(prefix + "Mock Asset Type" + "/subscribe")
             .request(MediaType.SERVER_SENT_EVENTS_TYPE)
             .header(
                 AuthenticationFilter.HEADER_AUTHORIZATION,

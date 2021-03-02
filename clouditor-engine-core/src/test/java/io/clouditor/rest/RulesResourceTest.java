@@ -23,10 +23,53 @@ public class RulesResourceTest extends JerseyTest {
   private static final Engine engine = new Engine();
   private String token;
   private static final String targetPrefix = "/rules/";
+  private static RuleService ruleService;
+
+  /** Test Settings */
+  @BeforeAll
+  static void startUpOnce() {
+    engine.setDbInMemory(true);
+
+    engine.setDBName("RulesResourceTestDB");
+
+    // init db
+    engine.initDB();
+
+    // initialize every else
+    engine.init();
+
+    // start the DiscoveryService
+    engine.getService(DiscoveryService.class).start();
+
+    // Remove all rules (in case other test suits have added some rules)
+    ruleService = engine.getService(RuleService.class);
+    ruleService.removeAllRules();
+  }
+
+  @AfterAll
+  static void cleanUpOnce() {
+    engine.shutdown();
+  }
+
+  @BeforeEach
+  public void setUp() throws Exception {
+    super.setUp();
+
+    client().register(ObjectMapperResolver.class);
+
+    if (this.token == null) {
+      this.token = engine.authenticateAPI(target(), "clouditor", "clouditor");
+    }
+  }
+
+  @Override
+  protected Application configure() {
+    // Find first available port.
+    forceSet(TestProperties.CONTAINER_PORT, "0");
+    return new EngineAPI(engine);
+  }
 
   /** Tests */
-
-  // ToDo: UI check if removing rules is possible (otherwise test can fail due to other tests)
   @Test
   @Order(1)
   public void testGetRules_whenNoRulesAvailable_thenStatusOkAndResponseEmpty() {
@@ -47,7 +90,6 @@ public class RulesResourceTest extends JerseyTest {
   @Test
   public void testGetRules_thenAmountOfRulesIsEqual() {
     // Preparation
-    RuleService ruleService = engine.getService(RuleService.class);
     try {
       ruleService.load(FileSystemManager.getInstance().getPathForResource("rules/test"));
     } catch (IOException e) {
@@ -64,7 +106,6 @@ public class RulesResourceTest extends JerseyTest {
             .get();
 
     // Assertions
-    System.out.println(ruleService.getRules().size());
     assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
     assertEquals(ruleService.getRules().size(), response.readEntity(Map.class).size());
   }
@@ -88,7 +129,6 @@ public class RulesResourceTest extends JerseyTest {
   @Test
   public void testGetRules_whenRulesWithAssetTypeAvailable_thenStatusOkAndResponseEqual() {
     // Preparation
-    RuleService ruleService = engine.getService(RuleService.class);
     try {
       ruleService.load(FileSystemManager.getInstance().getPathForResource("rules/test"));
     } catch (IOException e) {
@@ -135,7 +175,6 @@ public class RulesResourceTest extends JerseyTest {
   @Test
   public void testGet_whenRuleWithIdAvailable_thenStatusOkAndRespondIt() {
     // Preparation
-    RuleService ruleService = engine.getService(RuleService.class);
     try {
       ruleService.load(FileSystemManager.getInstance().getPathForResource("rules/test"));
     } catch (IOException e) {
@@ -158,45 +197,5 @@ public class RulesResourceTest extends JerseyTest {
     // Assertions
     assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
     assertNotNull(response.readEntity(RuleEvaluation.class));
-  }
-
-  /** Test Settings */
-  @BeforeAll
-  static void startUpOnce() {
-    engine.setDbInMemory(true);
-
-    engine.setDBName("CertificationResourceTestDB");
-
-    // init db
-    engine.initDB();
-
-    // initialize every else
-    engine.init();
-
-    // start the DiscoveryService
-    engine.getService(DiscoveryService.class).start();
-  }
-
-  @AfterAll
-  static void cleanUpOnce() {
-    engine.shutdown();
-  }
-
-  @BeforeEach
-  public void setUp() throws Exception {
-    super.setUp();
-
-    client().register(ObjectMapperResolver.class);
-
-    if (this.token == null) {
-      this.token = engine.authenticateAPI(target(), "clouditor", "clouditor");
-    }
-  }
-
-  @Override
-  protected Application configure() {
-    // Find first available port.
-    forceSet(TestProperties.CONTAINER_PORT, "0");
-    return new EngineAPI(engine);
   }
 }

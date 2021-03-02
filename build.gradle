@@ -147,10 +147,7 @@ allprojects {
     }
 
     test {
-        // ToDo: Set to true when testing finished
-        failFast = false
-        // Todo: Remove this line after test issues fixed
-        beforeTest { descriptor -> logger.lifecycle("Running test: ${descriptor}")}
+        failFast = true
         useJUnitPlatform()
     }
 

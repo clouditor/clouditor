@@ -138,6 +138,32 @@ public class RuleService extends DiscoveryResultSubscriber {
         .orElse(null);
   }
 
+  public void removeAllRules() {
+    getRules()
+        .values()
+        .forEach(
+            rulesPerAsset ->
+                rulesPerAsset.forEach(rule -> new HibernatePersistence().delete(rule)));
+    this.rules.clear();
+  }
+
+  // ToDo: Test
+  public void removeAllRulesFromAssetType(String assetType) {
+    var rulesPerAssetType = getRules().get(assetType);
+    rulesPerAssetType.forEach(rule -> new HibernatePersistence().delete(rule));
+    this.rules.get(assetType).clear();
+  }
+
+  // ToDo: Test
+  public void removeRule(Rule rule) {
+    this.rules.get(rule.getAssetType()).remove(rule);
+  }
+
+  // ToDo: Test
+  public void removeRule(String ruleId) {
+    removeRule(getWithId(ruleId));
+  }
+
   public static class ControlsVisitor extends AbstractVisitor {
 
     private final Rule rule;
