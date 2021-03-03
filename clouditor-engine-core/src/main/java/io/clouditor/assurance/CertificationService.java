@@ -223,7 +223,9 @@ public class CertificationService {
     }
   }
 
-  // For testing purposes (remove certifications when previous test suites added some)
+  /**
+   * Remove all certifications from certifications and DB
+   */
   public void removeAllCertifications() {
     for (Certification certification : getCertifications().values()) {
       new HibernatePersistence().delete(certification);
@@ -231,11 +233,29 @@ public class CertificationService {
     }
   }
 
+  /**
+   * Remove given certification from certifications and DB
+   *
+   * @param certification the certification to remove.
+   *
+   * @return true when the certification was stored, false otherwise
+  * */
   public boolean removeCertification(Certification certification) {
     return removeCertification(certification.getId());
   }
 
+  /**
+   * Remove given certification from certifications and DB
+   *
+   * @param certificationId the id of the certification to remove.
+   *
+   * @return true when the certification was stored, false otherwise
+   * */
   public boolean removeCertification(String certificationId) {
-    return certifications.remove(certificationId) != null;
+    boolean isRemoved = certifications.remove(certificationId) != null;
+    if (isRemoved) {
+      new HibernatePersistence().delete(Certification.class,certificationId);
+    }
+    return isRemoved;
   }
 }

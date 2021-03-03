@@ -147,19 +147,36 @@ public class RuleService extends DiscoveryResultSubscriber {
     this.rules.clear();
   }
 
-  // ToDo: Test
+
+  /**
+   * Remove all rules from rules and DB.
+   *
+   * @param assetType the assetType the rules apply to.
+   *
+   * */
   public void removeAllRulesFromAssetType(String assetType) {
     var rulesPerAssetType = getRules().get(assetType);
     rulesPerAssetType.forEach(rule -> new HibernatePersistence().delete(rule));
     this.rules.get(assetType).clear();
   }
 
-  // ToDo: Test
+  /**
+   * Remove rule from rules and DB.
+   *
+   * @param rule the rule to remove.
+   *
+   * */
   public void removeRule(Rule rule) {
     this.rules.get(rule.getAssetType()).remove(rule);
+    new HibernatePersistence().delete(rule);
   }
 
-  // ToDo: Test
+  /**
+   * Remove rule from rules and DB.
+   *
+   * @param ruleId the id of the rule to remove.
+   *
+   * */
   public void removeRule(String ruleId) {
     removeRule(getWithId(ruleId));
   }
