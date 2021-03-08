@@ -166,7 +166,7 @@ public class RuleService extends DiscoveryResultSubscriber {
   public void removeRule(Rule rule) {
     this.rules
         .get(rule.getAssetType())
-        .removeIf(ruleOfAssetType -> ruleOfAssetType.getId() == rule.getId());
+        .removeIf(ruleOfAssetType -> ruleOfAssetType.getId().equals(rule.getId()));
     new HibernatePersistence().delete(rule);
   }
 
