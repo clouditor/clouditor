@@ -31,7 +31,6 @@ import static io.clouditor.auth.AuthenticationService.ROLE_USER;
 import static io.clouditor.rest.AbstractAPI.sanitize;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.clouditor.Engine;
 import io.clouditor.assurance.Certification;
 import io.clouditor.assurance.CertificationImporter;
 import io.clouditor.assurance.CertificationService;

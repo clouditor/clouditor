@@ -17,7 +17,7 @@ public class StatisticsResourceTest extends JerseyTest {
   private static final String targetPrefix = "/statistics/";
   private static CertificationService certificationService;
 
-  /** Test Settings */
+  /* Test Settings */
   @BeforeAll
   static void startUpOnce() {
     engine.setDbInMemory(true);
@@ -61,7 +61,7 @@ public class StatisticsResourceTest extends JerseyTest {
     return new EngineAPI(engine);
   }
 
-  /** Tests */
+  /* Tests */
   @Test
   public void testGetStatistic() {
     // Preparation: Add a certification

@@ -27,7 +27,7 @@ public class UsersResourceTest extends JerseyTest {
   private static final String MOCK_USER_NAME = "MockUser";
   private static final String MOCK_USER_2_NAME = "MockUser2";
 
-  /** Test Settings */
+  /* Test Settings */
   @BeforeAll
   static void startUpOnce() {
     engine.setDbInMemory(true);
@@ -82,7 +82,7 @@ public class UsersResourceTest extends JerseyTest {
     return new EngineAPI(engine);
   }
 
-  /** Tests */
+  /* Tests */
   @Test
   void testGetUsers() {
     AuthenticationService authenticationService = engine.getService(AuthenticationService.class);

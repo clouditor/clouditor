@@ -23,7 +23,7 @@ public class CertificationResourceTest extends JerseyTest {
   private static final Engine engine = new Engine();
   private String token;
 
-  /** Test Settings */
+  /* Test Settings */
   @BeforeAll
   static void startUpOnce() {
     engine.setDbInMemory(true);
@@ -66,7 +66,7 @@ public class CertificationResourceTest extends JerseyTest {
     return new EngineAPI(engine);
   }
 
-  /** Tests */
+  /* Tests */
   @Test
   public void testCertificationResource_constructor() {
     target("certification")

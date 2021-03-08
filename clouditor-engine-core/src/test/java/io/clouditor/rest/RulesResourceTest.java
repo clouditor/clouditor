@@ -25,7 +25,7 @@ public class RulesResourceTest extends JerseyTest {
   private static final String targetPrefix = "/rules/";
   private static RuleService ruleService;
 
-  /** Test Settings */
+  /* Test Settings */
   @BeforeAll
   static void startUpOnce() {
     engine.setDbInMemory(true);
@@ -69,7 +69,7 @@ public class RulesResourceTest extends JerseyTest {
     return new EngineAPI(engine);
   }
 
-  /** Tests */
+  /* Tests */
   @Test
   @Order(1)
   public void testGetRules_whenNoRulesAvailable_thenStatusOkAndResponseEmpty() {

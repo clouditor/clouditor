@@ -21,7 +21,7 @@ public class AssetsResourceTest extends JerseyTest {
   private String token;
   private static final String prefix = "/assets/";
 
-  /** Test Settings */
+  /* Test Settings */
   @BeforeAll
   static void startUpOnce() {
     engine.setDbInMemory(true);
@@ -61,7 +61,7 @@ public class AssetsResourceTest extends JerseyTest {
     return new EngineAPI(engine);
   }
 
-  /** Tests */
+  /* Tests */
   @Test
   void testGetAssetsWithType_whenNoAssetAvailable_then() {
     // Request

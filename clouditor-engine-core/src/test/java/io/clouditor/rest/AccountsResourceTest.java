@@ -24,7 +24,7 @@ public class AccountsResourceTest extends JerseyTest {
   private String token;
   private static final String accountsPrefix = "/accounts/";
 
-  /** Test Settings */
+  /* Test Settings */
   @BeforeAll
   static void startUp() {
     // Init DB
@@ -62,7 +62,7 @@ public class AccountsResourceTest extends JerseyTest {
     return new EngineAPI(engine);
   }
 
-  /** Tests */
+  /* Tests */
   @Test
   @Order(1)
   public void testGetAccounts_whenNoAccountsAvailable_thenStatusOkAndResponseEmpty() {

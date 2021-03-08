@@ -16,7 +16,7 @@ public class DiscoveryResourceTest extends JerseyTest {
   private String token;
   private static final String targetPrefix = "/discovery/";
 
-  /** Test Settings */
+  /* Test Settings */
   @BeforeAll
   static void startUpOnce() {
     engine.setDbInMemory(true);
@@ -56,7 +56,7 @@ public class DiscoveryResourceTest extends JerseyTest {
     return new EngineAPI(engine);
   }
 
-  /** Tests */
+  /* Tests */
   @Test
   public void testGetScans_whenOneScannerAvailable_thenStatusOkAndResponseNotEmpty() {
     // Request

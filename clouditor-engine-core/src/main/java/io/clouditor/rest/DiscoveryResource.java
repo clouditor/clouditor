@@ -77,8 +77,7 @@ public class DiscoveryResource {
     var scan = service.getScan(id);
 
     if (scan == null) {
-      var sanitizedId = sanitize(id);
-      LOGGER.error("Could not find scan with id {}", sanitizedId);
+      LOGGER.error("Could not find scan with id {}", id);
       throw new NotFoundException("Could not find scan with id " + id);
     }
 

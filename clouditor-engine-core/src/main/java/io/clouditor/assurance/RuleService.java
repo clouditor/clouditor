@@ -147,13 +147,11 @@ public class RuleService extends DiscoveryResultSubscriber {
     this.rules.clear();
   }
 
-
   /**
    * Remove all rules from rules and DB.
    *
    * @param assetType the assetType the rules apply to.
-   *
-   * */
+   */
   public void removeAllRulesFromAssetType(String assetType) {
     var rulesPerAssetType = getRules().get(assetType);
     rulesPerAssetType.forEach(rule -> new HibernatePersistence().delete(rule));
@@ -164,10 +162,11 @@ public class RuleService extends DiscoveryResultSubscriber {
    * Remove rule from rules and DB.
    *
    * @param rule the rule to remove.
-   *
-   * */
+   */
   public void removeRule(Rule rule) {
-    this.rules.get(rule.getAssetType()).remove(rule);
+    this.rules
+        .get(rule.getAssetType())
+        .removeIf(ruleOfAssetType -> ruleOfAssetType.getId() == rule.getId());
     new HibernatePersistence().delete(rule);
   }
 
@@ -175,8 +174,7 @@ public class RuleService extends DiscoveryResultSubscriber {
    * Remove rule from rules and DB.
    *
    * @param ruleId the id of the rule to remove.
-   *
-   * */
+   */
   public void removeRule(String ruleId) {
     removeRule(getWithId(ruleId));
   }
