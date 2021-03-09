@@ -21,7 +21,7 @@ public class DiscoveryResourceTest extends JerseyTest {
   static void startUpOnce() {
     engine.setDbInMemory(true);
 
-    engine.setDBName("CertificationResourceTestDB");
+    engine.setDBName("DiscoveryResourceTestDB");
 
     // init db
     engine.initDB();
@@ -119,7 +119,7 @@ public class DiscoveryResourceTest extends JerseyTest {
   }
 
   @Test
-  public void testEnable_whenScannerIsAvailable_thenStatusNoContent() {
+  public void testEnable_whenScannerIsAvailable_thenScanEnabledStatusNoContent() {
     // Preparation
     String id = "fake";
     DiscoveryService discoveryService = engine.getService(DiscoveryService.class);
