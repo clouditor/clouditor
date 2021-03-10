@@ -1,7 +1,6 @@
 package io.clouditor.rest;
 
 import io.clouditor.Engine;
-import io.clouditor.data_access_layer.HibernatePersistence;
 import io.clouditor.discovery.DiscoveryService;
 import io.clouditor.discovery.Scan;
 import java.util.List;
@@ -16,6 +15,7 @@ public class DiscoveryResourceTest extends JerseyTest {
   private static final Engine engine = new Engine();
   private String token;
   private static final String targetPrefix = "/discovery/";
+  private static final String FAKE_ID = "fake";
   private static DiscoveryService discoveryService;
 
   /* Test Settings */
@@ -81,12 +81,9 @@ public class DiscoveryResourceTest extends JerseyTest {
 
   @Test
   public void testGetScan_whenRequestedScannerAvailable_thenStatusOkAndRespondIt() {
-    // Preparation
-    String id = "fake";
-
     // Request
     Response response =
-        target(targetPrefix + id)
+        target(targetPrefix + FAKE_ID)
             .request()
             .header(
                 AuthenticationFilter.HEADER_AUTHORIZATION,
@@ -94,10 +91,10 @@ public class DiscoveryResourceTest extends JerseyTest {
             .get();
 
     // Assertions
-    Assertions.assertNotNull(discoveryService.getScan(id));
+    Assertions.assertNotNull(discoveryService.getScan(FAKE_ID));
     Assertions.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
     Scan scan = response.readEntity(Scan.class);
-    Assertions.assertEquals("fake", scan.getId());
+    Assertions.assertEquals(FAKE_ID, scan.getId());
   }
 
   @Test
@@ -122,18 +119,17 @@ public class DiscoveryResourceTest extends JerseyTest {
   }
 
   @Test
-  public void testEnable_whenScannerIsAvailable_thenScanEnabledStatusNoContent() {
+  public void testEnable_whenScannerIsAvailableAndNotEnabled_thenScanEnabledStatusNoContent() {
     // Preparation
-    String id = "fake";
-    Scan scan = discoveryService.getScan(id);
-    discoveryService.disableScan(scan);
+    Scan scan = discoveryService.getScan(FAKE_ID);
+    scan.setEnabled(false);
 
     // Assert that scan is disabled before request
     Assertions.assertFalse(scan.isEnabled());
 
     // Request
     Response response =
-        target(targetPrefix + id + "/enable")
+        target(targetPrefix + FAKE_ID + "/enable")
             .request()
             .header(
                 AuthenticationFilter.HEADER_AUTHORIZATION,
@@ -141,8 +137,7 @@ public class DiscoveryResourceTest extends JerseyTest {
             .post(Entity.json("{}"));
 
     // Assertions
-    var isEnabled = new HibernatePersistence().get(Scan.class, id).get().isEnabled();
-    Assertions.assertTrue(isEnabled);
+    Assertions.assertTrue(scan.isEnabled());
     Assertions.assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());
   }
 
@@ -163,17 +158,14 @@ public class DiscoveryResourceTest extends JerseyTest {
   }
 
   @Test
-  public void testDisable_whenScannerIsAvailable_thenStatusNoContent() {
+  public void testDisable_whenScannerIsAvailableAndEnabled_thenStatusNoContent() {
     // Preparation
-    String id = "fake";
-    Scan scan = discoveryService.getScan(id);
-    System.out.println("Scan enabled: " + scan.isEnabled());
-    discoveryService.enableScan(scan);
-    System.out.println("Scan enabled: " + scan.isEnabled());
+    Scan scan = discoveryService.getScan(FAKE_ID);
+    scan.setEnabled(true);
 
     // Request
     Response response =
-        target(targetPrefix + id + "/disable")
+        target(targetPrefix + FAKE_ID + "/disable")
             .request()
             .header(
                 AuthenticationFilter.HEADER_AUTHORIZATION,
@@ -181,10 +173,7 @@ public class DiscoveryResourceTest extends JerseyTest {
             .post(Entity.json("{}"));
 
     // Assertions
-    System.out.println("Scan enabled: " + scan.isEnabled());
-    System.out.println("Scan from Hibernate: " + new HibernatePersistence().get(Scan.class, id));
-    var isEnabled = new HibernatePersistence().get(Scan.class, id).get().isEnabled();
-    Assertions.assertFalse(isEnabled);
+    Assertions.assertFalse(scan.isEnabled());
     Assertions.assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());
   }
 
