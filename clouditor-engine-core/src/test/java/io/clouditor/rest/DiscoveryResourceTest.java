@@ -1,6 +1,7 @@
 package io.clouditor.rest;
 
 import io.clouditor.Engine;
+import io.clouditor.data_access_layer.HibernatePersistence;
 import io.clouditor.discovery.DiscoveryService;
 import io.clouditor.discovery.Scan;
 import java.util.List;
@@ -15,6 +16,7 @@ public class DiscoveryResourceTest extends JerseyTest {
   private static final Engine engine = new Engine();
   private String token;
   private static final String targetPrefix = "/discovery/";
+  private static DiscoveryService discoveryService;
 
   /* Test Settings */
   @BeforeAll
@@ -31,6 +33,9 @@ public class DiscoveryResourceTest extends JerseyTest {
 
     // start the DiscoveryService
     engine.getService(DiscoveryService.class).start();
+
+    // Initialize discoveryService
+    discoveryService = engine.getService(DiscoveryService.class);
   }
 
   @AfterAll
@@ -78,7 +83,6 @@ public class DiscoveryResourceTest extends JerseyTest {
   public void testGetScan_whenRequestedScannerAvailable_thenStatusOkAndRespondIt() {
     // Preparation
     String id = "fake";
-    DiscoveryService discoveryService = engine.getService(DiscoveryService.class);
 
     // Request
     Response response =
@@ -100,7 +104,6 @@ public class DiscoveryResourceTest extends JerseyTest {
   public void testGetScan_whenRequestedScannerNotAvailable_thenStatusOkAndRespondIt() {
     // Preparation
     String id = "I Am Not There";
-    DiscoveryService discoveryService = engine.getService(DiscoveryService.class);
 
     // Request
     Response response =
@@ -122,9 +125,11 @@ public class DiscoveryResourceTest extends JerseyTest {
   public void testEnable_whenScannerIsAvailable_thenScanEnabledStatusNoContent() {
     // Preparation
     String id = "fake";
-    DiscoveryService discoveryService = engine.getService(DiscoveryService.class);
     Scan scan = discoveryService.getScan(id);
     discoveryService.disableScan(scan);
+
+    // Assert that scan is disabled before request
+    Assertions.assertFalse(scan.isEnabled());
 
     // Request
     Response response =
@@ -136,8 +141,8 @@ public class DiscoveryResourceTest extends JerseyTest {
             .post(Entity.json("{}"));
 
     // Assertions
-    scan = discoveryService.getScan(id);
-    Assertions.assertTrue(scan.isEnabled());
+    var isEnabled = new HibernatePersistence().get(Scan.class, id).get().isEnabled();
+    Assertions.assertTrue(isEnabled);
     Assertions.assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());
   }
 
@@ -161,9 +166,10 @@ public class DiscoveryResourceTest extends JerseyTest {
   public void testDisable_whenScannerIsAvailable_thenStatusNoContent() {
     // Preparation
     String id = "fake";
-    DiscoveryService discoveryService = engine.getService(DiscoveryService.class);
     Scan scan = discoveryService.getScan(id);
+    System.out.println("Scan enabled: " + scan.isEnabled());
     discoveryService.enableScan(scan);
+    System.out.println("Scan enabled: " + scan.isEnabled());
 
     // Request
     Response response =
@@ -175,8 +181,10 @@ public class DiscoveryResourceTest extends JerseyTest {
             .post(Entity.json("{}"));
 
     // Assertions
-    scan = discoveryService.getScan(id);
-    Assertions.assertFalse(scan.isEnabled());
+    System.out.println("Scan enabled: " + scan.isEnabled());
+    System.out.println("Scan from Hibernate: " + new HibernatePersistence().get(Scan.class, id));
+    var isEnabled = new HibernatePersistence().get(Scan.class, id).get().isEnabled();
+    Assertions.assertFalse(isEnabled);
     Assertions.assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());
   }
 
