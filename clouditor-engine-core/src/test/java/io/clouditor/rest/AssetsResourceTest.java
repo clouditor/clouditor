@@ -16,7 +16,7 @@ import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
 import org.junit.jupiter.api.*;
 
-public class AssetsResourceTest extends JerseyTest {
+class AssetsResourceTest extends JerseyTest {
   private static final Engine engine = new Engine();
   private String token;
   private static final String prefix = "/assets/";

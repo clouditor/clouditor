@@ -148,8 +148,8 @@ allprojects {
 
     test {
         failFast = true
-        // Comment next line when testing successful
-        beforeTest { descriptor -> logger.lifecycle("Running test: ${descriptor}")}
+        // Uncomment next line when you want to see each individual test while debugging
+        // beforeTest { descriptor -> logger.lifecycle("Running test: ${descriptor}")}
 
         useJUnitPlatform()
     }

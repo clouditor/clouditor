@@ -19,7 +19,7 @@ import org.glassfish.jersey.test.TestProperties;
 import org.junit.jupiter.api.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class RulesResourceTest extends JerseyTest {
+class RulesResourceTest extends JerseyTest {
   private static final Engine engine = new Engine();
   private String token;
   private static final String targetPrefix = "/rules/";
@@ -72,7 +72,7 @@ public class RulesResourceTest extends JerseyTest {
   /* Tests */
   @Test
   @Order(1)
-  public void testGetRules_whenNoRulesAvailable_thenStatusOkAndResponseEmpty() {
+  void testGetRules_whenNoRulesAvailable_thenStatusOkAndResponseEmpty() {
     // Request
     Response response =
         target(targetPrefix)
@@ -88,7 +88,7 @@ public class RulesResourceTest extends JerseyTest {
   }
 
   @Test
-  public void testGetRules_thenAmountOfRulesIsEqual() {
+  void testGetRules_thenAmountOfRulesIsEqual() {
     // Preparation
     try {
       ruleService.load(FileSystemManager.getInstance().getPathForResource("rules/test"));
@@ -111,7 +111,7 @@ public class RulesResourceTest extends JerseyTest {
   }
 
   @Test
-  public void testGetRules_whenNoRulesWithAssetTypeAvailable_thenStatusOkAndResponseEmpty() {
+  void testGetRules_whenNoRulesWithAssetTypeAvailable_thenStatusOkAndResponseEmpty() {
     // Request
     Response response =
         target(targetPrefix + "assets/NoAssetWithThisName")
@@ -127,7 +127,7 @@ public class RulesResourceTest extends JerseyTest {
   }
 
   @Test
-  public void testGetRules_whenRulesWithAssetTypeAvailable_thenStatusOkAndResponseEqual() {
+  void testGetRules_whenRulesWithAssetTypeAvailable_thenStatusOkAndResponseEqual() {
     // Preparation
     try {
       ruleService.load(FileSystemManager.getInstance().getPathForResource("rules/test"));
@@ -157,7 +157,7 @@ public class RulesResourceTest extends JerseyTest {
   }
 
   @Test
-  public void testGet_whenNoRuleWithIdAvailable_thenStatusNotFound() {
+  void testGet_whenNoRuleWithIdAvailable_thenStatusNotFound() {
     // Request
     Response response =
         target(targetPrefix + "No Id With This Name")
@@ -173,7 +173,7 @@ public class RulesResourceTest extends JerseyTest {
   }
 
   @Test
-  public void testGet_whenRuleWithIdAvailable_thenStatusOkAndRespondIt() {
+  void testGet_whenRuleWithIdAvailable_thenStatusOkAndRespondIt() {
     // Preparation
     try {
       ruleService.load(FileSystemManager.getInstance().getPathForResource("rules/test"));

@@ -19,7 +19,7 @@ import org.glassfish.jersey.test.TestProperties;
 import org.junit.jupiter.api.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class AccountsResourceTest extends JerseyTest {
+class AccountsResourceTest extends JerseyTest {
   private static final Engine engine = new Engine();
   private String token;
   private static final String accountsPrefix = "/accounts/";
@@ -65,7 +65,7 @@ public class AccountsResourceTest extends JerseyTest {
   /* Tests */
   @Test
   @Order(1)
-  public void testGetAccounts_whenNoAccountsAvailable_thenStatusOkAndResponseEmpty() {
+  void testGetAccounts_whenNoAccountsAvailable_thenStatusOkAndResponseEmpty() {
     // Request
     Response response =
         target(accountsPrefix)
@@ -82,7 +82,7 @@ public class AccountsResourceTest extends JerseyTest {
   }
 
   @Test
-  public void testGetAccounts_whenOneAccountAvailable_thenRespondWithAccount() {
+  void testGetAccounts_whenOneAccountAvailable_thenRespondWithAccount() {
     // Create and add new mock account
     AccountService accService = engine.getService(AccountService.class);
     CloudAccount mockCloudAccount = new MockCloudAccount();
@@ -111,7 +111,7 @@ public class AccountsResourceTest extends JerseyTest {
   }
 
   @Test
-  public void testGetAccount_whenNoAccountAvailableWithGivenProvider_then404AndNull() {
+  void testGetAccount_whenNoAccountAvailableWithGivenProvider_then404AndNull() {
     // Request
     final String nonExistingProviderName = "UnknownProvider";
     Response response =
@@ -137,7 +137,7 @@ public class AccountsResourceTest extends JerseyTest {
   }
 
   @Test
-  public void testGetAccount_whenOneAccountAvailable_then200AndResponseWithAccount() {
+  void testGetAccount_whenOneAccountAvailable_then200AndResponseWithAccount() {
     // Create account
     AccountService accService = engine.getService(AccountService.class);
     CloudAccount mockCloudAccount = new MockCloudAccount();
@@ -163,7 +163,7 @@ public class AccountsResourceTest extends JerseyTest {
   }
 
   @Test
-  public void testDiscover_whenNoAccountAvailable_Then404AndNull() {
+  void testDiscover_whenNoAccountAvailable_Then404AndNull() {
     // Request
     Response response =
         target(accountsPrefix + "discover/Mock Cloud")
@@ -178,11 +178,10 @@ public class AccountsResourceTest extends JerseyTest {
     Assertions.assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
   }
 
-  // ToDo: Cover at least some lines in method putAccount: The method seems not to accept the
-  // CloudAccount object
-  @Disabled
+  @Disabled(
+      "ToDo: Cover at least some lines in method putAccount: The method seems to not accept the CloudAccount object")
   @Test
-  public void testPutAccount() {
+  void testPutAccount() {
     // Create Account
     CloudAccount mockCloudAccount = new MockCloudAccount();
     mockCloudAccount.setAccountId("IdXYZ");
@@ -203,10 +202,11 @@ public class AccountsResourceTest extends JerseyTest {
                 AuthenticationFilter.HEADER_AUTHORIZATION,
                 AuthenticationFilter.createAuthorization(token))
             .put(javax.ws.rs.client.Entity.json(mockCloudAccount));
-    System.out.println(response.getStatus());
+
+    Assertions.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
   }
 
-  /** Helper classes and methods */
+  /* Helper classes and methods */
   @Table(name = "mock_account")
   @Entity(name = "mock_account")
   @JsonTypeName(value = "Mock Cloud")

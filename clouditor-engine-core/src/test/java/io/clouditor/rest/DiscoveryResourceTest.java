@@ -11,7 +11,7 @@ import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
 import org.junit.jupiter.api.*;
 
-public class DiscoveryResourceTest extends JerseyTest {
+class DiscoveryResourceTest extends JerseyTest {
   private static final Engine engine = new Engine();
   private String token;
   private static final String targetPrefix = "/discovery/";
@@ -63,7 +63,7 @@ public class DiscoveryResourceTest extends JerseyTest {
 
   /* Tests */
   @Test
-  public void testGetScans_whenOneScannerAvailable_thenStatusOkAndResponseNotEmpty() {
+  void testGetScans_whenOneScannerAvailable_thenStatusOkAndResponseNotEmpty() {
     // Request
     Response response =
         target(targetPrefix)
@@ -80,7 +80,7 @@ public class DiscoveryResourceTest extends JerseyTest {
   }
 
   @Test
-  public void testGetScan_whenRequestedScannerAvailable_thenStatusOkAndRespondIt() {
+  void testGetScan_whenRequestedScannerAvailable_thenStatusOkAndRespondIt() {
     // Request
     Response response =
         target(targetPrefix + FAKE_ID)
@@ -98,7 +98,7 @@ public class DiscoveryResourceTest extends JerseyTest {
   }
 
   @Test
-  public void testGetScan_whenRequestedScannerNotAvailable_thenStatusOkAndRespondIt() {
+  void testGetScan_whenRequestedScannerNotAvailable_thenStatusOkAndRespondIt() {
     // Preparation
     String id = "I Am Not There";
 
@@ -119,7 +119,7 @@ public class DiscoveryResourceTest extends JerseyTest {
   }
 
   @Test
-  public void testEnable_whenScannerIsAvailableAndNotEnabled_thenScanEnabledStatusNoContent() {
+  void testEnable_whenScannerIsAvailableAndNotEnabled_thenScanEnabledStatusNoContent() {
     // Preparation
     Scan scan = discoveryService.getScan(FAKE_ID);
     scan.setEnabled(false);
@@ -142,7 +142,7 @@ public class DiscoveryResourceTest extends JerseyTest {
   }
 
   @Test
-  public void testEnable_whenScannerIsNotAvailable_thenStatusNotFound() {
+  void testEnable_whenScannerIsNotAvailable_thenStatusNotFound() {
     // Request
     String id = "I am Not There";
     Response response =
@@ -158,7 +158,7 @@ public class DiscoveryResourceTest extends JerseyTest {
   }
 
   @Test
-  public void testDisable_whenScannerIsAvailableAndEnabled_thenStatusNoContent() {
+  void testDisable_whenScannerIsAvailableAndEnabled_thenStatusNoContent() {
     // Preparation
     Scan scan = discoveryService.getScan(FAKE_ID);
     scan.setEnabled(true);
@@ -178,7 +178,7 @@ public class DiscoveryResourceTest extends JerseyTest {
   }
 
   @Test
-  public void testDisable_whenScannerIsNotAvailable_thenStatusNotFound() {
+  void testDisable_whenScannerIsNotAvailable_thenStatusNotFound() {
     // Request
     String id = "I am Not There";
     Response response =

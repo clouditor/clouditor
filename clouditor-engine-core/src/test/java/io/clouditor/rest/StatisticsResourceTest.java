@@ -11,7 +11,7 @@ import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
 import org.junit.jupiter.api.*;
 
-public class StatisticsResourceTest extends JerseyTest {
+class StatisticsResourceTest extends JerseyTest {
   private static final Engine engine = new Engine();
   private String token;
   private static final String targetPrefix = "/statistics/";
@@ -63,7 +63,7 @@ public class StatisticsResourceTest extends JerseyTest {
 
   /* Tests */
   @Test
-  public void testGetStatistic() {
+  void testGetStatistic() {
     // Preparation: Add a certification
     Certification mockCertification = new Certification();
     mockCertification.setId("1");
