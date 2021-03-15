@@ -65,9 +65,9 @@ class AccountsResourceTest extends JerseyTest {
   /* Tests */
   @Test
   @Order(1)
-  void testGetAccounts_whenNoAccountsAvailable_thenStatusOkAndResponseEmpty() {
+  void testGetAccountsWhenNoAccountsAvailableThenStatusOkAndResponseEmpty() {
     // Request
-    Response response =
+    var response =
         target(accountsPrefix)
             .request()
             .header(
@@ -82,7 +82,7 @@ class AccountsResourceTest extends JerseyTest {
   }
 
   @Test
-  void testGetAccounts_whenOneAccountAvailable_thenRespondWithAccount() {
+  void testGetAccountsWhenOneAccountAvailableThenRespondWithAccount() {
     // Create and add new mock account
     AccountService accService = engine.getService(AccountService.class);
     CloudAccount mockCloudAccount = new MockCloudAccount();
@@ -94,7 +94,7 @@ class AccountsResourceTest extends JerseyTest {
     }
 
     // Request
-    Response response =
+    var response =
         target(accountsPrefix)
             .request()
             .header(
@@ -111,10 +111,10 @@ class AccountsResourceTest extends JerseyTest {
   }
 
   @Test
-  void testGetAccount_whenNoAccountAvailableWithGivenProvider_then404AndNull() {
+  void testGetAccountWhenNoAccountAvailableWithGivenProviderThen404AndNull() {
     // Request
     final String nonExistingProviderName = "UnknownProvider";
-    Response response =
+    var response =
         target(accountsPrefix + nonExistingProviderName)
             .request()
             .header(
@@ -137,7 +137,7 @@ class AccountsResourceTest extends JerseyTest {
   }
 
   @Test
-  void testGetAccount_whenOneAccountAvailable_then200AndResponseWithAccount() {
+  void testGetAccountWhenOneAccountAvailableThen200AndResponseWithAccount() {
     // Create account
     AccountService accService = engine.getService(AccountService.class);
     CloudAccount mockCloudAccount = new MockCloudAccount();
@@ -149,7 +149,7 @@ class AccountsResourceTest extends JerseyTest {
     }
 
     // Request
-    Response response =
+    var response =
         target(accountsPrefix + "Mock Cloud")
             .request()
             .header(
@@ -163,9 +163,9 @@ class AccountsResourceTest extends JerseyTest {
   }
 
   @Test
-  void testDiscover_whenNoAccountAvailable_Then404AndNull() {
+  void testDiscoverWhenNoAccountAvailableThen404AndNull() {
     // Request
-    Response response =
+    var response =
         target(accountsPrefix + "discover/Mock Cloud")
             .request()
             .header(
@@ -195,7 +195,7 @@ class AccountsResourceTest extends JerseyTest {
     }
 
     // Request with account and provider as PathParam
-    Response response =
+    var response =
         target(accountsPrefix + "AWS")
             .request()
             .header(

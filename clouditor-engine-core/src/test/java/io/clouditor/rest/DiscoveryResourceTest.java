@@ -63,9 +63,9 @@ class DiscoveryResourceTest extends JerseyTest {
 
   /* Tests */
   @Test
-  void testGetScans_whenOneScannerAvailable_thenStatusOkAndResponseNotEmpty() {
+  void testGetScansWhenOneScannerAvailableThenStatusOkAndResponseNotEmpty() {
     // Request
-    Response response =
+    var response =
         target(targetPrefix)
             .request()
             .header(
@@ -80,9 +80,9 @@ class DiscoveryResourceTest extends JerseyTest {
   }
 
   @Test
-  void testGetScan_whenRequestedScannerAvailable_thenStatusOkAndRespondIt() {
+  void testGetScanWhenRequestedScannerAvailableThenStatusOkAndRespondIt() {
     // Request
-    Response response =
+    var response =
         target(targetPrefix + FAKE_ID)
             .request()
             .header(
@@ -98,12 +98,12 @@ class DiscoveryResourceTest extends JerseyTest {
   }
 
   @Test
-  void testGetScan_whenRequestedScannerNotAvailable_thenStatusOkAndRespondIt() {
+  void testGetScanWhenRequestedScannerNotAvailableThenStatusOkAndRespondIt() {
     // Preparation
     String id = "I Am Not There";
 
     // Request
-    Response response =
+    var response =
         target(targetPrefix + id)
             .request()
             .header(
@@ -119,7 +119,7 @@ class DiscoveryResourceTest extends JerseyTest {
   }
 
   @Test
-  void testEnable_whenScannerIsAvailableAndNotEnabled_thenScanEnabledStatusNoContent() {
+  void testEnableWhenScannerIsAvailableAndNotEnabledThenScanEnabledStatusNoContent() {
     // Preparation
     Scan scan = discoveryService.getScan(FAKE_ID);
     scan.setEnabled(false);
@@ -128,7 +128,7 @@ class DiscoveryResourceTest extends JerseyTest {
     Assertions.assertFalse(scan.isEnabled());
 
     // Request
-    Response response =
+    var response =
         target(targetPrefix + FAKE_ID + "/enable")
             .request()
             .header(
@@ -142,10 +142,10 @@ class DiscoveryResourceTest extends JerseyTest {
   }
 
   @Test
-  void testEnable_whenScannerIsNotAvailable_thenStatusNotFound() {
+  void testEnableWhenScannerIsNotAvailableThenStatusNotFound() {
     // Request
     String id = "I am Not There";
-    Response response =
+    var response =
         target(targetPrefix + id + "/enable")
             .request()
             .header(
@@ -158,13 +158,13 @@ class DiscoveryResourceTest extends JerseyTest {
   }
 
   @Test
-  void testDisable_whenScannerIsAvailableAndEnabled_thenStatusNoContent() {
+  void testDisableWhenScannerIsAvailableAndEnabledThenStatusNoContent() {
     // Preparation
     Scan scan = discoveryService.getScan(FAKE_ID);
     scan.setEnabled(true);
 
     // Request
-    Response response =
+    var response =
         target(targetPrefix + FAKE_ID + "/disable")
             .request()
             .header(
@@ -178,10 +178,10 @@ class DiscoveryResourceTest extends JerseyTest {
   }
 
   @Test
-  void testDisable_whenScannerIsNotAvailable_thenStatusNotFound() {
+  void testDisableWhenScannerIsNotAvailableThenStatusNotFound() {
     // Request
     String id = "I am Not There";
-    Response response =
+    var response =
         target(targetPrefix + id + "/disable")
             .request()
             .header(

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class CertificationServiceTest extends AbstractEngineUnitTest {
+class CertificationServiceTest extends AbstractEngineUnitTest {
 
   /* Test Settings */
   @BeforeEach

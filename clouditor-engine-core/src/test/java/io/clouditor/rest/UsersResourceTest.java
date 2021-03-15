@@ -88,7 +88,7 @@ class UsersResourceTest extends JerseyTest {
     AuthenticationService authenticationService = engine.getService(AuthenticationService.class);
 
     // Request
-    Response response =
+    var response =
         target(prefix)
             .request()
             .header(
@@ -103,9 +103,9 @@ class UsersResourceTest extends JerseyTest {
   }
 
   @Test
-  void testGetUser_whenUserNotExist_thenStatusNotFound() {
+  void testGetUserWhenUserNotExistsThenStatusNotFound() {
     // Request
-    Response response =
+    var response =
         target(prefix + "Non-Existent User")
             .request()
             .header(
@@ -118,9 +118,9 @@ class UsersResourceTest extends JerseyTest {
   }
 
   @Test
-  void testGetUser_whenUserExist_thenStatusNotFound() {
+  void testGetUserWhenUserExistsThenStatusNotFound() {
     // Request
-    Response response =
+    var response =
         target(prefix + MOCK_USER_NAME)
             .request()
             .header(
@@ -144,7 +144,7 @@ class UsersResourceTest extends JerseyTest {
     String mockUserMailBeforeUpdate = authenticationService.getUser(MOCK_USER_NAME).getEmail();
 
     // Request
-    Response response =
+    var response =
         target(prefix + MOCK_USER_NAME)
             .request(MediaType.APPLICATION_JSON_TYPE)
             .header(
@@ -166,7 +166,7 @@ class UsersResourceTest extends JerseyTest {
     assertNotNull(authenticationService.getUser(MOCK_USER_2_NAME));
 
     // Request
-    Response response =
+    var response =
         target(prefix + MOCK_USER_2_NAME)
             .request(MediaType.APPLICATION_JSON_TYPE)
             .header(
@@ -180,15 +180,15 @@ class UsersResourceTest extends JerseyTest {
   }
 
   @Test
-  void testCreateUser_whenUserAlreadyExists_StatusBadRequest() {
+  void testCreateUserWhenUserAlreadyExistsStatusBadRequest() {
     // Preparation
-    ObjectMapper objectMapper = new ObjectMapper();
+    var objectMapper = new ObjectMapper();
     ObjectNode userAsJson = objectMapper.createObjectNode();
     userAsJson.put("username", MOCK_USER_NAME);
     userAsJson.put("password", MOCK_USER_NAME);
 
     // Request
-    Response response =
+    var response =
         target(prefix)
             .request(MediaType.APPLICATION_JSON_TYPE)
             .header(
@@ -201,9 +201,9 @@ class UsersResourceTest extends JerseyTest {
   }
 
   @Test
-  void testCreateUser_whenUserNotAlreadyExists_StatusOk() {
+  void testCreateUserWhenUserNotAlreadyExistsStatusOk() {
     // Preparation
-    ObjectMapper objectMapper = new ObjectMapper();
+    var objectMapper = new ObjectMapper();
     ObjectNode userAsJson = objectMapper.createObjectNode();
     String newUserUsername = "Complete New Mock User Name";
     userAsJson.put("username", newUserUsername);
@@ -213,7 +213,7 @@ class UsersResourceTest extends JerseyTest {
     assertNull(authenticationService.getUser(newUserUsername));
 
     // Request
-    Response response =
+    var response =
         target(prefix)
             .request(MediaType.APPLICATION_JSON_TYPE)
             .header(

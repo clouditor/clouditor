@@ -63,7 +63,7 @@ class StatisticsResourceTest extends JerseyTest {
 
   /* Tests */
   @Test
-  void testGetStatistic() {
+  void testGetStatistics() {
     // Preparation: Add a certification
     Certification mockCertification = new Certification();
     mockCertification.setId("1");
@@ -72,7 +72,7 @@ class StatisticsResourceTest extends JerseyTest {
     Map<String, Certification> certifications = certificationService.getCertifications();
 
     // Request
-    Response response =
+    var response =
         target(targetPrefix)
             .request()
             .header(

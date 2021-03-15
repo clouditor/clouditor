@@ -72,9 +72,9 @@ class RulesResourceTest extends JerseyTest {
   /* Tests */
   @Test
   @Order(1)
-  void testGetRules_whenNoRulesAvailable_thenStatusOkAndResponseEmpty() {
+  void testGetRulesWhenNoRulesAvailableThenStatusOkAndResponseEmpty() {
     // Request
-    Response response =
+    var response =
         target(targetPrefix)
             .request()
             .header(
@@ -88,7 +88,7 @@ class RulesResourceTest extends JerseyTest {
   }
 
   @Test
-  void testGetRules_thenAmountOfRulesIsEqual() {
+  void testGetRulesThenAmountOfRulesIsEqual() {
     // Preparation
     try {
       ruleService.load(FileSystemManager.getInstance().getPathForResource("rules/test"));
@@ -97,7 +97,7 @@ class RulesResourceTest extends JerseyTest {
     }
 
     // Request
-    Response response =
+    var response =
         target(targetPrefix)
             .request()
             .header(
@@ -111,9 +111,9 @@ class RulesResourceTest extends JerseyTest {
   }
 
   @Test
-  void testGetRules_whenNoRulesWithAssetTypeAvailable_thenStatusOkAndResponseEmpty() {
+  void testGetRulesWhenNoRulesWithAssetTypeAvailableThenStatusOkAndResponseEmpty() {
     // Request
-    Response response =
+    var response =
         target(targetPrefix + "assets/NoAssetWithThisName")
             .request()
             .header(
@@ -127,7 +127,7 @@ class RulesResourceTest extends JerseyTest {
   }
 
   @Test
-  void testGetRules_whenRulesWithAssetTypeAvailable_thenStatusOkAndResponseEqual() {
+  void testGetRulesWhenRulesWithAssetTypeAvailableThenStatusOkAndResponseEqual() {
     // Preparation
     try {
       ruleService.load(FileSystemManager.getInstance().getPathForResource("rules/test"));
@@ -140,7 +140,7 @@ class RulesResourceTest extends JerseyTest {
     String expectedId = rule.getId();
 
     // Request
-    Response response =
+    var response =
         target(targetPrefix + "assets/Asset")
             .request()
             .header(
@@ -157,9 +157,9 @@ class RulesResourceTest extends JerseyTest {
   }
 
   @Test
-  void testGet_whenNoRuleWithIdAvailable_thenStatusNotFound() {
+  void testGetWhenNoRuleWithIdAvailableThenStatusNotFound() {
     // Request
-    Response response =
+    var response =
         target(targetPrefix + "No Id With This Name")
             .request()
             .header(
@@ -173,7 +173,7 @@ class RulesResourceTest extends JerseyTest {
   }
 
   @Test
-  void testGet_whenRuleWithIdAvailable_thenStatusOkAndRespondIt() {
+  void testGetWhenRuleWithIdAvailableThenStatusOkAndRespondIt() {
     // Preparation
     try {
       ruleService.load(FileSystemManager.getInstance().getPathForResource("rules/test"));
@@ -186,7 +186,7 @@ class RulesResourceTest extends JerseyTest {
     String expectedId = rule.getId();
 
     // Request
-    Response response =
+    var response =
         target(targetPrefix + expectedId)
             .request()
             .header(

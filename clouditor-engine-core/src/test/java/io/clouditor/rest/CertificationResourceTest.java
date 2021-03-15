@@ -69,9 +69,9 @@ class CertificationResourceTest extends JerseyTest {
   /* Tests */
   @Test
   @Order(1)
-  void testGetCertifications_whenNoCertificationsAvailable_thenStatusOKButEmptyResponseContent() {
+  void testGetCertificationsWhenNoCertificationsAvailableThenStatusOKButEmptyResponseContent() {
     // Execute request
-    Response response =
+    var response =
         target("/certification")
             .request()
             .header(
@@ -87,9 +87,9 @@ class CertificationResourceTest extends JerseyTest {
   }
 
   @Test
-  void testModifyControlStatus_whenCertificationIsNullAndControlIsNull_thenNotFound() {
+  void testModifyControlStatusWhenCertificationIsNullAndControlIsNullThenNotFound() {
     // Tests
-    Response response =
+    var response =
         target("certification/1/1/status")
             .request()
             .header(
@@ -102,7 +102,7 @@ class CertificationResourceTest extends JerseyTest {
   }
 
   @Test
-  void testModifyControlStatus_whenCertificationNotNullAndControlIsNull_thenThrowException() {
+  void testModifyControlStatusWhenCertificationNotNullAndControlIsNullThenThrowException() {
 
     // Request
     CertificationService certService = engine.getService(CertificationService.class);
@@ -110,7 +110,7 @@ class CertificationResourceTest extends JerseyTest {
     mockCertification.setId("1");
     certService.modifyCertification(mockCertification);
 
-    Response response =
+    var response =
         target("certification/1/1/status")
             .request()
             .header(
@@ -123,7 +123,7 @@ class CertificationResourceTest extends JerseyTest {
   }
 
   @Test
-  void testModifyControlStatus_whenCertificationNotNullAndControlNotNull_thenStatus204() {
+  void testModifyControlStatusWhenCertificationNotNullAndControlNotNullThenStatus204() {
     // Create mock of certification  with id=1 (the one that will be searched for in
     // testModifyControlStatus())
     CertificationService certService = engine.getService(CertificationService.class);
@@ -146,7 +146,7 @@ class CertificationResourceTest extends JerseyTest {
     // Update the certificate in the certification service
     certService.modifyCertification(mockCertification);
 
-    Response response =
+    var response =
         target("certification/1/2/status")
             .request()
             .header(
@@ -160,7 +160,7 @@ class CertificationResourceTest extends JerseyTest {
   }
 
   @Test
-  void testModifyControlStatus_whenStatusFalseAndControlActiveTrue_thenStopMonitoring() {
+  void testModifyControlStatusWhenStatusFalseAndControlActiveTrueThenStopMonitoring() {
     // Create mock of certification  with id=1 (the one that will be searched for in
     // testModifyControlStatus())
     CertificationService certService = engine.getService(CertificationService.class);
@@ -187,7 +187,7 @@ class CertificationResourceTest extends JerseyTest {
         new CertificationResource.ControlStatusRequest();
 
     Assertions.assertTrue(mockControl.isActive());
-    Response response =
+    var response =
         target("certification/1/2/status")
             .request()
             .header(
@@ -202,7 +202,7 @@ class CertificationResourceTest extends JerseyTest {
   }
 
   @Test
-  void testModifyControlStatus_whenStatusTrueAndControlActiveFalse_thenStartMonitoring() {
+  void testModifyControlStatusWhenStatusTrueAndControlActiveFalseThenStartMonitoring() {
     // Create mock of certification  with id=1 (the one that will be searched for in
     // testModifyControlStatus())
     CertificationService certService = engine.getService(CertificationService.class);
@@ -250,14 +250,14 @@ class CertificationResourceTest extends JerseyTest {
   }
 
   @Test
-  void testGetCertifications_whenCorrectRequest_thenResponseIsOkAndContainsCertificate() {
+  void testGetCertificationsWhenCorrectRequestThenResponseIsOkAndContainsCertificate() {
     CertificationService certService = engine.getService(CertificationService.class);
     Certification mockCertification = new Certification();
     mockCertification.setId("Mock1");
 
     certService.modifyCertification(mockCertification);
 
-    Response response =
+    var response =
         target("/certification/Mock1")
             .request()
             .header(
@@ -271,7 +271,7 @@ class CertificationResourceTest extends JerseyTest {
   }
 
   @Test
-  void testGetCertifications_whenTwoCertificationsAvailable_thenStatusOkAndReturnBoth() {
+  void testGetCertificationsWhenTwoCertificationsAvailableThenStatusOkAndReturnBoth() {
     // Create two mocks of certification  with id=1 and id=2
     var id1 = "1";
     var id2 = "2";
@@ -284,7 +284,7 @@ class CertificationResourceTest extends JerseyTest {
     mockCertification2.setId(id2);
     certService.modifyCertification(mockCertification2);
 
-    Response response =
+    var response =
         target("/certification")
             .request()
             .header(
@@ -307,7 +307,7 @@ class CertificationResourceTest extends JerseyTest {
   }
 
   @Test
-  void testGetCertification_whenCertificationAvailable_thenStatusOkAndReturnIt() {
+  void testGetCertificationWhenCertificationAvailableThenStatusOkAndReturnIt() {
     // Create one mock of certification  with id=1
     var id = "1";
     var description = "Test Description";
@@ -318,7 +318,7 @@ class CertificationResourceTest extends JerseyTest {
     certService.modifyCertification(mockCertification1);
 
     // Execute get request
-    Response response =
+    var response =
         target("/certification/1")
             .request()
             .header(
@@ -332,11 +332,10 @@ class CertificationResourceTest extends JerseyTest {
   }
 
   @Test
-  void
-      testGetCertification_whenNoCertificationAvailableWithGivenId_thenStatus404AndThrowException() {
+  void testGetCertificationWhenNoCertificationAvailableWithGivenIdThenStatus404AndThrowException() {
 
     // Execute first get request asserting the status code
-    Response response =
+    var response =
         target("/certification/66")
             .request()
             .header(
@@ -361,14 +360,14 @@ class CertificationResourceTest extends JerseyTest {
   }
 
   @Test
-  void testGetControl_whenNoControlAvailableWithGivenId_thenStatus404AndThrowException() {
+  void testGetControlWhenNoControlAvailableWithGivenIdThenStatus404AndThrowException() {
     Certification mockCertification = new Certification();
     mockCertification.setId("1");
     CertificationService certService = engine.getService(CertificationService.class);
     certService.modifyCertification(mockCertification);
 
     // Execute first get request (get status code)
-    Response response =
+    var response =
         target("/certification/1/2")
             .request()
             .header(
@@ -392,7 +391,7 @@ class CertificationResourceTest extends JerseyTest {
   }
 
   @Test
-  void testGetControl_whenControlAvailableWithGivenId_thenStatusOkAndReturnIt() {
+  void testGetControlWhenControlAvailableWithGivenIdThenStatusOkAndReturnIt() {
     // Create mock of certification  with id=1 (the one that will be searched for in
     // testModifyControlStatus())
     var certificationId = "1";
@@ -416,7 +415,7 @@ class CertificationResourceTest extends JerseyTest {
     // Update the certificate in the certification service
     certService.modifyCertification(mockCertification);
 
-    Response response =
+    var response =
         target(String.format("certification/%s/%s", certificationId, controlId))
             .request()
             .header(
@@ -428,9 +427,9 @@ class CertificationResourceTest extends JerseyTest {
   }
 
   @Test
-  void testImportCertification_whenNoCertificationAvailable_thenStatus404AndThrowException() {
+  void testImportCertificationWhenNoCertificationAvailableThenStatus404AndThrowException() {
     // Execute first Post Request (for status)
-    Response response =
+    var response =
         target("certification/import/1")
             .request()
             .header(
@@ -442,14 +441,14 @@ class CertificationResourceTest extends JerseyTest {
 
   @Test
   void
-      testImportCertification_whenCertificationAvailableWithGivenId_thenStatusOkAndCertificateThere() {
+      testImportCertificationWhenCertificationAvailableWithGivenIdThenStatusOkAndCertificateThere() {
     // Get CertificationService
     CertificationService certService = engine.getService(CertificationService.class);
 
     // Verify that there are no certifications currently available (by checking the hash map of
     // certifications)
     Assertions.assertNull(certService.getCertifications().get("BSI C5"));
-    Response response =
+    var response =
         target("certification/import/BSI C5")
             .request()
             .header(
@@ -466,12 +465,12 @@ class CertificationResourceTest extends JerseyTest {
   }
 
   @Test
-  void testGetImporters_when_then() {
+  void testGetImportersThenResponseWithBSIC5() {
     // Get CertificationService
     CertificationService certService = engine.getService(CertificationService.class);
     // Get Importers
     var importers = certService.getImporters();
-    Response response =
+    var response =
         target("certification/importers")
             .request()
             .header(

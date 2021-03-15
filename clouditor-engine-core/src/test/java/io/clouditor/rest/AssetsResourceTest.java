@@ -63,9 +63,9 @@ class AssetsResourceTest extends JerseyTest {
 
   /* Tests */
   @Test
-  void testGetAssetsWithType_whenNoAssetAvailable_then() {
+  void testGetAssetsWithTypeWhenNoAssetAvailableThenEmptyResponse() {
     // Request
-    Response response =
+    var response =
         target(prefix + "This Asset Type Does Not Exist")
             .request()
             .header(
@@ -79,7 +79,7 @@ class AssetsResourceTest extends JerseyTest {
   }
 
   @Test
-  void testGetAssetsWithType() {
+  void testGetAssetsWithTypeWhenAssetAvailableThenRespondIt() {
     // Preparation
     AssetService assetService = engine.getService(AssetService.class);
     Asset mockAsset = new Asset();
@@ -88,7 +88,7 @@ class AssetsResourceTest extends JerseyTest {
     assetService.update(mockAsset);
 
     // Request
-    Response response =
+    var response =
         target(prefix + "Mock Asset Type")
             .request()
             .header(
@@ -104,9 +104,9 @@ class AssetsResourceTest extends JerseyTest {
   }
 
   @Test
-  void testGetServerSentEvents_whenAssetTypeNotExistent_thenResponse500() {
+  void testGetServerSentEventsWhenAssetTypeNotExistentThenResponse500() {
     // Request
-    Response response =
+    var response =
         target(prefix + "Non-existent Asset Type" + "/subscribe")
             .request(MediaType.SERVER_SENT_EVENTS_TYPE)
             .header(
