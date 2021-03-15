@@ -36,12 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,13 +54,14 @@ public class DiscoveryResource {
     this.service = service;
   }
 
-  @Produces(MediaType.APPLICATION_JSON)
   @GET
+  @Produces(MediaType.APPLICATION_JSON)
   public List<Scan> getScans() {
     return new ArrayList<>(this.service.getScans().values());
   }
 
   @GET
+  @Produces(MediaType.APPLICATION_JSON)
   @Path("{id}")
   public Scan getScan(@PathParam("id") String id) {
     id = sanitize(id);
@@ -81,7 +77,7 @@ public class DiscoveryResource {
     var scan = service.getScan(id);
 
     if (scan == null) {
-      LOGGER.error("Could not find scan with id {}", sanitize(id));
+      LOGGER.error("Could not find scan with id {}", id);
       throw new NotFoundException("Could not find scan with id " + id);
     }
 

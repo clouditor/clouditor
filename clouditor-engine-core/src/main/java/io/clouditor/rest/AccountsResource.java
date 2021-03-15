@@ -36,13 +36,8 @@ import java.io.IOException;
 import java.util.Map;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -58,11 +53,13 @@ public class AccountsResource {
   }
 
   @GET
+  @Produces(MediaType.APPLICATION_JSON)
   public Map<String, CloudAccount> getAccounts() {
     return this.service.getAccounts();
   }
 
   @GET
+  @Produces(MediaType.APPLICATION_JSON)
   @Path("{provider}")
   public CloudAccount getAccount(@PathParam("provider") String provider) {
     provider = sanitize(provider);
@@ -77,6 +74,7 @@ public class AccountsResource {
   }
 
   @POST
+  @Produces(MediaType.APPLICATION_JSON)
   @Path("discover/{provider}")
   public CloudAccount discover(@PathParam("provider") String provider) {
     provider = sanitize(provider);
@@ -91,6 +89,7 @@ public class AccountsResource {
   }
 
   @PUT
+  @Consumes(MediaType.APPLICATION_JSON)
   @Path("{provider}")
   public void putAccount(@PathParam("provider") String provider, CloudAccount account) {
     provider = sanitize(provider);

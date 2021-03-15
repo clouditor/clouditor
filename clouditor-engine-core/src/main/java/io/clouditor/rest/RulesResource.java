@@ -63,6 +63,7 @@ public class RulesResource {
   }
 
   @GET
+  @Produces(MediaType.APPLICATION_JSON)
   @Path("assets/{assetType}")
   public Set<Rule> getRules(@PathParam("assetType") String assetType) {
     assetType = sanitize(assetType);
@@ -76,8 +77,8 @@ public class RulesResource {
     return rules;
   }
 
-  @Produces(MediaType.APPLICATION_JSON)
   @GET
+  @Produces(MediaType.APPLICATION_JSON)
   @Path("{ruleId}")
   public RuleEvaluation get(@PathParam("ruleId") String ruleId) {
     ruleId = sanitize(ruleId);

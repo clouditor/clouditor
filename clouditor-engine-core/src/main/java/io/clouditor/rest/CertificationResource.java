@@ -31,7 +31,6 @@ import static io.clouditor.auth.AuthenticationService.ROLE_USER;
 import static io.clouditor.rest.AbstractAPI.sanitize;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.clouditor.Engine;
 import io.clouditor.assurance.Certification;
 import io.clouditor.assurance.CertificationImporter;
 import io.clouditor.assurance.CertificationService;
@@ -46,8 +45,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A resource end-point for {@link Certification}.
@@ -57,10 +54,6 @@ import org.slf4j.LoggerFactory;
 @Path("certification")
 @RolesAllowed(ROLE_USER)
 public class CertificationResource {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(CertificationResource.class);
-
-  private final Engine engine;
   private final CertificationService service;
 
   /**
@@ -69,8 +62,7 @@ public class CertificationResource {
    * @param engine the Clouditor Engine
    */
   @Inject
-  public CertificationResource(Engine engine, CertificationService service) {
-    this.engine = engine;
+  public CertificationResource(CertificationService service) {
     this.service = service;
   }
 
@@ -84,10 +76,6 @@ public class CertificationResource {
     controlId = sanitize(controlId);
 
     var certification = this.getCertification(certificationId);
-
-    if (certification == null) {
-      throw new NotFoundException();
-    }
 
     String finalControlId = controlId;
     var first =
@@ -132,6 +120,7 @@ public class CertificationResource {
   }
 
   @GET
+  @Produces(MediaType.APPLICATION_JSON)
   @Path("{certificationId}/{controlId}")
   public Control getControl(
       @PathParam("certificationId") String certificationId,
@@ -164,11 +153,11 @@ public class CertificationResource {
     if (certification == null) {
       throw new NotFoundException();
     }
-
     this.service.modifyCertification(certification);
   }
 
   @GET
+  @Produces(MediaType.APPLICATION_JSON)
   @Path("importers")
   public Map<String, CertificationImporter> getImporters() {
     return this.service.getImporters();
@@ -177,7 +166,5 @@ public class CertificationResource {
   public static class ControlStatusRequest {
 
     @JsonProperty private boolean status;
-
-    public ControlStatusRequest() {}
   }
 }

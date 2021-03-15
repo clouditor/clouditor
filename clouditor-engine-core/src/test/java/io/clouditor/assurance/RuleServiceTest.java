@@ -31,16 +31,34 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.clouditor.Engine;
+import io.clouditor.AbstractEngineUnitTest;
 import io.clouditor.assurance.ccl.BinaryComparison;
 import io.clouditor.assurance.ccl.BinaryComparison.Operator;
 import io.clouditor.util.FileSystemManager;
 import java.io.IOException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class RuleServiceTest {
+class RuleServiceTest extends AbstractEngineUnitTest {
+  /* Test Settings */
+  @BeforeEach
+  @Override
+  protected void setUp() {
+    super.setUp();
 
-  private final Engine engine = new Engine();
+    // init db
+    engine.initDB();
+    // initialize every else
+    engine.init();
+  }
+
+  @Override
+  protected void cleanUp() {
+    super.cleanUp();
+
+    engine.shutdown();
+  }
 
   @Test
   void testParseMarkdown() throws IOException {
@@ -67,5 +85,60 @@ class RuleServiceTest {
     assertEquals("property", ((BinaryComparison) expression).getField());
 
     assertEquals(2, rule.getControls().size());
+  }
+
+  @Test
+  void testRemoveRules() throws IOException {
+    // Preparation
+    var ruleService = engine.getService(RuleService.class);
+    ruleService.load(FileSystemManager.getInstance().getPathForResource("rules/test/test.md"));
+    var numberOfRulesBeforeRemoval = ruleService.getRules().size();
+
+    // Execute remove method
+    ruleService.removeAllRules();
+
+    // Assertions
+    Assertions.assertNotEquals(0, numberOfRulesBeforeRemoval);
+    Assertions.assertEquals(0, ruleService.getRules().size());
+  }
+
+  @Test
+  void testRemoveRule() throws IOException {
+    // Preparation
+    var ruleService = engine.getService(RuleService.class);
+    ruleService.load(FileSystemManager.getInstance().getPathForResource("rules/test/test.md"));
+    var numberOfRulesBeforeRemoval = ruleService.getRules().size();
+    System.out.println(numberOfRulesBeforeRemoval);
+    var rule =
+        this.engine
+            .getService(RuleService.class)
+            .loadRule(FileSystemManager.getInstance().getPathForResource("rules/test/test.md"));
+    var ruleBeforeRemoval = ruleService.getWithId(rule.getId());
+
+    // Execute remove method
+    ruleService.removeRule(rule.getId());
+
+    // Assertions
+    Assertions.assertNotNull(ruleBeforeRemoval);
+    Assertions.assertNull(ruleService.getWithId(rule.getId()));
+  }
+
+  @Test
+  void testRemoveAllRulesFromAsset() throws IOException {
+    // Preparation
+    var ruleService = engine.getService(RuleService.class);
+    ruleService.load(FileSystemManager.getInstance().getPathForResource("rules/test/test.md"));
+    var rule =
+        this.engine
+            .getService(RuleService.class)
+            .loadRule(FileSystemManager.getInstance().getPathForResource("rules/test/test.md"));
+    var rulesForAssetTypeBeforeRemoval = ruleService.get(rule.getAssetType());
+
+    // Execute remove method
+    ruleService.removeAllRulesFromAssetType(rule.getAssetType());
+
+    // Assertions
+    Assertions.assertFalse(rulesForAssetTypeBeforeRemoval.isEmpty());
+    Assertions.assertTrue(ruleService.get(rule.getAssetType()).isEmpty());
   }
 }
