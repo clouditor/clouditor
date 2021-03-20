@@ -209,7 +209,6 @@ task docker(type: Exec) {
     description 'Builds a docker image based on the Dockerfile.'
     // make sure, engine and dashboard are built
     dependsOn ':clouditor-engine:docker'
-    dependsOn ':clouditor-ui:docker'
 
     executable 'docker'
     args 'build',
