@@ -117,7 +117,7 @@ allprojects {
             azure                : '1.21.0',
             aws2                 : '2.4.4',
             adal4j               : '1.6.3',
-            bson4jackson         : '2.9.2',
+            bson4jackson         : '2.12.0',
             dockerjava           : '3.0.14',
             commonsIo            : '2.6',
             commonsLang3         : '3.8.1',
