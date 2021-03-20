@@ -27,15 +27,11 @@
 
 package io.clouditor.auth;
 
-import static com.kosprov.jargon2.api.Jargon2.jargon2Hasher;
-import static com.kosprov.jargon2.api.Jargon2.jargon2Verifier;
-
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.kosprov.jargon2.api.Jargon2.Type;
 import io.clouditor.Engine;
 import io.clouditor.data_access_layer.HibernatePersistence;
 import io.clouditor.data_access_layer.PersistenceManager;
@@ -48,6 +44,7 @@ import javax.ws.rs.NotAuthorizedException;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 
 @Service
 public class AuthenticationService {
@@ -95,16 +92,8 @@ public class AuthenticationService {
   }
 
   private String hashPassword(String password) {
-    var hasher =
-        jargon2Hasher()
-            .type(Type.ARGON2id)
-            .memoryCost(65536)
-            .timeCost(3)
-            .parallelism(6)
-            .saltLength(16)
-            .hashLength(16);
-
-    return hasher.password(password.getBytes()).encodedHash();
+    var encoder = new Argon2PasswordEncoder();
+    return encoder.encode(password);
   }
 
   public String createToken(User user) {
@@ -150,10 +139,7 @@ public class AuthenticationService {
       return false;
     }
 
-    return jargon2Verifier()
-        .hash(reference.getPassword())
-        .password(request.getPassword().getBytes())
-        .verifyEncoded();
+    return new Argon2PasswordEncoder().matches(request.getPassword(), reference.getPassword());
   }
 
   public List<User> getUsers() {
