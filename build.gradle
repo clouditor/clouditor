@@ -126,7 +126,7 @@ allprojects {
             guava                : '27.1-jre',
             log4j                : '2.11.1',
             slf4j                : '1.8.0-beta2',
-            jwt                  : '3.4.0',
+            jwt                  : '3.14.0',
             jackson              : '2.9.9',
             javassist            : '3.23.1-GA',
             jersey               : '2.30.1',
