@@ -121,7 +121,7 @@ allprojects {
             dockerjava           : '3.0.14',
             commonsIo            : '2.6',
             commonsLang3         : '3.8.1',
-            commonsConfiguration2: '2.3',
+            commonsConfiguration2: '2.7',
             geoip2               : '2.12.0',
             guava                : '27.1-jre',
             log4j                : '2.11.1',
