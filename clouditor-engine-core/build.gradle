@@ -41,7 +41,7 @@ dependencies {
     implementation "com.auth0:java-jwt:${libraryVersions.jwt}"
     implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
 
-    api group: 'org.apache.pdfbox', name: 'pdfbox', version: '2.0.12'
+    api group: 'org.apache.pdfbox', name: 'pdfbox', version: '2.0.23'
     api group: 'args4j', name: 'args4j', version: '2.33'
     api "org.apache.commons:commons-configuration2:${libraryVersions.commonsConfiguration2}"
     api group: 'org.slf4j', name: 'jul-to-slf4j', version: libraryVersions.slf4j
