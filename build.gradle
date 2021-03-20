@@ -114,7 +114,7 @@ allprojects {
 
     // Set library versions - useful for libraries with multiple packages
     ext.libraryVersions = [
-            azure                : '1.21.0',
+            azure                : '1.40.0',
             aws2                 : '2.4.4',
             adal4j               : '1.6.3',
             bson4jackson         : '2.9.2',
