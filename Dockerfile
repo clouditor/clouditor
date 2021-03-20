@@ -1,5 +1,6 @@
 ARG TAG=latest
-FROM clouditor/ui:${TAG} AS dashboard
+# always fetch the latest ui for now. later we might pin specific versions
+FROM clouditor/ui:latest AS dashboard
 
 FROM clouditor/engine:${TAG}
 
