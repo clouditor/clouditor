@@ -25,10 +25,9 @@
  * This file is part of Clouditor Community Edition.
  */
 
-rootProject.name = 'clouditor'
+package io.clouditor.discovery;
 
-include 'clouditor-engine',
-        'clouditor-engine-core',
-        'clouditor-engine-azure',
-        'clouditor-engine-aws',
-        'clouditor-engine-k8s'
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
+
+@JsonIgnoreType
+public class MixInIgnore {}

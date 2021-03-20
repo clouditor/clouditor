@@ -190,6 +190,7 @@ configure(subprojects.findAll {
     !it.name.contains('commons') &&
             !it.name.contains('core') &&
             !it.name.contains('-aws') &&
+            !it.name.contains('-k8s') &&
             !it.name.contains('-azure') &&
             !it.name.contains('-eu-sec')
 }) {

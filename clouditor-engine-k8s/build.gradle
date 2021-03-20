@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
+ *
  *            $$\                           $$\ $$\   $$\
  *            $$ |                          $$ |\__|  $$ |
  *   $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
@@ -23,11 +24,12 @@
  *   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
  *
  * This file is part of Clouditor Community Edition.
+ *
  */
+// Project dependencies
+dependencies {
+    implementation project(":clouditor-engine-core")
 
-package io.clouditor.discovery.azure;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreType;
-
-@JsonIgnoreType
-class MixInIgnore {}
+    implementation "com.auth0:java-jwt:${libraryVersions.jwt}"
+    implementation group: 'io.kubernetes', name: 'client-java', version: '6.0.1'
+}

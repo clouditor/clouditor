@@ -32,6 +32,7 @@ import com.microsoft.azure.management.resources.fluentcore.arm.models.HasName;
 import com.microsoft.azure.management.resources.fluentcore.model.HasInner;
 import io.clouditor.discovery.Asset;
 import io.clouditor.discovery.AssetProperties;
+import io.clouditor.discovery.MixInIgnore;
 import io.clouditor.discovery.ScanException;
 import io.clouditor.discovery.Scanner;
 import io.clouditor.discovery.ScannerPostProcessor;

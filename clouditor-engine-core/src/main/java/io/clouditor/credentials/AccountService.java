@@ -65,6 +65,11 @@ public class AccountService {
         case "Azure":
           c = Class.forName("io.clouditor.credentials.AzureAccount");
           break;
+
+        case "Kubernetes":
+          c = Class.forName("io.clouditor.credentials.KubernetesAccount");
+          break;
+
         default:
           throw new IOException("Provider not supported");
       }
@@ -77,7 +82,7 @@ public class AccountService {
         | IllegalAccessException
         | InvocationTargetException
         | IOException e) {
-      LOGGER.error("Could not discover {} account: {}", provider, e.getCause());
+      LOGGER.error("Could not discover {} account: {}", provider, e.getMessage());
       return null;
     }
   }
