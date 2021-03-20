@@ -36,8 +36,7 @@ jobs:
           docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker push clouditor/clouditor:$TAG
           docker push clouditor/engine:$TAG
-          docker push clouditor/ui:$TAG
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main'
   build-go:
     runs-on: ubuntu-latest
     # only execute if this is coming from a push or from a PR from a forked repository
