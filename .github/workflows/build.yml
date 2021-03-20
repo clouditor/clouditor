@@ -36,8 +36,15 @@ jobs:
           docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker push clouditor/clouditor:$TAG
           docker push clouditor/engine:$TAG
-          docker push clouditor/ui:$TAG
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+      - name: Push Docker Images (release as latest)
+        run: |
+          export TAG=`expr substr $GITHUB_SHA 1 8`
+          docker tag clouditor/clouditor:$TAG clouditor/clouditor
+          docker tag clouditor/engine:$TAG clouditor/engine
+          docker push clouditor/clouditor
+          docker push clouditor/engine
+        if: startsWith(github.ref, 'refs/tags/v')
   build-go:
     runs-on: ubuntu-latest
     # only execute if this is coming from a push or from a PR from a forked repository
