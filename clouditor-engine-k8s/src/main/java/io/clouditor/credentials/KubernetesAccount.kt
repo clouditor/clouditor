@@ -26,8 +26,10 @@ import io.kubernetes.client.util.credentials.KubeconfigAuthentication
 import io.kubernetes.client.ApiClient
 import io.kubernetes.client.util.ClientBuilder
 import io.kubernetes.client.util.Config
+import javax.persistence.Entity
 
 @JsonTypeName(value = "Kubernetes")
+@Entity
 class KubernetesAccount : CloudAccount<ClientBuilder?>() {
     private val url: String? = null
     private val token: String? = null
@@ -75,6 +77,7 @@ class KubernetesAccount : CloudAccount<ClientBuilder?>() {
          *
          * @return null, if no account was discovered. Otherwise the discovered [KubernetesAccount].
          */
+        @JvmStatic
         fun discover(): KubernetesAccount? {
             return try {
                 val account = KubernetesAccount()

@@ -82,7 +82,7 @@ public class AccountService {
         | IllegalAccessException
         | InvocationTargetException
         | IOException e) {
-      LOGGER.error("Could not discover {} account: {}", provider, e.getCause());
+      LOGGER.error("Could not discover {} account: {}", provider, e.getMessage());
       return null;
     }
   }
