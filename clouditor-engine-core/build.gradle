@@ -37,7 +37,7 @@ dependencies {
     implementation "org.reflections:reflections:0.9.11"
     implementation group: 'de.undercouch', name: 'bson4jackson', version: libraryVersions.bson4jackson
     implementation "org.apache.commons:commons-lang3:${libraryVersions.commonsLang3}"
-    implementation group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.3'
+    implementation group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
     implementation "com.auth0:java-jwt:${libraryVersions.jwt}"
     implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
 
