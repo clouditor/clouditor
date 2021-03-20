@@ -33,7 +33,7 @@ dependencies {
 
     implementation group: 'org.javassist', name: 'javassist', version: libraryVersions.javassist
     implementation "org.apache.logging.log4j:log4j-slf4j18-impl:${libraryVersions.log4j}"
-    implementation group: 'com.atlassian.commonmark', name: 'commonmark', version: '0.12.1'
+    implementation group: 'com.atlassian.commonmark', name: 'commonmark', version: '0.17.0'
     implementation "org.reflections:reflections:0.9.11"
     implementation group: 'de.undercouch', name: 'bson4jackson', version: libraryVersions.bson4jackson
     implementation "org.apache.commons:commons-lang3:${libraryVersions.commonsLang3}"
