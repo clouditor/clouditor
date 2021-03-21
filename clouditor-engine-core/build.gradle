@@ -35,7 +35,6 @@ dependencies {
     implementation "org.apache.logging.log4j:log4j-slf4j18-impl:${libraryVersions.log4j}"
     implementation group: 'com.atlassian.commonmark', name: 'commonmark', version: '0.17.0'
     implementation "org.reflections:reflections:0.9.11"
-    implementation group: 'de.undercouch', name: 'bson4jackson', version: libraryVersions.bson4jackson
     implementation "org.apache.commons:commons-lang3:${libraryVersions.commonsLang3}"
     implementation group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.3'
     implementation "com.auth0:java-jwt:${libraryVersions.jwt}"
@@ -52,8 +51,8 @@ dependencies {
     api "com.fasterxml.jackson.core:jackson-databind:${libraryVersions.jackson}"
     api "com.fasterxml.jackson.core:jackson-annotations:${libraryVersions.jackson}"
     api "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${libraryVersions.jackson}"
-    api group: 'org.glassfish.hk2', name: 'hk2-core', version: '2.5.0-b62'
-    api group: 'org.glassfish.hk2', name: 'hk2-extras', version: '2.5.0-b62'
+    api "org.glassfish.hk2:hk2-core:${libraryVersions.hk2}"
+    api "org.glassfish.hk2:hk2-extras:${libraryVersions.hk2}"
     api "org.glassfish.jersey.core:jersey-server:${libraryVersions.jersey}"
     api "org.glassfish.jersey.inject:jersey-hk2:${libraryVersions.jersey}"
     api "org.glassfish.jersey.containers:jersey-container-servlet:${libraryVersions.jersey}"
