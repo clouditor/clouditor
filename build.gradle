@@ -132,7 +132,7 @@ allprojects {
             jersey               : '2.33',
             JUnit                : '5.4.0',
             jetty                : '9.4.12.v20180830',
-            mockito              : '3.6.0',
+            mockito              : '3.8.0',
             swaggerJersey2       : '1.5.21',
             postgresql           : '42.2.18',
             hibernate            : '5.4.30.Final'
