@@ -134,7 +134,7 @@ allprojects {
             jetty                : '9.4.12.v20180830',
             mockito              : '3.8.0',
             swaggerJersey2       : '1.5.21',
-            postgresql           : '42.2.18',
+            postgresql           : '42.2.19',
             hibernate            : '5.4.30.Final'
     ]
 
