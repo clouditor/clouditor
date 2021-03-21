@@ -31,18 +31,14 @@ apply plugin: "antlr"
 dependencies {
     antlr group: "org.antlr", name: "antlr4", version: "4.7.2"
 
-    implementation group: 'org.javassist', name: 'javassist', version: libraryVersions.javassist
     implementation "org.apache.logging.log4j:log4j-slf4j18-impl:${libraryVersions.log4j}"
     implementation group: 'com.atlassian.commonmark', name: 'commonmark', version: '0.17.0'
     implementation "org.reflections:reflections:0.9.11"
-    implementation "org.apache.commons:commons-lang3:${libraryVersions.commonsLang3}"
-    implementation group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.3'
     implementation "com.auth0:java-jwt:${libraryVersions.jwt}"
     implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
 
     api group: 'org.apache.pdfbox', name: 'pdfbox', version: '2.0.12'
     api group: 'args4j', name: 'args4j', version: '2.33'
-    api "org.apache.commons:commons-configuration2:${libraryVersions.commonsConfiguration2}"
     api group: 'org.slf4j', name: 'jul-to-slf4j', version: libraryVersions.slf4j
     api group: 'org.slf4j', name: 'slf4j-api', version: libraryVersions.slf4j
     api "org.apache.logging.log4j:log4j-core:${libraryVersions.log4j}"
