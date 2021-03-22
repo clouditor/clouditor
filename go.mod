@@ -8,7 +8,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.0.1
 	github.com/jackc/pgx/v4 v4.9.2 // indirect
 	github.com/oxisto/go-httputil v0.3.7
-	github.com/plgd-dev/kit v0.0.0-20201102152602-1e03187a6a3a
+	github.com/plgd-dev/kit v0.0.0-20210322121129-fa0d31a13679
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.0
 	golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9 // indirect
