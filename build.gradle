@@ -128,7 +128,7 @@ allprojects {
             jwt                  : '3.14.0',
             jackson              : '2.12.2',
             jersey               : '2.33',
-            JUnit                : '5.4.0',
+            JUnit                : '5.7.1',
             jetty                : '9.4.12.v20180830',
             mockito              : '3.8.0',
             swaggerJersey2       : '1.5.21',
