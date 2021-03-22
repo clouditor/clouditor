@@ -4,5 +4,8 @@
   ],
   "patch": {
     "enabled": false
+  },
+  "digest": {
+    "enabled": false    
   }
 }

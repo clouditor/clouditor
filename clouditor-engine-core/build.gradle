@@ -33,7 +33,7 @@ dependencies {
 
     implementation "org.apache.logging.log4j:log4j-slf4j18-impl:${libraryVersions.log4j}"
     implementation group: 'com.atlassian.commonmark', name: 'commonmark', version: '0.17.0'
-    implementation "org.reflections:reflections:0.9.11"
+    implementation "org.reflections:reflections:0.9.12"
     implementation "com.auth0:java-jwt:${libraryVersions.jwt}"
     implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
 
