@@ -9,7 +9,7 @@ require (
 	github.com/jackc/pgx/v4 v4.9.2 // indirect
 	github.com/oxisto/go-httputil v0.3.7
 	github.com/plgd-dev/kit v0.0.0-20201102152602-1e03187a6a3a
-	github.com/spf13/cobra v1.1.1
+	github.com/spf13/cobra v1.1.3
 	github.com/spf13/viper v1.7.0
 	golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9 // indirect
 	golang.org/x/text v0.3.4 // indirect
