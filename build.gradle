@@ -33,7 +33,7 @@ plugins {
     id 'com.github.jk1.dependency-license-report' version '1.2'
     id 'maven-publish'
     id 'jacoco'
-    id 'org.jetbrains.kotlin.jvm' version '1.4.10'
+    id 'org.jetbrains.kotlin.jvm' version '1.4.32'
 }
 
 sonarqube {
