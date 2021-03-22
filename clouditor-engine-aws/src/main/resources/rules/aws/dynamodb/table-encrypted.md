@@ -3,7 +3,7 @@
 Checks if the tables of DynamoDB are encrypted.
 
 ```ccl
-Table has sseDescription.statusAsString == "ENABLED"
+Table has sseDescription.status == "ENABLED"
 ```
 
 ## Controls
