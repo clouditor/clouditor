@@ -10,7 +10,7 @@ require (
 	github.com/oxisto/go-httputil v0.3.7
 	github.com/plgd-dev/kit v0.0.0-20201102152602-1e03187a6a3a
 	github.com/spf13/cobra v1.1.1
-	github.com/spf13/viper v1.7.0
+	github.com/spf13/viper v1.7.1
 	golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9 // indirect
 	golang.org/x/text v0.3.4 // indirect
 	google.golang.org/genproto v0.0.0-20201019141844-1ed22bb0c154
