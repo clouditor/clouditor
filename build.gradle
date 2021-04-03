@@ -115,7 +115,7 @@ allprojects {
     // Set library versions - useful for libraries with multiple packages
     ext.libraryVersions = [
             azure                : '1.40.0',
-            aws2                 : '2.16.32',
+            aws2                 : '2.16.34',
             adal4j               : '1.6.6',
             dockerjava           : '3.0.14',
             commonsLang3         : '3.8.1',
