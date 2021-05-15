@@ -68,8 +68,6 @@ func (c *Client) continueSession() (err error) {
 		return
 	}
 
-	fmt.Printf("%+v", result["token"])
-
 	if token, ok := result["token"].(string); ok {
 		// set this client's token
 		c.token = token
@@ -131,7 +129,7 @@ func (c Client) Authenticate() (err error) {
 	}
 
 	// TODO: actually check if resp is status 200
-	fmt.Printf("%+v", result["token"])
+	fmt.Printf("%+v\n", result["token"])
 
 	// find the home directory
 	if home, err = os.UserHomeDir(); err != nil {
@@ -151,7 +149,7 @@ func (c Client) Authenticate() (err error) {
 		return
 	}
 
-	fmt.Print("Successfully logged in")
+	fmt.Println("Successfully logged in")
 
 	return nil
 }

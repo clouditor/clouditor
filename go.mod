@@ -4,11 +4,16 @@ go 1.15
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/fsnotify/fsnotify v1.4.9 // indirect
+	github.com/gofrs/uuid v3.3.0+incompatible // indirect
 	github.com/golang/protobuf v1.4.3
+	github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.0.1
 	github.com/jackc/pgx/v4 v4.9.2 // indirect
+	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/oxisto/go-httputil v0.3.7
-	github.com/plgd-dev/kit v0.0.0-20201102152602-1e03187a6a3a
+	github.com/pkg/errors v0.9.1 // indirect
+	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.0
 	golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9 // indirect

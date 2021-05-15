@@ -24,47 +24,25 @@
  *
  * This file is part of Clouditor Community Edition.
  */
+ syntax = "proto3";
 
-package persistence
+ package clouditor;
+ 
+ import "google/api/annotations.proto";
+ 
+ option go_package = ".;clouditor";
 
-import (
-	"fmt"
-
-	"clouditor.io/clouditor"
-	"github.com/sirupsen/logrus"
-	"gorm.io/driver/postgres"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
-)
-
-var log *logrus.Entry
-var db *gorm.DB
-
-func init() {
-	log = logrus.WithField("component", "db")
-}
-
-func InitDB(inMemory bool, host string, port int16) (err error) {
-	if inMemory {
-		if db, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{}); err != nil {
-			return err
-		}
-
-		log.Println("Using in-memory DB")
-	} else {
-		if db, err = gorm.Open(postgres.Open(fmt.Sprintf("postgres://postgres@%s:%d/postgres?sslmode=disable", host, port)), &gorm.Config{}); err != nil {
-			return err
-		}
-
-		log.Printf("Using postgres DB @ %s\n", host)
-	}
-
-	db.AutoMigrate(&clouditor.User{})
-
-	return nil
-}
-
-// GetDatabase returns the database
-func GetDatabase() *gorm.DB {
-	return db
-}
+ message StartDiscoveryRequest {
+    string username = 1;
+    string password = 2;
+  }
+  
+  message StartDiscoveryResponse { bool successful = 1; }
+  
+  service Discovery {
+    rpc Start(StartDiscoveryRequest) returns(StartDiscoveryResponse) {
+      option(google.api.http) = {
+        post : "/v1/discovery/start" body : "*" response_body : "*"
+      };
+    };
+  }

@@ -31,16 +31,22 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"os"
 	"strings"
 
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
+	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
+
+	"github.com/sirupsen/logrus"
+
 	"clouditor.io/clouditor"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/rest"
 	"clouditor.io/clouditor/service/auth"
+	"clouditor.io/clouditor/service/discovery"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
@@ -77,15 +83,20 @@ const (
 
 var server *grpc.Server
 var authService *auth.Service
+var discoveryService *discovery.Service
+
+var log *logrus.Entry
 
 var engineCmd = &cobra.Command{
 	Use:   "engine",
 	Short: "engine launches the Clouditor Engine",
-	Long:  "Clouditor Engine is the main component of Clouditor",
+	Long:  "Clouditor Engine is the main component of Clouditor. It is an all-in-one solution of several microservices, which also can be started individually.",
 	RunE:  doCmd,
 }
 
 func init() {
+	log = logrus.WithField("component", "grpc")
+
 	cobra.OnInitialize(initConfig)
 
 	engineCmd.Flags().String(APIDefaultUserFlag, DefaultAPIDefaultUser, "Specifies the default API username")
@@ -123,7 +134,7 @@ func initConfig() {
 }
 
 func doCmd(cmd *cobra.Command, args []string) (err error) {
-	log.Println("Welcome to new Clouditor 2.0")
+	log.Info("Welcome to new Clouditor 2.0")
 
 	fmt.Println(`
            $$\                           $$\ $$\   $$\
@@ -144,19 +155,38 @@ func doCmd(cmd *cobra.Command, args []string) (err error) {
 		TokenSecret: viper.GetString(APISecretFlag),
 	}
 
+	discoveryService = &discovery.Service{}
+
 	createDefaultUser()
 
 	grpcPort := viper.GetInt(APIgRPCPortFlag)
 	httpPort := viper.GetInt(APIHTTPPortFlag)
 
+	grpcLogger := logrus.New()
+	grpcLogger.Formatter = &clouditor.GRPCFormatter{}
+	grpcLoggerEntry := grpcLogger.WithField("component", "grpc")
+
+	// disabling the grpc log itself, because it will log everything on INFO, where as DEBUG would be more
+	// appropriate
+	// grpc_logrus.ReplaceGrpcLogger(grpcLoggerEntry)
+
 	// create a new socket for gRPC communication
 	sock, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
 	if err != nil {
-		log.Fatalf("could not listen: %v", err)
+		log.Errorf("could not listen: %v", err)
 	}
 
-	server = grpc.NewServer()
+	server = grpc.NewServer(
+		grpc_middleware.WithUnaryServerChain(
+			grpc_ctxtags.UnaryServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
+			grpc_logrus.UnaryServerInterceptor(grpcLoggerEntry),
+		),
+		grpc_middleware.WithStreamServerChain(
+			grpc_ctxtags.StreamServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
+			grpc_logrus.StreamServerInterceptor(grpcLoggerEntry),
+		))
 	clouditor.RegisterAuthenticationServer(server, authService)
+	clouditor.RegisterDiscoveryServer(server, discoveryService)
 
 	// enable reflection, primary for testing in early stages
 	reflection.Register(server)
@@ -174,11 +204,11 @@ func doCmd(cmd *cobra.Command, args []string) (err error) {
 		}
 	}()
 
-	log.Printf("Starting gRPC endpoint on :%d", grpcPort)
+	log.Infof("Starting gRPC endpoint on :%d", grpcPort)
 
 	// serve the gRPC socket
 	if err := server.Serve(sock); err != nil {
-		log.Printf("failed to serve gRPC endpoint: %v", err)
+		log.Infof("failed to serve gRPC endpoint: %s", err)
 		return err
 	}
 
@@ -187,7 +217,7 @@ func doCmd(cmd *cobra.Command, args []string) (err error) {
 
 func main() {
 	if err := engineCmd.Execute(); err != nil {
-		log.Fatal(err)
+		log.Panicf("Fatal error: %s", err)
 		os.Exit(1)
 	}
 }
@@ -208,7 +238,7 @@ func createDefaultUser() {
 			Password: string(password),
 		}
 
-		log.Printf("Creating default user %s\n", user.Username)
+		log.Infof("Creating default user %s\n", user.Username)
 
 		db.Create(&user)
 	}

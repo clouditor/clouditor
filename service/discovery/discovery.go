@@ -25,65 +25,24 @@
  * This file is part of Clouditor Community Edition.
  */
 
-package rest
+package discovery
 
 import (
 	"context"
-	"fmt"
-	"net/http"
-	"os"
-	"os/signal"
-	"time"
 
 	"clouditor.io/clouditor"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 )
 
-var log *logrus.Entry
+//go:generate protoc -I ../../proto -I ../../third_party discovery.proto --go_out=../.. --go-grpc_out=../..
 
-func init() {
-	log = logrus.WithField("component", "rest")
+// Service is an implementation of the Clouditor Discovery service
+type Service struct {
+	clouditor.UnimplementedDiscoveryServer
 }
 
-//go:generate protoc -I ../proto -I ../third_party auth.proto --grpc-gateway_out=../ --grpc-gateway_opt logtostderr=true
+// Start starts discovery
+func (s Service) Start(ctx context.Context, request *clouditor.StartDiscoveryRequest) (response *clouditor.StartDiscoveryResponse, err error) {
+	response = &clouditor.StartDiscoveryResponse{Successful: true}
 
-func RunServer(ctx context.Context, grpcPort int, httpPort int) error {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	mux := runtime.NewServeMux()
-
-	opts := []grpc.DialOption{grpc.WithInsecure()}
-
-	if err := clouditor.RegisterAuthenticationHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), opts); err != nil {
-		return fmt.Errorf("failed to connect to authentication gRPC service %w", err)
-	}
-
-	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%d", httpPort),
-		Handler: mux,
-	}
-
-	// graceful shutdown
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	go func() {
-		for range c {
-			// sig is a ^C, handle it
-			break
-		}
-
-		_, cancel := context.WithTimeout(ctx, 5*time.Second)
-		defer cancel()
-
-		log.Printf("Shutting down REST gateway on :%d\n", httpPort)
-
-		_ = srv.Shutdown(ctx)
-	}()
-
-	log.Printf("Starting REST gateway on :%d\n", httpPort)
-
-	return srv.ListenAndServe()
+	return response, nil
 }
