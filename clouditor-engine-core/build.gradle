@@ -59,7 +59,7 @@ dependencies {
     implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.4.5'
     implementation group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.68'
 
-    implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
+    implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '5.0.0'
 
     compile group: 'org.postgresql', name: 'postgresql', version: libraryVersions.postgresql
     compile group: 'org.hibernate', name: 'hibernate-core', version: libraryVersions.hibernate
