@@ -14,7 +14,7 @@ require (
 	golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9 // indirect
 	golang.org/x/text v0.3.4 // indirect
 	google.golang.org/genproto v0.0.0-20201019141844-1ed22bb0c154
-	google.golang.org/grpc v1.33.1
+	google.golang.org/grpc v1.37.1
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.0.1
 	google.golang.org/protobuf v1.25.0
 	gorm.io/driver/postgres v1.0.5
