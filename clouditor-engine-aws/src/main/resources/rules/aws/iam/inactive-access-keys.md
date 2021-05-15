@@ -3,7 +3,7 @@
 Checks if there are inactive access keys.
 
 ```ccl
-User has statusAsString != "Inactive" in all accessKeys
+User has status != "Inactive" in all accessKeys
 ````
 
 ## Controls

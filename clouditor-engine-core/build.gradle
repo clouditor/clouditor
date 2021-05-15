@@ -29,11 +29,11 @@ apply plugin: "antlr"
 
 // Project dependencies
 dependencies {
-    antlr group: "org.antlr", name: "antlr4", version: "4.7.2"
+    antlr group: "org.antlr", name: "antlr4", version: "4.9.2"
 
     implementation "org.apache.logging.log4j:log4j-slf4j18-impl:${libraryVersions.log4j}"
     implementation group: 'com.atlassian.commonmark', name: 'commonmark', version: '0.17.0'
-    implementation "org.reflections:reflections:0.9.11"
+    implementation "org.reflections:reflections:0.9.12"
     implementation "com.auth0:java-jwt:${libraryVersions.jwt}"
     implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
 
@@ -65,7 +65,7 @@ dependencies {
     compile group: 'org.hibernate', name: 'hibernate-core', version: libraryVersions.hibernate
     compile group: 'com.h2database', name: 'h2', version: '1.4.200'
 
-    testCompile group: 'org.awaitility', name: 'awaitility', version: '3.1.6'
+    testCompile group: 'org.awaitility', name: 'awaitility', version: '4.0.3'
 
     testImplementation "org.glassfish.jersey.test-framework:jersey-test-framework-core:${libraryVersions.jersey}"
     testImplementation "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:${libraryVersions.jersey}"
