@@ -125,7 +125,7 @@ allprojects {
             hk2                  : '2.6.1',
             log4j                : '2.14.1',
             slf4j                : '1.8.0-beta4',
-            jwt                  : '3.14.0',
+            jwt                  : '3.16.0',
             jackson              : '2.12.2',
             jersey               : '2.33',
             JUnit                : '5.7.1',
