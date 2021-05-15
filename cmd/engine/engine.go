@@ -43,10 +43,13 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"clouditor.io/clouditor"
+	"clouditor.io/clouditor/api/auth"
+	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/rest"
-	"clouditor.io/clouditor/service/auth"
-	"clouditor.io/clouditor/service/discovery"
+	service_auth "clouditor.io/clouditor/service/auth"
+	service_discovery "clouditor.io/clouditor/service/discovery"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
@@ -82,8 +85,8 @@ const (
 )
 
 var server *grpc.Server
-var authService *auth.Service
-var discoveryService *discovery.Service
+var authService *service_auth.Service
+var discoveryService *service_discovery.Service
 
 var log *logrus.Entry
 
@@ -153,11 +156,11 @@ func doCmd(cmd *cobra.Command, args []string) (err error) {
 		viper.GetString(DBHostFlag),
 		int16(viper.GetInt(DBPortFlag)))
 
-	authService = &auth.Service{
+	authService = &service_auth.Service{
 		TokenSecret: viper.GetString(APISecretFlag),
 	}
 
-	discoveryService = &discovery.Service{}
+	discoveryService = &service_discovery.Service{}
 
 	createDefaultUser()
 
@@ -187,8 +190,8 @@ func doCmd(cmd *cobra.Command, args []string) (err error) {
 			grpc_ctxtags.StreamServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
 			grpc_logrus.StreamServerInterceptor(grpcLoggerEntry),
 		))
-	clouditor.RegisterAuthenticationServer(server, authService)
-	clouditor.RegisterDiscoveryServer(server, discoveryService)
+	auth.RegisterAuthenticationServer(server, authService)
+	discovery.RegisterDiscoveryServer(server, discoveryService)
 
 	// enable reflection, primary for testing in early stages
 	reflection.Register(server)
@@ -229,12 +232,12 @@ func createDefaultUser() {
 	db := persistence.GetDatabase()
 
 	var count int64
-	db.Model(&clouditor.User{}).Count(&count)
+	db.Model(&auth.User{}).Count(&count)
 
 	if count == 0 {
 		password, _ := authService.HashPassword(viper.GetString(APIDefaultPasswordFlag))
 
-		user := clouditor.User{
+		user := auth.User{
 			Username: viper.GetString(APIDefaultUserFlag),
 			FullName: viper.GetString(APIDefaultUserFlag),
 			Password: string(password),

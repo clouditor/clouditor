@@ -30,7 +30,7 @@ package discovery
 import (
 	"context"
 
-	"clouditor.io/clouditor"
+	"clouditor.io/clouditor/api/discovery"
 	"github.com/sirupsen/logrus"
 )
 
@@ -40,7 +40,7 @@ var log *logrus.Entry
 
 // Service is an implementation of the Clouditor Discovery service
 type Service struct {
-	clouditor.UnimplementedDiscoveryServer
+	discovery.UnimplementedDiscoveryServer
 }
 
 func init() {
@@ -48,8 +48,8 @@ func init() {
 }
 
 // Start starts discovery
-func (s Service) Start(ctx context.Context, request *clouditor.StartDiscoveryRequest) (response *clouditor.StartDiscoveryResponse, err error) {
-	response = &clouditor.StartDiscoveryResponse{Successful: true}
+func (s Service) Start(ctx context.Context, request *discovery.StartDiscoveryRequest) (response *discovery.StartDiscoveryResponse, err error) {
+	response = &discovery.StartDiscoveryResponse{Successful: true}
 
 	var discovery StorageDiscoverer = &azureStorageDiscovery{}
 	discovery.List()

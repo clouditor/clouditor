@@ -30,7 +30,7 @@ package persistence
 import (
 	"fmt"
 
-	"clouditor.io/clouditor"
+	"clouditor.io/clouditor/api/auth"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
@@ -59,7 +59,7 @@ func InitDB(inMemory bool, host string, port int16) (err error) {
 		log.Printf("Using postgres DB @ %s", host)
 	}
 
-	db.AutoMigrate(&clouditor.User{})
+	db.AutoMigrate(&auth.User{})
 
 	return nil
 }
