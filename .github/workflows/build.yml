@@ -11,7 +11,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions/setup-java@v1
         with:
           java-version: "14"
@@ -48,6 +48,6 @@ jobs:
   build-go:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - run: |
           docker build -f go.Dockerfile .
