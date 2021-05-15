@@ -37,6 +37,6 @@ import (
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		login.NewLoginCommand(),
-		discovery.NewStartDiscoveryCommand(),
+		discovery.NewDiscoveryCommand(),
 	)
 }

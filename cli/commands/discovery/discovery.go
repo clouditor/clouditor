@@ -33,12 +33,11 @@ import (
 	"github.com/spf13/viper"
 )
 
-// NewStartDiscoveryCommand returns a cobra command for `login` subcommands
-// TODO: split into subcommands
+// NewStartDiscoveryCommand returns a cobra command for the `start` subcommand
 func NewStartDiscoveryCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "start_discovery",
-		Short: "Starts discvoery",
+		Use:   "start",
+		Short: "Starts the discovery",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var client = clouditor.NewClient(viper.GetString("url"))
 
@@ -49,4 +48,23 @@ func NewStartDiscoveryCommand() *cobra.Command {
 	}
 
 	return cmd
+}
+
+// NewStartDiscoveryCommand returns a cobra command for `discovery` subcommands
+func NewDiscoveryCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "discovery",
+		Short: "Discovery commands",
+	}
+
+	AddCommands(cmd)
+
+	return cmd
+}
+
+// AddCommands adds all subcommands
+func AddCommands(cmd *cobra.Command) {
+	cmd.AddCommand(
+		NewStartDiscoveryCommand(),
+	)
 }
