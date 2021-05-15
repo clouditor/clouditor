@@ -4,9 +4,21 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "go: build",
+            "label": "go: build engine",
             "type": "shell",
             "command": "go build cmd/engine/engine.go",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$go"
+            ]
+        },
+        {
+            "label": "go: build cli",
+            "type": "shell",
+            "command": "go build cmd/cli/clouditor-cli.go",
             "group": {
                 "kind": "build",
                 "isDefault": true

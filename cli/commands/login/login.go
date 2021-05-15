@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2020 Fraunhofer AISEC
+ * Copyright 2021 Fraunhofer AISEC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,34 +24,28 @@
  *
  * This file is part of Clouditor Community Edition.
  */
-syntax = "proto3";
 
-package clouditor;
+package login
 
-import "google/api/annotations.proto";
+import (
+	"clouditor.io/clouditor"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+)
 
-option go_package = ".;clouditor";
+// NewLoginCommand returns a cobra command for `login` subcommands
+func NewLoginCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "login",
+		Short: "Log in to Clouditor",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var client = clouditor.NewClient(viper.GetString("url"))
 
-/* A clouditor user */
-message User {
-  string username = 1;
-  string password = 2;
-  string email = 3;
-  string full_name = 4;
-  bool shadow = 5;
-}
+			err := client.Authenticate()
 
-message LoginRequest {
-  string username = 1;
-  string password = 2;
-}
+			return err
+		},
+	}
 
-message LoginResponse { string token = 1; }
-
-service Authentication {
-  rpc Login(LoginRequest) returns(LoginResponse) {
-    option(google.api.http) = {
-      post : "/v1/auth/login" body : "*" response_body : "*"
-    };
-  };
+	return cmd
 }
