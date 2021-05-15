@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2020 Fraunhofer AISEC
+ * Copyright 2021 Fraunhofer AISEC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,34 +24,18 @@
  *
  * This file is part of Clouditor Community Edition.
  */
-syntax = "proto3";
 
-package clouditor;
+package commands
 
-import "google/api/annotations.proto";
+import (
+	"clouditor.io/clouditor/cli/commands/login"
 
-option go_package = ".;clouditor";
+	"github.com/spf13/cobra"
+)
 
-/* A clouditor user */
-message User {
-  string username = 1;
-  string password = 2;
-  string email = 3;
-  string full_name = 4;
-  bool shadow = 5;
-}
-
-message LoginRequest {
-  string username = 1;
-  string password = 2;
-}
-
-message LoginResponse { string token = 1; }
-
-service Authentication {
-  rpc Login(LoginRequest) returns(LoginResponse) {
-    option(google.api.http) = {
-      post : "/v1/auth/login" body : "*" response_body : "*"
-    };
-  };
+// AddCommands adds all subcommands
+func AddCommands(cmd *cobra.Command) {
+	cmd.AddCommand(
+		login.NewLoginCommand(),
+	)
 }
