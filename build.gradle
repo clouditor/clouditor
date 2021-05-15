@@ -30,7 +30,7 @@ plugins {
     id 'org.owasp.dependencycheck' version '4.0.2'
     id 'com.diffplug.gradle.spotless' version '3.30.0'
     id "com.github.ben-manes.versions" version '0.38.0'
-    id 'com.github.jk1.dependency-license-report' version '1.2'
+    id 'com.github.jk1.dependency-license-report' version '1.16'
     id 'maven-publish'
     id 'jacoco'
     id 'org.jetbrains.kotlin.jvm' version '1.4.10'
