@@ -48,6 +48,29 @@ jobs:
   build-go:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - run: |
-          docker build -f go.Dockerfile .
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v1
+      - name: Build
+        run: |
+          go install google.golang.org/protobuf/cmd/protoc-gen-go \
+          google.golang.org/grpc/cmd/protoc-gen-go-grpc \
+          github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway
+          go generate ./...
+          go build cmd/engine/engine.go
+          go build cmd/cli/clouditor-cli.go
+      - name: "Upload Artifact"
+        uses: actions/upload-artifact@v2
+        with:
+          name: engine
+          path: engine
+      - name: "Upload Artifact"
+        uses: actions/upload-artifact@v2
+        with:
+          name: clouditor-cli
+          path: clouditor-cli

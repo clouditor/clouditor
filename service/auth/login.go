@@ -32,7 +32,7 @@ import (
 	"errors"
 	"time"
 
-	"clouditor.io/clouditor"
+	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/persistence"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/oxisto/go-httputil/argon2"
@@ -49,7 +49,7 @@ const (
 
 // Service is an implementation of the gRPC Authentication service
 type Service struct {
-	clouditor.UnimplementedAuthenticationServer
+	auth.UnimplementedAuthenticationServer
 
 	TokenSecret string
 }
@@ -62,9 +62,9 @@ type UserClaims struct {
 }
 
 // Login handles a login request
-func (s Service) Login(ctx context.Context, request *clouditor.LoginRequest) (response *clouditor.LoginResponse, err error) {
+func (s Service) Login(ctx context.Context, request *auth.LoginRequest) (response *auth.LoginResponse, err error) {
 	var result bool
-	var user *clouditor.User
+	var user *auth.User
 
 	if result, user, err = verifyLogin(request); err != nil {
 		// a returned error means, something has gone wrong
@@ -82,7 +82,7 @@ func (s Service) Login(ctx context.Context, request *clouditor.LoginRequest) (re
 		return nil, grpc.Errorf(codes.Internal, "token issue failed: %w", err)
 	}
 
-	response = &clouditor.LoginResponse{Token: token}
+	response = &auth.LoginResponse{Token: token}
 
 	return response, nil
 }
@@ -91,10 +91,10 @@ func (s Service) Login(ctx context.Context, request *clouditor.LoginRequest) (re
 // It will return an error in err only if a database error or something else is occurred, this should be
 // returned to the user as an internal server error. For security reasons, if authentication failed, only
 // the result will be set to false, but no detailed error will be returned to the user.
-func verifyLogin(request *clouditor.LoginRequest) (result bool, user *clouditor.User, err error) {
+func verifyLogin(request *auth.LoginRequest) (result bool, user *auth.User, err error) {
 	db := persistence.GetDatabase()
 
-	user = new(clouditor.User)
+	user = new(auth.User)
 
 	err = db.Where("username = ?", request.Username).First(user).Error
 

@@ -30,18 +30,25 @@ package rest
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
 
-	"clouditor.io/clouditor"
+	"clouditor.io/clouditor/api/auth"
+	"clouditor.io/clouditor/api/discovery"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
 
-//go:generate protoc -I ../proto -I ../third_party auth.proto --grpc-gateway_out=../ --grpc-gateway_opt logtostderr=true
+var log *logrus.Entry
+
+func init() {
+	log = logrus.WithField("component", "rest")
+}
+
+//go:generate protoc -I ../proto -I ../third_party auth.proto discovery.proto --grpc-gateway_out=../ --grpc-gateway_opt logtostderr=true
 
 func RunServer(ctx context.Context, grpcPort int, httpPort int) error {
 	ctx, cancel := context.WithCancel(ctx)
@@ -51,8 +58,12 @@ func RunServer(ctx context.Context, grpcPort int, httpPort int) error {
 
 	opts := []grpc.DialOption{grpc.WithInsecure()}
 
-	if err := clouditor.RegisterAuthenticationHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), opts); err != nil {
+	if err := auth.RegisterAuthenticationHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), opts); err != nil {
 		return fmt.Errorf("failed to connect to authentication gRPC service %w", err)
+	}
+
+	if err := discovery.RegisterDiscoveryHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), opts); err != nil {
+		return fmt.Errorf("failed to connect to discovery gRPC service %w", err)
 	}
 
 	srv := &http.Server{
@@ -72,12 +83,12 @@ func RunServer(ctx context.Context, grpcPort int, httpPort int) error {
 		_, cancel := context.WithTimeout(ctx, 5*time.Second)
 		defer cancel()
 
-		log.Printf("Shutting down REST gateway on :%d\n", httpPort)
+		log.Printf("Shutting down REST gateway on :%d", httpPort)
 
 		_ = srv.Shutdown(ctx)
 	}()
 
-	log.Printf("Starting REST gateway on :%d\n", httpPort)
+	log.Printf("Starting REST gateway on :%d", httpPort)
 
 	return srv.ListenAndServe()
 }

@@ -25,18 +25,46 @@
  * This file is part of Clouditor Community Edition.
  */
 
-package commands
+package discovery
 
 import (
-	"clouditor.io/clouditor/cli/commands/discovery"
-	"clouditor.io/clouditor/cli/commands/login"
+	"clouditor.io/clouditor"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
+
+// NewStartDiscoveryCommand returns a cobra command for the `start` subcommand
+func NewStartDiscoveryCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "start",
+		Short: "Starts the discovery",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var client = clouditor.NewClient(viper.GetString("url"))
+
+			err := client.StartDiscovery()
+
+			return err
+		},
+	}
+
+	return cmd
+}
+
+// NewStartDiscoveryCommand returns a cobra command for `discovery` subcommands
+func NewDiscoveryCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "discovery",
+		Short: "Discovery commands",
+	}
+
+	AddCommands(cmd)
+
+	return cmd
+}
 
 // AddCommands adds all subcommands
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
-		login.NewLoginCommand(),
-		discovery.NewDiscoveryCommand(),
+		NewStartDiscoveryCommand(),
 	)
 }

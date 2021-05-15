@@ -29,19 +29,20 @@ package persistence
 
 import (
 	"fmt"
-	"log"
 
-	"clouditor.io/clouditor"
+	"clouditor.io/clouditor/api/auth"
+	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
-func init() {
-
-}
-
+var log *logrus.Entry
 var db *gorm.DB
+
+func init() {
+	log = logrus.WithField("component", "db")
+}
 
 func InitDB(inMemory bool, host string, port int16) (err error) {
 	if inMemory {
@@ -55,10 +56,10 @@ func InitDB(inMemory bool, host string, port int16) (err error) {
 			return err
 		}
 
-		log.Printf("Using postgres DB @ %s\n", host)
+		log.Printf("Using postgres DB @ %s", host)
 	}
 
-	db.AutoMigrate(&clouditor.User{})
+	db.AutoMigrate(&auth.User{})
 
 	return nil
 }

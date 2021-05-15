@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Fraunhofer AISEC
+ * Copyright 2016-2020 Fraunhofer AISEC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,18 +25,34 @@
  * This file is part of Clouditor Community Edition.
  */
 
-package commands
+package discovery
 
 import (
-	"clouditor.io/clouditor/cli/commands/discovery"
-	"clouditor.io/clouditor/cli/commands/login"
-	"github.com/spf13/cobra"
+	"context"
+
+	"clouditor.io/clouditor/api/discovery"
+	"github.com/sirupsen/logrus"
 )
 
-// AddCommands adds all subcommands
-func AddCommands(cmd *cobra.Command) {
-	cmd.AddCommand(
-		login.NewLoginCommand(),
-		discovery.NewDiscoveryCommand(),
-	)
+var log *logrus.Entry
+
+//go:generate protoc -I ../../proto -I ../../third_party discovery.proto --go_out=../.. --go-grpc_out=../..
+
+// Service is an implementation of the Clouditor Discovery service
+type Service struct {
+	discovery.UnimplementedDiscoveryServer
+}
+
+func init() {
+	log = logrus.WithField("component", "discovery")
+}
+
+// Start starts discovery
+func (s Service) Start(ctx context.Context, request *discovery.StartDiscoveryRequest) (response *discovery.StartDiscoveryResponse, err error) {
+	response = &discovery.StartDiscoveryResponse{Successful: true}
+
+	var discovery StorageDiscoverer = &azureStorageDiscovery{}
+	discovery.List()
+
+	return response, nil
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Fraunhofer AISEC
+ * Copyright 2016-2020 Fraunhofer AISEC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,19 +24,23 @@
  *
  * This file is part of Clouditor Community Edition.
  */
+ syntax = "proto3";
 
-package commands
+ package clouditor;
+ 
+ import "google/api/annotations.proto";
+ 
+ option go_package = "api/discovery";
 
-import (
-	"clouditor.io/clouditor/cli/commands/discovery"
-	"clouditor.io/clouditor/cli/commands/login"
-	"github.com/spf13/cobra"
-)
-
-// AddCommands adds all subcommands
-func AddCommands(cmd *cobra.Command) {
-	cmd.AddCommand(
-		login.NewLoginCommand(),
-		discovery.NewDiscoveryCommand(),
-	)
-}
+ message StartDiscoveryRequest {
+  }
+  
+  message StartDiscoveryResponse { bool successful = 1; }
+  
+  service Discovery {
+    rpc Start(StartDiscoveryRequest) returns(StartDiscoveryResponse) {
+      option(google.api.http) = {
+        post : "/v1/discovery/start" body : "*" response_body : "*"
+      };
+    };
+  }

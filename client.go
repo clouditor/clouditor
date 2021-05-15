@@ -68,8 +68,6 @@ func (c *Client) continueSession() (err error) {
 		return
 	}
 
-	fmt.Printf("%+v", result["token"])
-
 	if token, ok := result["token"].(string); ok {
 		// set this client's token
 		c.token = token
@@ -131,7 +129,7 @@ func (c Client) Authenticate() (err error) {
 	}
 
 	// TODO: actually check if resp is status 200
-	fmt.Printf("%+v", result["token"])
+	fmt.Printf("%+v\n", result["token"])
 
 	// find the home directory
 	if home, err = os.UserHomeDir(); err != nil {
@@ -151,7 +149,29 @@ func (c Client) Authenticate() (err error) {
 		return
 	}
 
-	fmt.Print("Successfully logged in")
+	fmt.Println("Successfully logged in")
 
 	return nil
+}
+
+func (c Client) StartDiscovery() (err error) {
+	var result map[string]interface{}
+
+	request := map[string]string{}
+
+	b, err := json.Marshal(request)
+
+	resp, err := c.httpClient.Post(fmt.Sprintf("%s/v1/discovery/start", c.URL), "application/json", bytes.NewBuffer(b))
+
+	if err != nil {
+		return
+	}
+
+	if err = json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return
+	}
+
+	fmt.Printf("Response: %+v", resp)
+
+	return
 }
