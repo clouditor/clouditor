@@ -127,7 +127,7 @@ allprojects {
             slf4j                : '1.8.0-beta4',
             jwt                  : '3.16.0',
             jackson              : '2.12.2',
-            jersey               : '2.33',
+            jersey               : '2.34',
             JUnit                : '5.7.1',
             jetty                : '9.4.12.v20180830',
             mockito              : '3.8.0',
