@@ -28,8 +28,8 @@
 package commands
 
 import (
+	"clouditor.io/clouditor/cli/commands/discovery"
 	"clouditor.io/clouditor/cli/commands/login"
-
 	"github.com/spf13/cobra"
 )
 
@@ -37,5 +37,6 @@ import (
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		login.NewLoginCommand(),
+		discovery.NewStartDiscoveryCommand(),
 	)
 }

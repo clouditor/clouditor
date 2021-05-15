@@ -33,8 +33,6 @@
  option go_package = ".;clouditor";
 
  message StartDiscoveryRequest {
-    string username = 1;
-    string password = 2;
   }
   
   message StartDiscoveryResponse { bool successful = 1; }

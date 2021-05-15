@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2020 Fraunhofer AISEC
+ * Copyright 2021 Fraunhofer AISEC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,46 +25,28 @@
  * This file is part of Clouditor Community Edition.
  */
 
-package persistence
+package discovery
 
 import (
-	"fmt"
-
 	"clouditor.io/clouditor"
-	"github.com/sirupsen/logrus"
-	"gorm.io/driver/postgres"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-var log *logrus.Entry
-var db *gorm.DB
+// NewStartDiscoveryCommand returns a cobra command for `login` subcommands
+// TODO: split into subcommands
+func NewStartDiscoveryCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "start_discovery",
+		Short: "Starts discvoery",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var client = clouditor.NewClient(viper.GetString("url"))
 
-func init() {
-	log = logrus.WithField("component", "db")
-}
+			err := client.StartDiscovery()
 
-func InitDB(inMemory bool, host string, port int16) (err error) {
-	if inMemory {
-		if db, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{}); err != nil {
 			return err
-		}
-
-		log.Println("Using in-memory DB")
-	} else {
-		if db, err = gorm.Open(postgres.Open(fmt.Sprintf("postgres://postgres@%s:%d/postgres?sslmode=disable", host, port)), &gorm.Config{}); err != nil {
-			return err
-		}
-
-		log.Printf("Using postgres DB @ %s", host)
+		},
 	}
 
-	db.AutoMigrate(&clouditor.User{})
-
-	return nil
-}
-
-// GetDatabase returns the database
-func GetDatabase() *gorm.DB {
-	return db
+	return cmd
 }

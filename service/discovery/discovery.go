@@ -31,7 +31,10 @@ import (
 	"context"
 
 	"clouditor.io/clouditor"
+	"github.com/sirupsen/logrus"
 )
+
+var log *logrus.Entry
 
 //go:generate protoc -I ../../proto -I ../../third_party discovery.proto --go_out=../.. --go-grpc_out=../..
 
@@ -40,9 +43,16 @@ type Service struct {
 	clouditor.UnimplementedDiscoveryServer
 }
 
+func init() {
+	log = logrus.WithField("component", "discovery")
+}
+
 // Start starts discovery
 func (s Service) Start(ctx context.Context, request *clouditor.StartDiscoveryRequest) (response *clouditor.StartDiscoveryResponse, err error) {
 	response = &clouditor.StartDiscoveryResponse{Successful: true}
+
+	var discovery StorageDiscoverer = &azureStorageDiscovery{}
+	discovery.List()
 
 	return response, nil
 }

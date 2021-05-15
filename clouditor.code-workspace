@@ -8,6 +8,9 @@
 		"cSpell.words": [
 			"clouditor",
 			"grpc"
-		]
+		],
+		"workbench.colorCustomizations": {
+			"debugConsole.errorForeground": "#a8a8a8"
+		},
 	}
 }

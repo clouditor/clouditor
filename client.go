@@ -153,3 +153,25 @@ func (c Client) Authenticate() (err error) {
 
 	return nil
 }
+
+func (c Client) StartDiscovery() (err error) {
+	var result map[string]interface{}
+
+	request := map[string]string{}
+
+	b, err := json.Marshal(request)
+
+	resp, err := c.httpClient.Post(fmt.Sprintf("%s/v1/discovery/start", c.URL), "application/json", bytes.NewBuffer(b))
+
+	if err != nil {
+		return
+	}
+
+	if err = json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return
+	}
+
+	fmt.Printf("Response: %+v", resp)
+
+	return
+}

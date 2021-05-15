@@ -3,6 +3,10 @@ module clouditor.io/clouditor
 go 1.15
 
 require (
+	github.com/Azure/azure-sdk-for-go v54.2.0+incompatible
+	github.com/Azure/go-autorest/autorest/azure/auth v0.5.7
+	github.com/Azure/go-autorest/autorest/to v0.4.0 // indirect
+	github.com/Azure/go-autorest/autorest/validation v0.3.1 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/gofrs/uuid v3.3.0+incompatible // indirect
@@ -16,7 +20,6 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.0
-	golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9 // indirect
 	golang.org/x/text v0.3.4 // indirect
 	google.golang.org/genproto v0.0.0-20201019141844-1ed22bb0c154
 	google.golang.org/grpc v1.37.1
