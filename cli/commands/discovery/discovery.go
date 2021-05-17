@@ -74,6 +74,23 @@ func NewStartDiscoveryCommand() *cobra.Command {
 	return cmd
 }
 
+// NewStartDiscoveryCommand returns a cobra command for the `start` subcommand
+func NewQueryDiscoveryCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "query",
+		Short: "Queries the discovery",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var client = clouditor.NewClient(viper.GetString("url"))
+
+			err := client.QueryDiscovery()
+
+			return err
+		},
+	}
+
+	return cmd
+}
+
 // NewStartDiscoveryCommand returns a cobra command for `discovery` subcommands
 func NewDiscoveryCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -90,6 +107,7 @@ func NewDiscoveryCommand() *cobra.Command {
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewStartDiscoveryCommand(),
+		NewQueryDiscoveryCommand(),
 	)
 }
 

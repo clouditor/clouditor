@@ -134,3 +134,33 @@ func PromtForLogin() (loginRequest *auth.LoginRequest, err error) {
 
 	return loginRequest, nil
 }
+
+func (c Client) QueryDiscovery() (err error) {
+	var (
+		b      []byte
+		result map[string]interface{}
+	)
+
+	request := map[string]string{}
+
+	if b, err = json.Marshal(request); err != nil {
+		return fmt.Errorf("could not serialize JSON: %w", err)
+	}
+
+	resp, err := c.httpClient.Post(fmt.Sprintf("%s/v1/discovery/query", c.URL), "application/json", bytes.NewBuffer(b))
+
+	if err != nil {
+		return
+	}
+
+	if err = json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return
+	}
+
+	fmt.Printf("Response: %+v\n\n", resp)
+
+	b, _ = json.MarshalIndent(&result, "", "    ")
+	fmt.Printf("%s\n", string(b))
+
+	return
+}
