@@ -65,7 +65,7 @@ func newRootCommand() *cobra.Command {
 			// check, if server was specified either using config file or
 			// flags, otherwise we cannot continue
 			if viper.GetString(URLFlag) == "" {
-				return fmt.Errorf("Please specify an url using the config file or the --%s flag", URLFlag)
+				return fmt.Errorf("please specify an url using the config file or the --%s flag", URLFlag)
 			}
 
 			return nil
