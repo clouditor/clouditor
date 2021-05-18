@@ -36,8 +36,8 @@ import (
 	"clouditor.io/clouditor/persistence"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/oxisto/go-httputil/argon2"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
 )
 
@@ -68,18 +68,18 @@ func (s Service) Login(ctx context.Context, request *auth.LoginRequest) (respons
 
 	if result, user, err = verifyLogin(request); err != nil {
 		// a returned error means, something has gone wrong
-		return nil, grpc.Errorf(codes.Internal, "error during login: %v", err)
+		return nil, status.Errorf(codes.Internal, "error during login: %v", err)
 	}
 
-	if result == false {
+	if !result {
 		// authentication error
-		return nil, grpc.Errorf(codes.Unauthenticated, "login failed")
+		return nil, status.Errorf(codes.Unauthenticated, "login failed")
 	}
 
 	var token string
 
 	if token, err = s.issueToken(user.Username, user.FullName, user.Email, time.Now().Add(1*3600*24)); err != nil {
-		return nil, grpc.Errorf(codes.Internal, "token issue failed: %w", err)
+		return nil, status.Errorf(codes.Internal, "token issue failed: %w", err)
 	}
 
 	response = &auth.LoginResponse{Token: token}

@@ -58,7 +58,7 @@ func (c *Client) continueSession() (err error) {
 		return
 	}
 
-	if file, err = os.OpenFile(fmt.Sprintf("%s/.clouditor/session.json", home), os.O_RDONLY, 0644); err != nil {
+	if file, err = os.OpenFile(fmt.Sprintf("%s/.clouditor/session.json", home), os.O_RDONLY, 0600); err != nil {
 		return
 	}
 
@@ -139,7 +139,7 @@ func (c Client) Authenticate() (err error) {
 	// create the .clouditor directory
 	os.MkdirAll(fmt.Sprintf("%s/.clouditor", home), 0744)
 
-	if file, err = os.OpenFile(fmt.Sprintf("%s/.clouditor/session.json", home), os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644); err != nil {
+	if file, err = os.OpenFile(fmt.Sprintf("%s/.clouditor/session.json", home), os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0600); err != nil {
 		return
 	}
 
@@ -155,11 +155,16 @@ func (c Client) Authenticate() (err error) {
 }
 
 func (c Client) StartDiscovery() (err error) {
-	var result map[string]interface{}
+	var (
+		b      []byte
+		result map[string]interface{}
+	)
 
 	request := map[string]string{}
 
-	b, err := json.Marshal(request)
+	if b, err = json.Marshal(request); err != nil {
+		return fmt.Errorf("could not serialize JSON: %w", err)
+	}
 
 	resp, err := c.httpClient.Post(fmt.Sprintf("%s/v1/discovery/start", c.URL), "application/json", bytes.NewBuffer(b))
 

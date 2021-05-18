@@ -15,9 +15,6 @@ log
 out
 gradle.properties
 
-*.pb.go
-*.pb.gw.go
-
 __debug_bin
 engine
 clouditor-cli
