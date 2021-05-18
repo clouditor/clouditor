@@ -3,7 +3,7 @@ package clouditor
 import (
 	"fmt"
 
-	"github.com/logrusorgru/aurora"
+	"github.com/logrusorgru/aurora/v3"
 	"github.com/sirupsen/logrus"
 )
 
