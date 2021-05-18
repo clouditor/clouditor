@@ -27,7 +27,7 @@
 syntax = "proto3";
 
 package clouditor;
- 
+
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "evidence.proto";
@@ -39,13 +39,13 @@ message AssessmentResult {
   string id = 1;
 
   // the ID of the metric it refers to
-  string metricId = 2;
+  string metric_id = 2;
 
   enum ComplianceStatus {
     COMPLIANT = 0;
     NON_COMPLIANT = 1;
   }
-  
+
   ComplianceStatus result = 3;
 
   string target_value = 4;
@@ -53,4 +53,72 @@ message AssessmentResult {
   Evidence evidence = 5;
 }
 
-service Orchestrator {}
+// Represents an external tool or service that offers assessments according to
+// certain metrics
+message AssessmentTool {
+  string id = 1;
+
+  string name = 2;
+
+  // TODO: we might change this to just an identifier, if we only allow tools to
+  // refer to existing IDs
+  repeated Metric available_metrics = 3;
+}
+
+message RegisterAssessmentToolRequest { AssessmentTool tool = 1; }
+
+message ListAssessmentToolsRequest {
+  // filter tools by metric id
+  string metric_id = 1;
+}
+
+message ListAssessmentToolsResponse { repeated AssessmentTool tools = 1; }
+
+message GetAssessmentToolRequest { string id = 1; }
+
+message UpdateAssessmentToolRequest {
+  string id = 1;
+  AssessmentTool tool = 2;
+}
+
+message DeregisterAssessmentToolRequest { string id = 1; }
+
+service Orchestrator {
+
+  rpc RegisterAssessmentTool(RegisterAssessmentToolRequest)
+      returns (AssessmentTool) {
+    option (google.api.http) = {
+      post : "/v1/orchestator/assessment_tools"
+      body : "tool"
+    };
+  }
+
+  rpc ListAssessmentTools(ListAssessmentToolsRequest)
+      returns (ListAssessmentToolsResponse) {
+    option (google.api.http) = {
+      get : "/v1/orchestator/assessment_tools/"
+      additional_bindings {get : "/v1/orchestator/{metric_id}/assessment_tools"}
+    };
+  }
+
+  rpc GetAssessmentTool(GetAssessmentToolRequest) returns (AssessmentTool) {
+    option (google.api.http) = {
+      get : "/v1/orchestator/assessment_tools/{id}"
+    };
+  }
+
+  rpc UpdateAssessmentTool(UpdateAssessmentToolRequest)
+      returns (AssessmentTool) {
+    option (google.api.http) = {
+      put : "/v1/orchestator/assessment_tools/{id}"
+      body : "tool"
+    };
+  }
+
+  rpc DeregisterAssessmentTool(DeregisterAssessmentToolRequest)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete : "/v1/orchestator/assessment_tools/{id}"
+    };
+  }
+}

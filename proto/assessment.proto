@@ -27,30 +27,29 @@
 syntax = "proto3";
 
 package clouditor;
- 
+
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "evidence.proto";
 
 option go_package = "api/assessment";
 
-message StoreEvidenceRequest {
-  Evidence evidence = 1;
-}
+message StoreEvidenceRequest { Evidence evidence = 1; }
 
-message TriggerAssessmentRequest {
-  string someOption = 1;
-}
- 
-service Assessment {  
+message TriggerAssessmentRequest { string someOption = 1; }
+
+service Assessment {
   // Triggers the assement. Part of the private API, not exposed as REST.
-  rpc TriggerAssessment(TriggerAssessmentRequest) returns (google.protobuf.Empty){}
+  rpc TriggerAssessment(TriggerAssessmentRequest)
+      returns (google.protobuf.Empty) {}
 
-  // Stores the evidences coming from the discovery. Part of the public API, also exposed as REST
+  // Stores the evidences coming from the discovery. Part of the public API,
+  // also exposed as REST
   rpc StoreEvidence(StoreEvidenceRequest) returns (Evidence) {
-    option(google.api.http) = {
-      post : "/v1/assessment/evidences" 
-      body : "evidence" response_body : "*"
+    option (google.api.http) = {
+      post : "/v1/assessment/evidences"
+      body : "evidence"
+      response_body : "*"
     };
   }
 };

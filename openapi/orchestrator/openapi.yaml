@@ -5,6 +5,130 @@ openapi: 3.0.3
 info:
     title: Orchestrator
     version: 0.0.1
-paths: {}
+paths:
+    /v1/orchestator/assessment_tools:
+        post:
+            operationId: Orchestrator_RegisterAssessmentTool
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AssessmentTool'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AssessmentTool'
+    /v1/orchestator/assessment_tools/:
+        get:
+            operationId: Orchestrator_ListAssessmentTools
+            parameters:
+                - name: metric_id
+                  in: query
+                  description: filter tools by metric id
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListAssessmentToolsResponse'
+    /v1/orchestator/assessment_tools/{id}:
+        get:
+            operationId: Orchestrator_GetAssessmentTool
+            parameters:
+                - name: id
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AssessmentTool'
+        put:
+            operationId: Orchestrator_UpdateAssessmentTool
+            parameters:
+                - name: id
+                  in: query
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AssessmentTool'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AssessmentTool'
+        delete:
+            operationId: Orchestrator_DeregisterAssessmentTool
+            parameters:
+                - name: id
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
 components:
-    schemas: {}
+    schemas:
+        AssessmentTool:
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                available_metrics:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Metric'
+                    description: 'TODO: we might change this to just an identifier, if we only allow tools to refer to existing IDs'
+            description: Represents an external tool or service that offers assessments according to certain metrics
+        ListAssessmentToolsResponse:
+            properties:
+                tools:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/AssessmentTool'
+        Metric:
+            properties:
+                id:
+                    type: string
+                    description: the ID in a uuid format
+                name:
+                    type: string
+                    description: a human readable name of the metric
+                description:
+                    type: string
+                    description: a description of the metric
+                measuredProperty:
+                    type: string
+                    description: 'TODO: what is this?'
+                category:
+                    type: string
+                scale:
+                    type: string
+                    description: 'TODO: make this an enum of pre-defined values?'
+                source:
+                    type: string
+                    description: 'TODO: is this the tool?'
+                parametersId:
+                    type: string
+                    description: 'TODO: what is this?'
+                rulesId:
+                    type: string
+                    description: 'TODO: what is this?'
