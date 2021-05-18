@@ -24,48 +24,13 @@
  *
  * This file is part of Clouditor Community Edition.
  */
- syntax = "proto3";
 
- package clouditor;
- 
- import "google/api/annotations.proto";
- import "google/protobuf/empty.proto";
+package discovery
 
- option go_package = "api/assessment";
+import "clouditor.io/clouditor/api/assessment"
 
- message Evidence {
-  // the ID in a uuid format
-  string id = 1;
+//go:generate protoc -I ../../proto -I ../../third_party assessment.proto --go_out=../.. --go-grpc_out=../..
 
-  // reference to a service this evidence was gathered from
-  string serviceId = 2;
-
-  // reference to the resource this evidence was gathered from
-  string resourceId = 3;
-
-  // TODO: replace with google/type/date.proto
-  string timestamp = 4;
-
-  repeated string avalableMetrics = 5;
+type Service struct {
+	assessment.UnimplementedAssessmentServer
 }
-
-message StoreEvidenceRequest {
-  Evidence evidence = 1;
-}
-
-message TriggerAssessmentRequest {
-  string someOption = 1;
-}
- 
-service Assessment {  
-  // Triggers the assement. Part of the private API, not exposed as REST.
-  rpc TriggerAssessment(TriggerAssessmentRequest) returns (google.protobuf.Empty);
-
-  // Stores the evidences coming from the discovery. Part of the public API, also exposed as REST
-  rpc StoreEvidence(StoreEvidenceRequest) returns (Evidence) {
-    option(google.api.http) = {
-      post : "/v1/assessment/evidences" 
-      body : "evidence" response_body : "*"
-    };
-  }
-};
