@@ -2,6 +2,8 @@ module clouditor.io/clouditor
 
 go 1.16
 
+replace github.com/googleapis/gnostic => github.com/oxisto/gnostic v0.5.6-0.20210518120559-bda37c901ef7
+
 require (
 	github.com/Azure/azure-sdk-for-go v54.2.0+incompatible
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.7
@@ -9,7 +11,7 @@ require (
 	github.com/Azure/go-autorest/autorest/validation v0.3.1 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
-	github.com/googleapis/gnostic v0.5.5 // indirect
+	github.com/googleapis/gnostic v0.5.6-0.20210518120559-bda37c901ef7
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.4.0
 	github.com/logrusorgru/aurora/v3 v3.0.0

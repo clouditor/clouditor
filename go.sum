@@ -438,6 +438,8 @@ github.com/openzipkin-contrib/zipkin-go-opentracing v0.4.5/go.mod h1:/wsWhb9smxS
 github.com/openzipkin/zipkin-go v0.1.6/go.mod h1:QgAqvLzwWbR/WpD4A3cGpPtJrZXNIiJc5AZX7/PBEpw=
 github.com/openzipkin/zipkin-go v0.2.1/go.mod h1:NaW6tEwdmWMaCDZzg8sh+IBNOxHMPnhQw8ySjnjRyN4=
 github.com/openzipkin/zipkin-go v0.2.2/go.mod h1:NaW6tEwdmWMaCDZzg8sh+IBNOxHMPnhQw8ySjnjRyN4=
+github.com/oxisto/gnostic v0.5.6-0.20210518120559-bda37c901ef7 h1:x53WvV2aeU99NehzSM9nDZzzRhQOlXoVX1xtHDczJmk=
+github.com/oxisto/gnostic v0.5.6-0.20210518120559-bda37c901ef7/go.mod h1:7+EbHbldMins07ALC74bsA81Ovc97DwqyJO1AENw9kA=
 github.com/oxisto/go-httputil v1.0.0 h1:pEKwvturSphrq9jUnWdsQvpfUHdoxqBOv0lsHLOu6nE=
 github.com/oxisto/go-httputil v1.0.0/go.mod h1:bTcoLPQhM7NPljqbfor1E7i8EbdF2pb1GBI+MBcxKnc=
 github.com/pact-foundation/pact-go v1.0.4/go.mod h1:uExwJY4kCzNPcHRj+hCR/HBbOOIwwtUjcrb0b5/5kLM=

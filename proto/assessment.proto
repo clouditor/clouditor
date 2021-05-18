@@ -44,8 +44,7 @@ message TriggerAssessmentRequest {
  
 service Assessment {  
   // Triggers the assement. Part of the private API, not exposed as REST.
-  // this crashes gnostic
-  //rpc TriggerAssessment(TriggerAssessmentRequest) returns (google.protobuf.Empty){}
+  rpc TriggerAssessment(TriggerAssessmentRequest) returns (google.protobuf.Empty){}
 
   // Stores the evidences coming from the discovery. Part of the public API, also exposed as REST
   rpc StoreEvidence(StoreEvidenceRequest) returns (Evidence) {
