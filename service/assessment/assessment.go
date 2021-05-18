@@ -29,7 +29,7 @@ package discovery
 
 import "clouditor.io/clouditor/api/assessment"
 
-//go:generate protoc -I ../../proto -I ../../third_party assessment.proto --go_out=../.. --go-grpc_out=../..
+//go:generate protoc -I ../../proto -I ../../third_party assessment.proto --go_out=../.. --go-grpc_out=../.. --openapiv2_out=../../openapi
 
 type Service struct {
 	assessment.UnimplementedAssessmentServer

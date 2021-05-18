@@ -1,0 +1,112 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "assessment.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "Assessment"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/assessment/evidences": {
+      "post": {
+        "summary": "Stores the evidences coming from the discovery. Part of the public API, also exposed as REST",
+        "operationId": "Assessment_StoreEvidence",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/clouditorEvidence"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/clouditorEvidence"
+            }
+          }
+        ],
+        "tags": [
+          "Assessment"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "clouditorEvidence": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "the ID in a uuid format"
+        },
+        "serviceId": {
+          "type": "string",
+          "title": "reference to a service this evidence was gathered from"
+        },
+        "resourceId": {
+          "type": "string",
+          "title": "reference to the resource this evidence was gathered from"
+        },
+        "timestamp": {
+          "type": "string",
+          "title": "TODO: replace with google/type/date.proto"
+        },
+        "avalableMetrics": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}
