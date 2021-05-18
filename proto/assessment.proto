@@ -24,16 +24,16 @@
  *
  * This file is part of Clouditor Community Edition.
  */
- syntax = "proto3";
+syntax = "proto3";
 
- package clouditor;
+package clouditor;
  
- import "google/api/annotations.proto";
- import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
 
- option go_package = "api/assessment";
+option go_package = "api/assessment";
 
- message Evidence {
+message Evidence {
   // the ID in a uuid format
   string id = 1;
 
@@ -47,6 +47,34 @@
   string timestamp = 4;
 
   repeated string avalableMetrics = 5;
+}
+
+message Metric {
+  // the ID in a uuid format
+  string id = 1;
+
+  // a human readable name of the metric
+  string name = 2;
+
+  // a description of the metric
+  string description = 3;
+
+  // TODO: what is this?
+  string measuredProperty = 4;
+
+  string category = 5;
+
+  // TODO: make this an enum of pre-defined values?
+  string scale = 6;
+
+  // TODO: is this the tool?
+  string source = 7;
+
+  // TODO: what is this?
+  string parametersId = 8;
+
+  // TODO: what is this?
+  string rulesId = 9;
 }
 
 message StoreEvidenceRequest {
