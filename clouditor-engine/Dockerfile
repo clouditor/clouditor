@@ -1,4 +1,4 @@
-FROM openjdk:13-slim
+FROM openjdk:17-slim
 
 MAINTAINER Christian Banse <christian.banse@aisec.fraunhofer.de>
 
