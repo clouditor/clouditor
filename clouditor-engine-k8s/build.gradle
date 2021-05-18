@@ -31,5 +31,5 @@ dependencies {
     implementation project(":clouditor-engine-core")
 
     implementation "com.auth0:java-jwt:${libraryVersions.jwt}"
-    implementation group: 'io.kubernetes', name: 'client-java', version: '6.0.1'
+    implementation group: 'io.kubernetes', name: 'client-java', version: '12.0.1'
 }
