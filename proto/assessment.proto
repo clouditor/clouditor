@@ -30,7 +30,7 @@
  
  import "google/api/annotations.proto";
  import "google/protobuf/empty.proto";
-8	
+
  option go_package = "api/assessment";
 
  message Evidence {
