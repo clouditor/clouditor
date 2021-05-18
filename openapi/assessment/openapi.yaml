@@ -1,0 +1,45 @@
+# Generated with protoc-gen-openapi
+# https://github.com/googleapis/gnostic/tree/master/apps/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: Assessment
+    version: 0.0.1
+paths:
+    /v1/assessment/evidences:
+        post:
+            summary: Stores the evidences coming from the discovery. Part of the public API, also exposed as REST
+            operationId: Assessment_StoreEvidence
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Evidence'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Evidence'
+components:
+    schemas:
+        Evidence:
+            properties:
+                id:
+                    type: string
+                    description: the ID in a uuid format
+                serviceId:
+                    type: string
+                    description: reference to a service this evidence was gathered from
+                resourceId:
+                    type: string
+                    description: reference to the resource this evidence was gathered from
+                timestamp:
+                    type: string
+                    description: 'TODO: replace with google/type/date.proto'
+                avalableMetrics:
+                    type: array
+                    items:
+                        type: string

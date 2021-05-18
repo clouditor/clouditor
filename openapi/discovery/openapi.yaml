@@ -1,0 +1,32 @@
+# Generated with protoc-gen-openapi
+# https://github.com/googleapis/gnostic/tree/master/apps/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: Discovery
+    version: 0.0.1
+paths:
+    /v1/discovery/start:
+        post:
+            operationId: Discovery_Start
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/StartDiscoveryRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/StartDiscoveryResponse'
+components:
+    schemas:
+        StartDiscoveryRequest:
+            properties: {}
+        StartDiscoveryResponse:
+            properties:
+                successful:
+                    type: boolean

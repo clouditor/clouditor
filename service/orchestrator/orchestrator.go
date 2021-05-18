@@ -31,7 +31,7 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 )
 
-//go:generate protoc -I ../../proto -I ../../third_party orchestrator.proto --go_out=../.. --go-grpc_out=../.. --go_opt=Massessment.proto=clouditor.io/clouditor/api/assessment
+//go:generate protoc -I ../../proto -I ../../third_party orchestrator.proto --go_out=../.. --go-grpc_out=../.. --go_opt=Mevidence.proto=clouditor.io/clouditor/api/assessment  --openapi_out=../../openapi/orchestrator
 
 // Service is an implementation of the Clouditor Orchestrator service
 type Service struct {
