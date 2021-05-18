@@ -79,7 +79,7 @@ func (s Service) Login(ctx context.Context, request *auth.LoginRequest) (respons
 	var token string
 
 	if token, err = s.issueToken(user.Username, user.FullName, user.Email, time.Now().Add(1*3600*24)); err != nil {
-		return nil, status.Errorf(codes.Internal, "token issue failed: %w", err)
+		return nil, status.Errorf(codes.Internal, "token issue failed: %v", err)
 	}
 
 	response = &auth.LoginResponse{Token: token}
