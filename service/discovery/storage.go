@@ -62,9 +62,9 @@ type BlockStorage interface {
 	Storage
 }
 
-type blockStorage struct {
+/*type blockStorage struct {
 	storage
-}
+}*/
 
 type StorageDiscoverer interface {
 	List() ([]Storage, error)
