@@ -37,7 +37,7 @@ public class C5Importer extends CertificationImporter {
   @Override
   public Certification load() {
     var url =
-        "https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/CloudComputing/ComplianceControlsCatalogue/2020/C5_2020_editable.xlsx?__blob=publicationFile&v=1";
+        "https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/CloudComputing/ComplianceControlsCatalogue/2020/C5_2020_editable.xlsx?__blob=publicationFile&v=2";
 
     LOGGER.info("Fetching BSI C5 from {}...", url);
 
