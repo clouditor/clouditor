@@ -36,6 +36,7 @@ import org.junit.jupiter.api.Test;
 class CertificationImporterTest extends AbstractEngineUnitTest {
 
   @Test
+  @Disabled
   void testImporters() {
     var service = this.engine.getService(CertificationService.class);
 
