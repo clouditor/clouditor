@@ -3,6 +3,3 @@ version = 1
 [[analyzers]]
 name = "go"
 enabled = true
-
-  [analyzers.meta]
-  import_root = "clouditor.io/clouditor"
