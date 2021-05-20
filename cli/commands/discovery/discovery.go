@@ -36,6 +36,7 @@ import (
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // NewStartDiscoveryCommand returns a cobra command for the `start` subcommand
@@ -74,6 +75,42 @@ func NewStartDiscoveryCommand() *cobra.Command {
 	return cmd
 }
 
+// NewStartDiscoveryCommand returns a cobra command for the `start` subcommand
+func NewQueryDiscoveryCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "query",
+		Short: "Queries the discovery",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var (
+				err     error
+				session *cli.Session
+				conn    *grpc.ClientConn
+				client  discovery.DiscoveryClient
+				res     *discovery.QueryResponse
+			)
+
+			if session, err = cli.ContinueSession(); err != nil {
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+				return nil
+			}
+
+			if conn, err = grpc.Dial(session.URL, grpc.WithInsecure()); err != nil {
+				return fmt.Errorf("could not connect: %v", err)
+			}
+
+			client = discovery.NewDiscoveryClient(conn)
+
+			res, err = client.Query(session.Context(), &emptypb.Empty{})
+
+			printReponse(res)
+
+			return err
+		},
+	}
+
+	return cmd
+}
+
 // NewStartDiscoveryCommand returns a cobra command for `discovery` subcommands
 func NewDiscoveryCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -90,6 +127,7 @@ func NewDiscoveryCommand() *cobra.Command {
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewStartDiscoveryCommand(),
+		NewQueryDiscoveryCommand(),
 	)
 }
 

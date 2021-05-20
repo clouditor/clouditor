@@ -7,6 +7,8 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.7
 	github.com/Azure/go-autorest/autorest/to v0.4.0 // indirect
 	github.com/Azure/go-autorest/autorest/validation v0.3.1 // indirect
+	github.com/cayleygraph/cayley v0.7.7-0.20210518204410-08381efb7f81
+	github.com/cayleygraph/quad v1.2.4
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0

@@ -29,16 +29,27 @@ package persistence
 
 import (
 	"fmt"
+	"math/rand"
+
+	"github.com/cayleygraph/cayley"
+	"github.com/cayleygraph/cayley/schema"
+
+	"github.com/cayleygraph/quad"
 
 	"clouditor.io/clouditor/api/auth"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+
+	"github.com/cayleygraph/quad/voc"
+	_ "github.com/cayleygraph/quad/voc/core"
 )
 
 var log *logrus.Entry
 var db *gorm.DB
+var store *cayley.Handle
+var schemaConfig *schema.Config
 
 func init() {
 	log = logrus.WithField("component", "db")
@@ -61,10 +72,34 @@ func InitDB(inMemory bool, host string, port int16) (err error) {
 
 	db.AutoMigrate(&auth.User{})
 
+	// experimental cayley stuff
+
+	// Create a brand new graph
+	store, err = cayley.NewMemoryGraph()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	voc.RegisterPrefix("cloud:", "https://clouditor.io")
+
+	schemaConfig = schema.NewConfig()
+	// Override a function to generate IDs. Can be changed to generate UUIDs, for example.
+	schemaConfig.GenerateID = func(_ interface{}) quad.Value {
+		return quad.BNode(fmt.Sprintf("node%d", rand.Intn(1000)))
+	}
+
 	return nil
 }
 
 // GetDatabase returns the database
 func GetDatabase() *gorm.DB {
 	return db
+}
+
+func GetStore() *cayley.Handle {
+	return store
+}
+
+func GetSchemaConfig() *schema.Config {
+	return schemaConfig
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2020 Fraunhofer AISEC
+ * Copyright 2021 Fraunhofer AISEC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,35 +24,13 @@
  *
  * This file is part of Clouditor Community Edition.
  */
- syntax = "proto3";
 
- package clouditor;
- 
- import "google/api/annotations.proto";
- import "google/protobuf/empty.proto";
- import "google/protobuf/any.proto";
- 
- option go_package = "api/discovery";
+package azure
 
- message StartDiscoveryRequest {
-  }
-  
-  message StartDiscoveryResponse { bool successful = 1; }
+import "github.com/sirupsen/logrus"
 
-  message QueryResponse {
-    string result = 1; // probably a raw JSON
-  }
-  
-  service Discovery {
-    rpc Start(StartDiscoveryRequest) returns(StartDiscoveryResponse) {
-      option(google.api.http) = {
-        post : "/v1/discovery/start" body : "*" response_body : "*"
-      };
-    };
+var log *logrus.Entry
 
-    rpc Query(google.protobuf.Empty) returns (QueryResponse) {
-      option(google.api.http) = {
-        post : "/v1/discovery/query" body : "*" response_body : "*"
-      };
-    }
-  }
+func init() {
+	log = logrus.WithField("component", "azure-discovery")
+}
