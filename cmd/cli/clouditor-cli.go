@@ -37,11 +37,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-const (
-	// URLFlag is the viper flag for the server url
-	URLFlag = "url"
-)
-
 func init() {
 	cobra.OnInitialize(initConfig)
 }
@@ -64,20 +59,15 @@ func newRootCommand() *cobra.Command {
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// check, if server was specified either using config file or
 			// flags, otherwise we cannot continue
-			if viper.GetString(URLFlag) == "" {
+			/*if viper.GetString(URLFlag) == "" {
 				return fmt.Errorf("please specify an url using the config file or the --%s flag", URLFlag)
-			}
+			}*/
 
 			return nil
 		},
 	}
 
-	var pf = cmd.PersistentFlags()
-	pf.String(URLFlag, "", "The URL of the Clouditor server")
-
 	commands.AddCommands(cmd)
-
-	viper.BindPFlag(URLFlag, pf.Lookup(URLFlag))
 
 	return cmd
 }
