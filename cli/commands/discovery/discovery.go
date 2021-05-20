@@ -36,6 +36,7 @@ import (
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // NewStartDiscoveryCommand returns a cobra command for the `start` subcommand
@@ -80,9 +81,28 @@ func NewQueryDiscoveryCommand() *cobra.Command {
 		Use:   "query",
 		Short: "Queries the discovery",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var client = clouditor.NewClient(viper.GetString("url"))
+			var (
+				err     error
+				session *cli.Session
+				conn    *grpc.ClientConn
+				client  discovery.DiscoveryClient
+				res     *discovery.QueryResponse
+			)
 
-			err := client.QueryDiscovery()
+			if session, err = cli.ContinueSession(); err != nil {
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+				return nil
+			}
+
+			if conn, err = grpc.Dial(session.URL, grpc.WithInsecure()); err != nil {
+				return fmt.Errorf("could not connect: %v", err)
+			}
+
+			client = discovery.NewDiscoveryClient(conn)
+
+			res, err = client.Query(session.Context(), &emptypb.Empty{})
+
+			printReponse(res)
 
 			return err
 		},
