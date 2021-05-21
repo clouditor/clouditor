@@ -37,6 +37,7 @@ import (
 
 	"clouditor.io/clouditor/api/auth"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/proto"
 )
 
 type Session struct {
@@ -108,6 +109,12 @@ func (s *Session) Save() {
 	if err = json.NewEncoder(file).Encode(s); err != nil {
 		return
 	}
+}
+
+func (s *Session) PrintReponse(msg proto.Message) {
+	b, _ := json.MarshalIndent(msg, "", "  ")
+
+	fmt.Printf("%+v\n", string(b))
 }
 
 func PromtForLogin() (loginRequest *auth.LoginRequest, err error) {

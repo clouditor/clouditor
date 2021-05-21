@@ -18,7 +18,7 @@
         {
             "label": "go: build cli",
             "type": "shell",
-            "command": "go build cmd/cli/clouditor-cli.go",
+            "command": "go build cmd/cli/cl.go",
             "group": {
                 "kind": "build",
                 "isDefault": true
