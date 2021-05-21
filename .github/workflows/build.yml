@@ -64,7 +64,7 @@ jobs:
           github.com/googleapis/gnostic/apps/protoc-gen-openapi
           go generate ./...
           go build cmd/engine/engine.go
-          go build cmd/cli/clouditor-cli.go
+          go build cmd/cli/cl.go
       - name: "Upload Artifact"
         uses: actions/upload-artifact@v2
         with:
@@ -73,5 +73,5 @@ jobs:
       - name: "Upload Artifact"
         uses: actions/upload-artifact@v2
         with:
-          name: clouditor-cli
-          path: clouditor-cli
+          name: cl
+          path: cl
