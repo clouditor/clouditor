@@ -30,16 +30,22 @@ components:
                 id:
                     type: string
                     description: the ID in a uuid format
-                serviceId:
+                service_id:
                     type: string
                     description: reference to a service this evidence was gathered from
-                resourceId:
+                resource_id:
                     type: string
                     description: reference to the resource this evidence was gathered from
                 timestamp:
                     type: string
                     description: 'TODO: replace with google/type/date.proto'
-                avalableMetrics:
+                applicable_metrics:
                     type: array
                     items:
                         type: string
+                raw:
+                    type: string
+                    description: '"raw" evidence (for the auditor), for example the raw JSON response from the API. This does not follow a defined schema'
+                resource:
+                    type: string
+                    description: optional; a semantic representation of the Cloud resource according to our defined ontology. a JSON seralized node of our semantic graph. This may be Clouditor-specific.

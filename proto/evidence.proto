@@ -24,12 +24,12 @@
  *
  * This file is part of Clouditor Community Edition.
  */
- syntax = "proto3";
+syntax = "proto3";
 
- package clouditor;
-  
- option go_package = "api/assessment";
- 
+package clouditor;
+
+option go_package = "api/assessment";
+
 message Evidence {
   // the ID in a uuid format
   string id = 1;
@@ -45,10 +45,13 @@ message Evidence {
 
   repeated string applicable_metrics = 5;
 
-  // "raw" evidence (for the auditor), for example the raw JSON response from the API. This does not follow a defined schema
+  // "raw" evidence (for the auditor), for example the raw JSON response from
+  // the API. This does not follow a defined schema
   string raw = 6;
 
-  // optional; a semantic representation of the Cloud resource according to our defined ontology. a JSON seralized node of our semantic graph. This may be Clouditor-specific.
+  // optional; a semantic representation of the Cloud resource according to our
+  // defined ontology. a JSON seralized node of our semantic graph. This may be
+  // Clouditor-specific.
   string resource = 7;
 }
 
@@ -64,15 +67,16 @@ message Metric {
 
   // reference to control catalog category or domain
   string category = 4;
-  
-  // TBD
+
   enum Scale {
     NOMIMAL = 0;
     ORDINAL = 1;
-    NUMERIC = 2;
+    METRIC = 2;
   }
-  Scale scale = 4;
+  // the scale of this metric, e.g. categories, ranked data or metric values
+  Scale scale = 5;
 
+  // the range of this metric, depends on the scale
   Range range = 6;
 
   // TODO: is this the tool?
@@ -83,16 +87,37 @@ message Metric {
 
   // TODO: what is this?
   string rulesId = 9;
-  
+
   // target value
   oneof target_value {
-    int numeric_target_value = 10;
+    int64 numeric_target_value = 10;
     string string_target_value = 11;
   }
 }
 
+// Defines a range of values
 message Range {
-  // TODO: model this using oneof
-  // because we have different types of scales (numerical, categorical, etc.)
-  // for numerical values we want to have min/max; for categorical data we want to have the allowed values
+  oneof range {
+    // used for nomical scale
+    AllowedValues allowed_values_range = 1;
+
+    // used for ordinal scale
+    Order order = 2;
+
+    // used for metric scale
+    MinMax min_max_range = 3;
+  }
 }
+
+// Defines a range of values through a (inclusive) minimum and a maximum
+message MinMax {
+  int64 min = 1;
+  int64 max = 2;
+}
+
+// Defines a range
+message AllowedValues { repeated string values = 1; }
+
+// Defines a range of values in a pre-defined order from the lowest to the
+// highest.
+message Order { repeated string values = 1; }

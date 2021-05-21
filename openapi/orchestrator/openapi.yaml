@@ -86,6 +86,13 @@ paths:
                     content: {}
 components:
     schemas:
+        AllowedValues:
+            properties:
+                values:
+                    type: array
+                    items:
+                        type: string
+            description: Defines a range
         AssessmentTool:
             properties:
                 id:
@@ -115,14 +122,15 @@ components:
                 description:
                     type: string
                     description: a description of the metric
-                measuredProperty:
-                    type: string
-                    description: 'TODO: what is this?'
                 category:
                     type: string
+                    description: reference to control catalog category or domain
                 scale:
-                    type: string
-                    description: 'TODO: make this an enum of pre-defined values?'
+                    type: integer
+                    description: the scale of this metric, e.g. categories, ranked data or metric values
+                    format: enum
+                range:
+                    $ref: '#/components/schemas/Range'
                 source:
                     type: string
                     description: 'TODO: is this the tool?'
@@ -132,3 +140,33 @@ components:
                 rulesId:
                     type: string
                     description: 'TODO: what is this?'
+                numeric_target_value:
+                    type: integer
+                    format: int64
+                string_target_value:
+                    type: string
+        MinMax:
+            properties:
+                min:
+                    type: integer
+                    format: int64
+                max:
+                    type: integer
+                    format: int64
+            description: Defines a range of values through a (inclusive) minimum and a maximum
+        Order:
+            properties:
+                values:
+                    type: array
+                    items:
+                        type: string
+            description: Defines a range of values in a pre-defined order from the lowest to the highest.
+        Range:
+            properties:
+                allowed_values_range:
+                    $ref: '#/components/schemas/AllowedValues'
+                order:
+                    $ref: '#/components/schemas/Order'
+                min_max_range:
+                    $ref: '#/components/schemas/MinMax'
+            description: Defines a range of values
