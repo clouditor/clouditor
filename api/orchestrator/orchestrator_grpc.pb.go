@@ -3,6 +3,7 @@
 package orchestrator
 
 import (
+	assessment "api/assessment"
 	context "context"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
@@ -24,6 +25,8 @@ type OrchestratorClient interface {
 	GetAssessmentTool(ctx context.Context, in *GetAssessmentToolRequest, opts ...grpc.CallOption) (*AssessmentTool, error)
 	UpdateAssessmentTool(ctx context.Context, in *UpdateAssessmentToolRequest, opts ...grpc.CallOption) (*AssessmentTool, error)
 	DeregisterAssessmentTool(ctx context.Context, in *DeregisterAssessmentToolRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ListMetrics(ctx context.Context, in *ListMetricsRequest, opts ...grpc.CallOption) (*ListMetricsResponse, error)
+	GetMetric(ctx context.Context, in *GetMetricsRequest, opts ...grpc.CallOption) (*assessment.Metric, error)
 }
 
 type orchestratorClient struct {
@@ -79,6 +82,24 @@ func (c *orchestratorClient) DeregisterAssessmentTool(ctx context.Context, in *D
 	return out, nil
 }
 
+func (c *orchestratorClient) ListMetrics(ctx context.Context, in *ListMetricsRequest, opts ...grpc.CallOption) (*ListMetricsResponse, error) {
+	out := new(ListMetricsResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/ListMetrics", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orchestratorClient) GetMetric(ctx context.Context, in *GetMetricsRequest, opts ...grpc.CallOption) (*assessment.Metric, error) {
+	out := new(assessment.Metric)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/GetMetric", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OrchestratorServer is the server API for Orchestrator service.
 // All implementations must embed UnimplementedOrchestratorServer
 // for forward compatibility
@@ -88,6 +109,8 @@ type OrchestratorServer interface {
 	GetAssessmentTool(context.Context, *GetAssessmentToolRequest) (*AssessmentTool, error)
 	UpdateAssessmentTool(context.Context, *UpdateAssessmentToolRequest) (*AssessmentTool, error)
 	DeregisterAssessmentTool(context.Context, *DeregisterAssessmentToolRequest) (*emptypb.Empty, error)
+	ListMetrics(context.Context, *ListMetricsRequest) (*ListMetricsResponse, error)
+	GetMetric(context.Context, *GetMetricsRequest) (*assessment.Metric, error)
 	mustEmbedUnimplementedOrchestratorServer()
 }
 
@@ -109,6 +132,12 @@ func (UnimplementedOrchestratorServer) UpdateAssessmentTool(context.Context, *Up
 }
 func (UnimplementedOrchestratorServer) DeregisterAssessmentTool(context.Context, *DeregisterAssessmentToolRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeregisterAssessmentTool not implemented")
+}
+func (UnimplementedOrchestratorServer) ListMetrics(context.Context, *ListMetricsRequest) (*ListMetricsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListMetrics not implemented")
+}
+func (UnimplementedOrchestratorServer) GetMetric(context.Context, *GetMetricsRequest) (*assessment.Metric, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMetric not implemented")
 }
 func (UnimplementedOrchestratorServer) mustEmbedUnimplementedOrchestratorServer() {}
 
@@ -213,6 +242,42 @@ func _Orchestrator_DeregisterAssessmentTool_Handler(srv interface{}, ctx context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Orchestrator_ListMetrics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListMetricsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).ListMetrics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/ListMetrics",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).ListMetrics(ctx, req.(*ListMetricsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Orchestrator_GetMetric_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMetricsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).GetMetric(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/GetMetric",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).GetMetric(ctx, req.(*GetMetricsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Orchestrator_ServiceDesc is the grpc.ServiceDesc for Orchestrator service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -239,6 +304,14 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeregisterAssessmentTool",
 			Handler:    _Orchestrator_DeregisterAssessmentTool_Handler,
+		},
+		{
+			MethodName: "ListMetrics",
+			Handler:    _Orchestrator_ListMetrics_Handler,
+		},
+		{
+			MethodName: "GetMetric",
+			Handler:    _Orchestrator_GetMetric_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

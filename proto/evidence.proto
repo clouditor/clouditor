@@ -43,7 +43,7 @@ message Evidence {
   // TODO: replace with google/type/date.proto
   string timestamp = 4;
 
-  repeated string applicable_metrics = 5;
+  repeated int32 applicable_metrics = 5;
 
   // "raw" evidence (for the auditor), for example the raw JSON response from
   // the API. This does not follow a defined schema
@@ -56,8 +56,7 @@ message Evidence {
 }
 
 message Metric {
-  // the ID in a uuid format
-  string id = 1;
+  int32 id = 1;
 
   // a human readable name of the metric
   string name = 2;
@@ -79,19 +78,10 @@ message Metric {
   // the range of this metric, depends on the scale
   Range range = 6;
 
-  // TODO: is this the tool?
-  string source = 7;
-
-  // TODO: what is this?
-  string parametersId = 8;
-
-  // TODO: what is this?
-  string rulesId = 9;
-
   // target value
   oneof target_value {
-    int64 numeric_target_value = 10;
-    string string_target_value = 11;
+    int64 target_value_num = 10;
+    string target_value_string = 11;
   }
 }
 
@@ -99,13 +89,13 @@ message Metric {
 message Range {
   oneof range {
     // used for nomical scale
-    AllowedValues allowed_values_range = 1;
+    AllowedValues allowed_values = 1;
 
     // used for ordinal scale
     Order order = 2;
 
     // used for metric scale
-    MinMax min_max_range = 3;
+    MinMax min_max = 3;
   }
 }
 

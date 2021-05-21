@@ -38,11 +38,11 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListAssessmentToolsResponse'
-    /v1/orchestator/assessment_tools/{id}:
+    /v1/orchestator/assessment_tools/{tool_id}:
         get:
             operationId: Orchestrator_GetAssessmentTool
             parameters:
-                - name: id
+                - name: tool_id
                   in: query
                   schema:
                     type: string
@@ -76,7 +76,7 @@ paths:
         delete:
             operationId: Orchestrator_DeregisterAssessmentTool
             parameters:
-                - name: id
+                - name: tool_id
                   in: query
                   schema:
                     type: string
@@ -84,6 +84,31 @@ paths:
                 "200":
                     description: OK
                     content: {}
+    /v1/orchestator/metrics/:
+        get:
+            operationId: Orchestrator_ListMetrics
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListMetricsResponse'
+    /v1/orchestator/metrics/{metric_id}:
+        get:
+            operationId: Orchestrator_GetMetric
+            parameters:
+                - name: metric_id
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Metric'
 components:
     schemas:
         AllowedValues:
@@ -99,11 +124,13 @@ components:
                     type: string
                 name:
                     type: string
+                description:
+                    type: string
                 available_metrics:
                     type: array
                     items:
-                        $ref: '#/components/schemas/Metric'
-                    description: 'TODO: we might change this to just an identifier, if we only allow tools to refer to existing IDs'
+                        type: string
+                    description: a list of metrics that this tool can assess, referred by their ids
             description: Represents an external tool or service that offers assessments according to certain metrics
         ListAssessmentToolsResponse:
             properties:
@@ -111,11 +138,17 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/AssessmentTool'
+        ListMetricsResponse:
+            properties:
+                metrics:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Metric'
         Metric:
             properties:
                 id:
-                    type: string
-                    description: the ID in a uuid format
+                    type: integer
+                    format: int32
                 name:
                     type: string
                     description: a human readable name of the metric
@@ -131,19 +164,10 @@ components:
                     format: enum
                 range:
                     $ref: '#/components/schemas/Range'
-                source:
-                    type: string
-                    description: 'TODO: is this the tool?'
-                parametersId:
-                    type: string
-                    description: 'TODO: what is this?'
-                rulesId:
-                    type: string
-                    description: 'TODO: what is this?'
-                numeric_target_value:
+                target_value_num:
                     type: integer
                     format: int64
-                string_target_value:
+                target_value_string:
                     type: string
         MinMax:
             properties:
@@ -163,10 +187,10 @@ components:
             description: Defines a range of values in a pre-defined order from the lowest to the highest.
         Range:
             properties:
-                allowed_values_range:
+                allowed_values:
                     $ref: '#/components/schemas/AllowedValues'
                 order:
                     $ref: '#/components/schemas/Order'
-                min_max_range:
+                min_max:
                     $ref: '#/components/schemas/MinMax'
             description: Defines a range of values

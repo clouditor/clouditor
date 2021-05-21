@@ -60,28 +60,28 @@ message AssessmentTool {
 
   string name = 2;
 
-  // TODO: we might change this to just an identifier, if we only allow tools to
-  // refer to existing IDs
-  repeated Metric available_metrics = 3;
+  string description = 3;
+
+  // a list of metrics that this tool can assess, referred by their ids
+  repeated string available_metrics = 4;
 }
 
 message RegisterAssessmentToolRequest { AssessmentTool tool = 1; }
-
 message ListAssessmentToolsRequest {
   // filter tools by metric id
   string metric_id = 1;
 }
-
 message ListAssessmentToolsResponse { repeated AssessmentTool tools = 1; }
-
-message GetAssessmentToolRequest { string id = 1; }
-
+message GetAssessmentToolRequest { string tool_id = 1; }
 message UpdateAssessmentToolRequest {
   string id = 1;
   AssessmentTool tool = 2;
 }
+message DeregisterAssessmentToolRequest { string tool_id = 1; }
 
-message DeregisterAssessmentToolRequest { string id = 1; }
+message GetMetricsRequest { int32 metric_id = 1; }
+message ListMetricsRequest {}
+message ListMetricsResponse { repeated Metric metrics = 1; }
 
 service Orchestrator {
 
@@ -103,14 +103,14 @@ service Orchestrator {
 
   rpc GetAssessmentTool(GetAssessmentToolRequest) returns (AssessmentTool) {
     option (google.api.http) = {
-      get : "/v1/orchestator/assessment_tools/{id}"
+      get : "/v1/orchestator/assessment_tools/{tool_id}"
     };
   }
 
   rpc UpdateAssessmentTool(UpdateAssessmentToolRequest)
       returns (AssessmentTool) {
     option (google.api.http) = {
-      put : "/v1/orchestator/assessment_tools/{id}"
+      put : "/v1/orchestator/assessment_tools/{tool_id}"
       body : "tool"
     };
   }
@@ -118,7 +118,19 @@ service Orchestrator {
   rpc DeregisterAssessmentTool(DeregisterAssessmentToolRequest)
       returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      delete : "/v1/orchestator/assessment_tools/{id}"
+      delete : "/v1/orchestator/assessment_tools/{tool_id}"
+    };
+  }
+
+  rpc ListMetrics(ListMetricsRequest) returns (ListMetricsResponse) {
+    option (google.api.http) = {
+      get : "/v1/orchestator/metrics/"
+    };
+  }
+
+  rpc GetMetric(GetMetricsRequest) returns (Metric) {
+    option (google.api.http) = {
+      get : "/v1/orchestator/metrics/{metric_id}"
     };
   }
 }

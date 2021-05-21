@@ -25,7 +25,7 @@
  * This file is part of Clouditor Community Edition.
  */
 
-package discovery
+package metric
 
 import (
 	"clouditor.io/clouditor"
@@ -33,11 +33,11 @@ import (
 	"github.com/spf13/viper"
 )
 
-// NewStartDiscoveryCommand returns a cobra command for the `start` subcommand
-func NewStartDiscoveryCommand() *cobra.Command {
+// NewListMetricCommand returns a cobra command for the `list` subcommand
+func NewListMetricCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "start",
-		Short: "Starts the discovery",
+		Use:   "list",
+		Short: "Lists all metrics",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var client = clouditor.NewClient(viper.GetString("url"))
 
@@ -50,11 +50,11 @@ func NewStartDiscoveryCommand() *cobra.Command {
 	return cmd
 }
 
-// NewDiscoveryCommand returns a cobra command for `discovery` subcommands
-func NewDiscoveryCommand() *cobra.Command {
+// NewMetricCommand returns a cobra command for `metric` subcommands
+func NewMetricCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "discovery",
-		Short: "Discovery commands",
+		Use:   "metric",
+		Short: "Metric commands",
 	}
 
 	AddCommands(cmd)
@@ -65,6 +65,6 @@ func NewDiscoveryCommand() *cobra.Command {
 // AddCommands adds all subcommands
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
-		NewStartDiscoveryCommand(),
+		NewListMetricCommand(),
 	)
 }
