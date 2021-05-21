@@ -28,14 +28,12 @@
 package discovery
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
-	"google.golang.org/protobuf/proto"
 )
 
 // NewStartDiscoveryCommand returns a cobra command for the `start` subcommand
@@ -65,7 +63,7 @@ func NewStartDiscoveryCommand() *cobra.Command {
 
 			res, err = client.Start(session.Context(), &discovery.StartDiscoveryRequest{})
 
-			printReponse(res)
+			session.PrintReponse(res)
 
 			return err
 		},
@@ -91,10 +89,4 @@ func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewStartDiscoveryCommand(),
 	)
-}
-
-func printReponse(msg proto.Message) {
-	b, _ := json.MarshalIndent(msg, "", "  ")
-
-	fmt.Printf("%+v\n", string(b))
 }

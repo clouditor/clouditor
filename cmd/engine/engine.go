@@ -45,10 +45,12 @@ import (
 	"clouditor.io/clouditor"
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/rest"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_discovery "clouditor.io/clouditor/service/discovery"
+	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -87,6 +89,7 @@ const (
 var server *grpc.Server
 var authService *service_auth.Service
 var discoveryService *service_discovery.Service
+var orchestratorService *service_orchestrator.Service
 
 var log *logrus.Entry
 
@@ -161,6 +164,7 @@ func doCmd(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	discoveryService = &service_discovery.Service{}
+	orchestratorService = &service_orchestrator.Service{}
 
 	createDefaultUser()
 
@@ -192,6 +196,7 @@ func doCmd(cmd *cobra.Command, args []string) (err error) {
 		))
 	auth.RegisterAuthenticationServer(server, authService)
 	discovery.RegisterDiscoveryServer(server, discoveryService)
+	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
 
 	// enable reflection, primary for testing in early stages
 	reflection.Register(server)

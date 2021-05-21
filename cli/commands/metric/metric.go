@@ -28,9 +28,12 @@
 package metric
 
 import (
-	"clouditor.io/clouditor"
+	"fmt"
+
+	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"google.golang.org/grpc"
 )
 
 // NewListMetricCommand returns a cobra command for the `list` subcommand
@@ -39,9 +42,28 @@ func NewListMetricCommand() *cobra.Command {
 		Use:   "list",
 		Short: "Lists all metrics",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var client = clouditor.NewClient(viper.GetString("url"))
+			var (
+				err     error
+				session *cli.Session
+				conn    *grpc.ClientConn
+				client  orchestrator.OrchestratorClient
+				res     *orchestrator.ListMetricsResponse
+			)
 
-			err := client.StartDiscovery()
+			if session, err = cli.ContinueSession(); err != nil {
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+				return nil
+			}
+
+			if conn, err = grpc.Dial(session.URL, grpc.WithInsecure()); err != nil {
+				return fmt.Errorf("could not connect: %v", err)
+			}
+
+			client = orchestrator.NewOrchestratorClient(conn)
+
+			res, err = client.ListMetrics(session.Context(), &orchestrator.ListMetricsRequest{})
+
+			session.PrintReponse(res)
 
 			return err
 		},
