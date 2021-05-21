@@ -35,15 +35,21 @@
    string id = 1;
  
    // reference to a service this evidence was gathered from
-   string serviceId = 2;
+   string service_id = 2;
  
    // reference to the resource this evidence was gathered from
-   string resourceId = 3;
+   string resource_id = 3;
  
    // TODO: replace with google/type/date.proto
    string timestamp = 4;
  
-   repeated string avalableMetrics = 5;
+   repeated string applicable_metrics = 5;
+   
+   // "raw" evidence (for the auditor), for example the raw JSON response from the API. This does not follow a defined schema
+   string raw = 6;
+   
+   // optional; a semantic representation of the Cloud resource according to our defined ontology. a JSON seralized node of our semantic graph. This may be Clouditor-specific.
+   string resource = 7;
  }
  
  message Metric {
