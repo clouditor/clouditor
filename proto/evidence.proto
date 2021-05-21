@@ -30,53 +30,69 @@
   
  option go_package = "api/assessment";
  
- message Evidence {
-   // the ID in a uuid format
-   string id = 1;
- 
-   // reference to a service this evidence was gathered from
-   string service_id = 2;
- 
-   // reference to the resource this evidence was gathered from
-   string resource_id = 3;
- 
-   // TODO: replace with google/type/date.proto
-   string timestamp = 4;
- 
-   repeated string applicable_metrics = 5;
-   
-   // "raw" evidence (for the auditor), for example the raw JSON response from the API. This does not follow a defined schema
-   string raw = 6;
-   
-   // optional; a semantic representation of the Cloud resource according to our defined ontology. a JSON seralized node of our semantic graph. This may be Clouditor-specific.
-   string resource = 7;
- }
- 
- message Metric {
-   // the ID in a uuid format
-   string id = 1;
- 
-   // a human readable name of the metric
-   string name = 2;
- 
-   // a description of the metric
-   string description = 3;
- 
-   // TODO: what is this?
-   string measuredProperty = 4;
- 
-   string category = 5;
- 
-   // TODO: make this an enum of pre-defined values?
-   string scale = 6;
- 
-   // TODO: is this the tool?
-   string source = 7;
- 
-   // TODO: what is this?
-   string parametersId = 8;
- 
-   // TODO: what is this?
-   string rulesId = 9;
- }
- 
+message Evidence {
+  // the ID in a uuid format
+  string id = 1;
+
+  // reference to a service this evidence was gathered from
+  string service_id = 2;
+
+  // reference to the resource this evidence was gathered from
+  string resource_id = 3;
+
+  // TODO: replace with google/type/date.proto
+  string timestamp = 4;
+
+  repeated string applicable_metrics = 5;
+
+  // "raw" evidence (for the auditor), for example the raw JSON response from the API. This does not follow a defined schema
+  string raw = 6;
+
+  // optional; a semantic representation of the Cloud resource according to our defined ontology. a JSON seralized node of our semantic graph. This may be Clouditor-specific.
+  string resource = 7;
+}
+
+message Metric {
+  // the ID in a uuid format
+  string id = 1;
+
+  // a human readable name of the metric
+  string name = 2;
+
+  // a description of the metric
+  string description = 3;
+
+  // reference to control catalog category or domain
+  string category = 4;
+  
+  // TBD
+  enum Scale {
+    NOMIMAL = 0;
+    ORDINAL = 1;
+    NUMERIC = 2;
+  }
+  Scale scale = 4;
+
+  Range range = 6;
+
+  // TODO: is this the tool?
+  string source = 7;
+
+  // TODO: what is this?
+  string parametersId = 8;
+
+  // TODO: what is this?
+  string rulesId = 9;
+  
+  // target value
+  oneof target_value {
+    int numeric_target_value = 10;
+    string string_target_value = 11;
+  }
+}
+
+message Range {
+  // TODO: model this using oneof
+  // because we have different types of scales (numerical, categorical, etc.)
+  // for numerical values we want to have min/max; for categorical data we want to have the allowed values
+}
