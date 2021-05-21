@@ -28,20 +28,57 @@
 package login
 
 import (
-	"clouditor.io/clouditor"
+	"context"
+	"fmt"
+
+	"clouditor.io/clouditor/api/auth"
+	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"google.golang.org/grpc"
+)
+
+const (
+	// URLFlag is the viper flag for the server url
+	URLFlag = "url"
 )
 
 // NewLoginCommand returns a cobra command for `login` subcommands
 func NewLoginCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "login",
+		Use:   "login [login]",
 		Short: "Log in to Clouditor",
+		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var client = clouditor.NewClient(viper.GetString("url"))
+			var (
+				err     error
+				conn    *grpc.ClientConn
+				client  auth.AuthenticationClient
+				res     *auth.LoginResponse
+				req     *auth.LoginRequest
+				session *cli.Session
+			)
 
-			err := client.Authenticate()
+			session = cli.NewSession(args[0])
+
+			if conn, err = grpc.Dial(session.URL, grpc.WithInsecure()); err != nil {
+				return fmt.Errorf("could not connect: %w", err)
+			}
+
+			if req, err = cli.PromtForLogin(); err != nil {
+				return fmt.Errorf("could not prompt for password: %w", err)
+			}
+
+			client = auth.NewAuthenticationClient(conn)
+
+			if res, err = client.Login(context.Background(), req); err != nil {
+				return fmt.Errorf("could not login: %w", err)
+			}
+
+			// update the session
+			session.Token = res.Token
+			session.Save()
+
+			fmt.Print("\nLogin succesful\n")
 
 			return err
 		},

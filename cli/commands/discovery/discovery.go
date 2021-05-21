@@ -28,9 +28,14 @@
 package discovery
 
 import (
-	"clouditor.io/clouditor"
+	"encoding/json"
+	"fmt"
+
+	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"google.golang.org/grpc"
+	"google.golang.org/protobuf/proto"
 )
 
 // NewStartDiscoveryCommand returns a cobra command for the `start` subcommand
@@ -39,9 +44,28 @@ func NewStartDiscoveryCommand() *cobra.Command {
 		Use:   "start",
 		Short: "Starts the discovery",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var client = clouditor.NewClient(viper.GetString("url"))
+			var (
+				err     error
+				session *cli.Session
+				conn    *grpc.ClientConn
+				client  discovery.DiscoveryClient
+				res     *discovery.StartDiscoveryResponse
+			)
 
-			err := client.StartDiscovery()
+			if session, err = cli.ContinueSession(); err != nil {
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+				return nil
+			}
+
+			if conn, err = grpc.Dial(session.URL, grpc.WithInsecure()); err != nil {
+				return fmt.Errorf("could not connect: %v", err)
+			}
+
+			client = discovery.NewDiscoveryClient(conn)
+
+			res, err = client.Start(session.Context(), &discovery.StartDiscoveryRequest{})
+
+			printReponse(res)
 
 			return err
 		},
@@ -67,4 +91,10 @@ func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewStartDiscoveryCommand(),
 	)
+}
+
+func printReponse(msg proto.Message) {
+	b, _ := json.MarshalIndent(msg, "", "  ")
+
+	fmt.Printf("%+v\n", string(b))
 }
