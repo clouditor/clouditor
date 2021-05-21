@@ -42,13 +42,13 @@ func NewCompletionCommand() *cobra.Command {
 
 Bash:
 
-  $ source <(yourprogram completion bash)
+  $ source <(cl completion bash)
 
   # To load completions for each session, execute once:
   # Linux:
-  $ yourprogram completion bash > /etc/bash_completion.d/yourprogram
+  $ cl completion bash > /etc/bash_completion.d/cl
   # macOS:
-  $ yourprogram completion bash > /usr/local/etc/bash_completion.d/yourprogram
+  $ cl completion bash > /usr/local/etc/bash_completion.d/cl
 
 Zsh:
 
@@ -58,23 +58,23 @@ Zsh:
   $ echo "autoload -U compinit; compinit" >> ~/.zshrc
 
   # To load completions for each session, execute once:
-  $ yourprogram completion zsh > "${fpath[1]}/_yourprogram"
+  $ cl completion zsh > "${fpath[1]}/_cl"
 
   # You will need to start a new shell for this setup to take effect.
 
 fish:
 
-  $ yourprogram completion fish | source
+  $ cl completion fish | source
 
   # To load completions for each session, execute once:
-  $ yourprogram completion fish > ~/.config/fish/completions/yourprogram.fish
+  $ cl completion fish > ~/.config/fish/completions/cl.fish
 
 PowerShell:
 
-  PS> yourprogram completion powershell | Out-String | Invoke-Expression
+  PS> cl completion powershell | Out-String | Invoke-Expression
 
   # To load completions for every new session, run:
-  PS> yourprogram completion powershell > yourprogram.ps1
+  PS> cl completion powershell > cl.ps1
   # and source this file from your PowerShell profile.
 `,
 		DisableFlagsInUseLine: true,

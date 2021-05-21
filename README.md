@@ -132,12 +132,4 @@ cl login <host:grpcPort>
 
 #### Command Completion
 
-The CLI offers command completion for most shells using the `cl completion` command. For example, `zsh` can be configured in the following way.
-
-```bash
-echo """
-autoload -Uz compinit && compinit -C
-source <(cl completion zsh)
-compdef _cl cl
-""" >> ~/.zshrc
-```
+The CLI offers command completion for most shells using the `cl completion` command. Specific instructions to install the shell completions can be accessed using `cl completion --help`.
