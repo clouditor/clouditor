@@ -54,14 +54,14 @@ func initConfig() {
 
 func newRootCommand() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "clouditor",
+		Use:   "cl",
 		Short: "The Clouditor CLI",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// check, if server was specified either using config file or
 			// flags, otherwise we cannot continue
 			/*if viper.GetString(URLFlag) == "" {
-				return fmt.Errorf("please specify an url using the config file or the --%s flag", URLFlag)
-			}*/
+				 return fmt.Errorf("please specify an url using the config file or the --%s flag", URLFlag)
+			 }*/
 
 			return nil
 		},

@@ -121,3 +121,15 @@ Alternatively, be sure to start a postgre DB:
 ```
 docker run -e POSTGRES_HOST_AUTH_METHOD=trust -d -p 5432:5432 postgres 
 ```
+
+### Clouditor CLI
+
+The Go components contain a basic CLI command called `cl`. It can be installed using `go install cmd/cli/cl.go`. Make sure that your `~/go/bin` is within your $PATH. Afterwards the binary can be used to connect to a Clouditor instance.
+
+```bash
+cl login <host:grpcPort>
+```
+
+#### Command Completion
+
+The CLI offers command completion for most shells using the `cl completion` command. Specific instructions to install the shell completions can be accessed using `cl completion --help`.
