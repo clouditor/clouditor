@@ -37,6 +37,7 @@ import (
 
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/orchestrator"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -48,7 +49,7 @@ func init() {
 	log = logrus.WithField("component", "rest")
 }
 
-//go:generate protoc -I ../proto -I ../third_party auth.proto discovery.proto --grpc-gateway_out=../ --grpc-gateway_opt logtostderr=true
+//go:generate protoc -I ../proto -I ../third_party auth.proto discovery.proto orchestrator.proto --grpc-gateway_out=../ --grpc-gateway_opt logtostderr=true
 
 func RunServer(ctx context.Context, grpcPort int, httpPort int) error {
 	ctx, cancel := context.WithCancel(ctx)
@@ -63,6 +64,10 @@ func RunServer(ctx context.Context, grpcPort int, httpPort int) error {
 	}
 
 	if err := discovery.RegisterDiscoveryHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), opts); err != nil {
+		return fmt.Errorf("failed to connect to discovery gRPC service %w", err)
+	}
+
+	if err := orchestrator.RegisterOrchestratorHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), opts); err != nil {
 		return fmt.Errorf("failed to connect to discovery gRPC service %w", err)
 	}
 

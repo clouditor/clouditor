@@ -34,6 +34,7 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 //go:generate protoc -I ../../proto -I ../../third_party orchestrator.proto --go_out=../.. --go-grpc_out=../.. --go_opt=Mevidence.proto=clouditor.io/clouditor/api/assessment --go-grpc_opt=Mevidence.proto=clouditor.io/clouditor/api/assessment --openapi_out=../../openapi/orchestrator
@@ -56,10 +57,36 @@ func init() {
 			Scale:       assessment.Metric_ORDINAL,
 			Range: &assessment.Range{
 				Range: &assessment.Range_Order{
-					Order: &assessment.Order{Values: []string{"false", "true"}},
+					Order: &assessment.Order{Values: []*structpb.Value{
+						structpb.NewBoolValue(false),
+						structpb.NewBoolValue(true),
+					}},
 				},
 			},
-			TargetValue: &assessment.Metric_TargetValueString{TargetValueString: "true"},
+			TargetValue: structpb.NewBoolValue(true),
+		},
+		{
+			Id:          2,
+			Name:        "Transport Encryption Protocol Version",
+			Description: "This metric describes, whether a up-to-date transport encryption protocol version is used",
+			Category:    "",
+			Scale:       assessment.Metric_ORDINAL,
+			Range: &assessment.Range{
+				Range: &assessment.Range_Order{
+					Order: &assessment.Order{Values: []*structpb.Value{
+						structpb.NewStringValue("TLS 1.0"),
+						structpb.NewStringValue("TLS 1.1"),
+						structpb.NewStringValue("TLS 1.2"),
+						structpb.NewStringValue("TLS 1.3"),
+					}},
+				},
+			},
+			TargetValue: structpb.NewListValue(&structpb.ListValue{
+				Values: []*structpb.Value{
+					structpb.NewStringValue("TLS 1.2"),
+					structpb.NewStringValue("TLS 1.3"),
+				},
+			}),
 		},
 	}
 

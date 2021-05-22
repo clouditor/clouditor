@@ -7,22 +7,6 @@ info:
     version: 0.0.1
 paths:
     /v1/orchestator/assessment_tools:
-        post:
-            operationId: Orchestrator_RegisterAssessmentTool
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/AssessmentTool'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/AssessmentTool'
-    /v1/orchestator/assessment_tools/:
         get:
             operationId: Orchestrator_ListAssessmentTools
             parameters:
@@ -38,6 +22,21 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListAssessmentToolsResponse'
+        post:
+            operationId: Orchestrator_RegisterAssessmentTool
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AssessmentTool'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AssessmentTool'
     /v1/orchestator/assessment_tools/{tool_id}:
         get:
             operationId: Orchestrator_GetAssessmentTool
@@ -56,7 +55,7 @@ paths:
         put:
             operationId: Orchestrator_UpdateAssessmentTool
             parameters:
-                - name: id
+                - name: tool_id
                   in: query
                   schema:
                     type: string
@@ -84,7 +83,7 @@ paths:
                 "200":
                     description: OK
                     content: {}
-    /v1/orchestator/metrics/:
+    /v1/orchestator/metrics:
         get:
             operationId: Orchestrator_ListMetrics
             responses:
@@ -116,7 +115,7 @@ components:
                 values:
                     type: array
                     items:
-                        type: string
+                        $ref: '#/components/schemas/Value'
             description: Defines a range
         AssessmentTool:
             properties:
@@ -144,6 +143,14 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Metric'
+        ListValue:
+            properties:
+                values:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Value'
+                    description: Repeated field of dynamically typed values.
+            description: '`ListValue` is a wrapper around a repeated field of values. The JSON representation for `ListValue` is JSON array.'
         Metric:
             properties:
                 id:
@@ -164,11 +171,8 @@ components:
                     format: enum
                 range:
                     $ref: '#/components/schemas/Range'
-                target_value_num:
-                    type: integer
-                    format: int64
-                target_value_string:
-                    type: string
+                target_value:
+                    $ref: '#/components/schemas/Value'
         MinMax:
             properties:
                 min:
@@ -183,7 +187,7 @@ components:
                 values:
                     type: array
                     items:
-                        type: string
+                        $ref: '#/components/schemas/Value'
             description: Defines a range of values in a pre-defined order from the lowest to the highest.
         Range:
             properties:
@@ -194,3 +198,29 @@ components:
                 min_max:
                     $ref: '#/components/schemas/MinMax'
             description: Defines a range of values
+        Struct:
+            properties:
+                fields:
+                    $ref: '#/components/schemas/FieldsEntry'
+            description: '`Struct` represents a structured data value, consisting of fields which map to dynamically typed values. In some languages, `Struct` might be supported by a native representation. For example, in scripting languages like JS a struct is represented as an object. The details of that representation are described together with the proto support for the language. The JSON representation for `Struct` is JSON object.'
+        Value:
+            properties:
+                null_value:
+                    type: integer
+                    description: Represents a null value.
+                    format: enum
+                number_value:
+                    type: number
+                    description: Represents a double value.
+                    format: double
+                string_value:
+                    type: string
+                    description: Represents a string value.
+                bool_value:
+                    type: boolean
+                    description: Represents a boolean value.
+                struct_value:
+                    $ref: '#/components/schemas/Struct'
+                list_value:
+                    $ref: '#/components/schemas/ListValue'
+            description: '`Value` represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values. A producer of value is expected to set one of that variants, absence of any variant indicates an error. The JSON representation for `Value` is JSON value.'

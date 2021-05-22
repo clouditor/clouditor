@@ -37,7 +37,7 @@ import (
 )
 
 // NewListMetricCommand returns a cobra command for the `list` subcommand
-func NewListMetricCommand() *cobra.Command {
+func NewListMetricsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "Lists all metrics",
@@ -63,9 +63,12 @@ func NewListMetricCommand() *cobra.Command {
 
 			res, err = client.ListMetrics(session.Context(), &orchestrator.ListMetricsRequest{})
 
-			session.PrintReponse(res)
+			session.HandleResponse(res, err)
 
 			return err
+		},
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return []string{}, cobra.ShellCompDirectiveNoFileComp
 		},
 	}
 
@@ -87,6 +90,6 @@ func NewMetricCommand() *cobra.Command {
 // AddCommands adds all subcommands
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
-		NewListMetricCommand(),
+		NewListMetricsCommand(),
 	)
 }

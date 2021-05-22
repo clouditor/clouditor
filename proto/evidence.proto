@@ -28,6 +28,8 @@ syntax = "proto3";
 
 package clouditor;
 
+import "google/protobuf/struct.proto";
+
 option go_package = "api/assessment";
 
 message Evidence {
@@ -52,7 +54,7 @@ message Evidence {
   // optional; a semantic representation of the Cloud resource according to our
   // defined ontology. a JSON seralized node of our semantic graph. This may be
   // Clouditor-specific.
-  string resource = 7;
+  google.protobuf.Value resource = 7;
 }
 
 message Metric {
@@ -79,10 +81,7 @@ message Metric {
   Range range = 6;
 
   // target value
-  oneof target_value {
-    int64 target_value_num = 10;
-    string target_value_string = 11;
-  }
+  google.protobuf.Value target_value  = 7;
 }
 
 // Defines a range of values
@@ -106,8 +105,8 @@ message MinMax {
 }
 
 // Defines a range
-message AllowedValues { repeated string values = 1; }
+message AllowedValues { repeated google.protobuf.Value values = 1; }
 
 // Defines a range of values in a pre-defined order from the lowest to the
 // highest.
-message Order { repeated string values = 1; }
+message Order { repeated google.protobuf.Value values = 1; }

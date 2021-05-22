@@ -74,7 +74,7 @@ message ListAssessmentToolsRequest {
 message ListAssessmentToolsResponse { repeated AssessmentTool tools = 1; }
 message GetAssessmentToolRequest { string tool_id = 1; }
 message UpdateAssessmentToolRequest {
-  string id = 1;
+  string tool_id = 1;
   AssessmentTool tool = 2;
 }
 message DeregisterAssessmentToolRequest { string tool_id = 1; }
@@ -96,7 +96,7 @@ service Orchestrator {
   rpc ListAssessmentTools(ListAssessmentToolsRequest)
       returns (ListAssessmentToolsResponse) {
     option (google.api.http) = {
-      get : "/v1/orchestator/assessment_tools/"
+      get : "/v1/orchestator/assessment_tools"
       additional_bindings {get : "/v1/orchestator/{metric_id}/assessment_tools"}
     };
   }
@@ -124,7 +124,7 @@ service Orchestrator {
 
   rpc ListMetrics(ListMetricsRequest) returns (ListMetricsResponse) {
     option (google.api.http) = {
-      get : "/v1/orchestator/metrics/"
+      get : "/v1/orchestator/metrics"
     };
   }
 
