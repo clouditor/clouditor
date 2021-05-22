@@ -63,9 +63,7 @@ func NewStartDiscoveryCommand() *cobra.Command {
 
 			res, err = client.Start(session.Context(), &discovery.StartDiscoveryRequest{})
 
-			session.PrintReponse(res)
-
-			return err
+			return session.HandleResponse(res, err)
 		},
 	}
 

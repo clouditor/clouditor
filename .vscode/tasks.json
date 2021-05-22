@@ -28,6 +28,18 @@
             ]
         },
         {
+            "label": "go: install cli",
+            "type": "shell",
+            "command": "go install cmd/cli/cl.go",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$go"
+            ]
+        },
+        {
             "label": "go: generate",
             "type": "shell",
             "command": "go generate ./...",
