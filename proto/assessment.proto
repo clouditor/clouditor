@@ -52,4 +52,6 @@ service Assessment {
       response_body : "*"
     };
   }
+
+  rpc StreamEvidences(stream Evidence) returns (google.protobuf.Empty);
 };

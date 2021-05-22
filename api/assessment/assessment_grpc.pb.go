@@ -24,6 +24,7 @@ type AssessmentClient interface {
 	// Stores the evidences coming from the discovery. Part of the public API,
 	// also exposed as REST
 	StoreEvidence(ctx context.Context, in *StoreEvidenceRequest, opts ...grpc.CallOption) (*Evidence, error)
+	StreamEvidences(ctx context.Context, opts ...grpc.CallOption) (Assessment_StreamEvidencesClient, error)
 }
 
 type assessmentClient struct {
@@ -52,6 +53,40 @@ func (c *assessmentClient) StoreEvidence(ctx context.Context, in *StoreEvidenceR
 	return out, nil
 }
 
+func (c *assessmentClient) StreamEvidences(ctx context.Context, opts ...grpc.CallOption) (Assessment_StreamEvidencesClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Assessment_ServiceDesc.Streams[0], "/clouditor.Assessment/StreamEvidences", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &assessmentStreamEvidencesClient{stream}
+	return x, nil
+}
+
+type Assessment_StreamEvidencesClient interface {
+	Send(*Evidence) error
+	CloseAndRecv() (*emptypb.Empty, error)
+	grpc.ClientStream
+}
+
+type assessmentStreamEvidencesClient struct {
+	grpc.ClientStream
+}
+
+func (x *assessmentStreamEvidencesClient) Send(m *Evidence) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *assessmentStreamEvidencesClient) CloseAndRecv() (*emptypb.Empty, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(emptypb.Empty)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // AssessmentServer is the server API for Assessment service.
 // All implementations must embed UnimplementedAssessmentServer
 // for forward compatibility
@@ -61,6 +96,7 @@ type AssessmentServer interface {
 	// Stores the evidences coming from the discovery. Part of the public API,
 	// also exposed as REST
 	StoreEvidence(context.Context, *StoreEvidenceRequest) (*Evidence, error)
+	StreamEvidences(Assessment_StreamEvidencesServer) error
 	mustEmbedUnimplementedAssessmentServer()
 }
 
@@ -73,6 +109,9 @@ func (UnimplementedAssessmentServer) TriggerAssessment(context.Context, *Trigger
 }
 func (UnimplementedAssessmentServer) StoreEvidence(context.Context, *StoreEvidenceRequest) (*Evidence, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreEvidence not implemented")
+}
+func (UnimplementedAssessmentServer) StreamEvidences(Assessment_StreamEvidencesServer) error {
+	return status.Errorf(codes.Unimplemented, "method StreamEvidences not implemented")
 }
 func (UnimplementedAssessmentServer) mustEmbedUnimplementedAssessmentServer() {}
 
@@ -123,6 +162,32 @@ func _Assessment_StoreEvidence_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Assessment_StreamEvidences_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(AssessmentServer).StreamEvidences(&assessmentStreamEvidencesServer{stream})
+}
+
+type Assessment_StreamEvidencesServer interface {
+	SendAndClose(*emptypb.Empty) error
+	Recv() (*Evidence, error)
+	grpc.ServerStream
+}
+
+type assessmentStreamEvidencesServer struct {
+	grpc.ServerStream
+}
+
+func (x *assessmentStreamEvidencesServer) SendAndClose(m *emptypb.Empty) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *assessmentStreamEvidencesServer) Recv() (*Evidence, error) {
+	m := new(Evidence)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // Assessment_ServiceDesc is the grpc.ServiceDesc for Assessment service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -139,6 +204,12 @@ var Assessment_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Assessment_StoreEvidence_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "StreamEvidences",
+			Handler:       _Assessment_StreamEvidences_Handler,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "assessment.proto",
 }
