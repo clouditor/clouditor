@@ -31,12 +31,14 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
 
 	"clouditor.io/clouditor/api/auth"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -86,6 +88,7 @@ func (s *Session) Context() context.Context {
 	return ctx
 }
 
+// Save saves the session into the `.clouditor` folder in the home directory
 func (s *Session) Save() {
 	var (
 		err  error
@@ -111,10 +114,26 @@ func (s *Session) Save() {
 	}
 }
 
-func (s *Session) PrintReponse(msg proto.Message) {
+// HandleResponse handles the response and error message of an gRPC call
+func (s *Session) HandleResponse(msg proto.Message, err error) error {
+	if err != nil {
+		// check, if it is a gRPC error
+		s, ok := status.FromError(err)
+
+		// otherwise, forward the error message
+		if !ok {
+			return err
+		}
+
+		// create a new error with just the message
+		return errors.New(s.Message())
+	}
+
 	b, _ := json.MarshalIndent(msg, "", "  ")
 
-	fmt.Printf("%+v\n", string(b))
+	fmt.Printf("%s\n", string(b))
+
+	return err
 }
 
 func PromtForLogin() (loginRequest *auth.LoginRequest, err error) {
