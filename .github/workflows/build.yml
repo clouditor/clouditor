@@ -62,6 +62,7 @@ jobs:
           google.golang.org/grpc/cmd/protoc-gen-go-grpc \
           github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway
           go generate ./...
+          go vet ./...
           go build cmd/engine/engine.go
           go build cmd/cli/cl.go
       - name: "Upload Artifact"

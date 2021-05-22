@@ -88,6 +88,7 @@ func (s *Session) Context() context.Context {
 	return ctx
 }
 
+// Save saves the session into the `.clouditor` folder in the home directory
 func (s *Session) Save() {
 	var (
 		err  error
@@ -113,6 +114,7 @@ func (s *Session) Save() {
 	}
 }
 
+// HandleResponse handles the response and error message of an gRPC call
 func (s *Session) HandleResponse(msg proto.Message, err error) error {
 	if err != nil {
 		// check, if it is a gRPC error
