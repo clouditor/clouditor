@@ -6,6 +6,19 @@ info:
     title: Orchestrator
     version: 0.0.1
 paths:
+    /v1/orchestator/assessment_results:
+        put:
+            operationId: Orchestrator_StoreAssessmentResult
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AssessmentResult'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
     /v1/orchestator/assessment_tools:
         get:
             operationId: Orchestrator_ListAssessmentTools
@@ -117,6 +130,21 @@ components:
                     items:
                         $ref: '#/components/schemas/Value'
             description: Defines a range
+        AssessmentResult:
+            properties:
+                id:
+                    type: string
+                    description: the ID in a uuid format
+                metric_id:
+                    type: string
+                    description: the ID of the metric it refers to
+                result:
+                    type: integer
+                    format: enum
+                target_value:
+                    type: string
+                evidence:
+                    $ref: '#/components/schemas/Evidence'
         AssessmentTool:
             properties:
                 id:
@@ -131,6 +159,29 @@ components:
                         type: string
                     description: a list of metrics that this tool can assess, referred by their ids
             description: Represents an external tool or service that offers assessments according to certain metrics
+        Evidence:
+            properties:
+                id:
+                    type: string
+                    description: the ID in a uuid format
+                service_id:
+                    type: string
+                    description: reference to a service this evidence was gathered from
+                resource_id:
+                    type: string
+                    description: reference to the resource this evidence was gathered from
+                timestamp:
+                    type: string
+                    description: 'TODO: replace with google/type/date.proto'
+                applicable_metrics:
+                    type: array
+                    items:
+                        type: integer
+                raw:
+                    type: string
+                    description: '"raw" evidence (for the auditor), for example the raw JSON response from the API. This does not follow a defined schema'
+                resource:
+                    $ref: '#/components/schemas/Value'
         ListAssessmentToolsResponse:
             properties:
                 tools:

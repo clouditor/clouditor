@@ -79,6 +79,10 @@ message UpdateAssessmentToolRequest {
 }
 message DeregisterAssessmentToolRequest { string tool_id = 1; }
 
+message StoreAssessmentResultRequest {
+  AssessmentResult result = 1;
+}
+
 message GetMetricsRequest { int32 metric_id = 1; }
 message ListMetricsRequest {}
 message ListMetricsResponse { repeated Metric metrics = 1; }
@@ -121,6 +125,15 @@ service Orchestrator {
       delete : "/v1/orchestator/assessment_tools/{tool_id}"
     };
   }
+
+  rpc StoreAssessmentResult(StoreAssessmentResultRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put : "/v1/orchestator/assessment_results"
+      body : "result"
+    };
+  }
+
+  rpc StreamAssessmentResults(stream AssessmentResult) returns (google.protobuf.Empty);
 
   rpc ListMetrics(ListMetricsRequest) returns (ListMetricsResponse) {
     option (google.api.http) = {

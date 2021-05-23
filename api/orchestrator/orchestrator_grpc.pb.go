@@ -25,6 +25,8 @@ type OrchestratorClient interface {
 	GetAssessmentTool(ctx context.Context, in *GetAssessmentToolRequest, opts ...grpc.CallOption) (*AssessmentTool, error)
 	UpdateAssessmentTool(ctx context.Context, in *UpdateAssessmentToolRequest, opts ...grpc.CallOption) (*AssessmentTool, error)
 	DeregisterAssessmentTool(ctx context.Context, in *DeregisterAssessmentToolRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	StoreAssessmentResult(ctx context.Context, in *StoreAssessmentResultRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	StreamAssessmentResults(ctx context.Context, opts ...grpc.CallOption) (Orchestrator_StreamAssessmentResultsClient, error)
 	ListMetrics(ctx context.Context, in *ListMetricsRequest, opts ...grpc.CallOption) (*ListMetricsResponse, error)
 	GetMetric(ctx context.Context, in *GetMetricsRequest, opts ...grpc.CallOption) (*assessment.Metric, error)
 }
@@ -82,6 +84,49 @@ func (c *orchestratorClient) DeregisterAssessmentTool(ctx context.Context, in *D
 	return out, nil
 }
 
+func (c *orchestratorClient) StoreAssessmentResult(ctx context.Context, in *StoreAssessmentResultRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/StoreAssessmentResult", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orchestratorClient) StreamAssessmentResults(ctx context.Context, opts ...grpc.CallOption) (Orchestrator_StreamAssessmentResultsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Orchestrator_ServiceDesc.Streams[0], "/clouditor.Orchestrator/StreamAssessmentResults", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &orchestratorStreamAssessmentResultsClient{stream}
+	return x, nil
+}
+
+type Orchestrator_StreamAssessmentResultsClient interface {
+	Send(*AssessmentResult) error
+	CloseAndRecv() (*emptypb.Empty, error)
+	grpc.ClientStream
+}
+
+type orchestratorStreamAssessmentResultsClient struct {
+	grpc.ClientStream
+}
+
+func (x *orchestratorStreamAssessmentResultsClient) Send(m *AssessmentResult) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *orchestratorStreamAssessmentResultsClient) CloseAndRecv() (*emptypb.Empty, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(emptypb.Empty)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *orchestratorClient) ListMetrics(ctx context.Context, in *ListMetricsRequest, opts ...grpc.CallOption) (*ListMetricsResponse, error) {
 	out := new(ListMetricsResponse)
 	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/ListMetrics", in, out, opts...)
@@ -109,6 +154,8 @@ type OrchestratorServer interface {
 	GetAssessmentTool(context.Context, *GetAssessmentToolRequest) (*AssessmentTool, error)
 	UpdateAssessmentTool(context.Context, *UpdateAssessmentToolRequest) (*AssessmentTool, error)
 	DeregisterAssessmentTool(context.Context, *DeregisterAssessmentToolRequest) (*emptypb.Empty, error)
+	StoreAssessmentResult(context.Context, *StoreAssessmentResultRequest) (*emptypb.Empty, error)
+	StreamAssessmentResults(Orchestrator_StreamAssessmentResultsServer) error
 	ListMetrics(context.Context, *ListMetricsRequest) (*ListMetricsResponse, error)
 	GetMetric(context.Context, *GetMetricsRequest) (*assessment.Metric, error)
 	mustEmbedUnimplementedOrchestratorServer()
@@ -132,6 +179,12 @@ func (UnimplementedOrchestratorServer) UpdateAssessmentTool(context.Context, *Up
 }
 func (UnimplementedOrchestratorServer) DeregisterAssessmentTool(context.Context, *DeregisterAssessmentToolRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeregisterAssessmentTool not implemented")
+}
+func (UnimplementedOrchestratorServer) StoreAssessmentResult(context.Context, *StoreAssessmentResultRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StoreAssessmentResult not implemented")
+}
+func (UnimplementedOrchestratorServer) StreamAssessmentResults(Orchestrator_StreamAssessmentResultsServer) error {
+	return status.Errorf(codes.Unimplemented, "method StreamAssessmentResults not implemented")
 }
 func (UnimplementedOrchestratorServer) ListMetrics(context.Context, *ListMetricsRequest) (*ListMetricsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListMetrics not implemented")
@@ -242,6 +295,50 @@ func _Orchestrator_DeregisterAssessmentTool_Handler(srv interface{}, ctx context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Orchestrator_StoreAssessmentResult_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StoreAssessmentResultRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).StoreAssessmentResult(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/StoreAssessmentResult",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).StoreAssessmentResult(ctx, req.(*StoreAssessmentResultRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Orchestrator_StreamAssessmentResults_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(OrchestratorServer).StreamAssessmentResults(&orchestratorStreamAssessmentResultsServer{stream})
+}
+
+type Orchestrator_StreamAssessmentResultsServer interface {
+	SendAndClose(*emptypb.Empty) error
+	Recv() (*AssessmentResult, error)
+	grpc.ServerStream
+}
+
+type orchestratorStreamAssessmentResultsServer struct {
+	grpc.ServerStream
+}
+
+func (x *orchestratorStreamAssessmentResultsServer) SendAndClose(m *emptypb.Empty) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *orchestratorStreamAssessmentResultsServer) Recv() (*AssessmentResult, error) {
+	m := new(AssessmentResult)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func _Orchestrator_ListMetrics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListMetricsRequest)
 	if err := dec(in); err != nil {
@@ -306,6 +403,10 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Orchestrator_DeregisterAssessmentTool_Handler,
 		},
 		{
+			MethodName: "StoreAssessmentResult",
+			Handler:    _Orchestrator_StoreAssessmentResult_Handler,
+		},
+		{
 			MethodName: "ListMetrics",
 			Handler:    _Orchestrator_ListMetrics_Handler,
 		},
@@ -314,6 +415,12 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Orchestrator_GetMetric_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "StreamAssessmentResults",
+			Handler:       _Orchestrator_StreamAssessmentResults_Handler,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "orchestrator.proto",
 }
