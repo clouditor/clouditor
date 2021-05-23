@@ -28,6 +28,7 @@
 package tool
 
 import (
+	"context"
 	"fmt"
 
 	"clouditor.io/clouditor/api/orchestrator"
@@ -35,6 +36,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // NewListToolCommand returns a cobra command for the `list` subcommand
@@ -46,7 +48,6 @@ func NewListToolsCommand() *cobra.Command {
 			var (
 				err     error
 				session *cli.Session
-				conn    *grpc.ClientConn
 				client  orchestrator.OrchestratorClient
 				res     *orchestrator.ListAssessmentToolsResponse
 			)
@@ -56,38 +57,37 @@ func NewListToolsCommand() *cobra.Command {
 				return nil
 			}
 
-			if conn, err = grpc.Dial(session.URL, grpc.WithInsecure()); err != nil {
-				return fmt.Errorf("could not connect: %v", err)
-			}
+			client = orchestrator.NewOrchestratorClient(session)
 
-			client = orchestrator.NewOrchestratorClient(conn)
-
-			res, err = client.ListAssessmentTools(session.Context(), &orchestrator.ListAssessmentToolsRequest{})
+			res, err = client.ListAssessmentTools(context.Background(), &orchestrator.ListAssessmentToolsRequest{})
 
 			session.HandleResponse(res, err)
 
 			return err
 		},
+		ValidArgsFunction: cli.DefaultArgsShellComp,
 	}
 
 	cmd.PersistentFlags().StringP("metric-id", "m", "", "only list tools for this metric")
 	viper.BindPFlag("metric-id", cmd.PersistentFlags().Lookup("metric-id"))
+	cmd.RegisterFlagCompletionFunc("metric-id", cli.ValidArgsGetMetrics)
 
 	return cmd
 }
 
-// NewListToolCommand returns a cobra command for the `list` subcommand
+// NewListToolCommand returns a cobra command for the `show` subcommand
 func NewShowToolCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "show",
+		Use:   "show [id]",
 		Short: "Get details of a tool",
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err     error
 				session *cli.Session
 				conn    *grpc.ClientConn
 				client  orchestrator.OrchestratorClient
-				res     *orchestrator.ListAssessmentToolsResponse
+				res     *orchestrator.AssessmentTool
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -101,57 +101,104 @@ func NewShowToolCommand() *cobra.Command {
 
 			client = orchestrator.NewOrchestratorClient(conn)
 
-			res, err = client.ListAssessmentTools(session.Context(), &orchestrator.ListAssessmentToolsRequest{})
+			res, err = client.GetAssessmentTool(context.Background(), &orchestrator.GetAssessmentToolRequest{
+				ToolId: args[0],
+			})
 
 			session.HandleResponse(res, err)
 
 			return err
 		},
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			if len(args) != 0 {
-				return nil, cobra.ShellCompDirectiveNoFileComp
-			}
-
-			return getTools(toComplete), cobra.ShellCompDirectiveNoFileComp
-		},
+		ValidArgsFunction: cli.ValidArgsGetTools,
 	}
-
-	cmd.PersistentFlags().StringP("metric-id", "m", "", "only list tools for this metric")
-	viper.BindPFlag("metric-id", cmd.PersistentFlags().Lookup("metric-id"))
 
 	return cmd
 }
 
-func getTools(toComplete string) []string {
-	var (
-		err     error
-		session *cli.Session
-		conn    *grpc.ClientConn
-		client  orchestrator.OrchestratorClient
-		res     *orchestrator.ListAssessmentToolsResponse
-	)
+// NewRegisterToolCommand returns a cobra command for the `register` subcommand
+func NewRegisterToolCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "register",
+		Short: "Registeres a new assessment tool",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var (
+				err     error
+				session *cli.Session
+				client  orchestrator.OrchestratorClient
+				res     *orchestrator.AssessmentTool
+			)
 
-	if session, err = cli.ContinueSession(); err != nil {
-		fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
-		return nil
+			if session, err = cli.ContinueSession(); err != nil {
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+				return nil
+			}
+
+			client = orchestrator.NewOrchestratorClient(session)
+
+			res, err = client.RegisterAssessmentTool(context.Background(), &orchestrator.RegisterAssessmentToolRequest{
+				Tool: &orchestrator.AssessmentTool{
+					Name:             viper.GetString("name"),
+					Description:      viper.GetString("description"),
+					AvailableMetrics: viper.GetStringSlice("metric-ids"),
+				},
+			})
+
+			session.HandleResponse(res, err)
+
+			return err
+		},
+		ValidArgsFunction: cli.DefaultArgsShellComp,
 	}
 
-	if conn, err = grpc.Dial(session.URL, grpc.WithInsecure()); err != nil {
-		return []string{}
+	cmd.PersistentFlags().StringP("name", "n", "", "the name of the tool")
+	cmd.PersistentFlags().StringP("description", "d", "", "an optional description")
+	cmd.PersistentFlags().StringSliceP("metric-ids", "m", []string{}, "the metric this tool assesses")
+	cmd.MarkPersistentFlagRequired("name")
+	cmd.MarkPersistentFlagRequired("metric-ids")
+	viper.BindPFlag("name", cmd.PersistentFlags().Lookup("name"))
+	viper.BindPFlag("description", cmd.PersistentFlags().Lookup("description"))
+	viper.BindPFlag("metric-ids", cmd.PersistentFlags().Lookup("metric-ids"))
+
+	cmd.RegisterFlagCompletionFunc("name", cli.DefaultArgsShellComp)
+	cmd.RegisterFlagCompletionFunc("description", cli.DefaultArgsShellComp)
+	cmd.RegisterFlagCompletionFunc("metric-ids", cli.ValidArgsGetMetrics)
+
+	return cmd
+}
+
+// NewDeregisterToolCommand returns a cobra command for the `deregister` subcommand
+func NewDeregisterToolCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "reregister [id]",
+		Short: "Deregisteres a tool",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var (
+				err     error
+				session *cli.Session
+				client  orchestrator.OrchestratorClient
+				res     *emptypb.Empty
+			)
+
+			if session, err = cli.ContinueSession(); err != nil {
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+				return nil
+			}
+
+			client = orchestrator.NewOrchestratorClient(session)
+
+			res, err = client.DeregisterAssessmentTool(context.Background(), &orchestrator.DeregisterAssessmentToolRequest{
+				ToolId: args[0],
+			})
+
+			session.HandleResponse(res, err)
+
+			return err
+		},
+		ValidArgsFunction: cli.ValidArgsGetTools,
 	}
 
-	client = orchestrator.NewOrchestratorClient(conn)
-
-	if res, err = client.ListAssessmentTools(session.Context(), &orchestrator.ListAssessmentToolsRequest{}); err != nil {
-		return []string{}
-	}
-
-	var tools []string
-	for _, v := range res.Tools {
-		tools = append(tools, fmt.Sprintf("%s\t%s: %s", v.Id, v.Name, v.Description))
-	}
-
-	return tools
+	return cmd
 }
 
 // NewToolCommand returns a cobra command for `tool` subcommands
@@ -171,5 +218,6 @@ func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewListToolsCommand(),
 		NewShowToolCommand(),
+		NewRegisterToolCommand(),
 	)
 }

@@ -28,12 +28,12 @@
 package metric
 
 import (
+	"context"
 	"fmt"
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
-	"google.golang.org/grpc"
 )
 
 // NewListMetricCommand returns a cobra command for the `list` subcommand
@@ -45,7 +45,6 @@ func NewListMetricsCommand() *cobra.Command {
 			var (
 				err     error
 				session *cli.Session
-				conn    *grpc.ClientConn
 				client  orchestrator.OrchestratorClient
 				res     *orchestrator.ListMetricsResponse
 			)
@@ -55,13 +54,9 @@ func NewListMetricsCommand() *cobra.Command {
 				return nil
 			}
 
-			if conn, err = grpc.Dial(session.URL, grpc.WithInsecure()); err != nil {
-				return fmt.Errorf("could not connect: %v", err)
-			}
+			client = orchestrator.NewOrchestratorClient(session)
 
-			client = orchestrator.NewOrchestratorClient(conn)
-
-			res, err = client.ListMetrics(session.Context(), &orchestrator.ListMetricsRequest{})
+			res, err = client.ListMetrics(context.Background(), &orchestrator.ListMetricsRequest{})
 
 			session.HandleResponse(res, err)
 

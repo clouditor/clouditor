@@ -26,12 +26,12 @@
 package discovery
 
 import (
+	"context"
 	"fmt"
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
-	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -44,7 +44,6 @@ func NewStartDiscoveryCommand() *cobra.Command {
 			var (
 				err     error
 				session *cli.Session
-				conn    *grpc.ClientConn
 				client  discovery.DiscoveryClient
 				res     *discovery.StartDiscoveryResponse
 			)
@@ -54,13 +53,9 @@ func NewStartDiscoveryCommand() *cobra.Command {
 				return nil
 			}
 
-			if conn, err = grpc.Dial(session.URL, grpc.WithInsecure()); err != nil {
-				return fmt.Errorf("could not connect: %v", err)
-			}
+			client = discovery.NewDiscoveryClient(session)
 
-			client = discovery.NewDiscoveryClient(conn)
-
-			res, err = client.Start(session.Context(), &discovery.StartDiscoveryRequest{})
+			res, err = client.Start(context.Background(), &discovery.StartDiscoveryRequest{})
 
 			return session.HandleResponse(res, err)
 		},
@@ -78,7 +73,6 @@ func NewQueryDiscoveryCommand() *cobra.Command {
 			var (
 				err     error
 				session *cli.Session
-				conn    *grpc.ClientConn
 				client  discovery.DiscoveryClient
 				res     *discovery.QueryResponse
 			)
@@ -88,13 +82,9 @@ func NewQueryDiscoveryCommand() *cobra.Command {
 				return nil
 			}
 
-			if conn, err = grpc.Dial(session.URL, grpc.WithInsecure()); err != nil {
-				return fmt.Errorf("could not connect: %v", err)
-			}
+			client = discovery.NewDiscoveryClient(session)
 
-			client = discovery.NewDiscoveryClient(conn)
-
-			res, err = client.Query(session.Context(), &emptypb.Empty{})
+			res, err = client.Query(context.Background(), &emptypb.Empty{})
 
 			return session.HandleResponse(res, err)
 		},
