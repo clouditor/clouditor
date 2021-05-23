@@ -6,6 +6,22 @@ info:
     title: Discovery
     version: 0.0.1
 paths:
+    /v1/discovery/query:
+        post:
+            operationId: Discovery_Query
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Empty'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/QueryResponse'
     /v1/discovery/start:
         post:
             operationId: Discovery_Start
@@ -24,9 +40,50 @@ paths:
                                 $ref: '#/components/schemas/StartDiscoveryResponse'
 components:
     schemas:
+        Empty:
+            properties: {}
+            description: 'A generic empty message that you can re-use to avoid defining duplicated empty messages in your APIs. A typical example is to use it as the request or the response type of an API method. For instance:     service Foo {       rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty);     } The JSON representation for `Empty` is empty JSON object `{}`.'
+        ListValue:
+            properties:
+                values:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Value'
+                    description: Repeated field of dynamically typed values.
+            description: '`ListValue` is a wrapper around a repeated field of values. The JSON representation for `ListValue` is JSON array.'
+        QueryResponse:
+            properties:
+                result:
+                    $ref: '#/components/schemas/ListValue'
         StartDiscoveryRequest:
             properties: {}
         StartDiscoveryResponse:
             properties:
                 successful:
                     type: boolean
+        Struct:
+            properties:
+                fields:
+                    $ref: '#/components/schemas/FieldsEntry'
+            description: '`Struct` represents a structured data value, consisting of fields which map to dynamically typed values. In some languages, `Struct` might be supported by a native representation. For example, in scripting languages like JS a struct is represented as an object. The details of that representation are described together with the proto support for the language. The JSON representation for `Struct` is JSON object.'
+        Value:
+            properties:
+                null_value:
+                    type: integer
+                    description: Represents a null value.
+                    format: enum
+                number_value:
+                    type: number
+                    description: Represents a double value.
+                    format: double
+                string_value:
+                    type: string
+                    description: Represents a string value.
+                bool_value:
+                    type: boolean
+                    description: Represents a boolean value.
+                struct_value:
+                    $ref: '#/components/schemas/Struct'
+                list_value:
+                    $ref: '#/components/schemas/ListValue'
+            description: '`Value` represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values. A producer of value is expected to set one of that variants, absence of any variant indicates an error. The JSON representation for `Value` is JSON value.'

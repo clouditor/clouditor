@@ -28,11 +28,8 @@
 package tools
 
 import (
-<<<<<<< HEAD
-	_ "github.com/googleapis/gnostic/apps/protoc-gen-openapi"
-=======
 	_ "github.com/google/addlicense"
->>>>>>> origin/main
+	_ "github.com/googleapis/gnostic/apps/protoc-gen-openapi"
 	_ "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway"
 	_ "google.golang.org/grpc/cmd/protoc-gen-go-grpc"
 	_ "google.golang.org/protobuf/cmd/protoc-gen-go"
