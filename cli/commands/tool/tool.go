@@ -166,6 +166,59 @@ func NewRegisterToolCommand() *cobra.Command {
 	return cmd
 }
 
+// NewUpdateToolCommand returns a cobra command for the `update` subcommand
+func NewUpdateToolCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update [id]",
+		Short: "Updates a registered assessment tool",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var (
+				err     error
+				session *cli.Session
+				client  orchestrator.OrchestratorClient
+				res     *orchestrator.AssessmentTool
+			)
+
+			if session, err = cli.ContinueSession(); err != nil {
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+				return nil
+			}
+
+			client = orchestrator.NewOrchestratorClient(session)
+
+			res, err = client.UpdateAssessmentTool(context.Background(), &orchestrator.UpdateAssessmentToolRequest{
+				ToolId: args[0],
+				Tool: &orchestrator.AssessmentTool{
+					Name:             viper.GetString("name"),
+					Description:      viper.GetString("description"),
+					AvailableMetrics: viper.GetStringSlice("metric-ids"),
+				},
+			})
+
+			session.HandleResponse(res, err)
+
+			return err
+		},
+		ValidArgsFunction: cli.DefaultArgsShellComp,
+	}
+
+	cmd.PersistentFlags().StringP("name", "n", "", "the name of the tool")
+	cmd.PersistentFlags().StringP("description", "d", "", "an optional description")
+	cmd.PersistentFlags().StringSliceP("metric-ids", "m", []string{}, "the metric this tool assesses")
+	cmd.MarkPersistentFlagRequired("name")
+	cmd.MarkPersistentFlagRequired("metric-ids")
+	viper.BindPFlag("name", cmd.PersistentFlags().Lookup("name"))
+	viper.BindPFlag("description", cmd.PersistentFlags().Lookup("description"))
+	viper.BindPFlag("metric-ids", cmd.PersistentFlags().Lookup("metric-ids"))
+
+	cmd.RegisterFlagCompletionFunc("name", cli.DefaultArgsShellComp)
+	cmd.RegisterFlagCompletionFunc("description", cli.DefaultArgsShellComp)
+	cmd.RegisterFlagCompletionFunc("metric-ids", cli.ValidArgsGetMetrics)
+
+	return cmd
+}
+
 // NewDeregisterToolCommand returns a cobra command for the `deregister` subcommand
 func NewDeregisterToolCommand() *cobra.Command {
 	cmd := &cobra.Command{
