@@ -1,0 +1,112 @@
+/*
+ * Copyright 2021 Fraunhofer AISEC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *           $$\                           $$\ $$\   $$\
+ *           $$ |                          $$ |\__|  $$ |
+ *  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+ * $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+ * $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
+ * $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+ * \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+ *  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+ *
+ * This file is part of Clouditor Community Edition.
+ */
+syntax = "proto3";
+
+package clouditor;
+
+import "google/protobuf/struct.proto";
+
+option go_package = "api/assessment";
+
+message Evidence {
+  // the ID in a uuid format
+  string id = 1;
+
+  // reference to a service this evidence was gathered from
+  string service_id = 2;
+
+  // reference to the resource this evidence was gathered from
+  string resource_id = 3;
+
+  // TODO: replace with google/type/date.proto
+  string timestamp = 4;
+
+  repeated int32 applicable_metrics = 5;
+
+  // "raw" evidence (for the auditor), for example the raw JSON response from
+  // the API. This does not follow a defined schema
+  string raw = 6;
+
+  // optional; a semantic representation of the Cloud resource according to our
+  // defined ontology. a JSON seralized node of our semantic graph. This may be
+  // Clouditor-specific.
+  google.protobuf.Value resource = 7;
+}
+
+message Metric {
+  int32 id = 1;
+
+  // a human readable name of the metric
+  string name = 2;
+
+  // a description of the metric
+  string description = 3;
+
+  // reference to control catalog category or domain
+  string category = 4;
+
+  enum Scale {
+    NOMIMAL = 0;
+    ORDINAL = 1;
+    METRIC = 2;
+  }
+  // the scale of this metric, e.g. categories, ranked data or metric values
+  Scale scale = 5;
+
+  // the range of this metric, depends on the scale
+  Range range = 6;
+
+  // target value
+  google.protobuf.Value target_value  = 7;
+}
+
+// Defines a range of values
+message Range {
+  oneof range {
+    // used for nomical scale
+    AllowedValues allowed_values = 1;
+
+    // used for ordinal scale
+    Order order = 2;
+
+    // used for metric scale
+    MinMax min_max = 3;
+  }
+}
+
+// Defines a range of values through a (inclusive) minimum and a maximum
+message MinMax {
+  int64 min = 1;
+  int64 max = 2;
+}
+
+// Defines a range
+message AllowedValues { repeated google.protobuf.Value values = 1; }
+
+// Defines a range of values in a pre-defined order from the lowest to the
+// highest.
+message Order { repeated google.protobuf.Value values = 1; }

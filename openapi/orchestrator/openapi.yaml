@@ -1,0 +1,277 @@
+# Generated with protoc-gen-openapi
+# https://github.com/googleapis/gnostic/tree/master/apps/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: Orchestrator
+    version: 0.0.1
+paths:
+    /v1/orchestator/assessment_results:
+        put:
+            operationId: Orchestrator_StoreAssessmentResult
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AssessmentResult'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /v1/orchestator/assessment_tools:
+        get:
+            operationId: Orchestrator_ListAssessmentTools
+            parameters:
+                - name: metric_id
+                  in: query
+                  description: filter tools by metric id
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListAssessmentToolsResponse'
+        post:
+            operationId: Orchestrator_RegisterAssessmentTool
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AssessmentTool'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AssessmentTool'
+    /v1/orchestator/assessment_tools/{tool_id}:
+        get:
+            operationId: Orchestrator_GetAssessmentTool
+            parameters:
+                - name: tool_id
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AssessmentTool'
+        put:
+            operationId: Orchestrator_UpdateAssessmentTool
+            parameters:
+                - name: tool_id
+                  in: query
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AssessmentTool'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AssessmentTool'
+        delete:
+            operationId: Orchestrator_DeregisterAssessmentTool
+            parameters:
+                - name: tool_id
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /v1/orchestator/metrics:
+        get:
+            operationId: Orchestrator_ListMetrics
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListMetricsResponse'
+    /v1/orchestator/metrics/{metric_id}:
+        get:
+            operationId: Orchestrator_GetMetric
+            parameters:
+                - name: metric_id
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Metric'
+components:
+    schemas:
+        AllowedValues:
+            properties:
+                values:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Value'
+            description: Defines a range
+        AssessmentResult:
+            properties:
+                id:
+                    type: string
+                    description: the ID in a uuid format
+                metric_id:
+                    type: string
+                    description: the ID of the metric it refers to
+                result:
+                    type: integer
+                    format: enum
+                target_value:
+                    type: string
+                evidence:
+                    $ref: '#/components/schemas/Evidence'
+        AssessmentTool:
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                description:
+                    type: string
+                available_metrics:
+                    type: array
+                    items:
+                        type: string
+                    description: a list of metrics that this tool can assess, referred by their ids
+            description: Represents an external tool or service that offers assessments according to certain metrics
+        Evidence:
+            properties:
+                id:
+                    type: string
+                    description: the ID in a uuid format
+                service_id:
+                    type: string
+                    description: reference to a service this evidence was gathered from
+                resource_id:
+                    type: string
+                    description: reference to the resource this evidence was gathered from
+                timestamp:
+                    type: string
+                    description: 'TODO: replace with google/type/date.proto'
+                applicable_metrics:
+                    type: array
+                    items:
+                        type: integer
+                raw:
+                    type: string
+                    description: '"raw" evidence (for the auditor), for example the raw JSON response from the API. This does not follow a defined schema'
+                resource:
+                    $ref: '#/components/schemas/Value'
+        ListAssessmentToolsResponse:
+            properties:
+                tools:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/AssessmentTool'
+        ListMetricsResponse:
+            properties:
+                metrics:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Metric'
+        ListValue:
+            properties:
+                values:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Value'
+                    description: Repeated field of dynamically typed values.
+            description: '`ListValue` is a wrapper around a repeated field of values. The JSON representation for `ListValue` is JSON array.'
+        Metric:
+            properties:
+                id:
+                    type: integer
+                    format: int32
+                name:
+                    type: string
+                    description: a human readable name of the metric
+                description:
+                    type: string
+                    description: a description of the metric
+                category:
+                    type: string
+                    description: reference to control catalog category or domain
+                scale:
+                    type: integer
+                    description: the scale of this metric, e.g. categories, ranked data or metric values
+                    format: enum
+                range:
+                    $ref: '#/components/schemas/Range'
+                target_value:
+                    $ref: '#/components/schemas/Value'
+        MinMax:
+            properties:
+                min:
+                    type: integer
+                    format: int64
+                max:
+                    type: integer
+                    format: int64
+            description: Defines a range of values through a (inclusive) minimum and a maximum
+        Order:
+            properties:
+                values:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Value'
+            description: Defines a range of values in a pre-defined order from the lowest to the highest.
+        Range:
+            properties:
+                allowed_values:
+                    $ref: '#/components/schemas/AllowedValues'
+                order:
+                    $ref: '#/components/schemas/Order'
+                min_max:
+                    $ref: '#/components/schemas/MinMax'
+            description: Defines a range of values
+        Struct:
+            properties:
+                fields:
+                    $ref: '#/components/schemas/FieldsEntry'
+            description: '`Struct` represents a structured data value, consisting of fields which map to dynamically typed values. In some languages, `Struct` might be supported by a native representation. For example, in scripting languages like JS a struct is represented as an object. The details of that representation are described together with the proto support for the language. The JSON representation for `Struct` is JSON object.'
+        Value:
+            properties:
+                null_value:
+                    type: integer
+                    description: Represents a null value.
+                    format: enum
+                number_value:
+                    type: number
+                    description: Represents a double value.
+                    format: double
+                string_value:
+                    type: string
+                    description: Represents a string value.
+                bool_value:
+                    type: boolean
+                    description: Represents a boolean value.
+                struct_value:
+                    $ref: '#/components/schemas/Struct'
+                list_value:
+                    $ref: '#/components/schemas/ListValue'
+            description: '`Value` represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values. A producer of value is expected to set one of that variants, absence of any variant indicates an error. The JSON representation for `Value` is JSON value.'

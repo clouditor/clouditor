@@ -64,7 +64,7 @@ func NewStartDiscoveryCommand() *cobra.Command {
 	return cmd
 }
 
-// NewStartDiscoveryCommand returns a cobra command for the `start` subcommand
+// NewQueryDiscoveryCommand returns a cobra command for the `start` subcommand
 func NewQueryDiscoveryCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "query",

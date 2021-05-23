@@ -29,6 +29,8 @@ import (
 	"clouditor.io/clouditor/cli/commands/completion"
 	"clouditor.io/clouditor/cli/commands/discovery"
 	"clouditor.io/clouditor/cli/commands/login"
+	"clouditor.io/clouditor/cli/commands/metric"
+	"clouditor.io/clouditor/cli/commands/tool"
 	"github.com/spf13/cobra"
 )
 
@@ -37,6 +39,8 @@ func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		login.NewLoginCommand(),
 		discovery.NewDiscoveryCommand(),
+		metric.NewMetricCommand(),
+		tool.NewToolCommand(),
 		completion.NewCompletionCommand(),
 	)
 }

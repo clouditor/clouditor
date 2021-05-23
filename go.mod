@@ -10,6 +10,7 @@ require (
 	github.com/alexedwards/argon2id v0.0.0-20210511081203-7d35d68092b8
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/google/addlicense v0.0.0-20210428195630-6d92264d7170
+	github.com/googleapis/gnostic v0.5.6-0.20210520165051-0320d74b3646
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.4.0
 	github.com/logrusorgru/aurora/v3 v3.0.0
@@ -19,7 +20,7 @@ require (
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a // indirect
 	google.golang.org/genproto v0.0.0-20210521181308-5ccab8a35a9a
 	google.golang.org/grpc v1.38.0
-	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0
+	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.0.0
 	google.golang.org/protobuf v1.26.0
 	gorm.io/driver/postgres v1.1.0
 	gorm.io/driver/sqlite v1.1.4

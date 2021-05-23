@@ -35,6 +35,7 @@ import (
 	"strings"
 
 	"clouditor.io/clouditor/api/auth"
+	"clouditor.io/clouditor/api/orchestrator"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -189,4 +190,74 @@ func (s *Session) AuthenticatedContext(ctx context.Context) context.Context {
 
 func DefaultArgsShellComp(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return []string{}, cobra.ShellCompDirectiveNoFileComp
+}
+
+func ValidArgsGetTools(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if len(args) != 0 {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	return getTools(toComplete), cobra.ShellCompDirectiveNoFileComp
+}
+
+func ValidArgsGetMetrics(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if len(args) != 0 {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	return getMetrics(toComplete), cobra.ShellCompDirectiveNoFileComp
+}
+
+func getTools(toComplete string) []string {
+	var (
+		err     error
+		session *Session
+		client  orchestrator.OrchestratorClient
+		res     *orchestrator.ListAssessmentToolsResponse
+	)
+
+	if session, err = ContinueSession(); err != nil {
+		fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+		return nil
+	}
+
+	client = orchestrator.NewOrchestratorClient(session)
+
+	if res, err = client.ListAssessmentTools(context.Background(), &orchestrator.ListAssessmentToolsRequest{}); err != nil {
+		return []string{}
+	}
+
+	var tools []string
+	for _, v := range res.Tools {
+		tools = append(tools, fmt.Sprintf("%s\t%s: %s", v.Id, v.Name, v.Description))
+	}
+
+	return tools
+}
+
+func getMetrics(toComplete string) []string {
+	var (
+		err     error
+		session *Session
+		client  orchestrator.OrchestratorClient
+		res     *orchestrator.ListMetricsResponse
+	)
+
+	if session, err = ContinueSession(); err != nil {
+		fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+		return nil
+	}
+
+	client = orchestrator.NewOrchestratorClient(session)
+
+	if res, err = client.ListMetrics(context.Background(), &orchestrator.ListMetricsRequest{}); err != nil {
+		return []string{}
+	}
+
+	var metrics []string
+	for _, v := range res.Metrics {
+		metrics = append(metrics, fmt.Sprintf("%d\t%s: %s", v.Id, v.Name, v.Description))
+	}
+
+	return metrics
 }

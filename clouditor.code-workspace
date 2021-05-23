@@ -12,5 +12,12 @@
 		"workbench.colorCustomizations": {
 			"debugConsole.errorForeground": "#a8a8a8"
 		},
+		"protoc": {
+			"options": [
+				"--proto_path=${workspaceRoot}proto",
+				"--proto_path=${workspaceRoot}/third_party",
+				"--proto_path=${env.GOPATH}/src"
+			]
+		}
 	}
 }

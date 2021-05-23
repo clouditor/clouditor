@@ -101,7 +101,8 @@ Install necessary protobuf tools.
 ```
 go install google.golang.org/protobuf/cmd/protoc-gen-go \
 google.golang.org/grpc/cmd/protoc-gen-go-grpc \
-github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway
+github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
+github.com/googleapis/gnostic/apps/protoc-gen-openapi
 ```
 
 Also make sure that `$HOME/go/bin` is on your `$PATH` and build:
