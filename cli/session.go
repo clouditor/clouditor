@@ -35,6 +35,8 @@ import (
 	"strings"
 
 	"clouditor.io/clouditor/api/auth"
+	"github.com/spf13/cobra"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -44,6 +46,8 @@ import (
 type Session struct {
 	URL   string `json:"url"`
 	Token string `json:"token"`
+
+	conn *grpc.ClientConn
 }
 
 func NewSession(url string) *Session {
@@ -77,14 +81,11 @@ func ContinueSession() (session *Session, err error) {
 		return
 	}
 
+	if session.conn, err = grpc.Dial(session.URL, grpc.WithInsecure()); err != nil {
+		return nil, fmt.Errorf("could not connect: %v", err)
+	}
+
 	return session, nil
-}
-
-func (s *Session) Context() context.Context {
-	md := metadata.Pairs("Authorization", fmt.Sprintf("Bearer %s", s.Token))
-	ctx := metadata.NewOutgoingContext(context.Background(), md)
-
-	return ctx
 }
 
 // Save saves the session into the `.clouditor` folder in the home directory
@@ -163,4 +164,29 @@ func PromtForLogin() (loginRequest *auth.LoginRequest, err error) {
 	}
 
 	return loginRequest, nil
+}
+
+// Invoke implements `grpc.ClientConnInterface` and automatically provides an authenticated
+// context of this session
+func (s *Session) Invoke(ctx context.Context, method string, args interface{}, reply interface{}, opts ...grpc.CallOption) error {
+	return s.conn.Invoke(s.AuthenticatedContext(ctx), method, args, reply, opts...)
+}
+
+// NewStream implements `grpc.ClientConnInterface` and automatically provides an authenticated
+// context of this session
+func (s *Session) NewStream(ctx context.Context, desc *grpc.StreamDesc, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+	return s.conn.NewStream(s.AuthenticatedContext(ctx), desc, method, opts...)
+}
+
+func (s *Session) AuthenticatedContext(ctx context.Context) context.Context {
+	return metadata.NewOutgoingContext(ctx,
+		metadata.Pairs(
+			"Authorization",
+			fmt.Sprintf("Bearer %s",
+				s.Token),
+		))
+}
+
+func DefaultArgsShellComp(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return []string{}, cobra.ShellCompDirectiveNoFileComp
 }
