@@ -1,29 +1,27 @@
-/*
- * Copyright 2016-2020 Fraunhofer AISEC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- *           $$\                           $$\ $$\   $$\
- *           $$ |                          $$ |\__|  $$ |
- *  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
- * $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
- * $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
- * $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
- * \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
- *  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
- *
- * This file is part of Clouditor Community Edition.
- */
+// Copyright 2016-2020 Fraunhofer AISEC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+//           $$\                           $$\ $$\   $$\
+//           $$ |                          $$ |\__|  $$ |
+//  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+// $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+// $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
+// $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+// \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+//  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+//
+// This file is part of Clouditor Community Edition.
 
 package auth
 
@@ -34,8 +32,8 @@ import (
 
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/persistence"
+	argon2 "github.com/alexedwards/argon2id"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/oxisto/go-httputil/argon2"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
@@ -92,6 +90,8 @@ func (s Service) Login(ctx context.Context, request *auth.LoginRequest) (respons
 // returned to the user as an internal server error. For security reasons, if authentication failed, only
 // the result will be set to false, but no detailed error will be returned to the user.
 func verifyLogin(request *auth.LoginRequest) (result bool, user *auth.User, err error) {
+	var match bool
+
 	db := persistence.GetDatabase()
 
 	user = new(auth.User)
@@ -106,25 +106,26 @@ func verifyLogin(request *auth.LoginRequest) (result bool, user *auth.User, err 
 		return false, nil, err
 	}
 
-	err = argon2.CompareHashAndPassword([]byte(user.Password), []byte(request.Password))
+	match, err = argon2.ComparePasswordAndHash(request.Password, user.Password)
 
-	if errors.Is(err, argon2.ErrMismatchedHashAndPassword) {
-		// do not return the error, just set result to false
-		return false, nil, nil
-	} else if err != nil {
+	if err != nil {
 		// some other error occurred, return it
 		return false, nil, err
 	}
 
-	return true, user, nil
+	if match {
+		return true, user, nil
+	} else {
+		return false, nil, nil
+	}
 }
 
 // HashPassword returns a hash of password using argon2id.
-func (s Service) HashPassword(password string) ([]byte, error) {
-	return argon2.GenerateFromPasswordWithParams([]byte(password), argon2.IDParams{
+func (s Service) HashPassword(password string) (string, error) {
+	return argon2.CreateHash(password, &argon2.Params{
 		SaltLength:  16,
 		Memory:      65536,
-		KeyLength:   16, /* moved over from Java code. might need to be upgraded to 32 */
+		KeyLength:   32,
 		Iterations:  3,
 		Parallelism: 6,
 	})

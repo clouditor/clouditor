@@ -23,46 +23,50 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package persistence
+package voc
 
-import (
-	"fmt"
+type IsEncryption interface {
+	IsEnabled() bool
 
-	"clouditor.io/clouditor/api/auth"
-	"github.com/sirupsen/logrus"
-	"gorm.io/driver/postgres"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
-)
-
-var log *logrus.Entry
-var db *gorm.DB
-
-func init() {
-	log = logrus.WithField("component", "db")
+	isEncryption() bool
 }
 
-func InitDB(inMemory bool, host string, port int16) (err error) {
-	if inMemory {
-		if db, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{}); err != nil {
-			return err
-		}
+type Encryption struct {
+	Enabled bool `json:"enabled"`
+}
 
-		log.Println("Using in-memory DB")
-	} else {
-		if db, err = gorm.Open(postgres.Open(fmt.Sprintf("postgres://postgres@%s:%d/postgres?sslmode=disable", host, port)), &gorm.Config{}); err != nil {
-			return err
-		}
+func (e *Encryption) IsEnabled() bool {
+	return e.Enabled
+}
 
-		log.Printf("Using postgres DB @ %s", host)
+func (e *Encryption) isEncryption() bool {
+	return true
+}
+
+type AtRestEncryption struct {
+	Encryption
+	Algorithm  string `json:"algorithm"`
+	KeyManager string `json:"keyManager"`
+}
+
+func NewAtRestEncryption(enabled bool, algorithm string, keyManager string) *AtRestEncryption {
+	return &AtRestEncryption{
+		Encryption: Encryption{Enabled: enabled},
+		Algorithm:  algorithm,
+		KeyManager: keyManager,
 	}
-
-	db.AutoMigrate(&auth.User{})
-
-	return nil
 }
 
-// GetDatabase returns the database
-func GetDatabase() *gorm.DB {
-	return db
+type TransportEncryption struct {
+	Encryption
+	Enforced   bool   `json:"enforced"`
+	TlsVersion string `json:"tlsVersion"`
+}
+
+func NewTransportEncryption(enabled bool, enforced bool, tlsVersion string) *TransportEncryption {
+	return &TransportEncryption{
+		Encryption: Encryption{Enabled: enabled},
+		Enforced:   enforced,
+		TlsVersion: tlsVersion,
+	}
 }
