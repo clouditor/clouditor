@@ -10,6 +10,7 @@ require (
 	github.com/alexedwards/argon2id v0.0.0-20210511081203-7d35d68092b8
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
+	github.com/google/addlicense v0.0.0-20210428195630-6d92264d7170
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.4.0
 	github.com/logrusorgru/aurora/v3 v3.0.0
