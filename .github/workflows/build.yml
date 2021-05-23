@@ -56,13 +56,19 @@ jobs:
           go-version: 1.16
       - name: Install Protoc
         uses: arduino/setup-protoc@v1
-      - name: Build
+      - name: Generate
         run: |
           go install google.golang.org/protobuf/cmd/protoc-gen-go \
           google.golang.org/grpc/cmd/protoc-gen-go-grpc \
           github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway
           go generate ./...
+      - name: Lint
+        run: |
+          go install github.com/google/addlicense
+          addlicense -c "Fraunhofer AISEC" -l apache -check **/*.go
           go vet ./...
+      - name: Build
+        run: |
           go build cmd/engine/engine.go
           go build cmd/cli/cl.go
       - name: "Upload Artifact"
