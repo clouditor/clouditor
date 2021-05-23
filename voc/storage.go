@@ -36,9 +36,9 @@ type IsResource interface {
 }
 
 type Resource struct {
-	ID           string
-	Name         string
-	CreationTime int64
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	CreationTime int64  `json:"creationTime"`
 }
 
 func (r *Resource) GetID() string {
@@ -71,7 +71,7 @@ type IsStorage interface {
 type StorageResource struct {
 	Resource
 
-	AtRestEncryption *AtRestEncryption
+	AtRestEncryption *AtRestEncryption `json:"atRestEncryption"`
 }
 
 func (s *StorageResource) GetAtRestEncryption() *AtRestEncryption {
@@ -86,7 +86,7 @@ type IsObjectStorage interface {
 type ObjectStorageResource struct {
 	StorageResource
 
-	HttpEndpoint *HttpEndpoint
+	HttpEndpoint *HttpEndpoint `json:"httpEndpoint"`
 }
 
 type BlockStorageResource struct {

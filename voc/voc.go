@@ -23,5 +23,6 @@
 //
 // This file is part of Clouditor Community Edition.
 
-// Package voc contains the vocabulary
+// Package voc contains the vocabulary for Cloud resources and their properties
+// that can be discovered using Clouditor
 package voc

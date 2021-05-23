@@ -27,12 +27,11 @@ package discovery
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/service/discovery/azure"
 	"clouditor.io/clouditor/voc"
-	"github.com/fatih/structs"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -74,10 +73,16 @@ func (s Service) Query(ctx context.Context, request *emptypb.Empty) (response *d
 	var r []*structpb.Value
 
 	for _, v := range resources {
-		m := structs.Map(v)
-		s, err := structpb.NewValue(m)
-		fmt.Printf("err: %+v", err)
-		r = append(r, s)
+		var s structpb.Value
+
+		// this is probably not the fastest approach, but this
+		// way, no extra libraries are needed and no extra struct tags
+		// except `json` are required. there is also no significant
+		// speed increase in marshaling the whole resource list, because
+		// we first need to build it out of the map anyway
+		b, _ := json.Marshal(v)
+		json.Unmarshal(b, &s)
+		r = append(r, &s)
 	}
 
 	return &discovery.QueryResponse{

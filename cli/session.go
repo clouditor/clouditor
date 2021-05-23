@@ -37,6 +37,7 @@ import (
 	"clouditor.io/clouditor/api/auth"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -127,7 +128,12 @@ func (s *Session) HandleResponse(msg proto.Message, err error) error {
 		return errors.New(s.Message())
 	}
 
-	b, _ := json.MarshalIndent(msg, "", "  ")
+	opt := protojson.MarshalOptions{
+		Multiline: true,
+		Indent:    "  ",
+	}
+
+	b, _ := opt.Marshal(msg)
 
 	fmt.Printf("%s\n", string(b))
 

@@ -32,7 +32,7 @@ type IsEncryption interface {
 }
 
 type Encryption struct {
-	Enabled bool
+	Enabled bool `json:"enabled"`
 }
 
 func (e *Encryption) IsEnabled() bool {
@@ -45,8 +45,8 @@ func (e *Encryption) isEncryption() bool {
 
 type AtRestEncryption struct {
 	Encryption
-	Algorithm  string
-	KeyManager string
+	Algorithm  string `json:"algorithm"`
+	KeyManager string `json:"keyManager"`
 }
 
 func NewAtRestEncryption(enabled bool, algorithm string, keyManager string) *AtRestEncryption {
@@ -59,8 +59,8 @@ func NewAtRestEncryption(enabled bool, algorithm string, keyManager string) *AtR
 
 type TransportEncryption struct {
 	Encryption
-	Enforced   bool
-	TlsVersion string
+	Enforced   bool   `json:"enforced"`
+	TlsVersion string `json:"tlsVersion"`
 }
 
 func NewTransportEncryption(enabled bool, enforced bool, tlsVersion string) *TransportEncryption {

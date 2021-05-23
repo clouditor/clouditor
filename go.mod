@@ -9,7 +9,6 @@ require (
 	github.com/Azure/go-autorest/autorest/validation v0.3.1 // indirect
 	github.com/alexedwards/argon2id v0.0.0-20210511081203-7d35d68092b8
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/fatih/structs v1.1.0
 	github.com/google/addlicense v0.0.0-20210428195630-6d92264d7170
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.4.0

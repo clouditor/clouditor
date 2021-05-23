@@ -26,7 +26,7 @@
 package voc
 
 type HttpEndpoint struct {
-	URL string
+	URL string `json:"url"`
 
-	TransportEncryption *TransportEncryption
+	TransportEncryption *TransportEncryption `json:"transportEncryption"`
 }

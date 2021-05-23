@@ -52,7 +52,7 @@ func (d *azureStorageDiscovery) Description() string {
 }
 
 func (d *azureStorageDiscovery) List() (list []voc.IsResource, err error) {
-	// create an authorizer from env vars or Azure Managed Service Idenity
+	// create an authorizer from env vars or Azure Managed Service Identity
 	authorizer, err := auth.NewAuthorizerFromCLI()
 	if err != nil {
 		log.Errorf("Could not authenticate to Azure: %s", err)
