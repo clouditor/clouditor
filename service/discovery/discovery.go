@@ -86,6 +86,6 @@ func (s Service) Query(ctx context.Context, request *emptypb.Empty) (response *d
 	}
 
 	return &discovery.QueryResponse{
-		Result: structpb.NewListValue(&structpb.ListValue{Values: r}),
+		Result: &structpb.ListValue{Values: r},
 	}, nil
 }

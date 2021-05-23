@@ -40,7 +40,7 @@
   message StartDiscoveryResponse { bool successful = 1; }
 
   message QueryResponse {
-    google.protobuf.Value result = 1;
+    google.protobuf.ListValue result = 1;
   }
   
   service Discovery {
