@@ -20,7 +20,7 @@ require (
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a // indirect
 	google.golang.org/genproto v0.0.0-20210521181308-5ccab8a35a9a
 	google.golang.org/grpc v1.38.0
-	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.0.0
+	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0
 	google.golang.org/protobuf v1.26.0
 	gorm.io/driver/postgres v1.1.0
 	gorm.io/driver/sqlite v1.1.4
