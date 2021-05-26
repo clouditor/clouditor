@@ -58,11 +58,17 @@ func (s Service) Start(ctx context.Context, request *discovery.StartDiscoveryReq
 
 	log.Infof("Starting discovery...")
 
-	var discoverer discovery.Discoverer = azure.NewAzureStorageDiscovery()
+	var discovererStorage discovery.Discoverer = azure.NewAzureStorageDiscovery()
+	var discovererCompute discovery.Discoverer = azure.NewAzureComputeDiscovery()
 
-	list, _ := discoverer.List()
+	list, _ := discovererStorage.List()
+	listCompute, _ := discovererCompute.List()
 
 	for _, v := range list {
+		resources[string(v.GetID())] = v
+	}
+
+	for _, v := range listCompute {
 		resources[string(v.GetID())] = v
 	}
 

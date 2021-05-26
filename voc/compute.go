@@ -25,41 +25,34 @@
 
 package voc
 
-type HasAtRestEncryption interface {
-	GetAtRestEncryption() *AtRestEncryption
+type HasLog interface {
+	GetLog() *Log
 }
 
-type HasHttpEndpoint interface {
-	GetHttpEndpoint() *HttpEndpoint
-}
-
-type IsStorage interface {
+// TBD Reicht das aus?
+type IsCompute interface {
 	IsResource
-
-	HasAtRestEncryption
 }
 
-type StorageResource struct {
+type ComputeResource struct {
 	Resource
-
-	AtRestEncryption *AtRestEncryption `json:"atRestEncryption"`
 }
 
-func (s *StorageResource) GetAtRestEncryption() *AtRestEncryption {
-	return s.AtRestEncryption
+type VirtualMachineResource struct {
+	ComputeResource
+	// NetworkInterface
+	//BlockStorage
+
+	//Log *Log `json:"log"`
 }
 
-type IsObjectStorage interface {
-	IsStorage
-	HasHttpEndpoint
-}
+// type NetworkInterface struct {
+// 	ComputeResource
+// 	//NetworkService
 
-type ObjectStorageResource struct {
-	StorageResource
+// 	//HasAccessRestriction
+// }
 
-	HttpEndpoint *HttpEndpoint `json:"httpEndpoint"`
-}
-
-type BlockStorageResource struct {
-	StorageResource
-}
+// func (v *VirtualMachineResource) GetLog() *Log {
+// 	return v.Log
+// }
