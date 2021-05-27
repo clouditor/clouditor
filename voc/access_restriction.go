@@ -26,15 +26,13 @@
 package voc
 
 type AccessRestriction struct {
-	Name    string `json:"name"`
-	Inbound bool   `json:"inbound"`
+	Inbound bool `json:"inbound"`
 	// According to the ontology, it is a string. But bool should be enough.
 	RestrictedPorts bool `json:"restrictedPorts"`
 }
 
 func NewAccessRestriction(name string, inbound bool, restrictedPorts bool) *AccessRestriction {
 	return &AccessRestriction{
-		Name:            name,
 		Inbound:         inbound,
 		RestrictedPorts: restrictedPorts,
 	}

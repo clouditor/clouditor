@@ -34,6 +34,7 @@ import (
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/compute/mgmt/compute"
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/resources/mgmt/subscriptions"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2020-03-01/network"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 )
 
@@ -51,7 +52,7 @@ func (d *azureComputeDiscovery) Description() string {
 	return "Discovery Azure compute."
 }
 
-// Discover virtual machines
+// Discover compute resources
 func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 	// create an authorizer from env vars or Azure Managed Service Identity
 	authorizer, err := auth.NewAuthorizerFromCLI()
@@ -69,15 +70,30 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 
 	log.Infof("Using %s as subscription", *sub.SubscriptionID)
 
+	ctx := context.Background()
+
+	// Discover virtual machines
 	client := compute.NewVirtualMachinesClient(*sub.SubscriptionID)
 	client.Authorizer = authorizer
-
-	ctx := context.Background()
 
 	result, _ := client.ListAllComplete(ctx, "true")
 
 	for _, v := range *result.Response().Value {
 		s := handleVirtualMachines(v)
+
+		log.Infof("Adding virtual machine %+v", s)
+
+		list = append(list, s)
+	}
+
+	// Discover network interfaces
+	client_network_interfaces := network.NewInterfacesClient(*sub.SubscriptionID)
+	client_network_interfaces.Authorizer = authorizer
+
+	result_network_interfaces, _ := client_network_interfaces.ListAll(ctx)
+
+	for _, ni := range result_network_interfaces.Values() {
+		s := handleNetworkInterfaces(ni)
 
 		log.Infof("Adding virtual machine %+v", s)
 
@@ -93,7 +109,7 @@ func handleVirtualMachines(vm compute.VirtualMachine) voc.IsCompute {
 			Resource: voc.Resource{
 				ID:           *vm.ID,
 				Name:         *vm.Name,
-				CreationTime: 0, // VM has no creation time
+				CreationTime: 0, // No creation time available
 			}},
 		Log: &voc.Log{
 			Enabled: IsBootDiagnosticEnabled(vm),
@@ -107,4 +123,45 @@ func IsBootDiagnosticEnabled(vm compute.VirtualMachine) bool {
 	} else {
 		return *vm.DiagnosticsProfile.BootDiagnostics.Enabled
 	}
+}
+
+func handleNetworkInterfaces(ni network.Interface) voc.IsCompute {
+	return &voc.NetworkInterfaceResource{
+		ComputeResource: voc.ComputeResource{
+			Resource: voc.Resource{
+				ID:           *ni.ID,
+				Name:         *ni.Name,
+				CreationTime: 0, // No creation time available
+			}},
+		VmID: GetVmID(ni), // Only for debugging reasons 
+		AccessRestriction: &voc.AccessRestriction{
+			Inbound:         false,                         //TBD
+			RestrictedPorts: AreRestrictedPortsDefined(ni), //TBD:SecurityGroupProperties are empty. Why?
+		},
+	}
+}
+
+func AreRestrictedPortsDefined(ni network.Interface) bool {
+
+	// Returns true if at least one SourcePortRange is defined
+	if ni.NetworkSecurityGroup.SecurityGroupPropertiesFormat != nil {
+		for _, securityRule := range *ni.NetworkSecurityGroup.SecurityRules {
+			if securityRule.SourcePortRange != nil {
+				return true
+			} else {
+				continue
+			}
+		}
+	}
+
+	return false
+}
+
+func GetVmID(ni network.Interface) string {
+	if ni.VirtualMachine == nil {
+		return ""
+	} else {
+		return *ni.VirtualMachine.ID
+	}
+
 }

@@ -53,6 +53,7 @@ type NetworkInterfaceResource struct {
 	ComputeResource
 	//NetworkService
 
+	VmID              string             `json:"vmId"` // For debugging reasons
 	AccessRestriction *AccessRestriction `json:"accessRestriction"`
 }
 
