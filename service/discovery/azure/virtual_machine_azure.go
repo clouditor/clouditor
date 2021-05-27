@@ -51,7 +51,7 @@ func (d *azureComputeDiscovery) Description() string {
 	return "Discovery Azure compute."
 }
 
-// Discover VMs per resourceGroup
+// Discover virtual machines
 func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 	// create an authorizer from env vars or Azure Managed Service Identity
 	authorizer, err := auth.NewAuthorizerFromCLI()
@@ -74,10 +74,10 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 
 	ctx := context.Background()
 
-	result, _ := client.List(ctx, "BayernCloud")
+	result, _ := client.ListAllComplete(ctx, "true")
 
-	for _, v := range result.Values() {
-		s := handleCompute(v)
+	for _, v := range *result.Response().Value {
+		s := handleVirtualMachines(v)
 
 		log.Infof("Adding virtual machine %+v", s)
 
@@ -87,12 +87,13 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 	return
 }
 
-func handleCompute(vm compute.VirtualMachine) voc.IsCompute {
+func handleVirtualMachines(vm compute.VirtualMachine) voc.IsCompute {
 	return &voc.VirtualMachineResource{
 		ComputeResource: voc.ComputeResource{
 			Resource: voc.Resource{
-				ID:   *vm.ID,
-				Name: *vm.Name,
+				ID:           *vm.ID,
+				Name:         *vm.Name,
+				CreationTime: 0, // VM has no creation time
 			}},
 	}
 }
