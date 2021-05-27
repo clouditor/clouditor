@@ -95,5 +95,16 @@ func handleVirtualMachines(vm compute.VirtualMachine) voc.IsCompute {
 				Name:         *vm.Name,
 				CreationTime: 0, // VM has no creation time
 			}},
+		Log: &voc.Log{
+			Enabled: IsBootDiagnosticEnabled(vm),
+		},
+	}
+}
+
+func IsBootDiagnosticEnabled(vm compute.VirtualMachine) bool {
+	if vm.DiagnosticsProfile == nil {
+		return false
+	} else {
+		return *vm.DiagnosticsProfile.BootDiagnostics.Enabled
 	}
 }

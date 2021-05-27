@@ -1,4 +1,4 @@
-// Copyright 2021 Fraunhofer AISEC
+// Copyright 2016-2020 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,41 +25,7 @@
 
 package voc
 
-// type HasLog interface {
-// 	GetLog() *Log
-// }
-
-type HasAccessRestriction interface {
-	GetAccessRestriction() *AccessRestriction
-}
-
-type IsCompute interface {
-	IsResource
-}
-
-type ComputeResource struct {
-	Resource
-}
-
-type VirtualMachineResource struct {
-	ComputeResource
-	//NetworkInterfaceResource
-	//BlockStorage
-
-	Log *Log `json:"log"`
-}
-
-type NetworkInterfaceResource struct {
-	ComputeResource
-	//NetworkService
-
-	AccessRestriction *AccessRestriction `json:"accessRestriction"`
-}
-
-func (v *VirtualMachineResource) GetLog() *Log {
-	return v.Log
-}
-
-func (n *NetworkInterfaceResource) GetAccessRestriction() *AccessRestriction {
-	return n.AccessRestriction
+//Do we want to distinguish between logging mechanisms, e.g., azure Log Analytics, Azure VM BootDiagnostics?
+type Log struct {
+	Enabled bool `json:"enabled"`
 }
