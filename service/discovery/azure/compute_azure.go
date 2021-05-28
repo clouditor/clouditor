@@ -29,6 +29,7 @@ package azure
 
 import (
 	"context"
+	"strings"
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
@@ -133,28 +134,62 @@ func handleNetworkInterfaces(ni network.Interface) voc.IsCompute {
 				Name:         *ni.Name,
 				CreationTime: 0, // No creation time available
 			}},
-		VmID: GetVmID(ni), // Only for debugging reasons 
+		VmID: GetVmID(ni),
 		AccessRestriction: &voc.AccessRestriction{
-			Inbound:         false,                         //TBD
-			RestrictedPorts: AreRestrictedPortsDefined(ni), //TBD:SecurityGroupProperties are empty. Why?
+			Inbound:         false, //TBD
+			RestrictedPorts: AreRestrictedPortsDefined(ni),
 		},
 	}
 }
 
+// TODO What is the definition of restricted ports?
+// For now it is checked if an user-configured inbound security rule is enabled
 func AreRestrictedPortsDefined(ni network.Interface) bool {
 
-	// Returns true if at least one SourcePortRange is defined
-	if ni.NetworkSecurityGroup.SecurityGroupPropertiesFormat != nil {
-		for _, securityRule := range *ni.NetworkSecurityGroup.SecurityRules {
-			if securityRule.SourcePortRange != nil {
-				return true
-			} else {
-				continue
-			}
+	if ni.NetworkSecurityGroup.ID == nil {
+		return false
+	}
+
+	nsgID := *ni.NetworkSecurityGroup.ID
+
+	// TODO refactor authorizer
+	// create an authorizer from env vars or Azure Managed Service Identity
+	authorizer, err := auth.NewAuthorizerFromCLI()
+	if err != nil {
+		log.Errorf("Could not authenticate to Azure: %s", err)
+		return false
+	}
+
+	subClient := subscriptions.NewClient()
+	subClient.Authorizer = authorizer
+
+	// get first subcription
+	page, _ := subClient.List(context.Background())
+	sub := page.Values()[0]
+
+	ctx := context.Background()
+
+	client2 := network.NewSecurityGroupsClient(*sub.SubscriptionID)
+	client2.Authorizer = authorizer
+	sg, err := client2.Get(ctx, GetResourceGroupName(nsgID), strings.Split(nsgID, "/")[8], "")
+
+	if err != nil {
+		log.Errorf("Could not get security group: %s", err)
+		return false
+	}
+
+	for _, securityRule := range *sg.SecurityRules {
+		if securityRule.Access == network.SecurityRuleAccessAllow {
+			return true
 		}
 	}
 
 	return false
+}
+
+func GetResourceGroupName(nsgID string) string {
+	log.Infof(strings.Split(nsgID, "/")[4])
+	return strings.Split(nsgID, "/")[4]
 }
 
 func GetVmID(ni network.Interface) string {
