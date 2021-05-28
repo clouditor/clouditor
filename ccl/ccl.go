@@ -2,36 +2,104 @@
 package ccl
 
 import (
+	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
+	"github.com/sirupsen/logrus"
 
 	"clouditor.io/clouditor/ccl/parser"
 )
 
+var log *logrus.Entry
+
 func init() {
-
+	log = logrus.WithField("component", "ccl")
 }
 
-type TreeShapeListener struct {
-	*parser.BaseCCLListener
-}
+func RunRule(file string, object map[string]interface{}) (bool, error) {
+	log.Debugf("Evaluating rule %s...", file)
 
-func NewTreeShapeListener() *TreeShapeListener {
-	return new(TreeShapeListener)
-}
-
-func (this *TreeShapeListener) EnterEveryRule(ctx antlr.ParserRuleContext) {
-	fmt.Println(ctx.GetText())
-}
-
-func RunRule() {
-	input, _ := antlr.NewFileStream("../rules/encryption.ccl")
+	input, _ := antlr.NewFileStream(file)
 	lexer := parser.NewCCLLexer(input)
 	stream := antlr.NewCommonTokenStream(lexer, 0)
 	p := parser.NewCCLParser(stream)
 	p.AddErrorListener(antlr.NewDiagnosticErrorListener(true))
-	p.BuildParseTrees = true
 	tree := p.Condition()
-	antlr.ParseTreeWalkerDefault.Walk(NewTreeShapeListener(), tree)
+
+	return evaluateCondition(tree, object)
+}
+
+func evaluateCondition(c parser.IConditionContext, o map[string]interface{}) (success bool, err error) {
+	switch v := c.(type) {
+	case *parser.ConditionContext:
+		return evaluateExpression(v.Expression(), o)
+	}
+
+	return false, errors.New("unsupported context")
+}
+
+func evaluateExpression(c parser.IExpressionContext, o map[string]interface{}) (success bool, err error) {
+	switch v := c.(type) {
+	case *parser.ExpressionContext:
+		if v.SimpleExpression() != nil {
+			return evaluateSimpleExpression(v.SimpleExpression(), o)
+		}
+	}
+
+	return false, errors.New("unsupported context")
+}
+
+func evaluateSimpleExpression(c parser.ISimpleExpressionContext, o map[string]interface{}) (success bool, err error) {
+	switch v := c.(type) {
+	case *parser.SimpleExpressionContext:
+		if v.Comparison() != nil {
+			return evaluateComparison(v.Comparison(), o)
+		}
+	}
+
+	return false, errors.New("unsupported context")
+}
+
+func evaluateComparison(c parser.IComparisonContext, o map[string]interface{}) (success bool, err error) {
+	switch v := c.(type) {
+	case *parser.ComparisonContext:
+		if v.BinaryComparison() != nil {
+			return evaluteBinaryComparison(v.BinaryComparison(), o)
+		}
+	}
+
+	return false, errors.New("unsupported context")
+}
+
+func evaluteBinaryComparison(c parser.IBinaryComparisonContext, o map[string]interface{}) (success bool, err error) {
+	switch v := c.(type) {
+	case *parser.BinaryComparisonContext:
+		// now the fun begins
+		fieldIdentifier := v.Field().(*parser.FieldContext).Identifier().GetText()
+
+		fieldValue := o[fieldIdentifier]
+
+		comparisonValue := evaluateStringLiteral(v.Value().(*parser.ValueContext).StringLiteral())
+
+		return evaluateEquals(fieldValue, comparisonValue)
+	}
+
+	return false, errors.New("unsupported context")
+}
+
+func evaluateStringLiteral(node antlr.TerminalNode) string {
+	s := node.GetText()
+
+	return strings.Trim(s, "\"'")
+}
+
+func evaluateEquals(lhs interface{}, rhs interface{}) (success bool, err error) {
+	switch v := lhs.(type) {
+	case string:
+		return v == fmt.Sprintf("%v", rhs), nil
+	}
+
+	return false, fmt.Errorf("could not compare %+v and %+v", lhs, rhs)
 }
