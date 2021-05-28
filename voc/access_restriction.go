@@ -27,11 +27,11 @@ package voc
 
 type AccessRestriction struct {
 	Inbound bool `json:"inbound"`
-	// According to the ontology, it is a string. But bool should be enough.
-	RestrictedPorts bool `json:"restrictedPorts"`
+	// TODO According to the ontology, it is a string. What information do we need exactly?
+	RestrictedPorts string `json:"restrictedPorts"` // List of restricted ports
 }
 
-func NewAccessRestriction(name string, inbound bool, restrictedPorts bool) *AccessRestriction {
+func NewAccessRestriction(name string, inbound bool, restrictedPorts string) *AccessRestriction {
 	return &AccessRestriction{
 		Inbound:         inbound,
 		RestrictedPorts: restrictedPorts,

@@ -28,13 +28,9 @@
 package azure
 
 import (
-	"context"
-
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
-	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/resources/mgmt/subscriptions"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
-	"github.com/Azure/go-autorest/autorest/azure/auth"
 )
 
 type azureStorageDiscovery struct{}
@@ -52,28 +48,11 @@ func (d *azureStorageDiscovery) Description() string {
 }
 
 func (d *azureStorageDiscovery) List() (list []voc.IsResource, err error) {
-	// create an authorizer from env vars or Azure Managed Service Identity
-	authorizer, err := auth.NewAuthorizerFromCLI()
-	if err != nil {
-		log.Errorf("Could not authenticate to Azure: %s", err)
-		return
-	}
 
-	subClient := subscriptions.NewClient()
-	subClient.Authorizer = authorizer
+	client := storage.NewAccountsClient(*azureAuthorizer.sub.SubscriptionID)
+	client.Authorizer = azureAuthorizer.authorizer
 
-	// get first subcription
-	page, _ := subClient.List(context.Background())
-	sub := page.Values()[0]
-
-	log.Infof("Using %s as subscription", *sub.SubscriptionID)
-
-	client := storage.NewAccountsClient(*sub.SubscriptionID)
-	client.Authorizer = authorizer
-
-	ctx := context.Background()
-
-	result, _ := client.List(ctx)
+	result, _ := client.List(azureAuthorizer.ctx)
 
 	for _, v := range result.Values() {
 		s := handleStorageAccount(v)

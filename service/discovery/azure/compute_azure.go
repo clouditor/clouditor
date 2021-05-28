@@ -28,18 +28,16 @@
 package azure
 
 import (
-	"context"
 	"strings"
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/compute/mgmt/compute"
-	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/resources/mgmt/subscriptions"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2020-03-01/network"
-	"github.com/Azure/go-autorest/autorest/azure/auth"
 )
 
-type azureComputeDiscovery struct{}
+type azureComputeDiscovery struct {
+}
 
 func NewAzureComputeDiscovery() discovery.Discoverer {
 	return &azureComputeDiscovery{}
@@ -55,29 +53,12 @@ func (d *azureComputeDiscovery) Description() string {
 
 // Discover compute resources
 func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
-	// create an authorizer from env vars or Azure Managed Service Identity
-	authorizer, err := auth.NewAuthorizerFromCLI()
-	if err != nil {
-		log.Errorf("Could not authenticate to Azure: %s", err)
-		return
-	}
-
-	subClient := subscriptions.NewClient()
-	subClient.Authorizer = authorizer
-
-	// get first subcription
-	page, _ := subClient.List(context.Background())
-	sub := page.Values()[0]
-
-	log.Infof("Using %s as subscription", *sub.SubscriptionID)
-
-	ctx := context.Background()
 
 	// Discover virtual machines
-	client := compute.NewVirtualMachinesClient(*sub.SubscriptionID)
-	client.Authorizer = authorizer
+	client := compute.NewVirtualMachinesClient(*azureAuthorizer.sub.SubscriptionID)
+	client.Authorizer = azureAuthorizer.authorizer
 
-	result, _ := client.ListAllComplete(ctx, "true")
+	result, _ := client.ListAllComplete(azureAuthorizer.ctx, "true")
 
 	for _, v := range *result.Response().Value {
 		s := handleVirtualMachines(v)
@@ -88,15 +69,15 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 	}
 
 	// Discover network interfaces
-	client_network_interfaces := network.NewInterfacesClient(*sub.SubscriptionID)
-	client_network_interfaces.Authorizer = authorizer
+	client_network_interfaces := network.NewInterfacesClient(*azureAuthorizer.sub.SubscriptionID)
+	client_network_interfaces.Authorizer = azureAuthorizer.authorizer
 
-	result_network_interfaces, _ := client_network_interfaces.ListAll(ctx)
+	result_network_interfaces, _ := client_network_interfaces.ListAll(azureAuthorizer.ctx)
 
 	for _, ni := range result_network_interfaces.Values() {
 		s := handleNetworkInterfaces(ni)
 
-		log.Infof("Adding virtual machine %+v", s)
+		log.Infof("Adding network interfaces %+v", s)
 
 		list = append(list, s)
 	}
@@ -137,54 +118,42 @@ func handleNetworkInterfaces(ni network.Interface) voc.IsCompute {
 		VmID: GetVmID(ni),
 		AccessRestriction: &voc.AccessRestriction{
 			Inbound:         false, //TBD
-			RestrictedPorts: AreRestrictedPortsDefined(ni),
+			RestrictedPorts: GetRestrictedPortsDefined(ni),
 		},
 	}
 }
 
-// TODO What is the definition of restricted ports?
-// For now it is checked if an user-configured inbound security rule is enabled
-func AreRestrictedPortsDefined(ni network.Interface) bool {
+// Returns all restricted ports for the network interface
+func GetRestrictedPortsDefined(ni network.Interface) string {
+
+	var restrictedPorts []string
 
 	if ni.NetworkSecurityGroup.ID == nil {
-		return false
+		return ""
 	}
 
 	nsgID := *ni.NetworkSecurityGroup.ID
 
-	// TODO refactor authorizer
-	// create an authorizer from env vars or Azure Managed Service Identity
-	authorizer, err := auth.NewAuthorizerFromCLI()
-	if err != nil {
-		log.Errorf("Could not authenticate to Azure: %s", err)
-		return false
-	}
+	client2 := network.NewSecurityGroupsClient(*azureAuthorizer.sub.SubscriptionID)
+	client2.Authorizer = azureAuthorizer.authorizer
 
-	subClient := subscriptions.NewClient()
-	subClient.Authorizer = authorizer
-
-	// get first subcription
-	page, _ := subClient.List(context.Background())
-	sub := page.Values()[0]
-
-	ctx := context.Background()
-
-	client2 := network.NewSecurityGroupsClient(*sub.SubscriptionID)
-	client2.Authorizer = authorizer
-	sg, err := client2.Get(ctx, GetResourceGroupName(nsgID), strings.Split(nsgID, "/")[8], "")
+	// Get the Security Group of the network interface ni
+	sg, err := client2.Get(azureAuthorizer.ctx, GetResourceGroupName(nsgID), strings.Split(nsgID, "/")[8], "")
 
 	if err != nil {
 		log.Errorf("Could not get security group: %s", err)
-		return false
+		return ""
 	}
 
+	// Find all ports defined in the security rules with access property "Deny"
 	for _, securityRule := range *sg.SecurityRules {
-		if securityRule.Access == network.SecurityRuleAccessAllow {
-			return true
+		if securityRule.Access == network.SecurityRuleAccessDeny {
+			// TODO delete duplicates
+			restrictedPorts = append(restrictedPorts, *securityRule.SourcePortRange)
 		}
 	}
 
-	return false
+	return strings.Join(restrictedPorts, ",")
 }
 
 func GetResourceGroupName(nsgID string) string {
