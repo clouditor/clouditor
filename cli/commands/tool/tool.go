@@ -61,16 +61,14 @@ func NewListToolsCommand() *cobra.Command {
 
 			res, err = client.ListAssessmentTools(context.Background(), &orchestrator.ListAssessmentToolsRequest{})
 
-			session.HandleResponse(res, err)
-
-			return err
+			return session.HandleResponse(res, err)
 		},
 		ValidArgsFunction: cli.DefaultArgsShellComp,
 	}
 
 	cmd.PersistentFlags().StringP("metric-id", "m", "", "only list tools for this metric")
-	viper.BindPFlag("metric-id", cmd.PersistentFlags().Lookup("metric-id"))
-	cmd.RegisterFlagCompletionFunc("metric-id", cli.ValidArgsGetMetrics)
+	_ = viper.BindPFlag("metric-id", cmd.PersistentFlags().Lookup("metric-id"))
+	_ = cmd.RegisterFlagCompletionFunc("metric-id", cli.ValidArgsGetMetrics)
 
 	return cmd
 }
@@ -105,9 +103,7 @@ func NewShowToolCommand() *cobra.Command {
 				ToolId: args[0],
 			})
 
-			session.HandleResponse(res, err)
-
-			return err
+			return session.HandleResponse(res, err)
 		},
 		ValidArgsFunction: cli.ValidArgsGetTools,
 	}
@@ -143,9 +139,7 @@ func NewRegisterToolCommand() *cobra.Command {
 				},
 			})
 
-			session.HandleResponse(res, err)
-
-			return err
+			return session.HandleResponse(res, err)
 		},
 		ValidArgsFunction: cli.DefaultArgsShellComp,
 	}
@@ -153,15 +147,15 @@ func NewRegisterToolCommand() *cobra.Command {
 	cmd.PersistentFlags().StringP("name", "n", "", "the name of the tool")
 	cmd.PersistentFlags().StringP("description", "d", "", "an optional description")
 	cmd.PersistentFlags().StringSliceP("metric-ids", "m", []string{}, "the metric this tool assesses")
-	cmd.MarkPersistentFlagRequired("name")
-	cmd.MarkPersistentFlagRequired("metric-ids")
-	viper.BindPFlag("name", cmd.PersistentFlags().Lookup("name"))
-	viper.BindPFlag("description", cmd.PersistentFlags().Lookup("description"))
-	viper.BindPFlag("metric-ids", cmd.PersistentFlags().Lookup("metric-ids"))
+	_ = cmd.MarkPersistentFlagRequired("name")
+	_ = cmd.MarkPersistentFlagRequired("metric-ids")
+	_ = viper.BindPFlag("name", cmd.PersistentFlags().Lookup("name"))
+	_ = viper.BindPFlag("description", cmd.PersistentFlags().Lookup("description"))
+	_ = viper.BindPFlag("metric-ids", cmd.PersistentFlags().Lookup("metric-ids"))
 
-	cmd.RegisterFlagCompletionFunc("name", cli.DefaultArgsShellComp)
-	cmd.RegisterFlagCompletionFunc("description", cli.DefaultArgsShellComp)
-	cmd.RegisterFlagCompletionFunc("metric-ids", cli.ValidArgsGetMetrics)
+	_ = cmd.RegisterFlagCompletionFunc("name", cli.DefaultArgsShellComp)
+	_ = cmd.RegisterFlagCompletionFunc("description", cli.DefaultArgsShellComp)
+	_ = cmd.RegisterFlagCompletionFunc("metric-ids", cli.ValidArgsGetMetrics)
 
 	return cmd
 }
@@ -196,9 +190,7 @@ func NewUpdateToolCommand() *cobra.Command {
 				},
 			})
 
-			session.HandleResponse(res, err)
-
-			return err
+			return session.HandleResponse(res, err)
 		},
 		ValidArgsFunction: cli.DefaultArgsShellComp,
 	}
@@ -206,15 +198,15 @@ func NewUpdateToolCommand() *cobra.Command {
 	cmd.PersistentFlags().StringP("name", "n", "", "the name of the tool")
 	cmd.PersistentFlags().StringP("description", "d", "", "an optional description")
 	cmd.PersistentFlags().StringSliceP("metric-ids", "m", []string{}, "the metric this tool assesses")
-	cmd.MarkPersistentFlagRequired("name")
-	cmd.MarkPersistentFlagRequired("metric-ids")
-	viper.BindPFlag("name", cmd.PersistentFlags().Lookup("name"))
-	viper.BindPFlag("description", cmd.PersistentFlags().Lookup("description"))
-	viper.BindPFlag("metric-ids", cmd.PersistentFlags().Lookup("metric-ids"))
+	_ = cmd.MarkPersistentFlagRequired("name")
+	_ = cmd.MarkPersistentFlagRequired("metric-ids")
+	_ = viper.BindPFlag("name", cmd.PersistentFlags().Lookup("name"))
+	_ = viper.BindPFlag("description", cmd.PersistentFlags().Lookup("description"))
+	_ = viper.BindPFlag("metric-ids", cmd.PersistentFlags().Lookup("metric-ids"))
 
-	cmd.RegisterFlagCompletionFunc("name", cli.DefaultArgsShellComp)
-	cmd.RegisterFlagCompletionFunc("description", cli.DefaultArgsShellComp)
-	cmd.RegisterFlagCompletionFunc("metric-ids", cli.ValidArgsGetMetrics)
+	_ = cmd.RegisterFlagCompletionFunc("name", cli.DefaultArgsShellComp)
+	_ = cmd.RegisterFlagCompletionFunc("description", cli.DefaultArgsShellComp)
+	_ = cmd.RegisterFlagCompletionFunc("metric-ids", cli.ValidArgsGetMetrics)
 
 	return cmd
 }
@@ -244,9 +236,7 @@ func NewDeregisterToolCommand() *cobra.Command {
 				ToolId: args[0],
 			})
 
-			session.HandleResponse(res, err)
-
-			return err
+			return session.HandleResponse(res, err)
 		},
 		ValidArgsFunction: cli.ValidArgsGetTools,
 	}

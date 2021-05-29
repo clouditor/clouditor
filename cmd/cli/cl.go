@@ -26,7 +26,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 
 	"clouditor.io/clouditor/cli/commands"
@@ -47,7 +46,7 @@ func initConfig() {
 	viper.AddConfigPath("$HOME/.clouditor")
 	viper.AddConfigPath(".")
 
-	viper.ReadInConfig()
+	_ = viper.ReadInConfig()
 }
 
 func newRootCommand() *cobra.Command {
@@ -73,7 +72,6 @@ func newRootCommand() *cobra.Command {
 func main() {
 	var cmd = newRootCommand()
 
-	cmd.Execute()
-
-	fmt.Printf("%s", viper.GetString("server"))
+	// ignore the error returned from execute, since it will already be printed out
+	_ = cmd.Execute()
 }

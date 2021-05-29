@@ -115,17 +115,17 @@ func init() {
 	engineCmd.Flags().Int16(DBPortFlag, DefaultDBPort, "Provides port for database")
 	engineCmd.Flags().Bool(DBInMemoryFlag, DefaultDBInMemory, "Uses an in-memory database which is not persisted at all")
 
-	viper.BindPFlag(APIDefaultUserFlag, engineCmd.Flags().Lookup(APIDefaultUserFlag))
-	viper.BindPFlag(APIDefaultPasswordFlag, engineCmd.Flags().Lookup(APIDefaultPasswordFlag))
-	viper.BindPFlag(APISecretFlag, engineCmd.Flags().Lookup(APISecretFlag))
-	viper.BindPFlag(APIgRPCPortFlag, engineCmd.Flags().Lookup(APIgRPCPortFlag))
-	viper.BindPFlag(APIHTTPPortFlag, engineCmd.Flags().Lookup(APIHTTPPortFlag))
-	viper.BindPFlag(DBUserNameFlag, engineCmd.Flags().Lookup(DBUserNameFlag))
-	viper.BindPFlag(DBPasswordFlag, engineCmd.Flags().Lookup(DBPasswordFlag))
-	viper.BindPFlag(DBHostFlag, engineCmd.Flags().Lookup(DBHostFlag))
-	viper.BindPFlag(DBNameFlag, engineCmd.Flags().Lookup(DBNameFlag))
-	viper.BindPFlag(DBPortFlag, engineCmd.Flags().Lookup(DBPortFlag))
-	viper.BindPFlag(DBInMemoryFlag, engineCmd.Flags().Lookup(DBInMemoryFlag))
+	_ = viper.BindPFlag(APIDefaultUserFlag, engineCmd.Flags().Lookup(APIDefaultUserFlag))
+	_ = viper.BindPFlag(APIDefaultPasswordFlag, engineCmd.Flags().Lookup(APIDefaultPasswordFlag))
+	_ = viper.BindPFlag(APISecretFlag, engineCmd.Flags().Lookup(APISecretFlag))
+	_ = viper.BindPFlag(APIgRPCPortFlag, engineCmd.Flags().Lookup(APIgRPCPortFlag))
+	_ = viper.BindPFlag(APIHTTPPortFlag, engineCmd.Flags().Lookup(APIHTTPPortFlag))
+	_ = viper.BindPFlag(DBUserNameFlag, engineCmd.Flags().Lookup(DBUserNameFlag))
+	_ = viper.BindPFlag(DBPasswordFlag, engineCmd.Flags().Lookup(DBPasswordFlag))
+	_ = viper.BindPFlag(DBHostFlag, engineCmd.Flags().Lookup(DBHostFlag))
+	_ = viper.BindPFlag(DBNameFlag, engineCmd.Flags().Lookup(DBNameFlag))
+	_ = viper.BindPFlag(DBPortFlag, engineCmd.Flags().Lookup(DBPortFlag))
+	_ = viper.BindPFlag(DBInMemoryFlag, engineCmd.Flags().Lookup(DBInMemoryFlag))
 }
 
 func initConfig() {
@@ -153,9 +153,11 @@ func doCmd(cmd *cobra.Command, args []string) (err error) {
   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
  `)
 
-	persistence.InitDB(viper.GetBool(DBInMemoryFlag),
+	if err = persistence.InitDB(viper.GetBool(DBInMemoryFlag),
 		viper.GetString(DBHostFlag),
-		int16(viper.GetInt(DBPortFlag)))
+		int16(viper.GetInt(DBPortFlag))); err != nil {
+		return fmt.Errorf("could not initialize DB: %w", err)
+	}
 
 	authService = &service_auth.Service{
 		TokenSecret: viper.GetString(APISecretFlag),

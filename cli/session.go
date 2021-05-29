@@ -90,29 +90,32 @@ func ContinueSession() (session *Session, err error) {
 }
 
 // Save saves the session into the `.clouditor` folder in the home directory
-func (s *Session) Save() {
+func (s *Session) Save() (err error) {
 	var (
-		err  error
 		home string
 		file *os.File
 	)
 	// find the home directory
 	if home, err = os.UserHomeDir(); err != nil {
-		return
+		return fmt.Errorf("could not find home directory: %w", err)
 	}
 
 	// create the .clouditor directory
-	os.MkdirAll(fmt.Sprintf("%s/.clouditor", home), 0744)
+	if err = os.MkdirAll(fmt.Sprintf("%s/.clouditor", home), 0744); err != nil {
+		return fmt.Errorf("could not create .clouditor in home directory: %w", err)
+	}
 
 	if file, err = os.OpenFile(fmt.Sprintf("%s/.clouditor/session.json", home), os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0600); err != nil {
-		return
+		return fmt.Errorf("could not save session.json: %w", err)
 	}
 
 	defer file.Close()
 
 	if err = json.NewEncoder(file).Encode(s); err != nil {
-		return
+		return fmt.Errorf("could not serialize JSON: %w", err)
 	}
+
+	return nil
 }
 
 // HandleResponse handles the response and error message of an gRPC call
