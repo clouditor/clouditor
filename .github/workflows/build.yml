@@ -63,17 +63,10 @@ jobs:
           github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
           github.com/googleapis/gnostic/apps/protoc-gen-openapi
           go generate ./...
-      - name: Lint
-        uses: golangci/golangci-lint-action@v2
-      - name: Check for Missing Copyright Header
-        run: |
-          go install github.com/google/addlicense
-          addlicense -c "Fraunhofer AISEC" -l apache -check **/*.go
-          go vet ./...
       - name: Build
         run: |
-           go test -v ./...
-           go build ./...          
+          go test -v ./...
+          go build ./...
       - name: "Upload Artifact"
         uses: actions/upload-artifact@v2
         with:
@@ -84,3 +77,14 @@ jobs:
         with:
           name: cl
           path: cl
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Lint
+        uses: golangci/golangci-lint-action@v2
+      - name: Check for Missing Copyright Header
+        run: |
+          go install github.com/google/addlicense
+          addlicense -c "Fraunhofer AISEC" -l apache -check **/*.go
