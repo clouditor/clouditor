@@ -57,7 +57,9 @@ func InitDB(inMemory bool, host string, port int16) (err error) {
 		log.Printf("Using postgres DB @ %s", host)
 	}
 
-	db.AutoMigrate(&auth.User{})
+	if err = db.AutoMigrate(&auth.User{}); err != nil {
+		return fmt.Errorf("error during auto-migration: %w", err)
+	}
 
 	return nil
 }
