@@ -33,6 +33,8 @@ import (
 	"clouditor.io/clouditor/service/discovery/azure"
 	"clouditor.io/clouditor/voc"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 )
@@ -81,7 +83,9 @@ func (s Service) Query(ctx context.Context, request *emptypb.Empty) (response *d
 		// speed increase in marshaling the whole resource list, because
 		// we first need to build it out of the map anyway
 		b, _ := json.Marshal(v)
-		json.Unmarshal(b, &s)
+		if err = json.Unmarshal(b, &s); err != nil {
+			return nil, status.Errorf(codes.Internal, "error during JSON unmarshal: %v", err)
+		}
 		r = append(r, &s)
 	}
 

@@ -74,7 +74,10 @@ func NewLoginCommand() *cobra.Command {
 
 			// update the session
 			session.Token = res.Token
-			session.Save()
+
+			if err = session.Save(); err != nil {
+				return fmt.Errorf("could not save session: %w", err)
+			}
 
 			fmt.Print("\nLogin succesful\n")
 
