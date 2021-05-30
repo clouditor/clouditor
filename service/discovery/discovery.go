@@ -43,16 +43,24 @@ var log *logrus.Entry
 
 //go:generate protoc -I ../../proto -I ../../third_party discovery.proto --go_out=../.. --go-grpc_out=../.. --openapi_out=../../openapi/discovery
 
-// Service is an implementation of the Clouditor Discovery service
+// Service is an implementation of the Clouditor Discovery service.
+// It should not be used directly, but rather the NewService constructor
+// should be used.
 type Service struct {
 	discovery.UnimplementedDiscoveryServer
+
+	resources map[string]voc.IsResource
 }
 
 func init() {
 	log = logrus.WithField("component", "discovery")
 }
 
-var resources map[string]voc.IsResource = make(map[string]voc.IsResource)
+func NewService() *Service {
+	return &Service{
+		resources: make(map[string]voc.IsResource),
+	}
+}
 
 // Start starts discovery
 func (s Service) Start(ctx context.Context, request *discovery.StartDiscoveryRequest) (response *discovery.StartDiscoveryResponse, err error) {
@@ -62,19 +70,23 @@ func (s Service) Start(ctx context.Context, request *discovery.StartDiscoveryReq
 
 	var discoverer discovery.Discoverer = azure.NewAzureStorageDiscovery()
 
+	s.StartDiscovery(discoverer)
+
+	return response, nil
+}
+
+func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 	list, _ := discoverer.List()
 
 	for _, v := range list {
-		resources[string(v.GetID())] = v
+		s.resources[string(v.GetID())] = v
 	}
-
-	return response, nil
 }
 
 func (s Service) Query(ctx context.Context, request *emptypb.Empty) (response *discovery.QueryResponse, err error) {
 	var r []*structpb.Value
 
-	for _, v := range resources {
+	for _, v := range s.resources {
 		var s structpb.Value
 
 		// this is probably not the fastest approach, but this
