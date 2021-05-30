@@ -40,6 +40,12 @@ import (
 
 var log *logrus.Entry
 
+var (
+	ErrUnsupportedContext = errors.New("unsupported context")
+	ErrFieldNameNotFound  = errors.New("invalid field name")
+	ErrFieldNoMap         = errors.New("field is not a map")
+)
+
 func init() {
 	log = logrus.WithField("component", "ccl")
 }
@@ -75,17 +81,19 @@ func evaluateCondition(c parser.IConditionContext, o map[string]interface{}) (su
 		return evaluateExpression(v.Expression(), o)
 	}
 
-	return false, errors.New("unsupported context")
+	return false, ErrUnsupportedContext
 }
 
 func evaluateExpression(c parser.IExpressionContext, o map[string]interface{}) (success bool, err error) {
 	if v, ok := c.(*parser.ExpressionContext); ok {
 		if v.SimpleExpression() != nil {
 			return evaluateSimpleExpression(v.SimpleExpression(), o)
+		} else if v.NotExpression() != nil {
+			return evaluateNotExpression(v.NotExpression(), o)
 		}
 	}
 
-	return false, errors.New("unsupported context")
+	return false, ErrUnsupportedContext
 }
 
 func evaluateSimpleExpression(c parser.ISimpleExpressionContext, o map[string]interface{}) (success bool, err error) {
@@ -95,7 +103,19 @@ func evaluateSimpleExpression(c parser.ISimpleExpressionContext, o map[string]in
 		}
 	}
 
-	return false, errors.New("unsupported context")
+	return false, ErrUnsupportedContext
+}
+
+func evaluateNotExpression(c parser.INotExpressionContext, o map[string]interface{}) (success bool, err error) {
+	if v, ok := c.(*parser.NotExpressionContext); ok {
+		// evalute the expression and negate it
+		success, err = evaluateExpression(v.Expression(), o)
+		success = !success
+
+		return
+	}
+
+	return false, ErrUnsupportedContext
 }
 
 func evaluateComparison(c parser.IComparisonContext, o map[string]interface{}) (success bool, err error) {
@@ -105,15 +125,19 @@ func evaluateComparison(c parser.IComparisonContext, o map[string]interface{}) (
 		}
 	}
 
-	return false, errors.New("unsupported context")
+	return false, ErrUnsupportedContext
 }
 
 func evaluteBinaryComparison(c parser.IBinaryComparisonContext, o map[string]interface{}) (success bool, err error) {
 	if v, ok := c.(*parser.BinaryComparisonContext); ok {
 		// now the fun begins
-		fieldIdentifier := v.Field().(*parser.FieldContext).Identifier().GetText()
+		identifier := v.Field().(*parser.FieldContext).Identifier().GetText()
 
-		fieldValue := o[fieldIdentifier]
+		var fieldValue interface{}
+
+		if fieldValue, err = evaluateField(identifier, o); err != nil {
+			return false, fmt.Errorf("could not evaluate field %s: %w", identifier, err)
+		}
 
 		var comparisonValue interface{}
 		if comparisonValue, err = evaluateLiteral(v.Value().(*parser.ValueContext)); err != nil {
@@ -123,7 +147,40 @@ func evaluteBinaryComparison(c parser.IBinaryComparisonContext, o map[string]int
 		return evaluateEquals(fieldValue, comparisonValue)
 	}
 
-	return false, errors.New("unsupported context")
+	return false, ErrUnsupportedContext
+}
+
+func evaluateField(field string, o map[string]interface{}) (interface{}, error) {
+	var (
+		idx   int
+		value interface{}
+		ok    bool
+	)
+
+	if idx = strings.Index(field, "."); idx == -1 {
+		// no sub field left, directly access it
+		if value, ok = o[field]; !ok {
+			return nil, ErrFieldNameNotFound
+		}
+
+		return value, nil
+	} else {
+		// check for the first part; if that does not exist, we do not need to continue
+		firstPart := field[:idx]
+		if value, ok = o[firstPart]; !ok {
+			return nil, ErrFieldNameNotFound
+		}
+
+		mapValue, ok := value.(map[string]interface{})
+		if !ok {
+			return nil, ErrFieldNoMap
+		}
+
+		// recursivly check for the second part
+		secondPart := field[idx+1:]
+
+		return evaluateField(secondPart, mapValue)
+	}
 }
 
 func evaluateLiteral(value *parser.ValueContext) (interface{}, error) {
@@ -155,7 +212,7 @@ func evaluteIntegerLiteral(node antlr.TerminalNode) (int64, error) {
 }
 
 func evaluateFloatLiteral(node antlr.TerminalNode) (float64, error) {
-	return strconv.ParseFloat(node.GetText(), 10)
+	return strconv.ParseFloat(node.GetText(), 64)
 }
 
 func evaluateBoolLiteral(node antlr.TerminalNode) (bool, error) {

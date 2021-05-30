@@ -51,56 +51,83 @@ func TestRuleFromFile(t *testing.T) {
 	assert.True(t, success)
 }
 
-func TestRunRule_intCompare(t *testing.T) {
-	var (
-		err     error
-		success bool
-		j       = `{"intField": 1}`
-		o       map[string]interface{}
-	)
+// just a shortcut
+type m map[string]interface{}
 
-	err = json.Unmarshal([]byte(j), &o)
+func TestRunRule(t *testing.T) {
+	var err error
+
+	var testData = []struct {
+		name            string
+		json            map[string]interface{}
+		ccl             string
+		expectedError   error
+		expectedSuccess bool
+	}{
+		{
+			name:            "string compare",
+			json:            m{"stringField": 1},
+			ccl:             "Object has stringField == 1",
+			expectedSuccess: true,
+		},
+		{
+			name:            "int compare",
+			json:            m{"intField": 1},
+			ccl:             "Object has intField == 1",
+			expectedSuccess: true,
+		},
+		{
+			name:            "float compare",
+			json:            m{"floatField": 1.5},
+			ccl:             "Object has floatField == 1.5",
+			expectedSuccess: true,
+		},
+		{
+			name:            "bool compare",
+			json:            m{"boolField": false},
+			ccl:             "Object has boolField == false",
+			expectedSuccess: true,
+		},
+		{
+			name:            "not expression",
+			json:            m{"boolField": false},
+			ccl:             "Object has not boolField == false",
+			expectedSuccess: false,
+		},
+		{
+			name:          "field does not exist",
+			json:          m{},
+			ccl:           "Object has field == 1",
+			expectedError: ccl.ErrFieldNameNotFound,
+		},
+		{
+			name:          "field not a map",
+			json:          m{"nested": 1},
+			ccl:           "Object has nested.field == 1",
+			expectedError: ccl.ErrFieldNoMap,
+		},
+		{
+			name:            "nested field",
+			json:            m{"nested": map[string]interface{}{"field": 1}},
+			ccl:             "Object has nested.field == 1",
+			expectedSuccess: true,
+		},
+		{
+			name:          "nested field does not exist",
+			json:          m{"nested": map[string]interface{}{"field": 1}},
+			ccl:           "Object has nested.someotherfield == 1",
+			expectedError: ccl.ErrFieldNameNotFound,
+		},
+	}
+
+	for _, data := range testData {
+		t.Run(data.name, func(t *testing.T) {
+			success, err := ccl.RunRule(data.ccl, data.json)
+
+			assert.ErrorIs(t, err, data.expectedError, "did not match error")
+			assert.Equal(t, data.expectedSuccess, success, "did not match expected success outcome")
+		})
+	}
 
 	assert.Nil(t, err)
-
-	success, err = ccl.RunRule("Object has intField == 1", o)
-
-	assert.Nil(t, err)
-	assert.True(t, success)
-}
-
-func TestRunRule_floatCompare(t *testing.T) {
-	var (
-		err     error
-		success bool
-		j       = `{"floatField": 1.5}`
-		o       map[string]interface{}
-	)
-
-	err = json.Unmarshal([]byte(j), &o)
-
-	assert.Nil(t, err)
-
-	success, err = ccl.RunRule("Object has floatField == 1.5", o)
-
-	assert.Nil(t, err)
-	assert.True(t, success)
-}
-
-func TestRunRule_boolCompare(t *testing.T) {
-	var (
-		err     error
-		success bool
-		j       = `{"boolField": false}`
-		o       map[string]interface{}
-	)
-
-	err = json.Unmarshal([]byte(j), &o)
-
-	assert.Nil(t, err)
-
-	success, err = ccl.RunRule("Object has boolField == false", o)
-
-	assert.Nil(t, err)
-	assert.True(t, success)
 }
