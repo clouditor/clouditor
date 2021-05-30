@@ -29,6 +29,7 @@ package ccl
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
@@ -43,10 +44,23 @@ func init() {
 	log = logrus.WithField("component", "ccl")
 }
 
-func RunRule(file string, object map[string]interface{}) (bool, error) {
+func RunRule(data string, object map[string]interface{}) (bool, error) {
+	log.Debugf("Evaluating '%s'...", data)
+
+	input := antlr.NewInputStream(data)
+
+	return runRule(input, object)
+}
+
+func RunRuleFromFile(file string, object map[string]interface{}) (bool, error) {
 	log.Debugf("Evaluating rule %s...", file)
 
 	input, _ := antlr.NewFileStream(file)
+
+	return runRule(input, object)
+}
+
+func runRule(input antlr.CharStream, object map[string]interface{}) (bool, error) {
 	lexer := parser.NewCCLLexer(input)
 	stream := antlr.NewCommonTokenStream(lexer, 0)
 	p := parser.NewCCLParser(stream)
@@ -101,12 +115,25 @@ func evaluteBinaryComparison(c parser.IBinaryComparisonContext, o map[string]int
 
 		fieldValue := o[fieldIdentifier]
 
-		comparisonValue := evaluateStringLiteral(v.Value().(*parser.ValueContext).StringLiteral())
+		var comparisonValue interface{}
+		if comparisonValue, err = evaluateLiteral(v.Value().(*parser.ValueContext)); err != nil {
+			return false, fmt.Errorf("could not parse comparison value: %w", err)
+		}
 
 		return evaluateEquals(fieldValue, comparisonValue)
 	}
 
 	return false, errors.New("unsupported context")
+}
+
+func evaluateLiteral(value *parser.ValueContext) (interface{}, error) {
+	if value.StringLiteral() != nil {
+		return evaluateStringLiteral(value.StringLiteral()), nil
+	} else if value.Number() != nil {
+		return evaluteIntegerLiteral(value.Number())
+	}
+
+	return nil, errors.New("could not evalute literal")
 }
 
 func evaluateStringLiteral(node antlr.TerminalNode) string {
@@ -115,11 +142,47 @@ func evaluateStringLiteral(node antlr.TerminalNode) string {
 	return strings.Trim(s, "\"'")
 }
 
+func evaluteIntegerLiteral(node antlr.TerminalNode) (int64, error) {
+	return strconv.ParseInt(node.GetText(), 10, 64)
+}
+
 func evaluateEquals(lhs interface{}, rhs interface{}) (success bool, err error) {
 	switch v := lhs.(type) {
 	case string:
 		return v == fmt.Sprintf("%v", rhs), nil
+	case int:
+		return compareInt(int64(v), rhs, 64)
+	case int16:
+		return compareInt(int64(v), rhs, 64)
+	case int32:
+		return compareInt(int64(v), rhs, 64)
+	case int64:
+		return compareInt(int64(v), rhs, 64)
+	case float32:
+		return compareFloat(float64(v), rhs, 64)
+	case float64:
+		return compareFloat(float64(v), rhs, 64)
 	}
 
 	return false, fmt.Errorf("could not compare %+v and %+v", lhs, rhs)
+}
+
+func compareInt(v int64, rhs interface{}, bitSize int) (success bool, err error) {
+	var i int64
+	// try to convert rhs to integer
+	if i, err = strconv.ParseInt(fmt.Sprintf("%v", rhs), 10, bitSize); err != nil {
+		return false, fmt.Errorf("could not compare %+v and %+v: %w", v, rhs, err)
+	}
+
+	return v == i, nil
+}
+
+func compareFloat(v float64, rhs interface{}, bitSize int) (success bool, err error) {
+	var f float64
+	// try to convert rhs to integer
+	if f, err = strconv.ParseFloat(fmt.Sprintf("%v", rhs), bitSize); err != nil {
+		return false, fmt.Errorf("could not compare %+v and %+v: %w", v, rhs, err)
+	}
+
+	return v == f, nil
 }

@@ -33,7 +33,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRule(t *testing.T) {
+func TestRuleFromFile(t *testing.T) {
 	var (
 		err     error
 		success bool
@@ -45,7 +45,25 @@ func TestRule(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	success, err = ccl.RunRule("test_rule.ccl", o)
+	success, err = ccl.RunRuleFromFile("test_rule.ccl", o)
+
+	assert.Nil(t, err)
+	assert.True(t, success)
+}
+
+func TestRunRule_intCompare(t *testing.T) {
+	var (
+		err     error
+		success bool
+		j       = `{"intField": 1}`
+		o       map[string]interface{}
+	)
+
+	err = json.Unmarshal([]byte(j), &o)
+
+	assert.Nil(t, err)
+
+	success, err = ccl.RunRule("Object has intField == 1", o)
 
 	assert.Nil(t, err)
 	assert.True(t, success)
