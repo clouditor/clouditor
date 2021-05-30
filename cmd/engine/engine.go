@@ -163,7 +163,7 @@ func doCmd(cmd *cobra.Command, args []string) (err error) {
 		TokenSecret: viper.GetString(APISecretFlag),
 	}
 
-	discoveryService = &service_discovery.Service{}
+	discoveryService = service_discovery.NewService()
 	orchestratorService = &service_orchestrator.Service{}
 
 	createDefaultUser()
