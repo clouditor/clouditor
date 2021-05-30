@@ -65,18 +65,19 @@ jobs:
           go generate ./...
       - name: Build
         run: |
-          go test -v ./...
-          go build ./...
+          go test -v -coverprofile=coverage.cov -coverpkg ./... -covermode=atomic ./...
+          mkdir -p build
+          go build -o build ./...
+      - uses: codecov/codecov-action@v1
+        with:
+          files: coverage.cov
+          flags: unittests
+          verbose: true
       - name: "Upload Artifact"
         uses: actions/upload-artifact@v2
         with:
-          name: engine
-          path: engine
-      - name: "Upload Artifact"
-        uses: actions/upload-artifact@v2
-        with:
-          name: cl
-          path: cl
+          name: build
+          path: build
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -85,7 +86,7 @@ jobs:
       - name: Lint
         uses: golangci/golangci-lint-action@v2
         with:
-          args: --timeout=10m        
+          args: --timeout=10m
       - name: Check for Missing Copyright Header
         run: |
           go install github.com/google/addlicense
