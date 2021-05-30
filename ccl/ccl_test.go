@@ -34,12 +34,18 @@ import (
 )
 
 func TestRule(t *testing.T) {
-	var j = `{"field": "value"}`
-	var o map[string]interface{}
+	var (
+		err     error
+		success bool
+		j       = `{"field": "value"}`
+		o       map[string]interface{}
+	)
 
-	json.Unmarshal([]byte(j), &o)
+	err = json.Unmarshal([]byte(j), &o)
 
-	success, err := ccl.RunRule("test_rule.ccl", o)
+	assert.Nil(t, err)
+
+	success, err = ccl.RunRule("test_rule.ccl", o)
 
 	assert.Nil(t, err)
 	assert.True(t, success)

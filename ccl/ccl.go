@@ -57,8 +57,7 @@ func RunRule(file string, object map[string]interface{}) (bool, error) {
 }
 
 func evaluateCondition(c parser.IConditionContext, o map[string]interface{}) (success bool, err error) {
-	switch v := c.(type) {
-	case *parser.ConditionContext:
+	if v, ok := c.(*parser.ConditionContext); ok {
 		return evaluateExpression(v.Expression(), o)
 	}
 
@@ -66,8 +65,7 @@ func evaluateCondition(c parser.IConditionContext, o map[string]interface{}) (su
 }
 
 func evaluateExpression(c parser.IExpressionContext, o map[string]interface{}) (success bool, err error) {
-	switch v := c.(type) {
-	case *parser.ExpressionContext:
+	if v, ok := c.(*parser.ExpressionContext); ok {
 		if v.SimpleExpression() != nil {
 			return evaluateSimpleExpression(v.SimpleExpression(), o)
 		}
@@ -77,8 +75,7 @@ func evaluateExpression(c parser.IExpressionContext, o map[string]interface{}) (
 }
 
 func evaluateSimpleExpression(c parser.ISimpleExpressionContext, o map[string]interface{}) (success bool, err error) {
-	switch v := c.(type) {
-	case *parser.SimpleExpressionContext:
+	if v, ok := c.(*parser.SimpleExpressionContext); ok {
 		if v.Comparison() != nil {
 			return evaluateComparison(v.Comparison(), o)
 		}
@@ -88,8 +85,7 @@ func evaluateSimpleExpression(c parser.ISimpleExpressionContext, o map[string]in
 }
 
 func evaluateComparison(c parser.IComparisonContext, o map[string]interface{}) (success bool, err error) {
-	switch v := c.(type) {
-	case *parser.ComparisonContext:
+	if v, ok := c.(*parser.ComparisonContext); ok {
 		if v.BinaryComparison() != nil {
 			return evaluteBinaryComparison(v.BinaryComparison(), o)
 		}
@@ -99,8 +95,7 @@ func evaluateComparison(c parser.IComparisonContext, o map[string]interface{}) (
 }
 
 func evaluteBinaryComparison(c parser.IBinaryComparisonContext, o map[string]interface{}) (success bool, err error) {
-	switch v := c.(type) {
-	case *parser.BinaryComparisonContext:
+	if v, ok := c.(*parser.BinaryComparisonContext); ok {
 		// now the fun begins
 		fieldIdentifier := v.Field().(*parser.FieldContext).Identifier().GetText()
 
