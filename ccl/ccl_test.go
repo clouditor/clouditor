@@ -95,6 +95,30 @@ func TestRunRule(t *testing.T) {
 			expectedSuccess: false,
 		},
 		{
+			name:            "isempty expression with nonexisting field",
+			json:            m{},
+			ccl:             "Object has empty field",
+			expectedSuccess: true,
+		},
+		{
+			name:            "isempty expression with empty string",
+			json:            m{"field": ""},
+			ccl:             "Object has empty field",
+			expectedSuccess: true,
+		},
+		{
+			name:            "isempty expression with boolean false",
+			json:            m{"field": false},
+			ccl:             "Object has empty field",
+			expectedSuccess: true,
+		},
+		{
+			name:            "isempty expression with integer zero",
+			json:            m{"field": 0},
+			ccl:             "Object has empty field",
+			expectedSuccess: true,
+		},
+		{
 			name:          "field does not exist",
 			json:          m{},
 			ccl:           "Object has field == 1",

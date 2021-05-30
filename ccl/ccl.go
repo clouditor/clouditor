@@ -98,7 +98,9 @@ func evaluateExpression(c parser.IExpressionContext, o map[string]interface{}) (
 
 func evaluateSimpleExpression(c parser.ISimpleExpressionContext, o map[string]interface{}) (success bool, err error) {
 	if v, ok := c.(*parser.SimpleExpressionContext); ok {
-		if v.Comparison() != nil {
+		if v.IsEmptyExpression() != nil {
+			return evaluateIsEmptyExpression(v.IsEmptyExpression(), o)
+		} else if v.Comparison() != nil {
 			return evaluateComparison(v.Comparison(), o)
 		}
 	}
@@ -113,6 +115,24 @@ func evaluateNotExpression(c parser.INotExpressionContext, o map[string]interfac
 		success = !success
 
 		return
+	}
+
+	return false, ErrUnsupportedContext
+}
+
+func evaluateIsEmptyExpression(c parser.IIsEmptyExpressionContext, o map[string]interface{}) (success bool, err error) {
+	if v, ok := c.(*parser.IsEmptyExpressionContext); ok {
+		// evalute the field
+		value, err := evaluateField(v.Field().GetText(), o)
+		if errors.Is(err, ErrFieldNameNotFound) {
+			// if the field is not found, it is also empty
+			return true, nil
+		} else if err != nil {
+			return false, fmt.Errorf("could not evaluate field: %w", err)
+		}
+
+		// otherwise, check, if the value is an "empty" value
+		return value == "" || value == 0 || value == false, nil
 	}
 
 	return false, ErrUnsupportedContext
