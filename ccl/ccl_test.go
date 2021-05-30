@@ -68,3 +68,39 @@ func TestRunRule_intCompare(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, success)
 }
+
+func TestRunRule_floatCompare(t *testing.T) {
+	var (
+		err     error
+		success bool
+		j       = `{"floatField": 1.5}`
+		o       map[string]interface{}
+	)
+
+	err = json.Unmarshal([]byte(j), &o)
+
+	assert.Nil(t, err)
+
+	success, err = ccl.RunRule("Object has floatField == 1.5", o)
+
+	assert.Nil(t, err)
+	assert.True(t, success)
+}
+
+func TestRunRule_boolCompare(t *testing.T) {
+	var (
+		err     error
+		success bool
+		j       = `{"boolField": false}`
+		o       map[string]interface{}
+	)
+
+	err = json.Unmarshal([]byte(j), &o)
+
+	assert.Nil(t, err)
+
+	success, err = ccl.RunRule("Object has boolField == false", o)
+
+	assert.Nil(t, err)
+	assert.True(t, success)
+}

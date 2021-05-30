@@ -127,13 +127,21 @@ func evaluteBinaryComparison(c parser.IBinaryComparisonContext, o map[string]int
 }
 
 func evaluateLiteral(value *parser.ValueContext) (interface{}, error) {
-	if value.StringLiteral() != nil {
-		return evaluateStringLiteral(value.StringLiteral()), nil
-	} else if value.Number() != nil {
-		return evaluteIntegerLiteral(value.Number())
+	if value == nil {
+		return nil, nil
 	}
 
-	return nil, errors.New("could not evalute literal")
+	if value.StringLiteral() != nil {
+		return evaluateStringLiteral(value.StringLiteral()), nil
+	} else if value.IntNumber() != nil {
+		return evaluteIntegerLiteral(value.IntNumber())
+	} else if value.FloatNumber() != nil {
+		return evaluateFloatLiteral(value.FloatNumber())
+	} else if value.BooleanLiteral() != nil {
+		return evaluateBoolLiteral(value.BooleanLiteral())
+	}
+
+	return nil, fmt.Errorf("could not evalute literal: %v", value.GetText())
 }
 
 func evaluateStringLiteral(node antlr.TerminalNode) string {
@@ -144,6 +152,14 @@ func evaluateStringLiteral(node antlr.TerminalNode) string {
 
 func evaluteIntegerLiteral(node antlr.TerminalNode) (int64, error) {
 	return strconv.ParseInt(node.GetText(), 10, 64)
+}
+
+func evaluateFloatLiteral(node antlr.TerminalNode) (float64, error) {
+	return strconv.ParseFloat(node.GetText(), 10)
+}
+
+func evaluateBoolLiteral(node antlr.TerminalNode) (bool, error) {
+	return strconv.ParseBool(node.GetText())
 }
 
 func evaluateEquals(lhs interface{}, rhs interface{}) (success bool, err error) {
@@ -162,6 +178,8 @@ func evaluateEquals(lhs interface{}, rhs interface{}) (success bool, err error) 
 		return compareFloat(float64(v), rhs, 64)
 	case float64:
 		return compareFloat(float64(v), rhs, 64)
+	case bool:
+		return compareBool(v, rhs)
 	}
 
 	return false, fmt.Errorf("could not compare %+v and %+v", lhs, rhs)
@@ -185,4 +203,14 @@ func compareFloat(v float64, rhs interface{}, bitSize int) (success bool, err er
 	}
 
 	return v == f, nil
+}
+
+func compareBool(v bool, rhs interface{}) (success bool, err error) {
+	var b bool
+	// try to convert rhs to integer
+	if b, err = strconv.ParseBool(fmt.Sprintf("%v", rhs)); err != nil {
+		return false, fmt.Errorf("could not compare %+v and %+v: %w", v, rhs, err)
+	}
+
+	return v == b, nil
 }

@@ -16,7 +16,7 @@ var _ = reflect.Copy
 var _ = strconv.Itoa
 
 var parserATN = []uint16{
-	3, 24715, 42794, 33075, 47597, 16764, 15335, 30598, 22884, 3, 35, 127,
+	3, 24715, 42794, 33075, 47597, 16764, 15335, 30598, 22884, 3, 36, 127,
 	4, 2, 9, 2, 4, 3, 9, 3, 4, 4, 9, 4, 4, 5, 9, 5, 4, 6, 9, 6, 4, 7, 9, 7,
 	4, 8, 9, 8, 4, 9, 9, 9, 4, 10, 9, 10, 4, 11, 9, 11, 4, 12, 9, 12, 4, 13,
 	9, 13, 4, 14, 9, 14, 4, 15, 9, 15, 4, 16, 9, 16, 4, 17, 9, 17, 4, 18, 9,
@@ -31,7 +31,7 @@ var parserATN = []uint16{
 	6, 20, 119, 10, 20, 13, 20, 14, 20, 120, 3, 21, 3, 21, 3, 22, 3, 22, 3,
 	22, 2, 2, 23, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32,
 	34, 36, 38, 40, 42, 2, 7, 3, 2, 25, 28, 3, 2, 10, 12, 3, 2, 14, 15, 4,
-	2, 29, 29, 33, 34, 3, 2, 18, 24, 2, 115, 2, 44, 3, 2, 2, 2, 4, 51, 3, 2,
+	2, 29, 29, 33, 35, 3, 2, 18, 24, 2, 115, 2, 44, 3, 2, 2, 2, 4, 51, 3, 2,
 	2, 2, 6, 53, 3, 2, 2, 2, 8, 55, 3, 2, 2, 2, 10, 59, 3, 2, 2, 2, 12, 64,
 	3, 2, 2, 2, 14, 73, 3, 2, 2, 2, 16, 75, 3, 2, 2, 2, 18, 78, 3, 2, 2, 2,
 	20, 83, 3, 2, 2, 2, 22, 85, 3, 2, 2, 2, 24, 89, 3, 2, 2, 2, 26, 97, 3,
@@ -77,14 +77,14 @@ var symbolicNames = []string{
 	"NotEqualsOperator", "LessOrEqualsThanOperator", "LessThanOperator", "MoreThanOperator",
 	"MoreOrEqualsThanOperator", "ContainsOperator", "BeforeOperator", "AfterOperator",
 	"YoungerOperator", "OlderOperator", "BooleanLiteral", "True", "False",
-	"Identifier", "Number", "StringLiteral", "Whitespace",
+	"Identifier", "IntNumber", "FloatNumber", "StringLiteral", "Whitespace",
 }
 
 var ruleNames = []string{
 	"condition", "assetType", "simpleAssetType", "filteredAssetType", "field",
-	"expression", "simpleExpression", "notExpression", "emptyExpression", "comparison",
-	"binaryComparison", "timeComparison", "timeOperator", "nowOperator", "time",
-	"unit", "inExpression", "scope", "withinExpression", "value", "operator",
+	"expression", "simpleExpression", "notExpression", "isEmptyExpression",
+	"comparison", "binaryComparison", "timeComparison", "timeOperator", "nowOperator",
+	"time", "unit", "inExpression", "scope", "withinExpression", "value", "operator",
 }
 
 type CCLParser struct {
@@ -149,9 +149,10 @@ const (
 	CCLParserTrue                     = 28
 	CCLParserFalse                    = 29
 	CCLParserIdentifier               = 30
-	CCLParserNumber                   = 31
-	CCLParserStringLiteral            = 32
-	CCLParserWhitespace               = 33
+	CCLParserIntNumber                = 31
+	CCLParserFloatNumber              = 32
+	CCLParserStringLiteral            = 33
+	CCLParserWhitespace               = 34
 )
 
 // CCLParser rules.
@@ -164,7 +165,7 @@ const (
 	CCLParserRULE_expression        = 5
 	CCLParserRULE_simpleExpression  = 6
 	CCLParserRULE_notExpression     = 7
-	CCLParserRULE_emptyExpression   = 8
+	CCLParserRULE_isEmptyExpression = 8
 	CCLParserRULE_comparison        = 9
 	CCLParserRULE_binaryComparison  = 10
 	CCLParserRULE_timeComparison    = 11
@@ -741,12 +742,12 @@ type ExpressionContext struct {
 	parser antlr.Parser
 }
 
-/*func NewEmptyExpressionContext() *ExpressionContext {
+func NewEmptyExpressionContext() *ExpressionContext {
 	var p = new(ExpressionContext)
 	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
 	p.RuleIndex = CCLParserRULE_expression
 	return p
-}*/
+}
 
 func (*ExpressionContext) IsExpressionContext() {}
 
@@ -900,14 +901,14 @@ func NewSimpleExpressionContext(parser antlr.Parser, parent antlr.ParserRuleCont
 
 func (s *SimpleExpressionContext) GetParser() antlr.Parser { return s.parser }
 
-func (s *SimpleExpressionContext) EmptyExpression() IEmptyExpressionContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IEmptyExpressionContext)(nil)).Elem(), 0)
+func (s *SimpleExpressionContext) IsEmptyExpression() IIsEmptyExpressionContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IIsEmptyExpressionContext)(nil)).Elem(), 0)
 
 	if t == nil {
 		return nil
 	}
 
-	return t.(IEmptyExpressionContext)
+	return t.(IIsEmptyExpressionContext)
 }
 
 func (s *SimpleExpressionContext) WithinExpression() IWithinExpressionContext {
@@ -987,7 +988,7 @@ func (p *CCLParser) SimpleExpression() (localctx ISimpleExpressionContext) {
 		p.EnterOuterAlt(localctx, 1)
 		{
 			p.SetState(64)
-			p.EmptyExpression()
+			p.IsEmptyExpression()
 		}
 
 	case 2:
@@ -1125,45 +1126,45 @@ func (p *CCLParser) NotExpression() (localctx INotExpressionContext) {
 	return localctx
 }
 
-// IEmptyExpressionContext is an interface to support dynamic dispatch.
-type IEmptyExpressionContext interface {
+// IIsEmptyExpressionContext is an interface to support dynamic dispatch.
+type IIsEmptyExpressionContext interface {
 	antlr.ParserRuleContext
 
 	// GetParser returns the parser.
 	GetParser() antlr.Parser
 
-	// IsEmptyExpressionContext differentiates from other interfaces.
-	IsEmptyExpressionContext()
+	// IsIsEmptyExpressionContext differentiates from other interfaces.
+	IsIsEmptyExpressionContext()
 }
 
-type EmptyExpressionContext struct {
+type IsEmptyExpressionContext struct {
 	*antlr.BaseParserRuleContext
 	parser antlr.Parser
 }
 
-func NewEmptyEmptyExpressionContext() *EmptyExpressionContext {
-	var p = new(EmptyExpressionContext)
+func NewEmptyIsEmptyExpressionContext() *IsEmptyExpressionContext {
+	var p = new(IsEmptyExpressionContext)
 	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
-	p.RuleIndex = CCLParserRULE_emptyExpression
+	p.RuleIndex = CCLParserRULE_isEmptyExpression
 	return p
 }
 
-func (*EmptyExpressionContext) IsEmptyExpressionContext() {}
+func (*IsEmptyExpressionContext) IsIsEmptyExpressionContext() {}
 
-func NewEmptyExpressionContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *EmptyExpressionContext {
-	var p = new(EmptyExpressionContext)
+func NewIsEmptyExpressionContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *IsEmptyExpressionContext {
+	var p = new(IsEmptyExpressionContext)
 
 	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
 
 	p.parser = parser
-	p.RuleIndex = CCLParserRULE_emptyExpression
+	p.RuleIndex = CCLParserRULE_isEmptyExpression
 
 	return p
 }
 
-func (s *EmptyExpressionContext) GetParser() antlr.Parser { return s.parser }
+func (s *IsEmptyExpressionContext) GetParser() antlr.Parser { return s.parser }
 
-func (s *EmptyExpressionContext) Field() IFieldContext {
+func (s *IsEmptyExpressionContext) Field() IFieldContext {
 	var t = s.GetTypedRuleContext(reflect.TypeOf((*IFieldContext)(nil)).Elem(), 0)
 
 	if t == nil {
@@ -1173,29 +1174,29 @@ func (s *EmptyExpressionContext) Field() IFieldContext {
 	return t.(IFieldContext)
 }
 
-func (s *EmptyExpressionContext) GetRuleContext() antlr.RuleContext {
+func (s *IsEmptyExpressionContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
 
-func (s *EmptyExpressionContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
+func (s *IsEmptyExpressionContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *EmptyExpressionContext) EnterRule(listener antlr.ParseTreeListener) {
+func (s *IsEmptyExpressionContext) EnterRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.EnterEmptyExpression(s)
+		listenerT.EnterIsEmptyExpression(s)
 	}
 }
 
-func (s *EmptyExpressionContext) ExitRule(listener antlr.ParseTreeListener) {
+func (s *IsEmptyExpressionContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.ExitEmptyExpression(s)
+		listenerT.ExitIsEmptyExpression(s)
 	}
 }
 
-func (p *CCLParser) EmptyExpression() (localctx IEmptyExpressionContext) {
-	localctx = NewEmptyExpressionContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 16, CCLParserRULE_emptyExpression)
+func (p *CCLParser) IsEmptyExpression() (localctx IIsEmptyExpressionContext) {
+	localctx = NewIsEmptyExpressionContext(p, p.GetParserRuleContext(), p.GetState())
+	p.EnterRule(localctx, 16, CCLParserRULE_isEmptyExpression)
 
 	defer func() {
 		p.ExitRule()
@@ -1612,7 +1613,7 @@ func (p *CCLParser) TimeComparison() (localctx ITimeComparisonContext) {
 	p.GetErrorHandler().Sync(p)
 
 	switch p.GetTokenStream().LA(1) {
-	case CCLParserNumber:
+	case CCLParserIntNumber:
 		{
 			p.SetState(89)
 			p.Time()
@@ -1870,8 +1871,8 @@ func NewTimeContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokin
 
 func (s *TimeContext) GetParser() antlr.Parser { return s.parser }
 
-func (s *TimeContext) Number() antlr.TerminalNode {
-	return s.GetToken(CCLParserNumber, 0)
+func (s *TimeContext) IntNumber() antlr.TerminalNode {
+	return s.GetToken(CCLParserIntNumber, 0)
 }
 
 func (s *TimeContext) GetRuleContext() antlr.RuleContext {
@@ -1917,7 +1918,7 @@ func (p *CCLParser) Time() (localctx ITimeContext) {
 	p.EnterOuterAlt(localctx, 1)
 	{
 		p.SetState(99)
-		p.Match(CCLParserNumber)
+		p.Match(CCLParserIntNumber)
 	}
 
 	return localctx
@@ -2365,7 +2366,7 @@ func (p *CCLParser) WithinExpression() (localctx IWithinExpressionContext) {
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
-	for ok := true; ok; ok = (((_la-27)&-(0x1f+1)) == 0 && ((1<<uint((_la-27)))&((1<<(CCLParserBooleanLiteral-27))|(1<<(CCLParserNumber-27))|(1<<(CCLParserStringLiteral-27)))) != 0) {
+	for ok := true; ok; ok = (((_la-27)&-(0x1f+1)) == 0 && ((1<<uint((_la-27)))&((1<<(CCLParserBooleanLiteral-27))|(1<<(CCLParserIntNumber-27))|(1<<(CCLParserFloatNumber-27))|(1<<(CCLParserStringLiteral-27)))) != 0) {
 		{
 			p.SetState(112)
 			p.Value()
@@ -2436,8 +2437,12 @@ func (s *ValueContext) BooleanLiteral() antlr.TerminalNode {
 	return s.GetToken(CCLParserBooleanLiteral, 0)
 }
 
-func (s *ValueContext) Number() antlr.TerminalNode {
-	return s.GetToken(CCLParserNumber, 0)
+func (s *ValueContext) IntNumber() antlr.TerminalNode {
+	return s.GetToken(CCLParserIntNumber, 0)
+}
+
+func (s *ValueContext) FloatNumber() antlr.TerminalNode {
+	return s.GetToken(CCLParserFloatNumber, 0)
 }
 
 func (s *ValueContext) GetRuleContext() antlr.RuleContext {
@@ -2486,7 +2491,7 @@ func (p *CCLParser) Value() (localctx IValueContext) {
 		p.SetState(120)
 		_la = p.GetTokenStream().LA(1)
 
-		if !(((_la-27)&-(0x1f+1)) == 0 && ((1<<uint((_la-27)))&((1<<(CCLParserBooleanLiteral-27))|(1<<(CCLParserNumber-27))|(1<<(CCLParserStringLiteral-27)))) != 0) {
+		if !(((_la-27)&-(0x1f+1)) == 0 && ((1<<uint((_la-27)))&((1<<(CCLParserBooleanLiteral-27))|(1<<(CCLParserIntNumber-27))|(1<<(CCLParserFloatNumber-27))|(1<<(CCLParserStringLiteral-27)))) != 0) {
 			p.GetErrorHandler().RecoverInline(p)
 		} else {
 			p.GetErrorHandler().ReportMatch(p)

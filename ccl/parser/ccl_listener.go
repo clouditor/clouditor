@@ -32,8 +32,8 @@ type CCLListener interface {
 	// EnterNotExpression is called when entering the notExpression production.
 	EnterNotExpression(c *NotExpressionContext)
 
-	// EnterEmptyExpression is called when entering the emptyExpression production.
-	EnterEmptyExpression(c *EmptyExpressionContext)
+	// EnterIsEmptyExpression is called when entering the isEmptyExpression production.
+	EnterIsEmptyExpression(c *IsEmptyExpressionContext)
 
 	// EnterComparison is called when entering the comparison production.
 	EnterComparison(c *ComparisonContext)
@@ -95,8 +95,8 @@ type CCLListener interface {
 	// ExitNotExpression is called when exiting the notExpression production.
 	ExitNotExpression(c *NotExpressionContext)
 
-	// ExitEmptyExpression is called when exiting the emptyExpression production.
-	ExitEmptyExpression(c *EmptyExpressionContext)
+	// ExitIsEmptyExpression is called when exiting the isEmptyExpression production.
+	ExitIsEmptyExpression(c *IsEmptyExpressionContext)
 
 	// ExitComparison is called when exiting the comparison production.
 	ExitComparison(c *ComparisonContext)

@@ -69,11 +69,11 @@ func (s *BaseCCLListener) EnterNotExpression(ctx *NotExpressionContext) {}
 // ExitNotExpression is called when production notExpression is exited.
 func (s *BaseCCLListener) ExitNotExpression(ctx *NotExpressionContext) {}
 
-// EnterEmptyExpression is called when production emptyExpression is entered.
-func (s *BaseCCLListener) EnterEmptyExpression(ctx *EmptyExpressionContext) {}
+// EnterIsEmptyExpression is called when production isEmptyExpression is entered.
+func (s *BaseCCLListener) EnterIsEmptyExpression(ctx *IsEmptyExpressionContext) {}
 
-// ExitEmptyExpression is called when production emptyExpression is exited.
-func (s *BaseCCLListener) ExitEmptyExpression(ctx *EmptyExpressionContext) {}
+// ExitIsEmptyExpression is called when production isEmptyExpression is exited.
+func (s *BaseCCLListener) ExitIsEmptyExpression(ctx *IsEmptyExpressionContext) {}
 
 // EnterComparison is called when production comparison is entered.
 func (s *BaseCCLListener) EnterComparison(ctx *ComparisonContext) {}
