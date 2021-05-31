@@ -227,6 +227,24 @@ func TestRunRule(t *testing.T) {
 			ccl:             "Object has field older now",
 			expectedSuccess: true,
 		},
+		{
+			name: "in any expression",
+			json: m{"array": []map[string]interface{}{
+				{"field": 1},
+				{"field": 2},
+			}},
+			ccl:             "Object has field == 1 in any array",
+			expectedSuccess: true,
+		},
+		{
+			name: "in all expression",
+			json: m{"array": []map[string]interface{}{
+				{"field": 1},
+				{"field": 2},
+			}},
+			ccl:             "Object has field == 1 in all array",
+			expectedSuccess: false,
+		},
 	}
 
 	for _, data := range testData {

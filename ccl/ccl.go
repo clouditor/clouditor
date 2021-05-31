@@ -43,10 +43,13 @@ import (
 var log *logrus.Entry
 
 var (
-	ErrUnsupportedContext = errors.New("unsupported context")
-	ErrFieldNameNotFound  = errors.New("invalid field name")
-	ErrFieldNoMap         = errors.New("field is not a map")
-	ErrFieldNoTime        = errors.New("field has no time value")
+	ErrUnsupportedContext   = errors.New("unsupported context")
+	ErrFieldNameNotFound    = errors.New("invalid field name")
+	ErrFieldNoMap           = errors.New("field is not a map")
+	ErrFieldNoTime          = errors.New("field has no time value")
+	ErrFieldNoArray         = errors.New("field is not an array")
+	ErrInvalidScope         = errors.New("invalid scope in in-expression")
+	ErrUnexpectedExpression = errors.New("unexpected expression")
 )
 
 func init() {
@@ -93,6 +96,10 @@ func evaluateExpression(c parser.IExpressionContext, o map[string]interface{}) (
 			return evaluateSimpleExpression(v.SimpleExpression(), o)
 		} else if v.NotExpression() != nil {
 			return evaluateNotExpression(v.NotExpression(), o)
+		} else if v.InExpression() != nil {
+			return evaluateInExpression(v.InExpression(), o)
+		} else {
+			return false, ErrUnexpectedExpression
 		}
 	}
 
@@ -109,6 +116,8 @@ func evaluateSimpleExpression(c parser.ISimpleExpressionContext, o map[string]in
 			return evaluateComparison(v.Comparison(), o)
 		} else if v.Expression() != nil {
 			return evaluateExpression(v.Expression(), o)
+		} else {
+			return false, ErrUnexpectedExpression
 		}
 	}
 
@@ -122,6 +131,50 @@ func evaluateNotExpression(c parser.INotExpressionContext, o map[string]interfac
 		success = !success
 
 		return
+	}
+
+	return false, ErrUnsupportedContext
+}
+
+func evaluateInExpression(c parser.IInExpressionContext, o map[string]interface{}) (success bool, err error) {
+	if v, ok := c.(*parser.InExpressionContext); ok {
+		var value interface{}
+		var arrayValue []map[string]interface{}
+
+		if value, err = evaluateField(v.Field().GetText(), o); err != nil {
+			return false, fmt.Errorf("could not evaluate in-expression: %w", err)
+		}
+
+		if arrayValue, ok = value.([]map[string]interface{}); !ok {
+			return false, ErrFieldNoArray
+		}
+
+		var scope string
+		if v.Scope().GetText() == "all" {
+			scope = "all"
+		} else if v.Scope().GetText() == "any" {
+			scope = "any"
+		} else {
+			return false, ErrInvalidScope
+		}
+
+		var result bool
+
+		// loop through array
+		for _, item := range arrayValue {
+			// if any matches
+			if success, err = evaluateSimpleExpression(v.SimpleExpression(), item); err != nil {
+				return false, fmt.Errorf("could not evaluate in-expression: %w", err)
+			}
+
+			if success && scope == "any" {
+				return true, nil
+			}
+
+			result = result && success
+		}
+
+		return result, nil
 	}
 
 	return false, ErrUnsupportedContext
@@ -192,6 +245,8 @@ func evaluateComparison(c parser.IComparisonContext, o map[string]interface{}) (
 			return evaluteBinaryComparison(v.BinaryComparison(), o)
 		} else if v.TimeComparison() != nil {
 			return evaluateTimeComparison(v.TimeComparison(), o)
+		} else {
+			return false, ErrUnexpectedExpression
 		}
 	}
 
