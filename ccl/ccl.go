@@ -281,7 +281,7 @@ func evaluateOperator(c parser.IOperatorContext) (Operator, error) {
 		}
 
 		if v.LessOrEqualsThanOperator() != nil {
-			return &lessOrEqualsOperator{}, nil
+			return &notOperator{greaterOperator{}}, nil
 		}
 
 		if v.MoreThanOperator() != nil {
@@ -289,7 +289,7 @@ func evaluateOperator(c parser.IOperatorContext) (Operator, error) {
 		}
 
 		if v.MoreOrEqualsThanOperator() != nil {
-			return &greaterOrEqualsOperator{}, nil
+			return &notOperator{lessOperator{}}, nil
 		}
 
 		if v.ContainsOperator() != nil {

@@ -57,40 +57,12 @@ func (e lessOperator) CompareBool(lhs bool, rhs bool) (bool, error) {
 	return false, ErrOperationNotSupported
 }
 
-type lessOrEqualsOperator struct{}
-
-func (e lessOrEqualsOperator) CompareString(lhs string, rhs string) (bool, error) {
-	return lhs <= rhs, nil
-}
-func (e lessOrEqualsOperator) CompareInt(lhs int64, rhs int64) (bool, error) { return lhs <= rhs, nil }
-func (e lessOrEqualsOperator) CompareFloat(lhs float64, rhs float64) (bool, error) {
-	return lhs <= rhs, nil
-}
-func (e lessOrEqualsOperator) CompareBool(lhs bool, rhs bool) (bool, error) {
-	return false, ErrOperationNotSupported
-}
-
 type greaterOperator struct{}
 
 func (e greaterOperator) CompareString(lhs string, rhs string) (bool, error)  { return lhs > rhs, nil }
 func (e greaterOperator) CompareInt(lhs int64, rhs int64) (bool, error)       { return lhs > rhs, nil }
 func (e greaterOperator) CompareFloat(lhs float64, rhs float64) (bool, error) { return lhs > rhs, nil }
 func (e greaterOperator) CompareBool(lhs bool, rhs bool) (bool, error) {
-	return false, ErrOperationNotSupported
-}
-
-type greaterOrEqualsOperator struct{}
-
-func (e greaterOrEqualsOperator) CompareString(lhs string, rhs string) (bool, error) {
-	return lhs >= rhs, nil
-}
-func (e greaterOrEqualsOperator) CompareInt(lhs int64, rhs int64) (bool, error) {
-	return lhs >= rhs, nil
-}
-func (e greaterOrEqualsOperator) CompareFloat(lhs float64, rhs float64) (bool, error) {
-	return lhs >= rhs, nil
-}
-func (e greaterOrEqualsOperator) CompareBool(lhs bool, rhs bool) (bool, error) {
 	return false, ErrOperationNotSupported
 }
 
