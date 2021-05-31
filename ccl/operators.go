@@ -48,17 +48,6 @@ func (e equalsOperator) CompareInt(lhs int64, rhs int64) (bool, error)       { r
 func (e equalsOperator) CompareFloat(lhs float64, rhs float64) (bool, error) { return lhs == rhs, nil }
 func (e equalsOperator) CompareBool(lhs bool, rhs bool) (bool, error)        { return lhs == rhs, nil }
 
-type notEqualsOperator struct{}
-
-func (e notEqualsOperator) CompareString(lhs string, rhs string) (bool, error) {
-	return lhs != rhs, nil
-}
-func (e notEqualsOperator) CompareInt(lhs int64, rhs int64) (bool, error) { return lhs != rhs, nil }
-func (e notEqualsOperator) CompareFloat(lhs float64, rhs float64) (bool, error) {
-	return lhs != rhs, nil
-}
-func (e notEqualsOperator) CompareBool(lhs bool, rhs bool) (bool, error) { return lhs != rhs, nil }
-
 type lessOperator struct{}
 
 func (e lessOperator) CompareString(lhs string, rhs string) (bool, error)  { return lhs < rhs, nil }
@@ -118,4 +107,37 @@ func (e containsOperator) CompareFloat(lhs float64, rhs float64) (bool, error) {
 }
 func (e containsOperator) CompareBool(lhs bool, rhs bool) (bool, error) {
 	return false, ErrOperationNotSupported
+}
+
+type notOperator struct {
+	op Operator
+}
+
+func (e notOperator) CompareString(lhs string, rhs string) (b bool, err error) {
+	if b, err = e.op.CompareString(lhs, rhs); err != nil {
+		return false, err
+	}
+
+	return !b, nil
+}
+func (e notOperator) CompareInt(lhs int64, rhs int64) (b bool, err error) {
+	if b, err = e.op.CompareInt(lhs, rhs); err != nil {
+		return false, err
+	}
+
+	return !b, nil
+}
+func (e notOperator) CompareFloat(lhs float64, rhs float64) (b bool, err error) {
+	if b, err = e.op.CompareFloat(lhs, rhs); err != nil {
+		return false, err
+	}
+
+	return !b, nil
+}
+func (e notOperator) CompareBool(lhs bool, rhs bool) (b bool, err error) {
+	if b, err = e.op.CompareBool(lhs, rhs); err != nil {
+		return false, err
+	}
+
+	return !b, nil
 }
