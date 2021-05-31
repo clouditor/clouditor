@@ -24,22 +24,7 @@
 // This file is part of Clouditor Community Edition.
 
 // Package ccl contains the the Cloud Compliance Language (CCL). It is a simple domain specific language to model rules
-// that should apply to discovered resources. It has the following syntax:
-// ```ccl
-// <resourceType> has <expression>
-// ```
-//
-// The `<resourceType>` refers to an existing resource type in the vocabulary. See package voc.
-// The `<expression>` must evaluate to a boolean expression, which decide whether the resource is compliant or not
-//
-// Several different expression exists. For example, a simple comparison can be achieved using
-// ```ccl
-// <field> <operatorType> <literalValue>
-// ```
-//
-// In this case, <field> refers to a field in the resource type, defined the vocabulary. See package voc.
-// <operatorType> can either be `==`, `!=`, `<=`, `<`, `>`, `>=`, or the special `contains` keyword.
-// <literalValue> refers to a literal in either a string, integer, float or boolean format.
+// that should apply to discovered resources.
 package ccl
 
 import (
@@ -169,18 +154,44 @@ func evaluteBinaryComparison(c parser.IBinaryComparisonContext, o map[string]int
 		// now the fun begins
 		identifier := v.Field().(*parser.FieldContext).Identifier().GetText()
 
-		var fieldValue interface{}
+		var (
+			lhs interface{}
+			rhs interface{}
+			op  Operator
+		)
 
-		if fieldValue, err = evaluateField(identifier, o); err != nil {
+		if lhs, err = evaluateField(identifier, o); err != nil {
 			return false, fmt.Errorf("could not evaluate field %s: %w", identifier, err)
 		}
 
-		var comparisonValue interface{}
-		if comparisonValue, err = evaluateLiteral(v.Value().(*parser.ValueContext)); err != nil {
+		if rhs, err = evaluateLiteral(v.Value().(*parser.ValueContext)); err != nil {
 			return false, fmt.Errorf("could not parse comparison value: %w", err)
 		}
 
-		return evaluateEquals(fieldValue, comparisonValue)
+		if op, err = evaluateOperator(v.Operator()); err != nil {
+			return false, fmt.Errorf("could not parse operator: %w", err)
+		}
+
+		switch v := lhs.(type) {
+		case string:
+			return compareString(v, rhs, op)
+		case int:
+			return compareInt(int64(v), rhs, 64, op)
+		case int16:
+			return compareInt(int64(v), rhs, 64, op)
+		case int32:
+			return compareInt(int64(v), rhs, 64, op)
+		case int64:
+			return compareInt(int64(v), rhs, 64, op)
+		case float32:
+			return compareFloat(float64(v), rhs, 64, op)
+		case float64:
+			return compareFloat(float64(v), rhs, 64, op)
+		case bool:
+			return compareBool(v, rhs, op)
+		}
+
+		return false, fmt.Errorf("could not compare %+v and %+v", lhs, rhs)
 	}
 
 	return false, ErrUnsupportedContext
@@ -255,55 +266,72 @@ func evaluateBoolLiteral(node antlr.TerminalNode) (bool, error) {
 	return strconv.ParseBool(node.GetText())
 }
 
-func evaluateEquals(lhs interface{}, rhs interface{}) (success bool, err error) {
-	switch v := lhs.(type) {
-	case string:
-		return v == fmt.Sprintf("%v", rhs), nil
-	case int:
-		return compareInt(int64(v), rhs, 64)
-	case int16:
-		return compareInt(int64(v), rhs, 64)
-	case int32:
-		return compareInt(int64(v), rhs, 64)
-	case int64:
-		return compareInt(int64(v), rhs, 64)
-	case float32:
-		return compareFloat(float64(v), rhs, 64)
-	case float64:
-		return compareFloat(float64(v), rhs, 64)
-	case bool:
-		return compareBool(v, rhs)
+func evaluateOperator(c parser.IOperatorContext) (Operator, error) {
+	if v, ok := c.(*parser.OperatorContext); ok {
+		if v.EqualsOperator() != nil {
+			return &equalsOperator{}, nil
+		}
+
+		if v.NotEqualsOperator() != nil {
+			return &notEqualsOperator{}, nil
+		}
+
+		if v.LessThanOperator() != nil {
+			return &lessOperator{}, nil
+		}
+
+		if v.LessOrEqualsThanOperator() != nil {
+			return &lessOrEqualsOperator{}, nil
+		}
+
+		if v.MoreThanOperator() != nil {
+			return &greaterOperator{}, nil
+		}
+
+		if v.MoreOrEqualsThanOperator() != nil {
+			return &greaterOrEqualsOperator{}, nil
+		}
+
+		if v.ContainsOperator() != nil {
+			return &containsOperator{}, nil
+		}
 	}
 
-	return false, fmt.Errorf("could not compare %+v and %+v", lhs, rhs)
+	return nil, ErrUnsupportedContext
 }
 
-func compareInt(v int64, rhs interface{}, bitSize int) (success bool, err error) {
+func compareString(v string, rhs interface{}, op Operator) (success bool, err error) {
+	var s = fmt.Sprintf("%v", rhs)
+
+	return op.CompareString(v, s)
+}
+
+func compareInt(v int64, rhs interface{}, bitSize int, op Operator) (success bool, err error) {
 	var i int64
 	// try to convert rhs to integer
 	if i, err = strconv.ParseInt(fmt.Sprintf("%v", rhs), 10, bitSize); err != nil {
 		return false, fmt.Errorf("could not compare %+v and %+v: %w", v, rhs, err)
 	}
 
-	return v == i, nil
+	return op.CompareInt(v, i)
 }
 
-func compareFloat(v float64, rhs interface{}, bitSize int) (success bool, err error) {
+func compareFloat(v float64, rhs interface{}, bitSize int, op Operator) (success bool, err error) {
 	var f float64
 	// try to convert rhs to integer
 	if f, err = strconv.ParseFloat(fmt.Sprintf("%v", rhs), bitSize); err != nil {
 		return false, fmt.Errorf("could not compare %+v and %+v: %w", v, rhs, err)
 	}
 
-	return v == f, nil
+	return op.CompareFloat(v, f)
 }
 
-func compareBool(v bool, rhs interface{}) (success bool, err error) {
+func compareBool(v bool, rhs interface{}, op Operator) (success bool, err error) {
 	var b bool
 	// try to convert rhs to integer
 	if b, err = strconv.ParseBool(fmt.Sprintf("%v", rhs)); err != nil {
 		return false, fmt.Errorf("could not compare %+v and %+v: %w", v, rhs, err)
 	}
 
-	return v == b, nil
+	return op.CompareBool(v, b)
 }

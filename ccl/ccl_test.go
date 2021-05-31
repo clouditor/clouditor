@@ -142,6 +142,42 @@ func TestRunRule(t *testing.T) {
 			ccl:           "Object has nested.someotherfield == 1",
 			expectedError: ccl.ErrFieldNameNotFound,
 		},
+		{
+			name:            "not equals operator",
+			json:            m{"field": 2},
+			ccl:             "Object has field != 1",
+			expectedSuccess: true,
+		},
+		{
+			name:            "less operator",
+			json:            m{"field": 1},
+			ccl:             "Object has field < 2",
+			expectedSuccess: true,
+		},
+		{
+			name:            "less equals operator",
+			json:            m{"field": 2},
+			ccl:             "Object has field <= 2",
+			expectedSuccess: true,
+		},
+		{
+			name:            "greater operator",
+			json:            m{"field": 2},
+			ccl:             "Object has field > 1",
+			expectedSuccess: true,
+		},
+		{
+			name:            "greater equals operator",
+			json:            m{"field": 1},
+			ccl:             "Object has field >= 1",
+			expectedSuccess: true,
+		},
+		{
+			name:            "contains operator",
+			json:            m{"field": "myvalue"},
+			ccl:             "Object has field contains \"my\"",
+			expectedSuccess: true,
+		},
 	}
 
 	for _, data := range testData {
