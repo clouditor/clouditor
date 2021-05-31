@@ -23,5 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
+// //go:generate antlr -Dlanguage=Go -no-listener CCL.g4
+
 // Package parser contains the files for the CCL Parser
 package parser

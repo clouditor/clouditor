@@ -2,11 +2,11 @@ grammar CCL;
 
 condition: assetType 'has' expression EOF;
 
-assetType: simpleAssetType | filteredAssetType;
+assetType: simpleAssetType /*| filteredAssetType*/;
 
 simpleAssetType: field;
 
-filteredAssetType: field 'with' expression;
+//filteredAssetType: field 'with' expression;
 
 field: Identifier;
 expression: simpleExpression | notExpression | inExpression;

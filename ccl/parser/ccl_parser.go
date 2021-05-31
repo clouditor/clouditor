@@ -16,64 +16,60 @@ var _ = reflect.Copy
 var _ = strconv.Itoa
 
 var parserATN = []uint16{
-	3, 24715, 42794, 33075, 47597, 16764, 15335, 30598, 22884, 3, 36, 127,
+	3, 24715, 42794, 33075, 47597, 16764, 15335, 30598, 22884, 3, 35, 119,
 	4, 2, 9, 2, 4, 3, 9, 3, 4, 4, 9, 4, 4, 5, 9, 5, 4, 6, 9, 6, 4, 7, 9, 7,
 	4, 8, 9, 8, 4, 9, 9, 9, 4, 10, 9, 10, 4, 11, 9, 11, 4, 12, 9, 12, 4, 13,
 	9, 13, 4, 14, 9, 14, 4, 15, 9, 15, 4, 16, 9, 16, 4, 17, 9, 17, 4, 18, 9,
-	18, 4, 19, 9, 19, 4, 20, 9, 20, 4, 21, 9, 21, 4, 22, 9, 22, 3, 2, 3, 2,
-	3, 2, 3, 2, 3, 2, 3, 3, 3, 3, 5, 3, 52, 10, 3, 3, 4, 3, 4, 3, 5, 3, 5,
-	3, 5, 3, 5, 3, 6, 3, 6, 3, 7, 3, 7, 3, 7, 5, 7, 65, 10, 7, 3, 8, 3, 8,
-	3, 8, 3, 8, 3, 8, 3, 8, 3, 8, 5, 8, 74, 10, 8, 3, 9, 3, 9, 3, 9, 3, 10,
-	3, 10, 3, 10, 3, 11, 3, 11, 5, 11, 84, 10, 11, 3, 12, 3, 12, 3, 12, 3,
-	12, 3, 13, 3, 13, 3, 13, 3, 13, 3, 13, 3, 13, 5, 13, 96, 10, 13, 3, 14,
-	3, 14, 3, 15, 3, 15, 3, 16, 3, 16, 3, 17, 3, 17, 3, 18, 3, 18, 3, 18, 3,
-	18, 3, 18, 3, 19, 3, 19, 3, 20, 3, 20, 3, 20, 3, 20, 5, 20, 117, 10, 20,
-	6, 20, 119, 10, 20, 13, 20, 14, 20, 120, 3, 21, 3, 21, 3, 22, 3, 22, 3,
-	22, 2, 2, 23, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32,
-	34, 36, 38, 40, 42, 2, 7, 3, 2, 25, 28, 3, 2, 10, 12, 3, 2, 14, 15, 4,
-	2, 29, 29, 33, 35, 3, 2, 18, 24, 2, 115, 2, 44, 3, 2, 2, 2, 4, 51, 3, 2,
-	2, 2, 6, 53, 3, 2, 2, 2, 8, 55, 3, 2, 2, 2, 10, 59, 3, 2, 2, 2, 12, 64,
-	3, 2, 2, 2, 14, 73, 3, 2, 2, 2, 16, 75, 3, 2, 2, 2, 18, 78, 3, 2, 2, 2,
-	20, 83, 3, 2, 2, 2, 22, 85, 3, 2, 2, 2, 24, 89, 3, 2, 2, 2, 26, 97, 3,
-	2, 2, 2, 28, 99, 3, 2, 2, 2, 30, 101, 3, 2, 2, 2, 32, 103, 3, 2, 2, 2,
-	34, 105, 3, 2, 2, 2, 36, 110, 3, 2, 2, 2, 38, 112, 3, 2, 2, 2, 40, 122,
-	3, 2, 2, 2, 42, 124, 3, 2, 2, 2, 44, 45, 5, 4, 3, 2, 45, 46, 7, 3, 2, 2,
-	46, 47, 5, 12, 7, 2, 47, 48, 7, 2, 2, 3, 48, 3, 3, 2, 2, 2, 49, 52, 5,
-	6, 4, 2, 50, 52, 5, 8, 5, 2, 51, 49, 3, 2, 2, 2, 51, 50, 3, 2, 2, 2, 52,
-	5, 3, 2, 2, 2, 53, 54, 5, 10, 6, 2, 54, 7, 3, 2, 2, 2, 55, 56, 5, 10, 6,
-	2, 56, 57, 7, 4, 2, 2, 57, 58, 5, 12, 7, 2, 58, 9, 3, 2, 2, 2, 59, 60,
-	7, 32, 2, 2, 60, 11, 3, 2, 2, 2, 61, 65, 5, 14, 8, 2, 62, 65, 5, 16, 9,
-	2, 63, 65, 5, 34, 18, 2, 64, 61, 3, 2, 2, 2, 64, 62, 3, 2, 2, 2, 64, 63,
-	3, 2, 2, 2, 65, 13, 3, 2, 2, 2, 66, 74, 5, 18, 10, 2, 67, 74, 5, 38, 20,
-	2, 68, 74, 5, 20, 11, 2, 69, 70, 7, 5, 2, 2, 70, 71, 5, 12, 7, 2, 71, 72,
-	7, 6, 2, 2, 72, 74, 3, 2, 2, 2, 73, 66, 3, 2, 2, 2, 73, 67, 3, 2, 2, 2,
-	73, 68, 3, 2, 2, 2, 73, 69, 3, 2, 2, 2, 74, 15, 3, 2, 2, 2, 75, 76, 7,
-	7, 2, 2, 76, 77, 5, 12, 7, 2, 77, 17, 3, 2, 2, 2, 78, 79, 7, 8, 2, 2, 79,
-	80, 5, 10, 6, 2, 80, 19, 3, 2, 2, 2, 81, 84, 5, 22, 12, 2, 82, 84, 5, 24,
-	13, 2, 83, 81, 3, 2, 2, 2, 83, 82, 3, 2, 2, 2, 84, 21, 3, 2, 2, 2, 85,
-	86, 5, 10, 6, 2, 86, 87, 5, 42, 22, 2, 87, 88, 5, 40, 21, 2, 88, 23, 3,
-	2, 2, 2, 89, 90, 5, 10, 6, 2, 90, 95, 5, 26, 14, 2, 91, 92, 5, 30, 16,
-	2, 92, 93, 5, 32, 17, 2, 93, 96, 3, 2, 2, 2, 94, 96, 5, 28, 15, 2, 95,
-	91, 3, 2, 2, 2, 95, 94, 3, 2, 2, 2, 96, 25, 3, 2, 2, 2, 97, 98, 9, 2, 2,
-	2, 98, 27, 3, 2, 2, 2, 99, 100, 7, 9, 2, 2, 100, 29, 3, 2, 2, 2, 101, 102,
-	7, 33, 2, 2, 102, 31, 3, 2, 2, 2, 103, 104, 9, 3, 2, 2, 104, 33, 3, 2,
-	2, 2, 105, 106, 5, 14, 8, 2, 106, 107, 7, 13, 2, 2, 107, 108, 5, 36, 19,
-	2, 108, 109, 5, 10, 6, 2, 109, 35, 3, 2, 2, 2, 110, 111, 9, 4, 2, 2, 111,
-	37, 3, 2, 2, 2, 112, 113, 5, 10, 6, 2, 113, 118, 7, 16, 2, 2, 114, 116,
-	5, 40, 21, 2, 115, 117, 7, 17, 2, 2, 116, 115, 3, 2, 2, 2, 116, 117, 3,
-	2, 2, 2, 117, 119, 3, 2, 2, 2, 118, 114, 3, 2, 2, 2, 119, 120, 3, 2, 2,
-	2, 120, 118, 3, 2, 2, 2, 120, 121, 3, 2, 2, 2, 121, 39, 3, 2, 2, 2, 122,
-	123, 9, 5, 2, 2, 123, 41, 3, 2, 2, 2, 124, 125, 9, 6, 2, 2, 125, 43, 3,
-	2, 2, 2, 9, 51, 64, 73, 83, 95, 116, 120,
+	18, 4, 19, 9, 19, 4, 20, 9, 20, 4, 21, 9, 21, 3, 2, 3, 2, 3, 2, 3, 2, 3,
+	2, 3, 3, 3, 3, 3, 4, 3, 4, 3, 5, 3, 5, 3, 6, 3, 6, 3, 6, 5, 6, 57, 10,
+	6, 3, 7, 3, 7, 3, 7, 3, 7, 3, 7, 3, 7, 3, 7, 5, 7, 66, 10, 7, 3, 8, 3,
+	8, 3, 8, 3, 9, 3, 9, 3, 9, 3, 10, 3, 10, 5, 10, 76, 10, 10, 3, 11, 3, 11,
+	3, 11, 3, 11, 3, 12, 3, 12, 3, 12, 3, 12, 3, 12, 3, 12, 5, 12, 88, 10,
+	12, 3, 13, 3, 13, 3, 14, 3, 14, 3, 15, 3, 15, 3, 16, 3, 16, 3, 17, 3, 17,
+	3, 17, 3, 17, 3, 17, 3, 18, 3, 18, 3, 19, 3, 19, 3, 19, 3, 19, 5, 19, 109,
+	10, 19, 6, 19, 111, 10, 19, 13, 19, 14, 19, 112, 3, 20, 3, 20, 3, 21, 3,
+	21, 3, 21, 2, 2, 22, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28,
+	30, 32, 34, 36, 38, 40, 2, 7, 3, 2, 24, 27, 3, 2, 9, 11, 3, 2, 13, 14,
+	4, 2, 28, 28, 32, 34, 3, 2, 17, 23, 2, 107, 2, 42, 3, 2, 2, 2, 4, 47, 3,
+	2, 2, 2, 6, 49, 3, 2, 2, 2, 8, 51, 3, 2, 2, 2, 10, 56, 3, 2, 2, 2, 12,
+	65, 3, 2, 2, 2, 14, 67, 3, 2, 2, 2, 16, 70, 3, 2, 2, 2, 18, 75, 3, 2, 2,
+	2, 20, 77, 3, 2, 2, 2, 22, 81, 3, 2, 2, 2, 24, 89, 3, 2, 2, 2, 26, 91,
+	3, 2, 2, 2, 28, 93, 3, 2, 2, 2, 30, 95, 3, 2, 2, 2, 32, 97, 3, 2, 2, 2,
+	34, 102, 3, 2, 2, 2, 36, 104, 3, 2, 2, 2, 38, 114, 3, 2, 2, 2, 40, 116,
+	3, 2, 2, 2, 42, 43, 5, 4, 3, 2, 43, 44, 7, 3, 2, 2, 44, 45, 5, 10, 6, 2,
+	45, 46, 7, 2, 2, 3, 46, 3, 3, 2, 2, 2, 47, 48, 5, 6, 4, 2, 48, 5, 3, 2,
+	2, 2, 49, 50, 5, 8, 5, 2, 50, 7, 3, 2, 2, 2, 51, 52, 7, 31, 2, 2, 52, 9,
+	3, 2, 2, 2, 53, 57, 5, 12, 7, 2, 54, 57, 5, 14, 8, 2, 55, 57, 5, 32, 17,
+	2, 56, 53, 3, 2, 2, 2, 56, 54, 3, 2, 2, 2, 56, 55, 3, 2, 2, 2, 57, 11,
+	3, 2, 2, 2, 58, 66, 5, 16, 9, 2, 59, 66, 5, 36, 19, 2, 60, 66, 5, 18, 10,
+	2, 61, 62, 7, 4, 2, 2, 62, 63, 5, 10, 6, 2, 63, 64, 7, 5, 2, 2, 64, 66,
+	3, 2, 2, 2, 65, 58, 3, 2, 2, 2, 65, 59, 3, 2, 2, 2, 65, 60, 3, 2, 2, 2,
+	65, 61, 3, 2, 2, 2, 66, 13, 3, 2, 2, 2, 67, 68, 7, 6, 2, 2, 68, 69, 5,
+	10, 6, 2, 69, 15, 3, 2, 2, 2, 70, 71, 7, 7, 2, 2, 71, 72, 5, 8, 5, 2, 72,
+	17, 3, 2, 2, 2, 73, 76, 5, 20, 11, 2, 74, 76, 5, 22, 12, 2, 75, 73, 3,
+	2, 2, 2, 75, 74, 3, 2, 2, 2, 76, 19, 3, 2, 2, 2, 77, 78, 5, 8, 5, 2, 78,
+	79, 5, 40, 21, 2, 79, 80, 5, 38, 20, 2, 80, 21, 3, 2, 2, 2, 81, 82, 5,
+	8, 5, 2, 82, 87, 5, 24, 13, 2, 83, 84, 5, 28, 15, 2, 84, 85, 5, 30, 16,
+	2, 85, 88, 3, 2, 2, 2, 86, 88, 5, 26, 14, 2, 87, 83, 3, 2, 2, 2, 87, 86,
+	3, 2, 2, 2, 88, 23, 3, 2, 2, 2, 89, 90, 9, 2, 2, 2, 90, 25, 3, 2, 2, 2,
+	91, 92, 7, 8, 2, 2, 92, 27, 3, 2, 2, 2, 93, 94, 7, 32, 2, 2, 94, 29, 3,
+	2, 2, 2, 95, 96, 9, 3, 2, 2, 96, 31, 3, 2, 2, 2, 97, 98, 5, 12, 7, 2, 98,
+	99, 7, 12, 2, 2, 99, 100, 5, 34, 18, 2, 100, 101, 5, 8, 5, 2, 101, 33,
+	3, 2, 2, 2, 102, 103, 9, 4, 2, 2, 103, 35, 3, 2, 2, 2, 104, 105, 5, 8,
+	5, 2, 105, 110, 7, 15, 2, 2, 106, 108, 5, 38, 20, 2, 107, 109, 7, 16, 2,
+	2, 108, 107, 3, 2, 2, 2, 108, 109, 3, 2, 2, 2, 109, 111, 3, 2, 2, 2, 110,
+	106, 3, 2, 2, 2, 111, 112, 3, 2, 2, 2, 112, 110, 3, 2, 2, 2, 112, 113,
+	3, 2, 2, 2, 113, 37, 3, 2, 2, 2, 114, 115, 9, 5, 2, 2, 115, 39, 3, 2, 2,
+	2, 116, 117, 9, 6, 2, 2, 117, 41, 3, 2, 2, 2, 8, 56, 65, 75, 87, 108, 112,
 }
 var literalNames = []string{
-	"", "'has'", "'with'", "'('", "')'", "'not'", "'empty'", "'now'", "'seconds'",
-	"'days'", "'months'", "'in'", "'any'", "'all'", "'within'", "','", "'=='",
-	"'!='", "'<='", "'<'", "'>'", "'>='", "'contains'", "'before'", "'after'",
-	"'younger'", "'older'", "", "'true'", "'false'",
+	"", "'has'", "'('", "')'", "'not'", "'empty'", "'now'", "'seconds'", "'days'",
+	"'months'", "'in'", "'any'", "'all'", "'within'", "','", "'=='", "'!='",
+	"'<='", "'<'", "'>'", "'>='", "'contains'", "'before'", "'after'", "'younger'",
+	"'older'", "", "'true'", "'false'",
 }
 var symbolicNames = []string{
-	"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "EqualsOperator",
+	"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "EqualsOperator",
 	"NotEqualsOperator", "LessOrEqualsThanOperator", "LessThanOperator", "MoreThanOperator",
 	"MoreOrEqualsThanOperator", "ContainsOperator", "BeforeOperator", "AfterOperator",
 	"YoungerOperator", "OlderOperator", "BooleanLiteral", "True", "False",
@@ -81,10 +77,10 @@ var symbolicNames = []string{
 }
 
 var ruleNames = []string{
-	"condition", "assetType", "simpleAssetType", "filteredAssetType", "field",
-	"expression", "simpleExpression", "notExpression", "isEmptyExpression",
-	"comparison", "binaryComparison", "timeComparison", "timeOperator", "nowOperator",
-	"time", "unit", "inExpression", "scope", "withinExpression", "value", "operator",
+	"condition", "assetType", "simpleAssetType", "field", "expression", "simpleExpression",
+	"notExpression", "isEmptyExpression", "comparison", "binaryComparison",
+	"timeComparison", "timeOperator", "nowOperator", "time", "unit", "inExpression",
+	"scope", "withinExpression", "value", "operator",
 }
 
 type CCLParser struct {
@@ -133,26 +129,25 @@ const (
 	CCLParserT__11                    = 12
 	CCLParserT__12                    = 13
 	CCLParserT__13                    = 14
-	CCLParserT__14                    = 15
-	CCLParserEqualsOperator           = 16
-	CCLParserNotEqualsOperator        = 17
-	CCLParserLessOrEqualsThanOperator = 18
-	CCLParserLessThanOperator         = 19
-	CCLParserMoreThanOperator         = 20
-	CCLParserMoreOrEqualsThanOperator = 21
-	CCLParserContainsOperator         = 22
-	CCLParserBeforeOperator           = 23
-	CCLParserAfterOperator            = 24
-	CCLParserYoungerOperator          = 25
-	CCLParserOlderOperator            = 26
-	CCLParserBooleanLiteral           = 27
-	CCLParserTrue                     = 28
-	CCLParserFalse                    = 29
-	CCLParserIdentifier               = 30
-	CCLParserIntNumber                = 31
-	CCLParserFloatNumber              = 32
-	CCLParserStringLiteral            = 33
-	CCLParserWhitespace               = 34
+	CCLParserEqualsOperator           = 15
+	CCLParserNotEqualsOperator        = 16
+	CCLParserLessOrEqualsThanOperator = 17
+	CCLParserLessThanOperator         = 18
+	CCLParserMoreThanOperator         = 19
+	CCLParserMoreOrEqualsThanOperator = 20
+	CCLParserContainsOperator         = 21
+	CCLParserBeforeOperator           = 22
+	CCLParserAfterOperator            = 23
+	CCLParserYoungerOperator          = 24
+	CCLParserOlderOperator            = 25
+	CCLParserBooleanLiteral           = 26
+	CCLParserTrue                     = 27
+	CCLParserFalse                    = 28
+	CCLParserIdentifier               = 29
+	CCLParserIntNumber                = 30
+	CCLParserFloatNumber              = 31
+	CCLParserStringLiteral            = 32
+	CCLParserWhitespace               = 33
 )
 
 // CCLParser rules.
@@ -160,24 +155,23 @@ const (
 	CCLParserRULE_condition         = 0
 	CCLParserRULE_assetType         = 1
 	CCLParserRULE_simpleAssetType   = 2
-	CCLParserRULE_filteredAssetType = 3
-	CCLParserRULE_field             = 4
-	CCLParserRULE_expression        = 5
-	CCLParserRULE_simpleExpression  = 6
-	CCLParserRULE_notExpression     = 7
-	CCLParserRULE_isEmptyExpression = 8
-	CCLParserRULE_comparison        = 9
-	CCLParserRULE_binaryComparison  = 10
-	CCLParserRULE_timeComparison    = 11
-	CCLParserRULE_timeOperator      = 12
-	CCLParserRULE_nowOperator       = 13
-	CCLParserRULE_time              = 14
-	CCLParserRULE_unit              = 15
-	CCLParserRULE_inExpression      = 16
-	CCLParserRULE_scope             = 17
-	CCLParserRULE_withinExpression  = 18
-	CCLParserRULE_value             = 19
-	CCLParserRULE_operator          = 20
+	CCLParserRULE_field             = 3
+	CCLParserRULE_expression        = 4
+	CCLParserRULE_simpleExpression  = 5
+	CCLParserRULE_notExpression     = 6
+	CCLParserRULE_isEmptyExpression = 7
+	CCLParserRULE_comparison        = 8
+	CCLParserRULE_binaryComparison  = 9
+	CCLParserRULE_timeComparison    = 10
+	CCLParserRULE_timeOperator      = 11
+	CCLParserRULE_nowOperator       = 12
+	CCLParserRULE_time              = 13
+	CCLParserRULE_unit              = 14
+	CCLParserRULE_inExpression      = 15
+	CCLParserRULE_scope             = 16
+	CCLParserRULE_withinExpression  = 17
+	CCLParserRULE_value             = 18
+	CCLParserRULE_operator          = 19
 )
 
 // IConditionContext is an interface to support dynamic dispatch.
@@ -250,18 +244,6 @@ func (s *ConditionContext) ToStringTree(ruleNames []string, recog antlr.Recogniz
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *ConditionContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.EnterCondition(s)
-	}
-}
-
-func (s *ConditionContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.ExitCondition(s)
-	}
-}
-
 func (p *CCLParser) Condition() (localctx IConditionContext) {
 	localctx = NewConditionContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 0, CCLParserRULE_condition)
@@ -284,19 +266,19 @@ func (p *CCLParser) Condition() (localctx IConditionContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(42)
+		p.SetState(40)
 		p.AssetType()
 	}
 	{
-		p.SetState(43)
+		p.SetState(41)
 		p.Match(CCLParserT__0)
 	}
 	{
-		p.SetState(44)
+		p.SetState(42)
 		p.Expression()
 	}
 	{
-		p.SetState(45)
+		p.SetState(43)
 		p.Match(CCLParserEOF)
 	}
 
@@ -351,34 +333,12 @@ func (s *AssetTypeContext) SimpleAssetType() ISimpleAssetTypeContext {
 	return t.(ISimpleAssetTypeContext)
 }
 
-func (s *AssetTypeContext) FilteredAssetType() IFilteredAssetTypeContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IFilteredAssetTypeContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IFilteredAssetTypeContext)
-}
-
 func (s *AssetTypeContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
 
 func (s *AssetTypeContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
 	return antlr.TreesStringTree(s, ruleNames, recog)
-}
-
-func (s *AssetTypeContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.EnterAssetType(s)
-	}
-}
-
-func (s *AssetTypeContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.ExitAssetType(s)
-	}
 }
 
 func (p *CCLParser) AssetType() (localctx IAssetTypeContext) {
@@ -401,23 +361,10 @@ func (p *CCLParser) AssetType() (localctx IAssetTypeContext) {
 		}
 	}()
 
-	p.SetState(49)
-	p.GetErrorHandler().Sync(p)
-	switch p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 0, p.GetParserRuleContext()) {
-	case 1:
-		p.EnterOuterAlt(localctx, 1)
-		{
-			p.SetState(47)
-			p.SimpleAssetType()
-		}
-
-	case 2:
-		p.EnterOuterAlt(localctx, 2)
-		{
-			p.SetState(48)
-			p.FilteredAssetType()
-		}
-
+	p.EnterOuterAlt(localctx, 1)
+	{
+		p.SetState(45)
+		p.SimpleAssetType()
 	}
 
 	return localctx
@@ -479,18 +426,6 @@ func (s *SimpleAssetTypeContext) ToStringTree(ruleNames []string, recog antlr.Re
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *SimpleAssetTypeContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.EnterSimpleAssetType(s)
-	}
-}
-
-func (s *SimpleAssetTypeContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.ExitSimpleAssetType(s)
-	}
-}
-
 func (p *CCLParser) SimpleAssetType() (localctx ISimpleAssetTypeContext) {
 	localctx = NewSimpleAssetTypeContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 4, CCLParserRULE_simpleAssetType)
@@ -513,123 +448,8 @@ func (p *CCLParser) SimpleAssetType() (localctx ISimpleAssetTypeContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(51)
+		p.SetState(47)
 		p.Field()
-	}
-
-	return localctx
-}
-
-// IFilteredAssetTypeContext is an interface to support dynamic dispatch.
-type IFilteredAssetTypeContext interface {
-	antlr.ParserRuleContext
-
-	// GetParser returns the parser.
-	GetParser() antlr.Parser
-
-	// IsFilteredAssetTypeContext differentiates from other interfaces.
-	IsFilteredAssetTypeContext()
-}
-
-type FilteredAssetTypeContext struct {
-	*antlr.BaseParserRuleContext
-	parser antlr.Parser
-}
-
-func NewEmptyFilteredAssetTypeContext() *FilteredAssetTypeContext {
-	var p = new(FilteredAssetTypeContext)
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
-	p.RuleIndex = CCLParserRULE_filteredAssetType
-	return p
-}
-
-func (*FilteredAssetTypeContext) IsFilteredAssetTypeContext() {}
-
-func NewFilteredAssetTypeContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *FilteredAssetTypeContext {
-	var p = new(FilteredAssetTypeContext)
-
-	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
-
-	p.parser = parser
-	p.RuleIndex = CCLParserRULE_filteredAssetType
-
-	return p
-}
-
-func (s *FilteredAssetTypeContext) GetParser() antlr.Parser { return s.parser }
-
-func (s *FilteredAssetTypeContext) Field() IFieldContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IFieldContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IFieldContext)
-}
-
-func (s *FilteredAssetTypeContext) Expression() IExpressionContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IExpressionContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IExpressionContext)
-}
-
-func (s *FilteredAssetTypeContext) GetRuleContext() antlr.RuleContext {
-	return s
-}
-
-func (s *FilteredAssetTypeContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
-	return antlr.TreesStringTree(s, ruleNames, recog)
-}
-
-func (s *FilteredAssetTypeContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.EnterFilteredAssetType(s)
-	}
-}
-
-func (s *FilteredAssetTypeContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.ExitFilteredAssetType(s)
-	}
-}
-
-func (p *CCLParser) FilteredAssetType() (localctx IFilteredAssetTypeContext) {
-	localctx = NewFilteredAssetTypeContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 6, CCLParserRULE_filteredAssetType)
-
-	defer func() {
-		p.ExitRule()
-	}()
-
-	defer func() {
-		if err := recover(); err != nil {
-			if v, ok := err.(antlr.RecognitionException); ok {
-				localctx.SetException(v)
-				p.GetErrorHandler().ReportError(p, v)
-				p.GetErrorHandler().Recover(p, v)
-			} else {
-				panic(err)
-			}
-		}
-	}()
-
-	p.EnterOuterAlt(localctx, 1)
-	{
-		p.SetState(53)
-		p.Field()
-	}
-	{
-		p.SetState(54)
-		p.Match(CCLParserT__1)
-	}
-	{
-		p.SetState(55)
-		p.Expression()
 	}
 
 	return localctx
@@ -685,21 +505,9 @@ func (s *FieldContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) 
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *FieldContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.EnterField(s)
-	}
-}
-
-func (s *FieldContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.ExitField(s)
-	}
-}
-
 func (p *CCLParser) Field() (localctx IFieldContext) {
 	localctx = NewFieldContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 8, CCLParserRULE_field)
+	p.EnterRule(localctx, 6, CCLParserRULE_field)
 
 	defer func() {
 		p.ExitRule()
@@ -719,7 +527,7 @@ func (p *CCLParser) Field() (localctx IFieldContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(57)
+		p.SetState(49)
 		p.Match(CCLParserIdentifier)
 	}
 
@@ -802,21 +610,9 @@ func (s *ExpressionContext) ToStringTree(ruleNames []string, recog antlr.Recogni
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *ExpressionContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.EnterExpression(s)
-	}
-}
-
-func (s *ExpressionContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.ExitExpression(s)
-	}
-}
-
 func (p *CCLParser) Expression() (localctx IExpressionContext) {
 	localctx = NewExpressionContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 10, CCLParserRULE_expression)
+	p.EnterRule(localctx, 8, CCLParserRULE_expression)
 
 	defer func() {
 		p.ExitRule()
@@ -834,27 +630,27 @@ func (p *CCLParser) Expression() (localctx IExpressionContext) {
 		}
 	}()
 
-	p.SetState(62)
+	p.SetState(54)
 	p.GetErrorHandler().Sync(p)
-	switch p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 1, p.GetParserRuleContext()) {
+	switch p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 0, p.GetParserRuleContext()) {
 	case 1:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(59)
+			p.SetState(51)
 			p.SimpleExpression()
 		}
 
 	case 2:
 		p.EnterOuterAlt(localctx, 2)
 		{
-			p.SetState(60)
+			p.SetState(52)
 			p.NotExpression()
 		}
 
 	case 3:
 		p.EnterOuterAlt(localctx, 3)
 		{
-			p.SetState(61)
+			p.SetState(53)
 			p.InExpression()
 		}
 
@@ -949,21 +745,9 @@ func (s *SimpleExpressionContext) ToStringTree(ruleNames []string, recog antlr.R
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *SimpleExpressionContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.EnterSimpleExpression(s)
-	}
-}
-
-func (s *SimpleExpressionContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.ExitSimpleExpression(s)
-	}
-}
-
 func (p *CCLParser) SimpleExpression() (localctx ISimpleExpressionContext) {
 	localctx = NewSimpleExpressionContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 12, CCLParserRULE_simpleExpression)
+	p.EnterRule(localctx, 10, CCLParserRULE_simpleExpression)
 
 	defer func() {
 		p.ExitRule()
@@ -981,43 +765,43 @@ func (p *CCLParser) SimpleExpression() (localctx ISimpleExpressionContext) {
 		}
 	}()
 
-	p.SetState(71)
+	p.SetState(63)
 	p.GetErrorHandler().Sync(p)
-	switch p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 2, p.GetParserRuleContext()) {
+	switch p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 1, p.GetParserRuleContext()) {
 	case 1:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(64)
+			p.SetState(56)
 			p.IsEmptyExpression()
 		}
 
 	case 2:
 		p.EnterOuterAlt(localctx, 2)
 		{
-			p.SetState(65)
+			p.SetState(57)
 			p.WithinExpression()
 		}
 
 	case 3:
 		p.EnterOuterAlt(localctx, 3)
 		{
-			p.SetState(66)
+			p.SetState(58)
 			p.Comparison()
 		}
 
 	case 4:
 		p.EnterOuterAlt(localctx, 4)
 		{
-			p.SetState(67)
-			p.Match(CCLParserT__2)
+			p.SetState(59)
+			p.Match(CCLParserT__1)
 		}
 		{
-			p.SetState(68)
+			p.SetState(60)
 			p.Expression()
 		}
 		{
-			p.SetState(69)
-			p.Match(CCLParserT__3)
+			p.SetState(61)
+			p.Match(CCLParserT__2)
 		}
 
 	}
@@ -1081,21 +865,9 @@ func (s *NotExpressionContext) ToStringTree(ruleNames []string, recog antlr.Reco
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *NotExpressionContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.EnterNotExpression(s)
-	}
-}
-
-func (s *NotExpressionContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.ExitNotExpression(s)
-	}
-}
-
 func (p *CCLParser) NotExpression() (localctx INotExpressionContext) {
 	localctx = NewNotExpressionContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 14, CCLParserRULE_notExpression)
+	p.EnterRule(localctx, 12, CCLParserRULE_notExpression)
 
 	defer func() {
 		p.ExitRule()
@@ -1115,11 +887,11 @@ func (p *CCLParser) NotExpression() (localctx INotExpressionContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(73)
-		p.Match(CCLParserT__4)
+		p.SetState(65)
+		p.Match(CCLParserT__3)
 	}
 	{
-		p.SetState(74)
+		p.SetState(66)
 		p.Expression()
 	}
 
@@ -1182,21 +954,9 @@ func (s *IsEmptyExpressionContext) ToStringTree(ruleNames []string, recog antlr.
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *IsEmptyExpressionContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.EnterIsEmptyExpression(s)
-	}
-}
-
-func (s *IsEmptyExpressionContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.ExitIsEmptyExpression(s)
-	}
-}
-
 func (p *CCLParser) IsEmptyExpression() (localctx IIsEmptyExpressionContext) {
 	localctx = NewIsEmptyExpressionContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 16, CCLParserRULE_isEmptyExpression)
+	p.EnterRule(localctx, 14, CCLParserRULE_isEmptyExpression)
 
 	defer func() {
 		p.ExitRule()
@@ -1216,11 +976,11 @@ func (p *CCLParser) IsEmptyExpression() (localctx IIsEmptyExpressionContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(76)
-		p.Match(CCLParserT__5)
+		p.SetState(68)
+		p.Match(CCLParserT__4)
 	}
 	{
-		p.SetState(77)
+		p.SetState(69)
 		p.Field()
 	}
 
@@ -1293,21 +1053,9 @@ func (s *ComparisonContext) ToStringTree(ruleNames []string, recog antlr.Recogni
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *ComparisonContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.EnterComparison(s)
-	}
-}
-
-func (s *ComparisonContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.ExitComparison(s)
-	}
-}
-
 func (p *CCLParser) Comparison() (localctx IComparisonContext) {
 	localctx = NewComparisonContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 18, CCLParserRULE_comparison)
+	p.EnterRule(localctx, 16, CCLParserRULE_comparison)
 
 	defer func() {
 		p.ExitRule()
@@ -1325,20 +1073,20 @@ func (p *CCLParser) Comparison() (localctx IComparisonContext) {
 		}
 	}()
 
-	p.SetState(81)
+	p.SetState(73)
 	p.GetErrorHandler().Sync(p)
-	switch p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 3, p.GetParserRuleContext()) {
+	switch p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 2, p.GetParserRuleContext()) {
 	case 1:
 		p.EnterOuterAlt(localctx, 1)
 		{
-			p.SetState(79)
+			p.SetState(71)
 			p.BinaryComparison()
 		}
 
 	case 2:
 		p.EnterOuterAlt(localctx, 2)
 		{
-			p.SetState(80)
+			p.SetState(72)
 			p.TimeComparison()
 		}
 
@@ -1423,21 +1171,9 @@ func (s *BinaryComparisonContext) ToStringTree(ruleNames []string, recog antlr.R
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *BinaryComparisonContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.EnterBinaryComparison(s)
-	}
-}
-
-func (s *BinaryComparisonContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.ExitBinaryComparison(s)
-	}
-}
-
 func (p *CCLParser) BinaryComparison() (localctx IBinaryComparisonContext) {
 	localctx = NewBinaryComparisonContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 20, CCLParserRULE_binaryComparison)
+	p.EnterRule(localctx, 18, CCLParserRULE_binaryComparison)
 
 	defer func() {
 		p.ExitRule()
@@ -1457,15 +1193,15 @@ func (p *CCLParser) BinaryComparison() (localctx IBinaryComparisonContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(83)
+		p.SetState(75)
 		p.Field()
 	}
 	{
-		p.SetState(84)
+		p.SetState(76)
 		p.Operator()
 	}
 	{
-		p.SetState(85)
+		p.SetState(77)
 		p.Value()
 	}
 
@@ -1568,21 +1304,9 @@ func (s *TimeComparisonContext) ToStringTree(ruleNames []string, recog antlr.Rec
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *TimeComparisonContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.EnterTimeComparison(s)
-	}
-}
-
-func (s *TimeComparisonContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.ExitTimeComparison(s)
-	}
-}
-
 func (p *CCLParser) TimeComparison() (localctx ITimeComparisonContext) {
 	localctx = NewTimeComparisonContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 22, CCLParserRULE_timeComparison)
+	p.EnterRule(localctx, 20, CCLParserRULE_timeComparison)
 
 	defer func() {
 		p.ExitRule()
@@ -1602,30 +1326,30 @@ func (p *CCLParser) TimeComparison() (localctx ITimeComparisonContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(87)
+		p.SetState(79)
 		p.Field()
 	}
 	{
-		p.SetState(88)
+		p.SetState(80)
 		p.TimeOperator()
 	}
-	p.SetState(93)
+	p.SetState(85)
 	p.GetErrorHandler().Sync(p)
 
 	switch p.GetTokenStream().LA(1) {
 	case CCLParserIntNumber:
 		{
-			p.SetState(89)
+			p.SetState(81)
 			p.Time()
 		}
 		{
-			p.SetState(90)
+			p.SetState(82)
 			p.Unit()
 		}
 
-	case CCLParserT__6:
+	case CCLParserT__5:
 		{
-			p.SetState(92)
+			p.SetState(84)
 			p.NowOperator()
 		}
 
@@ -1698,21 +1422,9 @@ func (s *TimeOperatorContext) ToStringTree(ruleNames []string, recog antlr.Recog
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *TimeOperatorContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.EnterTimeOperator(s)
-	}
-}
-
-func (s *TimeOperatorContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.ExitTimeOperator(s)
-	}
-}
-
 func (p *CCLParser) TimeOperator() (localctx ITimeOperatorContext) {
 	localctx = NewTimeOperatorContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 24, CCLParserRULE_timeOperator)
+	p.EnterRule(localctx, 22, CCLParserRULE_timeOperator)
 	var _la int
 
 	defer func() {
@@ -1733,7 +1445,7 @@ func (p *CCLParser) TimeOperator() (localctx ITimeOperatorContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(95)
+		p.SetState(87)
 		_la = p.GetTokenStream().LA(1)
 
 		if !(((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<CCLParserBeforeOperator)|(1<<CCLParserAfterOperator)|(1<<CCLParserYoungerOperator)|(1<<CCLParserOlderOperator))) != 0) {
@@ -1792,21 +1504,9 @@ func (s *NowOperatorContext) ToStringTree(ruleNames []string, recog antlr.Recogn
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *NowOperatorContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.EnterNowOperator(s)
-	}
-}
-
-func (s *NowOperatorContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.ExitNowOperator(s)
-	}
-}
-
 func (p *CCLParser) NowOperator() (localctx INowOperatorContext) {
 	localctx = NewNowOperatorContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 26, CCLParserRULE_nowOperator)
+	p.EnterRule(localctx, 24, CCLParserRULE_nowOperator)
 
 	defer func() {
 		p.ExitRule()
@@ -1826,8 +1526,8 @@ func (p *CCLParser) NowOperator() (localctx INowOperatorContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(97)
-		p.Match(CCLParserT__6)
+		p.SetState(89)
+		p.Match(CCLParserT__5)
 	}
 
 	return localctx
@@ -1883,21 +1583,9 @@ func (s *TimeContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) s
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *TimeContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.EnterTime(s)
-	}
-}
-
-func (s *TimeContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.ExitTime(s)
-	}
-}
-
 func (p *CCLParser) Time() (localctx ITimeContext) {
 	localctx = NewTimeContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 28, CCLParserRULE_time)
+	p.EnterRule(localctx, 26, CCLParserRULE_time)
 
 	defer func() {
 		p.ExitRule()
@@ -1917,7 +1605,7 @@ func (p *CCLParser) Time() (localctx ITimeContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(99)
+		p.SetState(91)
 		p.Match(CCLParserIntNumber)
 	}
 
@@ -1969,21 +1657,9 @@ func (s *UnitContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) s
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *UnitContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.EnterUnit(s)
-	}
-}
-
-func (s *UnitContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.ExitUnit(s)
-	}
-}
-
 func (p *CCLParser) Unit() (localctx IUnitContext) {
 	localctx = NewUnitContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 30, CCLParserRULE_unit)
+	p.EnterRule(localctx, 28, CCLParserRULE_unit)
 	var _la int
 
 	defer func() {
@@ -2004,10 +1680,10 @@ func (p *CCLParser) Unit() (localctx IUnitContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(101)
+		p.SetState(93)
 		_la = p.GetTokenStream().LA(1)
 
-		if !(((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<CCLParserT__7)|(1<<CCLParserT__8)|(1<<CCLParserT__9))) != 0) {
+		if !(((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<CCLParserT__6)|(1<<CCLParserT__7)|(1<<CCLParserT__8))) != 0) {
 			p.GetErrorHandler().RecoverInline(p)
 		} else {
 			p.GetErrorHandler().ReportMatch(p)
@@ -2094,21 +1770,9 @@ func (s *InExpressionContext) ToStringTree(ruleNames []string, recog antlr.Recog
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *InExpressionContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.EnterInExpression(s)
-	}
-}
-
-func (s *InExpressionContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.ExitInExpression(s)
-	}
-}
-
 func (p *CCLParser) InExpression() (localctx IInExpressionContext) {
 	localctx = NewInExpressionContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 32, CCLParserRULE_inExpression)
+	p.EnterRule(localctx, 30, CCLParserRULE_inExpression)
 
 	defer func() {
 		p.ExitRule()
@@ -2128,19 +1792,19 @@ func (p *CCLParser) InExpression() (localctx IInExpressionContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(103)
+		p.SetState(95)
 		p.SimpleExpression()
 	}
 	{
-		p.SetState(104)
-		p.Match(CCLParserT__10)
+		p.SetState(96)
+		p.Match(CCLParserT__9)
 	}
 	{
-		p.SetState(105)
+		p.SetState(97)
 		p.Scope()
 	}
 	{
-		p.SetState(106)
+		p.SetState(98)
 		p.Field()
 	}
 
@@ -2192,21 +1856,9 @@ func (s *ScopeContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) 
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *ScopeContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.EnterScope(s)
-	}
-}
-
-func (s *ScopeContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.ExitScope(s)
-	}
-}
-
 func (p *CCLParser) Scope() (localctx IScopeContext) {
 	localctx = NewScopeContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 34, CCLParserRULE_scope)
+	p.EnterRule(localctx, 32, CCLParserRULE_scope)
 	var _la int
 
 	defer func() {
@@ -2227,10 +1879,10 @@ func (p *CCLParser) Scope() (localctx IScopeContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(108)
+		p.SetState(100)
 		_la = p.GetTokenStream().LA(1)
 
-		if !(_la == CCLParserT__11 || _la == CCLParserT__12) {
+		if !(_la == CCLParserT__10 || _la == CCLParserT__11) {
 			p.GetErrorHandler().RecoverInline(p)
 		} else {
 			p.GetErrorHandler().ReportMatch(p)
@@ -2320,21 +1972,9 @@ func (s *WithinExpressionContext) ToStringTree(ruleNames []string, recog antlr.R
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *WithinExpressionContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.EnterWithinExpression(s)
-	}
-}
-
-func (s *WithinExpressionContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.ExitWithinExpression(s)
-	}
-}
-
 func (p *CCLParser) WithinExpression() (localctx IWithinExpressionContext) {
 	localctx = NewWithinExpressionContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 36, CCLParserRULE_withinExpression)
+	p.EnterRule(localctx, 34, CCLParserRULE_withinExpression)
 	var _la int
 
 	defer func() {
@@ -2355,35 +1995,35 @@ func (p *CCLParser) WithinExpression() (localctx IWithinExpressionContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(110)
+		p.SetState(102)
 		p.Field()
 	}
 	{
-		p.SetState(111)
-		p.Match(CCLParserT__13)
+		p.SetState(103)
+		p.Match(CCLParserT__12)
 	}
-	p.SetState(116)
+	p.SetState(108)
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
-	for ok := true; ok; ok = (((_la-27)&-(0x1f+1)) == 0 && ((1<<uint((_la-27)))&((1<<(CCLParserBooleanLiteral-27))|(1<<(CCLParserIntNumber-27))|(1<<(CCLParserFloatNumber-27))|(1<<(CCLParserStringLiteral-27)))) != 0) {
+	for ok := true; ok; ok = (((_la-26)&-(0x1f+1)) == 0 && ((1<<uint((_la-26)))&((1<<(CCLParserBooleanLiteral-26))|(1<<(CCLParserIntNumber-26))|(1<<(CCLParserFloatNumber-26))|(1<<(CCLParserStringLiteral-26)))) != 0) {
 		{
-			p.SetState(112)
+			p.SetState(104)
 			p.Value()
 		}
-		p.SetState(114)
+		p.SetState(106)
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 
-		if _la == CCLParserT__14 {
+		if _la == CCLParserT__13 {
 			{
-				p.SetState(113)
-				p.Match(CCLParserT__14)
+				p.SetState(105)
+				p.Match(CCLParserT__13)
 			}
 
 		}
 
-		p.SetState(118)
+		p.SetState(110)
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 	}
@@ -2453,21 +2093,9 @@ func (s *ValueContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) 
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *ValueContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.EnterValue(s)
-	}
-}
-
-func (s *ValueContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.ExitValue(s)
-	}
-}
-
 func (p *CCLParser) Value() (localctx IValueContext) {
 	localctx = NewValueContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 38, CCLParserRULE_value)
+	p.EnterRule(localctx, 36, CCLParserRULE_value)
 	var _la int
 
 	defer func() {
@@ -2488,10 +2116,10 @@ func (p *CCLParser) Value() (localctx IValueContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(120)
+		p.SetState(112)
 		_la = p.GetTokenStream().LA(1)
 
-		if !(((_la-27)&-(0x1f+1)) == 0 && ((1<<uint((_la-27)))&((1<<(CCLParserBooleanLiteral-27))|(1<<(CCLParserIntNumber-27))|(1<<(CCLParserFloatNumber-27))|(1<<(CCLParserStringLiteral-27)))) != 0) {
+		if !(((_la-26)&-(0x1f+1)) == 0 && ((1<<uint((_la-26)))&((1<<(CCLParserBooleanLiteral-26))|(1<<(CCLParserIntNumber-26))|(1<<(CCLParserFloatNumber-26))|(1<<(CCLParserStringLiteral-26)))) != 0) {
 			p.GetErrorHandler().RecoverInline(p)
 		} else {
 			p.GetErrorHandler().ReportMatch(p)
@@ -2576,21 +2204,9 @@ func (s *OperatorContext) ToStringTree(ruleNames []string, recog antlr.Recognize
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (s *OperatorContext) EnterRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.EnterOperator(s)
-	}
-}
-
-func (s *OperatorContext) ExitRule(listener antlr.ParseTreeListener) {
-	if listenerT, ok := listener.(CCLListener); ok {
-		listenerT.ExitOperator(s)
-	}
-}
-
 func (p *CCLParser) Operator() (localctx IOperatorContext) {
 	localctx = NewOperatorContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 40, CCLParserRULE_operator)
+	p.EnterRule(localctx, 38, CCLParserRULE_operator)
 	var _la int
 
 	defer func() {
@@ -2611,7 +2227,7 @@ func (p *CCLParser) Operator() (localctx IOperatorContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(122)
+		p.SetState(114)
 		_la = p.GetTokenStream().LA(1)
 
 		if !(((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<CCLParserEqualsOperator)|(1<<CCLParserNotEqualsOperator)|(1<<CCLParserLessOrEqualsThanOperator)|(1<<CCLParserLessThanOperator)|(1<<CCLParserMoreThanOperator)|(1<<CCLParserMoreOrEqualsThanOperator)|(1<<CCLParserContainsOperator))) != 0) {
