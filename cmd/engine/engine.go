@@ -227,7 +227,6 @@ func doCmd(cmd *cobra.Command, args []string) (err error) {
 
 func main() {
 	if err := engineCmd.Execute(); err != nil {
-		log.Panicf("Fatal error: %s", err)
 		os.Exit(1)
 	}
 }
