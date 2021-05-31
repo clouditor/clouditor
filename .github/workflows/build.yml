@@ -25,7 +25,7 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.login=$SONAR_TOKEN
           else
-            ./gradlew --parallel build
+            ./gradlew --parallel docker build
           fi
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -63,22 +63,31 @@ jobs:
           github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
           github.com/googleapis/gnostic/apps/protoc-gen-openapi
           go generate ./...
+      - name: Build
+        run: |
+          go test -v -coverprofile=coverage.cov -coverpkg ./... -covermode=atomic ./...
+          mkdir -p build
+          go build -o build ./...
+      - uses: codecov/codecov-action@v1
+        with:
+          files: coverage.cov
+          flags: unittests
+          verbose: true
+      - name: "Upload Artifact"
+        uses: actions/upload-artifact@v2
+        with:
+          name: build
+          path: build
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
       - name: Lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          args: --timeout=10m
+      - name: Check for Missing Copyright Header
         run: |
           go install github.com/google/addlicense
           addlicense -c "Fraunhofer AISEC" -l apache -check **/*.go
-          go vet ./...
-      - name: Build
-        run: |
-          go build cmd/engine/engine.go
-          go build cmd/cli/cl.go
-      - name: "Upload Artifact"
-        uses: actions/upload-artifact@v2
-        with:
-          name: engine
-          path: engine
-      - name: "Upload Artifact"
-        uses: actions/upload-artifact@v2
-        with:
-          name: cl
-          path: cl

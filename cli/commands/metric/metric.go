@@ -58,9 +58,7 @@ func NewListMetricsCommand() *cobra.Command {
 
 			res, err = client.ListMetrics(context.Background(), &orchestrator.ListMetricsRequest{})
 
-			session.HandleResponse(res, err)
-
-			return err
+			return session.HandleResponse(res, err)
 		},
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			return []string{}, cobra.ShellCompDirectiveNoFileComp
