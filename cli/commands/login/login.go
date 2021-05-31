@@ -56,9 +56,7 @@ func NewLoginCommand() *cobra.Command {
 				session *cli.Session
 			)
 
-			session = cli.NewSession(args[0])
-
-			if conn, err = grpc.Dial(session.URL, grpc.WithInsecure()); err != nil {
+			if session, err = cli.NewSession(args[0], cli.DefaultSessionFolder); err != nil {
 				return fmt.Errorf("could not connect: %w", err)
 			}
 

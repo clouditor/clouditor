@@ -44,33 +44,49 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+var DefaultSessionFolder string
+
 type Session struct {
 	URL   string `json:"url"`
 	Token string `json:"token"`
 
+	Folder string
+
 	conn *grpc.ClientConn
 }
 
-func NewSession(url string) *Session {
-	return &Session{
-		URL: url,
-	}
-}
-
-func ContinueSession() (session *Session, err error) {
-	var (
-		home string
-		file *os.File
-	)
-
-	// try to read from session.json
+func init() {
+	var home string
+	var err error
 
 	// find the home directory
 	if home, err = os.UserHomeDir(); err != nil {
 		return
 	}
 
-	if file, err = os.OpenFile(fmt.Sprintf("%s/.clouditor/session.json", home), os.O_RDONLY, 0600); err != nil {
+	DefaultSessionFolder = fmt.Sprintf("%s/.clouditor/", home)
+}
+
+func NewSession(url string, folder string) (session *Session, err error) {
+	session = &Session{
+		URL:    url,
+		Folder: folder,
+	}
+
+	if session.conn, err = grpc.Dial(session.URL, grpc.WithInsecure()); err != nil {
+		return nil, fmt.Errorf("could not connect: %v", err)
+	}
+
+	return session, nil
+}
+
+func ContinueSession(folder string) (session *Session, err error) {
+	var (
+		file *os.File
+	)
+
+	// try to read from session.json
+	if file, err = os.OpenFile(fmt.Sprintf("%s/session.json", folder), os.O_RDONLY, 0600); err != nil {
 		return
 	}
 
@@ -92,20 +108,15 @@ func ContinueSession() (session *Session, err error) {
 // Save saves the session into the `.clouditor` folder in the home directory
 func (s *Session) Save() (err error) {
 	var (
-		home string
 		file *os.File
 	)
-	// find the home directory
-	if home, err = os.UserHomeDir(); err != nil {
-		return fmt.Errorf("could not find home directory: %w", err)
-	}
 
-	// create the .clouditor directory
-	if err = os.MkdirAll(fmt.Sprintf("%s/.clouditor", home), 0744); err != nil {
+	// create the session directory
+	if err = os.MkdirAll(s.Folder, 0744); err != nil {
 		return fmt.Errorf("could not create .clouditor in home directory: %w", err)
 	}
 
-	if file, err = os.OpenFile(fmt.Sprintf("%s/.clouditor/session.json", home), os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0600); err != nil {
+	if file, err = os.OpenFile(fmt.Sprintf("%s/session.json", s.Folder), os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0600); err != nil {
 		return fmt.Errorf("could not save session.json: %w", err)
 	}
 
@@ -219,7 +230,7 @@ func getTools(toComplete string) []string {
 		res     *orchestrator.ListAssessmentToolsResponse
 	)
 
-	if session, err = ContinueSession(); err != nil {
+	if session, err = ContinueSession(DefaultSessionFolder); err != nil {
 		fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
 		return nil
 	}
@@ -246,7 +257,7 @@ func getMetrics(toComplete string) []string {
 		res     *orchestrator.ListMetricsResponse
 	)
 
-	if session, err = ContinueSession(); err != nil {
+	if session, err = ContinueSession(DefaultSessionFolder); err != nil {
 		fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
 		return nil
 	}

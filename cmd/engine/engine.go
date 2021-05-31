@@ -166,7 +166,7 @@ func doCmd(cmd *cobra.Command, args []string) (err error) {
 	discoveryService = service_discovery.NewService()
 	orchestratorService = &service_orchestrator.Service{}
 
-	createDefaultUser()
+	authService.CreateDefaultUser(viper.GetString(APIDefaultUserFlag), viper.GetString(APIDefaultPasswordFlag))
 
 	grpcPort := viper.GetInt(APIgRPCPortFlag)
 	httpPort := viper.GetInt(APIHTTPPortFlag)
@@ -228,27 +228,5 @@ func doCmd(cmd *cobra.Command, args []string) (err error) {
 func main() {
 	if err := engineCmd.Execute(); err != nil {
 		os.Exit(1)
-	}
-}
-
-// createDefaultUser creates a default user in the database
-func createDefaultUser() {
-	db := persistence.GetDatabase()
-
-	var count int64
-	db.Model(&auth.User{}).Count(&count)
-
-	if count == 0 {
-		password, _ := authService.HashPassword(viper.GetString(APIDefaultPasswordFlag))
-
-		user := auth.User{
-			Username: viper.GetString(APIDefaultUserFlag),
-			FullName: viper.GetString(APIDefaultUserFlag),
-			Password: string(password),
-		}
-
-		log.Infof("Creating default user %s\n", user.Username)
-
-		db.Create(&user)
 	}
 }

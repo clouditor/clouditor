@@ -48,7 +48,7 @@ func NewStartDiscoveryCommand() *cobra.Command {
 				res     *discovery.StartDiscoveryResponse
 			)
 
-			if session, err = cli.ContinueSession(); err != nil {
+			if session, err = cli.ContinueSession(cli.DefaultSessionFolder); err != nil {
 				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
 				return nil
 			}
@@ -77,7 +77,7 @@ func NewQueryDiscoveryCommand() *cobra.Command {
 				res     *discovery.QueryResponse
 			)
 
-			if session, err = cli.ContinueSession(); err != nil {
+			if session, err = cli.ContinueSession(cli.DefaultSessionFolder); err != nil {
 				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
 				return nil
 			}
