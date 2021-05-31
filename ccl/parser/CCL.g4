@@ -25,14 +25,14 @@ comparison: binaryComparison | timeComparison;
 
 binaryComparison: field operator value;
 
-timeComparison: field timeOperator (time unit | nowOperator);
+timeComparison: field timeOperator (duration | nowOperator);
 timeOperator:
 	BeforeOperator
 	| AfterOperator
 	| YoungerOperator
 	| OlderOperator;
 nowOperator: 'now';
-time: IntNumber;
+duration: IntNumber unit;
 unit: 'seconds' | 'days' | 'months';
 
 inExpression: simpleExpression 'in' scope field;

@@ -16,7 +16,7 @@ var _ = reflect.Copy
 var _ = strconv.Itoa
 
 var parserATN = []uint16{
-	3, 24715, 42794, 33075, 47597, 16764, 15335, 30598, 22884, 3, 35, 119,
+	3, 24715, 42794, 33075, 47597, 16764, 15335, 30598, 22884, 3, 35, 118,
 	4, 2, 9, 2, 4, 3, 9, 3, 4, 4, 9, 4, 4, 5, 9, 5, 4, 6, 9, 6, 4, 7, 9, 7,
 	4, 8, 9, 8, 4, 9, 9, 9, 4, 10, 9, 10, 4, 11, 9, 11, 4, 12, 9, 12, 4, 13,
 	9, 13, 4, 14, 9, 14, 4, 15, 9, 15, 4, 16, 9, 16, 4, 17, 9, 17, 4, 18, 9,
@@ -24,43 +24,43 @@ var parserATN = []uint16{
 	2, 3, 3, 3, 3, 3, 4, 3, 4, 3, 5, 3, 5, 3, 6, 3, 6, 3, 6, 5, 6, 57, 10,
 	6, 3, 7, 3, 7, 3, 7, 3, 7, 3, 7, 3, 7, 3, 7, 5, 7, 66, 10, 7, 3, 8, 3,
 	8, 3, 8, 3, 9, 3, 9, 3, 9, 3, 10, 3, 10, 5, 10, 76, 10, 10, 3, 11, 3, 11,
-	3, 11, 3, 11, 3, 12, 3, 12, 3, 12, 3, 12, 3, 12, 3, 12, 5, 12, 88, 10,
-	12, 3, 13, 3, 13, 3, 14, 3, 14, 3, 15, 3, 15, 3, 16, 3, 16, 3, 17, 3, 17,
-	3, 17, 3, 17, 3, 17, 3, 18, 3, 18, 3, 19, 3, 19, 3, 19, 3, 19, 5, 19, 109,
-	10, 19, 6, 19, 111, 10, 19, 13, 19, 14, 19, 112, 3, 20, 3, 20, 3, 21, 3,
-	21, 3, 21, 2, 2, 22, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28,
-	30, 32, 34, 36, 38, 40, 2, 7, 3, 2, 24, 27, 3, 2, 9, 11, 3, 2, 13, 14,
-	4, 2, 28, 28, 32, 34, 3, 2, 17, 23, 2, 107, 2, 42, 3, 2, 2, 2, 4, 47, 3,
-	2, 2, 2, 6, 49, 3, 2, 2, 2, 8, 51, 3, 2, 2, 2, 10, 56, 3, 2, 2, 2, 12,
-	65, 3, 2, 2, 2, 14, 67, 3, 2, 2, 2, 16, 70, 3, 2, 2, 2, 18, 75, 3, 2, 2,
-	2, 20, 77, 3, 2, 2, 2, 22, 81, 3, 2, 2, 2, 24, 89, 3, 2, 2, 2, 26, 91,
-	3, 2, 2, 2, 28, 93, 3, 2, 2, 2, 30, 95, 3, 2, 2, 2, 32, 97, 3, 2, 2, 2,
-	34, 102, 3, 2, 2, 2, 36, 104, 3, 2, 2, 2, 38, 114, 3, 2, 2, 2, 40, 116,
-	3, 2, 2, 2, 42, 43, 5, 4, 3, 2, 43, 44, 7, 3, 2, 2, 44, 45, 5, 10, 6, 2,
-	45, 46, 7, 2, 2, 3, 46, 3, 3, 2, 2, 2, 47, 48, 5, 6, 4, 2, 48, 5, 3, 2,
-	2, 2, 49, 50, 5, 8, 5, 2, 50, 7, 3, 2, 2, 2, 51, 52, 7, 31, 2, 2, 52, 9,
-	3, 2, 2, 2, 53, 57, 5, 12, 7, 2, 54, 57, 5, 14, 8, 2, 55, 57, 5, 32, 17,
-	2, 56, 53, 3, 2, 2, 2, 56, 54, 3, 2, 2, 2, 56, 55, 3, 2, 2, 2, 57, 11,
-	3, 2, 2, 2, 58, 66, 5, 16, 9, 2, 59, 66, 5, 36, 19, 2, 60, 66, 5, 18, 10,
-	2, 61, 62, 7, 4, 2, 2, 62, 63, 5, 10, 6, 2, 63, 64, 7, 5, 2, 2, 64, 66,
-	3, 2, 2, 2, 65, 58, 3, 2, 2, 2, 65, 59, 3, 2, 2, 2, 65, 60, 3, 2, 2, 2,
-	65, 61, 3, 2, 2, 2, 66, 13, 3, 2, 2, 2, 67, 68, 7, 6, 2, 2, 68, 69, 5,
-	10, 6, 2, 69, 15, 3, 2, 2, 2, 70, 71, 7, 7, 2, 2, 71, 72, 5, 8, 5, 2, 72,
-	17, 3, 2, 2, 2, 73, 76, 5, 20, 11, 2, 74, 76, 5, 22, 12, 2, 75, 73, 3,
-	2, 2, 2, 75, 74, 3, 2, 2, 2, 76, 19, 3, 2, 2, 2, 77, 78, 5, 8, 5, 2, 78,
-	79, 5, 40, 21, 2, 79, 80, 5, 38, 20, 2, 80, 21, 3, 2, 2, 2, 81, 82, 5,
-	8, 5, 2, 82, 87, 5, 24, 13, 2, 83, 84, 5, 28, 15, 2, 84, 85, 5, 30, 16,
-	2, 85, 88, 3, 2, 2, 2, 86, 88, 5, 26, 14, 2, 87, 83, 3, 2, 2, 2, 87, 86,
-	3, 2, 2, 2, 88, 23, 3, 2, 2, 2, 89, 90, 9, 2, 2, 2, 90, 25, 3, 2, 2, 2,
-	91, 92, 7, 8, 2, 2, 92, 27, 3, 2, 2, 2, 93, 94, 7, 32, 2, 2, 94, 29, 3,
-	2, 2, 2, 95, 96, 9, 3, 2, 2, 96, 31, 3, 2, 2, 2, 97, 98, 5, 12, 7, 2, 98,
-	99, 7, 12, 2, 2, 99, 100, 5, 34, 18, 2, 100, 101, 5, 8, 5, 2, 101, 33,
-	3, 2, 2, 2, 102, 103, 9, 4, 2, 2, 103, 35, 3, 2, 2, 2, 104, 105, 5, 8,
-	5, 2, 105, 110, 7, 15, 2, 2, 106, 108, 5, 38, 20, 2, 107, 109, 7, 16, 2,
-	2, 108, 107, 3, 2, 2, 2, 108, 109, 3, 2, 2, 2, 109, 111, 3, 2, 2, 2, 110,
-	106, 3, 2, 2, 2, 111, 112, 3, 2, 2, 2, 112, 110, 3, 2, 2, 2, 112, 113,
-	3, 2, 2, 2, 113, 37, 3, 2, 2, 2, 114, 115, 9, 5, 2, 2, 115, 39, 3, 2, 2,
-	2, 116, 117, 9, 6, 2, 2, 117, 41, 3, 2, 2, 2, 8, 56, 65, 75, 87, 108, 112,
+	3, 11, 3, 11, 3, 12, 3, 12, 3, 12, 3, 12, 5, 12, 86, 10, 12, 3, 13, 3,
+	13, 3, 14, 3, 14, 3, 15, 3, 15, 3, 15, 3, 16, 3, 16, 3, 17, 3, 17, 3, 17,
+	3, 17, 3, 17, 3, 18, 3, 18, 3, 19, 3, 19, 3, 19, 3, 19, 5, 19, 108, 10,
+	19, 6, 19, 110, 10, 19, 13, 19, 14, 19, 111, 3, 20, 3, 20, 3, 21, 3, 21,
+	3, 21, 2, 2, 22, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30,
+	32, 34, 36, 38, 40, 2, 7, 3, 2, 24, 27, 3, 2, 9, 11, 3, 2, 13, 14, 4, 2,
+	28, 28, 32, 34, 3, 2, 17, 23, 2, 106, 2, 42, 3, 2, 2, 2, 4, 47, 3, 2, 2,
+	2, 6, 49, 3, 2, 2, 2, 8, 51, 3, 2, 2, 2, 10, 56, 3, 2, 2, 2, 12, 65, 3,
+	2, 2, 2, 14, 67, 3, 2, 2, 2, 16, 70, 3, 2, 2, 2, 18, 75, 3, 2, 2, 2, 20,
+	77, 3, 2, 2, 2, 22, 81, 3, 2, 2, 2, 24, 87, 3, 2, 2, 2, 26, 89, 3, 2, 2,
+	2, 28, 91, 3, 2, 2, 2, 30, 94, 3, 2, 2, 2, 32, 96, 3, 2, 2, 2, 34, 101,
+	3, 2, 2, 2, 36, 103, 3, 2, 2, 2, 38, 113, 3, 2, 2, 2, 40, 115, 3, 2, 2,
+	2, 42, 43, 5, 4, 3, 2, 43, 44, 7, 3, 2, 2, 44, 45, 5, 10, 6, 2, 45, 46,
+	7, 2, 2, 3, 46, 3, 3, 2, 2, 2, 47, 48, 5, 6, 4, 2, 48, 5, 3, 2, 2, 2, 49,
+	50, 5, 8, 5, 2, 50, 7, 3, 2, 2, 2, 51, 52, 7, 31, 2, 2, 52, 9, 3, 2, 2,
+	2, 53, 57, 5, 12, 7, 2, 54, 57, 5, 14, 8, 2, 55, 57, 5, 32, 17, 2, 56,
+	53, 3, 2, 2, 2, 56, 54, 3, 2, 2, 2, 56, 55, 3, 2, 2, 2, 57, 11, 3, 2, 2,
+	2, 58, 66, 5, 16, 9, 2, 59, 66, 5, 36, 19, 2, 60, 66, 5, 18, 10, 2, 61,
+	62, 7, 4, 2, 2, 62, 63, 5, 10, 6, 2, 63, 64, 7, 5, 2, 2, 64, 66, 3, 2,
+	2, 2, 65, 58, 3, 2, 2, 2, 65, 59, 3, 2, 2, 2, 65, 60, 3, 2, 2, 2, 65, 61,
+	3, 2, 2, 2, 66, 13, 3, 2, 2, 2, 67, 68, 7, 6, 2, 2, 68, 69, 5, 10, 6, 2,
+	69, 15, 3, 2, 2, 2, 70, 71, 7, 7, 2, 2, 71, 72, 5, 8, 5, 2, 72, 17, 3,
+	2, 2, 2, 73, 76, 5, 20, 11, 2, 74, 76, 5, 22, 12, 2, 75, 73, 3, 2, 2, 2,
+	75, 74, 3, 2, 2, 2, 76, 19, 3, 2, 2, 2, 77, 78, 5, 8, 5, 2, 78, 79, 5,
+	40, 21, 2, 79, 80, 5, 38, 20, 2, 80, 21, 3, 2, 2, 2, 81, 82, 5, 8, 5, 2,
+	82, 85, 5, 24, 13, 2, 83, 86, 5, 28, 15, 2, 84, 86, 5, 26, 14, 2, 85, 83,
+	3, 2, 2, 2, 85, 84, 3, 2, 2, 2, 86, 23, 3, 2, 2, 2, 87, 88, 9, 2, 2, 2,
+	88, 25, 3, 2, 2, 2, 89, 90, 7, 8, 2, 2, 90, 27, 3, 2, 2, 2, 91, 92, 7,
+	32, 2, 2, 92, 93, 5, 30, 16, 2, 93, 29, 3, 2, 2, 2, 94, 95, 9, 3, 2, 2,
+	95, 31, 3, 2, 2, 2, 96, 97, 5, 12, 7, 2, 97, 98, 7, 12, 2, 2, 98, 99, 5,
+	34, 18, 2, 99, 100, 5, 8, 5, 2, 100, 33, 3, 2, 2, 2, 101, 102, 9, 4, 2,
+	2, 102, 35, 3, 2, 2, 2, 103, 104, 5, 8, 5, 2, 104, 109, 7, 15, 2, 2, 105,
+	107, 5, 38, 20, 2, 106, 108, 7, 16, 2, 2, 107, 106, 3, 2, 2, 2, 107, 108,
+	3, 2, 2, 2, 108, 110, 3, 2, 2, 2, 109, 105, 3, 2, 2, 2, 110, 111, 3, 2,
+	2, 2, 111, 109, 3, 2, 2, 2, 111, 112, 3, 2, 2, 2, 112, 37, 3, 2, 2, 2,
+	113, 114, 9, 5, 2, 2, 114, 39, 3, 2, 2, 2, 115, 116, 9, 6, 2, 2, 116, 41,
+	3, 2, 2, 2, 8, 56, 65, 75, 85, 107, 111,
 }
 var literalNames = []string{
 	"", "'has'", "'('", "')'", "'not'", "'empty'", "'now'", "'seconds'", "'days'",
@@ -79,7 +79,7 @@ var symbolicNames = []string{
 var ruleNames = []string{
 	"condition", "assetType", "simpleAssetType", "field", "expression", "simpleExpression",
 	"notExpression", "isEmptyExpression", "comparison", "binaryComparison",
-	"timeComparison", "timeOperator", "nowOperator", "time", "unit", "inExpression",
+	"timeComparison", "timeOperator", "nowOperator", "duration", "unit", "inExpression",
 	"scope", "withinExpression", "value", "operator",
 }
 
@@ -165,7 +165,7 @@ const (
 	CCLParserRULE_timeComparison    = 10
 	CCLParserRULE_timeOperator      = 11
 	CCLParserRULE_nowOperator       = 12
-	CCLParserRULE_time              = 13
+	CCLParserRULE_duration          = 13
 	CCLParserRULE_unit              = 14
 	CCLParserRULE_inExpression      = 15
 	CCLParserRULE_scope             = 16
@@ -1266,24 +1266,14 @@ func (s *TimeComparisonContext) TimeOperator() ITimeOperatorContext {
 	return t.(ITimeOperatorContext)
 }
 
-func (s *TimeComparisonContext) Time() ITimeContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*ITimeContext)(nil)).Elem(), 0)
+func (s *TimeComparisonContext) Duration() IDurationContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IDurationContext)(nil)).Elem(), 0)
 
 	if t == nil {
 		return nil
 	}
 
-	return t.(ITimeContext)
-}
-
-func (s *TimeComparisonContext) Unit() IUnitContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IUnitContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IUnitContext)
+	return t.(IDurationContext)
 }
 
 func (s *TimeComparisonContext) NowOperator() INowOperatorContext {
@@ -1333,23 +1323,19 @@ func (p *CCLParser) TimeComparison() (localctx ITimeComparisonContext) {
 		p.SetState(80)
 		p.TimeOperator()
 	}
-	p.SetState(85)
+	p.SetState(83)
 	p.GetErrorHandler().Sync(p)
 
 	switch p.GetTokenStream().LA(1) {
 	case CCLParserIntNumber:
 		{
 			p.SetState(81)
-			p.Time()
-		}
-		{
-			p.SetState(82)
-			p.Unit()
+			p.Duration()
 		}
 
 	case CCLParserT__5:
 		{
-			p.SetState(84)
+			p.SetState(82)
 			p.NowOperator()
 		}
 
@@ -1445,7 +1431,7 @@ func (p *CCLParser) TimeOperator() (localctx ITimeOperatorContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(87)
+		p.SetState(85)
 		_la = p.GetTokenStream().LA(1)
 
 		if !(((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<CCLParserBeforeOperator)|(1<<CCLParserAfterOperator)|(1<<CCLParserYoungerOperator)|(1<<CCLParserOlderOperator))) != 0) {
@@ -1526,66 +1512,76 @@ func (p *CCLParser) NowOperator() (localctx INowOperatorContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(89)
+		p.SetState(87)
 		p.Match(CCLParserT__5)
 	}
 
 	return localctx
 }
 
-// ITimeContext is an interface to support dynamic dispatch.
-type ITimeContext interface {
+// IDurationContext is an interface to support dynamic dispatch.
+type IDurationContext interface {
 	antlr.ParserRuleContext
 
 	// GetParser returns the parser.
 	GetParser() antlr.Parser
 
-	// IsTimeContext differentiates from other interfaces.
-	IsTimeContext()
+	// IsDurationContext differentiates from other interfaces.
+	IsDurationContext()
 }
 
-type TimeContext struct {
+type DurationContext struct {
 	*antlr.BaseParserRuleContext
 	parser antlr.Parser
 }
 
-func NewEmptyTimeContext() *TimeContext {
-	var p = new(TimeContext)
+func NewEmptyDurationContext() *DurationContext {
+	var p = new(DurationContext)
 	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(nil, -1)
-	p.RuleIndex = CCLParserRULE_time
+	p.RuleIndex = CCLParserRULE_duration
 	return p
 }
 
-func (*TimeContext) IsTimeContext() {}
+func (*DurationContext) IsDurationContext() {}
 
-func NewTimeContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *TimeContext {
-	var p = new(TimeContext)
+func NewDurationContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *DurationContext {
+	var p = new(DurationContext)
 
 	p.BaseParserRuleContext = antlr.NewBaseParserRuleContext(parent, invokingState)
 
 	p.parser = parser
-	p.RuleIndex = CCLParserRULE_time
+	p.RuleIndex = CCLParserRULE_duration
 
 	return p
 }
 
-func (s *TimeContext) GetParser() antlr.Parser { return s.parser }
+func (s *DurationContext) GetParser() antlr.Parser { return s.parser }
 
-func (s *TimeContext) IntNumber() antlr.TerminalNode {
+func (s *DurationContext) IntNumber() antlr.TerminalNode {
 	return s.GetToken(CCLParserIntNumber, 0)
 }
 
-func (s *TimeContext) GetRuleContext() antlr.RuleContext {
+func (s *DurationContext) Unit() IUnitContext {
+	var t = s.GetTypedRuleContext(reflect.TypeOf((*IUnitContext)(nil)).Elem(), 0)
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IUnitContext)
+}
+
+func (s *DurationContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
 
-func (s *TimeContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
+func (s *DurationContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
 	return antlr.TreesStringTree(s, ruleNames, recog)
 }
 
-func (p *CCLParser) Time() (localctx ITimeContext) {
-	localctx = NewTimeContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 26, CCLParserRULE_time)
+func (p *CCLParser) Duration() (localctx IDurationContext) {
+	localctx = NewDurationContext(p, p.GetParserRuleContext(), p.GetState())
+	p.EnterRule(localctx, 26, CCLParserRULE_duration)
 
 	defer func() {
 		p.ExitRule()
@@ -1605,8 +1601,12 @@ func (p *CCLParser) Time() (localctx ITimeContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(91)
+		p.SetState(89)
 		p.Match(CCLParserIntNumber)
+	}
+	{
+		p.SetState(90)
+		p.Unit()
 	}
 
 	return localctx
@@ -1680,7 +1680,7 @@ func (p *CCLParser) Unit() (localctx IUnitContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(93)
+		p.SetState(92)
 		_la = p.GetTokenStream().LA(1)
 
 		if !(((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<CCLParserT__6)|(1<<CCLParserT__7)|(1<<CCLParserT__8))) != 0) {
@@ -1792,19 +1792,19 @@ func (p *CCLParser) InExpression() (localctx IInExpressionContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(95)
+		p.SetState(94)
 		p.SimpleExpression()
 	}
 	{
-		p.SetState(96)
+		p.SetState(95)
 		p.Match(CCLParserT__9)
 	}
 	{
-		p.SetState(97)
+		p.SetState(96)
 		p.Scope()
 	}
 	{
-		p.SetState(98)
+		p.SetState(97)
 		p.Field()
 	}
 
@@ -1879,7 +1879,7 @@ func (p *CCLParser) Scope() (localctx IScopeContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(100)
+		p.SetState(99)
 		_la = p.GetTokenStream().LA(1)
 
 		if !(_la == CCLParserT__10 || _la == CCLParserT__11) {
@@ -1995,35 +1995,35 @@ func (p *CCLParser) WithinExpression() (localctx IWithinExpressionContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(102)
+		p.SetState(101)
 		p.Field()
 	}
 	{
-		p.SetState(103)
+		p.SetState(102)
 		p.Match(CCLParserT__12)
 	}
-	p.SetState(108)
+	p.SetState(107)
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
 	for ok := true; ok; ok = (((_la-26)&-(0x1f+1)) == 0 && ((1<<uint((_la-26)))&((1<<(CCLParserBooleanLiteral-26))|(1<<(CCLParserIntNumber-26))|(1<<(CCLParserFloatNumber-26))|(1<<(CCLParserStringLiteral-26)))) != 0) {
 		{
-			p.SetState(104)
+			p.SetState(103)
 			p.Value()
 		}
-		p.SetState(106)
+		p.SetState(105)
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 
 		if _la == CCLParserT__13 {
 			{
-				p.SetState(105)
+				p.SetState(104)
 				p.Match(CCLParserT__13)
 			}
 
 		}
 
-		p.SetState(110)
+		p.SetState(109)
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 	}
@@ -2116,7 +2116,7 @@ func (p *CCLParser) Value() (localctx IValueContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(112)
+		p.SetState(111)
 		_la = p.GetTokenStream().LA(1)
 
 		if !(((_la-26)&-(0x1f+1)) == 0 && ((1<<uint((_la-26)))&((1<<(CCLParserBooleanLiteral-26))|(1<<(CCLParserIntNumber-26))|(1<<(CCLParserFloatNumber-26))|(1<<(CCLParserStringLiteral-26)))) != 0) {
@@ -2227,7 +2227,7 @@ func (p *CCLParser) Operator() (localctx IOperatorContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(114)
+		p.SetState(113)
 		_la = p.GetTokenStream().LA(1)
 
 		if !(((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<CCLParserEqualsOperator)|(1<<CCLParserNotEqualsOperator)|(1<<CCLParserLessOrEqualsThanOperator)|(1<<CCLParserLessThanOperator)|(1<<CCLParserMoreThanOperator)|(1<<CCLParserMoreOrEqualsThanOperator)|(1<<CCLParserContainsOperator))) != 0) {

@@ -32,6 +32,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/sirupsen/logrus"
@@ -45,6 +46,7 @@ var (
 	ErrUnsupportedContext = errors.New("unsupported context")
 	ErrFieldNameNotFound  = errors.New("invalid field name")
 	ErrFieldNoMap         = errors.New("field is not a map")
+	ErrFieldNoTime        = errors.New("field has no time value")
 )
 
 func init() {
@@ -101,8 +103,12 @@ func evaluateSimpleExpression(c parser.ISimpleExpressionContext, o map[string]in
 	if v, ok := c.(*parser.SimpleExpressionContext); ok {
 		if v.IsEmptyExpression() != nil {
 			return evaluateIsEmptyExpression(v.IsEmptyExpression(), o)
+		} else if v.WithinExpression() != nil {
+			return evaluateWithinExpression(v.WithinExpression(), o)
 		} else if v.Comparison() != nil {
 			return evaluateComparison(v.Comparison(), o)
+		} else if v.Expression() != nil {
+			return evaluateExpression(v.Expression(), o)
 		}
 	}
 
@@ -139,10 +145,53 @@ func evaluateIsEmptyExpression(c parser.IIsEmptyExpressionContext, o map[string]
 	return false, ErrUnsupportedContext
 }
 
+// evaluateWithinExpression checks, if a field value is within a specified array
+func evaluateWithinExpression(c parser.IWithinExpressionContext, o map[string]interface{}) (success bool, err error) {
+	if v, ok := c.(*parser.WithinExpressionContext); ok {
+		var (
+			lhs interface{}
+			rhs interface{}
+			op  Operator
+		)
+
+		op = &equalsOperator{}
+
+		identifier := v.Field().(*parser.FieldContext).Identifier().GetText()
+
+		if lhs, err = evaluateField(identifier, o); err != nil {
+			return false, fmt.Errorf("could not evaluate field %s: %w", identifier, err)
+		}
+
+		ctxs := v.AllValue()
+		for _, ctx := range ctxs {
+			if rhs, err = evaluateValue(ctx); err != nil {
+				return false, fmt.Errorf("could not evaluate value: %w", err)
+			}
+
+			if success, err = compare(lhs, rhs, op); err != nil {
+				// directly return error without wrapping, i.e. if the comparison was of a different type
+				return false, err
+			}
+
+			// return early, if a match was found
+			if success {
+				return true, nil
+			}
+		}
+
+		// no match found
+		return false, nil
+	}
+
+	return false, ErrUnsupportedContext
+}
+
 func evaluateComparison(c parser.IComparisonContext, o map[string]interface{}) (success bool, err error) {
 	if v, ok := c.(*parser.ComparisonContext); ok {
 		if v.BinaryComparison() != nil {
 			return evaluteBinaryComparison(v.BinaryComparison(), o)
+		} else if v.TimeComparison() != nil {
+			return evaluateTimeComparison(v.TimeComparison(), o)
 		}
 	}
 
@@ -164,37 +213,110 @@ func evaluteBinaryComparison(c parser.IBinaryComparisonContext, o map[string]int
 			return false, fmt.Errorf("could not evaluate field %s: %w", identifier, err)
 		}
 
-		if rhs, err = evaluateLiteral(v.Value().(*parser.ValueContext)); err != nil {
-			return false, fmt.Errorf("could not parse comparison value: %w", err)
+		if rhs, err = evaluateValue(v.Value()); err != nil {
+			return false, fmt.Errorf("could not evaluate value: %w", err)
 		}
 
 		if op, err = evaluateOperator(v.Operator()); err != nil {
 			return false, fmt.Errorf("could not parse operator: %w", err)
 		}
 
-		switch v := lhs.(type) {
-		case string:
-			return compareString(v, rhs, op)
-		case int:
-			return compareInt(int64(v), rhs, 64, op)
-		case int16:
-			return compareInt(int64(v), rhs, 64, op)
-		case int32:
-			return compareInt(int64(v), rhs, 64, op)
-		case int64:
-			return compareInt(int64(v), rhs, 64, op)
-		case float32:
-			return compareFloat(float64(v), rhs, 64, op)
-		case float64:
-			return compareFloat(float64(v), rhs, 64, op)
-		case bool:
-			return compareBool(v, rhs, op)
-		}
-
-		return false, fmt.Errorf("could not compare %+v and %+v", lhs, rhs)
+		return compare(lhs, rhs, op)
 	}
 
 	return false, ErrUnsupportedContext
+}
+
+func evaluateTimeComparison(c parser.ITimeComparisonContext, o map[string]interface{}) (success bool, err error) {
+	if v, ok := c.(*parser.TimeComparisonContext); ok {
+		var (
+			lhs       interface{}
+			timeValue time.Time
+			duration  time.Duration
+		)
+
+		identifier := v.Field().(*parser.FieldContext).Identifier().GetText()
+
+		if lhs, err = evaluateField(identifier, o); err != nil {
+			return false, fmt.Errorf("could not evaluate field %s: %w", identifier, err)
+		}
+
+		if timeValue, ok = lhs.(time.Time); !ok {
+			return false, ErrFieldNoTime
+		}
+
+		if v.Duration() != nil {
+			if duration, err = evaluateDuration(v.Duration()); err != nil {
+				return false, fmt.Errorf("could not compare times: %w", err)
+			}
+		} else if v.NowOperator() != nil {
+			duration = 0
+		}
+
+		// four different operators, but all relative to the current time
+		now := time.Now()
+
+		// younger than X (days|minutes|seconds)
+		if v.TimeOperator().GetText() == "younger" {
+			// substract the duration specified in rhs from now (go back into the past) to get the
+			// beginning of the period we consider 'younger'
+			younger := now.Add(-duration)
+
+			// check, if timeValue is after or equal to the 'younger' date
+			return timeValue.After(younger) || timeValue.Equal(younger), nil
+		}
+
+		// older than X (seconds|days|months)
+		if v.TimeOperator().GetText() == "older" {
+			// basically, the same as younger, just before - not after
+			older := now.Add(-duration)
+
+			return timeValue.Before(older), nil
+		}
+
+		// before X (seconds|days|months)
+		if v.TimeOperator().GetText() == "before" {
+			// add the duration specified in rhs to now (going into the future) to get the
+			// end of the period we consider 'before'
+			before := now.Add(duration)
+
+			// check if timeValue is before or equal to the 'before' date
+			return timeValue.Before(before) || timeValue.Equal(before), nil
+		}
+
+		// after X (seconds|days|months)
+		if v.TimeOperator().GetText() == "after" {
+			// basically, the same as before, just after - not before
+			after := now.Add(duration)
+
+			// check if timeValue is before or equal to the 'before' date
+			return timeValue.After(after), nil
+		}
+	}
+
+	return false, ErrUnsupportedContext
+}
+
+func evaluateDuration(c parser.IDurationContext) (duration time.Duration, err error) {
+	if v, ok := c.(*parser.DurationContext); ok {
+		var value int64
+		if value, err = evaluteIntegerLiteral(v.IntNumber()); err != nil {
+			return 0, fmt.Errorf("invalid value: %w", err)
+		}
+
+		t := v.Unit().GetText()
+		if t == "seconds" {
+			return time.Duration(value) * time.Second, nil
+		} else if t == "days" {
+			return time.Duration(value) * time.Hour * 24, nil
+		} else if t == "months" {
+			return time.Duration(value) * time.Hour * 24 * 30, nil
+		} else {
+			return 0, fmt.Errorf("invalid unit duration: %s", t)
+		}
+	}
+
+	return 0, ErrUnsupportedContext
 }
 
 func evaluateField(field string, o map[string]interface{}) (interface{}, error) {
@@ -230,22 +352,22 @@ func evaluateField(field string, o map[string]interface{}) (interface{}, error) 
 	}
 }
 
-func evaluateLiteral(value *parser.ValueContext) (interface{}, error) {
-	if value == nil {
-		return nil, nil
+func evaluateValue(c parser.IValueContext) (interface{}, error) {
+	if v, ok := c.(*parser.ValueContext); ok {
+		if v.StringLiteral() != nil {
+			return evaluateStringLiteral(v.StringLiteral()), nil
+		} else if v.IntNumber() != nil {
+			return evaluteIntegerLiteral(v.IntNumber())
+		} else if v.FloatNumber() != nil {
+			return evaluateFloatLiteral(v.FloatNumber())
+		} else if v.BooleanLiteral() != nil {
+			return evaluateBoolLiteral(v.BooleanLiteral())
+		}
+
+		return nil, fmt.Errorf("could not evalute literal: %v", v.GetText())
 	}
 
-	if value.StringLiteral() != nil {
-		return evaluateStringLiteral(value.StringLiteral()), nil
-	} else if value.IntNumber() != nil {
-		return evaluteIntegerLiteral(value.IntNumber())
-	} else if value.FloatNumber() != nil {
-		return evaluateFloatLiteral(value.FloatNumber())
-	} else if value.BooleanLiteral() != nil {
-		return evaluateBoolLiteral(value.BooleanLiteral())
-	}
-
-	return nil, fmt.Errorf("could not evalute literal: %v", value.GetText())
+	return nil, ErrUnsupportedContext
 }
 
 func evaluateStringLiteral(node antlr.TerminalNode) string {
@@ -298,6 +420,29 @@ func evaluateOperator(c parser.IOperatorContext) (Operator, error) {
 	}
 
 	return nil, ErrUnsupportedContext
+}
+
+func compare(lhs interface{}, rhs interface{}, op Operator) (success bool, err error) {
+	switch v := lhs.(type) {
+	case string:
+		return compareString(v, rhs, op)
+	case int:
+		return compareInt(int64(v), rhs, 64, op)
+	case int16:
+		return compareInt(int64(v), rhs, 64, op)
+	case int32:
+		return compareInt(int64(v), rhs, 64, op)
+	case int64:
+		return compareInt(int64(v), rhs, 64, op)
+	case float32:
+		return compareFloat(float64(v), rhs, 64, op)
+	case float64:
+		return compareFloat(float64(v), rhs, 64, op)
+	case bool:
+		return compareBool(v, rhs, op)
+	}
+
+	return false, fmt.Errorf("could not compare %+v and %+v", lhs, rhs)
 }
 
 func compareString(v string, rhs interface{}, op Operator) (success bool, err error) {

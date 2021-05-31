@@ -28,6 +28,7 @@ package ccl_test
 import (
 	"encoding/json"
 	"testing"
+	"time"
 
 	"clouditor.io/clouditor/ccl"
 	"github.com/stretchr/testify/assert"
@@ -121,7 +122,7 @@ func TestRunRule(t *testing.T) {
 		{
 			name:          "field does not exist",
 			json:          m{},
-			ccl:           "Object has field == 1",
+			ccl:           "Object has (field == 1)",
 			expectedError: ccl.ErrFieldNameNotFound,
 		},
 		{
@@ -194,6 +195,36 @@ func TestRunRule(t *testing.T) {
 			name:            "contains operator",
 			json:            m{"field": "myvalue"},
 			ccl:             "Object has field contains \"my\"",
+			expectedSuccess: true,
+		},
+		{
+			name:            "within expression",
+			json:            m{"field": 4},
+			ccl:             "Object has field within 1,2,3,4",
+			expectedSuccess: true,
+		},
+		{
+			name:            "time comparison before",
+			json:            m{"field": time.Now().Add(1 * time.Hour * 24)},
+			ccl:             "Object has field before 2 days",
+			expectedSuccess: true,
+		},
+		{
+			name:            "time comparison after",
+			json:            m{"field": time.Now().Add(10 * time.Second)},
+			ccl:             "Object has field after 2 seconds",
+			expectedSuccess: true,
+		},
+		{
+			name:            "time comparison younger",
+			json:            m{"field": time.Now().Add(-2 * time.Hour * 24 * 30)},
+			ccl:             "Object has field younger 3 months",
+			expectedSuccess: true,
+		},
+		{
+			name:            "time comparison older",
+			json:            m{"field": time.Now().Add(-10 * time.Hour * 24 * 30)},
+			ccl:             "Object has field older now",
 			expectedSuccess: true,
 		},
 	}
