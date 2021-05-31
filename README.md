@@ -1,13 +1,13 @@
-<img src="images/claudi.png" style="width: 50%"/>
+<img src="images/claudi.png" width="60%"/>
 
 # Clouditor Community Edition
 
-![build](https://github.com/clouditor/clouditor/workflows/build/badge.svg) 
+[![build](https://github.com/clouditor/clouditor/actions/workflows/build.yml/badge.svg)](https://github.com/clouditor/clouditor/actions/workflows/build.yml)
 [![](https://godoc.org/clouditor.io/clouditor?status.svg)](https://pkg.go.dev/clouditor.io/clouditor)
 [![Go Report Card](https://goreportcard.com/badge/clouditor.io/clouditor)](https://goreportcard.com/report/clouditor.io/clouditor)
 [![codecov](https://codecov.io/gh/clouditor/clouditor/branch/main/graph/badge.svg)](https://codecov.io/gh/clouditor/clouditor)
 
-![build](https://github.com/clouditor/clouditor/workflows/build-java/badge.svg) 
+[![build-java](https://github.com/clouditor/clouditor/actions/workflows/build-java.yml/badge.svg)](https://github.com/clouditor/clouditor/actions/workflows/build-java.yml)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=clouditor_clouditor&metric=alert_status)](https://sonarcloud.io/dashboard?id=clouditor_clouditor) 
 [![Docker Pulls](https://img.shields.io/docker/pulls/clouditor/clouditor.svg)](https://hub.docker.com/r/clouditor/clouditor)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=clouditor_clouditor&metric=coverage)](https://sonarcloud.io/dashboard?id=clouditor_clouditor) 
