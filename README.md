@@ -2,6 +2,7 @@
 
 # Clouditor Community Edition
 ![build](https://github.com/clouditor/clouditor/workflows/build/badge.svg) 
+
 [![](https://godoc.org/clouditor.io/clouditor?status.svg)](https://pkg.go.dev/clouditor.io/clouditor)
 [![Go Report Card](https://goreportcard.com/badge/clouditor.io/clouditor)](https://goreportcard.com/report/clouditor.io/clouditor)
 [![codecov](https://codecov.io/gh/clouditor/clouditor/branch/main/graph/badge.svg)](https://codecov.io/gh/clouditor/clouditor)
@@ -10,6 +11,11 @@
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=clouditor_clouditor&metric=coverage)](https://sonarcloud.io/dashboard?id=clouditor_clouditor) 
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=clouditor_clouditor&metric=bugs)](https://sonarcloud.io/dashboard?id=clouditor_clouditor) 
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=clouditor_clouditor&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=clouditor_clouditor)
+
+> :warning: Note: We are currently in the transition of re-implementing most of the core functionality of Clouditor in Go. This choice will allows us to build a more scalable, microservice-friendly version of Clouditor. While the current Java code still resides in the project for now, the majority of development work will go into the Go code. While we aim to replace most of the code, we still want to provide the same look and feel as before, so we decided NOT to brand this as a v2 release, but we are rather targeting to have a `v1.5` or later release with most of the functionality done. This is an intential break with our semver approach, but we feel it is necessary to circumvent some of the pitfalls of Go's enforced SIV-style for `v2` and later.
+>
+> If you are looking for a stable version using only the Java code, please use the [1.2.0](https://github.com/clouditor/clouditor/releases/tag/v1.2.0) release.
+
 
 ## Introduction
 

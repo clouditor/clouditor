@@ -11,43 +11,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-java@v1
-        with:
-          java-version: "14"
-      - name: Build
-        run: |
-          if [ "$SONAR_TOKEN" != "" ]
-          then
-            ./gradlew --parallel docker jacocoRootReport sonarqube \
-            -Dsonar.projectKey=clouditor_clouditor \
-            -Dsonar.organization=clouditor \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.login=$SONAR_TOKEN
-          else
-            ./gradlew --parallel docker build
-          fi
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Push Docker Images
-        run: |
-          export TAG=`expr substr $GITHUB_SHA 1 8`
-          docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker push clouditor/clouditor:$TAG
-          docker push clouditor/engine:$TAG
-        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
-      - name: Push Docker Images (release as latest)
-        run: |
-          export TAG=`expr substr $GITHUB_SHA 1 8`
-          docker tag clouditor/clouditor:$TAG clouditor/clouditor
-          docker tag clouditor/engine:$TAG clouditor/engine
-          docker push clouditor/clouditor
-          docker push clouditor/engine
-        if: startsWith(github.ref, 'refs/tags/v')
-  build-go:
-    runs-on: ubuntu-latest
-    steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Setup Go
