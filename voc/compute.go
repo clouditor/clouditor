@@ -41,6 +41,7 @@ type ComputeResource struct {
 	Resource
 }
 
+// Virtual Machine
 type VirtualMachineResource struct {
 	ComputeResource
 	//NetworkInterfaceResource
@@ -49,6 +50,11 @@ type VirtualMachineResource struct {
 	Log *Log `json:"log"`
 }
 
+func (v *VirtualMachineResource) GetLog() *Log {
+	return v.Log
+}
+
+// Network Interface
 type NetworkInterfaceResource struct {
 	ComputeResource
 	//NetworkService
@@ -57,10 +63,15 @@ type NetworkInterfaceResource struct {
 	AccessRestriction *AccessRestriction `json:"accessRestriction"`
 }
 
-func (v *VirtualMachineResource) GetLog() *Log {
-	return v.Log
-}
-
 func (n *NetworkInterfaceResource) GetAccessRestriction() *AccessRestriction {
 	return n.AccessRestriction
+}
+
+// LoadBalancer
+type LoadBalancerResource struct {
+	ComputeResource
+	//NetworkService
+
+	AccessRestriction *AccessRestriction `json:"accessRestriction"`
+	HttpEndpoint      *HttpEndpoint      `json:"httpEndpoint"`
 }

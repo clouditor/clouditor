@@ -26,6 +26,7 @@
 package voc
 
 type AccessRestriction struct {
+	// TODO What informaton do we need here?
 	Inbound bool `json:"inbound"`
 	// TODO According to the ontology, it is a string. What information do we need exactly?
 	RestrictedPorts string `json:"restrictedPorts"` // List of restricted ports

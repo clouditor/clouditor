@@ -82,7 +82,80 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 		list = append(list, s)
 	}
 
+	// Discover Load Balancer
+	// TODO Client to get load balancer
+	client_load_balancer := network.NewLoadBalancersClient(*azureAuthorizer.sub.SubscriptionID)
+	client_load_balancer.Authorizer = azureAuthorizer.authorizer
+
+	result_load_balancer, _ := client_load_balancer.ListAll(azureAuthorizer.ctx)
+
+	for _, lb := range result_load_balancer.Values() {
+		s := handleLoadBalancer(lb)
+
+		log.Infof("Adding load balancer %+v", s)
+
+		list = append(list, s)
+	}
+
 	return
+}
+
+//TBD
+func handleLoadBalancer(lb network.LoadBalancer) voc.IsCompute {
+	return &voc.LoadBalancerResource{
+		ComputeResource: voc.ComputeResource{
+			Resource: voc.Resource{
+				ID:           *lb.ID,
+				Name:         *lb.Name,
+				CreationTime: 0, // No creation time available
+			},
+		},
+		AccessRestriction: &voc.AccessRestriction{
+			Inbound:         false,
+			RestrictedPorts: "", //TBD
+		},
+		HttpEndpoint: &voc.HttpEndpoint{
+			//TODO weitermachen Frontend IP configuration
+			URL:                 GetPublicIPAddress(lb),                       // Get Public IP Address of the Load Balancer
+			TransportEncryption: voc.NewTransportEncryption(false, false, ""), // No transport encryption defined by the Load Balancer
+		},
+	}
+}
+
+func GetPublicIPAddress(lb network.LoadBalancer) string {
+
+	var publicIPAddresses []string
+
+	// Get public IP resource
+	client := network.NewPublicIPAddressesClient(*azureAuthorizer.sub.SubscriptionID)
+	client.Authorizer = azureAuthorizer.authorizer
+
+	for _, publicIpProperties := range *lb.FrontendIPConfigurations {
+
+		publicIPAddress, err := client.Get(azureAuthorizer.ctx, GetResourceGroupName(*publicIpProperties.ID), *publicIpProperties.Name, "")
+
+		if err != nil {
+			log.Errorf("Error getting public IP address: ", err)
+			continue
+		}
+
+		publicIPAddresses = append(publicIPAddresses, *publicIPAddress.IPAddress)
+
+	}
+
+	// result, _ := client.Get(azureAuthorizer.ctx, GetResourceGroupName(*lb.ID), *lb.Name, lb.Fr)
+
+	// for _, publicIpProperties := range *lb.FrontendIPConfigurations {
+
+	// 	if publicIpProperties.FrontendIPConfigurationPropertiesFormat.PublicIPAddress.PublicIPAddressPropertiesFormat == nil {
+	// 		continue
+	// 	}
+
+	// 	publicIpAddresses = append(publicIpAddresses, *publicIpProperties.FrontendIPConfigurationPropertiesFormat.PublicIPAddress.IPAddress)
+
+	// }
+
+	return strings.Join(publicIPAddresses, ",")
 }
 
 func handleVirtualMachines(vm compute.VirtualMachine) voc.IsCompute {
@@ -134,11 +207,11 @@ func GetRestrictedPortsDefined(ni network.Interface) string {
 
 	nsgID := *ni.NetworkSecurityGroup.ID
 
-	client2 := network.NewSecurityGroupsClient(*azureAuthorizer.sub.SubscriptionID)
-	client2.Authorizer = azureAuthorizer.authorizer
+	client := network.NewSecurityGroupsClient(*azureAuthorizer.sub.SubscriptionID)
+	client.Authorizer = azureAuthorizer.authorizer
 
 	// Get the Security Group of the network interface ni
-	sg, err := client2.Get(azureAuthorizer.ctx, GetResourceGroupName(nsgID), strings.Split(nsgID, "/")[8], "")
+	sg, err := client.Get(azureAuthorizer.ctx, GetResourceGroupName(nsgID), strings.Split(nsgID, "/")[8], "")
 
 	if err != nil {
 		log.Errorf("Could not get security group: %s", err)
