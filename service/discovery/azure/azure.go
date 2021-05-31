@@ -42,19 +42,23 @@ type AzureAuthorizer struct {
 	authorizer autorest.Authorizer
 	sub        subscriptions.Subscription
 	ctx        context.Context
+
+	isAuthorized bool
 }
 
 var azureAuthorizer = &AzureAuthorizer{}
 
 func init() {
 	log = logrus.WithField("component", "azure-discovery")
-
-	// Initialise Azure paramters
-	AuthorizeAzure()
-
 }
 
-func AuthorizeAzure() (err error) {
+func (a *AzureAuthorizer) Authorize() (err error) {
+	// for now, do not re-authorize. in the future, we would probably need to check, if
+	// the token is still valid. or maybe Azure does this for us?
+	if a.isAuthorized {
+		return
+	}
+
 	// create an authorizer from env vars or Azure Managed Service Identity
 	azureAuthorizer.authorizer, err = auth.NewAuthorizerFromCLI()
 	if err != nil {
@@ -72,6 +76,8 @@ func AuthorizeAzure() (err error) {
 	azureAuthorizer.ctx = context.Background()
 
 	log.Infof("Using %s as subscription", *azureAuthorizer.sub.SubscriptionID)
+
+	a.isAuthorized = true
 
 	return nil
 }

@@ -28,6 +28,7 @@
 package azure
 
 import (
+	"fmt"
 	"strings"
 
 	"clouditor.io/clouditor/api/discovery"
@@ -53,6 +54,9 @@ func (d *azureComputeDiscovery) Description() string {
 
 // Discover compute resources
 func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
+	if azureAuthorizer.Authorize(); err != nil {
+		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
+	}
 
 	// Discover virtual machines
 	client := compute.NewVirtualMachinesClient(*azureAuthorizer.sub.SubscriptionID)
@@ -135,7 +139,7 @@ func GetPublicIPAddress(lb network.LoadBalancer) string {
 		publicIPAddress, err := client.Get(azureAuthorizer.ctx, GetResourceGroupName(*publicIpProperties.ID), *publicIpProperties.Name, "")
 
 		if err != nil {
-			log.Errorf("Error getting public IP address: ", err)
+			log.Errorf("Error getting public IP address: %v", err)
 			continue
 		}
 

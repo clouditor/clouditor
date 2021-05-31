@@ -30,3 +30,8 @@ import "clouditor.io/clouditor/voc"
 type Discoverer interface {
 	List() ([]voc.IsResource, error)
 }
+
+// Authorizer authorizes a Cloud service
+type Authorizer interface {
+	Authorize() (err error)
+}

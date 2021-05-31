@@ -28,6 +28,8 @@
 package azure
 
 import (
+	"fmt"
+
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
@@ -48,6 +50,9 @@ func (d *azureStorageDiscovery) Description() string {
 }
 
 func (d *azureStorageDiscovery) List() (list []voc.IsResource, err error) {
+	if azureAuthorizer.Authorize(); err != nil {
+		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
+	}
 
 	client := storage.NewAccountsClient(*azureAuthorizer.sub.SubscriptionID)
 	client.Authorizer = azureAuthorizer.authorizer
