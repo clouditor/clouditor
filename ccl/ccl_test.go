@@ -245,6 +245,18 @@ func TestRunRule(t *testing.T) {
 			ccl:             "Object has field == 1 in all array",
 			expectedSuccess: false,
 		},
+		{
+			name:          "syntax error",
+			json:          m{},
+			ccl:           "Object has nonsense",
+			expectedError: ccl.ErrUnexpectedExpression,
+		},
+		{
+			name:          "syntax error in any expression",
+			json:          m{},
+			ccl:           "Object has (field == in any array",
+			expectedError: ccl.ErrUnexpectedExpression,
+		},
 	}
 
 	for _, data := range testData {

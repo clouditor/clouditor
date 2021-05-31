@@ -116,8 +116,6 @@ func evaluateSimpleExpression(c parser.ISimpleExpressionContext, o map[string]in
 			return evaluateComparison(v.Comparison(), o)
 		} else if v.Expression() != nil {
 			return evaluateExpression(v.Expression(), o)
-		} else {
-			return false, ErrUnexpectedExpression
 		}
 	}
 
