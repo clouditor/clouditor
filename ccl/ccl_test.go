@@ -143,9 +143,27 @@ func TestRunRule(t *testing.T) {
 			expectedError: ccl.ErrFieldNameNotFound,
 		},
 		{
-			name:            "not equals operator",
+			name:            "not equals operator int",
 			json:            m{"field": 2},
 			ccl:             "Object has field != 1",
+			expectedSuccess: true,
+		},
+		{
+			name:            "not equals operator string",
+			json:            m{"field": "value"},
+			ccl:             "Object has field != \"some_value\"",
+			expectedSuccess: true,
+		},
+		{
+			name:            "not equals operator float",
+			json:            m{"field": 1.5},
+			ccl:             "Object has field != 2",
+			expectedSuccess: true,
+		},
+		{
+			name:            "not equals operator bool",
+			json:            m{"field": false},
+			ccl:             "Object has field != true",
 			expectedSuccess: true,
 		},
 		{
