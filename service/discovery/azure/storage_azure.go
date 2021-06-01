@@ -28,14 +28,17 @@
 package azure
 
 import (
+	"context"
 	"fmt"
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
+	"github.com/Azure/go-autorest/autorest/to"
 )
 
-type azureStorageDiscovery struct{}
+type azureStorageDiscovery struct {
+}
 
 func NewAzureStorageDiscovery() discovery.Discoverer {
 	return &azureStorageDiscovery{}
@@ -49,15 +52,16 @@ func (d *azureStorageDiscovery) Description() string {
 	return "Discovery Azure storage accounts."
 }
 
+var StorageListFunc ListFunc = storage.AccountsClient.List
+var StorageClientFunc ClientFunc = createClient
+
+type ListFunc func(storage.AccountsClient, context.Context) (storage.AccountListResultPage, error)
+type ClientFunc func() (client storage.AccountsClient, err error)
+
 func (d *azureStorageDiscovery) List() (list []voc.IsResource, err error) {
-	if err = azureAuthorizer.Authorize(); err != nil {
-		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
-	}
+	client, _ := StorageClientFunc()
 
-	client := storage.NewAccountsClient(*azureAuthorizer.sub.SubscriptionID)
-	client.Authorizer = azureAuthorizer.authorizer
-
-	result, _ := client.List(azureAuthorizer.ctx)
+	result, _ := StorageListFunc(client, azureAuthorizer.ctx)
 
 	for _, v := range result.Values() {
 		s := handleStorageAccount(v)
@@ -70,23 +74,34 @@ func (d *azureStorageDiscovery) List() (list []voc.IsResource, err error) {
 	return
 }
 
+func createClient() (client storage.AccountsClient, err error) {
+	if err = azureAuthorizer.Authorize(); err != nil {
+		return storage.AccountsClient{}, fmt.Errorf("could not authorize Azure account: %w", err)
+	}
+
+	client = storage.NewAccountsClient(*azureAuthorizer.sub.SubscriptionID)
+	client.Authorizer = azureAuthorizer.authorizer
+
+	return
+}
+
 func handleStorageAccount(account storage.Account) voc.IsStorage {
 	return &voc.ObjectStorageResource{StorageResource: voc.StorageResource{
 		Resource: voc.Resource{
-			ID:           *account.ID,
-			Name:         *account.Name,
+			ID:           to.String(account.ID),
+			Name:         to.String(account.Name),
 			CreationTime: account.CreationTime.Unix(),
 		},
 		AtRestEncryption: voc.NewAtRestEncryption(
-			*account.Encryption.Services.Blob.Enabled,
+			to.Bool(account.Encryption.Services.Blob.Enabled),
 			"AES-265", // seems to be always AES-256
 			string(account.Encryption.KeySource),
 		)},
 		HttpEndpoint: &voc.HttpEndpoint{
-			URL: *account.PrimaryEndpoints.Blob,
+			URL: to.String(account.PrimaryEndpoints.Blob),
 			TransportEncryption: voc.NewTransportEncryption(
 				true, // cannot be disabled
-				*account.EnableHTTPSTrafficOnly,
+				to.Bool(account.EnableHTTPSTrafficOnly),
 				string(account.MinimumTLSVersion),
 			),
 		},
