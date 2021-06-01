@@ -29,14 +29,12 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net"
 	"os"
 	"testing"
 
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -46,42 +44,12 @@ import (
 )
 
 var sock net.Listener
+var server *grpc.Server
 
 func init() {
-	StartAuthServer()
+	sock, server = service_auth.StartStandaloneAuthServer(":0")
 }
 
-func StartAuthServer() {
-	var (
-		err         error
-		authService *service_auth.Service
-	)
-
-	// create a new socket for gRPC communication
-	sock, err = net.Listen("tcp", ":0") // random open port
-	if err != nil {
-		log.Fatalf("Could not listen: %v", err)
-	}
-
-	err = persistence.InitDB(true, "", 0)
-
-	if err != nil {
-		log.Fatalf("Server exited: %v", err)
-	}
-
-	authService = &service_auth.Service{}
-	authService.CreateDefaultUser("clouditor", "clouditor")
-
-	server := grpc.NewServer()
-	auth.RegisterAuthenticationServer(server, authService)
-
-	go func() {
-		// serve the gRPC socket
-		_ = server.Serve(sock)
-	}()
-}
-
-// TODO(oxisto): instead of replicating the things we do in the cmd, it would be good to call the command with arguments
 func TestSession(t *testing.T) {
 	var (
 		err     error
@@ -89,6 +57,7 @@ func TestSession(t *testing.T) {
 		dir     string
 	)
 	defer sock.Close()
+	defer server.Stop()
 
 	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
 	assert.Nil(t, err)
