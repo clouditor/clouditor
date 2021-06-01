@@ -32,7 +32,7 @@ import (
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
-	"google.golang.org/grpc"
+	"github.com/spf13/viper"
 )
 
 const (
@@ -49,24 +49,28 @@ func NewLoginCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err     error
-				conn    *grpc.ClientConn
 				client  auth.AuthenticationClient
 				res     *auth.LoginResponse
 				req     *auth.LoginRequest
 				session *cli.Session
 			)
 
-			session = cli.NewSession(args[0])
-
-			if conn, err = grpc.Dial(session.URL, grpc.WithInsecure()); err != nil {
+			if session, err = cli.NewSession(args[0]); err != nil {
 				return fmt.Errorf("could not connect: %w", err)
 			}
 
-			if req, err = cli.PromtForLogin(); err != nil {
-				return fmt.Errorf("could not prompt for password: %w", err)
+			if viper.GetString("username") == "" || viper.GetString("password") == "" {
+				if req, err = cli.PromtForLogin(); err != nil {
+					return fmt.Errorf("could not prompt for password: %w", err)
+				}
+			} else {
+				req = &auth.LoginRequest{
+					Username: viper.GetString("username"),
+					Password: viper.GetString("password"),
+				}
 			}
 
-			client = auth.NewAuthenticationClient(conn)
+			client = auth.NewAuthenticationClient(session)
 
 			if res, err = client.Login(context.Background(), req); err != nil {
 				return fmt.Errorf("could not login: %w", err)
@@ -84,6 +88,12 @@ func NewLoginCommand() *cobra.Command {
 			return err
 		},
 	}
+
+	cmd.PersistentFlags().StringP("username", "u", "", "the username. if not specified, a prompt will be displayed")
+	_ = viper.BindPFlag("username", cmd.PersistentFlags().Lookup("username"))
+
+	cmd.PersistentFlags().StringP("password", "p", "", "the password. if not specified, a prompt will be displayed")
+	_ = viper.BindPFlag("password", cmd.PersistentFlags().Lookup("password"))
 
 	return cmd
 }

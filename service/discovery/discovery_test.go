@@ -49,7 +49,6 @@ func TestQuery(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.NotNil(t, response)
-
 	assert.NotEmpty(t, response.Result.Values)
 
 	m := response.Result.Values[0].GetStructValue().AsMap()

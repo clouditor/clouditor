@@ -23,29 +23,55 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package commands
+package login_test
 
 import (
-	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/cli/commands/completion"
-	"clouditor.io/clouditor/cli/commands/discovery"
+	"fmt"
+	"io/ioutil"
+	"net"
+	"os"
+	"testing"
+
 	"clouditor.io/clouditor/cli/commands/login"
-	"clouditor.io/clouditor/cli/commands/metric"
-	"clouditor.io/clouditor/cli/commands/tool"
-	"github.com/spf13/cobra"
+	service_auth "clouditor.io/clouditor/service/auth"
 	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc"
 )
 
-// AddCommands adds all subcommands
-func AddCommands(cmd *cobra.Command) {
-	cmd.AddCommand(
-		login.NewLoginCommand(),
-		discovery.NewDiscoveryCommand(),
-		metric.NewMetricCommand(),
-		tool.NewToolCommand(),
-		completion.NewCompletionCommand(),
+var sock net.Listener
+var server *grpc.Server
+
+func TestMain(m *testing.M) {
+	var err error
+
+	sock, server, err = service_auth.StartStandaloneAuthServer(":0")
+
+	if err != nil {
+		panic(err)
+	}
+
+	os.Exit(m.Run())
+}
+
+func TestLogin(t *testing.T) {
+	var (
+		err error
+		dir string
 	)
 
-	cmd.PersistentFlags().StringP("session-directory", "s", cli.DefaultSessionFolder, "the directory where the session will be saved and loaded from")
-	_ = viper.BindPFlag("session-directory", cmd.PersistentFlags().Lookup("session-directory"))
+	defer sock.Close()
+	defer server.Stop()
+
+	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
+	assert.Nil(t, err)
+	assert.NotEmpty(t, dir)
+
+	viper.Set("username", "clouditor")
+	viper.Set("password", "clouditor")
+	viper.Set("session-directory", dir)
+
+	cmd := login.NewLoginCommand()
+	err = cmd.RunE(nil, []string{fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)})
+	assert.Nil(t, err)
 }

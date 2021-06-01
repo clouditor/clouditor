@@ -28,12 +28,16 @@ package auth
 import (
 	"context"
 	"errors"
+	"fmt"
+	"net"
 	"time"
 
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/persistence"
 	argon2 "github.com/alexedwards/argon2id"
 	"github.com/golang-jwt/jwt"
+	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
@@ -44,6 +48,8 @@ import (
 const (
 	Issuer = "clouditor"
 )
+
+var log *logrus.Entry
 
 // Service is an implementation of the gRPC Authentication service
 type Service struct {
@@ -57,6 +63,10 @@ type UserClaims struct {
 	jwt.StandardClaims
 	FullName string `json:"full_name"`
 	EMail    string `json:"email"`
+}
+
+func init() {
+	log = logrus.WithField("component", "auth")
 }
 
 // Login handles a login request
@@ -131,6 +141,28 @@ func (s Service) HashPassword(password string) (string, error) {
 	})
 }
 
+// CreateDefaultUser creates a default user in the database
+func (s Service) CreateDefaultUser(username string, password string) {
+	db := persistence.GetDatabase()
+
+	var count int64
+	db.Model(&auth.User{}).Count(&count)
+
+	if count == 0 {
+		hash, _ := s.HashPassword(password)
+
+		user := auth.User{
+			Username: username,
+			FullName: username,
+			Password: string(hash),
+		}
+
+		log.Infof("Creating default user %s\n", user.Username)
+
+		db.Create(&user)
+	}
+}
+
 // issueToken issues a JWT token
 func (s Service) issueToken(subject string, fullName string, email string, expiry time.Time) (token string, err error) {
 	key := []byte(s.TokenSecret)
@@ -148,4 +180,36 @@ func (s Service) issueToken(subject string, fullName string, email string, expir
 
 	token, err = claims.SignedString(key)
 	return
+}
+
+// StartStandaloneAuthServer starts a gRPC server containing just the auth service
+func StartStandaloneAuthServer(address string) (sock net.Listener, server *grpc.Server, err error) {
+	var (
+		authService *Service
+	)
+
+	// create a new socket for gRPC communication
+	sock, err = net.Listen("tcp", address)
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not listen: %w", err)
+	}
+
+	err = persistence.InitDB(true, "", 0)
+
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not initialize in-memory DB: %w", err)
+	}
+
+	authService = &Service{}
+	authService.CreateDefaultUser("clouditor", "clouditor")
+
+	server = grpc.NewServer()
+	auth.RegisterAuthenticationServer(server, authService)
+
+	go func() {
+		// serve the gRPC socket
+		_ = server.Serve(sock)
+	}()
+
+	return sock, server, nil
 }
