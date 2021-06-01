@@ -52,7 +52,7 @@ func NewListToolsCommand() *cobra.Command {
 				res     *orchestrator.ListAssessmentToolsResponse
 			)
 
-			if session, err = cli.ContinueSession(cli.DefaultSessionFolder); err != nil {
+			if session, err = cli.ContinueSession(); err != nil {
 				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
 				return nil
 			}
@@ -88,7 +88,7 @@ func NewShowToolCommand() *cobra.Command {
 				res     *orchestrator.AssessmentTool
 			)
 
-			if session, err = cli.ContinueSession(cli.DefaultSessionFolder); err != nil {
+			if session, err = cli.ContinueSession(); err != nil {
 				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
 				return nil
 			}
@@ -124,7 +124,7 @@ func NewRegisterToolCommand() *cobra.Command {
 				res     *orchestrator.AssessmentTool
 			)
 
-			if session, err = cli.ContinueSession(cli.DefaultSessionFolder); err != nil {
+			if session, err = cli.ContinueSession(); err != nil {
 				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
 				return nil
 			}
@@ -174,7 +174,7 @@ func NewUpdateToolCommand() *cobra.Command {
 				res     *orchestrator.AssessmentTool
 			)
 
-			if session, err = cli.ContinueSession(cli.DefaultSessionFolder); err != nil {
+			if session, err = cli.ContinueSession(); err != nil {
 				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
 				return nil
 			}
@@ -225,7 +225,7 @@ func NewDeregisterToolCommand() *cobra.Command {
 				res     *emptypb.Empty
 			)
 
-			if session, err = cli.ContinueSession(cli.DefaultSessionFolder); err != nil {
+			if session, err = cli.ContinueSession(); err != nil {
 				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
 				return nil
 			}

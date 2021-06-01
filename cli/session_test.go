@@ -13,29 +13,36 @@ import (
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/grpc/test/bufconn"
 )
 
-const bufSize = 1024 * 1024
-
-var sock *bufconn.Listener
+var sock net.Listener
 
 func init() {
-	// create a new socket for gRPC communication
-	sock = bufconn.Listen(bufSize)
+	StartAuthServer()
+}
 
-	var err error
+func StartAuthServer() {
+	var (
+		err         error
+		authService *service_auth.Service
+	)
+
+	// create a new socket for gRPC communication
+	sock, err = net.Listen("tcp", ":0") // random open port
+	if err != nil {
+		log.Fatalf("Could not listen: %v", err)
+	}
+
 	err = persistence.InitDB(true, "", 0)
 
 	if err != nil {
 		log.Fatalf("Server exited: %v", err)
 	}
-
-	var authService *service_auth.Service
 
 	authService = &service_auth.Service{}
 	authService.CreateDefaultUser("clouditor", "clouditor")
@@ -46,14 +53,7 @@ func init() {
 	go func() {
 		// serve the gRPC socket
 		_ = server.Serve(sock)
-		/*if err != nil {
-			log.Fatalf("Server exited: %v", err)
-		}*/
 	}()
-}
-
-func bufDialer(context.Context, string) (net.Conn, error) {
-	return sock.Dial()
 }
 
 // TODO(oxisto): instead of replicating the things we do in the cmd, it would be good to call the command with arguments
@@ -63,18 +63,15 @@ func TestSession(t *testing.T) {
 		session *cli.Session
 		dir     string
 	)
-
-	assert.Nil(t, err)
-
 	defer sock.Close()
-
-	assert.Nil(t, err, "could not listen")
 
 	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
 	assert.Nil(t, err)
 	assert.NotEmpty(t, dir)
 
-	session, err = cli.NewSession("bufnet", dir, grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
+	viper.Set("session-directory", dir)
+
+	session, err = cli.NewSession(fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port))
 	if err != nil {
 		t.Fatalf("Failed to dial bufnet: %v", err)
 	}
@@ -82,8 +79,7 @@ func TestSession(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.NotNil(t, session)
-
-	fmt.Printf("%+v\n", session)
+	assert.Equal(t, dir, session.Folder)
 
 	client := auth.NewAuthenticationClient(session)
 
@@ -103,12 +99,11 @@ func TestSession(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	// TODO(oxisto): not quite sure how to test continue session with the bufnet dialer
-	// session, err = cli.ContinueSession(dir)
-	// assert.Nil(t, err)
-	// assert.NotNil(t, session)
+	session, err = cli.ContinueSession()
+	assert.Nil(t, err)
+	assert.NotNil(t, session)
 
-	// client = auth.NewAuthenticationClient(session)
+	client = auth.NewAuthenticationClient(session)
 
 	// login with non-existing user
 	// TODO(oxisto): Should be moved to a service/auth test. here we should only test the session mechanism

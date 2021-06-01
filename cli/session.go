@@ -37,6 +37,7 @@ import (
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
@@ -50,7 +51,7 @@ type Session struct {
 	URL   string `json:"url"`
 	Token string `json:"token"`
 
-	Folder string
+	Folder string `json:"-"`
 
 	*grpc.ClientConn
 }
@@ -67,10 +68,10 @@ func init() {
 	DefaultSessionFolder = fmt.Sprintf("%s/.clouditor/", home)
 }
 
-func NewSession(url string, folder string, opts ...grpc.DialOption) (session *Session, err error) {
+func NewSession(url string, opts ...grpc.DialOption) (session *Session, err error) {
 	session = &Session{
 		URL:    url,
-		Folder: folder,
+		Folder: viper.GetString("session-directory"),
 	}
 
 	if len(opts) == 0 {
@@ -85,10 +86,13 @@ func NewSession(url string, folder string, opts ...grpc.DialOption) (session *Se
 	return session, nil
 }
 
-func ContinueSession(folder string) (session *Session, err error) {
+func ContinueSession() (session *Session, err error) {
 	var (
-		file *os.File
+		file   *os.File
+		folder string
 	)
+
+	folder = viper.GetString("session-directory")
 
 	// try to read from session.json
 	if file, err = os.OpenFile(fmt.Sprintf("%s/session.json", folder), os.O_RDONLY, 0600); err != nil {
@@ -98,6 +102,7 @@ func ContinueSession(folder string) (session *Session, err error) {
 	defer file.Close()
 
 	session = new(Session)
+	session.Folder = folder
 
 	if err = json.NewDecoder(file).Decode(&session); err != nil {
 		return
@@ -235,7 +240,7 @@ func getTools(toComplete string) []string {
 		res     *orchestrator.ListAssessmentToolsResponse
 	)
 
-	if session, err = ContinueSession(DefaultSessionFolder); err != nil {
+	if session, err = ContinueSession(); err != nil {
 		fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
 		return nil
 	}
@@ -262,7 +267,7 @@ func getMetrics(toComplete string) []string {
 		res     *orchestrator.ListMetricsResponse
 	)
 
-	if session, err = ContinueSession(DefaultSessionFolder); err != nil {
+	if session, err = ContinueSession(); err != nil {
 		fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
 		return nil
 	}
