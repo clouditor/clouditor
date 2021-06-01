@@ -54,7 +54,7 @@ func (d *azureComputeDiscovery) Description() string {
 
 // Discover compute resources
 func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
-	if azureAuthorizer.Authorize(); err != nil {
+	if err = azureAuthorizer.Authorize(); err != nil {
 		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
 	}
 
