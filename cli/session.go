@@ -52,7 +52,7 @@ type Session struct {
 
 	Folder string
 
-	conn *grpc.ClientConn
+	*grpc.ClientConn
 }
 
 func init() {
@@ -67,13 +67,18 @@ func init() {
 	DefaultSessionFolder = fmt.Sprintf("%s/.clouditor/", home)
 }
 
-func NewSession(url string, folder string) (session *Session, err error) {
+func NewSession(url string, folder string, opts ...grpc.DialOption) (session *Session, err error) {
 	session = &Session{
 		URL:    url,
 		Folder: folder,
 	}
 
-	if session.conn, err = grpc.Dial(session.URL, grpc.WithInsecure()); err != nil {
+	if len(opts) == 0 {
+		// TODO(oxisto): set flag depending on target url, insecure only for localhost
+		opts = []grpc.DialOption{grpc.WithInsecure()}
+	}
+
+	if session.ClientConn, err = grpc.Dial(session.URL, opts...); err != nil {
 		return nil, fmt.Errorf("could not connect: %v", err)
 	}
 
@@ -98,7 +103,7 @@ func ContinueSession(folder string) (session *Session, err error) {
 		return
 	}
 
-	if session.conn, err = grpc.Dial(session.URL, grpc.WithInsecure()); err != nil {
+	if session.ClientConn, err = grpc.Dial(session.URL, grpc.WithInsecure()); err != nil {
 		return nil, fmt.Errorf("could not connect: %v", err)
 	}
 
@@ -184,13 +189,13 @@ func PromtForLogin() (loginRequest *auth.LoginRequest, err error) {
 // Invoke implements `grpc.ClientConnInterface` and automatically provides an authenticated
 // context of this session
 func (s *Session) Invoke(ctx context.Context, method string, args interface{}, reply interface{}, opts ...grpc.CallOption) error {
-	return s.conn.Invoke(s.AuthenticatedContext(ctx), method, args, reply, opts...)
+	return s.ClientConn.Invoke(s.AuthenticatedContext(ctx), method, args, reply, opts...)
 }
 
 // NewStream implements `grpc.ClientConnInterface` and automatically provides an authenticated
 // context of this session
 func (s *Session) NewStream(ctx context.Context, desc *grpc.StreamDesc, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-	return s.conn.NewStream(s.AuthenticatedContext(ctx), desc, method, opts...)
+	return s.ClientConn.NewStream(s.AuthenticatedContext(ctx), desc, method, opts...)
 }
 
 func (s *Session) AuthenticatedContext(ctx context.Context) context.Context {

@@ -3,8 +3,10 @@ package cli_test
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
+	"os"
 	"testing"
 
 	"clouditor.io/clouditor/api/auth"
@@ -54,10 +56,13 @@ func bufDialer(context.Context, string) (net.Conn, error) {
 	return sock.Dial()
 }
 
+// TODO(oxisto): instead of replicating the things we do in the cmd, it would be good to call the command with arguments
 func TestSession(t *testing.T) {
-	var err error
-
-	var session *cli.Session
+	var (
+		err     error
+		session *cli.Session
+		dir     string
+	)
 
 	assert.Nil(t, err)
 
@@ -65,20 +70,22 @@ func TestSession(t *testing.T) {
 
 	assert.Nil(t, err, "could not listen")
 
-	//session, err = cli.NewSession(fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port), "test")
+	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
+	assert.Nil(t, err)
+	assert.NotEmpty(t, dir)
 
-	conn, err := grpc.DialContext(context.Background(), "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
+	session, err = cli.NewSession("bufnet", dir, grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
 	if err != nil {
 		t.Fatalf("Failed to dial bufnet: %v", err)
 	}
-	defer conn.Close()
+	defer session.Close()
 
 	assert.Nil(t, err)
-	//assert.NotNil(t, session)
+	assert.NotNil(t, session)
 
 	fmt.Printf("%+v\n", session)
 
-	client := auth.NewAuthenticationClient(conn)
+	client := auth.NewAuthenticationClient(session)
 
 	var response *auth.LoginResponse
 
@@ -87,8 +94,24 @@ func TestSession(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.NotNil(t, response)
+	assert.NotEmpty(t, response.Token)
+
+	// update the session
+	session.Token = response.Token
+
+	err = session.Save()
+
+	assert.Nil(t, err)
+
+	// TODO(oxisto): not quite sure how to test continue session with the bufnet dialer
+	// session, err = cli.ContinueSession(dir)
+	// assert.Nil(t, err)
+	// assert.NotNil(t, session)
+
+	// client = auth.NewAuthenticationClient(session)
 
 	// login with non-existing user
+	// TODO(oxisto): Should be moved to a service/auth test. here we should only test the session mechanism
 	response, err = client.Login(context.Background(), &auth.LoginRequest{Username: "some-other-user", Password: "password"})
 
 	assert.NotNil(t, err)
