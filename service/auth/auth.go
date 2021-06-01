@@ -28,6 +28,8 @@ package auth
 import (
 	"context"
 	"errors"
+	"fmt"
+	"net"
 	"time"
 
 	"clouditor.io/clouditor/api/auth"
@@ -35,6 +37,7 @@ import (
 	argon2 "github.com/alexedwards/argon2id"
 	"github.com/golang-jwt/jwt"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
@@ -177,4 +180,36 @@ func (s Service) issueToken(subject string, fullName string, email string, expir
 
 	token, err = claims.SignedString(key)
 	return
+}
+
+// StartStandaloneAuthServer starts a gRPC server containing just the auth service
+func StartStandaloneAuthServer(address string) (sock net.Listener, server *grpc.Server, err error) {
+	var (
+		authService *Service
+	)
+
+	// create a new socket for gRPC communication
+	sock, err = net.Listen("tcp", address)
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not listen: %w", err)
+	}
+
+	err = persistence.InitDB(true, "", 0)
+
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not initialize in-memory DB: %w", err)
+	}
+
+	authService = &Service{}
+	authService.CreateDefaultUser("clouditor", "clouditor")
+
+	server = grpc.NewServer()
+	auth.RegisterAuthenticationServer(server, authService)
+
+	go func() {
+		// serve the gRPC socket
+		_ = server.Serve(sock)
+	}()
+
+	return sock, server, nil
 }
