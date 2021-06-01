@@ -46,8 +46,16 @@ import (
 var sock net.Listener
 var server *grpc.Server
 
-func init() {
-	sock, server = service_auth.StartStandaloneAuthServer(":0")
+func TestMain(m *testing.M) {
+	var err error
+
+	sock, server, err = service_auth.StartStandaloneAuthServer(":0")
+
+	if err != nil {
+		panic(err)
+	}
+
+	os.Exit(m.Run())
 }
 
 func TestSession(t *testing.T) {

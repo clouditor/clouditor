@@ -28,6 +28,7 @@ package auth
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net"
 	"time"
 
@@ -184,20 +185,19 @@ func (s Service) issueToken(subject string, fullName string, email string, expir
 // StartStandaloneAuthServer starts a gRPC server containing just the auth service
 func StartStandaloneAuthServer(address string) (sock net.Listener, server *grpc.Server, err error) {
 	var (
-		err         error
 		authService *Service
 	)
 
 	// create a new socket for gRPC communication
 	sock, err = net.Listen("tcp", address)
 	if err != nil {
-		log.Fatalf("Could not listen: %v", err)
+		return nil, nil, fmt.Errorf("could not listen: %w", err)
 	}
 
 	err = persistence.InitDB(true, "", 0)
 
 	if err != nil {
-		log.Fatalf("Server exited: %v", err)
+		return nil, nil, fmt.Errorf("could not initialize in-memory DB: %w", err)
 	}
 
 	authService = &Service{}
@@ -211,5 +211,5 @@ func StartStandaloneAuthServer(address string) (sock net.Listener, server *grpc.
 		_ = server.Serve(sock)
 	}()
 
-	return sock, server
+	return sock, server, nil
 }
