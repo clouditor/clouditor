@@ -14,7 +14,10 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/grpc/test/bufconn"
 )
+
+const bufSize = 1024 * 1024
 
 func TestSession(t *testing.T) {
 	var err error
@@ -27,7 +30,11 @@ func TestSession(t *testing.T) {
 	var session *cli.Session
 
 	// create a new socket for gRPC communication
-	sock, err := net.Listen("tcp", ":0")
+	var sock = bufconn.Listen(bufSize)
+
+	var bufDialer = func(context.Context, string) (net.Conn, error) {
+		return sock.Dial()
+	}
 
 	assert.Nil(t, err)
 
@@ -47,14 +54,20 @@ func TestSession(t *testing.T) {
 		assert.Nil(t, err)
 	}()
 
-	session, err = cli.NewSession(fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port), "test")
+	//session, err = cli.NewSession(fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port), "test")
+
+	conn, err := grpc.DialContext(context.Background(), "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
+	if err != nil {
+		t.Fatalf("Failed to dial bufnet: %v", err)
+	}
+	defer conn.Close()
 
 	assert.Nil(t, err)
-	assert.NotNil(t, session)
+	//assert.NotNil(t, session)
 
 	fmt.Printf("%+v\n", session)
 
-	client := auth.NewAuthenticationClient(session)
+	client := auth.NewAuthenticationClient(conn)
 
 	var response *auth.LoginResponse
 
