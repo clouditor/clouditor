@@ -3,6 +3,7 @@ package cli_test
 import (
 	"context"
 	"fmt"
+	"log"
 	"net"
 	"testing"
 
@@ -19,28 +20,20 @@ import (
 
 const bufSize = 1024 * 1024
 
-func TestSession(t *testing.T) {
-	var err error
+var sock *bufconn.Listener
 
+func init() {
+	// create a new socket for gRPC communication
+	sock = bufconn.Listen(bufSize)
+
+	var err error
 	err = persistence.InitDB(true, "", 0)
 
-	assert.Nil(t, err)
-
-	var authService *service_auth.Service
-	var session *cli.Session
-
-	// create a new socket for gRPC communication
-	var sock = bufconn.Listen(bufSize)
-
-	var bufDialer = func(context.Context, string) (net.Conn, error) {
-		return sock.Dial()
+	if err != nil {
+		log.Fatalf("Server exited: %v", err)
 	}
 
-	assert.Nil(t, err)
-
-	defer sock.Close()
-
-	assert.Nil(t, err, "could not listen")
+	var authService *service_auth.Service
 
 	authService = &service_auth.Service{}
 	authService.CreateDefaultUser("clouditor", "clouditor")
@@ -50,9 +43,27 @@ func TestSession(t *testing.T) {
 
 	go func() {
 		// serve the gRPC socket
-		err = server.Serve(sock)
-		assert.Nil(t, err)
+		_ = server.Serve(sock)
+		/*if err != nil {
+			log.Fatalf("Server exited: %v", err)
+		}*/
 	}()
+}
+
+func bufDialer(context.Context, string) (net.Conn, error) {
+	return sock.Dial()
+}
+
+func TestSession(t *testing.T) {
+	var err error
+
+	var session *cli.Session
+
+	assert.Nil(t, err)
+
+	defer sock.Close()
+
+	assert.Nil(t, err, "could not listen")
 
 	//session, err = cli.NewSession(fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port), "test")
 
