@@ -26,12 +26,14 @@
 package commands
 
 import (
+	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/completion"
 	"clouditor.io/clouditor/cli/commands/discovery"
 	"clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/cli/commands/metric"
 	"clouditor.io/clouditor/cli/commands/tool"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // AddCommands adds all subcommands
@@ -43,4 +45,7 @@ func AddCommands(cmd *cobra.Command) {
 		tool.NewToolCommand(),
 		completion.NewCompletionCommand(),
 	)
+
+	cmd.PersistentFlags().StringP("session-directory", "s", cli.DefaultSessionFolder, "the directory where the session will be saved and loaded from")
+	_ = viper.BindPFlag("session-directory", cmd.PersistentFlags().Lookup("session-directory"))
 }

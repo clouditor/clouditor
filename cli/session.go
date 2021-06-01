@@ -37,6 +37,7 @@ import (
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
@@ -44,45 +45,70 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+var DefaultSessionFolder string
+
 type Session struct {
 	URL   string `json:"url"`
 	Token string `json:"token"`
 
-	conn *grpc.ClientConn
+	Folder string `json:"-"`
+
+	*grpc.ClientConn
 }
 
-func NewSession(url string) *Session {
-	return &Session{
-		URL: url,
-	}
-}
-
-func ContinueSession() (session *Session, err error) {
-	var (
-		home string
-		file *os.File
-	)
-
-	// try to read from session.json
+func init() {
+	var home string
+	var err error
 
 	// find the home directory
 	if home, err = os.UserHomeDir(); err != nil {
 		return
 	}
 
-	if file, err = os.OpenFile(fmt.Sprintf("%s/.clouditor/session.json", home), os.O_RDONLY, 0600); err != nil {
+	DefaultSessionFolder = fmt.Sprintf("%s/.clouditor/", home)
+}
+
+func NewSession(url string, opts ...grpc.DialOption) (session *Session, err error) {
+	session = &Session{
+		URL:    url,
+		Folder: viper.GetString("session-directory"),
+	}
+
+	if len(opts) == 0 {
+		// TODO(oxisto): set flag depending on target url, insecure only for localhost
+		opts = []grpc.DialOption{grpc.WithInsecure()}
+	}
+
+	if session.ClientConn, err = grpc.Dial(session.URL, opts...); err != nil {
+		return nil, fmt.Errorf("could not connect: %v", err)
+	}
+
+	return session, nil
+}
+
+func ContinueSession() (session *Session, err error) {
+	var (
+		file   *os.File
+		folder string
+	)
+
+	folder = viper.GetString("session-directory")
+
+	// try to read from session.json
+	if file, err = os.OpenFile(fmt.Sprintf("%s/session.json", folder), os.O_RDONLY, 0600); err != nil {
 		return
 	}
 
 	defer file.Close()
 
 	session = new(Session)
+	session.Folder = folder
 
 	if err = json.NewDecoder(file).Decode(&session); err != nil {
 		return
 	}
 
-	if session.conn, err = grpc.Dial(session.URL, grpc.WithInsecure()); err != nil {
+	if session.ClientConn, err = grpc.Dial(session.URL, grpc.WithInsecure()); err != nil {
 		return nil, fmt.Errorf("could not connect: %v", err)
 	}
 
@@ -92,20 +118,15 @@ func ContinueSession() (session *Session, err error) {
 // Save saves the session into the `.clouditor` folder in the home directory
 func (s *Session) Save() (err error) {
 	var (
-		home string
 		file *os.File
 	)
-	// find the home directory
-	if home, err = os.UserHomeDir(); err != nil {
-		return fmt.Errorf("could not find home directory: %w", err)
-	}
 
-	// create the .clouditor directory
-	if err = os.MkdirAll(fmt.Sprintf("%s/.clouditor", home), 0744); err != nil {
+	// create the session directory
+	if err = os.MkdirAll(s.Folder, 0744); err != nil {
 		return fmt.Errorf("could not create .clouditor in home directory: %w", err)
 	}
 
-	if file, err = os.OpenFile(fmt.Sprintf("%s/.clouditor/session.json", home), os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0600); err != nil {
+	if file, err = os.OpenFile(fmt.Sprintf("%s/session.json", s.Folder), os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0600); err != nil {
 		return fmt.Errorf("could not save session.json: %w", err)
 	}
 
@@ -173,13 +194,13 @@ func PromtForLogin() (loginRequest *auth.LoginRequest, err error) {
 // Invoke implements `grpc.ClientConnInterface` and automatically provides an authenticated
 // context of this session
 func (s *Session) Invoke(ctx context.Context, method string, args interface{}, reply interface{}, opts ...grpc.CallOption) error {
-	return s.conn.Invoke(s.AuthenticatedContext(ctx), method, args, reply, opts...)
+	return s.ClientConn.Invoke(s.AuthenticatedContext(ctx), method, args, reply, opts...)
 }
 
 // NewStream implements `grpc.ClientConnInterface` and automatically provides an authenticated
 // context of this session
 func (s *Session) NewStream(ctx context.Context, desc *grpc.StreamDesc, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-	return s.conn.NewStream(s.AuthenticatedContext(ctx), desc, method, opts...)
+	return s.ClientConn.NewStream(s.AuthenticatedContext(ctx), desc, method, opts...)
 }
 
 func (s *Session) AuthenticatedContext(ctx context.Context) context.Context {
