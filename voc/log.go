@@ -1,4 +1,4 @@
-// Copyright 2021 Fraunhofer AISEC
+// Copyright 2016-2020 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,41 +25,7 @@
 
 package voc
 
-type HasAtRestEncryption interface {
-	GetAtRestEncryption() *AtRestEncryption
-}
-
-type HasHttpEndpoint interface {
-	GetHttpEndpoint() *HttpEndpoint
-}
-
-type IsStorage interface {
-	IsResource
-
-	HasAtRestEncryption
-}
-
-type StorageResource struct {
-	Resource
-
-	AtRestEncryption *AtRestEncryption `json:"atRestEncryption"`
-}
-
-func (s *StorageResource) GetAtRestEncryption() *AtRestEncryption {
-	return s.AtRestEncryption
-}
-
-type IsObjectStorage interface {
-	IsStorage
-	HasHttpEndpoint
-}
-
-type ObjectStorageResource struct {
-	StorageResource
-
-	HttpEndpoint *HttpEndpoint `json:"httpEndpoint"`
-}
-
-type BlockStorageResource struct {
-	StorageResource
+//Do we want to distinguish between logging mechanisms, e.g., azure Log Analytics, Azure VM BootDiagnostics?
+type Log struct {
+	Enabled bool `json:"enabled"`
 }

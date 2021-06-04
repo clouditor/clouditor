@@ -26,3 +26,30 @@
 // Package voc contains the vocabulary for Cloud resources and their properties
 // that can be discovered using Clouditor
 package voc
+
+import "time"
+
+type IsResource interface {
+	GetID() string
+	GetName() string
+	GetCreationTime() *time.Time
+}
+
+type Resource struct {
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	CreationTime int64  `json:"creationTime"` // is set to 0 if no creation time is available
+}
+
+func (r *Resource) GetID() string {
+	return r.ID
+}
+
+func (r *Resource) GetName() string {
+	return r.Name
+}
+
+func (r *Resource) GetCreationTime() *time.Time {
+	t := time.Unix(r.CreationTime, 0)
+	return &t
+}

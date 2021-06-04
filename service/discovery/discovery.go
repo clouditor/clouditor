@@ -32,6 +32,7 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/service/discovery/azure"
 	"clouditor.io/clouditor/voc"
+	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -68,9 +69,18 @@ func (s Service) Start(ctx context.Context, request *discovery.StartDiscoveryReq
 
 	log.Infof("Starting discovery...")
 
-	var discoverer discovery.Discoverer = azure.NewAzureStorageDiscovery()
+	// create an authorizer from env vars or Azure Managed Service Identity
+	authorizer, err := auth.NewAuthorizerFromCLI()
+	if err != nil {
+		log.Errorf("Could not authenticate to Azure: %s", err)
+		return nil, err
+	}
 
-	s.StartDiscovery(discoverer)
+	var discovererStorage discovery.Discoverer = azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer))
+	var discovererCompute discovery.Discoverer = azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer))
+
+	s.StartDiscovery(discovererStorage)
+	s.StartDiscovery(discovererCompute)
 
 	return response, nil
 }

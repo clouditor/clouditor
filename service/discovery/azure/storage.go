@@ -29,18 +29,30 @@ package azure
 
 import (
 	"context"
+	"fmt"
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
-	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/resources/mgmt/subscriptions"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
-	"github.com/Azure/go-autorest/autorest/azure/auth"
+	"github.com/Azure/go-autorest/autorest/to"
 )
 
-type azureStorageDiscovery struct{}
+type azureStorageDiscovery struct {
+	azureDiscovery
+}
 
-func NewAzureStorageDiscovery() discovery.Discoverer {
-	return &azureStorageDiscovery{}
+func NewAzureStorageDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
+	d := &azureStorageDiscovery{}
+
+	for _, opt := range opts {
+		if auth, ok := opt.(*authorizerOption); ok {
+			d.authOption = auth
+		} else {
+			d.options = append(d.options, opt)
+		}
+	}
+
+	return d
 }
 
 func (d *azureStorageDiscovery) Name() string {
@@ -52,28 +64,15 @@ func (d *azureStorageDiscovery) Description() string {
 }
 
 func (d *azureStorageDiscovery) List() (list []voc.IsResource, err error) {
-	// create an authorizer from env vars or Azure Managed Service Identity
-	authorizer, err := auth.NewAuthorizerFromCLI()
-	if err != nil {
-		log.Errorf("Could not authenticate to Azure: %s", err)
-		return
+	// make sure, we are authorized
+	if err = d.authorize(); err != nil {
+		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
 	}
 
-	subClient := subscriptions.NewClient()
-	subClient.Authorizer = authorizer
+	client := storage.NewAccountsClient(to.String(d.sub.SubscriptionID))
+	d.apply(&client.Client)
 
-	// get first subcription
-	page, _ := subClient.List(context.Background())
-	sub := page.Values()[0]
-
-	log.Infof("Using %s as subscription", *sub.SubscriptionID)
-
-	client := storage.NewAccountsClient(*sub.SubscriptionID)
-	client.Authorizer = authorizer
-
-	ctx := context.Background()
-
-	result, _ := client.List(ctx)
+	result, _ := client.List(context.Background())
 
 	for _, v := range result.Values() {
 		s := handleStorageAccount(v)
@@ -89,20 +88,20 @@ func (d *azureStorageDiscovery) List() (list []voc.IsResource, err error) {
 func handleStorageAccount(account storage.Account) voc.IsStorage {
 	return &voc.ObjectStorageResource{StorageResource: voc.StorageResource{
 		Resource: voc.Resource{
-			ID:           *account.ID,
-			Name:         *account.Name,
+			ID:           to.String(account.ID),
+			Name:         to.String(account.Name),
 			CreationTime: account.CreationTime.Unix(),
 		},
 		AtRestEncryption: voc.NewAtRestEncryption(
-			*account.Encryption.Services.Blob.Enabled,
+			to.Bool(account.Encryption.Services.Blob.Enabled),
 			"AES-265", // seems to be always AES-256
 			string(account.Encryption.KeySource),
 		)},
 		HttpEndpoint: &voc.HttpEndpoint{
-			URL: *account.PrimaryEndpoints.Blob,
+			URL: to.String(account.PrimaryEndpoints.Blob),
 			TransportEncryption: voc.NewTransportEncryption(
 				true, // cannot be disabled
-				*account.EnableHTTPSTrafficOnly,
+				to.Bool(account.EnableHTTPSTrafficOnly),
 				string(account.MinimumTLSVersion),
 			),
 		},

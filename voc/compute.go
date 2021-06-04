@@ -25,41 +25,53 @@
 
 package voc
 
-type HasAtRestEncryption interface {
-	GetAtRestEncryption() *AtRestEncryption
+// type HasLog interface {
+// 	GetLog() *Log
+// }
+
+type HasAccessRestriction interface {
+	GetAccessRestriction() *AccessRestriction
 }
 
-type HasHttpEndpoint interface {
-	GetHttpEndpoint() *HttpEndpoint
-}
-
-type IsStorage interface {
+type IsCompute interface {
 	IsResource
-
-	HasAtRestEncryption
 }
 
-type StorageResource struct {
+type ComputeResource struct {
 	Resource
-
-	AtRestEncryption *AtRestEncryption `json:"atRestEncryption"`
 }
 
-func (s *StorageResource) GetAtRestEncryption() *AtRestEncryption {
-	return s.AtRestEncryption
+// Virtual Machine
+type VirtualMachineResource struct {
+	ComputeResource
+	//NetworkInterfaceResource
+	//BlockStorage
+
+	Log *Log `json:"log"`
 }
 
-type IsObjectStorage interface {
-	IsStorage
-	HasHttpEndpoint
+func (v *VirtualMachineResource) GetLog() *Log {
+	return v.Log
 }
 
-type ObjectStorageResource struct {
-	StorageResource
+// Network Interface
+type NetworkInterfaceResource struct {
+	ComputeResource
+	//NetworkService
 
-	HttpEndpoint *HttpEndpoint `json:"httpEndpoint"`
+	VmID              string             `json:"vmId"` // For debugging reasons
+	AccessRestriction *AccessRestriction `json:"accessRestriction"`
 }
 
-type BlockStorageResource struct {
-	StorageResource
+func (n *NetworkInterfaceResource) GetAccessRestriction() *AccessRestriction {
+	return n.AccessRestriction
+}
+
+// LoadBalancer
+type LoadBalancerResource struct {
+	ComputeResource
+	//NetworkService
+
+	AccessRestriction *AccessRestriction `json:"accessRestriction"`
+	HttpEndpoint      *HttpEndpoint      `json:"httpEndpoint"`
 }

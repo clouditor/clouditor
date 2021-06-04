@@ -27,10 +27,89 @@
 
 package azure
 
-import "github.com/sirupsen/logrus"
+import (
+	"context"
+	"errors"
+
+	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/resources/mgmt/subscriptions"
+	"github.com/Azure/go-autorest/autorest"
+	"github.com/sirupsen/logrus"
+)
 
 var log *logrus.Entry
 
+type DiscoveryOption interface {
+	apply(*autorest.Client)
+}
+
+type senderOption struct {
+	sender autorest.Sender
+}
+
+func (o senderOption) apply(client *autorest.Client) {
+	client.Sender = o.sender
+}
+
+func WithSender(sender autorest.Sender) DiscoveryOption {
+	return &senderOption{sender}
+}
+
+type authorizerOption struct {
+	authorizer autorest.Authorizer
+}
+
+func WithAuthorizer(authorizer autorest.Authorizer) DiscoveryOption {
+	return &authorizerOption{authorizer: authorizer}
+}
+
 func init() {
 	log = logrus.WithField("component", "azure-discovery")
+}
+
+func (a authorizerOption) apply(client *autorest.Client) {
+	client.Authorizer = a.authorizer
+}
+
+type azureDiscovery struct {
+	authOption *authorizerOption
+	sub        subscriptions.Subscription
+
+	isAuthorized bool
+
+	options []DiscoveryOption
+}
+
+func (a *azureDiscovery) authorize() (err error) {
+	if a.authOption == nil {
+		return errors.New("no authorized was available")
+	}
+
+	// for now, do not re-authorize. in the future, we would probably need to check, if
+	// the token is still valid. or maybe Azure does this for us?
+	if a.isAuthorized {
+		return
+	}
+
+	subClient := subscriptions.NewClient()
+	a.apply(&subClient.Client)
+
+	// get first subcription
+	page, _ := subClient.List(context.Background())
+	a.sub = page.Values()[0]
+
+	log.Infof("Using %s as subscription", *a.sub.SubscriptionID)
+
+	a.isAuthorized = true
+
+	return nil
+}
+
+func (a azureDiscovery) apply(client *autorest.Client) {
+	if a.authOption != nil {
+		a.authOption.apply(client)
+	}
+
+	for _, v := range a.options {
+		v.apply(client)
+	}
 }
