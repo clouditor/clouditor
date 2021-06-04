@@ -111,7 +111,11 @@ func (s Service) Start(ctx context.Context, request *discovery.StartDiscoveryReq
 		return nil, err
 	}
 
-	k8sClient := k8s.AuthFromKubeConfig()
+	k8sClient, err := k8s.AuthFromKubeConfig()
+	if err != nil {
+		log.Errorf("Could not authenticate to Kubernetes: %s", err)
+		return nil, err
+	}
 
 	var discoverer []discovery.Discoverer
 

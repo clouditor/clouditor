@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"flag"
+	"fmt"
 	"path/filepath"
 
 	"github.com/sirupsen/logrus"
@@ -20,7 +21,7 @@ type k8sDiscovery struct {
 	intf kubernetes.Interface
 }
 
-func AuthFromKubeConfig() kubernetes.Interface {
+func AuthFromKubeConfig() (intf kubernetes.Interface, err error) {
 	var kubeconfig *string
 	if home := homedir.HomeDir(); home != "" {
 		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
@@ -32,14 +33,14 @@ func AuthFromKubeConfig() kubernetes.Interface {
 	// use the current context in kubeconfig
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
-		panic(err.Error())
+		return nil, fmt.Errorf("could not read kubeconfig: %w", err)
 	}
 
 	// create the clientset
 	client, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		panic(err.Error())
+		return nil, fmt.Errorf("could not create client: %w", err)
 	}
 
-	return client
+	return client, nil
 }
