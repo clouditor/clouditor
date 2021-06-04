@@ -26,9 +26,16 @@
 package voc
 
 type HttpEndpoint struct {
-	Resource
+	Resource // TODO(oxisto): should actually be a functionality, not a resource
 
 	URL string `json:"url"`
 
 	TransportEncryption *TransportEncryption `json:"transportEncryption"`
+}
+
+type NetworkService struct {
+	Resource
+
+	IPs   []string
+	Ports []int16
 }

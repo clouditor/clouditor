@@ -6,6 +6,7 @@ import (
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
+	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -20,6 +21,19 @@ func NewKubernetesNetworkDiscovery(intf kubernetes.Interface) discovery.Discover
 func (k k8sNetworkDiscovery) List() ([]voc.IsResource, error) {
 	var list []voc.IsResource
 
+	services, err := k.intf.CoreV1().Services("").List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("could not list services: %v", err)
+	}
+
+	for _, service := range services.Items {
+		c := k.handleService(service)
+
+		log.Infof("Adding service %+v", c)
+
+		list = append(list, c)
+	}
+
 	ingresses, err := k.intf.NetworkingV1().Ingresses("").List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("could not list ingresses: %v", err)
@@ -28,12 +42,30 @@ func (k k8sNetworkDiscovery) List() ([]voc.IsResource, error) {
 	for _, ingress := range ingresses.Items {
 		c := k.handleIngress(ingress)
 
-		log.Infof("Adding container %+v", c)
+		log.Infof("Adding ingress %+v", c)
 
 		list = append(list, c)
 	}
 
 	return list, nil
+}
+
+func (k k8sNetworkDiscovery) handleService(service corev1.Service) voc.IsCompute {
+	var ports []int16
+
+	for _, v := range service.Spec.Ports {
+		ports = append(ports, int16(v.Port))
+	}
+
+	return &voc.NetworkService{
+		Resource: voc.Resource{
+			ID:           fmt.Sprintf("/namespaces/%s/services/%s", service.Namespace, service.Name),
+			Name:         service.Name,
+			CreationTime: service.CreationTimestamp.Unix(),
+		},
+		IPs:   service.Spec.ClusterIPs,
+		Ports: ports,
+	}
 }
 
 func (k k8sNetworkDiscovery) handleIngress(ingress v1.Ingress) voc.IsCompute {
