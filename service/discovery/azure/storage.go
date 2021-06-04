@@ -41,7 +41,7 @@ type azureStorageDiscovery struct {
 	azureDiscovery
 }
 
-func NewAzureStorageDiscovery(opts ...AzureOptions) discovery.Discoverer {
+func NewAzureStorageDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureStorageDiscovery{}
 
 	for _, opt := range opts {

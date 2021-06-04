@@ -38,7 +38,7 @@ import (
 
 var log *logrus.Entry
 
-type AzureOptions interface {
+type DiscoveryOption interface {
 	apply(*autorest.Client)
 }
 
@@ -50,7 +50,7 @@ func (o senderOption) apply(client *autorest.Client) {
 	client.Sender = o.sender
 }
 
-func WithSender(sender autorest.Sender) *senderOption {
+func WithSender(sender autorest.Sender) DiscoveryOption {
 	return &senderOption{sender}
 }
 
@@ -58,7 +58,7 @@ type authorizerOption struct {
 	authorizer autorest.Authorizer
 }
 
-func WithAuthorizer(authorizer autorest.Authorizer) AzureOptions {
+func WithAuthorizer(authorizer autorest.Authorizer) DiscoveryOption {
 	return &authorizerOption{authorizer: authorizer}
 }
 
@@ -76,7 +76,7 @@ type azureDiscovery struct {
 
 	isAuthorized bool
 
-	options []AzureOptions
+	options []DiscoveryOption
 }
 
 func (a *azureDiscovery) authorize() (err error) {
@@ -102,7 +102,6 @@ func (a *azureDiscovery) authorize() (err error) {
 	a.isAuthorized = true
 
 	return nil
-
 }
 
 func (a azureDiscovery) apply(client *autorest.Client) {

@@ -43,7 +43,7 @@ type azureComputeDiscovery struct {
 	azureDiscovery
 }
 
-func NewAzureComputeDiscovery(opts ...AzureOptions) discovery.Discoverer {
+func NewAzureComputeDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureComputeDiscovery{}
 
 	for _, opt := range opts {
@@ -122,8 +122,8 @@ func (d *azureComputeDiscovery) handleLoadBalancer(lb network.LoadBalancer) voc.
 	return &voc.LoadBalancerResource{
 		ComputeResource: voc.ComputeResource{
 			Resource: voc.Resource{
-				ID:           *lb.ID,
-				Name:         *lb.Name,
+				ID:           to.String(lb.ID),
+				Name:         to.String(lb.Name),
 				CreationTime: 0, // No creation time available
 			},
 		},
@@ -179,8 +179,8 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm compute.VirtualMachine)
 	return &voc.VirtualMachineResource{
 		ComputeResource: voc.ComputeResource{
 			Resource: voc.Resource{
-				ID:           *vm.ID,
-				Name:         *vm.Name,
+				ID:           to.String(vm.ID),
+				Name:         to.String(vm.Name),
 				CreationTime: 0, // No creation time available
 			}},
 		Log: &voc.Log{
@@ -201,8 +201,8 @@ func (d *azureComputeDiscovery) handleNetworkInterfaces(ni network.Interface) vo
 	return &voc.NetworkInterfaceResource{
 		ComputeResource: voc.ComputeResource{
 			Resource: voc.Resource{
-				ID:           *ni.ID,
-				Name:         *ni.Name,
+				ID:           to.String(ni.ID),
+				Name:         to.String(ni.Name),
 				CreationTime: 0, // No creation time available
 			}},
 		VmID: GetVmID(ni),
@@ -218,11 +218,13 @@ func (d *azureComputeDiscovery) GetRestrictedPortsDefined(ni network.Interface) 
 
 	var restrictedPorts []string
 
-	if ni.NetworkSecurityGroup.ID == nil {
+	if ni.InterfacePropertiesFormat == nil ||
+		ni.InterfacePropertiesFormat.NetworkSecurityGroup == nil ||
+		ni.InterfacePropertiesFormat.NetworkSecurityGroup.ID == nil {
 		return ""
 	}
 
-	nsgID := *ni.NetworkSecurityGroup.ID
+	nsgID := to.String(ni.NetworkSecurityGroup.ID)
 
 	client := network.NewSecurityGroupsClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
@@ -235,11 +237,13 @@ func (d *azureComputeDiscovery) GetRestrictedPortsDefined(ni network.Interface) 
 		return ""
 	}
 
-	// Find all ports defined in the security rules with access property "Deny"
-	for _, securityRule := range *sg.SecurityRules {
-		if securityRule.Access == network.SecurityRuleAccessDeny {
-			// TODO delete duplicates
-			restrictedPorts = append(restrictedPorts, *securityRule.SourcePortRange)
+	if sg.SecurityGroupPropertiesFormat != nil && sg.SecurityGroupPropertiesFormat.SecurityRules != nil {
+		// Find all ports defined in the security rules with access property "Deny"
+		for _, securityRule := range *sg.SecurityRules {
+			if securityRule.Access == network.SecurityRuleAccessDeny {
+				// TODO delete duplicates
+				restrictedPorts = append(restrictedPorts, *securityRule.SourcePortRange)
+			}
 		}
 	}
 
