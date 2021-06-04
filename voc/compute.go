@@ -54,6 +54,10 @@ func (v *VirtualMachineResource) GetLog() *Log {
 	return v.Log
 }
 
+type ContainerResource struct {
+	ComputeResource
+}
+
 // Network Interface
 type NetworkInterfaceResource struct {
 	ComputeResource
