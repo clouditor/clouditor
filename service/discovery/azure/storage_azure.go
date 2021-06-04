@@ -38,10 +38,21 @@ import (
 )
 
 type azureStorageDiscovery struct {
+	azureDiscovery
 }
 
-func NewAzureStorageDiscovery() discovery.Discoverer {
-	return &azureStorageDiscovery{}
+func NewAzureStorageDiscovery(opts ...AzureOptions) discovery.Discoverer {
+	d := &azureStorageDiscovery{}
+
+	for _, opt := range opts {
+		if auth, ok := opt.(*authorizerOption); ok {
+			d.authOption = auth
+		} else {
+			d.options = append(d.options, opt)
+		}
+	}
+
+	return d
 }
 
 func (d *azureStorageDiscovery) Name() string {
@@ -52,16 +63,16 @@ func (d *azureStorageDiscovery) Description() string {
 	return "Discovery Azure storage accounts."
 }
 
-var StorageListFunc ListFunc = storage.AccountsClient.List
-var StorageClientFunc ClientFunc = createClient
-
-type ListFunc func(storage.AccountsClient, context.Context) (storage.AccountListResultPage, error)
-type ClientFunc func() (client storage.AccountsClient, err error)
-
 func (d *azureStorageDiscovery) List() (list []voc.IsResource, err error) {
-	client, _ := StorageClientFunc()
+	// make sure, we are authorized
+	if err = d.authorize(); err != nil {
+		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
+	}
 
-	result, _ := StorageListFunc(client, azureAuthorizer.ctx)
+	client := storage.NewAccountsClient(to.String(d.sub.SubscriptionID))
+	d.apply(&client.Client)
+
+	result, _ := client.List(context.Background())
 
 	for _, v := range result.Values() {
 		s := handleStorageAccount(v)
@@ -70,17 +81,6 @@ func (d *azureStorageDiscovery) List() (list []voc.IsResource, err error) {
 
 		list = append(list, s)
 	}
-
-	return
-}
-
-func createClient() (client storage.AccountsClient, err error) {
-	if err = azureAuthorizer.Authorize(); err != nil {
-		return storage.AccountsClient{}, fmt.Errorf("could not authorize Azure account: %w", err)
-	}
-
-	client = storage.NewAccountsClient(*azureAuthorizer.sub.SubscriptionID)
-	client.Authorizer = azureAuthorizer.authorizer
 
 	return
 }

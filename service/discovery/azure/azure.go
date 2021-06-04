@@ -29,55 +29,92 @@ package azure
 
 import (
 	"context"
+	"errors"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/resources/mgmt/subscriptions"
 	"github.com/Azure/go-autorest/autorest"
-	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/sirupsen/logrus"
 )
 
 var log *logrus.Entry
 
-type AzureAuthorizer struct {
-	authorizer autorest.Authorizer
-	sub        subscriptions.Subscription
-	ctx        context.Context
-
-	isAuthorized bool
+type AzureOptions interface {
+	apply(*autorest.Client) (err error)
 }
 
-var azureAuthorizer = &AzureAuthorizer{}
+type senderOption struct {
+	sender autorest.Sender
+}
+
+func (o senderOption) apply(client *autorest.Client) (err error) {
+	client.Sender = o.sender
+
+	return nil
+}
+
+func WithSender(sender autorest.Sender) *senderOption {
+	return &senderOption{sender}
+}
+
+type authorizerOption struct {
+	authorizer autorest.Authorizer
+}
+
+func WithAuthorizer(authorizer autorest.Authorizer) AzureOptions {
+	return &authorizerOption{authorizer: authorizer}
+}
 
 func init() {
 	log = logrus.WithField("component", "azure-discovery")
 }
 
-func (a *AzureAuthorizer) Authorize() (err error) {
+func (a authorizerOption) apply(client *autorest.Client) (err error) {
+	client.Authorizer = a.authorizer
+
+	return nil
+}
+
+type azureDiscovery struct {
+	authOption *authorizerOption
+	sub        subscriptions.Subscription
+
+	isAuthorized bool
+
+	options []AzureOptions
+}
+
+func (a *azureDiscovery) authorize() (err error) {
+	if a.authOption == nil {
+		return errors.New("no authorized was available")
+	}
+
 	// for now, do not re-authorize. in the future, we would probably need to check, if
 	// the token is still valid. or maybe Azure does this for us?
 	if a.isAuthorized {
 		return
 	}
 
-	// create an authorizer from env vars or Azure Managed Service Identity
-	azureAuthorizer.authorizer, err = auth.NewAuthorizerFromCLI()
-	if err != nil {
-		log.Errorf("Could not authenticate to Azure: %s", err)
-		return err
-	}
-
 	subClient := subscriptions.NewClient()
-	subClient.Authorizer = azureAuthorizer.authorizer
+	a.apply(&subClient.Client)
 
 	// get first subcription
 	page, _ := subClient.List(context.Background())
-	azureAuthorizer.sub = page.Values()[0]
+	a.sub = page.Values()[0]
 
-	azureAuthorizer.ctx = context.Background()
-
-	log.Infof("Using %s as subscription", *azureAuthorizer.sub.SubscriptionID)
+	log.Infof("Using %s as subscription", *a.sub.SubscriptionID)
 
 	a.isAuthorized = true
 
 	return nil
+
+}
+
+func (a azureDiscovery) apply(client *autorest.Client) {
+	if a.authOption != nil {
+		a.authOption.apply(client)
+	}
+
+	for _, v := range a.options {
+		v.apply(client)
+	}
 }

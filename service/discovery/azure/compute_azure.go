@@ -28,6 +28,7 @@
 package azure
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -35,13 +36,25 @@ import (
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/compute/mgmt/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2020-03-01/network"
+	"github.com/Azure/go-autorest/autorest/to"
 )
 
 type azureComputeDiscovery struct {
+	azureDiscovery
 }
 
-func NewAzureComputeDiscovery() discovery.Discoverer {
-	return &azureComputeDiscovery{}
+func NewAzureComputeDiscovery(opts ...AzureOptions) discovery.Discoverer {
+	d := &azureComputeDiscovery{}
+
+	for _, opt := range opts {
+		if auth, ok := opt.(*authorizerOption); ok {
+			d.authOption = auth
+		} else {
+			d.options = append(d.options, opt)
+		}
+	}
+
+	return d
 }
 
 func (d *azureComputeDiscovery) Name() string {
@@ -54,18 +67,18 @@ func (d *azureComputeDiscovery) Description() string {
 
 // Discover compute resources
 func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
-	if err = azureAuthorizer.Authorize(); err != nil {
+	if err = d.authorize(); err != nil {
 		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
 	}
 
 	// Discover virtual machines
-	client := compute.NewVirtualMachinesClient(*azureAuthorizer.sub.SubscriptionID)
-	client.Authorizer = azureAuthorizer.authorizer
+	client := compute.NewVirtualMachinesClient(to.String(d.sub.SubscriptionID))
+	d.apply(&client.Client)
 
-	result, _ := client.ListAllComplete(azureAuthorizer.ctx, "true")
+	result, _ := client.ListAllComplete(context.Background(), "true")
 
 	for _, v := range *result.Response().Value {
-		s := handleVirtualMachines(v)
+		s := d.handleVirtualMachines(v)
 
 		log.Infof("Adding virtual machine %+v", s)
 
@@ -73,13 +86,13 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 	}
 
 	// Discover network interfaces
-	client_network_interfaces := network.NewInterfacesClient(*azureAuthorizer.sub.SubscriptionID)
-	client_network_interfaces.Authorizer = azureAuthorizer.authorizer
+	client_network_interfaces := network.NewInterfacesClient(to.String(d.sub.SubscriptionID))
+	d.apply(&client_network_interfaces.Client)
 
-	result_network_interfaces, _ := client_network_interfaces.ListAll(azureAuthorizer.ctx)
+	result_network_interfaces, _ := client_network_interfaces.ListAll(context.Background())
 
 	for _, ni := range result_network_interfaces.Values() {
-		s := handleNetworkInterfaces(ni)
+		s := d.handleNetworkInterfaces(ni)
 
 		log.Infof("Adding network interfaces %+v", s)
 
@@ -88,13 +101,13 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 
 	// Discover Load Balancer
 	// TODO Client to get load balancer
-	client_load_balancer := network.NewLoadBalancersClient(*azureAuthorizer.sub.SubscriptionID)
-	client_load_balancer.Authorizer = azureAuthorizer.authorizer
+	client_load_balancer := network.NewLoadBalancersClient(to.String(d.sub.SubscriptionID))
+	d.apply(&client_load_balancer.Client)
 
-	result_load_balancer, _ := client_load_balancer.ListAll(azureAuthorizer.ctx)
+	result_load_balancer, _ := client_load_balancer.ListAll(context.Background())
 
 	for _, lb := range result_load_balancer.Values() {
-		s := handleLoadBalancer(lb)
+		s := d.handleLoadBalancer(lb)
 
 		log.Infof("Adding load balancer %+v", s)
 
@@ -105,7 +118,7 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 }
 
 //TBD
-func handleLoadBalancer(lb network.LoadBalancer) voc.IsCompute {
+func (d *azureComputeDiscovery) handleLoadBalancer(lb network.LoadBalancer) voc.IsCompute {
 	return &voc.LoadBalancerResource{
 		ComputeResource: voc.ComputeResource{
 			Resource: voc.Resource{
@@ -120,23 +133,23 @@ func handleLoadBalancer(lb network.LoadBalancer) voc.IsCompute {
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
 			//TODO weitermachen Frontend IP configuration
-			URL:                 GetPublicIPAddress(lb),                       // Get Public IP Address of the Load Balancer
+			URL:                 d.GetPublicIPAddress(lb),                     // Get Public IP Address of the Load Balancer
 			TransportEncryption: voc.NewTransportEncryption(false, false, ""), // No transport encryption defined by the Load Balancer
 		},
 	}
 }
 
-func GetPublicIPAddress(lb network.LoadBalancer) string {
+func (d *azureComputeDiscovery) GetPublicIPAddress(lb network.LoadBalancer) string {
 
 	var publicIPAddresses []string
 
 	// Get public IP resource
-	client := network.NewPublicIPAddressesClient(*azureAuthorizer.sub.SubscriptionID)
-	client.Authorizer = azureAuthorizer.authorizer
+	client := network.NewPublicIPAddressesClient(to.String(d.sub.SubscriptionID))
+	d.apply(&client.Client)
 
 	for _, publicIpProperties := range *lb.FrontendIPConfigurations {
 
-		publicIPAddress, err := client.Get(azureAuthorizer.ctx, GetResourceGroupName(*publicIpProperties.ID), *publicIpProperties.Name, "")
+		publicIPAddress, err := client.Get(context.Background(), GetResourceGroupName(*publicIpProperties.ID), *publicIpProperties.Name, "")
 
 		if err != nil {
 			log.Errorf("Error getting public IP address: %v", err)
@@ -162,7 +175,7 @@ func GetPublicIPAddress(lb network.LoadBalancer) string {
 	return strings.Join(publicIPAddresses, ",")
 }
 
-func handleVirtualMachines(vm compute.VirtualMachine) voc.IsCompute {
+func (d *azureComputeDiscovery) handleVirtualMachines(vm compute.VirtualMachine) voc.IsCompute {
 	return &voc.VirtualMachineResource{
 		ComputeResource: voc.ComputeResource{
 			Resource: voc.Resource{
@@ -184,7 +197,7 @@ func IsBootDiagnosticEnabled(vm compute.VirtualMachine) bool {
 	}
 }
 
-func handleNetworkInterfaces(ni network.Interface) voc.IsCompute {
+func (d *azureComputeDiscovery) handleNetworkInterfaces(ni network.Interface) voc.IsCompute {
 	return &voc.NetworkInterfaceResource{
 		ComputeResource: voc.ComputeResource{
 			Resource: voc.Resource{
@@ -195,13 +208,13 @@ func handleNetworkInterfaces(ni network.Interface) voc.IsCompute {
 		VmID: GetVmID(ni),
 		AccessRestriction: &voc.AccessRestriction{
 			Inbound:         false, //TBD
-			RestrictedPorts: GetRestrictedPortsDefined(ni),
+			RestrictedPorts: d.GetRestrictedPortsDefined(ni),
 		},
 	}
 }
 
 // Returns all restricted ports for the network interface
-func GetRestrictedPortsDefined(ni network.Interface) string {
+func (d *azureComputeDiscovery) GetRestrictedPortsDefined(ni network.Interface) string {
 
 	var restrictedPorts []string
 
@@ -211,11 +224,11 @@ func GetRestrictedPortsDefined(ni network.Interface) string {
 
 	nsgID := *ni.NetworkSecurityGroup.ID
 
-	client := network.NewSecurityGroupsClient(*azureAuthorizer.sub.SubscriptionID)
-	client.Authorizer = azureAuthorizer.authorizer
+	client := network.NewSecurityGroupsClient(to.String(d.sub.SubscriptionID))
+	d.apply(&client.Client)
 
 	// Get the Security Group of the network interface ni
-	sg, err := client.Get(azureAuthorizer.ctx, GetResourceGroupName(nsgID), strings.Split(nsgID, "/")[8], "")
+	sg, err := client.Get(context.Background(), GetResourceGroupName(nsgID), strings.Split(nsgID, "/")[8], "")
 
 	if err != nil {
 		log.Errorf("Could not get security group: %s", err)
