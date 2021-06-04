@@ -5,12 +5,38 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/http/httputil"
 
 	"github.com/Azure/go-autorest/autorest"
+	"github.com/sirupsen/logrus"
 )
+
+var log *logrus.Entry
+
+func init() {
+	log = logrus.WithField("component", "azure-tests")
+}
+
+type mockSender struct {
+}
+
+func (m mockSender) doSubscriptions(req *http.Request) (res *http.Response, handled bool, err error) {
+	if req.URL.Path == "/subscriptions" {
+		res, err = createResponse(map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":             "/subscriptions/00000000-0000-0000-0000-000000000000",
+					"subscriptionId": "00000000-0000-0000-0000-000000000000",
+					"name":           "sub1",
+				},
+			},
+		}, 200)
+		handled = true
+	}
+
+	return
+}
 
 type mockAuthorizer struct{}
 
