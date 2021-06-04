@@ -21,7 +21,7 @@ func init() {
 type mockSender struct {
 }
 
-func (m mockSender) doSubscriptions(req *http.Request) (res *http.Response, handled bool, err error) {
+func (m mockSender) Do(req *http.Request) (res *http.Response, err error) {
 	if req.URL.Path == "/subscriptions" {
 		res, err = createResponse(map[string]interface{}{
 			"value": &[]map[string]interface{}{
@@ -32,7 +32,9 @@ func (m mockSender) doSubscriptions(req *http.Request) (res *http.Response, hand
 				},
 			},
 		}, 200)
-		handled = true
+	} else {
+		res, err = createResponse(map[string]interface{}{}, 404)
+		log.Errorf("Not handling mock for %s yet", req.URL.Path)
 	}
 
 	return

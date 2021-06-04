@@ -14,14 +14,8 @@ type mockStorageSender struct {
 }
 
 func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error) {
-	var handled bool
-
-	if res, handled, err = m.doSubscriptions(req); handled {
-		return
-	}
-
 	if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts" {
-		res, err = createResponse(map[string]interface{}{
+		return createResponse(map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
@@ -51,12 +45,9 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 				},
 			},
 		}, 200)
-	} else {
-		res, err = createResponse(map[string]interface{}{}, 404)
-		log.Errorf("Not handling mock for %s yet", req.URL.Path)
 	}
 
-	return
+	return m.mockSender.Do(req)
 }
 
 func TestListStorage(t *testing.T) {

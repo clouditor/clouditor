@@ -147,17 +147,18 @@ func (d *azureComputeDiscovery) GetPublicIPAddress(lb network.LoadBalancer) stri
 	client := network.NewPublicIPAddressesClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
 
-	for _, publicIpProperties := range *lb.FrontendIPConfigurations {
+	if lb.LoadBalancerPropertiesFormat != nil && lb.LoadBalancerPropertiesFormat.FrontendIPConfigurations != nil {
+		for _, publicIpProperties := range *lb.FrontendIPConfigurations {
 
-		publicIPAddress, err := client.Get(context.Background(), GetResourceGroupName(*publicIpProperties.ID), *publicIpProperties.Name, "")
+			publicIPAddress, err := client.Get(context.Background(), GetResourceGroupName(*publicIpProperties.ID), *publicIpProperties.Name, "")
 
-		if err != nil {
-			log.Errorf("Error getting public IP address: %v", err)
-			continue
+			if err != nil {
+				log.Errorf("Error getting public IP address: %v", err)
+				continue
+			}
+
+			publicIPAddresses = append(publicIPAddresses, *publicIPAddress.IPAddress)
 		}
-
-		publicIPAddresses = append(publicIPAddresses, *publicIPAddress.IPAddress)
-
 	}
 
 	// result, _ := client.Get(azureAuthorizer.ctx, GetResourceGroupName(*lb.ID), *lb.Name, lb.Fr)
