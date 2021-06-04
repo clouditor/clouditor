@@ -39,17 +39,15 @@ import (
 var log *logrus.Entry
 
 type AzureOptions interface {
-	apply(*autorest.Client) (err error)
+	apply(*autorest.Client)
 }
 
 type senderOption struct {
 	sender autorest.Sender
 }
 
-func (o senderOption) apply(client *autorest.Client) (err error) {
+func (o senderOption) apply(client *autorest.Client) {
 	client.Sender = o.sender
-
-	return nil
 }
 
 func WithSender(sender autorest.Sender) *senderOption {
@@ -68,10 +66,8 @@ func init() {
 	log = logrus.WithField("component", "azure-discovery")
 }
 
-func (a authorizerOption) apply(client *autorest.Client) (err error) {
+func (a authorizerOption) apply(client *autorest.Client) {
 	client.Authorizer = a.authorizer
-
-	return nil
 }
 
 type azureDiscovery struct {
