@@ -31,8 +31,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import io.clouditor.AbstractEngineUnitTest;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 class CertificationImporterTest extends AbstractEngineUnitTest {
 
