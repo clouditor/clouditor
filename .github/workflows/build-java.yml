@@ -6,11 +6,11 @@ on:
     branches:
       - main
     paths:
-      - "clouditor-engine-*"
+      - legacy
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
-      - "clouditor-engine-*"
+      - legacy
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,6 +21,7 @@ jobs:
           java-version: "14"
       - name: Build
         run: |
+          cd legacy
           if [ "$SONAR_TOKEN" != "" ]
           then
             ./gradlew --parallel docker jacocoRootReport sonarqube \
