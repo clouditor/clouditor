@@ -26,8 +26,8 @@ func (k k8sNetworkDiscovery) List() ([]voc.IsResource, error) {
 		return nil, fmt.Errorf("could not list services: %v", err)
 	}
 
-	for _, service := range services.Items {
-		c := k.handleService(service)
+	for i := range services.Items {
+		c := k.handleService(&services.Items[i])
 
 		log.Infof("Adding service %+v", c)
 
@@ -39,8 +39,8 @@ func (k k8sNetworkDiscovery) List() ([]voc.IsResource, error) {
 		return nil, fmt.Errorf("could not list ingresses: %v", err)
 	}
 
-	for _, ingress := range ingresses.Items {
-		c := k.handleIngress(ingress)
+	for i := range ingresses.Items {
+		c := k.handleIngress(&ingresses.Items[i])
 
 		log.Infof("Adding ingress %+v", c)
 
@@ -50,7 +50,7 @@ func (k k8sNetworkDiscovery) List() ([]voc.IsResource, error) {
 	return list, nil
 }
 
-func (k k8sNetworkDiscovery) handleService(service corev1.Service) voc.IsCompute {
+func (k k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsCompute {
 	var ports []int16
 
 	for _, v := range service.Spec.Ports {
@@ -68,7 +68,7 @@ func (k k8sNetworkDiscovery) handleService(service corev1.Service) voc.IsCompute
 	}
 }
 
-func (k k8sNetworkDiscovery) handleIngress(ingress v1.Ingress) voc.IsCompute {
+func (k k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsCompute {
 	var url = fmt.Sprintf("%s/%s", ingress.Spec.Rules[0].Host, ingress.Spec.Rules[0].HTTP.Paths[0].Path)
 	var te *voc.TransportEncryption
 

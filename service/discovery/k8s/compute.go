@@ -25,8 +25,8 @@ func (k k8sComputeDiscovery) List() ([]voc.IsResource, error) {
 		return nil, fmt.Errorf("could not list ingresses: %v", err)
 	}
 
-	for _, pod := range pods.Items {
-		c := k.handlePod(pod)
+	for i := range pods.Items {
+		c := k.handlePod(&pods.Items[i])
 
 		log.Infof("Adding container %+v", c)
 
@@ -36,7 +36,7 @@ func (k k8sComputeDiscovery) List() ([]voc.IsResource, error) {
 	return list, nil
 }
 
-func (k k8sComputeDiscovery) handlePod(pod v1.Pod) voc.IsCompute {
+func (k k8sComputeDiscovery) handlePod(pod *v1.Pod) voc.IsCompute {
 	return &voc.ContainerResource{
 		ComputeResource: voc.ComputeResource{
 			Resource: voc.Resource{

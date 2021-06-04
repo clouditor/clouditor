@@ -74,8 +74,9 @@ func (d *azureStorageDiscovery) List() (list []voc.IsResource, err error) {
 
 	result, _ := client.List(context.Background())
 
-	for _, v := range result.Values() {
-		s := handleStorageAccount(v)
+	accounts := result.Values()
+	for i := range accounts {
+		s := handleStorageAccount(&accounts[i])
 
 		log.Infof("Adding storage account %+v", s)
 
@@ -85,7 +86,7 @@ func (d *azureStorageDiscovery) List() (list []voc.IsResource, err error) {
 	return
 }
 
-func handleStorageAccount(account storage.Account) voc.IsStorage {
+func handleStorageAccount(account *storage.Account) voc.IsStorage {
 	return &voc.ObjectStorageResource{StorageResource: voc.StorageResource{
 		Resource: voc.Resource{
 			ID:           to.String(account.ID),
