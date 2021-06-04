@@ -32,6 +32,7 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/service/discovery/azure"
+	"clouditor.io/clouditor/service/discovery/k8s"
 	"clouditor.io/clouditor/service/standalone"
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
@@ -110,11 +111,15 @@ func (s Service) Start(ctx context.Context, request *discovery.StartDiscoveryReq
 		return nil, err
 	}
 
+	k8sClient := k8s.AuthFromKubeConfig()
+
 	var discoverer []discovery.Discoverer
 
 	discoverer = append(discoverer,
 		azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
 		azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
+		k8s.NewKubernetesComputeDiscovery(k8sClient),
+		k8s.NewKubernetesNetworkDiscovery(k8sClient),
 	)
 
 	for _, v := range discoverer {

@@ -6,7 +6,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
-	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
 )
@@ -21,7 +20,7 @@ type k8sDiscovery struct {
 	intf kubernetes.Interface
 }
 
-func (k k8sDiscovery) auth() corev1.CoreV1Interface {
+func AuthFromKubeConfig() kubernetes.Interface {
 	var kubeconfig *string
 	if home := homedir.HomeDir(); home != "" {
 		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
@@ -37,10 +36,10 @@ func (k k8sDiscovery) auth() corev1.CoreV1Interface {
 	}
 
 	// create the clientset
-	clientset, err := kubernetes.NewForConfig(config)
+	client, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	return clientset.CoreV1()
+	return client
 }

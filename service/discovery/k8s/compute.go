@@ -22,7 +22,7 @@ func (k k8sComputeDiscovery) List() ([]voc.IsResource, error) {
 
 	pods, err := k.intf.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
-		panic(err.Error())
+		return nil, fmt.Errorf("could not list ingresses: %v", err)
 	}
 
 	for _, pod := range pods.Items {

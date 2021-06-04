@@ -22,7 +22,7 @@ func (k k8sNetworkDiscovery) List() ([]voc.IsResource, error) {
 
 	ingresses, err := k.intf.NetworkingV1().Ingresses("").List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
-		panic(err.Error())
+		return nil, fmt.Errorf("could not list ingresses: %v", err)
 	}
 
 	for _, ingress := range ingresses.Items {
