@@ -25,12 +25,44 @@
  * This file is part of Clouditor Community Edition.
  */
 
-package discovery
+package assessment
 
-import "clouditor.io/clouditor/api/assessment"
+import (
+	"io"
+
+	"clouditor.io/clouditor/api/assessment"
+	"github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/types/known/emptypb"
+)
+
+var log *logrus.Entry
 
 //go:generate protoc -I ../../proto -I ../../third_party assessment.proto evidence.proto --go_out=../.. --go-grpc_out=../..  --openapi_out=../../openapi/assessment
 
+func init() {
+	log = logrus.WithField("component", "assessment")
+}
+
 type Service struct {
 	assessment.UnimplementedAssessmentServer
+}
+
+func (s Service) StreamEvidences(stream assessment.Assessment_StreamEvidencesServer) error {
+	var evidence *assessment.Evidence
+	var err error
+
+	for {
+		evidence, err = stream.Recv()
+		if err == io.EOF {
+			log.Infof("Stopped receiving streamed evidence")
+
+			return stream.SendAndClose(&emptypb.Empty{})
+		}
+
+		if err != nil {
+			return err
+		}
+
+		log.Infof("Received evidence: %+v", evidence)
+	}
 }

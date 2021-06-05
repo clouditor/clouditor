@@ -27,12 +27,20 @@
 // that can be discovered using Clouditor
 package voc
 
-import "time"
+import (
+	"encoding/json"
+	"fmt"
+	"time"
+
+	"google.golang.org/protobuf/types/known/structpb"
+)
 
 type IsResource interface {
 	GetID() string
 	GetName() string
 	GetCreationTime() *time.Time
+
+	ToStruct() (s *structpb.Value, err error)
 }
 
 type Resource struct {
@@ -52,4 +60,20 @@ func (r *Resource) GetName() string {
 func (r *Resource) GetCreationTime() *time.Time {
 	t := time.Unix(r.CreationTime, 0)
 	return &t
+}
+
+func (r *Resource) ToStruct() (s *structpb.Value, err error) {
+	s = new(structpb.Value)
+
+	// this is probably not the fastest approach, but this
+	// way, no extra libraries are needed and no extra struct tags
+	// except `json` are required. there is also no significant
+	// speed increase in marshaling the whole resource list, because
+	// we first need to build it out of the map anyway
+	b, _ := json.Marshal(r)
+	if err = json.Unmarshal(b, &s); err != nil {
+		return nil, fmt.Errorf("JSON unmarshal failed: %v", err)
+	}
+
+	return s, nil
 }

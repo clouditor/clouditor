@@ -16,6 +16,8 @@ var service *service_discovery.Service
 type mockDiscoverer struct {
 }
 
+func (m mockDiscoverer) Name() string { return "just mocking" }
+
 func (m mockDiscoverer) List() ([]voc.IsResource, error) {
 	return []voc.IsResource{
 		&voc.ObjectStorageResource{

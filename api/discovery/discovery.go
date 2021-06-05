@@ -28,6 +28,7 @@ package discovery
 import "clouditor.io/clouditor/voc"
 
 type Discoverer interface {
+	Name() string
 	List() ([]voc.IsResource, error)
 }
 
