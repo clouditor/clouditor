@@ -8,7 +8,7 @@ import (
 	"github.com/open-policy-agent/opa/rego"
 )
 
-func Run(file string) {
+func Run(file string) (err error) {
 	var m map[string]interface{}
 	j := `{
 		"atRestEncryption": {
@@ -29,17 +29,26 @@ func Run(file string) {
 		"name": "aybazestorage"
 	}`
 
-	json.Unmarshal([]byte(j), &m)
+	err = json.Unmarshal([]byte(j), &m)
+	if err != nil {
+		return fmt.Errorf("could not unmarshal JSON: %w", err)
+	}
 
 	ctx := context.TODO()
 	r, err := rego.New(
 		rego.Query("data.clouditor"),
 		rego.Load([]string{"tls.rego"}, nil),
 	).PrepareForEval(ctx)
-
-	fmt.Printf("%+v", err)
+	if err != nil {
+		return fmt.Errorf("could not prepare rego evaluation: %w", err)
+	}
 
 	results, err := r.Eval(ctx, rego.EvalInput(m))
+	if err != nil {
+		return fmt.Errorf("could not evaluate rego policy: %w", err)
+	}
 
 	fmt.Printf("%+v", results[0].Expressions[0].Value)
+
+	return nil
 }

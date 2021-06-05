@@ -31,8 +31,8 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
-	service_assessment "clouditor.io/clouditor/service/assessment"
 	"clouditor.io/clouditor/service/discovery/azure"
+	"clouditor.io/clouditor/service/standalone"
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/go-co-op/gocron"
@@ -85,15 +85,14 @@ func (s Service) Start(ctx context.Context, request *discovery.StartDiscoveryReq
 
 	s.scheduler.TagsUnique()
 
-	var standalone bool = true
+	var isStandalone bool = true
 
 	var client assessment.AssessmentClient
 
-	if standalone {
-		client = service_assessment.NewInMemoryClient()
+	if isStandalone {
+		client = standalone.NewAssessmentClient()
 	} else {
 		// TODO(oxisto): support assessment on another tcp/port
-		// TODO(oxisto): support direct in-memory streaming, if in standalone
 		cc, err := grpc.Dial("localhost:9090", grpc.WithInsecure())
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "could not connect to assessment service: %v", err)
@@ -163,7 +162,15 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 			Resource: v,
 		}
 
-		s.stream.Send(evidence)
+		if s.stream == nil {
+			log.Warnf("Evidence stream not available")
+			continue
+		}
+
+		err = s.stream.Send(evidence)
+		if err != nil {
+			log.Errorf("Could not send evidence: %v", err)
+		}
 	}
 }
 

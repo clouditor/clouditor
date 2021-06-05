@@ -1,15 +1,41 @@
-package assessment
+// Copyright 2021 Fraunhofer AISEC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+//           $$\                           $$\ $$\   $$\
+//           $$ |                          $$ |\__|  $$ |
+//  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+// $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+// $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
+// $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+// \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+//  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+//
+// This file is part of Clouditor Community Edition.
+
+package standalone
 
 import (
 	"context"
 
 	"clouditor.io/clouditor/api/assessment"
+	service_assessment "clouditor.io/clouditor/service/assessment"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-var standalone *Service
+var assessmentService *service_assessment.Service
 
 type standaloneEvidenceStream struct {
 	serverChannel chan *assessment.Evidence
@@ -80,11 +106,11 @@ func (s standaloneEvidenceStream) SendMsg(m interface{}) error {
 }
 
 func (s standaloneEvidenceClient) TriggerAssessment(ctx context.Context, in *assessment.TriggerAssessmentRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	return standalone.TriggerAssessment(ctx, in)
+	return assessmentService.TriggerAssessment(ctx, in)
 }
 
 func (s standaloneEvidenceClient) StoreEvidence(ctx context.Context, in *assessment.StoreEvidenceRequest, opts ...grpc.CallOption) (*assessment.Evidence, error) {
-	return standalone.StoreEvidence(ctx, in)
+	return assessmentService.StoreEvidence(ctx, in)
 }
 
 func (s standaloneEvidenceClient) StreamEvidences(ctx context.Context, opts ...grpc.CallOption) (assessment.Assessment_StreamEvidencesClient, error) {
@@ -94,17 +120,19 @@ func (s standaloneEvidenceClient) StreamEvidences(ctx context.Context, opts ...g
 		ctx:           context.Background(),
 	}
 
-	go standalone.StreamEvidences(stream)
+	go func() {
+		_ = assessmentService.StreamEvidences(stream)
+	}()
 
 	return stream, nil
 }
 
-func NewInMemoryClient() assessment.AssessmentClient {
+func NewAssessmentClient() assessment.AssessmentClient {
 	return &standaloneEvidenceClient{}
 }
 
-func StandaloneService() *Service {
-	standalone = &Service{}
+func NewAssessmentServer() *service_assessment.Service {
+	assessmentService = &service_assessment.Service{}
 
-	return standalone
+	return assessmentService
 }

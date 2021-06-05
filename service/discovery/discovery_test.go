@@ -6,6 +6,7 @@ import (
 
 	"clouditor.io/clouditor/api/discovery"
 	service_discovery "clouditor.io/clouditor/service/discovery"
+	"clouditor.io/clouditor/service/standalone"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -38,6 +39,7 @@ func TestQuery(t *testing.T) {
 		err        error
 	)
 
+	_ = standalone.NewAssessmentServer()
 	service = service_discovery.NewService()
 
 	// use our mock discoverer

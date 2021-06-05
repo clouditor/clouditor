@@ -4,8 +4,11 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/policies"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRun(t *testing.T) {
-	policies.Run("tls.rego")
+	err := policies.Run("tls.rego")
+
+	assert.Nil(t, err)
 }
