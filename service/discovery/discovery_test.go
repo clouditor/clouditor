@@ -40,7 +40,10 @@ func TestQuery(t *testing.T) {
 	)
 
 	_ = standalone.NewAssessmentServer()
+	client := standalone.NewAssessmentClient()
+
 	service = service_discovery.NewService()
+	service.AssessmentStream, _ = client.StreamEvidences(context.Background())
 
 	// use our mock discoverer
 	discoverer = mockDiscoverer{}

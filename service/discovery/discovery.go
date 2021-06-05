@@ -55,10 +55,11 @@ type Service struct {
 	discovery.UnimplementedDiscoveryServer
 
 	Configurations map[discovery.Discoverer]*DiscoveryConfiguration
+	// TODO(oxisto) do not expose this. just makes tests easier for now
+	AssessmentStream assessment.Assessment_StreamEvidencesClient
 
 	resources map[string]voc.IsResource
 	scheduler *gocron.Scheduler
-	stream    assessment.Assessment_StreamEvidencesClient
 }
 
 type DiscoveryConfiguration struct {
@@ -100,7 +101,7 @@ func (s Service) Start(ctx context.Context, request *discovery.StartDiscoveryReq
 		client = assessment.NewAssessmentClient(cc)
 	}
 
-	s.stream, _ = client.StreamEvidences(context.Background())
+	s.AssessmentStream, _ = client.StreamEvidences(context.Background())
 
 	// create an authorizer from env vars or Azure Managed Service Identity
 	authorizer, err := auth.NewAuthorizerFromCLI()
@@ -162,12 +163,12 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 			Resource: v,
 		}
 
-		if s.stream == nil {
+		if s.AssessmentStream == nil {
 			log.Warnf("Evidence stream not available")
 			continue
 		}
 
-		err = s.stream.Send(evidence)
+		err = s.AssessmentStream.Send(evidence)
 		if err != nil {
 			log.Errorf("Could not send evidence: %v", err)
 		}
