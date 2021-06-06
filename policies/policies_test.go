@@ -23,55 +23,58 @@
 //
 // This file is part of Clouditor Community Edition.
 
-// Package voc contains the vocabulary for Cloud resources and their properties
-// that can be discovered using Clouditor
-package voc
+package policies_test
 
 import (
 	"encoding/json"
-	"fmt"
-	"time"
+	"testing"
 
+	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/policies"
+	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-type IsResource interface {
-	GetID() string
-	GetName() string
-	GetCreationTime() *time.Time
-}
+func TestRun(t *testing.T) {
+	var (
+		m    map[string]interface{}
+		data map[string]interface{}
+		s    *structpb.Struct
+		err  error
+	)
 
-type Resource struct {
-	ID           string `json:"id"`
-	Name         string `json:"name"`
-	CreationTime int64  `json:"creationTime"` // is set to 0 if no creation time is available
-}
+	j := `{
+		"atRestEncryption": {
+			"algorithm": "AES-265",
+			"enabled": true,
+			"keyManager": "Microsoft.Storage"
+		},
+		"creationTime": 1621086669,
+		"httpEndpoint": {
+			"transportEncryption": {
+				"enabled": true,
+				"enforced": true,
+				"tlsVersion": "TLS1_2"
+			},
+			"url": "https://aybazestorage.blob.core.windows.net/"
+		},
+		"id": "/subscriptions/e3ed0e96-57bc-4d81-9594-f239540cd77a/resourceGroups/titan/providers/Microsoft.Storage/storageAccounts/aybazestorage",
+		"name": "aybazestorage"
+	}`
 
-func (r *Resource) GetID() string {
-	return r.ID
-}
+	err = json.Unmarshal([]byte(j), &m)
 
-func (r *Resource) GetName() string {
-	return r.Name
-}
+	assert.Nil(t, err)
 
-func (r *Resource) GetCreationTime() *time.Time {
-	t := time.Unix(r.CreationTime, 0)
-	return &t
-}
+	s, err = structpb.NewStruct(m)
 
-func ToStruct(r IsResource) (s *structpb.Value, err error) {
-	s = new(structpb.Value)
+	assert.Nil(t, err)
 
-	// this is probably not the fastest approach, but this
-	// way, no extra libraries are needed and no extra struct tags
-	// except `json` are required. there is also no significant
-	// speed increase in marshaling the whole resource list, because
-	// we first need to build it out of the map anyway
-	b, _ := json.Marshal(r)
-	if err = json.Unmarshal(b, &s); err != nil {
-		return nil, fmt.Errorf("JSON unmarshal failed: %v", err)
-	}
+	data, err = policies.Run("metric1.rego", &assessment.Evidence{
+		Resource: structpb.NewStructValue(s),
+	})
 
-	return
+	assert.Nil(t, err)
+	assert.NotNil(t, data)
+	assert.Equal(t, true, data["compliant"])
 }

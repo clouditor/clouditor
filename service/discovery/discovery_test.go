@@ -3,9 +3,13 @@ package discovery_test
 import (
 	"context"
 	"testing"
+	"time"
 
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
+	service_assessment "clouditor.io/clouditor/service/assessment"
 	service_discovery "clouditor.io/clouditor/service/discovery"
+	"clouditor.io/clouditor/service/standalone"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -16,6 +20,8 @@ var service *service_discovery.Service
 type mockDiscoverer struct {
 }
 
+func (m mockDiscoverer) Name() string { return "just mocking" }
+
 func (m mockDiscoverer) List() ([]voc.IsResource, error) {
 	return []voc.IsResource{
 		&voc.ObjectStorageResource{
@@ -24,6 +30,9 @@ func (m mockDiscoverer) List() ([]voc.IsResource, error) {
 					ID:   "some-id",
 					Name: "some-name",
 				},
+			},
+			HttpEndpoint: &voc.HttpEndpoint{
+				TransportEncryption: voc.NewTransportEncryption(true, false, "TLS1_2"),
 			},
 		},
 	}, nil
@@ -36,7 +45,23 @@ func TestQuery(t *testing.T) {
 		err        error
 	)
 
+	var ready chan bool = make(chan bool)
+
+	assessmentServer := standalone.NewAssessmentServer().(*service_assessment.Service)
+	assessmentServer.ResultHook = func(result *assessment.Result, err error) {
+		assert.Nil(t, err)
+		assert.NotNil(t, result)
+
+		assert.Equal(t, "some-id", result.ResourceId)
+		assert.Equal(t, true, result.Compliant)
+
+		ready <- true
+	}
+
+	client := standalone.NewAssessmentClient()
+
 	service = service_discovery.NewService()
+	service.AssessmentStream, _ = client.StreamEvidences(context.Background())
 
 	// use our mock discoverer
 	discoverer = mockDiscoverer{}
@@ -56,4 +81,12 @@ func TestQuery(t *testing.T) {
 	assert.NotNil(t, m)
 	assert.Equal(t, "some-id", m["id"])
 	assert.Equal(t, "some-name", m["name"])
+
+	// make the test wait for streaming envidence
+	select {
+	case <-ready:
+		return
+	case <-time.After(10 * time.Second):
+		assert.Fail(t, "Timeout while waiting for evidence assessment result to be ready")
+	}
 }

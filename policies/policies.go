@@ -23,54 +23,41 @@
 //
 // This file is part of Clouditor Community Edition.
 
-// Package voc contains the vocabulary for Cloud resources and their properties
-// that can be discovered using Clouditor
-package voc
+package policies
 
 import (
-	"encoding/json"
+	"context"
+	"errors"
 	"fmt"
-	"time"
 
-	"google.golang.org/protobuf/types/known/structpb"
+	"clouditor.io/clouditor/api/assessment"
+	"github.com/open-policy-agent/opa/rego"
 )
 
-type IsResource interface {
-	GetID() string
-	GetName() string
-	GetCreationTime() *time.Time
-}
+func Run(file string, evidence *assessment.Evidence) (data map[string]interface{}, err error) {
+	var (
+		m  map[string]interface{}
+		ok bool
+	)
 
-type Resource struct {
-	ID           string `json:"id"`
-	Name         string `json:"name"`
-	CreationTime int64  `json:"creationTime"` // is set to 0 if no creation time is available
-}
+	ctx := context.TODO()
+	r, err := rego.New(
+		rego.Query("data.clouditor"),
+		rego.Load([]string{file}, nil),
+	).PrepareForEval(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("could not prepare rego evaluation: %w", err)
+	}
 
-func (r *Resource) GetID() string {
-	return r.ID
-}
+	m = evidence.Resource.GetStructValue().AsMap()
 
-func (r *Resource) GetName() string {
-	return r.Name
-}
+	results, err := r.Eval(ctx, rego.EvalInput(m))
+	if err != nil {
+		return nil, fmt.Errorf("could not evaluate rego policy: %w", err)
+	}
 
-func (r *Resource) GetCreationTime() *time.Time {
-	t := time.Unix(r.CreationTime, 0)
-	return &t
-}
-
-func ToStruct(r IsResource) (s *structpb.Value, err error) {
-	s = new(structpb.Value)
-
-	// this is probably not the fastest approach, but this
-	// way, no extra libraries are needed and no extra struct tags
-	// except `json` are required. there is also no significant
-	// speed increase in marshaling the whole resource list, because
-	// we first need to build it out of the map anyway
-	b, _ := json.Marshal(r)
-	if err = json.Unmarshal(b, &s); err != nil {
-		return nil, fmt.Errorf("JSON unmarshal failed: %v", err)
+	if data, ok = results[0].Expressions[0].Value.(map[string]interface{}); !ok {
+		return nil, errors.New("expected data is not a map[string]interface{}")
 	}
 
 	return

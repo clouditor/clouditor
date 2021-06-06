@@ -41,6 +41,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"clouditor.io/clouditor"
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/orchestrator"
@@ -49,6 +50,7 @@ import (
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_discovery "clouditor.io/clouditor/service/discovery"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+	"clouditor.io/clouditor/service/standalone"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -87,7 +89,8 @@ const (
 var server *grpc.Server
 var authService *service_auth.Service
 var discoveryService *service_discovery.Service
-var orchestratorService *service_orchestrator.Service
+var orchestratorService orchestrator.OrchestratorServer
+var assessmentService assessment.AssessmentServer
 
 var log *logrus.Entry
 
@@ -165,6 +168,7 @@ func doCmd(cmd *cobra.Command, args []string) (err error) {
 
 	discoveryService = service_discovery.NewService()
 	orchestratorService = &service_orchestrator.Service{}
+	assessmentService = standalone.NewAssessmentServer()
 
 	authService.CreateDefaultUser(viper.GetString(APIDefaultUserFlag), viper.GetString(APIDefaultPasswordFlag))
 
@@ -197,6 +201,7 @@ func doCmd(cmd *cobra.Command, args []string) (err error) {
 	auth.RegisterAuthenticationServer(server, authService)
 	discovery.RegisterDiscoveryServer(server, discoveryService)
 	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
+	assessment.RegisterAssessmentServer(server, assessmentService)
 
 	// enable reflection, primary for testing in early stages
 	reflection.Register(server)
