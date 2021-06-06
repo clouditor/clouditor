@@ -30,6 +30,7 @@ package assessment
 import (
 	"fmt"
 	"io"
+	"os"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/policies"
@@ -79,8 +80,16 @@ func (s Service) StreamEvidences(stream assessment.Assessment_StreamEvidencesSer
 		// TODO(oxisto): actually look up metric via orchestrator
 		if len(evidence.ApplicableMetrics) != 0 {
 			metric := evidence.ApplicableMetrics[0]
-			baseDir := "../../policies/"
-			file = fmt.Sprintf("%s/metric%d.rego", baseDir, metric)
+
+			var baseDir string = "."
+
+			// check, if we are in the root of Clouditor
+			if _, err := os.Stat("policies"); os.IsNotExist(err) {
+				// in tests, we are relative to our current package
+				baseDir = "../../"
+			}
+
+			file = fmt.Sprintf("%s/policies/metric%d.rego", baseDir, metric)
 		} else {
 			log.Errorf("Could not find a valid metric for evidence of resource %s", evidence.ResourceId)
 		}
@@ -89,7 +98,10 @@ func (s Service) StreamEvidences(stream assessment.Assessment_StreamEvidencesSer
 		data, err := policies.Run(file, evidence)
 		if err != nil {
 			log.Errorf("Could not evaluate evidence: %v", err)
-			s.ResultHook(nil, err)
+
+			if s.ResultHook != nil {
+				s.ResultHook(nil, err)
+			}
 
 			return err
 		}
@@ -103,6 +115,8 @@ func (s Service) StreamEvidences(stream assessment.Assessment_StreamEvidencesSer
 
 		s.results[evidence.ResourceId] = result
 
-		s.ResultHook(result, nil)
+		if s.ResultHook != nil {
+			s.ResultHook(result, nil)
+		}
 	}
 }

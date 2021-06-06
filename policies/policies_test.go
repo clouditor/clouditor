@@ -70,7 +70,7 @@ func TestRun(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	data, err = policies.Run("tls.rego", &assessment.Evidence{
+	data, err = policies.Run("metric1.rego", &assessment.Evidence{
 		Resource: structpb.NewStructValue(s),
 	})
 
