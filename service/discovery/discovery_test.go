@@ -4,7 +4,9 @@ import (
 	"context"
 	"testing"
 
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
+	service_assessment "clouditor.io/clouditor/service/assessment"
 	service_discovery "clouditor.io/clouditor/service/discovery"
 	"clouditor.io/clouditor/service/standalone"
 	"clouditor.io/clouditor/voc"
@@ -39,7 +41,16 @@ func TestQuery(t *testing.T) {
 		err        error
 	)
 
-	_ = standalone.NewAssessmentServer()
+	var ready chan bool = make(chan bool)
+
+	assessmentServer := standalone.NewAssessmentServer().(*service_assessment.Service)
+	assessmentServer.ResultHook = func(result *assessment.Result, err error) {
+		assert.Nil(t, err)
+		assert.NotNil(t, result)
+
+		ready <- true
+	}
+
 	client := standalone.NewAssessmentClient()
 
 	service = service_discovery.NewService()
@@ -64,5 +75,6 @@ func TestQuery(t *testing.T) {
 	assert.Equal(t, "some-id", m["id"])
 	assert.Equal(t, "some-name", m["name"])
 
-	// TODO(oxisto): make the test wait for streaming envidence or exclude it from the test
+	// make the test wait for streaming envidence
+	<-ready
 }

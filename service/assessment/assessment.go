@@ -44,19 +44,21 @@ func init() {
 	log = logrus.WithField("component", "assessment")
 }
 
-type service struct {
-	assessment.UnimplementedAssessmentServer
+type Service struct {
+	ResultHook func(result *assessment.Result, err error)
 
 	results map[string]*assessment.Result
+
+	assessment.UnimplementedAssessmentServer
 }
 
 func NewService() assessment.AssessmentServer {
-	return &service{
+	return &Service{
 		results: make(map[string]*assessment.Result),
 	}
 }
 
-func (s service) StreamEvidences(stream assessment.Assessment_StreamEvidencesServer) error {
+func (s Service) StreamEvidences(stream assessment.Assessment_StreamEvidencesServer) error {
 	var evidence *assessment.Evidence
 	var err error
 
@@ -74,6 +76,7 @@ func (s service) StreamEvidences(stream assessment.Assessment_StreamEvidencesSer
 		data, err := policies.Run("../../policies/tls.rego", evidence)
 		if err != nil {
 			log.Errorf("Could not evaluate evidence: %v", err)
+			s.ResultHook(nil, err)
 
 			return err
 		}
@@ -86,5 +89,7 @@ func (s service) StreamEvidences(stream assessment.Assessment_StreamEvidencesSer
 		}
 
 		s.results[evidence.ResourceId] = result
+
+		s.ResultHook(result, nil)
 	}
 }
