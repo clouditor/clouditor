@@ -160,8 +160,9 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 		}
 
 		evidence := &assessment.Evidence{
-			Resource:   v,
-			ResourceId: resource.GetID(),
+			Resource:          v,
+			ResourceId:        resource.GetID(),
+			ApplicableMetrics: []int32{1},
 		}
 
 		if s.AssessmentStream == nil {

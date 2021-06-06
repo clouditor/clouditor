@@ -28,6 +28,7 @@
 package assessment
 
 import (
+	"fmt"
 	"io"
 
 	"clouditor.io/clouditor/api/assessment"
@@ -48,7 +49,6 @@ type Service struct {
 	ResultHook func(result *assessment.Result, err error)
 
 	results map[string]*assessment.Result
-
 	assessment.UnimplementedAssessmentServer
 }
 
@@ -56,6 +56,7 @@ func NewService() assessment.AssessmentServer {
 	return &Service{
 		results: make(map[string]*assessment.Result),
 	}
+
 }
 
 func (s Service) StreamEvidences(stream assessment.Assessment_StreamEvidencesServer) error {
@@ -73,8 +74,19 @@ func (s Service) StreamEvidences(stream assessment.Assessment_StreamEvidencesSer
 		log.Infof("Received evidence for resource %s", evidence.ResourceId)
 		log.Debugf("Evidence: %+v", evidence)
 
+		var file string
+
+		// TODO(oxisto): actually look up metric via orchestrator
+		if len(evidence.ApplicableMetrics) != 0 {
+			metric := evidence.ApplicableMetrics[0]
+			baseDir := "../../policies/"
+			file = fmt.Sprintf("%s/metric%d.rego", baseDir, metric)
+		} else {
+			log.Errorf("Could not find a valid metric for evidence of resource %s", evidence.ResourceId)
+		}
+
 		// TODO(oxisto): use go embed
-		data, err := policies.Run("../../policies/tls.rego", evidence)
+		data, err := policies.Run(file, evidence)
 		if err != nil {
 			log.Errorf("Could not evaluate evidence: %v", err)
 			s.ResultHook(nil, err)
