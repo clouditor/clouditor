@@ -39,8 +39,6 @@ type IsResource interface {
 	GetID() string
 	GetName() string
 	GetCreationTime() *time.Time
-
-	ToStruct() (s *structpb.Value, err error)
 }
 
 type Resource struct {
@@ -62,7 +60,7 @@ func (r *Resource) GetCreationTime() *time.Time {
 	return &t
 }
 
-func (r *Resource) ToStruct() (s *structpb.Value, err error) {
+func ToStruct(r IsResource) (s *structpb.Value, err error) {
 	s = new(structpb.Value)
 
 	// this is probably not the fastest approach, but this
@@ -75,5 +73,5 @@ func (r *Resource) ToStruct() (s *structpb.Value, err error) {
 		return nil, fmt.Errorf("JSON unmarshal failed: %v", err)
 	}
 
-	return s, nil
+	return
 }

@@ -70,7 +70,8 @@ func (s Service) StreamEvidences(stream assessment.Assessment_StreamEvidencesSer
 			return stream.SendAndClose(&emptypb.Empty{})
 		}
 
-		log.Infof("Received evidence: %+v", evidence)
+		log.Infof("Received evidence for resource %s", evidence.ResourceId)
+		log.Debugf("Evidence: %+v", evidence)
 
 		// TODO(oxisto): use go embed
 		data, err := policies.Run("../../policies/tls.rego", evidence)

@@ -3,6 +3,7 @@ package discovery_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
@@ -30,6 +31,9 @@ func (m mockDiscoverer) List() ([]voc.IsResource, error) {
 					Name: "some-name",
 				},
 			},
+			HttpEndpoint: &voc.HttpEndpoint{
+				TransportEncryption: voc.NewTransportEncryption(true, false, "TLS1_2"),
+			},
 		},
 	}, nil
 }
@@ -47,6 +51,9 @@ func TestQuery(t *testing.T) {
 	assessmentServer.ResultHook = func(result *assessment.Result, err error) {
 		assert.Nil(t, err)
 		assert.NotNil(t, result)
+
+		assert.Equal(t, "some-id", result.ResourceId)
+		assert.Equal(t, true, result.Compliant)
 
 		ready <- true
 	}
@@ -76,5 +83,10 @@ func TestQuery(t *testing.T) {
 	assert.Equal(t, "some-name", m["name"])
 
 	// make the test wait for streaming envidence
-	<-ready
+	select {
+	case <-ready:
+		return
+	case <-time.After(10 * time.Second):
+		assert.Fail(t, "Timeout while waiting for evidence assessment result to be ready")
+	}
 }

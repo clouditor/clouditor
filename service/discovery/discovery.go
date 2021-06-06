@@ -154,13 +154,14 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 			err error
 		)
 
-		v, err = resource.ToStruct()
+		v, err = voc.ToStruct(resource)
 		if err != nil {
 			log.Errorf("Could not convert resource to protobuf struct: %v", err)
 		}
 
 		evidence := &assessment.Evidence{
-			Resource: v,
+			Resource:   v,
+			ResourceId: resource.GetID(),
 		}
 
 		if s.AssessmentStream == nil {
@@ -181,7 +182,7 @@ func (s Service) Query(ctx context.Context, request *emptypb.Empty) (response *d
 	for _, v := range s.resources {
 		var s *structpb.Value
 
-		s, err = v.ToStruct()
+		s, err = voc.ToStruct(v)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "error during JSON unmarshal: %v", err)
 		}
