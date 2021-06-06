@@ -47,7 +47,6 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/rest"
-	service_assessment "clouditor.io/clouditor/service/assessment"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_discovery "clouditor.io/clouditor/service/discovery"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
@@ -91,7 +90,7 @@ var server *grpc.Server
 var authService *service_auth.Service
 var discoveryService *service_discovery.Service
 var orchestratorService *service_orchestrator.Service
-var assessmentService *service_assessment.Service
+var assessmentService assessment.AssessmentServer
 
 var log *logrus.Entry
 

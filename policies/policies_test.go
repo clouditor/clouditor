@@ -26,14 +26,55 @@
 package policies_test
 
 import (
+	"encoding/json"
 	"testing"
 
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/policies"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func TestRun(t *testing.T) {
-	err := policies.Run("tls.rego")
+	var (
+		m    map[string]interface{}
+		data map[string]interface{}
+		s    *structpb.Struct
+		err  error
+	)
+
+	j := `{
+		"atRestEncryption": {
+			"algorithm": "AES-265",
+			"enabled": true,
+			"keyManager": "Microsoft.Storage"
+		},
+		"creationTime": 1621086669,
+		"httpEndpoint": {
+			"transportEncryption": {
+				"enabled": true,
+				"enforced": true,
+				"tlsVersion": "TLS1_2"
+			},
+			"url": "https://aybazestorage.blob.core.windows.net/"
+		},
+		"id": "/subscriptions/e3ed0e96-57bc-4d81-9594-f239540cd77a/resourceGroups/titan/providers/Microsoft.Storage/storageAccounts/aybazestorage",
+		"name": "aybazestorage"
+	}`
+
+	err = json.Unmarshal([]byte(j), &m)
 
 	assert.Nil(t, err)
+
+	s, err = structpb.NewStruct(m)
+
+	assert.Nil(t, err)
+
+	data, err = policies.Run("tls.rego", &assessment.Evidence{
+		Resource: structpb.NewStructValue(s),
+	})
+
+	assert.Nil(t, err)
+	assert.NotNil(t, data)
+	assert.Equal(t, true, data["compliant"])
 }

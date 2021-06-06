@@ -35,7 +35,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-var assessmentService *service_assessment.Service
+var assessmentService assessment.AssessmentServer
 
 type standaloneEvidenceStream struct {
 	serverChannel chan *assessment.Evidence
@@ -131,8 +131,8 @@ func NewAssessmentClient() assessment.AssessmentClient {
 	return &standaloneEvidenceClient{}
 }
 
-func NewAssessmentServer() *service_assessment.Service {
-	assessmentService = &service_assessment.Service{}
+func NewAssessmentServer() assessment.AssessmentServer {
+	assessmentService = service_assessment.NewService()
 
 	return assessmentService
 }

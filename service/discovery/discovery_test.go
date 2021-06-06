@@ -63,4 +63,6 @@ func TestQuery(t *testing.T) {
 	assert.NotNil(t, m)
 	assert.Equal(t, "some-id", m["id"])
 	assert.Equal(t, "some-name", m["name"])
+
+	// TODO(oxisto): make the test wait for streaming envidence or exclude it from the test
 }

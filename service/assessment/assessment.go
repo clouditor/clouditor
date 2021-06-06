@@ -31,6 +31,7 @@ import (
 	"io"
 
 	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/policies"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -43,11 +44,19 @@ func init() {
 	log = logrus.WithField("component", "assessment")
 }
 
-type Service struct {
+type service struct {
 	assessment.UnimplementedAssessmentServer
+
+	results map[string]*assessment.Result
 }
 
-func (s Service) StreamEvidences(stream assessment.Assessment_StreamEvidencesServer) error {
+func NewService() assessment.AssessmentServer {
+	return &service{
+		results: make(map[string]*assessment.Result),
+	}
+}
+
+func (s service) StreamEvidences(stream assessment.Assessment_StreamEvidencesServer) error {
 	var evidence *assessment.Evidence
 	var err error
 
@@ -59,10 +68,23 @@ func (s Service) StreamEvidences(stream assessment.Assessment_StreamEvidencesSer
 			return stream.SendAndClose(&emptypb.Empty{})
 		}
 
+		log.Infof("Received evidence: %+v", evidence)
+
+		// TODO(oxisto): use go embed
+		data, err := policies.Run("../../policies/tls.rego", evidence)
 		if err != nil {
+			log.Errorf("Could not evaluate evidence: %v", err)
+
 			return err
 		}
 
-		log.Infof("Received evidence: %+v", evidence)
+		log.Infof("Evaluated evidence as %v", data["compliant"])
+
+		result := &assessment.Result{
+			ResourceId: evidence.ResourceId,
+			Compliant:  data["compliant"].(bool),
+		}
+
+		s.results[evidence.ResourceId] = result
 	}
 }
