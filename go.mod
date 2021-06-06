@@ -10,12 +10,14 @@ require (
 	github.com/Azure/go-autorest/autorest/validation v0.3.1 // indirect
 	github.com/alexedwards/argon2id v0.0.0-20210511081203-7d35d68092b8
 	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20210521184019-c5ad59b459ec
+	github.com/go-co-op/gocron v1.6.0
 	github.com/golang-jwt/jwt v0.0.0-20210604144742-8a7d546baec2
 	github.com/google/addlicense v0.0.0-20210428195630-6d92264d7170
 	github.com/googleapis/gnostic v0.5.6-0.20210520165051-0320d74b3646
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.4.0
 	github.com/logrusorgru/aurora/v3 v3.0.0
+	github.com/open-policy-agent/opa v0.29.4
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/viper v1.7.1

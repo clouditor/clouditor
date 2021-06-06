@@ -1,0 +1,18 @@
+{
+    "atRestEncryption": {
+        "algorithm": "AES-265",
+        "enabled": true,
+        "keyManager": "Microsoft.Storage"
+    },
+    "creationTime": 1621086669,
+    "httpEndpoint": {
+        "transportEncryption": {
+            "enabled": true,
+            "enforced": true,
+            "tlsVersion": "TLS1_2"
+        },
+        "url": "https://aybazestorage.blob.core.windows.net/"
+    },
+    "id": "/subscriptions/e3ed0e96-57bc-4d81-9594-f239540cd77a/resourceGroups/titan/providers/Microsoft.Storage/storageAccounts/aybazestorage",
+    "name": "aybazestorage"
+}

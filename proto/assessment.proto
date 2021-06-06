@@ -34,6 +34,12 @@ import "evidence.proto";
 
 option go_package = "api/assessment";
 
+message Result {
+  string resource_id = 1;
+
+  bool compliant = 2;
+}
+
 message StoreEvidenceRequest { Evidence evidence = 1; }
 
 message TriggerAssessmentRequest { string someOption = 1; }

@@ -23,16 +23,5 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package discovery
-
-import "clouditor.io/clouditor/voc"
-
-type Discoverer interface {
-	Name() string
-	List() ([]voc.IsResource, error)
-}
-
-// Authorizer authorizes a Cloud service
-type Authorizer interface {
-	Authorize() (err error)
-}
+// Package standalone contains utility code for the invididual Clouditor services to be run in a standalone mode.
+package standalone

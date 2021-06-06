@@ -27,13 +27,17 @@ package discovery
 
 import (
 	"context"
-	"encoding/json"
+	"time"
 
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/service/discovery/azure"
+	"clouditor.io/clouditor/service/standalone"
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
+	"github.com/go-co-op/gocron"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -50,7 +54,16 @@ var log *logrus.Entry
 type Service struct {
 	discovery.UnimplementedDiscoveryServer
 
+	Configurations map[discovery.Discoverer]*DiscoveryConfiguration
+	// TODO(oxisto) do not expose this. just makes tests easier for now
+	AssessmentStream assessment.Assessment_StreamEvidencesClient
+
 	resources map[string]voc.IsResource
+	scheduler *gocron.Scheduler
+}
+
+type DiscoveryConfiguration struct {
+	Interval time.Duration
 }
 
 func init() {
@@ -59,7 +72,9 @@ func init() {
 
 func NewService() *Service {
 	return &Service{
-		resources: make(map[string]voc.IsResource),
+		resources:      make(map[string]voc.IsResource),
+		scheduler:      gocron.NewScheduler(time.UTC),
+		Configurations: make(map[discovery.Discoverer]*DiscoveryConfiguration),
 	}
 }
 
@@ -69,6 +84,25 @@ func (s Service) Start(ctx context.Context, request *discovery.StartDiscoveryReq
 
 	log.Infof("Starting discovery...")
 
+	s.scheduler.TagsUnique()
+
+	var isStandalone bool = true
+
+	var client assessment.AssessmentClient
+
+	if isStandalone {
+		client = standalone.NewAssessmentClient()
+	} else {
+		// TODO(oxisto): support assessment on another tcp/port
+		cc, err := grpc.Dial("localhost:9090", grpc.WithInsecure())
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "could not connect to assessment service: %v", err)
+		}
+		client = assessment.NewAssessmentClient(cc)
+	}
+
+	s.AssessmentStream, _ = client.StreamEvidences(context.Background())
+
 	// create an authorizer from env vars or Azure Managed Service Identity
 	authorizer, err := auth.NewAuthorizerFromCLI()
 	if err != nil {
@@ -76,20 +110,70 @@ func (s Service) Start(ctx context.Context, request *discovery.StartDiscoveryReq
 		return nil, err
 	}
 
-	var discovererStorage discovery.Discoverer = azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer))
-	var discovererCompute discovery.Discoverer = azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer))
+	var discoverer []discovery.Discoverer
 
-	s.StartDiscovery(discovererStorage)
-	s.StartDiscovery(discovererCompute)
+	discoverer = append(discoverer,
+		azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
+		azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
+	)
+
+	for _, v := range discoverer {
+		s.Configurations[v] = &DiscoveryConfiguration{
+			Interval: 5 * time.Minute,
+		}
+
+		log.Infof("Scheduling {%s} to execute every 5 minutes...", v.Name())
+
+		_, err = s.scheduler.
+			Every(5).
+			Minute().
+			Tag(v.Name()).
+			Do(s.StartDiscovery, v)
+		if err != nil {
+			log.Errorf("Could not schedule job for {%s}: %v", v.Name(), err)
+		}
+	}
+
+	s.scheduler.StartAsync()
 
 	return response, nil
+}
+
+func (s Service) Shutdown() {
+	s.scheduler.Stop()
 }
 
 func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 	list, _ := discoverer.List()
 
-	for _, v := range list {
-		s.resources[string(v.GetID())] = v
+	for _, resource := range list {
+		s.resources[string(resource.GetID())] = resource
+
+		var (
+			v   *structpb.Value
+			err error
+		)
+
+		v, err = voc.ToStruct(resource)
+		if err != nil {
+			log.Errorf("Could not convert resource to protobuf struct: %v", err)
+		}
+
+		evidence := &assessment.Evidence{
+			Resource:          v,
+			ResourceId:        resource.GetID(),
+			ApplicableMetrics: []int32{1},
+		}
+
+		if s.AssessmentStream == nil {
+			log.Warnf("Evidence stream not available")
+			continue
+		}
+
+		err = s.AssessmentStream.Send(evidence)
+		if err != nil {
+			log.Errorf("Could not send evidence: %v", err)
+		}
 	}
 }
 
@@ -97,18 +181,14 @@ func (s Service) Query(ctx context.Context, request *emptypb.Empty) (response *d
 	var r []*structpb.Value
 
 	for _, v := range s.resources {
-		var s structpb.Value
+		var s *structpb.Value
 
-		// this is probably not the fastest approach, but this
-		// way, no extra libraries are needed and no extra struct tags
-		// except `json` are required. there is also no significant
-		// speed increase in marshaling the whole resource list, because
-		// we first need to build it out of the map anyway
-		b, _ := json.Marshal(v)
-		if err = json.Unmarshal(b, &s); err != nil {
+		s, err = voc.ToStruct(v)
+		if err != nil {
 			return nil, status.Errorf(codes.Internal, "error during JSON unmarshal: %v", err)
 		}
-		r = append(r, &s)
+
+		r = append(r, s)
 	}
 
 	return &discovery.QueryResponse{
