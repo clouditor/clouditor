@@ -182,8 +182,8 @@ func (s Service) issueToken(subject string, fullName string, email string, expir
 	return
 }
 
-// StartStandaloneAuthServer starts a gRPC server containing just the auth service
-func StartStandaloneAuthServer(address string) (sock net.Listener, server *grpc.Server, err error) {
+// StartDedicatedAuthServer starts a gRPC server containing just the auth service
+func StartDedicatedAuthServer(address string) (sock net.Listener, server *grpc.Server, err error) {
 	var (
 		authService *Service
 	)
