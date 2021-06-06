@@ -62,7 +62,7 @@ func TestListTool(t *testing.T) {
 
 	// unsupported for now
 	assert.NotNil(t, err)
-	assert.Error(t, err, "method ListAssessmentTools not implemented")
+	assert.Equal(t, err.Error(), "method ListAssessmentTools not implemented")
 }
 
 func TestShowTool(t *testing.T) {
@@ -73,5 +73,38 @@ func TestShowTool(t *testing.T) {
 
 	// unsupported for now
 	assert.NotNil(t, err)
-	assert.Error(t, err, "method GetAssessmentTool not implemented")
+	assert.Equal(t, err.Error(), "method GetAssessmentTool not implemented")
+}
+
+func TestUpdateTool(t *testing.T) {
+	var err error
+
+	cmd := tool.NewUpdateToolCommand()
+	err = cmd.RunE(nil, []string{"1"})
+
+	// unsupported for now
+	assert.NotNil(t, err)
+	assert.Equal(t, err.Error(), "method UpdateAssessmentTool not implemented")
+}
+
+func TestRegisterTool(t *testing.T) {
+	var err error
+
+	cmd := tool.NewRegisterToolCommand()
+	err = cmd.RunE(nil, []string{})
+
+	// unsupported for now
+	assert.NotNil(t, err)
+	assert.Equal(t, err.Error(), "method RegisterAssessmentTool not implemented")
+}
+
+func TestDeregisterTool(t *testing.T) {
+	var err error
+
+	cmd := tool.NewDeregisterToolCommand()
+	err = cmd.RunE(nil, []string{"1"})
+
+	// unsupported for now
+	assert.NotNil(t, err)
+	assert.Equal(t, err.Error(), "method DeregisterAssessmentTool not implemented")
 }
