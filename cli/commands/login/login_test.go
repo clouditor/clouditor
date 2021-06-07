@@ -45,7 +45,7 @@ var server *grpc.Server
 func TestMain(m *testing.M) {
 	var err error
 
-	sock, server, err = service_auth.StartStandaloneAuthServer(":0")
+	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
 
 	if err != nil {
 		panic(err)

@@ -31,6 +31,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -46,6 +47,7 @@ import (
 )
 
 var DefaultSessionFolder string
+var Output io.Writer = os.Stdout
 
 type Session struct {
 	URL   string `json:"url"`
@@ -161,7 +163,7 @@ func (s *Session) HandleResponse(msg proto.Message, err error) error {
 
 	b, _ := opt.Marshal(msg)
 
-	fmt.Printf("%s\n", string(b))
+	fmt.Fprintf(Output, "%s\n", string(b))
 
 	return err
 }
