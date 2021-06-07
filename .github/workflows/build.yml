@@ -35,6 +35,7 @@ jobs:
         with:
           files: coverage.cov
           flags: unittests
+          token: ${{ secrets.CODECOV_TOKEN }} # not needed, but seems to be more reliable
       - name: "Upload Artifact"
         uses: actions/upload-artifact@v2
         with:
