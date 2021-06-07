@@ -17,6 +17,14 @@ func NewKubernetesComputeDiscovery(intf kubernetes.Interface) discovery.Discover
 	return &k8sComputeDiscovery{k8sDiscovery{intf}}
 }
 
+func (d *k8sComputeDiscovery) Name() string {
+	return "Kubernetes Compute"
+}
+
+func (d *k8sComputeDiscovery) Description() string {
+	return "Discover Kubernetes compute resources."
+}
+
 func (k k8sComputeDiscovery) List() ([]voc.IsResource, error) {
 	var list []voc.IsResource
 

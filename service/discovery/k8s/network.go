@@ -18,6 +18,14 @@ func NewKubernetesNetworkDiscovery(intf kubernetes.Interface) discovery.Discover
 	return &k8sNetworkDiscovery{k8sDiscovery{intf}}
 }
 
+func (d *k8sNetworkDiscovery) Name() string {
+	return "Kubernetes Network"
+}
+
+func (d *k8sNetworkDiscovery) Description() string {
+	return "Discover Kubernetes network resources."
+}
+
 func (k k8sNetworkDiscovery) List() ([]voc.IsResource, error) {
 	var list []voc.IsResource
 
