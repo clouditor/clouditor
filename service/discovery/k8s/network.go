@@ -76,28 +76,51 @@ func (k k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsComput
 	}
 }
 
-func (k k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsCompute {
-	var url = fmt.Sprintf("%s/%s", ingress.Spec.Rules[0].Host, ingress.Spec.Rules[0].HTTP.Paths[0].Path)
-	var te *voc.TransportEncryption
+func (k k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsResource {
+	lb := &voc.LoadBalancerResource{
+		NetworkService: voc.NetworkService{
+			Resource: voc.Resource{
+				ID:           fmt.Sprintf("/namespaces/%s/ingresses/%s", ingress.Namespace, ingress.Name),
+				Name:         ingress.Name,
+				CreationTime: ingress.CreationTimestamp.Unix(),
+			},
+			Ports: []int16{80, 443},
+		},
+		// TODO(oxisto): fill out access restrictions
+		AccessRestriction: &voc.AccessRestriction{},
+		HttpEndpoints:     []*voc.HttpEndpoint{}}
 
-	if ingress.Spec.TLS == nil {
-		url = fmt.Sprintf("http://%s", url)
-	} else {
-		url = fmt.Sprintf("https://%s", url)
+	for _, rule := range ingress.Spec.Rules {
+		lb.IPs = append(lb.IPs, rule.Host)
 
-		te = &voc.TransportEncryption{
-			Enforced:   true,
-			Encryption: voc.Encryption{Enabled: true},
+		for _, path := range rule.HTTP.Paths {
+			var url = fmt.Sprintf("%s/%s", rule.Host, path.Path)
+			var te *voc.TransportEncryption
+
+			if ingress.Spec.TLS == nil {
+				url = fmt.Sprintf("http://%s", url)
+			} else {
+				url = fmt.Sprintf("https://%s", url)
+
+				te = &voc.TransportEncryption{
+					Enforced:   true,
+					Encryption: voc.Encryption{Enabled: true},
+				}
+			}
+
+			http := &voc.HttpEndpoint{
+				Resource: voc.Resource{
+					ID:           url,
+					Name:         ingress.Name,
+					CreationTime: ingress.CreationTimestamp.Unix(),
+				},
+				URL:                 url,
+				TransportEncryption: te,
+			}
+
+			lb.HttpEndpoints = append(lb.HttpEndpoints, http)
 		}
 	}
 
-	return &voc.HttpEndpoint{
-		Resource: voc.Resource{
-			ID:           url,
-			Name:         ingress.Name,
-			CreationTime: ingress.CreationTimestamp.Unix(),
-		},
-		URL:                 url,
-		TransportEncryption: te,
-	}
+	return lb
 }

@@ -39,3 +39,11 @@ type NetworkService struct {
 	IPs   []string
 	Ports []int16
 }
+
+// LoadBalancer
+type LoadBalancerResource struct {
+	NetworkService
+
+	AccessRestriction *AccessRestriction `json:"accessRestriction"`
+	HttpEndpoints     []*HttpEndpoint    `json:"httpEndpoint"`
+}

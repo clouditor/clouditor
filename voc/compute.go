@@ -70,12 +70,3 @@ type NetworkInterfaceResource struct {
 func (n *NetworkInterfaceResource) GetAccessRestriction() *AccessRestriction {
 	return n.AccessRestriction
 }
-
-// LoadBalancer
-type LoadBalancerResource struct {
-	ComputeResource
-	//NetworkService
-
-	AccessRestriction *AccessRestriction `json:"accessRestriction"`
-	HttpEndpoint      *HttpEndpoint      `json:"httpEndpoint"`
-}

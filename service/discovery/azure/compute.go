@@ -123,22 +123,23 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 //TBD
 func (d *azureComputeDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc.IsCompute {
 	return &voc.LoadBalancerResource{
-		ComputeResource: voc.ComputeResource{
+		NetworkService: voc.NetworkService{
 			Resource: voc.Resource{
 				ID:           to.String(lb.ID),
 				Name:         to.String(lb.Name),
 				CreationTime: 0, // No creation time available
 			},
+			IPs: []string{d.GetPublicIPAddress(lb)},
 		},
 		AccessRestriction: &voc.AccessRestriction{
 			Inbound:         false,
 			RestrictedPorts: "", //TBD
 		},
-		HttpEndpoint: &voc.HttpEndpoint{
+		HttpEndpoints: []*voc.HttpEndpoint{{
 			//TODO weitermachen Frontend IP configuration
 			URL:                 d.GetPublicIPAddress(lb),                     // Get Public IP Address of the Load Balancer
 			TransportEncryption: voc.NewTransportEncryption(false, false, ""), // No transport encryption defined by the Load Balancer
-		},
+		}},
 	}
 }
 
