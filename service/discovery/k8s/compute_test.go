@@ -23,50 +23,39 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package voc
+package k8s_test
 
-// type HasLog interface {
-// 	GetLog() *Log
-// }
+import (
+	"context"
+	"testing"
 
-type HasAccessRestriction interface {
-	GetAccessRestriction() *AccessRestriction
-}
+	"clouditor.io/clouditor/service/discovery/k8s"
+	"clouditor.io/clouditor/voc"
+	"github.com/stretchr/testify/assert"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/fake"
+)
 
-type IsCompute interface {
-	IsResource
-}
+func TestListPods(t *testing.T) {
+	client := fake.NewSimpleClientset()
 
-type ComputeResource struct {
-	Resource
-}
+	p := &corev1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "my-pod", CreationTimestamp: metav1.Now()}}
+	_, err := client.CoreV1().Pods("my-namespace").Create(context.TODO(), p, metav1.CreateOptions{})
+	if err != nil {
+		t.Fatalf("error injecting pod add: %v", err)
+	}
 
-// Virtual Machine
-type VirtualMachineResource struct {
-	ComputeResource
-	//NetworkInterfaceResource
-	//BlockStorage
+	d := k8s.NewKubernetesComputeDiscovery(client)
 
-	Log *Log `json:"log"`
-}
+	list, err := d.List()
 
-func (v *VirtualMachineResource) GetLog() *Log {
-	return v.Log
-}
+	assert.Nil(t, err)
+	assert.NotNil(t, list)
 
-type ContainerResource struct {
-	ComputeResource
-}
+	container, ok := list[0].(*voc.ContainerResource)
 
-// Network Interface
-type NetworkInterfaceResource struct {
-	ComputeResource
-	//NetworkService
-
-	VmID              string             `json:"vmId"` // For debugging reasons
-	AccessRestriction *AccessRestriction `json:"accessRestriction"`
-}
-
-func (n *NetworkInterfaceResource) GetAccessRestriction() *AccessRestriction {
-	return n.AccessRestriction
+	assert.True(t, ok)
+	assert.Equal(t, "my-pod", container.Name)
+	assert.Equal(t, "/namespaces/my-namespace/containers/my-pod", container.ID)
 }
