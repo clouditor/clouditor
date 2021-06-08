@@ -113,6 +113,10 @@ func (s standaloneEvidenceClient) StoreEvidence(ctx context.Context, in *assessm
 	return assessmentService.StoreEvidence(ctx, in)
 }
 
+func (s standaloneEvidenceClient) ListAssessmentResults(ctx context.Context, in *assessment.ListAssessmentResultsRequest, opts ...grpc.CallOption) (*assessment.ListAssessmentResultsResponse, error) {
+	return assessmentService.ListAssessmentResults(ctx, in)
+}
+
 func (s standaloneEvidenceClient) StreamEvidences(ctx context.Context, opts ...grpc.CallOption) (assessment.Assessment_StreamEvidencesClient, error) {
 	var stream = &standaloneEvidenceStream{
 		serverChannel: make(chan *assessment.Evidence),

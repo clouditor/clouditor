@@ -26,6 +26,7 @@
 package assessment
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -117,4 +118,15 @@ func (s Service) StreamEvidences(stream assessment.Assessment_StreamEvidencesSer
 			s.ResultHook(result, nil)
 		}
 	}
+}
+
+func (s Service) ListAssessmentResults(ctx context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
+	res = new(assessment.ListAssessmentResultsResponse)
+	res.Results = []*assessment.Result{}
+
+	for _, result := range s.results {
+		res.Results = append(res.Results, result)
+	}
+
+	return
 }

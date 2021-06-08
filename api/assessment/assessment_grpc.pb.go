@@ -24,6 +24,7 @@ type AssessmentClient interface {
 	// Stores the evidences coming from the discovery. Part of the public API,
 	// also exposed as REST
 	StoreEvidence(ctx context.Context, in *StoreEvidenceRequest, opts ...grpc.CallOption) (*Evidence, error)
+	ListAssessmentResults(ctx context.Context, in *ListAssessmentResultsRequest, opts ...grpc.CallOption) (*ListAssessmentResultsResponse, error)
 	StreamEvidences(ctx context.Context, opts ...grpc.CallOption) (Assessment_StreamEvidencesClient, error)
 }
 
@@ -47,6 +48,15 @@ func (c *assessmentClient) TriggerAssessment(ctx context.Context, in *TriggerAss
 func (c *assessmentClient) StoreEvidence(ctx context.Context, in *StoreEvidenceRequest, opts ...grpc.CallOption) (*Evidence, error) {
 	out := new(Evidence)
 	err := c.cc.Invoke(ctx, "/clouditor.Assessment/StoreEvidence", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *assessmentClient) ListAssessmentResults(ctx context.Context, in *ListAssessmentResultsRequest, opts ...grpc.CallOption) (*ListAssessmentResultsResponse, error) {
+	out := new(ListAssessmentResultsResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.Assessment/ListAssessmentResults", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -96,6 +106,7 @@ type AssessmentServer interface {
 	// Stores the evidences coming from the discovery. Part of the public API,
 	// also exposed as REST
 	StoreEvidence(context.Context, *StoreEvidenceRequest) (*Evidence, error)
+	ListAssessmentResults(context.Context, *ListAssessmentResultsRequest) (*ListAssessmentResultsResponse, error)
 	StreamEvidences(Assessment_StreamEvidencesServer) error
 	mustEmbedUnimplementedAssessmentServer()
 }
@@ -109,6 +120,9 @@ func (UnimplementedAssessmentServer) TriggerAssessment(context.Context, *Trigger
 }
 func (UnimplementedAssessmentServer) StoreEvidence(context.Context, *StoreEvidenceRequest) (*Evidence, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreEvidence not implemented")
+}
+func (UnimplementedAssessmentServer) ListAssessmentResults(context.Context, *ListAssessmentResultsRequest) (*ListAssessmentResultsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListAssessmentResults not implemented")
 }
 func (UnimplementedAssessmentServer) StreamEvidences(Assessment_StreamEvidencesServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamEvidences not implemented")
@@ -162,6 +176,24 @@ func _Assessment_StoreEvidence_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Assessment_ListAssessmentResults_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAssessmentResultsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AssessmentServer).ListAssessmentResults(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Assessment/ListAssessmentResults",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AssessmentServer).ListAssessmentResults(ctx, req.(*ListAssessmentResultsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Assessment_StreamEvidences_Handler(srv interface{}, stream grpc.ServerStream) error {
 	return srv.(AssessmentServer).StreamEvidences(&assessmentStreamEvidencesServer{stream})
 }
@@ -202,6 +234,10 @@ var Assessment_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StoreEvidence",
 			Handler:    _Assessment_StoreEvidence_Handler,
+		},
+		{
+			MethodName: "ListAssessmentResults",
+			Handler:    _Assessment_ListAssessmentResults_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

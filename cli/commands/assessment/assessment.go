@@ -23,31 +23,64 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package commands
+package assessment
 
 import (
+	"context"
+	"fmt"
+
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/cli/commands/assessment"
-	"clouditor.io/clouditor/cli/commands/completion"
-	"clouditor.io/clouditor/cli/commands/discovery"
-	"clouditor.io/clouditor/cli/commands/login"
-	"clouditor.io/clouditor/cli/commands/metric"
-	"clouditor.io/clouditor/cli/commands/tool"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
+
+// NewListMetricCommand returns a cobra command for the `list` subcommand
+func NewListResultsCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "Lists all asssessment results",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var (
+				err     error
+				session *cli.Session
+				client  assessment.AssessmentClient
+				res     *assessment.ListAssessmentResultsResponse
+			)
+
+			if session, err = cli.ContinueSession(); err != nil {
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+				return nil
+			}
+
+			client = assessment.NewAssessmentClient(session)
+
+			res, err = client.ListAssessmentResults(context.Background(), &assessment.ListAssessmentResultsRequest{})
+
+			return session.HandleResponse(res, err)
+		},
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return []string{}, cobra.ShellCompDirectiveNoFileComp
+		},
+	}
+
+	return cmd
+}
+
+// NewAssessmentCommand returns a cobra command for `assessment` subcommands
+func NewAssessmentCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "assessment",
+		Short: "Assessment result commands",
+	}
+
+	AddCommands(cmd)
+
+	return cmd
+}
 
 // AddCommands adds all subcommands
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
-		login.NewLoginCommand(),
-		discovery.NewDiscoveryCommand(),
-		metric.NewMetricCommand(),
-		tool.NewToolCommand(),
-		assessment.NewAssessmentCommand(),
-		completion.NewCompletionCommand(),
+		NewListResultsCommand(),
 	)
-
-	cmd.PersistentFlags().StringP("session-directory", "s", cli.DefaultSessionFolder, "the directory where the session will be saved and loaded from")
-	_ = viper.BindPFlag("session-directory", cmd.PersistentFlags().Lookup("session-directory"))
 }

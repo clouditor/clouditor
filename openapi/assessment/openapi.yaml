@@ -23,6 +23,16 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Evidence'
+    /v1/assessment/results:
+        post:
+            operationId: Assessment_ListAssessmentResults
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListAssessmentResultsResponse'
 components:
     schemas:
         Evidence:
@@ -48,6 +58,12 @@ components:
                     description: '"raw" evidence (for the auditor), for example the raw JSON response from the API. This does not follow a defined schema'
                 resource:
                     $ref: '#/components/schemas/Value'
+        ListAssessmentResultsResponse:
+            properties:
+                results:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Result'
         ListValue:
             properties:
                 values:
@@ -56,6 +72,12 @@ components:
                         $ref: '#/components/schemas/Value'
                     description: Repeated field of dynamically typed values.
             description: '`ListValue` is a wrapper around a repeated field of values. The JSON representation for `ListValue` is JSON array.'
+        Result:
+            properties:
+                resource_id:
+                    type: string
+                compliant:
+                    type: boolean
         Struct:
             properties:
                 fields:
