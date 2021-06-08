@@ -53,4 +53,4 @@ jobs:
       - name: Check for Missing Copyright Header
         run: |
           go install github.com/google/addlicense
-          addlicense -c "Fraunhofer AISEC" -l apache -check **/*.go
+          addlicense -c "Fraunhofer AISEC" -l apache -check **/**.go
