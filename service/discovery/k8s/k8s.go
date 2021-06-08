@@ -23,50 +23,49 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package voc
+package k8s
 
-// type HasLog interface {
-// 	GetLog() *Log
-// }
+import (
+	"flag"
+	"fmt"
+	"path/filepath"
 
-type HasAccessRestriction interface {
-	GetAccessRestriction() *AccessRestriction
+	"github.com/sirupsen/logrus"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/util/homedir"
+)
+
+var log *logrus.Entry
+
+func init() {
+	log = logrus.WithField("component", "k8s-discovery")
 }
 
-type IsCompute interface {
-	IsResource
+type k8sDiscovery struct {
+	intf kubernetes.Interface
 }
 
-type ComputeResource struct {
-	Resource
-}
+func AuthFromKubeConfig() (intf kubernetes.Interface, err error) {
+	var kubeconfig *string
+	if home := homedir.HomeDir(); home != "" {
+		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+	} else {
+		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+	}
+	flag.Parse()
 
-// Virtual Machine
-type VirtualMachineResource struct {
-	ComputeResource
-	//NetworkInterfaceResource
-	//BlockStorage
+	// use the current context in kubeconfig
+	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	if err != nil {
+		return nil, fmt.Errorf("could not read kubeconfig: %w", err)
+	}
 
-	Log *Log `json:"log"`
-}
+	// create the clientset
+	client, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, fmt.Errorf("could not create client: %w", err)
+	}
 
-func (v *VirtualMachineResource) GetLog() *Log {
-	return v.Log
-}
-
-type ContainerResource struct {
-	ComputeResource
-}
-
-// Network Interface
-type NetworkInterfaceResource struct {
-	ComputeResource
-	//NetworkService
-
-	VmID              string             `json:"vmId"` // For debugging reasons
-	AccessRestriction *AccessRestriction `json:"accessRestriction"`
-}
-
-func (n *NetworkInterfaceResource) GetAccessRestriction() *AccessRestriction {
-	return n.AccessRestriction
+	return client, nil
 }

@@ -75,8 +75,9 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 
 	result, _ := client.ListAllComplete(context.Background(), "true")
 
-	for _, v := range *result.Response().Value {
-		s := d.handleVirtualMachines(v)
+	vms := *result.Response().Value
+	for i := range vms {
+		s := d.handleVirtualMachines(&vms[i])
 
 		log.Infof("Adding virtual machine %+v", s)
 
@@ -89,8 +90,9 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 
 	result_network_interfaces, _ := client_network_interfaces.ListAll(context.Background())
 
-	for _, ni := range result_network_interfaces.Values() {
-		s := d.handleNetworkInterfaces(ni)
+	interfaces := result_network_interfaces.Values()
+	for i := range interfaces {
+		s := d.handleNetworkInterfaces(&interfaces[i])
 
 		log.Infof("Adding network interfaces %+v", s)
 
@@ -104,8 +106,9 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 
 	result_load_balancer, _ := client_load_balancer.ListAll(context.Background())
 
-	for _, lb := range result_load_balancer.Values() {
-		s := d.handleLoadBalancer(lb)
+	lbs := result_load_balancer.Values()
+	for i := range lbs {
+		s := d.handleLoadBalancer(&lbs[i])
 
 		log.Infof("Adding load balancer %+v", s)
 
@@ -116,28 +119,29 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 }
 
 //TBD
-func (d *azureComputeDiscovery) handleLoadBalancer(lb network.LoadBalancer) voc.IsCompute {
+func (d *azureComputeDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc.IsCompute {
 	return &voc.LoadBalancerResource{
-		ComputeResource: voc.ComputeResource{
+		NetworkService: voc.NetworkService{
 			Resource: voc.Resource{
 				ID:           to.String(lb.ID),
 				Name:         to.String(lb.Name),
 				CreationTime: 0, // No creation time available
 			},
+			IPs: []string{d.GetPublicIPAddress(lb)},
 		},
 		AccessRestriction: &voc.AccessRestriction{
 			Inbound:         false,
 			RestrictedPorts: "", //TBD
 		},
-		HttpEndpoint: &voc.HttpEndpoint{
+		HttpEndpoints: []*voc.HttpEndpoint{{
 			//TODO weitermachen Frontend IP configuration
 			URL:                 d.GetPublicIPAddress(lb),                     // Get Public IP Address of the Load Balancer
 			TransportEncryption: voc.NewTransportEncryption(false, false, ""), // No transport encryption defined by the Load Balancer
-		},
+		}},
 	}
 }
 
-func (d *azureComputeDiscovery) GetPublicIPAddress(lb network.LoadBalancer) string {
+func (d *azureComputeDiscovery) GetPublicIPAddress(lb *network.LoadBalancer) string {
 
 	var publicIPAddresses []string
 
@@ -174,7 +178,7 @@ func (d *azureComputeDiscovery) GetPublicIPAddress(lb network.LoadBalancer) stri
 	return strings.Join(publicIPAddresses, ",")
 }
 
-func (d *azureComputeDiscovery) handleVirtualMachines(vm compute.VirtualMachine) voc.IsCompute {
+func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine) voc.IsCompute {
 	return &voc.VirtualMachineResource{
 		ComputeResource: voc.ComputeResource{
 			Resource: voc.Resource{
@@ -188,7 +192,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm compute.VirtualMachine)
 	}
 }
 
-func IsBootDiagnosticEnabled(vm compute.VirtualMachine) bool {
+func IsBootDiagnosticEnabled(vm *compute.VirtualMachine) bool {
 	if vm.DiagnosticsProfile == nil {
 		return false
 	} else {
@@ -196,7 +200,7 @@ func IsBootDiagnosticEnabled(vm compute.VirtualMachine) bool {
 	}
 }
 
-func (d *azureComputeDiscovery) handleNetworkInterfaces(ni network.Interface) voc.IsCompute {
+func (d *azureComputeDiscovery) handleNetworkInterfaces(ni *network.Interface) voc.IsCompute {
 	return &voc.NetworkInterfaceResource{
 		ComputeResource: voc.ComputeResource{
 			Resource: voc.Resource{
@@ -204,7 +208,7 @@ func (d *azureComputeDiscovery) handleNetworkInterfaces(ni network.Interface) vo
 				Name:         to.String(ni.Name),
 				CreationTime: 0, // No creation time available
 			}},
-		VmID: GetVmID(ni),
+		VmID: GetVmID(*ni),
 		AccessRestriction: &voc.AccessRestriction{
 			Inbound:         false, //TBD
 			RestrictedPorts: d.GetRestrictedPortsDefined(ni),
@@ -213,7 +217,7 @@ func (d *azureComputeDiscovery) handleNetworkInterfaces(ni network.Interface) vo
 }
 
 // Returns all restricted ports for the network interface
-func (d *azureComputeDiscovery) GetRestrictedPortsDefined(ni network.Interface) string {
+func (d *azureComputeDiscovery) GetRestrictedPortsDefined(ni *network.Interface) string {
 
 	var restrictedPorts []string
 
