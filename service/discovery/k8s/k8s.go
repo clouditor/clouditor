@@ -50,6 +50,8 @@ type k8sDiscovery struct {
 
 func AuthFromKubeConfig() (intf kubernetes.Interface, err error) {
 	var kubeconfig *string
+
+	// TODO(oxisto): this crashes if called twice
 	if home := homedir.HomeDir(); home != "" {
 		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
 	} else {

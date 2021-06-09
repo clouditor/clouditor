@@ -116,7 +116,7 @@ func (s Service) StreamEvidences(stream assessment.Assessment_StreamEvidencesSer
 				s.ResultHook(result, nil)
 			}
 		} else {
-			log.Errorf("Could not find a valid metric for evidence of resource %s", evidence.ResourceId)
+			log.Warnf("Could not find a valid metric for evidence of resource %s", evidence.ResourceId)
 		}
 	}
 }
