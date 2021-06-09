@@ -78,6 +78,9 @@ components:
                     type: string
                 compliant:
                     type: boolean
+                metric_id:
+                    type: integer
+                    format: int32
         Struct:
             properties:
                 fields:

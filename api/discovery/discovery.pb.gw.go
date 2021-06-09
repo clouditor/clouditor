@@ -21,7 +21,6 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // Suppress "imported and not used" errors
@@ -67,7 +66,7 @@ func local_request_Discovery_Start_0(ctx context.Context, marshaler runtime.Mars
 }
 
 func request_Discovery_Query_0(ctx context.Context, marshaler runtime.Marshaler, client DiscoveryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq emptypb.Empty
+	var protoReq QueryRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -84,7 +83,7 @@ func request_Discovery_Query_0(ctx context.Context, marshaler runtime.Marshaler,
 }
 
 func local_request_Discovery_Query_0(ctx context.Context, marshaler runtime.Marshaler, server DiscoveryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq emptypb.Empty
+	var protoReq QueryRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)

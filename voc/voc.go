@@ -39,6 +39,7 @@ type IsResource interface {
 	GetID() string
 	GetName() string
 	GetType() []string
+	HasType(string) bool
 	GetCreationTime() *time.Time
 }
 
@@ -60,6 +61,17 @@ func (r *Resource) GetName() string {
 
 func (r *Resource) GetType() []string {
 	return r.Type
+}
+
+func (r *Resource) HasType(t string) (b bool) {
+	for _, v := range r.Type {
+		if v == t {
+			b = true
+			break
+		}
+	}
+
+	return
 }
 
 func (r *Resource) GetCreationTime() *time.Time {

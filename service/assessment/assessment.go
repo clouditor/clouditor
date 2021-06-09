@@ -89,33 +89,34 @@ func (s Service) StreamEvidences(stream assessment.Assessment_StreamEvidencesSer
 			}
 
 			file = fmt.Sprintf("%s/policies/metric%d.rego", baseDir, metric)
-		} else {
-			log.Errorf("Could not find a valid metric for evidence of resource %s", evidence.ResourceId)
-		}
 
-		// TODO(oxisto): use go embed
-		data, err := policies.Run(file, evidence)
-		if err != nil {
-			log.Errorf("Could not evaluate evidence: %v", err)
+			// TODO(oxisto): use go embed
+			data, err := policies.Run(file, evidence)
+			if err != nil {
+				log.Errorf("Could not evaluate evidence: %v", err)
 
-			if s.ResultHook != nil {
-				s.ResultHook(nil, err)
+				if s.ResultHook != nil {
+					s.ResultHook(nil, err)
+				}
+
+				return err
 			}
 
-			return err
-		}
+			log.Infof("Evaluated evidence as %v", data["compliant"])
 
-		log.Infof("Evaluated evidence as %v", data["compliant"])
+			result := &assessment.Result{
+				ResourceId: evidence.ResourceId,
+				Compliant:  data["compliant"].(bool),
+				MetricId:   metric,
+			}
 
-		result := &assessment.Result{
-			ResourceId: evidence.ResourceId,
-			Compliant:  data["compliant"].(bool),
-		}
+			s.results[evidence.ResourceId] = result
 
-		s.results[evidence.ResourceId] = result
-
-		if s.ResultHook != nil {
-			s.ResultHook(result, nil)
+			if s.ResultHook != nil {
+				s.ResultHook(result, nil)
+			}
+		} else {
+			log.Errorf("Could not find a valid metric for evidence of resource %s", evidence.ResourceId)
 		}
 	}
 }

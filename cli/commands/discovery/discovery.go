@@ -32,7 +32,6 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // NewStartDiscoveryCommand returns a cobra command for the `start` subcommand
@@ -75,6 +74,7 @@ func NewQueryDiscoveryCommand() *cobra.Command {
 				session *cli.Session
 				client  discovery.DiscoveryClient
 				res     *discovery.QueryResponse
+				req     discovery.QueryRequest
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -84,7 +84,11 @@ func NewQueryDiscoveryCommand() *cobra.Command {
 
 			client = discovery.NewDiscoveryClient(session)
 
-			res, err = client.Query(context.Background(), &emptypb.Empty{})
+			if len(args) > 0 {
+				req.FilteredType = args[0]
+			}
+
+			res, err = client.Query(context.Background(), &req)
 
 			return session.HandleResponse(res, err)
 		},
