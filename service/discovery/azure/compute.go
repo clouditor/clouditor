@@ -126,6 +126,7 @@ func (d *azureComputeDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc
 				ID:           to.String(lb.ID),
 				Name:         to.String(lb.Name),
 				CreationTime: 0, // No creation time available
+				Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
 			},
 			IPs: []string{d.GetPublicIPAddress(lb)},
 		},
@@ -185,6 +186,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 				ID:           to.String(vm.ID),
 				Name:         to.String(vm.Name),
 				CreationTime: 0, // No creation time available
+				Type:         []string{"VirtualMachine", "Compute", "Resource"},
 			}},
 		Log: &voc.Log{
 			Enabled: IsBootDiagnosticEnabled(vm),
@@ -207,6 +209,7 @@ func (d *azureComputeDiscovery) handleNetworkInterfaces(ni *network.Interface) v
 				ID:           to.String(ni.ID),
 				Name:         to.String(ni.Name),
 				CreationTime: 0, // No creation time available
+				Type:         []string{"NetworkInterface", "Compute", "Resource"},
 			}},
 		VmID: GetVmID(*ni),
 		AccessRestriction: &voc.AccessRestriction{
