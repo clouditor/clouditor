@@ -90,6 +90,7 @@ func handleStorageAccount(account *storage.Account) voc.IsStorage {
 			ID:           to.String(account.ID),
 			Name:         to.String(account.Name),
 			CreationTime: account.CreationTime.Unix(),
+			Type:         []string{"ObjectStorage", "Storage", "Resource"},
 		},
 		AtRestEncryption: voc.NewAtRestEncryption(
 			to.Bool(account.Encryption.Services.Blob.Enabled),

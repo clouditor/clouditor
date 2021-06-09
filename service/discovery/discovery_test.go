@@ -54,6 +54,7 @@ func (m mockDiscoverer) List() ([]voc.IsResource, error) {
 				Resource: voc.Resource{
 					ID:   "some-id",
 					Name: "some-name",
+					Type: []string{"ObjectStorage", "Storage", "Resource"},
 				},
 			},
 			HttpEndpoint: &voc.HttpEndpoint{
