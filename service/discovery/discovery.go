@@ -42,7 +42,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -170,9 +169,15 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 		}
 
 		evidence := &assessment.Evidence{
-			Resource:          v,
-			ResourceId:        resource.GetID(),
-			ApplicableMetrics: []int32{1},
+			Resource:   v,
+			ResourceId: resource.GetID(),
+		}
+
+		// check for object storage
+		for _, v := range resource.GetType() {
+			if v == "ObjectStorage" {
+				evidence.ApplicableMetrics = []int32{1}
+			}
 		}
 
 		if s.AssessmentStream == nil {
@@ -189,11 +194,20 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}
 }
 
-func (s Service) Query(ctx context.Context, request *emptypb.Empty) (response *discovery.QueryResponse, err error) {
+func (s Service) Query(ctx context.Context, request *discovery.QueryRequest) (response *discovery.QueryResponse, err error) {
 	var r []*structpb.Value
+
+	var filteredType = ""
+	if request != nil {
+		filteredType = request.FilteredType
+	}
 
 	for _, v := range s.resources {
 		var s *structpb.Value
+
+		if filteredType != "" && !v.HasType(filteredType) {
+			continue
+		}
 
 		s, err = voc.ToStruct(v)
 		if err != nil {
