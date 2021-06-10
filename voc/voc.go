@@ -39,6 +39,7 @@ type IsResource interface {
 	GetID() string
 	GetName() string
 	GetType() []string
+	HasType(string) bool
 	GetCreationTime() *time.Time
 }
 
@@ -62,12 +63,26 @@ func (r *Resource) GetType() []string {
 	return r.Type
 }
 
+// HasType checks whether the resource has the particular resourceType
+func (r *Resource) HasType(resourceType string) (ok bool) {
+	for _, value := range r.Type {
+		if value == resourceType {
+			ok = true
+			break
+		}
+	}
+
+	return
+}
+
 func (r *Resource) GetCreationTime() *time.Time {
 	t := time.Unix(r.CreationTime, 0)
 	return &t
 }
 
 func ToStruct(r IsResource) (s *structpb.Value, err error) {
+	var b []byte
+
 	s = new(structpb.Value)
 
 	// this is probably not the fastest approach, but this
@@ -75,7 +90,9 @@ func ToStruct(r IsResource) (s *structpb.Value, err error) {
 	// except `json` are required. there is also no significant
 	// speed increase in marshaling the whole resource list, because
 	// we first need to build it out of the map anyway
-	b, _ := json.Marshal(r)
+	if b, err = json.Marshal(r); err != nil {
+		return nil, fmt.Errorf("JSON marshal failed: %v", err)
+	}
 	if err = json.Unmarshal(b, &s); err != nil {
 		return nil, fmt.Errorf("JSON unmarshal failed: %v", err)
 	}
