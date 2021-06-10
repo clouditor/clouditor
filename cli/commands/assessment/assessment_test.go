@@ -1,41 +1,59 @@
 package assessment_test
 
 import (
+	"bytes"
 	"context"
+	"fmt"
+	"io/ioutil"
+	"net"
 	"os"
 	"testing"
 	"time"
 
 	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/cli"
+	cli_assessment "clouditor.io/clouditor/cli/commands/assessment"
+	"clouditor.io/clouditor/cli/commands/login"
 	service_assessment "clouditor.io/clouditor/service/assessment"
+	service_auth "clouditor.io/clouditor/service/auth"
 	"clouditor.io/clouditor/service/standalone"
 	"clouditor.io/clouditor/voc"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
-func TestListResults(t *testing.T) {
+var sock net.Listener
+var server *grpc.Server
+
+func TestMain(m *testing.M) {
 	var (
-		response *assessment.ListAssessmentResultsResponse
-		err      error
+		dir string
+		err error
 	)
 
 	// make sure, that we are in the clouditor root folder to find the policies
 	err = os.Chdir("../../..")
-
-	assert.Nil(t, err)
+	if err != nil {
+		panic(err)
+	}
 
 	var ready chan bool = make(chan bool)
 
+	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
+	if err != nil {
+		panic(err)
+	}
+
+	defer sock.Close()
+	defer server.Stop()
+
 	assessmentServer := standalone.NewAssessmentServer().(*service_assessment.Service)
 	assessmentServer.ResultHook = func(result *assessment.Result, err error) {
-		assert.Nil(t, err)
-		assert.NotNil(t, result)
-
-		assert.Equal(t, "some-id", result.ResourceId)
-		assert.Equal(t, true, result.Compliant)
-
 		ready <- true
 	}
+	assessment.RegisterAssessmentServer(server, assessmentServer)
 
 	client := standalone.NewAssessmentClient()
 
@@ -52,8 +70,9 @@ func TestListResults(t *testing.T) {
 	}
 
 	s, err := voc.ToStruct(resource)
-
-	assert.Nil(t, err)
+	if err != nil {
+		panic(err)
+	}
 
 	evidence := &assessment.Evidence{
 		ResourceId:        "some-id",
@@ -64,27 +83,53 @@ func TestListResults(t *testing.T) {
 	_, err = client.StoreEvidence(context.Background(), &assessment.StoreEvidenceRequest{
 		Evidence: evidence,
 	})
-
-	assert.Nil(t, err)
+	if err != nil {
+		panic(err)
+	}
 
 	// make the test wait for envidence to be stored
 	select {
 	case <-ready:
 		break
 	case <-time.After(10 * time.Second):
-		assert.Fail(t, "Timeout while waiting for evidence assessment result to be ready")
+		panic("Timeout while waiting for evidence assessment result to be ready")
 	}
 
-	// query them
-	response, err = client.ListAssessmentResults(context.Background(), &assessment.ListAssessmentResultsRequest{})
+	// TODO(oxisto): refactor the next lines into a common test login function
+	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
+	if err != nil {
+		panic(err)
+	}
+
+	viper.Set("username", "clouditor")
+	viper.Set("password", "clouditor")
+	viper.Set("session-directory", dir)
+
+	cmd := login.NewLoginCommand()
+	err = cmd.RunE(nil, []string{fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)})
+	if err != nil {
+		panic(err)
+	}
+
+	os.Exit(m.Run())
+}
+
+func TestListResults(t *testing.T) {
+	var b bytes.Buffer
+	var err error
+
+	cli.Output = &b
+
+	cmd := cli_assessment.NewListResultsCommand()
+	err = cmd.RunE(nil, []string{})
+
+	assert.Nil(t, err)
+
+	var response *assessment.ListAssessmentResultsResponse = &assessment.ListAssessmentResultsResponse{}
+
+	err = protojson.Unmarshal(b.Bytes(), response)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response.Results)
-
-	r := response.Results[0]
-
-	assert.NotNil(t, r)
-	assert.Equal(t, "some-id", r.ResourceId)
-	assert.Equal(t, int32(1), r.MetricId)
 }
