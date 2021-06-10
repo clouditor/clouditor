@@ -73,7 +73,10 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 	client := compute.NewVirtualMachinesClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
 
-	result, _ := client.ListAllComplete(context.Background(), "true")
+	result, err := client.ListAllComplete(context.Background(), "true")
+	if err != nil {
+		return nil, fmt.Errorf("could not list virtual machines: %w", err)
+	}
 
 	vms := *result.Response().Value
 	for i := range vms {
@@ -88,7 +91,10 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 	client_network_interfaces := network.NewInterfacesClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client_network_interfaces.Client)
 
-	result_network_interfaces, _ := client_network_interfaces.ListAll(context.Background())
+	result_network_interfaces, err := client_network_interfaces.ListAll(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("could not list network interfaces: %w", err)
+	}
 
 	interfaces := result_network_interfaces.Values()
 	for i := range interfaces {
@@ -100,11 +106,13 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 	}
 
 	// Discover Load Balancer
-	// TODO Client to get load balancer
 	client_load_balancer := network.NewLoadBalancersClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client_load_balancer.Client)
 
-	result_load_balancer, _ := client_load_balancer.ListAll(context.Background())
+	result_load_balancer, err := client_load_balancer.ListAll(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("could not list load balancer: %w", err)
+	}
 
 	lbs := result_load_balancer.Values()
 	for i := range lbs {
@@ -130,14 +138,15 @@ func (d *azureComputeDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc
 			},
 			IPs: []string{d.GetPublicIPAddress(lb)},
 		},
+		// TODO: fill out access restrictions
 		AccessRestriction: &voc.AccessRestriction{
 			Inbound:         false,
 			RestrictedPorts: "", //TBD
 		},
+		// TODO: do we need the httpEndpoint?
 		HttpEndpoints: []*voc.HttpEndpoint{{
-			//TODO weitermachen Frontend IP configuration
 			URL:                 d.GetPublicIPAddress(lb),                     // Get Public IP Address of the Load Balancer
-			TransportEncryption: voc.NewTransportEncryption(false, false, ""), // No transport encryption defined by the Load Balancer
+			TransportEncryption: voc.NewTransportEncryption(false, false, ""), // No transport encryption defined for the Load Balancer
 		}},
 	}
 }
@@ -164,18 +173,6 @@ func (d *azureComputeDiscovery) GetPublicIPAddress(lb *network.LoadBalancer) str
 		}
 	}
 
-	// result, _ := client.Get(azureAuthorizer.ctx, GetResourceGroupName(*lb.ID), *lb.Name, lb.Fr)
-
-	// for _, publicIpProperties := range *lb.FrontendIPConfigurations {
-
-	// 	if publicIpProperties.FrontendIPConfigurationPropertiesFormat.PublicIPAddress.PublicIPAddressPropertiesFormat == nil {
-	// 		continue
-	// 	}
-
-	// 	publicIpAddresses = append(publicIpAddresses, *publicIpProperties.FrontendIPConfigurationPropertiesFormat.PublicIPAddress.IPAddress)
-
-	// }
-
 	return strings.Join(publicIPAddresses, ",")
 }
 
@@ -198,7 +195,7 @@ func IsBootDiagnosticEnabled(vm *compute.VirtualMachine) bool {
 	if vm.DiagnosticsProfile == nil {
 		return false
 	} else {
-		return *vm.DiagnosticsProfile.BootDiagnostics.Enabled
+		return to.Bool(vm.DiagnosticsProfile.BootDiagnostics.Enabled)
 	}
 }
 
