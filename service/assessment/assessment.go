@@ -34,10 +34,14 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/policies"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 var log *logrus.Entry
+
+var listId int32
 
 //go:generate protoc -I ../../proto -I ../../third_party assessment.proto evidence.proto --go_out=../.. --go-grpc_out=../..  --openapi_out=../../openapi/assessment
 
@@ -56,7 +60,16 @@ func NewService() assessment.AssessmentServer {
 	return &Service{
 		results: make(map[string]*assessment.Result),
 	}
+}
 
+func (s Service) StoreEvidence(ctx context.Context, req *assessment.StoreEvidenceRequest) (res *assessment.Evidence, err error) {
+	res, err = s.handleEvidence(req.Evidence)
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
+	}
+
+	return
 }
 
 func (s Service) StreamEvidences(stream assessment.Assessment_StreamEvidencesServer) error {
@@ -65,60 +78,73 @@ func (s Service) StreamEvidences(stream assessment.Assessment_StreamEvidencesSer
 
 	for {
 		evidence, err = stream.Recv()
+
+		_, _ = s.handleEvidence(evidence)
+
 		if err == io.EOF {
 			log.Infof("Stopped receiving streamed evidence")
 
 			return stream.SendAndClose(&emptypb.Empty{})
 		}
 
-		log.Infof("Received evidence for resource %s", evidence.ResourceId)
-		log.Debugf("Evidence: %+v", evidence)
+	}
+}
 
-		var file string
+func (s Service) handleEvidence(evidence *assessment.Evidence) (result *assessment.Evidence, err error) {
+	log.Infof("Received evidence for resource %s", evidence.ResourceId)
+	log.Debugf("Evidence: %+v", evidence)
 
-		// TODO(oxisto): actually look up metric via orchestrator
-		if len(evidence.ApplicableMetrics) != 0 {
-			metric := evidence.ApplicableMetrics[0]
+	var file string
 
-			var baseDir string = "."
+	listId++
+	evidence.Id = fmt.Sprintf("%d", listId)
 
-			// check, if we are in the root of Clouditor
-			if _, err := os.Stat("policies"); os.IsNotExist(err) {
-				// in tests, we are relative to our current package
-				baseDir = "../../"
-			}
+	// TODO(oxisto): actually look up metric via orchestrator
+	if len(evidence.ApplicableMetrics) != 0 {
+		metric := evidence.ApplicableMetrics[0]
 
-			file = fmt.Sprintf("%s/policies/metric%d.rego", baseDir, metric)
+		var baseDir string = "."
 
-			// TODO(oxisto): use go embed
-			data, err := policies.Run(file, evidence)
-			if err != nil {
-				log.Errorf("Could not evaluate evidence: %v", err)
+		// check, if we are in the root of Clouditor
+		if _, err := os.Stat("policies"); os.IsNotExist(err) {
+			// in tests, we are relative to our current package
+			baseDir = "../../"
+		}
 
-				if s.ResultHook != nil {
-					s.ResultHook(nil, err)
-				}
+		file = fmt.Sprintf("%s/policies/metric%d.rego", baseDir, metric)
 
-				return err
-			}
-
-			log.Infof("Evaluated evidence as %v", data["compliant"])
-
-			result := &assessment.Result{
-				ResourceId: evidence.ResourceId,
-				Compliant:  data["compliant"].(bool),
-				MetricId:   metric,
-			}
-
-			s.results[evidence.ResourceId] = result
+		// TODO(oxisto): use go embed
+		data, err := policies.Run(file, evidence)
+		if err != nil {
+			log.Errorf("Could not evaluate evidence: %v", err)
 
 			if s.ResultHook != nil {
-				s.ResultHook(result, nil)
+				go s.ResultHook(nil, err)
 			}
-		} else {
-			log.Warnf("Could not find a valid metric for evidence of resource %s", evidence.ResourceId)
+
+			return nil, err
 		}
+
+		log.Infof("Evaluated evidence as %v", data["compliant"])
+
+		result := &assessment.Result{
+			ResourceId: evidence.ResourceId,
+			Compliant:  data["compliant"].(bool),
+			MetricId:   metric,
+		}
+
+		s.results[evidence.ResourceId] = result
+
+		if s.ResultHook != nil {
+			go s.ResultHook(result, nil)
+		}
+	} else {
+		log.Warnf("Could not find a valid metric for evidence of resource %s", evidence.ResourceId)
 	}
+
+	result = evidence
+
+	return
 }
 
 func (s Service) ListAssessmentResults(ctx context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {

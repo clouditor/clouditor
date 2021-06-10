@@ -34,7 +34,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewListMetricCommand returns a cobra command for the `list` subcommand
+// NewListResultsCommand returns a cobra command for the `list` subcommand
 func NewListResultsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",

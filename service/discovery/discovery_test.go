@@ -99,13 +99,12 @@ func TestQuery(t *testing.T) {
 	discoverer = mockDiscoverer{}
 
 	// discover some resources
-	// TODO(oxist): It seems that some discoverers block, not sure why
-	go service.StartDiscovery(discoverer)
+	service.StartDiscovery(discoverer)
 
 	// make the test wait for streaming envidence
 	select {
 	case <-ready:
-		return
+		break
 	case <-time.After(10 * time.Second):
 		assert.Fail(t, "Timeout while waiting for evidence assessment result to be ready")
 	}
