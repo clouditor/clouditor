@@ -70,6 +70,24 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 	}
 
 	// Discover virtual machines
+	virtualMachines, _ := d.discoverVirtualMachines()
+	list = append(list, virtualMachines...)
+
+	// Discover network interfaces
+	networkInterfaces, _ := d.discoverNetworkInterfaces()
+	list = append(list, networkInterfaces...)
+
+	// Discover Load Balancer
+	loadBalancer, _ := d.discoverLoadBalancer()
+	list = append(list, loadBalancer...)
+
+	return
+}
+
+// Discover virtual machines
+func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsResource, error) {
+	var list []voc.IsResource
+
 	client := compute.NewVirtualMachinesClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
 
@@ -87,7 +105,13 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 		list = append(list, s)
 	}
 
-	// Discover network interfaces
+	return list, err
+}
+
+// Discover network interfaces
+func (d *azureComputeDiscovery) discoverNetworkInterfaces() ([]voc.IsResource, error) {
+	var list []voc.IsResource
+
 	client_network_interfaces := network.NewInterfacesClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client_network_interfaces.Client)
 
@@ -105,7 +129,13 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 		list = append(list, s)
 	}
 
-	// Discover Load Balancer
+	return list, err
+}
+
+// Discover Load Balancer
+func (d *azureComputeDiscovery) discoverLoadBalancer() ([]voc.IsResource, error) {
+	var list []voc.IsResource
+
 	client_load_balancer := network.NewLoadBalancersClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client_load_balancer.Client)
 
@@ -123,7 +153,7 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 		list = append(list, s)
 	}
 
-	return
+	return list, err
 }
 
 //TBD
