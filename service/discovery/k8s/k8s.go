@@ -26,7 +26,7 @@
 package k8s
 
 import (
-	"flag"
+	"errors"
 	"fmt"
 	"path/filepath"
 
@@ -34,6 +34,8 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
+
+	_ "k8s.io/client-go/plugin/pkg/client/auth/azure"
 )
 
 var log *logrus.Entry
@@ -47,16 +49,17 @@ type k8sDiscovery struct {
 }
 
 func AuthFromKubeConfig() (intf kubernetes.Interface, err error) {
-	var kubeconfig *string
+	var kubeconfig string
+
+	// TODO(oxisto): this crashes if called twice
 	if home := homedir.HomeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+		kubeconfig = filepath.Join(home, ".kube", "config")
 	} else {
-		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+		return nil, errors.New("could not find kubeconfig")
 	}
-	flag.Parse()
 
 	// use the current context in kubeconfig
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
 	if err != nil {
 		return nil, fmt.Errorf("could not read kubeconfig: %w", err)
 	}

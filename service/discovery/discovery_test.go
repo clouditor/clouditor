@@ -37,7 +37,6 @@ import (
 	"clouditor.io/clouditor/service/standalone"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 var service *service_discovery.Service
@@ -59,6 +58,13 @@ func (m mockDiscoverer) List() ([]voc.IsResource, error) {
 			},
 			HttpEndpoint: &voc.HttpEndpoint{
 				TransportEncryption: voc.NewTransportEncryption(true, false, "TLS1_2"),
+			},
+		},
+		&voc.ComputeResource{
+			Resource: voc.Resource{
+				ID:   "some-other-id",
+				Name: "some-other-name",
+				Type: []string{"Compute", "Resource"},
 			},
 		},
 	}, nil
@@ -95,8 +101,19 @@ func TestQuery(t *testing.T) {
 	// discover some resources
 	service.StartDiscovery(discoverer)
 
+	// make the test wait for streaming envidence
+	select {
+	case <-ready:
+		break
+	case <-time.After(10 * time.Second):
+		assert.Fail(t, "Timeout while waiting for evidence assessment result to be ready")
+	}
+
 	// query them
-	response, err = service.Query(context.Background(), &emptypb.Empty{})
+	response, err = service.Query(context.Background(), &discovery.QueryRequest{
+		// this should only result 1 resource, and not the compute resource
+		FilteredType: "ObjectStorage",
+	})
 
 	assert.Nil(t, err)
 	assert.NotNil(t, response)
@@ -107,12 +124,4 @@ func TestQuery(t *testing.T) {
 	assert.NotNil(t, m)
 	assert.Equal(t, "some-id", m["id"])
 	assert.Equal(t, "some-name", m["name"])
-
-	// make the test wait for streaming envidence
-	select {
-	case <-ready:
-		return
-	case <-time.After(10 * time.Second):
-		assert.Fail(t, "Timeout while waiting for evidence assessment result to be ready")
-	}
 }

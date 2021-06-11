@@ -38,11 +38,17 @@ message Result {
   string resource_id = 1;
 
   bool compliant = 2;
+
+  int32 metric_id = 3;
 }
 
 message StoreEvidenceRequest { Evidence evidence = 1; }
 
 message TriggerAssessmentRequest { string someOption = 1; }
+
+message ListAssessmentResultsRequest {}
+
+message ListAssessmentResultsResponse { repeated Result results = 1; }
 
 service Assessment {
   // Triggers the assement. Part of the private API, not exposed as REST.
@@ -55,6 +61,14 @@ service Assessment {
     option (google.api.http) = {
       post : "/v1/assessment/evidences"
       body : "evidence"
+      response_body : "*"
+    };
+  }
+
+  rpc ListAssessmentResults(ListAssessmentResultsRequest)
+      returns (ListAssessmentResultsResponse) {
+    option (google.api.http) = {
+      post : "/v1/assessment/results"
       response_body : "*"
     };
   }
