@@ -42,6 +42,7 @@ type awsS3Discovery struct {
 	client *s3.Client
 	// ToDo: Change type to bucketsType to list of bucket structs
 	buckets       interface{}
+	bucketNames   []string
 	isDiscovering bool
 }
 
@@ -67,7 +68,7 @@ type S3ListBucketsAPI interface {
 func (d *awsS3Discovery) discoverBuckets() {
 	// ToDo: Double check that d.client can't be zero due to "private" access with "public" constructor?
 	d.getBuckets(d.client)
-	d.checkEncryption()
+	d.checkEncryption("")
 	d.checkPublicAccessBlockConfiguration()
 	d.checkBucketReplication()
 	d.checkLifeCycleConfiguration()
@@ -79,13 +80,15 @@ func (d *awsS3Discovery) discoverBuckets() {
 // getBuckets returns all buckets
 func (d *awsS3Discovery) getBuckets(clientApi S3ListBucketsAPI) {
 	logrus.Println("Discovering s3:")
-	// ToDo: One return line
 	resp, err := clientApi.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
 	if err != nil {
 		log.Fatalf("Error occured while retrieving buckets: %v", err)
 	}
 	logrus.Printf("Retrieved %v buckets.", len(resp.Buckets))
 	d.buckets = resp
+	for _, bucket := range resp.Buckets {
+		d.bucketNames = append(d.bucketNames, *bucket.Name)
+	}
 
 	// ToDo: Call getBucketObjects and associate the objects with the buckets
 }
@@ -117,9 +120,23 @@ func (d *awsS3Discovery) getBucketObjects(myBucket string) *s3.ListObjectsV2Outp
 }
 
 // checkEncryption gets the bucket's encryption configuration
-// ToDo
-func (d *awsS3Discovery) checkEncryption() {
-	log.Println("ToDo: Implement checkEncryption")
+func (d *awsS3Discovery) checkEncryption(bucket string) bool {
+	log.Printf("Checking encryption for bucket %v.\n", bucket)
+	input := s3.GetBucketEncryptionInput{
+		Bucket:              aws.String(bucket),
+		ExpectedBucketOwner: nil,
+	}
+	resp, err := d.client.GetBucketEncryption(context.TODO(), &input)
+	if err != nil {
+		logrus.Errorf("Probably no encryption enabled. Error: %v", err)
+		// ToDo: Simply Return good?
+		return false
+	}
+	logrus.Println("Bucket is encrypted.")
+	for i, rule := range resp.ServerSideEncryptionConfiguration.Rules {
+		log.Printf("Rule %v: %v", i, rule.ApplyServerSideEncryptionByDefault)
+	}
+	return true
 }
 
 // checkPublicAccessBlockConfiguration gets the bucket's access configuration

@@ -44,7 +44,7 @@ func Test_awsDiscovery_NewAwsDiscovery(t *testing.T) {
 // ToDo: Works with my credentials -> Mock it
 func Test_discoverAll(t *testing.T) {
 	testDiscovery := NewAwsDiscovery()
-	discoverAll(testDiscovery)
+	//discoverAll(testDiscovery)
 	if region := testDiscovery.cfg.Region; region != "eu-central-1" {
 		t.Fatalf("Excpected eu-central-1. Got %v", region)
 	}
