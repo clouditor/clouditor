@@ -10,9 +10,17 @@ import (
 	"testing"
 )
 
+// ToDo: Needs re-writing
+
 func TestGetS3ServiceClient(t *testing.T) {
-	if client := GetS3Client(); client == nil {
+	cfg := NewAwsDiscovery().cfg
+	client := GetS3Client(cfg)
+	if client == nil {
 		t.Errorf("Connection failed. Credentials are nil.")
+	}
+	_, err := client.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
+	if err != nil {
+		t.Fatalf("Error: %v", err)
 	}
 }
 
@@ -65,10 +73,7 @@ func TestListS3(t *testing.T) {
 
 	for i, tt := range cases {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			buckets, err := List(tt.client(t))
-			if err != nil {
-				t.Fatalf("expect no error, got %v", err)
-			}
+			buckets := List(tt.client(t))
 			if len(buckets.Buckets) == 0 {
 				t.Fatal("Buckets empty but shouldn't be.")
 			}
@@ -115,10 +120,7 @@ func TestAreBucketsEncrypted(t *testing.T) {
 
 	for i, tt := range cases {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			buckets, err := List(tt.client(t))
-			if err != nil {
-				t.Fatalf("expect no error, got %v", err)
-			}
+			buckets := List(tt.client(t))
 			if len(buckets.Buckets) == 0 {
 				t.Fatal("Buckets empty but shouldn't be.")
 			}
