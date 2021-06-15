@@ -70,8 +70,8 @@ func (d *awsS3Discovery) discoverBuckets() {
 	d.getBuckets(d.client)
 	d.checkEncryption("")
 	d.checkPublicAccessBlockConfiguration("")
-	d.checkBucketReplication()
-	d.checkLifeCycleConfiguration()
+	d.checkBucketReplication("")
+	d.checkLifeCycleConfiguration("")
 }
 
 // ToDo: Decide if functions are attached to awsS3Discovery or not. It is, e.g., weird that discoverBuckets
@@ -140,7 +140,6 @@ func (d *awsS3Discovery) checkEncryption(bucket string) bool {
 }
 
 // checkPublicAccessBlockConfiguration gets the bucket's access configuration
-// ToDo
 func (d *awsS3Discovery) checkPublicAccessBlockConfiguration(bucket string) (false bool) {
 	log.Printf("Check if bucket %v has public access...", bucket)
 	input := s3.GetPublicAccessBlockInput{
@@ -164,14 +163,34 @@ func (d *awsS3Discovery) checkPublicAccessBlockConfiguration(bucket string) (fal
 }
 
 // checkBucketReplication gets the bucket's replication configuration
-// ToDo
-func (d *awsS3Discovery) checkBucketReplication() {
-	log.Println("ToDo: Implement checkBucketReplication")
-
+func (d *awsS3Discovery) checkBucketReplication(bucket string) (false bool) {
+	log.Printf("Check if bucket '%v' is been replicated...", bucket)
+	input := s3.GetBucketReplicationInput{
+		Bucket:              aws.String(bucket),
+		ExpectedBucketOwner: nil,
+	}
+	resp, err := d.client.GetBucketReplication(context.TODO(), &input)
+	if err != nil {
+		logrus.Errorf("Error (probably no replica configuration): %v", err)
+		return
+	}
+	logrus.Println(resp.ReplicationConfiguration)
+	return true
 }
 
 // checkLifeCycleConfiguration gets the bucket's lifecycle configuration
 // ToDo
-func (d *awsS3Discovery) checkLifeCycleConfiguration() {
-	log.Println("ToDo: Implement checkLifeCycleConfiguration")
+func (d *awsS3Discovery) checkLifeCycleConfiguration(bucket string) (false bool) {
+	log.Printf("Check life cycle configuration for bucket '%v'", bucket)
+	input := s3.GetBucketLifecycleConfigurationInput{
+		Bucket:              aws.String(bucket),
+		ExpectedBucketOwner: nil,
+	}
+	resp, err := d.client.GetBucketLifecycleConfiguration(context.TODO(), &input)
+	if err != nil {
+		logrus.Errorf("Error occurred: %v", err)
+		return
+	}
+	logrus.Printf(string(resp.Rules[0].Expiration.Days))
+	return true
 }

@@ -187,6 +187,26 @@ func TestCheckPublicAccessBlockConfiguration(t *testing.T) {
 	}
 }
 
+func TestCheckBucketReplication(t *testing.T) {
+	d := NewS3Discovery(NewAwsDiscovery().cfg)
+	d.getBuckets(d.client)
+	for _, bucket := range d.bucketNames {
+		if d.checkBucketReplication(bucket) == true {
+			t.Fatalf("Expected no replication setting for bucket. But replication is set for bucket '%v'.", bucket)
+		}
+	}
+}
+
+func TestCheckLifeCycleConfiguration(t *testing.T) {
+	d := NewS3Discovery(NewAwsDiscovery().cfg)
+	d.getBuckets(d.client)
+	for _, bucket := range d.bucketNames {
+		if d.checkLifeCycleConfiguration(bucket) == true {
+			t.Fatalf("Expected no life cycle configuration setting for bucket. But it is set for bucket '%v'.", bucket)
+		}
+	}
+}
+
 //func TestGetObjectsOfBucket_whenNotEmpty(t *testing.T) {
 //	if bucketObjects := GetObjectsOfBucket(os.Getenv("TESTBUCKET")); len(bucketObjects.Contents) == 0 {
 //		t.Errorf("No buckets found")
