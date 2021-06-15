@@ -29,14 +29,20 @@ package aws
 
 import (
 	"context"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"testing"
 )
 
 // ToDo: Needs re-writing
 
+var cfg aws.Config
+
+func init() {
+	cfg = NewAwsDiscovery().cfg
+}
+
 func TestGetS3ServiceClient(t *testing.T) {
-	cfg := NewAwsDiscovery().cfg
 	// ToDo
 	client := NewS3Discovery(cfg)
 	if client == nil {
@@ -159,7 +165,7 @@ func (m mockListBucketsAPI) ListBuckets(ctx context.Context,
 
 // ToDo: Works with my credentials -> Mock it
 func TestCheckEncryption(t *testing.T) {
-	d := NewS3Discovery(NewAwsDiscovery().cfg)
+	d := NewS3Discovery(cfg)
 	d.getBuckets(d.client)
 	for i, bucket := range d.bucketNames {
 		isEncrypted := d.checkEncryption(bucket)
@@ -167,6 +173,16 @@ func TestCheckEncryption(t *testing.T) {
 			t.Errorf("Expected that bucket %v is not encrypted, but it is", bucket)
 		} else if i == 1 && !isEncrypted {
 			t.Errorf("Expected that bucket %v is encrypted, but it is not", bucket)
+		}
+	}
+}
+
+func TestCheckPublicAccessBlockConfiguration(t *testing.T) {
+	d := NewS3Discovery(NewAwsDiscovery().cfg)
+	d.getBuckets(d.client)
+	for _, bucket := range d.bucketNames {
+		if d.checkPublicAccessBlockConfiguration(bucket) == false {
+			t.Fatalf("Expected no public access of bucket. But public access is enabled for %v.", bucket)
 		}
 	}
 }

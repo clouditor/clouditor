@@ -69,7 +69,7 @@ func (d *awsS3Discovery) discoverBuckets() {
 	// ToDo: Double check that d.client can't be zero due to "private" access with "public" constructor?
 	d.getBuckets(d.client)
 	d.checkEncryption("")
-	d.checkPublicAccessBlockConfiguration()
+	d.checkPublicAccessBlockConfiguration("")
 	d.checkBucketReplication()
 	d.checkLifeCycleConfiguration()
 }
@@ -141,9 +141,26 @@ func (d *awsS3Discovery) checkEncryption(bucket string) bool {
 
 // checkPublicAccessBlockConfiguration gets the bucket's access configuration
 // ToDo
-func (d *awsS3Discovery) checkPublicAccessBlockConfiguration() {
-	log.Println("ToDo: Implement checkPublicAccessBlockConfiguration")
+func (d *awsS3Discovery) checkPublicAccessBlockConfiguration(bucket string) (false bool) {
+	log.Printf("Check if bucket %v has public access...", bucket)
+	input := s3.GetPublicAccessBlockInput{
+		Bucket:              aws.String(bucket),
+		ExpectedBucketOwner: nil,
+	}
+	resp, err := d.client.GetPublicAccessBlock(context.TODO(), &input)
+	if err != nil {
+		logrus.Errorf("Error found: %v", err)
+		return
+	}
+	logrus.Printf("Found: %v", resp.PublicAccessBlockConfiguration)
 
+	configs := resp.PublicAccessBlockConfiguration
+	// ToDo: Currently every configuration has to be unset. Anyway in future, the configs are saved to struct since the
+	// discovery does no assessment
+	if !configs.BlockPublicAcls || !configs.BlockPublicPolicy || !configs.IgnorePublicAcls || !configs.RestrictPublicBuckets {
+		return
+	}
+	return true
 }
 
 // checkBucketReplication gets the bucket's replication configuration
