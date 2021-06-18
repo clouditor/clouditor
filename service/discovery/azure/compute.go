@@ -70,15 +70,24 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 	}
 
 	// Discover virtual machines
-	virtualMachines, _ := d.discoverVirtualMachines()
+	virtualMachines, err := d.discoverVirtualMachines()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover virtual machines: %w", err)
+	}
 	list = append(list, virtualMachines...)
 
 	// Discover network interfaces
-	networkInterfaces, _ := d.discoverNetworkInterfaces()
+	networkInterfaces, err := d.discoverNetworkInterfaces()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover network interfaces: %w", err)
+	}
 	list = append(list, networkInterfaces...)
 
 	// Discover Load Balancer
-	loadBalancer, _ := d.discoverLoadBalancer()
+	loadBalancer, err := d.discoverLoadBalancer()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover load balancer: %w", err)
+	}
 	list = append(list, loadBalancer...)
 
 	return
