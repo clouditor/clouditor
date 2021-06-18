@@ -79,9 +79,6 @@ message Metric {
 
   // the range of this metric, depends on the scale
   Range range = 6;
-
-  // target value
-  google.protobuf.Value target_value  = 7;
 }
 
 // Defines a range of values
