@@ -133,41 +133,39 @@ func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsResource, error)
 	return list, err
 }
 
-//TBD
-func (d *azureNetworkDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc.IsCompute {
+func (d *azureNetworkDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc.IsNetwork {
 	return &voc.LoadBalancerResource{
 		NetworkService: voc.NetworkService{
-			Resource: voc.Resource{
-				ID:           to.String(lb.ID),
-				Name:         to.String(lb.Name),
-				CreationTime: 0, // No creation time available
-				Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
+			NetworkResource: voc.NetworkResource{
+				Resource: voc.Resource{
+					ID:           to.String(lb.ID),
+					Name:         to.String(lb.Name),
+					CreationTime: 0, // No creation time available
+					Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
+				},
 			},
-			IPs: []string{d.GetPublicIPAddress(lb)},
+			IPs:   []string{d.GetPublicIPAddress(lb)},
+			Ports: nil, //TODO: fill out ports (garuppel)
 		},
-		// TODO: fill out access restrictions
+		// TODO (garuppel): fill out access restrictions
 		AccessRestriction: &voc.AccessRestriction{
 			Inbound:         false,
-			RestrictedPorts: "", //TBD
+			RestrictedPorts: "",
 		},
 		// TODO: do we need the httpEndpoint?
-		HttpEndpoints: []*voc.HttpEndpoint{{
-			URL:                 d.GetPublicIPAddress(lb),                     // Get Public IP Address of the Load Balancer
-			TransportEncryption: voc.NewTransportEncryption(false, false, ""), // No transport encryption defined for the Load Balancer
-		}},
-	}
+		HttpEndpoints: []*voc.HttpEndpoint{}}
 }
 
-func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *network.Interface) voc.IsCompute {
+func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *network.Interface) voc.IsNetwork {
 	return &voc.NetworkInterfaceResource{
-		ComputeResource: voc.ComputeResource{
+		NetworkResource: voc.NetworkResource{
 			Resource: voc.Resource{
 				ID:           to.String(ni.ID),
 				Name:         to.String(ni.Name),
 				CreationTime: 0, // No creation time available
 				Type:         []string{"NetworkInterface", "Compute", "Resource"},
-			}},
-		VmID: GetVmID(*ni),
+			},
+		},
 		AccessRestriction: &voc.AccessRestriction{
 			Inbound:         false, //TBD
 			RestrictedPorts: d.GetRestrictedPortsDefined(ni),
@@ -240,13 +238,4 @@ func (d *azureNetworkDiscovery) GetPublicIPAddress(lb *network.LoadBalancer) str
 	}
 
 	return strings.Join(publicIPAddresses, ",")
-}
-
-func GetVmID(ni network.Interface) string {
-	if ni.VirtualMachine == nil {
-		return ""
-	} else {
-		return *ni.VirtualMachine.ID
-	}
-
 }
