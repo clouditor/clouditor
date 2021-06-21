@@ -29,7 +29,7 @@ require (
 	google.golang.org/protobuf v1.26.0
 	gorm.io/driver/postgres v1.1.0
 	gorm.io/driver/sqlite v1.1.4
-	gorm.io/gorm v1.21.10
+	gorm.io/gorm v1.21.11
 	k8s.io/api v0.21.1
 	k8s.io/apimachinery v0.21.2
 	k8s.io/client-go v0.21.1
