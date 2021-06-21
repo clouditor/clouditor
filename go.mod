@@ -31,7 +31,7 @@ require (
 	gorm.io/driver/sqlite v1.1.4
 	gorm.io/gorm v1.21.10
 	k8s.io/api v0.21.1
-	k8s.io/apimachinery v0.21.1
+	k8s.io/apimachinery v0.21.2
 	k8s.io/client-go v0.21.1
 )
 
