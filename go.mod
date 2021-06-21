@@ -32,7 +32,7 @@ require (
 	gorm.io/gorm v1.21.11
 	k8s.io/api v0.21.2
 	k8s.io/apimachinery v0.21.2
-	k8s.io/client-go v0.21.1
+	k8s.io/client-go v0.21.2
 )
 
 replace github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt v0.0.0-20210527125010-9e96e9651418
