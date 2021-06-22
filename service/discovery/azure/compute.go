@@ -28,12 +28,10 @@ package azure
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/compute/mgmt/compute"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2020-03-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
 )
 
@@ -70,10 +68,26 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 	}
 
 	// Discover virtual machines
+	virtualMachines, err := d.discoverVirtualMachines()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover virtual machines: %w", err)
+	}
+	list = append(list, virtualMachines...)
+
+	return
+}
+
+// Discover virtual machines
+func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsResource, error) {
+	var list []voc.IsResource
+
 	client := compute.NewVirtualMachinesClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
 
-	result, _ := client.ListAllComplete(context.Background(), "true")
+	result, err := client.ListAllComplete(context.Background(), "true")
+	if err != nil {
+		return nil, fmt.Errorf("could not list virtual machines: %w", err)
+	}
 
 	vms := *result.Response().Value
 	for i := range vms {
@@ -84,99 +98,7 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 		list = append(list, s)
 	}
 
-	// Discover network interfaces
-	client_network_interfaces := network.NewInterfacesClient(to.String(d.sub.SubscriptionID))
-	d.apply(&client_network_interfaces.Client)
-
-	result_network_interfaces, _ := client_network_interfaces.ListAll(context.Background())
-
-	interfaces := result_network_interfaces.Values()
-	for i := range interfaces {
-		s := d.handleNetworkInterfaces(&interfaces[i])
-
-		log.Infof("Adding network interfaces %+v", s)
-
-		list = append(list, s)
-	}
-
-	// Discover Load Balancer
-	// TODO Client to get load balancer
-	client_load_balancer := network.NewLoadBalancersClient(to.String(d.sub.SubscriptionID))
-	d.apply(&client_load_balancer.Client)
-
-	result_load_balancer, _ := client_load_balancer.ListAll(context.Background())
-
-	lbs := result_load_balancer.Values()
-	for i := range lbs {
-		s := d.handleLoadBalancer(&lbs[i])
-
-		log.Infof("Adding load balancer %+v", s)
-
-		list = append(list, s)
-	}
-
-	return
-}
-
-//TBD
-func (d *azureComputeDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc.IsCompute {
-	return &voc.LoadBalancerResource{
-		NetworkService: voc.NetworkService{
-			Resource: voc.Resource{
-				ID:           to.String(lb.ID),
-				Name:         to.String(lb.Name),
-				CreationTime: 0, // No creation time available
-				Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
-			},
-			IPs: []string{d.GetPublicIPAddress(lb)},
-		},
-		AccessRestriction: &voc.AccessRestriction{
-			Inbound:         false,
-			RestrictedPorts: "", //TBD
-		},
-		HttpEndpoints: []*voc.HttpEndpoint{{
-			//TODO weitermachen Frontend IP configuration
-			URL:                 d.GetPublicIPAddress(lb),                     // Get Public IP Address of the Load Balancer
-			TransportEncryption: voc.NewTransportEncryption(false, false, ""), // No transport encryption defined by the Load Balancer
-		}},
-	}
-}
-
-func (d *azureComputeDiscovery) GetPublicIPAddress(lb *network.LoadBalancer) string {
-
-	var publicIPAddresses []string
-
-	// Get public IP resource
-	client := network.NewPublicIPAddressesClient(to.String(d.sub.SubscriptionID))
-	d.apply(&client.Client)
-
-	if lb.LoadBalancerPropertiesFormat != nil && lb.LoadBalancerPropertiesFormat.FrontendIPConfigurations != nil {
-		for _, publicIpProperties := range *lb.FrontendIPConfigurations {
-
-			publicIPAddress, err := client.Get(context.Background(), GetResourceGroupName(*publicIpProperties.ID), *publicIpProperties.Name, "")
-
-			if err != nil {
-				log.Errorf("Error getting public IP address: %v", err)
-				continue
-			}
-
-			publicIPAddresses = append(publicIPAddresses, *publicIPAddress.IPAddress)
-		}
-	}
-
-	// result, _ := client.Get(azureAuthorizer.ctx, GetResourceGroupName(*lb.ID), *lb.Name, lb.Fr)
-
-	// for _, publicIpProperties := range *lb.FrontendIPConfigurations {
-
-	// 	if publicIpProperties.FrontendIPConfigurationPropertiesFormat.PublicIPAddress.PublicIPAddressPropertiesFormat == nil {
-	// 		continue
-	// 	}
-
-	// 	publicIpAddresses = append(publicIpAddresses, *publicIpProperties.FrontendIPConfigurationPropertiesFormat.PublicIPAddress.IPAddress)
-
-	// }
-
-	return strings.Join(publicIPAddresses, ",")
+	return list, err
 }
 
 func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine) voc.IsCompute {
@@ -198,74 +120,6 @@ func IsBootDiagnosticEnabled(vm *compute.VirtualMachine) bool {
 	if vm.DiagnosticsProfile == nil {
 		return false
 	} else {
-		return *vm.DiagnosticsProfile.BootDiagnostics.Enabled
+		return to.Bool(vm.DiagnosticsProfile.BootDiagnostics.Enabled)
 	}
-}
-
-func (d *azureComputeDiscovery) handleNetworkInterfaces(ni *network.Interface) voc.IsCompute {
-	return &voc.NetworkInterfaceResource{
-		ComputeResource: voc.ComputeResource{
-			Resource: voc.Resource{
-				ID:           to.String(ni.ID),
-				Name:         to.String(ni.Name),
-				CreationTime: 0, // No creation time available
-				Type:         []string{"NetworkInterface", "Compute", "Resource"},
-			}},
-		VmID: GetVmID(*ni),
-		AccessRestriction: &voc.AccessRestriction{
-			Inbound:         false, //TBD
-			RestrictedPorts: d.GetRestrictedPortsDefined(ni),
-		},
-	}
-}
-
-// Returns all restricted ports for the network interface
-func (d *azureComputeDiscovery) GetRestrictedPortsDefined(ni *network.Interface) string {
-
-	var restrictedPorts []string
-
-	if ni.InterfacePropertiesFormat == nil ||
-		ni.InterfacePropertiesFormat.NetworkSecurityGroup == nil ||
-		ni.InterfacePropertiesFormat.NetworkSecurityGroup.ID == nil {
-		return ""
-	}
-
-	nsgID := to.String(ni.NetworkSecurityGroup.ID)
-
-	client := network.NewSecurityGroupsClient(to.String(d.sub.SubscriptionID))
-	d.apply(&client.Client)
-
-	// Get the Security Group of the network interface ni
-	sg, err := client.Get(context.Background(), GetResourceGroupName(nsgID), strings.Split(nsgID, "/")[8], "")
-
-	if err != nil {
-		log.Errorf("Could not get security group: %s", err)
-		return ""
-	}
-
-	if sg.SecurityGroupPropertiesFormat != nil && sg.SecurityGroupPropertiesFormat.SecurityRules != nil {
-		// Find all ports defined in the security rules with access property "Deny"
-		for _, securityRule := range *sg.SecurityRules {
-			if securityRule.Access == network.SecurityRuleAccessDeny {
-				// TODO delete duplicates
-				restrictedPorts = append(restrictedPorts, *securityRule.SourcePortRange)
-			}
-		}
-	}
-
-	return strings.Join(restrictedPorts, ",")
-}
-
-func GetResourceGroupName(nsgID string) string {
-	log.Infof(strings.Split(nsgID, "/")[4])
-	return strings.Split(nsgID, "/")[4]
-}
-
-func GetVmID(ni network.Interface) string {
-	if ni.VirtualMachine == nil {
-		return ""
-	} else {
-		return *ni.VirtualMachine.ID
-	}
-
 }

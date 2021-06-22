@@ -25,10 +25,6 @@
 
 package voc
 
-// type HasLog interface {
-// 	GetLog() *Log
-// }
-
 type HasAccessRestriction interface {
 	GetAccessRestriction() *AccessRestriction
 }
@@ -44,8 +40,6 @@ type ComputeResource struct {
 // Virtual Machine
 type VirtualMachineResource struct {
 	ComputeResource
-	//NetworkInterfaceResource
-	//BlockStorage
 
 	Log *Log `json:"log"`
 }
@@ -56,17 +50,4 @@ func (v *VirtualMachineResource) GetLog() *Log {
 
 type ContainerResource struct {
 	ComputeResource
-}
-
-// Network Interface
-type NetworkInterfaceResource struct {
-	ComputeResource
-	//NetworkService
-
-	VmID              string             `json:"vmId"` // For debugging reasons
-	AccessRestriction *AccessRestriction `json:"accessRestriction"`
-}
-
-func (n *NetworkInterfaceResource) GetAccessRestriction() *AccessRestriction {
-	return n.AccessRestriction
 }

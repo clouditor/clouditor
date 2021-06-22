@@ -83,7 +83,7 @@ func (k k8sNetworkDiscovery) List() ([]voc.IsResource, error) {
 	return list, nil
 }
 
-func (k k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsCompute {
+func (k k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwork {
 	var ports []int16
 
 	for _, v := range service.Spec.Ports {
@@ -91,26 +91,31 @@ func (k k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsComput
 	}
 
 	return &voc.NetworkService{
-		Resource: voc.Resource{
-			ID:           fmt.Sprintf("/namespaces/%s/services/%s", service.Namespace, service.Name),
-			Name:         service.Name,
-			CreationTime: service.CreationTimestamp.Unix(),
-			Type:         []string{"NetworkService", "Resource"},
+		NetworkResource: voc.NetworkResource{
+			Resource: voc.Resource{
+				ID:           fmt.Sprintf("/namespaces/%s/services/%s", service.Namespace, service.Name),
+				Name:         service.Name,
+				CreationTime: service.CreationTimestamp.Unix(),
+				Type:         []string{"NetworkService", "Resource"},
+			},
 		},
 		IPs:   service.Spec.ClusterIPs,
 		Ports: ports,
 	}
 }
 
-func (k k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsResource {
+func (k k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 	lb := &voc.LoadBalancerResource{
 		NetworkService: voc.NetworkService{
-			Resource: voc.Resource{
-				ID:           fmt.Sprintf("/namespaces/%s/ingresses/%s", ingress.Namespace, ingress.Name),
-				Name:         ingress.Name,
-				CreationTime: ingress.CreationTimestamp.Unix(),
-				Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
+			NetworkResource: voc.NetworkResource{
+				Resource: voc.Resource{
+					ID:           fmt.Sprintf("/namespaces/%s/ingresses/%s", ingress.Namespace, ingress.Name),
+					Name:         ingress.Name,
+					CreationTime: ingress.CreationTimestamp.Unix(),
+					Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
+				},
 			},
+			IPs:   nil, // TODO (oxisto): fill out IPs
 			Ports: []int16{80, 443},
 		},
 		// TODO(oxisto): fill out access restrictions
