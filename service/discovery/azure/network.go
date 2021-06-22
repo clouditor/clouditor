@@ -145,7 +145,7 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc
 				},
 			},
 			IPs:   []string{d.GetPublicIPAddress(lb)},
-			Ports: nil, //TODO: fill out ports (garuppel)
+			Ports: getLoadBalancerPorts(lb),
 		},
 		// TODO (garuppel): fill out access restrictions
 		AccessRestriction: &voc.AccessRestriction{
@@ -171,6 +171,15 @@ func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *network.Interface) v
 			RestrictedPorts: d.GetRestrictedPortsDefined(ni),
 		},
 	}
+}
+
+func getLoadBalancerPorts(lb *network.LoadBalancer) (loadBalancerPorts []int16) {
+
+	for _, item := range *lb.LoadBalancingRules {
+		loadBalancerPorts = append(loadBalancerPorts, int16(*item.FrontendPort))
+	}
+
+	return loadBalancerPorts
 }
 
 // Returns all restricted ports for the network interface
