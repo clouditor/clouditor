@@ -25,6 +25,14 @@
 
 package voc
 
+type IsNetwork interface {
+	IsResource
+}
+
+type NetworkResource struct {
+	Resource
+}
+
 type HttpEndpoint struct {
 	Resource // TODO(oxisto): should actually be a functionality, not a resource
 
@@ -34,7 +42,7 @@ type HttpEndpoint struct {
 }
 
 type NetworkService struct {
-	Resource
+	NetworkResource
 
 	IPs   []string
 	Ports []int16
@@ -46,4 +54,15 @@ type LoadBalancerResource struct {
 
 	AccessRestriction *AccessRestriction `json:"accessRestriction"`
 	HttpEndpoints     []*HttpEndpoint    `json:"httpEndpoint"`
+}
+
+// Network Interface
+type NetworkInterfaceResource struct {
+	NetworkResource
+
+	AccessRestriction *AccessRestriction `json:"accessRestriction"`
+}
+
+func (n *NetworkInterfaceResource) GetAccessRestriction() *AccessRestriction {
+	return n.AccessRestriction
 }

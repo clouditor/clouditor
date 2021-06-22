@@ -122,6 +122,7 @@ func (s Service) Start(ctx context.Context, request *discovery.StartDiscoveryReq
 	discoverer = append(discoverer,
 		azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
 		azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
+		azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)),
 		k8s.NewKubernetesComputeDiscovery(k8sClient),
 		k8s.NewKubernetesNetworkDiscovery(k8sClient),
 	)
