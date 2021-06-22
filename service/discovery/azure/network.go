@@ -168,7 +168,7 @@ func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *network.Interface) v
 		},
 		AccessRestriction: &voc.AccessRestriction{
 			Inbound:         false, //TBD
-			RestrictedPorts: d.GetRestrictedPortsDefined(ni),
+			RestrictedPorts: d.getRestrictedPortsDefined(ni),
 		},
 	}
 }
@@ -183,7 +183,7 @@ func getLoadBalancerPorts(lb *network.LoadBalancer) (loadBalancerPorts []int16) 
 }
 
 // Returns all restricted ports for the network interface
-func (d *azureNetworkDiscovery) GetRestrictedPortsDefined(ni *network.Interface) string {
+func (d *azureNetworkDiscovery) getRestrictedPortsDefined(ni *network.Interface) string {
 
 	var restrictedPorts []string
 
