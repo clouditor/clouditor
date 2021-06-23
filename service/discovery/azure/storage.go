@@ -67,10 +67,26 @@ func (d *azureStorageDiscovery) List() (list []voc.IsResource, err error) {
 		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
 	}
 
+	// Discover storage accounts
+	storageAccounts, err := d.discoverStorageAccounts()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover storage accounts: %w", err)
+	}
+	list = append(list, storageAccounts...)
+
+	return
+}
+
+func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsResource, error) {
+	var list []voc.IsResource
+
 	client := storage.NewAccountsClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
 
-	result, _ := client.List(context.Background())
+	result, err := client.List(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("could not list storage accounts: %w", err)
+	}
 
 	accounts := result.Values()
 	for i := range accounts {
@@ -81,7 +97,7 @@ func (d *azureStorageDiscovery) List() (list []voc.IsResource, err error) {
 		list = append(list, s)
 	}
 
-	return
+	return list, err
 }
 
 func handleStorageAccount(account *storage.Account) voc.IsStorage {
