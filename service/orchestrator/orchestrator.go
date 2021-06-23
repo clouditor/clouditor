@@ -47,6 +47,8 @@ var metrics []*assessment.Metric
 var metricIndex map[int32]*assessment.Metric
 var log *logrus.Entry
 
+var DefaultMetricsFile = "metrics.json"
+
 // Service is an implementation of the Clouditor Orchestrator service
 type Service struct {
 	orchestrator.UnimplementedOrchestratorServer
@@ -55,7 +57,7 @@ type Service struct {
 func init() {
 	log = logrus.WithField("component", "orchestrator")
 
-	if err := loadMetrics(); err != nil {
+	if err := LoadMetrics(DefaultMetricsFile); err != nil {
 		log.Errorf("Could not load embedded metrics. Will continue with empty metric list: %v", err)
 	}
 
@@ -65,14 +67,14 @@ func init() {
 	}
 }
 
-func loadMetrics() (err error) {
+func LoadMetrics(metricsFile string) (err error) {
 	var (
 		b []byte
 	)
 
-	b, err = f.ReadFile("metrics.json")
+	b, err = f.ReadFile(metricsFile)
 	if err != nil {
-		return fmt.Errorf("error while loading metrics.json: %w", err)
+		return fmt.Errorf("error while loading %s: %w", metricsFile, err)
 	}
 
 	err = json.Unmarshal(b, &metrics)
