@@ -147,12 +147,9 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc
 			IPs:   []string{d.GetPublicIPAddress(lb)},
 			Ports: getLoadBalancerPorts(lb),
 		},
-		// TODO (garuppel): fill out access restrictions
-		AccessRestriction: &voc.AccessRestriction{
-			Inbound:         false,
-			RestrictedPorts: "",
-		},
-		// TODO: do we need the httpEndpoint?
+		// TODO: do we need the AccessRestriction for load balancers?
+		AccessRestriction: &voc.AccessRestriction{},
+		// TODO: do we need the httpEndpoint for load balancers?
 		HttpEndpoints: []*voc.HttpEndpoint{}}
 }
 
