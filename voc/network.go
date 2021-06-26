@@ -57,12 +57,13 @@ type LoadBalancerResource struct {
 }
 
 // Network Interface
-type NetworkInterfaceResource struct {
+type NetworkInterface struct {
 	NetworkResource
 
 	AccessRestriction *AccessRestriction `json:"accessRestriction"`
+	AttachedTo        ResourceID         `json:"attachedTo"`
 }
 
-func (n *NetworkInterfaceResource) GetAccessRestriction() *AccessRestriction {
+func (n *NetworkInterface) GetAccessRestriction() *AccessRestriction {
 	return n.AccessRestriction
 }

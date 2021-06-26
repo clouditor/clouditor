@@ -73,7 +73,7 @@ func (k k8sComputeDiscovery) handlePod(pod *v1.Pod) voc.IsCompute {
 	return &voc.ContainerResource{
 		ComputeResource: voc.ComputeResource{
 			Resource: voc.Resource{
-				ID:           fmt.Sprintf("/namespaces/%s/containers/%s", pod.Namespace, pod.Name),
+				ID:           voc.ResourceID(fmt.Sprintf("/namespaces/%s/containers/%s", pod.Namespace, pod.Name)),
 				Name:         pod.Name,
 				CreationTime: pod.CreationTimestamp.Unix(),
 				Type:         []string{"Container", "Compute", "Resource"},

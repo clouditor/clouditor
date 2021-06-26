@@ -36,22 +36,24 @@ import (
 )
 
 type IsResource interface {
-	GetID() string
+	GetID() ResourceID
 	GetName() string
 	GetType() []string
 	HasType(string) bool
 	GetCreationTime() *time.Time
 }
 
+type ResourceID string
+
 type Resource struct {
-	ID           string `json:"id"`
-	Name         string `json:"name"`
-	CreationTime int64  `json:"creationTime"` // is set to 0 if no creation time is available
+	ID           ResourceID `json:"id"`
+	Name         string     `json:"name"`
+	CreationTime int64      `json:"creationTime"` // is set to 0 if no creation time is available
 	// The resource type. It is an array, because a type can be derived from another
 	Type []string `json:"type"`
 }
 
-func (r *Resource) GetID() string {
+func (r *Resource) GetID() ResourceID {
 	return r.ID
 }
 

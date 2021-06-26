@@ -35,6 +35,8 @@ type IsCompute interface {
 
 type ComputeResource struct {
 	Resource
+
+	NetworkInterfaces []ResourceID
 }
 
 // Virtual Machine

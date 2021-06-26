@@ -93,7 +93,7 @@ func (k k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwor
 	return &voc.NetworkService{
 		NetworkResource: voc.NetworkResource{
 			Resource: voc.Resource{
-				ID:           fmt.Sprintf("/namespaces/%s/services/%s", service.Namespace, service.Name),
+				ID:           voc.ResourceID(fmt.Sprintf("/namespaces/%s/services/%s", service.Namespace, service.Name)),
 				Name:         service.Name,
 				CreationTime: service.CreationTimestamp.Unix(),
 				Type:         []string{"NetworkService", "Resource"},
@@ -109,7 +109,7 @@ func (k k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 		NetworkService: voc.NetworkService{
 			NetworkResource: voc.NetworkResource{
 				Resource: voc.Resource{
-					ID:           fmt.Sprintf("/namespaces/%s/ingresses/%s", ingress.Namespace, ingress.Name),
+					ID:           voc.ResourceID(fmt.Sprintf("/namespaces/%s/ingresses/%s", ingress.Namespace, ingress.Name)),
 					Name:         ingress.Name,
 					CreationTime: ingress.CreationTimestamp.Unix(),
 					Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
@@ -142,7 +142,7 @@ func (k k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 
 			http := &voc.HttpEndpoint{
 				Resource: voc.Resource{
-					ID:           url,
+					ID:           voc.ResourceID(url),
 					Name:         ingress.Name,
 					CreationTime: ingress.CreationTimestamp.Unix(),
 				},

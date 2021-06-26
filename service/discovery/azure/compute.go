@@ -102,10 +102,11 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsResource, err
 }
 
 func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine) voc.IsCompute {
-	return &voc.VirtualMachineResource{
+
+	r := &voc.VirtualMachineResource{
 		ComputeResource: voc.ComputeResource{
 			Resource: voc.Resource{
-				ID:           to.String(vm.ID),
+				ID:           voc.ResourceID(to.String(vm.ID)),
 				Name:         to.String(vm.Name),
 				CreationTime: 0, // No creation time available
 				Type:         []string{"VirtualMachine", "Compute", "Resource"},
@@ -114,6 +115,12 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 			Enabled: IsBootDiagnosticEnabled(vm),
 		},
 	}
+
+	for _, i := range *vm.NetworkProfile.NetworkInterfaces {
+		r.NetworkInterfaces = append(r.NetworkInterfaces, voc.ResourceID(to.String(i.ID)))
+	}
+
+	return r
 }
 
 func IsBootDiagnosticEnabled(vm *compute.VirtualMachine) bool {
