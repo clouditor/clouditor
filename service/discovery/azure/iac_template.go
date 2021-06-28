@@ -126,6 +126,12 @@ func (d *azureIaCTemplateDiscovery) discoverIaCTemplate() ([]voc.IsResource, err
 									return nil, fmt.Errorf("could not create virtual machine resource: %w", err)
 								}
 								list = append(list, vm)
+							} else if valueValue.(string) == "Microsoft.Network/loadBalancers" {
+								lb, err := d.createLBResource(value, *resourceGroups[i].Name)
+								if err != nil {
+									return nil, fmt.Errorf("could not create load balancer resource: %w", err)
+								}
+								list = append(list, lb)
 							}
 						}
 					}
@@ -137,6 +143,45 @@ func (d *azureIaCTemplateDiscovery) discoverIaCTemplate() ([]voc.IsResource, err
 	return list, nil
 }
 
+func (d *azureIaCTemplateDiscovery) createLBResource(resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
+
+	var name string
+	var resourceType string
+
+	resourceType = resourceValue["type"].(string)
+
+	for key, value := range resourceValue {
+		// Get LB name
+		if key == "name" {
+			name = getResourceName(value.(string))
+		}
+	}
+
+	// TODO Which additional information do we get from the template?
+	lb := &voc.LoadBalancerResource{
+		NetworkService: voc.NetworkService{
+			NetworkResource: voc.NetworkResource{
+				Resource: voc.Resource{
+					ID:           d.createID(resourceGroup, resourceType, name),
+					Name:         name,
+					CreationTime: 0, // No creation time available
+					Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
+				},
+			},
+			IPs:   []string{},
+			Ports: nil,
+		},
+		AccessRestriction: &voc.AccessRestriction{
+			Inbound:         false,
+			RestrictedPorts: "",
+		},
+		// TODO Do we need the httpEndpoint?
+		HttpEndpoints: []*voc.HttpEndpoint{},
+	}
+
+	return lb, nil
+}
+
 func (d *azureIaCTemplateDiscovery) createVMResource(resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
 	var id string
 	var name string
@@ -144,18 +189,19 @@ func (d *azureIaCTemplateDiscovery) createVMResource(resourceValue map[string]in
 
 	for key, value := range resourceValue {
 
+		// Get VM name
 		if key == "name" {
-			nameSplit := strings.Split(value.(string), "'")
-			vmNameSplit := strings.Split(nameSplit[1], "_")
-			// Delete first element
-			vmNameSplit = vmNameSplit[1:]
-			// Delete last element
-			vmNameSplit = vmNameSplit[:len(vmNameSplit)-1]
-			// TODO Is it possible that an vm_name has a _ as delimiter
-			name = strings.Join(vmNameSplit, "-")
+			name = getResourceName(value.(string))
+			// // Name in template is an paramter and unnecessary information must be shortened
+			// nameSplit := strings.Split(value.(string), "'")
+			// vmNameSplit := strings.Split(nameSplit[1], "_")
+			// vmNameSplit = vmNameSplit[1:]
+			// vmNameSplit = vmNameSplit[:len(vmNameSplit)-1]
+			// // TODO Is it possible that an vm_name has a _ as delimiter
+			// name = strings.Join(vmNameSplit, "-")
 		}
 
-		// Get bool value for bootDiagnostics
+		// Get bool for Logging enabled
 		if key == "properties" {
 			properties, ok := value.(map[string]interface{})
 
@@ -171,8 +217,9 @@ func (d *azureIaCTemplateDiscovery) createVMResource(resourceValue map[string]in
 		}
 	}
 
-	//TBD ID must be put together by hand
-	id = "/subscriptions/" + *d.sub.SubscriptionID + "/resourceGroups/" + strings.ToUpper(resourceGroup) + "/providers/" + resourceValue["type"].(string) + "/" + name
+	// Get ID
+	// ID must be put together by hand, is not available in template. Better ideas? Leave empty?
+	id = d.createID(resourceGroup, resourceValue["type"].(string), name) //"/subscriptions/" + *d.sub.SubscriptionID + "/resourceGroups/" + strings.ToUpper(resourceGroup) + "/providers/" + resourceValue["type"].(string) + "/" + name
 
 	vm := &voc.VirtualMachineResource{
 		ComputeResource: voc.ComputeResource{
@@ -188,4 +235,20 @@ func (d *azureIaCTemplateDiscovery) createVMResource(resourceValue map[string]in
 	}
 
 	return vm, nil
+}
+
+func (d *azureIaCTemplateDiscovery) createID(resourceGroup, resourceType, name string) string {
+	return "/subscriptions/" + *d.sub.SubscriptionID + "/resourceGroups/" + strings.ToUpper(resourceGroup) + "/providers/" + resourceType + "/" + name
+}
+
+func getResourceName(name string) string {
+	// Name in template is an paramter and unnecessary information must be shortened
+	nameSplit := strings.Split(name, "'")
+	vmNameSplit := strings.Split(nameSplit[1], "_")
+	vmNameSplit = vmNameSplit[1:]
+	vmNameSplit = vmNameSplit[:len(vmNameSplit)-1]
+	// TODO Is it possible that an vm_name has a _ as delimiter
+	resourceName := strings.Join(vmNameSplit, "-")
+
+	return resourceName
 }
