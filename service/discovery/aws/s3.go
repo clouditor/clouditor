@@ -181,7 +181,7 @@ func (d *awsS3Discovery) getBucketObjects(myBucket string) *s3.ListObjectsV2Outp
 // getEncryptionConf gets the bucket's encryption configuration
 // ToDo: algorithm "", "AES256" or "aws:kms" as algorithm. Is this the right format?
 // ToDo: keyManager "", "SSE-S3" or "SSE-KMS". Is this the right format?
-func (d *awsS3Discovery) getEncryptionConf(bucket string) (bool, string, string) {
+func (d *awsS3Discovery) getEncryptionConf(bucket string) (isEncrypted bool, algorithm string, keyManager string) {
 	log.Printf("Checking encryption for bucket %v.\n", bucket)
 	input := s3.GetBucketEncryptionInput{
 		Bucket:              aws.String(bucket),
@@ -191,25 +191,23 @@ func (d *awsS3Discovery) getEncryptionConf(bucket string) (bool, string, string)
 	if err != nil {
 		logrus.Errorf("Probably no encryption enabled. Error: %v", err)
 		// ToDo: Simply Return good?
-		return false, "", ""
+		return
 	}
 	log.Println("Bucket is encrypted.")
-	// ToDo: Why there are multiple rules? For now I check only the first
-	var algorithm string
-	var keyManager string
 	algorithm = string(resp.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm)
 	if algorithm == string(types.ServerSideEncryptionAes256) {
 		keyManager = "SSE-S3"
 	} else {
 		keyManager = "SSE-KMS"
 	}
+	isEncrypted = true
+	// ToDo: Why there are multiple rules? For now I check only the first
 	//for i, rule := range resp.ServerSideEncryptionConfiguration.Rules {
 	//	algorithm = string(rule.ApplyServerSideEncryptionByDefault.SSEAlgorithm)
 	//	keyManager = string(rule.)
 	//	log.Printf("Rule %v: %v", i, algorithm)
 	//}
-
-	return true, algorithm, keyManager
+	return
 }
 
 // checkPublicAccessBlockConfiguration gets the bucket's access configuration

@@ -29,6 +29,7 @@ package aws
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -184,6 +185,95 @@ func (m mockS3API) ListBuckets(ctx context.Context,
 	return m(ctx, params, optFns...)
 }
 
+type mockS3APINew struct{}
+
+func (m mockS3APINew) ListBuckets(ctx context.Context,
+	params *s3.ListBucketsInput,
+	optFns ...func(*s3.Options)) (*s3.ListBucketsOutput, error) {
+
+	output := &s3.ListBucketsOutput{Buckets: []types.Bucket{
+		{
+			Name: aws.String("AWS Mock Bucket 1"),
+		},
+		{
+			Name: aws.String("AWS Mock Bucket 2"),
+		},
+	}}
+	return output, nil
+}
+
+func (m mockS3APINew) GetBucketEncryption(ctx context.Context, params *s3.GetBucketEncryptionInput, optFns ...func(*s3.Options)) (*s3.GetBucketEncryptionOutput, error) {
+	// ToDo: Switch between different buckets (params) -> different SSEAlgorithm and KeyManager
+	switch aws.ToString(params.Bucket) {
+	case "Mock Bucket 1":
+		output := &s3.GetBucketEncryptionOutput{
+			ServerSideEncryptionConfiguration: &types.ServerSideEncryptionConfiguration{
+				Rules: []types.ServerSideEncryptionRule{
+					{
+						ApplyServerSideEncryptionByDefault: &types.ServerSideEncryptionByDefault{
+							SSEAlgorithm:   "AES256",
+							KMSMasterKeyID: aws.String("SSE-S3"),
+						},
+						BucketKeyEnabled: false,
+					},
+				},
+			},
+		}
+		return output, nil
+	default:
+		return nil, errors.New("there was an error")
+	}
+}
+
+func (m mockS3APINew) GetPublicAccessBlock(ctx context.Context, params *s3.GetPublicAccessBlockInput, optFns ...func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error) {
+	panic("implement me")
+}
+
+func (m mockS3APINew) GetBucketReplication(ctx context.Context, params *s3.GetBucketReplicationInput, optFns ...func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
+	panic("implement me")
+}
+
+func (m mockS3APINew) GetBucketLifecycleConfiguration(ctx context.Context, params *s3.GetBucketLifecycleConfigurationInput, optFns ...func(*s3.Options)) (*s3.GetBucketLifecycleConfigurationOutput, error) {
+	panic("implement me")
+}
+
+// TestGetBucketsNew tests the getBuckets method (with other form of mocking implementation)
+// ToDo: Its simpler and shorter but I would like the other one more (with "cases")
+func TestGetBucketsNew(t *testing.T) {
+	// ToDo: It is not better to use a pointer (&awsS3Discovery), is it?
+	d := awsS3Discovery{
+		client:        mockS3APINew{},
+		buckets:       nil,
+		bucketNames:   nil,
+		isDiscovering: false,
+	}
+	d.getBuckets()
+	log.Println("Here are the buckets: ", d.bucketNames)
+}
+
+func TestGetEncryptionConf(t *testing.T) {
+	d := awsS3Discovery{
+		client:        mockS3APINew{},
+		buckets:       nil,
+		bucketNames:   nil,
+		isDiscovering: false,
+	}
+	isEncrypted, algorithm, manager := d.getEncryptionConf("Mock Bucket 1")
+	if isEncrypted == false {
+		t.Error("Expected:", true, ".Got:", isEncrypted)
+	}
+	if e := "AES256"; algorithm != e {
+		t.Error("Expected:", e, ".Got:", algorithm)
+	}
+	if e := "SSE-S3"; manager != e {
+		t.Error("Expected:", e, ".Got:", manager)
+	}
+	isEncrypted, algorithm, manager = d.getEncryptionConf("Mock Bucket with no encryption")
+	if isEncrypted == true {
+		t.Error("Expected:", false, ".Got:", isEncrypted)
+	}
+}
+
 // TestGetBuckets tests the getBuckets method
 func TestGetBuckets(t *testing.T) {
 	cases := []struct {
@@ -196,11 +286,11 @@ func TestGetBuckets(t *testing.T) {
 					t.Helper()
 					return &s3.ListBucketsOutput{
 						Buckets: []types.Bucket{
-							types.Bucket{
+							{
 								CreationDate: nil,
 								Name:         aws.String("AWS Mock Bucket 1"),
 							},
-							types.Bucket{
+							{
 								CreationDate: nil,
 								Name:         aws.String("AWS Mock Bucket 2"),
 							},
@@ -228,6 +318,19 @@ func TestGetBuckets(t *testing.T) {
 		})
 	}
 }
+
+// TestGetEncryptionConf tests the getEncryptionConf method
+//func TestGetEncryptionConf(t *testing.T) {
+//	cases := []struct {
+//		client func(t *testing.T) S3API
+//	}{
+//		{
+//			client: func(t *testing.T) S3API {
+//				return mockS3API(func(ctx context.Context, params *s3.ListBucketsInput, optFns ...func(*s3.Options)) (*s3.ListBucketsOutput, error) {
+//
+//				})
+//			}}}
+//}
 
 // ToDo: Works with my credentials -> Mock it
 func TestCheckEncryption_withCredentials(t *testing.T) {
