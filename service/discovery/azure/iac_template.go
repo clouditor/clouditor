@@ -192,13 +192,6 @@ func (d *azureIaCTemplateDiscovery) createVMResource(resourceValue map[string]in
 		// Get VM name
 		if key == "name" {
 			name = getResourceName(value.(string))
-			// // Name in template is an paramter and unnecessary information must be shortened
-			// nameSplit := strings.Split(value.(string), "'")
-			// vmNameSplit := strings.Split(nameSplit[1], "_")
-			// vmNameSplit = vmNameSplit[1:]
-			// vmNameSplit = vmNameSplit[:len(vmNameSplit)-1]
-			// // TODO Is it possible that an vm_name has a _ as delimiter
-			// name = strings.Join(vmNameSplit, "-")
 		}
 
 		// Get bool for Logging enabled
