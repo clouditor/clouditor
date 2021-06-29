@@ -28,7 +28,6 @@
 package aws
 
 import (
-	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
 	"context"
 	"fmt"
@@ -42,11 +41,30 @@ import (
 // awsS3Discovery handles the AWS API requests regarding the S3 service
 // ToDo: Generalize from s3 to other storage types like EFS
 type awsS3Discovery struct {
-	client *s3.Client
+	client S3API
 	// ToDo: Change type to bucketsType to list of bucket structs
 	buckets       interface{}
 	bucketNames   []string
 	isDiscovering bool
+}
+
+// S3API describes the S3 client interface (for mock testing)
+type S3API interface {
+	ListBuckets(ctx context.Context,
+		params *s3.ListBucketsInput,
+		optFns ...func(*s3.Options)) (*s3.ListBucketsOutput, error)
+	GetBucketEncryption(ctx context.Context,
+		params *s3.GetBucketEncryptionInput,
+		optFns ...func(*s3.Options)) (*s3.GetBucketEncryptionOutput, error)
+	GetPublicAccessBlock(ctx context.Context,
+		params *s3.GetPublicAccessBlockInput,
+		optFns ...func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error)
+	GetBucketReplication(ctx context.Context,
+		params *s3.GetBucketReplicationInput,
+		optFns ...func(*s3.Options)) (*s3.GetBucketReplicationOutput, error)
+	GetBucketLifecycleConfiguration(ctx context.Context,
+		params *s3.GetBucketLifecycleConfigurationInput,
+		optFns ...func(*s3.Options)) (*s3.GetBucketLifecycleConfigurationOutput, error)
 }
 
 func (d *awsS3Discovery) Name() string {
@@ -60,7 +78,7 @@ func (d *awsS3Discovery) List() (resources []voc.IsResource, err error) {
 		log.Errorf("Could not retrieve buckets: %v", err)
 	}
 	for _, bucket := range resp.Buckets {
-		isEncrypted, algorithm, keyManager := d.checkEncryption(*bucket.Name)
+		isEncrypted, algorithm, keyManager := d.getEncryptionConf(*bucket.Name)
 		resources = append(resources, &voc.ObjectStorageResource{
 			StorageResource: voc.StorageResource{
 				Resource: voc.Resource{
@@ -73,7 +91,7 @@ func (d *awsS3Discovery) List() (resources []voc.IsResource, err error) {
 				},
 				AtRestEncryption: voc.NewAtRestEncryption(isEncrypted, algorithm, keyManager),
 			},
-			// ToDo: Why AtRestEncryption with constructor and with direct access?
+			// ToDo: Why AtRestEncryption with constructor and here with direct access?
 			HttpEndpoint: &voc.HttpEndpoint{
 				// What is with voc.Resource here? Is it even a resource?
 				// ToDo: I don't know how (yet)?
@@ -85,19 +103,11 @@ func (d *awsS3Discovery) List() (resources []voc.IsResource, err error) {
 	return
 }
 
-// NewS3Discovery constructs a new awsS3Discovery initializing the s3-client and isDiscovering with true
-// ToDo: Discard method
-func NewS3Discovery(cfg aws.Config) *awsS3Discovery {
-	return &awsS3Discovery{
-		client:        s3.NewFromConfig(cfg),
-		buckets:       nil,
-		isDiscovering: true,
-	}
-}
-
 // NewAwsStorageDiscovery constructs a new awsS3Discovery initializing the s3-client and isDiscovering with true
 // ToDo: cfg as copy (instead of pointer) since we do not want to change it?
-func NewAwsStorageDiscovery(cfg aws.Config) discovery.Discoverer {
+// ToDo: return type "discovery.Discoverer" instead of "awsS3Discovery"? (But "accept interfaces, return structs")
+// ToDo: Discard method
+func NewAwsStorageDiscovery(cfg aws.Config) *awsS3Discovery {
 	return &awsS3Discovery{
 		client:        s3.NewFromConfig(cfg),
 		buckets:       nil,
@@ -106,30 +116,30 @@ func NewAwsStorageDiscovery(cfg aws.Config) discovery.Discoverer {
 }
 
 // S3ListBucketsAPI is the interface for the List function (used for mock testing)
-// ToDo: Is it a good idea to do so, i.e. integrating test stuff here? It is recommended by the AWS SDK documentation
 type S3ListBucketsAPI interface {
 	ListBuckets(ctx context.Context,
 		params *s3.ListBucketsInput,
 		optFns ...func(*s3.Options)) (*s3.ListBucketsOutput, error)
 }
 
-// discoverBuckets retrieves all buckets and its configurations needed for assessing
-func (d *awsS3Discovery) discoverBuckets() {
+// handleStorageAccount retrieves all buckets and its configurations needed for assessing
+// Todo: Implement me!
+func (d *awsS3Discovery) handleStorageAccount() {
 	// ToDo: Double check that d.client can't be zero due to "private" access with "public" constructor?
-	d.getBuckets(d.client)
-	d.checkEncryption("")
-	d.checkPublicAccessBlockConfiguration("")
-	d.checkBucketReplication("")
-	d.checkLifeCycleConfiguration("")
+	//d.getBuckets()
+	//d.getEncryptionConf("")
+	//d.checkPublicAccessBlockConfiguration("")
+	//d.checkBucketReplication("")
+	//d.checkLifeCycleConfiguration("")
 }
 
-// ToDo: Decide if functions are attached to awsS3Discovery or not. It is, e.g., weird that discoverBuckets
+// ToDo: Decide if functions are attached to awsS3Discovery or not. It is, e.g., weird that handleStorageAccount
 // calls "d.getBuckets(d.client)"
 
 // getBuckets returns all buckets
-func (d *awsS3Discovery) getBuckets(clientApi S3ListBucketsAPI) {
+func (d *awsS3Discovery) getBuckets() {
 	logrus.Println("Discovering s3:")
-	resp, err := clientApi.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
+	resp, err := d.client.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
 	if err != nil {
 		log.Fatalf("Error occured while retrieving buckets: %v", err)
 	}
@@ -168,10 +178,10 @@ func (d *awsS3Discovery) getBucketObjects(myBucket string) *s3.ListObjectsV2Outp
 	return output
 }
 
-// checkEncryption gets the bucket's encryption configuration
+// getEncryptionConf gets the bucket's encryption configuration
 // ToDo: algorithm "", "AES256" or "aws:kms" as algorithm. Is this the right format?
 // ToDo: keyManager "", "SSE-S3" or "SSE-KMS". Is this the right format?
-func (d *awsS3Discovery) checkEncryption(bucket string) (bool, string, string) {
+func (d *awsS3Discovery) getEncryptionConf(bucket string) (bool, string, string) {
 	log.Printf("Checking encryption for bucket %v.\n", bucket)
 	input := s3.GetBucketEncryptionInput{
 		Bucket:              aws.String(bucket),
