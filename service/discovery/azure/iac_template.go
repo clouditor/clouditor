@@ -146,9 +146,8 @@ func (d *azureIaCTemplateDiscovery) discoverIaCTemplate() ([]voc.IsResource, err
 func (d *azureIaCTemplateDiscovery) createLBResource(resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
 
 	var name string
-	var resourceType string
 
-	resourceType = resourceValue["type"].(string)
+	resourceType := resourceValue["type"].(string)
 
 	for key, value := range resourceValue {
 		// Get LB name
@@ -212,7 +211,7 @@ func (d *azureIaCTemplateDiscovery) createVMResource(resourceValue map[string]in
 
 	// Get ID
 	// ID must be put together by hand, is not available in template. Better ideas? Leave empty?
-	id = d.createID(resourceGroup, resourceValue["type"].(string), name) //"/subscriptions/" + *d.sub.SubscriptionID + "/resourceGroups/" + strings.ToUpper(resourceGroup) + "/providers/" + resourceValue["type"].(string) + "/" + name
+	id = d.createID(resourceGroup, resourceValue["type"].(string), name)
 
 	vm := &voc.VirtualMachineResource{
 		ComputeResource: voc.ComputeResource{
@@ -235,7 +234,7 @@ func (d *azureIaCTemplateDiscovery) createID(resourceGroup, resourceType, name s
 }
 
 func getResourceName(name string) string {
-	// Name in template is an paramter and unnecessary information must be shortened
+	// Name in template is an parameter and unnecessary information must be shortened
 	nameSplit := strings.Split(name, "'")
 	vmNameSplit := strings.Split(nameSplit[1], "_")
 	vmNameSplit = vmNameSplit[1:]
