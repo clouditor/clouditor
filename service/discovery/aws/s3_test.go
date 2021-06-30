@@ -29,6 +29,7 @@ package aws
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -161,6 +162,10 @@ type mockS3API func(ctx context.Context,
 	params *s3.ListBucketsInput,
 	optFns ...func(*s3.Options)) (*s3.ListBucketsOutput, error)
 
+func (m mockS3API) GetBucketPolicy(ctx context.Context, params *s3.GetBucketPolicyInput, optFns ...func(*s3.Options)) (*s3.GetBucketPolicyOutput, error) {
+	panic("implement me")
+}
+
 func (m mockS3API) GetBucketEncryption(ctx context.Context, params *s3.GetBucketEncryptionInput, optFns ...func(*s3.Options)) (*s3.GetBucketEncryptionOutput, error) {
 	panic("implement me")
 }
@@ -225,6 +230,32 @@ func (m mockS3APINew) GetBucketEncryption(ctx context.Context, params *s3.GetBuc
 	}
 }
 
+func (m mockS3APINew) GetBucketPolicy(ctx context.Context, params *s3.GetBucketPolicyInput, optFns ...func(*s3.Options)) (output *s3.GetBucketPolicyOutput, err error) {
+	switch aws.ToString(params.Bucket) {
+	case "Mock Bucket 1":
+		policy := Policy{
+			ID:      "Mock Policy ID 1234",
+			Version: "2012-10-17",
+			Statement: []Statement{
+				{
+					Action:    "s3:*",
+					Effect:    "Deny",
+					Resource:  []string{"*"},
+					Condition: Condition{Bool{awsSecureTransport: false}},
+				}},
+		}
+		policyJson, err := json.Marshal(policy)
+		if err != nil {
+			log.Error(err)
+		}
+		output = &s3.GetBucketPolicyOutput{
+			Policy: aws.String(string(policyJson)),
+		}
+		err = nil
+	}
+	return
+}
+
 func (m mockS3APINew) GetPublicAccessBlock(ctx context.Context, params *s3.GetPublicAccessBlockInput, optFns ...func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error) {
 	panic("implement me")
 }
@@ -251,6 +282,7 @@ func TestGetBucketsNew(t *testing.T) {
 	log.Println("Here are the buckets: ", d.bucketNames)
 }
 
+// TestGetEncryptionConf tests the getEncryptionConf method
 func TestGetEncryptionConf(t *testing.T) {
 	d := awsS3Discovery{
 		client:        mockS3APINew{},
@@ -274,7 +306,35 @@ func TestGetEncryptionConf(t *testing.T) {
 	}
 }
 
+// TestGetTransportEncryption tests the getTransportEncryption method
+func TestGetTransportEncryption(t *testing.T) {
+	d := awsS3Discovery{
+		client:        mockS3APINew{},
+		buckets:       nil,
+		bucketNames:   nil,
+		isDiscovering: false,
+	}
+	if isEncrypted, algorithm, enforced, version := d.getTransportEncryption("Mock Bucket 1"); isEncrypted == false || algorithm != "TLS" || enforced == false || version != "1.2" {
+		t.Errorf("Expected isEncrypted: %v, algorithm: %v, enforced: %v, version: %v."+
+			"Got: %v, %v, %v, %v", true, "TLS", true, "1.2", isEncrypted, algorithm, enforced, version)
+	}
+
+}
+
+// TestGetPublicAccessBlockConfiguration tests the getPublicAccessBlockConfiguration method
+// ToDo: When needed or I have the time (since this check is not necessary now)
+func TestGetPublicAccessBlockConfiguration(t *testing.T) {
+	d := awsS3Discovery{
+		client:        mockS3APINew{},
+		buckets:       nil,
+		bucketNames:   nil,
+		isDiscovering: false,
+	}
+	d.getPublicAccessBlockConfiguration("Mock Bucket 1")
+}
+
 // TestGetBuckets tests the getBuckets method
+// ToDo: Remove test when deciding to use the new mock implementation variant
 func TestGetBuckets(t *testing.T) {
 	cases := []struct {
 		client func(t *testing.T) S3API
@@ -350,7 +410,7 @@ func TestCheckPublicAccessBlockConfiguration(t *testing.T) {
 	d := NewAwsStorageDiscovery(NewAwsDiscovery().cfg)
 	d.getBuckets()
 	for _, bucket := range d.bucketNames {
-		if d.checkPublicAccessBlockConfiguration(bucket) == false {
+		if d.getPublicAccessBlockConfiguration(bucket) == false {
 			t.Fatalf("Expected no public access of bucket. But public access is enabled for %v.", bucket)
 		}
 	}

@@ -30,6 +30,7 @@ package aws
 import (
 	"clouditor.io/clouditor/voc"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -56,6 +57,9 @@ type S3API interface {
 	GetBucketEncryption(ctx context.Context,
 		params *s3.GetBucketEncryptionInput,
 		optFns ...func(*s3.Options)) (*s3.GetBucketEncryptionOutput, error)
+	GetBucketPolicy(ctx context.Context,
+		params *s3.GetBucketPolicyInput,
+		optFns ...func(*s3.Options)) (*s3.GetBucketPolicyOutput, error)
 	GetPublicAccessBlock(ctx context.Context,
 		params *s3.GetPublicAccessBlockInput,
 		optFns ...func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error)
@@ -65,6 +69,26 @@ type S3API interface {
 	GetBucketLifecycleConfiguration(ctx context.Context,
 		params *s3.GetBucketLifecycleConfigurationInput,
 		optFns ...func(*s3.Options)) (*s3.GetBucketLifecycleConfigurationOutput, error)
+}
+
+// Bucket Policy struct/JSON
+type Bool struct {
+	// ToDo: should be in JSON: "aws.Secure..."
+	awsSecureTransport bool
+}
+type Condition struct {
+	Bool
+}
+type Statement struct {
+	Action   string
+	Effect   string
+	Resource []string
+	Condition
+}
+type Policy struct {
+	ID        string
+	Version   string
+	Statement []Statement
 }
 
 func (d *awsS3Discovery) Name() string {
@@ -128,7 +152,7 @@ func (d *awsS3Discovery) handleStorageAccount() {
 	// ToDo: Double check that d.client can't be zero due to "private" access with "public" constructor?
 	//d.getBuckets()
 	//d.getEncryptionConf("")
-	//d.checkPublicAccessBlockConfiguration("")
+	//d.getPublicAccessBlockConfiguration("")
 	//d.checkBucketReplication("")
 	//d.checkLifeCycleConfiguration("")
 }
@@ -210,8 +234,42 @@ func (d *awsS3Discovery) getEncryptionConf(bucket string) (isEncrypted bool, alg
 	return
 }
 
-// checkPublicAccessBlockConfiguration gets the bucket's access configuration
-func (d *awsS3Discovery) checkPublicAccessBlockConfiguration(bucket string) (false bool) {
+// "confirm that your bucket policies explicitly deny access to HTTP requests"
+// https://aws.amazon.com/premiumsupport/knowledge-center/s3-bucket-policy-for-config-rule/
+// getTransportEncryption loops over all statements in the bucket policy and checks if one statement denies https only == false
+// ToDo: Check if it is a good solution
+// ToDo: Check TLS Version (for me in FF it was TLS1.2 when accessing a bucket object)
+func (d *awsS3Discovery) getTransportEncryption(bucket string) (enabled bool, algorithm string, enforced bool, tlsVersion string) {
+	input := s3.GetBucketPolicyInput{
+		Bucket:              aws.String(bucket),
+		ExpectedBucketOwner: nil,
+	}
+	output, err := d.client.GetBucketPolicy(context.TODO(), &input)
+	// Case 1: No bucket policy -> no https only set
+	if err != nil {
+		log.Error(err)
+		return false, "", false, ""
+	}
+	// Case 2: bucket policy -> check if https only is set
+	var policy Policy
+	err = json.Unmarshal([]byte(aws.ToString(output.Policy)), &policy)
+	if err != nil {
+		log.Error(err)
+	}
+	// one statement has set https only -> default encryption is set
+	for _, statement := range policy.Statement {
+		if statement.Effect != "deny" || statement.Condition.awsSecureTransport == false || statement.Action != "s3:*" {
+			return true, "TLS", true, "1.2"
+		}
+	}
+	return false, "", false, ""
+
+}
+
+// ToDo: The next checks are not defined yet (in ontology or in voc)
+
+// getPublicAccessBlockConfiguration gets the bucket's access configuration
+func (d *awsS3Discovery) getPublicAccessBlockConfiguration(bucket string) (false bool) {
 	log.Printf("Check if bucket %v has public access...", bucket)
 	input := s3.GetPublicAccessBlockInput{
 		Bucket:              aws.String(bucket),
