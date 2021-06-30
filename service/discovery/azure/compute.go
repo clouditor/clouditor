@@ -110,10 +110,32 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 				CreationTime: 0, // No creation time available
 				Type:         []string{"VirtualMachine", "Compute", "Resource"},
 			}},
+		NetworkInterfaceResourceID: d.getNetworkInterfaceResourceID(vm),
 		Log: &voc.Log{
 			Enabled: IsBootDiagnosticEnabled(vm),
 		},
 	}
+}
+
+func (d *azureComputeDiscovery) getNetworkInterfaceResourceID(vm *compute.VirtualMachine) []string {
+
+	var networkInterfaceIDs []string
+
+	client := compute.NewVirtualMachinesClient(to.String(d.sub.SubscriptionID))
+	d.apply(&client.Client)
+
+	// TODO What do we do with this error? Ignore or handle?
+	result, err := client.Get(context.Background(), GetResourceGroupName(*vm.ID), *vm.Name, "")
+	if err != nil {
+		return []string{}
+	}
+
+	networkInterfacesList := *result.NetworkProfile.NetworkInterfaces
+	for i := range networkInterfacesList {
+		networkInterfaceIDs = append(networkInterfaceIDs, *networkInterfacesList[i].ID)
+	}
+
+	return networkInterfaceIDs
 }
 
 func IsBootDiagnosticEnabled(vm *compute.VirtualMachine) bool {

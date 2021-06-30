@@ -41,7 +41,8 @@ type ComputeResource struct {
 type VirtualMachineResource struct {
 	ComputeResource
 
-	Log *Log `json:"log"`
+	NetworkInterfaceResourceID []string `json:"networkInterfaceResourceId"`
+	Log                        *Log     `json:"log"`
 }
 
 func (v *VirtualMachineResource) GetLog() *Log {
