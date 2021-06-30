@@ -91,7 +91,10 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsResource, err
 
 	vms := *result.Response().Value
 	for i := range vms {
-		s := d.handleVirtualMachines(&vms[i])
+		s, err := d.handleVirtualMachines(&vms[i])
+		if err != nil {
+			return nil, err
+		}
 
 		log.Infof("Adding virtual machine %+v", s)
 
@@ -101,7 +104,19 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsResource, err
 	return list, err
 }
 
-func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine) voc.IsCompute {
+func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine) (voc.IsCompute, error) {
+
+	networkInterfaceResourceID, err := d.getNetworkInterfaceResourceID(vm)
+	if err != nil {
+		// TODO Doesn't the lowest error message always have to be passed on to the top?
+		return nil, err
+	}
+
+	blockStorageResourceID, err := d.getBlockStorageResourceID(vm)
+	if err != nil {
+		return nil, err
+	}
+
 	return &voc.VirtualMachineResource{
 		ComputeResource: voc.ComputeResource{
 			Resource: voc.Resource{
@@ -110,32 +125,63 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 				CreationTime: 0, // No creation time available
 				Type:         []string{"VirtualMachine", "Compute", "Resource"},
 			}},
-		NetworkInterfaceResourceID: d.getNetworkInterfaceResourceID(vm),
+		NetworkInterfaceResourceID: networkInterfaceResourceID,
+		BlockStorageResourceID:     blockStorageResourceID,
 		Log: &voc.Log{
 			Enabled: IsBootDiagnosticEnabled(vm),
 		},
-	}
+	}, nil
 }
 
-func (d *azureComputeDiscovery) getNetworkInterfaceResourceID(vm *compute.VirtualMachine) []string {
-
-	var networkInterfaceIDs []string
-
+// Get virtual machine with extended information, e.g., managed disk ID, network interface ID
+func (d *azureComputeDiscovery) getExtendedVirtualMachine(vm *compute.VirtualMachine) (*compute.VirtualMachine, error) {
 	client := compute.NewVirtualMachinesClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
 
 	// TODO What do we do with this error? Ignore or handle?
-	result, err := client.Get(context.Background(), GetResourceGroupName(*vm.ID), *vm.Name, "")
+	vmExtended, err := client.Get(context.Background(), GetResourceGroupName(*vm.ID), *vm.Name, "")
 	if err != nil {
-		return []string{}
+		return nil, fmt.Errorf("could not get virtual machine: %w", err)
 	}
 
-	networkInterfacesList := *result.NetworkProfile.NetworkInterfaces
+	return &vmExtended, nil
+
+}
+
+func (d *azureComputeDiscovery) getBlockStorageResourceID(vm *compute.VirtualMachine) (string, error) {
+
+	vmExtended, err := d.getExtendedVirtualMachine(vm)
+	if err != nil {
+		return "", fmt.Errorf("could not get virtual machine: %w", err)
+	}
+
+	return *vmExtended.VirtualMachineProperties.StorageProfile.OsDisk.ManagedDisk.ID, nil
+}
+
+func (d *azureComputeDiscovery) getNetworkInterfaceResourceID(vm *compute.VirtualMachine) ([]string, error) {
+
+	vm, err := d.getExtendedVirtualMachine(vm)
+	if err != nil {
+		return nil, fmt.Errorf("could not get virtual machine: %w", err)
+	}
+
+	var networkInterfaceIDs []string
+
+	// client := compute.NewVirtualMachinesClient(to.String(d.sub.SubscriptionID))
+	// d.apply(&client.Client)
+
+	// // TODO What do we do with this error? Ignore or handle?
+	// result, err := client.Get(context.Background(), GetResourceGroupName(*vm.ID), *vm.Name, "")
+	// if err != nil {
+	// 	return []string{}
+	// }
+
+	networkInterfacesList := *vm.NetworkProfile.NetworkInterfaces
 	for i := range networkInterfacesList {
 		networkInterfaceIDs = append(networkInterfaceIDs, *networkInterfacesList[i].ID)
 	}
 
-	return networkInterfaceIDs
+	return networkInterfaceIDs, nil
 }
 
 func IsBootDiagnosticEnabled(vm *compute.VirtualMachine) bool {

@@ -41,6 +41,7 @@ type ComputeResource struct {
 type VirtualMachineResource struct {
 	ComputeResource
 
+	BlockStorageResourceID     string   `json:"blockStorageResourceId"`
 	NetworkInterfaceResourceID []string `json:"networkInterfaceResourceId"`
 	Log                        *Log     `json:"log"`
 }
