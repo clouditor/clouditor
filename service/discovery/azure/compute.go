@@ -124,8 +124,15 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 		return nil, fmt.Errorf("could not get virtual machine: %w", err)
 	}
 
+	// Reference to networkInterfaces
 	for _, networkInterfaces := range *vmExtended.VirtualMachineProperties.NetworkProfile.NetworkInterfaces {
 		r.NetworkInterfaces = append(r.NetworkInterfaces, voc.ResourceID(to.String(networkInterfaces.ID)))
+	}
+
+	// Reference to blockstorage
+	r.BlockStorage = append(r.BlockStorage, voc.ResourceID(*vmExtended.StorageProfile.OsDisk.ManagedDisk.ID))
+	for _, blockstorage := range *vmExtended.StorageProfile.DataDisks {
+		r.BlockStorage = append(r.BlockStorage, voc.ResourceID(*blockstorage.ManagedDisk.ID))
 	}
 
 	return r, nil

@@ -35,15 +35,15 @@ type IsCompute interface {
 
 type ComputeResource struct {
 	Resource
-
-	NetworkInterfaces []ResourceID `json:"networkInterfaces"`
 }
 
 // Virtual Machine
 type VirtualMachineResource struct {
 	ComputeResource
 
-	Log *Log `json:"log"`
+	NetworkInterfaces []ResourceID `json:"networkInterfaces"`
+	BlockStorage      []ResourceID `json:"blockStorage"`
+	Log               *Log         `json:"log"`
 }
 
 func (v *VirtualMachineResource) GetLog() *Log {
