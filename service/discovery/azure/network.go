@@ -78,7 +78,7 @@ func (d *azureNetworkDiscovery) List() (list []voc.IsResource, err error) {
 	// Discover Load Balancer
 	loadBalancer, err := d.discoverLoadBalancer()
 	if err != nil {
-		return nil, fmt.Errorf("could not discover load balancer: %w", err)
+		return list, fmt.Errorf("could not discover load balancer: %w", err)
 	}
 	list = append(list, loadBalancer...)
 

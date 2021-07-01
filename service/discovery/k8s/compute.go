@@ -70,7 +70,7 @@ func (k k8sComputeDiscovery) List() ([]voc.IsResource, error) {
 }
 
 func (k k8sComputeDiscovery) handlePod(pod *v1.Pod) voc.IsCompute {
-	return &voc.ContainerResource{
+	r := &voc.ContainerResource{
 		ComputeResource: voc.ComputeResource{
 			Resource: voc.Resource{
 				ID:           voc.ResourceID(fmt.Sprintf("/namespaces/%s/containers/%s", pod.Namespace, pod.Name)),
@@ -79,5 +79,9 @@ func (k k8sComputeDiscovery) handlePod(pod *v1.Pod) voc.IsCompute {
 				Type:         []string{"Container", "Compute", "Resource"},
 			}},
 	}
+
+	r.NetworkInterfaces = append(r.NetworkInterfaces, voc.ResourceID(pod.Namespace))
+
+	return r
 
 }

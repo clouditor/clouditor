@@ -121,7 +121,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 
 	vmExtended, err := d.getExtendedVirtualMachine(vm)
 	if err != nil {
-		return nil, fmt.Errorf("could not get virtual machine: %w", err)
+		return nil, err
 	}
 
 	// Reference to networkInterfaces

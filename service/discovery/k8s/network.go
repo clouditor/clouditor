@@ -67,9 +67,10 @@ func (k k8sNetworkDiscovery) List() ([]voc.IsResource, error) {
 		list = append(list, c)
 	}
 
+	// TODO Does not get ingresses
 	ingresses, err := k.intf.NetworkingV1().Ingresses("").List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("could not list ingresses: %v", err)
+		return list, fmt.Errorf("could not list ingresses: %v", err)
 	}
 
 	for i := range ingresses.Items {
