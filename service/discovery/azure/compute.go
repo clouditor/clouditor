@@ -138,7 +138,6 @@ func (d *azureComputeDiscovery) getExtendedVirtualMachine(vm *compute.VirtualMac
 	client := compute.NewVirtualMachinesClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
 
-	// TODO What do we do with this error? Ignore or handle?
 	vmExtended, err := client.Get(context.Background(), GetResourceGroupName(*vm.ID), *vm.Name, "")
 	if err != nil {
 		return nil, fmt.Errorf("could not get virtual machine: %w", err)
@@ -166,15 +165,6 @@ func (d *azureComputeDiscovery) getNetworkInterfaceResourceID(vm *compute.Virtua
 	}
 
 	var networkInterfaceIDs []string
-
-	// client := compute.NewVirtualMachinesClient(to.String(d.sub.SubscriptionID))
-	// d.apply(&client.Client)
-
-	// // TODO What do we do with this error? Ignore or handle?
-	// result, err := client.Get(context.Background(), GetResourceGroupName(*vm.ID), *vm.Name, "")
-	// if err != nil {
-	// 	return []string{}
-	// }
 
 	networkInterfacesList := *vm.NetworkProfile.NetworkInterfaces
 	for i := range networkInterfacesList {
