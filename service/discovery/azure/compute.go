@@ -70,7 +70,8 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 	// Discover virtual machines
 	virtualMachines, err := d.discoverVirtualMachines()
 	if err != nil {
-		return nil, fmt.Errorf("could not discover virtual machines: %w", err)
+		return nil, err
+		//return nil, fmt.Errorf("could not discover virtual machines: %w", err)
 	}
 	list = append(list, virtualMachines...)
 
