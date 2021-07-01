@@ -73,15 +73,20 @@ func (k k8sComputeDiscovery) handlePod(pod *v1.Pod) voc.IsCompute {
 	r := &voc.ContainerResource{
 		ComputeResource: voc.ComputeResource{
 			Resource: voc.Resource{
-				ID:           voc.ResourceID(fmt.Sprintf("/namespaces/%s/containers/%s", pod.Namespace, pod.Name)),
+				ID:           voc.ResourceID(getContainerResourceID(pod)),
 				Name:         pod.Name,
 				CreationTime: pod.CreationTimestamp.Unix(),
 				Type:         []string{"Container", "Compute", "Resource"},
 			}},
 	}
 
+	// TODO Exists a namespace ID?
 	r.NetworkInterfaces = append(r.NetworkInterfaces, voc.ResourceID(pod.Namespace))
 
 	return r
 
+}
+
+func getContainerResourceID(pod *v1.Pod) string {
+	return fmt.Sprintf("/namespaces/%s/containers/%s", pod.Namespace, pod.Name)
 }
