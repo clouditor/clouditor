@@ -36,7 +36,7 @@ type IsCompute interface {
 type ComputeResource struct {
 	Resource
 
-	NetworkInterfaces []ResourceID
+	NetworkInterfaces []ResourceID `json:"networkInterfaces"`
 }
 
 // Virtual Machine

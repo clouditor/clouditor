@@ -91,7 +91,10 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsResource, err
 
 	vms := *result.Response().Value
 	for i := range vms {
-		s := d.handleVirtualMachines(&vms[i])
+		s, err := d.handleVirtualMachines(&vms[i])
+		if err != nil {
+			return nil, err
+		}
 
 		log.Infof("Adding virtual machine %+v", s)
 
@@ -101,7 +104,7 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsResource, err
 	return list, err
 }
 
-func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine) voc.IsCompute {
+func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine) (voc.IsCompute, error) {
 
 	r := &voc.VirtualMachineResource{
 		ComputeResource: voc.ComputeResource{
@@ -116,11 +119,28 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 		},
 	}
 
-	for _, i := range *vm.NetworkProfile.NetworkInterfaces {
-		r.NetworkInterfaces = append(r.NetworkInterfaces, voc.ResourceID(to.String(i.ID)))
+	vmExtended, err := d.getExtendedVirtualMachine(vm)
+	if err != nil {
+		return nil, fmt.Errorf("could not get virtual machine: %w", err)
 	}
 
-	return r
+	for _, networkInterfaces := range *vmExtended.VirtualMachineProperties.NetworkProfile.NetworkInterfaces {
+		r.NetworkInterfaces = append(r.NetworkInterfaces, voc.ResourceID(to.String(networkInterfaces.ID)))
+	}
+
+	return r, nil
+}
+
+// Get virtual machine with extended information, e.g., managed disk ID, network interface ID
+func (d *azureComputeDiscovery) getExtendedVirtualMachine(vm *compute.VirtualMachine) (*compute.VirtualMachine, error) {
+	client := compute.NewVirtualMachinesClient(to.String(d.sub.SubscriptionID))
+	d.apply(&client.Client)
+
+	vmExtended, err := client.Get(context.Background(), GetResourceGroupName(*vm.ID), *vm.Name, "")
+	if err != nil {
+		return nil, fmt.Errorf("could not get virtual machine: %w", err)
+	}
+	return &vmExtended, nil
 }
 
 func IsBootDiagnosticEnabled(vm *compute.VirtualMachine) bool {
