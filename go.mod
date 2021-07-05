@@ -11,11 +11,12 @@ require (
 	github.com/alexedwards/argon2id v0.0.0-20210511081203-7d35d68092b8
 	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20210521184019-c5ad59b459ec
 	github.com/go-co-op/gocron v1.6.2
+	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/golang-jwt/jwt v3.2.1+incompatible
 	github.com/google/addlicense v0.0.0-20210428195630-6d92264d7170
 	github.com/googleapis/gnostic v0.5.6-0.20210520165051-0320d74b3646
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.4.0
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.5.0
 	github.com/imdario/mergo v0.3.8 // indirect
 	github.com/lib/pq v1.9.0 // indirect
 	github.com/logrusorgru/aurora/v3 v3.0.0
@@ -27,7 +28,7 @@ require (
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.8.1
 	github.com/stretchr/testify v1.7.0
-	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c
+	google.golang.org/genproto v0.0.0-20210617175327-b9e0b3197ced
 	google.golang.org/grpc v1.39.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0
 	google.golang.org/protobuf v1.27.1
