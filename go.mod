@@ -3,7 +3,7 @@ module clouditor.io/clouditor
 go 1.16
 
 require (
-	github.com/Azure/azure-sdk-for-go v55.3.0+incompatible
+	github.com/Azure/azure-sdk-for-go v55.5.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.11.19
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.8
 	github.com/Azure/go-autorest/autorest/to v0.4.0
@@ -28,7 +28,7 @@ require (
 	github.com/spf13/viper v1.8.1
 	github.com/stretchr/testify v1.7.0
 	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c
-	google.golang.org/grpc v1.38.0
+	google.golang.org/grpc v1.39.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0
 	google.golang.org/protobuf v1.27.1
 	gorm.io/driver/postgres v1.1.0
