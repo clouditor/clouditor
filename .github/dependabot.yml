@@ -5,4 +5,5 @@ updates:
     schedule:
       interval: weekly
     ignore:    
-      - update-types: ["version-update:semver-patch"] # we are not interested in patch updates. this will still pull in security updates
+       - dependency-name: "*"
+         update-types: ["version-update:semver-patch"] # we are not interested in patch updates. this will still pull in security updates
