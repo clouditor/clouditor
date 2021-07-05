@@ -19,8 +19,8 @@ require (
 	github.com/logrusorgru/aurora/v3 v3.0.0
 	github.com/open-policy-agent/opa v0.29.4
 	github.com/sirupsen/logrus v1.8.1
-	github.com/spf13/cobra v1.1.3
-	github.com/spf13/viper v1.8.0
+	github.com/spf13/cobra v1.2.1
+	github.com/spf13/viper v1.8.1
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a // indirect
 	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c
