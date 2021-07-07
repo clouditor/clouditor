@@ -34,24 +34,23 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// ToDo: Use init() for initializing log?
 var log = logrus.WithField("component", "aws-discovery")
 
-// awsDiscovery holds configurations across all services within AWS
-type awsDiscovery struct {
-	cfg aws.Config
+// awsClient holds configurations across all services within AWS
+type awsClient struct {
+	Cfg aws.Config
 }
 
-// NewAwsDiscovery constructs a new awsDiscovery
+// NewAwsClient constructs a new awsClient
 // ToDo: "Overload" (switch) with staticCredentialsProvider
-func NewAwsDiscovery() *awsDiscovery {
-	d := &awsDiscovery{}
+func NewAwsClient() *awsClient {
+	d := &awsClient{}
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 	if err != nil {
 		log.Errorf("Could not load default config: %v", err)
 	}
 	// ToDo: Test if proper region was loaded and maybe remove line
 	log.Printf("Loaded credentials in region: %v", cfg.Region)
-	d.cfg = cfg
+	d.Cfg = cfg
 	return d
 }

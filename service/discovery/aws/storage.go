@@ -34,7 +34,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
@@ -42,19 +41,22 @@ import (
 	"time"
 )
 
+// awsS3Discovery handles the AWS API requests regarding the S3 service
+// ToDo: Generalize from s3 to storage for including other types, like EFS -> Probably storage folder with 3 .go files
+type awsS3Discovery struct {
+	client        S3API
+	isDiscovering bool
+	buckets       []bucket
+}
+
+// bucket contains meta data about a S3 bucket
 type bucket struct {
 	arn             string
 	name            string
 	numberOfObjects int
 	creationTime    time.Time
-}
-
-// awsS3Discovery handles the AWS API requests regarding the S3 service
-// ToDo: Generalize from s3 to other storage types like EFS
-type awsS3Discovery struct {
-	client        S3API
-	isDiscovering bool
-	buckets       []bucket
+	endpoint        string
+	region          string
 }
 
 // S3API describes the S3 client interface (for mock testing)
@@ -82,12 +84,11 @@ type S3API interface {
 		optFns ...func(*s3.Options)) (*s3.GetBucketLifecycleConfigurationOutput, error)
 }
 
-type Bool struct {
-	// ToDo: should be in JSON: "aws.Secure..."
-	awsSecureTransport bool `json:"aws:SecureTransport"`
-}
-type Condition struct {
-	Bool
+// BucketPolicy matches the returned bucket policy in JSON from AWS
+type BucketPolicy struct {
+	ID        string
+	Version   string
+	Statement []Statement
 }
 type Statement struct {
 	Action   string
@@ -95,10 +96,11 @@ type Statement struct {
 	Resource []string
 	Condition
 }
-type Policy struct {
-	ID        string
-	Version   string
-	Statement []Statement
+type Condition struct {
+	Bool
+}
+type Bool struct {
+	AwsSecureTransport bool `json:"aws:SecureTransport"`
 }
 
 // Name is the method implementation defined in the discovery.Discoverer interface
@@ -107,10 +109,7 @@ func (d *awsS3Discovery) Name() string {
 }
 
 // List is the method implementation defined in the discovery.Discoverer interface
-// ToDo: 1 bucket == 1 resource of type voc.isResource?
-// ToDo: Or should we even check every single object in every bucket?
-// ToDo: Changed return type to ObjectStorageResource, so no items get lost like with the interface isResource?!
-func (d *awsS3Discovery) List() (resources []voc.ObjectStorageResource, err error) {
+func (d *awsS3Discovery) List() (resources []voc.IsResource, err error) {
 	log.Info("Starting List() in ", d.Name())
 	d.getBuckets()
 	log.Println(d.buckets)
@@ -118,27 +117,21 @@ func (d *awsS3Discovery) List() (resources []voc.ObjectStorageResource, err erro
 		log.Println("Getting resources for", bucket.name)
 		isEncrypted, algorithm, keyManager := d.getEncryptionAtRest(bucket.name)
 		enabled, algo, enforced, version := d.getTransportEncryption(bucket.name)
-		resources = append(resources, voc.ObjectStorageResource{
+		resources = append(resources, &voc.ObjectStorageResource{
 			StorageResource: voc.StorageResource{
 				Resource: voc.Resource{
-					// ToDo: "An Amazon S3 bucket name is globally unique". But I bucket.Name isn't the full URL
-					ID: bucket.arn,
-					// ToDo: Maybe get bucket name without URL prefix?
+					ID:           bucket.arn,
 					Name:         bucket.name,
 					CreationTime: bucket.creationTime.Unix(),
 					Type:         []string{"ObjectStorage", "Storage", "Resource"},
 				},
 				AtRestEncryption: voc.NewAtRestEncryption(isEncrypted, algorithm, keyManager),
 			},
-			// ToDo: Why AtRestEncryption with constructor and here with direct access?
 			HttpEndpoint: &voc.HttpEndpoint{
-				// What is with voc.Resource here? Is it even a resource?
-				// ToDo: I don't know how (yet)?
-				URL: "",
+				URL: bucket.endpoint,
 				TransportEncryption: &voc.TransportEncryption{
 					Encryption: voc.Encryption{Enabled: enabled},
 					Enforced:   enforced,
-					// ToDo: In ontology (CPG) there are security features algorithm (not only TLS) AND version?
 					TlsVersion: algo + version,
 				},
 			},
@@ -151,9 +144,6 @@ func (b bucket) String() string {
 }
 
 // NewAwsStorageDiscovery constructs a new awsS3Discovery initializing the s3-client and isDiscovering with true
-// ToDo: cfg as copy (instead of pointer) since we do not want to change it?
-// ToDo: return type "discovery.Discoverer" instead of "awsS3Discovery"? (But "accept interfaces, return structs")
-// ToDo: Discard method
 func NewAwsStorageDiscovery(cfg aws.Config) *awsS3Discovery {
 	return &awsS3Discovery{
 		client:        s3.NewFromConfig(cfg),
@@ -168,9 +158,6 @@ type S3ListBucketsAPI interface {
 		params *s3.ListBucketsInput,
 		optFns ...func(*s3.Options)) (*s3.ListBucketsOutput, error)
 }
-
-// ToDo: Decide if functions are attached to awsS3Discovery or not. It is, e.g., weird that handleStorageAccount
-// calls "d.getBuckets(d.client)"
 
 // getBuckets returns all buckets
 func (d *awsS3Discovery) getBuckets() {
@@ -188,21 +175,18 @@ func (d *awsS3Discovery) getBuckets() {
 	//d.buckets = resp
 	for _, b := range resp.Buckets {
 		d.buckets = append(d.buckets, bucket{
-			arn:  "arn:aws:s3:::" + *b.Name,
-			name: aws.ToString(b.Name),
-			// ToDo: Do we want to handle a nil pointer as time "0" (with aws.ToTime) or to panic(with asterisk *)
-			// ToDo: Maybe panic is bette for debugging instead of using aws.ToTime()?
+			arn:          "arn:aws:s3:::" + *b.Name,
+			name:         aws.ToString(b.Name),
 			creationTime: aws.ToTime(b.CreationDate),
-			// ToDo: Implement method for retrieving the number of objects per bucket
+			region:       d.getRegion(aws.ToString(b.Name)),
+			endpoint:     "https://" + aws.ToString(b.Name) + ".s3." + d.getRegion(aws.ToString(b.Name)) + ".amazonaws.com",
+			// ToDo: Implement method for retrieving the number of objects per bucket (if needed)
 			numberOfObjects: -1,
 		})
 	}
-	// ToDo: Call getBucketObjects and associate the objects with the buckets
 }
 
 // getEncryptionAtRest gets the bucket's encryption configuration
-// ToDo: algorithm "", "AES256" or "aws:kms" as algorithm. Is this the right format?
-// ToDo: keyManager "", "SSE-S3" or "SSE-KMS". Is this the right format?
 func (d *awsS3Discovery) getEncryptionAtRest(bucket string) (isEncrypted bool, algorithm string, keyManager string) {
 	log.Printf("Checking encryption for bucket %v.\n", bucket)
 	input := s3.GetBucketEncryptionInput{
@@ -226,21 +210,12 @@ func (d *awsS3Discovery) getEncryptionAtRest(bucket string) (isEncrypted bool, a
 		keyManager = "SSE-KMS"
 	}
 	isEncrypted = true
-	// ToDo: Why there are multiple rules? For now I check only the first
-	//for i, rule := range resp.ServerSideEncryptionConfiguration.Rules {
-	//	algorithm = string(rule.ApplyServerSideEncryptionByDefault.SSEAlgorithm)
-	//	keyManager = string(rule.)
-	//	log.Printf("Rule %v: %v", i, algorithm)
-	//}
 	return
 }
 
 // "confirm that your bucket policies explicitly deny access to HTTP requests"
 // https://aws.amazon.com/premiumsupport/knowledge-center/s3-bucket-policy-for-config-rule/
 // getTransportEncryption loops over all statements in the bucket policy and checks if one statement denies https only == false
-// ToDo: Check if it is a good solution
-// ToDo: Check TLS Version (for me in FF it was TLS1.2 when accessing a bucket object)
-// ToDo: CHeck how it is done in Azure/K8s
 func (d *awsS3Discovery) getTransportEncryption(bucket string) (enabled bool, algorithm string, enforced bool, tlsVersion string) {
 	input := s3.GetBucketPolicyInput{
 		Bucket:              aws.String(bucket),
@@ -257,7 +232,7 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (enabled bool, al
 		return false, "", false, ""
 	}
 	// Case 2: bucket policy -> check if https only is set
-	var policy Policy
+	var policy BucketPolicy
 	err = json.Unmarshal([]byte(aws.ToString(output.Policy)), &policy)
 	if err != nil {
 		log.Error("Error occurred while unmarshalling the bucket policy:", err)
@@ -265,7 +240,7 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (enabled bool, al
 	}
 	// one statement has set https only -> default encryption is set
 	for _, statement := range policy.Statement {
-		if statement.Effect == "Deny" && statement.Condition.awsSecureTransport == false && statement.Action == "s3:*" {
+		if statement.Effect == "Deny" && statement.Condition.AwsSecureTransport == false && statement.Action == "s3:*" {
 			return true, "TLS", true, "1.2"
 		}
 	}
@@ -273,7 +248,8 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (enabled bool, al
 
 }
 
-func (d *awsS3Discovery) getGeoLocation(bucket string) (region string) {
+// getRegion returns the region where the bucket resides
+func (d *awsS3Discovery) getRegion(bucket string) (region string) {
 	input := s3.GetBucketLocationInput{
 		Bucket: aws.String(bucket),
 	}
@@ -286,56 +262,54 @@ func (d *awsS3Discovery) getGeoLocation(bucket string) (region string) {
 	return
 }
 
-// getPublicAccessBlockConfiguration gets the bucket's access configuration
-func (d *awsS3Discovery) getPublicAccessBlockConfiguration(bucket string) (false bool) {
-	log.Printf("Check if bucket %v has public access...", bucket)
-	input := s3.GetPublicAccessBlockInput{
-		Bucket:              aws.String(bucket),
-		ExpectedBucketOwner: nil,
-	}
-	resp, err := d.client.GetPublicAccessBlock(context.TODO(), &input)
-	if err != nil {
-		log.Errorf("Error found: %v", err)
-		return
-	}
-	log.Printf("Found: %v", resp.PublicAccessBlockConfiguration)
+// ToDo: The next checks are not defined yet (in ontology or in voc). They were checked in Clouditor 1.0
 
-	configs := resp.PublicAccessBlockConfiguration
-	// ToDo: Currently every configuration has to be unset. Anyway in future, the configs are saved to struct since the
-	// discovery does no assessment
-	if !configs.BlockPublicAcls || !configs.BlockPublicPolicy || !configs.IgnorePublicAcls || !configs.RestrictPublicBuckets {
-		return
-	}
-	return true
-}
-
-// ToDo: The next checks are not defined yet (in ontology or in voc)
+//// getPublicAccessBlockConfiguration gets the bucket's access configuration
+//func (d *awsS3Discovery) getPublicAccessBlockConfiguration(bucket string) (false bool) {
+//	log.Printf("Check if bucket %v has public access...", bucket)
+//	input := s3.GetPublicAccessBlockInput{
+//		Bucket:              aws.String(bucket),
+//		ExpectedBucketOwner: nil,
+//	}
+//	resp, err := d.client.GetPublicAccessBlock(context.TODO(), &input)
+//	if err != nil {
+//		log.Errorf("Error found: %v", err)
+//		return
+//	}
+//	log.Printf("Found: %v", resp.PublicAccessBlockConfiguration)
+//
+//	configs := resp.PublicAccessBlockConfiguration
+//	if !configs.BlockPublicAcls || !configs.BlockPublicPolicy || !configs.IgnorePublicAcls || !configs.RestrictPublicBuckets {
+//		return
+//	}
+//	return true
+//}
 
 // getBucketObjects returns all objects of the given bucket
 // ToDo: Do we need to iterate through single bucket objects or do we only check the general bucket settings?
 // ToDo: "Overload" method s.t. you can list all objects from all buckets or only from a specific set (e.g. 1) of buckets
-func (d *awsS3Discovery) getBucketObjects(myBucket string) *s3.ListObjectsV2Output {
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		fmt.Println("Error occurred:", err)
-		log.Fatal(err)
-	}
-
-	client := s3.NewFromConfig(cfg)
-
-	output, err := client.ListObjectsV2(context.TODO(), &s3.ListObjectsV2Input{
-		Bucket: aws.String(myBucket),
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println("first page results:")
-	for _, object := range output.Contents {
-		log.Printf("key=%s size=%d", aws.ToString(object.Key), object.Size)
-	}
-
-	return output
-}
+//func (d *awsS3Discovery) getBucketObjects(myBucket string) *s3.ListObjectsV2Output {
+//	Cfg, err := config.LoadDefaultConfig(context.TODO())
+//	if err != nil {
+//		fmt.Println("Error occurred:", err)
+//		log.Fatal(err)
+//	}
+//
+//	client := s3.NewFromConfig(Cfg)
+//
+//	output, err := client.ListObjectsV2(context.TODO(), &s3.ListObjectsV2Input{
+//		Bucket: aws.String(myBucket),
+//	})
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//	log.Println("first page results:")
+//	for _, object := range output.Contents {
+//		log.Printf("key=%s size=%d", aws.ToString(object.Key), object.Size)
+//	}
+//
+//	return output
+//}
 
 // checkBucketReplication gets the bucket's replication configuration
 func (d *awsS3Discovery) checkBucketReplication(bucket string) (false bool) {

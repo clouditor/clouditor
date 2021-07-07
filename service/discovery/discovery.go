@@ -26,6 +26,7 @@
 package discovery
 
 import (
+	"clouditor.io/clouditor/service/discovery/aws"
 	"context"
 	"strings"
 	"time"
@@ -117,6 +118,8 @@ func (s Service) Start(ctx context.Context, request *discovery.StartDiscoveryReq
 		return nil, err
 	}
 
+	awsClient := aws.NewAwsClient()
+
 	var discoverer []discovery.Discoverer
 
 	discoverer = append(discoverer,
@@ -125,6 +128,7 @@ func (s Service) Start(ctx context.Context, request *discovery.StartDiscoveryReq
 		azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)),
 		k8s.NewKubernetesComputeDiscovery(k8sClient),
 		k8s.NewKubernetesNetworkDiscovery(k8sClient),
+		aws.NewAwsStorageDiscovery(awsClient.Cfg),
 	)
 
 	for _, v := range discoverer {
