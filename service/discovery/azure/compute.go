@@ -70,8 +70,7 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 	// Discover virtual machines
 	virtualMachines, err := d.discoverVirtualMachines()
 	if err != nil {
-		return nil, err
-		//return nil, fmt.Errorf("could not discover virtual machines: %w", err)
+		return nil, fmt.Errorf("could not discover virtual machines: %w", err)
 	}
 	list = append(list, virtualMachines...)
 
@@ -94,7 +93,7 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsResource, err
 	for i := range vms {
 		s, err := d.handleVirtualMachines(&vms[i])
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("could not handle virtual machine: %w", err)
 		}
 
 		log.Infof("Adding virtual machine %+v", s)
@@ -122,7 +121,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 
 	vmExtended, err := d.getExtendedVirtualMachine(vm)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not get virtual machine with extended information: %w", err)
 	}
 
 	// Reference to networkInterfaces
