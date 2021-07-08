@@ -75,10 +75,10 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 	}
 	list = append(list, virtualMachines...)
 
-	// Discover virtual machines
+	// Discover functions
 	function, err := d.discoverFunction()
 	if err != nil {
-		return nil, fmt.Errorf("could not discover function: %w", err)
+		return nil, fmt.Errorf("could not discover functions: %w", err)
 	}
 	list = append(list, function...)
 
@@ -92,16 +92,15 @@ func (d *azureComputeDiscovery) discoverFunction() ([]voc.IsResource, error) {
 	client := web.NewAppsClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
 
-	result, err := client.List(context.Background())
+	result, err := client.ListComplete(context.Background())
 	if err != nil {
-		return nil, fmt.Errorf("could not list virtual machines: %w", err)
+		return nil, fmt.Errorf("could not list functions: %w", err)
 	}
 
-	functionApp := result.Values()
-	for i := range result.Values() {
+	functionApp := *result.Response().Value
+	for i := range functionApp {
 		functionResource := d.handleFunction(&functionApp[i])
 		list = append(list, functionResource)
-
 	}
 
 	return list, err

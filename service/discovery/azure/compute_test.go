@@ -84,12 +84,23 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 				},
 			},
 		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Web/sites" {
+		return createResponse(map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":         "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
+					"name":       "function1",
+					"location":   "West Europe",
+					"properties": map[string]interface{}{},
+				},
+			},
+		}, 200)
 	}
 
 	return m.mockSender.Do(req)
 }
 
-func TestListCompute(t *testing.T) {
+func TestVirtualMachine(t *testing.T) {
 	d := azure.NewAzureComputeDiscovery(
 		azure.WithSender(&mockComputeSender{}),
 		azure.WithAuthorizer(&mockAuthorizer{}),
@@ -99,7 +110,7 @@ func TestListCompute(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 1, len(list))
+	assert.Equal(t, 2, len(list))
 
 	virtualMachine, ok := list[0].(*voc.VirtualMachineResource)
 
@@ -110,4 +121,22 @@ func TestListCompute(t *testing.T) {
 
 	assert.Equal(t, "data_disk_1", string(virtualMachine.BlockStorage[1]))
 	assert.Equal(t, "123", string(virtualMachine.NetworkInterfaces[0]))
+}
+
+func TestFunction(t *testing.T) {
+	d := azure.NewAzureComputeDiscovery(
+		azure.WithSender(&mockComputeSender{}),
+		azure.WithAuthorizer(&mockAuthorizer{}),
+	)
+
+	list, err := d.List()
+
+	assert.Nil(t, err)
+	assert.NotNil(t, list)
+	assert.Equal(t, 2, len(list))
+
+	function, ok := list[1].(*voc.FunctionResource)
+
+	assert.True(t, ok)
+	assert.Equal(t, "function1", function.Name)
 }
