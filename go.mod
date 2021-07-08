@@ -10,14 +10,14 @@ require (
 	github.com/Azure/go-autorest/autorest/validation v0.3.1 // indirect
 	github.com/alexedwards/argon2id v0.0.0-20210511081203-7d35d68092b8
 	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20210521184019-c5ad59b459ec
-	github.com/go-co-op/gocron v1.6.2
-	github.com/gofrs/uuid v4.0.0+incompatible // indirect
-	github.com/golang-jwt/jwt v3.2.1+incompatible
 	github.com/aws/aws-sdk-go-v2 v1.6.0
 	github.com/aws/aws-sdk-go-v2/config v1.3.0
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.9.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.10.0
-	github.com/aws/smithy-go v1.4.0 // indirect
+	github.com/aws/smithy-go v1.4.0
+	github.com/go-co-op/gocron v1.6.2
+	github.com/gofrs/uuid v4.0.0+incompatible // indirect
+	github.com/golang-jwt/jwt v3.2.1+incompatible
 	github.com/google/addlicense v0.0.0-20210428195630-6d92264d7170
 	github.com/googleapis/gnostic v0.5.6-0.20210520165051-0320d74b3646
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
@@ -46,4 +46,5 @@ require (
 	k8s.io/client-go v0.21.2
 )
 
+// ToDo: In Goland: Missing dependency?
 replace github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt v0.0.0-20210527125010-9e96e9651418

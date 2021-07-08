@@ -4,7 +4,6 @@ package aws
 import (
 	"context"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
-	"log"
 )
 
 // EC2DescribeInstancesAPI is the interface for ListInstances function (used for mock testing)
