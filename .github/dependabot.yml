@@ -4,3 +4,6 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    ignore:    
+       - dependency-name: "*"
+         update-types: ["version-update:semver-patch"] # we are not interested in patch updates. this will still pull in security updates
