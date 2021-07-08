@@ -118,7 +118,11 @@ func (s Service) Start(ctx context.Context, request *discovery.StartDiscoveryReq
 		return nil, err
 	}
 
-	awsClient := aws.NewClient()
+	awsClient, err := aws.NewClient()
+	if err != nil {
+		log.Error("Could not load credentials:", err)
+		return nil, err
+	}
 
 	var discoverer []discovery.Discoverer
 
