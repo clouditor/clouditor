@@ -28,8 +28,10 @@ package voc_test
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"testing"
 
+	"clouditor.io/clouditor/policies"
 	"clouditor.io/clouditor/voc"
 )
 
@@ -59,4 +61,27 @@ func TestGraph(t *testing.T) {
 
 	fmt.Printf("%+v\n", err)
 	fmt.Printf("%s\n", string(out))
+
+	// make sure, that we are in the clouditor root folder to find the policies
+	err = os.Chdir("../")
+	if err != nil {
+		panic(err)
+	}
+
+	tls := map[string]interface{}{
+		"enabled": true,
+	}
+
+	m := map[string]interface{}{
+		"httpEndpoint": map[string]interface{}{
+			"transportEncryption": &tls,
+		},
+	}
+
+	tls["cycle"] = &m
+
+	data, err := policies.RunMap("policies/metric1.rego", m)
+
+	fmt.Printf("%+v\n", err)
+	fmt.Printf("%+v\n", data)
 }
