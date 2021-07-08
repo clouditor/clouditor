@@ -372,7 +372,7 @@ func TestGetEncryptionAtRest(t *testing.T) {
 	}
 
 	// Third case
-	isEncrypted, algorithm, manager = d.getEncryptionAtRest("Mock Bucket with no encryption")
+	isEncrypted, _, _ = d.getEncryptionAtRest("Mock Bucket with no encryption")
 	if isEncrypted == true {
 		t.Error("Expected:", false, ".Got:", isEncrypted)
 	}
@@ -536,7 +536,7 @@ func TestList(t *testing.T) {
 //var Cfg aws.Config
 //
 //func init() {
-//	Cfg = NewAwsClient().Cfg
+//	Cfg = NewClient().Cfg
 //}
 
 //// TestGetPublicAccessBlockConfiguration tests the getPublicAccessBlockConfiguration method
@@ -551,7 +551,7 @@ func TestList(t *testing.T) {
 //}
 
 //func TestCheckPublicAccessBlockConfiguration(t *testing.T) {
-//	d := NewAwsStorageDiscovery(NewAwsClient().Cfg)
+//	d := NewAwsStorageDiscovery(NewClient().Cfg)
 //	d.getBuckets()
 //	for _, bucket := range d.buckets {
 //		if d.getPublicAccessBlockConfiguration(bucket.name) == false {
@@ -561,7 +561,7 @@ func TestList(t *testing.T) {
 //}
 //
 //func TestCheckBucketReplication(t *testing.T) {
-//	d := NewAwsStorageDiscovery(NewAwsClient().Cfg)
+//	d := NewAwsStorageDiscovery(NewClient().Cfg)
 //	d.getBuckets()
 //	for _, bucket := range d.buckets {
 //		if d.checkBucketReplication(bucket.name) == true {
@@ -571,7 +571,7 @@ func TestList(t *testing.T) {
 //}
 //
 //func TestCheckLifeCycleConfiguration(t *testing.T) {
-//	d := NewAwsStorageDiscovery(NewAwsClient().Cfg)
+//	d := NewAwsStorageDiscovery(NewClient().Cfg)
 //	d.getBuckets()
 //	for _, bucket := range d.buckets {
 //		if d.checkLifeCycleConfiguration(bucket.name) == true {

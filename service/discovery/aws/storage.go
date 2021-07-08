@@ -28,6 +28,7 @@
 package aws
 
 import (
+	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
 	"context"
 	"encoding/json"
@@ -37,7 +38,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
-	"github.com/sirupsen/logrus"
 	"time"
 )
 
@@ -144,7 +144,7 @@ func (b bucket) String() string {
 }
 
 // NewAwsStorageDiscovery constructs a new awsS3Discovery initializing the s3-client and isDiscovering with true
-func NewAwsStorageDiscovery(cfg aws.Config) *awsS3Discovery {
+func NewAwsStorageDiscovery(cfg aws.Config) discovery.Discoverer {
 	return &awsS3Discovery{
 		client:        s3.NewFromConfig(cfg),
 		buckets:       nil,
@@ -311,35 +311,35 @@ func (d *awsS3Discovery) getRegion(bucket string) (region string) {
 //	return output
 //}
 
-// checkBucketReplication gets the bucket's replication configuration
-func (d *awsS3Discovery) checkBucketReplication(bucket string) (false bool) {
-	log.Printf("Check if bucket '%v' is been replicated...", bucket)
-	input := s3.GetBucketReplicationInput{
-		Bucket:              aws.String(bucket),
-		ExpectedBucketOwner: nil,
-	}
-	resp, err := d.client.GetBucketReplication(context.TODO(), &input)
-	if err != nil {
-		logrus.Errorf("Error (probably no replica configuration): %v", err)
-		return
-	}
-	logrus.Println(resp.ReplicationConfiguration)
-	return true
-}
-
-// checkLifeCycleConfiguration gets the bucket's lifecycle configuration
-// ToDo
-func (d *awsS3Discovery) checkLifeCycleConfiguration(bucket string) (false bool) {
-	log.Printf("Check life cycle configuration for bucket '%v'", bucket)
-	input := s3.GetBucketLifecycleConfigurationInput{
-		Bucket:              aws.String(bucket),
-		ExpectedBucketOwner: nil,
-	}
-	resp, err := d.client.GetBucketLifecycleConfiguration(context.TODO(), &input)
-	if err != nil {
-		logrus.Errorf("Error occurred: %v", err)
-		return
-	}
-	logrus.Printf(string(resp.Rules[0].Expiration.Days))
-	return true
-}
+//// checkBucketReplication gets the bucket's replication configuration
+//func (d *awsS3Discovery) checkBucketReplication(bucket string) (false bool) {
+//	log.Printf("Check if bucket '%v' is been replicated...", bucket)
+//	input := s3.GetBucketReplicationInput{
+//		Bucket:              aws.String(bucket),
+//		ExpectedBucketOwner: nil,
+//	}
+//	resp, err := d.client.GetBucketReplication(context.TODO(), &input)
+//	if err != nil {
+//		logrus.Errorf("Error (probably no replica configuration): %v", err)
+//		return
+//	}
+//	logrus.Println(resp.ReplicationConfiguration)
+//	return true
+//}
+//
+//// checkLifeCycleConfiguration gets the bucket's lifecycle configuration
+//// ToDo
+//func (d *awsS3Discovery) checkLifeCycleConfiguration(bucket string) (false bool) {
+//	log.Printf("Check life cycle configuration for bucket '%v'", bucket)
+//	input := s3.GetBucketLifecycleConfigurationInput{
+//		Bucket:              aws.String(bucket),
+//		ExpectedBucketOwner: nil,
+//	}
+//	resp, err := d.client.GetBucketLifecycleConfiguration(context.TODO(), &input)
+//	if err != nil {
+//		logrus.Errorf("Error occurred: %v", err)
+//		return
+//	}
+//	logrus.Printf(string(resp.Rules[0].Expiration.Days))
+//	return true
+//}

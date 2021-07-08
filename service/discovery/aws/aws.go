@@ -36,21 +36,21 @@ import (
 
 var log = logrus.WithField("component", "aws-discovery")
 
-// awsClient holds configurations across all services within AWS
-type awsClient struct {
+// Client holds configurations across all services within AWS
+// ToDo: deepsource.io wants the struct to exported since NewAwsStorageDiscovery is exported. Encapsulation?
+type Client struct {
 	Cfg aws.Config
 }
 
-// NewAwsClient constructs a new awsClient
+// NewClient constructs a new AwsClient
 // ToDo: "Overload" (switch) with staticCredentialsProvider
-func NewAwsClient() *awsClient {
-	d := &awsClient{}
+// ToDo: Should we implement singleton pattern?
+func NewClient() *Client {
+	d := &Client{}
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 	if err != nil {
 		log.Errorf("Could not load default config: %v", err)
 	}
-	// ToDo: Test if proper region was loaded and maybe remove line
-	log.Printf("Loaded credentials in region: %v", cfg.Region)
 	d.Cfg = cfg
 	return d
 }

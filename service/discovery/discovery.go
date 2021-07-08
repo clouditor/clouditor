@@ -118,7 +118,7 @@ func (s Service) Start(ctx context.Context, request *discovery.StartDiscoveryReq
 		return nil, err
 	}
 
-	awsClient := aws.NewAwsClient()
+	awsClient := aws.NewClient()
 
 	var discoverer []discovery.Discoverer
 

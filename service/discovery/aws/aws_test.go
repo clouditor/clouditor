@@ -35,7 +35,7 @@ import (
 
 // ToDo: Works with my credentials -> Mock it
 func Test_awsDiscovery_NewAwsDiscovery(t *testing.T) {
-	testDiscovery := NewAwsClient()
+	testDiscovery := NewClient()
 	if region := testDiscovery.Cfg.Region; region != mockBucket1Region {
 		t.Fatalf("Excpected eu-central-1. Got %v", region)
 	}
@@ -43,7 +43,7 @@ func Test_awsDiscovery_NewAwsDiscovery(t *testing.T) {
 
 // ToDo: Works with my credentials -> Mock it
 func Test_discoverAll(t *testing.T) {
-	testDiscovery := NewAwsClient()
+	testDiscovery := NewClient()
 	//discoverAll(testDiscovery)
 	if region := testDiscovery.Cfg.Region; region != mockBucket1Region {
 		t.Fatalf("Excpected eu-central-1. Got %v", region)
