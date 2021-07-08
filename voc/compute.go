@@ -47,11 +47,6 @@ type VirtualMachineResource struct {
 	Log          *Log         `json:"log"`
 }
 
-// Function
-type FunctionResource struct {
-	ComputeResource
-}
-
 // Functions
 type FunctionResource struct {
 	ComputeResource
