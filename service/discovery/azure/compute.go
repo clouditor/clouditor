@@ -32,6 +32,7 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/compute/mgmt/compute"
+	"github.com/Azure/azure-sdk-for-go/services/web/mgmt/2019-08-01/web"
 	"github.com/Azure/go-autorest/autorest/to"
 )
 
@@ -74,7 +75,50 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 	}
 	list = append(list, virtualMachines...)
 
+	// Discover functions
+	function, err := d.discoverFunction()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover functions: %w", err)
+	}
+	list = append(list, function...)
+
 	return
+}
+
+// Discover function
+func (d *azureComputeDiscovery) discoverFunction() ([]voc.IsResource, error) {
+	var list []voc.IsResource
+
+	client := web.NewAppsClient(to.String(d.sub.SubscriptionID))
+	d.apply(&client.Client)
+
+	result, err := client.ListComplete(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("could not list functions: %w", err)
+	}
+
+	functionApp := *result.Response().Value
+	for i := range functionApp {
+		functionResource := d.handleFunction(&functionApp[i])
+		list = append(list, functionResource)
+	}
+
+	return list, err
+}
+
+func (d *azureComputeDiscovery) handleFunction(function *web.Site) voc.IsCompute {
+	return &voc.FunctionResource{
+		ComputeResource: voc.ComputeResource{
+			Resource: voc.Resource{
+				ID:           voc.ResourceID(to.String(function.ID)),
+				Name:         to.String(function.Name),
+				CreationTime: 0, // No creation time available
+				Type:         []string{"Function", "Compute", "Resource"},
+			},
+			NetworkInterfaces: nil, // TBD
+		},
+	}
+
 }
 
 // Discover virtual machines
