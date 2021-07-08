@@ -32,7 +32,7 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/compute/mgmt/compute"
-	"github.com/Azure/azure-sdk-for-go/services/web/mgmt/2019-08-01/web"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/web/mgmt/web"
 	"github.com/Azure/go-autorest/autorest/to"
 )
 
