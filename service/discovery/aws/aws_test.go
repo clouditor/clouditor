@@ -28,25 +28,64 @@
 package aws
 
 import (
+	"context"
+	"errors"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"testing"
 )
 
-// ToDo: Re-writing
+// TestNewClient tests the NewClient function
+func TestNewClient(t *testing.T) {
+	// Mock loadDefaultConfig and store the original function back to loadDefaultConfig at the end of the test
+	old := loadDefaultConfig
+	defer func() { loadDefaultConfig = old }()
 
-// ToDo: Works with my credentials -> Mock it
-func Test_awsDiscovery_NewAwsDiscovery(t *testing.T) {
-	testDiscovery := NewClient()
-	if region := testDiscovery.Cfg.Region; region != mockBucket1Region {
-		t.Fatalf("Excpected eu-central-1. Got %v", region)
+	// Case 1: Get config (and no error)
+	loadDefaultConfig = func(ctx context.Context,
+		opt ...func(options *config.LoadOptions) error) (cfg aws.Config, err error) {
+		err = nil
+		cfg = aws.Config{
+			Region:           "mockRegion",
+			Credentials:      nil,
+			HTTPClient:       nil,
+			EndpointResolver: nil,
+			Retryer:          nil,
+			ConfigSources:    nil,
+			APIOptions:       nil,
+			Logger:           nil,
+			ClientLogMode:    0,
+		}
+		return
 	}
+	client, err := NewClient()
+	if err != nil {
+		t.Error("EXPECTED no error but GOT one.")
+	}
+	if e, a := "mockRegion", client.Cfg.Region; e != a {
+		t.Error("EXPECTED: mockRegion.", "GOT", a)
+	}
+
+	// Case 1: Get error (and empty config)
+	loadDefaultConfig = func(ctx context.Context,
+		opt ...func(options *config.LoadOptions) error) (cfg aws.Config, err error) {
+		err = errors.New("error occurred while loading credentials")
+		cfg = aws.Config{}
+		return
+	}
+	client, err = NewClient()
+	if err == nil {
+		t.Error("EXPECTED no error but GOT one.")
+	}
+	if e, a := "", client.Cfg.Region; e != a {
+		t.Error("EXPECTED no region.", "GOT", a)
+	}
+
 }
 
 // ToDo: Works with my credentials -> Mock it
-func Test_discoverAll(t *testing.T) {
-	testDiscovery := NewClient()
-	//discoverAll(testDiscovery)
-	if region := testDiscovery.Cfg.Region; region != mockBucket1Region {
-		t.Fatalf("Excpected eu-central-1. Got %v", region)
-	}
-
-}
+//func Test_awsDiscovery_NewAwsDiscovery(t *testing.T) {
+//	testDiscovery := NewClient()
+//	if region := testDiscovery.Cfg.Region; region != mockBucket1Region {
+//		t.Fatalf("Excpected eu-central-1. Got %v", region)
+//	}

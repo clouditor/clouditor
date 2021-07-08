@@ -36,6 +36,9 @@ import (
 
 var log = logrus.WithField("component", "aws-discovery")
 
+// loadDefaultConfig holds config.LoadDefaultConfig() so the test function can mock it
+var loadDefaultConfig = config.LoadDefaultConfig
+
 // Client holds configurations across all services within AWS
 // ToDo: deepsource.io wants the struct to exported since NewAwsStorageDiscovery is exported. Encapsulation?
 type Client struct {
@@ -44,13 +47,12 @@ type Client struct {
 
 // NewClient constructs a new AwsClient
 // ToDo: "Overload" (switch) with staticCredentialsProvider
-// ToDo: Should we implement singleton pattern?
-func NewClient() *Client {
-	d := &Client{}
-	cfg, err := config.LoadDefaultConfig(context.TODO())
+func NewClient() (*Client, error) {
+	c := &Client{}
+	cfg, err := loadDefaultConfig(context.TODO())
 	if err != nil {
 		log.Errorf("Could not load default config: %v", err)
 	}
-	d.Cfg = cfg
-	return d
+	c.Cfg = cfg
+	return c, err
 }

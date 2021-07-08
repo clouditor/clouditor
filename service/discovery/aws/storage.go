@@ -240,7 +240,7 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (enabled bool, al
 	}
 	// one statement has set https only -> default encryption is set
 	for _, statement := range policy.Statement {
-		if statement.Effect == "Deny" && statement.Condition.AwsSecureTransport == false && statement.Action == "s3:*" {
+		if statement.Effect == "Deny" && !statement.Condition.AwsSecureTransport && statement.Action == "s3:*" {
 			return true, "TLS", true, "1.2"
 		}
 	}

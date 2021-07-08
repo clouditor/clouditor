@@ -140,7 +140,6 @@ func (m mockS3APINew) GetBucketPolicy(_ context.Context,
 		output = &s3.GetBucketPolicyOutput{
 			Policy: aws.String(string(policyJson)),
 		}
-		err = nil
 	case "mockbucket2": // JSON failure
 		output = &s3.GetBucketPolicyOutput{
 			Policy: aws.String(""),
@@ -165,7 +164,6 @@ func (m mockS3APINew) GetBucketPolicy(_ context.Context,
 		output = &s3.GetBucketPolicyOutput{
 			Policy: aws.String(string(policyJson)),
 		}
-		err = nil
 	}
 	return
 }
