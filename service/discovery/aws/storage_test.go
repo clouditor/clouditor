@@ -280,13 +280,15 @@ func (m mockS3APIWitHErrors) GetBucketLifecycleConfiguration(_ context.Context, 
 
 // TestGetBucketsNew tests the getBuckets method (with other form of mocking implementation)
 func TestGetBucketsNew(t *testing.T) {
-	// ToDo: I should mock the initialization of d as well? Meaning creating a init function in storage.go and mock it
 	d := awsS3Discovery{
 		client:        mockS3APINew{},
 		buckets:       nil,
 		isDiscovering: false,
 	}
-	d.getBuckets()
+	err := d.getBuckets()
+	if err != nil {
+		t.Error("EXPECTED no errors. GOT one:", err)
+	}
 	log.Print("Testing number of buckets")
 	if e, a := 2, len(d.buckets); e != a {
 		t.Error("EXPECTED:", e, "GOT:", a)
@@ -337,9 +339,9 @@ func TestGetBucketsNew(t *testing.T) {
 		isDiscovering: false,
 	}
 
-	d.getBuckets()
-	if d.buckets != nil {
-		t.Error("EXPECTED no buckets")
+	err = d.getBuckets()
+	if err != nil {
+		t.Error("EXPECTED error. GOT none")
 	}
 }
 
