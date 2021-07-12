@@ -441,8 +441,10 @@ func TestGetRegion(t *testing.T) {
 	if a, _ := d.getRegion(mockBucket2); mockBucket2Region != a {
 		t.Error("Expected: ", mockBucket2Region, ". Got:", a)
 	}
-	if a, _ := d.getRegion("mockbucketNotAvailable"); "" != a {
-		t.Error("Expected: ", "(empty string)", ". Got:", a)
+
+	// Error case
+	if _, err := d.getRegion("mockbucketNotAvailable"); err == nil {
+		t.Error("EXPECTED error. GOT none")
 	}
 
 }
