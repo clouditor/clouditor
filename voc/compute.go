@@ -44,6 +44,11 @@ type VirtualMachineResource struct {
 	Log *Log `json:"log"`
 }
 
+// Functions
+type FunctionResource struct {
+	ComputeResource
+}
+
 func (v *VirtualMachineResource) GetLog() *Log {
 	return v.Log
 }

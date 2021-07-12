@@ -50,6 +50,17 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 				},
 			},
 		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Web/sites" {
+		return createResponse(map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":         "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
+					"name":       "function1",
+					"location":   "West Europe",
+					"properties": map[string]interface{}{},
+				},
+			},
+		}, 200)
 	}
 
 	return m.mockSender.Do(req)
@@ -65,10 +76,16 @@ func TestListCompute(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 1, len(list))
+	assert.Equal(t, 2, len(list))
 
-	storage, ok := list[0].(*voc.VirtualMachineResource)
+	vm, ok := list[0].(*voc.VirtualMachineResource)
 
 	assert.True(t, ok)
-	assert.Equal(t, "vm1", storage.Name)
+	assert.Equal(t, "vm1", vm.Name)
+
+	functions, ok := list[1].(*voc.FunctionResource)
+
+	assert.True(t, ok)
+	assert.Equal(t, "function1", functions.Name)
+
 }
