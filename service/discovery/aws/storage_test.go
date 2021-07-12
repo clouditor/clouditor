@@ -278,8 +278,8 @@ func (m mockS3APIWitHErrors) GetBucketLifecycleConfiguration(_ context.Context, 
 	return nil, oe
 }
 
-// TestGetBucketsNew tests the getBuckets method (with other form of mocking implementation)
-func TestGetBucketsNew(t *testing.T) {
+// TestGetBuckets tests the getBuckets method (with other form of mocking implementation)
+func TestGetBuckets(t *testing.T) {
 	d := awsS3Discovery{
 		client:        mockS3APINew{},
 		buckets:       nil,
@@ -339,8 +339,7 @@ func TestGetBucketsNew(t *testing.T) {
 		isDiscovering: false,
 	}
 
-	err = d.getBuckets()
-	if err != nil {
+	if err = d.getBuckets(); err == nil {
 		t.Error("EXPECTED error. GOT none")
 	}
 }
