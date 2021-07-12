@@ -184,7 +184,11 @@ func (m mockS3APINew) GetBucketLocation(_ context.Context,
 		err = nil
 	default:
 		output = nil
-		err = errors.New("MockS3API: No bucket location found for given bucket. Bucket does not exist")
+		err = &smithy.OperationError{
+			ServiceID:     "MockS3API",
+			OperationName: "GetBucketLocation",
+			Err:           errors.New("no bucket location found for given bucket. Bucket does not exist"),
+		}
 	}
 	return
 }
@@ -340,44 +344,46 @@ func TestGetBucketsNew(t *testing.T) {
 }
 
 // TestGetEncryptionAtRest tests the getEncryptionAtRest method
+// ToDo: Check errors explicitly
 func TestGetEncryptionAtRest(t *testing.T) {
 	d := awsS3Discovery{
 		client:        mockS3APINew{},
 		buckets:       nil,
 		isDiscovering: false,
 	}
+
 	// First case
-	isEncrypted, algorithm, manager := d.getEncryptionAtRest(mockBucket1)
-	if isEncrypted == false {
+	encryptionAtRest, _ := d.getEncryptionAtRest(mockBucket1)
+	if isEncrypted := encryptionAtRest.Encryption.Enabled; !isEncrypted {
 		t.Error("Expected:", true, ".Got:", isEncrypted)
 	}
-	if e := "AES256"; algorithm != e {
-		t.Error("Expected:", e, ".Got:", algorithm)
+	if e, a := "AES256", encryptionAtRest.Algorithm; e != a {
+		t.Error("Expected:", e, ".Got:", a)
 	}
-	if e := "SSE-S3"; manager != e {
-		t.Error("Expected:", e, ".Got:", manager)
-	}
-	// Second case
-	isEncrypted, algorithm, manager = d.getEncryptionAtRest("mockbucket2")
-	if isEncrypted == false {
-		t.Error("Expected:", true, ".Got:", isEncrypted)
-	}
-	if e := "aws:kms"; algorithm != e {
-		t.Error("Expected:", e, ".Got:", algorithm)
-	}
-	if e := "SSE-KMS"; manager != e {
-		t.Error("Expected:", e, ".Got:", manager)
+	if e, a := "SSE-S3", encryptionAtRest.KeyManager; e != a {
+		t.Error("Expected:", e, ".Got:", a)
 	}
 
-	// Third case
-	isEncrypted, _, _ = d.getEncryptionAtRest("Mock Bucket with no encryption")
-	if isEncrypted == true {
+	// Second case
+	encryptionAtRest, _ = d.getEncryptionAtRest(mockBucket2)
+	if isEncrypted := encryptionAtRest.Encryption.Enabled; !isEncrypted {
+		t.Error("Expected:", true, ".Got:", isEncrypted)
+	}
+	if e, a := "aws:kms", encryptionAtRest.Algorithm; e != a {
+		t.Error("Expected:", e, ".Got:", a)
+	}
+	if e, a := "SSE-KMS", encryptionAtRest.KeyManager; e != a {
+		t.Error("Expected:", e, ".Got:", a)
+	}
+
+	// Third case (no encryption at all)
+	encryptionAtRest, _ = d.getEncryptionAtRest("Mock Bucket with no encryption")
+	if isEncrypted := encryptionAtRest.Encryption.Enabled; isEncrypted {
 		t.Error("Expected:", false, ".Got:", isEncrypted)
 	}
 }
 
 // TestGetTransportEncryption tests the getTransportEncryption method
-// ToDo: Check Test again
 func TestGetTransportEncryption(t *testing.T) {
 	// Case 1 (error case):
 	d := awsS3Discovery{
@@ -385,9 +391,10 @@ func TestGetTransportEncryption(t *testing.T) {
 		buckets:       nil,
 		isDiscovering: false,
 	}
-	if isEncrypted, algorithm, enforced, version := d.getTransportEncryption(""); isEncrypted == true || algorithm != "" || enforced == true || version != "" {
-		t.Errorf("Expected isEncrypted: %v, algorithm: %v, enforced: %v, version: %v."+
-			"Got: %v, %v, %v, %v", false, "", false, "", isEncrypted, algorithm, enforced, version)
+	encryptionAtTransit, err := d.getTransportEncryption("")
+	if err == nil || encryptionAtTransit.Encryption.Enabled || encryptionAtTransit.TlsVersion != "" || encryptionAtTransit.Enforced {
+		t.Errorf("Expected error but got no one. encryptionEnabled: %v, TLS version: %v, isEnforced: %v."+
+			"Got: %v, %v, %v", false, "", false, encryptionAtTransit.Encryption.Enabled, encryptionAtTransit.TlsVersion, encryptionAtTransit.Enforced)
 	}
 
 	d = awsS3Discovery{
@@ -397,39 +404,43 @@ func TestGetTransportEncryption(t *testing.T) {
 	}
 
 	// Case 2
-	if isEncrypted, algorithm, enforced, version := d.getTransportEncryption(mockBucket1); isEncrypted == false || algorithm != "TLS" || enforced == false || version != "1.2" {
-		t.Errorf("Expected isEncrypted: %v, algorithm: %v, enforced: %v, version: %v."+
-			"Got: %v, %v, %v, %v", true, "TLS", true, "1.2", isEncrypted, algorithm, enforced, version)
+	encryptionAtTransit, _ = d.getTransportEncryption(mockBucket1)
+	if !encryptionAtTransit.Encryption.Enabled || encryptionAtTransit.TlsVersion != "TLS1.2" || !encryptionAtTransit.Enforced {
+		t.Errorf("Expected encryptionEnabled: %v, TLS version: %v, isEnforced: %v."+
+			"Got: %v, %v, %v", true, "TLS1.2", true, encryptionAtTransit.Encryption.Enabled, encryptionAtTransit.TlsVersion, encryptionAtTransit.Enforced)
 	}
 
 	// Case 3: JSON failure
-	if isEncrypted, algorithm, enforced, version := d.getTransportEncryption("mockbucket2"); isEncrypted == true || algorithm != "" || enforced == true || version != "" {
-		t.Errorf("Expected isEncrypted: %v, algorithm: %v, enforced: %v, version: %v."+
-			"Got: %v, %v, %v, %v", false, "", false, "", isEncrypted, algorithm, enforced, version)
+	encryptionAtTransit, _ = d.getTransportEncryption(mockBucket2)
+	if encryptionAtTransit.Encryption.Enabled || encryptionAtTransit.TlsVersion != "" || encryptionAtTransit.Enforced {
+		t.Errorf("Expected isEncrypted: %v, TLS version: %v, enforced: %v. "+
+			"Got: %v, %v, %v.", false, "", false, encryptionAtTransit.Encryption.Enabled, encryptionAtTransit.TlsVersion, encryptionAtTransit.Enforced)
 	}
 
-	// Case 4:
-	if isEncrypted, algorithm, enforced, version := d.getTransportEncryption("mockbucket3"); isEncrypted == true || algorithm != "" || enforced == true || version != "" {
-		t.Errorf("Expected isEncrypted: %v, algorithm: %v, enforced: %v, version: %v."+
-			"Got: %v, %v, %v, %v", false, "", false, "", isEncrypted, algorithm, enforced, version)
+	// Case 4
+	encryptionAtTransit, _ = d.getTransportEncryption("mockbucket3")
+	if encryptionAtTransit.Encryption.Enabled || encryptionAtTransit.TlsVersion != "" || encryptionAtTransit.Enforced {
+		t.Errorf("Expected isEncrypted: %v, TLS version: %v, enforced: %v."+
+			"Got: %v, %v, %v.", false, "", false, encryptionAtTransit.Encryption.Enabled, encryptionAtTransit.TlsVersion, encryptionAtTransit.Enforced)
 	}
 
 }
 
 // TestGetRegion tests the getRegion method
+// ToDo: Test errors explicitly
 func TestGetRegion(t *testing.T) {
 	d := awsS3Discovery{
 		client:        mockS3APINew{},
 		buckets:       nil,
 		isDiscovering: false,
 	}
-	if e, a := mockBucket1Region, d.getRegion(mockBucket1); e != a {
-		t.Error("Expected: ", e, ". Got:", a)
+	if a, _ := d.getRegion(mockBucket1); mockBucket1Region != a {
+		t.Error("Expected: ", mockBucket1Region, ". Got:", a)
 	}
-	if e, a := mockBucket2Region, d.getRegion(mockBucket2); e != a {
-		t.Error("Expected: ", e, ". Got:", a)
+	if a, _ := d.getRegion(mockBucket2); mockBucket2Region != a {
+		t.Error("Expected: ", mockBucket2Region, ". Got:", a)
 	}
-	if e, a := "", d.getRegion("mockbucketNotAvailable"); e != a {
+	if a, _ := d.getRegion("mockbucketNotAvailable"); "" != a {
 		t.Error("Expected: ", "(empty string)", ". Got:", a)
 	}
 
@@ -443,12 +454,14 @@ func TestName(t *testing.T) {
 		isDiscovering: false,
 	}
 	log.Println("Testing the name of the AWS Blob Storage Discovery")
-	if e, a := "Aws Blob Storage", d.Name(); e != a {
+	if e, a := "AWS Blob Storage", d.Name(); e != a {
 		t.Error("EXPECTED:", e, "GOT", a)
 	}
 }
 
 // TestList tests the List method
+// ToDo: Currently no full coverage since testing all errors in single tests yields early termination here
+// ToDo: One possibility: Create new MockAPIs for each case...
 func TestList(t *testing.T) {
 	d := awsS3Discovery{
 		client:        mockS3APINew{},
@@ -456,11 +469,11 @@ func TestList(t *testing.T) {
 		isDiscovering: false,
 	}
 	resources, err := d.List()
-	if err != nil {
-		t.Error("Error occurred:", err)
+	if err == nil {
+		t.Error("EXPECTED error because MockBucket2 should throw JSON error. But GOT no error")
 	}
 	log.Println("Testing number of resources (buckets)")
-	if a := len(resources); a != 2 {
+	if e, a := 1, len(resources); e != a {
 		t.Error("EXPECTED: 2", "GOT:", a)
 	}
 

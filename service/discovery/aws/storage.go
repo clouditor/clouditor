@@ -105,18 +105,30 @@ type Bool struct {
 
 // Name is the method implementation defined in the discovery.Discoverer interface
 func (d *awsS3Discovery) Name() string {
-	return "Aws Blob Storage"
+	return "AWS Blob Storage"
 }
 
 // List is the method implementation defined in the discovery.Discoverer interface
 func (d *awsS3Discovery) List() (resources []voc.IsResource, err error) {
+	var encryptionAtRest voc.AtRestEncryption
+	var encryptionAtTransmit voc.TransportEncryption
+
 	log.Info("Starting List() in ", d.Name())
-	d.getBuckets()
+	err = d.getBuckets()
+	if err != nil {
+		return
+	}
 	log.Println(d.buckets)
 	for _, bucket := range d.buckets {
 		log.Println("Getting resources for", bucket.name)
-		isEncrypted, algorithm, keyManager := d.getEncryptionAtRest(bucket.name)
-		enabled, algo, enforced, version := d.getTransportEncryption(bucket.name)
+		encryptionAtRest, err = d.getEncryptionAtRest(bucket.name)
+		if err != nil {
+			return
+		}
+		encryptionAtTransmit, err = d.getTransportEncryption(bucket.name)
+		if err != nil {
+			return
+		}
 		resources = append(resources, &voc.ObjectStorageResource{
 			StorageResource: voc.StorageResource{
 				Resource: voc.Resource{
@@ -125,15 +137,11 @@ func (d *awsS3Discovery) List() (resources []voc.IsResource, err error) {
 					CreationTime: bucket.creationTime.Unix(),
 					Type:         []string{"ObjectStorage", "Storage", "Resource"},
 				},
-				AtRestEncryption: voc.NewAtRestEncryption(isEncrypted, algorithm, keyManager),
+				AtRestEncryption: &encryptionAtRest,
 			},
 			HttpEndpoint: &voc.HttpEndpoint{
-				URL: bucket.endpoint,
-				TransportEncryption: &voc.TransportEncryption{
-					Encryption: voc.Encryption{Enabled: enabled},
-					Enforced:   enforced,
-					TlsVersion: algo + version,
-				},
+				URL:                 bucket.endpoint,
+				TransportEncryption: &encryptionAtTransmit,
 			},
 		})
 	}
@@ -160,40 +168,49 @@ type S3ListBucketsAPI interface {
 }
 
 // getBuckets returns all buckets
-func (d *awsS3Discovery) getBuckets() {
+func (d *awsS3Discovery) getBuckets() (err error) {
 	log.Println("Getting buckets in s3...")
-	resp, err := d.client.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
+	var resp *s3.ListBucketsOutput
+	resp, err = d.client.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
 	if err != nil {
-		log.Error("Error occurred")
+		log.Error("Error occurred.")
 		var oe *smithy.OperationError
 		if errors.As(err, &oe) {
 			log.Printf("failed to call service: %s, operation: %s, error: %v", oe.Service(), oe.Operation(), oe.Unwrap())
 		}
 		return
 	}
+	var region string
 	log.Printf("Retrieved %v buckets.", len(resp.Buckets))
-	//d.buckets = resp
 	for _, b := range resp.Buckets {
+		//d.buckets = resp
+		region, err = d.getRegion(aws.ToString(b.Name))
+		if err != nil {
+			return
+		}
 		d.buckets = append(d.buckets, bucket{
 			arn:          "arn:aws:s3:::" + *b.Name,
 			name:         aws.ToString(b.Name),
 			creationTime: aws.ToTime(b.CreationDate),
-			region:       d.getRegion(aws.ToString(b.Name)),
-			endpoint:     "https://" + aws.ToString(b.Name) + ".s3." + d.getRegion(aws.ToString(b.Name)) + ".amazonaws.com",
+			region:       region,
+			endpoint:     "https://" + aws.ToString(b.Name) + ".s3." + region + ".amazonaws.com",
 			// ToDo: Implement method for retrieving the number of objects per bucket (if needed)
 			numberOfObjects: -1,
 		})
 	}
+	return
 }
 
 // getEncryptionAtRest gets the bucket's encryption configuration
-func (d *awsS3Discovery) getEncryptionAtRest(bucket string) (isEncrypted bool, algorithm string, keyManager string) {
+func (d *awsS3Discovery) getEncryptionAtRest(bucket string) (e voc.AtRestEncryption, err error) {
 	log.Printf("Checking encryption for bucket %v.\n", bucket)
 	input := s3.GetBucketEncryptionInput{
 		Bucket:              aws.String(bucket),
 		ExpectedBucketOwner: nil,
 	}
-	resp, err := d.client.GetBucketEncryption(context.TODO(), &input)
+	var resp *s3.GetBucketEncryptionOutput
+
+	resp, err = d.client.GetBucketEncryption(context.TODO(), &input)
 	if err != nil {
 		log.Error("Error occurred")
 		var oe *smithy.OperationError
@@ -203,37 +220,41 @@ func (d *awsS3Discovery) getEncryptionAtRest(bucket string) (isEncrypted bool, a
 		return
 	}
 	log.Println("Bucket is encrypted.")
-	algorithm = string(resp.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm)
-	if algorithm == string(types.ServerSideEncryptionAes256) {
-		keyManager = "SSE-S3"
+	e.Algorithm = string(resp.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm)
+	if e.Algorithm == string(types.ServerSideEncryptionAes256) {
+		e.KeyManager = "SSE-S3"
 	} else {
-		keyManager = "SSE-KMS"
+		e.KeyManager = "SSE-KMS"
 	}
-	isEncrypted = true
+	e.Enabled = true
 	return
 }
 
 // "confirm that your bucket policies explicitly deny access to HTTP requests"
 // https://aws.amazon.com/premiumsupport/knowledge-center/s3-bucket-policy-for-config-rule/
 // getTransportEncryption loops over all statements in the bucket policy and checks if one statement denies https only == false
-func (d *awsS3Discovery) getTransportEncryption(bucket string) (enabled bool, algorithm string, enforced bool, tlsVersion string) {
+func (d *awsS3Discovery) getTransportEncryption(bucket string) (encryptionAtTransit voc.TransportEncryption, err error) {
 	input := s3.GetBucketPolicyInput{
 		Bucket:              aws.String(bucket),
 		ExpectedBucketOwner: nil,
 	}
-	output, err := d.client.GetBucketPolicy(context.TODO(), &input)
-	// Case 1: No bucket policy -> no https only set
+	var resp *s3.GetBucketPolicyOutput
+
+	resp, err = d.client.GetBucketPolicy(context.TODO(), &input)
+
+	// Case 1: No bucket policy or api error -> no https only set
 	if err != nil {
-		log.Error("Error occurred")
+		log.Error("Error occurred.")
 		var oe *smithy.OperationError
 		if errors.As(err, &oe) {
 			log.Printf("failed to call service: %s, operation: %s, error: %v", oe.Service(), oe.Operation(), oe.Unwrap())
 		}
-		return false, "", false, ""
+		return
 	}
+
 	// Case 2: bucket policy -> check if https only is set
 	var policy BucketPolicy
-	err = json.Unmarshal([]byte(aws.ToString(output.Policy)), &policy)
+	err = json.Unmarshal([]byte(aws.ToString(resp.Policy)), &policy)
 	if err != nil {
 		log.Error("Error occurred while unmarshalling the bucket policy:", err)
 		return
@@ -241,24 +262,40 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (enabled bool, al
 	// one statement has set https only -> default encryption is set
 	for _, statement := range policy.Statement {
 		if statement.Effect == "Deny" && !statement.Condition.AwsSecureTransport && statement.Action == "s3:*" {
-			return true, "TLS", true, "1.2"
+			encryptionAtTransit = voc.TransportEncryption{
+				Encryption: voc.Encryption{Enabled: true},
+				Enforced:   true,
+				TlsVersion: "TLS1.2",
+			}
+			return
 		}
 	}
-	return false, "", false, ""
+	encryptionAtTransit = voc.TransportEncryption{
+		// ToDo: I think you can only enforce it via a bucket policy. But not look if its enabled or not, otherwise
+		Encryption: voc.Encryption{Enabled: false},
+		Enforced:   false,
+		TlsVersion: "",
+	}
+	return
 
 }
 
 // getRegion returns the region where the bucket resides
-func (d *awsS3Discovery) getRegion(bucket string) (region string) {
+func (d *awsS3Discovery) getRegion(bucket string) (region string, err error) {
 	input := s3.GetBucketLocationInput{
 		Bucket: aws.String(bucket),
 	}
-	output, err := d.client.GetBucketLocation(context.TODO(), &input)
+	var resp *s3.GetBucketLocationOutput
+	resp, err = d.client.GetBucketLocation(context.TODO(), &input)
 	if err != nil {
-		log.Error("Retrieved error while getting location of bucket: ", err)
-		return ""
+		log.Error("Error occurred.")
+		var oe *smithy.OperationError
+		if errors.As(err, &oe) {
+			log.Printf("failed to call service: %s, operation: %s, error: %v", oe.Service(), oe.Operation(), oe.Unwrap())
+		}
+		return
 	}
-	region = string(output.LocationConstraint)
+	region = string(resp.LocationConstraint)
 	return
 }
 
