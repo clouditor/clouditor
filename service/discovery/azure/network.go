@@ -147,12 +147,12 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc
 			IPs:   []string{d.GetPublicIPAddress(lb)},
 			Ports: nil, //TODO: fill out ports (garuppel)
 		},
-		// TODO (garuppel): fill out access restrictions
+		// TODO(garuppel): fill out access restrictions
 		AccessRestriction: &voc.AccessRestriction{
 			Inbound:         false,
 			RestrictedPorts: "",
 		},
-		// TODO: do we need the httpEndpoint?
+		// TODO(all): do we need the httpEndpoint?
 		HttpEndpoints: []*voc.HttpEndpoint{}}
 }
 
@@ -167,7 +167,7 @@ func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *network.Interface) v
 			},
 		},
 		AccessRestriction: &voc.AccessRestriction{
-			Inbound:         false, //TBD
+			Inbound:         false, // TODO(garuppel): TBD
 			RestrictedPorts: d.GetRestrictedPortsDefined(ni),
 		},
 	}
@@ -201,7 +201,7 @@ func (d *azureNetworkDiscovery) GetRestrictedPortsDefined(ni *network.Interface)
 		// Find all ports defined in the security rules with access property "Deny"
 		for _, securityRule := range *sg.SecurityRules {
 			if securityRule.Access == network.SecurityRuleAccessDeny {
-				// TODO delete duplicates
+				// TODO(garuppel): delete duplicates
 				restrictedPorts = append(restrictedPorts, *securityRule.SourcePortRange)
 			}
 		}

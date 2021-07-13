@@ -36,12 +36,12 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 )
 
-type azureIaCTemplateDiscovery struct {
+type azureIacTemplateDiscovery struct {
 	azureDiscovery
 }
 
-func NewIaCTemplateDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
-	d := &azureIaCTemplateDiscovery{}
+func NewAzureIacTemplateDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
+	d := &azureIacTemplateDiscovery{}
 
 	for _, opt := range opts {
 		if auth, ok := opt.(*authorizerOption); ok {
@@ -54,16 +54,16 @@ func NewIaCTemplateDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	return d
 }
 
-func (d *azureIaCTemplateDiscovery) Name() string {
+func (d *azureIacTemplateDiscovery) Name() string {
 	return "Azure"
 }
 
-func (d *azureIaCTemplateDiscovery) Description() string {
+func (d *azureIacTemplateDiscovery) Description() string {
 	return "Discovery IaC template."
 }
 
 // Discover IaC template
-func (d *azureIaCTemplateDiscovery) List() (list []voc.IsResource, err error) {
+func (d *azureIacTemplateDiscovery) List() (list []voc.IsResource, err error) {
 	if err = d.authorize(); err != nil {
 		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
 	}
@@ -77,7 +77,7 @@ func (d *azureIaCTemplateDiscovery) List() (list []voc.IsResource, err error) {
 	return
 }
 
-func (d *azureIaCTemplateDiscovery) discoverIaCTemplate() ([]voc.IsResource, error) {
+func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsResource, error) {
 
 	var list []voc.IsResource
 
@@ -100,6 +100,8 @@ func (d *azureIaCTemplateDiscovery) discoverIaCTemplate() ([]voc.IsResource, err
 		if err != nil {
 			return nil, fmt.Errorf("could not discover IaC templates: %w", err)
 		}
+
+		fmt.Println("RESULT: ", result)
 
 		template, ok := result.Template.(map[string]interface{})
 		if !ok {
@@ -143,7 +145,7 @@ func (d *azureIaCTemplateDiscovery) discoverIaCTemplate() ([]voc.IsResource, err
 	return list, nil
 }
 
-func (d *azureIaCTemplateDiscovery) createLBResource(resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
+func (d *azureIacTemplateDiscovery) createLBResource(resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
 
 	var name string
 
@@ -156,7 +158,7 @@ func (d *azureIaCTemplateDiscovery) createLBResource(resourceValue map[string]in
 		}
 	}
 
-	// TODO Which additional information do we get from the template?
+	// TODO(garuppel): Which additional information do we get from the template?
 	lb := &voc.LoadBalancerResource{
 		NetworkService: voc.NetworkService{
 			NetworkResource: voc.NetworkResource{
@@ -174,14 +176,14 @@ func (d *azureIaCTemplateDiscovery) createLBResource(resourceValue map[string]in
 			Inbound:         false,
 			RestrictedPorts: "",
 		},
-		// TODO Do we need the httpEndpoint?
+		// TODO(all): Do we need the httpEndpoint?
 		HttpEndpoints: []*voc.HttpEndpoint{},
 	}
 
 	return lb, nil
 }
 
-func (d *azureIaCTemplateDiscovery) createVMResource(resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
+func (d *azureIacTemplateDiscovery) createVMResource(resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
 	var id string
 	var name string
 	var enabled bool
@@ -229,7 +231,7 @@ func (d *azureIaCTemplateDiscovery) createVMResource(resourceValue map[string]in
 	return vm, nil
 }
 
-func (d *azureIaCTemplateDiscovery) createID(resourceGroup, resourceType, name string) string {
+func (d *azureIacTemplateDiscovery) createID(resourceGroup, resourceType, name string) string {
 	return "/subscriptions/" + *d.sub.SubscriptionID + "/resourceGroups/" + strings.ToUpper(resourceGroup) + "/providers/" + resourceType + "/" + name
 }
 
@@ -239,7 +241,7 @@ func getResourceName(name string) string {
 	vmNameSplit := strings.Split(nameSplit[1], "_")
 	vmNameSplit = vmNameSplit[1:]
 	vmNameSplit = vmNameSplit[:len(vmNameSplit)-1]
-	// TODO Is it possible that an vm_name has a _ as delimiter
+	// TODO(all): Is it possible that an vm_name has a _ as delimiter
 	resourceName := strings.Join(vmNameSplit, "-")
 
 	return resourceName

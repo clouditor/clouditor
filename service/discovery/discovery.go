@@ -123,8 +123,8 @@ func (s Service) Start(ctx context.Context, request *discovery.StartDiscoveryReq
 		azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
 		azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
 		azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)),
-		// TODO IaC Template discovery must be extracted
-		azure.NewIaCTemplateDiscovery(azure.WithAuthorizer(authorizer)),
+		// TODO(garuppel): IaC Template discovery must be extracted
+		azure.NewAzureIacTemplateDiscovery(azure.WithAuthorizer(authorizer)),
 		k8s.NewKubernetesComputeDiscovery(k8sClient),
 		k8s.NewKubernetesNetworkDiscovery(k8sClient),
 	)
