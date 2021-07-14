@@ -64,10 +64,23 @@ func (m mockNetworkSender) Do(req *http.Request) (res *http.Response, err error)
 		return createResponse(map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
-					"id":         "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1",
-					"name":       "lb1",
-					"location":   "eastus",
-					"properties": map[string]interface{}{},
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1",
+					"name":     "lb1",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"loadBalancingRules": []map[string]interface{}{
+							{
+								"properties": map[string]interface{}{
+									"frontendPort": 1234,
+								},
+							},
+							{
+								"properties": map[string]interface{}{
+									"frontendPort": 5678,
+								},
+							},
+						},
+					},
 				},
 			},
 		}, 200)
@@ -97,4 +110,5 @@ func TestListNetwork(t *testing.T) {
 
 	assert.True(t, ok)
 	assert.Equal(t, "lb1", lb.Name)
+	assert.Equal(t, int16(1234), lb.Ports[0])
 }
