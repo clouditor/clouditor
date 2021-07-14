@@ -101,8 +101,6 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsResource, err
 			return nil, fmt.Errorf("could not discover IaC templates: %w", err)
 		}
 
-		fmt.Println("RESULT: ", result)
-
 		template, ok := result.Template.(map[string]interface{})
 		if !ok {
 			return nil, fmt.Errorf("type convertion failed")
