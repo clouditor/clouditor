@@ -96,8 +96,20 @@ func (m mockNetworkSender) Do(req *http.Request) (res *http.Response, err error)
 								},
 							},
 						},
+						"frontendIPConfigurations": []map[string]interface{}{
+							{
+								"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
+								"name": "b9cb3645-25d0-4288-910a-020563f63b1c",
+							},
+						},
 					},
 				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/b9cb3645-25d0-4288-910a-020563f63b1c" {
+		return createResponse(map[string]interface{}{
+			"properties": map[string]interface{}{
+				"ipAddress": "111.222.333.444",
 			},
 		}, 200)
 	}
@@ -105,7 +117,7 @@ func (m mockNetworkSender) Do(req *http.Request) (res *http.Response, err error)
 	return m.mockSender.Do(req)
 }
 
-func TestListNetwork(t *testing.T) {
+func TestNetwork(t *testing.T) {
 	d := azure.NewAzureNetworkDiscovery(
 		azure.WithSender(&mockNetworkSender{}),
 		azure.WithAuthorizer(&mockAuthorizer{}),
@@ -128,4 +140,5 @@ func TestListNetwork(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "lb1", lb.Name)
 	assert.Equal(t, int16(1234), lb.Ports[0])
+	assert.Equal(t, "111.222.333.444", lb.IPs[0])
 }
