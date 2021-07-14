@@ -207,13 +207,26 @@ func (d *azureNetworkDiscovery) getRestrictedPorts(ni *network.Interface) string
 		// Find all ports defined in the security rules with access property "Deny"
 		for _, securityRule := range *sg.SecurityRules {
 			if securityRule.Access == network.SecurityRuleAccessDeny {
-				// TODO delete duplicates
 				restrictedPorts = append(restrictedPorts, *securityRule.SourcePortRange)
 			}
 		}
 	}
 
-	return strings.Join(restrictedPorts, ",")
+	restrictedPortsClean := deleteDuplicatesFromSlice(restrictedPorts)
+
+	return strings.Join(restrictedPortsClean, ",")
+}
+
+func deleteDuplicatesFromSlice(intSlice []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+	for _, entry := range intSlice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
 }
 
 func GetResourceGroupName(nsgID string) string {

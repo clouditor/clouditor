@@ -59,6 +59,22 @@ func (m mockNetworkSender) Do(req *http.Request) (res *http.Response, err error)
 			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1",
 			"name":     "nsg1",
 			"location": "eastus",
+			"properties": map[string]interface{}{
+				"securityRules": []map[string]interface{}{
+					{
+						"properties": map[string]interface{}{
+							"access":          "Deny",
+							"sourcePortRange": "*",
+						},
+					},
+					{
+						"properties": map[string]interface{}{
+							"access":          "Deny",
+							"sourcePortRange": "*",
+						},
+					},
+				},
+			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Network/loadBalancers" {
 		return createResponse(map[string]interface{}{
@@ -105,6 +121,7 @@ func TestListNetwork(t *testing.T) {
 
 	assert.True(t, ok)
 	assert.Equal(t, "iface1", iface.Name)
+	assert.Equal(t, "*", iface.AccessRestriction.RestrictedPorts)
 
 	lb, ok := list[1].(*voc.LoadBalancerResource)
 
