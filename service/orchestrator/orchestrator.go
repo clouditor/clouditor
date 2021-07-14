@@ -27,18 +27,27 @@ package orchestrator
 
 import (
 	"context"
+	"embed"
+	"encoding/json"
+	"fmt"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 //go:generate protoc -I ../../proto -I ../../third_party orchestrator.proto --go_out=../.. --go-grpc_out=../.. --go_opt=Mevidence.proto=clouditor.io/clouditor/api/assessment --go-grpc_opt=Mevidence.proto=clouditor.io/clouditor/api/assessment --openapi_out=../../openapi/orchestrator
 
+//go:embed metrics.json
+var f embed.FS
+
 var metrics []*assessment.Metric
 var metricIndex map[int32]*assessment.Metric
+var log *logrus.Entry
+
+var DefaultMetricsFile = "metrics.json"
 
 // Service is an implementation of the Clouditor Orchestrator service
 type Service struct {
@@ -46,52 +55,34 @@ type Service struct {
 }
 
 func init() {
-	metrics = []*assessment.Metric{
-		{
-			Id:          1,
-			Name:        "Transport Encryption",
-			Description: "This metric describes, whether transport encryption is turned on or not",
-			Category:    "",
-			Scale:       assessment.Metric_ORDINAL,
-			Range: &assessment.Range{
-				Range: &assessment.Range_Order{
-					Order: &assessment.Order{Values: []*structpb.Value{
-						structpb.NewBoolValue(false),
-						structpb.NewBoolValue(true),
-					}},
-				},
-			},
-			TargetValue: structpb.NewBoolValue(true),
-		},
-		{
-			Id:          2,
-			Name:        "Transport Encryption Protocol Version",
-			Description: "This metric describes, whether a up-to-date transport encryption protocol version is used",
-			Category:    "",
-			Scale:       assessment.Metric_ORDINAL,
-			Range: &assessment.Range{
-				Range: &assessment.Range_Order{
-					Order: &assessment.Order{Values: []*structpb.Value{
-						structpb.NewStringValue("TLS 1.0"),
-						structpb.NewStringValue("TLS 1.1"),
-						structpb.NewStringValue("TLS 1.2"),
-						structpb.NewStringValue("TLS 1.3"),
-					}},
-				},
-			},
-			TargetValue: structpb.NewListValue(&structpb.ListValue{
-				Values: []*structpb.Value{
-					structpb.NewStringValue("TLS 1.2"),
-					structpb.NewStringValue("TLS 1.3"),
-				},
-			}),
-		},
+	log = logrus.WithField("component", "orchestrator")
+
+	if err := LoadMetrics(DefaultMetricsFile); err != nil {
+		log.Errorf("Could not load embedded metrics. Will continue with empty metric list: %v", err)
 	}
 
 	metricIndex = make(map[int32]*assessment.Metric)
 	for _, v := range metrics {
 		metricIndex[v.Id] = v
 	}
+}
+
+func LoadMetrics(metricsFile string) (err error) {
+	var (
+		b []byte
+	)
+
+	b, err = f.ReadFile(metricsFile)
+	if err != nil {
+		return fmt.Errorf("error while loading %s: %w", metricsFile, err)
+	}
+
+	err = json.Unmarshal(b, &metrics)
+	if err != nil {
+		return fmt.Errorf("error in JSON marshal: %w", err)
+	}
+
+	return nil
 }
 
 func (s *Service) ListMetrics(ctx context.Context, request *orchestrator.ListMetricsRequest) (response *orchestrator.ListMetricsResponse, err error) {

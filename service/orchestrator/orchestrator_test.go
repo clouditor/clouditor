@@ -27,6 +27,7 @@ package orchestrator_test
 
 import (
 	"context"
+	"io/fs"
 	"testing"
 
 	"clouditor.io/clouditor/api/assessment"
@@ -65,4 +66,14 @@ func TestGetMetric(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, metric)
 	assert.Equal(t, request.MetricId, metric.Id)
+}
+
+func TestLoad(t *testing.T) {
+	var err = service_orchestrator.LoadMetrics("notfound.json")
+
+	assert.ErrorIs(t, err, fs.ErrNotExist)
+
+	err = service_orchestrator.LoadMetrics("metrics.json")
+
+	assert.Nil(t, err)
 }

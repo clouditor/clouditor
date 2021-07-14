@@ -222,8 +222,6 @@ components:
                     format: enum
                 range:
                     $ref: '#/components/schemas/Range'
-                target_value:
-                    $ref: '#/components/schemas/Value'
         MinMax:
             properties:
                 min:

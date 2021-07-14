@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1,
+    "name": "Transport Encryption",
+    "description": "This metric describes, whether transport encryption is turned on or not",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          false,
+          true
+        ]
+      }
+    }
+  },
+  {
+    "id": 2,
+    "name": "Transport Encryption Protocol Version",
+    "description": "This metric describes, whether a up-to-date transport encryption protocol version is used",
+    "scale": 1,
+    "range": {
+      "order": {
+        "values": [
+          "TLS 1.0",
+          "TLS 1.1",
+          "TLS 1.2",
+          "TLS 1.3"
+        ]
+      }
+    }
+  },
+  {
+    "id": 3,
+    "name": "Storage Encryption Key Size",
+    "description": "This metric describes the key size of a storage encryption block cipher",
+    "scale": 1,
+    "range": {
+      "minMax": {
+        "min": 128,
+        "max": 256
+      }
+    }
+  }
+]
