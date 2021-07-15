@@ -145,14 +145,11 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc
 				},
 			},
 			IPs:   []string{d.GetPublicIPAddress(lb)},
-			Ports: nil, //TODO: fill out ports (garuppel)
+			Ports: getLoadBalancerPorts(lb),
 		},
-		// TODO(garuppel): fill out access restrictions
-		AccessRestriction: &voc.AccessRestriction{
-			Inbound:         false,
-			RestrictedPorts: "",
-		},
-		// TODO(all): do we need the httpEndpoint?
+		// TODO: do we need the AccessRestriction for load balancers?
+		AccessRestriction: &voc.AccessRestriction{},
+		// TODO: do we need the httpEndpoint for load balancers?
 		HttpEndpoints: []*voc.HttpEndpoint{}}
 }
 
@@ -168,13 +165,22 @@ func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *network.Interface) v
 		},
 		AccessRestriction: &voc.AccessRestriction{
 			Inbound:         false, // TODO(garuppel): TBD
-			RestrictedPorts: d.GetRestrictedPortsDefined(ni),
+      RestrictedPorts: d.getRestrictedPorts(ni),
 		},
 	}
 }
 
+func getLoadBalancerPorts(lb *network.LoadBalancer) (loadBalancerPorts []int16) {
+
+	for _, item := range *lb.LoadBalancingRules {
+		loadBalancerPorts = append(loadBalancerPorts, int16(*item.FrontendPort))
+	}
+
+	return loadBalancerPorts
+}
+
 // Returns all restricted ports for the network interface
-func (d *azureNetworkDiscovery) GetRestrictedPortsDefined(ni *network.Interface) string {
+func (d *azureNetworkDiscovery) getRestrictedPorts(ni *network.Interface) string {
 
 	var restrictedPorts []string
 
@@ -201,13 +207,26 @@ func (d *azureNetworkDiscovery) GetRestrictedPortsDefined(ni *network.Interface)
 		// Find all ports defined in the security rules with access property "Deny"
 		for _, securityRule := range *sg.SecurityRules {
 			if securityRule.Access == network.SecurityRuleAccessDeny {
-				// TODO(garuppel): delete duplicates
 				restrictedPorts = append(restrictedPorts, *securityRule.SourcePortRange)
 			}
 		}
 	}
 
-	return strings.Join(restrictedPorts, ",")
+	restrictedPortsClean := deleteDuplicatesFromSlice(restrictedPorts)
+
+	return strings.Join(restrictedPortsClean, ",")
+}
+
+func deleteDuplicatesFromSlice(intSlice []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+	for _, entry := range intSlice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
 }
 
 func GetResourceGroupName(nsgID string) string {
