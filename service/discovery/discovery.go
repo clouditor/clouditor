@@ -171,7 +171,7 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 
 		evidence := &assessment.Evidence{
 			Resource:   v,
-			ResourceId: resource.GetID(),
+			ResourceId: string(resource.GetID()),
 		}
 
 		// check for object storage

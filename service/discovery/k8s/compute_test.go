@@ -57,5 +57,5 @@ func TestListPods(t *testing.T) {
 
 	assert.True(t, ok)
 	assert.Equal(t, "my-pod", container.Name)
-	assert.Equal(t, "/namespaces/my-namespace/containers/my-pod", container.ID)
+	assert.Equal(t, "/namespaces/my-namespace/containers/my-pod", string(container.ID))
 }

@@ -103,7 +103,7 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsResource, err
 func handleStorageAccount(account *storage.Account) voc.IsStorage {
 	return &voc.ObjectStorageResource{StorageResource: voc.StorageResource{
 		Resource: voc.Resource{
-			ID:           to.String(account.ID),
+			ID:           voc.ResourceID(to.String(account.ID)),
 			Name:         to.String(account.Name),
 			CreationTime: account.CreationTime.Unix(),
 			Type:         []string{"ObjectStorage", "Storage", "Resource"},

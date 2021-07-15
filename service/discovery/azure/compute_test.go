@@ -50,6 +50,40 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 				},
 			},
 		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1" {
+		return createResponse(map[string]interface{}{
+			"properties": map[string]interface{}{
+				"storageProfile": map[string]interface{}{
+					"osDisk": map[string]interface{}{
+						"managedDisk": map[string]interface{}{
+							"id": "os_test_disk",
+						},
+					},
+					"dataDisks": &[]map[string]interface{}{
+						{
+							"managedDisk": map[string]interface{}{
+								"id": "data_disk_1",
+							},
+						},
+						{
+							"managedDisk": map[string]interface{}{
+								"id": "data_disk_2",
+							},
+						},
+					},
+				},
+				"networkProfile": map[string]interface{}{
+					"networkInterfaces": &[]map[string]interface{}{
+						{
+							"id": "123",
+						},
+						{
+							"id": "234",
+						},
+					},
+				},
+			},
+		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Web/sites" {
 		return createResponse(map[string]interface{}{
 			"value": &[]map[string]interface{}{
@@ -66,7 +100,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 	return m.mockSender.Do(req)
 }
 
-func TestListCompute(t *testing.T) {
+func TestVirtualMachine(t *testing.T) {
 	d := azure.NewAzureComputeDiscovery(
 		azure.WithSender(&mockComputeSender{}),
 		azure.WithAuthorizer(&mockAuthorizer{}),
@@ -78,14 +112,31 @@ func TestListCompute(t *testing.T) {
 	assert.NotNil(t, list)
 	assert.Equal(t, 2, len(list))
 
-	vm, ok := list[0].(*voc.VirtualMachineResource)
+	virtualMachine, ok := list[0].(*voc.VirtualMachineResource)
 
 	assert.True(t, ok)
-	assert.Equal(t, "vm1", vm.Name)
+	assert.Equal(t, "vm1", virtualMachine.Name)
+	assert.Equal(t, 2, len(virtualMachine.NetworkInterfaces))
+	assert.Equal(t, 3, len(virtualMachine.BlockStorage))
 
-	functions, ok := list[1].(*voc.FunctionResource)
+	assert.Equal(t, "data_disk_1", string(virtualMachine.BlockStorage[1]))
+	assert.Equal(t, "123", string(virtualMachine.NetworkInterfaces[0]))
+}
+
+func TestFunction(t *testing.T) {
+	d := azure.NewAzureComputeDiscovery(
+		azure.WithSender(&mockComputeSender{}),
+		azure.WithAuthorizer(&mockAuthorizer{}),
+	)
+
+	list, err := d.List()
+
+	assert.Nil(t, err)
+	assert.NotNil(t, list)
+	assert.Equal(t, 2, len(list))
+
+	function, ok := list[1].(*voc.FunctionResource)
 
 	assert.True(t, ok)
-	assert.Equal(t, "function1", functions.Name)
-
+	assert.Equal(t, "function1", function.Name)
 }
