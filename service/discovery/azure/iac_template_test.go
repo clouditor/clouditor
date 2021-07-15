@@ -42,32 +42,31 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 		return createResponse(map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
-					"id":         "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
-					"name":       "resourceGroup1",
+					"id":         "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
+					"name":       "res1",
 					"location":   "eastus",
 					"properties": map[string]interface{}{},
 				},
 				{
-					"id":         "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/virtualMachines/vm1",
-					"name":       "resourceGroup2",
+					"id":         "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2",
+					"name":       "res2",
 					"location":   "eastus",
 					"properties": map[string]interface{}{},
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/{resourceGroupName}/exportTemplate" {
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/exportTemplate" {
 		return createResponse(map[string]interface{}{
 			"template": &map[string]interface{}{
-				"resources": []interface{}{
-					// TODO: What I have to do with the []interface{}?
-					// {
-					// 	"type": "Microsoft.Compute/virtualMachines",
-					// 	"name": "vm1",
-					// },
-					// {
-					// 	"type": "Microsoft.Network/loadBalancers",
-					// 	"name": "network1",
-					// },
+				"resources": []map[string]interface{}{
+					{
+						"type": "Microsoft.Compute/virtualMachines",
+						"name": "vm1",
+					},
+					{
+						"type": "Microsoft.Network/loadBalancers",
+						"name": "loadbalancer1",
+					},
 				},
 			},
 		}, 200)

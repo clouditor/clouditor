@@ -98,24 +98,24 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsResource, err
 		}
 		result, err := client.ExportTemplate(context.Background(), *resourceGroups[i].Name, expReq)
 		if err != nil {
-			return nil, fmt.Errorf("could not discover IaC templates: %w", err)
+			return nil, fmt.Errorf("could not discover IaC template: %w", err)
 		}
 
 		template, ok := result.Template.(map[string]interface{})
 		if !ok {
-			return nil, fmt.Errorf("type convertion failed")
+			return nil, fmt.Errorf("IaC template type convertion failed")
 		}
 
 		for templateKey, templateValue := range template {
 			if templateKey == "resources" {
 				resources, ok := templateValue.([]interface{})
 				if !ok {
-					return nil, fmt.Errorf("type convertion failed")
+					return nil, fmt.Errorf("IaC template  type convertion failed")
 				}
 				for _, resourcesValue := range resources {
 					value, ok := resourcesValue.(map[string]interface{})
 					if !ok {
-						return nil, fmt.Errorf("type convertion failed")
+						return nil, fmt.Errorf("IaC template type convertion failed")
 					}
 					for valueKey, valueValue := range value {
 						if valueKey == "type" {
