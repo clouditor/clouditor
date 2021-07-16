@@ -40,13 +40,13 @@ var log = logrus.WithField("component", "aws-discovery")
 var loadDefaultConfig = config.LoadDefaultConfig
 
 // Client holds configurations across all services within AWS
-// ToDo: deepsource.io wants the struct to exported since NewAwsStorageDiscovery is exported. Encapsulation?
+// TODO(lebogg): deepsource.io wants the struct to exported since NewAwsStorageDiscovery is exported. Encapsulation?
 type Client struct {
 	Cfg aws.Config
 }
 
 // NewClient constructs a new AwsClient
-// ToDo: "Overload" (switch) with staticCredentialsProvider
+// TODO(lebogg): "Overload" (switch) with staticCredentialsProvider
 func NewClient() (*Client, error) {
 	c := &Client{}
 	cfg, err := loadDefaultConfig(context.TODO())

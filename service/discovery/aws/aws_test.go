@@ -82,10 +82,3 @@ func TestNewClient(t *testing.T) {
 	}
 
 }
-
-// ToDo: Works with my credentials -> Mock it
-//func Test_awsDiscovery_NewAwsDiscovery(t *testing.T) {
-//	testDiscovery := NewClient()
-//	if region := testDiscovery.Cfg.Region; region != mockBucket1Region {
-//		t.Fatalf("Excpected eu-central-1. Got %v", region)
-//	}

@@ -42,7 +42,7 @@ import (
 )
 
 // awsS3Discovery handles the AWS API requests regarding the S3 service
-// ToDo: Generalize from s3 to storage for including other types, like EFS -> Probably storage folder with 3 .go files
+// TODO(lebogg): Generalize from s3 to storage for including other types, like EFS -> Probably storage folder with 3 .go files
 type awsS3Discovery struct {
 	client        S3API
 	isDiscovering bool
@@ -168,6 +168,7 @@ type S3ListBucketsAPI interface {
 }
 
 // getBuckets returns all buckets
+// TODO(lebogg): full coverage and check API err vs no buckets err?
 func (d *awsS3Discovery) getBuckets() (err error) {
 	log.Println("Getting buckets in s3...")
 	var resp *s3.ListBucketsOutput
@@ -176,14 +177,13 @@ func (d *awsS3Discovery) getBuckets() (err error) {
 		log.Error("Error occurred.")
 		var oe *smithy.OperationError
 		if errors.As(err, &oe) {
-			log.Printf("failed to call service: %s, operation: %s, error: %v", oe.Service(), oe.Operation(), oe.Unwrap())
+			err = fmt.Errorf("failed to call service: %s, operation: %s, error: %v", oe.Service(), oe.Operation(), oe.Unwrap())
 		}
 		return
 	}
 	var region string
 	log.Printf("Retrieved %v buckets.", len(resp.Buckets))
 	for _, b := range resp.Buckets {
-		//d.buckets = resp
 		region, err = d.getRegion(aws.ToString(b.Name))
 		if err != nil {
 			return
@@ -194,7 +194,7 @@ func (d *awsS3Discovery) getBuckets() (err error) {
 			creationTime: aws.ToTime(b.CreationDate),
 			region:       region,
 			endpoint:     "https://" + aws.ToString(b.Name) + ".s3." + region + ".amazonaws.com",
-			// ToDo: Implement method for retrieving the number of objects per bucket (if needed)
+			// TODO(lebogg): Implement method for retrieving the number of objects per bucket (if needed)
 			numberOfObjects: -1,
 		})
 	}
@@ -203,7 +203,7 @@ func (d *awsS3Discovery) getBuckets() (err error) {
 
 // getEncryptionAtRest gets the bucket's encryption configuration
 func (d *awsS3Discovery) getEncryptionAtRest(bucket string) (e voc.AtRestEncryption, err error) {
-	log.Printf("Checking encryption for bucket %v.\n", bucket)
+	log.Printf("Checking encryption for bucket %v.", bucket)
 	input := s3.GetBucketEncryptionInput{
 		Bucket:              aws.String(bucket),
 		ExpectedBucketOwner: nil,
@@ -212,14 +212,20 @@ func (d *awsS3Discovery) getEncryptionAtRest(bucket string) (e voc.AtRestEncrypt
 
 	resp, err = d.client.GetBucketEncryption(context.TODO(), &input)
 	if err != nil {
-		log.Error("Error occurred")
-		var oe *smithy.OperationError
-		if errors.As(err, &oe) {
-			log.Printf("failed to call service: %s, operation: %s, error: %v", oe.Service(), oe.Operation(), oe.Unwrap())
+		var ae smithy.APIError
+		if errors.As(err, &ae) {
+			if ae.ErrorCode() == "ServerSideEncryptionConfigurationNotFoundError" {
+				// This error code is equivalent to "encryption not enabled": set err to nil
+				e.Enabled = false
+				err = nil
+				return
+			}
+			// Any other error is a connection error with AWS : Format err and return it
+			err = fmt.Errorf("code: %v, fault: %v, message: %v", ae.ErrorCode(), ae.ErrorFault(), ae.ErrorMessage())
 		}
+		// return any error (but according to doc: "All service API response errors implement the smithy.APIError")
 		return
 	}
-	log.Println("Bucket is encrypted.")
 	e.Algorithm = string(resp.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm)
 	if e.Algorithm == string(types.ServerSideEncryptionAes256) {
 		e.KeyManager = "SSE-S3"
@@ -233,6 +239,7 @@ func (d *awsS3Discovery) getEncryptionAtRest(bucket string) (e voc.AtRestEncrypt
 // "confirm that your bucket policies explicitly deny access to HTTP requests"
 // https://aws.amazon.com/premiumsupport/knowledge-center/s3-bucket-policy-for-config-rule/
 // getTransportEncryption loops over all statements in the bucket policy and checks if one statement denies https only == false
+// TODO(lebogg): I don't think there is a way to see if it is "enabled"?!
 func (d *awsS3Discovery) getTransportEncryption(bucket string) (encryptionAtTransit voc.TransportEncryption, err error) {
 	input := s3.GetBucketPolicyInput{
 		Bucket:              aws.String(bucket),
@@ -242,13 +249,23 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (encryptionAtTran
 
 	resp, err = d.client.GetBucketPolicy(context.TODO(), &input)
 
-	// Case 1: No bucket policy or api error -> no https only set
+	// encryption at transit (https) is always enabled
+	encryptionAtTransit.Enabled = true
+
+	// Case 1: No bucket policy in place or api error -> 'https only' is not set
 	if err != nil {
-		log.Error("Error occurred.")
-		var oe *smithy.OperationError
-		if errors.As(err, &oe) {
-			log.Printf("failed to call service: %s, operation: %s, error: %v", oe.Service(), oe.Operation(), oe.Unwrap())
+		var ae smithy.APIError
+		if errors.As(err, &ae) {
+			if ae.ErrorCode() == "NoSuchBucketPolicy" {
+				// This error code is equivalent to "encryption not enforced": set err to nil
+				encryptionAtTransit.Enforced = false
+				err = nil
+				return
+			}
+			// Any other error is a connection error with AWS : Format err and return it
+			err = fmt.Errorf("code: %v, message: %s, fault: %v", ae.ErrorCode(), ae.ErrorMessage(), ae.ErrorFault())
 		}
+		// return any error (but according to doc: "All service API response errors implement the smithy.APIError")
 		return
 	}
 
@@ -269,12 +286,6 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (encryptionAtTran
 			}
 			return
 		}
-	}
-	encryptionAtTransit = voc.TransportEncryption{
-		// ToDo: I think you can only enforce it via a bucket policy. But not look if its enabled or not, otherwise
-		Encryption: voc.Encryption{Enabled: false},
-		Enforced:   false,
-		TlsVersion: "",
 	}
 	return
 
@@ -298,85 +309,3 @@ func (d *awsS3Discovery) getRegion(bucket string) (region string, err error) {
 	region = string(resp.LocationConstraint)
 	return
 }
-
-// ToDo: The next checks are not defined yet (in ontology or in voc). They were checked in Clouditor 1.0
-
-//// getPublicAccessBlockConfiguration gets the bucket's access configuration
-//func (d *awsS3Discovery) getPublicAccessBlockConfiguration(bucket string) (false bool) {
-//	log.Printf("Check if bucket %v has public access...", bucket)
-//	input := s3.GetPublicAccessBlockInput{
-//		Bucket:              aws.String(bucket),
-//		ExpectedBucketOwner: nil,
-//	}
-//	resp, err := d.client.GetPublicAccessBlock(context.TODO(), &input)
-//	if err != nil {
-//		log.Errorf("Error found: %v", err)
-//		return
-//	}
-//	log.Printf("Found: %v", resp.PublicAccessBlockConfiguration)
-//
-//	configs := resp.PublicAccessBlockConfiguration
-//	if !configs.BlockPublicAcls || !configs.BlockPublicPolicy || !configs.IgnorePublicAcls || !configs.RestrictPublicBuckets {
-//		return
-//	}
-//	return true
-//}
-
-// getBucketObjects returns all objects of the given bucket
-// ToDo: Do we need to iterate through single bucket objects or do we only check the general bucket settings?
-// ToDo: "Overload" method s.t. you can list all objects from all buckets or only from a specific set (e.g. 1) of buckets
-//func (d *awsS3Discovery) getBucketObjects(myBucket string) *s3.ListObjectsV2Output {
-//	Cfg, err := config.LoadDefaultConfig(context.TODO())
-//	if err != nil {
-//		fmt.Println("Error occurred:", err)
-//		log.Fatal(err)
-//	}
-//
-//	client := s3.NewFromConfig(Cfg)
-//
-//	output, err := client.ListObjectsV2(context.TODO(), &s3.ListObjectsV2Input{
-//		Bucket: aws.String(myBucket),
-//	})
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	log.Println("first page results:")
-//	for _, object := range output.Contents {
-//		log.Printf("key=%s size=%d", aws.ToString(object.Key), object.Size)
-//	}
-//
-//	return output
-//}
-
-//// checkBucketReplication gets the bucket's replication configuration
-//func (d *awsS3Discovery) checkBucketReplication(bucket string) (false bool) {
-//	log.Printf("Check if bucket '%v' is been replicated...", bucket)
-//	input := s3.GetBucketReplicationInput{
-//		Bucket:              aws.String(bucket),
-//		ExpectedBucketOwner: nil,
-//	}
-//	resp, err := d.client.GetBucketReplication(context.TODO(), &input)
-//	if err != nil {
-//		logrus.Errorf("Error (probably no replica configuration): %v", err)
-//		return
-//	}
-//	logrus.Println(resp.ReplicationConfiguration)
-//	return true
-//}
-//
-//// checkLifeCycleConfiguration gets the bucket's lifecycle configuration
-//// ToDo
-//func (d *awsS3Discovery) checkLifeCycleConfiguration(bucket string) (false bool) {
-//	log.Printf("Check life cycle configuration for bucket '%v'", bucket)
-//	input := s3.GetBucketLifecycleConfigurationInput{
-//		Bucket:              aws.String(bucket),
-//		ExpectedBucketOwner: nil,
-//	}
-//	resp, err := d.client.GetBucketLifecycleConfiguration(context.TODO(), &input)
-//	if err != nil {
-//		logrus.Errorf("Error occurred: %v", err)
-//		return
-//	}
-//	logrus.Printf(string(resp.Rules[0].Expiration.Days))
-//	return true
-//}
