@@ -30,7 +30,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"strings"
 
 	"clouditor.io/clouditor/api/discovery"
@@ -38,6 +37,13 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2016-02-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 )
+
+// type properties struct {
+// 	minimumTLSVersion string
+// 	hTTPSTrafficOnly  bool
+// 	encryptionEnabled bool
+// 	keySource         string
+// }
 
 type azureIacTemplateDiscovery struct {
 	azureDiscovery
@@ -113,7 +119,7 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsResource, err
 
 		err = saveExportTemplate(result, *resourceGroups[i].Name)
 		if err != nil {
-			fmt.Println("ERROR: ", err)
+			fmt.Println("Error saving export template: ", err)
 		}
 
 		for templateKey, templateValue := range template {
@@ -145,6 +151,12 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsResource, err
 									return nil, fmt.Errorf("could not create load balancer resource: %w", err)
 								}
 								list = append(list, lb)
+							} else if valueValue.(string) == "Microsoft.Storage/storageAccounts" {
+								storage, err := d.createStorageResource(value, *resourceGroups[i].Name)
+								if err != nil {
+									return nil, fmt.Errorf("could not create storage resource: %w", err)
+								}
+								list = append(list, storage)
 							}
 						}
 					}
@@ -165,11 +177,8 @@ func saveExportTemplate(template resources.GroupExportResult, groupName string) 
 		return fmt.Errorf("MarshalIndent failed %w", err)
 	}
 
-	fileTemplate := "%s-template.json"
+	fileTemplate := "../../raw_discovery_results/azure_iac_templates/%s-template.json"
 	fileName := fmt.Sprintf(fileTemplate, groupName)
-	if _, err := os.Stat(fileName); err == nil {
-		return fmt.Errorf("file already exists")
-	}
 
 	ioutil.WriteFile(fileName, exported, 0666)
 	if err != nil {
@@ -177,6 +186,84 @@ func saveExportTemplate(template resources.GroupExportResult, groupName string) 
 	}
 
 	return nil
+}
+
+func (d *azureIacTemplateDiscovery) createStorageResource(resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
+
+	var (
+		name string
+		// property properties
+	)
+
+	resourceType := resourceValue["type"].(string)
+
+	for key, value := range resourceValue {
+		// Get storage account name
+		if key == "name" {
+			name = getDefaultNameOfResource(value.(string))
+		}
+	}
+
+	storage := &voc.ObjectStorageResource{
+		StorageResource: voc.StorageResource{
+			Resource: voc.Resource{
+				ID:           d.createID(resourceGroup, resourceType, name),
+				Name:         name,
+				CreationTime: 0, // No creation time available
+				Type:         []string{"ObjectStorage", "Storage", "Resource"},
+			},
+			AtRestEncryption: voc.NewAtRestEncryption(
+				blobServiceEncryptionEnabled(resourceValue),
+				"AES-265", // seems to be always AWS-256
+				getStorageKeySource(resourceValue),
+			)},
+		HttpEndpoint: &voc.HttpEndpoint{
+			URL: "", // Not able to get from IaC tempalte
+			TransportEncryption: voc.NewTransportEncryption(
+				true, // cannot be disabled
+				httpTrafficOnlyEnabled(resourceValue),
+				getMinTlsVersion(resourceValue),
+			),
+		},
+	}
+
+	return storage, nil
+}
+
+func httpTrafficOnlyEnabled(value map[string]interface{}) bool {
+
+	if httpTrafficOnlyEnabled, ok := value["properties"].(map[string]interface{})["supportsHttpsTrafficOnly"].(bool); ok {
+		return httpTrafficOnlyEnabled
+	}
+
+	return false
+}
+
+func getStorageKeySource(value map[string]interface{}) string {
+
+	if storageKeySource, ok := value["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["keySource"].(string); ok {
+		return storageKeySource
+	}
+
+	return ""
+}
+
+func blobServiceEncryptionEnabled(value map[string]interface{}) bool {
+
+	if blobServiceEnabled, ok := value["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["services"].(map[string]interface{})["blob"].(map[string]interface{})["enabled"].(bool); ok {
+		return blobServiceEnabled
+	}
+
+	return false
+}
+
+func getMinTlsVersion(value map[string]interface{}) string {
+
+	if minTlsVersion, ok := value["properties"].(map[string]interface{})["minimumTlsVersion"].(string); ok {
+		return minTlsVersion
+	}
+
+	return ""
 }
 
 func (d *azureIacTemplateDiscovery) createLBResource(resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
