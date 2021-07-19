@@ -82,14 +82,14 @@ func TestListCompute(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 2, len(list))
+	assert.Equal(t, 3, len(list))
 
 	vm, ok := list[0].(*voc.VirtualMachineResource)
 
 	assert.True(t, ok)
 	assert.Equal(t, "vm1", vm.Name)
 
-	functions, ok := list[1].(*voc.FunctionResource)
+	functions, ok := list[2].(*voc.FunctionResource)
 
 	assert.True(t, ok)
 	assert.Equal(t, "function1", functions.Name)
