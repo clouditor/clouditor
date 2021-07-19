@@ -36,6 +36,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
+	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
@@ -284,118 +285,77 @@ func (m mockS3APIWitHErrors) GetBucketLifecycleConfiguration(_ context.Context, 
 func TestGetBuckets(t *testing.T) {
 	d := awsS3Discovery{
 		client:        mockS3APINew{},
-		buckets:       nil,
 		isDiscovering: false,
 	}
-	err := d.getBuckets()
-	if err != nil {
-		t.Error("EXPECTED no errors. GOT one:", err)
-	}
+	buckets, err := d.getBuckets()
+	assert.Nil(t, err, "Expected no errors but got one.")
+
 	log.Print("Testing number of buckets")
-	if e, a := 2, len(d.buckets); e != a {
-		t.Error("EXPECTED:", e, "GOT:", a)
-	}
+	assert.Equal(t, 2, len(buckets))
 
 	log.Print("Testing name of first bucket")
-	if e, a := mockBucket1, d.buckets[0].name; e != a {
-		t.Error("EXPECTED:", e, "GOT:", a)
-	}
+	assert.Equal(t, mockBucket1, buckets[0].name)
 	log.Print("Testing region of first bucket")
-	if e, a := mockBucket1Region, d.buckets[0].region; e != a {
-		t.Error("EXPECTED:", e, "GOT:", a)
-	}
+	assert.Equal(t, mockBucket1Region, buckets[0].region)
 	log.Print("Testing endpoint of first bucket")
-	if e, a := mockBucket1Endpoint, d.buckets[0].endpoint; e != a {
-		t.Error("EXPECTED:", e, "GOT:", a)
-	}
+	assert.Equal(t, mockBucket1Endpoint, buckets[0].endpoint)
 	log.Print("Testing creation time of first bucket")
 	expectedCreationTime1, _ := time.Parse(time.RFC3339, mockBucket1CreationTime)
-	if e, a := expectedCreationTime1, d.buckets[0].creationTime; e.String() != a.String() {
-		t.Error("EXPECTED:", e, "GOT:", a)
-	}
+	assert.Equal(t, expectedCreationTime1.String(), buckets[0].creationTime.String())
 
 	log.Print("Testing name of second bucket")
-	if e, a := mockBucket2, d.buckets[1].name; e != a {
-		t.Error("EXPECTED:", e, "GOT:", a)
-	}
+	assert.Equal(t, mockBucket2, buckets[1].name)
 	log.Print("Testing region of second bucket")
-	if e, a := mockBucket2Region, d.buckets[1].region; e != a {
-		t.Error("EXPECTED:", e, "GOT:", a)
-	}
+	assert.Equal(t, mockBucket2Region, buckets[1].region)
 	log.Print("Testing endpoint of second bucket")
-	if e, a := mockBucket2Endpoint, d.buckets[1].endpoint; e != a {
-		t.Error("EXPECTED:", e, "GOT:", a)
-	}
+	assert.Equal(t, mockBucket2Endpoint, buckets[1].endpoint)
 	log.Print("Testing creation time of second bucket")
 	expectedCreationTime2, _ := time.Parse(time.RFC3339, mockBucket2CreationTime)
-	if e, a := expectedCreationTime2, d.buckets[1].creationTime; e.String() != a.String() {
-		t.Error("EXPECTED:", e, "GOT:", a)
-	}
+	assert.Equal(t, expectedCreationTime2.String(), buckets[1].creationTime.String())
 
-	fmt.Println(d.buckets[1].name)
-	fmt.Println(d.buckets[1].creationTime)
-
+	// API error case
 	d = awsS3Discovery{
 		client:        mockS3APIWitHErrors{},
-		buckets:       nil,
 		isDiscovering: false,
 	}
 
-	if err = d.getBuckets(); err == nil {
-		t.Error("EXPECTED error. GOT none")
-	}
+	_, err = d.getBuckets()
+	assert.NotNil(t, err)
 }
 
 // TestGetEncryptionAtRest tests the getEncryptionAtRest method
-// TODO(lebogg): Check errors explicitly
 func TestGetEncryptionAtRest(t *testing.T) {
 	d := awsS3Discovery{
 		client:        mockS3APINew{},
-		buckets:       nil,
 		isDiscovering: false,
 	}
 
 	// First case: SSE-S3 encryption
-	encryptionAtRest, _ := d.getEncryptionAtRest(mockBucket1)
-	if isEncrypted := encryptionAtRest.Encryption.Enabled; !isEncrypted {
-		t.Error("Expected:", true, ".Got:", isEncrypted)
-	}
-	if e, a := "AES256", encryptionAtRest.Algorithm; e != a {
-		t.Error("Expected:", e, ".Got:", a)
-	}
-	if e, a := "SSE-S3", encryptionAtRest.KeyManager; e != a {
-		t.Error("Expected:", e, ".Got:", a)
-	}
+	encryptionAtRest, err := d.getEncryptionAtRest(mockBucket1)
+	assert.Nil(t, err)
+	assert.True(t, encryptionAtRest.Enabled)
+	assert.Equal(t, "AES256", encryptionAtRest.Algorithm)
+	assert.Equal(t, "SSE-S3", encryptionAtRest.KeyManager)
 
 	// Second case: SSE-KMS encryption
-	encryptionAtRest, _ = d.getEncryptionAtRest(mockBucket2)
-	if isEncrypted := encryptionAtRest.Encryption.Enabled; !isEncrypted {
-		t.Error("Expected:", true, ".Got:", isEncrypted)
-	}
-	if e, a := "aws:kms", encryptionAtRest.Algorithm; e != a {
-		t.Error("Expected:", e, ".Got:", a)
-	}
-	if e, a := "SSE-KMS", encryptionAtRest.KeyManager; e != a {
-		t.Error("Expected:", e, ".Got:", a)
-	}
+	encryptionAtRest, err = d.getEncryptionAtRest(mockBucket2)
+	assert.Nil(t, err)
+	assert.True(t, encryptionAtRest.Enabled)
+	assert.Equal(t, "aws:kms", encryptionAtRest.Algorithm)
+	assert.Equal(t, "SSE-KMS", encryptionAtRest.KeyManager)
 
 	// Third case: No encryption
-	encryptionAtRest, _ = d.getEncryptionAtRest("mockbucket3")
-	if isEncrypted := encryptionAtRest.Encryption.Enabled; isEncrypted {
-		t.Error("Expected:", false, ".Got:", isEncrypted)
-	}
+	encryptionAtRest, err = d.getEncryptionAtRest("mockbucket3")
+	assert.Nil(t, err)
+	assert.False(t, encryptionAtRest.Enabled)
 
 	// 4th case: Connection error
 	d = awsS3Discovery{
 		client:        mockS3APIWitHErrors{},
 		isDiscovering: false,
-		buckets:       nil,
 	}
-	_, err := d.getEncryptionAtRest("mockbucket4")
-	if err == nil {
-		t.Error("Expected error. Got none.")
-	}
-	fmt.Println(err)
+	_, err = d.getEncryptionAtRest("mockbucket4")
+	assert.NotNil(t, err)
 }
 
 // TestGetTransportEncryption tests the getTransportEncryption method
@@ -403,46 +363,43 @@ func TestGetTransportEncryption(t *testing.T) {
 	// Case 1: Connection error
 	d := awsS3Discovery{
 		client:        mockS3APIWitHErrors{},
-		buckets:       nil,
 		isDiscovering: false,
 	}
-	if _, err := d.getTransportEncryption(""); err == nil {
-		t.Errorf("Expected error. Got none")
-	}
+	_, err := d.getTransportEncryption("")
+	assert.NotNil(t, err)
 
 	d = awsS3Discovery{
 		client:        mockS3APINew{},
-		buckets:       nil,
 		isDiscovering: false,
 	}
 
 	// Case 2: Enforced
-	encryptionAtTransit, _ := d.getTransportEncryption(mockBucket1)
-	if !encryptionAtTransit.Encryption.Enabled || encryptionAtTransit.TlsVersion != "TLS1.2" || !encryptionAtTransit.Enforced {
-		t.Errorf("Expected encryptionEnabled: %v, TLS version: %v, isEnforced: %v."+
-			"\nGot: %v, %v, %v", true, "TLS1.2", true, encryptionAtTransit.Encryption.Enabled, encryptionAtTransit.TlsVersion, encryptionAtTransit.Enforced)
-	}
+	encryptionAtTransit, err := d.getTransportEncryption(mockBucket1)
+	assert.Nil(t, err)
+	assert.True(t, encryptionAtTransit.Enabled)
+	assert.Equal(t, "TLS1.2", encryptionAtTransit.TlsVersion)
+	assert.True(t, encryptionAtTransit.Enforced)
 
 	// Case 3: JSON failure
-	encryptionAtTransit, _ = d.getTransportEncryption(mockBucket2)
-	if !encryptionAtTransit.Encryption.Enabled || encryptionAtTransit.TlsVersion != "" || encryptionAtTransit.Enforced {
-		t.Errorf("Expected isEncrypted: %v, TLS version: %v, enforced: %v. "+
-			"\nGot: %v, %v, %v.", true, "", false, encryptionAtTransit.Encryption.Enabled, encryptionAtTransit.TlsVersion, encryptionAtTransit.Enforced)
-	}
+	encryptionAtTransit, err = d.getTransportEncryption(mockBucket2)
+	assert.NotNil(t, err)
+	assert.True(t, encryptionAtTransit.Enabled)
+	assert.Equal(t, "TLS1.2", encryptionAtTransit.TlsVersion)
+	assert.False(t, encryptionAtTransit.Enforced)
 
 	// Case 4: Not enforced
-	encryptionAtTransit, _ = d.getTransportEncryption(mockBucket3)
-	if !encryptionAtTransit.Encryption.Enabled || encryptionAtTransit.TlsVersion != "" || encryptionAtTransit.Enforced {
-		t.Errorf("Expected isEncrypted: %v, TLS version: %v, enforced: %v."+
-			"\nGot: %v, %v, %v.", true, "", false, encryptionAtTransit.Encryption.Enabled, encryptionAtTransit.TlsVersion, encryptionAtTransit.Enforced)
-	}
+	encryptionAtTransit, err = d.getTransportEncryption(mockBucket3)
+	assert.Nil(t, err)
+	assert.True(t, encryptionAtTransit.Enabled)
+	assert.Equal(t, "TLS1.2", encryptionAtTransit.TlsVersion)
+	assert.False(t, encryptionAtTransit.Enforced)
 
 	// Case 5: No bucket policy == not enforced
-	encryptionAtTransit, _ = d.getTransportEncryption("")
-	if !encryptionAtTransit.Encryption.Enabled || encryptionAtTransit.TlsVersion != "" || encryptionAtTransit.Enforced {
-		t.Errorf("Expected isEncrypted: %v, TLS version: %v, enforced: %v."+
-			"\nGot: %v, %v, %v.", true, "", false, encryptionAtTransit.Encryption.Enabled, encryptionAtTransit.TlsVersion, encryptionAtTransit.Enforced)
-	}
+	encryptionAtTransit, err = d.getTransportEncryption("")
+	assert.Nil(t, err)
+	assert.True(t, encryptionAtTransit.Enabled)
+	assert.Equal(t, "TLS1.2", encryptionAtTransit.TlsVersion)
+	assert.False(t, encryptionAtTransit.Enforced)
 
 }
 
@@ -450,20 +407,19 @@ func TestGetTransportEncryption(t *testing.T) {
 func TestGetRegion(t *testing.T) {
 	d := awsS3Discovery{
 		client:        mockS3APINew{},
-		buckets:       nil,
 		isDiscovering: false,
 	}
-	if a, _ := d.getRegion(mockBucket1); mockBucket1Region != a {
-		t.Error("Expected: ", mockBucket1Region, ". Got:", a)
-	}
-	if a, _ := d.getRegion(mockBucket2); mockBucket2Region != a {
-		t.Error("Expected: ", mockBucket2Region, ". Got:", a)
-	}
+	actualRegion, err := d.getRegion(mockBucket1)
+	assert.Nil(t, err)
+	assert.Equal(t, mockBucket1Region, actualRegion)
+
+	actualRegion, err = d.getRegion(mockBucket2)
+	assert.Nil(t, err)
+	assert.Equal(t, mockBucket2Region, actualRegion)
 
 	// Error case
-	if _, err := d.getRegion("mockbucketNotAvailable"); err == nil {
-		t.Error("EXPECTED error. GOT none")
-	}
+	_, err = d.getRegion("mockbucketNotAvailable")
+	assert.NotNil(t, err)
 
 }
 
@@ -471,13 +427,10 @@ func TestGetRegion(t *testing.T) {
 func TestName(t *testing.T) {
 	d := awsS3Discovery{
 		client:        mockS3APINew{},
-		buckets:       nil,
 		isDiscovering: false,
 	}
-	log.Println("Testing the name of the AWS Blob Storage Discovery")
-	if e, a := "AWS Blob Storage", d.Name(); e != a {
-		t.Error("EXPECTED:", e, "GOT", a)
-	}
+
+	assert.Equal(t, "AWS Blob Storage", d.Name())
 }
 
 // TestList tests the List method
@@ -486,30 +439,22 @@ func TestName(t *testing.T) {
 func TestList(t *testing.T) {
 	d := awsS3Discovery{
 		client:        mockS3APINew{},
-		buckets:       nil,
 		isDiscovering: false,
 	}
 	resources, err := d.List()
-	if err == nil {
-		t.Error("EXPECTED error because MockBucket2 should throw JSON error. But GOT no error")
-	}
+	assert.NotNil(t, err, "EXPECTED error because MockBucket2 should throw JSON error. But GOT no error")
+
 	log.Println("Testing number of resources (buckets)")
-	if e, a := 1, len(resources); e != a {
-		t.Error("EXPECTED: 2", "GOT:", a)
-	}
+	assert.Equal(t, 1, len(resources))
 
 	expectedResourceNames := []string{mockBucket1, "mockbucket2", "mockbucket3"}
 	//expectedResourceAtRestEncryptions := []bool{true, true, false}
 	//expectedResourceTransportEncryptions := []bool{true, false, false}
 	for i, r := range resources {
 		log.Println("Testing name for resource (bucket)", i+1)
-		if e, a := expectedResourceNames[i], r.GetName(); e != a {
-			t.Error("EXPECTED:", e, "GOT:", a)
-		}
+		assert.Equal(t, expectedResourceNames[i], r.GetName())
 		log.Println("Testing type of resource", i+1)
-		if e := "ObjectStorage"; !r.HasType(e) {
-			t.Error(e, "not found as type")
-		}
+		assert.True(t, r.HasType("ObjectStorage"))
 		// TODO(lebogg): How to convert to ObjectStorageResource s.t. we can access atRestEncryption?
 		//r = voc.ObjectStorageResource(r)
 		//log.Println("Testing at rest encryption of resource", i+1)
@@ -523,4 +468,17 @@ func TestList(t *testing.T) {
 		//}
 	}
 
+}
+
+func TestListBuckets(t *testing.T) {
+	client, _ := NewClient()
+	d := s3.NewFromConfig(client.Cfg)
+	resp, err := d.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
+	if err != nil {
+		t.Error(err)
+	}
+	for i, bucket := range resp.Buckets {
+
+		fmt.Println("Bucket", i, ":", aws.ToString(bucket.Name))
+	}
 }

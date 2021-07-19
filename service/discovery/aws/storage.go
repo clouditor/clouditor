@@ -42,11 +42,9 @@ import (
 )
 
 // awsS3Discovery handles the AWS API requests regarding the S3 service
-// TODO(lebogg): Generalize from s3 to storage for including other types, like EFS -> Probably storage folder with 3 .go files
 type awsS3Discovery struct {
 	client        S3API
 	isDiscovering bool
-	buckets       []bucket
 }
 
 // bucket contains meta data about a S3 bucket
@@ -114,12 +112,13 @@ func (d *awsS3Discovery) List() (resources []voc.IsResource, err error) {
 	var encryptionAtTransmit voc.TransportEncryption
 
 	log.Info("Starting List() in ", d.Name())
-	err = d.getBuckets()
+	var buckets []bucket
+	buckets, err = d.getBuckets()
 	if err != nil {
 		return
 	}
-	log.Println(d.buckets)
-	for _, bucket := range d.buckets {
+	log.Println("Found", len(buckets), "buckets.")
+	for _, bucket := range buckets {
 		log.Println("Getting resources for", bucket.name)
 		encryptionAtRest, err = d.getEncryptionAtRest(bucket.name)
 		if err != nil {
@@ -155,7 +154,6 @@ func (b bucket) String() string {
 func NewAwsStorageDiscovery(cfg aws.Config) discovery.Discoverer {
 	return &awsS3Discovery{
 		client:        s3.NewFromConfig(cfg),
-		buckets:       nil,
 		isDiscovering: true,
 	}
 }
@@ -168,27 +166,24 @@ type S3ListBucketsAPI interface {
 }
 
 // getBuckets returns all buckets
-// TODO(lebogg): full coverage and check API err vs no buckets err?
-func (d *awsS3Discovery) getBuckets() (err error) {
+func (d *awsS3Discovery) getBuckets() (buckets []bucket, err error) {
 	log.Println("Getting buckets in s3...")
 	var resp *s3.ListBucketsOutput
 	resp, err = d.client.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
 	if err != nil {
-		log.Error("Error occurred.")
-		var oe *smithy.OperationError
-		if errors.As(err, &oe) {
-			err = fmt.Errorf("failed to call service: %s, operation: %s, error: %v", oe.Service(), oe.Operation(), oe.Unwrap())
+		var ae smithy.APIError
+		if errors.As(err, &ae) {
+			err = fmt.Errorf("code: %v, fault: %v, message: %v", ae.ErrorCode(), ae.ErrorFault(), ae.ErrorMessage())
 		}
 		return
 	}
 	var region string
-	log.Printf("Retrieved %v buckets.", len(resp.Buckets))
 	for _, b := range resp.Buckets {
 		region, err = d.getRegion(aws.ToString(b.Name))
 		if err != nil {
 			return
 		}
-		d.buckets = append(d.buckets, bucket{
+		buckets = append(buckets, bucket{
 			arn:          "arn:aws:s3:::" + *b.Name,
 			name:         aws.ToString(b.Name),
 			creationTime: aws.ToTime(b.CreationDate),
@@ -249,8 +244,10 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (encryptionAtTran
 
 	resp, err = d.client.GetBucketPolicy(context.TODO(), &input)
 
-	// encryption at transit (https) is always enabled
+	// encryption at transit (https) is always enabled and TLS version fixed
 	encryptionAtTransit.Enabled = true
+	// TODO(lebogg): Verify
+	encryptionAtTransit.TlsVersion = "TLS1.2"
 
 	// Case 1: No bucket policy in place or api error -> 'https only' is not set
 	if err != nil {
@@ -270,20 +267,17 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (encryptionAtTran
 	}
 
 	// Case 2: bucket policy -> check if https only is set
+	// TODO(lebogg): bucket policy json fail still means that https is enabled (it always is). Still return error?
 	var policy BucketPolicy
 	err = json.Unmarshal([]byte(aws.ToString(resp.Policy)), &policy)
 	if err != nil {
-		log.Error("Error occurred while unmarshalling the bucket policy:", err)
+		err = fmt.Errorf("error occurred while unmarshalling the bucket policy:%v", err)
 		return
 	}
 	// one statement has set https only -> default encryption is set
 	for _, statement := range policy.Statement {
 		if statement.Effect == "Deny" && !statement.Condition.AwsSecureTransport && statement.Action == "s3:*" {
-			encryptionAtTransit = voc.TransportEncryption{
-				Encryption: voc.Encryption{Enabled: true},
-				Enforced:   true,
-				TlsVersion: "TLS1.2",
-			}
+			encryptionAtTransit.Enforced = true
 			return
 		}
 	}
@@ -299,10 +293,9 @@ func (d *awsS3Discovery) getRegion(bucket string) (region string, err error) {
 	var resp *s3.GetBucketLocationOutput
 	resp, err = d.client.GetBucketLocation(context.TODO(), &input)
 	if err != nil {
-		log.Error("Error occurred.")
 		var oe *smithy.OperationError
 		if errors.As(err, &oe) {
-			log.Printf("failed to call service: %s, operation: %s, error: %v", oe.Service(), oe.Operation(), oe.Unwrap())
+			err = fmt.Errorf("failed to call service: %s, operation: %s, error: %v", oe.Service(), oe.Operation(), oe.Unwrap())
 		}
 		return
 	}
