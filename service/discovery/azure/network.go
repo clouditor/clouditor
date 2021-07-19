@@ -78,7 +78,7 @@ func (d *azureNetworkDiscovery) List() (list []voc.IsResource, err error) {
 	// Discover Load Balancer
 	loadBalancer, err := d.discoverLoadBalancer()
 	if err != nil {
-		return nil, fmt.Errorf("could not discover load balancer: %w", err)
+		return list, fmt.Errorf("could not discover load balancer: %w", err)
 	}
 	list = append(list, loadBalancer...)
 
@@ -138,29 +138,26 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc
 		NetworkService: voc.NetworkService{
 			NetworkResource: voc.NetworkResource{
 				Resource: voc.Resource{
-					ID:           to.String(lb.ID),
+					ID:           voc.ResourceID(to.String(lb.ID)),
 					Name:         to.String(lb.Name),
 					CreationTime: 0, // No creation time available
 					Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
 				},
 			},
 			IPs:   []string{d.GetPublicIPAddress(lb)},
-			Ports: nil, //TODO: fill out ports (garuppel)
+			Ports: getLoadBalancerPorts(lb),
 		},
-		// TODO (garuppel): fill out access restrictions
-		AccessRestriction: &voc.AccessRestriction{
-			Inbound:         false,
-			RestrictedPorts: "",
-		},
-		// TODO: do we need the httpEndpoint?
+		// TODO: do we need the AccessRestriction for load balancers?
+		AccessRestriction: &voc.AccessRestriction{},
+		// TODO: do we need the httpEndpoint for load balancers?
 		HttpEndpoints: []*voc.HttpEndpoint{}}
 }
 
 func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *network.Interface) voc.IsNetwork {
-	return &voc.NetworkInterfaceResource{
+	return &voc.NetworkInterface{
 		NetworkResource: voc.NetworkResource{
 			Resource: voc.Resource{
-				ID:           to.String(ni.ID),
+				ID:           voc.ResourceID(to.String(ni.ID)),
 				Name:         to.String(ni.Name),
 				CreationTime: 0, // No creation time available
 				Type:         []string{"NetworkInterface", "Compute", "Resource"},
@@ -168,13 +165,22 @@ func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *network.Interface) v
 		},
 		AccessRestriction: &voc.AccessRestriction{
 			Inbound:         false, //TBD
-			RestrictedPorts: d.GetRestrictedPortsDefined(ni),
+			RestrictedPorts: d.getRestrictedPorts(ni),
 		},
 	}
 }
 
+func getLoadBalancerPorts(lb *network.LoadBalancer) (loadBalancerPorts []int16) {
+
+	for _, item := range *lb.LoadBalancingRules {
+		loadBalancerPorts = append(loadBalancerPorts, int16(*item.FrontendPort))
+	}
+
+	return loadBalancerPorts
+}
+
 // Returns all restricted ports for the network interface
-func (d *azureNetworkDiscovery) GetRestrictedPortsDefined(ni *network.Interface) string {
+func (d *azureNetworkDiscovery) getRestrictedPorts(ni *network.Interface) string {
 
 	var restrictedPorts []string
 
@@ -201,13 +207,26 @@ func (d *azureNetworkDiscovery) GetRestrictedPortsDefined(ni *network.Interface)
 		// Find all ports defined in the security rules with access property "Deny"
 		for _, securityRule := range *sg.SecurityRules {
 			if securityRule.Access == network.SecurityRuleAccessDeny {
-				// TODO delete duplicates
 				restrictedPorts = append(restrictedPorts, *securityRule.SourcePortRange)
 			}
 		}
 	}
 
-	return strings.Join(restrictedPorts, ",")
+	restrictedPortsClean := deleteDuplicatesFromSlice(restrictedPorts)
+
+	return strings.Join(restrictedPortsClean, ",")
+}
+
+func deleteDuplicatesFromSlice(intSlice []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+	for _, entry := range intSlice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
 }
 
 func GetResourceGroupName(nsgID string) string {

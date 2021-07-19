@@ -162,7 +162,17 @@ func (s Service) Shutdown() {
 }
 
 func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
-	list, _ := discoverer.List()
+	var (
+		err  error
+		list []voc.IsResource
+	)
+
+	list, err = discoverer.List()
+
+	if err != nil {
+		log.Errorf("Could not retrieve resources from discoverer '%s': %v", discoverer.Name(), err)
+		return
+	}
 
 	for _, resource := range list {
 		s.resources[string(resource.GetID())] = resource
@@ -179,7 +189,7 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 
 		evidence := &assessment.Evidence{
 			Resource:   v,
-			ResourceId: resource.GetID(),
+			ResourceId: string(resource.GetID()),
 		}
 
 		// check for object storage

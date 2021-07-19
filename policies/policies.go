@@ -34,9 +34,14 @@ import (
 	"github.com/open-policy-agent/opa/rego"
 )
 
-func Run(file string, evidence *assessment.Evidence) (data map[string]interface{}, err error) {
+func RunEvidence(file string, evidence *assessment.Evidence) (data map[string]interface{}, err error) {
+	var m = evidence.Resource.GetStructValue().AsMap()
+
+	return RunMap(file, m)
+}
+
+func RunMap(file string, m map[string]interface{}) (data map[string]interface{}, err error) {
 	var (
-		m  map[string]interface{}
 		ok bool
 	)
 
@@ -48,8 +53,6 @@ func Run(file string, evidence *assessment.Evidence) (data map[string]interface{
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare rego evaluation: %w", err)
 	}
-
-	m = evidence.Resource.GetStructValue().AsMap()
 
 	results, err := r.Eval(ctx, rego.EvalInput(m))
 	if err != nil {
