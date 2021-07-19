@@ -48,6 +48,12 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 					"location":   "eastus",
 					"properties": map[string]interface{}{},
 				},
+				{
+					"id":         "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2",
+					"name":       "vm2",
+					"location":   "eastus",
+					"properties": map[string]interface{}{},
+				},
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1" {
@@ -84,6 +90,40 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 				},
 			},
 		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2" {
+		return createResponse(map[string]interface{}{
+			"properties": map[string]interface{}{
+				"storageProfile": map[string]interface{}{
+					"osDisk": map[string]interface{}{
+						"managedDisk": map[string]interface{}{
+							"id": "os_test_disk",
+						},
+					},
+					"dataDisks": &[]map[string]interface{}{
+						{
+							"managedDisk": map[string]interface{}{
+								"id": "data_disk_2",
+							},
+						},
+						{
+							"managedDisk": map[string]interface{}{
+								"id": "data_disk_3",
+							},
+						},
+					},
+				},
+				"networkProfile": map[string]interface{}{
+					"networkInterfaces": &[]map[string]interface{}{
+						{
+							"id": "987",
+						},
+						{
+							"id": "654",
+						},
+					},
+				},
+			},
+		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Web/sites" {
 		return createResponse(map[string]interface{}{
 			"value": &[]map[string]interface{}{
@@ -110,7 +150,7 @@ func TestVirtualMachine(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 2, len(list))
+	assert.Equal(t, 3, len(list))
 
 	virtualMachine, ok := list[0].(*voc.VirtualMachineResource)
 
@@ -133,9 +173,9 @@ func TestFunction(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 2, len(list))
+	assert.Equal(t, 3, len(list))
 
-	function, ok := list[1].(*voc.FunctionResource)
+	function, ok := list[2].(*voc.FunctionResource)
 
 	assert.True(t, ok)
 	assert.Equal(t, "function1", function.Name)

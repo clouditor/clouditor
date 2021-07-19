@@ -25,7 +25,7 @@
 
 package voc
 
-//TODO Do we want to distinguish between logging mechanisms, e.g., azure Log Analytics, Azure VM BootDiagnostics?
+// TODO(all): Do we want to distinguish between logging mechanisms, e.g., azure Log Analytics, Azure VM BootDiagnostics?
 type Log struct {
 	Enabled bool `json:"enabled"`
 }
