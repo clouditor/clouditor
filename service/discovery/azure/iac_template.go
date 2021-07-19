@@ -180,7 +180,7 @@ func saveExportTemplate(template resources.GroupExportResult, groupName string) 
 	fileTemplate := "../../raw_discovery_results/azure_iac_templates/%s-template.json"
 	fileName := fmt.Sprintf(fileTemplate, groupName)
 
-	ioutil.WriteFile(fileName, exported, 0666)
+	err = ioutil.WriteFile(fileName, exported, 0666)
 	if err != nil {
 		return fmt.Errorf("write file failed %w", err)
 	}
