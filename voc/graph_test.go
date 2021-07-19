@@ -1,4 +1,4 @@
-// Copyright 2016-2020 Fraunhofer AISEC
+// Copyright 2021 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,47 +23,65 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package voc
+package voc_test
 
-type IsNetwork interface {
-	IsResource
-}
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"testing"
 
-type NetworkResource struct {
-	Resource
-}
+	"clouditor.io/clouditor/policies"
+	"clouditor.io/clouditor/voc"
+)
 
-type HttpEndpoint struct {
-	Resource // TODO(oxisto): should actually be a functionality, not a resource
+func TestGraph(t *testing.T) {
+	// lets build a graph consisting of a network interface and a VM
+	ni := voc.NetworkInterface{
+		NetworkResource: voc.NetworkResource{
+			Resource: voc.Resource{
+				ID: "my-network-interface",
+			},
+		},
+	}
 
-	URL string `json:"url"`
+	vm := voc.VirtualMachineResource{
+		ComputeResource: voc.ComputeResource{
+			Resource: voc.Resource{
+				ID: "my-vm",
+			},
+		},
+	}
 
-	TransportEncryption *TransportEncryption `json:"transportEncryption"`
-}
+	// connect both
+	ni.AttachedTo = vm.ID
+	vm.NetworkInterfaces = append(vm.NetworkInterfaces, ni.ID)
 
-type NetworkService struct {
-	NetworkResource
+	out, err := json.Marshal(vm)
 
-	IPs   []string
-	Ports []int16
-}
+	fmt.Printf("%+v\n", err)
+	fmt.Printf("%s\n", string(out))
 
-// LoadBalancer
-type LoadBalancerResource struct {
-	NetworkService
+	// make sure, that we are in the clouditor root folder to find the policies
+	err = os.Chdir("../")
+	if err != nil {
+		panic(err)
+	}
 
-	AccessRestriction *AccessRestriction `json:"accessRestriction"`
-	HttpEndpoints     []*HttpEndpoint    `json:"httpEndpoint"`
-}
+	tls := map[string]interface{}{
+		"enabled": true,
+	}
 
-// Network Interface
-type NetworkInterface struct {
-	NetworkResource
+	m := map[string]interface{}{
+		"httpEndpoint": map[string]interface{}{
+			"transportEncryption": &tls,
+		},
+	}
 
-	AccessRestriction *AccessRestriction `json:"accessRestriction"`
-	AttachedTo        ResourceID         `json:"attachedTo"`
-}
+	tls["cycle"] = &m
 
-func (n *NetworkInterface) GetAccessRestriction() *AccessRestriction {
-	return n.AccessRestriction
+	data, err := policies.RunMap("policies/metric1.rego", m)
+
+	fmt.Printf("%+v\n", err)
+	fmt.Printf("%+v\n", data)
 }
