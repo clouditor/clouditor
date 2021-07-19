@@ -131,7 +131,7 @@ func (d *awsS3Discovery) List() (resources []voc.IsResource, err error) {
 		resources = append(resources, &voc.ObjectStorageResource{
 			StorageResource: voc.StorageResource{
 				Resource: voc.Resource{
-					ID:           bucket.arn,
+					ID:           voc.ResourceID(bucket.arn),
 					Name:         bucket.name,
 					CreationTime: bucket.creationTime.Unix(),
 					Type:         []string{"ObjectStorage", "Storage", "Resource"},
