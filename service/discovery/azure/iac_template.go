@@ -27,7 +27,10 @@ package azure
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"strings"
 
 	"clouditor.io/clouditor/api/discovery"
@@ -79,7 +82,9 @@ func (d *azureIacTemplateDiscovery) List() (list []voc.IsResource, err error) {
 
 func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsResource, error) {
 
-	var list []voc.IsResource
+	var (
+		list []voc.IsResource
+	)
 
 	client := resources.NewGroupsClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
@@ -106,17 +111,25 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsResource, err
 			return nil, fmt.Errorf("IaC template type convertion failed")
 		}
 
+		err = saveExportTemplate(result, *resourceGroups[i].Name)
+		if err != nil {
+			fmt.Println("ERROR: ", err)
+		}
+
 		for templateKey, templateValue := range template {
+
 			if templateKey == "resources" {
 				resources, ok := templateValue.([]interface{})
 				if !ok {
-					return nil, fmt.Errorf("IaC template  type convertion failed")
+					return nil, fmt.Errorf("templateValue  type convertion failed")
 				}
+
 				for _, resourcesValue := range resources {
 					value, ok := resourcesValue.(map[string]interface{})
 					if !ok {
-						return nil, fmt.Errorf("IaC template type convertion failed")
+						return nil, fmt.Errorf("resources type convertion failed")
 					}
+
 					for valueKey, valueValue := range value {
 						if valueKey == "type" {
 
@@ -143,6 +156,29 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsResource, err
 	return list, nil
 }
 
+// saveExportTemplate saves the resource group template in a json file.
+func saveExportTemplate(template resources.GroupExportResult, groupName string) error {
+
+	prefix, indent := "", "    "
+	exported, err := json.MarshalIndent(template, prefix, indent)
+	if err != nil {
+		return fmt.Errorf("MarshalIndent failed %w", err)
+	}
+
+	fileTemplate := "%s-template.json"
+	fileName := fmt.Sprintf(fileTemplate, groupName)
+	if _, err := os.Stat(fileName); err == nil {
+		return fmt.Errorf("file already exists")
+	}
+
+	ioutil.WriteFile(fileName, exported, 0666)
+	if err != nil {
+		return fmt.Errorf("write file failed %w", err)
+	}
+
+	return nil
+}
+
 func (d *azureIacTemplateDiscovery) createLBResource(resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
 
 	var name string
@@ -152,7 +188,7 @@ func (d *azureIacTemplateDiscovery) createLBResource(resourceValue map[string]in
 	for key, value := range resourceValue {
 		// Get LB name
 		if key == "name" {
-			name = getResourceName(value.(string))
+			name = getDefaultNameOfResource(value.(string))
 		}
 	}
 
@@ -190,7 +226,7 @@ func (d *azureIacTemplateDiscovery) createVMResource(resourceValue map[string]in
 
 		// Get VM name
 		if key == "name" {
-			name = getResourceName(value.(string))
+			name = getDefaultNameOfResource(value.(string))
 		}
 
 		// Get bool for Logging enabled
@@ -233,14 +269,15 @@ func (d *azureIacTemplateDiscovery) createID(resourceGroup, resourceType, name s
 	return "/subscriptions/" + *d.sub.SubscriptionID + "/resourceGroups/" + strings.ToUpper(resourceGroup) + "/providers/" + resourceType + "/" + name
 }
 
-func getResourceName(name string) string {
+// getDefaultNameOfResource gets the defaultName from template parameter
+// TODO(all): The exported template contains a parameter instead of the defaultName (resourceName). Furthermore, the template parameters do not contain a mapping from the parameter to the defaultName. In the parameter name all word separators (e.g. _, -, .) were replaced by a underscore (_), so it is not possible to uniquely restore the defaultName. Ideas? Do we need the correct defaultNames?
+func getDefaultNameOfResource(name string) string {
 	// Name in template is an parameter and unnecessary information must be shortened
 	nameSplit := strings.Split(name, "'")
-	vmNameSplit := strings.Split(nameSplit[1], "_")
-	vmNameSplit = vmNameSplit[1:]
-	vmNameSplit = vmNameSplit[:len(vmNameSplit)-1]
-	// TODO(all): Is it possible that an vm_name has a _ as delimiter
-	resourceName := strings.Join(vmNameSplit, "-")
+	anotherNameSplit := strings.Split(nameSplit[1], "_")
+	anotherNameSplit = anotherNameSplit[1:]
+	anotherNameSplit = anotherNameSplit[:len(anotherNameSplit)-1]
+	resourceDefaultName := strings.Join(anotherNameSplit, "-")
 
-	return resourceName
+	return resourceDefaultName
 }
