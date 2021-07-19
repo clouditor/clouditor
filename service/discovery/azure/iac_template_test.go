@@ -30,6 +30,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/service/discovery/azure"
+	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -55,17 +56,54 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/exportTemplate" {
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/exportTemplate" {
+
 		return createResponse(map[string]interface{}{
 			"template": &map[string]interface{}{
 				"resources": []map[string]interface{}{
 					{
-						"type": "Microsoft.Compute/virtualMachines",
-						"name": "vm1",
+						"type":       "Microsoft.Compute/virtualMachines",
+						"name":       "[parameters('virtualMachines_vm1_name')]",
+						"location":   "eastus",
+						"properties": map[string]interface{}{},
 					},
 					{
-						"type": "Microsoft.Network/loadBalancers",
-						"name": "loadbalancer1",
+						"type":       "Microsoft.Compute/virtualMachines",
+						"name":       "[parameters('virtualMachines_vm2_name')]",
+						"location":   "eastus",
+						"properties": map[string]interface{}{},
+					},
+					{
+						"type":       "Microsoft.Storage",
+						"name":       "[parameters('storageAccounts_storage_1_name')]",
+						"location":   "eastus",
+						"properties": map[string]interface{}{},
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res2/exportTemplate" {
+
+		return createResponse(map[string]interface{}{
+			"template": &map[string]interface{}{
+				"resources": []map[string]interface{}{
+					{
+						"type":       "Microsoft.Compute/virtualMachines",
+						"name":       "[parameters('virtualMachines_vm_3_name')]",
+						"location":   "eastus",
+						"properties": map[string]interface{}{},
+					},
+					{
+						"type":       "Microsoft.Storage",
+						"name":       "[parameters('storageAccounts_storage_1_name')]",
+						"location":   "eastus",
+						"properties": map[string]interface{}{},
+					},
+					{
+						"type":       "Microsoft.Storage",
+						"name":       "[parameters('storageAccounts_storage_2_name')]",
+						"location":   "eastus",
+						"properties": map[string]interface{}{},
 					},
 				},
 			},
@@ -85,4 +123,16 @@ func TestIacDiscovery(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
+	assert.Equal(t, 6, len(list))
+
+	resourceVM, ok := list[0].(*voc.VirtualMachineResource)
+	assert.True(t, ok)
+	assert.Equal(t, "vm1", resourceVM.Name)
+
+	resourceStorage, ok := list[2].(*voc.StorageResource)
+	assert.True(t, ok)
+
+	// That should be equal. The Problem is described in file 'service/discovery/azure/iac_template.go'
+	assert.NotEqual(t, "storage_1", resourceStorage.Name)
+
 }

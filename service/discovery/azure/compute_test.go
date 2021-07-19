@@ -48,6 +48,12 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 					"location":   "eastus",
 					"properties": map[string]interface{}{},
 				},
+				{
+					"id":         "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2",
+					"name":       "vm2",
+					"location":   "eastus",
+					"properties": map[string]interface{}{},
+				},
 			},
 		}, 200)
 	}
@@ -65,7 +71,7 @@ func TestListCompute(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 1, len(list))
+	assert.Equal(t, 2, len(list))
 
 	storage, ok := list[0].(*voc.VirtualMachineResource)
 
