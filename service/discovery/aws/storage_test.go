@@ -31,7 +31,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
@@ -468,17 +467,4 @@ func TestList(t *testing.T) {
 		//}
 	}
 
-}
-
-func TestListBuckets(t *testing.T) {
-	client, _ := NewClient()
-	d := s3.NewFromConfig(client.Cfg)
-	resp, err := d.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
-	if err != nil {
-		t.Error(err)
-	}
-	for i, bucket := range resp.Buckets {
-
-		fmt.Println("Bucket", i, ":", aws.ToString(bucket.Name))
-	}
 }
