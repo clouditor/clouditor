@@ -57,7 +57,6 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/exportTemplate" {
-
 		return createResponse(map[string]interface{}{
 			"template": &map[string]interface{}{
 				"resources": []map[string]interface{}{
@@ -99,7 +98,6 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res2/exportTemplate" {
-
 		return createResponse(map[string]interface{}{
 			"template": &map[string]interface{}{
 				"resources": []map[string]interface{}{
@@ -153,6 +151,12 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 							},
 						},
 					},
+					{
+						"type":       "Microsoft.Network/loadBalancers",
+						"name":       "[parameters('loadBalancers_kubernetes_name')]",
+						"location":   "eastus",
+						"properties": map[string]interface{}{},
+					},
 				},
 			},
 		}, 200)
@@ -171,7 +175,7 @@ func TestIacDiscovery(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 6, len(list))
+	assert.Equal(t, 7, len(list))
 
 	resourceVM, ok := list[0].(*voc.VirtualMachineResource)
 	assert.True(t, ok)
