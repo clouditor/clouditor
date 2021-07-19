@@ -78,7 +78,7 @@ func (d *azureNetworkDiscovery) List() (list []voc.IsResource, err error) {
 	// Discover Load Balancer
 	loadBalancer, err := d.discoverLoadBalancer()
 	if err != nil {
-		return nil, fmt.Errorf("could not discover load balancer: %w", err)
+		return list, fmt.Errorf("could not discover load balancer: %w", err)
 	}
 	list = append(list, loadBalancer...)
 
@@ -138,7 +138,7 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc
 		NetworkService: voc.NetworkService{
 			NetworkResource: voc.NetworkResource{
 				Resource: voc.Resource{
-					ID:           to.String(lb.ID),
+					ID:           voc.ResourceID(to.String(lb.ID)),
 					Name:         to.String(lb.Name),
 					CreationTime: 0, // No creation time available
 					Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
@@ -154,10 +154,10 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc
 }
 
 func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *network.Interface) voc.IsNetwork {
-	return &voc.NetworkInterfaceResource{
+	return &voc.NetworkInterface{
 		NetworkResource: voc.NetworkResource{
 			Resource: voc.Resource{
-				ID:           to.String(ni.ID),
+				ID:           voc.ResourceID(to.String(ni.ID)),
 				Name:         to.String(ni.Name),
 				CreationTime: 0, // No creation time available
 				Type:         []string{"NetworkInterface", "Compute", "Resource"},

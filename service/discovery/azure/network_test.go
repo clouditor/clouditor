@@ -129,7 +129,7 @@ func TestNetwork(t *testing.T) {
 	assert.NotNil(t, list)
 	assert.Equal(t, 2, len(list))
 
-	iface, ok := list[0].(*voc.NetworkInterfaceResource)
+	iface, ok := list[0].(*voc.NetworkInterface)
 
 	assert.True(t, ok)
 	assert.Equal(t, "iface1", iface.Name)

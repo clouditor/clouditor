@@ -207,7 +207,7 @@ func (d *azureIacTemplateDiscovery) createStorageResource(resourceValue map[stri
 	storage := &voc.ObjectStorageResource{
 		StorageResource: voc.StorageResource{
 			Resource: voc.Resource{
-				ID:           d.createID(resourceGroup, resourceType, name),
+				ID:           voc.ResourceID(d.createID(resourceGroup, resourceType, name)),
 				Name:         name,
 				CreationTime: 0, // No creation time available
 				Type:         []string{"ObjectStorage", "Storage", "Resource"},
@@ -284,7 +284,7 @@ func (d *azureIacTemplateDiscovery) createLBResource(resourceValue map[string]in
 		NetworkService: voc.NetworkService{
 			NetworkResource: voc.NetworkResource{
 				Resource: voc.Resource{
-					ID:           d.createID(resourceGroup, resourceType, name),
+					ID:           voc.ResourceID(d.createID(resourceGroup, resourceType, name)),
 					Name:         name,
 					CreationTime: 0, // No creation time available
 					Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
@@ -339,7 +339,7 @@ func (d *azureIacTemplateDiscovery) createVMResource(resourceValue map[string]in
 	vm := &voc.VirtualMachineResource{
 		ComputeResource: voc.ComputeResource{
 			Resource: voc.Resource{
-				ID:           id,
+				ID:           voc.ResourceID(id),
 				Name:         name,
 				CreationTime: 0, // No creation time available
 				Type:         []string{"VirtualMachine", "Compute", "Resource"},

@@ -114,7 +114,7 @@ func (s Service) handleEvidence(evidence *assessment.Evidence) (result *assessme
 		file = fmt.Sprintf("%s/policies/metric%d.rego", baseDir, metric)
 
 		// TODO(oxisto): use go embed
-		data, err := policies.Run(file, evidence)
+		data, err := policies.RunEvidence(file, evidence)
 		if err != nil {
 			log.Errorf("Could not evaluate evidence: %v", err)
 
