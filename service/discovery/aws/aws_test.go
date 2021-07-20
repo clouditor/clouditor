@@ -32,8 +32,11 @@ import (
 	"errors"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
+
+const mockRegion = "mockRegion"
 
 // TestNewClient tests the NewClient function
 func TestNewClient(t *testing.T) {
@@ -46,7 +49,7 @@ func TestNewClient(t *testing.T) {
 		opt ...func(options *config.LoadOptions) error) (cfg aws.Config, err error) {
 		err = nil
 		cfg = aws.Config{
-			Region:           "mockRegion",
+			Region:           mockRegion,
 			Credentials:      nil,
 			HTTPClient:       nil,
 			EndpointResolver: nil,
@@ -59,12 +62,8 @@ func TestNewClient(t *testing.T) {
 		return
 	}
 	client, err := NewClient()
-	if err != nil {
-		t.Error("EXPECTED no error but GOT one.")
-	}
-	if e, a := "mockRegion", client.Cfg.Region; e != a {
-		t.Error("EXPECTED: mockRegion.", "GOT", a)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, mockRegion, client.Cfg.Region)
 
 	// Case 1: Get error (and empty config)
 	loadDefaultConfig = func(ctx context.Context,
@@ -74,11 +73,7 @@ func TestNewClient(t *testing.T) {
 		return
 	}
 	client, err = NewClient()
-	if err == nil {
-		t.Error("EXPECTED no error but GOT one.")
-	}
-	if e, a := "", client.Cfg.Region; e != a {
-		t.Error("EXPECTED no region.", "GOT", a)
-	}
+	assert.NotNil(t, err)
+	assert.Empty(t, client.Cfg.Region)
 
 }
