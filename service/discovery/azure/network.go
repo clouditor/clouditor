@@ -164,8 +164,8 @@ func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *network.Interface) v
 			},
 		},
 		AccessRestriction: &voc.AccessRestriction{
-			Inbound:         false, //TBD
-			RestrictedPorts: d.getRestrictedPorts(ni),
+			Inbound:         false, // TODO(garuppel): TBD
+      RestrictedPorts: d.getRestrictedPorts(ni),
 		},
 	}
 }

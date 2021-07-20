@@ -127,6 +127,7 @@ func (s Service) Start(ctx context.Context, request *discovery.StartDiscoveryReq
 	var discoverer []discovery.Discoverer
 
 	discoverer = append(discoverer,
+		azure.NewAzureIacTemplateDiscovery(azure.WithAuthorizer(authorizer)),
 		azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
 		azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
 		azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)),
