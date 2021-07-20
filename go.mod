@@ -10,10 +10,11 @@ require (
 	github.com/Azure/go-autorest/autorest/validation v0.3.1 // indirect
 	github.com/alexedwards/argon2id v0.0.0-20210511081203-7d35d68092b8
 	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20210521184019-c5ad59b459ec
-	github.com/aws/aws-sdk-go-v2 v1.7.0
+	github.com/aws/aws-sdk-go-v2 v1.7.1
 	github.com/aws/aws-sdk-go-v2/config v1.4.1
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.12.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.11.0
-	github.com/aws/smithy-go v1.5.0
+	github.com/aws/smithy-go v1.6.0
 	github.com/go-co-op/gocron v1.6.2
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/golang-jwt/jwt v3.2.1+incompatible
