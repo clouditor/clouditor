@@ -287,7 +287,7 @@ func TestGetBuckets(t *testing.T) {
 		isDiscovering: false,
 	}
 	buckets, err := d.getBuckets()
-	assert.Nil(t, err, "Expected no errors but got one.")
+	assert.Nil(t, err)
 
 	log.Print("Testing number of buckets")
 	assert.Equal(t, 2, len(buckets))
@@ -433,8 +433,6 @@ func TestName(t *testing.T) {
 }
 
 // TestList tests the List method
-// TODO(lebogg): Currently no full coverage since testing all errors in single tests yields early termination here
-// TODO(lebogg): One possibility: Create new MockAPIs for each case...
 func TestList(t *testing.T) {
 	d := awsS3Discovery{
 		client:        mockS3APINew{},
@@ -454,17 +452,5 @@ func TestList(t *testing.T) {
 		assert.Equal(t, expectedResourceNames[i], r.GetName())
 		log.Println("Testing type of resource", i+1)
 		assert.True(t, r.HasType("ObjectStorage"))
-		// TODO(lebogg): How to convert to ObjectStorageResource s.t. we can access atRestEncryption?
-		//r = voc.ObjectStorageResource(r)
-		//log.Println("Testing at rest encryption of resource", i+1)
-		//if e, a := expectedResourceAtRestEncryptions[i], r.AtRestEncryption.Enabled; e != a {
-		//	log.Println(r.AtRestEncryption.Enabled)
-		//	t.Error("EXPECTED", e, "GOT", a)
-		//}
-		//log.Println("Testing transport encryption of resource", i+1)
-		//if e, a := expectedResourceTransportEncryptions[i], r.HttpEndpoint.TransportEncryption.Enabled; e != a {
-		//	t.Error("EXPECTED", e, "GOT", a)
-		//}
 	}
-
 }

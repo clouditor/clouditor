@@ -49,12 +49,11 @@ type awsS3Discovery struct {
 
 // bucket contains meta data about a S3 bucket
 type bucket struct {
-	arn             string
-	name            string
-	numberOfObjects int
-	creationTime    time.Time
-	endpoint        string
-	region          string
+	arn          string
+	name         string
+	creationTime time.Time
+	endpoint     string
+	region       string
 }
 
 // S3API describes the S3 client interface (for mock testing)
@@ -108,7 +107,7 @@ func (d *awsS3Discovery) Name() string {
 
 // List is the method implementation defined in the discovery.Discoverer interface
 func (d *awsS3Discovery) List() (resources []voc.IsResource, err error) {
-	var encryptionAtRest voc.AtRestEncryption
+	var encryptionAtRest *voc.AtRestEncryption
 	var encryptionAtTransmit voc.TransportEncryption
 
 	log.Info("Starting List() in ", d.Name())
@@ -136,7 +135,7 @@ func (d *awsS3Discovery) List() (resources []voc.IsResource, err error) {
 					CreationTime: bucket.creationTime.Unix(),
 					Type:         []string{"ObjectStorage", "Storage", "Resource"},
 				},
-				AtRestEncryption: &encryptionAtRest,
+				AtRestEncryption: encryptionAtRest,
 			},
 			HttpEndpoint: &voc.HttpEndpoint{
 				URL:                 bucket.endpoint,
@@ -147,7 +146,7 @@ func (d *awsS3Discovery) List() (resources []voc.IsResource, err error) {
 	return
 }
 func (b bucket) String() string {
-	return fmt.Sprintf("[ARN: %v, Name: %v, Creation Time: %v, Number of objects: %v]", b.arn, b.name, b.creationTime, b.numberOfObjects)
+	return fmt.Sprintf("[ARN: %v, Name: %v, Creation Time: %v]", b.arn, b.name, b.creationTime)
 }
 
 // NewAwsStorageDiscovery constructs a new awsS3Discovery initializing the s3-client and isDiscovering with true
@@ -189,16 +188,15 @@ func (d *awsS3Discovery) getBuckets() (buckets []bucket, err error) {
 			creationTime: aws.ToTime(b.CreationDate),
 			region:       region,
 			endpoint:     "https://" + aws.ToString(b.Name) + ".s3." + region + ".amazonaws.com",
-			// TODO(lebogg): Implement method for retrieving the number of objects per bucket (if needed)
-			numberOfObjects: -1,
 		})
 	}
 	return
 }
 
 // getEncryptionAtRest gets the bucket's encryption configuration
-func (d *awsS3Discovery) getEncryptionAtRest(bucket string) (e voc.AtRestEncryption, err error) {
+func (d *awsS3Discovery) getEncryptionAtRest(bucket string) (e *voc.AtRestEncryption, err error) {
 	log.Printf("Checking encryption for bucket %v.", bucket)
+	e = new(voc.AtRestEncryption)
 	input := s3.GetBucketEncryptionInput{
 		Bucket:              aws.String(bucket),
 		ExpectedBucketOwner: nil,
@@ -234,7 +232,6 @@ func (d *awsS3Discovery) getEncryptionAtRest(bucket string) (e voc.AtRestEncrypt
 // "confirm that your bucket policies explicitly deny access to HTTP requests"
 // https://aws.amazon.com/premiumsupport/knowledge-center/s3-bucket-policy-for-config-rule/
 // getTransportEncryption loops over all statements in the bucket policy and checks if one statement denies https only == false
-// TODO(lebogg): I don't think there is a way to see if it is "enabled"?!
 func (d *awsS3Discovery) getTransportEncryption(bucket string) (encryptionAtTransit voc.TransportEncryption, err error) {
 	input := s3.GetBucketPolicyInput{
 		Bucket:              aws.String(bucket),
@@ -246,7 +243,6 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (encryptionAtTran
 
 	// encryption at transit (https) is always enabled and TLS version fixed
 	encryptionAtTransit.Enabled = true
-	// TODO(lebogg): Verify
 	encryptionAtTransit.TlsVersion = "TLS1.2"
 
 	// Case 1: No bucket policy in place or api error -> 'https only' is not set
