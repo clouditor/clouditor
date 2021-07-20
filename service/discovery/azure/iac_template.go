@@ -30,6 +30,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strings"
 
 	"clouditor.io/clouditor/api/discovery"
@@ -37,13 +38,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2016-02-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 )
-
-// type properties struct {
-// 	minimumTLSVersion string
-// 	hTTPSTrafficOnly  bool
-// 	encryptionEnabled bool
-// 	keySource         string
-// }
 
 type azureIacTemplateDiscovery struct {
 	azureDiscovery
@@ -171,16 +165,29 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsResource, err
 // saveExportTemplate saves the resource group template in a json file.
 func saveExportTemplate(template resources.GroupExportResult, groupName string) error {
 
+	var (
+		filepath     string
+		filename     string
+		fileTemplate string
+	)
+
 	prefix, indent := "", "    "
 	exported, err := json.MarshalIndent(template, prefix, indent)
 	if err != nil {
 		return fmt.Errorf("MarshalIndent failed %w", err)
 	}
 
-	fileTemplate := "../../raw_discovery_results/azure_iac_templates/%s-template.json"
-	fileName := fmt.Sprintf(fileTemplate, groupName)
+	filepath = "../../results/raw_discovery_results/azure_iac_raw_templates/"
+	fileTemplate = "%s-template.json"
+	filename = fmt.Sprintf(fileTemplate, groupName)
 
-	err = ioutil.WriteFile(fileName, exported, 0666)
+	// Check if folder exists
+	err = os.MkdirAll(filepath, os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("check for directory existence failed:  %w", err)
+	}
+
+	err = ioutil.WriteFile(filepath+filename, exported, 0666)
 	if err != nil {
 		return fmt.Errorf("write file failed %w", err)
 	}
