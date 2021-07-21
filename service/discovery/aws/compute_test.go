@@ -29,71 +29,68 @@ package aws
 
 import (
 	"context"
+	"fmt"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/aws/smithy-go"
 	"github.com/aws/smithy-go/middleware"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-type mockEC2 struct {
+const (
+	mockVM1            = "mockVM1"
+	mockVM1ID          = "mockVM1ID"
+	mockVM1Log         = "Mock Log for mockVM1ID"
+	mockVM1Time        = 0
+	blockVolumeId      = "blockVolumeID"
+	networkInterfaceId = "networkInterfaceId"
+)
+
+type mockEC2API struct {
 }
 
-func (m mockEC2) DescribeInstances(_ context.Context, _ *ec2.DescribeInstancesInput, _ ...func(options *ec2.Options)) (*ec2.DescribeInstancesOutput, error) {
+type mockEC2APIWithErrors struct {
+}
+
+func (m mockEC2API) DescribeInstances(_ context.Context, _ *ec2.DescribeInstancesInput, _ ...func(options *ec2.Options)) (*ec2.DescribeInstancesOutput, error) {
+	// block device mappings for output struct
+	blockDeviceMappings := []types.InstanceBlockDeviceMapping{
+		{
+			DeviceName: aws.String("/dev/sdh"),
+			Ebs: &types.EbsInstanceBlockDevice{
+				AttachTime:          nil,
+				DeleteOnTermination: nil,
+				Status:              "",
+				VolumeId:            aws.String(blockVolumeId),
+			},
+		},
+	}
+	// tags for output struct
+	tags := []types.Tag{
+		{
+			Key:   aws.String("name"),
+			Value: aws.String(mockVM1ID),
+		},
+	}
+	networkInterfaces := []types.InstanceNetworkInterface{
+		{
+			NetworkInterfaceId: aws.String(networkInterfaceId),
+		},
+	}
+
+	// output struct containing all necessary information
 	output := &ec2.DescribeInstancesOutput{
 		NextToken: nil,
 		Reservations: []types.Reservation{{
 			Groups: nil,
 			Instances: []types.Instance{{
-				AmiLaunchIndex:                          nil,
-				Architecture:                            "",
-				BlockDeviceMappings:                     nil,
-				BootMode:                                "",
-				CapacityReservationId:                   nil,
-				CapacityReservationSpecification:        nil,
-				ClientToken:                             nil,
-				CpuOptions:                              nil,
-				EbsOptimized:                            nil,
-				ElasticGpuAssociations:                  nil,
-				ElasticInferenceAcceleratorAssociations: nil,
-				EnaSupport:                              nil,
-				EnclaveOptions:                          nil,
-				HibernationOptions:                      nil,
-				Hypervisor:                              "",
-				IamInstanceProfile:                      nil,
-				ImageId:                                 nil,
-				InstanceId:                              nil,
-				InstanceLifecycle:                       "",
-				InstanceType:                            "",
-				KernelId:                                nil,
-				KeyName:                                 nil,
-				LaunchTime:                              nil,
-				Licenses:                                nil,
-				MetadataOptions:                         nil,
-				Monitoring:                              nil,
-				NetworkInterfaces:                       nil,
-				OutpostArn:                              nil,
-				Placement:                               nil,
-				Platform:                                "",
-				PrivateDnsName:                          nil,
-				PrivateIpAddress:                        nil,
-				ProductCodes:                            nil,
-				PublicDnsName:                           nil,
-				PublicIpAddress:                         nil,
-				RamdiskId:                               nil,
-				RootDeviceName:                          nil,
-				RootDeviceType:                          "",
-				SecurityGroups:                          nil,
-				SourceDestCheck:                         nil,
-				SpotInstanceRequestId:                   nil,
-				SriovNetSupport:                         nil,
-				State:                                   nil,
-				StateReason:                             nil,
-				StateTransitionReason:                   nil,
-				SubnetId:                                nil,
-				Tags:                                    nil,
-				VirtualizationType:                      "",
-				VpcId:                                   nil,
+				BlockDeviceMappings: blockDeviceMappings,
+				InstanceId:          aws.String(mockVM1ID),
+				NetworkInterfaces:   networkInterfaces,
+				Tags:                tags,
 			}},
 			OwnerId:       nil,
 			RequesterId:   nil,
@@ -102,44 +99,69 @@ func (m mockEC2) DescribeInstances(_ context.Context, _ *ec2.DescribeInstancesIn
 		ResultMetadata: middleware.Metadata{},
 	}
 	return output, nil
+}
 
+func (m mockEC2APIWithErrors) DescribeInstances(_ context.Context, _ *ec2.DescribeInstancesInput, _ ...func(options *ec2.Options)) (*ec2.DescribeInstancesOutput, error) {
+	err := &smithy.GenericAPIError{
+		Code:    "ConnectionError",
+		Message: "Couldn't resolve host. Bad connection?",
+	}
+	return nil, err
 }
 
 func TestListCompute(t *testing.T) {
 	d := computeDiscovery{
-		client:        mockEC2{},
+		client:        mockEC2API{},
 		isDiscovering: true,
 	}
 	list, err := d.List()
-	assert.NotNil(t, err)
+	assert.Nil(t, err)
 	assert.NotEmpty(t, list)
 }
 
-const (
-	mockVM1     = "mockVM1"
-	mockVM1ID   = "mockVM1ID"
-	mockVM1Log  = "Mock Log for mockVM1ID"
-	mockVM1Time = 0
-)
-
-func TestGetVMs(t *testing.T) {
+func TestDiscoverVirtualMachines(t *testing.T) {
 	d := computeDiscovery{
-		client:        mockEC2{},
-		isDiscovering: true,
+		client: mockEC2API{},
 	}
-	machines, err := d.getVMs()
-	assert.NotNil(t, err)
+	machines, err := d.discoverVirtualMachines()
+	assert.Nil(t, err)
 	// Possible
-	assert.Equal(t, mockVM1, machines.Name)
+	testMachine := machines[0]
+	assert.Equal(t, mockVM1, testMachine.Name)
 	// Possible
-	assert.Equal(t, mockVM1ID, machines.ID)
+	assert.Equal(t, mockVM1ID, testMachine.ID)
 	// Possible
-	assert.NotEmpty(t, machines.BlockStorage)
+	assert.NotEmpty(t, testMachine.BlockStorage)
 	// TODO(lebogg): Possible to fetch? Via CloudWatch?
-	assert.Equal(t, mockVM1Log, machines.Log)
+	//assert.Equal(t, mockVM1Log, machines.Log)
 	// Possible
-	assert.NotEmpty(t, machines.NetworkInterfaces)
+	assert.NotEmpty(t, testMachine.NetworkInterfaces)
 	// Possible
-	assert.Equal(t, mockVM1Time, machines.CreationTime)
+	assert.Equal(t, mockVM1Time, testMachine.CreationTime)
 
+	d = computeDiscovery{
+		client: mockEC2APIWithErrors{},
+	}
+	_, err = d.discoverVirtualMachines()
+	assert.NotNil(t, err)
+
+}
+
+// TODO(lebogg): Testing logs
+func TestLogging(t *testing.T) {
+	client, _ := NewClient()
+	d := cloudwatchlogs.NewFromConfig(client.Cfg)
+	input1 := &cloudwatchlogs.GetLogEventsInput{
+		LogGroupName:  aws.String("testGroup"),
+		LogStreamName: aws.String("testGroupTestStream"),
+		EndTime:       nil,
+		Limit:         nil,
+		NextToken:     nil,
+		StartFromHead: nil,
+		StartTime:     nil,
+	}
+	resp, _ := d.GetLogEvents(context.TODO(), input1)
+	fmt.Println(resp.Events)
+	//input := &cloudwatchlogs.GetLogRecordInput{}
+	//fmt.Println(d.GetLogRecord(context.TODO(), input))
 }

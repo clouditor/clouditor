@@ -53,6 +53,7 @@ func (d computeDiscovery) List() ([]voc.IsResource, error) {
 	panic("implement me")
 }
 
-func (d *computeDiscovery) getVMs() (*voc.VirtualMachineResource, error) {
+// TODO(lebogg): slices are implemented as pointers, right? So no need to use "*[]..."?
+func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachineResource, error) {
 	panic("implement me")
 }
