@@ -28,6 +28,7 @@
 package aws
 
 import (
+	"clouditor.io/clouditor/voc"
 	"context"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -38,15 +39,15 @@ import (
 	"github.com/aws/smithy-go/middleware"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 const (
 	mockVM1            = "mockVM1"
 	mockVM1ID          = "mockVM1ID"
-	mockVM1Log         = "Mock Log for mockVM1ID"
-	mockVM1Time        = 0
 	blockVolumeId      = "blockVolumeID"
 	networkInterfaceId = "networkInterfaceId"
+	mockVMCreationTime = "2012-11-01T22:08:41+00:00"
 )
 
 type mockEC2API struct {
@@ -72,13 +73,18 @@ func (m mockEC2API) DescribeInstances(_ context.Context, _ *ec2.DescribeInstance
 	tags := []types.Tag{
 		{
 			Key:   aws.String("name"),
-			Value: aws.String(mockVM1ID),
+			Value: aws.String(mockVM1),
 		},
 	}
 	networkInterfaces := []types.InstanceNetworkInterface{
 		{
 			NetworkInterfaceId: aws.String(networkInterfaceId),
 		},
+	}
+	// launch time
+	launchTime, err := time.Parse(time.RFC3339, mockVMCreationTime)
+	if err != nil {
+		log.Error(err)
 	}
 
 	// output struct containing all necessary information
@@ -91,6 +97,7 @@ func (m mockEC2API) DescribeInstances(_ context.Context, _ *ec2.DescribeInstance
 				InstanceId:          aws.String(mockVM1ID),
 				NetworkInterfaces:   networkInterfaces,
 				Tags:                tags,
+				LaunchTime:          aws.Time(launchTime),
 			}},
 			OwnerId:       nil,
 			RequesterId:   nil,
@@ -129,7 +136,7 @@ func TestDiscoverVirtualMachines(t *testing.T) {
 	testMachine := machines[0]
 	assert.Equal(t, mockVM1, testMachine.Name)
 	// Possible
-	assert.Equal(t, mockVM1ID, testMachine.ID)
+	assert.Equal(t, voc.ResourceID(mockVM1ID), testMachine.ID)
 	// Possible
 	assert.NotEmpty(t, testMachine.BlockStorage)
 	// TODO(lebogg): Possible to fetch? Via CloudWatch?
@@ -137,7 +144,8 @@ func TestDiscoverVirtualMachines(t *testing.T) {
 	// Possible
 	assert.NotEmpty(t, testMachine.NetworkInterfaces)
 	// Possible
-	assert.Equal(t, mockVM1Time, testMachine.CreationTime)
+	expectedCreationTime, _ := time.Parse(time.RFC3339, mockVMCreationTime)
+	assert.Equal(t, expectedCreationTime.Unix(), testMachine.CreationTime)
 
 	d = computeDiscovery{
 		client: mockEC2APIWithErrors{},
@@ -148,7 +156,7 @@ func TestDiscoverVirtualMachines(t *testing.T) {
 }
 
 // TODO(lebogg): Testing logs
-func TestLogging(t *testing.T) {
+func TestLoggingWithCloudWatchLogs(t *testing.T) {
 	client, _ := NewClient()
 	d := cloudwatchlogs.NewFromConfig(client.Cfg)
 	input1 := &cloudwatchlogs.GetLogEventsInput{
@@ -164,4 +172,20 @@ func TestLogging(t *testing.T) {
 	fmt.Println(resp.Events)
 	//input := &cloudwatchlogs.GetLogRecordInput{}
 	//fmt.Println(d.GetLogRecord(context.TODO(), input))
+}
+
+// TODO(lebogg): Testing logs
+func TestLoggingWithMonitoring(t *testing.T) {
+	client, _ := NewClient()
+	d := ec2.NewFromConfig(client.Cfg)
+	instances, err := d.DescribeInstances(context.TODO(), &ec2.DescribeInstancesInput{})
+	assert.Nil(t, err)
+
+	for _, reservation := range instances.Reservations {
+		for _, vm := range reservation.Instances {
+			fmt.Println(vm.Monitoring.State)
+			fmt.Println(vm.Monitoring.State.Values())
+		}
+	}
+
 }
