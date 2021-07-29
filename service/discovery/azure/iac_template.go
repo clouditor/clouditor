@@ -178,7 +178,7 @@ func saveExportTemplate(template resources.GroupExportResult, groupName string) 
 	}
 
 	filepath = "../../results/raw_discovery_results/azure_iac_raw_templates/"
-	fileTemplate = filepath + "%s-template.json"
+	fileTemplate = "%s-template.json"
 	filename = fmt.Sprintf(fileTemplate, groupName)
 
 	// Check if folder exists
@@ -190,6 +190,9 @@ func saveExportTemplate(template resources.GroupExportResult, groupName string) 
 	err = ioutil.WriteFile(filepath+filename, exported, 0666)
 	if err != nil {
 		return fmt.Errorf("write file failed %w", err)
+	} else {
+		fmt.Println("raw IaC template file written to: ", filepath+filename)
+
 	}
 
 	return nil

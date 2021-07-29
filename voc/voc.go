@@ -45,6 +45,7 @@ type IsCloudResource interface {
 
 type ResourceID string
 
+// CloudResource file from Ontology currently not used. How do we merge this file with the 'CloudResource Ontology file'
 type CloudResource struct {
 	ID           ResourceID `json:"id"`
 	Name         string     `json:"name"`

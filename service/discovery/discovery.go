@@ -285,6 +285,8 @@ func saveResourcesToFilesystem(result ResultOntology, filename string) error {
 	err = ioutil.WriteFile(filepath+filename, exported, 0666)
 	if err != nil {
 		return fmt.Errorf("write file failed %w", err)
+	} else {
+		fmt.Println("ontology resources written to: ", filepath+filename)
 	}
 
 	return nil
