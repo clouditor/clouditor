@@ -80,7 +80,7 @@ func (k k8sComputeDiscovery) handlePod(pod *v1.Pod) voc.IsCompute {
 			}},
 	}
 
-	// Currently not in the Ontology
+	// Currently, the container has no network interface in the Ontology
 	// // TODO Exists a namespace ID?
 	// r.NetworkInterface = append(r.NetworkInterfaces, voc.ResourceID(pod.Namespace))
 

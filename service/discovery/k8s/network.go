@@ -125,41 +125,45 @@ func (k k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 		},
 		// TODO(oxisto): fill out access restrictions
 		AccessRestriction: &voc.AccessRestriction{},
-		// HttpEndpoints:     []*voc.HttpEndpoint{},
+		HttpEndpoint:      &[]voc.HttpEndpoint{},
 	}
 
-	// for _, rule := range ingress.Spec.Rules {
-	// 	lb.Ips = append(lb.Ips, rule.Host)
+	for _, rule := range ingress.Spec.Rules {
+		lb.Ips = append(lb.Ips, rule.Host)
 
-	// 	for _, path := range rule.HTTP.Paths {
-	// 		var url = fmt.Sprintf("%s/%s", rule.Host, path.Path)
-	// 		var te *voc.TransportEncryption
+		for _, path := range rule.HTTP.Paths {
+			var url = fmt.Sprintf("%s/%s", rule.Host, path.Path)
+			var te *voc.TransportEncryption
 
-	// 		if ingress.Spec.TLS == nil {
-	// 			url = fmt.Sprintf("http://%s", url)
-	// 		} else {
-	// 			url = fmt.Sprintf("https://%s", url)
+			if ingress.Spec.TLS == nil {
+				url = fmt.Sprintf("http://%s", url)
+			} else {
+				url = fmt.Sprintf("https://%s", url)
 
-	// 			te = &voc.TransportEncryption{
-	// 				Enforced: true,
-	// 				Enabled:  true,
-	// 				// Encryption: voc.Encryption{Enabled: true},
-	// 			}
-	// 		}
+				te = &voc.TransportEncryption{
+					Enforced: true,
+					Enabled:  true,
+					// Encryption: voc.Encryption{Enabled: true},
+				}
+			}
 
-	// 		http := &voc.HttpEndpoint{
-	// 			CloudResource: &voc.CloudResource{
-	// 				ID:           voc.ResourceID(url),
-	// 				Name:         ingress.Name,
-	// 				CreationTime: ingress.CreationTimestamp.Unix(),
-	// 			},
-	// 			URL:                 url,
-	// 			TransportEncryption: te,
-	// 		}
+			http := voc.HttpEndpoint{
+				Url:                 url,
+				TransportEncryption: te,
+			}
+			// http := &voc.HttpEndpoint{
+			// 	CloudResource: &voc.CloudResource{
+			// 		ID:           voc.ResourceID(url),
+			// 		Name:         ingress.Name,
+			// 		CreationTime: ingress.CreationTimestamp.Unix(),
+			// 	},
+			// 	URL:                 url,
+			// 	TransportEncryption: te,
+			// }
 
-	// 		lb.HttpEndpoint = append(lb.HttpEndpoint, http)
-	// 	}
-	// }
+			*lb.HttpEndpoint = append(*lb.HttpEndpoint, http)
+		}
+	}
 
 	return lb
 }
