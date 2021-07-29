@@ -233,15 +233,15 @@ func (d *azureIacTemplateDiscovery) createStorageResource(resourceValue map[stri
 			Authenticity: &voc.Authenticity{
 				SecurityFeature: &voc.SecurityFeature{},
 			},
+			TransportEncryption: &voc.TransportEncryption{
+				Enabled:    true, // cannot be disabled
+				Enforced:   httpTrafficOnlyEnabled(resourceValue),
+				TlsVersion: getMinTlsVersion(resourceValue),
+				Algorithm:  "",
+			},
 			Method:  "",
 			Handler: "",
 			Path:    "",
-			// TODO TransportEncryption is currently missing in Ontology
-			// TransportEncryption: voc.NewTransportEncryption(
-			// 	true, // cannot be disabled
-			// 	httpTrafficOnlyEnabled(resourceValue),
-			// 	getMinTlsVersion(resourceValue),
-			// ),
 		},
 	}
 
@@ -316,7 +316,7 @@ func (d *azureIacTemplateDiscovery) createLBResource(resourceValue map[string]in
 			Inbound:         false,
 			RestrictedPorts: "",
 		},
-		HttpEndpoint: nil,
+		HttpEndpoint: &[]voc.HttpEndpoint{},
 		// // TODO(all): Do we need the httpEndpoint?
 		// HttpEndpoint: &voc.HttpEndpoint{},
 	}
