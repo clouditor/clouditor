@@ -46,22 +46,26 @@ type mockDiscoverer struct {
 
 func (m mockDiscoverer) Name() string { return "just mocking" }
 
-func (m mockDiscoverer) List() ([]voc.IsResource, error) {
-	return []voc.IsResource{
-		&voc.ObjectStorageResource{
-			StorageResource: voc.StorageResource{
-				Resource: voc.Resource{
+func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
+	return []voc.IsCloudResource{
+		&voc.ObjectStorage{
+			Storage: &voc.Storage{
+				CloudResource: &voc.CloudResource{
 					ID:   "some-id",
 					Name: "some-name",
 					Type: []string{"ObjectStorage", "Storage", "Resource"},
 				},
 			},
 			HttpEndpoint: &voc.HttpEndpoint{
-				TransportEncryption: voc.NewTransportEncryption(true, false, "TLS1_2"),
+				TransportEncryption: &voc.TransportEncryption{
+					Enforced:   false,
+					Enabled:    true,
+					TlsVersion: "TLS1_2",
+				},
 			},
 		},
-		&voc.ComputeResource{
-			Resource: voc.Resource{
+		&voc.Compute{
+			CloudResource: &voc.CloudResource{
 				ID:   "some-other-id",
 				Name: "some-other-name",
 				Type: []string{"Compute", "Resource"},
