@@ -115,11 +115,13 @@ func getNetworkInterfacesOfVM(vm types.Instance) (networkInterfaceIDs []voc.Reso
 	return
 }
 
-// getNameOfVM returns the name if exists (= a tag with key 'name' exists), otherwise empty string
+// getNameOfVM returns the name if exists (= a tag with key 'name' exists), otherwise instance ID is used
 func getNameOfVM(vm types.Instance) (name string) {
 	for _, tag := range vm.Tags {
 		if aws.ToString(tag.Key) == "name" {
 			name = aws.ToString(tag.Value)
+		} else {
+			name = aws.ToString(vm.InstanceId)
 		}
 	}
 	return
