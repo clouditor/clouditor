@@ -72,7 +72,7 @@ func (d *azureIacTemplateDiscovery) Description() string {
 }
 
 // Discover IaC template
-func (d *azureIacTemplateDiscovery) List() (list []voc.IsResource, err error) {
+func (d *azureIacTemplateDiscovery) List() (list []voc.IsCloudResource, err error) {
 	if err = d.authorize(); err != nil {
 		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
 	}
@@ -86,10 +86,10 @@ func (d *azureIacTemplateDiscovery) List() (list []voc.IsResource, err error) {
 	return
 }
 
-func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsResource, error) {
+func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource, error) {
 
 	var (
-		list []voc.IsResource
+		list []voc.IsCloudResource
 	)
 
 	client := resources.NewGroupsClient(to.String(d.sub.SubscriptionID))
@@ -177,7 +177,9 @@ func saveExportTemplate(template resources.GroupExportResult, groupName string) 
 		return fmt.Errorf("MarshalIndent failed %w", err)
 	}
 
-	fileTemplate := "../../raw_discovery_results/azure_iac_templates/%s-template.json"
+	filepath := "../../service/raw_discovery_results/azure_iac_templates/"
+
+	fileTemplate := filepath + "%s-template.json"
 	fileName := fmt.Sprintf(fileTemplate, groupName)
 
 	err = ioutil.WriteFile(fileName, exported, 0666)
@@ -204,26 +206,35 @@ func (d *azureIacTemplateDiscovery) createStorageResource(resourceValue map[stri
 		}
 	}
 
-	storage := &voc.ObjectStorageResource{
-		StorageResource: voc.StorageResource{
-			Resource: voc.Resource{
+	storage := &voc.ObjectStorage{
+		Storage: &voc.Storage{
+			CloudResource: &voc.CloudResource{
 				ID:           voc.ResourceID(d.createID(resourceGroup, resourceType, name)),
 				Name:         name,
 				CreationTime: 0, // No creation time available
 				Type:         []string{"ObjectStorage", "Storage", "Resource"},
 			},
-			AtRestEncryption: voc.NewAtRestEncryption(
-				blobServiceEncryptionEnabled(resourceValue),
-				"AES-265", // seems to be always AWS-256
-				getStorageKeySource(resourceValue),
-			)},
+			AtRestEncryption: &voc.AtRestEncryption{
+				Keymanager: getStorageKeySource(resourceValue),
+				Algorithm:  "AES-265", // seems to be always AWS-256,
+				Enabled:    blobServiceEncryptionEnabled(resourceValue),
+			},
+		},
 		HttpEndpoint: &voc.HttpEndpoint{
-			URL: "", // Not able to get from IaC tempalte
-			TransportEncryption: voc.NewTransportEncryption(
-				true, // cannot be disabled
-				httpTrafficOnlyEnabled(resourceValue),
-				getMinTlsVersion(resourceValue),
-			),
+			Url:           "", // Not able to get from IaC template
+			Functionality: &voc.Functionality{},
+			Authenticity: &voc.Authenticity{
+				SecurityFeature: &voc.SecurityFeature{},
+			},
+			Method:  "",
+			Handler: "",
+			Path:    "",
+			// TODO TransportEncryption is currently missing in Ontology
+			// TransportEncryption: voc.NewTransportEncryption(
+			// 	true, // cannot be disabled
+			// 	httpTrafficOnlyEnabled(resourceValue),
+			// 	getMinTlsVersion(resourceValue),
+			// ),
 		},
 	}
 
@@ -280,25 +291,27 @@ func (d *azureIacTemplateDiscovery) createLBResource(resourceValue map[string]in
 	}
 
 	// TODO(garuppel): Which additional information do we get from the template?
-	lb := &voc.LoadBalancerResource{
-		NetworkService: voc.NetworkService{
-			NetworkResource: voc.NetworkResource{
-				Resource: voc.Resource{
+	lb := &voc.LoadBalancer{
+		NetworkService: &voc.NetworkService{
+			Networking: &voc.Networking{
+				CloudResource: &voc.CloudResource{
 					ID:           voc.ResourceID(d.createID(resourceGroup, resourceType, name)),
 					Name:         name,
 					CreationTime: 0, // No creation time available
 					Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
 				},
 			},
-			IPs:   []string{},
-			Ports: nil,
+			Compute: []voc.ResourceID{},
+			Ips:     []string{},
+			Ports:   []int16{},
 		},
 		AccessRestriction: &voc.AccessRestriction{
 			Inbound:         false,
 			RestrictedPorts: "",
 		},
-		// TODO(all): Do we need the httpEndpoint?
-		HttpEndpoints: []*voc.HttpEndpoint{},
+		HttpEndpoint: nil,
+		// // TODO(all): Do we need the httpEndpoint?
+		// HttpEndpoint: &voc.HttpEndpoint{},
 	}
 
 	return lb, nil
@@ -336,16 +349,16 @@ func (d *azureIacTemplateDiscovery) createVMResource(resourceValue map[string]in
 	// ID must be put together by hand, is not available in template. Better ideas? Leave empty?
 	id = d.createID(resourceGroup, resourceValue["type"].(string), name)
 
-	vm := &voc.VirtualMachineResource{
-		ComputeResource: voc.ComputeResource{
-			Resource: voc.Resource{
+	vm := &voc.VirtualMachine{
+		Compute: &voc.Compute{
+			CloudResource: &voc.CloudResource{
 				ID:           voc.ResourceID(id),
 				Name:         name,
 				CreationTime: 0, // No creation time available
 				Type:         []string{"VirtualMachine", "Compute", "Resource"},
 			}},
 		Log: &voc.Log{
-			Enabled: enabled,
+			Activated: enabled,
 		},
 	}
 

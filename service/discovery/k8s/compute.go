@@ -50,8 +50,8 @@ func (d *k8sComputeDiscovery) Description() string {
 	return "Discover Kubernetes compute resources."
 }
 
-func (k k8sComputeDiscovery) List() ([]voc.IsResource, error) {
-	var list []voc.IsResource
+func (k k8sComputeDiscovery) List() ([]voc.IsCloudResource, error) {
+	var list []voc.IsCloudResource
 
 	pods, err := k.intf.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
@@ -70,9 +70,9 @@ func (k k8sComputeDiscovery) List() ([]voc.IsResource, error) {
 }
 
 func (k k8sComputeDiscovery) handlePod(pod *v1.Pod) voc.IsCompute {
-	r := &voc.ContainerResource{
-		ComputeResource: voc.ComputeResource{
-			Resource: voc.Resource{
+	r := &voc.Container{
+		Compute: &voc.Compute{
+			CloudResource: &voc.CloudResource{
 				ID:           voc.ResourceID(getContainerResourceID(pod)),
 				Name:         pod.Name,
 				CreationTime: pod.CreationTimestamp.Unix(),
@@ -80,8 +80,9 @@ func (k k8sComputeDiscovery) handlePod(pod *v1.Pod) voc.IsCompute {
 			}},
 	}
 
-	// TODO Exists a namespace ID?
-	r.NetworkInterfaces = append(r.NetworkInterfaces, voc.ResourceID(pod.Namespace))
+	// Currently not in the Ontology
+	// // TODO Exists a namespace ID?
+	// r.NetworkInterface = append(r.NetworkInterfaces, voc.ResourceID(pod.Namespace))
 
 	return r
 

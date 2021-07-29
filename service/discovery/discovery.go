@@ -26,10 +26,11 @@
 package discovery
 
 import (
-	"clouditor.io/clouditor/service/discovery/aws"
 	"context"
 	"strings"
 	"time"
+
+	"clouditor.io/clouditor/service/discovery/aws"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
@@ -60,7 +61,7 @@ type Service struct {
 	// TODO(oxisto) do not expose this. just makes tests easier for now
 	AssessmentStream assessment.Assessment_StreamEvidencesClient
 
-	resources map[string]voc.IsResource
+	resources map[string]voc.IsCloudResource
 	scheduler *gocron.Scheduler
 }
 
@@ -74,7 +75,7 @@ func init() {
 
 func NewService() *Service {
 	return &Service{
-		resources:      make(map[string]voc.IsResource),
+		resources:      make(map[string]voc.IsCloudResource),
 		scheduler:      gocron.NewScheduler(time.UTC),
 		Configurations: make(map[discovery.Discoverer]*DiscoveryConfiguration),
 	}
@@ -165,7 +166,7 @@ func (s Service) Shutdown() {
 func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 	var (
 		err  error
-		list []voc.IsResource
+		list []voc.IsCloudResource
 	)
 
 	list, err = discoverer.List()

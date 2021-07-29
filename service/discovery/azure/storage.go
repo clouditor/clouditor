@@ -61,7 +61,7 @@ func (d *azureStorageDiscovery) Description() string {
 	return "Discovery Azure storage accounts."
 }
 
-func (d *azureStorageDiscovery) List() (list []voc.IsResource, err error) {
+func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 	// make sure, we are authorized
 	if err = d.authorize(); err != nil {
 		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
@@ -77,8 +77,8 @@ func (d *azureStorageDiscovery) List() (list []voc.IsResource, err error) {
 	return
 }
 
-func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsResource, error) {
-	var list []voc.IsResource
+func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource, error) {
+	var list []voc.IsCloudResource
 
 	client := storage.NewAccountsClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
@@ -101,25 +101,51 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsResource, err
 }
 
 func handleStorageAccount(account *storage.Account) voc.IsStorage {
-	return &voc.ObjectStorageResource{StorageResource: voc.StorageResource{
-		Resource: voc.Resource{
-			ID:           voc.ResourceID(to.String(account.ID)),
-			Name:         to.String(account.Name),
-			CreationTime: account.CreationTime.Unix(),
-			Type:         []string{"ObjectStorage", "Storage", "Resource"},
+
+	return voc.ObjectStorage{
+		Storage: &voc.Storage{
+			CloudResource: &voc.CloudResource{
+				ID:           voc.ResourceID(to.String(account.ID)),
+				Name:         to.String(account.Name),
+				CreationTime: account.CreationTime.Unix(),
+				Type:         []string{"ObjectStorage", "Storage", "Resource"},
+			},
+			AtRestEncryption: &voc.AtRestEncryption{
+				Keymanager: string(account.Encryption.KeySource),
+				Algorithm:  "AES-265", // seems to be always AES-256
+				Enabled:    to.Bool(account.Encryption.Services.Blob.Enabled),
+			},
 		},
-		AtRestEncryption: voc.NewAtRestEncryption(
-			to.Bool(account.Encryption.Services.Blob.Enabled),
-			"AES-265", // seems to be always AES-256
-			string(account.Encryption.KeySource),
-		)},
 		HttpEndpoint: &voc.HttpEndpoint{
-			URL: to.String(account.PrimaryEndpoints.Blob),
-			TransportEncryption: voc.NewTransportEncryption(
-				true, // cannot be disabled
-				to.Bool(account.EnableHTTPSTrafficOnly),
-				string(account.MinimumTLSVersion),
-			),
+			Url: to.String(account.PrimaryEndpoints.Blob),
+			TransportEncryption: &voc.TransportEncryption{
+				Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
+				Enabled:    true, // cannot be disabled
+				TlsVersion: string(account.MinimumTLSVersion),
+				Algorithm:  "", // TBD
+			},
 		},
 	}
+
+	// return &voc.ObjectStorageResource{StorageResource: voc.StorageResource{
+	// 	Resource: voc.Resource{
+	// 		ID:           voc.ResourceID(to.String(account.ID)),
+	// 		Name:         to.String(account.Name),
+	// 		CreationTime: account.CreationTime.Unix(),
+	// 		Type:         []string{"ObjectStorage", "Storage", "Resource"},
+	// 	},
+	// 	AtRestEncryption: voc.NewAtRestEncryption(
+	// 		to.Bool(account.Encryption.Services.Blob.Enabled),
+	// 		"AES-265", // seems to be always AES-256
+	// 		string(account.Encryption.KeySource),
+	// 	)},
+	// 	HttpEndpoint: &voc.HttpEndpoint{
+	// 		URL: to.String(account.PrimaryEndpoints.Blob),
+	// 		TransportEncryption: voc.NewTransportEncryption(
+	// 			true, // cannot be disabled
+	// 			to.Bool(account.EnableHTTPSTrafficOnly),
+	// 			string(account.MinimumTLSVersion),
+	// 		),
+	// 	},
+	// }
 }
