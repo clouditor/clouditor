@@ -27,6 +27,10 @@ package discovery
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"os"
 	"strings"
 	"time"
 
@@ -69,6 +73,10 @@ type DiscoveryConfiguration struct {
 	Interval time.Duration
 }
 
+type ResultOntology struct {
+	Result *structpb.ListValue `json:"result"`
+}
+
 func init() {
 	log = logrus.WithField("component", "discovery")
 }
@@ -83,6 +91,7 @@ func NewService() *Service {
 
 // Start starts discovery
 func (s Service) Start(ctx context.Context, request *discovery.StartDiscoveryRequest) (response *discovery.StartDiscoveryResponse, err error) {
+
 	response = &discovery.StartDiscoveryResponse{Successful: true}
 
 	log.Infof("Starting discovery...")
@@ -238,7 +247,45 @@ func (s Service) Query(ctx context.Context, request *discovery.QueryRequest) (re
 		r = append(r, s)
 	}
 
+	// Save discovery result to filesystem
+	filenameFilesystem := "resources_ontology.json"
+	tmp := ResultOntology{
+		Result: &structpb.ListValue{Values: r},
+	}
+	err = saveResourcesToFilesystem(tmp, filenameFilesystem)
+
+	if err != nil {
+		fmt.Println("Error writing result to filesystem: %w,", err)
+	}
+
 	return &discovery.QueryResponse{
 		Result: &structpb.ListValue{Values: r},
 	}, nil
+}
+
+func saveResourcesToFilesystem(result ResultOntology, filename string) error {
+	var (
+		filepath string
+	)
+
+	prefix, indent := "", "    "
+	exported, err := json.MarshalIndent(result, prefix, indent)
+	if err != nil {
+		return fmt.Errorf("MarshalIndent failed %w", err)
+	}
+
+	filepath = "../../results/discovery_results/"
+
+	// Check if folder exists
+	err = os.MkdirAll(filepath, os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("check for directory existence failed:  %w", err)
+	}
+
+	err = ioutil.WriteFile(filepath+filename, exported, 0666)
+	if err != nil {
+		return fmt.Errorf("write file failed %w", err)
+	}
+
+	return nil
 }
