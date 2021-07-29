@@ -150,7 +150,7 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc
 		// TODO: do we need the AccessRestriction for load balancers?
 		AccessRestriction: &voc.AccessRestriction{},
 		// TODO: do we need the httpEndpoint for load balancers?
-		// HttpEndpoint: &voc.HttpEndpoint{},
+		HttpEndpoint: &[]voc.HttpEndpoint{},
 	}
 }
 
