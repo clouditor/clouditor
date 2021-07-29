@@ -82,15 +82,19 @@ func TestMain(m *testing.M) {
 
 	client := standalone.NewAssessmentClient()
 
-	resource := &voc.ObjectStorageResource{
-		StorageResource: voc.StorageResource{
-			Resource: voc.Resource{
+	resource := &voc.ObjectStorage{
+		Storage: &voc.Storage{
+			CloudResource: &voc.CloudResource{
 				ID:   "some-id",
 				Type: []string{"ObjectStorage", "Storage", "Resource"},
 			},
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
-			TransportEncryption: voc.NewTransportEncryption(true, true, "TLS1_2"),
+			TransportEncryption: &voc.TransportEncryption{
+				Enforced:   true,
+				Enabled:    true,
+				TlsVersion: "TLS1_2",
+			},
 		},
 	}
 

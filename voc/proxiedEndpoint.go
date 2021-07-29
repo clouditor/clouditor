@@ -27,5 +27,4 @@ package voc
 
 type ProxiedEndpoint struct {
 	*HttpEndpoint
-	HttpEndpoint *HttpEndpoint `json:"httpEndpoint"`
 }
