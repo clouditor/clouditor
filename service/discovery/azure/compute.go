@@ -165,19 +165,6 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 		},
 	}
 
-	// r := &voc.VirtualMachineResource{
-	// 	ComputeResource: voc.ComputeResource{
-	// 		Resource: voc.Resource{
-	// 			ID:           voc.ResourceID(to.String(vm.ID)),
-	// 			Name:         to.String(vm.Name),
-	// 			CreationTime: 0, // No creation time available
-	// 			Type:         []string{"VirtualMachine", "Compute", "Resource"},
-	// 		}},
-	// 	Log: &voc.Log{
-	// 		Enabled: IsBootDiagnosticEnabled(vm),
-	// 	},
-	// }
-
 	vmExtended, err := d.getExtendedVirtualMachine(vm)
 	if err != nil {
 		return nil, fmt.Errorf("could not get virtual machine with extended information: %w", err)
@@ -187,11 +174,6 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 	for _, networkInterfaces := range *vmExtended.VirtualMachineProperties.NetworkProfile.NetworkInterfaces {
 		r.NetworkInterface = append(r.NetworkInterface, voc.ResourceID(to.String(networkInterfaces.ID)))
 	}
-
-	// // Reference to networkInterfaces
-	// for _, networkInterfaces := range *vmExtended.VirtualMachineProperties.NetworkProfile.NetworkInterfaces {
-	// 	r.NetworkInterfaces = append(r.NetworkInterfaces, voc.ResourceID(to.String(networkInterfaces.ID)))
-	// }
 
 	// Reference to blockstorage
 	r.BlockStorage = append(r.BlockStorage, voc.ResourceID(*vmExtended.StorageProfile.OsDisk.ManagedDisk.ID))
