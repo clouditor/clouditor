@@ -199,7 +199,6 @@ func (d *azureIacTemplateDiscovery) createStorageResource(resourceValue map[stri
 
 	var (
 		name string
-		// property properties
 	)
 
 	resourceType := resourceValue["type"].(string)

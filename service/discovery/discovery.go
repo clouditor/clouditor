@@ -72,7 +72,7 @@ type DiscoveryConfiguration struct {
 }
 
 type ResultOntology struct {
-	Result []*structpb.Value `json:"result"`
+	Result *structpb.ListValue `json:"result"`
 }
 
 func init() {
@@ -241,7 +241,7 @@ func (s Service) Query(ctx context.Context, request *discovery.QueryRequest) (re
 	// Save discovery result to filesystem
 	filenameFilesystem := "resources_ontology.json"
 	tmp := ResultOntology{
-		Result: r,
+		Result: &structpb.ListValue{Values: r},
 	}
 	err = saveResourcesToFilesystem(tmp, filenameFilesystem)
 
