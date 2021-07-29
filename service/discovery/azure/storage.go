@@ -102,7 +102,7 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 
 func handleStorageAccount(account *storage.Account) voc.IsStorage {
 
-	return voc.ObjectStorage{
+	return &voc.ObjectStorage{
 		Storage: &voc.Storage{
 			CloudResource: &voc.CloudResource{
 				ID:           voc.ResourceID(to.String(account.ID)),
@@ -126,26 +126,4 @@ func handleStorageAccount(account *storage.Account) voc.IsStorage {
 			},
 		},
 	}
-
-	// return &voc.ObjectStorageResource{StorageResource: voc.StorageResource{
-	// 	Resource: voc.Resource{
-	// 		ID:           voc.ResourceID(to.String(account.ID)),
-	// 		Name:         to.String(account.Name),
-	// 		CreationTime: account.CreationTime.Unix(),
-	// 		Type:         []string{"ObjectStorage", "Storage", "Resource"},
-	// 	},
-	// 	AtRestEncryption: voc.NewAtRestEncryption(
-	// 		to.Bool(account.Encryption.Services.Blob.Enabled),
-	// 		"AES-265", // seems to be always AES-256
-	// 		string(account.Encryption.KeySource),
-	// 	)},
-	// 	HttpEndpoint: &voc.HttpEndpoint{
-	// 		URL: to.String(account.PrimaryEndpoints.Blob),
-	// 		TransportEncryption: voc.NewTransportEncryption(
-	// 			true, // cannot be disabled
-	// 			to.Bool(account.EnableHTTPSTrafficOnly),
-	// 			string(account.MinimumTLSVersion),
-	// 		),
-	// 	},
-	// }
 }

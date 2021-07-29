@@ -87,7 +87,7 @@ func TestListStorage(t *testing.T) {
 	assert.NotNil(t, list)
 	assert.Equal(t, 1, len(list))
 
-	storage, ok := list[0].(*voc.ObjectStorageResource)
+	storage, ok := list[0].(*voc.ObjectStorage)
 
 	assert.True(t, ok)
 	assert.Equal(t, "account1", storage.Name)
