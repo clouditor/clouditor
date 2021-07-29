@@ -191,7 +191,7 @@ func saveExportTemplate(template resources.GroupExportResult, groupName string) 
 	if err != nil {
 		return fmt.Errorf("write file failed %w", err)
 	} else {
-		log.Infof("raw IaC template file written to: %w%w", filepath, filename)
+		log.Infof("raw IaC template file written to: {%s}{%s}", filepath, filename)
 
 	}
 
