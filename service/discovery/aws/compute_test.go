@@ -118,7 +118,7 @@ func (m mockEC2APIWithErrors) DescribeInstances(_ context.Context, _ *ec2.Descri
 
 func TestListCompute(t *testing.T) {
 	d := computeDiscovery{
-		client:        mockEC2API{},
+		api:           mockEC2API{},
 		isDiscovering: true,
 	}
 	list, err := d.List()
@@ -128,7 +128,7 @@ func TestListCompute(t *testing.T) {
 
 func TestDiscoverVirtualMachines(t *testing.T) {
 	d := computeDiscovery{
-		client: mockEC2API{},
+		api: mockEC2API{},
 	}
 	machines, err := d.discoverVirtualMachines()
 	assert.Nil(t, err)
@@ -148,7 +148,7 @@ func TestDiscoverVirtualMachines(t *testing.T) {
 	assert.Equal(t, expectedCreationTime.Unix(), testMachine.CreationTime)
 
 	d = computeDiscovery{
-		client: mockEC2APIWithErrors{},
+		api: mockEC2APIWithErrors{},
 	}
 	_, err = d.discoverVirtualMachines()
 	assert.NotNil(t, err)
@@ -174,7 +174,7 @@ func TestLoggingWithCloudWatchLogs(t *testing.T) {
 	//fmt.Println(d.GetLogRecord(context.TODO(), input))
 }
 
-// TODO(lebogg): Testing logs
+// TODO(lebogg): Remove later
 func TestLoggingWithMonitoring(t *testing.T) {
 	client, _ := NewClient()
 	d := ec2.NewFromConfig(client.Cfg)
@@ -187,5 +187,21 @@ func TestLoggingWithMonitoring(t *testing.T) {
 			fmt.Println(vm.Monitoring.State.Values())
 		}
 	}
+}
 
+// TODO(lebogg): Remove later
+func TestRegionOfInstances(t *testing.T) {
+	client, _ := NewClient()
+	d := computeDiscovery{
+		api:           ec2.NewFromConfig(client.Cfg),
+		isDiscovering: false,
+		awsConfig:     client,
+	}
+	machines, err := d.discoverVirtualMachines()
+	if err != nil {
+		panic("Error!")
+	}
+	for i, machine := range machines {
+		fmt.Println(fmt.Sprint(i+1) + " ID: " + string(machine.ID) + "  Name: " + machine.Name)
+	}
 }

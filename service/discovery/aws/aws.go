@@ -31,6 +31,7 @@ import (
 	"context"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/sirupsen/logrus"
 )
 
@@ -43,16 +44,29 @@ var loadDefaultConfig = config.LoadDefaultConfig
 // TODO(lebogg): deepsource.io wants the struct to exported since NewAwsStorageDiscovery is exported. Encapsulation?
 type Client struct {
 	Cfg aws.Config
+	// accountID is needed for ARN creation
+	accountID *string
 }
 
 // NewClient constructs a new AwsClient
 // TODO(lebogg): "Overload" (switch) with staticCredentialsProvider
 func NewClient() (*Client, error) {
 	c := &Client{}
+
+	// load configuration
 	cfg, err := loadDefaultConfig(context.TODO())
 	if err != nil {
-		log.Errorf("Could not load default config: %v", err)
+		return c, err
 	}
 	c.Cfg = cfg
+
+	// load accountID
+	stsClient := sts.NewFromConfig(cfg)
+	resp, err := stsClient.GetCallerIdentity(context.TODO(), &sts.GetCallerIdentityInput{})
+	if err != nil {
+		return c, err
+	}
+	c.accountID = resp.Account
+
 	return c, err
 }

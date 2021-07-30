@@ -56,7 +56,7 @@ type bucket struct {
 	region       string
 }
 
-// S3API describes the S3 client interface (for mock testing)
+// S3API describes the S3 api interface (for mock testing)
 type S3API interface {
 	ListBuckets(ctx context.Context,
 		params *s3.ListBucketsInput,
@@ -149,7 +149,7 @@ func (b bucket) String() string {
 	return fmt.Sprintf("[ARN: %v, Name: %v, Creation Time: %v]", b.arn, b.name, b.creationTime)
 }
 
-// NewAwsStorageDiscovery constructs a new awsS3Discovery initializing the s3-client and isDiscovering with true
+// NewAwsStorageDiscovery constructs a new awsS3Discovery initializing the s3-api and isDiscovering with true
 func NewAwsStorageDiscovery(cfg aws.Config) discovery.Discoverer {
 	return &awsS3Discovery{
 		client:        s3.NewFromConfig(cfg),
