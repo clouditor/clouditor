@@ -43,7 +43,7 @@ type standaloneEvidenceStream struct {
 	ctx           context.Context
 }
 
-type standaloneEvidenceClient struct{}
+type standaloneAssessmentClient struct{}
 
 func (s standaloneEvidenceStream) SendAndClose(*emptypb.Empty) error {
 	s.clientChannel <- &emptypb.Empty{}
@@ -105,19 +105,19 @@ func (s standaloneEvidenceStream) SendMsg(m interface{}) error {
 	return nil
 }
 
-func (s standaloneEvidenceClient) TriggerAssessment(ctx context.Context, in *assessment.TriggerAssessmentRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (s standaloneAssessmentClient) TriggerAssessment(ctx context.Context, in *assessment.TriggerAssessmentRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	return assessmentService.TriggerAssessment(ctx, in)
 }
 
-func (s standaloneEvidenceClient) StoreEvidence(ctx context.Context, in *assessment.StoreEvidenceRequest, opts ...grpc.CallOption) (*assessment.Evidence, error) {
+func (s standaloneAssessmentClient) StoreEvidence(ctx context.Context, in *assessment.StoreEvidenceRequest, opts ...grpc.CallOption) (*assessment.Evidence, error) {
 	return assessmentService.StoreEvidence(ctx, in)
 }
 
-func (s standaloneEvidenceClient) ListAssessmentResults(ctx context.Context, in *assessment.ListAssessmentResultsRequest, opts ...grpc.CallOption) (*assessment.ListAssessmentResultsResponse, error) {
+func (s standaloneAssessmentClient) ListAssessmentResults(ctx context.Context, in *assessment.ListAssessmentResultsRequest, opts ...grpc.CallOption) (*assessment.ListAssessmentResultsResponse, error) {
 	return assessmentService.ListAssessmentResults(ctx, in)
 }
 
-func (s standaloneEvidenceClient) StreamEvidences(ctx context.Context, opts ...grpc.CallOption) (assessment.Assessment_StreamEvidencesClient, error) {
+func (s standaloneAssessmentClient) StreamEvidences(ctx context.Context, opts ...grpc.CallOption) (assessment.Assessment_StreamEvidencesClient, error) {
 	var stream = &standaloneEvidenceStream{
 		serverChannel: make(chan *assessment.Evidence),
 		clientChannel: make(chan *emptypb.Empty),
@@ -132,7 +132,7 @@ func (s standaloneEvidenceClient) StreamEvidences(ctx context.Context, opts ...g
 }
 
 func NewAssessmentClient() assessment.AssessmentClient {
-	return &standaloneEvidenceClient{}
+	return &standaloneAssessmentClient{}
 }
 
 func NewAssessmentServer() assessment.AssessmentServer {

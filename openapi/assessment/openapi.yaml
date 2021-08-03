@@ -48,7 +48,7 @@ components:
                     description: reference to the resource this evidence was gathered from
                 timestamp:
                     type: string
-                    description: 'TODO: replace with google/type/date.proto'
+                    format: date-time
                 applicable_metrics:
                     type: array
                     items:
@@ -81,6 +81,9 @@ components:
                 metric_id:
                     type: integer
                     format: int32
+                timestamp:
+                    type: string
+                    format: date-time
         Struct:
             properties:
                 fields:

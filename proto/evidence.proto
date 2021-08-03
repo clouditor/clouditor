@@ -29,6 +29,7 @@ syntax = "proto3";
 package clouditor;
 
 import "google/protobuf/struct.proto";
+import "google/type/datetime.proto";
 
 option go_package = "api/assessment";
 
@@ -42,8 +43,7 @@ message Evidence {
   // reference to the resource this evidence was gathered from
   string resource_id = 3;
 
-  // TODO: replace with google/type/date.proto
-  string timestamp = 4;
+  google.type.DateTime timestamp = 4;
 
   repeated int32 applicable_metrics = 5;
 
@@ -79,6 +79,9 @@ message Metric {
 
   // the range of this metric, depends on the scale
   Range range = 6;
+
+  // the requirement
+  repeated string requirement_ids = 7;
 }
 
 // Defines a range of values

@@ -172,7 +172,7 @@ components:
                     description: reference to the resource this evidence was gathered from
                 timestamp:
                     type: string
-                    description: 'TODO: replace with google/type/date.proto'
+                    format: date-time
                 applicable_metrics:
                     type: array
                     items:
@@ -222,6 +222,11 @@ components:
                     format: enum
                 range:
                     $ref: '#/components/schemas/Range'
+                requirement_ids:
+                    type: array
+                    items:
+                        type: string
+                    description: the requirement
         MinMax:
             properties:
                 min:
