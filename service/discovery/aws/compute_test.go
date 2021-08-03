@@ -163,7 +163,7 @@ func (m mockEC2APIWithErrors) DescribeInstances(_ context.Context, _ *ec2.Descri
 	return nil, err
 }
 
-func TestListCompute(t *testing.T) {
+func Test_computeDiscovery_list(t *testing.T) {
 	d := computeDiscovery{
 		virtualMachineAPI: mockEC2API{},
 		functionAPI:       mockLambdaAPI{},
@@ -281,7 +281,7 @@ func Test_computeDiscovery_discoverVirtualMachines(t *testing.T) {
 //	}
 //}
 
-func TestNameCompute(t *testing.T) {
+func Test_computeDiscover_name(t *testing.T) {
 	d := computeDiscovery{
 		virtualMachineAPI: mockEC2API{},
 		isDiscovering:     true,
@@ -415,7 +415,7 @@ func Test_computeDiscovery_discoverFunctions(t *testing.T) {
 	}
 }
 
-func TestNewComputeDiscovery(t *testing.T) {
+func Test_computeDiscovery_NewComputeDiscovery(t *testing.T) {
 	// Mock newFromConfigs and store the original functions back at the end of the test
 	oldEC2 := newFromConfigEC2
 	defer func() { newFromConfigEC2 = oldEC2 }()
