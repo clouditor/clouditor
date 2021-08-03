@@ -50,23 +50,33 @@ const (
 	blockVolumeId      = "blockVolumeID"
 	networkInterfaceId = "networkInterfaceId"
 	mockVMCreationTime = "2012-11-01T22:08:41+00:00"
+
+	mockFunction1ID           = "arn:aws:lambda:eu-central-1:123456789:function:mock-function:1"
+	mockFunction1             = "MockFunction1"
+	mockFunction1CreationTime = "2012-11-01T22:08:41.0+00:00"
 )
 
+// mockEC2API implements the EC2API interface for mock testing
 type mockEC2API struct {
 }
 
+// mockEC2APIWithErrors implements the EC2API interface (API call returning error) for mock testing
 type mockEC2APIWithErrors struct {
 }
 
+// mockLambdaAPI implements the LambdaAPI interface for mock testing
 type mockLambdaAPI struct {
 }
 
+// mockLambdaAPIWithTimeParseError implements the LambdaAPI interface (API call returning error) for mock testing
 type mockLambdaAPIWithTimeParseError struct {
 }
 
+// mockLambdaAPIWithErrors implements the LambdaAPI interface (API call returning error) for mock testing
 type mockLambdaAPIWithErrors struct {
 }
 
+// ListFunctions is the method implementation of the LambdaAPI interface
 func (m mockLambdaAPI) ListFunctions(_ context.Context, _ *lambda.ListFunctionsInput, _ ...func(*lambda.Options)) (*lambda.ListFunctionsOutput, error) {
 	return &lambda.ListFunctionsOutput{
 		Functions: []lambdaTypes.FunctionConfiguration{
@@ -81,6 +91,7 @@ func (m mockLambdaAPI) ListFunctions(_ context.Context, _ *lambda.ListFunctionsI
 	}, nil
 }
 
+// ListFunctions is the method implementation of the LambdaAPI interface
 func (m mockLambdaAPIWithTimeParseError) ListFunctions(_ context.Context, _ *lambda.ListFunctionsInput, _ ...func(*lambda.Options)) (*lambda.ListFunctionsOutput, error) {
 	return &lambda.ListFunctionsOutput{
 		Functions: []lambdaTypes.FunctionConfiguration{
@@ -95,6 +106,7 @@ func (m mockLambdaAPIWithTimeParseError) ListFunctions(_ context.Context, _ *lam
 	}, nil
 }
 
+// ListFunctions is the method implementation of the LambdaAPI interface
 func (m mockLambdaAPIWithErrors) ListFunctions(_ context.Context, _ *lambda.ListFunctionsInput, _ ...func(*lambda.Options)) (*lambda.ListFunctionsOutput, error) {
 	err := &smithy.GenericAPIError{
 		Code:    "500",
@@ -103,6 +115,7 @@ func (m mockLambdaAPIWithErrors) ListFunctions(_ context.Context, _ *lambda.List
 	return nil, err
 }
 
+// DescribeInstances is the method implementation of the EC2API interface
 func (m mockEC2API) DescribeInstances(_ context.Context, _ *ec2.DescribeInstancesInput, _ ...func(options *ec2.Options)) (*ec2.DescribeInstancesOutput, error) {
 	// block device mappings for output struct
 	blockDeviceMappings := []types.InstanceBlockDeviceMapping{
@@ -155,6 +168,7 @@ func (m mockEC2API) DescribeInstances(_ context.Context, _ *ec2.DescribeInstance
 	return output, nil
 }
 
+// DescribeInstances is the method implementation of the EC2API interface
 func (m mockEC2APIWithErrors) DescribeInstances(_ context.Context, _ *ec2.DescribeInstancesInput, _ ...func(options *ec2.Options)) (*ec2.DescribeInstancesOutput, error) {
 	err := &smithy.GenericAPIError{
 		Code:    "ConnectionError",
@@ -230,57 +244,6 @@ func Test_computeDiscovery_discoverVirtualMachines(t *testing.T) {
 
 }
 
-//// TODO(lebogg): Testing logs
-//func TestLoggingWithCloudWatchLogs(t *testing.T) {
-//	client, _ := NewClient()
-//	d := cloudwatchlogs.NewFromConfig(client.Cfg)
-//	input1 := &cloudwatchlogs.GetLogEventsInput{
-//		LogGroupName:  aws.String("testGroup"),
-//		LogStreamName: aws.String("testGroupTestStream"),
-//		EndTime:       nil,
-//		Limit:         nil,
-//		NextToken:     nil,
-//		StartFromHead: nil,
-//		StartTime:     nil,
-//	}
-//	resp, _ := d.GetLogEvents(context.TODO(), input1)
-//	fmt.Println(resp.Events)
-//	//input := &cloudwatchlogs.GetLogRecordInput{}
-//	//fmt.Println(d.GetLogRecord(context.TODO(), input))
-//}
-
-//// TODO(lebogg): Remove later
-//func TestLoggingWithMonitoring(t *testing.T) {
-//	client, _ := NewClient()
-//	d := ec2.NewFromConfig(client.Cfg)
-//	instances, err := d.DescribeInstances(context.TODO(), &ec2.DescribeInstancesInput{})
-//	assert.Nil(t, err)
-//
-//	for _, reservation := range instances.Reservations {
-//		for _, vm := range reservation.Instances {
-//			fmt.Println(vm.Monitoring.State)
-//			fmt.Println(vm.Monitoring.State.Values())
-//		}
-//	}
-//}
-//
-//// TODO(lebogg): Remove later
-//func TestRegionOfInstances(t *testing.T) {
-//	client, _ := NewClient()
-//	d := computeDiscovery{
-//		virtualMachineAPI:           ec2.NewFromConfig(client.Cfg),
-//		isDiscovering: false,
-//		awsConfig:     client,
-//	}
-//	machines, err := d.discoverVirtualMachines()
-//	if err != nil {
-//		panic("Error!")
-//	}
-//	for i, machine := range machines {
-//		fmt.Println(fmt.Sprint(i+1) + " ID: " + string(machine.ID) + "  Name: " + machine.Name)
-//	}
-//}
-
 func Test_computeDiscover_name(t *testing.T) {
 	d := computeDiscovery{
 		virtualMachineAPI: mockEC2API{},
@@ -338,13 +301,6 @@ func Test_computeDiscovery_getNameOfVM(t *testing.T) {
 	}
 }
 
-const mockFunction1ID = "arn:aws:lambda:eu-central-1:123456789:function:mock-function:1"
-
-const mockFunction1 = "MockFunction1"
-
-const mockFunction1CreationTime = "2012-11-01T22:08:41.0+00:00"
-
-// TODO(lebogg): Trying out other testing style
 func Test_computeDiscovery_discoverFunctions(t *testing.T) {
 	type fields struct {
 		virtualMachineAPI EC2API

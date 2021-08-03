@@ -43,7 +43,7 @@ import (
 	"github.com/aws/smithy-go"
 )
 
-// computeDiscovery handles the AWS API requests regarding the EC2 service
+// computeDiscovery handles the AWS API requests regarding the computing services (EC2 and Lambda)
 type computeDiscovery struct {
 	virtualMachineAPI EC2API
 	functionAPI       LambdaAPI
@@ -81,10 +81,12 @@ func NewComputeDiscovery(client *Client) discovery.Discoverer {
 	}
 }
 
+// Name is the method implementation defined in the discovery.Discoverer interface
 func (d computeDiscovery) Name() string {
 	return "AWS Compute"
 }
 
+// List is the method implementation defined in the discovery.Discoverer interface
 func (d computeDiscovery) List() (resources []voc.IsResource, err error) {
 	listOfVMs, err := d.discoverVirtualMachines()
 	if err != nil {
@@ -105,6 +107,7 @@ func (d computeDiscovery) List() (resources []voc.IsResource, err error) {
 	return
 }
 
+// discoverVirtualMachines discovers all VMs (in the current region)
 // TODO(all): Do we want to cover all VMs or only VMs in current region?
 func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachineResource, error) {
 	resp, err := d.virtualMachineAPI.DescribeInstances(context.TODO(), &ec2.DescribeInstancesInput{})
@@ -120,7 +123,7 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachineResour
 		for _, vm := range reservation.Instances {
 			computeResource := voc.ComputeResource{
 				Resource: voc.Resource{
-					ID:   d.getARN(vm),
+					ID:   d.getARNOfVM(vm),
 					Name: d.getNameOfVM(vm),
 					// TODO(all): Currently only the launch time can be derived directly. We could derive the creation
 					// time of the attached volume. But this 1st) requires an additional API Call. It is 2nd) a rather
@@ -142,10 +145,12 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachineResour
 	return resources, nil
 }
 
+// discoverFunctions discovers all lambda functions
 // TODO(all): lastModified for creation Time?
 // TODO(all): lambda can have "elastic network interfaces" if it is connected to a VPC. But you only get IDs of SecGroup, Subnet and VPC
 // TODO(lebogg): FunctionVersion in input to ALL?
 // TODO(lebogg): "Lambda returns up to 50 functions per call" -> Whats when there are >50? I think "NextMarker" (string)
+// TODO(lebogg): are lambdas tied to region?
 func (d *computeDiscovery) discoverFunctions() ([]voc.FunctionResource, error) {
 	input := &lambda.ListFunctionsInput{
 		FunctionVersion: types2.FunctionVersionAll,
@@ -183,6 +188,7 @@ func (d *computeDiscovery) discoverFunctions() ([]voc.FunctionResource, error) {
 	return resources, nil
 }
 
+// parseTime parses the time provided by AWS (ISO 8601 format)
 func parseTime(t *string) (int64, error) {
 	parsedT, err := time.Parse(time.RFC3339, *t)
 	if err != nil {
@@ -191,19 +197,21 @@ func parseTime(t *string) (int64, error) {
 	return parsedT.Unix(), nil
 }
 
+// formatError returns AWS API specific error code transformed into the default error type
 // TODO(lebogg): Try in other discoverer (e.g. storage) and maybe put it in aws.go
 func formatError(ae smithy.APIError) error {
 	return fmt.Errorf("code: %v, fault: %v, message: %v", ae.ErrorCode(), ae.ErrorFault(), ae.ErrorMessage())
 }
 
-// TODO(all): Currently there is no option to find out if logs are enabled -> Default value false?
 // getLogsOfVM checks if logging is enabled
+// TODO(all): Currently there is no option to find out if logs are enabled -> Default value false?
 func getLogsOfVM(_ types.Instance) (l *voc.Log) {
 	l = new(voc.Log)
 	l.Enabled = false
 	return
 }
 
+// getBlockStorageIDsOfVM returns block storages IDs by iterating through the VMs block storages
 func (d *computeDiscovery) getBlockStorageIDsOfVM(vm types.Instance) (blockStorageIDs []voc.ResourceID) {
 	for _, mapping := range vm.BlockDeviceMappings {
 		blockStorageIDs = append(blockStorageIDs, voc.ResourceID(aws.ToString(mapping.Ebs.VolumeId)))
@@ -219,7 +227,7 @@ func (d *computeDiscovery) getNetworkInterfacesOfVM(vm types.Instance) (networkI
 	return
 }
 
-// getNameOfVM returns the name if exists (= a tag with key 'name' exists), otherwise instance ID is used
+// getNameOfVM returns the name if exists (i.e. a tag with key 'name' exists), otherwise instance ID is used
 func (d *computeDiscovery) getNameOfVM(vm types.Instance) string {
 	for _, tag := range vm.Tags {
 		if aws.ToString(tag.Key) == "Name" {
@@ -230,7 +238,8 @@ func (d *computeDiscovery) getNameOfVM(vm types.Instance) string {
 	return aws.ToString(vm.InstanceId)
 }
 
-func (d computeDiscovery) getARN(vm types.Instance) voc.ResourceID {
+// getARNOfVM generates the ARN of a VM instance
+func (d computeDiscovery) getARNOfVM(vm types.Instance) voc.ResourceID {
 	// TODO(lebogg): Get Account ID
 	return voc.ResourceID("arn:aws:ec2:" +
 		d.awsConfig.Cfg.Region + ":" +
