@@ -2,3 +2,9 @@ ignore:
   - "**/*.pb.go" # ignore protoc generated files
   - "**/*.pb.gw.go" # ignore protoc-gen-grpc-gateway generated files
   - "ccl/parser/*.go" #ignore generated antlr parser files
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 0.5%
