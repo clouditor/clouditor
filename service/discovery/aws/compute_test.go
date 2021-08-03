@@ -294,7 +294,7 @@ func Test_computeDiscovery_getNameOfVM(t *testing.T) {
 				isDiscovering:     tt.fields.isDiscovering,
 				awsConfig:         tt.fields.awsConfig,
 			}
-			if got := d.getNameOfVM(tt.args.vm); got != tt.want {
+			if got := d.getNameOfVM(&tt.args.vm); got != tt.want {
 				t.Errorf("getNameOfVM() = %v, want %v", got, tt.want)
 			}
 		})
