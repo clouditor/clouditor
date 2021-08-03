@@ -120,7 +120,8 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachineResour
 	}
 	var resources []voc.VirtualMachineResource
 	for _, reservation := range resp.Reservations {
-		for _, vm := range reservation.Instances {
+		for i := range reservation.Instances {
+			vm := &reservation.Instances[i]
 			computeResource := voc.ComputeResource{
 				Resource: voc.Resource{
 					ID:   d.getARNOfVM(vm),
@@ -138,7 +139,7 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachineResour
 				ComputeResource: computeResource,
 				BlockStorage:    d.getBlockStorageIDsOfVM(vm),
 				// TODO(lebogg): How to derive logs
-				Log: getLogsOfVM(vm),
+				Log: d.getLogsOfVM(vm),
 			})
 		}
 	}
@@ -205,14 +206,14 @@ func formatError(ae smithy.APIError) error {
 
 // getLogsOfVM checks if logging is enabled
 // TODO(all): Currently there is no option to find out if logs are enabled -> Default value false?
-func getLogsOfVM(_ types.Instance) (l *voc.Log) {
+func (d *computeDiscovery) getLogsOfVM(_ *types.Instance) (l *voc.Log) {
 	l = new(voc.Log)
 	l.Enabled = false
 	return
 }
 
 // getBlockStorageIDsOfVM returns block storages IDs by iterating through the VMs block storages
-func (d *computeDiscovery) getBlockStorageIDsOfVM(vm types.Instance) (blockStorageIDs []voc.ResourceID) {
+func (d *computeDiscovery) getBlockStorageIDsOfVM(vm *types.Instance) (blockStorageIDs []voc.ResourceID) {
 	for _, mapping := range vm.BlockDeviceMappings {
 		blockStorageIDs = append(blockStorageIDs, voc.ResourceID(aws.ToString(mapping.Ebs.VolumeId)))
 	}
@@ -220,7 +221,7 @@ func (d *computeDiscovery) getBlockStorageIDsOfVM(vm types.Instance) (blockStora
 }
 
 // getNetworkInterfacesOfVM returns the network interface IDs by iterating through the VMs network interfaces
-func (d *computeDiscovery) getNetworkInterfacesOfVM(vm types.Instance) (networkInterfaceIDs []voc.ResourceID) {
+func (d *computeDiscovery) getNetworkInterfacesOfVM(vm *types.Instance) (networkInterfaceIDs []voc.ResourceID) {
 	for _, networkInterface := range vm.NetworkInterfaces {
 		networkInterfaceIDs = append(networkInterfaceIDs, voc.ResourceID(aws.ToString(networkInterface.NetworkInterfaceId)))
 	}
@@ -228,7 +229,7 @@ func (d *computeDiscovery) getNetworkInterfacesOfVM(vm types.Instance) (networkI
 }
 
 // getNameOfVM returns the name if exists (i.e. a tag with key 'name' exists), otherwise instance ID is used
-func (d *computeDiscovery) getNameOfVM(vm types.Instance) string {
+func (d *computeDiscovery) getNameOfVM(vm *types.Instance) string {
 	for _, tag := range vm.Tags {
 		if aws.ToString(tag.Key) == "Name" {
 			return aws.ToString(tag.Value)
@@ -239,7 +240,7 @@ func (d *computeDiscovery) getNameOfVM(vm types.Instance) string {
 }
 
 // getARNOfVM generates the ARN of a VM instance
-func (d computeDiscovery) getARNOfVM(vm types.Instance) voc.ResourceID {
+func (d computeDiscovery) getARNOfVM(vm *types.Instance) voc.ResourceID {
 	// TODO(lebogg): Get Account ID
 	return voc.ResourceID("arn:aws:ec2:" +
 		d.awsConfig.Cfg.Region + ":" +
