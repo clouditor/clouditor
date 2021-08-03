@@ -134,6 +134,7 @@ func (s Service) Start(ctx context.Context, request *discovery.StartDiscoveryReq
 		k8s.NewKubernetesComputeDiscovery(k8sClient),
 		k8s.NewKubernetesNetworkDiscovery(k8sClient),
 		aws.NewAwsStorageDiscovery(awsClient.Cfg),
+		aws.NewComputeDiscovery(awsClient),
 	)
 
 	for _, v := range discoverer {

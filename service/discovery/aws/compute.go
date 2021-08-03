@@ -28,11 +28,15 @@
 package aws
 
 import (
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/voc"
 	"context"
 	"errors"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/service/lambda"
+	types2 "github.com/aws/aws-sdk-go-v2/service/lambda/types"
+	"time"
+
+	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/voc"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
@@ -41,23 +45,39 @@ import (
 
 // computeDiscovery handles the AWS API requests regarding the EC2 service
 type computeDiscovery struct {
-	api           EC2API
-	isDiscovering bool
-	awsConfig     *Client
+	virtualMachineAPI EC2API
+	functionAPI       LambdaAPI
+	isDiscovering     bool
+	awsConfig         *Client
 }
 
+// EC2API describes the EC2 api interface (for mock testing)
 type EC2API interface {
 	DescribeInstances(ctx context.Context,
 		params *ec2.DescribeInstancesInput,
 		optFns ...func(options *ec2.Options)) (*ec2.DescribeInstancesOutput, error)
 }
 
-// NewComputeDiscovery constructs a new awsS3Discovery initializing the s3-api and isDiscovering with true
+// LambdaAPI describes the lambda api interface (for mock testing)
+// TODO(lebogg): Is there a way to squash both, EC2 and lambda, into one interface?
+type LambdaAPI interface {
+	ListFunctions(ctx context.Context,
+		params *lambda.ListFunctionsInput, optFns ...func(*lambda.Options)) (*lambda.ListFunctionsOutput, error)
+}
+
+// newFromConfigEC2 holds ec2.NewFromConfig(...) allowing a test function to mock it
+var newFromConfigEC2 = ec2.NewFromConfig
+
+// newFromConfigLambda holds lambda.NewFromConfig(...) allowing a test function tp mock it
+var newFromConfigLambda = lambda.NewFromConfig
+
+// NewComputeDiscovery constructs a new awsS3Discovery initializing the s3-virtualMachineAPI and isDiscovering with true
 func NewComputeDiscovery(client *Client) discovery.Discoverer {
 	return &computeDiscovery{
-		api:           ec2.NewFromConfig(client.Cfg),
-		isDiscovering: true,
-		awsConfig:     client,
+		virtualMachineAPI: newFromConfigEC2(client.Cfg),
+		functionAPI:       newFromConfigLambda(client.Cfg),
+		isDiscovering:     true,
+		awsConfig:         client,
 	}
 }
 
@@ -65,17 +85,33 @@ func (d computeDiscovery) Name() string {
 	return "AWS Compute"
 }
 
-func (d computeDiscovery) List() ([]voc.IsResource, error) {
-	panic("implement me")
+func (d computeDiscovery) List() (resources []voc.IsResource, err error) {
+	listOfVMs, err := d.discoverVirtualMachines()
+	if err != nil {
+		return
+	}
+	for _, machine := range listOfVMs {
+		resources = append(resources, &machine)
+	}
+
+	listOfFunctions, err := d.discoverFunctions()
+	if err != nil {
+		return
+	}
+	for _, function := range listOfFunctions {
+		resources = append(resources, &function)
+	}
+
+	return
 }
 
 // TODO(all): Do we want to cover all VMs or only VMs in current region?
 func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachineResource, error) {
-	resp, err := d.api.DescribeInstances(context.TODO(), &ec2.DescribeInstancesInput{})
+	resp, err := d.virtualMachineAPI.DescribeInstances(context.TODO(), &ec2.DescribeInstancesInput{})
 	if err != nil {
 		var ae smithy.APIError
 		if errors.As(err, &ae) {
-			err = fmt.Errorf("code: %v, fault: %v, message: %v", ae.ErrorCode(), ae.ErrorFault(), ae.ErrorMessage())
+			err = formatError(ae)
 		}
 		return nil, err
 	}
@@ -104,6 +140,60 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachineResour
 		}
 	}
 	return resources, nil
+}
+
+// TODO(all): lastModified for creation Time?
+// TODO(all): lambda can have "elastic network interfaces" if it is connected to a VPC. But you only get IDs of SecGroup, Subnet and VPC
+// TODO(lebogg): FunctionVersion in input to ALL?
+// TODO(lebogg): "Lambda returns up to 50 functions per call" -> Whats when there are >50? I think "NextMarker" (string)
+func (d *computeDiscovery) discoverFunctions() ([]voc.FunctionResource, error) {
+	input := &lambda.ListFunctionsInput{
+		FunctionVersion: types2.FunctionVersionAll,
+	}
+
+	resp, err := d.functionAPI.ListFunctions(context.TODO(), input)
+
+	if err != nil {
+		var ae smithy.APIError
+		if errors.As(err, &ae) {
+			err = formatError(ae)
+		}
+		return nil, err
+	}
+
+	var resources []voc.FunctionResource
+	for _, function := range resp.Functions {
+		lastModified, err := parseTime(function.LastModified)
+		if err != nil {
+			return resources, err
+		}
+		resources = append(resources, voc.FunctionResource{
+			ComputeResource: voc.ComputeResource{
+				Resource: voc.Resource{
+					ID:           voc.ResourceID(aws.ToString(function.FunctionArn)),
+					Name:         aws.ToString(function.FunctionName),
+					CreationTime: lastModified,
+					Type:         []string{"Function", "Compute", "Resource"},
+				},
+				// TODO(lebogg): Can I retrieve network interface IDs? (VPC ID possible)
+				NetworkInterfaces: nil,
+			},
+		})
+	}
+	return resources, nil
+}
+
+func parseTime(t *string) (int64, error) {
+	parsedT, err := time.Parse(time.RFC3339, *t)
+	if err != nil {
+		return 0, err
+	}
+	return parsedT.Unix(), nil
+}
+
+// TODO(lebogg): Try in other discoverer (e.g. storage) and maybe put it in aws.go
+func formatError(ae smithy.APIError) error {
+	return fmt.Errorf("code: %v, fault: %v, message: %v", ae.ErrorCode(), ae.ErrorFault(), ae.ErrorMessage())
 }
 
 // TODO(all): Currently there is no option to find out if logs are enabled -> Default value false?
@@ -142,5 +232,9 @@ func (d *computeDiscovery) getNameOfVM(vm types.Instance) string {
 
 func (d computeDiscovery) getARN(vm types.Instance) voc.ResourceID {
 	// TODO(lebogg): Get Account ID
-	return voc.ResourceID("arn:aws:ec2:" + d.awsConfig.Cfg.Region + ":" + aws.ToString(d.awsConfig.accountID) + ":instance/" + aws.ToString(vm.InstanceId))
+	return voc.ResourceID("arn:aws:ec2:" +
+		d.awsConfig.Cfg.Region + ":" +
+		aws.ToString(d.awsConfig.accountID) +
+		":instance/" +
+		aws.ToString(vm.InstanceId))
 }
