@@ -29,7 +29,7 @@ import "clouditor.io/clouditor/voc"
 
 type Discoverer interface {
 	Name() string
-	List() ([]voc.IsResource, error)
+	List() ([]voc.IsCloudResource, error)
 }
 
 // Authorizer authorizes a Cloud service

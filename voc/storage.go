@@ -25,41 +25,8 @@
 
 package voc
 
-type HasAtRestEncryption interface {
-	GetAtRestEncryption() *AtRestEncryption
+type Storage struct {
+	*CloudResource
+	AtRestEncryption	*AtRestEncryption `json:"atRestEncryption"`
 }
 
-type HasHttpEndpoint interface {
-	GetHttpEndpoint() *HttpEndpoint
-}
-
-type IsStorage interface {
-	IsResource
-
-	HasAtRestEncryption
-}
-
-type StorageResource struct {
-	Resource
-
-	AtRestEncryption *AtRestEncryption `json:"atRestEncryption"`
-}
-
-func (s *StorageResource) GetAtRestEncryption() *AtRestEncryption {
-	return s.AtRestEncryption
-}
-
-type IsObjectStorage interface {
-	IsStorage
-	HasHttpEndpoint
-}
-
-type ObjectStorageResource struct {
-	StorageResource
-
-	HttpEndpoint *HttpEndpoint `json:"httpEndpoint"`
-}
-
-type BlockStorageResource struct {
-	StorageResource
-}

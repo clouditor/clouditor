@@ -63,7 +63,7 @@ func (d *azureNetworkDiscovery) Description() string {
 }
 
 // Discover network resources
-func (d *azureNetworkDiscovery) List() (list []voc.IsResource, err error) {
+func (d *azureNetworkDiscovery) List() (list []voc.IsCloudResource, err error) {
 	if err = d.authorize(); err != nil {
 		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
 	}
@@ -86,8 +86,8 @@ func (d *azureNetworkDiscovery) List() (list []voc.IsResource, err error) {
 }
 
 // Discover network interfaces
-func (d *azureNetworkDiscovery) discoverNetworkInterfaces() ([]voc.IsResource, error) {
-	var list []voc.IsResource
+func (d *azureNetworkDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResource, error) {
+	var list []voc.IsCloudResource
 
 	client_network_interfaces := network.NewInterfacesClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client_network_interfaces.Client)
@@ -110,8 +110,8 @@ func (d *azureNetworkDiscovery) discoverNetworkInterfaces() ([]voc.IsResource, e
 }
 
 // Discover Load Balancer
-func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsResource, error) {
-	var list []voc.IsResource
+func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, error) {
+	var list []voc.IsCloudResource
 
 	client_load_balancer := network.NewLoadBalancersClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client_load_balancer.Client)
@@ -134,29 +134,30 @@ func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsResource, error)
 }
 
 func (d *azureNetworkDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc.IsNetwork {
-	return &voc.LoadBalancerResource{
-		NetworkService: voc.NetworkService{
-			NetworkResource: voc.NetworkResource{
-				Resource: voc.Resource{
+	return &voc.LoadBalancer{
+		NetworkService: &voc.NetworkService{
+			Networking: &voc.Networking{
+				CloudResource: &voc.CloudResource{
 					ID:           voc.ResourceID(to.String(lb.ID)),
 					Name:         to.String(lb.Name),
 					CreationTime: 0, // No creation time available
 					Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
 				},
 			},
-			IPs:   []string{d.GetPublicIPAddress(lb)},
+			Ips:   []string{d.GetPublicIPAddress(lb)},
 			Ports: getLoadBalancerPorts(lb),
 		},
 		// TODO: do we need the AccessRestriction for load balancers?
 		AccessRestriction: &voc.AccessRestriction{},
 		// TODO: do we need the httpEndpoint for load balancers?
-		HttpEndpoints: []*voc.HttpEndpoint{}}
+		HttpEndpoint: &[]voc.HttpEndpoint{},
+	}
 }
 
 func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *network.Interface) voc.IsNetwork {
 	return &voc.NetworkInterface{
-		NetworkResource: voc.NetworkResource{
-			Resource: voc.Resource{
+		Networking: &voc.Networking{
+			CloudResource: &voc.CloudResource{
 				ID:           voc.ResourceID(to.String(ni.ID)),
 				Name:         to.String(ni.Name),
 				CreationTime: 0, // No creation time available
@@ -165,7 +166,7 @@ func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *network.Interface) v
 		},
 		AccessRestriction: &voc.AccessRestriction{
 			Inbound:         false, // TODO(garuppel): TBD
-      RestrictedPorts: d.getRestrictedPorts(ni),
+			RestrictedPorts: d.getRestrictedPorts(ni),
 		},
 	}
 }

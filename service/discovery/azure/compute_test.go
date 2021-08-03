@@ -152,15 +152,15 @@ func TestVirtualMachine(t *testing.T) {
 	assert.NotNil(t, list)
 	assert.Equal(t, 3, len(list))
 
-	virtualMachine, ok := list[0].(*voc.VirtualMachineResource)
+	virtualMachine, ok := list[0].(*voc.VirtualMachine)
 
 	assert.True(t, ok)
 	assert.Equal(t, "vm1", virtualMachine.Name)
-	assert.Equal(t, 2, len(virtualMachine.NetworkInterfaces))
+	assert.Equal(t, 2, len(virtualMachine.NetworkInterface))
 	assert.Equal(t, 3, len(virtualMachine.BlockStorage))
 
 	assert.Equal(t, "data_disk_1", string(virtualMachine.BlockStorage[1]))
-	assert.Equal(t, "123", string(virtualMachine.NetworkInterfaces[0]))
+	assert.Equal(t, "123", string(virtualMachine.NetworkInterface[0]))
 }
 
 func TestFunction(t *testing.T) {
@@ -175,7 +175,7 @@ func TestFunction(t *testing.T) {
 	assert.NotNil(t, list)
 	assert.Equal(t, 3, len(list))
 
-	function, ok := list[2].(*voc.FunctionResource)
+	function, ok := list[2].(*voc.Function)
 
 	assert.True(t, ok)
 	assert.Equal(t, "function1", function.Name)

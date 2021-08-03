@@ -31,13 +31,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"testing"
+	"time"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
 )
 
 const (
@@ -334,14 +335,14 @@ func TestGetEncryptionAtRest(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, encryptionAtRest.Enabled)
 	assert.Equal(t, "AES256", encryptionAtRest.Algorithm)
-	assert.Equal(t, "SSE-S3", encryptionAtRest.KeyManager)
+	assert.Equal(t, "SSE-S3", encryptionAtRest.Keymanager)
 
 	// Second case: SSE-KMS encryption
 	encryptionAtRest, err = d.getEncryptionAtRest(mockBucket2)
 	assert.Nil(t, err)
 	assert.True(t, encryptionAtRest.Enabled)
 	assert.Equal(t, "aws:kms", encryptionAtRest.Algorithm)
-	assert.Equal(t, "SSE-KMS", encryptionAtRest.KeyManager)
+	assert.Equal(t, "SSE-KMS", encryptionAtRest.Keymanager)
 
 	// Third case: No encryption
 	encryptionAtRest, err = d.getEncryptionAtRest("mockbucket3")

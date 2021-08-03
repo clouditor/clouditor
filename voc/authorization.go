@@ -1,4 +1,4 @@
-// Copyright 2016-2020 Fraunhofer AISEC
+// Copyright 2021 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,16 +25,7 @@
 
 package voc
 
-type AccessRestriction struct {
-	// TODO(all): What informaton do we need here?
-	Inbound bool `json:"inbound"`
-	// TODO(all): According to the ontology, it is a string. What information do we need exactly?
-	RestrictedPorts string `json:"restrictedPorts"` // List of restricted ports
+type Authorization struct {
+	*SecurityFeature
 }
 
-func NewAccessRestriction(name string, inbound bool, restrictedPorts string) *AccessRestriction {
-	return &AccessRestriction{
-		Inbound:         inbound,
-		RestrictedPorts: restrictedPorts,
-	}
-}

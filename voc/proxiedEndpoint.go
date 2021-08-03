@@ -1,4 +1,4 @@
-// Copyright 2016-2020 Fraunhofer AISEC
+// Copyright 2021 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,48 +25,6 @@
 
 package voc
 
-type IsEncryption interface {
-	IsEnabled() bool
-
-	isEncryption() bool
-}
-
-type Encryption struct {
-	Enabled bool `json:"enabled"`
-}
-
-func (e *Encryption) IsEnabled() bool {
-	return e.Enabled
-}
-
-func (e *Encryption) isEncryption() bool {
-	return true
-}
-
-type AtRestEncryption struct {
-	Encryption
-	Algorithm  string `json:"algorithm"`
-	KeyManager string `json:"keyManager"`
-}
-
-func NewAtRestEncryption(enabled bool, algorithm string, keyManager string) *AtRestEncryption {
-	return &AtRestEncryption{
-		Encryption: Encryption{Enabled: enabled},
-		Algorithm:  algorithm,
-		KeyManager: keyManager,
-	}
-}
-
-type TransportEncryption struct {
-	Encryption
-	Enforced   bool   `json:"enforced"`
-	TlsVersion string `json:"tlsVersion"`
-}
-
-func NewTransportEncryption(enabled bool, enforced bool, tlsVersion string) *TransportEncryption {
-	return &TransportEncryption{
-		Encryption: Encryption{Enabled: enabled},
-		Enforced:   enforced,
-		TlsVersion: tlsVersion,
-	}
+type ProxiedEndpoint struct {
+	*HttpEndpoint
 }

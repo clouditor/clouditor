@@ -25,9 +25,7 @@
 
 package voc
 
-type HasGeoLocation interface {
-	GeoLocation() GeoLocation
+type Authenticity struct {
+	*SecurityFeature
 }
 
-type GeoLocation struct {
-}

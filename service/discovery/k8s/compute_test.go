@@ -53,7 +53,7 @@ func TestListPods(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
 
-	container, ok := list[0].(*voc.ContainerResource)
+	container, ok := list[0].(*voc.Container)
 
 	assert.True(t, ok)
 	assert.Equal(t, "my-pod", container.Name)
