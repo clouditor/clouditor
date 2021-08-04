@@ -25,8 +25,10 @@
 
 package voc
 
-type CloudResourceGroup struct {
-
-	CloudResource	*[]CloudResource `json:"cloudResource"`
+type ContainerOrchestration struct {
+	*CloudResource
+	Containers	[]ResourceID `json:"containers"`
+	ResourceLogging	[]ResourceID `json:"resourceLogging"`
+	ManagementUrl	string `json:"managementUrl"`
 }
 

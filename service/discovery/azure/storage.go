@@ -111,7 +111,7 @@ func handleStorageAccount(account *storage.Account) voc.IsStorage {
 				Type:         []string{"ObjectStorage", "Storage", "Resource"},
 			},
 			AtRestEncryption: &voc.AtRestEncryption{
-				Keymanager: string(account.Encryption.KeySource),
+				KeyManager: string(account.Encryption.KeySource),
 				Algorithm:  "AES-265", // seems to be always AES-256
 				Enabled:    to.Bool(account.Encryption.Services.Blob.Enabled),
 			},
