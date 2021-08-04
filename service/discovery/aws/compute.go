@@ -147,17 +147,12 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachineResour
 }
 
 // discoverFunctions discovers all lambda functions
-// TODO(all): lastModified for creation Time?
-// TODO(all): lambda can have "elastic network interfaces" if it is connected to a VPC. But you only get IDs of SecGroup, Subnet and VPC
-// TODO(lebogg): FunctionVersion in input to ALL?
-// TODO(lebogg): "Lambda returns up to 50 functions per call" -> Whats when there are >50? I think "NextMarker" (string)
-// TODO(lebogg): are lambdas tied to region?
+// TODO(all): FunctionVersion in input to ALL ok?
+// TODO(oxisto): Is this good code? (with "for hasNextMarker" loop)
 func (d *computeDiscovery) discoverFunctions() ([]voc.FunctionResource, error) {
-	input := &lambda.ListFunctionsInput{
+	resp, err := d.functionAPI.ListFunctions(context.TODO(), &lambda.ListFunctionsInput{
 		FunctionVersion: types2.FunctionVersionAll,
-	}
-
-	resp, err := d.functionAPI.ListFunctions(context.TODO(), input)
+	})
 
 	if err != nil {
 		var ae smithy.APIError
@@ -168,30 +163,51 @@ func (d *computeDiscovery) discoverFunctions() ([]voc.FunctionResource, error) {
 	}
 
 	var resources []voc.FunctionResource
-	for _, function := range resp.Functions {
-		lastModified, err := parseTime(function.LastModified)
+	resources = append(resources, d.iterateThroughFunctions(resp.Functions)...)
+
+	hasNextMarker := resp.NextMarker != nil
+	for hasNextMarker {
+		resp, err = d.functionAPI.ListFunctions(context.TODO(), &lambda.ListFunctionsInput{
+			Marker:          resp.NextMarker,
+			FunctionVersion: types2.FunctionVersionAll,
+		})
 		if err != nil {
-			return resources, err
+			var ae smithy.APIError
+			if errors.As(err, &ae) {
+				err = formatError(ae)
+			}
+			return nil, err
 		}
+		resources = append(resources, d.iterateThroughFunctions(resp.Functions)...)
+		hasNextMarker = resp.NextMarker != nil
+	}
+
+	return resources, nil
+}
+
+// TODO(lebogg): Are the loops memory efficient or should I use pointers (as previously done)
+func (d *computeDiscovery) iterateThroughFunctions(functions []types2.FunctionConfiguration) (resources []voc.FunctionResource) {
+	for _, function := range functions {
 		resources = append(resources, voc.FunctionResource{
 			ComputeResource: voc.ComputeResource{
 				Resource: voc.Resource{
 					ID:           voc.ResourceID(aws.ToString(function.FunctionArn)),
 					Name:         aws.ToString(function.FunctionName),
-					CreationTime: lastModified,
+					CreationTime: -1,
 					Type:         []string{"Function", "Compute", "Resource"},
 				},
-				// TODO(lebogg): Can I retrieve network interface IDs? (VPC ID possible)
+				// TODO(all): lambda can have "elastic network interfaces" if it is connected to a VPC. But you only get IDs of SecGroup, Subnet and VPC
 				NetworkInterfaces: nil,
-			},
-		})
+			}})
 	}
-	return resources, nil
+	return
 }
 
 // parseTime parses the time provided by AWS (ISO 8601 format)
 func parseTime(t *string) (int64, error) {
-	parsedT, err := time.Parse(time.RFC3339, *t)
+	// TODO(lebogg): used AWS method ToString to avoid nil pointer referencing. Good?
+	parsedT, err := time.Parse(time.RFC3339, aws.ToString(t))
+	// TODO(all): Should we throw error or return 0 (if wrong format is given)
 	if err != nil {
 		return 0, err
 	}
@@ -205,7 +221,7 @@ func formatError(ae smithy.APIError) error {
 }
 
 // getLogsOfVM checks if logging is enabled
-// TODO(all): Currently there is no option to find out if logs are enabled -> Default value false?
+// Currently there is no option to find out if logs are enabled -> Default value false
 func (d *computeDiscovery) getLogsOfVM(_ *types.Instance) (l *voc.Log) {
 	l = new(voc.Log)
 	l.Enabled = false
@@ -241,7 +257,6 @@ func (d *computeDiscovery) getNameOfVM(vm *types.Instance) string {
 
 // getARNOfVM generates the ARN of a VM instance
 func (d computeDiscovery) getARNOfVM(vm *types.Instance) voc.ResourceID {
-	// TODO(lebogg): Get Account ID
 	return voc.ResourceID("arn:aws:ec2:" +
 		d.awsConfig.Cfg.Region + ":" +
 		aws.ToString(d.awsConfig.accountID) +

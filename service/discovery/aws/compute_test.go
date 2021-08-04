@@ -68,6 +68,10 @@ type mockEC2APIWithErrors struct {
 type mockLambdaAPI struct {
 }
 
+// mockLambdaAPI implements the LambdaAPI interface for mock testing if >50 Lambda functions are discovered (not only 50)
+type mockLambdaAPI51LambdaFunctions struct {
+}
+
 // mockLambdaAPIWithTimeParseError implements the LambdaAPI interface (API call returning error) for mock testing
 type mockLambdaAPIWithTimeParseError struct {
 }
@@ -89,6 +93,36 @@ func (m mockLambdaAPI) ListFunctions(_ context.Context, _ *lambda.ListFunctionsI
 		NextMarker:     nil,
 		ResultMetadata: middleware.Metadata{},
 	}, nil
+}
+
+func (m mockLambdaAPI51LambdaFunctions) ListFunctions(_ context.Context, input *lambda.ListFunctionsInput, _ ...func(*lambda.Options)) (output *lambda.ListFunctionsOutput, err error) {
+	var lambdaFunctions []lambdaTypes.FunctionConfiguration
+	nextMarker := "ShowNext"
+	if input.Marker == nil {
+		// TODO(lebogg): Remove later
+		for i := 0; i < 50; i++ {
+			lambdaFunctions = append(lambdaFunctions, lambdaTypes.FunctionConfiguration{
+				// We have to set a time in a right format, otherwise the discoverer fails (parse error)
+				LastModified: aws.String(mockFunction1CreationTime),
+			})
+		}
+		output = &lambda.ListFunctionsOutput{
+			Functions:  lambdaFunctions,
+			NextMarker: aws.String(nextMarker),
+		}
+	} else if *input.Marker == nextMarker {
+		for i := 0; i < 5; i++ {
+			lambdaFunctions = append(lambdaFunctions, lambdaTypes.FunctionConfiguration{
+				// We have to set a time in a right format, otherwise the discoverer fails (parse error)
+				LastModified: aws.String(mockFunction1CreationTime),
+			})
+		}
+		output = &lambda.ListFunctionsOutput{
+			Functions:  lambdaFunctions,
+			NextMarker: nil,
+		}
+	}
+	return
 }
 
 // ListFunctions is the method implementation of the LambdaAPI interface
@@ -308,7 +342,7 @@ func Test_computeDiscovery_discoverFunctions(t *testing.T) {
 		isDiscovering     bool
 		awsConfig         *Client
 	}
-	creationTime, _ := time.Parse(time.RFC3339, mockFunction1CreationTime)
+	// creationTime, _ := time.Parse(time.RFC3339, mockFunction1CreationTime)
 	tests := []struct {
 		name    string
 		fields  fields
@@ -326,7 +360,7 @@ func Test_computeDiscovery_discoverFunctions(t *testing.T) {
 					Resource: voc.Resource{
 						ID:           mockFunction1ID,
 						Name:         mockFunction1,
-						CreationTime: creationTime.Unix(),
+						CreationTime: -1,
 						Type:         []string{"Function", "Compute", "Resource"},
 					},
 					NetworkInterfaces: nil,
@@ -334,14 +368,15 @@ func Test_computeDiscovery_discoverFunctions(t *testing.T) {
 			},
 			false,
 		},
-		{
-			"Test case 2 (time parse error)",
-			fields{
-				functionAPI: mockLambdaAPIWithTimeParseError{},
-			},
-			nil,
-			true,
-		},
+		// Don't use lastModified as creationTime anymore -> Save for later use when we may add lastModified
+		//{
+		//	"Test case 2 (time parse error)",
+		//	fields{
+		//		functionAPI: mockLambdaAPIWithTimeParseError{},
+		//	},
+		//	nil,
+		//	true,
+		//},
 		{
 			"Test case 3 (API error)",
 			fields{
@@ -369,6 +404,16 @@ func Test_computeDiscovery_discoverFunctions(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Test_computeDiscovery_discover55Functions tests the case where two API Calls have to be made due to limit of returned functions
+func Test_computeDiscovery_discover55Functions(t *testing.T) {
+	d := computeDiscovery{
+		functionAPI: mockLambdaAPI51LambdaFunctions{},
+	}
+	functions, err := d.discoverFunctions()
+	assert.Nil(t, err)
+	assert.Less(t, 50, len(functions))
 }
 
 func Test_computeDiscovery_NewComputeDiscovery(t *testing.T) {
