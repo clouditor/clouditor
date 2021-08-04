@@ -107,13 +107,13 @@ func TestListIngresses(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "my-ingress", lb.Name)
 	assert.Equal(t, "/namespaces/my-namespace/ingresses/my-ingress", string(lb.ID))
-	assert.Equal(t, "http://myhost/test", string((*lb.HttpEndpoint)[0].Url))
+	assert.Equal(t, "http://myhost/test", string((*lb.HttpEndpoints)[0].Url))
 
 	lb, ok = list[2].(*voc.LoadBalancer)
 
 	assert.True(t, ok)
 	assert.Equal(t, "my-other-ingress", lb.Name)
 	assert.Equal(t, "/namespaces/my-namespace/ingresses/my-other-ingress", string(lb.ID))
-	assert.Equal(t, "https://myhost/test", string((*lb.HttpEndpoint)[0].Url))
-	assert.NotNil(t, (*lb.HttpEndpoint)[0].TransportEncryption)
+	assert.Equal(t, "https://myhost/test", string((*lb.HttpEndpoints)[0].Url))
+	assert.NotNil(t, (*lb.HttpEndpoints)[0].TransportEncryption)
 }

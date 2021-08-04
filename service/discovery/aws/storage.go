@@ -222,9 +222,9 @@ func (d *awsS3Discovery) getEncryptionAtRest(bucket string) (e *voc.AtRestEncryp
 	}
 	e.Algorithm = string(resp.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm)
 	if e.Algorithm == string(types.ServerSideEncryptionAes256) {
-		e.Keymanager = "SSE-S3"
+		e.KeyManager = "SSE-S3"
 	} else {
-		e.Keymanager = "SSE-KMS"
+		e.KeyManager = "SSE-KMS"
 	}
 	e.Enabled = true
 	return

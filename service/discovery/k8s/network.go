@@ -125,7 +125,7 @@ func (k k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 		},
 		// TODO(oxisto): fill out access restrictions
 		AccessRestriction: &voc.AccessRestriction{},
-		HttpEndpoint:      &[]voc.HttpEndpoint{},
+		HttpEndpoints:     &[]voc.HttpEndpoint{},
 	}
 
 	for _, rule := range ingress.Spec.Rules {
@@ -161,7 +161,7 @@ func (k k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 			// 	TransportEncryption: te,
 			// }
 
-			*lb.HttpEndpoint = append(*lb.HttpEndpoint, http)
+			*lb.HttpEndpoints = append(*lb.HttpEndpoints, http)
 		}
 	}
 

@@ -25,9 +25,8 @@
 
 package voc
 
-type Container struct {
-	*Compute
-	Image	[]ResourceID `json:"image"`
-	NetworkInterface	[]ResourceID `json:"networkInterface"`
+type DatabaseQuery struct {
+	*DatabaseOperation
+	Modify	bool `json:"modify"`
 }
 

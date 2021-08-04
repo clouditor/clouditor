@@ -25,9 +25,8 @@
 
 package voc
 
-type Container struct {
-	*Compute
-	Image	[]ResourceID `json:"image"`
-	NetworkInterface	[]ResourceID `json:"networkInterface"`
+type CloudResourceGroup struct {
+
+	CloudResources	*[]CloudResource `json:"cloudResources"`
 }
 

@@ -25,7 +25,10 @@
 
 package voc
 
-type DatabaseService struct {
-	*CloudResource
+type HttpRequestHandler struct {
+	*Functionality
+	Application	*Application `json:"application"`
+	HttpEndpoints	*[]HttpEndpoint `json:"httpEndpoints"`
+	Path	string `json:"path"`
 }
 

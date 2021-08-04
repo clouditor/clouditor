@@ -222,7 +222,7 @@ func (d *azureIacTemplateDiscovery) createStorageResource(resourceValue map[stri
 				Type:         []string{"ObjectStorage", "Storage", "Resource"},
 			},
 			AtRestEncryption: &voc.AtRestEncryption{
-				Keymanager: getStorageKeySource(resourceValue),
+				KeyManager: getStorageKeySource(resourceValue),
 				Algorithm:  "AES-265", // seems to be always AWS-256,
 				Enabled:    blobServiceEncryptionEnabled(resourceValue),
 			},
@@ -316,7 +316,7 @@ func (d *azureIacTemplateDiscovery) createLBResource(resourceValue map[string]in
 			Inbound:         false,
 			RestrictedPorts: "",
 		},
-		HttpEndpoint: &[]voc.HttpEndpoint{},
+		HttpEndpoints: &[]voc.HttpEndpoint{},
 		// // TODO(all): Do we need the httpEndpoint?
 		// HttpEndpoint: &voc.HttpEndpoint{},
 	}
