@@ -172,7 +172,7 @@ func (d *awsS3Discovery) getBuckets() (buckets []bucket, err error) {
 	if err != nil {
 		var ae smithy.APIError
 		if errors.As(err, &ae) {
-			err = fmt.Errorf("code: %v, fault: %v, message: %v", ae.ErrorCode(), ae.ErrorFault(), ae.ErrorMessage())
+			err = formatError(ae)
 		}
 		return
 	}
@@ -214,7 +214,7 @@ func (d *awsS3Discovery) getEncryptionAtRest(bucket string) (e *voc.AtRestEncryp
 				return
 			}
 			// Any other error is a connection error with AWS : Format err and return it
-			err = fmt.Errorf("code: %v, fault: %v, message: %v", ae.ErrorCode(), ae.ErrorFault(), ae.ErrorMessage())
+			err = formatError(ae)
 		}
 		// return any error (but according to doc: "All service API response errors implement the smithy.APIError")
 		return
@@ -256,7 +256,7 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (encryptionAtTran
 				return
 			}
 			// Any other error is a connection error with AWS : Format err and return it
-			err = fmt.Errorf("code: %v, message: %s, fault: %v", ae.ErrorCode(), ae.ErrorMessage(), ae.ErrorFault())
+			err = formatError(ae)
 		}
 		// return any error (but according to doc: "All service API response errors implement the smithy.APIError")
 		return

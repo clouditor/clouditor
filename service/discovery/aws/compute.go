@@ -28,18 +28,15 @@
 package aws
 
 import (
-	"context"
-	"errors"
-	"fmt"
-	"github.com/aws/aws-sdk-go-v2/service/lambda"
-	types2 "github.com/aws/aws-sdk-go-v2/service/lambda/types"
-	"time"
-
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
+	"context"
+	"errors"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/aws/aws-sdk-go-v2/service/lambda"
+	types2 "github.com/aws/aws-sdk-go-v2/service/lambda/types"
 	"github.com/aws/smithy-go"
 )
 
@@ -59,7 +56,6 @@ type EC2API interface {
 }
 
 // LambdaAPI describes the lambda api interface (for mock testing)
-// TODO(lebogg): Is there a way to squash both, EC2 and lambda, into one interface?
 type LambdaAPI interface {
 	ListFunctions(ctx context.Context,
 		params *lambda.ListFunctionsInput, optFns ...func(*lambda.Options)) (*lambda.ListFunctionsOutput, error)
@@ -108,7 +104,6 @@ func (d computeDiscovery) List() (resources []voc.IsResource, err error) {
 }
 
 // discoverVirtualMachines discovers all VMs (in the current region)
-// TODO(all): Do we want to cover all VMs or only VMs in current region?
 func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachineResource, error) {
 	resp, err := d.virtualMachineAPI.DescribeInstances(context.TODO(), &ec2.DescribeInstancesInput{})
 	if err != nil {
@@ -126,10 +121,8 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachineResour
 				Resource: voc.Resource{
 					ID:   d.getARNOfVM(vm),
 					Name: d.getNameOfVM(vm),
-					// TODO(all): Currently only the launch time can be derived directly. We could derive the creation
-					// time of the attached volume. But this 1st) requires an additional API Call. It is 2nd) a rather
-					// ugly solution since although it is likely to be not detached, it is NOT guaranteed.
-					CreationTime: vm.LaunchTime.Unix(),
+					// TODO(all): -1 or 0 as default value when no creation time is available?
+					CreationTime: -1,
 					Type:         []string{"VirtualMachine", "Compute", "Resource"},
 				},
 				NetworkInterfaces: d.getNetworkInterfacesOfVM(vm),
@@ -138,8 +131,7 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachineResour
 			resources = append(resources, voc.VirtualMachineResource{
 				ComputeResource: computeResource,
 				BlockStorage:    d.getBlockStorageIDsOfVM(vm),
-				// TODO(lebogg): How to derive logs
-				Log: d.getLogsOfVM(vm),
+				Log:             d.getLogsOfVM(vm),
 			})
 		}
 	}
@@ -147,9 +139,10 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachineResour
 }
 
 // discoverFunctions discovers all lambda functions
-// TODO(all): FunctionVersion in input to ALL ok?
-// TODO(oxisto): Is this good code? (with "for hasNextMarker" loop)
+// TODO(all): FunctionVersion in input to ALL ok? (=all versions of a lambda functions are discovered)
+// TODO(oxisto): Is this a good approach with "for hasNextMarker" loop (I would use overloaded methods - not in Go)
 func (d *computeDiscovery) discoverFunctions() ([]voc.FunctionResource, error) {
+	// 'listFunctions' discovers up to 50 Lambda functions per execution
 	resp, err := d.functionAPI.ListFunctions(context.TODO(), &lambda.ListFunctionsInput{
 		FunctionVersion: types2.FunctionVersionAll,
 	})
@@ -163,8 +156,10 @@ func (d *computeDiscovery) discoverFunctions() ([]voc.FunctionResource, error) {
 	}
 
 	var resources []voc.FunctionResource
-	resources = append(resources, d.iterateThroughFunctions(resp.Functions)...)
+	resources = append(resources, d.getFunctionResources(resp.Functions)...)
 
+	// Execute 'listFunctions' in a loop until all Lambda functions are discovered
+	// If nextMarker in resp is set, more functions are discovered (setting this marker in the input parameter)
 	hasNextMarker := resp.NextMarker != nil
 	for hasNextMarker {
 		resp, err = d.functionAPI.ListFunctions(context.TODO(), &lambda.ListFunctionsInput{
@@ -178,21 +173,23 @@ func (d *computeDiscovery) discoverFunctions() ([]voc.FunctionResource, error) {
 			}
 			return nil, err
 		}
-		resources = append(resources, d.iterateThroughFunctions(resp.Functions)...)
+		resources = append(resources, d.getFunctionResources(resp.Functions)...)
 		hasNextMarker = resp.NextMarker != nil
 	}
 
 	return resources, nil
 }
 
-// TODO(lebogg): Are the loops memory efficient or should I use pointers (as previously done)
-func (d *computeDiscovery) iterateThroughFunctions(functions []types2.FunctionConfiguration) (resources []voc.FunctionResource) {
-	for _, function := range functions {
+// getFunctionResources iterates functionConfigurations and returns a list of corresponding FunctionResources
+func (d *computeDiscovery) getFunctionResources(functions []types2.FunctionConfiguration) (resources []voc.FunctionResource) {
+	for i := range functions {
+		function := &functions[i]
 		resources = append(resources, voc.FunctionResource{
 			ComputeResource: voc.ComputeResource{
 				Resource: voc.Resource{
-					ID:           voc.ResourceID(aws.ToString(function.FunctionArn)),
-					Name:         aws.ToString(function.FunctionName),
+					ID:   voc.ResourceID(aws.ToString(function.FunctionArn)),
+					Name: aws.ToString(function.FunctionName),
+					// TODO(all): -1 or 0 as default value when no creation time is available?
 					CreationTime: -1,
 					Type:         []string{"Function", "Compute", "Resource"},
 				},
@@ -204,21 +201,14 @@ func (d *computeDiscovery) iterateThroughFunctions(functions []types2.FunctionCo
 }
 
 // parseTime parses the time provided by AWS (ISO 8601 format)
-func parseTime(t *string) (int64, error) {
-	// TODO(lebogg): used AWS method ToString to avoid nil pointer referencing. Good?
-	parsedT, err := time.Parse(time.RFC3339, aws.ToString(t))
-	// TODO(all): Should we throw error or return 0 (if wrong format is given)
-	if err != nil {
-		return 0, err
-	}
-	return parsedT.Unix(), nil
-}
-
-// formatError returns AWS API specific error code transformed into the default error type
-// TODO(lebogg): Try in other discoverer (e.g. storage) and maybe put it in aws.go
-func formatError(ae smithy.APIError) error {
-	return fmt.Errorf("code: %v, fault: %v, message: %v", ae.ErrorCode(), ae.ErrorFault(), ae.ErrorMessage())
-}
+//func parseTime(t *string) (int64, error) {
+//	parsedT, err := time.Parse(time.RFC3339, aws.ToString(t))
+//	// Should we throw error or return 0 (if wrong format is given)
+//	if err != nil {
+//		return 0, err
+//	}
+//	return parsedT.Unix(), nil
+//}
 
 // getLogsOfVM checks if logging is enabled
 // Currently there is no option to find out if logs are enabled -> Default value false
@@ -228,7 +218,7 @@ func (d *computeDiscovery) getLogsOfVM(_ *types.Instance) (l *voc.Log) {
 	return
 }
 
-// getBlockStorageIDsOfVM returns block storages IDs by iterating through the VMs block storages
+// getBlockStorageIDsOfVM returns block storages IDs by iterating the VMs block storages
 func (d *computeDiscovery) getBlockStorageIDsOfVM(vm *types.Instance) (blockStorageIDs []voc.ResourceID) {
 	for _, mapping := range vm.BlockDeviceMappings {
 		blockStorageIDs = append(blockStorageIDs, voc.ResourceID(aws.ToString(mapping.Ebs.VolumeId)))
@@ -236,7 +226,7 @@ func (d *computeDiscovery) getBlockStorageIDsOfVM(vm *types.Instance) (blockStor
 	return
 }
 
-// getNetworkInterfacesOfVM returns the network interface IDs by iterating through the VMs network interfaces
+// getNetworkInterfacesOfVM returns the network interface IDs by iterating the VMs network interfaces
 func (d *computeDiscovery) getNetworkInterfacesOfVM(vm *types.Instance) (networkInterfaceIDs []voc.ResourceID) {
 	for _, networkInterface := range vm.NetworkInterfaces {
 		networkInterfaceIDs = append(networkInterfaceIDs, voc.ResourceID(aws.ToString(networkInterface.NetworkInterfaceId)))

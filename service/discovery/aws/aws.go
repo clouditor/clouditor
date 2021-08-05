@@ -29,9 +29,11 @@ package aws
 
 import (
 	"context"
+	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
+	"github.com/aws/smithy-go"
 	"github.com/sirupsen/logrus"
 )
 
@@ -69,4 +71,9 @@ func NewClient() (*Client, error) {
 	c.accountID = resp.Account
 
 	return c, err
+}
+
+// formatError returns AWS API specific error code transformed into the default error type
+func formatError(ae smithy.APIError) error {
+	return fmt.Errorf("code: %v, fault: %v, message: %v", ae.ErrorCode(), ae.ErrorFault(), ae.ErrorMessage())
 }

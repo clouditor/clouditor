@@ -99,7 +99,6 @@ func (m mockLambdaAPI51LambdaFunctions) ListFunctions(_ context.Context, input *
 	var lambdaFunctions []lambdaTypes.FunctionConfiguration
 	nextMarker := "ShowNext"
 	if input.Marker == nil {
-		// TODO(lebogg): Remove later
 		for i := 0; i < 50; i++ {
 			lambdaFunctions = append(lambdaFunctions, lambdaTypes.FunctionConfiguration{
 				// We have to set a time in a right format, otherwise the discoverer fails (parse error)
@@ -267,8 +266,7 @@ func Test_computeDiscovery_discoverVirtualMachines(t *testing.T) {
 	assert.NotEmpty(t, testMachine.BlockStorage)
 	assert.False(t, testMachine.Log.Enabled)
 	assert.NotEmpty(t, testMachine.NetworkInterfaces)
-	expectedCreationTime, _ := time.Parse(time.RFC3339, mockVMCreationTime)
-	assert.Equal(t, expectedCreationTime.Unix(), testMachine.CreationTime)
+	assert.Equal(t, int64(-1), testMachine.CreationTime)
 
 	d = computeDiscovery{
 		virtualMachineAPI: mockEC2APIWithErrors{},
@@ -360,7 +358,7 @@ func Test_computeDiscovery_discoverFunctions(t *testing.T) {
 					Resource: voc.Resource{
 						ID:           mockFunction1ID,
 						Name:         mockFunction1,
-						CreationTime: -1,
+						CreationTime: int64(-1),
 						Type:         []string{"Function", "Compute", "Resource"},
 					},
 					NetworkInterfaces: nil,
