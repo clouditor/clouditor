@@ -83,7 +83,7 @@ func (d computeDiscovery) Name() string {
 }
 
 // List is the method implementation defined in the discovery.Discoverer interface
-func (d computeDiscovery) List() (resources []voc.IsResource, err error) {
+func (d computeDiscovery) List() (resources []voc.IsCloudResource, err error) {
 	listOfVMs, err := d.discoverVirtualMachines()
 	if err != nil {
 		return
@@ -104,7 +104,7 @@ func (d computeDiscovery) List() (resources []voc.IsResource, err error) {
 }
 
 // discoverVirtualMachines discovers all VMs (in the current region)
-func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachineResource, error) {
+func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachine, error) {
 	resp, err := d.virtualMachineAPI.DescribeInstances(context.TODO(), &ec2.DescribeInstancesInput{})
 	if err != nil {
 		var ae smithy.APIError
@@ -113,25 +113,25 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachineResour
 		}
 		return nil, err
 	}
-	var resources []voc.VirtualMachineResource
+	var resources []voc.VirtualMachine
 	for _, reservation := range resp.Reservations {
 		for i := range reservation.Instances {
 			vm := &reservation.Instances[i]
-			computeResource := voc.ComputeResource{
-				Resource: voc.Resource{
+			computeResource := &voc.Compute{
+				CloudResource: &voc.CloudResource{
 					ID:   d.getARNOfVM(vm),
 					Name: d.getNameOfVM(vm),
 					// TODO(all): -1 or 0 as default value when no creation time is available?
 					CreationTime: -1,
 					Type:         []string{"VirtualMachine", "Compute", "Resource"},
 				},
-				NetworkInterfaces: d.getNetworkInterfacesOfVM(vm),
 			}
 
-			resources = append(resources, voc.VirtualMachineResource{
-				ComputeResource: computeResource,
-				BlockStorage:    d.getBlockStorageIDsOfVM(vm),
-				Log:             d.getLogsOfVM(vm),
+			resources = append(resources, voc.VirtualMachine{
+				Compute:          computeResource,
+				NetworkInterface: d.getNetworkInterfacesOfVM(vm),
+				BlockStorage:     d.getBlockStorageIDsOfVM(vm),
+				Log:              d.getLogsOfVM(vm),
 			})
 		}
 	}
@@ -141,7 +141,7 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachineResour
 // discoverFunctions discovers all lambda functions
 // TODO(all): FunctionVersion in input to ALL ok? (=all versions of a lambda functions are discovered)
 // TODO(oxisto): Is this a good approach with "for hasNextMarker" loop (I would use overloaded methods - not in Go)
-func (d *computeDiscovery) discoverFunctions() ([]voc.FunctionResource, error) {
+func (d *computeDiscovery) discoverFunctions() ([]voc.Function, error) {
 	// 'listFunctions' discovers up to 50 Lambda functions per execution
 	resp, err := d.functionAPI.ListFunctions(context.TODO(), &lambda.ListFunctionsInput{
 		FunctionVersion: types2.FunctionVersionAll,
@@ -155,7 +155,7 @@ func (d *computeDiscovery) discoverFunctions() ([]voc.FunctionResource, error) {
 		return nil, err
 	}
 
-	var resources []voc.FunctionResource
+	var resources []voc.Function
 	resources = append(resources, d.getFunctionResources(resp.Functions)...)
 
 	// Execute 'listFunctions' in a loop until all Lambda functions are discovered
@@ -181,20 +181,18 @@ func (d *computeDiscovery) discoverFunctions() ([]voc.FunctionResource, error) {
 }
 
 // getFunctionResources iterates functionConfigurations and returns a list of corresponding FunctionResources
-func (d *computeDiscovery) getFunctionResources(functions []types2.FunctionConfiguration) (resources []voc.FunctionResource) {
+func (d *computeDiscovery) getFunctionResources(functions []types2.FunctionConfiguration) (resources []voc.Function) {
 	for i := range functions {
 		function := &functions[i]
-		resources = append(resources, voc.FunctionResource{
-			ComputeResource: voc.ComputeResource{
-				Resource: voc.Resource{
+		resources = append(resources, voc.Function{
+			Compute: &voc.Compute{
+				CloudResource: &voc.CloudResource{
 					ID:   voc.ResourceID(aws.ToString(function.FunctionArn)),
 					Name: aws.ToString(function.FunctionName),
 					// TODO(all): -1 or 0 as default value when no creation time is available?
 					CreationTime: -1,
 					Type:         []string{"Function", "Compute", "Resource"},
 				},
-				// TODO(all): lambda can have "elastic network interfaces" if it is connected to a VPC. But you only get IDs of SecGroup, Subnet and VPC
-				NetworkInterfaces: nil,
 			}})
 	}
 	return
@@ -214,7 +212,7 @@ func (d *computeDiscovery) getFunctionResources(functions []types2.FunctionConfi
 // Currently there is no option to find out if logs are enabled -> Default value false
 func (d *computeDiscovery) getLogsOfVM(_ *types.Instance) (l *voc.Log) {
 	l = new(voc.Log)
-	l.Enabled = false
+	l.Activated = false
 	return
 }
 

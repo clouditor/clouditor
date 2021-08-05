@@ -264,8 +264,7 @@ func Test_computeDiscovery_discoverVirtualMachines(t *testing.T) {
 	assert.Equal(t, mockVM1, testMachine.Name)
 	assert.Equal(t, voc.ResourceID("arn:aws:ec2:eu-central-1:MockAccountID1234:instance/mockVM1ID"), testMachine.ID)
 	assert.NotEmpty(t, testMachine.BlockStorage)
-	assert.False(t, testMachine.Log.Enabled)
-	assert.NotEmpty(t, testMachine.NetworkInterfaces)
+	assert.False(t, testMachine.Log.Activated)
 	assert.Equal(t, int64(-1), testMachine.CreationTime)
 
 	d = computeDiscovery{
@@ -344,7 +343,7 @@ func Test_computeDiscovery_discoverFunctions(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    []voc.FunctionResource
+		want    []voc.Function
 		wantErr bool
 	}{
 		// Test cases
@@ -353,15 +352,14 @@ func Test_computeDiscovery_discoverFunctions(t *testing.T) {
 			fields{
 				functionAPI: mockLambdaAPI{},
 			},
-			[]voc.FunctionResource{
-				{ComputeResource: voc.ComputeResource{
-					Resource: voc.Resource{
+			[]voc.Function{
+				{Compute: &voc.Compute{
+					CloudResource: &voc.CloudResource{
 						ID:           mockFunction1ID,
 						Name:         mockFunction1,
 						CreationTime: int64(-1),
 						Type:         []string{"Function", "Compute", "Resource"},
 					},
-					NetworkInterfaces: nil,
 				}},
 			},
 			false,
