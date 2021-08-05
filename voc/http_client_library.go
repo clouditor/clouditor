@@ -23,65 +23,9 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package voc_test
+package voc
 
-import (
-	"encoding/json"
-	"fmt"
-	"os"
-	"testing"
-
-	"clouditor.io/clouditor/policies"
-	"clouditor.io/clouditor/voc"
-)
-
-func TestGraph(t *testing.T) {
-	// lets build a graph consisting of a network interface and a VM
-	ni := voc.NetworkInterface{
-		NetworkResource: voc.NetworkResource{
-			Resource: voc.Resource{
-				ID: "my-network-interface",
-			},
-		},
-	}
-
-	vm := voc.VirtualMachineResource{
-		ComputeResource: voc.ComputeResource{
-			Resource: voc.Resource{
-				ID: "my-vm",
-			},
-		},
-	}
-
-	// connect both
-	ni.AttachedTo = vm.ID
-	vm.NetworkInterfaces = append(vm.NetworkInterfaces, ni.ID)
-
-	out, err := json.Marshal(vm)
-
-	fmt.Printf("%+v\n", err)
-	fmt.Printf("%s\n", string(out))
-
-	// make sure, that we are in the clouditor root folder to find the policies
-	err = os.Chdir("../")
-	if err != nil {
-		panic(err)
-	}
-
-	tls := map[string]interface{}{
-		"enabled": true,
-	}
-
-	m := map[string]interface{}{
-		"httpEndpoint": map[string]interface{}{
-			"transportEncryption": &tls,
-		},
-	}
-
-	tls["cycle"] = &m
-
-	data, err := policies.RunMap("policies/metric1.rego", m)
-
-	fmt.Printf("%+v\n", err)
-	fmt.Printf("%+v\n", data)
+type HttpClientLibrary struct {
+	*Framework
 }
+

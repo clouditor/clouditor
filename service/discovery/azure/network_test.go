@@ -135,10 +135,10 @@ func TestNetwork(t *testing.T) {
 	assert.Equal(t, "iface1", iface.Name)
 	assert.Equal(t, "*", iface.AccessRestriction.RestrictedPorts)
 
-	lb, ok := list[1].(*voc.LoadBalancerResource)
+	lb, ok := list[1].(*voc.LoadBalancer)
 
 	assert.True(t, ok)
 	assert.Equal(t, "lb1", lb.Name)
 	assert.Equal(t, int16(1234), lb.Ports[0])
-	assert.Equal(t, "111.222.333.444", lb.IPs[0])
+	assert.Equal(t, "111.222.333.444", lb.Ips[0])
 }

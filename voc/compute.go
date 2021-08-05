@@ -25,37 +25,7 @@
 
 package voc
 
-type HasAccessRestriction interface {
-	GetAccessRestriction() *AccessRestriction
+type Compute struct {
+	*CloudResource
 }
 
-type IsCompute interface {
-	IsResource
-}
-
-type ComputeResource struct {
-	Resource
-
-	NetworkInterfaces []ResourceID `json:"networkInterfaces"`
-}
-
-// Virtual Machine
-type VirtualMachineResource struct {
-	ComputeResource
-
-	BlockStorage []ResourceID `json:"blockStorage"`
-	Log          *Log         `json:"log"`
-}
-
-// Functions
-type FunctionResource struct {
-	ComputeResource
-}
-
-func (v *VirtualMachineResource) GetLog() *Log {
-	return v.Log
-}
-
-type ContainerResource struct {
-	ComputeResource
-}

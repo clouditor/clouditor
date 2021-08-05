@@ -177,11 +177,11 @@ func TestIacDiscovery(t *testing.T) {
 	assert.NotNil(t, list)
 	assert.Equal(t, 7, len(list))
 
-	resourceVM, ok := list[0].(*voc.VirtualMachineResource)
+	resourceVM, ok := list[0].(*voc.VirtualMachine)
 	assert.True(t, ok)
 	assert.Equal(t, "vm1", resourceVM.Name)
 
-	resourceStorage, ok := list[2].(*voc.ObjectStorageResource)
+	resourceStorage, ok := list[2].(*voc.ObjectStorage)
 	assert.True(t, ok)
 
 	// That should be equal. The Problem is described in file 'service/discovery/azure/iac_template.go'

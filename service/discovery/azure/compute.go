@@ -63,7 +63,7 @@ func (d *azureComputeDiscovery) Description() string {
 }
 
 // Discover compute resources
-func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
+func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 	if err = d.authorize(); err != nil {
 		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
 	}
@@ -86,8 +86,8 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 }
 
 // Discover function
-func (d *azureComputeDiscovery) discoverFunction() ([]voc.IsResource, error) {
-	var list []voc.IsResource
+func (d *azureComputeDiscovery) discoverFunction() ([]voc.IsCloudResource, error) {
+	var list []voc.IsCloudResource
 
 	client := web.NewAppsClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
@@ -107,23 +107,22 @@ func (d *azureComputeDiscovery) discoverFunction() ([]voc.IsResource, error) {
 }
 
 func (d *azureComputeDiscovery) handleFunction(function *web.Site) voc.IsCompute {
-	return &voc.FunctionResource{
-		ComputeResource: voc.ComputeResource{
-			Resource: voc.Resource{
+	return &voc.Function{
+		Compute: &voc.Compute{
+			CloudResource: &voc.CloudResource{
 				ID:           voc.ResourceID(to.String(function.ID)),
 				Name:         to.String(function.Name),
 				CreationTime: 0, // No creation time available
 				Type:         []string{"Function", "Compute", "Resource"},
 			},
-			NetworkInterfaces: nil, // TBD
 		},
 	}
 
 }
 
 // Discover virtual machines
-func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsResource, error) {
-	var list []voc.IsResource
+func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource, error) {
+	var list []voc.IsCloudResource
 
 	client := compute.NewVirtualMachinesClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
@@ -150,16 +149,19 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsResource, err
 
 func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine) (voc.IsCompute, error) {
 
-	r := &voc.VirtualMachineResource{
-		ComputeResource: voc.ComputeResource{
-			Resource: voc.Resource{
+	r := &voc.VirtualMachine{
+		Compute: &voc.Compute{
+			CloudResource: &voc.CloudResource{
 				ID:           voc.ResourceID(to.String(vm.ID)),
 				Name:         to.String(vm.Name),
 				CreationTime: 0, // No creation time available
 				Type:         []string{"VirtualMachine", "Compute", "Resource"},
 			}},
 		Log: &voc.Log{
-			Enabled: IsBootDiagnosticEnabled(vm),
+			Activated: IsBootDiagnosticEnabled(vm),
+			Auditing: &voc.Auditing{
+				SecurityFeature: &voc.SecurityFeature{},
+			},
 		},
 	}
 
@@ -170,7 +172,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 
 	// Reference to networkInterfaces
 	for _, networkInterfaces := range *vmExtended.VirtualMachineProperties.NetworkProfile.NetworkInterfaces {
-		r.NetworkInterfaces = append(r.NetworkInterfaces, voc.ResourceID(to.String(networkInterfaces.ID)))
+		r.NetworkInterface = append(r.NetworkInterface, voc.ResourceID(to.String(networkInterfaces.ID)))
 	}
 
 	// Reference to blockstorage

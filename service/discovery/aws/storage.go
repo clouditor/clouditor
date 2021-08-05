@@ -28,17 +28,18 @@
 package aws
 
 import (
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/voc"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
+
+	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/voc"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
-	"time"
 )
 
 // awsS3Discovery handles the AWS API requests regarding the S3 service
@@ -106,7 +107,7 @@ func (d *awsS3Discovery) Name() string {
 }
 
 // List is the method implementation defined in the discovery.Discoverer interface
-func (d *awsS3Discovery) List() (resources []voc.IsResource, err error) {
+func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 	var encryptionAtRest *voc.AtRestEncryption
 	var encryptionAtTransmit voc.TransportEncryption
 
@@ -127,9 +128,9 @@ func (d *awsS3Discovery) List() (resources []voc.IsResource, err error) {
 		if err != nil {
 			return
 		}
-		resources = append(resources, &voc.ObjectStorageResource{
-			StorageResource: voc.StorageResource{
-				Resource: voc.Resource{
+		resources = append(resources, &voc.ObjectStorage{
+			Storage: &voc.Storage{
+				CloudResource: &voc.CloudResource{
 					ID:           voc.ResourceID(bucket.arn),
 					Name:         bucket.name,
 					CreationTime: bucket.creationTime.Unix(),
@@ -138,7 +139,7 @@ func (d *awsS3Discovery) List() (resources []voc.IsResource, err error) {
 				AtRestEncryption: encryptionAtRest,
 			},
 			HttpEndpoint: &voc.HttpEndpoint{
-				URL:                 bucket.endpoint,
+				Url:                 bucket.endpoint,
 				TransportEncryption: &encryptionAtTransmit,
 			},
 		})
