@@ -42,12 +42,20 @@ var log = logrus.WithField("component", "aws-discovery")
 // loadDefaultConfig holds config.LoadDefaultConfig() so the test function can mock it
 var loadDefaultConfig = config.LoadDefaultConfig
 
+// newFromConfigSTS holds sts.NewFromConfig() so the test function can mock it
+var newFromConfigSTS = loadSTSClient
+
 // Client holds configurations across all services within AWS
 // TODO(lebogg): deepsource.io wants the struct to exported since NewAwsStorageDiscovery is exported. Encapsulation?
 type Client struct {
 	Cfg aws.Config
 	// accountID is needed for ARN creation
 	accountID *string
+}
+
+// STSAPI describes the STS api interface (for mock testing)
+type STSAPI interface {
+	GetCallerIdentity(ctx context.Context, params *sts.GetCallerIdentityInput, optFns ...func(*sts.Options)) (*sts.GetCallerIdentityOutput, error)
 }
 
 // NewClient constructs a new AwsClient
@@ -63,7 +71,7 @@ func NewClient() (*Client, error) {
 	c.Cfg = cfg
 
 	// load accountID
-	stsClient := sts.NewFromConfig(cfg)
+	stsClient := newFromConfigSTS(cfg)
 	resp, err := stsClient.GetCallerIdentity(context.TODO(), &sts.GetCallerIdentityInput{})
 	if err != nil {
 		return c, err
@@ -76,4 +84,11 @@ func NewClient() (*Client, error) {
 // formatError returns AWS API specific error code transformed into the default error type
 func formatError(ae smithy.APIError) error {
 	return fmt.Errorf("code: %v, fault: %v, message: %v", ae.ErrorCode(), ae.ErrorFault(), ae.ErrorMessage())
+}
+
+// loadSTSClient creates the client using the STS api interface (for mock testing)
+func loadSTSClient(cfg aws.Config) STSAPI {
+	var client STSAPI
+	client = sts.NewFromConfig(cfg)
+	return client
 }
