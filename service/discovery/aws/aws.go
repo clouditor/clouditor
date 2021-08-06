@@ -88,7 +88,6 @@ func formatError(ae smithy.APIError) error {
 
 // loadSTSClient creates the client using the STS api interface (for mock testing)
 func loadSTSClient(cfg aws.Config) STSAPI {
-	var client STSAPI
-	client = sts.NewFromConfig(cfg)
+	client := sts.NewFromConfig(cfg)
 	return client
 }

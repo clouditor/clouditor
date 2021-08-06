@@ -89,7 +89,7 @@ func TestNewClient(t *testing.T) {
 		}
 		return
 	}
-	client, err = NewClient()
+	_, err = NewClient()
 	assert.NotNil(t, err)
 
 }
