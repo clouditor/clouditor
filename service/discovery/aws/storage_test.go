@@ -282,7 +282,7 @@ func (m mockS3APIWitHErrors) GetBucketLifecycleConfiguration(_ context.Context, 
 }
 
 // TestGetBuckets tests the getBuckets method (with other form of mocking implementation)
-func TestGetBuckets(t *testing.T) {
+func TestAwsS3Discovery_getBuckets(t *testing.T) {
 	d := awsS3Discovery{
 		client:        mockS3APINew{},
 		isDiscovering: false,
@@ -324,7 +324,7 @@ func TestGetBuckets(t *testing.T) {
 }
 
 // TestGetEncryptionAtRest tests the getEncryptionAtRest method
-func TestGetEncryptionAtRest(t *testing.T) {
+func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 	d := awsS3Discovery{
 		client:        mockS3APINew{},
 		isDiscovering: false,
@@ -359,7 +359,7 @@ func TestGetEncryptionAtRest(t *testing.T) {
 }
 
 // TestGetTransportEncryption tests the getTransportEncryption method
-func TestGetTransportEncryption(t *testing.T) {
+func TestAwsS3Discovery_getTransportEncryption(t *testing.T) {
 	// Case 1: Connection error
 	d := awsS3Discovery{
 		client:        mockS3APIWitHErrors{},
@@ -404,7 +404,7 @@ func TestGetTransportEncryption(t *testing.T) {
 }
 
 // TestGetRegion tests the getRegion method
-func TestGetRegion(t *testing.T) {
+func TestAwsS3Discovery_getRegion(t *testing.T) {
 	d := awsS3Discovery{
 		client:        mockS3APINew{},
 		isDiscovering: false,
@@ -424,7 +424,7 @@ func TestGetRegion(t *testing.T) {
 }
 
 // TestName tests the Name method
-func TestName(t *testing.T) {
+func TestAwsS3Discovery_Name(t *testing.T) {
 	d := awsS3Discovery{
 		client:        mockS3APINew{},
 		isDiscovering: false,
@@ -434,7 +434,7 @@ func TestName(t *testing.T) {
 }
 
 // TestList tests the List method
-func TestList(t *testing.T) {
+func TestAwsS3Discovery_List(t *testing.T) {
 	d := awsS3Discovery{
 		client:        mockS3APINew{},
 		isDiscovering: false,

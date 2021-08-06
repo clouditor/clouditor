@@ -210,7 +210,7 @@ func (m mockEC2APIWithErrors) DescribeInstances(_ context.Context, _ *ec2.Descri
 	return nil, err
 }
 
-func Test_computeDiscovery_list(t *testing.T) {
+func TestComputeDiscovery_List(t *testing.T) {
 	d := computeDiscovery{
 		virtualMachineAPI: mockEC2API{},
 		functionAPI:       mockLambdaAPI{},
@@ -247,7 +247,7 @@ func Test_computeDiscovery_list(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func Test_computeDiscovery_discoverVirtualMachines(t *testing.T) {
+func TestComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 	d := computeDiscovery{
 		virtualMachineAPI: mockEC2API{},
 		isDiscovering:     true,
@@ -275,7 +275,7 @@ func Test_computeDiscovery_discoverVirtualMachines(t *testing.T) {
 
 }
 
-func Test_computeDiscover_name(t *testing.T) {
+func TestComputeDiscover_Name(t *testing.T) {
 	d := computeDiscovery{
 		virtualMachineAPI: mockEC2API{},
 		isDiscovering:     true,
@@ -284,7 +284,7 @@ func Test_computeDiscover_name(t *testing.T) {
 	assert.Equal(t, "AWS Compute", d.Name())
 }
 
-func Test_computeDiscovery_getNameOfVM(t *testing.T) {
+func TestComputeDiscovery_getNameOfVM(t *testing.T) {
 	type fields struct {
 		api           EC2API
 		isDiscovering bool
@@ -332,7 +332,7 @@ func Test_computeDiscovery_getNameOfVM(t *testing.T) {
 	}
 }
 
-func Test_computeDiscovery_discoverFunctions(t *testing.T) {
+func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 	type fields struct {
 		virtualMachineAPI EC2API
 		functionAPI       LambdaAPI
@@ -400,19 +400,18 @@ func Test_computeDiscovery_discoverFunctions(t *testing.T) {
 			}
 		})
 	}
-}
 
-// Test_computeDiscovery_discover55Functions tests the case where two API Calls have to be made due to limit of returned functions
-func Test_computeDiscovery_discover55Functions(t *testing.T) {
+	// Testing the case where two API Calls have to be made due to limit of returned functions
 	d := computeDiscovery{
 		functionAPI: mockLambdaAPI51LambdaFunctions{},
 	}
 	functions, err := d.discoverFunctions()
 	assert.Nil(t, err)
 	assert.Less(t, 50, len(functions))
+
 }
 
-func Test_computeDiscovery_NewComputeDiscovery(t *testing.T) {
+func TestComputeDiscovery_NewComputeDiscovery(t *testing.T) {
 	// Mock newFromConfigs and store the original functions back at the end of the test
 	oldEC2 := newFromConfigEC2
 	defer func() { newFromConfigEC2 = oldEC2 }()
