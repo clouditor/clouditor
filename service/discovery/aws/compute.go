@@ -198,16 +198,6 @@ func (d *computeDiscovery) getFunctionResources(functions []types2.FunctionConfi
 	return
 }
 
-// parseTime parses the time provided by AWS (ISO 8601 format)
-//func parseTime(t *string) (int64, error) {
-//	parsedT, err := time.Parse(time.RFC3339, aws.ToString(t))
-//	// Should we throw error or return 0 (if wrong format is given)
-//	if err != nil {
-//		return 0, err
-//	}
-//	return parsedT.Unix(), nil
-//}
-
 // getLogsOfVM checks if logging is enabled
 // Currently there is no option to find out if logs are enabled -> Default value false
 func (d *computeDiscovery) getLogsOfVM(_ *types.Instance) (l *voc.Log) {

@@ -72,10 +72,6 @@ type mockLambdaAPI struct {
 type mockLambdaAPI51LambdaFunctions struct {
 }
 
-// mockLambdaAPIWithTimeParseError implements the LambdaAPI interface (API call returning error) for mock testing
-type mockLambdaAPIWithTimeParseError struct {
-}
-
 // mockLambdaAPIWithErrors implements the LambdaAPI interface (API call returning error) for mock testing
 type mockLambdaAPIWithErrors struct {
 }
@@ -122,21 +118,6 @@ func (m mockLambdaAPI51LambdaFunctions) ListFunctions(_ context.Context, input *
 		}
 	}
 	return
-}
-
-// ListFunctions is the method implementation of the LambdaAPI interface
-func (m mockLambdaAPIWithTimeParseError) ListFunctions(_ context.Context, _ *lambda.ListFunctionsInput, _ ...func(*lambda.Options)) (*lambda.ListFunctionsOutput, error) {
-	return &lambda.ListFunctionsOutput{
-		Functions: []lambdaTypes.FunctionConfiguration{
-			{
-				FunctionArn:  aws.String(mockFunction1ID),
-				FunctionName: aws.String(mockFunction1),
-				LastModified: aws.String("XYZ"),
-			},
-		},
-		NextMarker:     nil,
-		ResultMetadata: middleware.Metadata{},
-	}, nil
 }
 
 // ListFunctions is the method implementation of the LambdaAPI interface
@@ -364,15 +345,6 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 			},
 			false,
 		},
-		// Don't use lastModified as creationTime anymore -> Save for later use when we may add lastModified
-		//{
-		//	"Test case 2 (time parse error)",
-		//	fields{
-		//		functionAPI: mockLambdaAPIWithTimeParseError{},
-		//	},
-		//	nil,
-		//	true,
-		//},
 		{
 			"Test case 3 (API error)",
 			fields{
