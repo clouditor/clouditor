@@ -197,7 +197,7 @@ func TestComputeDiscovery_List(t *testing.T) {
 		functionAPI:       mockLambdaAPI{},
 		isDiscovering:     true,
 		awsConfig: &Client{
-			Cfg: aws.Config{
+			cfg: aws.Config{
 				Region: "eu-central-1",
 			},
 			accountID: aws.String("MockAccountID1234"),
@@ -218,7 +218,7 @@ func TestComputeDiscovery_List(t *testing.T) {
 		functionAPI:       mockLambdaAPIWithErrors{},
 		isDiscovering:     true,
 		awsConfig: &Client{
-			Cfg: aws.Config{
+			cfg: aws.Config{
 				Region: "eu-central-1",
 			},
 			accountID: aws.String("MockAccountID1234"),
@@ -233,7 +233,7 @@ func TestComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 		virtualMachineAPI: mockEC2API{},
 		isDiscovering:     true,
 		awsConfig: &Client{
-			Cfg: aws.Config{
+			cfg: aws.Config{
 				Region: "eu-central-1",
 			},
 			accountID: aws.String("MockAccountID1234"),
@@ -246,7 +246,7 @@ func TestComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 	assert.Equal(t, voc.ResourceID("arn:aws:ec2:eu-central-1:MockAccountID1234:instance/mockVM1ID"), testMachine.ID)
 	assert.NotEmpty(t, testMachine.BlockStorage)
 	assert.False(t, testMachine.Log.Activated)
-	assert.Equal(t, int64(-1), testMachine.CreationTime)
+	assert.Equal(t, int64(0), testMachine.CreationTime)
 
 	d = computeDiscovery{
 		virtualMachineAPI: mockEC2APIWithErrors{},
@@ -338,7 +338,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 					CloudResource: &voc.CloudResource{
 						ID:           mockFunction1ID,
 						Name:         mockFunction1,
-						CreationTime: int64(-1),
+						CreationTime: int64(0),
 						Type:         []string{"Function", "Compute", "Resource"},
 					},
 				}},
@@ -401,7 +401,7 @@ func TestComputeDiscovery_NewComputeDiscovery(t *testing.T) {
 		client *Client
 	}
 	mockClient := &Client{
-		Cfg: aws.Config{
+		cfg: aws.Config{
 			Region: "eu-central-1",
 		},
 		accountID: aws.String("1234"),

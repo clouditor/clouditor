@@ -151,9 +151,9 @@ func (b bucket) String() string {
 }
 
 // NewAwsStorageDiscovery constructs a new awsS3Discovery initializing the s3-api and isDiscovering with true
-func NewAwsStorageDiscovery(cfg aws.Config) discovery.Discoverer {
+func NewAwsStorageDiscovery(client *Client) discovery.Discoverer {
 	return &awsS3Discovery{
-		client:        s3.NewFromConfig(cfg),
+		client:        s3.NewFromConfig(client.cfg),
 		isDiscovering: true,
 	}
 }

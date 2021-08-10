@@ -32,11 +32,12 @@ import (
 	"clouditor.io/clouditor/voc"
 	"context"
 	"errors"
+	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
-	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	typesEC2 "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
-	types2 "github.com/aws/aws-sdk-go-v2/service/lambda/types"
+	typesLambda "github.com/aws/aws-sdk-go-v2/service/lambda/types"
 	"github.com/aws/smithy-go"
 )
 
@@ -48,14 +49,14 @@ type computeDiscovery struct {
 	awsConfig         *Client
 }
 
-// EC2API describes the EC2 api interface (for mock testing)
+// EC2API describes the EC2 api interface which is implemented by the official AWS client and mock clients in tests
 type EC2API interface {
 	DescribeInstances(ctx context.Context,
 		params *ec2.DescribeInstancesInput,
 		optFns ...func(options *ec2.Options)) (*ec2.DescribeInstancesOutput, error)
 }
 
-// LambdaAPI describes the lambda api interface (for mock testing)
+// LambdaAPI describes the lambda api interface which is implemented by the official AWS client and mock clients in tests
 type LambdaAPI interface {
 	ListFunctions(ctx context.Context,
 		params *lambda.ListFunctionsInput, optFns ...func(*lambda.Options)) (*lambda.ListFunctionsOutput, error)
@@ -70,8 +71,8 @@ var newFromConfigLambda = lambda.NewFromConfig
 // NewComputeDiscovery constructs a new awsS3Discovery initializing the s3-virtualMachineAPI and isDiscovering with true
 func NewComputeDiscovery(client *Client) discovery.Discoverer {
 	return &computeDiscovery{
-		virtualMachineAPI: newFromConfigEC2(client.Cfg),
-		functionAPI:       newFromConfigLambda(client.Cfg),
+		virtualMachineAPI: newFromConfigEC2(client.cfg),
+		functionAPI:       newFromConfigLambda(client.cfg),
 		isDiscovering:     true,
 		awsConfig:         client,
 	}
@@ -86,7 +87,7 @@ func (d computeDiscovery) Name() string {
 func (d computeDiscovery) List() (resources []voc.IsCloudResource, err error) {
 	listOfVMs, err := d.discoverVirtualMachines()
 	if err != nil {
-		return
+		return nil, fmt.Errorf("could not discover virtual machines: %w", err)
 	}
 	for _, machine := range listOfVMs {
 		resources = append(resources, &machine)
@@ -94,7 +95,7 @@ func (d computeDiscovery) List() (resources []voc.IsCloudResource, err error) {
 
 	listOfFunctions, err := d.discoverFunctions()
 	if err != nil {
-		return
+		return nil, fmt.Errorf("could not discover functions: %w", err)
 	}
 	for _, function := range listOfFunctions {
 		resources = append(resources, &function)
@@ -119,10 +120,9 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachine, erro
 			vm := &reservation.Instances[i]
 			computeResource := &voc.Compute{
 				CloudResource: &voc.CloudResource{
-					ID:   d.getARNOfVM(vm),
-					Name: d.getNameOfVM(vm),
-					// TODO(all): -1 or 0 as default value when no creation time is available?
-					CreationTime: -1,
+					ID:           d.addARNToVM(vm),
+					Name:         d.getNameOfVM(vm),
+					CreationTime: 0,
 					Type:         []string{"VirtualMachine", "Compute", "Resource"},
 				},
 			}
@@ -130,7 +130,7 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachine, erro
 			resources = append(resources, voc.VirtualMachine{
 				Compute:          computeResource,
 				NetworkInterface: d.getNetworkInterfacesOfVM(vm),
-				BlockStorage:     d.getBlockStorageIDsOfVM(vm),
+				BlockStorage:     d.mapBlockStorageIDsOfVM(vm),
 				Log:              d.getLogsOfVM(vm),
 			})
 		}
@@ -139,32 +139,13 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachine, erro
 }
 
 // discoverFunctions discovers all lambda functions
-// TODO(all): FunctionVersion in input to ALL ok? (=all versions of a lambda functions are discovered)
-// TODO(oxisto): Is this a good approach with "for hasNextMarker" loop (I would use overloaded methods - not in Go)
-func (d *computeDiscovery) discoverFunctions() ([]voc.Function, error) {
-	// 'listFunctions' discovers up to 50 Lambda functions per execution
-	resp, err := d.functionAPI.ListFunctions(context.TODO(), &lambda.ListFunctionsInput{
-		FunctionVersion: types2.FunctionVersionAll,
-	})
-
-	if err != nil {
-		var ae smithy.APIError
-		if errors.As(err, &ae) {
-			err = formatError(ae)
-		}
-		return nil, err
-	}
-
-	var resources []voc.Function
-	resources = append(resources, d.getFunctionResources(resp.Functions)...)
-
-	// Execute 'listFunctions' in a loop until all Lambda functions are discovered
-	// If nextMarker in resp is set, more functions are discovered (setting this marker in the input parameter)
-	hasNextMarker := resp.NextMarker != nil
-	for hasNextMarker {
+func (d *computeDiscovery) discoverFunctions() (resources []voc.Function, err error) {
+	// 'listFunctions' discovers up to 50 Lambda functions per execution -> loop through when response has nextMarker set
+	var resp *lambda.ListFunctionsOutput
+	var nextMarker *string
+	for {
 		resp, err = d.functionAPI.ListFunctions(context.TODO(), &lambda.ListFunctionsInput{
-			Marker:          resp.NextMarker,
-			FunctionVersion: types2.FunctionVersionAll,
+			Marker: nextMarker,
 		})
 		if err != nil {
 			var ae smithy.APIError
@@ -173,24 +154,26 @@ func (d *computeDiscovery) discoverFunctions() ([]voc.Function, error) {
 			}
 			return nil, err
 		}
-		resources = append(resources, d.getFunctionResources(resp.Functions)...)
-		hasNextMarker = resp.NextMarker != nil
+		resources = append(resources, d.mapFunctionResources(resp.Functions)...)
+
+		if nextMarker = resp.NextMarker; nextMarker == nil {
+			break
+		}
 	}
 
-	return resources, nil
+	return
 }
 
-// getFunctionResources iterates functionConfigurations and returns a list of corresponding FunctionResources
-func (d *computeDiscovery) getFunctionResources(functions []types2.FunctionConfiguration) (resources []voc.Function) {
+// mapFunctionResources iterates functionConfigurations and returns a list of corresponding FunctionResources
+func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.FunctionConfiguration) (resources []voc.Function) {
 	for i := range functions {
 		function := &functions[i]
 		resources = append(resources, voc.Function{
 			Compute: &voc.Compute{
 				CloudResource: &voc.CloudResource{
-					ID:   voc.ResourceID(aws.ToString(function.FunctionArn)),
-					Name: aws.ToString(function.FunctionName),
-					// TODO(all): -1 or 0 as default value when no creation time is available?
-					CreationTime: -1,
+					ID:           voc.ResourceID(aws.ToString(function.FunctionArn)),
+					Name:         aws.ToString(function.FunctionName),
+					CreationTime: 0,
 					Type:         []string{"Function", "Compute", "Resource"},
 				},
 			}})
@@ -200,14 +183,14 @@ func (d *computeDiscovery) getFunctionResources(functions []types2.FunctionConfi
 
 // getLogsOfVM checks if logging is enabled
 // Currently there is no option to find out if logs are enabled -> Default value false
-func (d *computeDiscovery) getLogsOfVM(_ *types.Instance) (l *voc.Log) {
+func (d *computeDiscovery) getLogsOfVM(_ *typesEC2.Instance) (l *voc.Log) {
 	l = new(voc.Log)
 	l.Activated = false
 	return
 }
 
-// getBlockStorageIDsOfVM returns block storages IDs by iterating the VMs block storages
-func (d *computeDiscovery) getBlockStorageIDsOfVM(vm *types.Instance) (blockStorageIDs []voc.ResourceID) {
+// mapBlockStorageIDsOfVM returns block storages IDs by iterating the VMs block storages
+func (d *computeDiscovery) mapBlockStorageIDsOfVM(vm *typesEC2.Instance) (blockStorageIDs []voc.ResourceID) {
 	for _, mapping := range vm.BlockDeviceMappings {
 		blockStorageIDs = append(blockStorageIDs, voc.ResourceID(aws.ToString(mapping.Ebs.VolumeId)))
 	}
@@ -215,7 +198,7 @@ func (d *computeDiscovery) getBlockStorageIDsOfVM(vm *types.Instance) (blockStor
 }
 
 // getNetworkInterfacesOfVM returns the network interface IDs by iterating the VMs network interfaces
-func (d *computeDiscovery) getNetworkInterfacesOfVM(vm *types.Instance) (networkInterfaceIDs []voc.ResourceID) {
+func (d *computeDiscovery) getNetworkInterfacesOfVM(vm *typesEC2.Instance) (networkInterfaceIDs []voc.ResourceID) {
 	for _, networkInterface := range vm.NetworkInterfaces {
 		networkInterfaceIDs = append(networkInterfaceIDs, voc.ResourceID(aws.ToString(networkInterface.NetworkInterfaceId)))
 	}
@@ -223,7 +206,7 @@ func (d *computeDiscovery) getNetworkInterfacesOfVM(vm *types.Instance) (network
 }
 
 // getNameOfVM returns the name if exists (i.e. a tag with key 'name' exists), otherwise instance ID is used
-func (d *computeDiscovery) getNameOfVM(vm *types.Instance) string {
+func (d *computeDiscovery) getNameOfVM(vm *typesEC2.Instance) string {
 	for _, tag := range vm.Tags {
 		if aws.ToString(tag.Key) == "Name" {
 			return aws.ToString(tag.Value)
@@ -233,10 +216,10 @@ func (d *computeDiscovery) getNameOfVM(vm *types.Instance) string {
 	return aws.ToString(vm.InstanceId)
 }
 
-// getARNOfVM generates the ARN of a VM instance
-func (d computeDiscovery) getARNOfVM(vm *types.Instance) voc.ResourceID {
+// addARNToVM generates the ARN of a VM instance
+func (d computeDiscovery) addARNToVM(vm *typesEC2.Instance) voc.ResourceID {
 	return voc.ResourceID("arn:aws:ec2:" +
-		d.awsConfig.Cfg.Region + ":" +
+		d.awsConfig.cfg.Region + ":" +
 		aws.ToString(d.awsConfig.accountID) +
 		":instance/" +
 		aws.ToString(vm.InstanceId))

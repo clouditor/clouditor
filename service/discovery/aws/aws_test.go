@@ -64,7 +64,7 @@ func TestNewClient(t *testing.T) {
 
 	client, err := NewClient()
 	assert.Nil(t, err)
-	assert.Equal(t, mockRegion, client.Cfg.Region)
+	assert.Equal(t, mockRegion, client.cfg.Region)
 
 	// Case 2: Get error while loading credentials
 	loadDefaultConfig = func(ctx context.Context,
@@ -75,7 +75,7 @@ func TestNewClient(t *testing.T) {
 	}
 	client, err = NewClient()
 	assert.NotNil(t, err)
-	assert.Empty(t, client.Cfg.Region)
+	assert.Empty(t, client.cfg.Region)
 
 	// Case 3: Get error while calling GetCallerIdentity
 	newFromConfigSTS = func(cfg aws.Config) STSAPI {

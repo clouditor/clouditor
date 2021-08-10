@@ -10,13 +10,13 @@ require (
 	github.com/Azure/go-autorest/autorest/validation v0.3.1 // indirect
 	github.com/alexedwards/argon2id v0.0.0-20210511081203-7d35d68092b8
 	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20210521184019-c5ad59b459ec
-	github.com/aws/aws-sdk-go-v2 v1.7.1
-	github.com/aws/aws-sdk-go-v2/config v1.5.0
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.12.0
-	github.com/aws/aws-sdk-go-v2/service/lambda v1.5.0
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.11.0
-	github.com/aws/aws-sdk-go-v2/service/sts v1.6.0
-	github.com/aws/smithy-go v1.6.0
+	github.com/aws/aws-sdk-go-v2 v1.8.0
+	github.com/aws/aws-sdk-go-v2/config v1.6.0
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.13.0
+	github.com/aws/aws-sdk-go-v2/service/lambda v1.6.0
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.12.0
+	github.com/aws/aws-sdk-go-v2/service/sts v1.6.1
+	github.com/aws/smithy-go v1.7.0
 	github.com/go-co-op/gocron v1.6.2
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/golang-jwt/jwt/v4 v4.0.0
@@ -35,8 +35,10 @@ require (
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.8.1
 	github.com/stretchr/testify v1.7.0
-	google.golang.org/genproto v0.0.0-20210617175327-b9e0b3197ced
-	google.golang.org/grpc v1.39.0
+	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d // indirect
+	golang.org/x/sys v0.0.0-20210809222454-d867a43fc93e // indirect
+	google.golang.org/genproto v0.0.0-20210809142519-0135a39c2737
+	google.golang.org/grpc v1.39.1
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0
 	google.golang.org/protobuf v1.27.1
 	gorm.io/driver/postgres v1.1.0

@@ -29,6 +29,7 @@ package aws
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -48,7 +49,7 @@ var newFromConfigSTS = loadSTSClient
 // Client holds configurations across all services within AWS
 // TODO(lebogg): deepsource.io wants the struct to exported since NewAwsStorageDiscovery is exported. Encapsulation?
 type Client struct {
-	Cfg aws.Config
+	cfg aws.Config
 	// accountID is needed for ARN creation
 	accountID *string
 }
@@ -66,15 +67,19 @@ func NewClient() (*Client, error) {
 	// load configuration
 	cfg, err := loadDefaultConfig(context.TODO())
 	if err != nil {
-		return c, err
+		return nil, fmt.Errorf("could not load default config: %v", err)
 	}
-	c.Cfg = cfg
+	c.cfg = cfg
 
 	// load accountID
 	stsClient := newFromConfigSTS(cfg)
 	resp, err := stsClient.GetCallerIdentity(context.TODO(), &sts.GetCallerIdentityInput{})
 	if err != nil {
-		return c, err
+		var ae smithy.APIError
+		if errors.As(err, &ae) {
+			err = formatError(ae)
+		}
+		return nil, err
 	}
 	c.accountID = resp.Account
 
