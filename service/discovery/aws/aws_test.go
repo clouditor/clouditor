@@ -75,7 +75,7 @@ func TestNewClient(t *testing.T) {
 	}
 	client, err = NewClient()
 	assert.NotNil(t, err)
-	assert.Empty(t, client.cfg.Region)
+	assert.Nil(t, client)
 
 	// Case 3: Get error while calling GetCallerIdentity
 	newFromConfigSTS = func(cfg aws.Config) STSAPI {
@@ -89,8 +89,9 @@ func TestNewClient(t *testing.T) {
 		}
 		return
 	}
-	_, err = NewClient()
+	client, err = NewClient()
 	assert.NotNil(t, err)
+	assert.Nil(t, client)
 
 }
 
