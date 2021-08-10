@@ -25,9 +25,7 @@
 
 package voc
 
-type Container struct {
-	*Compute
-	Image	[]ResourceID `json:"image"`
-	NetworkInterface	[]ResourceID `json:"networkInterface"`
+type DocumentDatabaseService struct {
+	*DatabaseService
 }
 

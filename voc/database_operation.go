@@ -25,10 +25,9 @@
 
 package voc
 
-type ContainerOrchestration struct {
-	*CloudResource
-	Container	[]ResourceID `json:"container"`
-	ResourceLogging	[]ResourceID `json:"resourceLogging"`
-	ManagementUrl	string `json:"managementUrl"`
+type DatabaseOperation struct {
+	*Functionality
+	DatabaseService	[]ResourceID `json:"databaseService"`
+	Call	string `json:"call"`
 }
 

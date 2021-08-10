@@ -335,14 +335,14 @@ func TestGetEncryptionAtRest(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, encryptionAtRest.Enabled)
 	assert.Equal(t, "AES256", encryptionAtRest.Algorithm)
-	assert.Equal(t, "SSE-S3", encryptionAtRest.Keymanager)
+	assert.Equal(t, "SSE-S3", encryptionAtRest.KeyManager)
 
 	// Second case: SSE-KMS encryption
 	encryptionAtRest, err = d.getEncryptionAtRest(mockBucket2)
 	assert.Nil(t, err)
 	assert.True(t, encryptionAtRest.Enabled)
 	assert.Equal(t, "aws:kms", encryptionAtRest.Algorithm)
-	assert.Equal(t, "SSE-KMS", encryptionAtRest.Keymanager)
+	assert.Equal(t, "SSE-KMS", encryptionAtRest.KeyManager)
 
 	// Third case: No encryption
 	encryptionAtRest, err = d.getEncryptionAtRest("mockbucket3")
