@@ -98,22 +98,22 @@ func TestListIngresses(t *testing.T) {
 
 	assert.True(t, ok)
 	assert.Equal(t, "my-service", service.Name)
-	assert.Equal(t, "/namespaces/my-namespace/services/my-service", service.ID)
+	assert.Equal(t, "/namespaces/my-namespace/services/my-service", string(service.ID))
 	assert.Equal(t, []int16{80}, service.Ports)
-	assert.Equal(t, []string{"127.0.0.1"}, service.IPs)
+	assert.Equal(t, []string{"127.0.0.1"}, service.Ips)
 
-	lb, ok := list[1].(*voc.LoadBalancerResource)
+	lb, ok := list[1].(*voc.LoadBalancer)
 
 	assert.True(t, ok)
 	assert.Equal(t, "my-ingress", lb.Name)
-	assert.Equal(t, "/namespaces/my-namespace/ingresses/my-ingress", lb.ID)
-	assert.Equal(t, "http://myhost/test", lb.HttpEndpoints[0].ID)
+	assert.Equal(t, "/namespaces/my-namespace/ingresses/my-ingress", string(lb.ID))
+	assert.Equal(t, "http://myhost/test", string((*lb.HttpEndpoint)[0].Url))
 
-	lb, ok = list[2].(*voc.LoadBalancerResource)
+	lb, ok = list[2].(*voc.LoadBalancer)
 
 	assert.True(t, ok)
 	assert.Equal(t, "my-other-ingress", lb.Name)
-	assert.Equal(t, "/namespaces/my-namespace/ingresses/my-other-ingress", lb.ID)
-	assert.Equal(t, "https://myhost/test", lb.HttpEndpoints[0].ID)
-	assert.NotNil(t, lb.HttpEndpoints[0].TransportEncryption)
+	assert.Equal(t, "/namespaces/my-namespace/ingresses/my-other-ingress", string(lb.ID))
+	assert.Equal(t, "https://myhost/test", string((*lb.HttpEndpoint)[0].Url))
+	assert.NotNil(t, (*lb.HttpEndpoint)[0].TransportEncryption)
 }

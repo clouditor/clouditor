@@ -25,9 +25,8 @@
 
 package voc
 
-type HasGeoLocation interface {
-	GeoLocation() GeoLocation
+type HttpServer struct {
+	*Framework
+	HttpRequestHandler	*HttpRequestHandler `json:"httpRequestHandler"`
 }
 
-type GeoLocation struct {
-}

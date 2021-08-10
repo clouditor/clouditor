@@ -1,4 +1,4 @@
-// Copyright 2016-2020 Fraunhofer AISEC
+// Copyright 2021 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,44 +25,7 @@
 
 package voc
 
-type IsNetwork interface {
-	IsResource
+type Authorization struct {
+	*SecurityFeature
 }
 
-type NetworkResource struct {
-	Resource
-}
-
-type HttpEndpoint struct {
-	Resource // TODO(oxisto): should actually be a functionality, not a resource
-
-	URL string `json:"url"`
-
-	TransportEncryption *TransportEncryption `json:"transportEncryption"`
-}
-
-type NetworkService struct {
-	NetworkResource
-
-	IPs   []string
-	Ports []int16
-}
-
-// LoadBalancer
-type LoadBalancerResource struct {
-	NetworkService
-
-	AccessRestriction *AccessRestriction `json:"accessRestriction"`
-	HttpEndpoints     []*HttpEndpoint    `json:"httpEndpoint"`
-}
-
-// Network Interface
-type NetworkInterfaceResource struct {
-	NetworkResource
-
-	AccessRestriction *AccessRestriction `json:"accessRestriction"`
-}
-
-func (n *NetworkInterfaceResource) GetAccessRestriction() *AccessRestriction {
-	return n.AccessRestriction
-}

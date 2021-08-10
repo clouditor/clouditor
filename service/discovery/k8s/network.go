@@ -51,8 +51,8 @@ func (d *k8sNetworkDiscovery) Description() string {
 	return "Discover Kubernetes network resources."
 }
 
-func (k k8sNetworkDiscovery) List() ([]voc.IsResource, error) {
-	var list []voc.IsResource
+func (k k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
+	var list []voc.IsCloudResource
 
 	services, err := k.intf.CoreV1().Services("").List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
@@ -67,9 +67,10 @@ func (k k8sNetworkDiscovery) List() ([]voc.IsResource, error) {
 		list = append(list, c)
 	}
 
+	// TODO Does not get ingresses
 	ingresses, err := k.intf.NetworkingV1().Ingresses("").List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("could not list ingresses: %v", err)
+		return list, fmt.Errorf("could not list ingresses: %v", err)
 	}
 
 	for i := range ingresses.Items {
@@ -91,39 +92,44 @@ func (k k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwor
 	}
 
 	return &voc.NetworkService{
-		NetworkResource: voc.NetworkResource{
-			Resource: voc.Resource{
-				ID:           fmt.Sprintf("/namespaces/%s/services/%s", service.Namespace, service.Name),
+		Networking: &voc.Networking{
+			CloudResource: &voc.CloudResource{
+				ID:           voc.ResourceID(getNetworkServiceResourceID(service)),
 				Name:         service.Name,
 				CreationTime: service.CreationTimestamp.Unix(),
 				Type:         []string{"NetworkService", "Resource"},
 			},
 		},
-		IPs:   service.Spec.ClusterIPs,
+		Ips:   service.Spec.ClusterIPs,
 		Ports: ports,
 	}
 }
 
+func getNetworkServiceResourceID(service *corev1.Service) string {
+	return fmt.Sprintf("/namespaces/%s/services/%s", service.Namespace, service.Name)
+}
+
 func (k k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
-	lb := &voc.LoadBalancerResource{
-		NetworkService: voc.NetworkService{
-			NetworkResource: voc.NetworkResource{
-				Resource: voc.Resource{
-					ID:           fmt.Sprintf("/namespaces/%s/ingresses/%s", ingress.Namespace, ingress.Name),
+	lb := &voc.LoadBalancer{
+		NetworkService: &voc.NetworkService{
+			Networking: &voc.Networking{
+				CloudResource: &voc.CloudResource{
+					ID:           voc.ResourceID(getLoadBalancerResourceID(ingress)),
 					Name:         ingress.Name,
 					CreationTime: ingress.CreationTimestamp.Unix(),
 					Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
 				},
 			},
-			IPs:   nil, // TODO (oxisto): fill out IPs
+			Ips:   nil, // TODO (oxisto): fill out IPs
 			Ports: []int16{80, 443},
 		},
 		// TODO(oxisto): fill out access restrictions
 		AccessRestriction: &voc.AccessRestriction{},
-		HttpEndpoints:     []*voc.HttpEndpoint{}}
+		HttpEndpoint:      &[]voc.HttpEndpoint{},
+	}
 
 	for _, rule := range ingress.Spec.Rules {
-		lb.IPs = append(lb.IPs, rule.Host)
+		lb.Ips = append(lb.Ips, rule.Host)
 
 		for _, path := range rule.HTTP.Paths {
 			var url = fmt.Sprintf("%s/%s", rule.Host, path.Path)
@@ -135,24 +141,33 @@ func (k k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 				url = fmt.Sprintf("https://%s", url)
 
 				te = &voc.TransportEncryption{
-					Enforced:   true,
-					Encryption: voc.Encryption{Enabled: true},
+					Enforced: true,
+					Enabled:  true,
+					// Encryption: voc.Encryption{Enabled: true},
 				}
 			}
 
-			http := &voc.HttpEndpoint{
-				Resource: voc.Resource{
-					ID:           url,
-					Name:         ingress.Name,
-					CreationTime: ingress.CreationTimestamp.Unix(),
-				},
-				URL:                 url,
+			http := voc.HttpEndpoint{
+				Url:                 url,
 				TransportEncryption: te,
 			}
+			// http := &voc.HttpEndpoint{
+			// 	CloudResource: &voc.CloudResource{
+			// 		ID:           voc.ResourceID(url),
+			// 		Name:         ingress.Name,
+			// 		CreationTime: ingress.CreationTimestamp.Unix(),
+			// 	},
+			// 	URL:                 url,
+			// 	TransportEncryption: te,
+			// }
 
-			lb.HttpEndpoints = append(lb.HttpEndpoints, http)
+			*lb.HttpEndpoint = append(*lb.HttpEndpoint, http)
 		}
 	}
 
 	return lb
+}
+
+func getLoadBalancerResourceID(ingress *v1.Ingress) string {
+	return fmt.Sprintf("/namespaces/%s/ingresses/%s", ingress.Namespace, ingress.Name)
 }

@@ -27,8 +27,14 @@ package discovery
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"os"
 	"strings"
 	"time"
+
+	"clouditor.io/clouditor/service/discovery/aws"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
@@ -59,12 +65,16 @@ type Service struct {
 	// TODO(oxisto) do not expose this. just makes tests easier for now
 	AssessmentStream assessment.Assessment_StreamEvidencesClient
 
-	resources map[string]voc.IsResource
+	resources map[string]voc.IsCloudResource
 	scheduler *gocron.Scheduler
 }
 
 type DiscoveryConfiguration struct {
 	Interval time.Duration
+}
+
+type ResultOntology struct {
+	Result *structpb.ListValue `json:"result"`
 }
 
 func init() {
@@ -73,7 +83,7 @@ func init() {
 
 func NewService() *Service {
 	return &Service{
-		resources:      make(map[string]voc.IsResource),
+		resources:      make(map[string]voc.IsCloudResource),
 		scheduler:      gocron.NewScheduler(time.UTC),
 		Configurations: make(map[discovery.Discoverer]*DiscoveryConfiguration),
 	}
@@ -81,6 +91,7 @@ func NewService() *Service {
 
 // Start starts discovery
 func (s Service) Start(ctx context.Context, request *discovery.StartDiscoveryRequest) (response *discovery.StartDiscoveryResponse, err error) {
+
 	response = &discovery.StartDiscoveryResponse{Successful: true}
 
 	log.Infof("Starting discovery...")
@@ -117,14 +128,22 @@ func (s Service) Start(ctx context.Context, request *discovery.StartDiscoveryReq
 		return nil, err
 	}
 
+	awsClient, err := aws.NewClient()
+	if err != nil {
+		log.Error("Could not load credentials:", err)
+		return nil, err
+	}
+
 	var discoverer []discovery.Discoverer
 
 	discoverer = append(discoverer,
+		azure.NewAzureIacTemplateDiscovery(azure.WithAuthorizer(authorizer)),
 		azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
 		azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
 		azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)),
 		k8s.NewKubernetesComputeDiscovery(k8sClient),
 		k8s.NewKubernetesNetworkDiscovery(k8sClient),
+		aws.NewAwsStorageDiscovery(awsClient.Cfg),
 	)
 
 	for _, v := range discoverer {
@@ -154,7 +173,17 @@ func (s Service) Shutdown() {
 }
 
 func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
-	list, _ := discoverer.List()
+	var (
+		err  error
+		list []voc.IsCloudResource
+	)
+
+	list, err = discoverer.List()
+
+	if err != nil {
+		log.Errorf("Could not retrieve resources from discoverer '%s': %v", discoverer.Name(), err)
+		return
+	}
 
 	for _, resource := range list {
 		s.resources[string(resource.GetID())] = resource
@@ -171,7 +200,7 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 
 		evidence := &assessment.Evidence{
 			Resource:   v,
-			ResourceId: resource.GetID(),
+			ResourceId: string(resource.GetID()),
 		}
 
 		// check for object storage
@@ -218,7 +247,47 @@ func (s Service) Query(ctx context.Context, request *discovery.QueryRequest) (re
 		r = append(r, s)
 	}
 
+	// Save discovery result to filesystem
+	filenameFilesystem := "resources_ontology.json"
+	tmp := ResultOntology{
+		Result: &structpb.ListValue{Values: r},
+	}
+	err = saveResourcesToFilesystem(tmp, filenameFilesystem)
+
+	if err != nil {
+		fmt.Println("Error writing result to filesystem: %w,", err)
+	}
+
 	return &discovery.QueryResponse{
 		Result: &structpb.ListValue{Values: r},
 	}, nil
+}
+
+func saveResourcesToFilesystem(result ResultOntology, filename string) error {
+	var (
+		filepath string
+	)
+
+	prefix, indent := "", "    "
+	exported, err := json.MarshalIndent(result, prefix, indent)
+	if err != nil {
+		return fmt.Errorf("MarshalIndent failed %w", err)
+	}
+
+	filepath = "../../results/discovery_results/"
+
+	// Check if folder exists
+	err = os.MkdirAll(filepath, os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("check for directory existence failed:  %w", err)
+	}
+
+	err = ioutil.WriteFile(filepath+filename, exported, 0666)
+	if err != nil {
+		return fmt.Errorf("write file failed %w", err)
+	} else {
+		fmt.Println("ontology resources written to: ", filepath+filename)
+	}
+
+	return nil
 }

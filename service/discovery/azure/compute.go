@@ -32,6 +32,7 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/compute/mgmt/compute"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/web/mgmt/web"
 	"github.com/Azure/go-autorest/autorest/to"
 )
 
@@ -62,7 +63,7 @@ func (d *azureComputeDiscovery) Description() string {
 }
 
 // Discover compute resources
-func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
+func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 	if err = d.authorize(); err != nil {
 		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
 	}
@@ -74,12 +75,54 @@ func (d *azureComputeDiscovery) List() (list []voc.IsResource, err error) {
 	}
 	list = append(list, virtualMachines...)
 
+	// Discover functions
+	function, err := d.discoverFunction()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover functions: %w", err)
+	}
+	list = append(list, function...)
+
 	return
 }
 
+// Discover function
+func (d *azureComputeDiscovery) discoverFunction() ([]voc.IsCloudResource, error) {
+	var list []voc.IsCloudResource
+
+	client := web.NewAppsClient(to.String(d.sub.SubscriptionID))
+	d.apply(&client.Client)
+
+	result, err := client.ListComplete(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("could not list functions: %w", err)
+	}
+
+	functionApp := *result.Response().Value
+	for i := range functionApp {
+		functionResource := d.handleFunction(&functionApp[i])
+		list = append(list, functionResource)
+	}
+
+	return list, err
+}
+
+func (d *azureComputeDiscovery) handleFunction(function *web.Site) voc.IsCompute {
+	return &voc.Function{
+		Compute: &voc.Compute{
+			CloudResource: &voc.CloudResource{
+				ID:           voc.ResourceID(to.String(function.ID)),
+				Name:         to.String(function.Name),
+				CreationTime: 0, // No creation time available
+				Type:         []string{"Function", "Compute", "Resource"},
+			},
+		},
+	}
+
+}
+
 // Discover virtual machines
-func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsResource, error) {
-	var list []voc.IsResource
+func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource, error) {
+	var list []voc.IsCloudResource
 
 	client := compute.NewVirtualMachinesClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
@@ -91,7 +134,10 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsResource, err
 
 	vms := *result.Response().Value
 	for i := range vms {
-		s := d.handleVirtualMachines(&vms[i])
+		s, err := d.handleVirtualMachines(&vms[i])
+		if err != nil {
+			return nil, fmt.Errorf("could not handle virtual machine: %w", err)
+		}
 
 		log.Infof("Adding virtual machine %+v", s)
 
@@ -101,19 +147,53 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsResource, err
 	return list, err
 }
 
-func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine) voc.IsCompute {
-	return &voc.VirtualMachineResource{
-		ComputeResource: voc.ComputeResource{
-			Resource: voc.Resource{
-				ID:           to.String(vm.ID),
+func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine) (voc.IsCompute, error) {
+
+	r := &voc.VirtualMachine{
+		Compute: &voc.Compute{
+			CloudResource: &voc.CloudResource{
+				ID:           voc.ResourceID(to.String(vm.ID)),
 				Name:         to.String(vm.Name),
 				CreationTime: 0, // No creation time available
 				Type:         []string{"VirtualMachine", "Compute", "Resource"},
 			}},
 		Log: &voc.Log{
-			Enabled: IsBootDiagnosticEnabled(vm),
+			Activated: IsBootDiagnosticEnabled(vm),
+			Auditing: &voc.Auditing{
+				SecurityFeature: &voc.SecurityFeature{},
+			},
 		},
 	}
+
+	vmExtended, err := d.getExtendedVirtualMachine(vm)
+	if err != nil {
+		return nil, fmt.Errorf("could not get virtual machine with extended information: %w", err)
+	}
+
+	// Reference to networkInterfaces
+	for _, networkInterfaces := range *vmExtended.VirtualMachineProperties.NetworkProfile.NetworkInterfaces {
+		r.NetworkInterface = append(r.NetworkInterface, voc.ResourceID(to.String(networkInterfaces.ID)))
+	}
+
+	// Reference to blockstorage
+	r.BlockStorage = append(r.BlockStorage, voc.ResourceID(*vmExtended.StorageProfile.OsDisk.ManagedDisk.ID))
+	for _, blockstorage := range *vmExtended.StorageProfile.DataDisks {
+		r.BlockStorage = append(r.BlockStorage, voc.ResourceID(*blockstorage.ManagedDisk.ID))
+	}
+
+	return r, nil
+}
+
+// Get virtual machine with extended information, e.g., managed disk ID, network interface ID
+func (d *azureComputeDiscovery) getExtendedVirtualMachine(vm *compute.VirtualMachine) (*compute.VirtualMachine, error) {
+	client := compute.NewVirtualMachinesClient(to.String(d.sub.SubscriptionID))
+	d.apply(&client.Client)
+
+	vmExtended, err := client.Get(context.Background(), GetResourceGroupName(*vm.ID), *vm.Name, "")
+	if err != nil {
+		return nil, fmt.Errorf("could not get virtual machine: %w", err)
+	}
+	return &vmExtended, nil
 }
 
 func IsBootDiagnosticEnabled(vm *compute.VirtualMachine) bool {
