@@ -66,7 +66,7 @@ func NewClient() (*Client, error) {
 	// load configuration
 	cfg, err := loadDefaultConfig(context.TODO())
 	if err != nil {
-		return nil, fmt.Errorf("could not load default config: %v", err)
+		return nil, fmt.Errorf("could not load default config: %w", err)
 	}
 	c.cfg = cfg
 
