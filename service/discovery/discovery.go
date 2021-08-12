@@ -90,7 +90,7 @@ func NewService() *Service {
 }
 
 // Start starts discovery
-func (s Service) Start(ctx context.Context, request *discovery.StartDiscoveryRequest) (response *discovery.StartDiscoveryResponse, err error) {
+func (s Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (response *discovery.StartDiscoveryResponse, err error) {
 
 	response = &discovery.StartDiscoveryResponse{Successful: true}
 
@@ -143,7 +143,8 @@ func (s Service) Start(ctx context.Context, request *discovery.StartDiscoveryReq
 		azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)),
 		k8s.NewKubernetesComputeDiscovery(k8sClient),
 		k8s.NewKubernetesNetworkDiscovery(k8sClient),
-		aws.NewAwsStorageDiscovery(awsClient.Cfg),
+		aws.NewAwsStorageDiscovery(awsClient),
+		aws.NewComputeDiscovery(awsClient),
 	)
 
 	for _, v := range discoverer {
@@ -224,7 +225,7 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}
 }
 
-func (s Service) Query(ctx context.Context, request *discovery.QueryRequest) (response *discovery.QueryResponse, err error) {
+func (s Service) Query(_ context.Context, request *discovery.QueryRequest) (response *discovery.QueryResponse, err error) {
 	var r []*structpb.Value
 
 	var filteredType = ""

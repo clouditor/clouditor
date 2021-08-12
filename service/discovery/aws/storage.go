@@ -57,7 +57,7 @@ type bucket struct {
 	region       string
 }
 
-// S3API describes the S3 client interface (for mock testing)
+// S3API describes the S3 api interface which is implemented by the official AWS client and mock clients in tests
 type S3API interface {
 	ListBuckets(ctx context.Context,
 		params *s3.ListBucketsInput,
@@ -150,19 +150,12 @@ func (b bucket) String() string {
 	return fmt.Sprintf("[ARN: %v, Name: %v, Creation Time: %v]", b.arn, b.name, b.creationTime)
 }
 
-// NewAwsStorageDiscovery constructs a new awsS3Discovery initializing the s3-client and isDiscovering with true
-func NewAwsStorageDiscovery(cfg aws.Config) discovery.Discoverer {
+// NewAwsStorageDiscovery constructs a new awsS3Discovery initializing the s3-api and isDiscovering with true
+func NewAwsStorageDiscovery(client *Client) discovery.Discoverer {
 	return &awsS3Discovery{
-		client:        s3.NewFromConfig(cfg),
+		client:        s3.NewFromConfig(client.cfg),
 		isDiscovering: true,
 	}
-}
-
-// S3ListBucketsAPI is the interface for the List function (used for mock testing)
-type S3ListBucketsAPI interface {
-	ListBuckets(ctx context.Context,
-		params *s3.ListBucketsInput,
-		optFns ...func(*s3.Options)) (*s3.ListBucketsOutput, error)
 }
 
 // getBuckets returns all buckets
@@ -173,7 +166,7 @@ func (d *awsS3Discovery) getBuckets() (buckets []bucket, err error) {
 	if err != nil {
 		var ae smithy.APIError
 		if errors.As(err, &ae) {
-			err = fmt.Errorf("code: %v, fault: %v, message: %v", ae.ErrorCode(), ae.ErrorFault(), ae.ErrorMessage())
+			err = formatError(ae)
 		}
 		return
 	}
@@ -215,7 +208,7 @@ func (d *awsS3Discovery) getEncryptionAtRest(bucket string) (e *voc.AtRestEncryp
 				return
 			}
 			// Any other error is a connection error with AWS : Format err and return it
-			err = fmt.Errorf("code: %v, fault: %v, message: %v", ae.ErrorCode(), ae.ErrorFault(), ae.ErrorMessage())
+			err = formatError(ae)
 		}
 		// return any error (but according to doc: "All service API response errors implement the smithy.APIError")
 		return
@@ -257,7 +250,7 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (encryptionAtTran
 				return
 			}
 			// Any other error is a connection error with AWS : Format err and return it
-			err = fmt.Errorf("code: %v, message: %s, fault: %v", ae.ErrorCode(), ae.ErrorMessage(), ae.ErrorFault())
+			err = formatError(ae)
 		}
 		// return any error (but according to doc: "All service API response errors implement the smithy.APIError")
 		return
