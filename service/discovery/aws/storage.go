@@ -57,7 +57,7 @@ type bucket struct {
 	region       string
 }
 
-// S3API describes the S3 api interface (for mock testing)
+// S3API describes the S3 api interface which is implemented by the official AWS client and mock clients in tests
 type S3API interface {
 	ListBuckets(ctx context.Context,
 		params *s3.ListBucketsInput,
@@ -156,13 +156,6 @@ func NewAwsStorageDiscovery(client *Client) discovery.Discoverer {
 		client:        s3.NewFromConfig(client.cfg),
 		isDiscovering: true,
 	}
-}
-
-// S3ListBucketsAPI is the interface for the List function (used for mock testing)
-type S3ListBucketsAPI interface {
-	ListBuckets(ctx context.Context,
-		params *s3.ListBucketsInput,
-		optFns ...func(*s3.Options)) (*s3.ListBucketsOutput, error)
 }
 
 // getBuckets returns all buckets

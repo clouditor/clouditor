@@ -40,21 +40,20 @@ import (
 
 var log = logrus.WithField("component", "aws-discovery")
 
-// loadDefaultConfig holds config.LoadDefaultConfig() so the test function can mock it
+// loadDefaultConfig holds config.LoadDefaultConfig() so that NewClient() can use it and test function can mock it
 var loadDefaultConfig = config.LoadDefaultConfig
 
-// newFromConfigSTS holds sts.NewFromConfig() so the test function can mock it
+// newFromConfigSTS holds sts.NewFromConfig() so that NewClient() can use it and test function can mock it
 var newFromConfigSTS = loadSTSClient
 
 // Client holds configurations across all services within AWS
-// TODO(lebogg): deepsource.io wants the struct to exported since NewAwsStorageDiscovery is exported. Encapsulation?
 type Client struct {
 	cfg aws.Config
 	// accountID is needed for ARN creation
 	accountID *string
 }
 
-// STSAPI describes the STS api interface (for mock testing)
+// STSAPI describes the STS api interface which is implemented by the official AWS client and mock clients in tests
 type STSAPI interface {
 	GetCallerIdentity(ctx context.Context, params *sts.GetCallerIdentityInput, optFns ...func(*sts.Options)) (*sts.GetCallerIdentityOutput, error)
 }
