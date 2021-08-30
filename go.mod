@@ -15,7 +15,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.15.0
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.8.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.14.0
-	github.com/aws/aws-sdk-go-v2/service/sts v1.6.1
+	github.com/aws/aws-sdk-go-v2/service/sts v1.7.0
 	github.com/aws/smithy-go v1.8.0
 	github.com/go-co-op/gocron v1.7.0
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
