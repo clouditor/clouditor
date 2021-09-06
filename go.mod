@@ -11,7 +11,7 @@ require (
 	github.com/alexedwards/argon2id v0.0.0-20210511081203-7d35d68092b8
 	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20210521184019-c5ad59b459ec
 	github.com/aws/aws-sdk-go-v2 v1.9.0
-	github.com/aws/aws-sdk-go-v2/config v1.7.0
+	github.com/aws/aws-sdk-go-v2/config v1.8.0
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.15.0
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.8.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.14.0
