@@ -111,17 +111,11 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource
 			return nil, fmt.Errorf("IaC template type convertion failed")
 		}
 
-		err = saveExportTemplate(result, *resourceGroups[i].Name)
-		if err != nil {
-			fmt.Println("Error saving export template: ", err)
-		}
-
 		for templateKey, templateValue := range template {
-
 			if templateKey == "resources" {
 				resources, ok := templateValue.([]interface{})
 				if !ok {
-					return nil, fmt.Errorf("templateValue  type convertion failed")
+					return nil, fmt.Errorf("templateValue type convertion failed")
 				}
 
 				for _, resourcesValue := range resources {
