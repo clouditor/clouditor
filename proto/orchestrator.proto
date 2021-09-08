@@ -77,6 +77,8 @@ message UpdateAssessmentToolRequest {
   string tool_id = 1;
   AssessmentTool tool = 2;
 }
+
+// TODO IDs as string or int32?
 message DeregisterAssessmentToolRequest { string tool_id = 1; }
 
 message StoreAssessmentResultRequest {

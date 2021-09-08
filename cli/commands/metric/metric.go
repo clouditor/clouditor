@@ -90,7 +90,7 @@ func NewGetMetricsCommand() *cobra.Command {
 			client = orchestrator.NewOrchestratorClient(session)
 
 			fmt.Printf(args[1])
-			metricID, err := strconv.Atoi(args[1])
+			metricID, err := strconv.Atoi(args[0])
 			metricIDInt32 := int32(metricID)
 
 			if err != nil {
