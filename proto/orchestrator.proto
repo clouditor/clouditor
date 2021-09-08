@@ -85,6 +85,10 @@ message StoreAssessmentResultRequest {
   AssessmentResult result = 1;
 }
 
+message StoreEvidenceRequest {
+  Evidence evidence = 1;
+}
+
 message GetMetricsRequest { int32 metric_id = 1; }
 message ListMetricsRequest {}
 message ListMetricsResponse { repeated Metric metrics = 1; }
@@ -135,7 +139,17 @@ service Orchestrator {
     };
   }
 
+  // ToDo(all): Why do we not use 'StreamAssessmentResultRequest'?
   rpc StreamAssessmentResults(stream AssessmentResult) returns (google.protobuf.Empty);
+
+  rpc StoreEvidence(StoreEvidenceRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put : "/v1/orchestator/evidence"
+      body : "evidence"
+    };
+  }
+
+  rpc StreamEvidences(stream Evidence) returns (google.protobuf.Empty);
 
   rpc ListMetrics(ListMetricsRequest) returns (ListMetricsResponse) {
     option (google.api.http) = {
