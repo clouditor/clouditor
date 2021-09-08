@@ -29,6 +29,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -40,7 +41,6 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/service/discovery/azure"
 	"clouditor.io/clouditor/service/discovery/k8s"
-	"clouditor.io/clouditor/service/standalone"
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/go-co-op/gocron"
@@ -64,6 +64,8 @@ type Service struct {
 	Configurations map[discovery.Discoverer]*DiscoveryConfiguration
 	// TODO(oxisto) do not expose this. just makes tests easier for now
 	AssessmentStream assessment.Assessment_StreamEvidencesClient
+
+	EvidenceStream assessment.Assessment_StreamEvidencesClient
 
 	resources map[string]voc.IsCloudResource
 	scheduler *gocron.Scheduler
@@ -98,20 +100,14 @@ func (s Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (r
 
 	s.scheduler.TagsUnique()
 
-	var isStandalone bool = true
-
 	var client assessment.AssessmentClient
 
-	if isStandalone {
-		client = standalone.NewAssessmentClient()
-	} else {
-		// TODO(oxisto): support assessment on another tcp/port
-		cc, err := grpc.Dial("localhost:9090", grpc.WithInsecure())
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, "could not connect to assessment service: %v", err)
-		}
-		client = assessment.NewAssessmentClient(cc)
+	// TODO(oxisto): support assessment on another tcp/port
+	cc, err := grpc.Dial("localhost:9090", grpc.WithInsecure())
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not connect to assessment service: %v", err)
 	}
+	client = assessment.NewAssessmentClient(cc)
 
 	s.AssessmentStream, _ = client.StreamEvidences(context.Background())
 
@@ -200,6 +196,7 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 		}
 
 		evidence := &assessment.Evidence{
+			Id:         uuid.New().String(),
 			Resource:   v,
 			ResourceId: string(resource.GetID()),
 		}
@@ -211,7 +208,7 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 			}
 		}
 
-		if s.AssessmentStream == nil {
+		if s.AssessmentStream == nil || s.EvidenceStream == nil {
 			log.Warnf("Evidence stream not available")
 			continue
 		}
@@ -220,7 +217,12 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 
 		err = s.AssessmentStream.Send(evidence)
 		if err != nil {
-			log.Errorf("Could not send evidence: %v", err)
+			log.Errorf("Could not send evidence to Assessment: %v", err)
+		}
+
+		err = s.EvidenceStream.Send(evidence)
+		if err != nil {
+			log.Errorf("Could not send evidence to Orchestrator: %v", err)
 		}
 	}
 }
