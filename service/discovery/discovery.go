@@ -130,7 +130,7 @@ func (s Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (r
 
 	awsClient, err := aws.NewClient()
 	if err != nil {
-		log.Error("Could not load credentials: %s", err)
+		log.Errorf("Could not load credentials: %s", err)
 		return nil, err
 	}
 
