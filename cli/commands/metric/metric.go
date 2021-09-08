@@ -26,8 +26,10 @@
 package metric
 
 import (
+	"clouditor.io/clouditor/api/assessment"
 	"context"
 	"fmt"
+	"strconv"
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
@@ -66,6 +68,48 @@ func NewListMetricsCommand() *cobra.Command {
 	return cmd
 }
 
+// NewGetMetricCommand returns a cobra command for the `get` subcommand
+func NewGetMetricsCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "get",
+		Short: "Get metric by resourceID",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var (
+				err     error
+				session *cli.Session
+				client  orchestrator.OrchestratorClient
+				res     *assessment.Metric
+			)
+
+			if session, err = cli.ContinueSession(); err != nil {
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+				return nil
+			}
+
+
+			client = orchestrator.NewOrchestratorClient(session)
+
+			fmt.Printf(args[1])
+			metricID, err := strconv.Atoi(args[1])
+			metricIDInt32 := int32(metricID)
+
+			if err != nil {
+				fmt.Printf("Error while parsing string to int32")
+				return nil
+			}
+
+			res, err = client.GetMetric(context.Background(), &orchestrator.GetMetricsRequest{MetricId: metricIDInt32})
+
+			return session.HandleResponse(res, err)
+		},
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return []string{}, cobra.ShellCompDirectiveNoFileComp
+		},
+	}
+
+	return cmd
+}
+
 // NewMetricCommand returns a cobra command for `metric` subcommands
 func NewMetricCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -82,5 +126,6 @@ func NewMetricCommand() *cobra.Command {
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewListMetricsCommand(),
+		NewGetMetricsCommand(),
 	)
 }
