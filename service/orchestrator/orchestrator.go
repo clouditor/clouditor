@@ -104,35 +104,35 @@ func (s *Service) GetMetric(ctx context.Context, request *orchestrator.GetMetric
 	return metric, nil
 }
 
-// Tools
-
-// TODO Implement DeregisterAssessmentTool
-func (s *Service) RegisterAssessmentTool (ctx context.Context, request *orchestrator.RegisterAssessmentToolRequest) (tool *orchestrator.AssessmentTool, err error) {
-	// TBD
-	return tool, err
-}
-
-// TODO Implement UpdateAssessmentTool
-func (s *Service) UpdateAssessmentTool (ctx context.Context, request *orchestrator.UpdateAssessmentToolRequest) (tool *orchestrator.AssessmentTool, err error) {
-	// TBD
-	return tool, err
-}
-
-// TODO Implement DeregisterAssessmentTool
-func (s *Service) DeregisterAssessmentTool (ctx context.Context, request *orchestrator.DeregisterAssessmentToolRequest) (nil, err error) {
-	// TBD
-	return nil, err
-}
-
-
-// TODO Implement ListAssessmentTools
-func (s *Service) ListAssessmentTools (ctx context.Context, request *orchestrator.ListAssessmentToolsRequest) (tools *orchestrator.ListAssessmentToolsResponse, err error) {
-	// TBD
-	return tools, err
-}
-
-// TODO Implement GetAssessmentTool
-func (s *Service) GetAssessmentTool (ctx context.Context, request *orchestrator.GetAssessmentToolRequest) (tool *orchestrator.AssessmentTool, err error) {
-	// TBD
-	return tool, err
-}
+//// Tools
+//
+//// TODO Implement DeregisterAssessmentTool
+//func (s *Service) RegisterAssessmentTool (ctx context.Context, request *orchestrator.RegisterAssessmentToolRequest) (tool *orchestrator.AssessmentTool, err error) {
+//	// TBD
+//	return tool, err
+//}
+//
+//// TODO Implement UpdateAssessmentTool
+//func (s *Service) UpdateAssessmentTool (ctx context.Context, request *orchestrator.UpdateAssessmentToolRequest) (tool *orchestrator.AssessmentTool, err error) {
+//	// TBD
+//	return tool, err
+//}
+//
+//// TODO Implement DeregisterAssessmentTool
+//func (s *Service) DeregisterAssessmentTool (ctx context.Context, request *orchestrator.DeregisterAssessmentToolRequest) (nil, err error) {
+//	// TBD
+//	return nil, err
+//}
+//
+//
+//// TODO Implement ListAssessmentTools
+//func (s *Service) ListAssessmentTools (ctx context.Context, request *orchestrator.ListAssessmentToolsRequest) (tools *orchestrator.ListAssessmentToolsResponse, err error) {
+//	// TBD
+//	return tools, err
+//}
+//
+//// TODO Implement GetAssessmentTool
+//func (s *Service) GetAssessmentTool (ctx context.Context, request *orchestrator.GetAssessmentToolRequest) (tool *orchestrator.AssessmentTool, err error) {
+//	// TBD
+//	return tool, err
+//}

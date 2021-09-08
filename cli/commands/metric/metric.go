@@ -27,13 +27,12 @@ package metric
 
 import (
 	"clouditor.io/clouditor/api/assessment"
-	"context"
-	"fmt"
-	"strconv"
-
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
+	"context"
+	"fmt"
 	"github.com/spf13/cobra"
+	"strconv"
 )
 
 // NewListMetricCommand returns a cobra command for the `list` subcommand
@@ -72,7 +71,8 @@ func NewListMetricsCommand() *cobra.Command {
 func NewGetMetricsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get",
-		Short: "Get metric by resourceID",
+		Short: "Get metric by metricID",
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err     error
@@ -89,7 +89,6 @@ func NewGetMetricsCommand() *cobra.Command {
 
 			client = orchestrator.NewOrchestratorClient(session)
 
-			fmt.Printf(args[1])
 			metricID, err := strconv.Atoi(args[0])
 			metricIDInt32 := int32(metricID)
 
