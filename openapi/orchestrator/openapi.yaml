@@ -6,7 +6,7 @@ info:
     title: Orchestrator
     version: 0.0.1
 paths:
-    /v1/orchestator/assessment_results:
+    /v1/orchestrator/assessment_results:
         put:
             operationId: Orchestrator_StoreAssessmentResult
             requestBody:
@@ -19,7 +19,7 @@ paths:
                 "200":
                     description: OK
                     content: {}
-    /v1/orchestator/assessment_tools:
+    /v1/orchestrator/assessment_tools:
         get:
             operationId: Orchestrator_ListAssessmentTools
             parameters:
@@ -50,7 +50,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/AssessmentTool'
-    /v1/orchestator/assessment_tools/{tool_id}:
+    /v1/orchestrator/assessment_tools/{tool_id}:
         get:
             operationId: Orchestrator_GetAssessmentTool
             parameters:
@@ -96,7 +96,7 @@ paths:
                 "200":
                     description: OK
                     content: {}
-    /v1/orchestator/metrics:
+    /v1/orchestrator/metrics:
         get:
             operationId: Orchestrator_ListMetrics
             responses:
@@ -106,7 +106,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListMetricsResponse'
-    /v1/orchestator/metrics/{metric_id}:
+    /v1/orchestrator/metrics/{metric_id}:
         get:
             operationId: Orchestrator_GetMetric
             parameters:
