@@ -27,10 +27,7 @@ package azure
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"strings"
 
 	"clouditor.io/clouditor/api/discovery"
@@ -57,11 +54,11 @@ func NewAzureIacTemplateDiscovery(opts ...DiscoveryOption) discovery.Discoverer 
 	return d
 }
 
-func (d *azureIacTemplateDiscovery) Name() string {
+func (*azureIacTemplateDiscovery) Name() string {
 	return "Azure"
 }
 
-func (d *azureIacTemplateDiscovery) Description() string {
+func (*azureIacTemplateDiscovery) Description() string {
 	return "Discovery IaC template."
 }
 
@@ -111,17 +108,11 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource
 			return nil, fmt.Errorf("IaC template type convertion failed")
 		}
 
-		err = saveExportTemplate(result, *resourceGroups[i].Name)
-		if err != nil {
-			fmt.Println("Error saving export template: ", err)
-		}
-
 		for templateKey, templateValue := range template {
-
 			if templateKey == "resources" {
 				resources, ok := templateValue.([]interface{})
 				if !ok {
-					return nil, fmt.Errorf("templateValue  type convertion failed")
+					return nil, fmt.Errorf("templateValue type convertion failed")
 				}
 
 				for _, resourcesValue := range resources {
@@ -163,7 +154,7 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource
 }
 
 // saveExportTemplate saves the resource group template in a json file.
-func saveExportTemplate(template resources.GroupExportResult, groupName string) error {
+/*func saveExportTemplate(template resources.GroupExportResult, groupName string) error {
 
 	var (
 		filepath     string
@@ -196,7 +187,7 @@ func saveExportTemplate(template resources.GroupExportResult, groupName string) 
 	}
 
 	return nil
-}
+}*/
 
 func (d *azureIacTemplateDiscovery) createStorageResource(resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
 
