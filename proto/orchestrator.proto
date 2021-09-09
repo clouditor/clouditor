@@ -81,13 +81,7 @@ message UpdateAssessmentToolRequest {
 // TODO IDs as string or int32?
 message DeregisterAssessmentToolRequest { string tool_id = 1; }
 
-message StoreAssessmentResultRequest {
-  AssessmentResult result = 1;
-}
-
-//message StoreEvidenceRequest {
-//  Evidence evidence = 1;
-//}
+message StoreAssessmentResultRequest { AssessmentResult result = 1; }
 
 message GetMetricsRequest { int32 metric_id = 1; }
 message GetMetricResponse { Metric metric = 1; }
@@ -99,7 +93,7 @@ service Orchestrator {
   rpc RegisterAssessmentTool(RegisterAssessmentToolRequest)
       returns (AssessmentTool) {
     option (google.api.http) = {
-      post : "/v1/orchestator/assessment_tools"
+      post : "/v1/orchestrator/assessment_tools"
       body : "tool"
     };
   }
@@ -107,21 +101,21 @@ service Orchestrator {
   rpc ListAssessmentTools(ListAssessmentToolsRequest)
       returns (ListAssessmentToolsResponse) {
     option (google.api.http) = {
-      get : "/v1/orchestator/assessment_tools"
+      get : "/v1/orchestrator/assessment_tools"
       additional_bindings {get : "/v1/orchestator/{metric_id}/assessment_tools"}
     };
   }
 
   rpc GetAssessmentTool(GetAssessmentToolRequest) returns (AssessmentTool) {
     option (google.api.http) = {
-      get : "/v1/orchestator/assessment_tools/{tool_id}"
+      get : "/v1/orchestrator/assessment_tools/{tool_id}"
     };
   }
 
   rpc UpdateAssessmentTool(UpdateAssessmentToolRequest)
       returns (AssessmentTool) {
     option (google.api.http) = {
-      put : "/v1/orchestator/assessment_tools/{tool_id}"
+      put : "/v1/orchestrator/assessment_tools/{tool_id}"
       body : "tool"
     };
   }
@@ -129,26 +123,20 @@ service Orchestrator {
   rpc DeregisterAssessmentTool(DeregisterAssessmentToolRequest)
       returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      delete : "/v1/orchestator/assessment_tools/{tool_id}"
+      delete : "/v1/orchestrator/assessment_tools/{tool_id}"
     };
   }
 
-  rpc StoreAssessmentResult(StoreAssessmentResultRequest) returns (google.protobuf.Empty) {
+  rpc StoreAssessmentResult(StoreAssessmentResultRequest)
+      returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      put : "/v1/orchestator/assessment_results"
+      put : "/v1/orchestrator/assessment_results"
       body : "result"
     };
   }
 
   // ToDo(all): Why do we not use 'StreamAssessmentResultRequest'?
   rpc StreamAssessmentResults(stream AssessmentResult) returns (google.protobuf.Empty);
-
-//  rpc StoreEvidence(StoreEvidenceRequest) returns (google.protobuf.Empty) {
-//    option (google.api.http) = {
-//      put : "/v1/orchestator/evidence"
-//      body : "evidence"
-//    };
-//  }
 
   rpc StreamEvidences(stream Evidence) returns (google.protobuf.Empty);
 

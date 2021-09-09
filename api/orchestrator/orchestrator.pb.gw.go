@@ -867,23 +867,23 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 }
 
 var (
-	pattern_Orchestrator_RegisterAssessmentTool_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestator", "assessment_tools"}, ""))
+	pattern_Orchestrator_RegisterAssessmentTool_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "assessment_tools"}, ""))
 
-	pattern_Orchestrator_ListAssessmentTools_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestator", "assessment_tools"}, ""))
+	pattern_Orchestrator_ListAssessmentTools_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "assessment_tools"}, ""))
 
 	pattern_Orchestrator_ListAssessmentTools_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"v1", "orchestator", "metric_id", "assessment_tools"}, ""))
 
-	pattern_Orchestrator_GetAssessmentTool_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestator", "assessment_tools", "tool_id"}, ""))
+	pattern_Orchestrator_GetAssessmentTool_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "assessment_tools", "tool_id"}, ""))
 
-	pattern_Orchestrator_UpdateAssessmentTool_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestator", "assessment_tools", "tool_id"}, ""))
+	pattern_Orchestrator_UpdateAssessmentTool_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "assessment_tools", "tool_id"}, ""))
 
-	pattern_Orchestrator_DeregisterAssessmentTool_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestator", "assessment_tools", "tool_id"}, ""))
+	pattern_Orchestrator_DeregisterAssessmentTool_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "assessment_tools", "tool_id"}, ""))
 
-	pattern_Orchestrator_StoreAssessmentResult_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestator", "assessment_results"}, ""))
+	pattern_Orchestrator_StoreAssessmentResult_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "assessment_results"}, ""))
 
-	pattern_Orchestrator_ListMetrics_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestator", "metrics"}, ""))
+	pattern_Orchestrator_ListMetrics_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "metrics"}, ""))
 
-	pattern_Orchestrator_GetMetric_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestator", "metrics", "metric_id"}, ""))
+	pattern_Orchestrator_GetMetric_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "metrics", "metric_id"}, ""))
 )
 
 var (

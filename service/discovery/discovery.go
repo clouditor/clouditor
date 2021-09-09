@@ -27,11 +27,7 @@ package discovery
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"github.com/google/uuid"
-	"io/ioutil"
-	"os"
 	"strings"
 	"time"
 
@@ -126,7 +122,7 @@ func (s Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (r
 
 	awsClient, err := aws.NewClient()
 	if err != nil {
-		log.Error("Could not load credentials:", err)
+		log.Errorf("Could not load credentials: %s", err)
 		return nil, err
 	}
 
@@ -250,23 +246,12 @@ func (s Service) Query(_ context.Context, request *discovery.QueryRequest) (resp
 		r = append(r, s)
 	}
 
-	// Save discovery result to filesystem
-	filenameFilesystem := "resources_ontology.json"
-	tmp := ResultOntology{
-		Result: &structpb.ListValue{Values: r},
-	}
-	err = saveResourcesToFilesystem(tmp, filenameFilesystem)
-
-	if err != nil {
-		fmt.Println("Error writing result to filesystem: %w,", err)
-	}
-
 	return &discovery.QueryResponse{
 		Result: &structpb.ListValue{Values: r},
 	}, nil
 }
 
-func saveResourcesToFilesystem(result ResultOntology, filename string) error {
+/*func saveResourcesToFilesystem(result ResultOntology, filename string) error {
 	var (
 		filepath string
 	)
@@ -274,7 +259,7 @@ func saveResourcesToFilesystem(result ResultOntology, filename string) error {
 	prefix, indent := "", "    "
 	exported, err := json.MarshalIndent(result, prefix, indent)
 	if err != nil {
-		return fmt.Errorf("MarshalIndent failed %w", err)
+		return fmt.Errorf("marshalling JSON failed %w", err)
 	}
 
 	filepath = "../../results/discovery_results/"
@@ -293,4 +278,4 @@ func saveResourcesToFilesystem(result ResultOntology, filename string) error {
 	}
 
 	return nil
-}
+}*/
