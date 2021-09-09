@@ -82,7 +82,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestListTool(t *testing.T) {
+func TestListMetric(t *testing.T) {
 	var err error
 	var b bytes.Buffer
 
@@ -100,4 +100,24 @@ func TestListTool(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response.Metrics)
+}
+
+func TestGetMetric(t *testing.T) {
+	var err error
+	var b bytes.Buffer
+
+	cli.Output = &b
+
+	cmd := metric.NewGetMetricsCommand()
+	err = cmd.RunE(nil, []string{"1"})
+
+	assert.Nil(t, err)
+
+	var response *orchestrator.GetMetricResponse = &orchestrator.GetMetricResponse{}
+
+	err = protojson.Unmarshal(b.Bytes(), response)
+
+	assert.Nil(t, err)
+	assert.NotNil(t, response)
+	assert.NotEmpty(t, response.Metric)
 }

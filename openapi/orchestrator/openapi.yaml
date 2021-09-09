@@ -96,7 +96,7 @@ paths:
                 "200":
                     description: OK
                     content: {}
-    /v1/orchestator/metrics:
+    /v1/orchestrator/metrics:
         get:
             operationId: Orchestrator_ListMetrics
             responses:
@@ -106,7 +106,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListMetricsResponse'
-    /v1/orchestator/metrics/{metric_id}:
+    /v1/orchestrator/metrics/{metric_id}:
         get:
             operationId: Orchestrator_GetMetric
             parameters:
@@ -120,7 +120,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/Metric'
+                                $ref: '#/components/schemas/GetMetricResponse'
 components:
     schemas:
         AllowedValues:
@@ -182,6 +182,10 @@ components:
                     description: '"raw" evidence (for the auditor), for example the raw JSON response from the API. This does not follow a defined schema'
                 resource:
                     $ref: '#/components/schemas/Value'
+        GetMetricResponse:
+            properties:
+                metric:
+                    $ref: '#/components/schemas/Metric'
         ListAssessmentToolsResponse:
             properties:
                 tools:

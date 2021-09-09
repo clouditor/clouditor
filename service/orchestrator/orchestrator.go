@@ -94,14 +94,19 @@ func (s *Service) ListMetrics(ctx context.Context, request *orchestrator.ListMet
 	return response, nil
 }
 
-func (s *Service) GetMetric(ctx context.Context, request *orchestrator.GetMetricsRequest) (metric *assessment.Metric, err error) {
+func (s *Service) GetMetric(ctx context.Context, request *orchestrator.GetMetricsRequest) (response *orchestrator.GetMetricResponse, err error) {
 	var ok bool
+	var metric *assessment.Metric
 
 	if metric, ok = metricIndex[request.MetricId]; !ok {
 		return nil, status.Errorf(codes.NotFound, "Could not find metric with id %d", request.MetricId)
 	}
 
-	return metric, nil
+	response = &orchestrator.GetMetricResponse{
+		Metric: metric,
+	}
+
+	return response, nil
 }
 
 //// Tools
