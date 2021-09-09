@@ -54,11 +54,11 @@ func NewAzureIacTemplateDiscovery(opts ...DiscoveryOption) discovery.Discoverer 
 	return d
 }
 
-func (_ *azureIacTemplateDiscovery) Name() string {
+func (*azureIacTemplateDiscovery) Name() string {
 	return "Azure"
 }
 
-func (_ *azureIacTemplateDiscovery) Description() string {
+func (*azureIacTemplateDiscovery) Description() string {
 	return "Discovery IaC template."
 }
 

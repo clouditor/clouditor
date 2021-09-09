@@ -27,10 +27,6 @@ package discovery
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"os"
 	"strings"
 	"time"
 
@@ -253,7 +249,7 @@ func (s Service) Query(_ context.Context, request *discovery.QueryRequest) (resp
 	}, nil
 }
 
-func saveResourcesToFilesystem(result ResultOntology, filename string) error {
+/*func saveResourcesToFilesystem(result ResultOntology, filename string) error {
 	var (
 		filepath string
 	)
@@ -280,4 +276,4 @@ func saveResourcesToFilesystem(result ResultOntology, filename string) error {
 	}
 
 	return nil
-}
+}*/
