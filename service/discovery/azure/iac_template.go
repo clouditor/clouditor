@@ -27,10 +27,7 @@ package azure
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"strings"
 
 	"clouditor.io/clouditor/api/discovery"
@@ -57,11 +54,11 @@ func NewAzureIacTemplateDiscovery(opts ...DiscoveryOption) discovery.Discoverer 
 	return d
 }
 
-func (d *azureIacTemplateDiscovery) Name() string {
+func (_ *azureIacTemplateDiscovery) Name() string {
 	return "Azure"
 }
 
-func (d *azureIacTemplateDiscovery) Description() string {
+func (_ *azureIacTemplateDiscovery) Description() string {
 	return "Discovery IaC template."
 }
 
@@ -157,7 +154,7 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource
 }
 
 // saveExportTemplate saves the resource group template in a json file.
-func saveExportTemplate(template resources.GroupExportResult, groupName string) error {
+/*func saveExportTemplate(template resources.GroupExportResult, groupName string) error {
 
 	var (
 		filepath     string
@@ -190,7 +187,7 @@ func saveExportTemplate(template resources.GroupExportResult, groupName string) 
 	}
 
 	return nil
-}
+}*/
 
 func (d *azureIacTemplateDiscovery) createStorageResource(resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
 
