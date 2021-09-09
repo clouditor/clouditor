@@ -203,7 +203,7 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 		// check for object storage
 		for _, v := range resource.GetType() {
 			if v == "ObjectStorage" {
-				evidence.ApplicableMetrics = []int32{1}
+				evidence.ApplicableMetrics = []int32{1, 2}
 			}
 		}
 

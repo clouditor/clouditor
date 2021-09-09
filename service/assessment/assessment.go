@@ -99,10 +99,12 @@ func (s Service) handleEvidence(evidence *assessment.Evidence) (result *assessme
 	listId++
 	evidence.Id = fmt.Sprintf("%d", listId)
 
-	// TODO(oxisto): actually look up metric via orchestrator
-	if len(evidence.ApplicableMetrics) != 0 {
-		metric := evidence.ApplicableMetrics[0]
+	if len(evidence.ApplicableMetrics) == 0 {
+		log.Warnf("Could not find a valid metric for evidence of resource %s", evidence.ResourceId)
+	}
 
+	// TODO(oxisto): actually look up metric via orchestrator
+	for _, metric := range evidence.ApplicableMetrics {
 		var baseDir string = "."
 
 		// check, if we are in the root of Clouditor
@@ -130,16 +132,15 @@ func (s Service) handleEvidence(evidence *assessment.Evidence) (result *assessme
 		result := &assessment.Result{
 			ResourceId: evidence.ResourceId,
 			Compliant:  data["compliant"].(bool),
-			MetricId:   metric,
+			MetricId:   int32(metric),
 		}
 
-		s.results[evidence.ResourceId] = result
+		// just a little hack to quickly enable multiple results per resource
+		s.results[fmt.Sprintf("%s-%d", evidence.ResourceId, metric)] = result
 
 		if s.ResultHook != nil {
 			go s.ResultHook(result, nil)
 		}
-	} else {
-		log.Warnf("Could not find a valid metric for evidence of resource %s", evidence.ResourceId)
 	}
 
 	result = evidence

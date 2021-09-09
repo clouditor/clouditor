@@ -85,11 +85,13 @@ func TestQuery(t *testing.T) {
 
 	assessmentServer := standalone.NewAssessmentServer().(*service_assessment.Service)
 	assessmentServer.ResultHook = func(result *assessment.Result, err error) {
-		assert.Nil(t, err)
-		assert.NotNil(t, result)
+		if result.MetricId == 1 {
+			assert.Nil(t, err)
+			assert.NotNil(t, result)
 
-		assert.Equal(t, "some-id", result.ResourceId)
-		assert.Equal(t, true, result.Compliant)
+			assert.Equal(t, "some-id", result.ResourceId)
+			assert.Equal(t, true, result.Compliant)
+		}
 
 		ready <- true
 	}
