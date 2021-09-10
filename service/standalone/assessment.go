@@ -109,7 +109,7 @@ func (s standaloneEvidenceClient) TriggerAssessment(ctx context.Context, in *ass
 	return assessmentService.TriggerAssessment(ctx, in)
 }
 
-func (s standaloneEvidenceClient) AssessEvidence(ctx context.Context, in *assessment.Evidence, opts ...grpc.CallOption) (*assessment.AssessEvidenceResponse, error) {
+func (s standaloneEvidenceClient) AssessEvidence(ctx context.Context, in *assessment.AssessEvidenceRequest, opts ...grpc.CallOption) (*assessment.AssessEvidenceResponse, error) {
 	return assessmentService.AssessEvidence(ctx, in)
 }
 
