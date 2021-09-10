@@ -26,6 +26,7 @@
 package discovery
 
 import (
+	"clouditor.io/clouditor/api/evidenceStore"
 	"context"
 	"github.com/google/uuid"
 	"strings"
@@ -57,17 +58,17 @@ var log *logrus.Entry
 type Service struct {
 	discovery.UnimplementedDiscoveryServer
 
-	Configurations map[discovery.Discoverer]*DiscoveryConfiguration
+	Configurations map[discovery.Discoverer]*Configuration
 	// TODO(oxisto) do not expose this. just makes tests easier for now
-	AssessmentStream assessment.Assessment_StreamEvidencesClient
+	AssessmentStream assessment.Assessment_AssessEvidencesClient
 
-	EvidenceStream assessment.Assessment_StreamEvidencesClient
+	EvidenceStoreStream evidenceStore.EvidenceStore_StoreEvidencesClient
 
 	resources map[string]voc.IsCloudResource
 	scheduler *gocron.Scheduler
 }
 
-type DiscoveryConfiguration struct {
+type Configuration struct {
 	Interval time.Duration
 }
 
@@ -83,7 +84,7 @@ func NewService() *Service {
 	return &Service{
 		resources:      make(map[string]voc.IsCloudResource),
 		scheduler:      gocron.NewScheduler(time.UTC),
-		Configurations: make(map[discovery.Discoverer]*DiscoveryConfiguration),
+		Configurations: make(map[discovery.Discoverer]*Configuration),
 	}
 }
 
@@ -96,16 +97,21 @@ func (s Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (r
 
 	s.scheduler.TagsUnique()
 
+	// Establish connection to assessment component
 	var client assessment.AssessmentClient
-
 	// TODO(oxisto): support assessment on another tcp/port
 	cc, err := grpc.Dial("localhost:9090", grpc.WithInsecure())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not connect to assessment service: %v", err)
 	}
 	client = assessment.NewAssessmentClient(cc)
+	s.AssessmentStream, _ = client.AssessEvidences(context.Background())
 
-	s.AssessmentStream, _ = client.StreamEvidences(context.Background())
+	// Establish connection to evidenceStore component
+	var evidenceStoreClient evidenceStore.EvidenceStoreClient
+	cc, err = grpc.Dial("localhost:9091", grpc.WithInsecure())
+	evidenceStoreClient = evidenceStore.NewEvidenceStoreClient(cc)
+	s.EvidenceStoreStream, _ = evidenceStoreClient.StoreEvidences(context.Background())
 
 	// create an authorizer from env vars or Azure Managed Service Identity
 	authorizer, err := auth.NewAuthorizerFromCLI()
@@ -140,7 +146,7 @@ func (s Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (r
 	)
 
 	for _, v := range discoverer {
-		s.Configurations[v] = &DiscoveryConfiguration{
+		s.Configurations[v] = &Configuration{
 			Interval: 5 * time.Minute,
 		}
 
@@ -204,8 +210,8 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 			}
 		}
 
-		if s.AssessmentStream == nil || s.EvidenceStream == nil {
-			log.Warnf("Evidence stream not available")
+		if a, e := s.AssessmentStream == nil, s.EvidenceStoreStream == nil; a || e {
+			log.Warnf("Evidence stream to assessment component (%v) or to evidenceStore component (%v) not available", a, e)
 			continue
 		}
 
@@ -216,7 +222,7 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 			log.Errorf("Could not send evidence to Assessment: %v", err)
 		}
 
-		err = s.EvidenceStream.Send(evidence)
+		err = s.EvidenceStoreStream.Send(evidence)
 		if err != nil {
 			log.Errorf("Could not send evidence to Orchestrator: %v", err)
 		}
