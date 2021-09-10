@@ -109,14 +109,12 @@ func TestMain(m *testing.M) {
 		Resource:          s,
 	}
 
-	_, err = client.StoreEvidence(context.Background(), &assessment.StoreEvidenceRequest{
-		Evidence: evidence,
-	})
+	_, err = client.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{Evidence: evidence})
 	if err != nil {
 		panic(err)
 	}
 
-	// make the test wait for envidence to be stored
+	// make the test wait for evidence to be stored
 	select {
 	case <-ready:
 		break
