@@ -3,7 +3,7 @@
 package evidenceStore
 
 import (
-	assessment "api/assessment"
+	assessment "clouditor.io/clouditor/api/assessment"
 	context "context"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
