@@ -147,8 +147,9 @@ func (s Service) handleEvidence(evidence *assessment.AssessEvidenceRequest) (res
 		}
 	}
 
-	//result = evidence
-	result.Status = true
+	result = &assessment.AssessEvidenceResponse{
+		Status: true,
+	}
 
 	return
 }
