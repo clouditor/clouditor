@@ -62,7 +62,7 @@ func NewService() assessment.AssessmentServer {
 	}
 }
 
-func (s Service) StoreEvidence(ctx context.Context, req *assessment.Evidence) (res *assessment.Evidence, err error) {
+func (s Service) AssessEvidence(ctx context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
 	res, err = s.handleEvidence(req)
 
 	if err != nil {
@@ -72,14 +72,17 @@ func (s Service) StoreEvidence(ctx context.Context, req *assessment.Evidence) (r
 	return
 }
 
-func (s Service) StreamEvidences(stream assessment.Assessment_AssessEvidencesServer) error {
+func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) error {
 	var evidence *assessment.Evidence
 	var err error
 
 	for {
 		evidence, err = stream.Recv()
+		evidenceRequest := &assessment.AssessEvidenceRequest{
+			Evidence: evidence,
+		}
 
-		_, _ = s.handleEvidence(evidence)
+		_, _ = s.handleEvidence(evidenceRequest)
 
 		if err == io.EOF {
 			log.Infof("Stopped receiving streamed evidence")
@@ -90,21 +93,21 @@ func (s Service) StreamEvidences(stream assessment.Assessment_AssessEvidencesSer
 	}
 }
 
-func (s Service) handleEvidence(evidence *assessment.Evidence) (result *assessment.Evidence, err error) {
-	log.Infof("Received evidence for resource %s", evidence.ResourceId)
+func (s Service) handleEvidence(evidence *assessment.AssessEvidenceRequest) (result *assessment.AssessEvidenceResponse, err error) {
+	log.Infof("Received evidence for resource %s", evidence.Evidence.ResourceId)
 	log.Debugf("Evidence: %+v", evidence)
 
 	var file string
 
 	listId++
-	evidence.Id = fmt.Sprintf("%d", listId)
+	evidence.Evidence.Id = fmt.Sprintf("%d", listId)
 
-	if len(evidence.ApplicableMetrics) == 0 {
-		log.Warnf("Could not find a valid metric for evidence of resource %s", evidence.ResourceId)
+	if len(evidence.Evidence.ApplicableMetrics) == 0 {
+		log.Warnf("Could not find a valid metric for evidence of resource %s", evidence.Evidence.ResourceId)
 	}
 
 	// TODO(oxisto): actually look up metric via orchestrator
-	for _, metric := range evidence.ApplicableMetrics {
+	for _, metric := range evidence.Evidence.ApplicableMetrics {
 		var baseDir string = "."
 
 		// check, if we are in the root of Clouditor
@@ -116,7 +119,7 @@ func (s Service) handleEvidence(evidence *assessment.Evidence) (result *assessme
 		file = fmt.Sprintf("%s/policies/metric%d.rego", baseDir, metric)
 
 		// TODO(oxisto): use go embed
-		data, err := policies.RunEvidence(file, evidence)
+		data, err := policies.RunEvidence(file, evidence.Evidence)
 		if err != nil {
 			log.Errorf("Could not evaluate evidence: %v", err)
 
@@ -124,26 +127,28 @@ func (s Service) handleEvidence(evidence *assessment.Evidence) (result *assessme
 				go s.ResultHook(nil, err)
 			}
 
+			result.Status = false
 			return nil, err
 		}
 
 		log.Infof("Evaluated evidence as %v", data["compliant"])
 
 		result := &assessment.Result{
-			ResourceId: evidence.ResourceId,
+			ResourceId: evidence.Evidence.ResourceId,
 			Compliant:  data["compliant"].(bool),
 			MetricId:   int32(metric),
 		}
 
 		// just a little hack to quickly enable multiple results per resource
-		s.results[fmt.Sprintf("%s-%d", evidence.ResourceId, metric)] = result
+		s.results[fmt.Sprintf("%s-%d", evidence.Evidence.ResourceId, metric)] = result
 
 		if s.ResultHook != nil {
 			go s.ResultHook(result, nil)
 		}
 	}
 
-	result = evidence
+	//result = evidence
+	result.Status = true
 
 	return
 }
