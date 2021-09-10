@@ -30,7 +30,6 @@ import (
 	"io/fs"
 	"testing"
 
-	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"github.com/stretchr/testify/assert"
@@ -53,7 +52,7 @@ func TestListMetrics(t *testing.T) {
 func TestGetMetric(t *testing.T) {
 	var (
 		request *orchestrator.GetMetricsRequest
-		metric  *assessment.Metric
+		metric  *orchestrator.GetMetricResponse
 		err     error
 	)
 
@@ -65,7 +64,7 @@ func TestGetMetric(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.NotNil(t, metric)
-	assert.Equal(t, request.MetricId, metric.Id)
+	assert.Equal(t, request.MetricId, metric.Metric.Id)
 }
 
 func TestLoad(t *testing.T) {
