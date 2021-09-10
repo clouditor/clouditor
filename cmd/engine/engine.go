@@ -26,6 +26,7 @@
 package main
 
 import (
+	"clouditor.io/clouditor/api/evidenceStore"
 	"context"
 	"errors"
 	"fmt"
@@ -49,6 +50,7 @@ import (
 	"clouditor.io/clouditor/rest"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_discovery "clouditor.io/clouditor/service/discovery"
+	service_evidenceStore "clouditor.io/clouditor/service/evidenceStore"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"clouditor.io/clouditor/service/standalone"
 
@@ -91,6 +93,7 @@ var authService *service_auth.Service
 var discoveryService *service_discovery.Service
 var orchestratorService orchestrator.OrchestratorServer
 var assessmentService assessment.AssessmentServer
+var evidenceStoreService evidenceStore.EvidenceStoreServer
 
 var log *logrus.Entry
 
@@ -140,7 +143,7 @@ func initConfig() {
 	viper.AutomaticEnv()
 }
 
-func doCmd(cmd *cobra.Command, args []string) (err error) {
+func doCmd(_ *cobra.Command, _ []string) (err error) {
 	log.Logger.Formatter = &logrus.TextFormatter{ForceColors: true}
 
 	log.Info("Welcome to new Clouditor 2.0")
@@ -169,6 +172,7 @@ func doCmd(cmd *cobra.Command, args []string) (err error) {
 	discoveryService = service_discovery.NewService()
 	orchestratorService = &service_orchestrator.Service{}
 	assessmentService = standalone.NewAssessmentServer()
+	evidenceStoreService = service_evidenceStore.NewService()
 
 	authService.CreateDefaultUser(viper.GetString(APIDefaultUserFlag), viper.GetString(APIDefaultPasswordFlag))
 
@@ -179,7 +183,7 @@ func doCmd(cmd *cobra.Command, args []string) (err error) {
 	grpcLogger.Formatter = &clouditor.GRPCFormatter{TextFormatter: logrus.TextFormatter{ForceColors: true}}
 	grpcLoggerEntry := grpcLogger.WithField("component", "grpc")
 
-	// disabling the grpc log itself, because it will log everything on INFO, where as DEBUG would be more
+	// disabling the grpc log itself, because it will log everything on INFO, whereas DEBUG would be more
 	// appropriate
 	// grpc_logrus.ReplaceGrpcLogger(grpcLoggerEntry)
 
@@ -202,6 +206,7 @@ func doCmd(cmd *cobra.Command, args []string) (err error) {
 	discovery.RegisterDiscoveryServer(server, discoveryService)
 	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
 	assessment.RegisterAssessmentServer(server, assessmentService)
+	evidenceStore.RegisterEvidenceStoreServer(server, evidenceStoreService)
 
 	// enable reflection, primary for testing in early stages
 	reflection.Register(server)

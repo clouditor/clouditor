@@ -8,7 +8,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -20,7 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type EvidenceStoreClient interface {
-	StoreEvidence(ctx context.Context, in *assessment.Evidence, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	StoreEvidence(ctx context.Context, in *assessment.Evidence, opts ...grpc.CallOption) (*StoreEvidenceResult, error)
 	StoreEvidences(ctx context.Context, opts ...grpc.CallOption) (EvidenceStore_StoreEvidencesClient, error)
 }
 
@@ -32,8 +31,8 @@ func NewEvidenceStoreClient(cc grpc.ClientConnInterface) EvidenceStoreClient {
 	return &evidenceStoreClient{cc}
 }
 
-func (c *evidenceStoreClient) StoreEvidence(ctx context.Context, in *assessment.Evidence, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *evidenceStoreClient) StoreEvidence(ctx context.Context, in *assessment.Evidence, opts ...grpc.CallOption) (*StoreEvidenceResult, error) {
+	out := new(StoreEvidenceResult)
 	err := c.cc.Invoke(ctx, "/clouditor.EvidenceStore/StoreEvidence", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -52,7 +51,7 @@ func (c *evidenceStoreClient) StoreEvidences(ctx context.Context, opts ...grpc.C
 
 type EvidenceStore_StoreEvidencesClient interface {
 	Send(*assessment.Evidence) error
-	CloseAndRecv() (*emptypb.Empty, error)
+	CloseAndRecv() (*StoreEvidenceResult, error)
 	grpc.ClientStream
 }
 
@@ -64,11 +63,11 @@ func (x *evidenceStoreStoreEvidencesClient) Send(m *assessment.Evidence) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *evidenceStoreStoreEvidencesClient) CloseAndRecv() (*emptypb.Empty, error) {
+func (x *evidenceStoreStoreEvidencesClient) CloseAndRecv() (*StoreEvidenceResult, error) {
 	if err := x.ClientStream.CloseSend(); err != nil {
 		return nil, err
 	}
-	m := new(emptypb.Empty)
+	m := new(StoreEvidenceResult)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -79,7 +78,7 @@ func (x *evidenceStoreStoreEvidencesClient) CloseAndRecv() (*emptypb.Empty, erro
 // All implementations must embed UnimplementedEvidenceStoreServer
 // for forward compatibility
 type EvidenceStoreServer interface {
-	StoreEvidence(context.Context, *assessment.Evidence) (*emptypb.Empty, error)
+	StoreEvidence(context.Context, *assessment.Evidence) (*StoreEvidenceResult, error)
 	StoreEvidences(EvidenceStore_StoreEvidencesServer) error
 	mustEmbedUnimplementedEvidenceStoreServer()
 }
@@ -88,7 +87,7 @@ type EvidenceStoreServer interface {
 type UnimplementedEvidenceStoreServer struct {
 }
 
-func (UnimplementedEvidenceStoreServer) StoreEvidence(context.Context, *assessment.Evidence) (*emptypb.Empty, error) {
+func (UnimplementedEvidenceStoreServer) StoreEvidence(context.Context, *assessment.Evidence) (*StoreEvidenceResult, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreEvidence not implemented")
 }
 func (UnimplementedEvidenceStoreServer) StoreEvidences(EvidenceStore_StoreEvidencesServer) error {
@@ -130,7 +129,7 @@ func _EvidenceStore_StoreEvidences_Handler(srv interface{}, stream grpc.ServerSt
 }
 
 type EvidenceStore_StoreEvidencesServer interface {
-	SendAndClose(*emptypb.Empty) error
+	SendAndClose(*StoreEvidenceResult) error
 	Recv() (*assessment.Evidence, error)
 	grpc.ServerStream
 }
@@ -139,7 +138,7 @@ type evidenceStoreStoreEvidencesServer struct {
 	grpc.ServerStream
 }
 
-func (x *evidenceStoreStoreEvidencesServer) SendAndClose(m *emptypb.Empty) error {
+func (x *evidenceStoreStoreEvidencesServer) SendAndClose(m *StoreEvidenceResult) error {
 	return x.ServerStream.SendMsg(m)
 }
 

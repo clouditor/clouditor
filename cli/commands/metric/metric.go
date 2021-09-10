@@ -34,7 +34,7 @@ import (
 	"strconv"
 )
 
-// NewListMetricCommand returns a cobra command for the `list` subcommand
+// NewListMetricsCommand returns a cobra command for the `list` subcommand
 func NewListMetricsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
@@ -66,7 +66,7 @@ func NewListMetricsCommand() *cobra.Command {
 	return cmd
 }
 
-// NewGetMetricCommand returns a cobra command for the `get` subcommand
+// NewGetMetricsCommand returns a cobra command for the `get` subcommand
 func NewGetMetricsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get",
@@ -84,7 +84,6 @@ func NewGetMetricsCommand() *cobra.Command {
 				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
 				return nil
 			}
-
 
 			client = orchestrator.NewOrchestratorClient(session)
 

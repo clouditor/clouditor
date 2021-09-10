@@ -4,5 +4,16 @@
     "title": "OpenAPI Spec for Istio APIs.",
     "version": "clouditor"
   },
-  "components": {}
+  "components": {
+    "schemas": {
+      "clouditor.StoreEvidenceResult": {
+        "properties": {
+          "status": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    }
+  }
 }

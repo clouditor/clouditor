@@ -28,12 +28,17 @@ syntax = "proto3";
 
 package clouditor;
 
-import "google/protobuf/empty.proto";
 import "evidence.proto";
 
 option go_package = "api/evidenceStore";
 
 service EvidenceStore {
-  rpc StoreEvidence(Evidence) returns (google.protobuf.Empty);
-  rpc StoreEvidences(stream Evidence) returns (google.protobuf.Empty);
+  rpc StoreEvidence(Evidence) returns (StoreEvidenceResult);
+  rpc StoreEvidences(stream Evidence) returns (StoreEvidenceResult);
+}
+
+// ToDo(lebogg): Add and implement method getEvidence
+
+message StoreEvidenceResult {
+  bool status = 1;
 }

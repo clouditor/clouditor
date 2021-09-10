@@ -109,7 +109,7 @@ func (s Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (r
 
 	// Establish connection to evidenceStore component
 	var evidenceStoreClient evidenceStore.EvidenceStoreClient
-	cc, err = grpc.Dial("localhost:9091", grpc.WithInsecure())
+	cc, err = grpc.Dial("localhost:9090", grpc.WithInsecure())
 	evidenceStoreClient = evidenceStore.NewEvidenceStoreClient(cc)
 	s.EvidenceStoreStream, _ = evidenceStoreClient.StoreEvidences(context.Background())
 
@@ -210,8 +210,13 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 			}
 		}
 
-		if a, e := s.AssessmentStream == nil, s.EvidenceStoreStream == nil; a || e {
-			log.Warnf("Evidence stream to assessment component (%v) or to evidenceStore component (%v) not available", a, e)
+		if s.AssessmentStream == nil {
+			log.Warnf("Evidence stream to Assessment component not available")
+			continue
+		}
+
+		if s.EvidenceStoreStream == nil {
+			log.Warnf("Evidence stream to EvidenceStore component not available")
 			continue
 		}
 
@@ -224,7 +229,7 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 
 		err = s.EvidenceStoreStream.Send(evidence)
 		if err != nil {
-			log.Errorf("Could not send evidence to Orchestrator: %v", err)
+			log.Errorf("Could not send evidence to EvidenceStore: %v", err)
 		}
 	}
 }

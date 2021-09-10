@@ -62,7 +62,7 @@ func NewService() assessment.AssessmentServer {
 	}
 }
 
-func (s Service) AssessEvidence(ctx context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
+func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
 	res, err = s.handleEvidence(req)
 
 	if err != nil {
@@ -85,7 +85,7 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 		_, _ = s.handleEvidence(evidenceRequest)
 
 		if err == io.EOF {
-			log.Infof("Stopped receiving streamed evidence")
+			log.Infof("Stopped receiving streamed evidences")
 
 			return stream.SendAndClose(&emptypb.Empty{})
 		}
@@ -154,7 +154,7 @@ func (s Service) handleEvidence(evidence *assessment.AssessEvidenceRequest) (res
 	return
 }
 
-func (s Service) ListAssessmentResults(ctx context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
+func (s Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
 	res = new(assessment.ListAssessmentResultsResponse)
 	res.Results = []*assessment.Result{}
 
