@@ -24,6 +24,7 @@
  *
  * This file is part of Clouditor Community Edition.
  */
+// ToDo(all): Change name of file to resources.proto or similar? (It is not containing evidences only)
 syntax = "proto3";
 
 package clouditor;
@@ -52,7 +53,7 @@ message Evidence {
   string raw = 6;
 
   // optional; a semantic representation of the Cloud resource according to our
-  // defined ontology. a JSON seralized node of our semantic graph. This may be
+  // defined ontology. a JSON serialized node of our semantic graph. This may be
   // Clouditor-specific.
   google.protobuf.Value resource = 7;
 }

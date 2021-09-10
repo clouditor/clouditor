@@ -26,9 +26,11 @@ type OrchestratorClient interface {
 	UpdateAssessmentTool(ctx context.Context, in *UpdateAssessmentToolRequest, opts ...grpc.CallOption) (*AssessmentTool, error)
 	DeregisterAssessmentTool(ctx context.Context, in *DeregisterAssessmentToolRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	StoreAssessmentResult(ctx context.Context, in *StoreAssessmentResultRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// ToDo(all): Why do we not use 'StreamAssessmentResultRequest'?
 	StreamAssessmentResults(ctx context.Context, opts ...grpc.CallOption) (Orchestrator_StreamAssessmentResultsClient, error)
+	StreamEvidences(ctx context.Context, opts ...grpc.CallOption) (Orchestrator_StreamEvidencesClient, error)
 	ListMetrics(ctx context.Context, in *ListMetricsRequest, opts ...grpc.CallOption) (*ListMetricsResponse, error)
-	GetMetric(ctx context.Context, in *GetMetricsRequest, opts ...grpc.CallOption) (*assessment.Metric, error)
+	GetMetric(ctx context.Context, in *GetMetricsRequest, opts ...grpc.CallOption) (*GetMetricResponse, error)
 }
 
 type orchestratorClient struct {
@@ -127,6 +129,40 @@ func (x *orchestratorStreamAssessmentResultsClient) CloseAndRecv() (*emptypb.Emp
 	return m, nil
 }
 
+func (c *orchestratorClient) StreamEvidences(ctx context.Context, opts ...grpc.CallOption) (Orchestrator_StreamEvidencesClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Orchestrator_ServiceDesc.Streams[1], "/clouditor.Orchestrator/StreamEvidences", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &orchestratorStreamEvidencesClient{stream}
+	return x, nil
+}
+
+type Orchestrator_StreamEvidencesClient interface {
+	Send(*assessment.Evidence) error
+	CloseAndRecv() (*emptypb.Empty, error)
+	grpc.ClientStream
+}
+
+type orchestratorStreamEvidencesClient struct {
+	grpc.ClientStream
+}
+
+func (x *orchestratorStreamEvidencesClient) Send(m *assessment.Evidence) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *orchestratorStreamEvidencesClient) CloseAndRecv() (*emptypb.Empty, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(emptypb.Empty)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *orchestratorClient) ListMetrics(ctx context.Context, in *ListMetricsRequest, opts ...grpc.CallOption) (*ListMetricsResponse, error) {
 	out := new(ListMetricsResponse)
 	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/ListMetrics", in, out, opts...)
@@ -136,8 +172,8 @@ func (c *orchestratorClient) ListMetrics(ctx context.Context, in *ListMetricsReq
 	return out, nil
 }
 
-func (c *orchestratorClient) GetMetric(ctx context.Context, in *GetMetricsRequest, opts ...grpc.CallOption) (*assessment.Metric, error) {
-	out := new(assessment.Metric)
+func (c *orchestratorClient) GetMetric(ctx context.Context, in *GetMetricsRequest, opts ...grpc.CallOption) (*GetMetricResponse, error) {
+	out := new(GetMetricResponse)
 	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/GetMetric", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -155,9 +191,11 @@ type OrchestratorServer interface {
 	UpdateAssessmentTool(context.Context, *UpdateAssessmentToolRequest) (*AssessmentTool, error)
 	DeregisterAssessmentTool(context.Context, *DeregisterAssessmentToolRequest) (*emptypb.Empty, error)
 	StoreAssessmentResult(context.Context, *StoreAssessmentResultRequest) (*emptypb.Empty, error)
+	// ToDo(all): Why do we not use 'StreamAssessmentResultRequest'?
 	StreamAssessmentResults(Orchestrator_StreamAssessmentResultsServer) error
+	StreamEvidences(Orchestrator_StreamEvidencesServer) error
 	ListMetrics(context.Context, *ListMetricsRequest) (*ListMetricsResponse, error)
-	GetMetric(context.Context, *GetMetricsRequest) (*assessment.Metric, error)
+	GetMetric(context.Context, *GetMetricsRequest) (*GetMetricResponse, error)
 	mustEmbedUnimplementedOrchestratorServer()
 }
 
@@ -186,10 +224,13 @@ func (UnimplementedOrchestratorServer) StoreAssessmentResult(context.Context, *S
 func (UnimplementedOrchestratorServer) StreamAssessmentResults(Orchestrator_StreamAssessmentResultsServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamAssessmentResults not implemented")
 }
+func (UnimplementedOrchestratorServer) StreamEvidences(Orchestrator_StreamEvidencesServer) error {
+	return status.Errorf(codes.Unimplemented, "method StreamEvidences not implemented")
+}
 func (UnimplementedOrchestratorServer) ListMetrics(context.Context, *ListMetricsRequest) (*ListMetricsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListMetrics not implemented")
 }
-func (UnimplementedOrchestratorServer) GetMetric(context.Context, *GetMetricsRequest) (*assessment.Metric, error) {
+func (UnimplementedOrchestratorServer) GetMetric(context.Context, *GetMetricsRequest) (*GetMetricResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMetric not implemented")
 }
 func (UnimplementedOrchestratorServer) mustEmbedUnimplementedOrchestratorServer() {}
@@ -339,6 +380,32 @@ func (x *orchestratorStreamAssessmentResultsServer) Recv() (*AssessmentResult, e
 	return m, nil
 }
 
+func _Orchestrator_StreamEvidences_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(OrchestratorServer).StreamEvidences(&orchestratorStreamEvidencesServer{stream})
+}
+
+type Orchestrator_StreamEvidencesServer interface {
+	SendAndClose(*emptypb.Empty) error
+	Recv() (*assessment.Evidence, error)
+	grpc.ServerStream
+}
+
+type orchestratorStreamEvidencesServer struct {
+	grpc.ServerStream
+}
+
+func (x *orchestratorStreamEvidencesServer) SendAndClose(m *emptypb.Empty) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *orchestratorStreamEvidencesServer) Recv() (*assessment.Evidence, error) {
+	m := new(assessment.Evidence)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func _Orchestrator_ListMetrics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListMetricsRequest)
 	if err := dec(in); err != nil {
@@ -419,6 +486,11 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "StreamAssessmentResults",
 			Handler:       _Orchestrator_StreamAssessmentResults_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "StreamEvidences",
+			Handler:       _Orchestrator_StreamEvidences_Handler,
 			ClientStreams: true,
 		},
 	},

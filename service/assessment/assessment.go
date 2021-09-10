@@ -62,8 +62,8 @@ func NewService() assessment.AssessmentServer {
 	}
 }
 
-func (s Service) StoreEvidence(ctx context.Context, req *assessment.StoreEvidenceRequest) (res *assessment.Evidence, err error) {
-	res, err = s.handleEvidence(req.Evidence)
+func (s Service) StoreEvidence(ctx context.Context, req *assessment.Evidence) (res *assessment.Evidence, err error) {
+	res, err = s.handleEvidence(req)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
@@ -72,7 +72,7 @@ func (s Service) StoreEvidence(ctx context.Context, req *assessment.StoreEvidenc
 	return
 }
 
-func (s Service) StreamEvidences(stream assessment.Assessment_StreamEvidencesServer) error {
+func (s Service) StreamEvidences(stream assessment.Assessment_AssessEvidencesServer) error {
 	var evidence *assessment.Evidence
 	var err error
 

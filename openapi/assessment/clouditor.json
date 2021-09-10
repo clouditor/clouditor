@@ -1,0 +1,605 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "OpenAPI Spec for Istio APIs.",
+    "version": "clouditor"
+  },
+  "components": {
+    "schemas": {
+      "clouditor.AllowedValues": {
+        "description": "Defines a range",
+        "properties": {
+          "values": {
+            "items": {
+              "description": "`Value` represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values. A producer of value is expected to set one of that variants, absence of any variant indicates an error.",
+              "properties": {
+                "kind": {
+                  "oneOf": [
+                    {
+                      "description": "Represents a null value.",
+                      "enum": [
+                        [
+                          "NULL_VALUE"
+                        ]
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "description": "Represents a double value.",
+                      "type": "number"
+                    },
+                    {
+                      "description": "Represents a string value.",
+                      "type": "string"
+                    },
+                    {
+                      "description": "Represents a boolean value.",
+                      "type": "boolean"
+                    },
+                    {
+                      "description": "Represents a structured value.",
+                      "properties": {
+                        "fields": {
+                          "additionalProperties": true,
+                          "type": "object"
+                        }
+                      }
+                    },
+                    {
+                      "description": "Represents a repeated `Value`.",
+                      "properties": {
+                        "values": {
+                          "items": {
+                            "type": "object"
+                          },
+                          "type": "array"
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "clouditor.AssessEvidenceResponse": {
+        "properties": {
+          "status": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "clouditor.Evidence": {
+        "properties": {
+          "applicable_metrics": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "id": {
+            "description": "the ID in a uuid format",
+            "type": "string"
+          },
+          "raw": {
+            "description": "\"raw\" evidence (for the auditor), for example the raw JSON response from the API. This does not follow a defined schema",
+            "type": "string"
+          },
+          "resource": {
+            "description": "optional; a semantic representation of the Cloud resource according to our defined ontology. a JSON serialized node of our semantic graph. This may be Clouditor-specific.",
+            "properties": {
+              "kind": {
+                "oneOf": [
+                  {
+                    "description": "Represents a null value.",
+                    "enum": [
+                      [
+                        "NULL_VALUE"
+                      ]
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "description": "Represents a double value.",
+                    "type": "number"
+                  },
+                  {
+                    "description": "Represents a string value.",
+                    "type": "string"
+                  },
+                  {
+                    "description": "Represents a boolean value.",
+                    "type": "boolean"
+                  },
+                  {
+                    "description": "Represents a structured value.",
+                    "properties": {
+                      "fields": {
+                        "additionalProperties": true,
+                        "type": "object"
+                      }
+                    }
+                  },
+                  {
+                    "description": "Represents a repeated `Value`.",
+                    "properties": {
+                      "values": {
+                        "items": {
+                          "type": "object"
+                        },
+                        "type": "array"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "type": "object"
+          },
+          "resource_id": {
+            "description": "reference to the resource this evidence was gathered from",
+            "type": "string"
+          },
+          "service_id": {
+            "description": "reference to a service this evidence was gathered from",
+            "type": "string"
+          },
+          "timestamp": {
+            "description": "TODO: replace with google/type/date.proto",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "clouditor.ListAssessmentResultsRequest": {
+        "type": "object"
+      },
+      "clouditor.ListAssessmentResultsResponse": {
+        "properties": {
+          "results": {
+            "items": {
+              "properties": {
+                "compliant": {
+                  "type": "boolean"
+                },
+                "metric_id": {
+                  "format": "int32",
+                  "type": "integer"
+                },
+                "resource_id": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "clouditor.Metric": {
+        "properties": {
+          "category": {
+            "description": "reference to control catalog category or domain",
+            "type": "string"
+          },
+          "description": {
+            "description": "a description of the metric",
+            "type": "string"
+          },
+          "id": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "name": {
+            "description": "a human readable name of the metric",
+            "type": "string"
+          },
+          "range": {
+            "description": "the range of this metric, depends on the scale",
+            "properties": {
+              "range": {
+                "oneOf": [
+                  {
+                    "description": "used for nomical scale",
+                    "properties": {
+                      "values": {
+                        "items": {
+                          "description": "`Value` represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values. A producer of value is expected to set one of that variants, absence of any variant indicates an error.",
+                          "properties": {
+                            "kind": {
+                              "oneOf": [
+                                {
+                                  "description": "Represents a null value.",
+                                  "enum": [
+                                    [
+                                      "NULL_VALUE"
+                                    ]
+                                  ],
+                                  "type": "string"
+                                },
+                                {
+                                  "description": "Represents a double value.",
+                                  "type": "number"
+                                },
+                                {
+                                  "description": "Represents a string value.",
+                                  "type": "string"
+                                },
+                                {
+                                  "description": "Represents a boolean value.",
+                                  "type": "boolean"
+                                },
+                                {
+                                  "description": "Represents a structured value.",
+                                  "properties": {
+                                    "fields": {
+                                      "additionalProperties": true,
+                                      "type": "object"
+                                    }
+                                  }
+                                },
+                                {
+                                  "description": "Represents a repeated `Value`.",
+                                  "properties": {
+                                    "values": {
+                                      "items": {
+                                        "type": "object"
+                                      },
+                                      "type": "array"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "type": "array"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  {
+                    "description": "used for ordinal scale",
+                    "properties": {
+                      "values": {
+                        "items": {
+                          "description": "`Value` represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values. A producer of value is expected to set one of that variants, absence of any variant indicates an error.",
+                          "properties": {
+                            "kind": {
+                              "oneOf": [
+                                {
+                                  "description": "Represents a null value.",
+                                  "enum": [
+                                    [
+                                      "NULL_VALUE"
+                                    ]
+                                  ],
+                                  "type": "string"
+                                },
+                                {
+                                  "description": "Represents a double value.",
+                                  "type": "number"
+                                },
+                                {
+                                  "description": "Represents a string value.",
+                                  "type": "string"
+                                },
+                                {
+                                  "description": "Represents a boolean value.",
+                                  "type": "boolean"
+                                },
+                                {
+                                  "description": "Represents a structured value.",
+                                  "properties": {
+                                    "fields": {
+                                      "additionalProperties": true,
+                                      "type": "object"
+                                    }
+                                  }
+                                },
+                                {
+                                  "description": "Represents a repeated `Value`.",
+                                  "properties": {
+                                    "values": {
+                                      "items": {
+                                        "type": "object"
+                                      },
+                                      "type": "array"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "type": "array"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  {
+                    "description": "used for metric scale",
+                    "properties": {
+                      "max": {
+                        "format": "int64",
+                        "type": "integer"
+                      },
+                      "min": {
+                        "format": "int64",
+                        "type": "integer"
+                      }
+                    },
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "type": "object"
+          },
+          "scale": {
+            "description": "the scale of this metric, e.g. categories, ranked data or metric values",
+            "enum": [
+              [
+                "NOMIMAL",
+                "ORDINAL",
+                "METRIC"
+              ]
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "clouditor.MinMax": {
+        "description": "Defines a range of values through a (inclusive) minimum and a maximum",
+        "properties": {
+          "max": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "min": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "clouditor.Order": {
+        "description": "Defines a range of values in a pre-defined order from the lowest to the highest.",
+        "properties": {
+          "values": {
+            "items": {
+              "description": "`Value` represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values. A producer of value is expected to set one of that variants, absence of any variant indicates an error.",
+              "properties": {
+                "kind": {
+                  "oneOf": [
+                    {
+                      "description": "Represents a null value.",
+                      "enum": [
+                        [
+                          "NULL_VALUE"
+                        ]
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "description": "Represents a double value.",
+                      "type": "number"
+                    },
+                    {
+                      "description": "Represents a string value.",
+                      "type": "string"
+                    },
+                    {
+                      "description": "Represents a boolean value.",
+                      "type": "boolean"
+                    },
+                    {
+                      "description": "Represents a structured value.",
+                      "properties": {
+                        "fields": {
+                          "additionalProperties": true,
+                          "type": "object"
+                        }
+                      }
+                    },
+                    {
+                      "description": "Represents a repeated `Value`.",
+                      "properties": {
+                        "values": {
+                          "items": {
+                            "type": "object"
+                          },
+                          "type": "array"
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "clouditor.Range": {
+        "description": "Defines a range of values",
+        "properties": {
+          "range": {
+            "oneOf": [
+              {
+                "description": "used for nomical scale",
+                "properties": {
+                  "values": {
+                    "items": {
+                      "description": "`Value` represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values. A producer of value is expected to set one of that variants, absence of any variant indicates an error.",
+                      "properties": {
+                        "kind": {
+                          "oneOf": [
+                            {
+                              "description": "Represents a null value.",
+                              "enum": [
+                                [
+                                  "NULL_VALUE"
+                                ]
+                              ],
+                              "type": "string"
+                            },
+                            {
+                              "description": "Represents a double value.",
+                              "type": "number"
+                            },
+                            {
+                              "description": "Represents a string value.",
+                              "type": "string"
+                            },
+                            {
+                              "description": "Represents a boolean value.",
+                              "type": "boolean"
+                            },
+                            {
+                              "description": "Represents a structured value.",
+                              "properties": {
+                                "fields": {
+                                  "additionalProperties": true,
+                                  "type": "object"
+                                }
+                              }
+                            },
+                            {
+                              "description": "Represents a repeated `Value`.",
+                              "properties": {
+                                "values": {
+                                  "items": {
+                                    "type": "object"
+                                  },
+                                  "type": "array"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              },
+              {
+                "description": "used for ordinal scale",
+                "properties": {
+                  "values": {
+                    "items": {
+                      "description": "`Value` represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values. A producer of value is expected to set one of that variants, absence of any variant indicates an error.",
+                      "properties": {
+                        "kind": {
+                          "oneOf": [
+                            {
+                              "description": "Represents a null value.",
+                              "enum": [
+                                [
+                                  "NULL_VALUE"
+                                ]
+                              ],
+                              "type": "string"
+                            },
+                            {
+                              "description": "Represents a double value.",
+                              "type": "number"
+                            },
+                            {
+                              "description": "Represents a string value.",
+                              "type": "string"
+                            },
+                            {
+                              "description": "Represents a boolean value.",
+                              "type": "boolean"
+                            },
+                            {
+                              "description": "Represents a structured value.",
+                              "properties": {
+                                "fields": {
+                                  "additionalProperties": true,
+                                  "type": "object"
+                                }
+                              }
+                            },
+                            {
+                              "description": "Represents a repeated `Value`.",
+                              "properties": {
+                                "values": {
+                                  "items": {
+                                    "type": "object"
+                                  },
+                                  "type": "array"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              },
+              {
+                "description": "used for metric scale",
+                "properties": {
+                  "max": {
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "min": {
+                    "format": "int64",
+                    "type": "integer"
+                  }
+                },
+                "type": "object"
+              }
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "clouditor.Result": {
+        "properties": {
+          "compliant": {
+            "type": "boolean"
+          },
+          "metric_id": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "resource_id": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "clouditor.TriggerAssessmentRequest": {
+        "properties": {
+          "someOption": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  }
+}

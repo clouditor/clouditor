@@ -33,14 +33,6 @@ import "google/protobuf/struct.proto";
 
 option go_package = "api/discovery";
 
-message StartDiscoveryRequest {}
-
-message StartDiscoveryResponse { bool successful = 1; }
-
-message QueryRequest { string filtered_type = 1; }
-
-message QueryResponse { google.protobuf.ListValue result = 1; }
-
 service Discovery {
   rpc Start(StartDiscoveryRequest) returns (StartDiscoveryResponse) {
     option (google.api.http) = {
@@ -58,3 +50,11 @@ service Discovery {
     };
   }
 }
+
+message StartDiscoveryRequest {}
+
+message StartDiscoveryResponse { bool successful = 1; }
+
+message QueryRequest { string filtered_type = 1; }
+
+message QueryResponse { google.protobuf.ListValue result = 1; }

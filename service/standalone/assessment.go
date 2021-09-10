@@ -109,15 +109,15 @@ func (s standaloneEvidenceClient) TriggerAssessment(ctx context.Context, in *ass
 	return assessmentService.TriggerAssessment(ctx, in)
 }
 
-func (s standaloneEvidenceClient) StoreEvidence(ctx context.Context, in *assessment.StoreEvidenceRequest, opts ...grpc.CallOption) (*assessment.Evidence, error) {
-	return assessmentService.StoreEvidence(ctx, in)
+func (s standaloneEvidenceClient) AssessEvidence(ctx context.Context, in *assessment.Evidence, opts ...grpc.CallOption) (*assessment.AssessEvidenceResponse, error) {
+	return assessmentService.AssessEvidence(ctx, in)
 }
 
 func (s standaloneEvidenceClient) ListAssessmentResults(ctx context.Context, in *assessment.ListAssessmentResultsRequest, opts ...grpc.CallOption) (*assessment.ListAssessmentResultsResponse, error) {
 	return assessmentService.ListAssessmentResults(ctx, in)
 }
 
-func (s standaloneEvidenceClient) StreamEvidences(ctx context.Context, opts ...grpc.CallOption) (assessment.Assessment_StreamEvidencesClient, error) {
+func (s standaloneEvidenceClient) AssessEvidences(ctx context.Context, opts ...grpc.CallOption) (assessment.Assessment_AssessEvidencesClient, error) {
 	var stream = &standaloneEvidenceStream{
 		serverChannel: make(chan *assessment.Evidence),
 		clientChannel: make(chan *emptypb.Empty),
@@ -125,7 +125,7 @@ func (s standaloneEvidenceClient) StreamEvidences(ctx context.Context, opts ...g
 	}
 
 	go func() {
-		_ = assessmentService.StreamEvidences(stream)
+		_ = assessmentService.AssessEvidences(stream)
 	}()
 
 	return stream, nil
