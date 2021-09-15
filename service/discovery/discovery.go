@@ -89,7 +89,7 @@ func NewService() *Service {
 }
 
 // Start starts discovery
-func (s Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (response *discovery.StartDiscoveryResponse, err error) {
+func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (response *discovery.StartDiscoveryResponse, err error) {
 
 	response = &discovery.StartDiscoveryResponse{Successful: true}
 
@@ -105,12 +105,17 @@ func (s Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (r
 		return nil, status.Errorf(codes.Internal, "could not connect to assessment service: %v", err)
 	}
 	client = assessment.NewAssessmentClient(cc)
+	// ToDo(lebogg): whats with the err?
 	s.AssessmentStream, _ = client.AssessEvidences(context.Background())
 
 	// Establish connection to evidenceStore component
 	var evidenceStoreClient evidenceStore.EvidenceStoreClient
 	cc, err = grpc.Dial("localhost:9090", grpc.WithInsecure())
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not connect to evidence store service: %v", err)
+	}
 	evidenceStoreClient = evidenceStore.NewEvidenceStoreClient(cc)
+	// ToDo(lebogg): whats with the err?
 	s.EvidenceStoreStream, _ = evidenceStoreClient.StoreEvidences(context.Background())
 
 	// create an authorizer from env vars or Azure Managed Service Identity

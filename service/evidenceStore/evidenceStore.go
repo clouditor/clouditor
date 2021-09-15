@@ -33,7 +33,7 @@ func (s *Service) StoreEvidence(_ context.Context, evidence *assessment.Evidence
 	log.Warnf("Storing evidence in-memory. But there is no other functionality here!")
 	s.evidences[evidence.Id] = evidence
 	resp.Status = true
-	return resp, nil
+	return
 }
 
 func (s *Service) StoreEvidences(stream evidenceStore.EvidenceStore_StoreEvidencesServer) (err error) {
