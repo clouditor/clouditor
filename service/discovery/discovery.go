@@ -97,7 +97,7 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 
 	// Establish connection to assessment component
 	var client assessment.AssessmentClient
-	// TODO(oxisto): support assessment on another tcp/port
+	// TODO(oxisto): support assessment on Another tcp/port
 	cc, err := grpc.Dial("localhost:9090", grpc.WithInsecure())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not connect to assessment service: %v", err)

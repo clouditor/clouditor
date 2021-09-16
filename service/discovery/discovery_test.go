@@ -23,43 +23,213 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package discovery_test
+package discovery
 
-//var service *service_discovery.Service
-//
-//type mockDiscoverer struct {
-//}
-//
-//func (m mockDiscoverer) Name() string { return "just mocking" }
-//
-//func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
-//	return []voc.IsCloudResource{
-//		&voc.ObjectStorage{
-//			Storage: &voc.Storage{
-//				CloudResource: &voc.CloudResource{
-//					ID:   "some-id",
-//					Name: "some-name",
-//					Type: []string{"ObjectStorage", "Storage", "Resource"},
-//				},
-//			},
-//			HttpEndpoint: &voc.HttpEndpoint{
-//				TransportEncryption: &voc.TransportEncryption{
-//					Enforced:   false,
-//					Enabled:    true,
-//					TlsVersion: "TLS1_2",
-//				},
-//			},
-//		},
-//		&voc.Compute{
-//			CloudResource: &voc.CloudResource{
-//				ID:   "some-other-id",
-//				Name: "some-other-name",
-//				Type: []string{"Compute", "Resource"},
-//			},
-//		},
-//	}, nil
-//}
-//
+import (
+	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/evidenceStore"
+	"clouditor.io/clouditor/voc"
+	"context"
+	"fmt"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/types/known/emptypb"
+	"testing"
+	"time"
+)
+
+type mockDiscoverer struct {
+	// testCase allows for different implementations for table tests in TestStartDiscovery
+	testCase int
+}
+
+func (m mockDiscoverer) Name() string { return "just mocking" }
+
+func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
+	switch m.testCase {
+	case 0:
+		return nil, fmt.Errorf("Mock Error in List()")
+	case 1:
+		res1 := mockIsCloudResource{Another: nil}
+		res2 := mockIsCloudResource{Another: &res1}
+		res1.Another = &res2
+		return []voc.IsCloudResource{
+			res1,
+		}, nil
+	case 2:
+		return []voc.IsCloudResource{
+			&voc.ObjectStorage{
+				Storage: &voc.Storage{
+					CloudResource: &voc.CloudResource{
+						ID:   "some-id",
+						Name: "some-name",
+						Type: []string{"ObjectStorage", "Storage", "Resource"},
+					},
+				},
+				HttpEndpoint: &voc.HttpEndpoint{
+					TransportEncryption: &voc.TransportEncryption{
+						Enforced:   false,
+						Enabled:    true,
+						TlsVersion: "TLS1_2",
+					},
+				},
+			},
+		}, nil
+	default:
+		return nil, nil
+	}
+}
+
+func TestStartDiscovery(t *testing.T) {
+	discoveryService := NewService()
+
+	type fields struct {
+		assessmentStream    assessment.Assessment_AssessEvidencesClient
+		evidenceStoreStream evidenceStore.EvidenceStore_StoreEvidencesClient
+		discoverer          discovery.Discoverer
+	}
+
+	tests := []struct {
+		name   string
+		fields fields
+	}{
+		{
+			name: "Err in discoverer",
+			fields: fields{
+				discoverer: mockDiscoverer{testCase: 0}},
+		},
+		{
+			name: "Err in marshaling the resource containing circular dependencies",
+			fields: fields{
+				discoverer: mockDiscoverer{testCase: 1}},
+		},
+		{
+			name: "No err in discoverer but no evidence stream to assessment",
+			fields: fields{
+				discoverer: mockDiscoverer{testCase: 2},
+			},
+		},
+		{
+			name: "No err in discoverer but no evidence stream to evidence store available",
+			fields: fields{
+				assessmentStream: mockAssessmentStream{},
+				discoverer:       mockDiscoverer{testCase: 2}},
+		},
+		{
+			name: "No err in discoverer but streaming to assessment fails",
+			fields: fields{
+				assessmentStream:    mockAssessmentStream{},
+				evidenceStoreStream: mockEvidenceStoreStream{},
+				discoverer:          mockDiscoverer{testCase: 2}},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			discoveryService.AssessmentStream = tt.fields.assessmentStream
+			discoveryService.EvidenceStoreStream = tt.fields.evidenceStoreStream
+			discoveryService.StartDiscovery(tt.fields.discoverer)
+		})
+	}
+
+}
+
+// mockAssessmentStream implements Assessment_AssessEvidencesClient interface
+type mockAssessmentStream struct{}
+
+func (mockAssessmentStream) Send(_ *assessment.Evidence) error {
+	return fmt.Errorf("MocK Send error")
+}
+
+func (mockAssessmentStream) CloseAndRecv() (*emptypb.Empty, error) {
+	return nil, nil
+}
+
+func (mockAssessmentStream) Header() (metadata.MD, error) {
+	return nil, nil
+}
+
+func (mockAssessmentStream) Trailer() metadata.MD {
+	return nil
+}
+
+func (mockAssessmentStream) CloseSend() error {
+	return nil
+}
+
+func (mockAssessmentStream) Context() context.Context {
+	return nil
+}
+
+func (mockAssessmentStream) SendMsg(_ interface{}) error {
+	return nil
+}
+
+func (mockAssessmentStream) RecvMsg(_ interface{}) error {
+	return nil
+}
+
+// mockEvidenceStoreStream implements EvidenceStore_StoreEvidencesClient interface
+type mockEvidenceStoreStream struct{}
+
+func (mockEvidenceStoreStream) Send(_ *assessment.Evidence) error {
+	return fmt.Errorf("MocK Send error")
+}
+
+func (mockEvidenceStoreStream) CloseAndRecv() (*evidenceStore.StoreEvidencesResponse, error) {
+	return nil, nil
+}
+
+func (mockEvidenceStoreStream) Header() (metadata.MD, error) {
+	return nil, nil
+}
+
+func (mockEvidenceStoreStream) Trailer() metadata.MD {
+	return nil
+}
+
+func (mockEvidenceStoreStream) CloseSend() error {
+	return nil
+}
+
+func (mockEvidenceStoreStream) Context() context.Context {
+	return nil
+}
+
+func (mockEvidenceStoreStream) SendMsg(_ interface{}) error {
+	return nil
+}
+
+func (mockEvidenceStoreStream) RecvMsg(_ interface{}) error {
+	return nil
+}
+
+// mockIsCloudResource implements mockIsCloudResource interface.
+// It is used for json.marshal to fail since it contains circular dependency
+type mockIsCloudResource struct {
+	Another *mockIsCloudResource `json:"Another"`
+}
+
+func (mockIsCloudResource) GetID() voc.ResourceID {
+	return ""
+}
+
+func (mockIsCloudResource) GetName() string {
+	return ""
+}
+
+func (mockIsCloudResource) GetType() []string {
+	return nil
+}
+
+func (mockIsCloudResource) HasType(_ string) bool {
+	return false
+}
+
+func (mockIsCloudResource) GetCreationTime() *time.Time {
+	return nil
+}
+
 //// ToDo: Adapt TestQuery at a later stage when we fully implement the standalone version
 //func TestQuery(t *testing.T) {
 //	var (
