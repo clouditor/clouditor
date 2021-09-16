@@ -1,7 +1,7 @@
 version = 1
 
 exclude_patterns = [
-    "api/orchestrator/orchestrator_grpc.pb.go "
+    "api/**.pb.*"
 ]
 
 [[analyzers]]
