@@ -138,7 +138,8 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	os.Exit(m.Run())
+	// ToDo(lebogg): Check if CRT-D0011 deepsource bug risk warning still occurs
+	defer os.Exit(m.Run())
 }
 
 func TestListResults(t *testing.T) {
