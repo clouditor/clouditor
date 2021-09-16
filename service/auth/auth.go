@@ -129,7 +129,7 @@ func verifyLogin(request *auth.LoginRequest) (result bool, user *auth.User, err 
 }
 
 // HashPassword returns a hash of password using argon2id.
-func (_ Service) HashPassword(password string) (string, error) {
+func (Service) HashPassword(password string) (string, error) {
 	return argon2.CreateHash(password, &argon2.Params{
 		SaltLength:  16,
 		Memory:      65536,
