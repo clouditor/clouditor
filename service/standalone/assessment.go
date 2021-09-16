@@ -57,19 +57,19 @@ func (s standaloneEvidenceStream) CloseAndRecv() (*emptypb.Empty, error) {
 	return empty, nil
 }
 
-func (s standaloneEvidenceStream) CloseSend() error {
+func (_ standaloneEvidenceStream) CloseSend() error {
 	return nil
 }
 
-func (s standaloneEvidenceStream) Header() (metadata.MD, error) {
+func (_ standaloneEvidenceStream) Header() (metadata.MD, error) {
 	return nil, nil
 }
 
-func (s standaloneEvidenceStream) Trailer() metadata.MD {
+func (_ standaloneEvidenceStream) Trailer() metadata.MD {
 	return nil
 }
 
-func (s standaloneEvidenceStream) Context() context.Context {
+func (_ standaloneEvidenceStream) Context() context.Context {
 	return nil
 }
 
@@ -79,15 +79,15 @@ func (s standaloneEvidenceStream) Send(evidence *assessment.Evidence) error {
 	return nil
 }
 
-func (s standaloneEvidenceStream) SendHeader(metadata.MD) error {
+func (_ standaloneEvidenceStream) SendHeader(metadata.MD) error {
 	return nil
 }
 
-func (s standaloneEvidenceStream) SetHeader(metadata.MD) error {
+func (_ standaloneEvidenceStream) SetHeader(metadata.MD) error {
 	return nil
 }
 
-func (s standaloneEvidenceStream) SetTrailer(metadata.MD) {
+func (_ standaloneEvidenceStream) SetTrailer(metadata.MD) {
 
 }
 
@@ -97,27 +97,27 @@ func (s standaloneEvidenceStream) Recv() (*assessment.Evidence, error) {
 	return evidence, nil
 }
 
-func (s standaloneEvidenceStream) RecvMsg(m interface{}) error {
+func (_ standaloneEvidenceStream) RecvMsg(_ interface{}) error {
 	return nil
 }
 
-func (s standaloneEvidenceStream) SendMsg(m interface{}) error {
+func (_ standaloneEvidenceStream) SendMsg(_ interface{}) error {
 	return nil
 }
 
-func (s standaloneEvidenceClient) TriggerAssessment(ctx context.Context, in *assessment.TriggerAssessmentRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (_ standaloneEvidenceClient) TriggerAssessment(ctx context.Context, in *assessment.TriggerAssessmentRequest, _ ...grpc.CallOption) (*emptypb.Empty, error) {
 	return assessmentService.TriggerAssessment(ctx, in)
 }
 
-func (s standaloneEvidenceClient) AssessEvidence(ctx context.Context, in *assessment.AssessEvidenceRequest, opts ...grpc.CallOption) (*assessment.AssessEvidenceResponse, error) {
+func (_ standaloneEvidenceClient) AssessEvidence(ctx context.Context, in *assessment.AssessEvidenceRequest, _ ...grpc.CallOption) (*assessment.AssessEvidenceResponse, error) {
 	return assessmentService.AssessEvidence(ctx, in)
 }
 
-func (s standaloneEvidenceClient) ListAssessmentResults(ctx context.Context, in *assessment.ListAssessmentResultsRequest, opts ...grpc.CallOption) (*assessment.ListAssessmentResultsResponse, error) {
+func (_ standaloneEvidenceClient) ListAssessmentResults(ctx context.Context, in *assessment.ListAssessmentResultsRequest, _ ...grpc.CallOption) (*assessment.ListAssessmentResultsResponse, error) {
 	return assessmentService.ListAssessmentResults(ctx, in)
 }
 
-func (s standaloneEvidenceClient) AssessEvidences(ctx context.Context, opts ...grpc.CallOption) (assessment.Assessment_AssessEvidencesClient, error) {
+func (_ standaloneEvidenceClient) AssessEvidences(_ context.Context, _ ...grpc.CallOption) (assessment.Assessment_AssessEvidencesClient, error) {
 	var stream = &standaloneEvidenceStream{
 		serverChannel: make(chan *assessment.Evidence),
 		clientChannel: make(chan *emptypb.Empty),

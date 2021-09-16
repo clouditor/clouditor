@@ -215,11 +215,13 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	go func() {
 		err = rest.RunServer(context.Background(), grpcPort, httpPort)
 		if errors.Is(err, http.ErrServerClosed) {
+			// ToDo(oxisto): deepsource anti-pattern: calls to os.Exit only in main() or init() functions
 			os.Exit(0)
 			return
 		}
 
 		if err != nil {
+			// ToDo(oxisto): deepsource anti-pattern: calls to log.Fatalf only in main() or init() functions
 			log.Fatalf("failed to serve gRPC-HTTP gateway: %v", err)
 		}
 	}()
