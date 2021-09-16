@@ -84,7 +84,7 @@ func LoadMetrics(metricsFile string) (err error) {
 	return nil
 }
 
-func (_ *Service) ListMetrics(_ context.Context, _ *orchestrator.ListMetricsRequest) (response *orchestrator.ListMetricsResponse, err error) {
+func (*Service) ListMetrics(_ context.Context, _ *orchestrator.ListMetricsRequest) (response *orchestrator.ListMetricsResponse, err error) {
 	response = &orchestrator.ListMetricsResponse{
 		Metrics: metrics,
 	}
@@ -92,7 +92,7 @@ func (_ *Service) ListMetrics(_ context.Context, _ *orchestrator.ListMetricsRequ
 	return response, nil
 }
 
-func (_ *Service) GetMetric(_ context.Context, request *orchestrator.GetMetricsRequest) (response *orchestrator.GetMetricResponse, err error) {
+func (*Service) GetMetric(_ context.Context, request *orchestrator.GetMetricsRequest) (response *orchestrator.GetMetricResponse, err error) {
 	var ok bool
 	var metric *assessment.Metric
 
@@ -110,32 +110,32 @@ func (_ *Service) GetMetric(_ context.Context, request *orchestrator.GetMetricsR
 //// Tools
 //
 //// TODO Implement DeregisterAssessmentTool
-//func (_ *Service) RegisterAssessmentTool (ctx context.Context, request *orchestrator.RegisterAssessmentToolRequest) (tool *orchestrator.AssessmentTool, err error) {
+//func ( *Service) RegisterAssessmentTool (ctx context.Context, request *orchestrator.RegisterAssessmentToolRequest) (tool *orchestrator.AssessmentTool, err error) {
 //	// TBD
 //	return tool, err
 //}
 //
 //// TODO Implement UpdateAssessmentTool
-//func (_ *Service) UpdateAssessmentTool (ctx context.Context, request *orchestrator.UpdateAssessmentToolRequest) (tool *orchestrator.AssessmentTool, err error) {
+//func ( *Service) UpdateAssessmentTool (ctx context.Context, request *orchestrator.UpdateAssessmentToolRequest) (tool *orchestrator.AssessmentTool, err error) {
 //	// TBD
 //	return tool, err
 //}
 //
 //// TODO Implement DeregisterAssessmentTool
-//func (_ *Service) DeregisterAssessmentTool (ctx context.Context, request *orchestrator.DeregisterAssessmentToolRequest) (nil, err error) {
+//func ( *Service) DeregisterAssessmentTool (ctx context.Context, request *orchestrator.DeregisterAssessmentToolRequest) (nil, err error) {
 //	// TBD
 //	return nil, err
 //}
 //
 //
 //// TODO Implement ListAssessmentTools
-//func (_ *Service) ListAssessmentTools (ctx context.Context, request *orchestrator.ListAssessmentToolsRequest) (tools *orchestrator.ListAssessmentToolsResponse, err error) {
+//func ( *Service) ListAssessmentTools (ctx context.Context, request *orchestrator.ListAssessmentToolsRequest) (tools *orchestrator.ListAssessmentToolsResponse, err error) {
 //	// TBD
 //	return tools, err
 //}
 //
 //// TODO Implement GetAssessmentTool
-//func (_ *Service) GetAssessmentTool (ctx context.Context, request *orchestrator.GetAssessmentToolRequest) (tool *orchestrator.AssessmentTool, err error) {
+//func ( *Service) GetAssessmentTool (ctx context.Context, request *orchestrator.GetAssessmentToolRequest) (tool *orchestrator.AssessmentTool, err error) {
 //	// TBD
 //	return tool, err
 //}

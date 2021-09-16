@@ -26,10 +26,9 @@
 package standalone
 
 import (
-	"context"
-
 	"clouditor.io/clouditor/api/assessment"
 	service_assessment "clouditor.io/clouditor/service/assessment"
+	"context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -57,19 +56,19 @@ func (s standaloneEvidenceStream) CloseAndRecv() (*emptypb.Empty, error) {
 	return empty, nil
 }
 
-func (_ standaloneEvidenceStream) CloseSend() error {
+func (standaloneEvidenceStream) CloseSend() error {
 	return nil
 }
 
-func (_ standaloneEvidenceStream) Header() (metadata.MD, error) {
+func (standaloneEvidenceStream) Header() (metadata.MD, error) {
 	return nil, nil
 }
 
-func (_ standaloneEvidenceStream) Trailer() metadata.MD {
+func (standaloneEvidenceStream) Trailer() metadata.MD {
 	return nil
 }
 
-func (_ standaloneEvidenceStream) Context() context.Context {
+func (standaloneEvidenceStream) Context() context.Context {
 	return nil
 }
 
@@ -79,16 +78,15 @@ func (s standaloneEvidenceStream) Send(evidence *assessment.Evidence) error {
 	return nil
 }
 
-func (_ standaloneEvidenceStream) SendHeader(metadata.MD) error {
+func (standaloneEvidenceStream) SendHeader(metadata.MD) error {
 	return nil
 }
 
-func (_ standaloneEvidenceStream) SetHeader(metadata.MD) error {
+func (standaloneEvidenceStream) SetHeader(metadata.MD) error {
 	return nil
 }
 
-func (_ standaloneEvidenceStream) SetTrailer(metadata.MD) {
-
+func (standaloneEvidenceStream) SetTrailer(metadata.MD) {
 }
 
 func (s standaloneEvidenceStream) Recv() (*assessment.Evidence, error) {
@@ -97,27 +95,27 @@ func (s standaloneEvidenceStream) Recv() (*assessment.Evidence, error) {
 	return evidence, nil
 }
 
-func (_ standaloneEvidenceStream) RecvMsg(_ interface{}) error {
+func (standaloneEvidenceStream) RecvMsg(_ interface{}) error {
 	return nil
 }
 
-func (_ standaloneEvidenceStream) SendMsg(_ interface{}) error {
+func (standaloneEvidenceStream) SendMsg(_ interface{}) error {
 	return nil
 }
 
-func (_ standaloneEvidenceClient) TriggerAssessment(ctx context.Context, in *assessment.TriggerAssessmentRequest, _ ...grpc.CallOption) (*emptypb.Empty, error) {
+func (standaloneEvidenceClient) TriggerAssessment(ctx context.Context, in *assessment.TriggerAssessmentRequest, _ ...grpc.CallOption) (*emptypb.Empty, error) {
 	return assessmentService.TriggerAssessment(ctx, in)
 }
 
-func (_ standaloneEvidenceClient) AssessEvidence(ctx context.Context, in *assessment.AssessEvidenceRequest, _ ...grpc.CallOption) (*assessment.AssessEvidenceResponse, error) {
+func (standaloneEvidenceClient) AssessEvidence(ctx context.Context, in *assessment.AssessEvidenceRequest, _ ...grpc.CallOption) (*assessment.AssessEvidenceResponse, error) {
 	return assessmentService.AssessEvidence(ctx, in)
 }
 
-func (_ standaloneEvidenceClient) ListAssessmentResults(ctx context.Context, in *assessment.ListAssessmentResultsRequest, _ ...grpc.CallOption) (*assessment.ListAssessmentResultsResponse, error) {
+func (standaloneEvidenceClient) ListAssessmentResults(ctx context.Context, in *assessment.ListAssessmentResultsRequest, _ ...grpc.CallOption) (*assessment.ListAssessmentResultsResponse, error) {
 	return assessmentService.ListAssessmentResults(ctx, in)
 }
 
-func (_ standaloneEvidenceClient) AssessEvidences(_ context.Context, _ ...grpc.CallOption) (assessment.Assessment_AssessEvidencesClient, error) {
+func (standaloneEvidenceClient) AssessEvidences(_ context.Context, _ ...grpc.CallOption) (assessment.Assessment_AssessEvidencesClient, error) {
 	var stream = &standaloneEvidenceStream{
 		serverChannel: make(chan *assessment.Evidence),
 		clientChannel: make(chan *emptypb.Empty),
