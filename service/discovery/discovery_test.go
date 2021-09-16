@@ -107,7 +107,7 @@ func TestQuery(t *testing.T) {
 	// discover some resources
 	service.StartDiscovery(discoverer)
 
-	// make the test wait for streaming envidence
+	// make the test wait for streaming evidence
 	select {
 	case <-ready:
 		break
