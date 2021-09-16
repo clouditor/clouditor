@@ -50,8 +50,6 @@ import (
 
 var log *logrus.Entry
 
-//go:generate protoc -I ../../proto -I ../../third_party discovery.proto --go_out=../.. --go-grpc_out=../.. --openapi_out=../../openapi/discovery
-
 // Service is an implementation of the Clouditor Discovery service.
 // It should not be used directly, but rather the NewService constructor
 // should be used.

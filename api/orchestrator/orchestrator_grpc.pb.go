@@ -20,16 +20,25 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type OrchestratorClient interface {
+	// Registers the passed assessment tool
 	RegisterAssessmentTool(ctx context.Context, in *RegisterAssessmentToolRequest, opts ...grpc.CallOption) (*AssessmentTool, error)
+	// Lists all assessment tools assessing evidences for the metric given by the passed metric id
 	ListAssessmentTools(ctx context.Context, in *ListAssessmentToolsRequest, opts ...grpc.CallOption) (*ListAssessmentToolsResponse, error)
+	// Returns assessment tool given by the passed tool id
 	GetAssessmentTool(ctx context.Context, in *GetAssessmentToolRequest, opts ...grpc.CallOption) (*AssessmentTool, error)
+	// Updates the assessment tool given by the passed id
 	UpdateAssessmentTool(ctx context.Context, in *UpdateAssessmentToolRequest, opts ...grpc.CallOption) (*AssessmentTool, error)
+	// Remove assessment tool with passed id from the list of active assessment tools
 	DeregisterAssessmentTool(ctx context.Context, in *DeregisterAssessmentToolRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Stores the assessment result provided by an assessment tool
 	StoreAssessmentResult(ctx context.Context, in *StoreAssessmentResultRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// ToDo(all): Why do we not use 'StreamAssessmentResultRequest'?
+	// Stores stream of assessment results provided by an assessment tool
 	StreamAssessmentResults(ctx context.Context, opts ...grpc.CallOption) (Orchestrator_StreamAssessmentResultsClient, error)
+	// Obsolete: Stores stream of evidences. This responsibility is shifted now to the evidence store component.
 	StreamEvidences(ctx context.Context, opts ...grpc.CallOption) (Orchestrator_StreamEvidencesClient, error)
+	// List all metrics provided by the metric catalog
 	ListMetrics(ctx context.Context, in *ListMetricsRequest, opts ...grpc.CallOption) (*ListMetricsResponse, error)
+	// Returns the metric with the passed metric id
 	GetMetric(ctx context.Context, in *GetMetricsRequest, opts ...grpc.CallOption) (*GetMetricResponse, error)
 }
 
@@ -185,16 +194,25 @@ func (c *orchestratorClient) GetMetric(ctx context.Context, in *GetMetricsReques
 // All implementations must embed UnimplementedOrchestratorServer
 // for forward compatibility
 type OrchestratorServer interface {
+	// Registers the passed assessment tool
 	RegisterAssessmentTool(context.Context, *RegisterAssessmentToolRequest) (*AssessmentTool, error)
+	// Lists all assessment tools assessing evidences for the metric given by the passed metric id
 	ListAssessmentTools(context.Context, *ListAssessmentToolsRequest) (*ListAssessmentToolsResponse, error)
+	// Returns assessment tool given by the passed tool id
 	GetAssessmentTool(context.Context, *GetAssessmentToolRequest) (*AssessmentTool, error)
+	// Updates the assessment tool given by the passed id
 	UpdateAssessmentTool(context.Context, *UpdateAssessmentToolRequest) (*AssessmentTool, error)
+	// Remove assessment tool with passed id from the list of active assessment tools
 	DeregisterAssessmentTool(context.Context, *DeregisterAssessmentToolRequest) (*emptypb.Empty, error)
+	// Stores the assessment result provided by an assessment tool
 	StoreAssessmentResult(context.Context, *StoreAssessmentResultRequest) (*emptypb.Empty, error)
-	// ToDo(all): Why do we not use 'StreamAssessmentResultRequest'?
+	// Stores stream of assessment results provided by an assessment tool
 	StreamAssessmentResults(Orchestrator_StreamAssessmentResultsServer) error
+	// Obsolete: Stores stream of evidences. This responsibility is shifted now to the evidence store component.
 	StreamEvidences(Orchestrator_StreamEvidencesServer) error
+	// List all metrics provided by the metric catalog
 	ListMetrics(context.Context, *ListMetricsRequest) (*ListMetricsResponse, error)
+	// Returns the metric with the passed metric id
 	GetMetric(context.Context, *GetMetricsRequest) (*GetMetricResponse, error)
 	mustEmbedUnimplementedOrchestratorServer()
 }

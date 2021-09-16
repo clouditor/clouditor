@@ -32,13 +32,25 @@ import "evidence.proto";
 
 option go_package = "api/evidenceStore";
 
+// Manages the storage of evidences
 service EvidenceStore {
-  rpc StoreEvidence(Evidence) returns (StoreEvidenceResult);
-  rpc StoreEvidences(stream Evidence) returns (StoreEvidenceResult);
+  // Stores an evidence to the evidence storage
+  rpc StoreEvidence(Evidence) returns (StoreEvidenceResponse);
+  // Stores a stream of evidences to the evidence storage
+  rpc StoreEvidences(stream Evidence) returns (StoreEvidencesResponse);
+
+  // Returns the evidences lying in the evidence storage
+  // rpc ListEvidences(ListEvidencesRequest) returns (ListEvidencesResponse);
 }
 
-// ToDo(lebogg): Add and implement method getEvidence
 
-message StoreEvidenceResult {
+message StoreEvidenceResponse {
   bool status = 1;
 }
+
+message StoreEvidencesResponse {
+  bool status = 1;
+}
+
+//message ListEvidencesRequest {}
+//message ListEvidencesResponse {repeated Evidence evidences = 1;}

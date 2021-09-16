@@ -49,6 +49,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// The values a Scale accepts
 type Metric_Scale int32
 
 const (
@@ -98,6 +99,7 @@ func (Metric_Scale) EnumDescriptor() ([]byte, []int) {
 	return file_evidence_proto_rawDescGZIP(), []int{1, 0}
 }
 
+// An evidence resource
 type Evidence struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -202,21 +204,23 @@ func (x *Evidence) GetResource() *structpb.Value {
 	return nil
 }
 
+// A metric resource
 type Metric struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Required. The unique identifier of the metric.
 	Id int32 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	// a human readable name of the metric
+	// Required. The human readable name of the metric.
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	// a description of the metric
+	// The description of the metric
 	Description string `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	// reference to control catalog category or domain
+	// The reference to control catalog category or domain
 	Category string `protobuf:"bytes,4,opt,name=category,proto3" json:"category,omitempty"`
-	// the scale of this metric, e.g. categories, ranked data or metric values
+	// The scale of this metric, e.g. categories, ranked data or metric values.
 	Scale Metric_Scale `protobuf:"varint,5,opt,name=scale,proto3,enum=clouditor.Metric_Scale" json:"scale,omitempty"`
-	// the range of this metric, depends on the scale
+	// The range of this metric. Depending on the scale.
 	Range *Range `protobuf:"bytes,6,opt,name=range,proto3" json:"range,omitempty"`
 }
 
@@ -294,12 +298,14 @@ func (x *Metric) GetRange() *Range {
 	return nil
 }
 
-// Defines a range of values
+// A range resource representing the range of values
 type Range struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Required.
+	//
 	// Types that are assignable to Range:
 	//	*Range_AllowedValues
 	//	*Range_Order
@@ -398,7 +404,9 @@ type MinMax struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Required.
 	Min int64 `protobuf:"varint,1,opt,name=min,proto3" json:"min,omitempty"`
+	// Required.
 	Max int64 `protobuf:"varint,2,opt,name=max,proto3" json:"max,omitempty"`
 }
 

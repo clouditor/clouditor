@@ -8,8 +8,6 @@ import (
 	"io"
 )
 
-//go:generate protoc -I ../../proto -I ../../third_party evidence_store.proto --go_out=../.. --go-grpc_out=../.. --go_opt=Mevidence.proto=clouditor.io/clouditor/api/assessment --go-grpc_opt=Mevidence.proto=clouditor.io/clouditor/api/assessment --openapi_out=../../openapi/evidenceStore
-
 var log *logrus.Entry
 
 // Service is an implementation of the Clouditor EvidenceStore service (EvidenceStoreServer)
@@ -29,7 +27,7 @@ func init() {
 	log = logrus.WithField("component", "evidenceStore")
 }
 
-func (s *Service) StoreEvidence(_ context.Context, evidence *assessment.Evidence) (resp *evidenceStore.StoreEvidenceResult, err error) {
+func (s *Service) StoreEvidence(_ context.Context, evidence *assessment.Evidence) (resp *evidenceStore.StoreEvidenceResponse, err error) {
 	log.Warnf("Storing evidence in-memory. But there is no other functionality here!")
 	s.evidences[evidence.Id] = evidence
 	resp.Status = true
@@ -44,7 +42,7 @@ func (s *Service) StoreEvidences(stream evidenceStore.EvidenceStore_StoreEvidenc
 		s.evidences[receivedEvidence.Id] = receivedEvidence
 		if err == io.EOF {
 			log.Infof("Stopped receiving streamed evidences")
-			return stream.SendAndClose(&evidenceStore.StoreEvidenceResult{Status: true})
+			return stream.SendAndClose(&evidenceStore.StoreEvidencesResponse{Status: true})
 		}
 	}
 }

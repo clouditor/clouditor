@@ -43,8 +43,6 @@ import (
 	"gorm.io/gorm"
 )
 
-//go:generate protoc -I ../../proto -I ../../third_party auth.proto --go_out=../.. --go-grpc_out=../..
-
 const (
 	Issuer = "clouditor"
 )
@@ -70,7 +68,7 @@ func init() {
 }
 
 // Login handles a login request
-func (s Service) Login(ctx context.Context, request *auth.LoginRequest) (response *auth.LoginResponse, err error) {
+func (s Service) Login(_ context.Context, request *auth.LoginRequest) (response *auth.LoginResponse, err error) {
 	var result bool
 	var user *auth.User
 

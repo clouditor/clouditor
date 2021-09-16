@@ -33,7 +33,9 @@ import "google/protobuf/struct.proto";
 
 option go_package = "api/discovery";
 
+// Discovers cloud resources and maps these properties to the format of the ontology
 service Discovery {
+  // Starts discovering the cloud resources
   rpc Start(StartDiscoveryRequest) returns (StartDiscoveryResponse) {
     option (google.api.http) = {
       post : "/v1/discovery/start"
@@ -42,6 +44,7 @@ service Discovery {
     };
   };
 
+  // Lists all evidences collected in the last run
   rpc Query(QueryRequest) returns (QueryResponse) {
     option (google.api.http) = {
       post : "/v1/discovery/query"

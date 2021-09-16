@@ -43,8 +43,6 @@ var log *logrus.Entry
 
 var listId int32
 
-//go:generate protoc -I ../../proto -I ../../third_party assessment.proto evidence.proto --go_out=../.. --go-grpc_out=../..  --openapi_out=../../openapi/assessment
-
 func init() {
 	log = logrus.WithField("component", "assessment")
 }

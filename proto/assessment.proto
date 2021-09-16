@@ -34,11 +34,17 @@ import "evidence.proto";
 
 option go_package = "api/assessment";
 
+// Representing the link between orchestrator and discovery: Assessing evidences from discovery and sending results
+// to orchestrator
 service Assessment {
-  // Triggers the assessment. Part of the private API, not exposed as REST.
+  // Triggers the assessment. Part of the private API,
+  // not exposed as REST.
   rpc TriggerAssessment(TriggerAssessmentRequest)
       returns (google.protobuf.Empty) {}
 
+  // TODO(all): Part of public API because external entities (mainly discoveries) can use it?
+  // List the latest set of assessment results. Part of the public API,
+  // also exposed as REST
   rpc ListAssessmentResults(ListAssessmentResultsRequest)
   returns (ListAssessmentResultsResponse) {
     option (google.api.http) = {
@@ -47,7 +53,7 @@ service Assessment {
     };
   }
 
-  // Assesses the evidences coming from the discovery. Part of the public API,
+  // Assesses the evidence sent by discovery. Part of the public API,
   // also exposed as REST
   rpc AssessEvidence(AssessEvidenceRequest) returns (AssessEvidenceResponse) {
     option (google.api.http) = {
@@ -57,7 +63,8 @@ service Assessment {
     };
   }
 
-  // Assesses stream of evidences coming from the discovery. NOT exposed as REST
+  // Assesses stream of evidences coming from the discovery. Part of the public API,
+  // not exposed as REST
   rpc AssessEvidences(stream Evidence) returns (google.protobuf.Empty);
 };
 
@@ -69,6 +76,8 @@ message ListAssessmentResultsResponse { repeated Result results = 1; }
 message AssessEvidenceRequest { Evidence evidence = 1; }
 message AssessEvidenceResponse { bool status = 1; }
 
+
+// A result resource, representing the result after assessing the cloud resource with id resource_id.
 message Result {
   string resource_id = 1;
 

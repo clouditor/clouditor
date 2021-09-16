@@ -38,8 +38,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-//go:generate protoc -I ../../proto -I ../../third_party orchestrator.proto --go_out=../.. --go-grpc_out=../.. --go_opt=Mevidence.proto=clouditor.io/clouditor/api/assessment --go-grpc_opt=Mevidence.proto=clouditor.io/clouditor/api/assessment --openapi_out=../../openapi/orchestrator
-
 //go:embed metrics.json
 var f embed.FS
 

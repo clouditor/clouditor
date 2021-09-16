@@ -274,6 +274,7 @@ func (x *AssessEvidenceResponse) GetStatus() bool {
 	return false
 }
 
+// A result resource, representing the result after assessing the cloud resource with id resource_id.
 type Result struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

@@ -13,6 +13,7 @@ We follow the Google Cloud's [API design guide](https://cloud.google.com/apis/de
   * File name corresponding to (single) service
 * proto file only containing resources, consider naming this file simply as resources.proto
 * ENUM (Scale): The first value should be named ENUM_TYPE_UNSPECIFIED
+* Commenting: Comment services, RPCs and messages
 
 
 # Compiling

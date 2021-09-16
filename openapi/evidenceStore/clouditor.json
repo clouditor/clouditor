@@ -6,7 +6,15 @@
   },
   "components": {
     "schemas": {
-      "clouditor.StoreEvidenceResult": {
+      "clouditor.StoreEvidenceResponse": {
+        "properties": {
+          "status": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "clouditor.StoreEvidencesResponse": {
         "properties": {
           "status": {
             "type": "boolean"

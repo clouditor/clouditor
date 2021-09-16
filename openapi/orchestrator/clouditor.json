@@ -158,23 +158,24 @@
           "metric": {
             "properties": {
               "category": {
-                "description": "reference to control catalog category or domain",
+                "description": "The reference to control catalog category or domain",
                 "type": "string"
               },
               "description": {
-                "description": "a description of the metric",
+                "description": "The description of the metric",
                 "type": "string"
               },
               "id": {
+                "description": "Required. The unique identifier of the metric.",
                 "format": "int32",
                 "type": "integer"
               },
               "name": {
-                "description": "a human readable name of the metric",
+                "description": "Required. The human readable name of the metric.",
                 "type": "string"
               },
               "range": {
-                "description": "the range of this metric, depends on the scale",
+                "description": "The range of this metric. Depending on the scale.",
                 "properties": {
                   "range": {
                     "oneOf": [
@@ -302,10 +303,12 @@
                         "description": "used for metric scale",
                         "properties": {
                           "max": {
+                            "description": "Required.",
                             "format": "int64",
                             "type": "integer"
                           },
                           "min": {
+                            "description": "Required.",
                             "format": "int64",
                             "type": "integer"
                           }
@@ -318,7 +321,7 @@
                 "type": "object"
               },
               "scale": {
-                "description": "the scale of this metric, e.g. categories, ranked data or metric values",
+                "description": "The scale of this metric, e.g. categories, ranked data or metric values.",
                 "enum": [
                   [
                     "NOMIMAL",
@@ -389,25 +392,27 @@
         "properties": {
           "metrics": {
             "items": {
+              "description": "A metric resource",
               "properties": {
                 "category": {
-                  "description": "reference to control catalog category or domain",
+                  "description": "The reference to control catalog category or domain",
                   "type": "string"
                 },
                 "description": {
-                  "description": "a description of the metric",
+                  "description": "The description of the metric",
                   "type": "string"
                 },
                 "id": {
+                  "description": "Required. The unique identifier of the metric.",
                   "format": "int32",
                   "type": "integer"
                 },
                 "name": {
-                  "description": "a human readable name of the metric",
+                  "description": "Required. The human readable name of the metric.",
                   "type": "string"
                 },
                 "range": {
-                  "description": "the range of this metric, depends on the scale",
+                  "description": "The range of this metric. Depending on the scale.",
                   "properties": {
                     "range": {
                       "oneOf": [
@@ -535,10 +540,12 @@
                           "description": "used for metric scale",
                           "properties": {
                             "max": {
+                              "description": "Required.",
                               "format": "int64",
                               "type": "integer"
                             },
                             "min": {
+                              "description": "Required.",
                               "format": "int64",
                               "type": "integer"
                             }
@@ -551,7 +558,7 @@
                   "type": "object"
                 },
                 "scale": {
-                  "description": "the scale of this metric, e.g. categories, ranked data or metric values",
+                  "description": "The scale of this metric, e.g. categories, ranked data or metric values.",
                   "enum": [
                     [
                       "NOMIMAL",

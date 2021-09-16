@@ -31,9 +31,9 @@ package clouditor;
 
 import "google/protobuf/struct.proto";
 
-// Todo(all): own package 'evidence'?
 option go_package = "api/assessment";
 
+// An evidence resource
 message Evidence {
   // the ID in a uuid format
   string id = 1;
@@ -59,32 +59,37 @@ message Evidence {
   google.protobuf.Value resource = 7;
 }
 
+// A metric resource
 message Metric {
+  // Required. The unique identifier of the metric.
   int32 id = 1;
 
-  // a human readable name of the metric
+  // Required. The human readable name of the metric.
   string name = 2;
 
-  // a description of the metric
+  // The description of the metric
   string description = 3;
 
-  // reference to control catalog category or domain
+  // The reference to control catalog category or domain
   string category = 4;
 
+  // The scale of this metric, e.g. categories, ranked data or metric values.
+  Scale scale = 5;
+
+  // The range of this metric. Depending on the scale.
+  Range range = 6;
+
+  // The values a Scale accepts
   enum Scale {
     NOMIMAL = 0;
     ORDINAL = 1;
     METRIC = 2;
   }
-  // the scale of this metric, e.g. categories, ranked data or metric values
-  Scale scale = 5;
-
-  // the range of this metric, depends on the scale
-  Range range = 6;
 }
 
-// Defines a range of values
+// A range resource representing the range of values
 message Range {
+  // Required.
   oneof range {
     // used for nomical scale
     AllowedValues allowed_values = 1;
@@ -99,7 +104,9 @@ message Range {
 
 // Defines a range of values through a (inclusive) minimum and a maximum
 message MinMax {
+  // Required.
   int64 min = 1;
+  // Required.
   int64 max = 2;
 }
 

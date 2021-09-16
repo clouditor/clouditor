@@ -28,6 +28,7 @@
 package proto
 
 //go:generate protoc -I ./ -I ../third_party assessment.proto evidence.proto --go_out=../ --go-grpc_out=../  --openapi_out=../openapi/assessment
-//go:generate protoc -I ./ -I ../third_party auth.proto --go_out=../ --go-grpc_out=../..
+//go:generate protoc -I ./ -I ../third_party auth.proto --go_out=../ --go-grpc_out=../
 //go:generate protoc -I ./ -I ../third_party discovery.proto --go_out=../ --go-grpc_out=../ --openapi_out=../openapi/discovery
+//go:generate protoc -I ./ -I ../third_party evidence_store.proto --go_out=../ --go-grpc_out=../ --go_opt=Mevidence.proto=clouditor.io/clouditor/api/assessment --go-grpc_opt=Mevidence.proto=clouditor.io/clouditor/api/assessment --openapi_out=../openapi/evidenceStore
 //go:generate protoc -I ./ -I ../third_party orchestrator.proto --go_out=../ --go-grpc_out=../ --go_opt=Mevidence.proto=clouditor.io/clouditor/api/assessment --go-grpc_opt=Mevidence.proto=clouditor.io/clouditor/api/assessment --openapi_out=../openapi/orchestrator
