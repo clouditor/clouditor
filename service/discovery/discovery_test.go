@@ -117,12 +117,60 @@ func TestStartDiscovery(t *testing.T) {
 }
 
 func TestQuery(t *testing.T) {
+	s := NewService()
+	s.StartDiscovery(mockDiscoverer{testCase: 2})
 
-}
+	type fields struct {
+		resources    map[string]voc.IsCloudResource
+		queryRequest *discovery.QueryRequest
+	}
+	tests := []struct {
+		name string
+		fields
+		numberOfQueriedResources int
+		wantErr                  bool
+	}{
+		{
+			name: "Err when unmarshalling",
+			fields: fields{
+				queryRequest: &discovery.QueryRequest{},
+				resources: map[string]voc.IsCloudResource{
+					"MockResourceId": wrongFormattedResource(),
+				},
+			},
+			numberOfQueriedResources: 1,
+			wantErr:                  true,
+		},
+		{
+			name:                     "Filter type",
+			fields:                   fields{queryRequest: &discovery.QueryRequest{FilteredType: "Compute"}},
+			numberOfQueriedResources: 0,
+		},
+		{
+			name:                     "No filtering",
+			fields:                   fields{queryRequest: &discovery.QueryRequest{}},
+			numberOfQueriedResources: 1,
+		},
+	}
 
-// ToDo(lebogg): Maybe try to "outsource" `discoverer = append` in discovery to a field of service
-// So we can mock it
-func TestStart(t *testing.T) {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Add resources (bad formatted ones)
+			if res := tt.fields.resources; res != nil {
+				for k, v := range res {
+					s.resources[k] = v
+				}
+			}
+			response, err := s.Query(context.TODO(), &discovery.QueryRequest{FilteredType: tt.fields.queryRequest.FilteredType})
+			assert.Equal(t, tt.wantErr, err != nil)
+			if err != nil {
+				return
+			}
+			assert.Equal(t, tt.numberOfQueriedResources, len(response.Result.Values))
+		})
+		// If a bad resource was added it will be removed. Otherwise no-op
+		delete(s.resources, "MockResourceId")
+	}
 
 }
 
@@ -137,14 +185,9 @@ func (m mockDiscoverer) Name() string { return "just mocking" }
 func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 	switch m.testCase {
 	case 0:
-		return nil, fmt.Errorf("Mock Error in List()")
+		return nil, fmt.Errorf("mock Error in List()")
 	case 1:
-		res1 := mockIsCloudResource{Another: nil}
-		res2 := mockIsCloudResource{Another: &res1}
-		res1.Another = &res2
-		return []voc.IsCloudResource{
-			res1,
-		}, nil
+		return []voc.IsCloudResource{wrongFormattedResource()}, nil
 	case 2:
 		return []voc.IsCloudResource{
 			&voc.ObjectStorage{
@@ -167,6 +210,13 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 	default:
 		return nil, nil
 	}
+}
+
+func wrongFormattedResource() voc.IsCloudResource {
+	res1 := mockIsCloudResource{Another: nil}
+	res2 := mockIsCloudResource{Another: &res1}
+	res1.Another = &res2
+	return res1
 }
 
 // mockAssessmentStream implements Assessment_AssessEvidencesClient interface
@@ -258,7 +308,7 @@ type mockIsCloudResource struct {
 }
 
 func (mockIsCloudResource) GetID() voc.ResourceID {
-	return ""
+	return "MockResourceId"
 }
 
 func (mockIsCloudResource) GetName() string {
