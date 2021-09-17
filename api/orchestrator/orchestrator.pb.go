@@ -92,7 +92,7 @@ func (x AssessmentResult_ComplianceStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use AssessmentResult_ComplianceStatus.Descriptor instead.
 func (AssessmentResult_ComplianceStatus) EnumDescriptor() ([]byte, []int) {
-	return file_orchestrator_proto_rawDescGZIP(), []int{12, 0}
+	return file_orchestrator_proto_rawDescGZIP(), []int{11, 0}
 }
 
 type RegisterAssessmentToolRequest struct {
@@ -481,53 +481,6 @@ func (x *GetMetricsRequest) GetMetricId() int32 {
 	return 0
 }
 
-type GetMetricResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Metric *assessment.Metric `protobuf:"bytes,1,opt,name=metric,proto3" json:"metric,omitempty"`
-}
-
-func (x *GetMetricResponse) Reset() {
-	*x = GetMetricResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_orchestrator_proto_msgTypes[8]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *GetMetricResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetMetricResponse) ProtoMessage() {}
-
-func (x *GetMetricResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_orchestrator_proto_msgTypes[8]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetMetricResponse.ProtoReflect.Descriptor instead.
-func (*GetMetricResponse) Descriptor() ([]byte, []int) {
-	return file_orchestrator_proto_rawDescGZIP(), []int{8}
-}
-
-func (x *GetMetricResponse) GetMetric() *assessment.Metric {
-	if x != nil {
-		return x.Metric
-	}
-	return nil
-}
-
 type ListMetricsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -537,7 +490,7 @@ type ListMetricsRequest struct {
 func (x *ListMetricsRequest) Reset() {
 	*x = ListMetricsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_orchestrator_proto_msgTypes[9]
+		mi := &file_orchestrator_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -550,7 +503,7 @@ func (x *ListMetricsRequest) String() string {
 func (*ListMetricsRequest) ProtoMessage() {}
 
 func (x *ListMetricsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_orchestrator_proto_msgTypes[9]
+	mi := &file_orchestrator_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -563,7 +516,7 @@ func (x *ListMetricsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListMetricsRequest.ProtoReflect.Descriptor instead.
 func (*ListMetricsRequest) Descriptor() ([]byte, []int) {
-	return file_orchestrator_proto_rawDescGZIP(), []int{9}
+	return file_orchestrator_proto_rawDescGZIP(), []int{8}
 }
 
 type ListMetricsResponse struct {
@@ -577,7 +530,7 @@ type ListMetricsResponse struct {
 func (x *ListMetricsResponse) Reset() {
 	*x = ListMetricsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_orchestrator_proto_msgTypes[10]
+		mi := &file_orchestrator_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -590,7 +543,7 @@ func (x *ListMetricsResponse) String() string {
 func (*ListMetricsResponse) ProtoMessage() {}
 
 func (x *ListMetricsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_orchestrator_proto_msgTypes[10]
+	mi := &file_orchestrator_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -603,7 +556,7 @@ func (x *ListMetricsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListMetricsResponse.ProtoReflect.Descriptor instead.
 func (*ListMetricsResponse) Descriptor() ([]byte, []int) {
-	return file_orchestrator_proto_rawDescGZIP(), []int{10}
+	return file_orchestrator_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ListMetricsResponse) GetMetrics() []*assessment.Metric {
@@ -630,7 +583,7 @@ type AssessmentTool struct {
 func (x *AssessmentTool) Reset() {
 	*x = AssessmentTool{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_orchestrator_proto_msgTypes[11]
+		mi := &file_orchestrator_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -643,7 +596,7 @@ func (x *AssessmentTool) String() string {
 func (*AssessmentTool) ProtoMessage() {}
 
 func (x *AssessmentTool) ProtoReflect() protoreflect.Message {
-	mi := &file_orchestrator_proto_msgTypes[11]
+	mi := &file_orchestrator_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -656,7 +609,7 @@ func (x *AssessmentTool) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AssessmentTool.ProtoReflect.Descriptor instead.
 func (*AssessmentTool) Descriptor() ([]byte, []int) {
-	return file_orchestrator_proto_rawDescGZIP(), []int{11}
+	return file_orchestrator_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *AssessmentTool) GetId() string {
@@ -704,7 +657,7 @@ type AssessmentResult struct {
 func (x *AssessmentResult) Reset() {
 	*x = AssessmentResult{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_orchestrator_proto_msgTypes[12]
+		mi := &file_orchestrator_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -717,7 +670,7 @@ func (x *AssessmentResult) String() string {
 func (*AssessmentResult) ProtoMessage() {}
 
 func (x *AssessmentResult) ProtoReflect() protoreflect.Message {
-	mi := &file_orchestrator_proto_msgTypes[12]
+	mi := &file_orchestrator_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -730,7 +683,7 @@ func (x *AssessmentResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AssessmentResult.ProtoReflect.Descriptor instead.
 func (*AssessmentResult) Descriptor() ([]byte, []int) {
-	return file_orchestrator_proto_rawDescGZIP(), []int{12}
+	return file_orchestrator_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *AssessmentResult) GetId() string {
@@ -813,11 +766,7 @@ var file_orchestrator_proto_rawDesc = []byte{
 	0x6c, 0x74, 0x22, 0x30, 0x0a, 0x11, 0x47, 0x65, 0x74, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x73,
 	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1b, 0x0a, 0x09, 0x6d, 0x65, 0x74, 0x72, 0x69,
 	0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x08, 0x6d, 0x65, 0x74, 0x72,
-	0x69, 0x63, 0x49, 0x64, 0x22, 0x3e, 0x0a, 0x11, 0x47, 0x65, 0x74, 0x4d, 0x65, 0x74, 0x72, 0x69,
-	0x63, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x29, 0x0a, 0x06, 0x6d, 0x65, 0x74,
-	0x72, 0x69, 0x63, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x63, 0x6c, 0x6f, 0x75,
-	0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x52, 0x06, 0x6d, 0x65,
-	0x74, 0x72, 0x69, 0x63, 0x22, 0x14, 0x0a, 0x12, 0x4c, 0x69, 0x73, 0x74, 0x4d, 0x65, 0x74, 0x72,
+	0x69, 0x63, 0x49, 0x64, 0x22, 0x14, 0x0a, 0x12, 0x4c, 0x69, 0x73, 0x74, 0x4d, 0x65, 0x74, 0x72,
 	0x69, 0x63, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0x42, 0x0a, 0x13, 0x4c, 0x69,
 	0x73, 0x74, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
 	0x65, 0x12, 0x2b, 0x0a, 0x07, 0x6d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x73, 0x18, 0x01, 0x20, 0x03,
@@ -848,7 +797,7 @@ var file_orchestrator_proto_rawDesc = []byte{
 	0x22, 0x34, 0x0a, 0x10, 0x43, 0x6f, 0x6d, 0x70, 0x6c, 0x69, 0x61, 0x6e, 0x63, 0x65, 0x53, 0x74,
 	0x61, 0x74, 0x75, 0x73, 0x12, 0x0d, 0x0a, 0x09, 0x43, 0x4f, 0x4d, 0x50, 0x4c, 0x49, 0x41, 0x4e,
 	0x54, 0x10, 0x00, 0x12, 0x11, 0x0a, 0x0d, 0x4e, 0x4f, 0x4e, 0x5f, 0x43, 0x4f, 0x4d, 0x50, 0x4c,
-	0x49, 0x41, 0x4e, 0x54, 0x10, 0x01, 0x32, 0xa4, 0x0a, 0x0a, 0x0c, 0x4f, 0x72, 0x63, 0x68, 0x65,
+	0x49, 0x41, 0x4e, 0x54, 0x10, 0x01, 0x32, 0x99, 0x0a, 0x0a, 0x0c, 0x4f, 0x72, 0x63, 0x68, 0x65,
 	0x73, 0x74, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x8e, 0x01, 0x0a, 0x16, 0x52, 0x65, 0x67, 0x69,
 	0x73, 0x74, 0x65, 0x72, 0x41, 0x73, 0x73, 0x65, 0x73, 0x73, 0x6d, 0x65, 0x6e, 0x74, 0x54, 0x6f,
 	0x6f, 0x6c, 0x12, 0x28, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x52,
@@ -923,16 +872,15 @@ var file_orchestrator_proto_rawDesc = []byte{
 	0x2e, 0x4c, 0x69, 0x73, 0x74, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x73, 0x52, 0x65, 0x73, 0x70,
 	0x6f, 0x6e, 0x73, 0x65, 0x22, 0x20, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x1a, 0x12, 0x18, 0x2f, 0x76,
 	0x31, 0x2f, 0x6f, 0x72, 0x63, 0x68, 0x65, 0x73, 0x74, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x2f, 0x6d,
-	0x65, 0x74, 0x72, 0x69, 0x63, 0x73, 0x12, 0x75, 0x0a, 0x09, 0x47, 0x65, 0x74, 0x4d, 0x65, 0x74,
+	0x65, 0x74, 0x72, 0x69, 0x63, 0x73, 0x12, 0x6a, 0x0a, 0x09, 0x47, 0x65, 0x74, 0x4d, 0x65, 0x74,
 	0x72, 0x69, 0x63, 0x12, 0x1c, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e,
 	0x47, 0x65, 0x74, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x1a, 0x1c, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x47, 0x65,
-	0x74, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
-	0x2c, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x26, 0x12, 0x24, 0x2f, 0x76, 0x31, 0x2f, 0x6f, 0x72, 0x63,
-	0x68, 0x65, 0x73, 0x74, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x2f, 0x6d, 0x65, 0x74, 0x72, 0x69, 0x63,
-	0x73, 0x2f, 0x7b, 0x6d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x7d, 0x42, 0x12, 0x5a,
-	0x10, 0x61, 0x70, 0x69, 0x2f, 0x6f, 0x72, 0x63, 0x68, 0x65, 0x73, 0x74, 0x72, 0x61, 0x74, 0x6f,
-	0x72, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x74, 0x1a, 0x11, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x4d, 0x65,
+	0x74, 0x72, 0x69, 0x63, 0x22, 0x2c, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x26, 0x12, 0x24, 0x2f, 0x76,
+	0x31, 0x2f, 0x6f, 0x72, 0x63, 0x68, 0x65, 0x73, 0x74, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x2f, 0x6d,
+	0x65, 0x74, 0x72, 0x69, 0x63, 0x73, 0x2f, 0x7b, 0x6d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x5f, 0x69,
+	0x64, 0x7d, 0x42, 0x12, 0x5a, 0x10, 0x61, 0x70, 0x69, 0x2f, 0x6f, 0x72, 0x63, 0x68, 0x65, 0x73,
+	0x74, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -948,7 +896,7 @@ func file_orchestrator_proto_rawDescGZIP() []byte {
 }
 
 var file_orchestrator_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_orchestrator_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_orchestrator_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_orchestrator_proto_goTypes = []interface{}{
 	(AssessmentResult_ComplianceStatus)(0),  // 0: clouditor.AssessmentResult.ComplianceStatus
 	(*RegisterAssessmentToolRequest)(nil),   // 1: clouditor.RegisterAssessmentToolRequest
@@ -959,49 +907,47 @@ var file_orchestrator_proto_goTypes = []interface{}{
 	(*DeregisterAssessmentToolRequest)(nil), // 6: clouditor.DeregisterAssessmentToolRequest
 	(*StoreAssessmentResultRequest)(nil),    // 7: clouditor.StoreAssessmentResultRequest
 	(*GetMetricsRequest)(nil),               // 8: clouditor.GetMetricsRequest
-	(*GetMetricResponse)(nil),               // 9: clouditor.GetMetricResponse
-	(*ListMetricsRequest)(nil),              // 10: clouditor.ListMetricsRequest
-	(*ListMetricsResponse)(nil),             // 11: clouditor.ListMetricsResponse
-	(*AssessmentTool)(nil),                  // 12: clouditor.AssessmentTool
-	(*AssessmentResult)(nil),                // 13: clouditor.AssessmentResult
-	(*assessment.Metric)(nil),               // 14: clouditor.Metric
-	(*assessment.Evidence)(nil),             // 15: clouditor.Evidence
-	(*emptypb.Empty)(nil),                   // 16: google.protobuf.Empty
+	(*ListMetricsRequest)(nil),              // 9: clouditor.ListMetricsRequest
+	(*ListMetricsResponse)(nil),             // 10: clouditor.ListMetricsResponse
+	(*AssessmentTool)(nil),                  // 11: clouditor.AssessmentTool
+	(*AssessmentResult)(nil),                // 12: clouditor.AssessmentResult
+	(*assessment.Metric)(nil),               // 13: clouditor.Metric
+	(*assessment.Evidence)(nil),             // 14: clouditor.Evidence
+	(*emptypb.Empty)(nil),                   // 15: google.protobuf.Empty
 }
 var file_orchestrator_proto_depIdxs = []int32{
-	12, // 0: clouditor.RegisterAssessmentToolRequest.tool:type_name -> clouditor.AssessmentTool
-	12, // 1: clouditor.ListAssessmentToolsResponse.tools:type_name -> clouditor.AssessmentTool
-	12, // 2: clouditor.UpdateAssessmentToolRequest.tool:type_name -> clouditor.AssessmentTool
-	13, // 3: clouditor.StoreAssessmentResultRequest.result:type_name -> clouditor.AssessmentResult
-	14, // 4: clouditor.GetMetricResponse.metric:type_name -> clouditor.Metric
-	14, // 5: clouditor.ListMetricsResponse.metrics:type_name -> clouditor.Metric
-	0,  // 6: clouditor.AssessmentResult.result:type_name -> clouditor.AssessmentResult.ComplianceStatus
-	15, // 7: clouditor.AssessmentResult.evidence:type_name -> clouditor.Evidence
-	1,  // 8: clouditor.Orchestrator.RegisterAssessmentTool:input_type -> clouditor.RegisterAssessmentToolRequest
-	2,  // 9: clouditor.Orchestrator.ListAssessmentTools:input_type -> clouditor.ListAssessmentToolsRequest
-	4,  // 10: clouditor.Orchestrator.GetAssessmentTool:input_type -> clouditor.GetAssessmentToolRequest
-	5,  // 11: clouditor.Orchestrator.UpdateAssessmentTool:input_type -> clouditor.UpdateAssessmentToolRequest
-	6,  // 12: clouditor.Orchestrator.DeregisterAssessmentTool:input_type -> clouditor.DeregisterAssessmentToolRequest
-	7,  // 13: clouditor.Orchestrator.StoreAssessmentResult:input_type -> clouditor.StoreAssessmentResultRequest
-	13, // 14: clouditor.Orchestrator.StreamAssessmentResults:input_type -> clouditor.AssessmentResult
-	15, // 15: clouditor.Orchestrator.StreamEvidences:input_type -> clouditor.Evidence
-	10, // 16: clouditor.Orchestrator.ListMetrics:input_type -> clouditor.ListMetricsRequest
-	8,  // 17: clouditor.Orchestrator.GetMetric:input_type -> clouditor.GetMetricsRequest
-	12, // 18: clouditor.Orchestrator.RegisterAssessmentTool:output_type -> clouditor.AssessmentTool
-	3,  // 19: clouditor.Orchestrator.ListAssessmentTools:output_type -> clouditor.ListAssessmentToolsResponse
-	12, // 20: clouditor.Orchestrator.GetAssessmentTool:output_type -> clouditor.AssessmentTool
-	12, // 21: clouditor.Orchestrator.UpdateAssessmentTool:output_type -> clouditor.AssessmentTool
-	16, // 22: clouditor.Orchestrator.DeregisterAssessmentTool:output_type -> google.protobuf.Empty
-	16, // 23: clouditor.Orchestrator.StoreAssessmentResult:output_type -> google.protobuf.Empty
-	16, // 24: clouditor.Orchestrator.StreamAssessmentResults:output_type -> google.protobuf.Empty
-	16, // 25: clouditor.Orchestrator.StreamEvidences:output_type -> google.protobuf.Empty
-	11, // 26: clouditor.Orchestrator.ListMetrics:output_type -> clouditor.ListMetricsResponse
-	9,  // 27: clouditor.Orchestrator.GetMetric:output_type -> clouditor.GetMetricResponse
-	18, // [18:28] is the sub-list for method output_type
-	8,  // [8:18] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	11, // 0: clouditor.RegisterAssessmentToolRequest.tool:type_name -> clouditor.AssessmentTool
+	11, // 1: clouditor.ListAssessmentToolsResponse.tools:type_name -> clouditor.AssessmentTool
+	11, // 2: clouditor.UpdateAssessmentToolRequest.tool:type_name -> clouditor.AssessmentTool
+	12, // 3: clouditor.StoreAssessmentResultRequest.result:type_name -> clouditor.AssessmentResult
+	13, // 4: clouditor.ListMetricsResponse.metrics:type_name -> clouditor.Metric
+	0,  // 5: clouditor.AssessmentResult.result:type_name -> clouditor.AssessmentResult.ComplianceStatus
+	14, // 6: clouditor.AssessmentResult.evidence:type_name -> clouditor.Evidence
+	1,  // 7: clouditor.Orchestrator.RegisterAssessmentTool:input_type -> clouditor.RegisterAssessmentToolRequest
+	2,  // 8: clouditor.Orchestrator.ListAssessmentTools:input_type -> clouditor.ListAssessmentToolsRequest
+	4,  // 9: clouditor.Orchestrator.GetAssessmentTool:input_type -> clouditor.GetAssessmentToolRequest
+	5,  // 10: clouditor.Orchestrator.UpdateAssessmentTool:input_type -> clouditor.UpdateAssessmentToolRequest
+	6,  // 11: clouditor.Orchestrator.DeregisterAssessmentTool:input_type -> clouditor.DeregisterAssessmentToolRequest
+	7,  // 12: clouditor.Orchestrator.StoreAssessmentResult:input_type -> clouditor.StoreAssessmentResultRequest
+	12, // 13: clouditor.Orchestrator.StreamAssessmentResults:input_type -> clouditor.AssessmentResult
+	14, // 14: clouditor.Orchestrator.StreamEvidences:input_type -> clouditor.Evidence
+	9,  // 15: clouditor.Orchestrator.ListMetrics:input_type -> clouditor.ListMetricsRequest
+	8,  // 16: clouditor.Orchestrator.GetMetric:input_type -> clouditor.GetMetricsRequest
+	11, // 17: clouditor.Orchestrator.RegisterAssessmentTool:output_type -> clouditor.AssessmentTool
+	3,  // 18: clouditor.Orchestrator.ListAssessmentTools:output_type -> clouditor.ListAssessmentToolsResponse
+	11, // 19: clouditor.Orchestrator.GetAssessmentTool:output_type -> clouditor.AssessmentTool
+	11, // 20: clouditor.Orchestrator.UpdateAssessmentTool:output_type -> clouditor.AssessmentTool
+	15, // 21: clouditor.Orchestrator.DeregisterAssessmentTool:output_type -> google.protobuf.Empty
+	15, // 22: clouditor.Orchestrator.StoreAssessmentResult:output_type -> google.protobuf.Empty
+	15, // 23: clouditor.Orchestrator.StreamAssessmentResults:output_type -> google.protobuf.Empty
+	15, // 24: clouditor.Orchestrator.StreamEvidences:output_type -> google.protobuf.Empty
+	10, // 25: clouditor.Orchestrator.ListMetrics:output_type -> clouditor.ListMetricsResponse
+	13, // 26: clouditor.Orchestrator.GetMetric:output_type -> clouditor.Metric
+	17, // [17:27] is the sub-list for method output_type
+	7,  // [7:17] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_orchestrator_proto_init() }
@@ -1107,18 +1053,6 @@ func file_orchestrator_proto_init() {
 			}
 		}
 		file_orchestrator_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetMetricResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_orchestrator_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ListMetricsRequest); i {
 			case 0:
 				return &v.state
@@ -1130,7 +1064,7 @@ func file_orchestrator_proto_init() {
 				return nil
 			}
 		}
-		file_orchestrator_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+		file_orchestrator_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ListMetricsResponse); i {
 			case 0:
 				return &v.state
@@ -1142,7 +1076,7 @@ func file_orchestrator_proto_init() {
 				return nil
 			}
 		}
-		file_orchestrator_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+		file_orchestrator_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*AssessmentTool); i {
 			case 0:
 				return &v.state
@@ -1154,7 +1088,7 @@ func file_orchestrator_proto_init() {
 				return nil
 			}
 		}
-		file_orchestrator_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+		file_orchestrator_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*AssessmentResult); i {
 			case 0:
 				return &v.state
@@ -1173,7 +1107,7 @@ func file_orchestrator_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_orchestrator_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   13,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

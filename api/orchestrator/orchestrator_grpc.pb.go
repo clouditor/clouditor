@@ -39,7 +39,7 @@ type OrchestratorClient interface {
 	// List all metrics provided by the metric catalog
 	ListMetrics(ctx context.Context, in *ListMetricsRequest, opts ...grpc.CallOption) (*ListMetricsResponse, error)
 	// Returns the metric with the passed metric id
-	GetMetric(ctx context.Context, in *GetMetricsRequest, opts ...grpc.CallOption) (*GetMetricResponse, error)
+	GetMetric(ctx context.Context, in *GetMetricsRequest, opts ...grpc.CallOption) (*assessment.Metric, error)
 }
 
 type orchestratorClient struct {
@@ -181,8 +181,8 @@ func (c *orchestratorClient) ListMetrics(ctx context.Context, in *ListMetricsReq
 	return out, nil
 }
 
-func (c *orchestratorClient) GetMetric(ctx context.Context, in *GetMetricsRequest, opts ...grpc.CallOption) (*GetMetricResponse, error) {
-	out := new(GetMetricResponse)
+func (c *orchestratorClient) GetMetric(ctx context.Context, in *GetMetricsRequest, opts ...grpc.CallOption) (*assessment.Metric, error) {
+	out := new(assessment.Metric)
 	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/GetMetric", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -213,7 +213,7 @@ type OrchestratorServer interface {
 	// List all metrics provided by the metric catalog
 	ListMetrics(context.Context, *ListMetricsRequest) (*ListMetricsResponse, error)
 	// Returns the metric with the passed metric id
-	GetMetric(context.Context, *GetMetricsRequest) (*GetMetricResponse, error)
+	GetMetric(context.Context, *GetMetricsRequest) (*assessment.Metric, error)
 	mustEmbedUnimplementedOrchestratorServer()
 }
 
@@ -248,7 +248,7 @@ func (UnimplementedOrchestratorServer) StreamEvidences(Orchestrator_StreamEviden
 func (UnimplementedOrchestratorServer) ListMetrics(context.Context, *ListMetricsRequest) (*ListMetricsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListMetrics not implemented")
 }
-func (UnimplementedOrchestratorServer) GetMetric(context.Context, *GetMetricsRequest) (*GetMetricResponse, error) {
+func (UnimplementedOrchestratorServer) GetMetric(context.Context, *GetMetricsRequest) (*assessment.Metric, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMetric not implemented")
 }
 func (UnimplementedOrchestratorServer) mustEmbedUnimplementedOrchestratorServer() {}

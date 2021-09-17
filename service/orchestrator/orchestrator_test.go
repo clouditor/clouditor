@@ -26,6 +26,7 @@
 package orchestrator_test
 
 import (
+	"clouditor.io/clouditor/api/assessment"
 	"context"
 	"io/fs"
 	"testing"
@@ -52,7 +53,7 @@ func TestListMetrics(t *testing.T) {
 func TestGetMetric(t *testing.T) {
 	var (
 		request *orchestrator.GetMetricsRequest
-		metric  *orchestrator.GetMetricResponse
+		metric  *assessment.Metric
 		err     error
 	)
 
@@ -64,7 +65,7 @@ func TestGetMetric(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.NotNil(t, metric)
-	assert.Equal(t, request.MetricId, metric.Metric.Id)
+	assert.Equal(t, request.MetricId, metric.Id)
 }
 
 func TestLoad(t *testing.T) {

@@ -92,7 +92,7 @@ func (*Service) ListMetrics(_ context.Context, _ *orchestrator.ListMetricsReques
 	return response, nil
 }
 
-func (*Service) GetMetric(_ context.Context, request *orchestrator.GetMetricsRequest) (response *orchestrator.GetMetricResponse, err error) {
+func (*Service) GetMetric(_ context.Context, request *orchestrator.GetMetricsRequest) (response *assessment.Metric, err error) {
 	var ok bool
 	var metric *assessment.Metric
 
@@ -100,9 +100,7 @@ func (*Service) GetMetric(_ context.Context, request *orchestrator.GetMetricsReq
 		return nil, status.Errorf(codes.NotFound, "Could not find metric with id %d", request.MetricId)
 	}
 
-	response = &orchestrator.GetMetricResponse{
-		Metric: metric,
-	}
+	response = metric
 
 	return response, nil
 }

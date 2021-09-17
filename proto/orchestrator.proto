@@ -101,7 +101,7 @@ service Orchestrator {
   }
 
   // Returns the metric with the passed metric id
-  rpc GetMetric(GetMetricsRequest) returns (GetMetricResponse) {
+  rpc GetMetric(GetMetricsRequest) returns (Metric) {
     option (google.api.http) = {
       get : "/v1/orchestrator/metrics/{metric_id}"
     };
@@ -129,7 +129,6 @@ message DeregisterAssessmentToolRequest { string tool_id = 1; }
 message StoreAssessmentResultRequest { AssessmentResult result = 1; }
 
 message GetMetricsRequest { int32 metric_id = 1; }
-message GetMetricResponse { Metric metric = 1; }
 
 message ListMetricsRequest {}
 message ListMetricsResponse { repeated Metric metrics = 1; }
