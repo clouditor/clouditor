@@ -23,6 +23,8 @@ type EvidenceStoreClient interface {
 	StoreEvidence(ctx context.Context, in *assessment.Evidence, opts ...grpc.CallOption) (*StoreEvidenceResponse, error)
 	// Stores a stream of evidences to the evidence storage
 	StoreEvidences(ctx context.Context, opts ...grpc.CallOption) (EvidenceStore_StoreEvidencesClient, error)
+	// Returns the evidences lying in the evidence storage
+	ListEvidences(ctx context.Context, in *ListEvidencesRequest, opts ...grpc.CallOption) (*ListEvidencesResponse, error)
 }
 
 type evidenceStoreClient struct {
@@ -76,6 +78,15 @@ func (x *evidenceStoreStoreEvidencesClient) CloseAndRecv() (*StoreEvidencesRespo
 	return m, nil
 }
 
+func (c *evidenceStoreClient) ListEvidences(ctx context.Context, in *ListEvidencesRequest, opts ...grpc.CallOption) (*ListEvidencesResponse, error) {
+	out := new(ListEvidencesResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.EvidenceStore/ListEvidences", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EvidenceStoreServer is the server API for EvidenceStore service.
 // All implementations must embed UnimplementedEvidenceStoreServer
 // for forward compatibility
@@ -84,6 +95,8 @@ type EvidenceStoreServer interface {
 	StoreEvidence(context.Context, *assessment.Evidence) (*StoreEvidenceResponse, error)
 	// Stores a stream of evidences to the evidence storage
 	StoreEvidences(EvidenceStore_StoreEvidencesServer) error
+	// Returns the evidences lying in the evidence storage
+	ListEvidences(context.Context, *ListEvidencesRequest) (*ListEvidencesResponse, error)
 	mustEmbedUnimplementedEvidenceStoreServer()
 }
 
@@ -96,6 +109,9 @@ func (UnimplementedEvidenceStoreServer) StoreEvidence(context.Context, *assessme
 }
 func (UnimplementedEvidenceStoreServer) StoreEvidences(EvidenceStore_StoreEvidencesServer) error {
 	return status.Errorf(codes.Unimplemented, "method StoreEvidences not implemented")
+}
+func (UnimplementedEvidenceStoreServer) ListEvidences(context.Context, *ListEvidencesRequest) (*ListEvidencesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListEvidences not implemented")
 }
 func (UnimplementedEvidenceStoreServer) mustEmbedUnimplementedEvidenceStoreServer() {}
 
@@ -154,6 +170,24 @@ func (x *evidenceStoreStoreEvidencesServer) Recv() (*assessment.Evidence, error)
 	return m, nil
 }
 
+func _EvidenceStore_ListEvidences_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListEvidencesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EvidenceStoreServer).ListEvidences(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.EvidenceStore/ListEvidences",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EvidenceStoreServer).ListEvidences(ctx, req.(*ListEvidencesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // EvidenceStore_ServiceDesc is the grpc.ServiceDesc for EvidenceStore service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -164,6 +198,10 @@ var EvidenceStore_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StoreEvidence",
 			Handler:    _EvidenceStore_StoreEvidence_Handler,
+		},
+		{
+			MethodName: "ListEvidences",
+			Handler:    _EvidenceStore_ListEvidences_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

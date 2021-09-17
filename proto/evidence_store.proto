@@ -39,8 +39,8 @@ service EvidenceStore {
   // Stores a stream of evidences to the evidence storage
   rpc StoreEvidences(stream Evidence) returns (StoreEvidencesResponse);
 
-  // Returns the evidences lying in the evidence storage
-  // rpc ListEvidences(ListEvidencesRequest) returns (ListEvidencesResponse);
+   // Returns the evidences lying in the evidence storage
+   rpc ListEvidences(ListEvidencesRequest) returns (ListEvidencesResponse);
 }
 
 
@@ -52,5 +52,5 @@ message StoreEvidencesResponse {
   bool status = 1;
 }
 
-//message ListEvidencesRequest {}
-//message ListEvidencesResponse {repeated Evidence evidences = 1;}
+message ListEvidencesRequest {}
+message ListEvidencesResponse {repeated Evidence evidences = 1;}

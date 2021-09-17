@@ -102,9 +102,37 @@ func TestStoreEvidences(t *testing.T) {
 			s := NewService()
 			if err := s.StoreEvidences(tt.args.stream); (err != nil) != tt.wantErr {
 				t.Errorf("StoreEvidences() error = %v, wantErr %v", err, tt.wantErr)
+				assert.Equal(t, 2, len(s.evidences))
 			}
 		})
 	}
+}
+
+// TestListEvidences tests List evidence
+func TestListEvidences(t *testing.T) {
+	s := NewService()
+	s.evidences["MockEvidenceId-1"] = &assessment.Evidence{
+		Id:                "MockEvidenceId-1",
+		ServiceId:         "MockServiceId-1",
+		ResourceId:        "MockResourceId-1",
+		Timestamp:         "TimeXY",
+		ApplicableMetrics: []int32{1, 2},
+		Raw:               "",
+		Resource:          nil,
+	}
+	s.evidences["MockEvidenceId-2"] = &assessment.Evidence{
+		Id:                "MockEvidenceId-2",
+		ServiceId:         "MockServiceId-2",
+		ResourceId:        "MockResourceId-2",
+		Timestamp:         "TimeXY",
+		ApplicableMetrics: []int32{1, 2},
+		Raw:               "",
+		Resource:          nil,
+	}
+
+	resp, err := s.ListEvidences(context.TODO(), &evidenceStore.ListEvidencesRequest{})
+	assert.Nil(t, err)
+	assert.Equal(t, 2, len(resp.Evidences))
 }
 
 type mockStreamer struct {
@@ -125,6 +153,17 @@ func (m *mockStreamer) Recv() (*assessment.Evidence, error) {
 			Id:                "MockEvidenceId-1",
 			ServiceId:         "MockServiceId-1",
 			ResourceId:        "MockResourceId-1",
+			Timestamp:         "TimeXY",
+			ApplicableMetrics: []int32{1, 2},
+			Raw:               "",
+			Resource:          nil,
+		}, nil
+	} else if m.counter == 1 {
+		m.counter++
+		return &assessment.Evidence{
+			Id:                "MockEvidenceId-2",
+			ServiceId:         "MockServiceId-2",
+			ResourceId:        "MockResourceId-2",
 			Timestamp:         "TimeXY",
 			ApplicableMetrics: []int32{1, 2},
 			Raw:               "",

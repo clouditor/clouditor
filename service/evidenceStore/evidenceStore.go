@@ -51,3 +51,12 @@ func (s *Service) StoreEvidences(stream evidenceStore.EvidenceStore_StoreEvidenc
 		s.evidences[receivedEvidence.Id] = receivedEvidence
 	}
 }
+
+func (s *Service) ListEvidences(_ context.Context, _ *evidenceStore.ListEvidencesRequest) (*evidenceStore.ListEvidencesResponse, error) {
+	var listOfEvidences []*assessment.Evidence
+	for _, v := range s.evidences {
+		listOfEvidences = append(listOfEvidences, v)
+	}
+
+	return &evidenceStore.ListEvidencesResponse{Evidences: listOfEvidences}, nil
+}
