@@ -32,12 +32,101 @@ import (
 	"clouditor.io/clouditor/voc"
 	"context"
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"testing"
 	"time"
 )
 
+func TestStartDiscovery(t *testing.T) {
+	discoveryService := NewService()
+
+	type fields struct {
+		assessmentStream    assessment.Assessment_AssessEvidencesClient
+		evidenceStoreStream evidenceStore.EvidenceStore_StoreEvidencesClient
+		discoverer          discovery.Discoverer
+	}
+
+	tests := []struct {
+		name          string
+		fields        fields
+		checkEvidence bool
+	}{
+		{
+			name: "Err in discoverer",
+			fields: fields{
+				discoverer: mockDiscoverer{testCase: 0}},
+		},
+		{
+			name: "Err in marshaling the resource containing circular dependencies",
+			fields: fields{
+				discoverer: mockDiscoverer{testCase: 1}},
+		},
+		{
+			name: "No err in discoverer but no evidence stream to assessment",
+			fields: fields{
+				discoverer: mockDiscoverer{testCase: 2},
+			},
+		},
+		{
+			name: "No err in discoverer but no evidence stream to evidence store available",
+			fields: fields{
+				assessmentStream: &mockAssessmentStream{},
+				discoverer:       mockDiscoverer{testCase: 2}},
+		},
+		{
+			name: "No err in discoverer but streaming to assessment fails",
+			fields: fields{
+				assessmentStream:    &mockAssessmentStream{},
+				evidenceStoreStream: mockEvidenceStoreStream{},
+				discoverer:          mockDiscoverer{testCase: 2}},
+		},
+		{
+			name: "No err",
+			fields: fields{
+				assessmentStream:    &mockAssessmentStream{connectionEstablished: true},
+				evidenceStoreStream: mockEvidenceStoreStream{},
+				discoverer:          mockDiscoverer{testCase: 2}},
+			checkEvidence: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			discoveryService.AssessmentStream = tt.fields.assessmentStream
+			discoveryService.EvidenceStoreStream = tt.fields.evidenceStoreStream
+			discoveryService.StartDiscovery(tt.fields.discoverer)
+
+			// APIs for assessment and evidence store both send the same evidence. Thus, testing one is enough.
+			if tt.checkEvidence {
+				evidence := discoveryService.AssessmentStream.(*mockAssessmentStream).sentEvidence
+				// Check if UUID has been created
+				assert.NotEmpty(t, evidence.Id)
+				// Check if cloud resources / properties are there
+				assert.NotEmpty(t, evidence.Resource)
+				// Currently, hard coded in discovery. This assertion will probably fail in future
+				assert.Equal(t, []int32{1, 2}, evidence.ApplicableMetrics)
+				// Check if ID of mockDiscovery's resource is mapped to resource id of the evidence
+				list, _ := tt.fields.discoverer.List()
+				assert.Equal(t, string(list[0].GetID()), evidence.ResourceId)
+			}
+		})
+	}
+
+}
+
+func TestQuery(t *testing.T) {
+
+}
+
+// ToDo(lebogg): Maybe try to "outsource" `discoverer = append` in discovery to a field of service
+// So we can mock it
+func TestStart(t *testing.T) {
+
+}
+
+// mockDiscoverer implements Discoverer and mocks the API to cloud resources
 type mockDiscoverer struct {
 	// testCase allows for different implementations for table tests in TestStartDiscovery
 	testCase int
@@ -80,97 +169,55 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 	}
 }
 
-func TestStartDiscovery(t *testing.T) {
-	discoveryService := NewService()
-
-	type fields struct {
-		assessmentStream    assessment.Assessment_AssessEvidencesClient
-		evidenceStoreStream evidenceStore.EvidenceStore_StoreEvidencesClient
-		discoverer          discovery.Discoverer
-	}
-
-	tests := []struct {
-		name   string
-		fields fields
-	}{
-		{
-			name: "Err in discoverer",
-			fields: fields{
-				discoverer: mockDiscoverer{testCase: 0}},
-		},
-		{
-			name: "Err in marshaling the resource containing circular dependencies",
-			fields: fields{
-				discoverer: mockDiscoverer{testCase: 1}},
-		},
-		{
-			name: "No err in discoverer but no evidence stream to assessment",
-			fields: fields{
-				discoverer: mockDiscoverer{testCase: 2},
-			},
-		},
-		{
-			name: "No err in discoverer but no evidence stream to evidence store available",
-			fields: fields{
-				assessmentStream: mockAssessmentStream{},
-				discoverer:       mockDiscoverer{testCase: 2}},
-		},
-		{
-			name: "No err in discoverer but streaming to assessment fails",
-			fields: fields{
-				assessmentStream:    mockAssessmentStream{},
-				evidenceStoreStream: mockEvidenceStoreStream{},
-				discoverer:          mockDiscoverer{testCase: 2}},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			discoveryService.AssessmentStream = tt.fields.assessmentStream
-			discoveryService.EvidenceStoreStream = tt.fields.evidenceStoreStream
-			discoveryService.StartDiscovery(tt.fields.discoverer)
-		})
-	}
-
-}
-
 // mockAssessmentStream implements Assessment_AssessEvidencesClient interface
-type mockAssessmentStream struct{}
-
-func (mockAssessmentStream) Send(_ *assessment.Evidence) error {
-	return fmt.Errorf("MocK Send error")
+type mockAssessmentStream struct {
+	// We add sentEvidence field to test the evidence that would be sent over gRPC
+	sentEvidence *assessment.Evidence
+	// We add connectionEstablished to differentiate between the case where evidences can be sent and not
+	connectionEstablished bool
 }
 
-func (mockAssessmentStream) CloseAndRecv() (*emptypb.Empty, error) {
+func (m *mockAssessmentStream) Send(e *assessment.Evidence) (err error) {
+	if m.connectionEstablished {
+		m.sentEvidence = e
+	} else {
+		err = fmt.Errorf("MocK Send error")
+	}
+	return
+}
+
+func (*mockAssessmentStream) CloseAndRecv() (*emptypb.Empty, error) {
 	return nil, nil
 }
 
-func (mockAssessmentStream) Header() (metadata.MD, error) {
+func (*mockAssessmentStream) Header() (metadata.MD, error) {
 	return nil, nil
 }
 
-func (mockAssessmentStream) Trailer() metadata.MD {
+func (*mockAssessmentStream) Trailer() metadata.MD {
 	return nil
 }
 
-func (mockAssessmentStream) CloseSend() error {
+func (*mockAssessmentStream) CloseSend() error {
 	return nil
 }
 
-func (mockAssessmentStream) Context() context.Context {
+func (*mockAssessmentStream) Context() context.Context {
 	return nil
 }
 
-func (mockAssessmentStream) SendMsg(_ interface{}) error {
+func (*mockAssessmentStream) SendMsg(_ interface{}) error {
 	return nil
 }
 
-func (mockAssessmentStream) RecvMsg(_ interface{}) error {
+func (*mockAssessmentStream) RecvMsg(_ interface{}) error {
 	return nil
 }
 
 // mockEvidenceStoreStream implements EvidenceStore_StoreEvidencesClient interface
-type mockEvidenceStoreStream struct{}
+type mockEvidenceStoreStream struct {
+	sentEvidence *assessment.Evidence
+}
 
 func (mockEvidenceStoreStream) Send(_ *assessment.Evidence) error {
 	return fmt.Errorf("MocK Send error")
