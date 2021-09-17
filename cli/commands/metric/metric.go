@@ -26,6 +26,7 @@
 package metric
 
 import (
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
 	"context"
@@ -77,7 +78,7 @@ func NewGetMetricsCommand() *cobra.Command {
 				err     error
 				session *cli.Session
 				client  orchestrator.OrchestratorClient
-				res     *orchestrator.GetMetricResponse
+				res     *assessment.Metric
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
