@@ -266,7 +266,6 @@ func (*mockAssessmentStream) RecvMsg(_ interface{}) error {
 
 // mockEvidenceStoreStream implements EvidenceStore_StoreEvidencesClient interface
 type mockEvidenceStoreStream struct {
-	sentEvidence *assessment.Evidence
 }
 
 func (mockEvidenceStoreStream) Send(_ *assessment.Evidence) error {
