@@ -1,15 +1,16 @@
-package evidenceStore
+package evidence_store
 
 import (
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/evidenceStore"
 	"context"
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc/metadata"
 	"io"
 	"reflect"
 	"testing"
+
+	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/evidenceStore"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc/metadata"
 )
 
 // TestNewService is a simply test for NewService

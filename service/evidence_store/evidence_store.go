@@ -1,21 +1,22 @@
-package evidenceStore
+package evidence_store
 
 import (
 	"context"
 	"io"
 
 	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/evidenceStore"
+	"clouditor.io/clouditor/api/evidence_store"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 var log *logrus.Entry
 
-// Service is an implementation of the Clouditor EvidenceStore service (EvidenceStoreServer)
+// Service is an implementation of the Clouditor evidence_store service (evidence_storeServer)
 type Service struct {
 	// Currently only in-memory
 	evidences map[string]*assessment.Evidence
-	evidenceStore.UnimplementedEvidenceStoreServer
+	evidence_store.UnimplementedEvidenceStoreServer
 }
 
 func NewService() *Service {
@@ -28,10 +29,10 @@ func init() {
 	log = logrus.WithField("component", "evidence_store")
 }
 
-// StoreEvidence is a method implementation of the EvidenceStoreServer interface: It receives an evidence and stores it
-func (s *Service) StoreEvidence(_ context.Context, evidence *assessment.Evidence) (*evidenceStore.StoreEvidenceResponse, error) {
+// StoreEvidence is a method implementation of the evidence_storeServer interface: It receives an evidence and stores it
+func (s *Service) StoreEvidence(_ context.Context, evidence *assessment.Evidence) (*evidence_store.StoreEvidenceResponse, error) {
 	var (
-		resp       = &evidenceStore.StoreEvidenceResponse{}
+		resp       = &evidence_store.StoreEvidenceResponse{}
 		err  error = nil
 	)
 
@@ -40,24 +41,24 @@ func (s *Service) StoreEvidence(_ context.Context, evidence *assessment.Evidence
 	return resp, err
 }
 
-// StoreEvidences is a method implementation of the EvidenceStoreServer interface: It receives evidences and stores them
-func (s *Service) StoreEvidences(stream evidenceStore.EvidenceStore_StoreEvidencesServer) (err error) {
+// StoreEvidences is a method implementation of the evidence_storeServer interface: It receives evidences and stores them
+func (s *Service) StoreEvidences(stream evidence_store.EvidenceStore_StoreEvidencesServer) (err error) {
 	var receivedEvidence *assessment.Evidence
 	for {
 		receivedEvidence, err = stream.Recv()
 		if err == io.EOF {
 			log.Infof("Stopped receiving streamed evidences")
-			return stream.SendAndClose(&evidenceStore.StoreEvidencesResponse{Status: true})
+			return stream.SendAndClose(&emptypb.Empty{})
 		}
 		s.evidences[receivedEvidence.Id] = receivedEvidence
 	}
 }
 
-func (s *Service) ListEvidences(_ context.Context, _ *evidenceStore.ListEvidencesRequest) (*evidenceStore.ListEvidencesResponse, error) {
+func (s *Service) ListEvidences(_ context.Context, _ *evidence_store.ListEvidencesRequest) (*evidence_store.ListEvidencesResponse, error) {
 	var listOfEvidences []*assessment.Evidence
 	for _, v := range s.evidences {
 		listOfEvidences = append(listOfEvidences, v)
 	}
 
-	return &evidenceStore.ListEvidencesResponse{Evidences: listOfEvidences}, nil
+	return &evidence_store.ListEvidencesResponse{Evidences: listOfEvidences}, nil
 }

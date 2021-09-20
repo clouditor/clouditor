@@ -26,7 +26,6 @@
 package main
 
 import (
-	"clouditor.io/clouditor/api/evidenceStore"
 	"context"
 	"errors"
 	"fmt"
@@ -45,12 +44,13 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/evidence_store"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/rest"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_discovery "clouditor.io/clouditor/service/discovery"
-	service_evidenceStore "clouditor.io/clouditor/service/evidenceStore"
+	service_evidenceStore "clouditor.io/clouditor/service/evidence_store"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"clouditor.io/clouditor/service/standalone"
 
@@ -93,7 +93,7 @@ var authService *service_auth.Service
 var discoveryService *service_discovery.Service
 var orchestratorService orchestrator.OrchestratorServer
 var assessmentService assessment.AssessmentServer
-var evidenceStoreService evidenceStore.EvidenceStoreServer
+var evidenceStoreService evidence_store.EvidenceStoreServer
 
 var log *logrus.Entry
 
@@ -206,7 +206,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	discovery.RegisterDiscoveryServer(server, discoveryService)
 	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
 	assessment.RegisterAssessmentServer(server, assessmentService)
-	evidenceStore.RegisterEvidenceStoreServer(server, evidenceStoreService)
+	evidence_store.RegisterEvidenceStoreServer(server, evidenceStoreService)
 
 	// enable reflection, primary for testing in early stages
 	reflection.Register(server)

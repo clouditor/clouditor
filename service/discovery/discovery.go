@@ -26,16 +26,17 @@
 package discovery
 
 import (
-	"clouditor.io/clouditor/api/evidenceStore"
 	"context"
-	"github.com/google/uuid"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 
 	"clouditor.io/clouditor/service/discovery/aws"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/evidence_store"
 	"clouditor.io/clouditor/service/discovery/azure"
 	"clouditor.io/clouditor/service/discovery/k8s"
 	"clouditor.io/clouditor/voc"
@@ -60,7 +61,7 @@ type Service struct {
 	// TODO(oxisto) do not expose this. just makes tests easier for now
 	AssessmentStream assessment.Assessment_AssessEvidencesClient
 
-	EvidenceStoreStream evidenceStore.EvidenceStore_StoreEvidencesClient
+	EvidenceStoreStream evidence_store.EvidenceStore_StoreEvidencesClient
 
 	resources map[string]voc.IsCloudResource
 	scheduler *gocron.Scheduler
@@ -107,12 +108,12 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	s.AssessmentStream, _ = client.AssessEvidences(context.Background())
 
 	// Establish connection to evidenceStore component
-	var evidenceStoreClient evidenceStore.EvidenceStoreClient
+	var evidenceStoreClient evidence_store.EvidenceStoreClient
 	cc, err = grpc.Dial("localhost:9090", grpc.WithInsecure())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not connect to evidence store service: %v", err)
 	}
-	evidenceStoreClient = evidenceStore.NewEvidenceStoreClient(cc)
+	evidenceStoreClient = evidence_store.NewEvidenceStoreClient(cc)
 	// ToDo(lebogg): whats with the err?
 	s.EvidenceStoreStream, _ = evidenceStoreClient.StoreEvidences(context.Background())
 
