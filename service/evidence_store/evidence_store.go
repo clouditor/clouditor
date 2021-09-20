@@ -1,11 +1,12 @@
 package evidenceStore
 
 import (
+	"context"
+	"io"
+
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidenceStore"
-	"context"
 	"github.com/sirupsen/logrus"
-	"io"
 )
 
 var log *logrus.Entry
@@ -24,7 +25,7 @@ func NewService() *Service {
 }
 
 func init() {
-	log = logrus.WithField("component", "evidenceStore")
+	log = logrus.WithField("component", "evidence_store")
 }
 
 // StoreEvidence is a method implementation of the EvidenceStoreServer interface: It receives an evidence and stores it
