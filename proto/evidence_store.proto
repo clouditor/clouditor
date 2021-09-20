@@ -29,6 +29,7 @@ syntax = "proto3";
 package clouditor;
 
 import "evidence.proto";
+import "google/protobuf/empty.proto";
 
 option go_package = "api/evidence_store";
 
@@ -36,19 +37,16 @@ option go_package = "api/evidence_store";
 service EvidenceStore {
   // Stores an evidence to the evidence storage
   rpc StoreEvidence(Evidence) returns (StoreEvidenceResponse);
-  // Stores a stream of evidences to the evidence storage
-  rpc StoreEvidences(stream Evidence) returns (StoreEvidencesResponse);
 
-   // Returns the evidences lying in the evidence storage
-   rpc ListEvidences(ListEvidencesRequest) returns (ListEvidencesResponse);
+  // Stores a stream of evidences to the evidence storage
+  rpc StoreEvidences(stream Evidence) returns (google.protobuf.Empty);
+
+  // Returns the evidences lying in the evidence storage
+  rpc ListEvidences(ListEvidencesRequest) returns (ListEvidencesResponse);
 }
 
 
 message StoreEvidenceResponse {
-  bool status = 1;
-}
-
-message StoreEvidencesResponse {
   bool status = 1;
 }
 

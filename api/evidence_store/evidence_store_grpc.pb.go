@@ -8,6 +8,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -55,7 +56,7 @@ func (c *evidenceStoreClient) StoreEvidences(ctx context.Context, opts ...grpc.C
 
 type EvidenceStore_StoreEvidencesClient interface {
 	Send(*assessment.Evidence) error
-	CloseAndRecv() (*StoreEvidencesResponse, error)
+	CloseAndRecv() (*emptypb.Empty, error)
 	grpc.ClientStream
 }
 
@@ -67,11 +68,11 @@ func (x *evidenceStoreStoreEvidencesClient) Send(m *assessment.Evidence) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *evidenceStoreStoreEvidencesClient) CloseAndRecv() (*StoreEvidencesResponse, error) {
+func (x *evidenceStoreStoreEvidencesClient) CloseAndRecv() (*emptypb.Empty, error) {
 	if err := x.ClientStream.CloseSend(); err != nil {
 		return nil, err
 	}
-	m := new(StoreEvidencesResponse)
+	m := new(emptypb.Empty)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -149,7 +150,7 @@ func _EvidenceStore_StoreEvidences_Handler(srv interface{}, stream grpc.ServerSt
 }
 
 type EvidenceStore_StoreEvidencesServer interface {
-	SendAndClose(*StoreEvidencesResponse) error
+	SendAndClose(*emptypb.Empty) error
 	Recv() (*assessment.Evidence, error)
 	grpc.ServerStream
 }
@@ -158,7 +159,7 @@ type evidenceStoreStoreEvidencesServer struct {
 	grpc.ServerStream
 }
 
-func (x *evidenceStoreStoreEvidencesServer) SendAndClose(m *StoreEvidencesResponse) error {
+func (x *evidenceStoreStoreEvidencesServer) SendAndClose(m *emptypb.Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 
