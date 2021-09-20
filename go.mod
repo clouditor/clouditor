@@ -17,7 +17,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.15.0
 	github.com/aws/aws-sdk-go-v2/service/sts v1.7.0
 	github.com/aws/smithy-go v1.8.0
-	github.com/go-co-op/gocron v1.7.0
+	github.com/go-co-op/gocron v1.9.0
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/golang-jwt/jwt/v4 v4.0.0
 	github.com/google/addlicense v0.0.0-20210428195630-6d92264d7170
