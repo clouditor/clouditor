@@ -109,7 +109,7 @@ func TestGetMetric(t *testing.T) {
 
 	cli.Output = &b
 
-	cmd := metric.NewGetMetricsCommand()
+	cmd := metric.NewGetMetricCommand()
 	err = cmd.RunE(nil, []string{"1"})
 
 	assert.Nil(t, err)

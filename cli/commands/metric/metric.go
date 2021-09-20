@@ -26,13 +26,14 @@
 package metric
 
 import (
+	"context"
+	"fmt"
+	"strconv"
+
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
-	"context"
-	"fmt"
 	"github.com/spf13/cobra"
-	"strconv"
 )
 
 // NewListMetricsCommand returns a cobra command for the `list` subcommand
@@ -67,11 +68,11 @@ func NewListMetricsCommand() *cobra.Command {
 	return cmd
 }
 
-// NewGetMetricsCommand returns a cobra command for the `get` subcommand
-func NewGetMetricsCommand() *cobra.Command {
+// NewGetMetricCommand returns a cobra command for the `get` subcommand
+func NewGetMetricCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get",
-		Short: "Get metric by metricID",
+		Short: "Retrieves a metric by its ID",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
@@ -100,9 +101,7 @@ func NewGetMetricsCommand() *cobra.Command {
 
 			return session.HandleResponse(res, err)
 		},
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return []string{}, cobra.ShellCompDirectiveNoFileComp
-		},
+		ValidArgsFunction: cli.ValidArgsGetMetrics,
 	}
 
 	return cmd
@@ -124,6 +123,6 @@ func NewMetricCommand() *cobra.Command {
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewListMetricsCommand(),
-		NewGetMetricsCommand(),
+		NewGetMetricCommand(),
 	)
 }

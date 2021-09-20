@@ -18,4 +18,5 @@ gradle.properties
 __debug_bin
 engine
 cl
+coverage.cov
 

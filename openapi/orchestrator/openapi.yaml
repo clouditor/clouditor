@@ -4,10 +4,12 @@
 openapi: 3.0.3
 info:
     title: Orchestrator
+    description: Manages the orchestration of components within the Clouditor architecture
     version: 0.0.1
 paths:
     /v1/orchestrator/assessment_results:
         put:
+            summary: Stores the assessment result provided by an assessment tool
             operationId: Orchestrator_StoreAssessmentResult
             requestBody:
                 content:
@@ -21,6 +23,7 @@ paths:
                     content: {}
     /v1/orchestrator/assessment_tools:
         get:
+            summary: Lists all assessment tools assessing evidences for the metric given by the passed metric id
             operationId: Orchestrator_ListAssessmentTools
             parameters:
                 - name: metric_id
@@ -36,6 +39,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/ListAssessmentToolsResponse'
         post:
+            summary: Registers the passed assessment tool
             operationId: Orchestrator_RegisterAssessmentTool
             requestBody:
                 content:
@@ -52,6 +56,7 @@ paths:
                                 $ref: '#/components/schemas/AssessmentTool'
     /v1/orchestrator/assessment_tools/{tool_id}:
         get:
+            summary: Returns assessment tool given by the passed tool id
             operationId: Orchestrator_GetAssessmentTool
             parameters:
                 - name: tool_id
@@ -66,6 +71,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/AssessmentTool'
         put:
+            summary: Updates the assessment tool given by the passed id
             operationId: Orchestrator_UpdateAssessmentTool
             parameters:
                 - name: tool_id
@@ -86,6 +92,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/AssessmentTool'
         delete:
+            summary: Remove assessment tool with passed id from the list of active assessment tools
             operationId: Orchestrator_DeregisterAssessmentTool
             parameters:
                 - name: tool_id
@@ -98,6 +105,7 @@ paths:
                     content: {}
     /v1/orchestrator/metrics:
         get:
+            summary: List all metrics provided by the metric catalog
             operationId: Orchestrator_ListMetrics
             responses:
                 "200":
@@ -108,6 +116,7 @@ paths:
                                 $ref: '#/components/schemas/ListMetricsResponse'
     /v1/orchestrator/metrics/{metric_id}:
         get:
+            summary: Returns the metric with the passed metric id
             operationId: Orchestrator_GetMetric
             parameters:
                 - name: metric_id
@@ -120,7 +129,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/GetMetricResponse'
+                                $ref: '#/components/schemas/Metric'
 components:
     schemas:
         AllowedValues:
@@ -182,10 +191,7 @@ components:
                     description: '"raw" evidence (for the auditor), for example the raw JSON response from the API. This does not follow a defined schema'
                 resource:
                     $ref: '#/components/schemas/Value'
-        GetMetricResponse:
-            properties:
-                metric:
-                    $ref: '#/components/schemas/Metric'
+            description: An evidence resource
         ListAssessmentToolsResponse:
             properties:
                 tools:
@@ -210,29 +216,33 @@ components:
             properties:
                 id:
                     type: integer
+                    description: Required. The unique identifier of the metric.
                     format: int32
                 name:
                     type: string
-                    description: a human readable name of the metric
+                    description: Required. The human readable name of the metric.
                 description:
                     type: string
-                    description: a description of the metric
+                    description: The description of the metric
                 category:
                     type: string
-                    description: reference to control catalog category or domain
+                    description: The reference to control catalog category or domain
                 scale:
                     type: integer
-                    description: the scale of this metric, e.g. categories, ranked data or metric values
+                    description: The scale of this metric, e.g. categories, ranked data or metric values.
                     format: enum
                 range:
                     $ref: '#/components/schemas/Range'
+            description: A metric resource
         MinMax:
             properties:
                 min:
                     type: integer
+                    description: Required.
                     format: int64
                 max:
                     type: integer
+                    description: Required.
                     format: int64
             description: Defines a range of values through a (inclusive) minimum and a maximum
         Order:
@@ -250,7 +260,7 @@ components:
                     $ref: '#/components/schemas/Order'
                 min_max:
                     $ref: '#/components/schemas/MinMax'
-            description: Defines a range of values
+            description: A range resource representing the range of values
         Struct:
             properties:
                 fields:
