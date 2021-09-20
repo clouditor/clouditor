@@ -26,17 +26,18 @@
 package discovery
 
 import (
+	"context"
+	"fmt"
+	"testing"
+	"time"
+
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidenceStore"
 	"clouditor.io/clouditor/voc"
-	"context"
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"testing"
-	"time"
 )
 
 func TestStartDiscovery(t *testing.T) {

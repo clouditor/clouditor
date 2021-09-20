@@ -83,7 +83,7 @@ func TestMain(m *testing.M) {
 	defer os.Exit(m.Run())
 }
 
-func TestListMetric(t *testing.T) {
+func TestListMetrics(t *testing.T) {
 	var err error
 	var b bytes.Buffer
 
@@ -113,13 +113,4 @@ func TestGetMetric(t *testing.T) {
 	err = cmd.RunE(nil, []string{"1"})
 
 	assert.Nil(t, err)
-
-	// TODO: Don't know what this actually did but no with API change (metric instead of GetMetricResponse) doesn't work anymore
-	//var response *orchestrator.GetMetricResponse = &orchestrator.GetMetricResponse{}
-	//
-	//err = protojson.Unmarshal(b.Bytes(), response)
-	//
-	//assert.Nil(t, err)
-	//assert.NotNil(t, response)
-	//assert.NotEmpty(t, response.Metric)
 }
