@@ -33,7 +33,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/api/evidenceStore"
+	"clouditor.io/clouditor/api/evidence_store"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
@@ -45,7 +45,7 @@ func TestStartDiscovery(t *testing.T) {
 
 	type fields struct {
 		assessmentStream    assessment.Assessment_AssessEvidencesClient
-		evidenceStoreStream evidenceStore.EvidenceStore_StoreEvidencesClient
+		evidenceStoreStream evidence_store.EvidenceStore_StoreEvidencesClient
 		discoverer          discovery.Discoverer
 	}
 
@@ -273,7 +273,7 @@ func (mockEvidenceStoreStream) Send(_ *assessment.Evidence) error {
 	return fmt.Errorf("MocK Send error")
 }
 
-func (mockEvidenceStoreStream) CloseAndRecv() (*evidenceStore.StoreEvidencesResponse, error) {
+func (mockEvidenceStoreStream) CloseAndRecv() (*emptypb.Empty, error) {
 	return nil, nil
 }
 

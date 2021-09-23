@@ -109,7 +109,7 @@ func TestMain(m *testing.M) {
 		Resource:          s,
 	}
 
-	_, err = client.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{Evidence: evidence})
+	_, err = client.AssessEvidence(context.Background(), evidence)
 	if err != nil {
 		panic(err)
 	}

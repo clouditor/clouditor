@@ -2,13 +2,13 @@ package evidence_store
 
 import (
 	"context"
-	"fmt"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"io"
 	"reflect"
 	"testing"
 
 	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/evidenceStore"
+	"clouditor.io/clouditor/api/evidence_store"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
 )
@@ -17,13 +17,13 @@ import (
 func TestNewService(t *testing.T) {
 	tests := []struct {
 		name string
-		want evidenceStore.EvidenceStoreServer
+		want evidence_store.EvidenceStoreServer
 	}{
 		{
 			name: "EvidenceStoreServer created with empty evidence map",
 			want: &Service{
 				evidences:                        make(map[string]*assessment.Evidence),
-				UnimplementedEvidenceStoreServer: evidenceStore.UnimplementedEvidenceStoreServer{},
+				UnimplementedEvidenceStoreServer: evidence_store.UnimplementedEvidenceStoreServer{},
 			},
 		},
 	}
@@ -45,7 +45,7 @@ func TestStoreEvidence(t *testing.T) {
 	tests := []struct {
 		name     string
 		args     args
-		wantResp *evidenceStore.StoreEvidenceResponse
+		wantResp *evidence_store.StoreEvidenceResponse
 		wantErr  bool
 	}{
 		{
@@ -63,7 +63,7 @@ func TestStoreEvidence(t *testing.T) {
 				},
 			},
 			wantErr:  false,
-			wantResp: &evidenceStore.StoreEvidenceResponse{Status: true},
+			wantResp: &evidence_store.StoreEvidenceResponse{Status: true},
 		},
 	}
 	for _, tt := range tests {
@@ -82,10 +82,10 @@ func TestStoreEvidence(t *testing.T) {
 	}
 }
 
-// TestStoreEvidence tests StoreEvidence
+// TestStoreEvidences tests StoreEvidences
 func TestStoreEvidences(t *testing.T) {
 	type args struct {
-		stream evidenceStore.EvidenceStore_StoreEvidencesServer
+		stream evidence_store.EvidenceStore_StoreEvidencesServer
 	}
 	tests := []struct {
 		name    string
@@ -131,7 +131,7 @@ func TestListEvidences(t *testing.T) {
 		Resource:          nil,
 	}
 
-	resp, err := s.ListEvidences(context.TODO(), &evidenceStore.ListEvidencesRequest{})
+	resp, err := s.ListEvidences(context.TODO(), &evidence_store.ListEvidencesRequest{})
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(resp.Evidences))
 }
@@ -140,11 +140,13 @@ type mockStreamer struct {
 	counter int
 }
 
-func (mockStreamer) SendAndClose(r *evidenceStore.StoreEvidencesResponse) error {
-	if r.Status {
-		return nil
-	}
-	return fmt.Errorf("error occured while sending and closing")
+//func (mockStreamer) SendAndClose(r *evidence_store.StoreEvidenceResponse) error {
+func (mockStreamer) SendAndClose(r *emptypb.Empty) error {
+	//if r.Status {
+	//	return nil
+	//}
+	//return fmt.Errorf("error occured while sending and closing")
+	return nil
 }
 
 func (m *mockStreamer) Recv() (*assessment.Evidence, error) {

@@ -55,10 +55,9 @@ service Assessment {
 
   // Assesses the evidence sent by discovery. Part of the public API,
   // also exposed as REST
-  rpc AssessEvidence(AssessEvidenceRequest) returns (AssessEvidenceResponse) {
+  rpc AssessEvidence(Evidence) returns (AssessEvidenceResponse) {
     option (google.api.http) = {
       post : "/v1/assessment/evidences"
-      body : "evidence"
       response_body : "*"
     };
   }
@@ -73,7 +72,6 @@ message TriggerAssessmentRequest { string someOption = 1; }
 message ListAssessmentResultsRequest {}
 message ListAssessmentResultsResponse { repeated Result results = 1; }
 
-message AssessEvidenceRequest { Evidence evidence = 1; }
 message AssessEvidenceResponse { bool status = 1; }
 
 
