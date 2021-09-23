@@ -140,12 +140,7 @@ type mockStreamer struct {
 	counter int
 }
 
-//func (mockStreamer) SendAndClose(r *evidence_store.StoreEvidenceResponse) error {
-func (mockStreamer) SendAndClose(r *emptypb.Empty) error {
-	//if r.Status {
-	//	return nil
-	//}
-	//return fmt.Errorf("error occured while sending and closing")
+func (mockStreamer) SendAndClose(_ *emptypb.Empty) error {
 	return nil
 }
 
