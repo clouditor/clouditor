@@ -28,6 +28,7 @@ package assessment
 import (
 	"context"
 	"fmt"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 	"io"
 	"os"
 
@@ -60,11 +61,11 @@ func NewService() assessment.AssessmentServer {
 	}
 }
 
-func (s Service) AssessEvidence(_ context.Context, req *assessment.Evidence) (res *assessment.AssessEvidenceResponse, err error) {
+func (s Service) AssessEvidence(_ context.Context, req *assessment.Evidence) (res *wrapperspb.BoolValue , err error) {
 	res, err = s.handleEvidence(req)
 
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
+		return res, status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
 	}
 
 	return
@@ -88,7 +89,7 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 	}
 }
 
-func (s Service) handleEvidence(evidence *assessment.Evidence) (result *assessment.AssessEvidenceResponse, err error) {
+func (s Service) handleEvidence(evidence *assessment.Evidence) (result *wrapperspb.BoolValue, err error) {
 	log.Infof("Received evidence for resource %s", evidence.ResourceId)
 	log.Debugf("Evidence: %+v", evidence)
 
@@ -122,8 +123,8 @@ func (s Service) handleEvidence(evidence *assessment.Evidence) (result *assessme
 				go s.ResultHook(nil, err)
 			}
 
-			result.Status = false
-			return nil, err
+			result = wrapperspb.Bool(false)
+			return result, err
 		}
 
 		log.Infof("Evaluated evidence as %v", data["compliant"])
@@ -142,9 +143,7 @@ func (s Service) handleEvidence(evidence *assessment.Evidence) (result *assessme
 		}
 	}
 
-	result = &assessment.AssessEvidenceResponse{
-		Status: true,
-	}
+	result = wrapperspb.Bool(true)
 
 	return
 }

@@ -54,6 +54,7 @@ func (s *Service) StoreEvidences(stream evidence_store.EvidenceStore_StoreEviden
 	}
 }
 
+// ListEvidences is a method implementation of the evidence_storeServer interface: It returns the evidences lying in the evidence storage
 func (s *Service) ListEvidences(_ context.Context, _ *evidence_store.ListEvidencesRequest) (*evidence_store.ListEvidencesResponse, error) {
 	var listOfEvidences []*assessment.Evidence
 	for _, v := range s.evidences {

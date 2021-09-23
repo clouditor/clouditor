@@ -30,6 +30,7 @@ package clouditor;
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
 import "evidence.proto";
 
 option go_package = "api/assessment";
@@ -55,7 +56,7 @@ service Assessment {
 
   // Assesses the evidence sent by discovery. Part of the public API,
   // also exposed as REST
-  rpc AssessEvidence(Evidence) returns (AssessEvidenceResponse) {
+  rpc AssessEvidence(Evidence) returns (google.protobuf.BoolValue) {
     option (google.api.http) = {
       post : "/v1/assessment/evidences"
       response_body : "*"
@@ -72,7 +73,7 @@ message TriggerAssessmentRequest { string someOption = 1; }
 message ListAssessmentResultsRequest {}
 message ListAssessmentResultsResponse { repeated Result results = 1; }
 
-message AssessEvidenceResponse { bool status = 1; }
+//message AssessEvidenceResponse { bool status = 1; }
 
 
 // A result resource, representing the result after assessing the cloud resource with id resource_id.
