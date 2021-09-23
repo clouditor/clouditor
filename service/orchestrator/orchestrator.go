@@ -65,7 +65,7 @@ func init() {
 	}
 }
 
-// Metrics
+// LoadMetrics loads metrics definitions from a JSON file.
 func LoadMetrics(metricsFile string) (err error) {
 	var (
 		b []byte
