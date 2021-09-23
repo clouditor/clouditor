@@ -8,6 +8,7 @@ import (
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
+	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -28,7 +29,7 @@ type AssessmentClient interface {
 	ListAssessmentResults(ctx context.Context, in *ListAssessmentResultsRequest, opts ...grpc.CallOption) (*ListAssessmentResultsResponse, error)
 	// Assesses the evidence sent by discovery. Part of the public API,
 	// also exposed as REST
-	AssessEvidence(ctx context.Context, in *AssessEvidenceRequest, opts ...grpc.CallOption) (*AssessEvidenceResponse, error)
+	AssessEvidence(ctx context.Context, in *Evidence, opts ...grpc.CallOption) (*wrapperspb.BoolValue, error)
 	// Assesses stream of evidences coming from the discovery. Part of the public API,
 	// not exposed as REST
 	AssessEvidences(ctx context.Context, opts ...grpc.CallOption) (Assessment_AssessEvidencesClient, error)
@@ -60,8 +61,8 @@ func (c *assessmentClient) ListAssessmentResults(ctx context.Context, in *ListAs
 	return out, nil
 }
 
-func (c *assessmentClient) AssessEvidence(ctx context.Context, in *AssessEvidenceRequest, opts ...grpc.CallOption) (*AssessEvidenceResponse, error) {
-	out := new(AssessEvidenceResponse)
+func (c *assessmentClient) AssessEvidence(ctx context.Context, in *Evidence, opts ...grpc.CallOption) (*wrapperspb.BoolValue, error) {
+	out := new(wrapperspb.BoolValue)
 	err := c.cc.Invoke(ctx, "/clouditor.Assessment/AssessEvidence", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -116,7 +117,7 @@ type AssessmentServer interface {
 	ListAssessmentResults(context.Context, *ListAssessmentResultsRequest) (*ListAssessmentResultsResponse, error)
 	// Assesses the evidence sent by discovery. Part of the public API,
 	// also exposed as REST
-	AssessEvidence(context.Context, *AssessEvidenceRequest) (*AssessEvidenceResponse, error)
+	AssessEvidence(context.Context, *Evidence) (*wrapperspb.BoolValue, error)
 	// Assesses stream of evidences coming from the discovery. Part of the public API,
 	// not exposed as REST
 	AssessEvidences(Assessment_AssessEvidencesServer) error
@@ -133,7 +134,7 @@ func (UnimplementedAssessmentServer) TriggerAssessment(context.Context, *Trigger
 func (UnimplementedAssessmentServer) ListAssessmentResults(context.Context, *ListAssessmentResultsRequest) (*ListAssessmentResultsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListAssessmentResults not implemented")
 }
-func (UnimplementedAssessmentServer) AssessEvidence(context.Context, *AssessEvidenceRequest) (*AssessEvidenceResponse, error) {
+func (UnimplementedAssessmentServer) AssessEvidence(context.Context, *Evidence) (*wrapperspb.BoolValue, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AssessEvidence not implemented")
 }
 func (UnimplementedAssessmentServer) AssessEvidences(Assessment_AssessEvidencesServer) error {
@@ -189,7 +190,7 @@ func _Assessment_ListAssessmentResults_Handler(srv interface{}, ctx context.Cont
 }
 
 func _Assessment_AssessEvidence_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AssessEvidenceRequest)
+	in := new(Evidence)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -201,7 +202,7 @@ func _Assessment_AssessEvidence_Handler(srv interface{}, ctx context.Context, de
 		FullMethod: "/clouditor.Assessment/AssessEvidence",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AssessmentServer).AssessEvidence(ctx, req.(*AssessEvidenceRequest))
+		return srv.(AssessmentServer).AssessEvidence(ctx, req.(*Evidence))
 	}
 	return interceptor(ctx, in, info, handler)
 }
