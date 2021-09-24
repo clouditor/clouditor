@@ -90,9 +90,6 @@ service Orchestrator {
   // Stores stream of assessment results provided by an assessment tool
   rpc StreamAssessmentResults(stream AssessmentResult) returns (google.protobuf.Empty);
 
-  // Obsolete: Stores stream of evidences. This responsibility is shifted now to the evidence store component.
-  rpc StreamEvidences(stream Evidence) returns (google.protobuf.Empty);
-
   // List all metrics provided by the metric catalog
   rpc ListMetrics(ListMetricsRequest) returns (ListMetricsResponse) {
     option (google.api.http) = {
