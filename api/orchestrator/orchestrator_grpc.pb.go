@@ -33,9 +33,7 @@ type OrchestratorClient interface {
 	// Stores the assessment result provided by an assessment tool
 	StoreAssessmentResult(ctx context.Context, in *StoreAssessmentResultRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Stores stream of assessment results provided by an assessment tool
-	StreamAssessmentResults(ctx context.Context, opts ...grpc.CallOption) (Orchestrator_StreamAssessmentResultsClient, error)
-	// Obsolete: Stores stream of evidences. This responsibility is shifted now to the evidence store component.
-	StreamEvidences(ctx context.Context, opts ...grpc.CallOption) (Orchestrator_StreamEvidencesClient, error)
+	StoreAssessmentResults(ctx context.Context, opts ...grpc.CallOption) (Orchestrator_StoreAssessmentResultsClient, error)
 	// List all metrics provided by the metric catalog
 	ListMetrics(ctx context.Context, in *ListMetricsRequest, opts ...grpc.CallOption) (*ListMetricsResponse, error)
 	// Returns the metric with the passed metric id
@@ -104,64 +102,30 @@ func (c *orchestratorClient) StoreAssessmentResult(ctx context.Context, in *Stor
 	return out, nil
 }
 
-func (c *orchestratorClient) StreamAssessmentResults(ctx context.Context, opts ...grpc.CallOption) (Orchestrator_StreamAssessmentResultsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Orchestrator_ServiceDesc.Streams[0], "/clouditor.Orchestrator/StreamAssessmentResults", opts...)
+func (c *orchestratorClient) StoreAssessmentResults(ctx context.Context, opts ...grpc.CallOption) (Orchestrator_StoreAssessmentResultsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Orchestrator_ServiceDesc.Streams[0], "/clouditor.Orchestrator/StoreAssessmentResults", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &orchestratorStreamAssessmentResultsClient{stream}
+	x := &orchestratorStoreAssessmentResultsClient{stream}
 	return x, nil
 }
 
-type Orchestrator_StreamAssessmentResultsClient interface {
+type Orchestrator_StoreAssessmentResultsClient interface {
 	Send(*AssessmentResult) error
 	CloseAndRecv() (*emptypb.Empty, error)
 	grpc.ClientStream
 }
 
-type orchestratorStreamAssessmentResultsClient struct {
+type orchestratorStoreAssessmentResultsClient struct {
 	grpc.ClientStream
 }
 
-func (x *orchestratorStreamAssessmentResultsClient) Send(m *AssessmentResult) error {
+func (x *orchestratorStoreAssessmentResultsClient) Send(m *AssessmentResult) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *orchestratorStreamAssessmentResultsClient) CloseAndRecv() (*emptypb.Empty, error) {
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	m := new(emptypb.Empty)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *orchestratorClient) StreamEvidences(ctx context.Context, opts ...grpc.CallOption) (Orchestrator_StreamEvidencesClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Orchestrator_ServiceDesc.Streams[1], "/clouditor.Orchestrator/StreamEvidences", opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &orchestratorStreamEvidencesClient{stream}
-	return x, nil
-}
-
-type Orchestrator_StreamEvidencesClient interface {
-	Send(*assessment.Evidence) error
-	CloseAndRecv() (*emptypb.Empty, error)
-	grpc.ClientStream
-}
-
-type orchestratorStreamEvidencesClient struct {
-	grpc.ClientStream
-}
-
-func (x *orchestratorStreamEvidencesClient) Send(m *assessment.Evidence) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *orchestratorStreamEvidencesClient) CloseAndRecv() (*emptypb.Empty, error) {
+func (x *orchestratorStoreAssessmentResultsClient) CloseAndRecv() (*emptypb.Empty, error) {
 	if err := x.ClientStream.CloseSend(); err != nil {
 		return nil, err
 	}
@@ -207,9 +171,7 @@ type OrchestratorServer interface {
 	// Stores the assessment result provided by an assessment tool
 	StoreAssessmentResult(context.Context, *StoreAssessmentResultRequest) (*emptypb.Empty, error)
 	// Stores stream of assessment results provided by an assessment tool
-	StreamAssessmentResults(Orchestrator_StreamAssessmentResultsServer) error
-	// Obsolete: Stores stream of evidences. This responsibility is shifted now to the evidence store component.
-	StreamEvidences(Orchestrator_StreamEvidencesServer) error
+	StoreAssessmentResults(Orchestrator_StoreAssessmentResultsServer) error
 	// List all metrics provided by the metric catalog
 	ListMetrics(context.Context, *ListMetricsRequest) (*ListMetricsResponse, error)
 	// Returns the metric with the passed metric id
@@ -239,11 +201,8 @@ func (UnimplementedOrchestratorServer) DeregisterAssessmentTool(context.Context,
 func (UnimplementedOrchestratorServer) StoreAssessmentResult(context.Context, *StoreAssessmentResultRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreAssessmentResult not implemented")
 }
-func (UnimplementedOrchestratorServer) StreamAssessmentResults(Orchestrator_StreamAssessmentResultsServer) error {
-	return status.Errorf(codes.Unimplemented, "method StreamAssessmentResults not implemented")
-}
-func (UnimplementedOrchestratorServer) StreamEvidences(Orchestrator_StreamEvidencesServer) error {
-	return status.Errorf(codes.Unimplemented, "method StreamEvidences not implemented")
+func (UnimplementedOrchestratorServer) StoreAssessmentResults(Orchestrator_StoreAssessmentResultsServer) error {
+	return status.Errorf(codes.Unimplemented, "method StoreAssessmentResults not implemented")
 }
 func (UnimplementedOrchestratorServer) ListMetrics(context.Context, *ListMetricsRequest) (*ListMetricsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListMetrics not implemented")
@@ -372,52 +331,26 @@ func _Orchestrator_StoreAssessmentResult_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Orchestrator_StreamAssessmentResults_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(OrchestratorServer).StreamAssessmentResults(&orchestratorStreamAssessmentResultsServer{stream})
+func _Orchestrator_StoreAssessmentResults_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(OrchestratorServer).StoreAssessmentResults(&orchestratorStoreAssessmentResultsServer{stream})
 }
 
-type Orchestrator_StreamAssessmentResultsServer interface {
+type Orchestrator_StoreAssessmentResultsServer interface {
 	SendAndClose(*emptypb.Empty) error
 	Recv() (*AssessmentResult, error)
 	grpc.ServerStream
 }
 
-type orchestratorStreamAssessmentResultsServer struct {
+type orchestratorStoreAssessmentResultsServer struct {
 	grpc.ServerStream
 }
 
-func (x *orchestratorStreamAssessmentResultsServer) SendAndClose(m *emptypb.Empty) error {
+func (x *orchestratorStoreAssessmentResultsServer) SendAndClose(m *emptypb.Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *orchestratorStreamAssessmentResultsServer) Recv() (*AssessmentResult, error) {
+func (x *orchestratorStoreAssessmentResultsServer) Recv() (*AssessmentResult, error) {
 	m := new(AssessmentResult)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func _Orchestrator_StreamEvidences_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(OrchestratorServer).StreamEvidences(&orchestratorStreamEvidencesServer{stream})
-}
-
-type Orchestrator_StreamEvidencesServer interface {
-	SendAndClose(*emptypb.Empty) error
-	Recv() (*assessment.Evidence, error)
-	grpc.ServerStream
-}
-
-type orchestratorStreamEvidencesServer struct {
-	grpc.ServerStream
-}
-
-func (x *orchestratorStreamEvidencesServer) SendAndClose(m *emptypb.Empty) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *orchestratorStreamEvidencesServer) Recv() (*assessment.Evidence, error) {
-	m := new(assessment.Evidence)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -502,13 +435,8 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 	},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "StreamAssessmentResults",
-			Handler:       _Orchestrator_StreamAssessmentResults_Handler,
-			ClientStreams: true,
-		},
-		{
-			StreamName:    "StreamEvidences",
-			Handler:       _Orchestrator_StreamEvidences_Handler,
+			StreamName:    "StoreAssessmentResults",
+			Handler:       _Orchestrator_StoreAssessmentResults_Handler,
 			ClientStreams: true,
 		},
 	},

@@ -88,7 +88,7 @@ service Orchestrator {
   }
 
   // Stores stream of assessment results provided by an assessment tool
-  rpc StreamAssessmentResults(stream AssessmentResult) returns (google.protobuf.Empty);
+  rpc StoreAssessmentResults(stream AssessmentResult) returns (google.protobuf.Empty);
 
   // List all metrics provided by the metric catalog
   rpc ListMetrics(ListMetricsRequest) returns (ListMetricsResponse) {
