@@ -70,7 +70,7 @@ func init() {
 }
 
 // Login handles a login request
-func (s Service) Login(ctx context.Context, request *auth.LoginRequest) (response *auth.LoginResponse, err error) {
+func (s Service) Login(_ context.Context, request *auth.LoginRequest) (response *auth.LoginResponse, err error) {
 	var result bool
 	var user *auth.User
 
@@ -130,8 +130,8 @@ func verifyLogin(request *auth.LoginRequest) (result bool, user *auth.User, err 
 	}
 }
 
-// HashPassword returns a hash of password using argon2id.
-func (s Service) HashPassword(password string) (string, error) {
+// hashPassword returns a hash of password using argon2id.
+func hashPassword(password string) (string, error) {
 	return argon2.CreateHash(password, &argon2.Params{
 		SaltLength:  16,
 		Memory:      65536,
@@ -149,7 +149,7 @@ func (s Service) CreateDefaultUser(username string, password string) {
 	db.Model(&auth.User{}).Count(&count)
 
 	if count == 0 {
-		hash, _ := s.HashPassword(password)
+		hash, _ := hashPassword(password)
 
 		user := auth.User{
 			Username: username,
