@@ -60,7 +60,7 @@ type Service struct {
 
 // UserClaims extend jwt.StandardClaims with more detailed claims about a user
 type UserClaims struct {
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 	FullName string `json:"full_name"`
 	EMail    string `json:"email"`
 }
