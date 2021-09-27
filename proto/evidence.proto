@@ -30,6 +30,7 @@ syntax = "proto3";
 package clouditor;
 
 import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
 
 option go_package = "api/assessment";
 
@@ -44,8 +45,8 @@ message Evidence {
   // reference to the resource this evidence was gathered from
   string resource_id = 3;
 
-  // TODO: replace with google/type/date.proto
-  string timestamp = 4;
+  // TODO: replace with google/type/date.proto timestamp.proto or date.proto?
+  google.protobuf.Timestamp timestamp = 4;
 
   repeated int32 applicable_metrics = 5;
 
@@ -91,7 +92,7 @@ message Metric {
 message Range {
   // Required.
   oneof range {
-    // used for nomical scale
+    // used for nominal scale
     AllowedValues allowed_values = 1;
 
     // used for ordinal scale
