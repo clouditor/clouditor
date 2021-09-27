@@ -12,38 +12,8 @@ paths:
             summary: Assesses the evidence sent by discovery. Part of the public API, also exposed as REST
             operationId: Assessment_AssessEvidence
             parameters:
-                - name: id
+                - name: evidence
                   in: query
-                  description: the ID in a uuid format
-                  schema:
-                    type: string
-                - name: service_id
-                  in: query
-                  description: reference to a service this evidence was gathered from
-                  schema:
-                    type: string
-                - name: resource_id
-                  in: query
-                  description: reference to the resource this evidence was gathered from
-                  schema:
-                    type: string
-                - name: timestamp
-                  in: query
-                  description: 'TODO: replace with google/type/date.proto timestamp.proto or date.proto?'
-                  schema:
-                    type: string
-                - name: applicable_metrics
-                  in: query
-                  schema:
-                    type: string
-                - name: raw
-                  in: query
-                  description: '"raw" evidence (for the auditor), for example the raw JSON response from the API. This does not follow a defined schema'
-                  schema:
-                    type: string
-                - name: resource
-                  in: query
-                  description: optional; a semantic representation of the Cloud resource according to our defined ontology. a JSON serialized node of our semantic graph. This may be Clouditor-specific.
                   schema:
                     type: string
             responses:
@@ -52,7 +22,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/BoolValue'
+                                $ref: '#/components/schemas/AssessEvidenceResponse'
     /v1/assessment/results:
         post:
             summary: 'TODO(all): Part of public API because external entities (mainly discoveries) can use it? List the latest set of assessment results. Part of the public API, also exposed as REST'
@@ -66,12 +36,10 @@ paths:
                                 $ref: '#/components/schemas/ListAssessmentResultsResponse'
 components:
     schemas:
-        BoolValue:
+        AssessEvidenceResponse:
             properties:
-                value:
+                status:
                     type: boolean
-                    description: The bool value.
-            description: Wrapper message for `bool`. The JSON representation for `BoolValue` is JSON `true` and `false`.
         ListAssessmentResultsResponse:
             properties:
                 results:

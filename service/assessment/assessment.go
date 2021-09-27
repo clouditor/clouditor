@@ -28,7 +28,6 @@ package assessment
 import (
 	"context"
 	"fmt"
-	"google.golang.org/protobuf/types/known/wrapperspb"
 	"io"
 	"os"
 
@@ -61,14 +60,22 @@ func NewService() assessment.AssessmentServer {
 	}
 }
 
-func (s Service) AssessEvidence(_ context.Context, req *assessment.Evidence) (res *wrapperspb.BoolValue , err error) {
-	_, err = s.handleEvidence(req)
+func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
+	_, err = s.handleEvidence(req.Evidence)
 
 	if err != nil {
-		return wrapperspb.Bool(false), status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
+		res = &assessment.AssessEvidenceResponse{
+			Status: false,
+		}
+
+		return res, status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
 	}
 
-	return wrapperspb.Bool(true), nil
+	res = &assessment.AssessEvidenceResponse{
+		Status: true,
+	}
+
+	return res, nil
 }
 
 func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) error {
@@ -78,7 +85,7 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 	for {
 		evidence, err = stream.Recv()
 
-		// TODO: Catch error
+		// TODO: Catch error?
 		_, _ = s.handleEvidence(evidence)
 
 		if err == io.EOF {
@@ -142,8 +149,6 @@ func (s Service) handleEvidence(evidence *assessment.Evidence) (result *assessme
 			go s.ResultHook(result, nil)
 		}
 	}
-
-	result = evidence
 
 	return
 }

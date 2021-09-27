@@ -103,10 +103,12 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	evidence := &assessment.Evidence{
-		ResourceId:        "some-id",
-		ApplicableMetrics: []int32{1},
-		Resource:          s,
+	evidence := &assessment.AssessEvidenceRequest{
+		Evidence: &assessment.Evidence{
+			ResourceId:        "some-id",
+			ApplicableMetrics: []int32{1},
+			Resource:          s,
+		},
 	}
 
 	_, err = client.AssessEvidence(context.Background(), evidence)

@@ -32,7 +32,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 var assessmentService assessment.AssessmentServer
@@ -108,7 +107,7 @@ func (standaloneEvidenceClient) TriggerAssessment(ctx context.Context, in *asses
 	return assessmentService.TriggerAssessment(ctx, in)
 }
 
-func (standaloneEvidenceClient) AssessEvidence(ctx context.Context, in *assessment.Evidence, _ ...grpc.CallOption) (*wrapperspb.BoolValue, error) {
+func (standaloneEvidenceClient) AssessEvidence(ctx context.Context, in *assessment.AssessEvidenceRequest, _ ...grpc.CallOption) (*assessment.AssessEvidenceResponse, error) {
 	return assessmentService.AssessEvidence(ctx, in)
 }
 
