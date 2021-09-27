@@ -19,7 +19,7 @@ require (
 	github.com/aws/smithy-go v1.8.0
 	github.com/go-co-op/gocron v1.9.0
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
-	github.com/golang-jwt/jwt/v4 v4.0.0
+	github.com/golang-jwt/jwt/v4 v4.1.0
 	github.com/google/addlicense v0.0.0-20210428195630-6d92264d7170
 	github.com/googleapis/gnostic v0.5.6-0.20210520165051-0320d74b3646
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
