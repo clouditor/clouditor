@@ -172,7 +172,7 @@ func (s Service) issueToken(subject string, fullName string, email string, expir
 			FullName: fullName,
 			EMail:    email,
 			RegisteredClaims: jwt.RegisteredClaims{
-				ExpiresAt: expiry.Unix(),
+				ExpiresAt: jwt.NewNumericDate(expiry),
 				Issuer:    Issuer,
 				Subject:   subject,
 			}},
