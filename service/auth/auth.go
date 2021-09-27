@@ -142,7 +142,7 @@ func hashPassword(password string) (string, error) {
 }
 
 // CreateDefaultUser creates a default user in the database
-func (s Service) CreateDefaultUser(username string, password string) {
+func (_ Service) CreateDefaultUser(username string, password string) {
 	db := persistence.GetDatabase()
 
 	var count int64
