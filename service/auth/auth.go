@@ -171,7 +171,7 @@ func (s Service) issueToken(subject string, fullName string, email string, expir
 		&UserClaims{
 			FullName: fullName,
 			EMail:    email,
-			StandardClaims: jwt.StandardClaims{
+			RegisteredClaims: jwt.RegisteredClaims{
 				ExpiresAt: expiry.Unix(),
 				Issuer:    Issuer,
 				Subject:   subject,
