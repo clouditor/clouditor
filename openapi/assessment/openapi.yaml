@@ -29,7 +29,7 @@ paths:
                     type: string
                 - name: timestamp
                   in: query
-                  description: 'TODO: replace with google/type/date.proto'
+                  description: 'TODO: replace with google/type/date.proto timestamp.proto or date.proto?'
                   schema:
                     type: string
                 - name: applicable_metrics

@@ -181,7 +181,8 @@ components:
                     description: reference to the resource this evidence was gathered from
                 timestamp:
                     type: string
-                    description: 'TODO: replace with google/type/date.proto'
+                    description: 'TODO: replace with google/type/date.proto timestamp.proto or date.proto?'
+                    format: RFC3339
                 applicable_metrics:
                     type: array
                     items:

@@ -3,6 +3,7 @@ package evidence_store
 import (
 	"context"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"io"
 	"reflect"
 	"testing"
@@ -56,7 +57,7 @@ func TestStoreEvidence(t *testing.T) {
 					Id:                "MockEvidenceId",
 					ServiceId:         "MockServiceId",
 					ResourceId:        "MockResourceId",
-					Timestamp:         "TimeXY",
+					Timestamp:         timestamppb.Now(),
 					ApplicableMetrics: []int32{1, 2},
 					Raw:               "",
 					Resource:          nil,
@@ -116,7 +117,7 @@ func TestListEvidences(t *testing.T) {
 		Id:                "MockEvidenceId-1",
 		ServiceId:         "MockServiceId-1",
 		ResourceId:        "MockResourceId-1",
-		Timestamp:         "TimeXY",
+		Timestamp:         timestamppb.Now(),
 		ApplicableMetrics: []int32{1, 2},
 		Raw:               "",
 		Resource:          nil,
@@ -125,7 +126,7 @@ func TestListEvidences(t *testing.T) {
 		Id:                "MockEvidenceId-2",
 		ServiceId:         "MockServiceId-2",
 		ResourceId:        "MockResourceId-2",
-		Timestamp:         "TimeXY",
+		Timestamp:         timestamppb.Now(),
 		ApplicableMetrics: []int32{1, 2},
 		Raw:               "",
 		Resource:          nil,
@@ -151,7 +152,7 @@ func (m *mockStreamer) Recv() (*assessment.Evidence, error) {
 			Id:                "MockEvidenceId-1",
 			ServiceId:         "MockServiceId-1",
 			ResourceId:        "MockResourceId-1",
-			Timestamp:         "TimeXY",
+			Timestamp:         timestamppb.Now(),
 			ApplicableMetrics: []int32{1, 2},
 			Raw:               "",
 			Resource:          nil,
@@ -162,7 +163,7 @@ func (m *mockStreamer) Recv() (*assessment.Evidence, error) {
 			Id:                "MockEvidenceId-2",
 			ServiceId:         "MockServiceId-2",
 			ResourceId:        "MockResourceId-2",
-			Timestamp:         "TimeXY",
+			Timestamp:         timestamppb.Now(),
 			ApplicableMetrics: []int32{1, 2},
 			Raw:               "",
 			Resource:          nil,
