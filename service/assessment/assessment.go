@@ -62,13 +62,13 @@ func NewService() assessment.AssessmentServer {
 }
 
 func (s Service) AssessEvidence(_ context.Context, req *assessment.Evidence) (res *wrapperspb.BoolValue , err error) {
-	res, err = s.handleEvidence(req)
+	_, err = s.handleEvidence(req)
 
 	if err != nil {
-		return res, status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
+		return wrapperspb.Bool(false), status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
 	}
 
-	return
+	return wrapperspb.Bool(true), nil
 }
 
 func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) error {
@@ -78,6 +78,7 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 	for {
 		evidence, err = stream.Recv()
 
+		// TODO: Catch error
 		_, _ = s.handleEvidence(evidence)
 
 		if err == io.EOF {
@@ -89,7 +90,7 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 	}
 }
 
-func (s Service) handleEvidence(evidence *assessment.Evidence) (result *wrapperspb.BoolValue, err error) {
+func (s Service) handleEvidence(evidence *assessment.Evidence) (result *assessment.Evidence, err error) {
 	log.Infof("Received evidence for resource %s", evidence.ResourceId)
 	log.Debugf("Evidence: %+v", evidence)
 
@@ -123,8 +124,7 @@ func (s Service) handleEvidence(evidence *assessment.Evidence) (result *wrappers
 				go s.ResultHook(nil, err)
 			}
 
-			result = wrapperspb.Bool(false)
-			return result, err
+			return nil, err
 		}
 
 		log.Infof("Evaluated evidence as %v", data["compliant"])
@@ -143,7 +143,7 @@ func (s Service) handleEvidence(evidence *assessment.Evidence) (result *wrappers
 		}
 	}
 
-	result = wrapperspb.Bool(true)
+	result = evidence
 
 	return
 }
