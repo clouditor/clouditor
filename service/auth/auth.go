@@ -142,7 +142,7 @@ func hashPassword(password string) (string, error) {
 }
 
 // CreateDefaultUser creates a default user in the database
-func (_ Service) CreateDefaultUser(username string, password string) {
+func (Service) CreateDefaultUser(username string, password string) {
 	db := persistence.GetDatabase()
 
 	var count int64
@@ -163,7 +163,7 @@ func (_ Service) CreateDefaultUser(username string, password string) {
 	}
 }
 
-// issueToken issues a JWT token
+// issueToken issues a JWT-based token
 func (s Service) issueToken(subject string, fullName string, email string, expiry time.Time) (token string, err error) {
 	key := []byte(s.TokenSecret)
 
