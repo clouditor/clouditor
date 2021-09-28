@@ -14,7 +14,18 @@ We follow the Google Cloud's [API design guide](https://cloud.google.com/apis/de
 * proto file only containing resources, consider naming this file simply as resources.proto
 * ENUM (Scale): The first value should be named ENUM_TYPE_UNSPECIFIED
 * Commenting: Comment services, RPCs and messages
+* Request and response messages
+  * **Standard methods** use request and response messages according to the following table (see [Cloud APIs Naming conventions](https://cloud.google.com/apis/design/naming_convention#method_names)). 
 
+  | Method name | Request Body | Response Body
+  ---|---|---
+  |ListBooks |ListBooksRequest | List*Response
+  |GetBook | GetBookRequest| Book
+  |CreateBook |CreateBookRequest | Book
+  |UpdateBook |UpdateBookRequest | Book
+  |RenameBook|RenameBookRequest| RenameBookResponse
+  |DeleteBook |DeleteBookRequest | google.brotobuf.Empty
+  * A **custom method** should have a response message even if it is empty (see [Cloud APIs Common design patterns](https://cloud.google.com/apis/design/design_patterns#empty_responses)).
 
 # Compiling
 The following compile snippets assume being in the current proto folder.
