@@ -3,6 +3,7 @@
 package assessment
 
 import (
+	evidence "clouditor.io/clouditor/api/evidence"
 	context "context"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
@@ -79,7 +80,7 @@ func (c *assessmentClient) AssessEvidences(ctx context.Context, opts ...grpc.Cal
 }
 
 type Assessment_AssessEvidencesClient interface {
-	Send(*Evidence) error
+	Send(*evidence.Evidence) error
 	CloseAndRecv() (*emptypb.Empty, error)
 	grpc.ClientStream
 }
@@ -88,7 +89,7 @@ type assessmentAssessEvidencesClient struct {
 	grpc.ClientStream
 }
 
-func (x *assessmentAssessEvidencesClient) Send(m *Evidence) error {
+func (x *assessmentAssessEvidencesClient) Send(m *evidence.Evidence) error {
 	return x.ClientStream.SendMsg(m)
 }
 
@@ -212,7 +213,7 @@ func _Assessment_AssessEvidences_Handler(srv interface{}, stream grpc.ServerStre
 
 type Assessment_AssessEvidencesServer interface {
 	SendAndClose(*emptypb.Empty) error
-	Recv() (*Evidence, error)
+	Recv() (*evidence.Evidence, error)
 	grpc.ServerStream
 }
 
@@ -224,8 +225,8 @@ func (x *assessmentAssessEvidencesServer) SendAndClose(m *emptypb.Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *assessmentAssessEvidencesServer) Recv() (*Evidence, error) {
-	m := new(Evidence)
+func (x *assessmentAssessEvidencesServer) Recv() (*evidence.Evidence, error) {
+	m := new(evidence.Evidence)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}

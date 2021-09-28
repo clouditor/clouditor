@@ -26,9 +26,11 @@
 package standalone
 
 import (
-	"clouditor.io/clouditor/api/assessment"
-	service_assessment "clouditor.io/clouditor/service/assessment"
 	"context"
+
+	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/evidence"
+	service_assessment "clouditor.io/clouditor/service/assessment"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -37,7 +39,7 @@ import (
 var assessmentService assessment.AssessmentServer
 
 type standaloneEvidenceStream struct {
-	serverChannel chan *assessment.Evidence
+	serverChannel chan *evidence.Evidence
 	clientChannel chan *emptypb.Empty
 	ctx           context.Context
 }
@@ -72,7 +74,7 @@ func (standaloneEvidenceStream) Context() context.Context {
 	return nil
 }
 
-func (s standaloneEvidenceStream) Send(evidence *assessment.Evidence) error {
+func (s standaloneEvidenceStream) Send(evidence *evidence.Evidence) error {
 	s.serverChannel <- evidence
 
 	return nil
@@ -89,7 +91,7 @@ func (standaloneEvidenceStream) SetHeader(metadata.MD) error {
 func (standaloneEvidenceStream) SetTrailer(metadata.MD) {
 }
 
-func (s standaloneEvidenceStream) Recv() (*assessment.Evidence, error) {
+func (s standaloneEvidenceStream) Recv() (*evidence.Evidence, error) {
 	evidence := <-s.serverChannel
 
 	return evidence, nil
@@ -117,7 +119,7 @@ func (standaloneEvidenceClient) ListAssessmentResults(ctx context.Context, in *a
 
 func (standaloneEvidenceClient) AssessEvidences(_ context.Context, _ ...grpc.CallOption) (assessment.Assessment_AssessEvidencesClient, error) {
 	var stream = &standaloneEvidenceStream{
-		serverChannel: make(chan *assessment.Evidence),
+		serverChannel: make(chan *evidence.Evidence),
 		clientChannel: make(chan *emptypb.Empty),
 		ctx:           context.Background(),
 	}

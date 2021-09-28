@@ -32,6 +32,7 @@ import (
 	"os"
 
 	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/policies"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -79,7 +80,7 @@ func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenc
 }
 
 func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) error {
-	var evidence *assessment.Evidence
+	var evidence *evidence.Evidence
 	var err error
 
 	for {
@@ -97,7 +98,7 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 	}
 }
 
-func (s Service) handleEvidence(evidence *assessment.Evidence) (result *assessment.Evidence, err error) {
+func (s Service) handleEvidence(evidence *evidence.Evidence) (result *evidence.Evidence, err error) {
 	log.Infof("Received evidence for resource %s", evidence.ResourceId)
 	log.Debugf("Evidence: %+v", evidence)
 

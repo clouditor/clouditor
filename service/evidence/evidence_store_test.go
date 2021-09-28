@@ -1,15 +1,15 @@
-package evidence_store
+package evidences
 
 import (
 	"context"
-	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"io"
 	"reflect"
 	"testing"
 
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/evidence_store"
+	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"clouditor.io/clouditor/api/evidence"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
 )
@@ -18,13 +18,13 @@ import (
 func TestNewService(t *testing.T) {
 	tests := []struct {
 		name string
-		want evidence_store.EvidenceStoreServer
+		want evidence.EvidenceStoreServer
 	}{
 		{
 			name: "EvidenceStoreServer created with empty evidence map",
 			want: &Service{
-				evidences:                        make(map[string]*assessment.Evidence),
-				UnimplementedEvidenceStoreServer: evidence_store.UnimplementedEvidenceStoreServer{},
+				evidences:                        make(map[string]*evidence.Evidence),
+				UnimplementedEvidenceStoreServer: evidence.UnimplementedEvidenceStoreServer{},
 			},
 		},
 	}
@@ -41,19 +41,19 @@ func TestNewService(t *testing.T) {
 func TestStoreEvidence(t *testing.T) {
 	type args struct {
 		in0      context.Context
-		evidence *assessment.Evidence
+		evidence *evidence.Evidence
 	}
 	tests := []struct {
 		name     string
 		args     args
-		wantResp *evidence_store.StoreEvidenceResponse
+		wantResp *evidence.StoreEvidenceResponse
 		wantErr  bool
 	}{
 		{
 			name: "Store evidence to the map",
 			args: args{
 				in0: context.TODO(),
-				evidence: &assessment.Evidence{
+				evidence: &evidence.Evidence{
 					Id:                "MockEvidenceId",
 					ServiceId:         "MockServiceId",
 					ResourceId:        "MockResourceId",
@@ -64,7 +64,7 @@ func TestStoreEvidence(t *testing.T) {
 				},
 			},
 			wantErr:  false,
-			wantResp: &evidence_store.StoreEvidenceResponse{Status: true},
+			wantResp: &evidence.StoreEvidenceResponse{Status: true},
 		},
 	}
 	for _, tt := range tests {
@@ -86,7 +86,7 @@ func TestStoreEvidence(t *testing.T) {
 // TestStoreEvidences tests StoreEvidences
 func TestStoreEvidences(t *testing.T) {
 	type args struct {
-		stream evidence_store.EvidenceStore_StoreEvidencesServer
+		stream evidence.EvidenceStore_StoreEvidencesServer
 	}
 	tests := []struct {
 		name    string
@@ -113,7 +113,7 @@ func TestStoreEvidences(t *testing.T) {
 // TestListEvidences tests List evidence
 func TestListEvidences(t *testing.T) {
 	s := NewService()
-	s.evidences["MockEvidenceId-1"] = &assessment.Evidence{
+	s.evidences["MockEvidenceId-1"] = &evidence.Evidence{
 		Id:                "MockEvidenceId-1",
 		ServiceId:         "MockServiceId-1",
 		ResourceId:        "MockResourceId-1",
@@ -122,7 +122,7 @@ func TestListEvidences(t *testing.T) {
 		Raw:               "",
 		Resource:          nil,
 	}
-	s.evidences["MockEvidenceId-2"] = &assessment.Evidence{
+	s.evidences["MockEvidenceId-2"] = &evidence.Evidence{
 		Id:                "MockEvidenceId-2",
 		ServiceId:         "MockServiceId-2",
 		ResourceId:        "MockResourceId-2",
@@ -132,7 +132,7 @@ func TestListEvidences(t *testing.T) {
 		Resource:          nil,
 	}
 
-	resp, err := s.ListEvidences(context.TODO(), &evidence_store.ListEvidencesRequest{})
+	resp, err := s.ListEvidences(context.TODO(), &evidence.ListEvidencesRequest{})
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(resp.Evidences))
 }
@@ -145,10 +145,10 @@ func (mockStreamer) SendAndClose(_ *emptypb.Empty) error {
 	return nil
 }
 
-func (m *mockStreamer) Recv() (*assessment.Evidence, error) {
+func (m *mockStreamer) Recv() (*evidence.Evidence, error) {
 	if m.counter == 0 {
 		m.counter++
-		return &assessment.Evidence{
+		return &evidence.Evidence{
 			Id:                "MockEvidenceId-1",
 			ServiceId:         "MockServiceId-1",
 			ResourceId:        "MockResourceId-1",
@@ -159,7 +159,7 @@ func (m *mockStreamer) Recv() (*assessment.Evidence, error) {
 		}, nil
 	} else if m.counter == 1 {
 		m.counter++
-		return &assessment.Evidence{
+		return &evidence.Evidence{
 			Id:                "MockEvidenceId-2",
 			ServiceId:         "MockServiceId-2",
 			ResourceId:        "MockResourceId-2",

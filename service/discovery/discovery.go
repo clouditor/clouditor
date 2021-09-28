@@ -36,7 +36,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/api/evidence_store"
+	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/service/discovery/azure"
 	"clouditor.io/clouditor/service/discovery/k8s"
 	"clouditor.io/clouditor/voc"
@@ -61,7 +61,7 @@ type Service struct {
 	// TODO(oxisto) do not expose this. just makes tests easier for now
 	AssessmentStream assessment.Assessment_AssessEvidencesClient
 
-	EvidenceStoreStream evidence_store.EvidenceStore_StoreEvidencesClient
+	EvidenceStoreStream evidence.EvidenceStore_StoreEvidencesClient
 
 	resources map[string]voc.IsCloudResource
 	scheduler *gocron.Scheduler
@@ -108,12 +108,12 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	s.AssessmentStream, _ = client.AssessEvidences(context.Background())
 
 	// Establish connection to evidenceStore component
-	var evidenceStoreClient evidence_store.EvidenceStoreClient
+	var evidenceStoreClient evidence.EvidenceStoreClient
 	cc, err = grpc.Dial("localhost:9090", grpc.WithInsecure())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not connect to evidence store service: %v", err)
 	}
-	evidenceStoreClient = evidence_store.NewEvidenceStoreClient(cc)
+	evidenceStoreClient = evidence.NewEvidenceStoreClient(cc)
 	// ToDo(lebogg): whats with the err?
 	s.EvidenceStoreStream, _ = evidenceStoreClient.StoreEvidences(context.Background())
 
@@ -201,7 +201,7 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 			log.Errorf("Could not convert resource to protobuf struct: %v", err)
 		}
 
-		evidence := &assessment.Evidence{
+		evidence := &evidence.Evidence{
 			Id:         uuid.New().String(),
 			Resource:   v,
 			ResourceId: string(resource.GetID()),

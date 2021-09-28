@@ -31,32 +31,63 @@ syntax = "proto3";
 package clouditor;
 
 import "google/protobuf/struct.proto";
-import "google/protobuf/timestamp.proto";
 
-option go_package = "api/evidence";
+option go_package = "api/assessment";
 
-// An evidence resource
-message Evidence {
-  // the ID in a uuid format
-  string id = 1;
+// A metric resource
+message Metric {
+  // Required. The unique identifier of the metric.
+  int32 id = 1;
 
-  // reference to a service this evidence was gathered from
-  string service_id = 2;
+  // Required. The human readable name of the metric.
+  string name = 2;
 
-  // reference to the resource this evidence was gathered from
-  string resource_id = 3;
+  // The description of the metric
+  string description = 3;
 
-  // TODO: replace with google/type/date.proto timestamp.proto or date.proto?
-  google.protobuf.Timestamp timestamp = 4;
+  // The reference to control catalog category or domain
+  string category = 4;
 
-  repeated int32 applicable_metrics = 5;
+  // The scale of this metric, e.g. categories, ranked data or metric values.
+  Scale scale = 5;
 
-  // "raw" evidence (for the auditor), for example the raw JSON response from
-  // the API. This does not follow a defined schema
-  string raw = 6;
+  // The range of this metric. Depending on the scale.
+  Range range = 6;
 
-  // optional; a semantic representation of the Cloud resource according to our
-  // defined ontology. a JSON serialized node of our semantic graph. This may be
-  // Clouditor-specific.
-  google.protobuf.Value resource = 7;
+  // The values a Scale accepts
+  enum Scale {
+    NOMIMAL = 0;
+    ORDINAL = 1;
+    METRIC = 2;
+  }
 }
+
+// A range resource representing the range of values
+message Range {
+  // Required.
+  oneof range {
+    // used for nominal scale
+    AllowedValues allowed_values = 1;
+
+    // used for ordinal scale
+    Order order = 2;
+
+    // used for metric scale
+    MinMax min_max = 3;
+  }
+}
+
+// Defines a range of values through a (inclusive) minimum and a maximum
+message MinMax {
+  // Required.
+  int64 min = 1;
+  // Required.
+  int64 max = 2;
+}
+
+// Defines a range
+message AllowedValues { repeated google.protobuf.Value values = 1; }
+
+// Defines a range of values in a pre-defined order from the lowest to the
+// highest.
+message Order { repeated google.protobuf.Value values = 1; }

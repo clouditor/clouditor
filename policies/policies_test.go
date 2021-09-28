@@ -29,7 +29,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/policies"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -70,7 +70,7 @@ func TestRun(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	data, err = policies.RunEvidence("metric1.rego", &assessment.Evidence{
+	data, err = policies.RunEvidence("metric1.rego", &evidence.Evidence{
 		Resource: structpb.NewStructValue(s),
 	})
 

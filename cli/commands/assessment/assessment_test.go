@@ -36,6 +36,7 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/cli"
 	cli_assessment "clouditor.io/clouditor/cli/commands/assessment"
 	"clouditor.io/clouditor/cli/commands/login"
@@ -104,7 +105,7 @@ func TestMain(m *testing.M) {
 	}
 
 	evidence := &assessment.AssessEvidenceRequest{
-		Evidence: &assessment.Evidence{
+		Evidence: &evidence.Evidence{
 			ResourceId:        "some-id",
 			ApplicableMetrics: []int32{1},
 			Resource:          s,

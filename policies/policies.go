@@ -30,11 +30,11 @@ import (
 	"errors"
 	"fmt"
 
-	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/evidence"
 	"github.com/open-policy-agent/opa/rego"
 )
 
-func RunEvidence(file string, evidence *assessment.Evidence) (data map[string]interface{}, err error) {
+func RunEvidence(file string, evidence *evidence.Evidence) (data map[string]interface{}, err error) {
 	var m = evidence.Resource.GetStructValue().AsMap()
 
 	return RunMap(file, m)

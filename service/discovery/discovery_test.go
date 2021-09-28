@@ -33,7 +33,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/api/evidence_store"
+	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
@@ -45,7 +45,7 @@ func TestStartDiscovery(t *testing.T) {
 
 	type fields struct {
 		assessmentStream    assessment.Assessment_AssessEvidencesClient
-		evidenceStoreStream evidence_store.EvidenceStore_StoreEvidencesClient
+		evidenceStoreStream evidence.EvidenceStore_StoreEvidencesClient
 		discoverer          discovery.Discoverer
 	}
 
@@ -223,12 +223,12 @@ func wrongFormattedResource() voc.IsCloudResource {
 // mockAssessmentStream implements Assessment_AssessEvidencesClient interface
 type mockAssessmentStream struct {
 	// We add sentEvidence field to test the evidence that would be sent over gRPC
-	sentEvidence *assessment.Evidence
+	sentEvidence *evidence.Evidence
 	// We add connectionEstablished to differentiate between the case where evidences can be sent and not
 	connectionEstablished bool
 }
 
-func (m *mockAssessmentStream) Send(e *assessment.Evidence) (err error) {
+func (m *mockAssessmentStream) Send(e *evidence.Evidence) (err error) {
 	if m.connectionEstablished {
 		m.sentEvidence = e
 	} else {
@@ -269,7 +269,7 @@ func (*mockAssessmentStream) RecvMsg(_ interface{}) error {
 type mockEvidenceStoreStream struct {
 }
 
-func (mockEvidenceStoreStream) Send(_ *assessment.Evidence) error {
+func (mockEvidenceStoreStream) Send(_ *evidence.Evidence) error {
 	return fmt.Errorf("MocK Send error")
 }
 
