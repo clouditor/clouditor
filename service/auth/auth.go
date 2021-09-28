@@ -58,7 +58,7 @@ type Service struct {
 
 // UserClaims extend jwt.StandardClaims with more detailed claims about a user
 type UserClaims struct {
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 	FullName string `json:"full_name"`
 	EMail    string `json:"email"`
 }
@@ -128,8 +128,8 @@ func verifyLogin(request *auth.LoginRequest) (result bool, user *auth.User, err 
 	}
 }
 
-// HashPassword returns a hash of password using argon2id.
-func (Service) HashPassword(password string) (string, error) {
+// hashPassword returns a hash of password using argon2id.
+func hashPassword(password string) (string, error) {
 	return argon2.CreateHash(password, &argon2.Params{
 		SaltLength:  16,
 		Memory:      65536,
@@ -140,14 +140,14 @@ func (Service) HashPassword(password string) (string, error) {
 }
 
 // CreateDefaultUser creates a default user in the database
-func (s Service) CreateDefaultUser(username string, password string) {
+func (Service) CreateDefaultUser(username string, password string) {
 	db := persistence.GetDatabase()
 
 	var count int64
 	db.Model(&auth.User{}).Count(&count)
 
 	if count == 0 {
-		hash, _ := s.HashPassword(password)
+		hash, _ := hashPassword(password)
 
 		user := auth.User{
 			Username: username,
@@ -161,7 +161,7 @@ func (s Service) CreateDefaultUser(username string, password string) {
 	}
 }
 
-// issueToken issues a JWT token
+// issueToken issues a JWT-based token
 func (s Service) issueToken(subject string, fullName string, email string, expiry time.Time) (token string, err error) {
 	key := []byte(s.TokenSecret)
 
@@ -169,8 +169,8 @@ func (s Service) issueToken(subject string, fullName string, email string, expir
 		&UserClaims{
 			FullName: fullName,
 			EMail:    email,
-			StandardClaims: jwt.StandardClaims{
-				ExpiresAt: expiry.Unix(),
+			RegisteredClaims: jwt.RegisteredClaims{
+				ExpiresAt: jwt.NewNumericDate(expiry),
 				Issuer:    Issuer,
 				Subject:   subject,
 			}},
