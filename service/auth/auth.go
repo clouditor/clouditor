@@ -43,8 +43,6 @@ import (
 	"gorm.io/gorm"
 )
 
-//go:generate protoc -I ../../proto -I ../../third_party auth.proto --go_out=../.. --go-grpc_out=../..
-
 const (
 	Issuer = "clouditor"
 )

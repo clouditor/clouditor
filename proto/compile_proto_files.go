@@ -24,34 +24,13 @@
  *
  * This file is part of Clouditor Community Edition.
  */
-syntax = "proto3";
 
-package clouditor;
+package proto
 
-import "google/api/annotations.proto";
-
-option go_package = "api/auth";
-
-service Authentication {
-  rpc Login(LoginRequest) returns(LoginResponse) {
-    option(google.api.http) = {
-      post : "/v1/auth/login" body : "*" response_body : "*"
-    };
-  };
-}
-
-/* A clouditor user */
-message User {
-  string username = 1;
-  string password = 2;
-  string email = 3;
-  string full_name = 4;
-  bool shadow = 5;
-}
-
-message LoginRequest {
-  string username = 1;
-  string password = 2;
-}
-
-message LoginResponse { string token = 1; }
+//go:generate protoc -I ./ -I ../third_party metric.proto --go_out=../
+//go:generate protoc -I ./ -I ../third_party evidence.proto --go_out=../
+//go:generate protoc -I ./ -I ../third_party assessment.proto --go_out=../ --go-grpc_out=../ --go_opt=Mevidence.proto=clouditor.io/clouditor/api/evidence --go-grpc_opt=Mevidence.proto=clouditor.io/clouditor/api/evidence --openapi_out=../openapi/assessment
+//go:generate protoc -I ./ -I ../third_party auth.proto --go_out=../ --go-grpc_out=../
+//go:generate protoc -I ./ -I ../third_party discovery.proto --go_out=../ --go-grpc_out=../ --openapi_out=../openapi/discovery
+//go:generate protoc -I ./ -I ../third_party evidence_store.proto --go_out=../ --go-grpc_out=../  --openapi_out=../openapi/evidence
+//go:generate protoc -I ./ -I ../third_party orchestrator.proto --go_out=../ --go-grpc_out=../ --go_opt=Mmetric.proto=clouditor.io/clouditor/api/assessment --go-grpc_opt=Mmetric.proto=clouditor.io/clouditor/api/assessment --openapi_out=../openapi/orchestrator

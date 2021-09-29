@@ -38,8 +38,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-//go:generate protoc -I ../../proto -I ../../third_party orchestrator.proto --go_out=../.. --go-grpc_out=../.. --go_opt=Mevidence.proto=clouditor.io/clouditor/api/assessment --go-grpc_opt=Mevidence.proto=clouditor.io/clouditor/api/assessment --openapi_out=../../openapi/orchestrator
-
 //go:embed metrics.json
 var f embed.FS
 
@@ -67,6 +65,7 @@ func init() {
 	}
 }
 
+// LoadMetrics loads metrics definitions from a JSON file.
 func LoadMetrics(metricsFile string) (err error) {
 	var (
 		b []byte
@@ -85,7 +84,7 @@ func LoadMetrics(metricsFile string) (err error) {
 	return nil
 }
 
-func (s *Service) ListMetrics(ctx context.Context, request *orchestrator.ListMetricsRequest) (response *orchestrator.ListMetricsResponse, err error) {
+func (*Service) ListMetrics(_ context.Context, _ *orchestrator.ListMetricsRequest) (response *orchestrator.ListMetricsResponse, err error) {
 	response = &orchestrator.ListMetricsResponse{
 		Metrics: metrics,
 	}
@@ -93,12 +92,48 @@ func (s *Service) ListMetrics(ctx context.Context, request *orchestrator.ListMet
 	return response, nil
 }
 
-func (s *Service) GetMetric(ctx context.Context, request *orchestrator.GetMetricsRequest) (metric *assessment.Metric, err error) {
+func (*Service) GetMetric(_ context.Context, request *orchestrator.GetMetricsRequest) (response *assessment.Metric, err error) {
 	var ok bool
+	var metric *assessment.Metric
 
 	if metric, ok = metricIndex[request.MetricId]; !ok {
 		return nil, status.Errorf(codes.NotFound, "Could not find metric with id %d", request.MetricId)
 	}
 
-	return metric, nil
+	response = metric
+
+	return response, nil
 }
+
+//// Tools
+//
+//// TODO Implement DeregisterAssessmentTool
+//func ( *Service) RegisterAssessmentTool (ctx context.Context, request *orchestrator.RegisterAssessmentToolRequest) (tool *orchestrator.AssessmentTool, err error) {
+//	// TBD
+//	return tool, err
+//}
+//
+//// TODO Implement UpdateAssessmentTool
+//func ( *Service) UpdateAssessmentTool (ctx context.Context, request *orchestrator.UpdateAssessmentToolRequest) (tool *orchestrator.AssessmentTool, err error) {
+//	// TBD
+//	return tool, err
+//}
+//
+//// TODO Implement DeregisterAssessmentTool
+//func ( *Service) DeregisterAssessmentTool (ctx context.Context, request *orchestrator.DeregisterAssessmentToolRequest) (nil, err error) {
+//	// TBD
+//	return nil, err
+//}
+//
+//
+//// TODO Implement ListAssessmentTools
+//func ( *Service) ListAssessmentTools (ctx context.Context, request *orchestrator.ListAssessmentToolsRequest) (tools *orchestrator.ListAssessmentToolsResponse, err error) {
+//	// TBD
+//	return tools, err
+//}
+//
+//// TODO Implement GetAssessmentTool
+//func ( *Service) GetAssessmentTool (ctx context.Context, request *orchestrator.GetAssessmentToolRequest) (tool *orchestrator.AssessmentTool, err error) {
+//	// TBD
+//	return tool, err
+//}

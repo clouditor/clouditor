@@ -79,10 +79,11 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	os.Exit(m.Run())
+	// ToDo(lebogg): Check if CRT-D0011 deepsource bug risk warning still occurs
+	defer os.Exit(m.Run())
 }
 
-func TestListTool(t *testing.T) {
+func TestListMetrics(t *testing.T) {
 	var err error
 	var b bytes.Buffer
 
@@ -100,4 +101,16 @@ func TestListTool(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response.Metrics)
+}
+
+func TestGetMetric(t *testing.T) {
+	var err error
+	var b bytes.Buffer
+
+	cli.Output = &b
+
+	cmd := metric.NewGetMetricCommand()
+	err = cmd.RunE(nil, []string{"1"})
+
+	assert.Nil(t, err)
 }

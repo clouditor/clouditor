@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2020 Fraunhofer AISEC
+ * Copyright 2021 Fraunhofer AISEC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,30 +28,24 @@ syntax = "proto3";
 
 package clouditor;
 
-import "google/api/annotations.proto";
+import "evidence.proto";
+import "google/protobuf/empty.proto";
 
-option go_package = "api/auth";
+option go_package = "api/evidence";
 
-service Authentication {
-  rpc Login(LoginRequest) returns(LoginResponse) {
-    option(google.api.http) = {
-      post : "/v1/auth/login" body : "*" response_body : "*"
-    };
-  };
+// Manages the storage of evidences
+service EvidenceStore {
+  // Stores an evidence to the evidence storage
+  rpc StoreEvidence(Evidence) returns (StoreEvidenceResponse);
+
+  // Stores a stream of evidences to the evidence storage
+  rpc StoreEvidences(stream Evidence) returns (google.protobuf.Empty);
+
+  // Returns the evidences lying in the evidence storage
+  rpc ListEvidences(ListEvidencesRequest) returns (ListEvidencesResponse);
 }
 
-/* A clouditor user */
-message User {
-  string username = 1;
-  string password = 2;
-  string email = 3;
-  string full_name = 4;
-  bool shadow = 5;
-}
+message StoreEvidenceResponse { bool status = 1; }
 
-message LoginRequest {
-  string username = 1;
-  string password = 2;
-}
-
-message LoginResponse { string token = 1; }
+message ListEvidencesRequest {}
+message ListEvidencesResponse { repeated Evidence evidences = 1; }

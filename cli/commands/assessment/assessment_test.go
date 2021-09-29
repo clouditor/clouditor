@@ -36,6 +36,7 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/cli"
 	cli_assessment "clouditor.io/clouditor/cli/commands/assessment"
 	"clouditor.io/clouditor/cli/commands/login"
@@ -103,20 +104,20 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	evidence := &assessment.Evidence{
-		ResourceId:        "some-id",
-		ApplicableMetrics: []int32{1},
-		Resource:          s,
+	evidence := &assessment.AssessEvidenceRequest{
+		Evidence: &evidence.Evidence{
+			ResourceId:        "some-id",
+			ApplicableMetrics: []int32{1},
+			Resource:          s,
+		},
 	}
 
-	_, err = client.StoreEvidence(context.Background(), &assessment.StoreEvidenceRequest{
-		Evidence: evidence,
-	})
+	_, err = client.AssessEvidence(context.Background(), evidence)
 	if err != nil {
 		panic(err)
 	}
 
-	// make the test wait for envidence to be stored
+	// make the test wait for evidence to be stored
 	select {
 	case <-ready:
 		break
@@ -140,7 +141,8 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	os.Exit(m.Run())
+	// ToDo(lebogg): Check if CRT-D0011 deepsource bug risk warning still occurs
+	defer os.Exit(m.Run())
 }
 
 func TestListResults(t *testing.T) {

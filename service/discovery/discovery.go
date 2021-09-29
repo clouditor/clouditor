@@ -30,13 +30,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
+
 	"clouditor.io/clouditor/service/discovery/aws"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/service/discovery/azure"
 	"clouditor.io/clouditor/service/discovery/k8s"
-	"clouditor.io/clouditor/service/standalone"
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/go-co-op/gocron"
@@ -49,23 +51,23 @@ import (
 
 var log *logrus.Entry
 
-//go:generate protoc -I ../../proto -I ../../third_party discovery.proto --go_out=../.. --go-grpc_out=../.. --openapi_out=../../openapi/discovery
-
 // Service is an implementation of the Clouditor Discovery service.
 // It should not be used directly, but rather the NewService constructor
 // should be used.
 type Service struct {
 	discovery.UnimplementedDiscoveryServer
 
-	Configurations map[discovery.Discoverer]*DiscoveryConfiguration
+	Configurations map[discovery.Discoverer]*Configuration
 	// TODO(oxisto) do not expose this. just makes tests easier for now
-	AssessmentStream assessment.Assessment_StreamEvidencesClient
+	AssessmentStream assessment.Assessment_AssessEvidencesClient
+
+	EvidenceStoreStream evidence.EvidenceStore_StoreEvidencesClient
 
 	resources map[string]voc.IsCloudResource
 	scheduler *gocron.Scheduler
 }
 
-type DiscoveryConfiguration struct {
+type Configuration struct {
 	Interval time.Duration
 }
 
@@ -81,12 +83,12 @@ func NewService() *Service {
 	return &Service{
 		resources:      make(map[string]voc.IsCloudResource),
 		scheduler:      gocron.NewScheduler(time.UTC),
-		Configurations: make(map[discovery.Discoverer]*DiscoveryConfiguration),
+		Configurations: make(map[discovery.Discoverer]*Configuration),
 	}
 }
 
 // Start starts discovery
-func (s Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (response *discovery.StartDiscoveryResponse, err error) {
+func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (response *discovery.StartDiscoveryResponse, err error) {
 
 	response = &discovery.StartDiscoveryResponse{Successful: true}
 
@@ -94,22 +96,26 @@ func (s Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (r
 
 	s.scheduler.TagsUnique()
 
-	var isStandalone bool = true
-
+	// Establish connection to assessment component
 	var client assessment.AssessmentClient
-
-	if isStandalone {
-		client = standalone.NewAssessmentClient()
-	} else {
-		// TODO(oxisto): support assessment on another tcp/port
-		cc, err := grpc.Dial("localhost:9090", grpc.WithInsecure())
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, "could not connect to assessment service: %v", err)
-		}
-		client = assessment.NewAssessmentClient(cc)
+	// TODO(oxisto): support assessment on Another tcp/port
+	cc, err := grpc.Dial("localhost:9090", grpc.WithInsecure())
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not connect to assessment service: %v", err)
 	}
+	client = assessment.NewAssessmentClient(cc)
+	// ToDo(lebogg): whats with the err?
+	s.AssessmentStream, _ = client.AssessEvidences(context.Background())
 
-	s.AssessmentStream, _ = client.StreamEvidences(context.Background())
+	// Establish connection to evidenceStore component
+	var evidenceStoreClient evidence.EvidenceStoreClient
+	cc, err = grpc.Dial("localhost:9090", grpc.WithInsecure())
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not connect to evidence store service: %v", err)
+	}
+	evidenceStoreClient = evidence.NewEvidenceStoreClient(cc)
+	// ToDo(lebogg): whats with the err?
+	s.EvidenceStoreStream, _ = evidenceStoreClient.StoreEvidences(context.Background())
 
 	// create an authorizer from env vars or Azure Managed Service Identity
 	authorizer, err := auth.NewAuthorizerFromCLI()
@@ -144,7 +150,7 @@ func (s Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (r
 	)
 
 	for _, v := range discoverer {
-		s.Configurations[v] = &DiscoveryConfiguration{
+		s.Configurations[v] = &Configuration{
 			Interval: 5 * time.Minute,
 		}
 
@@ -195,7 +201,8 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 			log.Errorf("Could not convert resource to protobuf struct: %v", err)
 		}
 
-		evidence := &assessment.Evidence{
+		evidence := &evidence.Evidence{
+			Id:         uuid.New().String(),
 			Resource:   v,
 			ResourceId: string(resource.GetID()),
 		}
@@ -208,7 +215,12 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 		}
 
 		if s.AssessmentStream == nil {
-			log.Warnf("Evidence stream not available")
+			log.Warnf("Evidence stream to Assessment component not available")
+			continue
+		}
+
+		if s.EvidenceStoreStream == nil {
+			log.Warnf("Evidence stream to EvidenceStore component not available")
 			continue
 		}
 
@@ -216,7 +228,12 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 
 		err = s.AssessmentStream.Send(evidence)
 		if err != nil {
-			log.Errorf("Could not send evidence: %v", err)
+			log.Errorf("Could not send evidence to Assessment: %v", err)
+		}
+
+		err = s.EvidenceStoreStream.Send(evidence)
+		if err != nil {
+			log.Errorf("Could not send evidence to EvidenceStore: %v", err)
 		}
 	}
 }

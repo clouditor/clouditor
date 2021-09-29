@@ -32,6 +32,7 @@ import (
 	"os"
 
 	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/policies"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -42,8 +43,6 @@ import (
 var log *logrus.Entry
 
 var listId int32
-
-//go:generate protoc -I ../../proto -I ../../third_party assessment.proto evidence.proto --go_out=../.. --go-grpc_out=../..  --openapi_out=../../openapi/assessment
 
 func init() {
 	log = logrus.WithField("component", "assessment")
@@ -62,27 +61,36 @@ func NewService() assessment.AssessmentServer {
 	}
 }
 
-func (s Service) StoreEvidence(ctx context.Context, req *assessment.StoreEvidenceRequest) (res *assessment.Evidence, err error) {
-	res, err = s.handleEvidence(req.Evidence)
+func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
+	_, err = s.handleEvidence(req.Evidence)
 
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
+		res = &assessment.AssessEvidenceResponse{
+			Status: false,
+		}
+
+		return res, status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
 	}
 
-	return
+	res = &assessment.AssessEvidenceResponse{
+		Status: true,
+	}
+
+	return res, nil
 }
 
-func (s Service) StreamEvidences(stream assessment.Assessment_StreamEvidencesServer) error {
-	var evidence *assessment.Evidence
+func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) error {
+	var evidence *evidence.Evidence
 	var err error
 
 	for {
 		evidence, err = stream.Recv()
 
+		// TODO: Catch error?
 		_, _ = s.handleEvidence(evidence)
 
 		if err == io.EOF {
-			log.Infof("Stopped receiving streamed evidence")
+			log.Infof("Stopped receiving streamed evidences")
 
 			return stream.SendAndClose(&emptypb.Empty{})
 		}
@@ -90,7 +98,7 @@ func (s Service) StreamEvidences(stream assessment.Assessment_StreamEvidencesSer
 	}
 }
 
-func (s Service) handleEvidence(evidence *assessment.Evidence) (result *assessment.Evidence, err error) {
+func (s Service) handleEvidence(evidence *evidence.Evidence) (result *evidence.Evidence, err error) {
 	log.Infof("Received evidence for resource %s", evidence.ResourceId)
 	log.Debugf("Evidence: %+v", evidence)
 
@@ -143,12 +151,10 @@ func (s Service) handleEvidence(evidence *assessment.Evidence) (result *assessme
 		}
 	}
 
-	result = evidence
-
 	return
 }
 
-func (s Service) ListAssessmentResults(ctx context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
+func (s Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
 	res = new(assessment.ListAssessmentResultsResponse)
 	res.Results = []*assessment.Result{}
 
