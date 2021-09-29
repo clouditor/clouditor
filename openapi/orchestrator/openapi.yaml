@@ -20,7 +20,10 @@ paths:
             responses:
                 "200":
                     description: OK
-                    content: {}
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/StoreAssessmentResultResponse'
     /v1/orchestrator/assessment_tools:
         get:
             summary: Lists all assessment tools assessing evidences for the metric given by the passed metric id
@@ -237,6 +240,8 @@ components:
                 min_max:
                     $ref: '#/components/schemas/MinMax'
             description: A range resource representing the range of values
+        StoreAssessmentResultResponse:
+            properties: {}
         Struct:
             properties:
                 fields:

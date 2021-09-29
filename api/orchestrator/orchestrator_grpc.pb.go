@@ -33,7 +33,7 @@ type OrchestratorClient interface {
 	// tools
 	DeregisterAssessmentTool(ctx context.Context, in *DeregisterAssessmentToolRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Stores the assessment result provided by an assessment tool
-	StoreAssessmentResult(ctx context.Context, in *StoreAssessmentResultRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	StoreAssessmentResult(ctx context.Context, in *StoreAssessmentResultRequest, opts ...grpc.CallOption) (*StoreAssessmentResultResponse, error)
 	// Stores stream of assessment results provided by an assessment tool
 	StoreAssessmentResults(ctx context.Context, opts ...grpc.CallOption) (Orchestrator_StoreAssessmentResultsClient, error)
 	// List all metrics provided by the metric catalog
@@ -95,8 +95,8 @@ func (c *orchestratorClient) DeregisterAssessmentTool(ctx context.Context, in *D
 	return out, nil
 }
 
-func (c *orchestratorClient) StoreAssessmentResult(ctx context.Context, in *StoreAssessmentResultRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *orchestratorClient) StoreAssessmentResult(ctx context.Context, in *StoreAssessmentResultRequest, opts ...grpc.CallOption) (*StoreAssessmentResultResponse, error) {
+	out := new(StoreAssessmentResultResponse)
 	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/StoreAssessmentResult", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -173,7 +173,7 @@ type OrchestratorServer interface {
 	// tools
 	DeregisterAssessmentTool(context.Context, *DeregisterAssessmentToolRequest) (*emptypb.Empty, error)
 	// Stores the assessment result provided by an assessment tool
-	StoreAssessmentResult(context.Context, *StoreAssessmentResultRequest) (*emptypb.Empty, error)
+	StoreAssessmentResult(context.Context, *StoreAssessmentResultRequest) (*StoreAssessmentResultResponse, error)
 	// Stores stream of assessment results provided by an assessment tool
 	StoreAssessmentResults(Orchestrator_StoreAssessmentResultsServer) error
 	// List all metrics provided by the metric catalog
@@ -202,7 +202,7 @@ func (UnimplementedOrchestratorServer) UpdateAssessmentTool(context.Context, *Up
 func (UnimplementedOrchestratorServer) DeregisterAssessmentTool(context.Context, *DeregisterAssessmentToolRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeregisterAssessmentTool not implemented")
 }
-func (UnimplementedOrchestratorServer) StoreAssessmentResult(context.Context, *StoreAssessmentResultRequest) (*emptypb.Empty, error) {
+func (UnimplementedOrchestratorServer) StoreAssessmentResult(context.Context, *StoreAssessmentResultRequest) (*StoreAssessmentResultResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreAssessmentResult not implemented")
 }
 func (UnimplementedOrchestratorServer) StoreAssessmentResults(Orchestrator_StoreAssessmentResultsServer) error {
