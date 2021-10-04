@@ -28,13 +28,15 @@ package metric
 import (
 	"context"
 	"fmt"
+	"strconv"
 
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
 )
 
-// NewListMetricCommand returns a cobra command for the `list` subcommand
+// NewListMetricsCommand returns a cobra command for the `list` subcommand
 func NewListMetricsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
@@ -66,6 +68,45 @@ func NewListMetricsCommand() *cobra.Command {
 	return cmd
 }
 
+// NewGetMetricCommand returns a cobra command for the `get` subcommand
+func NewGetMetricCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "get",
+		Short: "Retrieves a metric by its ID",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var (
+				err     error
+				session *cli.Session
+				client  orchestrator.OrchestratorClient
+				res     *assessment.Metric
+			)
+
+			if session, err = cli.ContinueSession(); err != nil {
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+				return nil
+			}
+
+			client = orchestrator.NewOrchestratorClient(session)
+
+			metricID, err := strconv.Atoi(args[0])
+			metricIDInt32 := int32(metricID)
+
+			if err != nil {
+				fmt.Printf("Error while parsing string to int32")
+				return nil
+			}
+
+			res, err = client.GetMetric(context.Background(), &orchestrator.GetMetricsRequest{MetricId: metricIDInt32})
+
+			return session.HandleResponse(res, err)
+		},
+		ValidArgsFunction: cli.ValidArgsGetMetrics,
+	}
+
+	return cmd
+}
+
 // NewMetricCommand returns a cobra command for `metric` subcommands
 func NewMetricCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -82,5 +123,6 @@ func NewMetricCommand() *cobra.Command {
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewListMetricsCommand(),
+		NewGetMetricCommand(),
 	)
 }

@@ -20,14 +20,25 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type OrchestratorClient interface {
+	// Registers the passed assessment tool
 	RegisterAssessmentTool(ctx context.Context, in *RegisterAssessmentToolRequest, opts ...grpc.CallOption) (*AssessmentTool, error)
+	// Lists all assessment tools assessing evidences for the metric given by the
+	// passed metric id
 	ListAssessmentTools(ctx context.Context, in *ListAssessmentToolsRequest, opts ...grpc.CallOption) (*ListAssessmentToolsResponse, error)
+	// Returns assessment tool given by the passed tool id
 	GetAssessmentTool(ctx context.Context, in *GetAssessmentToolRequest, opts ...grpc.CallOption) (*AssessmentTool, error)
+	// Updates the assessment tool given by the passed id
 	UpdateAssessmentTool(ctx context.Context, in *UpdateAssessmentToolRequest, opts ...grpc.CallOption) (*AssessmentTool, error)
+	// Remove assessment tool with passed id from the list of active assessment
+	// tools
 	DeregisterAssessmentTool(ctx context.Context, in *DeregisterAssessmentToolRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	StoreAssessmentResult(ctx context.Context, in *StoreAssessmentResultRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	StreamAssessmentResults(ctx context.Context, opts ...grpc.CallOption) (Orchestrator_StreamAssessmentResultsClient, error)
+	// Stores the assessment result provided by an assessment tool
+	StoreAssessmentResult(ctx context.Context, in *StoreAssessmentResultRequest, opts ...grpc.CallOption) (*StoreAssessmentResultResponse, error)
+	// Stores stream of assessment results provided by an assessment tool
+	StoreAssessmentResults(ctx context.Context, opts ...grpc.CallOption) (Orchestrator_StoreAssessmentResultsClient, error)
+	// List all metrics provided by the metric catalog
 	ListMetrics(ctx context.Context, in *ListMetricsRequest, opts ...grpc.CallOption) (*ListMetricsResponse, error)
+	// Returns the metric with the passed metric id
 	GetMetric(ctx context.Context, in *GetMetricsRequest, opts ...grpc.CallOption) (*assessment.Metric, error)
 }
 
@@ -84,8 +95,8 @@ func (c *orchestratorClient) DeregisterAssessmentTool(ctx context.Context, in *D
 	return out, nil
 }
 
-func (c *orchestratorClient) StoreAssessmentResult(ctx context.Context, in *StoreAssessmentResultRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *orchestratorClient) StoreAssessmentResult(ctx context.Context, in *StoreAssessmentResultRequest, opts ...grpc.CallOption) (*StoreAssessmentResultResponse, error) {
+	out := new(StoreAssessmentResultResponse)
 	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/StoreAssessmentResult", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -93,30 +104,30 @@ func (c *orchestratorClient) StoreAssessmentResult(ctx context.Context, in *Stor
 	return out, nil
 }
 
-func (c *orchestratorClient) StreamAssessmentResults(ctx context.Context, opts ...grpc.CallOption) (Orchestrator_StreamAssessmentResultsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Orchestrator_ServiceDesc.Streams[0], "/clouditor.Orchestrator/StreamAssessmentResults", opts...)
+func (c *orchestratorClient) StoreAssessmentResults(ctx context.Context, opts ...grpc.CallOption) (Orchestrator_StoreAssessmentResultsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Orchestrator_ServiceDesc.Streams[0], "/clouditor.Orchestrator/StoreAssessmentResults", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &orchestratorStreamAssessmentResultsClient{stream}
+	x := &orchestratorStoreAssessmentResultsClient{stream}
 	return x, nil
 }
 
-type Orchestrator_StreamAssessmentResultsClient interface {
+type Orchestrator_StoreAssessmentResultsClient interface {
 	Send(*AssessmentResult) error
 	CloseAndRecv() (*emptypb.Empty, error)
 	grpc.ClientStream
 }
 
-type orchestratorStreamAssessmentResultsClient struct {
+type orchestratorStoreAssessmentResultsClient struct {
 	grpc.ClientStream
 }
 
-func (x *orchestratorStreamAssessmentResultsClient) Send(m *AssessmentResult) error {
+func (x *orchestratorStoreAssessmentResultsClient) Send(m *AssessmentResult) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *orchestratorStreamAssessmentResultsClient) CloseAndRecv() (*emptypb.Empty, error) {
+func (x *orchestratorStoreAssessmentResultsClient) CloseAndRecv() (*emptypb.Empty, error) {
 	if err := x.ClientStream.CloseSend(); err != nil {
 		return nil, err
 	}
@@ -149,14 +160,25 @@ func (c *orchestratorClient) GetMetric(ctx context.Context, in *GetMetricsReques
 // All implementations must embed UnimplementedOrchestratorServer
 // for forward compatibility
 type OrchestratorServer interface {
+	// Registers the passed assessment tool
 	RegisterAssessmentTool(context.Context, *RegisterAssessmentToolRequest) (*AssessmentTool, error)
+	// Lists all assessment tools assessing evidences for the metric given by the
+	// passed metric id
 	ListAssessmentTools(context.Context, *ListAssessmentToolsRequest) (*ListAssessmentToolsResponse, error)
+	// Returns assessment tool given by the passed tool id
 	GetAssessmentTool(context.Context, *GetAssessmentToolRequest) (*AssessmentTool, error)
+	// Updates the assessment tool given by the passed id
 	UpdateAssessmentTool(context.Context, *UpdateAssessmentToolRequest) (*AssessmentTool, error)
+	// Remove assessment tool with passed id from the list of active assessment
+	// tools
 	DeregisterAssessmentTool(context.Context, *DeregisterAssessmentToolRequest) (*emptypb.Empty, error)
-	StoreAssessmentResult(context.Context, *StoreAssessmentResultRequest) (*emptypb.Empty, error)
-	StreamAssessmentResults(Orchestrator_StreamAssessmentResultsServer) error
+	// Stores the assessment result provided by an assessment tool
+	StoreAssessmentResult(context.Context, *StoreAssessmentResultRequest) (*StoreAssessmentResultResponse, error)
+	// Stores stream of assessment results provided by an assessment tool
+	StoreAssessmentResults(Orchestrator_StoreAssessmentResultsServer) error
+	// List all metrics provided by the metric catalog
 	ListMetrics(context.Context, *ListMetricsRequest) (*ListMetricsResponse, error)
+	// Returns the metric with the passed metric id
 	GetMetric(context.Context, *GetMetricsRequest) (*assessment.Metric, error)
 	mustEmbedUnimplementedOrchestratorServer()
 }
@@ -180,11 +202,11 @@ func (UnimplementedOrchestratorServer) UpdateAssessmentTool(context.Context, *Up
 func (UnimplementedOrchestratorServer) DeregisterAssessmentTool(context.Context, *DeregisterAssessmentToolRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeregisterAssessmentTool not implemented")
 }
-func (UnimplementedOrchestratorServer) StoreAssessmentResult(context.Context, *StoreAssessmentResultRequest) (*emptypb.Empty, error) {
+func (UnimplementedOrchestratorServer) StoreAssessmentResult(context.Context, *StoreAssessmentResultRequest) (*StoreAssessmentResultResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreAssessmentResult not implemented")
 }
-func (UnimplementedOrchestratorServer) StreamAssessmentResults(Orchestrator_StreamAssessmentResultsServer) error {
-	return status.Errorf(codes.Unimplemented, "method StreamAssessmentResults not implemented")
+func (UnimplementedOrchestratorServer) StoreAssessmentResults(Orchestrator_StoreAssessmentResultsServer) error {
+	return status.Errorf(codes.Unimplemented, "method StoreAssessmentResults not implemented")
 }
 func (UnimplementedOrchestratorServer) ListMetrics(context.Context, *ListMetricsRequest) (*ListMetricsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListMetrics not implemented")
@@ -313,25 +335,25 @@ func _Orchestrator_StoreAssessmentResult_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Orchestrator_StreamAssessmentResults_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(OrchestratorServer).StreamAssessmentResults(&orchestratorStreamAssessmentResultsServer{stream})
+func _Orchestrator_StoreAssessmentResults_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(OrchestratorServer).StoreAssessmentResults(&orchestratorStoreAssessmentResultsServer{stream})
 }
 
-type Orchestrator_StreamAssessmentResultsServer interface {
+type Orchestrator_StoreAssessmentResultsServer interface {
 	SendAndClose(*emptypb.Empty) error
 	Recv() (*AssessmentResult, error)
 	grpc.ServerStream
 }
 
-type orchestratorStreamAssessmentResultsServer struct {
+type orchestratorStoreAssessmentResultsServer struct {
 	grpc.ServerStream
 }
 
-func (x *orchestratorStreamAssessmentResultsServer) SendAndClose(m *emptypb.Empty) error {
+func (x *orchestratorStoreAssessmentResultsServer) SendAndClose(m *emptypb.Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *orchestratorStreamAssessmentResultsServer) Recv() (*AssessmentResult, error) {
+func (x *orchestratorStoreAssessmentResultsServer) Recv() (*AssessmentResult, error) {
 	m := new(AssessmentResult)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -417,8 +439,8 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 	},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "StreamAssessmentResults",
-			Handler:       _Orchestrator_StreamAssessmentResults_Handler,
+			StreamName:    "StoreAssessmentResults",
+			Handler:       _Orchestrator_StoreAssessmentResults_Handler,
 			ClientStreams: true,
 		},
 	},

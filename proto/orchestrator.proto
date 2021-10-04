@@ -30,28 +30,109 @@ package clouditor;
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
-import "evidence.proto";
+import "metric.proto";
 
 option go_package = "api/orchestrator";
 
-message AssessmentResult {
-  // the ID in a uuid format
-  string id = 1;
-
-  // the ID of the metric it refers to
-  string metric_id = 2;
-
-  enum ComplianceStatus {
-    COMPLIANT = 0;
-    NON_COMPLIANT = 1;
+// Manages the orchestration of components within the Clouditor architecture
+service Orchestrator {
+  // Registers the passed assessment tool
+  rpc RegisterAssessmentTool(RegisterAssessmentToolRequest)
+      returns (AssessmentTool) {
+    option (google.api.http) = {
+      post : "/v1/orchestrator/assessment_tools"
+      body : "tool"
+    };
   }
 
-  ComplianceStatus result = 3;
+  // Lists all assessment tools assessing evidences for the metric given by the
+  // passed metric id
+  rpc ListAssessmentTools(ListAssessmentToolsRequest)
+      returns (ListAssessmentToolsResponse) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/assessment_tools"
+      additional_bindings {get : "/v1/orchestator/{metric_id}/assessment_tools"}
+    };
+  }
 
-  string target_value = 4;
+  // Returns assessment tool given by the passed tool id
+  rpc GetAssessmentTool(GetAssessmentToolRequest) returns (AssessmentTool) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/assessment_tools/{tool_id}"
+    };
+  }
 
-  Evidence evidence = 5;
+  // Updates the assessment tool given by the passed id
+  rpc UpdateAssessmentTool(UpdateAssessmentToolRequest)
+      returns (AssessmentTool) {
+    option (google.api.http) = {
+      put : "/v1/orchestrator/assessment_tools/{tool_id}"
+      body : "tool"
+    };
+  }
+
+  // Remove assessment tool with passed id from the list of active assessment
+  // tools
+  rpc DeregisterAssessmentTool(DeregisterAssessmentToolRequest)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete : "/v1/orchestrator/assessment_tools/{tool_id}"
+    };
+  }
+
+  // Stores the assessment result provided by an assessment tool
+  rpc StoreAssessmentResult(StoreAssessmentResultRequest)
+      returns (StoreAssessmentResultResponse) {
+    option (google.api.http) = {
+      put : "/v1/orchestrator/assessment_results"
+      body : "result"
+    };
+  }
+
+  // Stores stream of assessment results provided by an assessment tool
+  rpc StoreAssessmentResults(stream AssessmentResult)
+      returns (google.protobuf.Empty);
+
+  // List all metrics provided by the metric catalog
+  rpc ListMetrics(ListMetricsRequest) returns (ListMetricsResponse) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/metrics"
+    };
+  }
+
+  // Returns the metric with the passed metric id
+  rpc GetMetric(GetMetricsRequest) returns (Metric) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/metrics/{metric_id}"
+    };
+  }
 }
+
+message RegisterAssessmentToolRequest { AssessmentTool tool = 1; }
+
+message ListAssessmentToolsRequest {
+  // filter tools by metric id
+  string metric_id = 1;
+}
+message ListAssessmentToolsResponse { repeated AssessmentTool tools = 1; }
+
+message GetAssessmentToolRequest { string tool_id = 1; }
+
+message UpdateAssessmentToolRequest {
+  string tool_id = 1;
+  AssessmentTool tool = 2;
+}
+
+// TODO IDs as string or int32?
+message DeregisterAssessmentToolRequest { string tool_id = 1; }
+
+message StoreAssessmentResultRequest { AssessmentResult result = 1; }
+message StoreAssessmentResultResponse {}
+
+message GetMetricsRequest { int32 metric_id = 1; }
+
+message ListMetricsRequest {}
+message ListMetricsResponse { repeated Metric metrics = 1; }
 
 // Represents an external tool or service that offers assessments according to
 // certain metrics
@@ -66,84 +147,21 @@ message AssessmentTool {
   repeated string available_metrics = 4;
 }
 
-message RegisterAssessmentToolRequest { AssessmentTool tool = 1; }
-message ListAssessmentToolsRequest {
-  // filter tools by metric id
-  string metric_id = 1;
-}
-message ListAssessmentToolsResponse { repeated AssessmentTool tools = 1; }
-message GetAssessmentToolRequest { string tool_id = 1; }
-message UpdateAssessmentToolRequest {
-  string tool_id = 1;
-  AssessmentTool tool = 2;
-}
-message DeregisterAssessmentToolRequest { string tool_id = 1; }
+message AssessmentResult {
+  // the ID in a uuid format
+  string id = 1;
 
-message StoreAssessmentResultRequest {
-  AssessmentResult result = 1;
-}
+  // the ID of the metric it refers to
+  string metric_id = 2;
 
-message GetMetricsRequest { int32 metric_id = 1; }
-message ListMetricsRequest {}
-message ListMetricsResponse { repeated Metric metrics = 1; }
+  ComplianceStatus result = 3;
 
-service Orchestrator {
+  string target_value = 4;
 
-  rpc RegisterAssessmentTool(RegisterAssessmentToolRequest)
-      returns (AssessmentTool) {
-    option (google.api.http) = {
-      post : "/v1/orchestator/assessment_tools"
-      body : "tool"
-    };
-  }
+  string evidence_id = 5;
 
-  rpc ListAssessmentTools(ListAssessmentToolsRequest)
-      returns (ListAssessmentToolsResponse) {
-    option (google.api.http) = {
-      get : "/v1/orchestator/assessment_tools"
-      additional_bindings {get : "/v1/orchestator/{metric_id}/assessment_tools"}
-    };
-  }
-
-  rpc GetAssessmentTool(GetAssessmentToolRequest) returns (AssessmentTool) {
-    option (google.api.http) = {
-      get : "/v1/orchestator/assessment_tools/{tool_id}"
-    };
-  }
-
-  rpc UpdateAssessmentTool(UpdateAssessmentToolRequest)
-      returns (AssessmentTool) {
-    option (google.api.http) = {
-      put : "/v1/orchestator/assessment_tools/{tool_id}"
-      body : "tool"
-    };
-  }
-
-  rpc DeregisterAssessmentTool(DeregisterAssessmentToolRequest)
-      returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      delete : "/v1/orchestator/assessment_tools/{tool_id}"
-    };
-  }
-
-  rpc StoreAssessmentResult(StoreAssessmentResultRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      put : "/v1/orchestator/assessment_results"
-      body : "result"
-    };
-  }
-
-  rpc StreamAssessmentResults(stream AssessmentResult) returns (google.protobuf.Empty);
-
-  rpc ListMetrics(ListMetricsRequest) returns (ListMetricsResponse) {
-    option (google.api.http) = {
-      get : "/v1/orchestator/metrics"
-    };
-  }
-
-  rpc GetMetric(GetMetricsRequest) returns (Metric) {
-    option (google.api.http) = {
-      get : "/v1/orchestator/metrics/{metric_id}"
-    };
+  enum ComplianceStatus {
+    COMPLIANT = 0;
+    NON_COMPLIANT = 1;
   }
 }

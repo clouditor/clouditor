@@ -29,30 +29,69 @@ package aws
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
+	"github.com/aws/smithy-go"
 	"github.com/sirupsen/logrus"
 )
 
 var log = logrus.WithField("component", "aws-discovery")
 
-// loadDefaultConfig holds config.LoadDefaultConfig() so the test function can mock it
+// loadDefaultConfig holds config.LoadDefaultConfig() so that NewClient() can use it and test function can mock it
 var loadDefaultConfig = config.LoadDefaultConfig
 
+// newFromConfigSTS holds sts.NewFromConfig() so that NewClient() can use it and test function can mock it
+var newFromConfigSTS = loadSTSClient
+
 // Client holds configurations across all services within AWS
-// TODO(lebogg): deepsource.io wants the struct to exported since NewAwsStorageDiscovery is exported. Encapsulation?
 type Client struct {
-	Cfg aws.Config
+	cfg aws.Config
+	// accountID is needed for ARN creation
+	accountID *string
+}
+
+// STSAPI describes the STS api interface which is implemented by the official AWS client and mock clients in tests
+type STSAPI interface {
+	GetCallerIdentity(ctx context.Context, params *sts.GetCallerIdentityInput, optFns ...func(*sts.Options)) (*sts.GetCallerIdentityOutput, error)
 }
 
 // NewClient constructs a new AwsClient
 // TODO(lebogg): "Overload" (switch) with staticCredentialsProvider
 func NewClient() (*Client, error) {
 	c := &Client{}
+
+	// load configuration
 	cfg, err := loadDefaultConfig(context.TODO())
 	if err != nil {
-		log.Errorf("Could not load default config: %v", err)
+		return nil, fmt.Errorf("could not load default config: %w", err)
 	}
-	c.Cfg = cfg
+	c.cfg = cfg
+
+	// load accountID
+	stsClient := newFromConfigSTS(cfg)
+	resp, err := stsClient.GetCallerIdentity(context.TODO(), &sts.GetCallerIdentityInput{})
+	if err != nil {
+		var ae smithy.APIError
+		if errors.As(err, &ae) {
+			err = formatError(ae)
+		}
+		return nil, err
+	}
+	c.accountID = resp.Account
+
 	return c, err
+}
+
+// formatError returns AWS API specific error code transformed into the default error type
+func formatError(ae smithy.APIError) error {
+	return fmt.Errorf("code: %v, fault: %v, message: %v", ae.ErrorCode(), ae.ErrorFault(), ae.ErrorMessage())
+}
+
+// loadSTSClient creates the client using the STS api interface (for mock testing)
+func loadSTSClient(cfg aws.Config) STSAPI {
+	client := sts.NewFromConfig(cfg)
+	return client
 }

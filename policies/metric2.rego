@@ -4,7 +4,6 @@ default compliant = false
 
 compliant {
 	tls := input.httpEndpoint.transportEncryption
-	tls.algorithm == true
 	goodVersion(tls)
 }
 

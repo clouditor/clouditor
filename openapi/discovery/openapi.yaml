@@ -4,10 +4,12 @@
 openapi: 3.0.3
 info:
     title: Discovery
+    description: Discovers cloud resources and maps these properties to the format of the ontology
     version: 0.0.1
 paths:
     /v1/discovery/query:
         post:
+            summary: Lists all evidences collected in the last run
             operationId: Discovery_Query
             requestBody:
                 content:
@@ -24,6 +26,7 @@ paths:
                                 $ref: '#/components/schemas/QueryResponse'
     /v1/discovery/start:
         post:
+            summary: Starts discovering the cloud resources
             operationId: Discovery_Start
             requestBody:
                 content:

@@ -29,6 +29,7 @@ import (
 	"context"
 
 	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/evidence"
 	service_assessment "clouditor.io/clouditor/service/assessment"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -38,12 +39,12 @@ import (
 var assessmentService assessment.AssessmentServer
 
 type standaloneEvidenceStream struct {
-	serverChannel chan *assessment.Evidence
+	serverChannel chan *evidence.Evidence
 	clientChannel chan *emptypb.Empty
 	ctx           context.Context
 }
 
-type standaloneAssessmentClient struct{}
+type standaloneEvidenceClient struct{}
 
 func (s standaloneEvidenceStream) SendAndClose(*emptypb.Empty) error {
 	s.clientChannel <- &emptypb.Empty{}
@@ -57,82 +58,81 @@ func (s standaloneEvidenceStream) CloseAndRecv() (*emptypb.Empty, error) {
 	return empty, nil
 }
 
-func (s standaloneEvidenceStream) CloseSend() error {
+func (standaloneEvidenceStream) CloseSend() error {
 	return nil
 }
 
-func (s standaloneEvidenceStream) Header() (metadata.MD, error) {
+func (standaloneEvidenceStream) Header() (metadata.MD, error) {
 	return nil, nil
 }
 
-func (s standaloneEvidenceStream) Trailer() metadata.MD {
+func (standaloneEvidenceStream) Trailer() metadata.MD {
 	return nil
 }
 
-func (s standaloneEvidenceStream) Context() context.Context {
+func (standaloneEvidenceStream) Context() context.Context {
 	return nil
 }
 
-func (s standaloneEvidenceStream) Send(evidence *assessment.Evidence) error {
+func (s standaloneEvidenceStream) Send(evidence *evidence.Evidence) error {
 	s.serverChannel <- evidence
 
 	return nil
 }
 
-func (s standaloneEvidenceStream) SendHeader(metadata.MD) error {
+func (standaloneEvidenceStream) SendHeader(metadata.MD) error {
 	return nil
 }
 
-func (s standaloneEvidenceStream) SetHeader(metadata.MD) error {
+func (standaloneEvidenceStream) SetHeader(metadata.MD) error {
 	return nil
 }
 
-func (s standaloneEvidenceStream) SetTrailer(metadata.MD) {
-
+func (standaloneEvidenceStream) SetTrailer(metadata.MD) {
 }
 
-func (s standaloneEvidenceStream) Recv() (*assessment.Evidence, error) {
+func (s standaloneEvidenceStream) Recv() (*evidence.Evidence, error) {
 	evidence := <-s.serverChannel
 
 	return evidence, nil
 }
 
-func (s standaloneEvidenceStream) RecvMsg(m interface{}) error {
+func (standaloneEvidenceStream) RecvMsg(_ interface{}) error {
 	return nil
 }
 
-func (s standaloneEvidenceStream) SendMsg(m interface{}) error {
+func (standaloneEvidenceStream) SendMsg(_ interface{}) error {
 	return nil
 }
 
-func (s standaloneAssessmentClient) TriggerAssessment(ctx context.Context, in *assessment.TriggerAssessmentRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (standaloneEvidenceClient) TriggerAssessment(ctx context.Context, in *assessment.TriggerAssessmentRequest, _ ...grpc.CallOption) (*emptypb.Empty, error) {
 	return assessmentService.TriggerAssessment(ctx, in)
 }
 
-func (s standaloneAssessmentClient) StoreEvidence(ctx context.Context, in *assessment.StoreEvidenceRequest, opts ...grpc.CallOption) (*assessment.Evidence, error) {
-	return assessmentService.StoreEvidence(ctx, in)
+func (standaloneEvidenceClient) AssessEvidence(ctx context.Context, in *assessment.AssessEvidenceRequest, _ ...grpc.CallOption) (*assessment.AssessEvidenceResponse, error) {
+	return assessmentService.AssessEvidence(ctx, in)
 }
 
-func (s standaloneAssessmentClient) ListAssessmentResults(ctx context.Context, in *assessment.ListAssessmentResultsRequest, opts ...grpc.CallOption) (*assessment.ListAssessmentResultsResponse, error) {
+func (standaloneEvidenceClient) ListAssessmentResults(ctx context.Context, in *assessment.ListAssessmentResultsRequest, _ ...grpc.CallOption) (*assessment.ListAssessmentResultsResponse, error) {
 	return assessmentService.ListAssessmentResults(ctx, in)
 }
 
-func (s standaloneAssessmentClient) StreamEvidences(ctx context.Context, opts ...grpc.CallOption) (assessment.Assessment_StreamEvidencesClient, error) {
+func (standaloneEvidenceClient) AssessEvidences(_ context.Context, _ ...grpc.CallOption) (assessment.Assessment_AssessEvidencesClient, error) {
 	var stream = &standaloneEvidenceStream{
-		serverChannel: make(chan *assessment.Evidence),
+		serverChannel: make(chan *evidence.Evidence),
 		clientChannel: make(chan *emptypb.Empty),
 		ctx:           context.Background(),
 	}
 
 	go func() {
-		_ = assessmentService.StreamEvidences(stream)
+		_ = assessmentService.AssessEvidences(stream)
 	}()
 
 	return stream, nil
 }
 
 func NewAssessmentClient() assessment.AssessmentClient {
-	return &standaloneAssessmentClient{}
+	return &standaloneEvidenceClient{}
 }
 
 func NewAssessmentServer() assessment.AssessmentServer {

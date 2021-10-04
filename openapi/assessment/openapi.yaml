@@ -4,27 +4,28 @@
 openapi: 3.0.3
 info:
     title: Assessment
+    description: 'Representing the link between orchestrator and discovery: Assessing evidences from discovery and sending results to orchestrator'
     version: 0.0.1
 paths:
     /v1/assessment/evidences:
         post:
-            summary: Stores the evidences coming from the discovery. Part of the public API, also exposed as REST
-            operationId: Assessment_StoreEvidence
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/Evidence'
-                required: true
+            summary: Assesses the evidence sent by discovery. Part of the public API, also exposed as REST
+            operationId: Assessment_AssessEvidence
+            parameters:
+                - name: evidence
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/Evidence'
+                                $ref: '#/components/schemas/AssessEvidenceResponse'
     /v1/assessment/results:
         post:
+            summary: 'TODO(all): Part of public API because external entities (mainly discoveries) can use it? List the latest set of assessment results. Part of the public API, also exposed as REST'
             operationId: Assessment_ListAssessmentResults
             responses:
                 "200":
@@ -35,43 +36,16 @@ paths:
                                 $ref: '#/components/schemas/ListAssessmentResultsResponse'
 components:
     schemas:
-        Evidence:
+        AssessEvidenceResponse:
             properties:
-                id:
-                    type: string
-                    description: the ID in a uuid format
-                service_id:
-                    type: string
-                    description: reference to a service this evidence was gathered from
-                resource_id:
-                    type: string
-                    description: reference to the resource this evidence was gathered from
-                timestamp:
-                    type: string
-                    format: date-time
-                applicable_metrics:
-                    type: array
-                    items:
-                        type: integer
-                raw:
-                    type: string
-                    description: '"raw" evidence (for the auditor), for example the raw JSON response from the API. This does not follow a defined schema'
-                resource:
-                    $ref: '#/components/schemas/Value'
+                status:
+                    type: boolean
         ListAssessmentResultsResponse:
             properties:
                 results:
                     type: array
                     items:
                         $ref: '#/components/schemas/Result'
-        ListValue:
-            properties:
-                values:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/Value'
-                    description: Repeated field of dynamically typed values.
-            description: '`ListValue` is a wrapper around a repeated field of values. The JSON representation for `ListValue` is JSON array.'
         Result:
             properties:
                 resource_id:
@@ -81,32 +55,4 @@ components:
                 metric_id:
                     type: integer
                     format: int32
-                timestamp:
-                    type: string
-                    format: date-time
-        Struct:
-            properties:
-                fields:
-                    $ref: '#/components/schemas/FieldsEntry'
-            description: '`Struct` represents a structured data value, consisting of fields which map to dynamically typed values. In some languages, `Struct` might be supported by a native representation. For example, in scripting languages like JS a struct is represented as an object. The details of that representation are described together with the proto support for the language. The JSON representation for `Struct` is JSON object.'
-        Value:
-            properties:
-                null_value:
-                    type: integer
-                    description: Represents a null value.
-                    format: enum
-                number_value:
-                    type: number
-                    description: Represents a double value.
-                    format: double
-                string_value:
-                    type: string
-                    description: Represents a string value.
-                bool_value:
-                    type: boolean
-                    description: Represents a boolean value.
-                struct_value:
-                    $ref: '#/components/schemas/Struct'
-                list_value:
-                    $ref: '#/components/schemas/ListValue'
-            description: '`Value` represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values. A producer of value is expected to set one of that variants, absence of any variant indicates an error. The JSON representation for `Value` is JSON value.'
+            description: A result resource, representing the result after assessing the cloud resource with id resource_id.
