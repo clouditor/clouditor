@@ -26,11 +26,11 @@
 package azure_test
 
 import (
+	"clouditor.io/clouditor/voc"
 	"net/http"
 	"testing"
 
 	"clouditor.io/clouditor/service/discovery/azure"
-	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -116,9 +116,75 @@ func TestListStorage(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
 	assert.Equal(t, 4, len(list))
+}
+
+func TestListObjectStorage(t *testing.T) {
+	d := azure.NewAzureStorageDiscovery(
+		azure.WithSender(&mockStorageSender{}),
+		azure.WithAuthorizer(&mockAuthorizer{}),
+	)
+
+	list, err := d.List()
+	assert.Nil(t, err)
+	assert.NotNil(t, list)
+
+	var counter int
+	for _, item := range list {
+		if item.GetType()[0] == "ObjectStorage" {
+			counter++
+		}
+	}
+	assert.Equal(t, 2, counter)
+}
+
+func TestGetObjectStorage(t *testing.T) {
+	d := azure.NewAzureStorageDiscovery(
+		azure.WithSender(&mockStorageSender{}),
+		azure.WithAuthorizer(&mockAuthorizer{}),
+	)
+
+	list, err := d.List()
+	assert.Nil(t, err)
+	assert.NotNil(t, list)
 
 	storage, ok := list[0].(*voc.ObjectStorage)
 
 	assert.True(t, ok)
 	assert.Equal(t, "container1", storage.Name)
 }
+
+func TestListFileStorage(t *testing.T) {
+	d := azure.NewAzureStorageDiscovery(
+		azure.WithSender(&mockStorageSender{}),
+		azure.WithAuthorizer(&mockAuthorizer{}),
+	)
+
+	list, err := d.List()
+	assert.Nil(t, err)
+	assert.NotNil(t, list)
+
+	var counter int
+	for _, item := range list {
+		if item.GetType()[0] == "FileStorage" {
+			counter++
+		}
+	}
+	assert.Equal(t, 2, counter)
+}
+
+func TestGetFileStorage(t *testing.T) {
+	d := azure.NewAzureStorageDiscovery(
+		azure.WithSender(&mockStorageSender{}),
+		azure.WithAuthorizer(&mockAuthorizer{}),
+	)
+
+	list, err := d.List()
+	assert.Nil(t, err)
+	assert.NotNil(t, list)
+
+	storage, ok := list[2].(*voc.FileStorage)
+
+	assert.True(t, ok)
+	assert.Equal(t, "fileshare1", storage.Name)
+}
+
