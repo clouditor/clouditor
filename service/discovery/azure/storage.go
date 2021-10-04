@@ -26,11 +26,11 @@
 package azure
 
 import (
-	"context"
-	"fmt"
-
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
+	"context"
+	"fmt"
+	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/compute/mgmt/compute"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
 	"github.com/Azure/go-autorest/autorest/to"
 )
@@ -103,30 +103,49 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 		}
 
 		//Discover block storages
-		//blockStorages, err := d.discoverBlockStorages(&accounts[i])
-		//if err != nil {
-		//	return nil, fmt.Errorf("could not handle block storages: %w", err)
-		//}
+		blockStorages, err := d.discoverBlockStorages(&accounts[i])
+		if err != nil {
+			return nil, fmt.Errorf("could not handle block storages: %w", err)
+		}
 
 
 		log.Infof("Adding storage account %+v", objectStorages)
 
 		list = append(list, objectStorages...)
 		list = append(list, fileStorages...)
-		//list = append(list, objectStorages...)
+		list = append(list, blockStorages...)
 	}
 
 	return list, err
+}
+
+func (d *azureStorageDiscovery) discoverBlockStorages(account *storage.Account) ([]voc.IsCloudResource, error) {
+	var list []voc.IsCloudResource
+
+	client := compute.NewDisksClient(to.String(d.sub.SubscriptionID))
+	d.apply(&client.Client)
+
+	result, err := client.ListComplete(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("could not list block storages: %w", err)
+	}
+
+	for _, disk := range *result.Response().Value {
+		blockStorages := handleBlockStorage(disk)
+		log.Infof("Adding block storage %+v", blockStorages)
+
+		list = append(list, blockStorages)
+	}
+
+	return list, nil
 }
 
 func (d *azureStorageDiscovery) discoverFileStorages(account *storage.Account) ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
 	client := storage.NewFileSharesClient(to.String(d.sub.SubscriptionID))
-	//client := storage.NewFileServicesClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
 
-	//result, err := client.List(context.Background(), GetResourceGroupName(*account.ID), *account.Name)
 	result, err := client.List(context.Background(), GetResourceGroupName(*account.ID), *account.Name, "", "", "")
 	if err != nil {
 	return nil, fmt.Errorf("could not list file storages: %w", err)
@@ -161,6 +180,25 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *storage.Account)
 	}
 
 	return list, nil
+}
+
+func handleBlockStorage(disk compute.Disk) voc.IsStorage {
+
+	return &voc.BlockStorage{
+		Storage: &voc.Storage{
+			CloudResource: &voc.CloudResource{
+				ID:           voc.ResourceID(to.String(disk.ID)),
+				Name:         to.String(disk.Name),
+				CreationTime: disk.TimeCreated.Unix(),
+				Type:         []string{"BlockStorage", "Storage", "Resource"},
+			},
+			AtRestEncryption: &voc.AtRestEncryption{
+				KeyManager: string(disk.Encryption.Type), // TODO(all): What do we do with the encryption type? Do we leave it like that?
+				Enabled:    true, // is always enabled
+				Algorithm: "", // not available
+			},
+		},
+	}
 }
 
 func handleObjectStorage(account *storage.Account, container storage.ListContainerItem) voc.IsStorage {
