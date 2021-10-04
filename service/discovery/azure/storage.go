@@ -103,7 +103,7 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 		}
 
 		//Discover block storages
-		blockStorages, err := d.discoverBlockStorages(&accounts[i])
+		blockStorages, err := d.discoverBlockStorages()
 		if err != nil {
 			return nil, fmt.Errorf("could not handle block storages: %w", err)
 		}
@@ -119,7 +119,7 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 	return list, err
 }
 
-func (d *azureStorageDiscovery) discoverBlockStorages(account *storage.Account) ([]voc.IsCloudResource, error) {
+func (d *azureStorageDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
 	client := compute.NewDisksClient(to.String(d.sub.SubscriptionID))
