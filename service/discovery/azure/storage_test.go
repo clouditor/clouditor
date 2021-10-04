@@ -107,6 +107,7 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
 					"name": "disk1",
 					"type": "Microsoft.Compute/disks",
+					"location": "eastus",
 					"properties": map[string]interface{}{
 						"timeCreated": "2017-05-24T13:28:53.4540398Z",
 						"encryption": map[string]interface{}{
@@ -119,6 +120,7 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2",
 					"name": "disk2",
 					"type": "Microsoft.Compute/disks",
+					"location": "eastus",
 					"properties": map[string]interface{}{
 						"timeCreated": "2017-05-24T13:28:53.4540398Z",
 						"encryption": map[string]interface{}{
