@@ -70,6 +70,36 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 				},
 			},
 		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers" {
+		return createResponse(map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
+					"name": "container1",
+					"type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+				},
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2",
+					"name": "container2",
+					"type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+				},
+			},
+		}, 200)
+	}else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares" {
+		return createResponse(map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/shares/fileshare1",
+					"name": "fileshare1",
+					"type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+				},
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/fileshare2",
+					"name": "fileshare2",
+					"type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+				},
+			},
+		}, 200)
 	}
 
 	return m.mockSender.Do(req)
@@ -85,10 +115,10 @@ func TestListStorage(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 1, len(list))
+	assert.Equal(t, 4, len(list))
 
 	storage, ok := list[0].(*voc.ObjectStorage)
 
 	assert.True(t, ok)
-	assert.Equal(t, "account1", storage.Name)
+	assert.Equal(t, "container1", storage.Name)
 }

@@ -90,14 +90,132 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 
 	accounts := result.Values()
 	for i := range accounts {
-		s := handleStorageAccount(&accounts[i])
+		// Discover object storages
+		objectStorages, err := d.discoverObjectStorages(&accounts[i])
+		if err != nil {
+			return nil, fmt.Errorf("could not handle object storages: %w", err)
+		}
+		
+		// Discover file storages
+		fileStorages, err := d.discoverFileStorages(&accounts[i])
+		if err != nil {
+			return nil, fmt.Errorf("could not handle file storages: %w", err)
+		}
 
-		log.Infof("Adding storage account %+v", s)
+		//Discover block storages
+		//blockStorages, err := d.discoverBlockStorages(&accounts[i])
+		//if err != nil {
+		//	return nil, fmt.Errorf("could not handle block storages: %w", err)
+		//}
 
-		list = append(list, s)
+
+		log.Infof("Adding storage account %+v", objectStorages)
+
+		list = append(list, objectStorages...)
+		list = append(list, fileStorages...)
+		//list = append(list, objectStorages...)
 	}
 
 	return list, err
+}
+
+func (d *azureStorageDiscovery) discoverFileStorages(account *storage.Account) ([]voc.IsCloudResource, error) {
+	var list []voc.IsCloudResource
+
+	client := storage.NewFileSharesClient(to.String(d.sub.SubscriptionID))
+	//client := storage.NewFileServicesClient(to.String(d.sub.SubscriptionID))
+	d.apply(&client.Client)
+
+	//result, err := client.List(context.Background(), GetResourceGroupName(*account.ID), *account.Name)
+	result, err := client.List(context.Background(), GetResourceGroupName(*account.ID), *account.Name, "", "", "")
+	if err != nil {
+	return nil, fmt.Errorf("could not list file storages: %w", err)
+	}
+
+	for _, value := range result.Values() {
+		fileStorages := handleFileStorage(account, value)
+		log.Infof("Adding file storage %+v", fileStorages)
+
+		list = append(list, fileStorages)
+	}
+
+	return list, nil
+}
+
+func (d *azureStorageDiscovery) discoverObjectStorages(account *storage.Account) ([]voc.IsCloudResource, error) {
+	var list []voc.IsCloudResource
+
+	client := storage.NewBlobContainersClient(to.String(d.sub.SubscriptionID))
+	d.apply(&client.Client)
+
+	result, err := client.List(context.Background(), GetResourceGroupName(*account.ID), *account.Name, "", "", "")
+	if err != nil {
+		return nil, fmt.Errorf("could not list object storages: %w", err)
+	}
+
+	for _, value := range result.Values() {
+		objectStorages := handleObjectStorage(account, value)
+		log.Infof("Adding object storage %+v", objectStorages)
+
+		list = append(list, objectStorages)
+	}
+
+	return list, nil
+}
+
+func handleObjectStorage(account *storage.Account, container storage.ListContainerItem) voc.IsStorage {
+	return &voc.ObjectStorage{
+		Storage: &voc.Storage{
+			CloudResource: &voc.CloudResource{
+				ID:           voc.ResourceID(to.String(container.ID)),
+				Name:         to.String(container.Name),
+				CreationTime: account.CreationTime.Unix(),
+				Type:         []string{"ObjectStorage", "Storage", "Resource"},
+			},
+			AtRestEncryption: &voc.AtRestEncryption{
+				KeyManager: string(account.Encryption.KeySource),
+				Algorithm:  "AES-265", // seems to be always AES-256
+				Enabled:    to.Bool(account.Encryption.Services.Blob.Enabled),
+			},
+		},
+		HttpEndpoint: &voc.HttpEndpoint{
+			Url: to.String(account.PrimaryEndpoints.Blob) + to.String(container.Name),
+			TransportEncryption: &voc.TransportEncryption{
+				Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
+				Enabled:    true, // cannot be disabled
+				TlsVersion: string(account.MinimumTLSVersion),
+				Algorithm:  "", // TBD
+			},
+		},
+	}
+}
+
+func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem) voc.IsStorage {
+	return &voc.FileStorage{
+		Storage: &voc.Storage{
+			CloudResource: &voc.CloudResource{
+				ID:           voc.ResourceID(to.String(fileshare.ID)),
+				Name:         to.String(fileshare.Name),
+				CreationTime: account.CreationTime.Unix(),
+				Type:         []string{"FileStorage", "Storage", "Resource"},
+			},
+			AtRestEncryption: &voc.AtRestEncryption{
+				KeyManager: string(account.Encryption.KeySource),
+				Algorithm:  "AES-265", // seems to be always AES-256
+				Enabled:    to.Bool(account.Encryption.Services.File.Enabled),
+			},
+		},
+		// TODO(all) Uncomment as soon as the HttpEndpoint is added to voc/file_storage.go
+		//HttpEndpoint: &voc.HttpEndpoint{
+		//	Url: to.String(account.PrimaryEndpoints.File) + to.String(fileshare.Name),
+		//	TransportEncryption: &voc.TransportEncryption{
+		//		Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
+		//		Enabled:    true, // cannot be disabled
+		//		TlsVersion: string(account.MinimumTLSVersion),
+		//		Algorithm:  "", // TBD
+		//	},
+		//},
+	}
 }
 
 func handleStorageAccount(account *storage.Account) voc.IsStorage {
