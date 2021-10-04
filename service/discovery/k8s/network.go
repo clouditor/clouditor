@@ -98,6 +98,9 @@ func (k k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwor
 				Name:         service.Name,
 				CreationTime: service.CreationTimestamp.Unix(),
 				Type:         []string{"NetworkService", "Resource"},
+				GeoLocation: voc.GeoLocation{
+					Region: "", // TODO(all)
+				},
 			},
 		},
 		Ips:   service.Spec.ClusterIPs,
@@ -118,6 +121,9 @@ func (k k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 					Name:         ingress.Name,
 					CreationTime: ingress.CreationTimestamp.Unix(),
 					Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
+					GeoLocation: voc.GeoLocation{
+						Region: "", // TODO(all)
+					},
 				},
 			},
 			Ips:   nil, // TODO (oxisto): fill out IPs
@@ -143,7 +149,6 @@ func (k k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 				te = &voc.TransportEncryption{
 					Enforced: true,
 					Enabled:  true,
-					// Encryption: voc.Encryption{Enabled: true},
 				}
 			}
 
@@ -151,15 +156,6 @@ func (k k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 				Url:                 url,
 				TransportEncryption: te,
 			}
-			// http := &voc.HttpEndpoint{
-			// 	CloudResource: &voc.CloudResource{
-			// 		ID:           voc.ResourceID(url),
-			// 		Name:         ingress.Name,
-			// 		CreationTime: ingress.CreationTimestamp.Unix(),
-			// 	},
-			// 	URL:                 url,
-			// 	TransportEncryption: te,
-			// }
 
 			*lb.HttpEndpoints = append(*lb.HttpEndpoints, http)
 		}
