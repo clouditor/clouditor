@@ -62,7 +62,7 @@ func (d *azureComputeDiscovery) Description() string {
 	return "Discovery Azure compute."
 }
 
-// Discover compute resources
+// List compute resources
 func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 	if err = d.authorize(); err != nil {
 		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
@@ -114,6 +114,9 @@ func (d *azureComputeDiscovery) handleFunction(function *web.Site) voc.IsCompute
 				Name:         to.String(function.Name),
 				CreationTime: 0, // No creation time available
 				Type:         []string{"Function", "Compute", "Resource"},
+				GeoLocation: voc.GeoLocation{
+					Region: *function.Location,
+				},
 			},
 		},
 	}
@@ -156,6 +159,9 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 				Name:         to.String(vm.Name),
 				CreationTime: 0, // No creation time available
 				Type:         []string{"VirtualMachine", "Compute", "Resource"},
+				GeoLocation: voc.GeoLocation{
+					Region: *vm.Location,
+				},
 			}},
 		Log: &voc.Log{
 			Activated: IsBootDiagnosticEnabled(vm),

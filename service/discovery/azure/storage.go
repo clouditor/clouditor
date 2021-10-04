@@ -109,6 +109,9 @@ func handleStorageAccount(account *storage.Account) voc.IsStorage {
 				Name:         to.String(account.Name),
 				CreationTime: account.CreationTime.Unix(),
 				Type:         []string{"ObjectStorage", "Storage", "Resource"},
+				GeoLocation: voc.GeoLocation{
+					Region: *account.Location,
+				},
 			},
 			AtRestEncryption: &voc.AtRestEncryption{
 				KeyManager: string(account.Encryption.KeySource),
