@@ -135,6 +135,9 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 					Name:         bucket.name,
 					CreationTime: bucket.creationTime.Unix(),
 					Type:         []string{"ObjectStorage", "Storage", "Resource"},
+					GeoLocation: voc.GeoLocation{
+						Region: bucket.region,
+					},
 				},
 				AtRestEncryption: encryptionAtRest,
 			},

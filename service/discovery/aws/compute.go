@@ -124,6 +124,9 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachine, erro
 					Name:         d.getNameOfVM(vm),
 					CreationTime: 0,
 					Type:         []string{"VirtualMachine", "Compute", "Resource"},
+					GeoLocation: voc.GeoLocation{
+						Region: d.awsConfig.cfg.Region,
+					},
 				},
 			}
 
@@ -175,6 +178,9 @@ func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.Function
 					Name:         aws.ToString(function.FunctionName),
 					CreationTime: 0,
 					Type:         []string{"Function", "Compute", "Resource"},
+					GeoLocation: voc.GeoLocation{
+						Region: d.awsConfig.cfg.Region,
+					},
 				},
 			}})
 	}
