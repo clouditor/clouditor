@@ -255,31 +255,3 @@ func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem
 		//},
 	}
 }
-
-func handleStorageAccount(account *storage.Account) voc.IsStorage {
-
-	return &voc.ObjectStorage{
-		Storage: &voc.Storage{
-			CloudResource: &voc.CloudResource{
-				ID:           voc.ResourceID(to.String(account.ID)),
-				Name:         to.String(account.Name),
-				CreationTime: account.CreationTime.Unix(),
-				Type:         []string{"ObjectStorage", "Storage", "Resource"},
-			},
-			AtRestEncryption: &voc.AtRestEncryption{
-				KeyManager: string(account.Encryption.KeySource),
-				Algorithm:  "AES-265", // seems to be always AES-256
-				Enabled:    to.Bool(account.Encryption.Services.Blob.Enabled),
-			},
-		},
-		HttpEndpoint: &voc.HttpEndpoint{
-			Url: to.String(account.PrimaryEndpoints.Blob),
-			TransportEncryption: &voc.TransportEncryption{
-				Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
-				Enabled:    true, // cannot be disabled
-				TlsVersion: string(account.MinimumTLSVersion),
-				Algorithm:  "", // TBD
-			},
-		},
-	}
-}
