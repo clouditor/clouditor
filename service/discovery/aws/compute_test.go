@@ -53,6 +53,7 @@ const (
 
 	mockFunction1ID           = "arn:aws:lambda:eu-central-1:123456789:function:mock-function:1"
 	mockFunction1             = "MockFunction1"
+	mockFunction1Region	= "eu-central-1"
 	mockFunction1CreationTime = "2012-11-01T22:08:41.0+00:00"
 )
 
@@ -320,6 +321,11 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 		isDiscovering     bool
 		awsConfig         *Client
 	}
+	mockClient := &Client{
+		cfg: aws.Config{
+			Region: "eu-central-1",
+		},
+	}
 	// creationTime, _ := time.Parse(time.RFC3339, mockFunction1CreationTime)
 	tests := []struct {
 		name    string
@@ -332,7 +338,9 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 			"Test case 1 (no error)",
 			fields{
 				functionAPI: mockLambdaAPI{},
+				awsConfig: mockClient,
 			},
+			//args: args{client: mockClient},
 			[]voc.Function{
 				{Compute: &voc.Compute{
 					CloudResource: &voc.CloudResource{
@@ -340,6 +348,9 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 						Name:         mockFunction1,
 						CreationTime: int64(0),
 						Type:         []string{"Function", "Compute", "Resource"},
+						GeoLocation: voc.GeoLocation{
+							Region: mockFunction1Region,
+						},
 					},
 				}},
 			},
@@ -376,6 +387,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 	// Testing the case where two API Calls have to be made due to limit of returned functions
 	d := computeDiscovery{
 		functionAPI: mockLambdaAPI51LambdaFunctions{},
+		awsConfig: mockClient,
 	}
 	functions, err := d.discoverFunctions()
 	assert.Nil(t, err)
