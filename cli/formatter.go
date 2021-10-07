@@ -36,7 +36,7 @@ func (f *GRPCFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	return f.TextFormatter.Format(entry)
 }
 
-func (GRPCFormatter) getCode(data logrus.Fields) aurora.Value {
+func (*GRPCFormatter) getCode(data logrus.Fields) aurora.Value {
 	var (
 		ok   bool
 		code string
@@ -58,7 +58,7 @@ func (GRPCFormatter) getCode(data logrus.Fields) aurora.Value {
 	}
 }
 
-func (GRPCFormatter) getService(data logrus.Fields) aurora.Value {
+func (*GRPCFormatter) getService(data logrus.Fields) aurora.Value {
 	var (
 		ok      bool
 		service string
@@ -78,7 +78,7 @@ func (GRPCFormatter) getService(data logrus.Fields) aurora.Value {
 	}
 }
 
-func (GRPCFormatter) getMethod(data logrus.Fields) aurora.Value {
+func (*GRPCFormatter) getMethod(data logrus.Fields) aurora.Value {
 	var (
 		ok     bool
 		method string
