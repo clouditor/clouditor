@@ -42,11 +42,11 @@ func NewKubernetesComputeDiscovery(intf kubernetes.Interface) discovery.Discover
 	return &k8sComputeDiscovery{k8sDiscovery{intf}}
 }
 
-func (d *k8sComputeDiscovery) Name() string {
+func (k *k8sComputeDiscovery) Name() string {
 	return "Kubernetes Compute"
 }
 
-func (d *k8sComputeDiscovery) Description() string {
+func (k *k8sComputeDiscovery) Description() string {
 	return "Discover Kubernetes compute resources."
 }
 
@@ -78,7 +78,7 @@ func (k k8sComputeDiscovery) handlePod(pod *v1.Pod) voc.IsCompute {
 				CreationTime: pod.CreationTimestamp.Unix(),
 				Type:         []string{"Container", "Compute", "Resource"},
 				GeoLocation: voc.GeoLocation{
-					Region: "", // TODO(all)
+					Region: "", // TODO(all) Add region to k8s container
 				},
 			}},
 	}
