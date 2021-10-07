@@ -51,7 +51,7 @@ func (d *k8sNetworkDiscovery) Description() string {
 	return "Discover Kubernetes network resources."
 }
 
-func (d k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
+func (k k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
 	services, err := d.intf.CoreV1().Services("").List(context.TODO(), metav1.ListOptions{})
@@ -84,7 +84,7 @@ func (d k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
 	return list, nil
 }
 
-func (d k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwork {
+func (k k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwork {
 	var ports []int16
 
 	for _, v := range service.Spec.Ports {

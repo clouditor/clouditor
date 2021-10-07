@@ -50,7 +50,7 @@ func (d *k8sComputeDiscovery) Description() string {
 	return "Discover Kubernetes compute resources."
 }
 
-func (d k8sComputeDiscovery) List() ([]voc.IsCloudResource, error) {
+func (k k8sComputeDiscovery) List() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
 	pods, err := d.intf.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
@@ -69,7 +69,7 @@ func (d k8sComputeDiscovery) List() ([]voc.IsCloudResource, error) {
 	return list, nil
 }
 
-func (d k8sComputeDiscovery) handlePod(pod *v1.Pod) voc.IsCompute {
+func (k k8sComputeDiscovery) handlePod(pod *v1.Pod) voc.IsCompute {
 	r := &voc.Container{
 		Compute: &voc.Compute{
 			CloudResource: &voc.CloudResource{
