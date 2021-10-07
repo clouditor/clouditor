@@ -26,7 +26,6 @@ type GRPCFormatter struct {
 }
 
 func (f *GRPCFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-
 	if _, ok := entry.Data["grpc.service"]; ok {
 		entry.Message = fmt.Sprintf("gRPC call %s | %s | %s",
 			f.getService(entry.Data),
@@ -37,7 +36,7 @@ func (f *GRPCFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	return f.TextFormatter.Format(entry)
 }
 
-func (f *GRPCFormatter) getCode(data logrus.Fields) aurora.Value {
+func (GRPCFormatter) getCode(data logrus.Fields) aurora.Value {
 	var (
 		ok   bool
 		code string
@@ -59,7 +58,7 @@ func (f *GRPCFormatter) getCode(data logrus.Fields) aurora.Value {
 	}
 }
 
-func (f *GRPCFormatter) getService(data logrus.Fields) aurora.Value {
+func (GRPCFormatter) getService(data logrus.Fields) aurora.Value {
 	var (
 		ok      bool
 		service string
@@ -79,7 +78,7 @@ func (f *GRPCFormatter) getService(data logrus.Fields) aurora.Value {
 	}
 }
 
-func (f *GRPCFormatter) getMethod(data logrus.Fields) aurora.Value {
+func (GRPCFormatter) getMethod(data logrus.Fields) aurora.Value {
 	var (
 		ok     bool
 		method string
