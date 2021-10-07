@@ -84,7 +84,7 @@ func (k k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
 	return list, nil
 }
 
-func (d k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwork {
+func (k k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwork {
 	var ports []int16
 
 	for _, v := range service.Spec.Ports {
