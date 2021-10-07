@@ -13,7 +13,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.9.1
 	github.com/aws/aws-sdk-go-v2/config v1.8.0
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.18.0
-	github.com/aws/aws-sdk-go-v2/service/lambda v1.8.0
+	github.com/aws/aws-sdk-go-v2/service/lambda v1.9.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.16.0
 	github.com/aws/aws-sdk-go-v2/service/sts v1.7.0
 	github.com/aws/smithy-go v1.8.0
@@ -31,7 +31,7 @@ require (
 	github.com/nxadm/tail v1.4.8 // indirect
 	github.com/onsi/ginkgo v1.15.0 // indirect
 	github.com/onsi/gomega v1.10.5 // indirect
-	github.com/open-policy-agent/opa v0.32.0
+	github.com/open-policy-agent/opa v0.33.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.9.0
