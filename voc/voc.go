@@ -52,6 +52,7 @@ type CloudResource struct {
 	CreationTime int64      `json:"creationTime"` // is set to 0 if no creation time is available
 	// The resource type. It is an array, because a type can be derived from another
 	Type []string `json:"type"`
+	GeoLocation GeoLocation `json:"geoLocation"`
 }
 
 func (r *CloudResource) GetID() ResourceID {

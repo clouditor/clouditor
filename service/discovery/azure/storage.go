@@ -191,6 +191,9 @@ func handleBlockStorage(disk compute.Disk) voc.IsStorage {
 				Name:         to.String(disk.Name),
 				CreationTime: disk.TimeCreated.Unix(),
 				Type:         []string{"BlockStorage", "Storage", "Resource"},
+				GeoLocation: voc.GeoLocation{
+					Region: *disk.Location,
+				},
 			},
 			AtRestEncryption: &voc.AtRestEncryption{
 				KeyManager: string(disk.Encryption.Type), // TODO(all): What do we do with the encryption type? Do we leave it like that?
@@ -209,6 +212,9 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 				Name:         to.String(container.Name),
 				CreationTime: account.CreationTime.Unix(),
 				Type:         []string{"ObjectStorage", "Storage", "Resource"},
+				GeoLocation: voc.GeoLocation{
+					Region: *account.Location,
+				},
 			},
 			AtRestEncryption: &voc.AtRestEncryption{
 				KeyManager: string(account.Encryption.KeySource),
@@ -236,6 +242,9 @@ func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem
 				Name:         to.String(fileshare.Name),
 				CreationTime: account.CreationTime.Unix(),
 				Type:         []string{"FileStorage", "Storage", "Resource"},
+				GeoLocation: voc.GeoLocation{
+					Region: *account.Location,
+				},
 			},
 			AtRestEncryption: &voc.AtRestEncryption{
 				KeyManager: string(account.Encryption.KeySource),
