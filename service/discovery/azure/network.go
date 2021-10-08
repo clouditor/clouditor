@@ -62,7 +62,7 @@ func (d *azureNetworkDiscovery) Description() string {
 	return "Discovery Azure network resources."
 }
 
-// Discover network resources
+// List network resources
 func (d *azureNetworkDiscovery) List() (list []voc.IsCloudResource, err error) {
 	if err = d.authorize(); err != nil {
 		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
@@ -89,15 +89,15 @@ func (d *azureNetworkDiscovery) List() (list []voc.IsCloudResource, err error) {
 func (d *azureNetworkDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
-	client_network_interfaces := network.NewInterfacesClient(to.String(d.sub.SubscriptionID))
-	d.apply(&client_network_interfaces.Client)
+	clientNetworkInterfaces := network.NewInterfacesClient(to.String(d.sub.SubscriptionID))
+	d.apply(&clientNetworkInterfaces.Client)
 
-	result_network_interfaces, err := client_network_interfaces.ListAll(context.Background())
+	resultNetworkInterfaces, err := clientNetworkInterfaces.ListAll(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("could not list network interfaces: %w", err)
 	}
 
-	interfaces := result_network_interfaces.Values()
+	interfaces := resultNetworkInterfaces.Values()
 	for i := range interfaces {
 		s := d.handleNetworkInterfaces(&interfaces[i])
 
@@ -109,19 +109,19 @@ func (d *azureNetworkDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResour
 	return list, err
 }
 
-// Discover Load Balancer
+// Discover load balancer
 func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
-	client_load_balancer := network.NewLoadBalancersClient(to.String(d.sub.SubscriptionID))
-	d.apply(&client_load_balancer.Client)
+	clientLoadBalancer := network.NewLoadBalancersClient(to.String(d.sub.SubscriptionID))
+	d.apply(&clientLoadBalancer.Client)
 
-	result_load_balancer, err := client_load_balancer.ListAll(context.Background())
+	resultLoadBalancer, err := clientLoadBalancer.ListAll(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("could not list load balancer: %w", err)
 	}
 
-	lbs := result_load_balancer.Values()
+	lbs := resultLoadBalancer.Values()
 	for i := range lbs {
 		s := d.handleLoadBalancer(&lbs[i])
 
@@ -142,14 +142,17 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc
 					Name:         to.String(lb.Name),
 					CreationTime: 0, // No creation time available
 					Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
+					GeoLocation: voc.GeoLocation{
+						Region: *lb.Location,
+					},
 				},
 			},
 			Ips:   []string{d.GetPublicIPAddress(lb)},
 			Ports: getLoadBalancerPorts(lb),
 		},
-		// TODO: do we need the AccessRestriction for load balancers?
+		// TODO(all): do we need the AccessRestriction for load balancers?
 		AccessRestriction: &voc.AccessRestriction{},
-		// TODO: do we need the httpEndpoint for load balancers?
+		// TODO(all): do we need the httpEndpoint for load balancers?
 		HttpEndpoints: &[]voc.HttpEndpoint{},
 	}
 }
@@ -162,6 +165,9 @@ func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *network.Interface) v
 				Name:         to.String(ni.Name),
 				CreationTime: 0, // No creation time available
 				Type:         []string{"NetworkInterface", "Compute", "Resource"},
+				GeoLocation: voc.GeoLocation{
+					Region: *ni.Location,
+				},
 			},
 		},
 		AccessRestriction: &voc.AccessRestriction{
@@ -220,7 +226,7 @@ func (d *azureNetworkDiscovery) getRestrictedPorts(ni *network.Interface) string
 
 func deleteDuplicatesFromSlice(intSlice []string) []string {
 	keys := make(map[string]bool)
-	list := []string{}
+	var list []string
 	for _, entry := range intSlice {
 		if _, value := keys[entry]; !value {
 			keys[entry] = true
@@ -230,9 +236,9 @@ func deleteDuplicatesFromSlice(intSlice []string) []string {
 	return list
 }
 
-func GetResourceGroupName(nsgID string) string {
-	log.Infof(strings.Split(nsgID, "/")[4])
-	return strings.Split(nsgID, "/")[4]
+func GetResourceGroupName(id string) string {
+	log.Infof(strings.Split(id, "/")[4])
+	return strings.Split(id, "/")[4]
 }
 
 func (d *azureNetworkDiscovery) GetPublicIPAddress(lb *network.LoadBalancer) string {

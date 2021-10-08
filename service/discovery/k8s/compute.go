@@ -77,6 +77,9 @@ func (k k8sComputeDiscovery) handlePod(pod *v1.Pod) voc.IsCompute {
 				Name:         pod.Name,
 				CreationTime: pod.CreationTimestamp.Unix(),
 				Type:         []string{"Container", "Compute", "Resource"},
+				GeoLocation: voc.GeoLocation{
+					Region: "", // TODO(all) Add region to k8s container
+				},
 			}},
 	}
 

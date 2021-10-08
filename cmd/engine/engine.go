@@ -40,12 +40,12 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"clouditor.io/clouditor"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/rest"
 	service_auth "clouditor.io/clouditor/service/auth"
@@ -180,7 +180,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	httpPort := viper.GetInt(APIHTTPPortFlag)
 
 	grpcLogger := logrus.New()
-	grpcLogger.Formatter = &clouditor.GRPCFormatter{TextFormatter: logrus.TextFormatter{ForceColors: true}}
+	grpcLogger.Formatter = &cli.GRPCFormatter{TextFormatter: logrus.TextFormatter{ForceColors: true}}
 	grpcLoggerEntry := grpcLogger.WithField("component", "grpc")
 
 	// disabling the grpc log itself, because it will log everything on INFO, whereas DEBUG would be more
