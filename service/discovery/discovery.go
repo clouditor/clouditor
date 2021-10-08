@@ -30,25 +30,24 @@ import (
 	"strings"
 	"time"
 
-	"clouditor.io/clouditor/service/discovery/azure"
-	"clouditor.io/clouditor/service/discovery/k8s"
-	"google.golang.org/protobuf/types/known/timestamppb"
-
-	"github.com/google/uuid"
-
-	"clouditor.io/clouditor/service/discovery/aws"
-
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/service/discovery/aws"
+	"clouditor.io/clouditor/service/discovery/azure"
+	"clouditor.io/clouditor/service/discovery/k8s"
 	"clouditor.io/clouditor/voc"
+	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/go-co-op/gocron"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var log *logrus.Entry
@@ -96,16 +95,24 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 
 	log.Infof("Starting discovery...")
 
+	// Clear any previous discoverers, if there are any
+	s.scheduler.Clear()
 	s.scheduler.TagsUnique()
 
 	// Establish connection to assessment component
 	var client assessment.AssessmentClient
+	var orchestratorClient orchestrator.OrchestratorClient
+
 	// TODO(oxisto): support assessment on Another tcp/port
 	cc, err := grpc.Dial("localhost:9090", grpc.WithInsecure())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not connect to assessment service: %v", err)
 	}
 	client = assessment.NewAssessmentClient(cc)
+	orchestratorClient = orchestrator.NewOrchestratorClient(cc)
+
+	accountsResponse, _ := orchestratorClient.ListAccounts(context.Background(), &orchestrator.ListAccountsRequests{})
+
 	// ToDo(lebogg): whats with the err?
 	s.AssessmentStream, _ = client.AssessEvidences(context.Background())
 
@@ -116,40 +123,22 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 		return nil, status.Errorf(codes.Internal, "could not connect to evidence store service: %v", err)
 	}
 	evidenceStoreClient = evidence.NewEvidenceStoreClient(cc)
+
 	// ToDo(lebogg): whats with the err?
 	s.EvidenceStoreStream, _ = evidenceStoreClient.StoreEvidences(context.Background())
 
-	// create an authorizer from env vars or Azure Managed Service Identity
-	authorizer, err := auth.NewAuthorizerFromCLI()
-	if err != nil {
-		log.Errorf("Could not authenticate to Azure: %s", err)
-		return nil, err
-	}
-
-	k8sClient, err := k8s.AuthFromKubeConfig()
-	if err != nil {
-		log.Errorf("Could not authenticate to Kubernetes: %s", err)
-		return nil, err
-	}
-
-	awsClient, err := aws.NewClient()
-	if err != nil {
-		log.Errorf("Could not load credentials: %s", err)
-		return nil, err
-	}
-
 	var discoverer []discovery.Discoverer
 
-	discoverer = append(discoverer,
-		azure.NewAzureIacTemplateDiscovery(azure.WithAuthorizer(authorizer)),
-		azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
-		azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
-		azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)),
-		k8s.NewKubernetesComputeDiscovery(k8sClient),
-		k8s.NewKubernetesNetworkDiscovery(k8sClient),
-		aws.NewAwsStorageDiscovery(awsClient),
-		aws.NewComputeDiscovery(awsClient),
-	)
+	// look for an azure account
+	for _, account := range accountsResponse.Accounts {
+		if account.AccountType == "azure" {
+			handleAzureAccount(account, &discoverer)
+		} else if account.AccountType == "aws" {
+			handleAWSAccount(account, &discoverer)
+		} else if account.AccountType == "k8s" {
+			handlek8sAccount(account, &discoverer)
+		}
+	}
 
 	for _, v := range discoverer {
 		s.Configurations[v] = &Configuration{
@@ -292,3 +281,63 @@ func (s Service) Query(_ context.Context, request *discovery.QueryRequest) (resp
 
 	return nil
 }*/
+
+func handleAzureAccount(account *orchestrator.CloudAccount, discoverer *[]discovery.Discoverer) (err error) {
+	log.Infof("Found an azure account. Cnfiguring our discoverers accordingly")
+
+	var authorizer autorest.Authorizer
+
+	if account.AutoDiscover {
+		// create an authorizer from env vars or Azure Managed Service Identity
+		authorizer, err = auth.NewAuthorizerFromCLI()
+		if err != nil {
+			log.Errorf("Could not authenticate to Azure: %s", err)
+			return err
+		}
+	} else {
+		authorizer, err = auth.NewClientCredentialsConfig(account.Principal, account.Secret, account.AccountId).Authorizer()
+		if err != nil {
+			log.Errorf("Could not authenticate to Azure: %s", err)
+			return err
+		}
+	}
+
+	*discoverer = append(*discoverer,
+		azure.NewAzureIacTemplateDiscovery(azure.WithAuthorizer(authorizer)),
+		azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
+		azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
+		azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)),
+	)
+
+	return nil
+}
+
+func handleAWSAccount(account *orchestrator.CloudAccount, discoverer *[]discovery.Discoverer) (err error) {
+	awsClient, err := aws.NewClient()
+	if err != nil {
+		log.Errorf("Could not load credentials: %s", err)
+		return err
+	}
+
+	*discoverer = append(*discoverer,
+		aws.NewAwsStorageDiscovery(awsClient),
+		aws.NewComputeDiscovery(awsClient),
+	)
+
+	return nil
+}
+
+func handlek8sAccount(account *orchestrator.CloudAccount, discoverer *[]discovery.Discoverer) (err error) {
+	k8sClient, err := k8s.AuthFromKubeConfig()
+	if err != nil {
+		log.Errorf("Could not authenticate to Kubernetes: %s", err)
+		return err
+	}
+
+	*discoverer = append(*discoverer,
+		k8s.NewKubernetesComputeDiscovery(k8sClient),
+		k8s.NewKubernetesNetworkDiscovery(k8sClient),
+	)
+
+	return nil
+}

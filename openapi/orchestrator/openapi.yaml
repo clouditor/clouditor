@@ -203,6 +203,9 @@ components:
                 account_id:
                     type: string
                     description: the account ID, for example account ID in AWS or tenant_id in Azure
+                account_type:
+                    type: string
+                    description: the type of account, like Azure or AWS
                 principal:
                     type: string
                     description: the principal. For an AWS account this would be an access_key_id
@@ -212,6 +215,9 @@ components:
                 custom_value:
                     type: string
                     description: a custom value
+                auto_discover:
+                    type: boolean
+                    description: set it to true, to automatically discover this account on the host where the Clouditor is running
         ListAccountsResponse:
             properties:
                 accounts:

@@ -192,12 +192,18 @@ message CloudAccount {
   // the account ID, for example account ID in AWS or tenant_id in Azure
   string account_id = 1;
 
+  // the type of account, like Azure or AWS 
+  string account_type = 2;
+
   // the principal. For an AWS account this would be an access_key_id
-  string principal = 2;
+  string principal = 3;
 
   // some kind of secret. For an AWS account would be secret_access_key
-  string secret = 3;
+  string secret = 4;
 
   // a custom value
-  string custom_value = 4;
+  string custom_value = 5;
+
+  // set it to true, to automatically discover this account on the host where the Clouditor is running
+  bool auto_discover = 6;
 }
