@@ -64,13 +64,59 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 						"type":       "Microsoft.Compute/virtualMachines",
 						"name":       "[parameters('virtualMachines_vm1_name')]",
 						"location":   "eastus",
-						"properties": map[string]interface{}{},
+						"properties": map[string]interface{}{
+							"storageProfile": map[string]interface{}{
+								"dataDisks": []map[string]interface{}{
+									{
+										"name": "blockStorage3",
+										"managedDisks": map[string]interface{}{
+											"id": "[resourceId('Microsoft.Compute/disks', 'virtualMachines_blockStorage3_name')]",
+										},
+									},
+									{
+										"name": "blockStorage4",
+										"managedDisks": map[string]interface{}{
+											"id": "[resourceId('Microsoft.Compute/disks', 'virtualMachines_blockStorage4_name')]",
+										},
+									},
+								},
+							},
+							"diagnosticsProfile": map[string]interface{}{
+								"bootDiagnostics": map[string]interface{}{
+									"enabled": true,
+									"storageUri": "[concat('https://', parameters('storageAccounts_storage_1_name'), '.blob.core.windows.net/')]",
+								},
+							},
+						},
 					},
 					{
 						"type":       "Microsoft.Compute/virtualMachines",
 						"name":       "[parameters('virtualMachines_vm2_name')]",
 						"location":   "eastus",
-						"properties": map[string]interface{}{},
+						"properties": map[string]interface{}{
+							"storageProfile": map[string]interface{}{
+								"dataDisks": []map[string]interface{}{
+									{
+										"name": "blockStorage1",
+										"managedDisks": map[string]interface{}{
+											"id": "[resourceId('Microsoft.Compute/disks', 'virtualMachines_blockStorage1_name')]",
+										},
+									},
+									{
+										"name": "blockStorage2",
+										"managedDisks": map[string]interface{}{
+											"id": "[resourceId('Microsoft.Compute/disks', 'virtualMachines_blockStorage2_name')]",
+										},
+									},
+								},
+							},
+							"diagnosticsProfile": map[string]interface{}{
+								"bootDiagnostics": map[string]interface{}{
+									"enabled": true,
+									"storageUri": "[concat('https://', parameters('storageAccounts_storage_2_name'), '.blob.core.windows.net/')]",
+								},
+							},
+						},
 					},
 					{
 						"type":     "Microsoft.Storage/storageAccounts",
@@ -105,7 +151,30 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 						"type":       "Microsoft.Compute/virtualMachines",
 						"name":       "[parameters('virtualMachines_vm_3_name')]",
 						"location":   "eastus",
-						"properties": map[string]interface{}{},
+						"properties": map[string]interface{}{
+							"storageProfile": map[string]interface{}{
+								"dataDisks": []map[string]interface{}{
+									{
+										"name": "blockStorage3",
+										"managedDisks": map[string]interface{}{
+											"id": "[resourceId('Microsoft.Compute/disks', 'virtualMachines_blockStorage3_name')]",
+										},
+									},
+									{
+										"name": "blockStorage4",
+										"managedDisks": map[string]interface{}{
+											"id": "[resourceId('Microsoft.Compute/disks', 'virtualMachines_blockStorage4_name')]",
+										},
+									},
+								},
+							},
+							"diagnosticsProfile": map[string]interface{}{
+								"bootDiagnostics": map[string]interface{}{
+									"enabled": true,
+									"storageUri": "[concat('https://', parameters('storageAccounts_storage_3_name'), '.blob.core.windows.net/')]",
+								},
+							},
+						},
 					},
 					{
 						"type":     "Microsoft.Storage/storageAccounts",
@@ -165,7 +234,41 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 	return m.mockSender.Do(req)
 }
 
-func TestIacDiscovery(t *testing.T) {
+func TestIaCTemplateDiscovery(t *testing.T){
+	d := azure.NewAzureIacTemplateDiscovery(
+		azure.WithSender(&mockIacTemplateSender{}),
+		azure.WithAuthorizer(&mockAuthorizer{}),
+	)
+
+	list, err := d.List()
+
+	assert.Nil(t, err)
+	assert.NotNil(t, list)
+	assert.Equal(t, 7, len(list))
+
+}
+
+func TestStorageAccountProperties(t *testing.T) {
+	d := azure.NewAzureIacTemplateDiscovery(
+		azure.WithSender(&mockIacTemplateSender{}),
+		azure.WithAuthorizer(&mockAuthorizer{}),
+	)
+
+	list, err := d.List()
+
+	assert.Nil(t, err)
+	assert.NotNil(t, list)
+
+	resourceStorage, ok := list[2].(*voc.ObjectStorage)
+	assert.True(t, ok)
+
+	// That should be equal. The Problem is described in file 'service/discovery/azure/iac_template.go'
+	assert.NotEqual(t, "storage_1", resourceStorage.Name)
+	assert.NotEqual(t, "TLS1_1", resourceStorage.HttpEndpoint.TransportEncryption.TlsVersion)
+
+}
+
+func TestVmProperties(t *testing.T) {
 	d := azure.NewAzureIacTemplateDiscovery(
 		azure.WithSender(&mockIacTemplateSender{}),
 		azure.WithAuthorizer(&mockAuthorizer{}),
@@ -180,12 +283,6 @@ func TestIacDiscovery(t *testing.T) {
 	resourceVM, ok := list[0].(*voc.VirtualMachine)
 	assert.True(t, ok)
 	assert.Equal(t, "vm1", resourceVM.Name)
-
-	resourceStorage, ok := list[2].(*voc.ObjectStorage)
-	assert.True(t, ok)
-
-	// That should be equal. The Problem is described in file 'service/discovery/azure/iac_template.go'
-	assert.NotEqual(t, "storage_1", resourceStorage.Name)
-	assert.NotEqual(t, "TLS1_1", resourceStorage.HttpEndpoint.TransportEncryption.TlsVersion)
-
+	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1", (string)(resourceVM.GetID()))
+	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/blockStorage3", (string)(resourceVM.BlockStorage[0]))
 }
