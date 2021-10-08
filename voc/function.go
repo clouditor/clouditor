@@ -27,5 +27,7 @@ package voc
 
 type Function struct {
 	*Compute
+	RuntimeVersion	string `json:"runtimeVersion"`
+	RuntimeLanguage	string `json:"runtimeLanguage"`
 }
 

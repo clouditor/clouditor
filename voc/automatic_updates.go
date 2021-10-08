@@ -25,9 +25,10 @@
 
 package voc
 
-type AtRestEncryption struct {
-	*Confidentiality
-	Algorithm	string `json:"algorithm"`
+type AutomaticUpdates struct {
+	*Integrity
 	Enabled	bool `json:"enabled"`
+	SecurityOnly	bool `json:"securityOnly"`
+	Interval	java.time.Duration `json:"interval"`
 }
 

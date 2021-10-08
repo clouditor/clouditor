@@ -25,9 +25,9 @@
 
 package voc
 
-type AtRestEncryption struct {
-	*Confidentiality
-	Algorithm	string `json:"algorithm"`
-	Enabled	bool `json:"enabled"`
+type CloudResource struct {
+
+	GeoLocation	*GeoLocation `json:"geoLocation"`
+	Labels	map[string]string `json:"labels"`
 }
 

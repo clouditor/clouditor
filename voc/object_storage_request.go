@@ -27,7 +27,7 @@ package voc
 
 type ObjectStorageRequest struct {
 	*Functionality
-	ObjectStorage	[]ResourceID `json:"objectStorage"`
+	To	[]ResourceID `json:"to"`
 	Source	string `json:"source"`
 	Type	string `json:"type"`
 }

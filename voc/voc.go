@@ -53,6 +53,7 @@ type CloudResource struct {
 	// The resource type. It is an array, because a type can be derived from another
 	Type []string `json:"type"`
 	GeoLocation GeoLocation `json:"geoLocation"`
+	Labels map[string]string `json:"labels"`
 }
 
 func (r *CloudResource) GetID() ResourceID {

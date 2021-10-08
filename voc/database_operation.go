@@ -27,7 +27,8 @@ package voc
 
 type DatabaseOperation struct {
 	*Functionality
-	DatabaseService	[]ResourceID `json:"databaseService"`
-	Call	string `json:"call"`
+	Storage	[]ResourceID `json:"storage"`
+	To	[]ResourceID `json:"to"`
+	Calls	java.util.List<de.fraunhofer.aisec.cpg.graph.statements.expressions.CallExpression> `json:"calls"`
 }
 

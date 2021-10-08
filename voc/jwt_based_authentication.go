@@ -25,9 +25,8 @@
 
 package voc
 
-type AtRestEncryption struct {
-	*Confidentiality
-	Algorithm	string `json:"algorithm"`
-	Enabled	bool `json:"enabled"`
+type JwtBasedAuthentication struct {
+	*Authenticity
+	Enforced	bool `json:"enforced"`
 }
 

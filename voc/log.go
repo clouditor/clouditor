@@ -27,6 +27,8 @@ package voc
 
 type Log struct {
 	*Auditing
-	Activated	bool `json:"activated"`
+	Output	[]ResourceID `json:"output"`
+	Enabled	bool `json:"enabled"`
+	RetentionPeriod	java.time.Duration `json:"retentionPeriod"`
 }
 

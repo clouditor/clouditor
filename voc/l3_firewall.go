@@ -25,9 +25,9 @@
 
 package voc
 
-type AtRestEncryption struct {
-	*Confidentiality
-	Algorithm	string `json:"algorithm"`
-	Enabled	bool `json:"enabled"`
+type L3Firewall struct {
+	*AccessRestriction
+	Inbound	bool `json:"inbound"`
+	RestrictedPorts	string `json:"restrictedPorts"`
 }
 
