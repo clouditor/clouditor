@@ -125,7 +125,10 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	evidenceStoreClient = evidence.NewEvidenceStoreClient(cc)
 
 	// ToDo(lebogg): whats with the err?
-	s.EvidenceStoreStream, _ = evidenceStoreClient.StoreEvidences(context.Background())
+	s.EvidenceStoreStream, err = evidenceStoreClient.StoreEvidences(context.Background())
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not enable connection to evidence store: %v", err)
+	}
 
 	var discoverer []discovery.Discoverer
 
@@ -140,7 +143,7 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 		}
 
 		if err != nil {
-			return nil, err
+			return nil, status.Errorf(codes.Internal, "could not handle account: %v", err)
 		}
 	}
 
