@@ -28,7 +28,7 @@ package voc
 type DatabaseOperation struct {
 	*Functionality
 	Storage	[]ResourceID `json:"storage"`
-	To	[]ResourceID `json:"to"`
-	Calls	java.util.List<de.fraunhofer.aisec.cpg.graph.statements.expressions.CallExpression> `json:"calls"`
+	To		[]ResourceID `json:"to"`
+	Calls	[]string `json:"calls"`
 }
 

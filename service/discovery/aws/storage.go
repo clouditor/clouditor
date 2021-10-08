@@ -38,7 +38,6 @@ import (
 	"clouditor.io/clouditor/voc"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
 )
 
@@ -217,11 +216,11 @@ func (d *awsS3Discovery) getEncryptionAtRest(bucket string) (e *voc.AtRestEncryp
 		return
 	}
 	e.Algorithm = string(resp.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm)
-	if e.Algorithm == string(types.ServerSideEncryptionAes256) {
-		e.KeyManager = "SSE-S3"
-	} else {
-		e.KeyManager = "SSE-KMS"
-	}
+	//if e.Algorithm == string(types.ServerSideEncryptionAes256) {
+	//	e.KeyManager = "SSE-S3"
+	//} else {
+	//	e.KeyManager = "SSE-KMS"
+	//}
 	e.Enabled = true
 	return
 }

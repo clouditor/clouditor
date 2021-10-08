@@ -196,7 +196,7 @@ func handleBlockStorage(disk compute.Disk) voc.IsStorage {
 				},
 			},
 			AtRestEncryption: &voc.AtRestEncryption{
-				KeyManager: string(disk.Encryption.Type), // TODO(all): What do we do with the encryption type? Do we leave it like that?
+				//KeyManager: string(disk.Encryption.Type), // TODO(all): What do we do with the encryption type? Do we leave it like that?
 				Enabled:    true, // is always enabled
 				Algorithm: "", // not available
 			},
@@ -217,7 +217,7 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 				},
 			},
 			AtRestEncryption: &voc.AtRestEncryption{
-				KeyManager: string(account.Encryption.KeySource),
+				//KeyManager: string(account.Encryption.KeySource),
 				Algorithm:  "AES-265", // seems to be always AES-256
 				Enabled:    to.Bool(account.Encryption.Services.Blob.Enabled),
 			},
@@ -247,7 +247,7 @@ func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem
 				},
 			},
 			AtRestEncryption: &voc.AtRestEncryption{
-				KeyManager: string(account.Encryption.KeySource),
+				//KeyManager: string(account.Encryption.KeySource),
 				Algorithm:  "AES-265", // seems to be always AES-256
 				Enabled:    to.Bool(account.Encryption.Services.File.Enabled),
 			},

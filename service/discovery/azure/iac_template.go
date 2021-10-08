@@ -62,7 +62,7 @@ func (*azureIacTemplateDiscovery) Description() string {
 	return "Discovery IaC template."
 }
 
-// Discover IaC template
+// List Azure resources by discoverying IaC template
 func (d *azureIacTemplateDiscovery) List() (list []voc.IsCloudResource, err error) {
 	if err = d.authorize(); err != nil {
 		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
@@ -103,6 +103,11 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource
 			return nil, fmt.Errorf("could not discover IaC template: %w", err)
 		}
 
+		//err = saveExportTemplate(result, *resourceGroups[i].Name)
+		//if err != nil {
+		//	return nil, fmt.Errorf("could not save IaC template: %w", err)
+		//}
+
 		template, ok := result.Template.(map[string]interface{})
 		if !ok {
 			return nil, fmt.Errorf("IaC template type convertion failed")
@@ -110,15 +115,15 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource
 
 		for templateKey, templateValue := range template {
 			if templateKey == "resources" {
-				resources, ok := templateValue.([]interface{})
+				azureResource, ok := templateValue.([]interface{})
 				if !ok {
 					return nil, fmt.Errorf("templateValue type convertion failed")
 				}
 
-				for _, resourcesValue := range resources {
+				for _, resourcesValue := range azureResource {
 					value, ok := resourcesValue.(map[string]interface{})
 					if !ok {
-						return nil, fmt.Errorf("resources type convertion failed")
+						return nil, fmt.Errorf("azureResource type convertion failed")
 					}
 
 					for valueKey, valueValue := range value {
@@ -154,41 +159,42 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource
 }
 
 // saveExportTemplate saves the resource group template in a json file.
-/*func saveExportTemplate(template resources.GroupExportResult, groupName string) error {
+//func saveExportTemplate(template resources.GroupExportResult, groupName string) error {
+//
+//	var (
+//		filepath     string
+//		filename     string
+//		fileTemplate string
+//	)
+//
+//	prefix, indent := "", "    "
+//	exported, err := json.MarshalIndent(template, prefix, indent)
+//	if err != nil {
+//		return fmt.Errorf("MarshalIndent failed %w", err)
+//	}
+//
+//	filepath = "../../results/raw_discovery_results/azure_iac_raw_templates/"
+//	fileTemplate = "%s-template.json"
+//	filename = fmt.Sprintf(fileTemplate, groupName)
+//
+//	// Check if folder exists
+//	err = os.MkdirAll(filepath, os.ModePerm)
+//	if err != nil {
+//		return fmt.Errorf("check for directory existence failed:  %w", err)
+//	}
+//
+//	err = ioutil.WriteFile(filepath+filename, exported, 0666)
+//	if err != nil {
+//		return fmt.Errorf("write file failed %w", err)
+//	} else {
+//		log.Infof("raw IaC template file written to: {%s}{%s}", filepath, filename)
+//
+//	}
+//
+//	return nil
+//}
 
-	var (
-		filepath     string
-		filename     string
-		fileTemplate string
-	)
-
-	prefix, indent := "", "    "
-	exported, err := json.MarshalIndent(template, prefix, indent)
-	if err != nil {
-		return fmt.Errorf("MarshalIndent failed %w", err)
-	}
-
-	filepath = "../../results/raw_discovery_results/azure_iac_raw_templates/"
-	fileTemplate = "%s-template.json"
-	filename = fmt.Sprintf(fileTemplate, groupName)
-
-	// Check if folder exists
-	err = os.MkdirAll(filepath, os.ModePerm)
-	if err != nil {
-		return fmt.Errorf("check for directory existence failed:  %w", err)
-	}
-
-	err = ioutil.WriteFile(filepath+filename, exported, 0666)
-	if err != nil {
-		return fmt.Errorf("write file failed %w", err)
-	} else {
-		log.Infof("raw IaC template file written to: {%s}{%s}", filepath, filename)
-
-	}
-
-	return nil
-}*/
-
+// TODO(garuppel): split to different storage types
 func (d *azureIacTemplateDiscovery) createStorageResource(resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
 
 	var (
@@ -213,7 +219,6 @@ func (d *azureIacTemplateDiscovery) createStorageResource(resourceValue map[stri
 				Type:         []string{"ObjectStorage", "Storage", "Resource"},
 			},
 			AtRestEncryption: &voc.AtRestEncryption{
-				KeyManager: getStorageKeySource(resourceValue),
 				Algorithm:  "AES-265", // seems to be always AWS-256,
 				Enabled:    blobServiceEncryptionEnabled(resourceValue),
 			},
@@ -226,7 +231,7 @@ func (d *azureIacTemplateDiscovery) createStorageResource(resourceValue map[stri
 			},
 			TransportEncryption: &voc.TransportEncryption{
 				Enabled:    true, // cannot be disabled
-				Enforced:   httpTrafficOnlyEnabled(resourceValue),
+				Enforced:   httpsTrafficOnlyEnabled(resourceValue),
 				TlsVersion: getMinTlsVersion(resourceValue),
 				Algorithm:  "",
 			},
@@ -239,23 +244,23 @@ func (d *azureIacTemplateDiscovery) createStorageResource(resourceValue map[stri
 	return storage, nil
 }
 
-func httpTrafficOnlyEnabled(value map[string]interface{}) bool {
+func httpsTrafficOnlyEnabled(value map[string]interface{}) bool {
 
-	if httpTrafficOnlyEnabled, ok := value["properties"].(map[string]interface{})["supportsHttpsTrafficOnly"].(bool); ok {
-		return httpTrafficOnlyEnabled
+	if supportsHttpsTrafficOnly, ok := value["properties"].(map[string]interface{})["supportsHttpsTrafficOnly"].(bool); ok {
+		return supportsHttpsTrafficOnly
 	}
 
 	return false
 }
 
-func getStorageKeySource(value map[string]interface{}) string {
-
-	if storageKeySource, ok := value["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["keySource"].(string); ok {
-		return storageKeySource
-	}
-
-	return ""
-}
+//func getStorageKeySource(value map[string]interface{}) string {
+//
+//	if storageKeySource, ok := value["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["keySource"].(string); ok {
+//		return storageKeySource
+//	}
+//
+//	return ""
+//}
 
 func blobServiceEncryptionEnabled(value map[string]interface{}) bool {
 
@@ -303,13 +308,14 @@ func (d *azureIacTemplateDiscovery) createLBResource(resourceValue map[string]in
 			Ips:     []string{},
 			Ports:   []int16{},
 		},
-		AccessRestriction: &voc.AccessRestriction{
-			Inbound:         false,
-			RestrictedPorts: "",
+		AccessRestrictions: &[]voc.AccessRestriction{
+			//Inbound:         false,
+			//RestrictedPorts: "",
 		},
-		HttpEndpoints: &[]voc.HttpEndpoint{},
 		// // TODO(all): Do we need the httpEndpoint?
-		// HttpEndpoint: &voc.HttpEndpoint{},
+		HttpEndpoints: &[]voc.HttpEndpoint{},
+		Url: "", // TODO(all): TBD
+		//NetworkServices: , // TODO(all): TBD
 	}
 
 	return lb, nil
@@ -318,7 +324,7 @@ func (d *azureIacTemplateDiscovery) createLBResource(resourceValue map[string]in
 func (d *azureIacTemplateDiscovery) createVMResource(resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
 	var id string
 	var name string
-	var enabled bool
+	var bootDiagnosticsEnabled bool
 
 	for key, value := range resourceValue {
 
@@ -327,7 +333,7 @@ func (d *azureIacTemplateDiscovery) createVMResource(resourceValue map[string]in
 			name = getDefaultNameOfResource(value.(string))
 		}
 
-		// Get bool for Logging enabled
+		// Get boot logging status (bootDiagnosticsEnabled)
 		if key == "properties" {
 			properties, ok := value.(map[string]interface{})
 
@@ -337,14 +343,14 @@ func (d *azureIacTemplateDiscovery) createVMResource(resourceValue map[string]in
 
 			for propertiesKey, propertiesValue := range properties {
 				if propertiesKey == "diagnosticsProfile" {
-					enabled = propertiesValue.(map[string]interface{})["bootDiagnostics"].(map[string]interface{})["enabled"].(bool)
+					bootDiagnosticsEnabled = propertiesValue.(map[string]interface{})["bootDiagnostics"].(map[string]interface{})["enabled"].(bool)
 				}
 			}
 		}
 	}
 
-	// Get ID
-	// ID must be put together by hand, is not available in template. Better ideas? Leave empty?
+	// Get virtual machine ID
+	// TODO(all): ID must be put together by hand, is not available in template. Better ideas? Leave empty?
 	id = d.createID(resourceGroup, resourceValue["type"].(string), name)
 
 	vm := &voc.VirtualMachine{
@@ -354,9 +360,19 @@ func (d *azureIacTemplateDiscovery) createVMResource(resourceValue map[string]in
 				Name:         name,
 				CreationTime: 0, // No creation time available
 				Type:         []string{"VirtualMachine", "Compute", "Resource"},
-			}},
-		Log: &voc.Log{
-			Activated: enabled,
+			},
+		},
+		BootLog: &voc.BootLog{
+			Log: &voc.Log{
+				Enabled: bootDiagnosticsEnabled,
+				//RetentionPeriod: ,
+				//Output: ,
+			},
+		},
+		OSLog: &voc.OSLog{
+			Log: &voc.Log{
+
+			},
 		},
 	}
 
@@ -370,7 +386,7 @@ func (d *azureIacTemplateDiscovery) createID(resourceGroup, resourceType, name s
 // getDefaultNameOfResource gets the defaultName from template parameter
 // TODO(all): The exported template contains a parameter instead of the defaultName (resourceName). Furthermore, the template parameters do not contain a mapping from the parameter to the defaultName. In the parameter name all word separators (e.g. _, -, .) were replaced by a underscore (_), so it is not possible to uniquely restore the defaultName. Ideas? Do we need the correct defaultNames?
 func getDefaultNameOfResource(name string) string {
-	// Name in template is an parameter and unnecessary information must be shortened
+	// Name in template is a parameter and unnecessary information must be shortened
 	nameSplit := strings.Split(name, "'")
 	anotherNameSplit := strings.Split(nameSplit[1], "_")
 	anotherNameSplit = anotherNameSplit[1:]

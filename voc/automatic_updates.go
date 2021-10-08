@@ -25,10 +25,12 @@
 
 package voc
 
+import "time"
+
 type AutomaticUpdates struct {
 	*Integrity
-	Enabled	bool `json:"enabled"`
+	Enabled			bool `json:"enabled"`
 	SecurityOnly	bool `json:"securityOnly"`
-	Interval	java.time.Duration `json:"interval"`
+	Interval		time.Duration `json:"interval"`
 }
 

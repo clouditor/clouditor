@@ -25,10 +25,12 @@
 
 package voc
 
+import "time"
+
 type Log struct {
 	*Auditing
 	Output	[]ResourceID `json:"output"`
 	Enabled	bool `json:"enabled"`
-	RetentionPeriod	java.time.Duration `json:"retentionPeriod"`
+	RetentionPeriod	time.Duration `json:"retentionPeriod"`
 }
 

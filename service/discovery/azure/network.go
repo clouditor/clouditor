@@ -151,7 +151,7 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc
 			Ports: getLoadBalancerPorts(lb),
 		},
 		// TODO(all): do we need the AccessRestriction for load balancers?
-		AccessRestriction: &voc.AccessRestriction{},
+		AccessRestrictions: &[]voc.AccessRestriction{},
 		// TODO(all): do we need the httpEndpoint for load balancers?
 		HttpEndpoints: &[]voc.HttpEndpoint{},
 	}
@@ -170,10 +170,10 @@ func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *network.Interface) v
 				},
 			},
 		},
-		AccessRestriction: &voc.AccessRestriction{
-			Inbound:         false, // TODO(garuppel): TBD
-			RestrictedPorts: d.getRestrictedPorts(ni),
-		},
+		//AccessRestriction: &voc.AccessRestriction{
+		//	Inbound:         false, // TODO(garuppel): TBD
+		//	RestrictedPorts: d.getRestrictedPorts(ni),
+		//},
 	}
 }
 

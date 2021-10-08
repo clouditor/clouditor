@@ -134,7 +134,7 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachine, erro
 				Compute:          computeResource,
 				NetworkInterface: d.getNetworkInterfacesOfVM(vm),
 				BlockStorage:     d.mapBlockStorageIDsOfVM(vm),
-				Log:              d.getLogsOfVM(vm),
+				//Log:              d.getLogsOfVM(vm),
 			})
 		}
 	}
@@ -191,7 +191,7 @@ func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.Function
 // Currently there is no option to find out if logs are enabled -> Default value false
 func (d *computeDiscovery) getLogsOfVM(_ *typesEC2.Instance) (l *voc.Log) {
 	l = new(voc.Log)
-	l.Activated = false
+	l.Enabled = false
 	return
 }
 
