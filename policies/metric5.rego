@@ -2,9 +2,9 @@ package clouditor
 
 default compliant = false
 
-# this is an implementation of metric 1 (Transport Encryption)
+# this is an implementation of metric TransportEncryptionEnforced
 
 compliant {
 	tls := input.httpEndpoint.transportEncryption
-	tls.enabled == true
+	tls.enforced == true
 }

@@ -80,14 +80,14 @@ func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenc
 }
 
 func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) error {
-	var evidence *evidence.Evidence
+	var e *evidence.Evidence
 	var err error
 
 	for {
-		evidence, err = stream.Recv()
+		e, err = stream.Recv()
 
 		// TODO: Catch error?
-		_, _ = s.handleEvidence(evidence)
+		_, _ = s.handleEvidence(e)
 
 		if err == io.EOF {
 			log.Infof("Stopped receiving streamed evidences")
@@ -121,7 +121,8 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) (result *evidence.E
 			baseDir = "../../"
 		}
 
-		file = fmt.Sprintf("%s/policies/metric%d.rego", baseDir, metric)
+		// ToDo(lebogg): Test if direction to each bundle works
+		file = fmt.Sprintf("%s/policies/bundle%d", baseDir, metric)
 
 		// TODO(oxisto): use go embed
 		data, err := policies.RunEvidence(file, evidence)

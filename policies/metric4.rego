@@ -2,6 +2,9 @@ package clouditor
 
 default compliant = false
 
+# this is an implementation of metric EncryptionAtRestAlgorithm
+
+
 compliant {
 	enc := input.atRestEncryption
 	goodAlgorithm(enc)

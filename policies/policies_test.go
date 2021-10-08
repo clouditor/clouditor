@@ -52,9 +52,10 @@ func TestRun(t *testing.T) {
 		"creationTime": 1621086669,
 		"httpEndpoint": {
 			"transportEncryption": {
+				"algorithm": "TLS",
 				"enabled": true,
 				"enforced": true,
-				"tlsVersion": "TLS1_2"
+				"tlsVersion": 1.3
 			},
 			"url": "https://aybazestorage.blob.core.windows.net/"
 		},
@@ -70,11 +71,40 @@ func TestRun(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	data, err = policies.RunEvidence("metric1.rego", &evidence.Evidence{
+	// Test metric TransportEncryptionAlgorithm
+	data, err = policies.RunEvidence("bundle1", &evidence.Evidence{
 		Resource: structpb.NewStructValue(s),
 	})
 
 	assert.Nil(t, err)
 	assert.NotNil(t, data)
 	assert.Equal(t, true, data["compliant"])
+
+	// Test metric TLSVersion
+	data, err = policies.RunEvidence("bundle2", &evidence.Evidence{
+		Resource: structpb.NewStructValue(s),
+	})
+
+	assert.Nil(t, err)
+	assert.NotNil(t, data)
+	assert.Equal(t, true, data["compliant"])
+
+	// Test metric TransportEncryptionEnabled
+	data, err = policies.RunEvidence("bundle3", &evidence.Evidence{
+		Resource: structpb.NewStructValue(s),
+	})
+
+	assert.Nil(t, err)
+	assert.NotNil(t, data)
+	assert.Equal(t, true, data["compliant"])
+
+	// Test metric TransportEncryptionEnforced
+	data, err = policies.RunEvidence("bundle4", &evidence.Evidence{
+		Resource: structpb.NewStructValue(s),
+	})
+
+	assert.Nil(t, err)
+	assert.NotNil(t, data)
+	assert.Equal(t, true, data["compliant"])
+
 }

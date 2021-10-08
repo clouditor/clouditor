@@ -48,7 +48,7 @@ func RunMap(file string, m map[string]interface{}) (data map[string]interface{},
 	ctx := context.TODO()
 	r, err := rego.New(
 		rego.Query("data.clouditor"),
-		rego.Load([]string{file}, nil),
+		rego.LoadBundle(file),
 	).PrepareForEval(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare rego evaluation: %w", err)
