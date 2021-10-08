@@ -106,6 +106,21 @@ service Orchestrator {
       get : "/v1/orchestrator/metrics/{metric_id}"
     };
   }
+
+  // Creates a new cloud service account
+  rpc CreateAccount(CreateAccountRequest) returns (CloudAccount) {
+    option (google.api.http) = {
+      post : "/v1/orchestrator/accounts"
+      body : "account"
+    };
+  }
+
+  // Creates a new cloud service account
+  rpc ListAccounts(ListAccountsRequests) returns (ListAccountsResponse) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/accounts"
+    };
+  }
 }
 
 message RegisterAssessmentToolRequest { AssessmentTool tool = 1; }
@@ -133,6 +148,13 @@ message GetMetricsRequest { string metric_id = 1; }
 
 message ListMetricsRequest {}
 message ListMetricsResponse { repeated Metric metrics = 1; }
+
+message CreateAccountRequest {
+    CloudAccount account = 1;
+}
+
+message ListAccountsRequests { }
+message ListAccountsResponse { repeated CloudAccount accounts = 1; }
 
 // Represents an external tool or service that offers assessments according to
 // certain metrics
@@ -164,4 +186,18 @@ message AssessmentResult {
     COMPLIANT = 0;
     NON_COMPLIANT = 1;
   }
+}
+
+message CloudAccount {
+  // the account ID, for example account ID in AWS or tenant_id in Azure
+  string account_id = 1;
+
+  // the principal. For an AWS account this would be an access_key_id
+  string principal = 2;
+
+  // some kind of secret. For an AWS account would be secret_access_key
+  string secret = 3;
+
+  // a custom value
+  string custom_value = 4;
 }

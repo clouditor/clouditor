@@ -40,6 +40,10 @@ type OrchestratorClient interface {
 	ListMetrics(ctx context.Context, in *ListMetricsRequest, opts ...grpc.CallOption) (*ListMetricsResponse, error)
 	// Returns the metric with the passed metric id
 	GetMetric(ctx context.Context, in *GetMetricsRequest, opts ...grpc.CallOption) (*assessment.Metric, error)
+	// Creates a new cloud service account
+	CreateAccount(ctx context.Context, in *CreateAccountRequest, opts ...grpc.CallOption) (*CloudAccount, error)
+	// Creates a new cloud service account
+	ListAccounts(ctx context.Context, in *ListAccountsRequests, opts ...grpc.CallOption) (*ListAccountsResponse, error)
 }
 
 type orchestratorClient struct {
@@ -156,6 +160,24 @@ func (c *orchestratorClient) GetMetric(ctx context.Context, in *GetMetricsReques
 	return out, nil
 }
 
+func (c *orchestratorClient) CreateAccount(ctx context.Context, in *CreateAccountRequest, opts ...grpc.CallOption) (*CloudAccount, error) {
+	out := new(CloudAccount)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/CreateAccount", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orchestratorClient) ListAccounts(ctx context.Context, in *ListAccountsRequests, opts ...grpc.CallOption) (*ListAccountsResponse, error) {
+	out := new(ListAccountsResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/ListAccounts", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OrchestratorServer is the server API for Orchestrator service.
 // All implementations must embed UnimplementedOrchestratorServer
 // for forward compatibility
@@ -180,6 +202,10 @@ type OrchestratorServer interface {
 	ListMetrics(context.Context, *ListMetricsRequest) (*ListMetricsResponse, error)
 	// Returns the metric with the passed metric id
 	GetMetric(context.Context, *GetMetricsRequest) (*assessment.Metric, error)
+	// Creates a new cloud service account
+	CreateAccount(context.Context, *CreateAccountRequest) (*CloudAccount, error)
+	// Creates a new cloud service account
+	ListAccounts(context.Context, *ListAccountsRequests) (*ListAccountsResponse, error)
 	mustEmbedUnimplementedOrchestratorServer()
 }
 
@@ -213,6 +239,12 @@ func (UnimplementedOrchestratorServer) ListMetrics(context.Context, *ListMetrics
 }
 func (UnimplementedOrchestratorServer) GetMetric(context.Context, *GetMetricsRequest) (*assessment.Metric, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMetric not implemented")
+}
+func (UnimplementedOrchestratorServer) CreateAccount(context.Context, *CreateAccountRequest) (*CloudAccount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateAccount not implemented")
+}
+func (UnimplementedOrchestratorServer) ListAccounts(context.Context, *ListAccountsRequests) (*ListAccountsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListAccounts not implemented")
 }
 func (UnimplementedOrchestratorServer) mustEmbedUnimplementedOrchestratorServer() {}
 
@@ -397,6 +429,42 @@ func _Orchestrator_GetMetric_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Orchestrator_CreateAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateAccountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).CreateAccount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/CreateAccount",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).CreateAccount(ctx, req.(*CreateAccountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Orchestrator_ListAccounts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAccountsRequests)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).ListAccounts(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/ListAccounts",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).ListAccounts(ctx, req.(*ListAccountsRequests))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Orchestrator_ServiceDesc is the grpc.ServiceDesc for Orchestrator service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -435,6 +503,14 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetMetric",
 			Handler:    _Orchestrator_GetMetric_Handler,
+		},
+		{
+			MethodName: "CreateAccount",
+			Handler:    _Orchestrator_CreateAccount_Handler,
+		},
+		{
+			MethodName: "ListAccounts",
+			Handler:    _Orchestrator_ListAccounts_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

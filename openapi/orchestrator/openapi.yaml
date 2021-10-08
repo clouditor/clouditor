@@ -7,6 +7,33 @@ info:
     description: Manages the orchestration of components within the Clouditor architecture
     version: 0.0.1
 paths:
+    /v1/orchestrator/accounts:
+        get:
+            summary: Creates a new cloud service account
+            operationId: Orchestrator_ListAccounts
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListAccountsResponse'
+        post:
+            summary: Creates a new cloud service account
+            operationId: Orchestrator_CreateAccount
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CloudAccount'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CloudAccount'
     /v1/orchestrator/assessment_results:
         put:
             summary: Stores the assessment result provided by an assessment tool
@@ -171,6 +198,26 @@ components:
                         type: string
                     description: a list of metrics that this tool can assess, referred by their ids
             description: Represents an external tool or service that offers assessments according to certain metrics
+        CloudAccount:
+            properties:
+                account_id:
+                    type: string
+                    description: the account ID, for example account ID in AWS or tenant_id in Azure
+                principal:
+                    type: string
+                    description: the principal. For an AWS account this would be an access_key_id
+                secret:
+                    type: string
+                    description: some kind of secret. For an AWS account would be secret_access_key
+                custom_value:
+                    type: string
+                    description: a custom value
+        ListAccountsResponse:
+            properties:
+                accounts:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/CloudAccount'
         ListAssessmentToolsResponse:
             properties:
                 tools:
