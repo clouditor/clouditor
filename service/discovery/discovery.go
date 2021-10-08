@@ -132,11 +132,15 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	// look for an azure account
 	for _, account := range accountsResponse.Accounts {
 		if account.AccountType == "azure" {
-			handleAzureAccount(account, &discoverer)
+			err = handleAzureAccount(account, &discoverer)
 		} else if account.AccountType == "aws" {
-			handleAWSAccount(account, &discoverer)
+			err = handleAWSAccount(account, &discoverer)
 		} else if account.AccountType == "k8s" {
-			handlek8sAccount(account, &discoverer)
+			err = handlek8sAccount(account, &discoverer)
+		}
+
+		if err != nil {
+			return nil, err
 		}
 	}
 
