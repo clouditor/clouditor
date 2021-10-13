@@ -51,9 +51,9 @@ type CloudResource struct {
 	Name         string     `json:"name"`
 	CreationTime int64      `json:"creationTime"` // is set to 0 if no creation time is available
 	// The resource type. It is an array, because a type can be derived from another
-	Type []string `json:"type"`
-	GeoLocation GeoLocation `json:"geoLocation"`
-	Labels map[string]string `json:"labels"`
+	Type        []string          `json:"type"`
+	GeoLocation GeoLocation       `json:"geoLocation"`
+	Labels      map[string]string `json:"labels"`
 }
 
 func (r *CloudResource) GetID() ResourceID {
@@ -120,8 +120,8 @@ type HasHttpEndpoint interface {
 	GetHttpEndpoint() *HttpEndpoint
 }
 
-func (s *Storage) GetAtRestEncryption() *AtRestEncryption {
-	return s.AtRestEncryption
+func (s *Storage) GetAtRestEncryption() *HasAtRestEncryption {
+	return &s.AtRestEncryption
 }
 
 // Compute

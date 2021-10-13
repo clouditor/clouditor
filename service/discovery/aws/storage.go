@@ -138,7 +138,7 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 						Region: bucket.region,
 					},
 				},
-				AtRestEncryption: encryptionAtRest,
+				AtRestEncryption: &voc.CustomerKeyEncryption{AtRestEncryption: encryptionAtRest},
 			},
 			HttpEndpoint: &voc.HttpEndpoint{
 				Url:                 bucket.endpoint,
