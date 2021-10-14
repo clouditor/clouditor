@@ -218,9 +218,12 @@ func (d *azureIacTemplateDiscovery) createStorageResource(resourceValue map[stri
 				CreationTime: 0, // No creation time available
 				Type:         []string{"ObjectStorage", "Storage", "Resource"},
 			},
-			AtRestEncryption: &voc.AtRestEncryption{
-				Algorithm:  "AES-265", // seems to be always AWS-256,
-				Enabled:    blobServiceEncryptionEnabled(resourceValue),
+			// TODO(garuppel): Check kind of AtRestEncryption
+			AtRestEncryption: voc.ManagedKeyEncryption{
+				AtRestEncryption: &voc.AtRestEncryption{
+					Algorithm: "AES-265", // seems to be always AWS-256,
+					Enabled:   blobServiceEncryptionEnabled(resourceValue),
+				},
 			},
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
@@ -314,7 +317,7 @@ func (d *azureIacTemplateDiscovery) createLBResource(resourceValue map[string]in
 		},
 		// // TODO(all): Do we need the httpEndpoint?
 		HttpEndpoints: &[]voc.HttpEndpoint{},
-		Url: "", // TODO(all): TBD
+		Url:           "", // TODO(all): TBD
 		//NetworkServices: , // TODO(all): TBD
 	}
 
@@ -370,9 +373,7 @@ func (d *azureIacTemplateDiscovery) createVMResource(resourceValue map[string]in
 			},
 		},
 		OSLog: &voc.OSLog{
-			Log: &voc.Log{
-
-			},
+			Log: &voc.Log{},
 		},
 	}
 

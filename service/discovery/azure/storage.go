@@ -95,7 +95,7 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 		if err != nil {
 			return nil, fmt.Errorf("could not handle object storages: %w", err)
 		}
-		
+
 		// Discover file storages
 		fileStorages, err := d.discoverFileStorages(&accounts[i])
 		if err != nil {
@@ -107,7 +107,6 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 		if err != nil {
 			return nil, fmt.Errorf("could not handle block storages: %w", err)
 		}
-
 
 		log.Infof("Adding storage account %+v", objectStorages)
 
@@ -148,7 +147,7 @@ func (d *azureStorageDiscovery) discoverFileStorages(account *storage.Account) (
 
 	result, err := client.List(context.Background(), GetResourceGroupName(*account.ID), *account.Name, "", "", "")
 	if err != nil {
-	return nil, fmt.Errorf("could not list file storages: %w", err)
+		return nil, fmt.Errorf("could not list file storages: %w", err)
 	}
 
 	for _, value := range result.Values() {
@@ -182,7 +181,23 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *storage.Account)
 	return list, nil
 }
 
-func handleBlockStorage(disk compute.Disk) voc.IsStorage {
+func handleBlockStorage(disk compute.Disk) *voc.BlockStorage {
+	// TODO: Better to extract to method?
+	var enc voc.HasAtRestEncryption
+	if disk.Encryption.Type == compute.EncryptionAtRestWithPlatformKey {
+		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
+			Algorithm: "", // TODO: not available?
+			Enabled:   true,
+		}}
+	} else {
+		enc = voc.CustomerKeyEncryption{
+			AtRestEncryption: &voc.AtRestEncryption{
+				Algorithm: "", // TODO: not available?
+				Enabled:   true,
+			},
+			KeyUrl: "", // TODO: ?
+		}
+	}
 
 	return &voc.BlockStorage{
 		Storage: &voc.Storage{
@@ -195,16 +210,29 @@ func handleBlockStorage(disk compute.Disk) voc.IsStorage {
 					Region: *disk.Location,
 				},
 			},
-			AtRestEncryption: &voc.AtRestEncryption{
-				//KeyManager: string(disk.Encryption.Type), // TODO(all): What do we do with the encryption type? Do we leave it like that?
-				Enabled:    true, // is always enabled
-				Algorithm: "", // not available
-			},
+			AtRestEncryption: enc,
 		},
 	}
 }
 
-func handleObjectStorage(account *storage.Account, container storage.ListContainerItem) voc.IsStorage {
+func handleObjectStorage(account *storage.Account, container storage.ListContainerItem) *voc.ObjectStorage {
+	// TODO: Better to extract to method?
+	var enc voc.HasAtRestEncryption
+	if account.Encryption.KeySource == storage.KeySourceMicrosoftStorage { // TODO: Is this right?
+		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
+			Algorithm: "", // TODO: not available?
+			Enabled:   true,
+		}}
+	} else {
+		enc = voc.CustomerKeyEncryption{
+			AtRestEncryption: &voc.AtRestEncryption{
+				Algorithm: "", // TODO: not available?
+				Enabled:   true,
+			},
+			KeyUrl: to.String(account.Encryption.KeyVaultProperties.KeyVaultURI), // TODO: Is this right?
+		}
+	}
+
 	return &voc.ObjectStorage{
 		Storage: &voc.Storage{
 			CloudResource: &voc.CloudResource{
@@ -216,11 +244,7 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 					Region: *account.Location,
 				},
 			},
-			AtRestEncryption: &voc.AtRestEncryption{
-				//KeyManager: string(account.Encryption.KeySource),
-				Algorithm:  "AES-265", // seems to be always AES-256
-				Enabled:    to.Bool(account.Encryption.Services.Blob.Enabled),
-			},
+			AtRestEncryption: enc,
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
 			Url: to.String(account.PrimaryEndpoints.Blob) + to.String(container.Name),
@@ -234,7 +258,24 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 	}
 }
 
-func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem) voc.IsStorage {
+func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem) *voc.FileStorage {
+	var enc voc.HasAtRestEncryption
+	// TODO: Better to extract to method?
+	if account.Encryption.KeySource == storage.KeySourceMicrosoftStorage { // TODO(garuppel): Is this right?
+		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
+			Algorithm: "", // TODO(garuppel): not available?
+			Enabled:   true,
+		}}
+	} else {
+		enc = voc.CustomerKeyEncryption{
+			AtRestEncryption: &voc.AtRestEncryption{
+				Algorithm: "", // TODO(garuppel): not available?
+				Enabled:   true,
+			},
+			KeyUrl: to.String(account.Encryption.KeyVaultProperties.KeyVaultURI), // TODO(garuppel): Is this right?
+		}
+	}
+
 	return &voc.FileStorage{
 		Storage: &voc.Storage{
 			CloudResource: &voc.CloudResource{
@@ -246,11 +287,7 @@ func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem
 					Region: *account.Location,
 				},
 			},
-			AtRestEncryption: &voc.AtRestEncryption{
-				//KeyManager: string(account.Encryption.KeySource),
-				Algorithm:  "AES-265", // seems to be always AES-256
-				Enabled:    to.Bool(account.Encryption.Services.File.Enabled),
-			},
+			AtRestEncryption: enc,
 		},
 		// TODO(all) Uncomment as soon as the HttpEndpoint is added to voc/file_storage.go
 		//HttpEndpoint: &voc.HttpEndpoint{

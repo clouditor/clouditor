@@ -1,0 +1,126 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "OpenAPI Spec for Istio APIs.",
+    "version": "clouditor"
+  },
+  "components": {
+    "schemas": {
+      "clouditor.ListEvidencesRequest": {
+        "type": "object"
+      },
+      "clouditor.ListEvidencesResponse": {
+        "properties": {
+          "evidences": {
+            "items": {
+              "description": "An evidence resource",
+              "properties": {
+                "applicable_metrics": {
+                  "items": {
+                    "format": "int32",
+                    "type": "integer"
+                  },
+                  "type": "array"
+                },
+                "id": {
+                  "description": "the ID in a uuid format",
+                  "type": "string"
+                },
+                "raw": {
+                  "description": "\"raw\" evidence (for the auditor), for example the raw JSON response from the API. This does not follow a defined schema",
+                  "type": "string"
+                },
+                "resource": {
+                  "description": "optional; a semantic representation of the Cloud resource according to our defined ontology. a JSON serialized node of our semantic graph. This may be Clouditor-specific.",
+                  "properties": {
+                    "kind": {
+                      "oneOf": [
+                        {
+                          "description": "Represents a null value.",
+                          "enum": [
+                            [
+                              "NULL_VALUE"
+                            ]
+                          ],
+                          "type": "string"
+                        },
+                        {
+                          "description": "Represents a double value.",
+                          "type": "number"
+                        },
+                        {
+                          "description": "Represents a string value.",
+                          "type": "string"
+                        },
+                        {
+                          "description": "Represents a boolean value.",
+                          "type": "boolean"
+                        },
+                        {
+                          "description": "Represents a structured value.",
+                          "properties": {
+                            "fields": {
+                              "additionalProperties": true,
+                              "type": "object"
+                            }
+                          }
+                        },
+                        {
+                          "description": "Represents a repeated `Value`.",
+                          "properties": {
+                            "values": {
+                              "items": {
+                                "type": "object"
+                              },
+                              "type": "array"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "type": "object"
+                },
+                "resource_id": {
+                  "description": "reference to the resource this evidence was gathered from",
+                  "type": "string"
+                },
+                "service_id": {
+                  "description": "reference to a service this evidence was gathered from",
+                  "type": "string"
+                },
+                "timestamp": {
+                  "description": "TODO: replace with google/type/date.proto timestamp.proto or date.proto?",
+                  "properties": {
+                    "nanos": {
+                      "description": "Non-negative fractions of a second at nanosecond resolution. Negative second values with fractions must still have non-negative nanos values that count forward in time. Must be from 0 to 999,999,999 inclusive.",
+                      "format": "int32",
+                      "type": "integer"
+                    },
+                    "seconds": {
+                      "description": "Represents seconds of UTC time since Unix epoch 1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59Z inclusive.",
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "clouditor.StoreEvidenceResponse": {
+        "properties": {
+          "status": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    }
+  }
+}
