@@ -210,6 +210,7 @@ func (d *azureIacTemplateDiscovery) createStorageResource(resourceValue map[stri
 		}
 	}
 
+	// TODO split to different storage accounts
 	storage := &voc.ObjectStorage{
 		Storage: &voc.Storage{
 			CloudResource: &voc.CloudResource{

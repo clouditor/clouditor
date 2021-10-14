@@ -185,28 +185,7 @@ func handleBlockStorage(disk compute.Disk) *voc.BlockStorage {
 	// TODO: Better to extract to method?
 	var enc voc.HasAtRestEncryption
 
-	//if disk.EncryptionSettingsCollection.Enabled {} // TODO nötig?
-
-	if disk.Encryption.Type == compute.EncryptionAtRestWithPlatformKey {
-		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
-			Algorithm: "", // TODO: not available?
-			Enabled:   true,
-		}}
-	} else if disk.Encryption.Type == compute.EncryptionAtRestWithCustomerKey && *disk.EncryptionSettingsCollection.Enabled{
-		var keyUrl string
-		for _, elem := range *disk.EncryptionSettingsCollection.EncryptionSettings {
-			keyUrl = *elem.DiskEncryptionKey.SourceVault.ID
-			break
-		}
-
-		enc = voc.CustomerKeyEncryption{
-			AtRestEncryption: &voc.AtRestEncryption{
-				Algorithm: "", // not available
-				Enabled:   true,
-			},
-			KeyUrl: keyUrl,
-		}
-	}
+	enc = getBlockStorageAtRestEncryption(disk)
 
 	return &voc.BlockStorage{
 		Storage: &voc.Storage{
@@ -227,20 +206,8 @@ func handleBlockStorage(disk compute.Disk) *voc.BlockStorage {
 func handleObjectStorage(account *storage.Account, container storage.ListContainerItem) *voc.ObjectStorage {
 	// TODO: Better to extract to method?
 	var enc voc.HasAtRestEncryption
-	if account.Encryption.KeySource == storage.KeySourceMicrosoftStorage && *account.Encryption.Services.Blob.Enabled {
-		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
-			Algorithm: "", // not available
-			Enabled:   true,
-		}}
-	} else if account.Encryption.KeySource == storage.KeySourceMicrosoftKeyvault && *account.Encryption.Services.Blob.Enabled{
-		enc = voc.CustomerKeyEncryption{
-			AtRestEncryption: &voc.AtRestEncryption{
-				Algorithm: "", // not available
-				Enabled:   true,
-			},
-			KeyUrl: to.String(account.Encryption.KeyVaultProperties.KeyVaultURI),
-		}
-	}
+
+	enc = getObjectStorageAtRestEncryption(account)
 
 	return &voc.ObjectStorage{
 		Storage: &voc.Storage{
@@ -269,21 +236,8 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 
 func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem) *voc.FileStorage {
 	var enc voc.HasAtRestEncryption
-	// TODO: Better to extract to method?
-	if account.Encryption.KeySource == storage.KeySourceMicrosoftStorage && *account.Encryption.Services.File.Enabled {
-		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
-			Algorithm: "", // not available
-			Enabled:   true,
-		}}
-	} else if account.Encryption.KeySource == storage.KeySourceMicrosoftKeyvault && *account.Encryption.Services.File.Enabled{
-		enc = voc.CustomerKeyEncryption{
-			AtRestEncryption: &voc.AtRestEncryption{
-				Algorithm: "", // not available
-				Enabled:   true,
-			},
-			KeyUrl: to.String(account.Encryption.KeyVaultProperties.KeyVaultURI),
-		}
-	}
+
+	enc = getFileStorageAtRestEncryption(account)
 
 	return &voc.FileStorage{
 		Storage: &voc.Storage{
@@ -309,4 +263,77 @@ func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem
 		//	},
 		//},
 	}
+}
+
+
+func getBlockStorageAtRestEncryption(disk compute.Disk) voc.HasAtRestEncryption{
+
+	var enc voc.HasAtRestEncryption
+
+	if disk.Encryption.Type == compute.EncryptionAtRestWithPlatformKey {
+		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
+			Algorithm: "", // TODO: not available?
+			Enabled:   true,
+		}}
+	} else if disk.Encryption.Type == compute.EncryptionAtRestWithCustomerKey && *disk.EncryptionSettingsCollection.Enabled{
+		var keyUrl string
+		for _, elem := range *disk.EncryptionSettingsCollection.EncryptionSettings {
+			keyUrl = *elem.DiskEncryptionKey.SourceVault.ID
+			break
+		}
+
+		enc = voc.CustomerKeyEncryption{
+			AtRestEncryption: &voc.AtRestEncryption{
+				Algorithm: "", // not available
+				Enabled:   true,
+			},
+			KeyUrl: keyUrl,
+		}
+	}
+
+	return enc
+}
+
+func getObjectStorageAtRestEncryption(account *storage.Account) voc.HasAtRestEncryption{
+
+	var enc voc.HasAtRestEncryption
+
+	if account.Encryption.KeySource == storage.KeySourceMicrosoftStorage && *account.Encryption.Services.Blob.Enabled {
+		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
+			Algorithm: "", // not available
+			Enabled:   true,
+		}}
+	} else if account.Encryption.KeySource == storage.KeySourceMicrosoftKeyvault && *account.Encryption.Services.Blob.Enabled{
+		enc = voc.CustomerKeyEncryption{
+			AtRestEncryption: &voc.AtRestEncryption{
+				Algorithm: "", // not available
+				Enabled:   true,
+			},
+			KeyUrl: to.String(account.Encryption.KeyVaultProperties.KeyVaultURI),
+		}
+	}
+
+	return enc
+}
+
+func getFileStorageAtRestEncryption(account *storage.Account) voc.HasAtRestEncryption{
+
+	var enc voc.HasAtRestEncryption
+
+	if account.Encryption.KeySource == storage.KeySourceMicrosoftStorage && *account.Encryption.Services.File.Enabled {
+		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
+			Algorithm: "", // not available
+			Enabled:   true,
+		}}
+	} else if account.Encryption.KeySource == storage.KeySourceMicrosoftKeyvault && *account.Encryption.Services.File.Enabled{
+		enc = voc.CustomerKeyEncryption{
+			AtRestEncryption: &voc.AtRestEncryption{
+				Algorithm: "", // not available
+				Enabled:   true,
+			},
+			KeyUrl: to.String(account.Encryption.KeyVaultProperties.KeyVaultURI),
+		}
+	}
+
+	return enc
 }
