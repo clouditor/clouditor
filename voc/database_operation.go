@@ -28,7 +28,7 @@ package voc
 type DatabaseOperation struct {
 	*Functionality
 	Storage	[]ResourceID `json:"storage"`
-	To		[]ResourceID `json:"to"`
+	DatabaseService	[]ResourceID `json:"databaseService"`
 	Calls	[]string `json:"calls"`
 }
 

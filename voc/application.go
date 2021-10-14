@@ -28,7 +28,7 @@ package voc
 type Application struct {
 
 	Functionalities	*[]Functionality `json:"functionalities"`
-	RunsOn	[]ResourceID `json:"runsOn"`
+	Compute	[]ResourceID `json:"compute"`
 	ProgrammingLanguage	string `json:"programmingLanguage"`
 	TranslationUnits	[]string `json:"translationUnits"`
 }

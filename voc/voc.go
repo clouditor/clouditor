@@ -105,7 +105,6 @@ func ToStruct(r IsCloudResource) (s *structpb.Value, err error) {
 	return
 }
 
-// Storage
 type IsStorage interface {
 	IsCloudResource
 
@@ -124,12 +123,10 @@ func (s *Storage) GetAtRestEncryption() *HasAtRestEncryption {
 	return &s.AtRestEncryption
 }
 
-// Compute
 type IsCompute interface {
 	IsCloudResource
 }
 
-// Network
 type IsNetwork interface {
 	IsCloudResource
 }

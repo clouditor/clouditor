@@ -381,7 +381,7 @@ func (d *azureIacTemplateDiscovery) createVMResource(resourceValue map[string]in
 }
 
 func (d *azureIacTemplateDiscovery) createID(resourceGroup, resourceType, name string) string {
-	return "/subscriptions/" + *d.sub.SubscriptionID + "/resourceGroups/" + strings.ToUpper(resourceGroup) + "/providers/" + resourceType + "/" + name
+	return "/subscriptions/" + *d.sub.SubscriptionID + "/resourceGroups/" + resourceGroup + "/providers/" + resourceType + "/" + name
 }
 
 // getDefaultNameOfResource gets the defaultName from template parameter

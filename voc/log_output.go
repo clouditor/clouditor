@@ -27,7 +27,7 @@ package voc
 
 type LogOutput struct {
 	*Functionality
-	To	[]ResourceID `json:"to"`
+	Logging	[]ResourceID `json:"logging"`
 	Call	string `json:"call"`
 	Value	string `json:"value"`
 }

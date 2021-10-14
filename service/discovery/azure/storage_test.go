@@ -136,6 +136,8 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 	return m.mockSender.Do(req)
 }
 
+
+// TODO tests for encryption stuff and extend basic tests
 func TestListStorage(t *testing.T) {
 	d := azure.NewAzureStorageDiscovery(
 		azure.WithSender(&mockStorageSender{}),

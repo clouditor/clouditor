@@ -27,7 +27,7 @@ package voc
 
 type HttpRequest struct {
 	*Functionality
-	To	*HttpEndpoint `json:"to"`
+	HttpEndpoint	*HttpEndpoint `json:"httpEndpoint"`
 	Call	string `json:"call"`
 }
 
