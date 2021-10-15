@@ -53,7 +53,7 @@ const (
 
 	mockFunction1ID           = "arn:aws:lambda:eu-central-1:123456789:function:mock-function:1"
 	mockFunction1             = "MockFunction1"
-	mockFunction1Region	= "eu-central-1"
+	mockFunction1Region       = "eu-central-1"
 	mockFunction1CreationTime = "2012-11-01T22:08:41.0+00:00"
 )
 
@@ -248,6 +248,7 @@ func TestComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 	assert.NotEmpty(t, testMachine.BlockStorage)
 	//assert.False(t, testMachine.Log.Activated)
 	assert.Equal(t, int64(0), testMachine.CreationTime)
+	assert.Equal(t, mockFunction1Region, testMachine.GeoLocation.Region)
 
 	d = computeDiscovery{
 		virtualMachineAPI: mockEC2APIWithErrors{},
@@ -338,7 +339,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 			"Test case 1 (no error)",
 			fields{
 				functionAPI: mockLambdaAPI{},
-				awsConfig: mockClient,
+				awsConfig:   mockClient,
 			},
 			//args: args{client: mockClient},
 			[]voc.Function{
@@ -387,7 +388,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 	// Testing the case where two API Calls have to be made due to limit of returned functions
 	d := computeDiscovery{
 		functionAPI: mockLambdaAPI51LambdaFunctions{},
-		awsConfig: mockClient,
+		awsConfig:   mockClient,
 	}
 	functions, err := d.discoverFunctions()
 	assert.Nil(t, err)
