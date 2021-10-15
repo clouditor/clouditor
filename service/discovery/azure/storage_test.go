@@ -27,6 +27,7 @@ package azure_test
 
 import (
 	"clouditor.io/clouditor/voc"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-04-01/storage"
 	"net/http"
 	"testing"
 
@@ -50,6 +51,7 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 						"creationTime": "2017-05-24T13:28:53.4540398Z",
 						"primaryEndpoints": map[string]interface{}{
 							"blob": "https://account1.blob.core.windows.net/",
+							"file": "https://account1.file.core.windows.net/",
 						},
 						"encryption": map[string]interface{}{
 							"services": map[string]interface{}{
@@ -64,8 +66,11 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 									"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
 								},
 							},
-							"keySource": "Microsoft.Storage",
+							"keySource": storage.KeySourceMicrosoftStorage,
 						},
+						"minimumTlsVersion": storage.MinimumTLSVersionTLS12,
+						"allowBlobPublicAccess": false,
+						"supportsHttpsTrafficOnly": true,
 					},
 				},
 			},
@@ -180,10 +185,20 @@ func TestGetObjectStorage(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
 
-	storage, ok := list[0].(*voc.ObjectStorage)
+	objectStorage, ok := list[0].(*voc.ObjectStorage)
 
 	assert.True(t, ok)
-	assert.Equal(t, "container1", storage.Name)
+	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1", string(objectStorage.ID))
+	assert.Equal(t, "container1", objectStorage.Name)
+	assert.NotNil(t, objectStorage.CreationTime)
+	assert.Equal(t, "ObjectStorage", objectStorage.Type[0])
+	assert.Equal(t, "eastus", objectStorage.GeoLocation.Region)
+	assert.Equal(t, true, objectStorage.AtRestEncryption.GetAtRestEncryption().Enabled)
+	assert.Equal(t, "https://account1.blob.core.windows.net/container1", objectStorage.HttpEndpoint.Url)
+	assert.Equal(t, true, objectStorage.HttpEndpoint.TransportEncryption.Enabled)
+	assert.Equal(t, true, objectStorage.HttpEndpoint.TransportEncryption.Enforced)
+	assert.Equal(t, "TLS1_2", objectStorage.HttpEndpoint.TransportEncryption.TlsVersion)
+	assert.Equal(t, "", objectStorage.HttpEndpoint.TransportEncryption.Algorithm)
 }
 
 func TestListFileStorage(t *testing.T) {
@@ -215,10 +230,20 @@ func TestGetFileStorage(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
 
-	storage, ok := list[2].(*voc.FileStorage)
+	fileStorage, ok := list[2].(*voc.FileStorage)
 
 	assert.True(t, ok)
-	assert.Equal(t, "fileshare1", storage.Name)
+	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/shares/fileshare1", string(fileStorage.ID))
+	assert.Equal(t, "fileshare1", fileStorage.Name)
+	assert.NotNil(t, fileStorage.CreationTime)
+	assert.Equal(t, "FileStorage", fileStorage.Type[0])
+	assert.Equal(t, "eastus", fileStorage.GeoLocation.Region)
+	assert.Equal(t, true, fileStorage.AtRestEncryption.GetAtRestEncryption().Enabled)
+	assert.Equal(t, "https://account1.file.core.windows.net/fileshare1", fileStorage.HttpEndpoint.Url)
+	assert.Equal(t, true, fileStorage.HttpEndpoint.TransportEncryption.Enabled)
+	assert.Equal(t, true, fileStorage.HttpEndpoint.TransportEncryption.Enforced)
+	assert.Equal(t, "TLS1_2", fileStorage.HttpEndpoint.TransportEncryption.TlsVersion)
+	assert.Equal(t, "", fileStorage.HttpEndpoint.TransportEncryption.Algorithm)
 }
 
 func TestListBlockStorage(t *testing.T) {
@@ -251,9 +276,14 @@ func TestGetBlockStorage(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
 
-	storage, ok := list[4].(*voc.BlockStorage)
+	blockStorage, ok := list[4].(*voc.BlockStorage)
 
 	assert.True(t, ok)
-	assert.Equal(t, "disk1", storage.Name)
+	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1", string(blockStorage.ID))
+	assert.Equal(t, "disk1", blockStorage.Name)
+	assert.NotNil(t, blockStorage.CreationTime)
+	assert.Equal(t, "BlockStorage", blockStorage.Type[0])
+	assert.Equal(t, "eastus", blockStorage.GeoLocation.Region)
+	assert.Equal(t, true, blockStorage.AtRestEncryption.GetAtRestEncryption().Enabled)
 }
 

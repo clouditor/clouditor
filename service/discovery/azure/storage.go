@@ -252,16 +252,15 @@ func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem
 			},
 			AtRestEncryption: enc,
 		},
-		// TODO(all) Uncomment as soon as the HttpEndpoint is added to voc/file_storage.go
-		//HttpEndpoint: &voc.HttpEndpoint{
-		//	Url: to.String(account.PrimaryEndpoints.File) + to.String(fileshare.Name),
-		//	TransportEncryption: &voc.TransportEncryption{
-		//		Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
-		//		Enabled:    true, // cannot be disabled
-		//		TlsVersion: string(account.MinimumTLSVersion),
-		//		Algorithm:  "", // TBD
-		//	},
-		//},
+		HttpEndpoint: &voc.HttpEndpoint{
+			Url: to.String(account.PrimaryEndpoints.File) + to.String(fileshare.Name),
+			TransportEncryption: &voc.TransportEncryption{
+				Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
+				Enabled:    true, // cannot be disabled
+				TlsVersion: string(account.MinimumTLSVersion),
+				Algorithm:  "", // not available
+			},
+		},
 	}
 }
 
