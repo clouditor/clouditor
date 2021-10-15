@@ -182,7 +182,6 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *storage.Account)
 }
 
 func handleBlockStorage(disk compute.Disk) *voc.BlockStorage {
-	// TODO: Better to extract to method?
 	var enc voc.HasAtRestEncryption
 
 	enc = getBlockStorageAtRestEncryption(disk)
@@ -204,7 +203,6 @@ func handleBlockStorage(disk compute.Disk) *voc.BlockStorage {
 }
 
 func handleObjectStorage(account *storage.Account, container storage.ListContainerItem) *voc.ObjectStorage {
-	// TODO: Better to extract to method?
 	var enc voc.HasAtRestEncryption
 
 	enc = getObjectStorageAtRestEncryption(account)
@@ -252,16 +250,15 @@ func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem
 			},
 			AtRestEncryption: enc,
 		},
-		// TODO(all) Uncomment as soon as the HttpEndpoint is added to voc/file_storage.go
-		//HttpEndpoint: &voc.HttpEndpoint{
-		//	Url: to.String(account.PrimaryEndpoints.File) + to.String(fileshare.Name),
-		//	TransportEncryption: &voc.TransportEncryption{
-		//		Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
-		//		Enabled:    true, // cannot be disabled
-		//		TlsVersion: string(account.MinimumTLSVersion),
-		//		Algorithm:  "", // TBD
-		//	},
-		//},
+		HttpEndpoint: &voc.HttpEndpoint{
+			Url: to.String(account.PrimaryEndpoints.File) + to.String(fileshare.Name),
+			TransportEncryption: &voc.TransportEncryption{
+				Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
+				Enabled:    true, // cannot be disabled
+				TlsVersion: string(account.MinimumTLSVersion),
+				Algorithm:  "", // not available
+			},
+		},
 	}
 }
 
@@ -272,7 +269,7 @@ func getBlockStorageAtRestEncryption(disk compute.Disk) voc.HasAtRestEncryption{
 
 	if disk.Encryption.Type == compute.EncryptionAtRestWithPlatformKey {
 		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
-			Algorithm: "", // TODO: not available?
+			Algorithm: "", // not available
 			Enabled:   true,
 		}}
 	} else if disk.Encryption.Type == compute.EncryptionAtRestWithCustomerKey && *disk.EncryptionSettingsCollection.Enabled{
