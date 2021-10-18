@@ -224,7 +224,7 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 			Url: to.String(account.PrimaryEndpoints.Blob) + to.String(container.Name),
 			TransportEncryption: &voc.TransportEncryption{
 				Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
-				Enabled:    true, // cannot be disabled
+				Enabled:    true, // TODO get from IaC template in all storages
 				TlsVersion: string(account.MinimumTLSVersion),
 				Algorithm:  "", // not available
 			},

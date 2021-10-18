@@ -84,7 +84,7 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 							"diagnosticsProfile": map[string]interface{}{
 								"bootDiagnostics": map[string]interface{}{
 									"enabled": true,
-									"storageUri": "[concat('https://', parameters('storageAccounts_storage_1_name'), '.blob.core.windows.net/')]",
+									"storageUri": "[concat('https://', parameters('storageAccounts_storage1_name'), '.blob.core.windows.net/')]",
 								},
 							},
 						},
@@ -120,7 +120,7 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 					},
 					{
 						"type":     "Microsoft.Storage/storageAccounts",
-						"name":     "[parameters('storageAccounts_storage_1_name')]",
+						"name":     "[parameters('storageAccounts_storage1_name')]",
 						"location": "eastus",
 						"properties": map[string]interface{}{
 							"encryption": map[string]interface{}{
@@ -138,6 +138,19 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 								"minimumTlsVersion":        "TLS1_1",
 								"supportsHttpsTrafficOnly": true,
 							},
+						},
+					},
+					{
+						"type":     "Microsoft.Storage/storageAccounts/blobServices/containers",
+						"name":     "[concat(parameters('storageAccounts_storage1_name'), 'default/container1')]",
+						"dependsOn": []interface{}{
+							"[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_functionapplogtransfer_name'), 'default')]",
+							"[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storage1_name'))]",
+						},
+						"properties": map[string]interface{}{
+							"defaultEncryptionScope": "$account-encryption-key",
+							"denyEncryptionScopeOverride": false,
+							"publicAccess": "None",
 						},
 					},
 				},
@@ -178,7 +191,7 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 					},
 					{
 						"type":     "Microsoft.Storage/storageAccounts",
-						"name":     "[parameters('storageAccounts_storage_1_name')]",
+						"name":     "[parameters('storageAccounts_storage1_name')]",
 						"location": "eastus",
 						"properties": map[string]interface{}{
 							"encryption": map[string]interface{}{
@@ -263,7 +276,7 @@ func TestStorageAccountProperties(t *testing.T) {
 	assert.True(t, ok)
 
 	// That should be equal. The Problem is described in file 'service/discovery/azure/iac_template.go'
-	assert.NotEqual(t, "storage_1", resourceStorage.Name)
+	assert.NotEqual(t, "storage1", resourceStorage.Name)
 	assert.NotEqual(t, "TLS1_1", resourceStorage.HttpEndpoint.TransportEncryption.TlsVersion)
 
 }
@@ -284,5 +297,5 @@ func TestVmProperties(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "vm1", resourceVM.Name)
 	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1", (string)(resourceVM.GetID()))
-	//assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/blockStorage3", (string)(resourceVM.BlockStorage[0]))
+	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/blockStorage3", (string)(resourceVM.BlockStorage[0]))
 }

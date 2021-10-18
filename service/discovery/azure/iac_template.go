@@ -141,8 +141,8 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource
 									return nil, fmt.Errorf("could not create load balancer resource: %w", err)
 								}
 								list = append(list, lb)
-							} else if valueValue.(string) == "Microsoft.Storage/storageAccounts" {
-								storage, err := d.createStorageResource(value, *resourceGroups[i].Name)
+							} else if valueValue.(string) == "Microsoft.Storage/storageAccounts/blobServices/containers" {
+								storage, err := d.createObjectStorageResource(value, azureResource, *resourceGroups[i].Name)
 								if err != nil {
 									return nil, fmt.Errorf("could not create storage resource: %w", err)
 								}
@@ -195,27 +195,39 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource
 //}
 
 // TODO(garuppel): split to different storage types
-func (d *azureIacTemplateDiscovery) createStorageResource(resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
+func (d *azureIacTemplateDiscovery) createObjectStorageResource(resourceValue map[string]interface{}, azureResources []interface{}, resourceGroup string) (voc.IsCompute, error) {
 
 	var (
-		name string
+		azureResourceName string
+		storage voc.IsCompute
 	)
-
-	resourceType := resourceValue["type"].(string)
-
-	for key, value := range resourceValue {
-		// Get storage account name
-		if key == "name" {
-			name = getDefaultNameOfResource(value.(string))
-		}
+	azureResourceName = getDefaultNameOfResource(resourceValue["name"].(string))
+	dependsOnList, ok :=(resourceValue["dependsOn"]).([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("dependsOn  convertion failed")
 	}
 
-	// TODO split to different storage accounts
-	storage := &voc.ObjectStorage{
+	// TODO use return value, brauche ich das storageAccount objekt nicht?
+	storageAccountResource, err := getStorageAccountResourceFromTemplate(dependsOnList, azureResources)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create object storage")
+	}
+
+	// get all necessary information
+	//id := ""
+	//atRestEncryptionEnabled := false
+	//url := ""
+	//transportEncryptionEnabled := false
+	//tlsEnforced := false
+	//tlsVersion := ""
+
+
+
+	storage = &voc.ObjectStorage{
 		Storage: &voc.Storage{
 			CloudResource: &voc.CloudResource{
-				ID:           voc.ResourceID(d.createID(resourceGroup, resourceType, name)),
-				Name:         name,
+				ID:           voc.ResourceID(d.createID(resourceGroup, "blobServices", azureResourceName)),
+				Name:         azureResourceName,
 				CreationTime: 0, // No creation time available
 				Type:         []string{"ObjectStorage", "Storage", "Resource"},
 			},
@@ -223,29 +235,56 @@ func (d *azureIacTemplateDiscovery) createStorageResource(resourceValue map[stri
 			AtRestEncryption: voc.ManagedKeyEncryption{
 				AtRestEncryption: &voc.AtRestEncryption{
 					Algorithm: "AES-265", // seems to be always AWS-256,
-					Enabled:   blobServiceEncryptionEnabled(resourceValue),
+					Enabled:   blobServiceEncryptionEnabled(storageAccountResource),
 				},
 			},
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
-			Url:           "", // Not able to get from IaC template
-			Functionality: &voc.Functionality{},
-			Authenticity: &voc.Authenticity{
-				SecurityFeature: &voc.SecurityFeature{},
-			},
+			Url: "", // Not able to get from IaC template
 			TransportEncryption: &voc.TransportEncryption{
-				Enabled:    true, // cannot be disabled
-				Enforced:   httpsTrafficOnlyEnabled(resourceValue),
-				TlsVersion: getMinTlsVersion(resourceValue),
-				Algorithm:  "",
+				Enabled:    true, // TODO get from IaC template
+				Enforced:   httpsTrafficOnlyEnabled(storageAccountResource),
+				TlsVersion: getMinTlsVersion(storageAccountResource),
+				Algorithm:  "", // not available
 			},
-			Method:  "",
-			Handler: "",
-			Path:    "",
 		},
 	}
 
 	return storage, nil
+}
+
+func getStorageAccountResourceFromTemplate(resourceNames []interface{}, azureTemplateResources  []interface{}) (map[string]interface{}, error) {
+
+	var (
+		resourceType string
+		resourceName string
+	)
+
+	// Get parameter type and name from corresponding storage account resource
+	for _, resourceNameElem := range resourceNames {
+
+		resourceNameSplit := strings.Split(resourceNameElem.(string), ",")
+		if len(resourceNameSplit) == 2 {
+			resourceType = strings.Split(resourceNameSplit[0], "'")[1]
+			resourceName = "[" + resourceNameSplit[1][1:len(resourceNameSplit[1])-2] + "]"
+		}
+	}
+
+	//println(resourceType)
+	//println(resourceName)
+
+	for _, resourcesValue := range azureTemplateResources {
+		templateResources, ok := resourcesValue.(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("azureResource type convertion failed")
+		}
+
+		if templateResources["type"] == resourceType && templateResources["name"] == resourceName {
+			return resourcesValue.(map[string]interface{}), nil
+		}
+	}
+
+	return nil, fmt.Errorf("could not get resource from IaC template")
 }
 
 func httpsTrafficOnlyEnabled(value map[string]interface{}) bool {
@@ -256,15 +295,6 @@ func httpsTrafficOnlyEnabled(value map[string]interface{}) bool {
 
 	return false
 }
-
-//func getStorageKeySource(value map[string]interface{}) string {
-//
-//	if storageKeySource, ok := value["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["keySource"].(string); ok {
-//		return storageKeySource
-//	}
-//
-//	return ""
-//}
 
 func blobServiceEncryptionEnabled(value map[string]interface{}) bool {
 
