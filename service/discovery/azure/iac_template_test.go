@@ -90,6 +90,17 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 						},
 					},
 					{
+						// TODO Do we need the OD disks?
+						"type":       "Microsoft.Compute/disks",
+						"name":       "[parameters('disks_disk1_name')]",
+						"location":   "eastus",
+						"properties": map[string]interface{}{
+							"encryption": map[string]interface{}{
+								"type": "EncryptionAtRestWithPlatformKey",
+							},
+						},
+					},
+					{
 						"type":       "Microsoft.Compute/virtualMachines",
 						"name":       "[parameters('virtualMachines_vm2_name')]",
 						"location":   "eastus",
@@ -182,13 +193,13 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 								"dataDisks": []map[string]interface{}{
 									{
 										"name": "blockStorage3",
-										"managedDisks": map[string]interface{}{
+										"managedDisk": map[string]interface{}{
 											"id": "[resourceId('Microsoft.Compute/disks', 'virtualMachines_blockStorage3_name')]",
 										},
 									},
 									{
 										"name": "blockStorage4",
-										"managedDisks": map[string]interface{}{
+										"managedDisk": map[string]interface{}{
 											"id": "[resourceId('Microsoft.Compute/disks', 'virtualMachines_blockStorage4_name')]",
 										},
 									},

@@ -154,6 +154,12 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource
 									return nil, fmt.Errorf("could not create storage resource: %w", err)
 								}
 								list = append(list, storage)
+							} else if valueValue.(string) == "Microsoft.Storage/storageAccounts/fileServices/shares" {
+								storage, err := d.handleFileStorage(value, azureResource, *resourceGroups[i].Name)
+								if err != nil {
+									return nil, fmt.Errorf("could not create storage resource: %w", err)
+								}
+								list = append(list, storage)
 							}
 						}
 					}
@@ -436,6 +442,8 @@ func (d *azureIacTemplateDiscovery) createVMResource(resourceValue map[string]in
 	var id string
 	var name string
 	var bootDiagnosticsEnabled bool
+	var properties map[string]interface{}
+	var ok bool
 
 	for key, value := range resourceValue {
 
@@ -446,7 +454,7 @@ func (d *azureIacTemplateDiscovery) createVMResource(resourceValue map[string]in
 
 		// Get boot logging status (bootDiagnosticsEnabled)
 		if key == "properties" {
-			properties, ok := value.(map[string]interface{})
+			properties, ok = value.(map[string]interface{})
 
 			if !ok {
 				return nil, fmt.Errorf("type convertion failed")
@@ -476,16 +484,28 @@ func (d *azureIacTemplateDiscovery) createVMResource(resourceValue map[string]in
 		BootLog: &voc.BootLog{
 			Log: &voc.Log{
 				Enabled: bootDiagnosticsEnabled,
-				//RetentionPeriod: ,
-				//Output: ,
 			},
 		},
 		OSLog: &voc.OSLog{
 			Log: &voc.Log{},
 		},
+		BlockStorage: d.getBlockStorageResourceIDs(properties, resourceGroup), 
 	}
 
 	return vm, nil
+}
+
+func (d *azureIacTemplateDiscovery) getBlockStorageResourceIDs(properties map[string]interface{}, resourceGroupName string) []voc.ResourceID {
+	var blockStorage []voc.ResourceID
+
+	dataDisks := properties["storageProfile"].(map[string]interface{})["dataDisks"].([]interface{})
+	for _, dataDisk := range dataDisks {
+		dataDiskName := dataDisk.(map[string]interface{})["name"].(string)
+		dataDiskResourceId := d.createID(resourceGroupName, "Microsoft.Compute/disks", dataDiskName)
+		blockStorage = append(blockStorage, voc.ResourceID(dataDiskResourceId))
+	}
+
+	return blockStorage
 }
 
 func (d *azureIacTemplateDiscovery) createID(resourceGroup, resourceType, name string) string {
