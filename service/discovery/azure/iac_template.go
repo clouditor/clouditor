@@ -161,6 +161,7 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource
 								}
 								list = append(list, storage)
 							}
+							// TODO(garuppel): How do we get BlockStorage resources?
 						}
 					}
 				}
@@ -207,7 +208,6 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource
 //	return nil
 //}
 
-// TODO(garuppel): split to different storage types
 func (d *azureIacTemplateDiscovery) handleObjectStorage(resourceValue map[string]interface{}, azureResources []interface{}, resourceGroup string) (voc.IsCompute, error) {
 
 	var (
@@ -230,7 +230,7 @@ func (d *azureIacTemplateDiscovery) handleObjectStorage(resourceValue map[string
 		return nil, fmt.Errorf("cannot create object storage")
 	}
 
-	enc = getObjectStorageAtRestEncryptionFromIac(storageAccountResource)
+	enc = getStorageAtRestEncryptionFromIac(storageAccountResource)
 
 	storage = &voc.ObjectStorage{
 		Storage: &voc.Storage{
@@ -248,7 +248,7 @@ func (d *azureIacTemplateDiscovery) handleObjectStorage(resourceValue map[string
 		HttpEndpoint: &voc.HttpEndpoint{
 			Url: "", // not available
 			TransportEncryption: &voc.TransportEncryption{
-				Enabled:    true, // TODO get from IaC template
+				Enabled:    isServiceEncryptionEnabled("blob", storageAccountResource),
 				Enforced:   httpsTrafficOnlyEnabled(storageAccountResource),
 				TlsVersion: getMinTlsVersionOfStorageAccount(storageAccountResource),
 				Algorithm:  "", // not available
@@ -258,6 +258,15 @@ func (d *azureIacTemplateDiscovery) handleObjectStorage(resourceValue map[string
 
 	return storage, nil
 }
+
+//func getEncryptionStatus(objectType string, storageAccount map[string]interface{}) bool {
+//
+//	if storageAccount["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["encryption"].(map[string]interface{})["services"].(map[string]interface{})[objectType].(map[string]interface{})["enabled"].(bool) {
+//		return true
+//	}
+//
+//	return false
+//}
 
 func (d *azureIacTemplateDiscovery) handleFileStorage(resourceValue map[string]interface{}, azureResources []interface{}, resourceGroup string) (voc.IsCompute, error) {
 
@@ -281,7 +290,7 @@ func (d *azureIacTemplateDiscovery) handleFileStorage(resourceValue map[string]i
 		return nil, fmt.Errorf("cannot create object storage")
 	}
 
-	enc = getObjectStorageAtRestEncryptionFromIac(storageAccountResource)
+	enc = getStorageAtRestEncryptionFromIac(storageAccountResource)
 
 	storage = &voc.FileStorage{
 		Storage: &voc.Storage{
@@ -299,7 +308,7 @@ func (d *azureIacTemplateDiscovery) handleFileStorage(resourceValue map[string]i
 		HttpEndpoint: &voc.HttpEndpoint{
 			Url: "", // not available
 			TransportEncryption: &voc.TransportEncryption{
-				Enabled:    true, // TODO get from IaC template
+				Enabled:    isServiceEncryptionEnabled("file", storageAccountResource),
 				Enforced:   httpsTrafficOnlyEnabled(storageAccountResource),
 				TlsVersion: getMinTlsVersionOfStorageAccount(storageAccountResource),
 				Algorithm:  "", // not available
@@ -311,7 +320,7 @@ func (d *azureIacTemplateDiscovery) handleFileStorage(resourceValue map[string]i
 }
 
 
-func getObjectStorageAtRestEncryptionFromIac(storageAccountResource map[string]interface{}) voc.HasAtRestEncryption {
+func getStorageAtRestEncryptionFromIac(storageAccountResource map[string]interface{}) voc.HasAtRestEncryption {
 
 	var enc voc.HasAtRestEncryption
 
@@ -321,7 +330,7 @@ func getObjectStorageAtRestEncryptionFromIac(storageAccountResource map[string]i
 		enc = &voc.ManagedKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
 				Algorithm: "AES-265", // seems to be always AWS-256,
-				Enabled: blobServiceEncryptionEnabled(storageAccountResource),
+				Enabled:   isServiceEncryptionEnabled("blob", storageAccountResource),
 			},
 		}
 	} else if encType == "Microsoft.Keyvault"{
@@ -330,7 +339,7 @@ func getObjectStorageAtRestEncryptionFromIac(storageAccountResource map[string]i
 		enc = &voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
 				Algorithm: "AES-265", // seems to be always AWS-256,
-				Enabled: blobServiceEncryptionEnabled(storageAccountResource),
+				Enabled:   isServiceEncryptionEnabled("blob", storageAccountResource),
 			},
 			KeyUrl: keyVaultUrl,
 		}
@@ -379,9 +388,9 @@ func httpsTrafficOnlyEnabled(value map[string]interface{}) bool {
 	return false
 }
 
-func blobServiceEncryptionEnabled(value map[string]interface{}) bool {
+func isServiceEncryptionEnabled(serviceType string, value map[string]interface{}) bool {
 
-	if blobServiceEnabled, ok := value["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["services"].(map[string]interface{})["blob"].(map[string]interface{})["enabled"].(bool); ok {
+	if blobServiceEnabled, ok := value["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["services"].(map[string]interface{})[serviceType].(map[string]interface{})["enabled"].(bool); ok {
 		return blobServiceEnabled
 	}
 
@@ -429,7 +438,7 @@ func (d *azureIacTemplateDiscovery) createLBResource(resourceValue map[string]in
 			//Inbound:         false,
 			//RestrictedPorts: "",
 		},
-		// // TODO(all): Do we need the httpEndpoint?
+		// TODO(all): Do we need the httpEndpoint?
 		HttpEndpoints: &[]voc.HttpEndpoint{},
 		Url:           "", // TODO(all): TBD
 		//NetworkServices: , // TODO(all): TBD
@@ -489,7 +498,7 @@ func (d *azureIacTemplateDiscovery) createVMResource(resourceValue map[string]in
 		OSLog: &voc.OSLog{
 			Log: &voc.Log{},
 		},
-		BlockStorage: d.getBlockStorageResourceIDs(properties, resourceGroup), 
+		BlockStorage: d.getBlockStorageResourceIDs(properties, resourceGroup),
 	}
 
 	return vm, nil

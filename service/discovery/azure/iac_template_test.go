@@ -284,7 +284,7 @@ func TestIaCTemplateDiscovery(t *testing.T){
 
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 5, len(list))
+	assert.Equal(t, 6, len(list))
 
 }
 
