@@ -28,6 +28,7 @@ package azure
 import (
 	"context"
 	"fmt"
+
 	"strings"
 
 	"clouditor.io/clouditor/api/discovery"
@@ -142,12 +143,12 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource
 								}
 								list = append(list, lb)
 							} else if valueValue.(string) == "Microsoft.Storage/storageAccounts/blobServices/containers" {
-								storage, err := d.createObjectStorageResource(value, azureResource, *resourceGroups[i].Name)
+								storage, err := d.handleObjectStorage(value, azureResource, *resourceGroups[i].Name)
 								if err != nil {
 									return nil, fmt.Errorf("could not create storage resource: %w", err)
 								}
 								list = append(list, storage)
-							}
+							} 
 						}
 					}
 				}
@@ -195,33 +196,29 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource
 //}
 
 // TODO(garuppel): split to different storage types
-func (d *azureIacTemplateDiscovery) createObjectStorageResource(resourceValue map[string]interface{}, azureResources []interface{}, resourceGroup string) (voc.IsCompute, error) {
+func (d *azureIacTemplateDiscovery) handleObjectStorage(resourceValue map[string]interface{}, azureResources []interface{}, resourceGroup string) (voc.IsCompute, error) {
 
 	var (
 		azureResourceName string
 		storage voc.IsCompute
+		enc voc.HasAtRestEncryption
 	)
+
+	// The resources are only referencing to parameters instead of using the resource names
 	azureResourceName = getDefaultNameOfResource(resourceValue["name"].(string))
+
+	// Necessary to get the needed information from the IaC template
 	dependsOnList, ok :=(resourceValue["dependsOn"]).([]interface{})
 	if !ok {
 		return nil, fmt.Errorf("dependsOn  convertion failed")
 	}
 
-	// TODO use return value, brauche ich das storageAccount objekt nicht?
 	storageAccountResource, err := getStorageAccountResourceFromTemplate(dependsOnList, azureResources)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create object storage")
 	}
 
-	// get all necessary information
-	//id := ""
-	//atRestEncryptionEnabled := false
-	//url := ""
-	//transportEncryptionEnabled := false
-	//tlsEnforced := false
-	//tlsVersion := ""
-
-
+	enc = getObjectStorageAtRestEncryptionFromIac(storageAccountResource)
 
 	storage = &voc.ObjectStorage{
 		Storage: &voc.Storage{
@@ -230,27 +227,59 @@ func (d *azureIacTemplateDiscovery) createObjectStorageResource(resourceValue ma
 				Name:         azureResourceName,
 				CreationTime: 0, // No creation time available
 				Type:         []string{"ObjectStorage", "Storage", "Resource"},
-			},
-			// TODO(garuppel): Check kind of AtRestEncryption
-			AtRestEncryption: voc.ManagedKeyEncryption{
-				AtRestEncryption: &voc.AtRestEncryption{
-					Algorithm: "AES-265", // seems to be always AWS-256,
-					Enabled:   blobServiceEncryptionEnabled(storageAccountResource),
+				GeoLocation: voc.GeoLocation{
+					Region: storageAccountResource["location"].(string),
 				},
 			},
+			// TODO(garuppel): Check kind of AtRestEncryption
+			AtRestEncryption: enc,
+				//voc.ManagedKeyEncryption{
+				//AtRestEncryption: &voc.AtRestEncryption{
+				//	Algorithm: "AES-265", // seems to be always AWS-256,
+				//	Enabled:   blobServiceEncryptionEnabled(storageAccountResource),
+				//},
+			//},
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
-			Url: "", // Not able to get from IaC template
+			Url: "", // not available
 			TransportEncryption: &voc.TransportEncryption{
 				Enabled:    true, // TODO get from IaC template
 				Enforced:   httpsTrafficOnlyEnabled(storageAccountResource),
-				TlsVersion: getMinTlsVersion(storageAccountResource),
+				TlsVersion: getMinTlsVersionOfStorageAccount(storageAccountResource),
 				Algorithm:  "", // not available
 			},
 		},
 	}
 
 	return storage, nil
+}
+
+func getObjectStorageAtRestEncryptionFromIac(storageAccountResource map[string]interface{}) voc.HasAtRestEncryption {
+
+	var enc voc.HasAtRestEncryption
+
+	encType := storageAccountResource["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["keySource"].(string)
+
+	if encType == "Microsoft.Storage" {
+		enc = &voc.ManagedKeyEncryption{
+			AtRestEncryption: &voc.AtRestEncryption{
+				Algorithm: "AES-265", // seems to be always AWS-256,
+				Enabled: blobServiceEncryptionEnabled(storageAccountResource),
+			},
+		}
+	} else if encType == "Microsoft.Keyvault"{
+		keyVaultUrl := storageAccountResource["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["keyvaultProperties"].(map[string]interface{})["keyvaulturi"].(string)
+
+		enc = &voc.CustomerKeyEncryption{
+			AtRestEncryption: &voc.AtRestEncryption{
+				Algorithm: "AES-265", // seems to be always AWS-256,
+				Enabled: blobServiceEncryptionEnabled(storageAccountResource),
+			},
+			KeyUrl: keyVaultUrl,
+		}
+	}
+
+	return enc
 }
 
 func getStorageAccountResourceFromTemplate(resourceNames []interface{}, azureTemplateResources  []interface{}) (map[string]interface{}, error) {
@@ -269,9 +298,6 @@ func getStorageAccountResourceFromTemplate(resourceNames []interface{}, azureTem
 			resourceName = "[" + resourceNameSplit[1][1:len(resourceNameSplit[1])-2] + "]"
 		}
 	}
-
-	//println(resourceType)
-	//println(resourceName)
 
 	for _, resourcesValue := range azureTemplateResources {
 		templateResources, ok := resourcesValue.(map[string]interface{})
@@ -305,9 +331,9 @@ func blobServiceEncryptionEnabled(value map[string]interface{}) bool {
 	return false
 }
 
-func getMinTlsVersion(value map[string]interface{}) string {
+func getMinTlsVersionOfStorageAccount(value map[string]interface{}) string {
 
-	if minTlsVersion, ok := value["properties"].(map[string]interface{})["minimumTlsVersion"].(string); ok {
+	if minTlsVersion, ok := value["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["minimumTlsVersion"].(string); ok {
 		return minTlsVersion
 	}
 

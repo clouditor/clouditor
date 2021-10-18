@@ -205,7 +205,10 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 										"enabled": true,
 									},
 								},
-								"keySource":                "Microsoft.Storage",
+								"keySource": "Microsoft.Keyvault",
+								"keyvaultproperties": map[string]interface{}{
+									"keyvaulturi": "https://testvault.vault.azure.net/keys/testkey/123456",
+								},
 								"minimumTlsVersion":        "TLS1_1",
 								"supportsHttpsTrafficOnly": true,
 							},
@@ -257,7 +260,7 @@ func TestIaCTemplateDiscovery(t *testing.T){
 
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 7, len(list))
+	assert.Equal(t, 5, len(list))
 
 }
 
@@ -275,10 +278,10 @@ func TestStorageAccountProperties(t *testing.T) {
 	resourceStorage, ok := list[2].(*voc.ObjectStorage)
 	assert.True(t, ok)
 
-	// That should be equal. The Problem is described in file 'service/discovery/azure/iac_template.go'
-	assert.NotEqual(t, "storage1", resourceStorage.Name)
-	assert.NotEqual(t, "TLS1_1", resourceStorage.HttpEndpoint.TransportEncryption.TlsVersion)
-
+	// That should be equal. The Problem is described in file 'service/discovery/azure/iac_template.go' TODO(all); do we need this comment any longer?
+	// TODO(garuppel): Tests for AtRestEncryption, ...
+	assert.Equal(t, "storage1", resourceStorage.Name)
+	assert.Equal(t, "TLS1_1", resourceStorage.HttpEndpoint.TransportEncryption.TlsVersion)
 }
 
 func TestVmProperties(t *testing.T) {
@@ -291,7 +294,6 @@ func TestVmProperties(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 7, len(list))
 
 	resourceVM, ok := list[0].(*voc.VirtualMachine)
 	assert.True(t, ok)
