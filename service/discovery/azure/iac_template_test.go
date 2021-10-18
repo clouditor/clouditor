@@ -153,6 +153,19 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 							"publicAccess": "None",
 						},
 					},
+					{
+						"type":     "Microsoft.Storage/storageAccounts/fileServices/shares",
+						"name":     "[concat(parameters('storageAccounts_storage1_name'), 'default/share1')]",
+						"dependsOn": []interface{}{
+							"[resourceId('Microsoft.Storage/storageAccounts/fileServices', parameters('storageAccounts_storage1_name'), 'default')]",
+							"[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storage1_name'))]",
+						},
+						"properties": map[string]interface{}{
+							"defaultEncryptionScope": "$account-encryption-key",
+							"denyEncryptionScopeOverride": false,
+							"publicAccess": "None",
+						},
+					},
 				},
 			},
 		}, 200)
@@ -264,7 +277,7 @@ func TestIaCTemplateDiscovery(t *testing.T){
 
 }
 
-func TestStorageAccountProperties(t *testing.T) {
+func TestObjectStorageProperties(t *testing.T) {
 	d := azure.NewAzureIacTemplateDiscovery(
 		azure.WithSender(&mockIacTemplateSender{}),
 		azure.WithAuthorizer(&mockAuthorizer{}),
@@ -280,8 +293,36 @@ func TestStorageAccountProperties(t *testing.T) {
 
 	// That should be equal. The Problem is described in file 'service/discovery/azure/iac_template.go' TODO(all); do we need this comment any longer?
 	// TODO(garuppel): Tests for AtRestEncryption, ...
-	assert.Equal(t, "storage1", resourceStorage.Name)
+	assert.Equal(t, "container1", resourceStorage.Name)
 	assert.Equal(t, "TLS1_1", resourceStorage.HttpEndpoint.TransportEncryption.TlsVersion)
+	assert.Equal(t, "ObjectStorage", resourceStorage.Type[0])
+	assert.Equal(t, "eastus", resourceStorage.GeoLocation.Region)
+	assert.Equal(t, true,  resourceStorage.HttpEndpoint.TransportEncryption.Enabled)
+	assert.Equal(t, true, resourceStorage.HttpEndpoint.TransportEncryption.Enforced)
+}
+
+func TestFileStorageProperties(t *testing.T) {
+	d := azure.NewAzureIacTemplateDiscovery(
+		azure.WithSender(&mockIacTemplateSender{}),
+		azure.WithAuthorizer(&mockAuthorizer{}),
+	)
+
+	list, err := d.List()
+
+	assert.Nil(t, err)
+	assert.NotNil(t, list)
+
+	resourceStorage, ok := list[3].(*voc.FileStorage)
+	assert.True(t, ok)
+
+	// That should be equal. The Problem is described in file 'service/discovery/azure/iac_template.go' TODO(all); do we need this comment any longer?
+	// TODO(garuppel): Tests for AtRestEncryption, ...
+	assert.Equal(t, "share1", resourceStorage.Name)
+	assert.Equal(t, "TLS1_1", resourceStorage.HttpEndpoint.TransportEncryption.TlsVersion)
+	assert.Equal(t, "FileStorage", resourceStorage.Type[0])
+	assert.Equal(t, "eastus", resourceStorage.GeoLocation.Region)
+	assert.Equal(t, true,  resourceStorage.HttpEndpoint.TransportEncryption.Enabled)
+	assert.Equal(t, true, resourceStorage.HttpEndpoint.TransportEncryption.Enforced)
 }
 
 func TestVmProperties(t *testing.T) {

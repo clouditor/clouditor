@@ -148,7 +148,13 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource
 									return nil, fmt.Errorf("could not create storage resource: %w", err)
 								}
 								list = append(list, storage)
-							} 
+							} else if valueValue.(string) == "Microsoft.Storage/storageAccounts/fileServices/shares" {
+								storage, err := d.handleFileStorage(value, azureResource, *resourceGroups[i].Name)
+								if err != nil {
+									return nil, fmt.Errorf("could not create storage resource: %w", err)
+								}
+								list = append(list, storage)
+							}
 						}
 					}
 				}
@@ -205,7 +211,7 @@ func (d *azureIacTemplateDiscovery) handleObjectStorage(resourceValue map[string
 	)
 
 	// The resources are only referencing to parameters instead of using the resource names
-	azureResourceName = getDefaultNameOfResource(resourceValue["name"].(string))
+	azureResourceName = getDefaultNameOfStorageResource(resourceValue["name"].(string))
 
 	// Necessary to get the needed information from the IaC template
 	dependsOnList, ok :=(resourceValue["dependsOn"]).([]interface{})
@@ -231,14 +237,7 @@ func (d *azureIacTemplateDiscovery) handleObjectStorage(resourceValue map[string
 					Region: storageAccountResource["location"].(string),
 				},
 			},
-			// TODO(garuppel): Check kind of AtRestEncryption
 			AtRestEncryption: enc,
-				//voc.ManagedKeyEncryption{
-				//AtRestEncryption: &voc.AtRestEncryption{
-				//	Algorithm: "AES-265", // seems to be always AWS-256,
-				//	Enabled:   blobServiceEncryptionEnabled(storageAccountResource),
-				//},
-			//},
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
 			Url: "", // not available
@@ -253,6 +252,58 @@ func (d *azureIacTemplateDiscovery) handleObjectStorage(resourceValue map[string
 
 	return storage, nil
 }
+
+func (d *azureIacTemplateDiscovery) handleFileStorage(resourceValue map[string]interface{}, azureResources []interface{}, resourceGroup string) (voc.IsCompute, error) {
+
+	var (
+		azureResourceName string
+		storage voc.IsCompute
+		enc voc.HasAtRestEncryption
+	)
+
+	// The resources are only referencing to parameters instead of using the resource names
+	azureResourceName = getDefaultNameOfStorageResource(resourceValue["name"].(string))
+
+	// Necessary to get the needed information from the IaC template
+	dependsOnList, ok :=(resourceValue["dependsOn"]).([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("dependsOn  convertion failed")
+	}
+
+	storageAccountResource, err := getStorageAccountResourceFromTemplate(dependsOnList, azureResources)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create object storage")
+	}
+
+	enc = getObjectStorageAtRestEncryptionFromIac(storageAccountResource)
+
+	storage = &voc.FileStorage{
+		Storage: &voc.Storage{
+			CloudResource: &voc.CloudResource{
+				ID:           voc.ResourceID(d.createID(resourceGroup, "fileServices", azureResourceName)),
+				Name:         azureResourceName,
+				CreationTime: 0, // No creation time available
+				Type:         []string{"FileStorage", "Storage", "Resource"},
+				GeoLocation: voc.GeoLocation{
+					Region: storageAccountResource["location"].(string),
+				},
+			},
+			AtRestEncryption: enc,
+		},
+		HttpEndpoint: &voc.HttpEndpoint{
+			Url: "", // not available
+			TransportEncryption: &voc.TransportEncryption{
+				Enabled:    true, // TODO get from IaC template
+				Enforced:   httpsTrafficOnlyEnabled(storageAccountResource),
+				TlsVersion: getMinTlsVersionOfStorageAccount(storageAccountResource),
+				Algorithm:  "", // not available
+			},
+		},
+	}
+
+	return storage, nil
+}
+
 
 func getObjectStorageAtRestEncryptionFromIac(storageAccountResource map[string]interface{}) voc.HasAtRestEncryption {
 
@@ -315,7 +366,7 @@ func getStorageAccountResourceFromTemplate(resourceNames []interface{}, azureTem
 
 func httpsTrafficOnlyEnabled(value map[string]interface{}) bool {
 
-	if supportsHttpsTrafficOnly, ok := value["properties"].(map[string]interface{})["supportsHttpsTrafficOnly"].(bool); ok {
+	if supportsHttpsTrafficOnly, ok := value["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["supportsHttpsTrafficOnly"].(bool); ok {
 		return supportsHttpsTrafficOnly
 	}
 
@@ -452,4 +503,12 @@ func getDefaultNameOfResource(name string) string {
 	resourceDefaultName := strings.Join(anotherNameSplit, "-")
 
 	return resourceDefaultName
+}
+
+func getDefaultNameOfStorageResource(name string) string {
+	// Name in template is a parameter and unnecessary information must be shortened
+	nameSplit := strings.Split(name, "'")
+	anotherNameSplit := strings.Split(nameSplit[3], "/")
+
+	return anotherNameSplit[1]
 }
