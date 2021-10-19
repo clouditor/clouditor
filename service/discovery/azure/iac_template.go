@@ -154,12 +154,6 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource
 									return nil, fmt.Errorf("could not create storage resource: %w", err)
 								}
 								list = append(list, storage)
-							} else if valueValue.(string) == "Microsoft.Storage/storageAccounts/fileServices/shares" {
-								storage, err := d.handleFileStorage(value, azureResource, *resourceGroups[i].Name)
-								if err != nil {
-									return nil, fmt.Errorf("could not create storage resource: %w", err)
-								}
-								list = append(list, storage)
 							}
 							// TODO(garuppel): How do we get BlockStorage resources?
 						}

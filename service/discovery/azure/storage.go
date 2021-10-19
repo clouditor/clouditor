@@ -182,9 +182,7 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *storage.Account)
 }
 
 func handleBlockStorage(disk compute.Disk) *voc.BlockStorage {
-	var enc voc.HasAtRestEncryption
-
-	enc = getBlockStorageAtRestEncryption(disk)
+	enc := getBlockStorageAtRestEncryption(disk)
 
 	return &voc.BlockStorage{
 		Storage: &voc.Storage{
@@ -203,9 +201,7 @@ func handleBlockStorage(disk compute.Disk) *voc.BlockStorage {
 }
 
 func handleObjectStorage(account *storage.Account, container storage.ListContainerItem) *voc.ObjectStorage {
-	var enc voc.HasAtRestEncryption
-
-	enc = getObjectStorageAtRestEncryption(account)
+	enc := getObjectStorageAtRestEncryption(account)
 
 	return &voc.ObjectStorage{
 		Storage: &voc.Storage{
@@ -233,9 +229,7 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 }
 
 func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem) *voc.FileStorage {
-	var enc voc.HasAtRestEncryption
-
-	enc = getFileStorageAtRestEncryption(account)
+	enc := getFileStorageAtRestEncryption(account)
 
 	return &voc.FileStorage{
 		Storage: &voc.Storage{

@@ -163,8 +163,8 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 					Region: *vm.Location,
 				},
 			}},
-			BootLog: &voc.BootLog{&voc.Log{Enabled: IsBootDiagnosticEnabled(vm)}},
-			OSLog: &voc.OSLog{&voc.Log{Enabled: false}},
+			BootLog: &voc.BootLog{Log: &voc.Log{Enabled: IsBootDiagnosticEnabled(vm)}},
+			OSLog: &voc.OSLog{Log: &voc.Log{Enabled: false}},
 			// TODO(garuppel) Add block storage resourceID
 			BlockStorage: []voc.ResourceID{},
 		}
