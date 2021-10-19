@@ -27,7 +27,6 @@ package policies_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	"clouditor.io/clouditor/api/evidence"
@@ -123,6 +122,7 @@ func TestRun(t *testing.T) {
 		"name": "aybazestorage"
 	}`
 
+	m = make(map[string]interface{})
 	err = json.Unmarshal([]byte(j), &m)
 
 	assert.Nil(t, err)
@@ -130,10 +130,6 @@ func TestRun(t *testing.T) {
 	s, err = structpb.NewStruct(m)
 
 	assert.Nil(t, err)
-
-	fmt.Println(&evidence.Evidence{
-		Resource: structpb.NewStructValue(s),
-	})
 
 	data, err = policies.RunEvidence(&evidence.Evidence{
 		Resource:   structpb.NewStructValue(s),

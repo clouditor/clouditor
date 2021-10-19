@@ -26,13 +26,12 @@
 package policies
 
 import (
+	"clouditor.io/clouditor/api/evidence"
 	"context"
 	"errors"
 	"fmt"
-	"os"
-
-	"clouditor.io/clouditor/api/evidence"
 	"github.com/open-policy-agent/opa/rego"
+	"os"
 )
 
 // applicableMetrics stores a list of applicable metrics per resourceType
@@ -48,25 +47,21 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 		// TODO(lebogg): Is it possible to do go to the root dir with a function?
 		baseDir = ".."
 	}
-	fmt.Println(baseDir)
 
 	var m = evidence.Resource.GetStructValue().AsMap()
 
 	// TODO(lebogg): For now check via resourceIDs. Later with (concatenation of) resourceTypes (more efficient hash)
 	if resID := evidence.GetResourceId(); applicableMetrics[resID] == nil {
-		fmt.Println(resID)
 		// TODO(lebogg): Replace magic number of 10 (current metrics)
 		for i := 1; i < 11; i++ {
 			// ToDo(lebogg): Test if direction to each bundle works
 			file := fmt.Sprintf("%s/policies/bundle%d", baseDir, i)
 			runMap, err := RunMap(file, m)
-			fmt.Println("i =", i, "and data:", runMap)
 			if err != nil {
 				return nil, err
 			}
 			if runMap != nil {
 				data = append(data, runMap)
-				//fmt.Println(data)
 
 				if metric := applicableMetrics[resID]; metric == nil {
 					applicableMetrics[resID] = []int{i}
@@ -75,9 +70,8 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 			}
 		}
 	} else {
-		fmt.Println(applicableMetrics[resID])
-		for _, i := range applicableMetrics[resID] {
-			file := fmt.Sprintf("%s/policies/bundle%d", baseDir, i)
+		for _, metric := range applicableMetrics[resID] {
+			file := fmt.Sprintf("%s/policies/bundle%d", baseDir, metric)
 			runMap, err := RunMap(file, m)
 			if err != nil {
 				return nil, err
@@ -94,7 +88,6 @@ func RunMap(bundle string, m map[string]interface{}) (data map[string]interface{
 	)
 
 	ctx := context.TODO()
-	fmt.Println(bundle)
 	r, err := rego.New(
 		rego.Query("data.clouditor"),
 		rego.LoadBundle(bundle),
@@ -109,13 +102,10 @@ func RunMap(bundle string, m map[string]interface{}) (data map[string]interface{
 	}
 
 	if data, ok = results[0].Expressions[0].Value.(map[string]interface{}); !ok {
-		fmt.Println(data)
 		return nil, errors.New("expected data is not a map[string]interface{}")
-	}
-	if data["applicable"] == false {
+	} else if data["applicable"] == false {
 		return nil, nil
+	} else {
+		return data, nil
 	}
-	fmt.Println(data)
-
-	return
 }
