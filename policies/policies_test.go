@@ -26,6 +26,7 @@
 package policies_test
 
 import (
+	"clouditor.io/clouditor/voc"
 	"encoding/json"
 	"testing"
 
@@ -37,42 +38,52 @@ import (
 
 func TestRun(t *testing.T) {
 	var (
-		m    map[string]interface{}
-		data []map[string]interface{}
-		s    *structpb.Struct
-		err  error
+		m        map[string]interface{}
+		data     []map[string]interface{}
+		v        *structpb.Value
+		resource voc.IsCloudResource
+		err      error
 	)
 
-	j := `{
-		"atRestEncryption": {
-			"algorithm": "AES-256",
-			"enabled": true,
-			"keyManager": "Microsoft.Storage"
-		},
-		"creationTime": 1621086669,
-		"httpEndpoint": {
-			"transportEncryption": {
-				"algorithm": "TLS",
-				"enabled": true,
-				"enforced": true,
-				"tlsVersion": 1.3
+	resource = voc.ObjectStorage{
+		Storage: &voc.Storage{
+			CloudResource: &voc.CloudResource{
+				ID:           "/subscriptions/e3ed0e96-57bc-4d81-9594-f239540cd77a/resourceGroups/titan/providers/Microsoft.Storage/storageAccounts/aybazestorage",
+				Name:         "aybazestorage",
+				CreationTime: 1621086669,
+				Type:         []string{"ObjectStorage", "Storage", "Resource"},
+				GeoLocation:  voc.GeoLocation{},
 			},
-			"url": "https://aybazestorage.blob.core.windows.net/"
+			AtRestEncryption: &voc.AtRestEncryption{
+				KeyManager: "Microsoft.Storage",
+				Algorithm:  "AES-256",
+				Enabled:    true,
+			},
 		},
-		"id": "/subscriptions/e3ed0e96-57bc-4d81-9594-f239540cd77a/resourceGroups/titan/providers/Microsoft.Storage/storageAccounts/aybazestorage",
-		"name": "aybazestorage"
-	}`
+		HttpEndpoint: &voc.HttpEndpoint{
+			Functionality: nil,
+			Authenticity:  nil,
+			TransportEncryption: &voc.TransportEncryption{
+				Enforced:   true,
+				Enabled:    true,
+				TlsVersion: "1.3",
+				Algorithm:  "TLS",
+			},
+			Url:     "https://aybazestorage.blob.core.windows.net/",
+			Method:  "",
+			Handler: "",
+			Path:    "",
+		},
+	}
 
-	err = json.Unmarshal([]byte(j), &m)
+	v, err = voc.ToStruct(resource)
 
 	assert.Nil(t, err)
-
-	s, err = structpb.NewStruct(m)
 
 	assert.Nil(t, err)
 
 	data, err = policies.RunEvidence(&evidence.Evidence{
-		Resource:   structpb.NewStructValue(s),
+		Resource:   v,
 		ResourceId: "/subscriptions/e3ed0e96-57bc-4d81-9594-f239540cd77a/resourceGroups/titan/providers/Microsoft.Storage/storageAccounts/aybazestorage",
 	})
 
@@ -109,7 +120,7 @@ func TestRun(t *testing.T) {
 	assert.Equal(t, true, data[5]["applicable"])
 
 	// Testing VM
-	j = `{
+	j := `{
 		"bootLog" : {
 			"enabled" : true,
 			"retentionPeriod" : 36
@@ -119,15 +130,35 @@ func TestRun(t *testing.T) {
 			"retentionPeriod" : 90
 		},
 		"id": "/subscriptions/e3ed0e96-57bc-4d81-9594-f239540cd77a/resourceGroups/titan/providers/Microsoft.Storage/virtualMachine/mockvm",
-		"name": "aybazestorage"
+		"name": "aybazestorage",
+		"type": [
+					"VirtualMachine",
+					"Compute",
+					"Resource"
+				]
 	}`
+
+	// TODO(lebogg): Have to wait vor voc update
+	//resource = &voc.VirtualMachine{
+	//	Compute: &voc.Compute{
+	//		CloudResource: &voc.CloudResource{
+	//			ID:           "/subscriptions/e3ed0e96-57bc-4d81-9594-f239540cd77a/resourceGroups/titan/providers/Microsoft.Storage/virtualMachine/mockvm",
+	//			Name:         "aybazestorage",
+	//		}},
+	//	NetworkInterface: nil,
+	//	BlockStorage:     nil,
+	//	Log:              &voc.Log{
+	//		Auditing:  nil,
+	//		Activated: false,
+	//	},
+	//}
 
 	m = make(map[string]interface{})
 	err = json.Unmarshal([]byte(j), &m)
 
 	assert.Nil(t, err)
 
-	s, err = structpb.NewStruct(m)
+	s, err := structpb.NewStruct(m)
 
 	assert.Nil(t, err)
 

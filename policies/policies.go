@@ -32,27 +32,41 @@ import (
 	"fmt"
 	"github.com/open-policy-agent/opa/rego"
 	"os"
+	"strings"
 )
 
 // applicableMetrics stores a list of applicable metrics per resourceType
 var applicableMetrics = make(map[string][]int)
 
 func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) {
-	// TODO(lebogg): Think about magic number 10
 	data := make([]map[string]interface{}, 0)
 	var baseDir string = "."
 	// check, if we are in the root of Clouditor
 	if _, err := os.Stat("policies"); os.IsNotExist(err) {
 		// in tests, we are relative to our current package
-		// TODO(lebogg): Is it possible to do go to the root dir with a function?
 		baseDir = ".."
 	}
 
 	var m = evidence.Resource.GetStructValue().AsMap()
 
-	// TODO(lebogg): For now check via resourceIDs. Later with (concatenation of) resourceTypes (more efficient hash)
-	if resID := evidence.GetResourceId(); applicableMetrics[resID] == nil {
-		// TODO(lebogg): Replace magic number of 10 (current metrics)
+	var types []string
+
+	// TODO(oxisto): this type assertions witch checks or do we assume resoruceTypes are always set as intended ([]string)?
+	if rawTypes, ok := m["type"].([]interface{}); !ok {
+		return nil, fmt.Errorf("got type '%T' but wanted '[]interface {}'", rawTypes)
+	} else {
+		types = make([]string, len(rawTypes))
+	}
+
+	for i, v := range m["type"].([]interface{}) {
+		if t, ok := v.(string); !ok {
+			return nil, fmt.Errorf("got type '%T' but wanted 'string'", t)
+		} else {
+			types[i] = t
+		}
+	}
+	if key := strings.Join(types, "-"); applicableMetrics[key] == nil {
+		// TODO(lebogg): Replace magic number of 11 (current metrics)
 		for i := 1; i < 11; i++ {
 			// ToDo(lebogg): Test if direction to each bundle works
 			file := fmt.Sprintf("%s/policies/bundle%d", baseDir, i)
@@ -63,14 +77,14 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 			if runMap != nil {
 				data = append(data, runMap)
 
-				if metric := applicableMetrics[resID]; metric == nil {
-					applicableMetrics[resID] = []int{i}
+				if metric := applicableMetrics[key]; metric == nil {
+					applicableMetrics[key] = []int{i}
 				}
-				applicableMetrics[resID] = append(applicableMetrics[resID], i)
+				applicableMetrics[key] = append(applicableMetrics[key], i)
 			}
 		}
 	} else {
-		for _, metric := range applicableMetrics[resID] {
+		for _, metric := range applicableMetrics[key] {
 			file := fmt.Sprintf("%s/policies/bundle%d", baseDir, metric)
 			runMap, err := RunMap(file, m)
 			if err != nil {
