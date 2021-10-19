@@ -3,7 +3,7 @@ package clouditor
 default compliant = false
 default applicable = false
 
-# this is an implementation of metric TransportEncryptionEnabled
+# this is an implementation of metric TransportEncryptionAlgorithm
 
 enc := input.httpEndpoint.transportEncryption
 

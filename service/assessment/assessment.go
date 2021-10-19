@@ -26,18 +26,16 @@
 package assessment
 
 import (
-	"context"
-	"fmt"
-	"io"
-	"os"
-
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/policies"
+	"context"
+	"fmt"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"io"
 )
 
 var log *logrus.Entry
@@ -62,7 +60,7 @@ func NewService() assessment.AssessmentServer {
 }
 
 func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
-	_, err = s.handleEvidence(req.Evidence)
+	err = s.handleEvidence(req.Evidence)
 
 	if err != nil {
 		res = &assessment.AssessEvidenceResponse{
@@ -87,7 +85,7 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 		e, err = stream.Recv()
 
 		// TODO: Catch error?
-		_, _ = s.handleEvidence(e)
+		_ = s.handleEvidence(e)
 
 		if err == io.EOF {
 			log.Infof("Stopped receiving streamed evidences")
@@ -98,61 +96,53 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 	}
 }
 
-func (s Service) handleEvidence(evidence *evidence.Evidence) (result *evidence.Evidence, err error) {
+func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 	log.Infof("Received evidence for resource %s", evidence.ResourceId)
 	log.Debugf("Evidence: %+v", evidence)
-
-	var file string
 
 	listId++
 	evidence.Id = fmt.Sprintf("%d", listId)
 
-	if len(evidence.ApplicableMetrics) == 0 {
-		log.Warnf("Could not find a valid metric for evidence of resource %s", evidence.ResourceId)
+	//if len(evidence.ApplicableMetrics) == 0 {
+	//	log.Warnf("Could not find a valid metric for evidence of resource %s", evidence.ResourceId)
+	//}
+
+	//// TODO(oxisto): actually look up metric via orchestrator
+	//for _, metric := range evidence.ApplicableMetrics {
+
+	// TODO(oxisto): use go embed
+	evaluations, err := policies.RunEvidence(evidence)
+	if err != nil {
+		log.Errorf("Could not evaluate evidence: %v", err)
+
+		if s.ResultHook != nil {
+			go s.ResultHook(nil, err)
+		}
+
+		return err
 	}
 
-	// TODO(oxisto): actually look up metric via orchestrator
-	for _, metric := range evidence.ApplicableMetrics {
-		var baseDir string = "."
-
-		// check, if we are in the root of Clouditor
-		if _, err := os.Stat("policies"); os.IsNotExist(err) {
-			// in tests, we are relative to our current package
-			baseDir = "../../"
-		}
-
-		// ToDo(lebogg): Test if direction to each bundle works
-		file = fmt.Sprintf("%s/policies/bundle%d", baseDir, metric)
-
-		// TODO(oxisto): use go embed
-		data, err := policies.RunEvidence(file, evidence)
-		if err != nil {
-			log.Errorf("Could not evaluate evidence: %v", err)
-
-			if s.ResultHook != nil {
-				go s.ResultHook(nil, err)
-			}
-
-			return nil, err
-		}
-
+	for i, data := range evaluations {
 		log.Infof("Evaluated evidence as %v", data["compliant"])
 
 		result := &assessment.Result{
 			ResourceId: evidence.ResourceId,
 			Compliant:  data["compliant"].(bool),
-			MetricId:   int32(metric),
+			// TODO(lebogg): MetricId not important in current impl
+			// MetricId:   int32(metric),
 		}
-
 		// just a little hack to quickly enable multiple results per resource
-		s.results[fmt.Sprintf("%s-%d", evidence.ResourceId, metric)] = result
+		s.results[fmt.Sprintf("%s-%d", evidence.ResourceId, i)] = result
 
+		// TODO(oxisto): What is this for? (lebogg)
 		if s.ResultHook != nil {
 			go s.ResultHook(result, nil)
 		}
 	}
 
-	return
+	//}
+
+	return nil
 }
 
 func (s Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {

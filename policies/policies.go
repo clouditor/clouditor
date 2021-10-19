@@ -29,26 +29,75 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 
 	"clouditor.io/clouditor/api/evidence"
 	"github.com/open-policy-agent/opa/rego"
 )
 
-func RunEvidence(file string, evidence *evidence.Evidence) (data map[string]interface{}, err error) {
+// applicableMetrics stores a list of applicable metrics per resourceType
+var applicableMetrics = make(map[string][]int)
+
+func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) {
+	// TODO(lebogg): Think about magic number 10
+	data := make([]map[string]interface{}, 0)
+	var baseDir string = "."
+	// check, if we are in the root of Clouditor
+	if _, err := os.Stat("policies"); os.IsNotExist(err) {
+		// in tests, we are relative to our current package
+		// TODO(lebogg): Is it possible to do go to the root dir with a function?
+		baseDir = ".."
+	}
+	fmt.Println(baseDir)
+
 	var m = evidence.Resource.GetStructValue().AsMap()
 
-	return RunMap(file, m)
+	// TODO(lebogg): For now check via resourceIDs. Later with (concatenation of) resourceTypes (more efficient hash)
+	if resID := evidence.GetResourceId(); applicableMetrics[resID] == nil {
+		fmt.Println(resID)
+		// TODO(lebogg): Replace magic number of 10 (current metrics)
+		for i := 1; i < 11; i++ {
+			// ToDo(lebogg): Test if direction to each bundle works
+			file := fmt.Sprintf("%s/policies/bundle%d", baseDir, i)
+			runMap, err := RunMap(file, m)
+			fmt.Println("i =", i, "and data:", runMap)
+			if err != nil {
+				return nil, err
+			}
+			if runMap != nil {
+				data = append(data, runMap)
+				//fmt.Println(data)
+
+				if metric := applicableMetrics[resID]; metric == nil {
+					applicableMetrics[resID] = []int{i}
+				}
+				applicableMetrics[resID] = append(applicableMetrics[resID], i)
+			}
+		}
+	} else {
+		fmt.Println(applicableMetrics[resID])
+		for _, i := range applicableMetrics[resID] {
+			file := fmt.Sprintf("%s/policies/bundle%d", baseDir, i)
+			runMap, err := RunMap(file, m)
+			if err != nil {
+				return nil, err
+			}
+			data = append(data, runMap)
+		}
+	}
+	return data, nil
 }
 
-func RunMap(file string, m map[string]interface{}) (data map[string]interface{}, err error) {
+func RunMap(bundle string, m map[string]interface{}) (data map[string]interface{}, err error) {
 	var (
 		ok bool
 	)
 
 	ctx := context.TODO()
+	fmt.Println(bundle)
 	r, err := rego.New(
 		rego.Query("data.clouditor"),
-		rego.LoadBundle(file),
+		rego.LoadBundle(bundle),
 	).PrepareForEval(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare rego evaluation: %w", err)
@@ -62,6 +111,9 @@ func RunMap(file string, m map[string]interface{}) (data map[string]interface{},
 	if data, ok = results[0].Expressions[0].Value.(map[string]interface{}); !ok {
 		fmt.Println(data)
 		return nil, errors.New("expected data is not a map[string]interface{}")
+	}
+	if data["applicable"] == false {
+		return nil, nil
 	}
 	fmt.Println(data)
 

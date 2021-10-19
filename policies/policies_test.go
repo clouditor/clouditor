@@ -27,6 +27,7 @@ package policies_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"clouditor.io/clouditor/api/evidence"
@@ -38,7 +39,7 @@ import (
 func TestRun(t *testing.T) {
 	var (
 		m    map[string]interface{}
-		data map[string]interface{}
+		data []map[string]interface{}
 		s    *structpb.Struct
 		err  error
 	)
@@ -71,75 +72,42 @@ func TestRun(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	// Test metric TransportEncryptionAlgorithm
-	data, err = policies.RunEvidence("bundle1", &evidence.Evidence{
-		Resource: structpb.NewStructValue(s),
+	data, err = policies.RunEvidence(&evidence.Evidence{
+		Resource:   structpb.NewStructValue(s),
+		ResourceId: "/subscriptions/e3ed0e96-57bc-4d81-9594-f239540cd77a/resourceGroups/titan/providers/Microsoft.Storage/storageAccounts/aybazestorage",
 	})
 
 	assert.Nil(t, err)
-	assert.NotNil(t, data)
-	assert.Equal(t, true, data["compliant"])
-	assert.Equal(t, true, data["applicable"])
+
+	// Test metric TransportEncryptionAlgorithm
+	assert.NotNil(t, data[0])
+	assert.Equal(t, true, data[0]["compliant"])
+	assert.Equal(t, true, data[0]["applicable"])
 
 	// Test metric TLSVersion
-	data, err = policies.RunEvidence("bundle2", &evidence.Evidence{
-		Resource: structpb.NewStructValue(s),
-	})
-
-	assert.Nil(t, err)
-	assert.NotNil(t, data)
-	assert.Equal(t, true, data["compliant"])
-	assert.Equal(t, true, data["applicable"])
+	assert.NotNil(t, data[1])
+	assert.Equal(t, true, data[1]["compliant"])
+	assert.Equal(t, true, data[1]["applicable"])
 
 	// Test metric TransportEncryptionEnabled
-	data, err = policies.RunEvidence("bundle3", &evidence.Evidence{
-		Resource: structpb.NewStructValue(s),
-	})
-
-	assert.Nil(t, err)
-	assert.NotNil(t, data)
-	assert.Equal(t, true, data["compliant"])
-	assert.Equal(t, true, data["applicable"])
+	assert.NotNil(t, data[2])
+	assert.Equal(t, true, data[2]["compliant"])
+	assert.Equal(t, true, data[2]["applicable"])
 
 	// Test metric TransportEncryptionEnforced
-	data, err = policies.RunEvidence("bundle4", &evidence.Evidence{
-		Resource: structpb.NewStructValue(s),
-	})
-
-	assert.Nil(t, err)
-	assert.NotNil(t, data)
-	assert.Equal(t, true, data["compliant"])
-	assert.Equal(t, true, data["applicable"])
+	assert.NotNil(t, data[3])
+	assert.Equal(t, true, data[3]["compliant"])
+	assert.Equal(t, true, data[3]["applicable"])
 
 	// Test metric EncryptionAtRestEnabled
-	data, err = policies.RunEvidence("bundle5", &evidence.Evidence{
-		Resource: structpb.NewStructValue(s),
-	})
-
-	assert.Nil(t, err)
-	assert.NotNil(t, data)
-	assert.Equal(t, true, data["compliant"])
-	assert.Equal(t, true, data["applicable"])
+	assert.NotNil(t, data[4])
+	assert.Equal(t, true, data[4]["compliant"])
+	assert.Equal(t, true, data[4]["applicable"])
 
 	// Test metric EncryptionAtRestAlgorithm
-	data, err = policies.RunEvidence("bundle6", &evidence.Evidence{
-		Resource: structpb.NewStructValue(s),
-	})
-
-	assert.Nil(t, err)
-	assert.NotNil(t, data)
-	assert.Equal(t, true, data["compliant"])
-	assert.Equal(t, true, data["applicable"])
-
-	// Test metric EncryptionAtRestAlgorithm
-	data, err = policies.RunEvidence("bundle6", &evidence.Evidence{
-		Resource: structpb.NewStructValue(s),
-	})
-
-	assert.Nil(t, err)
-	assert.NotNil(t, data)
-	assert.Equal(t, true, data["compliant"])
-	assert.Equal(t, true, data["applicable"])
+	assert.NotNil(t, data[5])
+	assert.Equal(t, true, data[5]["compliant"])
+	assert.Equal(t, true, data[5]["applicable"])
 
 	// Testing VM
 	j = `{
@@ -163,44 +131,42 @@ func TestRun(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	// Test metric BootLoggingEnabled
-	data, err = policies.RunEvidence("bundle7", &evidence.Evidence{
+	fmt.Println(&evidence.Evidence{
 		Resource: structpb.NewStructValue(s),
 	})
 
+	data, err = policies.RunEvidence(&evidence.Evidence{
+		Resource:   structpb.NewStructValue(s),
+		ResourceId: "/subscriptions/e3ed0e96-57bc-4d81-9594-f239540cd77a/resourceGroups/titan/providers/Microsoft.Storage/virtualMachine/mockvm",
+	})
 	assert.Nil(t, err)
 	assert.NotNil(t, data)
-	assert.Equal(t, true, data["compliant"])
-	assert.Equal(t, true, data["applicable"])
+
+	// Test metric BootLoggingEnabled
+	assert.NotNil(t, data[0])
+	assert.Equal(t, true, data[0]["compliant"])
+	assert.Equal(t, true, data[0]["applicable"])
 
 	// Test metric BootLoggingRetention
-	data, err = policies.RunEvidence("bundle8", &evidence.Evidence{
-		Resource: structpb.NewStructValue(s),
-	})
-
-	assert.Nil(t, err)
-	assert.NotNil(t, data)
-	assert.Equal(t, true, data["compliant"])
-	assert.Equal(t, true, data["applicable"])
+	assert.NotNil(t, data[1])
+	assert.Equal(t, true, data[1]["compliant"])
+	assert.Equal(t, true, data[1]["applicable"])
 
 	// Test metric OSLoggingEnabled
-	data, err = policies.RunEvidence("bundle9", &evidence.Evidence{
-		Resource: structpb.NewStructValue(s),
-	})
-
-	assert.Nil(t, err)
-	assert.NotNil(t, data)
-	assert.Equal(t, true, data["compliant"])
-	assert.Equal(t, true, data["applicable"])
+	assert.NotNil(t, data[2])
+	assert.Equal(t, true, data[2]["compliant"])
+	assert.Equal(t, true, data[2]["applicable"])
 
 	// Test metricOSLoggingRetention
-	data, err = policies.RunEvidence("bundle10", &evidence.Evidence{
-		Resource: structpb.NewStructValue(s),
-	})
+	assert.NotNil(t, data[3])
+	assert.Equal(t, true, data[3]["compliant"])
+	assert.Equal(t, true, data[3]["applicable"])
 
+	// Repeat to check if only the metrics are evaluated that are needed
+	data, err = policies.RunEvidence(&evidence.Evidence{
+		Resource:   structpb.NewStructValue(s),
+		ResourceId: "/subscriptions/e3ed0e96-57bc-4d81-9594-f239540cd77a/resourceGroups/titan/providers/Microsoft.Storage/virtualMachine/mockvm",
+	})
 	assert.Nil(t, err)
-	assert.NotNil(t, data)
-	assert.Equal(t, true, data["compliant"])
-	assert.Equal(t, true, data["applicable"])
 
 }
