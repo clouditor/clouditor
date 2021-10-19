@@ -60,8 +60,10 @@ func RunMap(file string, m map[string]interface{}) (data map[string]interface{},
 	}
 
 	if data, ok = results[0].Expressions[0].Value.(map[string]interface{}); !ok {
+		fmt.Println(data)
 		return nil, errors.New("expected data is not a map[string]interface{}")
 	}
+	fmt.Println(data)
 
 	return
 }

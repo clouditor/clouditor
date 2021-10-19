@@ -1,6 +1,7 @@
 package clouditor
 
 default compliant = false
+default applicable = false
 
 # this is an implementation of metric TLSVersion
 
@@ -14,4 +15,8 @@ compliant {
 compliant {
 	data.operator == ">="
 	enc.tlsVersion >= data.target_value
+}
+
+applicable {
+    input.httpEndpoint[_]
 }

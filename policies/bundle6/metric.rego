@@ -1,19 +1,16 @@
 package clouditor
 
+default applicable = false
 default compliant = false
 
 # this is an implementation of metric EncryptionAtRestAlgorithm
 
+applicable {
+    input.atRestEncryption[_]
+}
 
 compliant {
 	enc := input.atRestEncryption
-	goodAlgorithm(enc)
-}
-
-goodAlgorithm(enc) {
-	enc.algorithm == "AES-128"
-}
-
-goodAlgorithm(tls) {
-	enc.algorithm == "AES-256"
+    data.operator == "=="
+	enc.algorithm == data.target_value
 }
