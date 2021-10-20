@@ -230,11 +230,9 @@ func (d *awsS3Discovery) getEncryptionAtRest(bucket bucket) (e voc.HasAtRestEncr
 	} else {
 		e = voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
-				// TODO(all): Then, algorithm is "aws:kms". Don't know if that is good?
-				Algorithm: string(alg),
+				Algorithm: "", // not available
 				Enabled:   true,
 			},
-			// TODO(all) Is ARN sufficient?
 			// TODO(lebogg): Check in console if bucket.region is the actual region of the key arn
 			KeyUrl: "arn:aws:kms:" + bucket.region + ":" + aws.ToString(d.awsConfig.accountID) + ":key/" + aws.ToString(resp.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.KMSMasterKeyID),
 		}

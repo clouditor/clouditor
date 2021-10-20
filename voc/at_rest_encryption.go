@@ -31,7 +31,7 @@ type AtRestEncryption struct {
 	Enabled   bool   `json:"enabled"`
 }
 
-// TODO(all): I (lebogg) think we have to implement the interface for the case of encryption being not enabled?
-func (a AtRestEncryption) GetAtRestEncryption() *AtRestEncryption {
+// TODO(oxisto): I (lebogg) think we have to implement the interface for the case of encryption being not enabled?
+func (AtRestEncryption) GetAtRestEncryption() *AtRestEncryption {
 	panic("implement me")
 }
