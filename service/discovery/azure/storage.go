@@ -184,6 +184,12 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *storage.Account)
 func handleBlockStorage(disk compute.Disk) *voc.BlockStorage {
 	enc := getBlockStorageAtRestEncryption(disk)
 
+	if enc == nil {
+		enc = &voc.AtRestEncryption{
+			Enabled: false,
+		}
+	}
+
 	return &voc.BlockStorage{
 		Storage: &voc.Storage{
 			CloudResource: &voc.CloudResource{
@@ -202,6 +208,12 @@ func handleBlockStorage(disk compute.Disk) *voc.BlockStorage {
 
 func handleObjectStorage(account *storage.Account, container storage.ListContainerItem) *voc.ObjectStorage {
 	enc := getObjectStorageAtRestEncryption(account)
+
+	if enc == nil {
+		enc = &voc.AtRestEncryption{
+			Enabled: false,
+		}
+	}
 
 	return &voc.ObjectStorage{
 		Storage: &voc.Storage{
@@ -230,6 +242,12 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 
 func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem) *voc.FileStorage {
 	enc := getFileStorageAtRestEncryption(account)
+
+	if enc == nil {
+		enc = &voc.AtRestEncryption{
+			Enabled: false,
+		}
+	}
 
 	return &voc.FileStorage{
 		Storage: &voc.Storage{
