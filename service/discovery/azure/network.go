@@ -99,7 +99,7 @@ func (d *azureNetworkDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResour
 
 	interfaces := resultNetworkInterfaces.Values()
 	for i := range interfaces {
-		s := d.handleNetworkInterfaces(&interfaces[i])
+		s := handleNetworkInterfaces(&interfaces[i])
 
 		log.Infof("Adding network interfaces %+v", s)
 
@@ -157,7 +157,7 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc
 	}
 }
 
-func (_ *azureNetworkDiscovery) handleNetworkInterfaces(ni *network.Interface) voc.IsNetwork {
+func handleNetworkInterfaces(ni *network.Interface) voc.IsNetwork {
 	return &voc.NetworkInterface{
 		Networking: &voc.Networking{
 			CloudResource: &voc.CloudResource{
