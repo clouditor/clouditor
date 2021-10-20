@@ -28,6 +28,7 @@
 package aws
 
 import (
+	"clouditor.io/clouditor/voc"
 	"context"
 	"encoding/json"
 	"errors"
@@ -50,6 +51,7 @@ const (
 	mockBucket2Endpoint     = "https://mockbucket2.s3.eu-west-1.amazonaws.com"
 	mockBucket2Region       = "eu-west-1"
 	mockBucket2CreationTime = "2013-12-02T22:08:41+00:00"
+	mockBucket2KeyId        = "1234abcd-12ab-34cd-56ed-1234567890ab"
 	mockBucket3             = "mockbucket3"
 )
 
@@ -101,7 +103,8 @@ func (m mockS3APINew) GetBucketEncryption(_ context.Context,
 				Rules: []types.ServerSideEncryptionRule{
 					{
 						ApplyServerSideEncryptionByDefault: &types.ServerSideEncryptionByDefault{
-							SSEAlgorithm: "aws:kms",
+							SSEAlgorithm:   "aws:kms",
+							KMSMasterKeyID: aws.String(mockBucket2KeyId),
 						},
 						BucketKeyEnabled: false,
 					},
@@ -284,7 +287,7 @@ func (m mockS3APIWitHErrors) GetBucketLifecycleConfiguration(_ context.Context, 
 // TestGetBuckets tests the getBuckets method (with other form of mocking implementation)
 func TestAwsS3Discovery_getBuckets(t *testing.T) {
 	d := awsS3Discovery{
-		client:        mockS3APINew{},
+		storageAPI:    mockS3APINew{},
 		isDiscovering: false,
 	}
 	buckets, err := d.getBuckets()
@@ -315,7 +318,7 @@ func TestAwsS3Discovery_getBuckets(t *testing.T) {
 
 	// API error case
 	d = awsS3Discovery{
-		client:        mockS3APIWitHErrors{},
+		storageAPI:    mockS3APIWitHErrors{},
 		isDiscovering: false,
 	}
 
@@ -325,38 +328,55 @@ func TestAwsS3Discovery_getBuckets(t *testing.T) {
 
 // TestGetEncryptionAtRest tests the getEncryptionAtRest method
 func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
+	var (
+		encryptionAtRest   voc.HasAtRestEncryption
+		managedEncryption  voc.ManagedKeyEncryption
+		customerEncryption voc.CustomerKeyEncryption
+		atRestEncryption   voc.AtRestEncryption
+		ok                 bool
+		err                error
+		mockAccountID      = "123456789"
+	)
+
 	d := awsS3Discovery{
-		client:        mockS3APINew{},
+		storageAPI:    mockS3APINew{},
 		isDiscovering: false,
+		awsConfig: &Client{
+			cfg:       aws.Config{},
+			accountID: aws.String(mockAccountID),
+		},
 	}
 
 	// First case: SSE-S3 encryption
-	encryptionAtRest, err := d.getEncryptionAtRest(mockBucket1)
+	encryptionAtRest, err = d.getEncryptionAtRest(bucket{name: mockBucket1})
 	assert.Nil(t, err)
-	assert.True(t, encryptionAtRest.Enabled)
-	assert.Equal(t, "AES256", encryptionAtRest.Algorithm)
-	// TODO(lebogg) Fix test
-	//assert.Equal(t, "SSE-S3", encryptionAtRest.KeyManager)
+	managedEncryption, ok = encryptionAtRest.(voc.ManagedKeyEncryption)
+	assert.True(t, ok)
+	assert.True(t, managedEncryption.Enabled)
+	assert.Equal(t, "AES256", managedEncryption.Algorithm)
 
 	// Second case: SSE-KMS encryption
-	encryptionAtRest, err = d.getEncryptionAtRest(mockBucket2)
+	encryptionAtRest, err = d.getEncryptionAtRest(bucket{name: mockBucket2, region: "eu-west-1"})
+	customerEncryption, ok = encryptionAtRest.(voc.CustomerKeyEncryption)
+	assert.True(t, ok)
 	assert.Nil(t, err)
-	assert.True(t, encryptionAtRest.Enabled)
-	assert.Equal(t, "aws:kms", encryptionAtRest.Algorithm)
-	// TODO(lebogg) Fix test
-	//assert.Equal(t, "SSE-KMS", encryptionAtRest.KeyManager)
+	assert.True(t, customerEncryption.Enabled)
+	assert.Equal(t, "aws:kms", customerEncryption.Algorithm)
+	assert.Equal(t, "arn:aws:kms:"+mockBucket2Region+":"+mockAccountID+":key/"+mockBucket2KeyId, customerEncryption.KeyUrl)
 
 	// Third case: No encryption
-	encryptionAtRest, err = d.getEncryptionAtRest("mockbucket3")
+	encryptionAtRest, err = d.getEncryptionAtRest(bucket{name: "mockbucket3"})
+	atRestEncryption, ok = encryptionAtRest.(voc.AtRestEncryption)
+	assert.True(t, ok)
 	assert.Nil(t, err)
-	assert.False(t, encryptionAtRest.Enabled)
+	assert.False(t, atRestEncryption.Enabled)
 
 	// 4th case: Connection error
 	d = awsS3Discovery{
-		client:        mockS3APIWitHErrors{},
+		storageAPI:    mockS3APIWitHErrors{},
 		isDiscovering: false,
 	}
-	_, err = d.getEncryptionAtRest("mockbucket4")
+	_, err = d.getEncryptionAtRest(bucket{name: "mockbucket4"})
 	assert.NotNil(t, err)
 }
 
@@ -364,14 +384,14 @@ func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 func TestAwsS3Discovery_getTransportEncryption(t *testing.T) {
 	// Case 1: Connection error
 	d := awsS3Discovery{
-		client:        mockS3APIWitHErrors{},
+		storageAPI:    mockS3APIWitHErrors{},
 		isDiscovering: false,
 	}
 	_, err := d.getTransportEncryption("")
 	assert.NotNil(t, err)
 
 	d = awsS3Discovery{
-		client:        mockS3APINew{},
+		storageAPI:    mockS3APINew{},
 		isDiscovering: false,
 	}
 
@@ -408,7 +428,7 @@ func TestAwsS3Discovery_getTransportEncryption(t *testing.T) {
 // TestGetRegion tests the getRegion method
 func TestAwsS3Discovery_getRegion(t *testing.T) {
 	d := awsS3Discovery{
-		client:        mockS3APINew{},
+		storageAPI:    mockS3APINew{},
 		isDiscovering: false,
 	}
 	actualRegion, err := d.getRegion(mockBucket1)
@@ -428,7 +448,7 @@ func TestAwsS3Discovery_getRegion(t *testing.T) {
 // TestName tests the Name method
 func TestAwsS3Discovery_Name(t *testing.T) {
 	d := awsS3Discovery{
-		client:        mockS3APINew{},
+		storageAPI:    mockS3APINew{},
 		isDiscovering: false,
 	}
 
@@ -438,8 +458,22 @@ func TestAwsS3Discovery_Name(t *testing.T) {
 // TestList tests the List method
 func TestAwsS3Discovery_List(t *testing.T) {
 	d := awsS3Discovery{
-		client:        mockS3APINew{},
+		storageAPI:    mockS3APINew{},
 		isDiscovering: false,
+		awsConfig: &Client{
+			cfg: aws.Config{
+				Region:           "mockRegion",
+				Credentials:      nil,
+				HTTPClient:       nil,
+				EndpointResolver: nil,
+				Retryer:          nil,
+				ConfigSources:    nil,
+				APIOptions:       nil,
+				Logger:           nil,
+				ClientLogMode:    0,
+			},
+			accountID: aws.String("123456789"),
+		},
 	}
 	resources, err := d.List()
 	assert.NotNil(t, err, "EXPECTED error because MockBucket2 should throw JSON error. But GOT no error")

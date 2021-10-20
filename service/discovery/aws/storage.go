@@ -32,6 +32,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"time"
 
 	"clouditor.io/clouditor/api/discovery"
@@ -43,11 +44,12 @@ import (
 
 // awsS3Discovery handles the AWS API requests regarding the S3 service
 type awsS3Discovery struct {
-	client        S3API
+	storageAPI    S3API
 	isDiscovering bool
+	awsConfig     *Client
 }
 
-// bucket contains meta data about a S3 bucket
+// bucket contains metadata about a S3 bucket
 type bucket struct {
 	arn          string
 	name         string
@@ -56,7 +58,7 @@ type bucket struct {
 	region       string
 }
 
-// S3API describes the S3 api interface which is implemented by the official AWS client and mock clients in tests
+// S3API describes the S3 api interface which is implemented by the official AWS storageAPI and mock clients in tests
 type S3API interface {
 	ListBuckets(ctx context.Context,
 		params *s3.ListBucketsInput,
@@ -107,7 +109,7 @@ func (d *awsS3Discovery) Name() string {
 
 // List is the method implementation defined in the discovery.Discoverer interface
 func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
-	var encryptionAtRest *voc.AtRestEncryption
+	var encryptionAtRest voc.HasAtRestEncryption
 	var encryptionAtTransmit voc.TransportEncryption
 
 	log.Info("Starting List() in ", d.Name())
@@ -117,31 +119,31 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 		return
 	}
 	log.Println("Found", len(buckets), "buckets.")
-	for _, bucket := range buckets {
-		log.Println("Getting resources for", bucket.name)
-		encryptionAtRest, err = d.getEncryptionAtRest(bucket.name)
+	for _, b := range buckets {
+		log.Println("Getting resources for", b.name)
+		encryptionAtRest, err = d.getEncryptionAtRest(b)
 		if err != nil {
 			return
 		}
-		encryptionAtTransmit, err = d.getTransportEncryption(bucket.name)
+		encryptionAtTransmit, err = d.getTransportEncryption(b.name)
 		if err != nil {
 			return
 		}
 		resources = append(resources, &voc.ObjectStorage{
 			Storage: &voc.Storage{
 				CloudResource: &voc.CloudResource{
-					ID:           voc.ResourceID(bucket.arn),
-					Name:         bucket.name,
-					CreationTime: bucket.creationTime.Unix(),
+					ID:           voc.ResourceID(b.arn),
+					Name:         b.name,
+					CreationTime: b.creationTime.Unix(),
 					Type:         []string{"ObjectStorage", "Storage", "Resource"},
 					GeoLocation: voc.GeoLocation{
-						Region: bucket.region,
+						Region: b.region,
 					},
 				},
-				AtRestEncryption: &voc.CustomerKeyEncryption{AtRestEncryption: encryptionAtRest},
+				AtRestEncryption: encryptionAtRest,
 			},
 			HttpEndpoint: &voc.HttpEndpoint{
-				Url:                 bucket.endpoint,
+				Url:                 b.endpoint,
 				TransportEncryption: &encryptionAtTransmit,
 			},
 		})
@@ -155,8 +157,9 @@ func (b bucket) String() string {
 // NewAwsStorageDiscovery constructs a new awsS3Discovery initializing the s3-api and isDiscovering with true
 func NewAwsStorageDiscovery(client *Client) discovery.Discoverer {
 	return &awsS3Discovery{
-		client:        s3.NewFromConfig(client.cfg),
+		storageAPI:    s3.NewFromConfig(client.cfg),
 		isDiscovering: true,
+		awsConfig:     client,
 	}
 }
 
@@ -164,7 +167,7 @@ func NewAwsStorageDiscovery(client *Client) discovery.Discoverer {
 func (d *awsS3Discovery) getBuckets() (buckets []bucket, err error) {
 	log.Println("Getting buckets in s3...")
 	var resp *s3.ListBucketsOutput
-	resp, err = d.client.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
+	resp, err = d.storageAPI.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
 	if err != nil {
 		var ae smithy.APIError
 		if errors.As(err, &ae) {
@@ -190,22 +193,25 @@ func (d *awsS3Discovery) getBuckets() (buckets []bucket, err error) {
 }
 
 // getEncryptionAtRest gets the bucket's encryption configuration
-func (d *awsS3Discovery) getEncryptionAtRest(bucket string) (e *voc.AtRestEncryption, err error) {
-	log.Printf("Checking encryption for bucket %v.", bucket)
-	e = new(voc.AtRestEncryption)
+func (d *awsS3Discovery) getEncryptionAtRest(bucket bucket) (e voc.HasAtRestEncryption, err error) {
+
 	input := s3.GetBucketEncryptionInput{
-		Bucket:              aws.String(bucket),
+		Bucket:              aws.String(bucket.name),
 		ExpectedBucketOwner: nil,
 	}
 	var resp *s3.GetBucketEncryptionOutput
 
-	resp, err = d.client.GetBucketEncryption(context.TODO(), &input)
+	resp, err = d.storageAPI.GetBucketEncryption(context.TODO(), &input)
 	if err != nil {
 		var ae smithy.APIError
 		if errors.As(err, &ae) {
 			if ae.ErrorCode() == "ServerSideEncryptionConfigurationNotFoundError" {
 				// This error code is equivalent to "encryption not enabled": set err to nil
-				e.Enabled = false
+				e = voc.AtRestEncryption{
+					Confidentiality: nil,
+					Algorithm:       "",
+					Enabled:         false,
+				}
 				err = nil
 				return
 			}
@@ -215,13 +221,24 @@ func (d *awsS3Discovery) getEncryptionAtRest(bucket string) (e *voc.AtRestEncryp
 		// return any error (but according to doc: "All service API response errors implement the smithy.APIError")
 		return
 	}
-	e.Algorithm = string(resp.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm)
-	//if e.Algorithm == string(types.ServerSideEncryptionAes256) {
-	//	e.KeyManager = "SSE-S3"
-	//} else {
-	//	e.KeyManager = "SSE-KMS"
-	//}
-	e.Enabled = true
+
+	if alg := resp.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm; alg == types.ServerSideEncryptionAes256 {
+		e = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
+			Algorithm: string(alg),
+			Enabled:   true,
+		}}
+	} else {
+		e = voc.CustomerKeyEncryption{
+			AtRestEncryption: &voc.AtRestEncryption{
+				// TODO(all): Then, algorithm is "aws:kms". Don't know if that is good?
+				Algorithm: string(alg),
+				Enabled:   true,
+			},
+			// TODO(all) Is ARN sufficient?
+			// TODO(lebogg): Check in console if bucket.region is the actual region of the key arn
+			KeyUrl: "arn:aws:kms:" + bucket.region + ":" + aws.ToString(d.awsConfig.accountID) + ":key/" + aws.ToString(resp.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.KMSMasterKeyID),
+		}
+	}
 	return
 }
 
@@ -235,7 +252,7 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (encryptionAtTran
 	}
 	var resp *s3.GetBucketPolicyOutput
 
-	resp, err = d.client.GetBucketPolicy(context.TODO(), &input)
+	resp, err = d.storageAPI.GetBucketPolicy(context.TODO(), &input)
 
 	// encryption at transit (https) is always enabled and TLS version fixed
 	encryptionAtTransit.Enabled = true
@@ -283,7 +300,7 @@ func (d *awsS3Discovery) getRegion(bucket string) (region string, err error) {
 		Bucket: aws.String(bucket),
 	}
 	var resp *s3.GetBucketLocationOutput
-	resp, err = d.client.GetBucketLocation(context.TODO(), &input)
+	resp, err = d.storageAPI.GetBucketLocation(context.TODO(), &input)
 	if err != nil {
 		var oe *smithy.OperationError
 		if errors.As(err, &oe) {
