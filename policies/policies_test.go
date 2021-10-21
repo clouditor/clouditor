@@ -190,7 +190,7 @@ func TestRun(t *testing.T) {
 	assert.Equal(t, true, data[3]["applicable"])
 
 	// Repeat to check if only the metrics are evaluated that are needed
-	data, err = policies.RunEvidence(&evidence.Evidence{
+	_, err = policies.RunEvidence(&evidence.Evidence{
 		Resource:   structpb.NewStructValue(s),
 		ResourceId: "/subscriptions/e3ed0e96-57bc-4d81-9594-f239540cd77a/resourceGroups/titan/providers/Microsoft.Storage/virtualMachine/mockvm",
 	})
