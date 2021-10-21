@@ -126,7 +126,8 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 		log.Infof("Evaluated evidence with metric '%v' as %v", data["name"], data["compliant"])
 
 		result := &assessment.Result{
-			ResourceId: evidence.ResourceId,
+			// TODO(lebogg): Remove metric name hack after demo
+			ResourceId: evidence.ResourceId + " with metric " + data["name"].(string),
 			Compliant:  data["compliant"].(bool),
 			// TODO(lebogg): MetricId not important in current impl
 			// MetricId:   int32(metric),
