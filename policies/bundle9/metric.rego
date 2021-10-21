@@ -5,6 +5,8 @@ default compliant = false
 
 # this is an implementation of metric OSLoggingEnabled
 
+name := "OSLoggingEnabled"
+
 OSLog := input.OSLog
 
 applicable {

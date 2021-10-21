@@ -123,7 +123,7 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 	}
 
 	for i, data := range evaluations {
-		log.Infof("Evaluated evidence as %v", data["compliant"])
+		log.Infof("Evaluated evidence with metric '%v' as %v", data["name"], data["compliant"])
 
 		result := &assessment.Result{
 			ResourceId: evidence.ResourceId,

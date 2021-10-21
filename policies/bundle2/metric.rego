@@ -6,6 +6,7 @@ default applicable = false
 # this is an implementation of metric TLSVersion
 
 enc := input.httpEndpoint.transportEncryption
+name := "TLSVersion"
 
 compliant {
 	data.operator == "=="

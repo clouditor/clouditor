@@ -5,6 +5,8 @@ default compliant = false
 
 # this is an implementation of metric BootLoggingEnabled
 
+name := "BootLoggingEnabled"
+
 bootLog := input.bootLog
 
 applicable {

@@ -29,7 +29,6 @@ package aws
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -230,50 +229,52 @@ func (d *awsS3Discovery) getEncryptionAtRest(bucket string) (e *voc.AtRestEncryp
 // https://aws.amazon.com/premiumsupport/knowledge-center/s3-bucket-policy-for-config-rule/
 // getTransportEncryption loops over all statements in the bucket policy and checks if one statement denies https only == false
 func (d *awsS3Discovery) getTransportEncryption(bucket string) (encryptionAtTransit voc.TransportEncryption, err error) {
-	input := s3.GetBucketPolicyInput{
-		Bucket:              aws.String(bucket),
-		ExpectedBucketOwner: nil,
-	}
-	var resp *s3.GetBucketPolicyOutput
+	//input := s3.GetBucketPolicyInput{
+	//	Bucket:              aws.String(bucket),
+	//	ExpectedBucketOwner: nil,
+	//}
+	//var resp *s3.GetBucketPolicyOutput
 
-	resp, err = d.client.GetBucketPolicy(context.TODO(), &input)
+	//resp, err = d.client.GetBucketPolicy(context.TODO(), &input)
 
 	// encryption at transit (https) is always enabled and TLS version fixed
 	encryptionAtTransit.Enabled = true
-	encryptionAtTransit.TlsVersion = "TLS1.2"
+	encryptionAtTransit.TlsVersion = "1.2"
 
-	// Case 1: No bucket policy in place or api error -> 'https only' is not set
-	if err != nil {
-		var ae smithy.APIError
-		if errors.As(err, &ae) {
-			if ae.ErrorCode() == "NoSuchBucketPolicy" {
-				// This error code is equivalent to "encryption not enforced": set err to nil
-				encryptionAtTransit.Enforced = false
-				err = nil
-				return
-			}
-			// Any other error is a connection error with AWS : Format err and return it
-			err = formatError(ae)
-		}
-		// return any error (but according to doc: "All service API response errors implement the smithy.APIError")
-		return
-	}
-
-	// Case 2: bucket policy -> check if https only is set
-	// TODO(lebogg): bucket policy json fail still means that https is enabled (it always is). Still return error?
-	var policy BucketPolicy
-	err = json.Unmarshal([]byte(aws.ToString(resp.Policy)), &policy)
-	if err != nil {
-		err = fmt.Errorf("error occurred while unmarshalling the bucket policy:%v", err)
-		return
-	}
-	// one statement has set https only -> default encryption is set
-	for _, statement := range policy.Statement {
-		if statement.Effect == "Deny" && !statement.Condition.AwsSecureTransport && statement.Action == "s3:*" {
-			encryptionAtTransit.Enforced = true
-			return
-		}
-	}
+	//// Case 1: No bucket policy in place or api error -> 'https only' is not set
+	//if err != nil {
+	//	var ae smithy.APIError
+	//	if errors.As(err, &ae) {
+	//		if ae.ErrorCode() == "NoSuchBucketPolicy" {
+	//			// This error code is equivalent to "encryption not enforced": set err to nil
+	//			encryptionAtTransit.Enforced = false
+	//			err = nil
+	//			return
+	//		}
+	//		// Any other error is a connection error with AWS : Format err and return it
+	//		err = formatError(ae)
+	//	}
+	//	// return any error (but according to doc: "All service API response errors implement the smithy.APIError")
+	//	return
+	//}
+	//
+	//// Case 2: bucket policy -> check if https only is set
+	//// TODO(lebogg): bucket policy json fail still means that https is enabled (it always is). Still return error?
+	//var policy BucketPolicy
+	//err = json.Unmarshal([]byte(aws.ToString(resp.Policy)), &policy)
+	//if err != nil {
+	//	err = fmt.Errorf("error occurred while unmarshalling the bucket policy:%v", err)
+	//	return
+	//}
+	//// one statement has set https only -> default encryption is set
+	//for _, statement := range policy.Statement {
+	//	if statement.Effect == "Deny" && !statement.Condition.AwsSecureTransport && statement.Action == "s3:*" {
+	//		encryptionAtTransit.Enforced = true
+	//		return
+	//	}
+	//}
+	encryptionAtTransit.Enforced = false
+	encryptionAtTransit.Algorithm = "TLS"
 	return
 
 }

@@ -6,6 +6,7 @@ default applicable = false
 # this is an implementation of metric TransportEncryptionAlgorithm
 
 enc := input.httpEndpoint.transportEncryption
+name := "TransportEncryptionAlgorithm"
 
 compliant {
 	data.operator == "=="

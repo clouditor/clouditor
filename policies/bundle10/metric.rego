@@ -5,6 +5,8 @@ default compliant = false
 
 # this is an implementation of metric OSLoggingRetention
 
+name := "OSLoggingRetention"
+
 OSLog := input.OSLog
 
 applicable {

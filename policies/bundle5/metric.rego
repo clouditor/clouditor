@@ -5,6 +5,8 @@ default compliant = false
 
 # this is an implementation of metric EncryptionAtRestEnabled
 
+name := "EncryptionAtRestEnabled"
+
 applicable {
     input.atRestEncryption[_]
 }

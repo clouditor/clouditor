@@ -26,6 +26,8 @@
 package discovery
 
 import (
+	"clouditor.io/clouditor/service/discovery/azure"
+	"clouditor.io/clouditor/service/discovery/k8s"
 	"context"
 	"strings"
 	"time"
@@ -37,8 +39,6 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/service/discovery/azure"
-	"clouditor.io/clouditor/service/discovery/k8s"
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/go-co-op/gocron"
@@ -140,9 +140,10 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 
 	discoverer = append(discoverer,
 		azure.NewAzureIacTemplateDiscovery(azure.WithAuthorizer(authorizer)),
-		azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
-		azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
-		azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)),
+		// TODO(lebogg): Uncomment after demo
+		//azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
+		//azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
+		//azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)),
 		k8s.NewKubernetesComputeDiscovery(k8sClient),
 		k8s.NewKubernetesNetworkDiscovery(k8sClient),
 		aws.NewAwsStorageDiscovery(awsClient),
