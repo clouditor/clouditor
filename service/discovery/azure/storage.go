@@ -88,6 +88,7 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 		return nil, fmt.Errorf("could not list storage accounts: %w", err)
 	}
 
+	// Discover object and file storages
 	accounts := result.Values()
 	for i := range accounts {
 		// Discover object storages
@@ -102,18 +103,20 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 			return nil, fmt.Errorf("could not handle file storages: %w", err)
 		}
 
-		//Discover block storages
-		blockStorages, err := d.discoverBlockStorages()
-		if err != nil {
-			return nil, fmt.Errorf("could not handle block storages: %w", err)
-		}
+
 
 		log.Infof("Adding storage account %+v", objectStorages)
 
 		list = append(list, objectStorages...)
 		list = append(list, fileStorages...)
-		list = append(list, blockStorages...)
 	}
+
+	//Discover block storages
+	blockStorages, err := d.discoverBlockStorages()
+	if err != nil {
+		return nil, fmt.Errorf("could not handle block storages: %w", err)
+	}
+	list = append(list, blockStorages...)
 
 	return list, err
 }
@@ -184,6 +187,7 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *storage.Account)
 func handleBlockStorage(disk compute.Disk) *voc.BlockStorage {
 	enc := getBlockStorageAtRestEncryption(disk)
 
+	// TODO(all): Is it possible, that neither managedKeyEncryption nor customerKeyEncryption exist?
 	if enc == nil {
 		enc = &voc.AtRestEncryption{
 			Enabled: false,
@@ -209,6 +213,7 @@ func handleBlockStorage(disk compute.Disk) *voc.BlockStorage {
 func handleObjectStorage(account *storage.Account, container storage.ListContainerItem) *voc.ObjectStorage {
 	enc := getObjectStorageAtRestEncryption(account)
 
+	// TODO(all): Is it possible, that neither managedKeyEncryption nor customerKeyEncryption exist?
 	if enc == nil {
 		enc = &voc.AtRestEncryption{
 			Enabled: false,
@@ -243,6 +248,7 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem) *voc.FileStorage {
 	enc := getFileStorageAtRestEncryption(account)
 
+	// TODO(all): Is it possible, that neither managedKeyEncryption nor customerKeyEncryption exist?
 	if enc == nil {
 		enc = &voc.AtRestEncryption{
 			Enabled: false,
@@ -287,7 +293,8 @@ func getBlockStorageAtRestEncryption(disk compute.Disk) voc.HasAtRestEncryption{
 	} else if disk.Encryption.Type == compute.EncryptionAtRestWithCustomerKey && *disk.EncryptionSettingsCollection.Enabled{
 		var keyUrl string
 		for _, elem := range *disk.EncryptionSettingsCollection.EncryptionSettings {
-			keyUrl = *elem.DiskEncryptionKey.SourceVault.ID
+			// TODO(all): Do we want the secretUrl (URL) or the the sourceVault (id)?
+			keyUrl = *elem.DiskEncryptionKey.SecretURL
 			break
 		}
 
