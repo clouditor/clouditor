@@ -207,7 +207,7 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 }
 
 
-func TestListStorage(t *testing.T) {
+func TestStorage(t *testing.T) {
 	d := azure.NewAzureStorageDiscovery(
 		azure.WithSender(&mockStorageSender{}),
 		azure.WithAuthorizer(&mockAuthorizer{}),
@@ -218,6 +218,7 @@ func TestListStorage(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
 	assert.Equal(t, 8, len(list))
+	assert.Equal(t, "Azure Storage Account", d.Name())
 }
 
 func TestListObjectStorage(t *testing.T) {
@@ -239,7 +240,7 @@ func TestListObjectStorage(t *testing.T) {
 	assert.Equal(t, 4, counter)
 }
 
-func TestGetObjectStorage(t *testing.T) {
+func TestObjectStorage(t *testing.T) {
 	d := azure.NewAzureStorageDiscovery(
 		azure.WithSender(&mockStorageSender{}),
 		azure.WithAuthorizer(&mockAuthorizer{}),
@@ -299,7 +300,7 @@ func TestListFileStorage(t *testing.T) {
 	assert.Equal(t, 2, counter)
 }
 
-func TestGetFileStorage(t *testing.T) {
+func TestFileStorage(t *testing.T) {
 	d := azure.NewAzureStorageDiscovery(
 		azure.WithSender(&mockStorageSender{}),
 		azure.WithAuthorizer(&mockAuthorizer{}),
@@ -345,7 +346,7 @@ func TestListBlockStorage(t *testing.T) {
 }
 
 
-func TestGetBlockStorage(t *testing.T) {
+func TestBlockStorage(t *testing.T) {
 	d := azure.NewAzureStorageDiscovery(
 		azure.WithSender(&mockStorageSender{}),
 		azure.WithAuthorizer(&mockAuthorizer{}),

@@ -146,7 +146,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 	return m.mockSender.Do(req)
 }
 
-func TestVirtualMachine(t *testing.T) {
+func TestCompute(t *testing.T) {
 	d := azure.NewAzureComputeDiscovery(
 		azure.WithSender(&mockComputeSender{}),
 		azure.WithAuthorizer(&mockAuthorizer{}),
@@ -157,7 +157,17 @@ func TestVirtualMachine(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
 	assert.Equal(t, 3, len(list))
+}
 
+func TestVirtualMachine(t *testing.T) {
+	d := azure.NewAzureComputeDiscovery(
+		azure.WithSender(&mockComputeSender{}),
+		azure.WithAuthorizer(&mockAuthorizer{}),
+	)
+
+	list, err := d.List()
+	assert.Nil(t, err)
+	
 	virtualMachine, ok := list[0].(*voc.VirtualMachine)
 
 	assert.True(t, ok)
