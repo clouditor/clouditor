@@ -5,19 +5,21 @@ default applicable = false
 
 # this is an implementation of metric TLSVersion
 
-enc := input.httpEndpoint.transportEncryption
 name := "TLSVersion"
+metricID := 2
+
+endpoint := input.httpEndpoint
+
+applicable {
+    endpoint
+}
 
 compliant {
 	data.operator == "=="
-	enc.tlsVersion == data.target_value
+	endpoint.transportEncryption.tlsVersion == data.target_value
 }
 
 compliant {
 	data.operator == ">="
-	enc.tlsVersion >= data.target_value
-}
-
-applicable {
-    input.httpEndpoint[_]
+	endpoint.transportEncryption.tlsVersion >= data.target_value
 }

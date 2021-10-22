@@ -31,17 +31,19 @@ import (
 	"errors"
 	"fmt"
 	"github.com/open-policy-agent/opa/rego"
+	"github.com/sirupsen/logrus"
 	"os"
 	"strings"
 )
 
 // TODO(lebogg): Remove after testing
-//var log *logrus.Entry = logrus.WithField("component", "policies")
+var log *logrus.Entry = logrus.WithField("component", "policies")
 
 // applicableMetrics stores a list of applicable metrics per resourceType
 var applicableMetrics = make(map[string][]int)
 
 func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) {
+	log.Println("Run evidence for resourceId", evidence.ResourceId, " and ID: ", evidence.Id)
 	data := make([]map[string]interface{}, 0)
 	var baseDir string = "."
 	// check, if we are in the root of Clouditor
@@ -71,7 +73,6 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 	if key := strings.Join(types, "-"); applicableMetrics[key] == nil {
 		// TODO(lebogg): Replace magic number of 11/12 (current metrics)
 		for i := 1; i < 12; i++ {
-			// ToDo(lebogg): Test if direction to each bundle works
 			file := fmt.Sprintf("%s/policies/bundle%d", baseDir, i)
 			runMap, err := RunMap(file, m)
 			if err != nil {

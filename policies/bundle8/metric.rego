@@ -6,11 +6,12 @@ default compliant = false
 # this is an implementation of metric BootLoggingRetention
 
 name := "BootLoggingRetention"
+metricID := 8
 
 bootLog := input.bootLog
 
 applicable {
-    bootLog[_]
+    bootLog
 }
 
 compliant {

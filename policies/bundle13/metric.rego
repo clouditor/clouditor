@@ -6,16 +6,15 @@ default compliant = false
 # this is an implementation of metric OSLoggingRetention
 
 name := "OSLoggingRetention"
-metricID := 11
+metricID := 13
 
-OSLog := input.OSLog
+ad := input.anomalyDetection
 
 applicable {
-    OSLog
+    ad
 }
 
 compliant {
-	# ToDo(lebogg): Check if 'input.osLog' is generated (in JSON) or, e.g., 'input.OSLog'
-    data.operator == ">="
-	OSLog.retentionPeriod >= 35
+    data.operator == "=="
+	ad.enabled == data.target_value
 }

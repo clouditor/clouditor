@@ -5,14 +5,16 @@ default applicable = false
 
 # this is an implementation of metric TransportEncryptionEnforced
 
-enc := input.httpEndpoint.transportEncryption
 name := "TransportEncryptionEnforced"
+metricID := 4
+
+endpoint := input.httpEndpoint
+
+applicable {
+    endpoint
+}
 
 compliant {
 	data.operator == "=="
-	enc.enforced == data.target_value
-}
-
-applicable {
-    input.httpEndpoint[_]
+	endpoint.transportEncryption.enforced == data.target_value
 }

@@ -6,13 +6,15 @@ default compliant = false
 # this is an implementation of metric EncryptionAtRestEnabled
 
 name := "EncryptionAtRestEnabled"
+metricID := 5
+
+enc := input.atRestEncryption
 
 applicable {
-    input.atRestEncryption[_]
+    enc
 }
 
 compliant {
-	enc := input.atRestEncryption
     data.operator == "=="
 	enc.enabled == data.target_value
 }

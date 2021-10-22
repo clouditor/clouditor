@@ -110,15 +110,13 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 	var encryptionAtRest *voc.AtRestEncryption
 	var encryptionAtTransmit voc.TransportEncryption
 
-	log.Info("Starting List() in ", d.Name())
+	log.Info("Discovering ", d.Name())
 	var buckets []bucket
 	buckets, err = d.getBuckets()
 	if err != nil {
 		return
 	}
-	log.Println("Found", len(buckets), "buckets.")
 	for _, bucket := range buckets {
-		log.Println("Getting resources for", bucket.name)
 		encryptionAtRest, err = d.getEncryptionAtRest(bucket.name)
 		if err != nil {
 			return
@@ -162,7 +160,6 @@ func NewAwsStorageDiscovery(client *Client) discovery.Discoverer {
 
 // getBuckets returns all buckets
 func (d *awsS3Discovery) getBuckets() (buckets []bucket, err error) {
-	log.Println("Getting buckets in s3...")
 	var resp *s3.ListBucketsOutput
 	resp, err = d.client.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
 	if err != nil {
@@ -191,7 +188,6 @@ func (d *awsS3Discovery) getBuckets() (buckets []bucket, err error) {
 
 // getEncryptionAtRest gets the bucket's encryption configuration
 func (d *awsS3Discovery) getEncryptionAtRest(bucket string) (e *voc.AtRestEncryption, err error) {
-	log.Printf("Checking encryption for bucket %v.", bucket)
 	e = new(voc.AtRestEncryption)
 	input := s3.GetBucketEncryptionInput{
 		Bucket:              aws.String(bucket),
@@ -228,7 +224,7 @@ func (d *awsS3Discovery) getEncryptionAtRest(bucket string) (e *voc.AtRestEncryp
 // "confirm that your bucket policies explicitly deny access to HTTP requests"
 // https://aws.amazon.com/premiumsupport/knowledge-center/s3-bucket-policy-for-config-rule/
 // getTransportEncryption loops over all statements in the bucket policy and checks if one statement denies https only == false
-func (d *awsS3Discovery) getTransportEncryption(bucket string) (encryptionAtTransit voc.TransportEncryption, err error) {
+func (d *awsS3Discovery) getTransportEncryption(_ string) (encryptionAtTransit voc.TransportEncryption, err error) {
 	//input := s3.GetBucketPolicyInput{
 	//	Bucket:              aws.String(bucket),
 	//	ExpectedBucketOwner: nil,

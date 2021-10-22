@@ -30,6 +30,7 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/policies"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -40,7 +41,7 @@ import (
 
 var log *logrus.Entry
 
-var listId int32
+//var listId int32
 
 func init() {
 	log = logrus.WithField("component", "assessment")
@@ -100,15 +101,13 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 	log.Infof("Received evidence for resource %s", evidence.ResourceId)
 	log.Debugf("Evidence: %+v", evidence)
 
-	listId++
-	evidence.Id = fmt.Sprintf("%d", listId)
+	// TODO(all): The discovery already sets up the (UU)ID?
+	//listId++
+	//evidence.Id = fmt.Sprintf("%d", listId)
 
 	//if len(evidence.ApplicableMetrics) == 0 {
 	//	log.Warnf("Could not find a valid metric for evidence of resource %s", evidence.ResourceId)
 	//}
-
-	//// TODO(oxisto): actually look up metric via orchestrator
-	//for _, metric := range evidence.ApplicableMetrics {
 
 	// TODO(oxisto): use go embed
 	evaluations, err := policies.RunEvidence(evidence)
@@ -123,14 +122,17 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 	}
 
 	for i, data := range evaluations {
-		log.Infof("Evaluated evidence with metric '%v' as %v", data["name"], data["compliant"])
+		log.Infof("Evaluated evidence with metric %v '%v' as %v", data["metricID"], data["name"], data["compliant"])
+		var metricID int64
+		if metricID, err = data["metricID"].(json.Number).Int64(); err != nil {
+			return fmt.Errorf("could not convert metricID: %v", metricID)
+		}
 
 		result := &assessment.Result{
 			// TODO(lebogg): Remove metric name hack after demo
 			ResourceId: evidence.ResourceId + " with metric " + data["name"].(string),
 			Compliant:  data["compliant"].(bool),
-			// TODO(lebogg): MetricId not important in current impl
-			// MetricId:   int32(metric),
+			MetricId:   int32(metricID),
 		}
 		// just a little hack to quickly enable multiple results per resource
 		s.results[fmt.Sprintf("%s-%d", evidence.ResourceId, i)] = result
