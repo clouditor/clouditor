@@ -361,7 +361,7 @@ func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 	assert.True(t, ok)
 	assert.Nil(t, err)
 	assert.True(t, customerEncryption.Enabled)
-	assert.Equal(t, "aws:kms", customerEncryption.Algorithm)
+	assert.Equal(t, "", customerEncryption.Algorithm)
 	assert.Equal(t, "arn:aws:kms:"+mockBucket2Region+":"+mockAccountID+":key/"+mockBucket2KeyId, customerEncryption.KeyUrl)
 
 	// Third case: No encryption
