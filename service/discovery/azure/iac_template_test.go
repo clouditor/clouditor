@@ -230,6 +230,7 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 									},
 								},
 								"keySource": "Microsoft.Keyvault",
+								// TODO(all) Is the keyvaulturi correct? There is a difference between the keyUrl (URL), sourceVault (id) and keyvaulturi? Which do we need?
 								"keyvaultproperties": map[string]interface{}{
 									"keyvaulturi": "https://testvault.vault.azure.net/keys/testkey/123456",
 								},
@@ -251,28 +252,6 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 							"publicAccess": "None",
 						},
 					},
-					//{
-					//	"type":     "Microsoft.Storage/storageAccounts",
-					//	"name":     "[parameters('storageAccounts_storage_2_name')]",
-					//	"location": "eastus",
-					//	"properties": map[string]interface{}{
-					//		"encryption": map[string]interface{}{
-					//			"services": map[string]interface{}{
-					//				"file": map[string]interface{}{
-					//					"keyType": "Account",
-					//					"enabled": true,
-					//				},
-					//				"blob": map[string]interface{}{
-					//					"keyType": "Account",
-					//					"enabled": true,
-					//				},
-					//			},
-					//			"keySource":                "Microsoft.Storage",
-					//			"minimumTlsVersion":        "TLS1_1",
-					//			"supportsHttpsTrafficOnly": true,
-					//		},
-					//	},
-					//},
 					{
 						"type":       "Microsoft.Network/loadBalancers",
 						"name":       "[parameters('loadBalancers_kubernetes_name')]",
@@ -312,28 +291,29 @@ func TestObjectStorageProperties(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
 
-	resourceStorage, ok := list[2].(*voc.ObjectStorage)
+	objectStorage, ok := list[2].(*voc.ObjectStorage)
 	assert.True(t, ok)
 
 	// That should be equal. The Problem is described in file 'service/discovery/azure/iac_template.go' TODO(all); do we need this comment any longer?
 	// TODO(garuppel): Tests for AtRestEncryption, ...
-	assert.Equal(t, "container1", resourceStorage.Name)
-	assert.Equal(t, "TLS1_1", resourceStorage.HttpEndpoint.TransportEncryption.TlsVersion)
-	assert.Equal(t, "ObjectStorage", resourceStorage.Type[0])
-	assert.Equal(t, "eastus", resourceStorage.GeoLocation.Region)
-	assert.Equal(t, true,  resourceStorage.HttpEndpoint.TransportEncryption.Enabled)
-	assert.Equal(t, true, resourceStorage.HttpEndpoint.TransportEncryption.Enforced)
+	assert.Equal(t, "container1", objectStorage.Name)
+	assert.Equal(t, "TLS1_1", objectStorage.HttpEndpoint.TransportEncryption.TlsVersion)
+	assert.Equal(t, "ObjectStorage", objectStorage.Type[0])
+	assert.Equal(t, "eastus", objectStorage.GeoLocation.Region)
+	assert.Equal(t, true,  objectStorage.HttpEndpoint.TransportEncryption.Enabled)
+	assert.Equal(t, true, objectStorage.HttpEndpoint.TransportEncryption.Enforced)
 
-	atRestEncryption := *resourceStorage.GetAtRestEncryption()
-	managedKeyEncryption, ok := atRestEncryption.(*voc.ManagedKeyEncryption)
+	// Check ManagedKeyEncryption
+	atRestEncryption := *objectStorage.GetAtRestEncryption()
+	managedKeyEncryption, ok := atRestEncryption.(voc.ManagedKeyEncryption)
 	assert.True(t, ok)
 	assert.Equal(t, true, managedKeyEncryption.Enabled)
 
 	// Check CustomerKeyEncryption
-	resourceStorage, ok = list[5].(*voc.ObjectStorage)
+	objectStorage, ok = list[5].(*voc.ObjectStorage)
 	assert.True(t, ok)
-	atRestEncryption = *resourceStorage.GetAtRestEncryption()
-	customerKeyEncryption, ok := atRestEncryption.(*voc.CustomerKeyEncryption)
+	atRestEncryption = *objectStorage.GetAtRestEncryption()
+	customerKeyEncryption, ok := atRestEncryption.(voc.CustomerKeyEncryption)
 	assert.True(t, ok)
 	assert.Equal(t, true, customerKeyEncryption.Enabled)
 	assert.Equal(t, "https://testvault.vault.azure.net/keys/testkey/123456", customerKeyEncryption.KeyUrl)
@@ -350,20 +330,21 @@ func TestFileStorageProperties(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
 
-	resourceStorage, ok := list[3].(*voc.FileStorage)
+	fileStorage, ok := list[3].(*voc.FileStorage)
 	assert.True(t, ok)
 
 	// That should be equal. The Problem is described in file 'service/discovery/azure/iac_template.go' TODO(all); do we need this comment any longer?
 	// TODO(garuppel): Tests for AtRestEncryption, ...
-	assert.Equal(t, "share1", resourceStorage.Name)
-	assert.Equal(t, "TLS1_1", resourceStorage.HttpEndpoint.TransportEncryption.TlsVersion)
-	assert.Equal(t, "FileStorage", resourceStorage.Type[0])
-	assert.Equal(t, "eastus", resourceStorage.GeoLocation.Region)
-	assert.Equal(t, true,  resourceStorage.HttpEndpoint.TransportEncryption.Enabled)
-	assert.Equal(t, true, resourceStorage.HttpEndpoint.TransportEncryption.Enforced)
+	assert.Equal(t, "share1", fileStorage.Name)
+	assert.Equal(t, "TLS1_1", fileStorage.HttpEndpoint.TransportEncryption.TlsVersion)
+	assert.Equal(t, "FileStorage", fileStorage.Type[0])
+	assert.Equal(t, "eastus", fileStorage.GeoLocation.Region)
+	assert.Equal(t, true,  fileStorage.HttpEndpoint.TransportEncryption.Enabled)
+	assert.Equal(t, true, fileStorage.HttpEndpoint.TransportEncryption.Enforced)
 
-	atRestEncryption := *resourceStorage.GetAtRestEncryption()
-	atRest, ok := atRestEncryption.(*voc.ManagedKeyEncryption)
+	// Check ManagedKeyEncryption
+	atRestEncryption := *fileStorage.GetAtRestEncryption()
+	atRest, ok := atRestEncryption.(voc.ManagedKeyEncryption)
 	assert.True(t, ok)
 	assert.Equal(t, true, atRest.Enabled)
 }

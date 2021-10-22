@@ -317,7 +317,7 @@ func getStorageAtRestEncryptionFromIac(storageAccountResource map[string]interfa
 
 
 	if encType == "Microsoft.Storage" {
-		enc = &voc.ManagedKeyEncryption{
+		enc = voc.ManagedKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
 				Algorithm: "", // not available TODO(garuppel): do we get any information about the algorithm in the docs?
 				Enabled:   isServiceEncryptionEnabled("blob", storageAccountResource),
@@ -326,7 +326,7 @@ func getStorageAtRestEncryptionFromIac(storageAccountResource map[string]interfa
 	} else if encType == "Microsoft.Keyvault"{
 		keyVaultUrl := storageAccountResource["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["keyvaultproperties"].(map[string]interface{})["keyvaulturi"].(string)
 
-		enc = &voc.CustomerKeyEncryption{
+		enc = voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
 				Algorithm: "", // not available
 				Enabled:   isServiceEncryptionEnabled("blob", storageAccountResource),
