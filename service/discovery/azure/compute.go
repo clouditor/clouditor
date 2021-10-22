@@ -164,7 +164,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 				},
 			}},
 			BootLog: &voc.BootLog{Log: &voc.Log{Enabled: IsBootDiagnosticEnabled(vm)}},
-			OSLog: &voc.OSLog{Log: &voc.Log{Enabled: false}},
+			OSLog: &voc.OSLog{}, // TODO(garuppel): Add OSLog
 			// TODO(garuppel) Add block storage resourceID
 			BlockStorage: []voc.ResourceID{},
 		}

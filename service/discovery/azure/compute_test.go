@@ -46,7 +46,13 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 					"id":         "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
 					"name":       "vm1",
 					"location":   "eastus",
-					"properties": map[string]interface{}{},
+					"properties": map[string]interface{}{
+						"diagnosticsProfile": map[string]interface{}{
+							"bootDiagnostics": map[string]interface{}{
+								"enabled": true,
+							},
+						},
+					},
 				},
 				{
 					"id":         "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2",
@@ -155,12 +161,15 @@ func TestVirtualMachine(t *testing.T) {
 	virtualMachine, ok := list[0].(*voc.VirtualMachine)
 
 	assert.True(t, ok)
+	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1", string(virtualMachine.ID))
 	assert.Equal(t, "vm1", virtualMachine.Name)
 	assert.Equal(t, 2, len(virtualMachine.NetworkInterface))
 	assert.Equal(t, 3, len(virtualMachine.BlockStorage))
 
 	assert.Equal(t, "data_disk_1", string(virtualMachine.BlockStorage[1]))
 	assert.Equal(t, "123", string(virtualMachine.NetworkInterface[0]))
+	assert.Equal(t, "eastus", virtualMachine.GeoLocation.Region)
+	assert.Equal(t, true, virtualMachine.BootLog.Enabled)
 }
 
 func TestFunction(t *testing.T) {
