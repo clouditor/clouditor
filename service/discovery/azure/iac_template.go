@@ -253,15 +253,6 @@ func (d *azureIacTemplateDiscovery) handleObjectStorage(resourceValue map[string
 	return storage, nil
 }
 
-//func getEncryptionStatus(objectType string, storageAccount map[string]interface{}) bool {
-//
-//	if storageAccount["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["encryption"].(map[string]interface{})["services"].(map[string]interface{})[objectType].(map[string]interface{})["enabled"].(bool) {
-//		return true
-//	}
-//
-//	return false
-//}
-
 func (d *azureIacTemplateDiscovery) handleFileStorage(resourceValue map[string]interface{}, azureResources []interface{}, resourceGroup string) (voc.IsCompute, error) {
 
 	var (
@@ -318,21 +309,26 @@ func getStorageAtRestEncryptionFromIac(storageAccountResource map[string]interfa
 
 	var enc voc.HasAtRestEncryption
 
-	encType := storageAccountResource["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["keySource"].(string)
+	encType, ok := storageAccountResource["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["keySource"].(string)
+
+	if !ok {
+		return nil
+	}
+
 
 	if encType == "Microsoft.Storage" {
 		enc = &voc.ManagedKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
-				Algorithm: "AES-265", // seems to be always AWS-256,
+				Algorithm: "", // not available TODO(garuppel): do we get any information about the algorithm in the docs?
 				Enabled:   isServiceEncryptionEnabled("blob", storageAccountResource),
 			},
 		}
 	} else if encType == "Microsoft.Keyvault"{
-		keyVaultUrl := storageAccountResource["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["keyvaultProperties"].(map[string]interface{})["keyvaulturi"].(string)
+		keyVaultUrl := storageAccountResource["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["keyvaultproperties"].(map[string]interface{})["keyvaulturi"].(string)
 
 		enc = &voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
-				Algorithm: "AES-265", // seems to be always AWS-256,
+				Algorithm: "", // not available
 				Enabled:   isServiceEncryptionEnabled("blob", storageAccountResource),
 			},
 			KeyUrl: keyVaultUrl,
@@ -490,7 +486,9 @@ func (d *azureIacTemplateDiscovery) createVMResource(resourceValue map[string]in
 			},
 		},
 		OSLog: &voc.OSLog{
-			Log: &voc.Log{},
+			Log: &voc.Log{
+				Enabled: false,
+			}, // TODO(all): available in IaC template?
 		},
 		BlockStorage: d.getBlockStorageResourceIDs(properties, resourceGroup),
 	}

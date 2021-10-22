@@ -155,7 +155,7 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 						"type":     "Microsoft.Storage/storageAccounts/blobServices/containers",
 						"name":     "[concat(parameters('storageAccounts_storage1_name'), 'default/container1')]",
 						"dependsOn": []interface{}{
-							"[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_functionapplogtransfer_name'), 'default')]",
+							"[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_storage1_name'), 'default')]",
 							"[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storage1_name'))]",
 						},
 						"properties": map[string]interface{}{
@@ -215,7 +215,7 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 					},
 					{
 						"type":     "Microsoft.Storage/storageAccounts",
-						"name":     "[parameters('storageAccounts_storage1_name')]",
+						"name":     "[parameters('storageAccounts_storage3_name')]",
 						"location": "eastus",
 						"properties": map[string]interface{}{
 							"encryption": map[string]interface{}{
@@ -239,27 +239,40 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 						},
 					},
 					{
-						"type":     "Microsoft.Storage/storageAccounts",
-						"name":     "[parameters('storageAccounts_storage_2_name')]",
-						"location": "eastus",
+						"type":     "Microsoft.Storage/storageAccounts/blobServices/containers",
+						"name":     "[concat(parameters('storageAccounts_storage3_name'), 'default/container3')]",
+						"dependsOn": []interface{}{
+							"[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_storage3_name'), 'default')]",
+							"[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storage3_name'))]",
+						},
 						"properties": map[string]interface{}{
-							"encryption": map[string]interface{}{
-								"services": map[string]interface{}{
-									"file": map[string]interface{}{
-										"keyType": "Account",
-										"enabled": true,
-									},
-									"blob": map[string]interface{}{
-										"keyType": "Account",
-										"enabled": true,
-									},
-								},
-								"keySource":                "Microsoft.Storage",
-								"minimumTlsVersion":        "TLS1_1",
-								"supportsHttpsTrafficOnly": true,
-							},
+							"defaultEncryptionScope": "$account-encryption-key",
+							"denyEncryptionScopeOverride": false,
+							"publicAccess": "None",
 						},
 					},
+					//{
+					//	"type":     "Microsoft.Storage/storageAccounts",
+					//	"name":     "[parameters('storageAccounts_storage_2_name')]",
+					//	"location": "eastus",
+					//	"properties": map[string]interface{}{
+					//		"encryption": map[string]interface{}{
+					//			"services": map[string]interface{}{
+					//				"file": map[string]interface{}{
+					//					"keyType": "Account",
+					//					"enabled": true,
+					//				},
+					//				"blob": map[string]interface{}{
+					//					"keyType": "Account",
+					//					"enabled": true,
+					//				},
+					//			},
+					//			"keySource":                "Microsoft.Storage",
+					//			"minimumTlsVersion":        "TLS1_1",
+					//			"supportsHttpsTrafficOnly": true,
+					//		},
+					//	},
+					//},
 					{
 						"type":       "Microsoft.Network/loadBalancers",
 						"name":       "[parameters('loadBalancers_kubernetes_name')]",
@@ -284,7 +297,7 @@ func TestIaCTemplateDiscovery(t *testing.T){
 
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 6, len(list))
+	assert.Equal(t, 7, len(list))
 
 }
 
@@ -310,6 +323,20 @@ func TestObjectStorageProperties(t *testing.T) {
 	assert.Equal(t, "eastus", resourceStorage.GeoLocation.Region)
 	assert.Equal(t, true,  resourceStorage.HttpEndpoint.TransportEncryption.Enabled)
 	assert.Equal(t, true, resourceStorage.HttpEndpoint.TransportEncryption.Enforced)
+
+	atRestEncryption := *resourceStorage.GetAtRestEncryption()
+	managedKeyEncryption, ok := atRestEncryption.(*voc.ManagedKeyEncryption)
+	assert.True(t, ok)
+	assert.Equal(t, true, managedKeyEncryption.Enabled)
+
+	// Check CustomerKeyEncryption
+	resourceStorage, ok = list[5].(*voc.ObjectStorage)
+	assert.True(t, ok)
+	atRestEncryption = *resourceStorage.GetAtRestEncryption()
+	customerKeyEncryption, ok := atRestEncryption.(*voc.CustomerKeyEncryption)
+	assert.True(t, ok)
+	assert.Equal(t, true, customerKeyEncryption.Enabled)
+	assert.Equal(t, "https://testvault.vault.azure.net/keys/testkey/123456", customerKeyEncryption.KeyUrl)
 }
 
 func TestFileStorageProperties(t *testing.T) {
@@ -334,6 +361,11 @@ func TestFileStorageProperties(t *testing.T) {
 	assert.Equal(t, "eastus", resourceStorage.GeoLocation.Region)
 	assert.Equal(t, true,  resourceStorage.HttpEndpoint.TransportEncryption.Enabled)
 	assert.Equal(t, true, resourceStorage.HttpEndpoint.TransportEncryption.Enforced)
+
+	atRestEncryption := *resourceStorage.GetAtRestEncryption()
+	atRest, ok := atRestEncryption.(*voc.ManagedKeyEncryption)
+	assert.True(t, ok)
+	assert.Equal(t, true, atRest.Enabled)
 }
 
 func TestVmProperties(t *testing.T) {
@@ -352,4 +384,6 @@ func TestVmProperties(t *testing.T) {
 	assert.Equal(t, "vm1", resourceVM.Name)
 	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1", (string)(resourceVM.GetID()))
 	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/blockStorage3", (string)(resourceVM.BlockStorage[0]))
+	assert.True(t, resourceVM.BootLog.Enabled)
+	assert.False(t, resourceVM.OSLog.Enabled)
 }
