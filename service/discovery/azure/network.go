@@ -236,11 +236,6 @@ func getLoadBalancerPorts(lb *network.LoadBalancer) (loadBalancerPorts []int16) 
 //	return list
 //}
 
-func GetResourceGroupName(id string) string {
-	log.Infof(strings.Split(id, "/")[4])
-	return strings.Split(id, "/")[4]
-}
-
 func (d *azureNetworkDiscovery) GetPublicIPAddress(lb *network.LoadBalancer) string {
 
 	var publicIPAddresses []string

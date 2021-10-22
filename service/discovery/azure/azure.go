@@ -28,6 +28,7 @@ package azure
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/resources/mgmt/subscriptions"
 	"github.com/Azure/go-autorest/autorest"
@@ -110,4 +111,9 @@ func (a azureDiscovery) apply(client *autorest.Client) {
 	for _, v := range a.options {
 		v.apply(client)
 	}
+}
+
+func GetResourceGroupName(id string) string {
+	log.Infof(strings.Split(id, "/")[4])
+	return strings.Split(id, "/")[4]
 }
