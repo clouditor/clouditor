@@ -90,7 +90,6 @@ func NewService() *Service {
 
 // Start starts discovery
 func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (response *discovery.StartDiscoveryResponse, err error) {
-
 	response = &discovery.StartDiscoveryResponse{Successful: true}
 
 	log.Infof("Starting discovery...")
@@ -113,8 +112,10 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 
 	accountsResponse, _ := orchestratorClient.ListAccounts(context.Background(), &orchestrator.ListAccountsRequests{})
 
-	// ToDo(lebogg): whats with the err?
-	s.AssessmentStream, _ = client.AssessEvidences(context.Background())
+	s.AssessmentStream, err = client.AssessEvidences(context.Background())
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not enable connection to assessment service: %v", err)
+	}
 
 	// Establish connection to evidenceStore component
 	var evidenceStoreClient evidence.EvidenceStoreClient
@@ -124,7 +125,6 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	}
 	evidenceStoreClient = evidence.NewEvidenceStoreClient(cc)
 
-	// ToDo(lebogg): whats with the err?
 	s.EvidenceStoreStream, err = evidenceStoreClient.StoreEvidences(context.Background())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not enable connection to evidence store: %v", err)
@@ -132,7 +132,7 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 
 	var discoverer []discovery.Discoverer
 
-	// look for an azure account
+	// Look for an azure account
 	for _, account := range accountsResponse.Accounts {
 		if account.AccountType == "azure" {
 			err = handleAzureAccount(account, &discoverer)
