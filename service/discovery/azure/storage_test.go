@@ -68,8 +68,8 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 							},
 							"keySource": storage.KeySourceMicrosoftStorage,
 						},
-						"minimumTlsVersion": storage.MinimumTLSVersionTLS12,
-						"allowBlobPublicAccess": false,
+						"minimumTlsVersion":        storage.MinimumTLSVersionTLS12,
+						"allowBlobPublicAccess":    false,
 						"supportsHttpsTrafficOnly": true,
 					},
 				},
@@ -101,8 +101,8 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 								"keyvaulturi": "https://testvault.vault.azure.net/keys/testkey/123456",
 							},
 						},
-						"minimumTlsVersion": storage.MinimumTLSVersionTLS12,
-						"allowBlobPublicAccess": false,
+						"minimumTlsVersion":        storage.MinimumTLSVersionTLS12,
+						"allowBlobPublicAccess":    false,
 						"supportsHttpsTrafficOnly": true,
 					},
 				},
@@ -161,9 +161,9 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 		return createResponse(map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
-					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
-					"name": "disk1",
-					"type": "Microsoft.Compute/disks",
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
+					"name":     "disk1",
+					"type":     "Microsoft.Compute/disks",
 					"location": "eastus",
 					"properties": map[string]interface{}{
 						"timeCreated": "2017-05-24T13:28:53.4540398Z",
@@ -174,9 +174,9 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 					},
 				},
 				{
-					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2",
-					"name": "disk2",
-					"type": "Microsoft.Compute/disks",
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2",
+					"name":     "disk2",
+					"type":     "Microsoft.Compute/disks",
 					"location": "eastus",
 					"properties": map[string]interface{}{
 						"timeCreated": "2017-05-24T13:28:53.4540398Z",
@@ -205,7 +205,6 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 
 	return m.mockSender.Do(req)
 }
-
 
 func TestStorage(t *testing.T) {
 	d := azure.NewAzureStorageDiscovery(
@@ -345,7 +344,6 @@ func TestListBlockStorage(t *testing.T) {
 	assert.Equal(t, 2, counter)
 }
 
-
 func TestBlockStorage(t *testing.T) {
 	d := azure.NewAzureStorageDiscovery(
 		azure.WithSender(&mockStorageSender{}),
@@ -366,4 +364,3 @@ func TestBlockStorage(t *testing.T) {
 	assert.Equal(t, "eastus", blockStorage.GeoLocation.Region)
 	assert.Equal(t, true, blockStorage.AtRestEncryption.GetAtRestEncryption().Enabled)
 }
-

@@ -27,7 +27,6 @@ package voc
 
 type AnomalyDetection struct {
 	*Auditing
-	Output	[]ResourceID `json:"output"`
-	Enabled	bool `json:"enabled"`
+	Output  []ResourceID `json:"output"`
+	Enabled bool         `json:"enabled"`
 }
-

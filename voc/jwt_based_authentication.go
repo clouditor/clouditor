@@ -27,6 +27,5 @@ package voc
 
 type JwtBasedAuthentication struct {
 	*Authenticity
-	Enforced	bool `json:"enforced"`
+	Enforced bool `json:"enforced"`
 }
-

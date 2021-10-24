@@ -27,6 +27,5 @@ package voc
 
 type DatabaseQuery struct {
 	*DatabaseOperation
-	Modify	bool `json:"modify"`
+	Modify bool `json:"modify"`
 }
-

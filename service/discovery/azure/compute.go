@@ -163,11 +163,11 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 					Region: *vm.Location,
 				},
 			}},
-			BootLog: &voc.BootLog{Log: &voc.Log{Enabled: IsBootDiagnosticEnabled(vm)}},
-			OSLog: &voc.OSLog{}, // TODO(garuppel): Add OSLog
-			// TODO(garuppel) Add block storage resourceID
-			BlockStorage: []voc.ResourceID{},
-		}
+		BootLog: &voc.BootLog{Log: &voc.Log{Enabled: IsBootDiagnosticEnabled(vm)}},
+		OSLog:   &voc.OSLog{}, // TODO(garuppel): Add OSLog
+		// TODO(garuppel) Add block storage resourceID
+		BlockStorage: []voc.ResourceID{},
+	}
 
 	vmExtended, err := d.getExtendedVirtualMachine(vm)
 	if err != nil {

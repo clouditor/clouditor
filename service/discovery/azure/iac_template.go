@@ -206,15 +206,15 @@ func (d *azureIacTemplateDiscovery) handleObjectStorage(resourceValue map[string
 
 	var (
 		azureResourceName string
-		storage voc.IsCompute
-		enc voc.HasAtRestEncryption
+		storage           voc.IsCompute
+		enc               voc.HasAtRestEncryption
 	)
 
 	// The resources are only referencing to parameters instead of using the resource names
 	azureResourceName = getDefaultNameOfStorageResource(resourceValue["name"].(string))
 
 	// Necessary to get the needed information from the IaC template
-	dependsOnList, ok :=(resourceValue["dependsOn"]).([]interface{})
+	dependsOnList, ok := (resourceValue["dependsOn"]).([]interface{})
 	if !ok {
 		return nil, fmt.Errorf("dependsOn  convertion failed")
 	}
@@ -257,15 +257,15 @@ func (d *azureIacTemplateDiscovery) handleFileStorage(resourceValue map[string]i
 
 	var (
 		azureResourceName string
-		storage voc.IsCompute
-		enc voc.HasAtRestEncryption
+		storage           voc.IsCompute
+		enc               voc.HasAtRestEncryption
 	)
 
 	// The resources are only referencing to parameters instead of using the resource names
 	azureResourceName = getDefaultNameOfStorageResource(resourceValue["name"].(string))
 
 	// Necessary to get the needed information from the IaC template
-	dependsOnList, ok :=(resourceValue["dependsOn"]).([]interface{})
+	dependsOnList, ok := (resourceValue["dependsOn"]).([]interface{})
 	if !ok {
 		return nil, fmt.Errorf("dependsOn  convertion failed")
 	}
@@ -304,7 +304,6 @@ func (d *azureIacTemplateDiscovery) handleFileStorage(resourceValue map[string]i
 	return storage, nil
 }
 
-
 func getStorageAtRestEncryptionFromIac(storageAccountResource map[string]interface{}) voc.HasAtRestEncryption {
 
 	var enc voc.HasAtRestEncryption
@@ -315,7 +314,6 @@ func getStorageAtRestEncryptionFromIac(storageAccountResource map[string]interfa
 		return nil
 	}
 
-
 	if encType == "Microsoft.Storage" {
 		enc = voc.ManagedKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
@@ -323,7 +321,7 @@ func getStorageAtRestEncryptionFromIac(storageAccountResource map[string]interfa
 				Enabled:   isServiceEncryptionEnabled("blob", storageAccountResource),
 			},
 		}
-	} else if encType == "Microsoft.Keyvault"{
+	} else if encType == "Microsoft.Keyvault" {
 		keyVaultUrl := storageAccountResource["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["keyvaultproperties"].(map[string]interface{})["keyvaulturi"].(string)
 
 		enc = voc.CustomerKeyEncryption{
@@ -338,7 +336,7 @@ func getStorageAtRestEncryptionFromIac(storageAccountResource map[string]interfa
 	return enc
 }
 
-func getStorageAccountResourceFromTemplate(resourceNames []interface{}, azureTemplateResources  []interface{}) (map[string]interface{}, error) {
+func getStorageAccountResourceFromTemplate(resourceNames []interface{}, azureTemplateResources []interface{}) (map[string]interface{}, error) {
 
 	var (
 		resourceType string

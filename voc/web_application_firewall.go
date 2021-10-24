@@ -27,6 +27,5 @@ package voc
 
 type WebApplicationFirewall struct {
 	*AccessRestriction
-	Enabled	bool `json:"enabled"`
+	Enabled bool `json:"enabled"`
 }
-
