@@ -6,7 +6,7 @@ default compliant = false
 # this is an implementation of metric MalwareProtectionEnabeld
 
 name := "MalwareProtectionOutput"
-metricID := 16
+metricID := 18
 
 mp := input.malwareProtection
 
