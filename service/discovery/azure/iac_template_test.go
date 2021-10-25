@@ -62,7 +62,7 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 				"resources": []map[string]interface{}{
 					{
 						"type":     "Microsoft.Compute/virtualMachines",
-						"name":     "[parameters('virtualMachines_vm1_name')]",
+						"name":     "[parameters('virtualMachines_vm_1_2_name')]",
 						"location": "eastus",
 						"properties": map[string]interface{}{
 							"storageProfile": map[string]interface{}{
@@ -362,8 +362,8 @@ func TestVmProperties(t *testing.T) {
 
 	resourceVM, ok := list[0].(*voc.VirtualMachine)
 	assert.True(t, ok)
-	assert.Equal(t, "vm1", resourceVM.Name)
-	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1", (string)(resourceVM.GetID()))
+	assert.Equal(t, "vm-1-2", resourceVM.Name)
+	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm-1-2", (string)(resourceVM.GetID()))
 	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/blockStorage3", (string)(resourceVM.BlockStorage[0]))
 	assert.True(t, resourceVM.BootLog.Enabled)
 	assert.False(t, resourceVM.OSLog.Enabled)

@@ -63,7 +63,7 @@ func (*azureIacTemplateDiscovery) Description() string {
 	return "Discovery IaC template."
 }
 
-// List Azure resources by discoverying IaC template
+// List Azure resources by discovering IaC template
 func (d *azureIacTemplateDiscovery) List() (list []voc.IsCloudResource, err error) {
 	if err = d.authorize(); err != nil {
 		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
@@ -131,13 +131,13 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource
 						if valueKey == "type" {
 
 							if valueValue.(string) == "Microsoft.Compute/virtualMachines" {
-								vm, err := d.createVMResource(value, *resourceGroups[i].Name)
+								vm, err := d.handleVirtualMachine(value, *resourceGroups[i].Name)
 								if err != nil {
 									return nil, fmt.Errorf("could not create virtual machine resource: %w", err)
 								}
 								list = append(list, vm)
 							} else if valueValue.(string) == "Microsoft.Network/loadBalancers" {
-								lb, err := d.createLBResource(value, *resourceGroups[i].Name)
+								lb, err := d.handleLoadBalancer(value, *resourceGroups[i].Name)
 								if err != nil {
 									return nil, fmt.Errorf("could not create load balancer resource: %w", err)
 								}
@@ -211,9 +211,10 @@ func (d *azureIacTemplateDiscovery) handleObjectStorage(resourceValue map[string
 	)
 
 	// The resources are only referencing to parameters instead of using the resource names
-	azureResourceName = getDefaultNameOfStorageResource(resourceValue["name"].(string))
+	// In case of object storages, we take the container as resource
+	azureResourceName = getContainerName(resourceValue["name"].(string))
 
-	// Necessary to get the needed information from the IaC template
+	// 'dependsOn' references to the related IaC resources. For the storage account information, we need the related storage account resource name
 	dependsOnList, ok := (resourceValue["dependsOn"]).([]interface{})
 	if !ok {
 		return nil, fmt.Errorf("dependsOn  convertion failed")
@@ -243,7 +244,7 @@ func (d *azureIacTemplateDiscovery) handleObjectStorage(resourceValue map[string
 			Url: "", // not available
 			TransportEncryption: &voc.TransportEncryption{
 				Enabled:    isServiceEncryptionEnabled("blob", storageAccountResource),
-				Enforced:   httpsTrafficOnlyEnabled(storageAccountResource),
+				Enforced:   isHttpsTrafficOnlyEnabled(storageAccountResource),
 				TlsVersion: getMinTlsVersionOfStorageAccount(storageAccountResource),
 				Algorithm:  "", // not available
 			},
@@ -262,7 +263,7 @@ func (d *azureIacTemplateDiscovery) handleFileStorage(resourceValue map[string]i
 	)
 
 	// The resources are only referencing to parameters instead of using the resource names
-	azureResourceName = getDefaultNameOfStorageResource(resourceValue["name"].(string))
+	azureResourceName = getContainerName(resourceValue["name"].(string))
 
 	// Necessary to get the needed information from the IaC template
 	dependsOnList, ok := (resourceValue["dependsOn"]).([]interface{})
@@ -294,7 +295,7 @@ func (d *azureIacTemplateDiscovery) handleFileStorage(resourceValue map[string]i
 			Url: "", // not available
 			TransportEncryption: &voc.TransportEncryption{
 				Enabled:    isServiceEncryptionEnabled("file", storageAccountResource),
-				Enforced:   httpsTrafficOnlyEnabled(storageAccountResource),
+				Enforced:   isHttpsTrafficOnlyEnabled(storageAccountResource),
 				TlsVersion: getMinTlsVersionOfStorageAccount(storageAccountResource),
 				Algorithm:  "", // not available
 			},
@@ -367,7 +368,7 @@ func getStorageAccountResourceFromTemplate(resourceNames []interface{}, azureTem
 	return nil, fmt.Errorf("could not get resource from IaC template")
 }
 
-func httpsTrafficOnlyEnabled(value map[string]interface{}) bool {
+func isHttpsTrafficOnlyEnabled(value map[string]interface{}) bool {
 
 	if supportsHttpsTrafficOnly, ok := value["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["supportsHttpsTrafficOnly"].(bool); ok {
 		return supportsHttpsTrafficOnly
@@ -394,7 +395,7 @@ func getMinTlsVersionOfStorageAccount(value map[string]interface{}) string {
 	return ""
 }
 
-func (d *azureIacTemplateDiscovery) createLBResource(resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
+func (d *azureIacTemplateDiscovery) handleLoadBalancer(resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
 
 	var name string
 
@@ -403,7 +404,7 @@ func (d *azureIacTemplateDiscovery) createLBResource(resourceValue map[string]in
 	for key, value := range resourceValue {
 		// Get LB name
 		if key == "name" {
-			name = getDefaultNameOfResource(value.(string))
+			name = getDefaultResourceName(value.(string))
 		}
 	}
 
@@ -423,19 +424,20 @@ func (d *azureIacTemplateDiscovery) createLBResource(resourceValue map[string]in
 			Ports:   []int16{},
 		},
 		AccessRestrictions: &[]voc.AccessRestriction{
+			// TODO(all)
 			//Inbound:         false,
 			//RestrictedPorts: "",
 		},
 		// TODO(all): Do we need the httpEndpoint?
 		HttpEndpoints: &[]voc.HttpEndpoint{},
 		Url:           "", // TODO(all): TBD
-		//NetworkServices: , // TODO(all): TBD
+		NetworkServices: []voc.ResourceID{}, // TODO(all): TBD
 	}
 
 	return lb, nil
 }
 
-func (d *azureIacTemplateDiscovery) createVMResource(resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
+func (d *azureIacTemplateDiscovery) handleVirtualMachine(resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
 	var id string
 	var name string
 	var bootDiagnosticsEnabled bool
@@ -446,7 +448,7 @@ func (d *azureIacTemplateDiscovery) createVMResource(resourceValue map[string]in
 
 		// Get VM name
 		if key == "name" {
-			name = getDefaultNameOfResource(value.(string))
+			name = getDefaultResourceName(value.(string))
 		}
 
 		// Get boot logging status (bootDiagnosticsEnabled)
@@ -511,9 +513,9 @@ func (d *azureIacTemplateDiscovery) createID(resourceGroup, resourceType, name s
 	return "/subscriptions/" + *d.sub.SubscriptionID + "/resourceGroups/" + resourceGroup + "/providers/" + resourceType + "/" + name
 }
 
-// getDefaultNameOfResource gets the defaultName from template parameter
+// getDefaultResourceName gets the defaultName from template parameter
 // TODO(all): The exported template contains a parameter instead of the defaultName (resourceName). Furthermore, the template parameters do not contain a mapping from the parameter to the defaultName. In the parameter name all word separators (e.g. _, -, .) were replaced by a underscore (_), so it is not possible to uniquely restore the defaultName. Ideas? Do we need the correct defaultNames?
-func getDefaultNameOfResource(name string) string {
+func getDefaultResourceName(name string) string {
 	// Name in template is a parameter and unnecessary information must be shortened
 	nameSplit := strings.Split(name, "'")
 	anotherNameSplit := strings.Split(nameSplit[1], "_")
@@ -524,7 +526,7 @@ func getDefaultNameOfResource(name string) string {
 	return resourceDefaultName
 }
 
-func getDefaultNameOfStorageResource(name string) string {
+func getContainerName(name string) string {
 	// Name in template is a parameter and unnecessary information must be shortened
 	nameSplit := strings.Split(name, "'")
 	anotherNameSplit := strings.Split(nameSplit[3], "/")
