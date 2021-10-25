@@ -167,7 +167,7 @@ func TestVirtualMachine(t *testing.T) {
 
 	list, err := d.List()
 	assert.Nil(t, err)
-	
+
 	virtualMachine, ok := list[0].(*voc.VirtualMachine)
 
 	assert.True(t, ok)
