@@ -53,7 +53,7 @@ type Client struct {
 	accountID *string
 }
 
-// STSAPI describes the STS api interface which is implemented by the official AWS storageAPI and mock clients in tests
+// STSAPI describes the STS api interface which is implemented by the official AWS client and mock clients in tests
 type STSAPI interface {
 	GetCallerIdentity(ctx context.Context, params *sts.GetCallerIdentityInput, optFns ...func(*sts.Options)) (*sts.GetCallerIdentityOutput, error)
 }
