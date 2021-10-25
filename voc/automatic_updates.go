@@ -29,8 +29,7 @@ import "time"
 
 type AutomaticUpdates struct {
 	*Integrity
-	Enabled	bool `json:"enabled"`
-	Interval	time.Duration `json:"interval"`
-	SecurityOnly	bool `json:"securityOnly"`
+	Enabled      bool          `json:"enabled"`
+	Interval     time.Duration `json:"interval"`
+	SecurityOnly bool          `json:"securityOnly"`
 }
-

@@ -27,7 +27,6 @@ package voc
 
 type IdentityManagement struct {
 	*CloudResource
-	Authenticity	*Authenticity `json:"authenticity"`
-	Authorization	*Authorization `json:"authorization"`
+	Authenticity  *Authenticity  `json:"authenticity"`
+	Authorization *Authorization `json:"authorization"`
 }
-

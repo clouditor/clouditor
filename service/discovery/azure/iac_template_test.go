@@ -61,9 +61,9 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 			"template": &map[string]interface{}{
 				"resources": []map[string]interface{}{
 					{
-						"type":       "Microsoft.Compute/virtualMachines",
-						"name":       "[parameters('virtualMachines_vm1_name')]",
-						"location":   "eastus",
+						"type":     "Microsoft.Compute/virtualMachines",
+						"name":     "[parameters('virtualMachines_vm1_name')]",
+						"location": "eastus",
 						"properties": map[string]interface{}{
 							"storageProfile": map[string]interface{}{
 								"dataDisks": []map[string]interface{}{
@@ -83,7 +83,7 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 							},
 							"diagnosticsProfile": map[string]interface{}{
 								"bootDiagnostics": map[string]interface{}{
-									"enabled": true,
+									"enabled":    true,
 									"storageUri": "[concat('https://', parameters('storageAccounts_storage1_name'), '.blob.core.windows.net/')]",
 								},
 							},
@@ -91,9 +91,9 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 					},
 					{
 						// TODO Do we need the OD disks?
-						"type":       "Microsoft.Compute/disks",
-						"name":       "[parameters('disks_disk1_name')]",
-						"location":   "eastus",
+						"type":     "Microsoft.Compute/disks",
+						"name":     "[parameters('disks_disk1_name')]",
+						"location": "eastus",
 						"properties": map[string]interface{}{
 							"encryption": map[string]interface{}{
 								"type": "EncryptionAtRestWithPlatformKey",
@@ -101,9 +101,9 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 						},
 					},
 					{
-						"type":       "Microsoft.Compute/virtualMachines",
-						"name":       "[parameters('virtualMachines_vm2_name')]",
-						"location":   "eastus",
+						"type":     "Microsoft.Compute/virtualMachines",
+						"name":     "[parameters('virtualMachines_vm2_name')]",
+						"location": "eastus",
 						"properties": map[string]interface{}{
 							"storageProfile": map[string]interface{}{
 								"dataDisks": []map[string]interface{}{
@@ -123,7 +123,7 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 							},
 							"diagnosticsProfile": map[string]interface{}{
 								"bootDiagnostics": map[string]interface{}{
-									"enabled": true,
+									"enabled":    true,
 									"storageUri": "[concat('https://', parameters('storageAccounts_storage_2_name'), '.blob.core.windows.net/')]",
 								},
 							},
@@ -152,29 +152,29 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 						},
 					},
 					{
-						"type":     "Microsoft.Storage/storageAccounts/blobServices/containers",
-						"name":     "[concat(parameters('storageAccounts_storage1_name'), 'default/container1')]",
+						"type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+						"name": "[concat(parameters('storageAccounts_storage1_name'), 'default/container1')]",
 						"dependsOn": []interface{}{
 							"[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_storage1_name'), 'default')]",
 							"[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storage1_name'))]",
 						},
 						"properties": map[string]interface{}{
-							"defaultEncryptionScope": "$account-encryption-key",
+							"defaultEncryptionScope":      "$account-encryption-key",
 							"denyEncryptionScopeOverride": false,
-							"publicAccess": "None",
+							"publicAccess":                "None",
 						},
 					},
 					{
-						"type":     "Microsoft.Storage/storageAccounts/fileServices/shares",
-						"name":     "[concat(parameters('storageAccounts_storage1_name'), 'default/share1')]",
+						"type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+						"name": "[concat(parameters('storageAccounts_storage1_name'), 'default/share1')]",
 						"dependsOn": []interface{}{
 							"[resourceId('Microsoft.Storage/storageAccounts/fileServices', parameters('storageAccounts_storage1_name'), 'default')]",
 							"[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storage1_name'))]",
 						},
 						"properties": map[string]interface{}{
-							"defaultEncryptionScope": "$account-encryption-key",
+							"defaultEncryptionScope":      "$account-encryption-key",
 							"denyEncryptionScopeOverride": false,
-							"publicAccess": "None",
+							"publicAccess":                "None",
 						},
 					},
 				},
@@ -185,9 +185,9 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 			"template": &map[string]interface{}{
 				"resources": []map[string]interface{}{
 					{
-						"type":       "Microsoft.Compute/virtualMachines",
-						"name":       "[parameters('virtualMachines_vm_3_name')]",
-						"location":   "eastus",
+						"type":     "Microsoft.Compute/virtualMachines",
+						"name":     "[parameters('virtualMachines_vm_3_name')]",
+						"location": "eastus",
 						"properties": map[string]interface{}{
 							"storageProfile": map[string]interface{}{
 								"dataDisks": []map[string]interface{}{
@@ -207,7 +207,7 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 							},
 							"diagnosticsProfile": map[string]interface{}{
 								"bootDiagnostics": map[string]interface{}{
-									"enabled": true,
+									"enabled":    true,
 									"storageUri": "[concat('https://', parameters('storageAccounts_storage_3_name'), '.blob.core.windows.net/')]",
 								},
 							},
@@ -240,16 +240,16 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 						},
 					},
 					{
-						"type":     "Microsoft.Storage/storageAccounts/blobServices/containers",
-						"name":     "[concat(parameters('storageAccounts_storage3_name'), 'default/container3')]",
+						"type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+						"name": "[concat(parameters('storageAccounts_storage3_name'), 'default/container3')]",
 						"dependsOn": []interface{}{
 							"[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_storage3_name'), 'default')]",
 							"[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storage3_name'))]",
 						},
 						"properties": map[string]interface{}{
-							"defaultEncryptionScope": "$account-encryption-key",
+							"defaultEncryptionScope":      "$account-encryption-key",
 							"denyEncryptionScopeOverride": false,
-							"publicAccess": "None",
+							"publicAccess":                "None",
 						},
 					},
 					{
@@ -266,7 +266,7 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 	return m.mockSender.Do(req)
 }
 
-func TestIaCTemplateDiscovery(t *testing.T){
+func TestIaCTemplateDiscovery(t *testing.T) {
 	d := azure.NewAzureIacTemplateDiscovery(
 		azure.WithSender(&mockIacTemplateSender{}),
 		azure.WithAuthorizer(&mockAuthorizer{}),
@@ -300,7 +300,7 @@ func TestObjectStorageProperties(t *testing.T) {
 	assert.Equal(t, "TLS1_1", objectStorage.HttpEndpoint.TransportEncryption.TlsVersion)
 	assert.Equal(t, "ObjectStorage", objectStorage.Type[0])
 	assert.Equal(t, "eastus", objectStorage.GeoLocation.Region)
-	assert.Equal(t, true,  objectStorage.HttpEndpoint.TransportEncryption.Enabled)
+	assert.Equal(t, true, objectStorage.HttpEndpoint.TransportEncryption.Enabled)
 	assert.Equal(t, true, objectStorage.HttpEndpoint.TransportEncryption.Enforced)
 
 	// Check ManagedKeyEncryption
@@ -339,7 +339,7 @@ func TestFileStorageProperties(t *testing.T) {
 	assert.Equal(t, "TLS1_1", fileStorage.HttpEndpoint.TransportEncryption.TlsVersion)
 	assert.Equal(t, "FileStorage", fileStorage.Type[0])
 	assert.Equal(t, "eastus", fileStorage.GeoLocation.Region)
-	assert.Equal(t, true,  fileStorage.HttpEndpoint.TransportEncryption.Enabled)
+	assert.Equal(t, true, fileStorage.HttpEndpoint.TransportEncryption.Enabled)
 	assert.Equal(t, true, fileStorage.HttpEndpoint.TransportEncryption.Enforced)
 
 	// Check ManagedKeyEncryption

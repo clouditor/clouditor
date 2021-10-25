@@ -29,8 +29,7 @@ import "time"
 
 type Log struct {
 	*Auditing
-	Output	[]ResourceID `json:"output"`
-	Enabled	bool `json:"enabled"`
-	RetentionPeriod	time.Duration `json:"retentionPeriod"`
+	Output          []ResourceID  `json:"output"`
+	Enabled         bool          `json:"enabled"`
+	RetentionPeriod time.Duration `json:"retentionPeriod"`
 }
-

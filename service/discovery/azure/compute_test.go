@@ -43,9 +43,9 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 		return createResponse(map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
-					"id":         "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
-					"name":       "vm1",
-					"location":   "eastus",
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
+					"name":     "vm1",
+					"location": "eastus",
 					"properties": map[string]interface{}{
 						"diagnosticsProfile": map[string]interface{}{
 							"bootDiagnostics": map[string]interface{}{
