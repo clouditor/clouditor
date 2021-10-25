@@ -429,8 +429,8 @@ func (d *azureIacTemplateDiscovery) handleLoadBalancer(resourceValue map[string]
 			//RestrictedPorts: "",
 		},
 		// TODO(all): Do we need the httpEndpoint?
-		HttpEndpoints: &[]voc.HttpEndpoint{},
-		Url:           "", // TODO(all): TBD
+		HttpEndpoints:   &[]voc.HttpEndpoint{},
+		Url:             "",                 // TODO(all): TBD
 		NetworkServices: []voc.ResourceID{}, // TODO(all): TBD
 	}
 
