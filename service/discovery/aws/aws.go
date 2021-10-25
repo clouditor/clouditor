@@ -53,7 +53,7 @@ type Client struct {
 	accountID *string
 }
 
-// STSAPI describes the STS api interface which is implemented by the official AWS storageAPI and mock clients in tests
+// STSAPI describes the STS api interface which is implemented by the official AWS client and mock clients in tests
 type STSAPI interface {
 	GetCallerIdentity(ctx context.Context, params *sts.GetCallerIdentityInput, optFns ...func(*sts.Options)) (*sts.GetCallerIdentityOutput, error)
 }
@@ -90,7 +90,7 @@ func formatError(ae smithy.APIError) error {
 	return fmt.Errorf("code: %v, fault: %v, message: %v", ae.ErrorCode(), ae.ErrorFault(), ae.ErrorMessage())
 }
 
-// loadSTSClient creates the storageAPI using the STS api interface (for mock testing)
+// loadSTSClient creates the STS client using the STS api interface (for mock testing)
 func loadSTSClient(cfg aws.Config) STSAPI {
 	client := sts.NewFromConfig(cfg)
 	return client
