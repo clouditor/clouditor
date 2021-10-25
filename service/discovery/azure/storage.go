@@ -109,7 +109,7 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 		list = append(list, fileStorages...)
 	}
 
-	//Discover block storages
+	// Discover block storages
 	blockStorages, err := d.discoverBlockStorages()
 	if err != nil {
 		return nil, fmt.Errorf("could not handle block storages: %w", err)
