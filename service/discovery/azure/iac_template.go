@@ -325,7 +325,7 @@ func getStorageAccountAtRestEncryptionFromIac(storageAccountResource map[string]
 	if encType == "Microsoft.Storage" {
 		enc = voc.ManagedKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
-				Algorithm: "", // not available TODO(garuppel): do we get any information about the algorithm in the docs?
+				Algorithm: "AES-256", //
 				Enabled:   isServiceEncryptionEnabled("blob", storageAccountResource),
 			},
 		}

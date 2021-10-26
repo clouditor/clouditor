@@ -297,7 +297,7 @@ func getBlockStorageAtRestEncryption(disk compute.Disk) voc.HasAtRestEncryption 
 
 		enc = voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
-				Algorithm: "", // not available
+				Algorithm: "", // TODO(garuppel): TBD
 				Enabled:   true,
 			},
 			KeyUrl: keyUrl,
@@ -313,13 +313,13 @@ func getObjectStorageAtRestEncryption(account *storage.Account) voc.HasAtRestEnc
 
 	if account.Encryption.KeySource == storage.KeySourceMicrosoftStorage && *account.Encryption.Services.Blob.Enabled {
 		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
-			Algorithm: "", // not available
+			Algorithm: "AES-256",
 			Enabled:   true,
 		}}
 	} else if account.Encryption.KeySource == storage.KeySourceMicrosoftKeyvault && *account.Encryption.Services.Blob.Enabled {
 		enc = voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
-				Algorithm: "", // not available
+				Algorithm: "", // TODO(garuppel): TBD
 				Enabled:   true,
 			},
 			KeyUrl: to.String(account.Encryption.KeyVaultProperties.KeyVaultURI),
@@ -335,13 +335,13 @@ func getFileStorageAtRestEncryption(account *storage.Account) voc.HasAtRestEncry
 
 	if account.Encryption.KeySource == storage.KeySourceMicrosoftStorage && *account.Encryption.Services.File.Enabled {
 		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
-			Algorithm: "", // not available
+			Algorithm: "AES-256",
 			Enabled:   true,
 		}}
 	} else if account.Encryption.KeySource == storage.KeySourceMicrosoftKeyvault && *account.Encryption.Services.File.Enabled {
 		enc = voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
-				Algorithm: "", // not available
+				Algorithm: "", // TODO(garuppel): TBD
 				Enabled:   true,
 			},
 			KeyUrl: to.String(account.Encryption.KeyVaultProperties.KeyVaultURI),
