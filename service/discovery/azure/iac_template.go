@@ -111,20 +111,20 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource
 
 		template, ok := result.Template.(map[string]interface{})
 		if !ok {
-			return nil, fmt.Errorf("IaC template type convertion failed")
+			return nil, fmt.Errorf("IaC template type assertion failed")
 		}
 
 		for templateKey, templateValue := range template {
 			if templateKey == "resources" {
 				azureResource, ok := templateValue.([]interface{})
 				if !ok {
-					return nil, fmt.Errorf("templateValue type convertion failed")
+					return nil, fmt.Errorf("templateValue type assertion failed")
 				}
 
 				for _, resourcesValue := range azureResource {
 					value, ok := resourcesValue.(map[string]interface{})
 					if !ok {
-						return nil, fmt.Errorf("azureResource type convertion failed")
+						return nil, fmt.Errorf("azureResource type assertion failed")
 					}
 
 					for valueKey, valueValue := range value {
@@ -217,15 +217,19 @@ func (d *azureIacTemplateDiscovery) handleObjectStorage(resourceValue map[string
 	// 'dependsOn' references to the related IaC resources. For the storage account information, we need the related storage account resource name
 	dependsOnList, ok := (resourceValue["dependsOn"]).([]interface{})
 	if !ok {
-		return nil, fmt.Errorf("dependsOn  convertion failed")
+		return nil, fmt.Errorf("dependsOn type assertion failed")
 	}
 
 	storageAccountResource, err := getStorageAccountResourceFromTemplate(dependsOnList, azureResources)
 	if err != nil {
-		return nil, fmt.Errorf("cannot create object storage")
+		return nil, fmt.Errorf("cannot get storage account resource from IaC template: %v", err)
 	}
 
-	enc = getStorageAtRestEncryptionFromIac(storageAccountResource)
+	enc, err = getStorageAccountAtRestEncryptionFromIac(storageAccountResource)
+	if err != nil {
+		return nil, fmt.Errorf("cannot get atRestEncryption for storage account resource from IaC template: %v", err)
+	}
+
 
 	storage = &voc.ObjectStorage{
 		Storage: &voc.Storage{
@@ -268,15 +272,18 @@ func (d *azureIacTemplateDiscovery) handleFileStorage(resourceValue map[string]i
 	// Necessary to get the needed information from the IaC template
 	dependsOnList, ok := (resourceValue["dependsOn"]).([]interface{})
 	if !ok {
-		return nil, fmt.Errorf("dependsOn  convertion failed")
+		return nil, fmt.Errorf("dependsOn type assertion failed")
 	}
 
 	storageAccountResource, err := getStorageAccountResourceFromTemplate(dependsOnList, azureResources)
 	if err != nil {
-		return nil, fmt.Errorf("cannot create object storage")
+		return nil, fmt.Errorf("cannot get storage account resource from IaC template: %v", err)
 	}
 
-	enc = getStorageAtRestEncryptionFromIac(storageAccountResource)
+	enc, err = getStorageAccountAtRestEncryptionFromIac(storageAccountResource)
+	if err != nil {
+		return nil, fmt.Errorf("cannot get atRestEncryption for storage account resource from IaC template: %v", err)
+	}
 
 	storage = &voc.FileStorage{
 		Storage: &voc.Storage{
@@ -305,14 +312,14 @@ func (d *azureIacTemplateDiscovery) handleFileStorage(resourceValue map[string]i
 	return storage, nil
 }
 
-func getStorageAtRestEncryptionFromIac(storageAccountResource map[string]interface{}) voc.HasAtRestEncryption {
+func getStorageAccountAtRestEncryptionFromIac(storageAccountResource map[string]interface{}) (voc.HasAtRestEncryption, error) {
 
 	var enc voc.HasAtRestEncryption
 
 	encType, ok := storageAccountResource["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["keySource"].(string)
 
 	if !ok {
-		return nil
+		return nil, fmt.Errorf("type assertion failed")
 	}
 
 	if encType == "Microsoft.Storage" {
@@ -334,7 +341,7 @@ func getStorageAtRestEncryptionFromIac(storageAccountResource map[string]interfa
 		}
 	}
 
-	return enc
+	return enc, nil
 }
 
 func getStorageAccountResourceFromTemplate(resourceNames []interface{}, azureTemplateResources []interface{}) (map[string]interface{}, error) {
@@ -357,7 +364,7 @@ func getStorageAccountResourceFromTemplate(resourceNames []interface{}, azureTem
 	for _, resourcesValue := range azureTemplateResources {
 		templateResources, ok := resourcesValue.(map[string]interface{})
 		if !ok {
-			return nil, fmt.Errorf("azureResource type convertion failed")
+			return nil, fmt.Errorf("type assertion failed")
 		}
 
 		if templateResources["type"] == resourceType && templateResources["name"] == resourceName {
@@ -456,7 +463,7 @@ func (d *azureIacTemplateDiscovery) handleVirtualMachine(resourceValue map[strin
 			properties, ok = value.(map[string]interface{})
 
 			if !ok {
-				return nil, fmt.Errorf("type convertion failed")
+				return nil, fmt.Errorf("type assertion failed")
 			}
 
 			for propertiesKey, propertiesValue := range properties {

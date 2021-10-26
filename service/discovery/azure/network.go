@@ -157,7 +157,7 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc
 	}
 }
 
-func handleNetworkInterfaces(ni *network.Interface) voc.IsNetwork {
+func (azureNetworkDiscovery) handleNetworkInterfaces(ni *network.Interface) voc.IsNetwork {
 	return &voc.NetworkInterface{
 		Networking: &voc.Networking{
 			CloudResource: &voc.CloudResource{

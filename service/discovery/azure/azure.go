@@ -114,6 +114,5 @@ func (a azureDiscovery) apply(client *autorest.Client) {
 }
 
 func GetResourceGroupName(id string) string {
-	log.Infof(strings.Split(id, "/")[4])
 	return strings.Split(id, "/")[4]
 }
