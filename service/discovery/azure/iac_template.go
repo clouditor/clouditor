@@ -475,7 +475,7 @@ func (d *azureIacTemplateDiscovery) handleVirtualMachine(resourceValue map[strin
 	}
 
 	// Get virtual machine ID
-	// TODO(all): ID must be put together by hand, is not available in template. Better ideas? Leave empty?
+	// Virtual machine ID must be put together by hand, is not available in template
 	id = d.createID(resourceGroup, resourceValue["type"].(string), name)
 
 	vm := &voc.VirtualMachine{
@@ -495,7 +495,7 @@ func (d *azureIacTemplateDiscovery) handleVirtualMachine(resourceValue map[strin
 		OSLog: &voc.OSLog{
 			Log: &voc.Log{
 				Enabled: false,
-			}, // TODO(all): available in IaC template?
+			}, // TODO(all): available in IaC template/Azure?
 		},
 		BlockStorage: d.getBlockStorageResourceIDs(properties, resourceGroup),
 	}
