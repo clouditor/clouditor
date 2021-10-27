@@ -62,14 +62,14 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 		return nil, fmt.Errorf("got type '%T' but wanted '[]interface {}'. Check if resource types are specified ", rawTypes)
 	}
 	for i, v := range m["type"].([]interface{}) {
-		// TODO(all): type assertion check good or unnecessary because we assume resoruceTypes to be always set as intended ([]string)?
+		// TODO(all): type assertion check good or unnecessary because we assume resourceTypes to be always set as intended ([]string)?
 		if t, ok := v.(string); !ok {
 			return nil, fmt.Errorf("got type '%T' but wanted 'string'", t)
 		} else {
 			types[i] = t
 		}
 	}
-	if key := strings.Join(types, "-"); applicableMetrics[key] == nil {
+	if key := createKey(types); applicableMetrics[key] == nil {
 		files, err := scanBundleDir()
 		if err != nil {
 			return nil, fmt.Errorf("could not load metric bundles: %v", err)
@@ -82,12 +82,8 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 				return nil, err
 			}
 			if runMap != nil {
-				data = append(data, runMap)
-
-				if metric := applicableMetrics[key]; metric == nil {
-					applicableMetrics[key] = []string{fileInfo.Name()}
-				}
 				applicableMetrics[key] = append(applicableMetrics[key], fileInfo.Name())
+				data = append(data, runMap)
 			}
 		}
 	} else {
@@ -103,21 +99,10 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 	return data, nil
 }
 
-func scanBundleDir() ([]os.FileInfo, error) {
-
-	dirname := "./policyBundles"
-
-	f, err := os.Open(dirname)
-	if err != nil {
-		log.Fatal(err)
-	}
-	files, err := f.Readdir(-1)
-	_ = f.Close()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return files, err
+func createKey(types []string) (key string) {
+	key = strings.Join(types, "-")
+	key = strings.Replace(key, " ", "", -1)
+	return
 }
 
 func RunMap(bundle string, m map[string]interface{}) (data map[string]interface{}, err error) {
@@ -146,4 +131,21 @@ func RunMap(bundle string, m map[string]interface{}) (data map[string]interface{
 	} else {
 		return data, nil
 	}
+}
+
+func scanBundleDir() ([]os.FileInfo, error) {
+
+	dirname := "./policyBundles"
+
+	f, err := os.Open(dirname)
+	if err != nil {
+		log.Fatal(err)
+	}
+	files, err := f.Readdir(-1)
+	_ = f.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return files, err
 }

@@ -6,6 +6,7 @@ default compliant = false
 # this is an implementation of metric BootLoggingOutput
 
 name := "BootLoggingOutput"
+metricData := data.target_value
 
 bootLog := input.bootLog
 
@@ -15,8 +16,6 @@ applicable {
 
 compliant {
     data.operator == "=="
-    some i
-    some j
-	bootLog.output[i] == data.target_value[j]
-	bootLog.output[j] == data.target_value[i]
+    # Current implementation: It is enough that one output is one of target_values
+	bootLog.output[_] == data.target_value[_]
 }

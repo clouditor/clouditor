@@ -32,164 +32,191 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/policies"
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
-func TestRun(t *testing.T) {
-	var (
-		data     []map[string]interface{}
-		v        *structpb.Value
-		resource voc.IsCloudResource
-		err      error
-	)
+const (
+	mockObjStorage1EvidenceID = "1"
+	mockObjStorage1ResourceID = "/mockresources/storages/object1"
+	mockObjStorage2EvidenceID = "2"
+	mockObjStorage2ResourceID = "/mockresources/storages/object2"
+	mockVM1EvidenceID         = "3"
+	mockVM1ResourceID         = "/mockresources/compute/vm1"
+	mockVM2EvidenceID         = "4"
+	mockVM2ResourceID         = "/mockresources/compute/vm2"
+)
 
-	resource = voc.ObjectStorage{
-		Storage: &voc.Storage{
-			CloudResource: &voc.CloudResource{
-				ID:           "/subscriptions/e3ed0e96-57bc-4d81-9594-f239540cd77a/resourceGroups/titan/providers/Microsoft.Storage/storageAccounts/aybazestorage",
-				Name:         "aybazestorage",
-				CreationTime: 1621086669,
-				Type:         []string{"ObjectStorage", "Storage", "Resource"},
-				GeoLocation:  voc.GeoLocation{},
+func TestRunEvidence(t *testing.T) {
+	type fields struct {
+		resource   voc.IsCloudResource
+		evidenceID string
+	}
+	tests := []struct {
+		name       string
+		fields     fields
+		applicable bool
+		compliant  bool
+		wantErr    bool
+	}{
+		{
+			name: "ObjectStorage: Compliant Case",
+			fields: fields{
+				resource: voc.ObjectStorage{
+					Storage: &voc.Storage{
+						CloudResource: &voc.CloudResource{
+							ID:           mockObjStorage1ResourceID,
+							Name:         "aybazestorage",
+							CreationTime: 1621086669,
+							Type:         []string{"ObjectStorage", "Storage", "Resource"},
+							GeoLocation:  voc.GeoLocation{},
+						},
+						AtRestEncryption: &voc.AtRestEncryption{
+							Algorithm: "AES-256",
+							Enabled:   true,
+						},
+					},
+					HttpEndpoint: &voc.HttpEndpoint{
+						Functionality: nil,
+						Authenticity:  nil,
+						TransportEncryption: &voc.TransportEncryption{
+							Enforced:   true,
+							Enabled:    true,
+							TlsVersion: "1.3",
+							Algorithm:  "TLS",
+						},
+						Url:     "https://aybazestorage.blob.core.windows.net/",
+						Method:  "",
+						Handler: "",
+						Path:    "",
+					},
+				},
+				evidenceID: mockObjStorage1EvidenceID,
 			},
-			AtRestEncryption: &voc.AtRestEncryption{
-				Algorithm: "AES-256",
-				Enabled:   true,
+			applicable: true,
+			compliant:  true,
+			wantErr:    false,
+		}, {
+			name: "ObjectStorage: Non-Compliant Case",
+			fields: fields{
+				resource: voc.ObjectStorage{
+					Storage: &voc.Storage{
+						CloudResource: &voc.CloudResource{
+							ID:           mockObjStorage2ResourceID,
+							Name:         "aybazestorage",
+							CreationTime: 1621086669,
+							Type:         []string{"ObjectStorage", "Storage", "Resource"},
+							GeoLocation:  voc.GeoLocation{},
+						},
+						AtRestEncryption: &voc.AtRestEncryption{
+							Algorithm: "NoGoodAlg",
+							Enabled:   false,
+						},
+					},
+					HttpEndpoint: &voc.HttpEndpoint{
+						Functionality: nil,
+						Authenticity:  nil,
+						TransportEncryption: &voc.TransportEncryption{
+							Enforced:   false,
+							Enabled:    false,
+							TlsVersion: "1.0",
+							Algorithm:  "NoTLS",
+						},
+						Url:     "https://aybazestorage.blob.core.windows.net/",
+						Method:  "",
+						Handler: "",
+						Path:    "",
+					},
+				},
+				evidenceID: mockObjStorage2EvidenceID,
 			},
+			applicable: true,
+			compliant:  false,
+			wantErr:    false,
 		},
-		HttpEndpoint: &voc.HttpEndpoint{
-			Functionality: nil,
-			Authenticity:  nil,
-			TransportEncryption: &voc.TransportEncryption{
-				Enforced:   true,
-				Enabled:    true,
-				TlsVersion: "1.3",
-				Algorithm:  "TLS",
+		{
+			name: "VM:Compliant Case",
+			fields: fields{
+				resource: voc.VirtualMachine{
+					Compute: &voc.Compute{
+						CloudResource: &voc.CloudResource{
+							ID:   mockVM1ResourceID,
+							Name: "aybazestorage",
+							Type: []string{"Compute", "Virtual Machine", "Resource"},
+						}},
+					NetworkInterface: nil,
+					BlockStorage:     nil,
+					BootLog: &voc.BootLog{
+						Log: &voc.Log{
+							Output:          []voc.ResourceID{"SomeResourceId1", "SomeResourceId2"},
+							Enabled:         true,
+							RetentionPeriod: 36,
+						},
+					},
+					OSLog: &voc.OSLog{
+						Log: &voc.Log{
+							Output:          []voc.ResourceID{"SomeResourceId2"},
+							Enabled:         true,
+							RetentionPeriod: 36,
+						},
+					},
+				},
+				evidenceID: mockVM1EvidenceID,
 			},
-			Url:     "https://aybazestorage.blob.core.windows.net/",
-			Method:  "",
-			Handler: "",
-			Path:    "",
+			applicable: true,
+			compliant:  true,
+			wantErr:    false,
+		},
+		{
+			name: "VM:Non-Compliant Case",
+			fields: fields{
+				resource: voc.VirtualMachine{
+					Compute: &voc.Compute{
+						CloudResource: &voc.CloudResource{
+							ID:   mockVM2ResourceID,
+							Name: "aybazestorage",
+							Type: []string{"Compute", "Virtual Machine", "Resource"},
+						}},
+					NetworkInterface: nil,
+					BlockStorage:     nil,
+					BootLog: &voc.BootLog{
+						Log: &voc.Log{
+							Output:          []voc.ResourceID{},
+							Enabled:         false,
+							RetentionPeriod: 1,
+						},
+					},
+					OSLog: &voc.OSLog{
+						Log: &voc.Log{
+							Output:          []voc.ResourceID{"SomeResourceId3"},
+							Enabled:         false,
+							RetentionPeriod: 1,
+						},
+					},
+				},
+				evidenceID: mockVM2EvidenceID,
+			},
+			applicable: true,
+			compliant:  false,
+			wantErr:    false,
 		},
 	}
-
-	v, err = voc.ToStruct(resource)
-
-	assert.Nil(t, err)
-
-	data, err = policies.RunEvidence(&evidence.Evidence{
-		Resource:   v,
-		ResourceId: "/subscriptions/e3ed0e96-57bc-4d81-9594-f239540cd77a/resourceGroups/titan/providers/Microsoft.Storage/storageAccounts/aybazestorage",
-	})
-
-	assert.Nil(t, err)
-
-	// Test metric TransportEncryptionAlgorithm
-	assert.NotNil(t, data[0])
-	assert.Equal(t, true, data[0]["compliant"])
-	assert.Equal(t, true, data[0]["applicable"])
-
-	// Test metric TLSVersion
-	assert.NotNil(t, data[1])
-	assert.Equal(t, true, data[1]["compliant"])
-	assert.Equal(t, true, data[1]["applicable"])
-
-	// Test metric TransportEncryptionEnabled
-	assert.NotNil(t, data[2])
-	assert.Equal(t, true, data[2]["compliant"])
-	assert.Equal(t, true, data[2]["applicable"])
-
-	// Test metric TransportEncryptionEnforced
-	assert.NotNil(t, data[3])
-	assert.Equal(t, true, data[3]["compliant"])
-	assert.Equal(t, true, data[3]["applicable"])
-
-	// Test metric EncryptionAtRestEnabled
-	assert.NotNil(t, data[4])
-	assert.Equal(t, true, data[4]["compliant"])
-	assert.Equal(t, true, data[4]["applicable"])
-
-	// Test metric EncryptionAtRestAlgorithm
-	assert.NotNil(t, data[5])
-	assert.Equal(t, true, data[5]["compliant"])
-	assert.Equal(t, true, data[5]["applicable"])
-
-}
-
-func TestVM(t *testing.T) {
-	var (
-		data     []map[string]interface{}
-		v        *structpb.Value
-		resource voc.IsCloudResource
-		err      error
-	)
-
-	resource = voc.VirtualMachine{
-		Compute: &voc.Compute{
-			CloudResource: &voc.CloudResource{
-				ID:   "/subscriptions/e3ed0e96-57bc-4d81-9594-f239540cd77a/resourceGroups/titan/providers/Microsoft.Storage/virtualMachine/mockvm",
-				Name: "aybazestorage",
-				Type: []string{"Compute", "Virtual Machine", "Resource"},
-			}},
-		NetworkInterface: nil,
-		BlockStorage:     nil,
-		BootLog: &voc.BootLog{
-			Log: &voc.Log{
-				Output:          []voc.ResourceID{"SomeResourceId1", "SomeResourceId2"},
-				Enabled:         true,
-				RetentionPeriod: 36,
-			},
-		},
-		OSLog: &voc.OSLog{
-			Log: &voc.Log{
-				Output:          []voc.ResourceID{"SomeResourceId1", "SomeResourceId2"},
-				Enabled:         true,
-				RetentionPeriod: 36,
-			},
-		},
+	for _, tt := range tests {
+		resource, err := voc.ToStruct(tt.fields.resource)
+		assert.Nil(t, err)
+		t.Run(tt.name, func(t *testing.T) {
+			results, err := policies.RunEvidence(&evidence.Evidence{
+				Id:         tt.fields.evidenceID,
+				ResourceId: string(tt.fields.resource.GetID()),
+				Resource:   resource,
+			})
+			if (err != nil) != tt.wantErr {
+				t.Errorf("RunEvidence() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			assert.NotEmpty(t, results)
+			for _, result := range results {
+				assert.Equal(t, tt.applicable, result["applicable"].(bool))
+				assert.Equal(t, tt.compliant, result["compliant"].(bool))
+			}
+		})
 	}
-
-	v, err = voc.ToStruct(resource)
-
-	assert.Nil(t, err)
-
-	data, err = policies.RunEvidence(&evidence.Evidence{
-		Resource:   v,
-		ResourceId: "/subscriptions/e3ed0e96-57bc-4d81-9594-f239540cd77a/resourceGroups/titan/providers/Microsoft.Storage/virtualMachine/mockvm",
-	})
-	assert.Nil(t, err)
-	assert.NotNil(t, data)
-
-	// Test metric BootLoggingEnabled
-	assert.NotNil(t, data[0])
-	assert.Equal(t, true, data[0]["compliant"])
-	assert.Equal(t, true, data[0]["applicable"])
-
-	// Test metric BootLoggingRetention
-	assert.NotNil(t, data[1])
-	assert.Equal(t, true, data[1]["compliant"])
-	assert.Equal(t, true, data[1]["applicable"])
-
-	// Test metric BootLoggingOutput
-	assert.NotNil(t, data[2])
-	assert.Equal(t, true, data[1]["compliant"])
-	assert.Equal(t, true, data[1]["applicable"])
-
-	// Test metric OSLoggingEnabled
-	assert.NotNil(t, data[3])
-	assert.Equal(t, true, data[2]["compliant"])
-	assert.Equal(t, true, data[2]["applicable"])
-
-	// Test metricOSLoggingRetention
-	assert.NotNil(t, data[4])
-	assert.Equal(t, true, data[3]["compliant"])
-	assert.Equal(t, true, data[3]["applicable"])
-
-	// Repeat to check if only the metrics are evaluated that are needed
-	_, err = policies.RunEvidence(&evidence.Evidence{
-		Resource:   v,
-		ResourceId: "/subscriptions/e3ed0e96-57bc-4d81-9594-f239540cd77a/resourceGroups/titan/providers/Microsoft.Storage/virtualMachine/mockvm",
-	})
-	assert.Nil(t, err)
-
 }

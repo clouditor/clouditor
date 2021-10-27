@@ -15,9 +15,11 @@ applicable {
 
 compliant {
 	data.operator == "=="
-	endpoint.transportEncryption.tlsVersion == data.target_value
+	# Assess version with each compliant version in data
+	endpoint.transportEncryption.tlsVersion == data.target_value[_]
 }
 
+# Currently not working since version is string in ontology
 compliant {
 	data.operator == ">="
 	endpoint.transportEncryption.tlsVersion >= data.target_value
