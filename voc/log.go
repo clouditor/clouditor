@@ -25,8 +25,11 @@
 
 package voc
 
+import "time"
+
 type Log struct {
 	*Auditing
-	Activated	bool `json:"activated"`
+	Output          []ResourceID  `json:"output"`
+	Enabled         bool          `json:"enabled"`
+	RetentionPeriod time.Duration `json:"retentionPeriod"`
 }
-

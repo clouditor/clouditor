@@ -27,9 +27,8 @@ package voc
 
 type LoadBalancer struct {
 	*NetworkService
-	NetworkServices	[]ResourceID `json:"networkServices"`
-	AccessRestriction	*AccessRestriction `json:"accessRestriction"`
-	HttpEndpoints	*[]HttpEndpoint `json:"httpEndpoints"`
-	Url	string `json:"url"`
+	AccessRestrictions *[]AccessRestriction `json:"accessRestrictions"`
+	HttpEndpoints      *[]HttpEndpoint      `json:"httpEndpoints"`
+	NetworkServices    []ResourceID         `json:"networkServices"`
+	Url                string               `json:"url"`
 }
-

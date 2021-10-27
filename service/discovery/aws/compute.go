@@ -132,9 +132,10 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachine, erro
 
 			resources = append(resources, voc.VirtualMachine{
 				Compute:          computeResource,
-				NetworkInterface: d.getNetworkInterfacesOfVM(vm),
 				BlockStorage:     d.mapBlockStorageIDsOfVM(vm),
-				Log:              d.getLogsOfVM(vm),
+				NetworkInterface: d.getNetworkInterfacesOfVM(vm),
+				BootLog:          d.getBootLog(vm),
+				OSLog:            d.getOSLog(vm),
 			})
 		}
 	}
@@ -187,11 +188,31 @@ func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.Function
 	return
 }
 
-// getLogsOfVM checks if logging is enabled
-// Currently there is no option to find out if logs are enabled -> Default value false
-func (d *computeDiscovery) getLogsOfVM(_ *typesEC2.Instance) (l *voc.Log) {
-	l = new(voc.Log)
-	l.Activated = false
+// getBootLog checks if boot logging is enabled
+// Currently there is no option to find out if any logs are enabled -> Assign default zero values
+func (*computeDiscovery) getBootLog(_ *typesEC2.Instance) (l *voc.BootLog) {
+	l = &voc.BootLog{
+		Log: &voc.Log{
+			Auditing:        nil,
+			Output:          nil,
+			Enabled:         false,
+			RetentionPeriod: 0,
+		},
+	}
+	return
+}
+
+// getOSLog checks if OS logging is enabled
+// Currently there is no option to find out if any logs are enabled -> Assign default zero values
+func (*computeDiscovery) getOSLog(_ *typesEC2.Instance) (l *voc.OSLog) {
+	l = &voc.OSLog{
+		Log: &voc.Log{
+			Auditing:        nil,
+			Output:          nil,
+			Enabled:         false,
+			RetentionPeriod: 0,
+		},
+	}
 	return
 }
 

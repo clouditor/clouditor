@@ -27,5 +27,6 @@ package voc
 
 type RBAC struct {
 	*Authorization
+	MixedDuties      float32 `json:"mixedDuties"`
+	BroadAssignments float32 `json:"broadAssignments"`
 }
-

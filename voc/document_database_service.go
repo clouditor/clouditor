@@ -28,4 +28,3 @@ package voc
 type DocumentDatabaseService struct {
 	*DatabaseService
 }
-
