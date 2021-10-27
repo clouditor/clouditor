@@ -27,7 +27,6 @@ package policies_test
 
 import (
 	"clouditor.io/clouditor/voc"
-	"encoding/json"
 	"testing"
 
 	"clouditor.io/clouditor/api/evidence"
@@ -78,8 +77,6 @@ func TestRun(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	assert.Nil(t, err)
-
 	data, err = policies.RunEvidence(&evidence.Evidence{
 		Resource:   v,
 		ResourceId: "/subscriptions/e3ed0e96-57bc-4d81-9594-f239540cd77a/resourceGroups/titan/providers/Microsoft.Storage/storageAccounts/aybazestorage",
@@ -121,60 +118,43 @@ func TestRun(t *testing.T) {
 
 func TestVM(t *testing.T) {
 	var (
-		data []map[string]interface{}
-		//v        *structpb.Value
-		//resource voc.IsCloudResource
-		m   map[string]interface{}
-		err error
+		data     []map[string]interface{}
+		v        *structpb.Value
+		resource voc.IsCloudResource
+		err      error
 	)
 
-	// Testing VM
-	j := `{
-		"bootLog" : {
-			"enabled" : true,
-			"retentionPeriod" : 36,
-			"output" : [
-							"SomeResourceId1",
-							"SomeResourceId2"
-						]
+	resource = voc.VirtualMachine{
+		Compute: &voc.Compute{
+			CloudResource: &voc.CloudResource{
+				ID:   "/subscriptions/e3ed0e96-57bc-4d81-9594-f239540cd77a/resourceGroups/titan/providers/Microsoft.Storage/virtualMachine/mockvm",
+				Name: "aybazestorage",
+				Type: []string{"Compute", "Virtual Machine", "Resource"},
+			}},
+		NetworkInterface: nil,
+		BlockStorage:     nil,
+		BootLog: &voc.BootLog{
+			Log: &voc.Log{
+				Output:          []voc.ResourceID{"SomeResourceId1", "SomeResourceId2"},
+				Enabled:         true,
+				RetentionPeriod: 36,
+			},
 		},
-		"OSLog" : {
-			"enabled" : true,
-			"retentionPeriod" : 90
+		OSLog: &voc.OSLog{
+			Log: &voc.Log{
+				Output:          []voc.ResourceID{"SomeResourceId1", "SomeResourceId2"},
+				Enabled:         true,
+				RetentionPeriod: 36,
+			},
 		},
-		"id": "/subscriptions/e3ed0e96-57bc-4d81-9594-f239540cd77a/resourceGroups/titan/providers/Microsoft.Storage/virtualMachine/mockvm",
-		"name": "aybazestorage",
-		"type": [
-					"VirtualMachine",
-					"Compute",
-					"Resource"
-				]
-	}`
+	}
 
-	// TODO(lebogg): Have to wait vor voc update
-	//resource = &voc.VirtualMachine{
-	//	Compute: &voc.Compute{
-	//		CloudResource: &voc.CloudResource{
-	//			ID:           "/subscriptions/e3ed0e96-57bc-4d81-9594-f239540cd77a/resourceGroups/titan/providers/Microsoft.Storage/virtualMachine/mockvm",
-	//			Name:         "aybazestorage",
-	//		}},
-	//	NetworkInterface: nil,
-	//	BlockStorage:     nil,
-	//	BootLog:          B
-	//	},
-	//}
-
-	m = make(map[string]interface{})
-	err = json.Unmarshal([]byte(j), &m)
-
-	assert.Nil(t, err)
-
-	s, err := structpb.NewStruct(m)
+	v, err = voc.ToStruct(resource)
 
 	assert.Nil(t, err)
 
 	data, err = policies.RunEvidence(&evidence.Evidence{
-		Resource:   structpb.NewStructValue(s),
+		Resource:   v,
 		ResourceId: "/subscriptions/e3ed0e96-57bc-4d81-9594-f239540cd77a/resourceGroups/titan/providers/Microsoft.Storage/virtualMachine/mockvm",
 	})
 	assert.Nil(t, err)
@@ -190,19 +170,24 @@ func TestVM(t *testing.T) {
 	assert.Equal(t, true, data[1]["compliant"])
 	assert.Equal(t, true, data[1]["applicable"])
 
-	// Test metric OSLoggingEnabled
+	// Test metric BootLoggingOutput
 	assert.NotNil(t, data[2])
+	assert.Equal(t, true, data[1]["compliant"])
+	assert.Equal(t, true, data[1]["applicable"])
+
+	// Test metric OSLoggingEnabled
+	assert.NotNil(t, data[3])
 	assert.Equal(t, true, data[2]["compliant"])
 	assert.Equal(t, true, data[2]["applicable"])
 
 	// Test metricOSLoggingRetention
-	assert.NotNil(t, data[3])
+	assert.NotNil(t, data[4])
 	assert.Equal(t, true, data[3]["compliant"])
 	assert.Equal(t, true, data[3]["applicable"])
 
 	// Repeat to check if only the metrics are evaluated that are needed
 	_, err = policies.RunEvidence(&evidence.Evidence{
-		Resource:   structpb.NewStructValue(s),
+		Resource:   v,
 		ResourceId: "/subscriptions/e3ed0e96-57bc-4d81-9594-f239540cd77a/resourceGroups/titan/providers/Microsoft.Storage/virtualMachine/mockvm",
 	})
 	assert.Nil(t, err)

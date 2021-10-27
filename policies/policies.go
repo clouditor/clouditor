@@ -40,7 +40,7 @@ import (
 var log *logrus.Entry = logrus.WithField("component", "policies")
 
 // applicableMetrics stores a list of applicable metrics per resourceType
-var applicableMetrics = make(map[string][]int)
+var applicableMetrics = make(map[string][]string)
 
 func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) {
 	log.Println("Run evidence for resourceId", evidence.ResourceId, " and ID: ", evidence.Id)
@@ -59,7 +59,7 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 	if rawTypes, ok := m["type"].([]interface{}); ok {
 		types = make([]string, len(rawTypes))
 	} else {
-		return nil, fmt.Errorf("got type '%T' but wanted '[]interface {}'", rawTypes)
+		return nil, fmt.Errorf("got type '%T' but wanted '[]interface {}'. Check if resource types are specified ", rawTypes)
 	}
 	for i, v := range m["type"].([]interface{}) {
 		// TODO(all): type assertion check good or unnecessary because we assume resoruceTypes to be always set as intended ([]string)?
@@ -70,10 +70,13 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 		}
 	}
 	if key := strings.Join(types, "-"); applicableMetrics[key] == nil {
-		// TODO(lebogg): Replace magic number for amount of metrics in the future when they are not hardcoded anymore
-		for i := 1; i <= 24; i++ {
-			fmt.Println(i)
-			file := fmt.Sprintf("%s/policies/bundle%d", baseDir, i)
+		files, err := scanBundleDir()
+		if err != nil {
+			return nil, fmt.Errorf("could not load metric bundles: %v", err)
+		}
+
+		for _, fileInfo := range files {
+			file := fmt.Sprintf("%s/policies/policyBundles/%s", baseDir, fileInfo.Name())
 			runMap, err := RunMap(file, m)
 			if err != nil {
 				return nil, err
@@ -82,14 +85,14 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 				data = append(data, runMap)
 
 				if metric := applicableMetrics[key]; metric == nil {
-					applicableMetrics[key] = []int{i}
+					applicableMetrics[key] = []string{fileInfo.Name()}
 				}
-				applicableMetrics[key] = append(applicableMetrics[key], i)
+				applicableMetrics[key] = append(applicableMetrics[key], fileInfo.Name())
 			}
 		}
 	} else {
 		for _, metric := range applicableMetrics[key] {
-			file := fmt.Sprintf("%s/policies/bundle%d", baseDir, metric)
+			file := fmt.Sprintf("%s/policies/policyBundles/%s", baseDir, metric)
 			runMap, err := RunMap(file, m)
 			if err != nil {
 				return nil, err
@@ -98,6 +101,23 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 		}
 	}
 	return data, nil
+}
+
+func scanBundleDir() ([]os.FileInfo, error) {
+
+	dirname := "./policyBundles"
+
+	f, err := os.Open(dirname)
+	if err != nil {
+		log.Fatal(err)
+	}
+	files, err := f.Readdir(-1)
+	_ = f.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return files, err
 }
 
 func RunMap(bundle string, m map[string]interface{}) (data map[string]interface{}, err error) {
