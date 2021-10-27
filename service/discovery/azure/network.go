@@ -151,13 +151,13 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc
 			Ports: getLoadBalancerPorts(lb),
 		},
 		// TODO(all): do we need the AccessRestriction for load balancers?
-		AccessRestriction: &voc.AccessRestriction{},
+		AccessRestrictions: &[]voc.AccessRestriction{},
 		// TODO(all): do we need the httpEndpoint for load balancers?
 		HttpEndpoints: &[]voc.HttpEndpoint{},
 	}
 }
 
-func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *network.Interface) voc.IsNetwork {
+func (*azureNetworkDiscovery) handleNetworkInterfaces(ni *network.Interface) voc.IsNetwork {
 	return &voc.NetworkInterface{
 		Networking: &voc.Networking{
 			CloudResource: &voc.CloudResource{
@@ -170,10 +170,10 @@ func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *network.Interface) v
 				},
 			},
 		},
-		AccessRestriction: &voc.AccessRestriction{
-			Inbound:         false, // TODO(garuppel): TBD
-			RestrictedPorts: d.getRestrictedPorts(ni),
-		},
+		//AccessRestriction: &voc.AccessRestriction{
+		//	Inbound:         false, // TODO(garuppel): TBD
+		//	RestrictedPorts: d.getRestrictedPorts(ni),
+		//},
 	}
 }
 
@@ -186,60 +186,55 @@ func getLoadBalancerPorts(lb *network.LoadBalancer) (loadBalancerPorts []int16) 
 	return loadBalancerPorts
 }
 
-// Returns all restricted ports for the network interface
-func (d *azureNetworkDiscovery) getRestrictedPorts(ni *network.Interface) string {
-
-	var restrictedPorts []string
-
-	if ni.InterfacePropertiesFormat == nil ||
-		ni.InterfacePropertiesFormat.NetworkSecurityGroup == nil ||
-		ni.InterfacePropertiesFormat.NetworkSecurityGroup.ID == nil {
-		return ""
-	}
-
-	nsgID := to.String(ni.NetworkSecurityGroup.ID)
-
-	client := network.NewSecurityGroupsClient(to.String(d.sub.SubscriptionID))
-	d.apply(&client.Client)
-
-	// Get the Security Group of the network interface ni
-	sg, err := client.Get(context.Background(), GetResourceGroupName(nsgID), strings.Split(nsgID, "/")[8], "")
-
-	if err != nil {
-		log.Errorf("Could not get security group: %s", err)
-		return ""
-	}
-
-	if sg.SecurityGroupPropertiesFormat != nil && sg.SecurityGroupPropertiesFormat.SecurityRules != nil {
-		// Find all ports defined in the security rules with access property "Deny"
-		for _, securityRule := range *sg.SecurityRules {
-			if securityRule.Access == network.SecurityRuleAccessDeny {
-				restrictedPorts = append(restrictedPorts, *securityRule.SourcePortRange)
-			}
-		}
-	}
-
-	restrictedPortsClean := deleteDuplicatesFromSlice(restrictedPorts)
-
-	return strings.Join(restrictedPortsClean, ",")
-}
-
-func deleteDuplicatesFromSlice(intSlice []string) []string {
-	keys := make(map[string]bool)
-	var list []string
-	for _, entry := range intSlice {
-		if _, value := keys[entry]; !value {
-			keys[entry] = true
-			list = append(list, entry)
-		}
-	}
-	return list
-}
-
-func GetResourceGroupName(id string) string {
-	log.Infof(strings.Split(id, "/")[4])
-	return strings.Split(id, "/")[4]
-}
+//// Returns all restricted ports for the network interface
+//func (d *azureNetworkDiscovery) getRestrictedPorts(ni *network.Interface) string {
+//
+//	var restrictedPorts []string
+//
+//	if ni.InterfacePropertiesFormat == nil ||
+//		ni.InterfacePropertiesFormat.NetworkSecurityGroup == nil ||
+//		ni.InterfacePropertiesFormat.NetworkSecurityGroup.ID == nil {
+//		return ""
+//	}
+//
+//	nsgID := to.String(ni.NetworkSecurityGroup.ID)
+//
+//	client := network.NewSecurityGroupsClient(to.String(d.sub.SubscriptionID))
+//	d.apply(&client.Client)
+//
+//	// Get the Security Group of the network interface ni
+//	sg, err := client.Get(context.Background(), GetResourceGroupName(nsgID), strings.Split(nsgID, "/")[8], "")
+//
+//	if err != nil {
+//		log.Errorf("Could not get security group: %s", err)
+//		return ""
+//	}
+//
+//	if sg.SecurityGroupPropertiesFormat != nil && sg.SecurityGroupPropertiesFormat.SecurityRules != nil {
+//		// Find all ports defined in the security rules with access property "Deny"
+//		for _, securityRule := range *sg.SecurityRules {
+//			if securityRule.Access == network.SecurityRuleAccessDeny {
+//				restrictedPorts = append(restrictedPorts, *securityRule.SourcePortRange)
+//			}
+//		}
+//	}
+//
+//	restrictedPortsClean := deleteDuplicatesFromSlice(restrictedPorts)
+//
+//	return strings.Join(restrictedPortsClean, ",")
+//}
+//
+//func deleteDuplicatesFromSlice(intSlice []string) []string {
+//	keys := make(map[string]bool)
+//	var list []string
+//	for _, entry := range intSlice {
+//		if _, value := keys[entry]; !value {
+//			keys[entry] = true
+//			list = append(list, entry)
+//		}
+//	}
+//	return list
+//}
 
 func (d *azureNetworkDiscovery) GetPublicIPAddress(lb *network.LoadBalancer) string {
 

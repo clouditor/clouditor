@@ -27,5 +27,5 @@ package voc
 
 type FileStorage struct {
 	*Storage
+	HttpEndpoint *HttpEndpoint `json:"httpEndpoint"`
 }
-

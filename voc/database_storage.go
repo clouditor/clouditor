@@ -25,6 +25,7 @@
 
 package voc
 
-type InfrastructureLogging struct {
-	*Logging
+type DatabaseStorage struct {
+	*Storage
+	Parent []ResourceID `json:"parent"`
 }

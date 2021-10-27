@@ -25,6 +25,6 @@
 
 package voc
 
-type InfrastructureLogging struct {
-	*Logging
+type OSLog struct {
+	*Log
 }

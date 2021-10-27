@@ -25,6 +25,7 @@
 
 package voc
 
-type InfrastructureLogging struct {
-	*Logging
+type JwtBasedAuthentication struct {
+	*Authenticity
+	Enforced bool `json:"enforced"`
 }

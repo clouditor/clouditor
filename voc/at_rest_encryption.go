@@ -27,8 +27,11 @@ package voc
 
 type AtRestEncryption struct {
 	*Confidentiality
-	KeyManager	string `json:"keyManager"`
-	Algorithm	string `json:"algorithm"`
-	Enabled	bool `json:"enabled"`
+	Algorithm string `json:"algorithm"`
+	Enabled   bool   `json:"enabled"`
 }
 
+// TODO(all): I (lebogg) think we have to implement the interface for the case of encryption being not enabled?
+func (AtRestEncryption) GetAtRestEncryption() *AtRestEncryption {
+	panic("implement me")
+}

@@ -88,6 +88,7 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 		return nil, fmt.Errorf("could not list storage accounts: %w", err)
 	}
 
+	// Discover object and file storages
 	accounts := result.Values()
 	for i := range accounts {
 		// Discover object storages
@@ -95,26 +96,25 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 		if err != nil {
 			return nil, fmt.Errorf("could not handle object storages: %w", err)
 		}
-		
+
 		// Discover file storages
 		fileStorages, err := d.discoverFileStorages(&accounts[i])
 		if err != nil {
 			return nil, fmt.Errorf("could not handle file storages: %w", err)
 		}
 
-		//Discover block storages
-		blockStorages, err := d.discoverBlockStorages()
-		if err != nil {
-			return nil, fmt.Errorf("could not handle block storages: %w", err)
-		}
-
-
 		log.Infof("Adding storage account %+v", objectStorages)
 
 		list = append(list, objectStorages...)
 		list = append(list, fileStorages...)
-		list = append(list, blockStorages...)
 	}
+
+	// Discover block storages
+	blockStorages, err := d.discoverBlockStorages()
+	if err != nil {
+		return nil, fmt.Errorf("could not handle block storages: %w", err)
+	}
+	list = append(list, blockStorages...)
 
 	return list, err
 }
@@ -148,7 +148,7 @@ func (d *azureStorageDiscovery) discoverFileStorages(account *storage.Account) (
 
 	result, err := client.List(context.Background(), GetResourceGroupName(*account.ID), *account.Name, "", "", "")
 	if err != nil {
-	return nil, fmt.Errorf("could not list file storages: %w", err)
+		return nil, fmt.Errorf("could not list file storages: %w", err)
 	}
 
 	for _, value := range result.Values() {
@@ -182,7 +182,8 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *storage.Account)
 	return list, nil
 }
 
-func handleBlockStorage(disk compute.Disk) voc.IsStorage {
+func handleBlockStorage(disk compute.Disk) *voc.BlockStorage {
+	enc := getBlockStorageAtRestEncryption(disk)
 
 	return &voc.BlockStorage{
 		Storage: &voc.Storage{
@@ -195,16 +196,14 @@ func handleBlockStorage(disk compute.Disk) voc.IsStorage {
 					Region: *disk.Location,
 				},
 			},
-			AtRestEncryption: &voc.AtRestEncryption{
-				KeyManager: string(disk.Encryption.Type), // TODO(all): What do we do with the encryption type? Do we leave it like that?
-				Enabled:    true, // is always enabled
-				Algorithm: "", // not available
-			},
+			AtRestEncryption: enc,
 		},
 	}
 }
 
-func handleObjectStorage(account *storage.Account, container storage.ListContainerItem) voc.IsStorage {
+func handleObjectStorage(account *storage.Account, container storage.ListContainerItem) *voc.ObjectStorage {
+	enc := getObjectStorageAtRestEncryption(account)
+
 	return &voc.ObjectStorage{
 		Storage: &voc.Storage{
 			CloudResource: &voc.CloudResource{
@@ -216,25 +215,23 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 					Region: *account.Location,
 				},
 			},
-			AtRestEncryption: &voc.AtRestEncryption{
-				KeyManager: string(account.Encryption.KeySource),
-				Algorithm:  "AES-265", // seems to be always AES-256
-				Enabled:    to.Bool(account.Encryption.Services.Blob.Enabled),
-			},
+			AtRestEncryption: enc,
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
 			Url: to.String(account.PrimaryEndpoints.Blob) + to.String(container.Name),
 			TransportEncryption: &voc.TransportEncryption{
 				Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
-				Enabled:    true, // cannot be disabled
+				Enabled:    true, // TODO get from IaC template in all storages
 				TlsVersion: string(account.MinimumTLSVersion),
-				Algorithm:  "", // TBD
+				Algorithm:  "", // not available
 			},
 		},
 	}
 }
 
-func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem) voc.IsStorage {
+func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem) *voc.FileStorage {
+	enc := getFileStorageAtRestEncryption(account)
+
 	return &voc.FileStorage{
 		Storage: &voc.Storage{
 			CloudResource: &voc.CloudResource{
@@ -246,21 +243,88 @@ func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem
 					Region: *account.Location,
 				},
 			},
-			AtRestEncryption: &voc.AtRestEncryption{
-				KeyManager: string(account.Encryption.KeySource),
-				Algorithm:  "AES-265", // seems to be always AES-256
-				Enabled:    to.Bool(account.Encryption.Services.File.Enabled),
+			AtRestEncryption: enc,
+		},
+		HttpEndpoint: &voc.HttpEndpoint{
+			Url: to.String(account.PrimaryEndpoints.File) + to.String(fileshare.Name),
+			TransportEncryption: &voc.TransportEncryption{
+				Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
+				Enabled:    true, // cannot be disabled
+				TlsVersion: string(account.MinimumTLSVersion),
+				Algorithm:  "", // not available
 			},
 		},
-		// TODO(all) Uncomment as soon as the HttpEndpoint is added to voc/file_storage.go
-		//HttpEndpoint: &voc.HttpEndpoint{
-		//	Url: to.String(account.PrimaryEndpoints.File) + to.String(fileshare.Name),
-		//	TransportEncryption: &voc.TransportEncryption{
-		//		Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
-		//		Enabled:    true, // cannot be disabled
-		//		TlsVersion: string(account.MinimumTLSVersion),
-		//		Algorithm:  "", // TBD
-		//	},
-		//},
 	}
+}
+
+func getBlockStorageAtRestEncryption(disk compute.Disk) voc.HasAtRestEncryption {
+
+	var enc voc.HasAtRestEncryption
+
+	if disk.Encryption.Type == compute.EncryptionAtRestWithPlatformKey {
+		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
+			Algorithm: "", // not available
+			Enabled:   true,
+		}}
+	} else if disk.Encryption.Type == compute.EncryptionAtRestWithCustomerKey && *disk.EncryptionSettingsCollection.Enabled {
+		var keyUrl string
+		for _, elem := range *disk.EncryptionSettingsCollection.EncryptionSettings {
+			keyUrl = *elem.DiskEncryptionKey.SourceVault.ID
+			break
+		}
+
+		enc = voc.CustomerKeyEncryption{
+			AtRestEncryption: &voc.AtRestEncryption{
+				Algorithm: "", // TODO(garuppel): TBD
+				Enabled:   true,
+			},
+			KeyUrl: keyUrl,
+		}
+	}
+
+	return enc
+}
+
+func getObjectStorageAtRestEncryption(account *storage.Account) voc.HasAtRestEncryption {
+
+	var enc voc.HasAtRestEncryption
+
+	if account.Encryption.KeySource == storage.KeySourceMicrosoftStorage && *account.Encryption.Services.Blob.Enabled {
+		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
+			Algorithm: "AES-256",
+			Enabled:   true,
+		}}
+	} else if account.Encryption.KeySource == storage.KeySourceMicrosoftKeyvault && *account.Encryption.Services.Blob.Enabled {
+		enc = voc.CustomerKeyEncryption{
+			AtRestEncryption: &voc.AtRestEncryption{
+				Algorithm: "", // TODO(garuppel): TBD
+				Enabled:   true,
+			},
+			KeyUrl: to.String(account.Encryption.KeyVaultProperties.KeyVaultURI),
+		}
+	}
+
+	return enc
+}
+
+func getFileStorageAtRestEncryption(account *storage.Account) voc.HasAtRestEncryption {
+
+	var enc voc.HasAtRestEncryption
+
+	if account.Encryption.KeySource == storage.KeySourceMicrosoftStorage && *account.Encryption.Services.File.Enabled {
+		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
+			Algorithm: "AES-256",
+			Enabled:   true,
+		}}
+	} else if account.Encryption.KeySource == storage.KeySourceMicrosoftKeyvault && *account.Encryption.Services.File.Enabled {
+		enc = voc.CustomerKeyEncryption{
+			AtRestEncryption: &voc.AtRestEncryption{
+				Algorithm: "", // TODO(garuppel): TBD
+				Enabled:   true,
+			},
+			KeyUrl: to.String(account.Encryption.KeyVaultProperties.KeyVaultURI),
+		}
+	}
+
+	return enc
 }

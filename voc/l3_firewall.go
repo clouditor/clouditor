@@ -25,6 +25,8 @@
 
 package voc
 
-type InfrastructureLogging struct {
-	*Logging
+type L3Firewall struct {
+	*AccessRestriction
+	Inbound         bool   `json:"inbound"`
+	RestrictedPorts string `json:"restrictedPorts"`
 }

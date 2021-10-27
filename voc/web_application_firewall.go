@@ -25,6 +25,7 @@
 
 package voc
 
-type InfrastructureLogging struct {
-	*Logging
+type WebApplicationFirewall struct {
+	*AccessRestriction
+	Enabled bool `json:"enabled"`
 }
