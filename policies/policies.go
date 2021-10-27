@@ -101,7 +101,7 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 
 func createKey(types []string) (key string) {
 	key = strings.Join(types, "-")
-	key = strings.Replace(key, " ", "", -1)
+	key = strings.ReplaceAll(key, " ", "")
 	return
 }
 
@@ -139,12 +139,12 @@ func scanBundleDir() ([]os.FileInfo, error) {
 
 	f, err := os.Open(dirname)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	files, err := f.Readdir(-1)
 	_ = f.Close()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	return files, err
