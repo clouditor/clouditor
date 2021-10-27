@@ -69,9 +69,12 @@ func TestRunEvidence(t *testing.T) {
 							Type:         []string{"ObjectStorage", "Storage", "Resource"},
 							GeoLocation:  voc.GeoLocation{},
 						},
-						AtRestEncryption: &voc.AtRestEncryption{
-							Algorithm: "AES-256",
-							Enabled:   true,
+						AtRestEncryption: &voc.CustomerKeyEncryption{
+							AtRestEncryption: &voc.AtRestEncryption{
+								Algorithm: "AES-256",
+								Enabled:   true,
+							},
+							KeyUrl: "SomeUrl",
 						},
 					},
 					HttpEndpoint: &voc.HttpEndpoint{
@@ -95,7 +98,7 @@ func TestRunEvidence(t *testing.T) {
 			compliant:  true,
 			wantErr:    false,
 		}, {
-			name: "ObjectStorage: Non-Compliant Case",
+			name: "ObjectStorage: Non-Compliant Case with no Encrption at rest",
 			fields: fields{
 				resource: voc.ObjectStorage{
 					Storage: &voc.Storage{
@@ -109,6 +112,47 @@ func TestRunEvidence(t *testing.T) {
 						AtRestEncryption: &voc.AtRestEncryption{
 							Algorithm: "NoGoodAlg",
 							Enabled:   false,
+						},
+					},
+					HttpEndpoint: &voc.HttpEndpoint{
+						Functionality: nil,
+						Authenticity:  nil,
+						TransportEncryption: &voc.TransportEncryption{
+							Enforced:   false,
+							Enabled:    false,
+							TlsVersion: "1.0",
+							Algorithm:  "NoTLS",
+						},
+						Url:     "https://aybazestorage.blob.core.windows.net/",
+						Method:  "",
+						Handler: "",
+						Path:    "",
+					},
+				},
+				evidenceID: mockObjStorage2EvidenceID,
+			},
+			applicable: true,
+			compliant:  false,
+			wantErr:    false,
+		},
+		{
+			name: "ObjectStorage: Non-Compliant Case 2 with no customer managed key",
+			fields: fields{
+				resource: voc.ObjectStorage{
+					Storage: &voc.Storage{
+						CloudResource: &voc.CloudResource{
+							ID:           mockObjStorage2ResourceID,
+							Name:         "aybazestorage",
+							CreationTime: 1621086669,
+							Type:         []string{"ObjectStorage", "Storage", "Resource"},
+							GeoLocation:  voc.GeoLocation{},
+						},
+						AtRestEncryption: &voc.ManagedKeyEncryption{
+							AtRestEncryption: &voc.AtRestEncryption{
+								// Normally given but for test case purpose only check that no key URL is given
+								Algorithm: "",
+								Enabled:   false,
+							},
 						},
 					},
 					HttpEndpoint: &voc.HttpEndpoint{
