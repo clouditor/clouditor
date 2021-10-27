@@ -269,8 +269,7 @@ func getBlockStorageAtRestEncryption(disk compute.Disk) voc.HasAtRestEncryption 
 	} else if disk.Encryption.Type == compute.EncryptionAtRestWithCustomerKey && *disk.EncryptionSettingsCollection.Enabled {
 		var keyUrl string
 		for _, elem := range *disk.EncryptionSettingsCollection.EncryptionSettings {
-			// TODO(all): Do we want the secretUrl (URL) or the the sourceVault (id)?
-			keyUrl = *elem.DiskEncryptionKey.SecretURL
+			keyUrl = *elem.DiskEncryptionKey.SourceVault.ID
 			break
 		}
 
