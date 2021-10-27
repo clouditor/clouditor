@@ -38,7 +38,6 @@ import (
 
 func TestRun(t *testing.T) {
 	var (
-		m        map[string]interface{}
 		data     []map[string]interface{}
 		v        *structpb.Value
 		resource voc.IsCloudResource
@@ -55,9 +54,8 @@ func TestRun(t *testing.T) {
 				GeoLocation:  voc.GeoLocation{},
 			},
 			AtRestEncryption: &voc.AtRestEncryption{
-				KeyManager: "Microsoft.Storage",
-				Algorithm:  "AES-256",
-				Enabled:    true,
+				Algorithm: "AES-256",
+				Enabled:   true,
 			},
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
@@ -119,11 +117,26 @@ func TestRun(t *testing.T) {
 	assert.Equal(t, true, data[5]["compliant"])
 	assert.Equal(t, true, data[5]["applicable"])
 
+}
+
+func TestVM(t *testing.T) {
+	var (
+		data []map[string]interface{}
+		//v        *structpb.Value
+		//resource voc.IsCloudResource
+		m   map[string]interface{}
+		err error
+	)
+
 	// Testing VM
 	j := `{
 		"bootLog" : {
 			"enabled" : true,
-			"retentionPeriod" : 36
+			"retentionPeriod" : 36,
+			"output" : [
+							"SomeResourceId1",
+							"SomeResourceId2"
+						]
 		},
 		"OSLog" : {
 			"enabled" : true,
@@ -147,9 +160,7 @@ func TestRun(t *testing.T) {
 	//		}},
 	//	NetworkInterface: nil,
 	//	BlockStorage:     nil,
-	//	Log:              &voc.Log{
-	//		Auditing:  nil,
-	//		Activated: false,
+	//	BootLog:          B
 	//	},
 	//}
 

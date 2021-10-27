@@ -15,6 +15,9 @@ applicable {
 }
 
 compliant {
-    data.operator == ">="
-	bootLog.output == data.target_value
+    data.operator == "=="
+    some i
+    some j
+	bootLog.output[i] == data.target_value[j]
+	bootLog.output[j] == data.target_value[i]
 }

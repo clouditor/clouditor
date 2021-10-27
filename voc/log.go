@@ -29,6 +29,7 @@ import "time"
 
 type Log struct {
 	*Auditing
+	// TODO(all): How to know resource IDs beforehand (coming from metrics)? Maybe sth. like type or ignore it completely?
 	Output          []ResourceID  `json:"output"`
 	Enabled         bool          `json:"enabled"`
 	RetentionPeriod time.Duration `json:"retentionPeriod"`

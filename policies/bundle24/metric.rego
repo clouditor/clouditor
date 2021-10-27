@@ -3,10 +3,10 @@ package clouditor
 default applicable = false
 default compliant = false
 
-# this is an implementation of metric L3FirewallEnabled
+# this is an implementation of metric L3FirewallRestrictedPorts
 
-name := "L3FirewallEnabled"
-metricID := 23
+name := "L3FirewallRestrictedPorts"
+metricID := 24
 
 l3f := input.l3Firewall
 
@@ -16,5 +16,5 @@ applicable {
 
 compliant {
     data.operator == "=="
-	l3f.enabled == data.target_value
+	l3f.restrictedPorts == data.target_value
 }

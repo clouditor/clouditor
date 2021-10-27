@@ -16,5 +16,5 @@ applicable {
 
 compliant {
     data.operator == "=="
-	mp.interval == data.target_value
+	autoUpdates.interval == data.target_value
 }

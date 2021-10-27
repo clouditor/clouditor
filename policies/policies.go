@@ -56,14 +56,13 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 
 	var types []string
 
-	// TODO(oxisto): this type assertions witch checks or do we assume resoruceTypes are always set as intended ([]string)?
-	if rawTypes, ok := m["type"].([]interface{}); !ok {
-		return nil, fmt.Errorf("got type '%T' but wanted '[]interface {}'", rawTypes)
-	} else {
+	if rawTypes, ok := m["type"].([]interface{}); ok {
 		types = make([]string, len(rawTypes))
+	} else {
+		return nil, fmt.Errorf("got type '%T' but wanted '[]interface {}'", rawTypes)
 	}
-
 	for i, v := range m["type"].([]interface{}) {
+		// TODO(all): type assertion check good or unnecessary because we assume resoruceTypes to be always set as intended ([]string)?
 		if t, ok := v.(string); !ok {
 			return nil, fmt.Errorf("got type '%T' but wanted 'string'", t)
 		} else {
@@ -71,8 +70,9 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 		}
 	}
 	if key := strings.Join(types, "-"); applicableMetrics[key] == nil {
-		// TODO(lebogg): Replace magic number of 11/12 (current metrics)
-		for i := 1; i < 12; i++ {
+		// TODO(lebogg): Replace magic number for amount of metrics in the future when they are not hardcoded anymore
+		for i := 1; i <= 24; i++ {
+			fmt.Println(i)
 			file := fmt.Sprintf("%s/policies/bundle%d", baseDir, i)
 			runMap, err := RunMap(file, m)
 			if err != nil {

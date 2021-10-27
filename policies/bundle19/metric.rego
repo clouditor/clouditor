@@ -16,5 +16,5 @@ applicable {
 
 compliant {
     data.operator == "<="
-	mp.enabled == data.target_value
+	autoUpdates.enabled == data.target_value
 }
