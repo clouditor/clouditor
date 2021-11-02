@@ -37,7 +37,7 @@ import (
 )
 
 // TODO(lebogg): Remove after testing
-var log *logrus.Entry = logrus.WithField("component", "policies")
+var log = logrus.WithField("component", "policies")
 
 // applicableMetrics stores a list of applicable metrics per resourceType
 var applicableMetrics = make(map[string][]string)
@@ -70,7 +70,7 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 		}
 	}
 	if key := createKey(types); applicableMetrics[key] == nil {
-		files, err := scanBundleDir()
+		files, err := scanBundleDir(baseDir)
 		if err != nil {
 			return nil, fmt.Errorf("could not load metric bundles: %v", err)
 		}
@@ -133,9 +133,9 @@ func RunMap(bundle string, m map[string]interface{}) (data map[string]interface{
 	}
 }
 
-func scanBundleDir() ([]os.FileInfo, error) {
+func scanBundleDir(baseDir string) ([]os.FileInfo, error) {
 
-	dirname := "./policyBundles"
+	dirname := baseDir + "/policies/policyBundles"
 
 	f, err := os.Open(dirname)
 	if err != nil {

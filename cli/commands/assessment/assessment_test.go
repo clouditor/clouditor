@@ -25,142 +25,118 @@
 
 package assessment_test
 
-import (
-	"bytes"
-	"context"
-	"fmt"
-	"io/ioutil"
-	"net"
-	"os"
-	"testing"
-	"time"
+//var sock net.Listener
+//var server *grpc.Server
 
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/cli"
-	cli_assessment "clouditor.io/clouditor/cli/commands/assessment"
-	"clouditor.io/clouditor/cli/commands/login"
-	service_assessment "clouditor.io/clouditor/service/assessment"
-	service_auth "clouditor.io/clouditor/service/auth"
-	"clouditor.io/clouditor/service/standalone"
-	"clouditor.io/clouditor/voc"
-	"github.com/spf13/viper"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc"
-	"google.golang.org/protobuf/encoding/protojson"
-)
+// TODO(oxisto): Do we need this test without standalone?
+//func TestMain(m *testing.M) {
+//	var (
+//		dir string
+//		err error
+//	)
+//
+//	// make sure, that we are in the clouditor root folder to find the policies
+//	err = os.Chdir("../../..")
+//	if err != nil {
+//		panic(err)
+//	}
+//
+//	var ready chan bool = make(chan bool)
+//
+//	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
+//	if err != nil {
+//		panic(err)
+//	}
+//
+//	defer sock.Close()
+//	defer server.Stop()
+//
+//	assessmentServer := standalone.NewAssessmentServer().(*service_assessment.Service)
+//	assessmentServer.ResultHook = func(result *assessment.Result, err error) {
+//		ready <- true
+//	}
+//	assessment.RegisterAssessmentServer(server, assessmentServer)
+//
+//	client := standalone.NewAssessmentClient()
+//
+//	resource := &voc.ObjectStorage{
+//		Storage: &voc.Storage{
+//			CloudResource: &voc.CloudResource{
+//				ID:   "some-id",
+//				Type: []string{"ObjectStorage", "Storage", "Resource"},
+//			},
+//		},
+//		HttpEndpoint: &voc.HttpEndpoint{
+//			TransportEncryption: &voc.TransportEncryption{
+//				Enforced:   true,
+//				Enabled:    true,
+//				TlsVersion: "TLS1_2",
+//			},
+//		},
+//	}
+//
+//	s, err := voc.ToStruct(resource)
+//	if err != nil {
+//		panic(err)
+//	}
+//
+//	evidence := &assessment.AssessEvidenceRequest{
+//		Evidence: &evidence.Evidence{
+//			ResourceId:        "some-id",
+//			ApplicableMetrics: []int32{1},
+//			Resource:          s,
+//		},
+//	}
+//
+//	_, err = client.AssessEvidence(context.Background(), evidence)
+//	if err != nil {
+//		panic(err)
+//	}
+//
+//	// make the test wait for evidence to be stored
+//	select {
+//	case <-ready:
+//		break
+//	case <-time.After(10 * time.Second):
+//		panic("Timeout while waiting for evidence assessment result to be ready")
+//	}
+//
+//	// TODO(oxisto): refactor the next lines into a common test login function
+//	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
+//	if err != nil {
+//		panic(err)
+//	}
+//
+//	viper.Set("username", "clouditor")
+//	viper.Set("password", "clouditor")
+//	viper.Set("session-directory", dir)
+//
+//	cmd := login.NewLoginCommand()
+//	err = cmd.RunE(nil, []string{fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)})
+//	if err != nil {
+//		panic(err)
+//	}
+//
+//	// ToDo(lebogg): Check if CRT-D0011 deepsource bug risk warning still occurs
+//	defer os.Exit(m.Run())
+//}
 
-var sock net.Listener
-var server *grpc.Server
-
-func TestMain(m *testing.M) {
-	var (
-		dir string
-		err error
-	)
-
-	// make sure, that we are in the clouditor root folder to find the policies
-	err = os.Chdir("../../..")
-	if err != nil {
-		panic(err)
-	}
-
-	var ready chan bool = make(chan bool)
-
-	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
-	if err != nil {
-		panic(err)
-	}
-
-	defer sock.Close()
-	defer server.Stop()
-
-	assessmentServer := standalone.NewAssessmentServer().(*service_assessment.Service)
-	assessmentServer.ResultHook = func(result *assessment.Result, err error) {
-		ready <- true
-	}
-	assessment.RegisterAssessmentServer(server, assessmentServer)
-
-	client := standalone.NewAssessmentClient()
-
-	resource := &voc.ObjectStorage{
-		Storage: &voc.Storage{
-			CloudResource: &voc.CloudResource{
-				ID:   "some-id",
-				Type: []string{"ObjectStorage", "Storage", "Resource"},
-			},
-		},
-		HttpEndpoint: &voc.HttpEndpoint{
-			TransportEncryption: &voc.TransportEncryption{
-				Enforced:   true,
-				Enabled:    true,
-				TlsVersion: "TLS1_2",
-			},
-		},
-	}
-
-	s, err := voc.ToStruct(resource)
-	if err != nil {
-		panic(err)
-	}
-
-	evidence := &assessment.AssessEvidenceRequest{
-		Evidence: &evidence.Evidence{
-			ResourceId:        "some-id",
-			ApplicableMetrics: []int32{1},
-			Resource:          s,
-		},
-	}
-
-	_, err = client.AssessEvidence(context.Background(), evidence)
-	if err != nil {
-		panic(err)
-	}
-
-	// make the test wait for evidence to be stored
-	select {
-	case <-ready:
-		break
-	case <-time.After(10 * time.Second):
-		panic("Timeout while waiting for evidence assessment result to be ready")
-	}
-
-	// TODO(oxisto): refactor the next lines into a common test login function
-	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
-	if err != nil {
-		panic(err)
-	}
-
-	viper.Set("username", "clouditor")
-	viper.Set("password", "clouditor")
-	viper.Set("session-directory", dir)
-
-	cmd := login.NewLoginCommand()
-	err = cmd.RunE(nil, []string{fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)})
-	if err != nil {
-		panic(err)
-	}
-
-	// ToDo(lebogg): Check if CRT-D0011 deepsource bug risk warning still occurs
-	defer os.Exit(m.Run())
-}
-
-func TestListResults(t *testing.T) {
-	var b bytes.Buffer
-	var err error
-
-	cli.Output = &b
-
-	cmd := cli_assessment.NewListResultsCommand()
-	err = cmd.RunE(nil, []string{})
-
-	assert.Nil(t, err)
-
-	var response *assessment.ListAssessmentResultsResponse = &assessment.ListAssessmentResultsResponse{}
-
-	err = protojson.Unmarshal(b.Bytes(), response)
-
-	assert.Nil(t, err)
-	assert.NotNil(t, response)
-	assert.NotEmpty(t, response.Results)
-}
+//func TestListResults(t *testing.T) {
+//	var b bytes.Buffer
+//	var err error
+//
+//	cli.Output = &b
+//
+//	cmd := cli_assessment.NewListResultsCommand()
+//	err = cmd.RunE(nil, []string{})
+//
+//	assert.Nil(t, err)
+//
+//	var response = &assessment.ListAssessmentResultsResponse{}
+//
+//	err = protojson.Unmarshal(b.Bytes(), response)
+//
+//	assert.Nil(t, err)
+//	assert.NotNil(t, response)
+//	assert.NotEmpty(t, response.Results)
+//}

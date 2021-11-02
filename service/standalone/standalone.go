@@ -23,5 +23,5 @@
 //
 // This file is part of Clouditor Community Edition.
 
-// Package standalone contains utility code for the invididual Clouditor services to be run in a standalone mode.
+// Package standalone contains utility code for the individual Clouditor services to be run in a standalone mode.
 package standalone
