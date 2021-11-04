@@ -374,7 +374,7 @@ func TestLoadBalancerProperties(t *testing.T) {
 	d := azure.NewAzureIacTemplateDiscovery(
 		azure.WithSender(&mockIacTemplateSender{}),
 		azure.WithAuthorizer(&mockAuthorizer{}),
-		)
+	)
 
 	list, err := d.List()
 

@@ -230,7 +230,6 @@ func (d *azureIacTemplateDiscovery) handleObjectStorage(resourceValue map[string
 		return nil, fmt.Errorf("cannot get atRestEncryption for storage account resource from IaC template: %v", err)
 	}
 
-
 	storage = &voc.ObjectStorage{
 		Storage: &voc.Storage{
 			CloudResource: &voc.CloudResource{
