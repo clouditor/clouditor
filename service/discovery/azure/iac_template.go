@@ -424,6 +424,9 @@ func (d *azureIacTemplateDiscovery) handleLoadBalancer(resourceValue map[string]
 					Name:         name,
 					CreationTime: 0, // No creation time available
 					Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
+					GeoLocation: voc.GeoLocation{
+						Region: resourceValue["location"].(string),
+					},
 				},
 			},
 			Compute: []voc.ResourceID{},
@@ -485,6 +488,9 @@ func (d *azureIacTemplateDiscovery) handleVirtualMachine(resourceValue map[strin
 				Name:         name,
 				CreationTime: 0, // No creation time available
 				Type:         []string{"VirtualMachine", "Compute", "Resource"},
+				GeoLocation: voc.GeoLocation{
+					Region: resourceValue["location"].(string),
+				},
 			},
 		},
 		BootLog: &voc.BootLog{
