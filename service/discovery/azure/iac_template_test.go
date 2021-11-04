@@ -365,6 +365,26 @@ func TestVmProperties(t *testing.T) {
 	assert.Equal(t, "vm-1-2", resourceVM.Name)
 	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm-1-2", (string)(resourceVM.GetID()))
 	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/blockStorage3", (string)(resourceVM.BlockStorage[0]))
+	assert.Equal(t, "eastus", resourceVM.GeoLocation.Region)
 	assert.True(t, resourceVM.BootLog.Enabled)
 	assert.False(t, resourceVM.OSLog.Enabled)
+}
+
+func TestLoadBalancerProperties(t *testing.T) {
+	d := azure.NewAzureIacTemplateDiscovery(
+		azure.WithSender(&mockIacTemplateSender{}),
+		azure.WithAuthorizer(&mockAuthorizer{}),
+		)
+
+	list, err := d.List()
+
+	assert.Nil(t, err)
+	assert.NotNil(t, list)
+
+	resourceLoadBalancer, ok := list[6].(*voc.LoadBalancer)
+	assert.True(t, ok)
+	assert.Equal(t, "kubernetes", resourceLoadBalancer.Name)
+	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Network/loadBalancers/kubernetes", (string)(resourceLoadBalancer.GetID()))
+	assert.Equal(t, "LoadBalancer", resourceLoadBalancer.Type[0])
+	assert.Equal(t, "eastus", resourceLoadBalancer.GeoLocation.Region)
 }
