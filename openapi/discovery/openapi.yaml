@@ -57,7 +57,7 @@ components:
                     type: string
         QueryResponse:
             properties:
-                result:
+                results:
                     $ref: '#/components/schemas/ListValue'
         StartDiscoveryRequest:
             properties: {}

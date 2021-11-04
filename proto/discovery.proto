@@ -60,4 +60,4 @@ message StartDiscoveryResponse { bool successful = 1; }
 
 message QueryRequest { string filtered_type = 1; }
 
-message QueryResponse { google.protobuf.ListValue result = 1; }
+message QueryResponse { google.protobuf.ListValue results = 1; }
