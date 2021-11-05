@@ -59,6 +59,24 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/exportTemplate" {
 		return createResponse(map[string]interface{}{
 			"template": &map[string]interface{}{
+				"parameters": map[string]interface{}{
+					"virtualMachines_vm_1_2_name": map[string]interface{}{
+						"defaultValue": "vm1-2",
+						"type": "String",
+					},
+					"disks_disk1_name": map[string]interface{}{
+						"defaultValue": "disk1",
+						"type": "String",
+					},
+					"virtualMachines_vm2_name": map[string]interface{}{
+						"defaultValue": "vm-2",
+						"type": "String",
+					},
+					"storageAccounts_storage1_name": map[string]interface{}{
+						"defaultValue": "storage1",
+						"type": "String",
+					},
+				},
 				"resources": []map[string]interface{}{
 					{
 						"type":     "Microsoft.Compute/virtualMachines",
@@ -183,6 +201,20 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res2/exportTemplate" {
 		return createResponse(map[string]interface{}{
 			"template": &map[string]interface{}{
+				"parameters": map[string]interface{}{
+					"virtualMachines_vm_3_name": map[string]interface{}{
+						"defaultValue": "vm3",
+						"type": "String",
+					},
+					"storageAccounts_storage3_name": map[string]interface{}{
+						"defaultValue": "storage3",
+						"type": "String",
+					},
+					"loadBalancers_kubernetes_name": map[string]interface{}{
+						"defaultValue": "kubernetes",
+						"type": "String",
+					},
+				},
 				"resources": []map[string]interface{}{
 					{
 						"type":     "Microsoft.Compute/virtualMachines",
@@ -362,8 +394,8 @@ func TestVmProperties(t *testing.T) {
 
 	resourceVM, ok := list[0].(*voc.VirtualMachine)
 	assert.True(t, ok)
-	assert.Equal(t, "vm-1-2", resourceVM.Name)
-	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm-1-2", (string)(resourceVM.GetID()))
+	assert.Equal(t, "vm1-2", resourceVM.Name)
+	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1-2", (string)(resourceVM.GetID()))
 	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/blockStorage3", (string)(resourceVM.BlockStorage[0]))
 	assert.Equal(t, "eastus", resourceVM.GeoLocation.Region)
 	assert.True(t, resourceVM.BootLog.Enabled)

@@ -109,6 +109,7 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource
 		//	return nil, fmt.Errorf("could not save IaC template: %w", err)
 		//}
 
+		// TODO(garuppel) Storage template to global variable?
 		template, ok := result.Template.(map[string]interface{})
 		if !ok {
 			return nil, fmt.Errorf("IaC template type assertion failed")
@@ -131,13 +132,13 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource
 						if valueKey == "type" {
 
 							if valueValue.(string) == "Microsoft.Compute/virtualMachines" {
-								vm, err := d.handleVirtualMachine(value, *resourceGroups[i].Name)
+								vm, err := d.handleVirtualMachine(template, value, *resourceGroups[i].Name)
 								if err != nil {
 									return nil, fmt.Errorf("could not create virtual machine resource: %w", err)
 								}
 								list = append(list, vm)
 							} else if valueValue.(string) == "Microsoft.Network/loadBalancers" {
-								lb, err := d.handleLoadBalancer(value, *resourceGroups[i].Name)
+								lb, err := d.handleLoadBalancer(template, value, *resourceGroups[i].Name)
 								if err != nil {
 									return nil, fmt.Errorf("could not create load balancer resource: %w", err)
 								}
@@ -402,16 +403,20 @@ func getMinTlsVersionOfStorageAccount(value map[string]interface{}) string {
 	return ""
 }
 
-func (d *azureIacTemplateDiscovery) handleLoadBalancer(resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
+func (d *azureIacTemplateDiscovery) handleLoadBalancer(template map[string]interface{},resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
 
 	var name string
+	var err error
 
 	resourceType := resourceValue["type"].(string)
 
 	for key, value := range resourceValue {
 		// Get LB name
 		if key == "name" {
-			name = getDefaultResourceName(value.(string))
+			name, err = getDefaultResourceNameFromParameter(template, value.(string))
+			if err != nil{
+				return nil, fmt.Errorf("getting parameter default name failed")
+			}
 		}
 	}
 
@@ -447,18 +452,23 @@ func (d *azureIacTemplateDiscovery) handleLoadBalancer(resourceValue map[string]
 	return lb, nil
 }
 
-func (d *azureIacTemplateDiscovery) handleVirtualMachine(resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
+func (d *azureIacTemplateDiscovery) handleVirtualMachine(template map[string]interface{}, resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
 	var id string
 	var name string
 	var bootDiagnosticsEnabled bool
 	var properties map[string]interface{}
 	var ok bool
+	var err error
 
 	for key, value := range resourceValue {
 
 		// Get VM name
 		if key == "name" {
-			name = getDefaultResourceName(value.(string))
+			// name = getDefaultResourceName(value.(string))
+			name, err = getDefaultResourceNameFromParameter(template, value.(string))
+			if err != nil{
+				return nil, fmt.Errorf("getting parameter default name failed")
+			}
 		}
 
 		// Get boot logging status (bootDiagnosticsEnabled)
@@ -526,17 +536,32 @@ func (d *azureIacTemplateDiscovery) createID(resourceGroup, resourceType, name s
 	return "/subscriptions/" + *d.sub.SubscriptionID + "/resourceGroups/" + resourceGroup + "/providers/" + resourceType + "/" + name
 }
 
-// getDefaultResourceName gets the defaultName from template parameter
-// TODO(all): The exported template contains a parameter instead of the defaultName (resourceName). Furthermore, the template parameters do not contain a mapping from the parameter to the defaultName. In the parameter name all word separators (e.g. _, -, .) were replaced by a underscore (_), so it is not possible to uniquely restore the defaultName. Ideas? Do we need the correct defaultNames?
-func getDefaultResourceName(name string) string {
-	// Name in template is a parameter and unnecessary information must be shortened
-	nameSplit := strings.Split(name, "'")
-	anotherNameSplit := strings.Split(nameSplit[1], "_")
-	anotherNameSplit = anotherNameSplit[1:]
-	anotherNameSplit = anotherNameSplit[:len(anotherNameSplit)-1]
-	resourceDefaultName := strings.Join(anotherNameSplit, "-")
+// getDefaultResourceNameFromParameter returns the default name given in the parameters section of the template
+func getDefaultResourceNameFromParameter(template map[string]interface{}, name string) (string, error) {
 
-	return resourceDefaultName
+	for templateKey, templateValue := range template {
+		if templateKey == "parameters" {
+			azureResource, ok := templateValue.(map[string]interface{})
+			if !ok {
+				return "", fmt.Errorf("templateValue type assertion failed")
+			}
+
+			resource, ok := azureResource[getCoreName(name)].(map[string]interface{}) // TODO get name without parameter stuff around
+			if !ok {
+				fmt.Errorf("parameter resource type assertion failed")
+			}
+
+			return resource["defaultValue"].(string), nil
+		}
+	}
+
+	return "", fmt.Errorf("error getting default resource name ")
+}
+
+// getCoreName return the core resource name without the parameter stuff around from the resource name
+func getCoreName(name string) string {
+
+	return strings.Split(name, "'")[1]
 }
 
 func getContainerName(name string) string {
