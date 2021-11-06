@@ -13,7 +13,7 @@ applicable {
     l3f
 }
 
+# TODO(all): Maybe change restrictet ports to array of strings. See comment in Ontology.
 compliant {
-    data.operator == "=="
-	l3f.restrictedPorts == data.target_value
+    compare(data.operator, data.target_value, l3f.restrictedPorts)
 }

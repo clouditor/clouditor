@@ -1,4 +1,6 @@
 {
-  "operator" : "==",
-  "target_value" : "?"
+  "operator": "==",
+  "target_value": [
+    "?"
+  ]
 }

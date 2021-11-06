@@ -14,6 +14,5 @@ applicable {
 }
 
 compliant {
-    data.operator == "=="
-	sso.enabled == data.target_value
+    compare(data.operator, data.target_value, sso.enabled)
 }

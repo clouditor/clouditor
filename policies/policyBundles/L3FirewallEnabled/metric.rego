@@ -14,6 +14,5 @@ applicable {
 }
 
 compliant {
-    data.operator == "=="
-	l3f.enabled == data.target_value
+    compare(data.operator, data.target_value, l3f.enabled)
 }

@@ -14,13 +14,9 @@ applicable {
 }
 
 compliant {
-	data.operator == "=="
-	# Assess version with each compliant version in data
-	endpoint.transportEncryption.tlsVersion == data.target_value[_]
-}
-
-# Currently not working since version is string in ontology
-compliant {
-	data.operator == ">="
-	endpoint.transportEncryption.tlsVersion >= data.target_value
+    # If target_value is a list of strings/numbers
+	isIn(data.target_value, endpoint.transportEncryption.tlsVersion)
+}{
+    # If target_value is the version number represented as int/float
+    compare(data.operator, data.target_value, endpoint.transportEncryption.tlsVersion)
 }

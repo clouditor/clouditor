@@ -14,6 +14,6 @@ applicable {
 }
 
 compliant {
-    # Just check if keyUrl is set.
+    # Check if keyUrl is set. It is only set in the customer key encryption case.
 	enc.keyUrl
 }

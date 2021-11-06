@@ -14,6 +14,5 @@ applicable {
 }
 
 compliant {
-    data.operator == "=="
-	ad.enabled == data.target_value
+    compare(data.operator, data.target_value, ad.enabled)
 }

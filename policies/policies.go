@@ -69,6 +69,7 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 			types[i] = t
 		}
 	}
+	// TODO(lebogg): Try to optimize duplicated code
 	if key := createKey(types); applicableMetrics[key] == nil {
 		files, err := scanBundleDir(baseDir)
 		if err != nil {
@@ -76,7 +77,7 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 		}
 
 		for _, fileInfo := range files {
-			file := fmt.Sprintf("%s/policies/policyBundles/%s", baseDir, fileInfo.Name())
+			file := fmt.Sprintf("%s/policies/policyBundles/%s/", baseDir, fileInfo.Name())
 			runMap, err := RunMap(file, m)
 			if err != nil {
 				return nil, err
@@ -88,8 +89,8 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 		}
 	} else {
 		for _, metric := range applicableMetrics[key] {
-			file := fmt.Sprintf("%s/policies/policyBundles/%s", baseDir, metric)
-			runMap, err := RunMap(file, m)
+			bundle := fmt.Sprintf("%s/policies/policyBundles/%s/", baseDir, metric)
+			runMap, err := RunMap(bundle, m)
 			if err != nil {
 				return nil, err
 			}
@@ -97,12 +98,6 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 		}
 	}
 	return data, nil
-}
-
-func createKey(types []string) (key string) {
-	key = strings.Join(types, "-")
-	key = strings.ReplaceAll(key, " ", "")
-	return
 }
 
 func RunMap(bundle string, m map[string]interface{}) (data map[string]interface{}, err error) {
@@ -113,7 +108,13 @@ func RunMap(bundle string, m map[string]interface{}) (data map[string]interface{
 	ctx := context.TODO()
 	r, err := rego.New(
 		rego.Query("data.clouditor"),
-		rego.LoadBundle(bundle),
+		rego.Load(
+			[]string{
+				bundle + "metric.rego",
+				bundle + "data.json",
+				"../policies/utilityFunctions.rego",
+			},
+			nil),
 	).PrepareForEval(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare rego evaluation: %w", err)
@@ -148,4 +149,10 @@ func scanBundleDir(baseDir string) ([]os.FileInfo, error) {
 	}
 
 	return files, err
+}
+
+func createKey(types []string) (key string) {
+	key = strings.Join(types, "-")
+	key = strings.ReplaceAll(key, " ", "")
+	return
 }

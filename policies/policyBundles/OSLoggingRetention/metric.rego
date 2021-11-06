@@ -14,6 +14,5 @@ applicable {
 }
 
 compliant {
-    data.operator == ">="
-	OSLog.retentionPeriod >= 35
+    compare(data.operator, data.target_value, OSLog.retentionPeriod)
 }

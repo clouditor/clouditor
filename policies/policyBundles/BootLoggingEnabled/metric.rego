@@ -14,6 +14,5 @@ applicable {
 }
 
 compliant {
-    data.operator == "=="
-	bootLog.enabled == data.target_value
+    compare(data.operator, data.target_value, bootLog.enabled)
 }

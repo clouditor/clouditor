@@ -15,7 +15,6 @@ applicable {
 }
 
 compliant {
-    data.operator == "<="
     # TODO(all): Target value ?
-	rbac.mixedDuties <= data.target_value
+    compare(data.operator, data.target_value, rbac.mixedDuties)
 }

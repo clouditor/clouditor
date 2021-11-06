@@ -14,6 +14,5 @@ applicable {
 }
 
 compliant {
-    data.operator == "=="
-	OSLog.enabled == data.target_value
+    compare(data.operator, data.target_value, OSLog.enabled)
 }

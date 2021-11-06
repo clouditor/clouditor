@@ -14,7 +14,6 @@ applicable {
 }
 
 compliant {
-	data.operator == "=="
-	endpoint.transportEncryption.algorithm == data.target_value
+    compare(data.operator, data.target_value, endpoint.transportEncryption.algorithm)
 }
 

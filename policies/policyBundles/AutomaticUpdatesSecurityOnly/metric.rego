@@ -14,6 +14,5 @@ applicable {
 }
 
 compliant {
-    data.operator == "=="
-	autoUpdates.securityOnly == data.target_value
+    compare(data.operator, data.target_value, autoUpdates.securityOnly)
 }

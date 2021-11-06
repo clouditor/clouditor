@@ -5,7 +5,7 @@ default compliant = false
 
 # this is an implementation of metric AnomalyDetectionOutput
 
-name := "AnomalyDetectionOutput"
+name := "AnomalyDetectionOuput"
 
 ad := input.anomalyDetection
 
@@ -14,6 +14,5 @@ applicable {
 }
 
 compliant {
-    data.operator == "=="
-	ad.output == data.target_value
+    isIn(data.target_value, ad.output)
 }

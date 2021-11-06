@@ -17,13 +17,7 @@ applicable {
 
 # TODO(all): Consider to put `operator` into list of target_values for more granularity
 compliant {
-    data.operator == "=="
-	some i
-	runtimeLanguage == data.target_value[i].runtimeLanguage
-	runtimeVersion == data.target_value[i].runtimeVersion
-}{
-    data.operator == ">="
-	some i
-	runtimeLanguage == data.target_value[i].runtimeLanguage
-	runtimeVersion >= data.target_value[i].runtimeVersion
+    some i
+    compare("==", data.target_value[i].runtimeLanguage, runtimeLanguage)
+    compare(data.operator, data.target_value[i].runtimeVersion, runtimeVersion)
 }

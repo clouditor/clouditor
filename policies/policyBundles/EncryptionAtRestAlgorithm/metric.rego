@@ -14,6 +14,5 @@ applicable {
 }
 
 compliant {
-    data.operator == "=="
-	enc.algorithm == data.target_value
+    compare(data.operator, data.target_value, enc.algorithm)
 }

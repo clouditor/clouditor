@@ -15,7 +15,5 @@ applicable {
 }
 
 compliant {
-    data.operator == "=="
-    # Current implementation: It is enough that one output is one of target_values
-	OSLog.output[_] == data.target_value[_]
+    isIn(data.target_value, OSLog.output)
 }

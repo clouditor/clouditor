@@ -14,6 +14,5 @@ applicable {
 }
 
 compliant {
-    data.operator == ">="
-	bootLog.retentionPeriod >= data.target_value
+    compare(data.operator, data.target_value, bootLog.retentionPeriod)
 }
