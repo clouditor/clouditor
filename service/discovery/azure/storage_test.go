@@ -262,7 +262,7 @@ func TestObjectStorage(t *testing.T) {
 	assert.Equal(t, true, objectStorage.HttpEndpoint.TransportEncryption.Enabled)
 	assert.Equal(t, true, objectStorage.HttpEndpoint.TransportEncryption.Enforced)
 	assert.Equal(t, "TLS1_2", objectStorage.HttpEndpoint.TransportEncryption.TlsVersion)
-	assert.Equal(t, "", objectStorage.HttpEndpoint.TransportEncryption.Algorithm)
+	assert.Equal(t, "AES256", objectStorage.HttpEndpoint.TransportEncryption.Algorithm)
 
 	// Check ManagedKeyEncryption
 	atRestEncryption := *objectStorage.GetAtRestEncryption()
@@ -322,7 +322,7 @@ func TestFileStorage(t *testing.T) {
 	assert.Equal(t, true, fileStorage.HttpEndpoint.TransportEncryption.Enabled)
 	assert.Equal(t, true, fileStorage.HttpEndpoint.TransportEncryption.Enforced)
 	assert.Equal(t, "TLS1_2", fileStorage.HttpEndpoint.TransportEncryption.TlsVersion)
-	assert.Equal(t, "", fileStorage.HttpEndpoint.TransportEncryption.Algorithm)
+	assert.Equal(t, "AES256", fileStorage.HttpEndpoint.TransportEncryption.Algorithm)
 }
 
 func TestListBlockStorage(t *testing.T) {

@@ -32,7 +32,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"testing"
 	"time"
 
@@ -140,7 +139,6 @@ func (m mockS3APINew) GetBucketPolicy(_ context.Context,
 				}},
 		}
 		policyJson, err := json.Marshal(policy)
-		fmt.Println(policyJson)
 		if err != nil {
 			log.Error(err)
 		}

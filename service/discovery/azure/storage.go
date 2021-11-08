@@ -260,8 +260,6 @@ func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem
 func getBlockStorageAtRestEncryption(disk compute.Disk) voc.HasAtRestEncryption {
 
 	var enc voc.HasAtRestEncryption
-	fmt.Println(disk.EncryptionSettingsCollection)
-	fmt.Println(disk.Encryption.Type)
 
 	if disk.Encryption.Type == compute.EncryptionAtRestWithPlatformKey {
 		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
