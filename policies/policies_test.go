@@ -64,14 +64,13 @@ func TestRunEvidence(t *testing.T) {
 					Storage: &voc.Storage{
 						CloudResource: &voc.CloudResource{
 							ID:           mockObjStorage1ResourceID,
-							Name:         "aybazestorage",
 							CreationTime: 1621086669,
 							Type:         []string{"ObjectStorage", "Storage", "Resource"},
 							GeoLocation:  voc.GeoLocation{},
 						},
 						AtRestEncryption: &voc.CustomerKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
-								Algorithm: "AES-256",
+								Algorithm: "AES256",
 								Enabled:   true,
 							},
 							KeyUrl: "SomeUrl",
@@ -98,13 +97,12 @@ func TestRunEvidence(t *testing.T) {
 			compliant:  true,
 			wantErr:    false,
 		}, {
-			name: "ObjectStorage: Non-Compliant Case with no Encrption at rest",
+			name: "ObjectStorage: Non-Compliant Case with no Encryption at rest",
 			fields: fields{
 				resource: voc.ObjectStorage{
 					Storage: &voc.Storage{
 						CloudResource: &voc.CloudResource{
 							ID:           mockObjStorage2ResourceID,
-							Name:         "aybazestorage",
 							CreationTime: 1621086669,
 							Type:         []string{"ObjectStorage", "Storage", "Resource"},
 							GeoLocation:  voc.GeoLocation{},
@@ -142,7 +140,6 @@ func TestRunEvidence(t *testing.T) {
 					Storage: &voc.Storage{
 						CloudResource: &voc.CloudResource{
 							ID:           mockObjStorage2ResourceID,
-							Name:         "aybazestorage",
 							CreationTime: 1621086669,
 							Type:         []string{"ObjectStorage", "Storage", "Resource"},
 							GeoLocation:  voc.GeoLocation{},
@@ -183,7 +180,6 @@ func TestRunEvidence(t *testing.T) {
 					Compute: &voc.Compute{
 						CloudResource: &voc.CloudResource{
 							ID:   mockVM1ResourceID,
-							Name: "aybazestorage",
 							Type: []string{"Compute", "Virtual Machine", "Resource"},
 						}},
 					NetworkInterface: nil,
@@ -216,7 +212,6 @@ func TestRunEvidence(t *testing.T) {
 					Compute: &voc.Compute{
 						CloudResource: &voc.CloudResource{
 							ID:   mockVM2ResourceID,
-							Name: "aybazestorage",
 							Type: []string{"Compute", "Virtual Machine", "Resource"},
 						}},
 					NetworkInterface: nil,
