@@ -290,7 +290,7 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (*voc.TransportEn
 				return &voc.TransportEncryption{
 					Enforced:   true,
 					Enabled:    true,
-					TlsVersion: "TLS1.3",
+					TlsVersion: "TLS1.2",
 					Algorithm:  "TLS",
 				}, nil
 			}
