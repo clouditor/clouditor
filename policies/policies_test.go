@@ -83,7 +83,7 @@ func TestRunEvidence(t *testing.T) {
 						TransportEncryption: &voc.TransportEncryption{
 							Enforced:   true,
 							Enabled:    true,
-							TlsVersion: "1.3",
+							TlsVersion: "TLS1.3",
 							Algorithm:  "TLS",
 						},
 						Url:     "https://aybazestorage.blob.core.windows.net/",

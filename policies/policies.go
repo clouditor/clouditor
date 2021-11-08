@@ -31,19 +31,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/open-policy-agent/opa/rego"
-	"github.com/sirupsen/logrus"
 	"os"
 	"strings"
 )
-
-// TODO(lebogg): Remove after testing
-var log = logrus.WithField("component", "policies")
 
 // applicableMetrics stores a list of applicable metrics per resourceType
 var applicableMetrics = make(map[string][]string)
 
 func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) {
-	log.Println("Run evidence for resourceId", evidence.ResourceId, " and ID: ", evidence.Id)
 	data := make([]map[string]interface{}, 0)
 	var baseDir string = "."
 	// check, if we are in the root of Clouditor
@@ -77,8 +72,8 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 		}
 
 		for _, fileInfo := range files {
-			file := fmt.Sprintf("%s/policies/policyBundles/%s/", baseDir, fileInfo.Name())
-			runMap, err := RunMap(file, m)
+			//file := fmt.Sprintf("%s/policies/policyBundles/%s/", baseDir, fileInfo.Name())
+			runMap, err := RunMap(baseDir, fileInfo.Name(), m)
 			if err != nil {
 				return nil, err
 			}
@@ -89,8 +84,8 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 		}
 	} else {
 		for _, metric := range applicableMetrics[key] {
-			bundle := fmt.Sprintf("%s/policies/policyBundles/%s/", baseDir, metric)
-			runMap, err := RunMap(bundle, m)
+			//bundle := fmt.Sprintf("%s/policies/policyBundles/%s/", baseDir, metric)
+			runMap, err := RunMap(baseDir, metric, m)
 			if err != nil {
 				return nil, err
 			}
@@ -100,10 +95,14 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 	return data, nil
 }
 
-func RunMap(bundle string, m map[string]interface{}) (data map[string]interface{}, err error) {
+func RunMap(baseDir string, metric string, m map[string]interface{}) (data map[string]interface{}, err error) {
 	var (
 		ok bool
 	)
+
+	// Create paths for bundle directory and utility functions file
+	bundle := fmt.Sprintf("%s/policies/policyBundles/%s/", baseDir, metric)
+	utilityFunctions := fmt.Sprintf("%s/policies/utilityFunctions.rego", baseDir)
 
 	ctx := context.TODO()
 	r, err := rego.New(
@@ -112,7 +111,7 @@ func RunMap(bundle string, m map[string]interface{}) (data map[string]interface{
 			[]string{
 				bundle + "metric.rego",
 				bundle + "data.json",
-				"../policies/utilityFunctions.rego",
+				utilityFunctions,
 			},
 			nil),
 	).PrepareForEval(ctx)

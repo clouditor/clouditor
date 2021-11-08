@@ -223,7 +223,7 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 				Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
 				Enabled:    true, // TODO get from IaC template in all storages
 				TlsVersion: string(account.MinimumTLSVersion),
-				Algorithm:  "", // not available
+				Algorithm:  "AES256", // TODO(garuppel): I changed it due to https://docs.microsoft.com/en-us/azure/storage/common/storage-service-encryption
 			},
 		},
 	}
@@ -251,7 +251,7 @@ func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem
 				Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
 				Enabled:    true, // cannot be disabled
 				TlsVersion: string(account.MinimumTLSVersion),
-				Algorithm:  "", // not available
+				Algorithm:  "AES256", // TODO(garuppel): I changed it due to https://docs.microsoft.com/en-us/azure/storage/common/storage-service-encryption
 			},
 		},
 	}
@@ -260,18 +260,20 @@ func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem
 func getBlockStorageAtRestEncryption(disk compute.Disk) voc.HasAtRestEncryption {
 
 	var enc voc.HasAtRestEncryption
+	fmt.Println(disk.EncryptionSettingsCollection)
+	fmt.Println(disk.Encryption.Type)
 
 	if disk.Encryption.Type == compute.EncryptionAtRestWithPlatformKey {
 		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
-			Algorithm: "", // not available
+			Algorithm: "AES256", // TODO(garuppel): I changed it due to https://docs.microsoft.com/en-us/azure/storage/common/storage-service-encryption
 			Enabled:   true,
 		}}
-	} else if disk.Encryption.Type == compute.EncryptionAtRestWithCustomerKey && *disk.EncryptionSettingsCollection.Enabled {
+	} else if disk.Encryption.Type == compute.EncryptionAtRestWithCustomerKey {
 		var keyUrl string
-		for _, elem := range *disk.EncryptionSettingsCollection.EncryptionSettings {
-			keyUrl = *elem.DiskEncryptionKey.SourceVault.ID
-			break
-		}
+		//for _, elem := range *disk.EncryptionSettingsCollection.EncryptionSettings {
+		//	keyUrl = *elem.DiskEncryptionKey.SourceVault.ID
+		//	break
+		//}
 
 		enc = voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{

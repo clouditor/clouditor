@@ -32,6 +32,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"testing"
 	"time"
 
@@ -134,11 +135,12 @@ func (m mockS3APINew) GetBucketPolicy(_ context.Context,
 				{
 					Action:    "s3:*",
 					Effect:    "Deny",
-					Resource:  []string{"*"},
+					Resource:  "*",
 					Condition: Condition{Bool{AwsSecureTransport: false}},
 				}},
 		}
 		policyJson, err := json.Marshal(policy)
+		fmt.Println(policyJson)
 		if err != nil {
 			log.Error(err)
 		}
@@ -158,7 +160,7 @@ func (m mockS3APINew) GetBucketPolicy(_ context.Context,
 				{
 					Action:    "s3:*",
 					Effect:    "Audit",
-					Resource:  []string{"*"},
+					Resource:  "*",
 					Condition: Condition{Bool{AwsSecureTransport: false}},
 				}},
 		}

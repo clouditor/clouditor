@@ -30,7 +30,6 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/policies"
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -98,7 +97,7 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 }
 
 func (s Service) handleEvidence(evidence *evidence.Evidence) error {
-	log.Infof("Received evidence for resource %s", evidence.ResourceId)
+	log.Println("Running evidence for resourceId", evidence.ResourceId, " and ID:", evidence.Id)
 	log.Debugf("Evidence: %+v", evidence)
 
 	// TODO(all): The discovery already sets up the (UU)ID?
@@ -122,17 +121,18 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 	}
 
 	for i, data := range evaluations {
-		log.Infof("Evaluated evidence with metric %v '%v' as %v", data["metricID"], data["name"], data["compliant"])
-		var metricID int64
-		if metricID, err = data["metricID"].(json.Number).Int64(); err != nil {
-			return fmt.Errorf("could not convert metricID: %v", metricID)
-		}
+		//var metricID int64
+		//if metricID, err = data["metricID"].(json.Number).Int64(); err != nil {
+		//	return fmt.Errorf("could not convert metricID: %v", metricID)
+		//}
+		log.Infof("Evaluated evidence with metric '%v' as %v", data["name"], data["compliant"])
 
 		result := &assessment.Result{
 			// TODO(lebogg): Remove metric name hack after demo
 			ResourceId: evidence.ResourceId + " with metric " + data["name"].(string),
 			Compliant:  data["compliant"].(bool),
-			MetricId:   int32(metricID),
+			// TODO(lebogg): Currently no metric IDs are used
+			MetricId: int32(0),
 		}
 		// just a little hack to quickly enable multiple results per resource
 		s.results[fmt.Sprintf("%s-%d", evidence.ResourceId, i)] = result
@@ -142,6 +142,7 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 			go s.ResultHook(result, nil)
 		}
 	}
+	fmt.Println()
 
 	//}
 

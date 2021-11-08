@@ -141,9 +141,9 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	discoverer = append(discoverer,
 		azure.NewAzureIacTemplateDiscovery(azure.WithAuthorizer(authorizer)),
 		// TODO(lebogg): Uncomment after demo
-		//azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
-		//azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
-		//azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)),
+		azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
+		azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
+		azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)),
 		k8s.NewKubernetesComputeDiscovery(k8sClient),
 		k8s.NewKubernetesNetworkDiscovery(k8sClient),
 		aws.NewAwsStorageDiscovery(awsClient),
