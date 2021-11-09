@@ -37,26 +37,11 @@ option go_package = "api/evidence";
 
 // An evidence resource
 message Evidence {
-  // the ID in a uuid format
-  string id = 1;
-
-  // reference to a service this evidence was gathered from
-  string service_id = 2;
-
-  // reference to the resource this evidence was gathered from
-  string resource_id = 3;
-
+  string id = 1; // the ID in a uuid format
   // TODO: replace with google/type/date.proto timestamp.proto or date.proto?
-  google.protobuf.Timestamp timestamp = 4;
-
-  repeated int32 applicable_metrics = 5;
-
-  // "raw" evidence (for the auditor), for example the raw JSON response from
-  // the API. This does not follow a defined schema
-  string raw = 6;
-
-  // optional; a semantic representation of the Cloud resource according to our
-  // defined ontology. a JSON serialized node of our semantic graph. This may be
-  // Clouditor-specific.
-  google.protobuf.Value resource = 7;
+  google.protobuf.Timestamp timestamp = 2;
+  string service_id = 3; // Reference to a service this evidence was gathered from
+  string tool_id = 4; // Reference to the tool which provided the evidence
+  string raw = 5; // evidence in its original form without following a defined schema, e.g. the raw JSON
+  google.protobuf.Value resource = 6; // semantic representation of the Cloud resource according to our defined ontology
 }

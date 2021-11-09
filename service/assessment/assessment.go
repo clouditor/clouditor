@@ -97,7 +97,21 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 }
 
 func (s Service) handleEvidence(evidence *evidence.Evidence) error {
-	log.Println("Running evidence for resourceId", evidence.ResourceId, " and ID:", evidence.Id)
+	// TODO(oxisto): Should we check that "id" is really there and assertion is rightly done or can we just assume it?
+	resourceId := evidence.Resource.GetStructValue().AsMap()["id"].(string)
+	toolId := evidence.ToolId
+	// If no toolId was provided, indicate it in the info message
+	if toolId == "" {
+		toolId = "<Tool id missing>"
+	}
+	timeStamp := evidence.Timestamp
+	// if no timeStamp was given, indicate it in the info message
+	if timeStamp == nil {
+		log.Infof("Running evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, toolId, "<Timestamp missing>")
+	} else {
+		log.Infof("Running evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, toolId, timeStamp)
+	}
+
 	log.Debugf("Evidence: %+v", evidence)
 
 	// TODO(all): The discovery already sets up the (UU)ID?
@@ -128,14 +142,13 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 		log.Infof("Evaluated evidence with metric '%v' as %v", data["name"], data["compliant"])
 
 		result := &assessment.Result{
-			// TODO(lebogg): Remove metric name hack after demo
-			ResourceId: evidence.ResourceId + " with metric " + data["name"].(string),
+			ResourceId: resourceId,
 			Compliant:  data["compliant"].(bool),
 			// TODO(lebogg): Currently no metric IDs are used
 			MetricId: int32(0),
 		}
 		// just a little hack to quickly enable multiple results per resource
-		s.results[fmt.Sprintf("%s-%d", evidence.ResourceId, i)] = result
+		s.results[fmt.Sprintf("%s-%d", resourceId, i)] = result
 
 		// TODO(oxisto): What is this for? (lebogg)
 		if s.ResultHook != nil {

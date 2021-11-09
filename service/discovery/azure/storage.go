@@ -266,6 +266,7 @@ func getBlockStorageAtRestEncryption(disk compute.Disk) voc.HasAtRestEncryption 
 			Algorithm: "AES256", // TODO(garuppel): I changed it due to https://docs.microsoft.com/en-us/azure/storage/common/storage-service-encryption
 			Enabled:   true,
 		}}
+		// TODO(garuppel): Check the changed code (commented-out part and removed condition in if statement)
 	} else if disk.Encryption.Type == compute.EncryptionAtRestWithCustomerKey {
 		var keyUrl string
 		//for _, elem := range *disk.EncryptionSettingsCollection.EncryptionSettings {

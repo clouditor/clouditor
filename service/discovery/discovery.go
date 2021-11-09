@@ -202,17 +202,9 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 			log.Errorf("Could not convert resource to protobuf struct: %v", err)
 		}
 
-		evidence := &evidence.Evidence{
-			Id:         uuid.New().String(),
-			Resource:   v,
-			ResourceId: string(resource.GetID()),
-		}
-
-		// check for object storage
-		for _, v := range resource.GetType() {
-			if v == "ObjectStorage" {
-				evidence.ApplicableMetrics = []int32{1, 2}
-			}
+		e := &evidence.Evidence{
+			Id:       uuid.New().String(),
+			Resource: v,
 		}
 
 		if s.AssessmentStream == nil {
@@ -227,12 +219,12 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 
 		log.Debugf("Sending evidence for resource %s (%s)...", resource.GetID(), strings.Join(resource.GetType(), ", "))
 
-		err = s.AssessmentStream.Send(evidence)
+		err = s.AssessmentStream.Send(e)
 		if err != nil {
 			log.Errorf("Could not send evidence to Assessment: %v", err)
 		}
 
-		err = s.EvidenceStoreStream.Send(evidence)
+		err = s.EvidenceStoreStream.Send(e)
 		if err != nil {
 			log.Errorf("Could not send evidence to EvidenceStore: %v", err)
 		}
