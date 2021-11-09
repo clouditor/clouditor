@@ -260,7 +260,7 @@ func (s Service) Query(_ context.Context, request *discovery.QueryRequest) (resp
 	}
 
 	return &discovery.QueryResponse{
-		Result: &structpb.ListValue{Values: r},
+		Results: &structpb.ListValue{Values: r},
 	}, nil
 }
 
