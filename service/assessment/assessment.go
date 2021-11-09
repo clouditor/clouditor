@@ -31,10 +31,13 @@ import (
 	"clouditor.io/clouditor/policies"
 	"context"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"io"
 )
 
@@ -141,11 +144,24 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 		//}
 		log.Infof("Evaluated evidence with metric '%v' as %v", data["name"], data["compliant"])
 
+		// Get output values of Rego evaluation. If they are not given, the zero value is used
+		operator, _ := data["operator"].(string)
+		targetValue, _ := data["target_value"].(*structpb.Value)
+		compliant, _ := data["compliant"].(bool)
+
 		result := &assessment.Result{
-			ResourceId: resourceId,
-			Compliant:  data["compliant"].(bool),
-			// TODO(lebogg): Currently no metric IDs are used
+			Id:        uuid.NewString(),
+			Timestamp: timestamppb.Now(),
+			// TODO(lebogg): Currently no metric IDs are used (in the future, e.g. data["metric_id"])
 			MetricId: int32(0),
+			MetricData: &assessment.MetricData{
+				TargetValue: targetValue,
+				Operator:    operator,
+			},
+			Compliant:             compliant,
+			EvidenceId:            evidence.Id,
+			ResourceId:            resourceId,
+			NonComplianceComments: "No comments so far",
 		}
 		// just a little hack to quickly enable multiple results per resource
 		s.results[fmt.Sprintf("%s-%d", resourceId, i)] = result

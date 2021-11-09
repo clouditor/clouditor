@@ -29,6 +29,7 @@ import (
 	"clouditor.io/clouditor/service/discovery/azure"
 	"clouditor.io/clouditor/service/discovery/k8s"
 	"context"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"strings"
 	"time"
 
@@ -141,9 +142,9 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	discoverer = append(discoverer,
 		azure.NewAzureIacTemplateDiscovery(azure.WithAuthorizer(authorizer)),
 		// TODO(lebogg): Uncomment after demo
-		azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
-		azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
-		azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)),
+		//azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
+		//azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
+		//azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)),
 		k8s.NewKubernetesComputeDiscovery(k8sClient),
 		k8s.NewKubernetesNetworkDiscovery(k8sClient),
 		aws.NewAwsStorageDiscovery(awsClient),
@@ -202,9 +203,13 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 			log.Errorf("Could not convert resource to protobuf struct: %v", err)
 		}
 
+		// TODO(all): What is the raw type in our case?
 		e := &evidence.Evidence{
-			Id:       uuid.New().String(),
-			Resource: v,
+			Id:        uuid.New().String(),
+			Timestamp: timestamppb.Now(),
+			ToolId:    "Clouditor Evidences Collection",
+			Raw:       "",
+			Resource:  v,
 		}
 
 		if s.AssessmentStream == nil {

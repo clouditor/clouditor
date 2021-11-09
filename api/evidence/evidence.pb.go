@@ -59,7 +59,7 @@ type Evidence struct {
 
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // the ID in a uuid format
 	// TODO: replace with google/type/date.proto timestamp.proto or date.proto?
-	Timestamp *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Timestamp *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"`                  // time of evidence creation
 	ServiceId string                 `protobuf:"bytes,3,opt,name=service_id,json=serviceId,proto3" json:"service_id,omitempty"` // Reference to a service this evidence was gathered from
 	ToolId    string                 `protobuf:"bytes,4,opt,name=tool_id,json=toolId,proto3" json:"tool_id,omitempty"`          // Reference to the tool which provided the evidence
 	Raw       string                 `protobuf:"bytes,5,opt,name=raw,proto3" json:"raw,omitempty"`                              // evidence in its original form without following a defined schema, e.g. the raw JSON
