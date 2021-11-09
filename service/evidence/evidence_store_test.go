@@ -54,13 +54,11 @@ func TestStoreEvidence(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
-					Id:                "MockEvidenceId",
-					ServiceId:         "MockServiceId",
-					ResourceId:        "MockResourceId",
-					Timestamp:         timestamppb.Now(),
-					ApplicableMetrics: []int32{1, 2},
-					Raw:               "",
-					Resource:          nil,
+					Id:        "MockEvidenceId",
+					ServiceId: "MockServiceId",
+					Timestamp: timestamppb.Now(),
+					Raw:       "",
+					Resource:  nil,
 				},
 			},
 			wantErr:  false,
@@ -114,22 +112,18 @@ func TestStoreEvidences(t *testing.T) {
 func TestListEvidences(t *testing.T) {
 	s := NewService()
 	s.evidences["MockEvidenceId-1"] = &evidence.Evidence{
-		Id:                "MockEvidenceId-1",
-		ServiceId:         "MockServiceId-1",
-		ResourceId:        "MockResourceId-1",
-		Timestamp:         timestamppb.Now(),
-		ApplicableMetrics: []int32{1, 2},
-		Raw:               "",
-		Resource:          nil,
+		Id:        "MockEvidenceId-1",
+		ServiceId: "MockServiceId-1",
+		Timestamp: timestamppb.Now(),
+		Raw:       "",
+		Resource:  nil,
 	}
 	s.evidences["MockEvidenceId-2"] = &evidence.Evidence{
-		Id:                "MockEvidenceId-2",
-		ServiceId:         "MockServiceId-2",
-		ResourceId:        "MockResourceId-2",
-		Timestamp:         timestamppb.Now(),
-		ApplicableMetrics: []int32{1, 2},
-		Raw:               "",
-		Resource:          nil,
+		Id:        "MockEvidenceId-2",
+		ServiceId: "MockServiceId-2",
+		Timestamp: timestamppb.Now(),
+		Raw:       "",
+		Resource:  nil,
 	}
 
 	resp, err := s.ListEvidences(context.TODO(), &evidence.ListEvidencesRequest{})
@@ -149,24 +143,20 @@ func (m *mockStreamer) Recv() (*evidence.Evidence, error) {
 	if m.counter == 0 {
 		m.counter++
 		return &evidence.Evidence{
-			Id:                "MockEvidenceId-1",
-			ServiceId:         "MockServiceId-1",
-			ResourceId:        "MockResourceId-1",
-			Timestamp:         timestamppb.Now(),
-			ApplicableMetrics: []int32{1, 2},
-			Raw:               "",
-			Resource:          nil,
+			Id:        "MockEvidenceId-1",
+			ServiceId: "MockServiceId-1",
+			Timestamp: timestamppb.Now(),
+			Raw:       "",
+			Resource:  nil,
 		}, nil
 	} else if m.counter == 1 {
 		m.counter++
 		return &evidence.Evidence{
-			Id:                "MockEvidenceId-2",
-			ServiceId:         "MockServiceId-2",
-			ResourceId:        "MockResourceId-2",
-			Timestamp:         timestamppb.Now(),
-			ApplicableMetrics: []int32{1, 2},
-			Raw:               "",
-			Resource:          nil,
+			Id:        "MockEvidenceId-2",
+			ServiceId: "MockServiceId-2",
+			Timestamp: timestamppb.Now(),
+			Raw:       "",
+			Resource:  nil,
 		}, nil
 	} else {
 		return nil, io.EOF

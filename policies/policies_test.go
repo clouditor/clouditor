@@ -243,9 +243,8 @@ func TestRunEvidence(t *testing.T) {
 		assert.Nil(t, err)
 		t.Run(tt.name, func(t *testing.T) {
 			results, err := policies.RunEvidence(&evidence.Evidence{
-				Id:         tt.fields.evidenceID,
-				ResourceId: string(tt.fields.resource.GetID()),
-				Resource:   resource,
+				Id:       tt.fields.evidenceID,
+				Resource: resource,
 			})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RunEvidence() error = %v, wantErr %v", err, tt.wantErr)
