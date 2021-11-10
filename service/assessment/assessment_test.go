@@ -23,5 +23,34 @@
 //
 // This file is part of Clouditor Community Edition.
 
-// Package standalone contains utility code for the individual Clouditor services to be run in a standalone mode.
-package standalone
+package assessment
+
+import (
+	"reflect"
+	"testing"
+
+	"clouditor.io/clouditor/api/assessment"
+)
+
+// TestNewService is a simply test for NewService
+func TestNewService(t *testing.T) {
+	tests := []struct {
+		name string
+		want assessment.AssessmentServer
+	}{
+		{
+			name: "AssessmentServer created with empty results map",
+			want: &Service{
+				results:                       make(map[string]*assessment.Result),
+				UnimplementedAssessmentServer: assessment.UnimplementedAssessmentServer{},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewService(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewService() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

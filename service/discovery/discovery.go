@@ -26,12 +26,13 @@
 package discovery
 
 import (
-	"clouditor.io/clouditor/service/discovery/azure"
-	"clouditor.io/clouditor/service/discovery/k8s"
 	"context"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"strings"
 	"time"
+
+	"clouditor.io/clouditor/service/discovery/azure"
+	"clouditor.io/clouditor/service/discovery/k8s"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/google/uuid"
 
@@ -141,10 +142,9 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 
 	discoverer = append(discoverer,
 		azure.NewAzureIacTemplateDiscovery(azure.WithAuthorizer(authorizer)),
-		// TODO(lebogg): Uncomment after demo
-		//azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
-		//azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
-		//azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)),
+		azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
+		azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
+		azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)),
 		k8s.NewKubernetesComputeDiscovery(k8sClient),
 		k8s.NewKubernetesNetworkDiscovery(k8sClient),
 		aws.NewAwsStorageDiscovery(awsClient),
