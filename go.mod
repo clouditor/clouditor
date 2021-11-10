@@ -10,13 +10,13 @@ require (
 	github.com/Azure/go-autorest/autorest/validation v0.3.1 // indirect
 	github.com/alexedwards/argon2id v0.0.0-20210511081203-7d35d68092b8
 	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20210521184019-c5ad59b459ec
-	github.com/aws/aws-sdk-go-v2 v1.9.2
-	github.com/aws/aws-sdk-go-v2/config v1.8.0
+	github.com/aws/aws-sdk-go-v2 v1.11.0
+	github.com/aws/aws-sdk-go-v2/config v1.10.0
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.19.0
-	github.com/aws/aws-sdk-go-v2/service/lambda v1.9.0
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.16.0
-	github.com/aws/aws-sdk-go-v2/service/sts v1.7.0
-	github.com/aws/smithy-go v1.8.0
+	github.com/aws/aws-sdk-go-v2/service/lambda v1.11.0
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.18.0
+	github.com/aws/aws-sdk-go-v2/service/sts v1.9.0
+	github.com/aws/smithy-go v1.9.0
 	github.com/go-co-op/gocron v1.9.0
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/golang-jwt/jwt/v4 v4.1.0
@@ -37,7 +37,7 @@ require (
 	github.com/spf13/viper v1.9.0
 	github.com/stretchr/testify v1.7.0
 	google.golang.org/genproto v0.0.0-20210903162649-d08c68adba83
-	google.golang.org/grpc v1.41.0
+	google.golang.org/grpc v1.42.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0
 	google.golang.org/protobuf v1.27.1
 	gorm.io/driver/postgres v1.1.0
