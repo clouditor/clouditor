@@ -40,11 +40,12 @@ import (
 
 func TestMain(m *testing.M) {
 	// make sure, that we are in the clouditor root folder to find the policies
-	err := os.Chdir("../../..")
+	err := os.Chdir("../")
 	if err != nil {
 		panic(err)
 	}
 
+	os.Exit(m.Run())
 }
 
 // TestNewService is a simply test for NewService
