@@ -3,7 +3,6 @@
 # Clouditor Community Edition
 
 [![build](https://github.com/clouditor/clouditor/actions/workflows/build.yml/badge.svg)](https://github.com/clouditor/clouditor/actions/workflows/build.yml)
-[![build-java](https://github.com/clouditor/clouditor/actions/workflows/build-java.yml/badge.svg)](https://github.com/clouditor/clouditor/actions/workflows/build-java.yml)
 [![](https://godoc.org/clouditor.io/clouditor?status.svg)](https://pkg.go.dev/clouditor.io/clouditor)
 [![Go Report Card](https://goreportcard.com/badge/clouditor.io/clouditor)](https://goreportcard.com/report/clouditor.io/clouditor)
 [![codecov](https://codecov.io/gh/clouditor/clouditor/branch/main/graph/badge.svg)](https://codecov.io/gh/clouditor/clouditor)
