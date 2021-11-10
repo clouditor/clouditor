@@ -26,11 +26,14 @@
 package assessment
 
 import (
+	"context"
+	"errors"
+	"fmt"
+	"io"
+
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/policies"
-	"context"
-	"fmt"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -38,7 +41,6 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"io"
 )
 
 var log *logrus.Entry
@@ -100,8 +102,30 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 }
 
 func (s Service) handleEvidence(evidence *evidence.Evidence) error {
-	// TODO(oxisto): Should we check that "id" is really there and assertion is rightly done or can we just assume it?
-	resourceId := evidence.Resource.GetStructValue().AsMap()["id"].(string)
+	if evidence.Resource == nil {
+		return errors.New("evidence must contain a valid resource")
+	}
+
+	value := evidence.Resource.GetStructValue()
+	if value == nil {
+		return errors.New("resource in evidence is not struct value")
+	}
+
+	m := evidence.Resource.GetStructValue().AsMap()
+	if m == nil {
+		return errors.New("resource in evidence is not a map")
+	}
+
+	field, ok := m["id"]
+	if !ok {
+		return errors.New("resource in evidence is missing the id field")
+	}
+
+	resourceId, ok := field.(string)
+	if !ok {
+		return errors.New("resource id in evidence is not a string")
+	}
+
 	toolId := evidence.ToolId
 	// If no toolId was provided, indicate it in the info message
 	if toolId == "" {
