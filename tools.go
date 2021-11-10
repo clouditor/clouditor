@@ -1,3 +1,4 @@
+//go:build tools
 // +build tools
 
 // Copyright 2016-2020 Fraunhofer AISEC
