@@ -164,9 +164,9 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 				},
 			}},
 		BootLog: &voc.BootLog{Log: &voc.Log{
-			Output:          nil, // TODO(garuppel): You can specify a storage account where the logs diagnostics are stored at. Otherwise its Azure managed.
 			Enabled:         IsBootDiagnosticEnabled(vm),
-			RetentionPeriod: 0, // TODO(garuppel): Does not help much but either after reboot or after 1gb of space according to https://github.com/MicrosoftDocs/azure-docs/issues/69953#issuecomment-776246351
+			Output:          []voc.ResourceID{voc.ResourceID(*vm.DiagnosticsProfile.BootDiagnostics.StorageURI)},
+			RetentionPeriod: 0, // Currently, configuring the retention period for Managed Boot Diagnostics is not available. The logs will be overwritten after 1gb of space according to https://github.com/MicrosoftDocs/azure-docs/issues/69953
 		}},
 		OSLog: &voc.OSLog{}, // TODO(garuppel): Add OSLog
 		// TODO(garuppel) Add block storage resourceID

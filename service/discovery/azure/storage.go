@@ -221,7 +221,7 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 			Url: to.String(account.PrimaryEndpoints.Blob) + to.String(container.Name),
 			TransportEncryption: &voc.TransportEncryption{
 				Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
-				Enabled:    true, // TODO get from IaC template in all storages
+				Enabled:    true, // TODO(garuppel): can we get that from the API
 				TlsVersion: string(account.MinimumTLSVersion),
 				Algorithm:  "AES256", // TODO(garuppel): I changed it due to https://docs.microsoft.com/en-us/azure/storage/common/storage-service-encryption
 			},
