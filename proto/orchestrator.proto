@@ -121,6 +121,21 @@ service Orchestrator {
       get : "/v1/orchestrator/accounts"
     };
   }
+
+  // Registers a new target cloud service
+  rpc RegisterCloudService(RegisterCloudServiceRequest) returns (CloudService) {
+    option (google.api.http) = {
+      post : "/v1/orchestrator/cloud_services"
+      body : "service"
+    };
+  }
+
+  // Lists all target cloud services
+  rpc ListCloudServices(ListCloudServicesRequest) returns (ListCloudServicesResponse) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/cloud_services"
+    };
+  }
 }
 
 message RegisterAssessmentToolRequest { AssessmentTool tool = 1; }
@@ -155,6 +170,11 @@ message CreateAccountRequest {
 
 message ListAccountsRequests { }
 message ListAccountsResponse { repeated CloudAccount accounts = 1; }
+
+message RegisterCloudServiceRequest { CloudService service = 1; }
+
+message ListCloudServicesRequest {  }
+message ListCloudServicesResponse { repeated CloudService services = 1; }
 
 // Represents an external tool or service that offers assessments according to
 // certain metrics
@@ -206,4 +226,10 @@ message CloudAccount {
 
   // set it to true, to automatically discover this account on the host where the Clouditor is running
   bool auto_discover = 6;
+}
+
+message CloudService {
+  string id = 1;
+
+  string name = 2;
 }

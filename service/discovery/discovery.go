@@ -290,7 +290,7 @@ func (s Service) Query(_ context.Context, request *discovery.QueryRequest) (resp
 }*/
 
 func handleAzureAccount(account *orchestrator.CloudAccount, discoverer *[]discovery.Discoverer) (err error) {
-	log.Infof("Found an azure account. Cnfiguring our discoverers accordingly")
+	log.Info("Found an azure account. Configuring our discoverers accordingly")
 
 	var authorizer autorest.Authorizer
 
