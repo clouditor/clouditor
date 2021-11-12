@@ -53,12 +53,22 @@ service Discovery {
       response_body : "*"
     };
   }
+
+  // Assigns this discovery service as responsible for the discovery the target cloud service
+  rpc Assign(AssignRequest) returns (AssignResponse) {
+    option (google.api.http) = {
+      post : "/v1/discovery/assign"
+      body : "*"
+      response_body : "*"
+    };
+  }
 }
 
 message StartDiscoveryRequest {}
-
 message StartDiscoveryResponse { bool successful = 1; }
 
 message QueryRequest { string filtered_type = 1; }
-
 message QueryResponse { google.protobuf.ListValue results = 1; }
+
+message AssignRequest { string service_id = 1; }
+message AssignResponse {}

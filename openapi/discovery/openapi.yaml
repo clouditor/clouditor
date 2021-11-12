@@ -7,6 +7,23 @@ info:
     description: Discovers cloud resources and maps these properties to the format of the ontology
     version: 0.0.1
 paths:
+    /v1/discovery/assign:
+        post:
+            summary: Assigns this discovery service as responsible for the discovery the target cloud service
+            operationId: Discovery_Assign
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AssignRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AssignResponse'
     /v1/discovery/query:
         post:
             summary: Lists all evidences collected in the last run
@@ -43,6 +60,12 @@ paths:
                                 $ref: '#/components/schemas/StartDiscoveryResponse'
 components:
     schemas:
+        AssignRequest:
+            properties:
+                service_id:
+                    type: string
+        AssignResponse:
+            properties: {}
         ListValue:
             properties:
                 values:

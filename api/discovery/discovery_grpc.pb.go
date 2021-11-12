@@ -22,6 +22,8 @@ type DiscoveryClient interface {
 	Start(ctx context.Context, in *StartDiscoveryRequest, opts ...grpc.CallOption) (*StartDiscoveryResponse, error)
 	// Lists all evidences collected in the last run
 	Query(ctx context.Context, in *QueryRequest, opts ...grpc.CallOption) (*QueryResponse, error)
+	// Assigns this discovery service as responsible for the discovery the target cloud service
+	Assign(ctx context.Context, in *AssignRequest, opts ...grpc.CallOption) (*AssignResponse, error)
 }
 
 type discoveryClient struct {
@@ -50,6 +52,15 @@ func (c *discoveryClient) Query(ctx context.Context, in *QueryRequest, opts ...g
 	return out, nil
 }
 
+func (c *discoveryClient) Assign(ctx context.Context, in *AssignRequest, opts ...grpc.CallOption) (*AssignResponse, error) {
+	out := new(AssignResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.Discovery/Assign", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DiscoveryServer is the server API for Discovery service.
 // All implementations must embed UnimplementedDiscoveryServer
 // for forward compatibility
@@ -58,6 +69,8 @@ type DiscoveryServer interface {
 	Start(context.Context, *StartDiscoveryRequest) (*StartDiscoveryResponse, error)
 	// Lists all evidences collected in the last run
 	Query(context.Context, *QueryRequest) (*QueryResponse, error)
+	// Assigns this discovery service as responsible for the discovery the target cloud service
+	Assign(context.Context, *AssignRequest) (*AssignResponse, error)
 	mustEmbedUnimplementedDiscoveryServer()
 }
 
@@ -70,6 +83,9 @@ func (UnimplementedDiscoveryServer) Start(context.Context, *StartDiscoveryReques
 }
 func (UnimplementedDiscoveryServer) Query(context.Context, *QueryRequest) (*QueryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Query not implemented")
+}
+func (UnimplementedDiscoveryServer) Assign(context.Context, *AssignRequest) (*AssignResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Assign not implemented")
 }
 func (UnimplementedDiscoveryServer) mustEmbedUnimplementedDiscoveryServer() {}
 
@@ -120,6 +136,24 @@ func _Discovery_Query_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Discovery_Assign_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AssignRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DiscoveryServer).Assign(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Discovery/Assign",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DiscoveryServer).Assign(ctx, req.(*AssignRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Discovery_ServiceDesc is the grpc.ServiceDesc for Discovery service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -134,6 +168,10 @@ var Discovery_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Query",
 			Handler:    _Discovery_Query_Handler,
+		},
+		{
+			MethodName: "Assign",
+			Handler:    _Discovery_Assign_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

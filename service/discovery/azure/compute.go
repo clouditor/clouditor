@@ -129,7 +129,7 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 
 	client := compute.NewVirtualMachinesClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
- 
+
 	result, err := client.ListAllComplete(context.Background(), "true")
 	if err != nil {
 		return nil, fmt.Errorf("could not list virtual machines: %w", err)

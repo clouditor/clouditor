@@ -66,6 +66,7 @@ type Service struct {
 
 	resources map[string]voc.IsCloudResource
 	scheduler *gocron.Scheduler
+	serviceId string
 }
 
 type Configuration struct {
@@ -204,7 +205,6 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 			Id:        uuid.New().String(),
 			Timestamp: timestamppb.Now(),
 			ToolId:    "Clouditor Evidences Collection",
-			Raw:       "",
 			Resource:  v,
 		}
 
@@ -258,6 +258,15 @@ func (s Service) Query(_ context.Context, request *discovery.QueryRequest) (resp
 	return &discovery.QueryResponse{
 		Results: &structpb.ListValue{Values: r},
 	}, nil
+}
+
+// Assign assigns this discovery service to a target cloud service
+func (s *Service) Assign(_ context.Context, req *discovery.AssignRequest) (response *discovery.AssignResponse, err error) {
+	response = new(discovery.AssignResponse)
+
+	s.serviceId = req.ServiceId
+
+	return
 }
 
 /*func saveResourcesToFilesystem(result ResultOntology, filename string) error {
