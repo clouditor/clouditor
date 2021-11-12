@@ -42,11 +42,6 @@ var applicableMetrics = make(map[string][]string)
 func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) {
 	data := make([]map[string]interface{}, 0)
 	var baseDir string = "."
-	// check, if we are in the root of Clouditor
-	if _, err := os.Stat("policies"); os.IsNotExist(err) {
-		// in tests, we are relative to our current package
-		baseDir = ".."
-	}
 
 	var m = evidence.Resource.GetStructValue().AsMap()
 

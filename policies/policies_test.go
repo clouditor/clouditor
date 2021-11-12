@@ -26,8 +26,10 @@
 package policies_test
 
 import (
-	"clouditor.io/clouditor/voc"
+	"os"
 	"testing"
+
+	"clouditor.io/clouditor/voc"
 
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/policies"
@@ -44,6 +46,16 @@ const (
 	mockVM2EvidenceID         = "4"
 	mockVM2ResourceID         = "/mockresources/compute/vm2"
 )
+
+func TestMain(m *testing.M) {
+	// make sure, that we are in the clouditor root folder to find the policies
+	err := os.Chdir("../")
+	if err != nil {
+		panic(err)
+	}
+
+	os.Exit(m.Run())
+}
 
 func TestRunEvidence(t *testing.T) {
 	type fields struct {
