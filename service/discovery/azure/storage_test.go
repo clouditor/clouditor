@@ -26,10 +26,11 @@
 package azure_test
 
 import (
-	"clouditor.io/clouditor/voc"
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-04-01/storage"
 	"net/http"
 	"testing"
+
+	"clouditor.io/clouditor/voc"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-04-01/storage"
 
 	"clouditor.io/clouditor/service/discovery/azure"
 	"github.com/stretchr/testify/assert"
@@ -262,7 +263,7 @@ func TestObjectStorage(t *testing.T) {
 	assert.Equal(t, true, objectStorage.HttpEndpoint.TransportEncryption.Enabled)
 	assert.Equal(t, true, objectStorage.HttpEndpoint.TransportEncryption.Enforced)
 	assert.Equal(t, "TLS1_2", objectStorage.HttpEndpoint.TransportEncryption.TlsVersion)
-	assert.Equal(t, "AES256", objectStorage.HttpEndpoint.TransportEncryption.Algorithm)
+	assert.Equal(t, "TLS", objectStorage.HttpEndpoint.TransportEncryption.Algorithm)
 
 	// Check ManagedKeyEncryption
 	atRestEncryption := *objectStorage.GetAtRestEncryption()

@@ -36,6 +36,7 @@ import (
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func TestMain(m *testing.M) {
@@ -88,6 +89,32 @@ func TestHandleEvidence(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
+					ToolId:    "mock",
+					Timestamp: timestamppb.Now(),
+					Resource:  toStruct(voc.VirtualMachine{}, t),
+				},
+			},
+			wantErr:  true,
+			wantResp: &evidence.StoreEvidenceResponse{Status: true},
+		},
+		{
+			name: "Assess resource without tool id",
+			args: args{
+				in0: context.TODO(),
+				evidence: &evidence.Evidence{
+					Timestamp: timestamppb.Now(),
+					Resource:  toStruct(voc.VirtualMachine{}, t),
+				},
+			},
+			wantErr:  true,
+			wantResp: &evidence.StoreEvidenceResponse{Status: true},
+		},
+		{
+			name: "Assess resource without timestamp",
+			args: args{
+				in0: context.TODO(),
+				evidence: &evidence.Evidence{
+					ToolId:   "mock",
 					Resource: toStruct(voc.VirtualMachine{}, t),
 				},
 			},
@@ -99,7 +126,9 @@ func TestHandleEvidence(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
-					Resource: toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+					ToolId:    "mock",
+					Timestamp: timestamppb.Now(),
+					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 				},
 			},
 			wantErr:  false,

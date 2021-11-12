@@ -45,6 +45,16 @@ import (
 
 var log *logrus.Entry
 
+var (
+	ErrNotValidResource    = errors.New("resource in evidence is not a map")
+	ErrResourceNotStruct   = errors.New("resource in evidence is not struct value")
+	ErrResourceNotMap      = errors.New("resource in evidence is not a map")
+	ErrResourceIdMissing   = errors.New("resource in evidence is missing the id field")
+	ErrResourceIdNotString = errors.New("resource id in evidence is not a string")
+	ErrToolIdMissing       = errors.New("tool id in evidence is missing")
+	ErrTimestampMissing    = errors.New("timestamp in evidence is missing")
+)
+
 func init() {
 	log = logrus.WithField("component", "assessment")
 }
@@ -103,42 +113,39 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 
 func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 	if evidence.Resource == nil {
-		return errors.New("evidence must contain a valid resource")
+		return ErrNotValidResource
 	}
-
 	value := evidence.Resource.GetStructValue()
 	if value == nil {
-		return errors.New("resource in evidence is not struct value")
+		return ErrResourceNotStruct
 	}
 
 	m := evidence.Resource.GetStructValue().AsMap()
 	if m == nil {
-		return errors.New("resource in evidence is not a map")
+		return ErrResourceNotMap
 	}
 
 	field, ok := m["id"]
 	if !ok {
-		return errors.New("resource in evidence is missing the id field")
+		return ErrResourceIdMissing
 	}
 
 	resourceId, ok := field.(string)
 	if !ok {
-		return errors.New("resource id in evidence is not a string")
+		return ErrResourceIdNotString
 	}
 
 	toolId := evidence.ToolId
-	// If no toolId was provided, indicate it in the info message
 	if toolId == "" {
-		toolId = "<Tool id missing>"
-	}
-	timeStamp := evidence.Timestamp
-	// if no timeStamp was given, indicate it in the info message
-	if timeStamp == nil {
-		log.Infof("Running evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, toolId, "<Timestamp missing>")
-	} else {
-		log.Infof("Running evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, toolId, timeStamp)
+		return ErrToolIdMissing
 	}
 
+	timestamp := evidence.Timestamp
+	if timestamp == nil {
+		return ErrTimestampMissing
+	}
+
+	log.Infof("Running evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, toolId, timestamp)
 	log.Debugf("Evidence: %+v", evidence)
 
 	evaluations, err := policies.RunEvidence(evidence)
