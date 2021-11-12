@@ -64,7 +64,7 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 	if key := createKey(types); applicableMetrics[key] == nil {
 		files, err := scanBundleDir(baseDir)
 		if err != nil {
-			return nil, fmt.Errorf("could not load metric bundles: %v", err)
+			return nil, fmt.Errorf("could not load metric bundles: %w", err)
 		}
 
 		for _, fileInfo := range files {

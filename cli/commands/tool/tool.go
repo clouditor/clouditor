@@ -92,7 +92,7 @@ func NewShowToolCommand() *cobra.Command {
 			}
 
 			if conn, err = grpc.Dial(session.URL, grpc.WithInsecure()); err != nil {
-				return fmt.Errorf("could not connect: %v", err)
+				return fmt.Errorf("could not connect: %w", err)
 			}
 
 			client = orchestrator.NewOrchestratorClient(conn)
