@@ -26,10 +26,11 @@
 package azure
 
 import (
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/voc"
 	"context"
 	"fmt"
+
+	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/voc"
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/compute/mgmt/compute"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -223,7 +224,7 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 				Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
 				Enabled:    true, // TODO(garuppel): can we get that from the API
 				TlsVersion: string(account.MinimumTLSVersion),
-				Algorithm:  "AES256", // TODO(garuppel): I changed it due to https://docs.microsoft.com/en-us/azure/storage/common/storage-service-encryption
+				Algorithm:  "TLS",
 			},
 		},
 	}
@@ -257,22 +258,18 @@ func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem
 	}
 }
 
-func getBlockStorageAtRestEncryption(disk compute.Disk) voc.HasAtRestEncryption {
-
-	var enc voc.HasAtRestEncryption
-
+func getBlockStorageAtRestEncryption(disk compute.Disk) (enc voc.HasAtRestEncryption) {
 	if disk.Encryption.Type == compute.EncryptionAtRestWithPlatformKey {
 		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
-			Algorithm: "AES256", // TODO(garuppel): I changed it due to https://docs.microsoft.com/en-us/azure/storage/common/storage-service-encryption
+			Algorithm: "AES256", // See https://docs.microsoft.com/en-us/azure/storage/common/storage-service-encryption
 			Enabled:   true,
 		}}
-		// TODO(garuppel): Check the changed code (commented-out part and removed condition in if statement)
 	} else if disk.Encryption.Type == compute.EncryptionAtRestWithCustomerKey {
 		var keyUrl string
-		//for _, elem := range *disk.EncryptionSettingsCollection.EncryptionSettings {
-		//	keyUrl = *elem.DiskEncryptionKey.SourceVault.ID
-		//	break
-		//}
+		for _, elem := range *disk.EncryptionSettingsCollection.EncryptionSettings {
+			keyUrl = *elem.DiskEncryptionKey.SourceVault.ID
+			break
+		}
 
 		enc = voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
