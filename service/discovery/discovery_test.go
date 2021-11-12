@@ -130,7 +130,7 @@ func TestQuery(t *testing.T) {
 		wantErr                  bool
 	}{
 		{
-			name: "Err when unmarshalling",
+			name: "Err when un-marshalling",
 			fields: fields{
 				queryRequest: &discovery.QueryRequest{},
 				resources: map[string]voc.IsCloudResource{
