@@ -58,7 +58,6 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 		return nil, fmt.Errorf("got type '%T' but wanted '[]interface {}'. Check if resource types are specified ", rawTypes)
 	}
 	for i, v := range m["type"].([]interface{}) {
-		// TODO(all): type assertion check good or unnecessary because we assume resourceTypes to be always set as intended ([]string)?
 		if t, ok := v.(string); !ok {
 			return nil, fmt.Errorf("got type '%T' but wanted 'string'", t)
 		} else {
@@ -73,7 +72,6 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 		}
 
 		for _, fileInfo := range files {
-			//file := fmt.Sprintf("%s/policies/policyBundles/%s/", baseDir, fileInfo.Name())
 			runMap, err := RunMap(baseDir, fileInfo.Name(), m)
 			if err != nil {
 				return nil, err
@@ -85,7 +83,6 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 		}
 	} else {
 		for _, metric := range applicableMetrics[key] {
-			//bundle := fmt.Sprintf("%s/policies/policyBundles/%s/", baseDir, metric)
 			runMap, err := RunMap(baseDir, metric, m)
 			if err != nil {
 				return nil, err
@@ -102,8 +99,8 @@ func RunMap(baseDir string, metric string, m map[string]interface{}) (data map[s
 	)
 
 	// Create paths for bundle directory and utility functions file
-	bundle := fmt.Sprintf("%s/policies/policyBundles/%s/", baseDir, metric)
-	utilityFunctions := fmt.Sprintf("%s/policies/utilityFunctions.rego", baseDir)
+	bundle := fmt.Sprintf("%s/policies/bundles/%s/", baseDir, metric)
+	operators := fmt.Sprintf("%s/policies/operators.rego", baseDir)
 
 	ctx := context.TODO()
 	r, err := rego.New(
@@ -112,7 +109,7 @@ func RunMap(baseDir string, metric string, m map[string]interface{}) (data map[s
 			[]string{
 				bundle + "metric.rego",
 				bundle + "data.json",
-				utilityFunctions,
+				operators,
 			},
 			nil),
 	).PrepareForEval(ctx)
@@ -135,8 +132,7 @@ func RunMap(baseDir string, metric string, m map[string]interface{}) (data map[s
 }
 
 func scanBundleDir(baseDir string) ([]os.FileInfo, error) {
-
-	dirname := baseDir + "/policies/policyBundles"
+	dirname := baseDir + "/policies/bundles"
 
 	f, err := os.Open(dirname)
 	if err != nil {
