@@ -33,8 +33,8 @@ func init() {
 // StoreEvidence is a method implementation of the evidenceServer interface: It receives an evidence and stores it
 func (s *Service) StoreEvidence(_ context.Context, e *evidence.Evidence) (*evidence.StoreEvidenceResponse, error) {
 	var (
-		resp       = &evidence.StoreEvidenceResponse{}
-		err  error = nil
+		resp = &evidence.StoreEvidenceResponse{}
+		err  error
 	)
 
 	_, err = e.Validate()
