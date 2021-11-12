@@ -27,7 +27,6 @@ package assessment
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 
@@ -44,16 +43,6 @@ import (
 )
 
 var log *logrus.Entry
-
-var (
-	ErrNotValidResource    = errors.New("resource in evidence is not a map")
-	ErrResourceNotStruct   = errors.New("resource in evidence is not struct value")
-	ErrResourceNotMap      = errors.New("resource in evidence is not a map")
-	ErrResourceIdMissing   = errors.New("resource in evidence is missing the id field")
-	ErrResourceIdNotString = errors.New("resource id in evidence is not a string")
-	ErrToolIdMissing       = errors.New("tool id in evidence is missing")
-	ErrTimestampMissing    = errors.New("timestamp in evidence is missing")
-)
 
 func init() {
 	log = logrus.WithField("component", "assessment")
@@ -112,40 +101,12 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 }
 
 func (s Service) handleEvidence(evidence *evidence.Evidence) error {
-	if evidence.Resource == nil {
-		return ErrNotValidResource
-	}
-	value := evidence.Resource.GetStructValue()
-	if value == nil {
-		return ErrResourceNotStruct
+	resourceId, err := evidence.Validate()
+	if err != nil {
+		return fmt.Errorf("invalid evidence: %w", err)
 	}
 
-	m := evidence.Resource.GetStructValue().AsMap()
-	if m == nil {
-		return ErrResourceNotMap
-	}
-
-	field, ok := m["id"]
-	if !ok {
-		return ErrResourceIdMissing
-	}
-
-	resourceId, ok := field.(string)
-	if !ok {
-		return ErrResourceIdNotString
-	}
-
-	toolId := evidence.ToolId
-	if toolId == "" {
-		return ErrToolIdMissing
-	}
-
-	timestamp := evidence.Timestamp
-	if timestamp == nil {
-		return ErrTimestampMissing
-	}
-
-	log.Infof("Running evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, toolId, timestamp)
+	log.Infof("Running evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, evidence.ToolId, evidence.Timestamp)
 	log.Debugf("Evidence: %+v", evidence)
 
 	evaluations, err := policies.RunEvidence(evidence)

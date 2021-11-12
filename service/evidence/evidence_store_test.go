@@ -7,9 +7,11 @@ import (
 	"testing"
 
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
 )
@@ -56,9 +58,14 @@ func TestStoreEvidence(t *testing.T) {
 				evidence: &evidence.Evidence{
 					Id:        "MockEvidenceId",
 					ServiceId: "MockServiceId",
+					ToolId:    "MockTool",
 					Timestamp: timestamppb.Now(),
 					Raw:       "",
-					Resource:  nil,
+					Resource: toStruct(voc.VirtualMachine{
+						Compute: &voc.Compute{CloudResource: &voc.CloudResource{
+							ID: "mock-id",
+						}},
+					}, t),
 				},
 			},
 			wantErr:  false,
@@ -185,4 +192,13 @@ func (mockStreamer) SendMsg(_ interface{}) error {
 
 func (mockStreamer) RecvMsg(_ interface{}) error {
 	panic("implement me")
+}
+
+func toStruct(r voc.IsCloudResource, t *testing.T) (s *structpb.Value) {
+	s, err := voc.ToStruct(r)
+	if err != nil {
+		assert.NotNil(t, err)
+	}
+
+	return
 }

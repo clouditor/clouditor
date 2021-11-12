@@ -27,9 +27,8 @@ package voc
 
 type TransportEncryption struct {
 	*Confidentiality
-	Enforced bool `json:"enforced"`
-	Enabled  bool `json:"enabled"`
-	// TODO(all): I would suggest to use float s.t. we can compare within Rego policies
+	Enforced   bool   `json:"enforced"`
+	Enabled    bool   `json:"enabled"`
 	TlsVersion string `json:"tlsVersion"`
 	Algorithm  string `json:"algorithm"`
 }
