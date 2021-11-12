@@ -56,7 +56,7 @@ func (k k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
 
 	services, err := k.intf.CoreV1().Services("").List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("could not list services: %v", err)
+		return nil, fmt.Errorf("could not list services: %w", err)
 	}
 
 	for i := range services.Items {
@@ -70,7 +70,7 @@ func (k k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
 	// TODO Does not get ingresses
 	ingresses, err := k.intf.NetworkingV1().Ingresses("").List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
-		return list, fmt.Errorf("could not list ingresses: %v", err)
+		return list, fmt.Errorf("could not list ingresses: %w", err)
 	}
 
 	for i := range ingresses.Items {

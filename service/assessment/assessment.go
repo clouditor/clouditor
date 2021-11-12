@@ -29,26 +29,28 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"os"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/policies"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var log *logrus.Entry
-
-var listId int32
 
 func init() {
 	log = logrus.WithField("component", "assessment")
 }
 
 type Service struct {
+	// ResultHook is a hook function that can be used if one wants to be
+	// informed about each assessment result
 	ResultHook func(result *assessment.Result, err error)
 
 	results map[string]*assessment.Result
@@ -62,7 +64,7 @@ func NewService() assessment.AssessmentServer {
 }
 
 func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
-	_, err = s.handleEvidence(req.Evidence)
+	err = s.handleEvidence(req.Evidence)
 
 	if err != nil {
 		res = &assessment.AssessEvidenceResponse{
@@ -80,14 +82,14 @@ func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenc
 }
 
 func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) error {
-	var evidence *evidence.Evidence
+	var e *evidence.Evidence
 	var err error
 
 	for {
-		evidence, err = stream.Recv()
+		e, err = stream.Recv()
 
 		// TODO: Catch error?
-		_, _ = s.handleEvidence(evidence)
+		_ = s.handleEvidence(e)
 
 		if err == io.EOF {
 			log.Infof("Stopped receiving streamed evidences")
@@ -98,60 +100,61 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 	}
 }
 
-func (s Service) handleEvidence(evidence *evidence.Evidence) (result *evidence.Evidence, err error) {
-	log.Infof("Received evidence for resource %s", evidence.ResourceId)
-	log.Debugf("Evidence: %+v", evidence)
-
-	var file string
-
-	listId++
-	evidence.Id = fmt.Sprintf("%d", listId)
-
-	if len(evidence.ApplicableMetrics) == 0 {
-		log.Warnf("Could not find a valid metric for evidence of resource %s", evidence.ResourceId)
+func (s Service) handleEvidence(evidence *evidence.Evidence) error {
+	resourceId, err := evidence.Validate()
+	if err != nil {
+		return fmt.Errorf("invalid evidence: %w", err)
 	}
 
-	// TODO(oxisto): actually look up metric via orchestrator
-	for _, metric := range evidence.ApplicableMetrics {
-		var baseDir string = "."
+	log.Infof("Running evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, evidence.ToolId, evidence.Timestamp)
+	log.Debugf("Evidence: %+v", evidence)
 
-		// check, if we are in the root of Clouditor
-		if _, err := os.Stat("policies"); os.IsNotExist(err) {
-			// in tests, we are relative to our current package
-			baseDir = "../../"
+	evaluations, err := policies.RunEvidence(evidence)
+	if err != nil {
+		log.Errorf("Could not evaluate evidence: %v", err)
+
+		// Inform our hook, if we have any
+		if s.ResultHook != nil {
+			go s.ResultHook(nil, err)
 		}
 
-		file = fmt.Sprintf("%s/policies/metric%d.rego", baseDir, metric)
+		return err
+	}
 
-		// TODO(oxisto): use go embed
-		data, err := policies.RunEvidence(file, evidence)
-		if err != nil {
-			log.Errorf("Could not evaluate evidence: %v", err)
+	for i, data := range evaluations {
+		metricId := data["metricId"].(string)
 
-			if s.ResultHook != nil {
-				go s.ResultHook(nil, err)
-			}
+		log.Infof("Evaluated evidence with metric '%v' as %v", metricId, data["compliant"])
 
-			return nil, err
-		}
-
-		log.Infof("Evaluated evidence as %v", data["compliant"])
+		// Get output values of Rego evaluation. If they are not given, the zero value is used
+		operator, _ := data["operator"].(string)
+		targetValue, _ := data["target_value"].(*structpb.Value)
+		compliant, _ := data["compliant"].(bool)
 
 		result := &assessment.Result{
-			ResourceId: evidence.ResourceId,
-			Compliant:  data["compliant"].(bool),
-			MetricId:   int32(metric),
+			Id:        uuid.NewString(),
+			Timestamp: timestamppb.Now(),
+			MetricId:  metricId,
+			MetricData: &assessment.MetricData{
+				TargetValue: targetValue,
+				Operator:    operator,
+			},
+			Compliant:             compliant,
+			EvidenceId:            evidence.Id,
+			ResourceId:            resourceId,
+			NonComplianceComments: "No comments so far",
 		}
 
-		// just a little hack to quickly enable multiple results per resource
-		s.results[fmt.Sprintf("%s-%d", evidence.ResourceId, metric)] = result
+		// Just a little hack to quickly enable multiple results per resource
+		s.results[fmt.Sprintf("%s-%d", resourceId, i)] = result
 
+		// Inform our hook, if we have any
 		if s.ResultHook != nil {
 			go s.ResultHook(result, nil)
 		}
 	}
 
-	return
+	return nil
 }
 
 func (s Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {

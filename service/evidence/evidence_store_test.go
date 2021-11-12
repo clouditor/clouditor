@@ -7,9 +7,11 @@ import (
 	"testing"
 
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
 )
@@ -54,13 +56,16 @@ func TestStoreEvidence(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
-					Id:                "MockEvidenceId",
-					ServiceId:         "MockServiceId",
-					ResourceId:        "MockResourceId",
-					Timestamp:         timestamppb.Now(),
-					ApplicableMetrics: []int32{1, 2},
-					Raw:               "",
-					Resource:          nil,
+					Id:        "MockEvidenceId",
+					ServiceId: "MockServiceId",
+					ToolId:    "MockTool",
+					Timestamp: timestamppb.Now(),
+					Raw:       "",
+					Resource: toStruct(voc.VirtualMachine{
+						Compute: &voc.Compute{CloudResource: &voc.CloudResource{
+							ID: "mock-id",
+						}},
+					}, t),
 				},
 			},
 			wantErr:  false,
@@ -114,22 +119,18 @@ func TestStoreEvidences(t *testing.T) {
 func TestListEvidences(t *testing.T) {
 	s := NewService()
 	s.evidences["MockEvidenceId-1"] = &evidence.Evidence{
-		Id:                "MockEvidenceId-1",
-		ServiceId:         "MockServiceId-1",
-		ResourceId:        "MockResourceId-1",
-		Timestamp:         timestamppb.Now(),
-		ApplicableMetrics: []int32{1, 2},
-		Raw:               "",
-		Resource:          nil,
+		Id:        "MockEvidenceId-1",
+		ServiceId: "MockServiceId-1",
+		Timestamp: timestamppb.Now(),
+		Raw:       "",
+		Resource:  nil,
 	}
 	s.evidences["MockEvidenceId-2"] = &evidence.Evidence{
-		Id:                "MockEvidenceId-2",
-		ServiceId:         "MockServiceId-2",
-		ResourceId:        "MockResourceId-2",
-		Timestamp:         timestamppb.Now(),
-		ApplicableMetrics: []int32{1, 2},
-		Raw:               "",
-		Resource:          nil,
+		Id:        "MockEvidenceId-2",
+		ServiceId: "MockServiceId-2",
+		Timestamp: timestamppb.Now(),
+		Raw:       "",
+		Resource:  nil,
 	}
 
 	resp, err := s.ListEvidences(context.TODO(), &evidence.ListEvidencesRequest{})
@@ -149,24 +150,20 @@ func (m *mockStreamer) Recv() (*evidence.Evidence, error) {
 	if m.counter == 0 {
 		m.counter++
 		return &evidence.Evidence{
-			Id:                "MockEvidenceId-1",
-			ServiceId:         "MockServiceId-1",
-			ResourceId:        "MockResourceId-1",
-			Timestamp:         timestamppb.Now(),
-			ApplicableMetrics: []int32{1, 2},
-			Raw:               "",
-			Resource:          nil,
+			Id:        "MockEvidenceId-1",
+			ServiceId: "MockServiceId-1",
+			Timestamp: timestamppb.Now(),
+			Raw:       "",
+			Resource:  nil,
 		}, nil
 	} else if m.counter == 1 {
 		m.counter++
 		return &evidence.Evidence{
-			Id:                "MockEvidenceId-2",
-			ServiceId:         "MockServiceId-2",
-			ResourceId:        "MockResourceId-2",
-			Timestamp:         timestamppb.Now(),
-			ApplicableMetrics: []int32{1, 2},
-			Raw:               "",
-			Resource:          nil,
+			Id:        "MockEvidenceId-2",
+			ServiceId: "MockServiceId-2",
+			Timestamp: timestamppb.Now(),
+			Raw:       "",
+			Resource:  nil,
 		}, nil
 	} else {
 		return nil, io.EOF
@@ -195,4 +192,13 @@ func (mockStreamer) SendMsg(_ interface{}) error {
 
 func (mockStreamer) RecvMsg(_ interface{}) error {
 	panic("implement me")
+}
+
+func toStruct(r voc.IsCloudResource, t *testing.T) (s *structpb.Value) {
+	s, err := voc.ToStruct(r)
+	if err != nil {
+		assert.NotNil(t, err)
+	}
+
+	return
 }

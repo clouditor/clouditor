@@ -38,7 +38,7 @@ import (
 func NewListResultsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "Lists all asssessment results",
+		Short: "Lists all assessment results",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err     error

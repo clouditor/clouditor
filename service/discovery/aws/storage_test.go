@@ -44,12 +44,12 @@ import (
 
 const (
 	mockBucket1             = "mockbucket1"
-	mockBucket1Endpoint     = "https://mockbucket1.s3.eu-central-1.amazonaws.com"
 	mockBucket1Region       = "eu-central-1"
+	mockBucket1Endpoint     = "https://" + mockBucket1 + ".s3." + mockBucket1Region + ".amazonaws.com"
 	mockBucket1CreationTime = "2012-11-01T22:08:41+00:00"
 	mockBucket2             = "mockbucket2"
-	mockBucket2Endpoint     = "https://mockbucket2.s3.eu-west-1.amazonaws.com"
-	mockBucket2Region       = "eu-west-1"
+	mockBucket2Region       = mockBucket1Region
+	mockBucket2Endpoint     = "https://" + mockBucket2 + ".s3." + mockBucket1Region + ".amazonaws.com"
 	mockBucket2CreationTime = "2013-12-02T22:08:41+00:00"
 	mockBucket2KeyId        = "1234abcd-12ab-34cd-56ed-1234567890ab"
 	mockBucket3             = "mockbucket3"
@@ -134,7 +134,7 @@ func (m mockS3APINew) GetBucketPolicy(_ context.Context,
 				{
 					Action:    "s3:*",
 					Effect:    "Deny",
-					Resource:  []string{"*"},
+					Resource:  "*",
 					Condition: Condition{Bool{AwsSecureTransport: false}},
 				}},
 		}
@@ -158,7 +158,7 @@ func (m mockS3APINew) GetBucketPolicy(_ context.Context,
 				{
 					Action:    "s3:*",
 					Effect:    "Audit",
-					Resource:  []string{"*"},
+					Resource:  "*",
 					Condition: Condition{Bool{AwsSecureTransport: false}},
 				}},
 		}
@@ -289,11 +289,16 @@ func TestAwsS3Discovery_getBuckets(t *testing.T) {
 	d := awsS3Discovery{
 		storageAPI:    mockS3APINew{},
 		isDiscovering: false,
+		awsConfig: &Client{
+			cfg:       aws.Config{Region: mockBucket1Region},
+			accountID: nil,
+		},
 	}
 	buckets, err := d.getBuckets()
 	assert.Nil(t, err)
 
 	log.Print("Testing number of buckets")
+	// We fetch buckets currently only of users region
 	assert.Equal(t, 2, len(buckets))
 
 	log.Print("Testing name of first bucket")
@@ -356,7 +361,7 @@ func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 	assert.Equal(t, "AES256", managedEncryption.Algorithm)
 
 	// Second case: SSE-KMS encryption
-	encryptionAtRest, err = d.getEncryptionAtRest(bucket{name: mockBucket2, region: "eu-west-1"})
+	encryptionAtRest, err = d.getEncryptionAtRest(bucket{name: mockBucket2, region: mockBucket2Region})
 	customerEncryption, ok = encryptionAtRest.(voc.CustomerKeyEncryption)
 	assert.True(t, ok)
 	assert.Nil(t, err)
@@ -405,9 +410,7 @@ func TestAwsS3Discovery_getTransportEncryption(t *testing.T) {
 	// Case 3: JSON failure
 	encryptionAtTransit, err = d.getTransportEncryption(mockBucket2)
 	assert.NotNil(t, err)
-	assert.True(t, encryptionAtTransit.Enabled)
-	assert.Equal(t, "TLS1.2", encryptionAtTransit.TlsVersion)
-	assert.False(t, encryptionAtTransit.Enforced)
+	assert.Nil(t, encryptionAtTransit)
 
 	// Case 4: Not enforced
 	encryptionAtTransit, err = d.getTransportEncryption(mockBucket3)
@@ -462,7 +465,7 @@ func TestAwsS3Discovery_List(t *testing.T) {
 		isDiscovering: false,
 		awsConfig: &Client{
 			cfg: aws.Config{
-				Region:           "mockRegion",
+				Region:           mockBucket1Region,
 				Credentials:      nil,
 				HTTPClient:       nil,
 				EndpointResolver: nil,

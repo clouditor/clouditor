@@ -26,10 +26,11 @@
 package orchestrator_test
 
 import (
-	"clouditor.io/clouditor/api/assessment"
 	"context"
 	"io/fs"
 	"testing"
+
+	"clouditor.io/clouditor/api/assessment"
 
 	"clouditor.io/clouditor/api/orchestrator"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
@@ -58,7 +59,7 @@ func TestGetMetric(t *testing.T) {
 	)
 
 	request = &orchestrator.GetMetricsRequest{
-		MetricId: 1,
+		MetricId: "TransportEncryptionEnabled",
 	}
 
 	metric, err = service.GetMetric(context.TODO(), request)

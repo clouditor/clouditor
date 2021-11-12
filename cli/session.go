@@ -82,7 +82,7 @@ func NewSession(url string, opts ...grpc.DialOption) (session *Session, err erro
 	}
 
 	if session.ClientConn, err = grpc.Dial(session.URL, opts...); err != nil {
-		return nil, fmt.Errorf("could not connect: %v", err)
+		return nil, fmt.Errorf("could not connect: %w", err)
 	}
 
 	return session, nil
@@ -111,7 +111,7 @@ func ContinueSession() (session *Session, err error) {
 	}
 
 	if session.ClientConn, err = grpc.Dial(session.URL, grpc.WithInsecure()); err != nil {
-		return nil, fmt.Errorf("could not connect: %v", err)
+		return nil, fmt.Errorf("could not connect: %w", err)
 	}
 
 	return session, nil
@@ -282,7 +282,7 @@ func getMetrics(toComplete string) []string {
 
 	var metrics []string
 	for _, v := range res.Metrics {
-		metrics = append(metrics, fmt.Sprintf("%d\t%s: %s", v.Id, v.Name, v.Description))
+		metrics = append(metrics, fmt.Sprintf("%s\t%s: %s", v.Id, v.Name, v.Description))
 	}
 
 	return metrics

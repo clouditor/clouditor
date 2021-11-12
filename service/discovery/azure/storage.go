@@ -26,10 +26,11 @@
 package azure
 
 import (
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/voc"
 	"context"
 	"fmt"
+
+	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/voc"
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/compute/mgmt/compute"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -221,9 +222,9 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 			Url: to.String(account.PrimaryEndpoints.Blob) + to.String(container.Name),
 			TransportEncryption: &voc.TransportEncryption{
 				Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
-				Enabled:    true, // TODO get from IaC template in all storages
+				Enabled:    true, // TODO(garuppel): can we get that from the API
 				TlsVersion: string(account.MinimumTLSVersion),
-				Algorithm:  "", // not available
+				Algorithm:  "TLS",
 			},
 		},
 	}
@@ -251,22 +252,19 @@ func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem
 				Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
 				Enabled:    true, // cannot be disabled
 				TlsVersion: string(account.MinimumTLSVersion),
-				Algorithm:  "", // not available
+				Algorithm:  "AES256", // TODO(garuppel): I changed it due to https://docs.microsoft.com/en-us/azure/storage/common/storage-service-encryption
 			},
 		},
 	}
 }
 
-func getBlockStorageAtRestEncryption(disk compute.Disk) voc.HasAtRestEncryption {
-
-	var enc voc.HasAtRestEncryption
-
+func getBlockStorageAtRestEncryption(disk compute.Disk) (enc voc.HasAtRestEncryption) {
 	if disk.Encryption.Type == compute.EncryptionAtRestWithPlatformKey {
 		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
-			Algorithm: "", // not available
+			Algorithm: "AES256", // See https://docs.microsoft.com/en-us/azure/storage/common/storage-service-encryption
 			Enabled:   true,
 		}}
-	} else if disk.Encryption.Type == compute.EncryptionAtRestWithCustomerKey && *disk.EncryptionSettingsCollection.Enabled {
+	} else if disk.Encryption.Type == compute.EncryptionAtRestWithCustomerKey {
 		var keyUrl string
 		for _, elem := range *disk.EncryptionSettingsCollection.EncryptionSettings {
 			keyUrl = *elem.DiskEncryptionKey.SourceVault.ID

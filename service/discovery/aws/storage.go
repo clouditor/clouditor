@@ -85,15 +85,15 @@ type S3API interface {
 
 // BucketPolicy matches the returned bucket policy in JSON from AWS
 type BucketPolicy struct {
-	ID        string
-	Version   string
-	Statement []Statement
+	ID        string      `json:"id"`
+	Version   string      `json:"Version"`
+	Statement []Statement `json:"Statement"`
 }
 type Statement struct {
-	Action   string
-	Effect   string
-	Resource []string
-	Condition
+	Action    interface{} `json:"Action"`
+	Effect    string      `json:"Effect"`
+	Resource  interface{}
+	Condition `json:"Condition"`
 }
 type Condition struct {
 	Bool
@@ -110,17 +110,15 @@ func (d *awsS3Discovery) Name() string {
 // List is the method implementation defined in the discovery.Discoverer interface
 func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 	var encryptionAtRest voc.HasAtRestEncryption
-	var encryptionAtTransmit voc.TransportEncryption
+	var encryptionAtTransmit *voc.TransportEncryption
 
-	log.Info("Starting List() in ", d.Name())
+	log.Infof("Collecting evidences in %s", d.Name())
 	var buckets []bucket
 	buckets, err = d.getBuckets()
 	if err != nil {
 		return
 	}
-	log.Println("Found", len(buckets), "buckets.")
 	for _, b := range buckets {
-		log.Println("Getting resources for", b.name)
 		encryptionAtRest, err = d.getEncryptionAtRest(b)
 		if err != nil {
 			return
@@ -144,7 +142,7 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 			},
 			HttpEndpoint: &voc.HttpEndpoint{
 				Url:                 b.endpoint,
-				TransportEncryption: &encryptionAtTransmit,
+				TransportEncryption: encryptionAtTransmit,
 			},
 		})
 	}
@@ -165,7 +163,6 @@ func NewAwsStorageDiscovery(client *Client) discovery.Discoverer {
 
 // getBuckets returns all buckets
 func (d *awsS3Discovery) getBuckets() (buckets []bucket, err error) {
-	log.Println("Getting buckets in s3...")
 	var resp *s3.ListBucketsOutput
 	resp, err = d.storageAPI.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
 	if err != nil {
@@ -181,13 +178,17 @@ func (d *awsS3Discovery) getBuckets() (buckets []bucket, err error) {
 		if err != nil {
 			return
 		}
-		buckets = append(buckets, bucket{
-			arn:          "arn:aws:s3:::" + *b.Name,
-			name:         aws.ToString(b.Name),
-			creationTime: aws.ToTime(b.CreationDate),
-			region:       region,
-			endpoint:     "https://" + aws.ToString(b.Name) + ".s3." + region + ".amazonaws.com",
-		})
+		// Currently only buckets are retrieved that are in the region of the users specified region in the config. Since getBucketPolicy throws error if bucket region differs
+		// TODO(lebogg): Retrieve all buckets (just remove if) and fix issues with other methods, e.g. getBucketPolicy
+		if region == d.awsConfig.cfg.Region {
+			buckets = append(buckets, bucket{
+				arn:          "arn:aws:s3:::" + *b.Name,
+				name:         aws.ToString(b.Name),
+				creationTime: aws.ToTime(b.CreationDate),
+				region:       region,
+				endpoint:     "https://" + aws.ToString(b.Name) + ".s3." + region + ".amazonaws.com",
+			})
+		}
 	}
 	return
 }
@@ -243,18 +244,17 @@ func (d *awsS3Discovery) getEncryptionAtRest(bucket bucket) (e voc.HasAtRestEncr
 // "confirm that your bucket policies explicitly deny access to HTTP requests"
 // https://aws.amazon.com/premiumsupport/knowledge-center/s3-bucket-policy-for-config-rule/
 // getTransportEncryption loops over all statements in the bucket policy and checks if one statement denies https only == false
-func (d *awsS3Discovery) getTransportEncryption(bucket string) (encryptionAtTransit voc.TransportEncryption, err error) {
+func (d *awsS3Discovery) getTransportEncryption(bucket string) (*voc.TransportEncryption, error) {
 	input := s3.GetBucketPolicyInput{
 		Bucket:              aws.String(bucket),
 		ExpectedBucketOwner: nil,
 	}
 	var resp *s3.GetBucketPolicyOutput
+	var err error
 
 	resp, err = d.storageAPI.GetBucketPolicy(context.TODO(), &input)
 
 	// encryption at transit (https) is always enabled and TLS version fixed
-	encryptionAtTransit.Enabled = true
-	encryptionAtTransit.TlsVersion = "TLS1.2"
 
 	// Case 1: No bucket policy in place or api error -> 'https only' is not set
 	if err != nil {
@@ -262,15 +262,18 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (encryptionAtTran
 		if errors.As(err, &ae) {
 			if ae.ErrorCode() == "NoSuchBucketPolicy" {
 				// This error code is equivalent to "encryption not enforced": set err to nil
-				encryptionAtTransit.Enforced = false
-				err = nil
-				return
+				return &voc.TransportEncryption{
+					Enforced:   false,
+					Enabled:    true,
+					TlsVersion: "TLS1.2",
+					Algorithm:  "TLS",
+				}, nil
 			}
 			// Any other error is a connection error with AWS : Format err and return it
 			err = formatError(ae)
 		}
 		// return any error (but according to doc: "All service API response errors implement the smithy.APIError")
-		return
+		return nil, err
 	}
 
 	// Case 2: bucket policy -> check if https only is set
@@ -278,17 +281,39 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (encryptionAtTran
 	var policy BucketPolicy
 	err = json.Unmarshal([]byte(aws.ToString(resp.Policy)), &policy)
 	if err != nil {
-		err = fmt.Errorf("error occurred while unmarshalling the bucket policy:%v", err)
-		return
+		return nil, fmt.Errorf("error occurred while unmarshalling the bucket policy: %v", err)
 	}
 	// one statement has set https only -> default encryption is set
 	for _, statement := range policy.Statement {
-		if statement.Effect == "Deny" && !statement.Condition.AwsSecureTransport && statement.Action == "s3:*" {
-			encryptionAtTransit.Enforced = true
-			return
+		if a, ok := statement.Action.(string); ok {
+			if statement.Effect == "Deny" && !statement.Condition.AwsSecureTransport && a == "s3:*" {
+				return &voc.TransportEncryption{
+					Enforced:   true,
+					Enabled:    true,
+					TlsVersion: "TLS1.2",
+					Algorithm:  "TLS",
+				}, nil
+			}
+		}
+		if actions, ok := statement.Action.([]string); ok {
+			for _, a := range actions {
+				if statement.Effect == "Deny" && !statement.Condition.AwsSecureTransport && a == "s3:*" {
+					return &voc.TransportEncryption{
+						Enforced:   true,
+						Enabled:    true,
+						TlsVersion: "TLS1.2",
+						Algorithm:  "TLS",
+					}, nil
+				}
+			}
 		}
 	}
-	return
+	return &voc.TransportEncryption{
+		Enforced:   false,
+		Enabled:    true,
+		TlsVersion: "TLS1.2",
+		Algorithm:  "TLS",
+	}, nil
 
 }
 

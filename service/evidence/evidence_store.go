@@ -6,6 +6,8 @@ import (
 
 	"clouditor.io/clouditor/api/evidence"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -31,9 +33,14 @@ func init() {
 // StoreEvidence is a method implementation of the evidenceServer interface: It receives an evidence and stores it
 func (s *Service) StoreEvidence(_ context.Context, e *evidence.Evidence) (*evidence.StoreEvidenceResponse, error) {
 	var (
-		resp       = &evidence.StoreEvidenceResponse{}
-		err  error = nil
+		resp = &evidence.StoreEvidenceResponse{}
+		err  error
 	)
+
+	_, err = e.Validate()
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid evidence: %v", err)
+	}
 
 	s.evidences[e.Id] = e
 	resp.Status = true

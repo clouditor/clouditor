@@ -23,15 +23,15 @@ type AssessmentClient interface {
 	// Triggers the assessment. Part of the private API,
 	// not exposed as REST.
 	TriggerAssessment(ctx context.Context, in *TriggerAssessmentRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// TODO(all): Part of public API because external entities (mainly discoveries) can use it?
-	// List the latest set of assessment results. Part of the public API,
-	// also exposed as REST
+	// TODO(all): Part of public API because external entities (mainly
+	// discoveries) can use it? List the latest set of assessment results. Part of
+	// the public API, also exposed as REST
 	ListAssessmentResults(ctx context.Context, in *ListAssessmentResultsRequest, opts ...grpc.CallOption) (*ListAssessmentResultsResponse, error)
 	// Assesses the evidence sent by discovery. Part of the public API,
 	// also exposed as REST
 	AssessEvidence(ctx context.Context, in *AssessEvidenceRequest, opts ...grpc.CallOption) (*AssessEvidenceResponse, error)
-	// Assesses stream of evidences coming from the discovery. Part of the public API,
-	// not exposed as REST
+	// Assesses stream of evidences coming from the discovery. Part of the public
+	// API, not exposed as REST
 	AssessEvidences(ctx context.Context, opts ...grpc.CallOption) (Assessment_AssessEvidencesClient, error)
 }
 
@@ -111,15 +111,15 @@ type AssessmentServer interface {
 	// Triggers the assessment. Part of the private API,
 	// not exposed as REST.
 	TriggerAssessment(context.Context, *TriggerAssessmentRequest) (*emptypb.Empty, error)
-	// TODO(all): Part of public API because external entities (mainly discoveries) can use it?
-	// List the latest set of assessment results. Part of the public API,
-	// also exposed as REST
+	// TODO(all): Part of public API because external entities (mainly
+	// discoveries) can use it? List the latest set of assessment results. Part of
+	// the public API, also exposed as REST
 	ListAssessmentResults(context.Context, *ListAssessmentResultsRequest) (*ListAssessmentResultsResponse, error)
 	// Assesses the evidence sent by discovery. Part of the public API,
 	// also exposed as REST
 	AssessEvidence(context.Context, *AssessEvidenceRequest) (*AssessEvidenceResponse, error)
-	// Assesses stream of evidences coming from the discovery. Part of the public API,
-	// not exposed as REST
+	// Assesses stream of evidences coming from the discovery. Part of the public
+	// API, not exposed as REST
 	AssessEvidences(Assessment_AssessEvidencesServer) error
 	mustEmbedUnimplementedAssessmentServer()
 }

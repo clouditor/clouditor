@@ -450,6 +450,7 @@ func (d *azureIacTemplateDiscovery) handleVirtualMachine(resourceValue map[strin
 	var id string
 	var name string
 	var bootDiagnosticsEnabled bool
+	var storageUri string
 	var properties map[string]interface{}
 	var ok bool
 
@@ -471,6 +472,7 @@ func (d *azureIacTemplateDiscovery) handleVirtualMachine(resourceValue map[strin
 			for propertiesKey, propertiesValue := range properties {
 				if propertiesKey == "diagnosticsProfile" {
 					bootDiagnosticsEnabled = propertiesValue.(map[string]interface{})["bootDiagnostics"].(map[string]interface{})["enabled"].(bool)
+					storageUri = getStorageUriFromArmTemplate(propertiesValue.(map[string]interface{})["bootDiagnostics"].(map[string]interface{})["storageUri"].(string))
 				}
 			}
 		}
@@ -494,7 +496,9 @@ func (d *azureIacTemplateDiscovery) handleVirtualMachine(resourceValue map[strin
 		},
 		BootLog: &voc.BootLog{
 			Log: &voc.Log{
-				Enabled: bootDiagnosticsEnabled,
+				Enabled:         bootDiagnosticsEnabled,
+				Output:          []voc.ResourceID{voc.ResourceID(storageUri)},
+				RetentionPeriod: 0, // Currently, configuring the retention period for Managed Boot Diagnostics is not available. The logs will be overwritten after 1gb of space according to https://github.com/MicrosoftDocs/azure-docs/issues/69953
 			},
 		},
 		OSLog: &voc.OSLog{
@@ -544,4 +548,15 @@ func getContainerName(name string) string {
 	anotherNameSplit := strings.Split(nameSplit[3], "/")
 
 	return anotherNameSplit[1]
+}
+
+func getStorageUriFromArmTemplate(name string) string {
+	var storageUri string
+
+	// "[concat('https://', parameters('storageAccounts_bcloudtest_name'), '.blob.core.windows.net/')]"
+	nameSplit := strings.Split(name, "'")
+	storageUriName := strings.Split(nameSplit[3], "_")
+	storageUri = nameSplit[1] + storageUriName[1] + nameSplit[5]
+
+	return storageUri
 }

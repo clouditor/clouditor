@@ -33,7 +33,8 @@ import "google/protobuf/struct.proto";
 
 option go_package = "api/discovery";
 
-// Discovers cloud resources and maps these properties to the format of the ontology
+// Discovers cloud resources and maps these properties to the format of the
+// ontology
 service Discovery {
   // Starts discovering the cloud resources
   rpc Start(StartDiscoveryRequest) returns (StartDiscoveryResponse) {

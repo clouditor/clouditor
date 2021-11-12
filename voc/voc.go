@@ -96,10 +96,10 @@ func ToStruct(r IsCloudResource) (s *structpb.Value, err error) {
 	// speed increase in marshaling the whole resource list, because
 	// we first need to build it out of the map anyway
 	if b, err = json.Marshal(r); err != nil {
-		return nil, fmt.Errorf("JSON marshal failed: %v", err)
+		return nil, fmt.Errorf("JSON marshal failed: %w", err)
 	}
 	if err = json.Unmarshal(b, &s); err != nil {
-		return nil, fmt.Errorf("JSON unmarshal failed: %v", err)
+		return nil, fmt.Errorf("JSON unmarshal failed: %w", err)
 	}
 
 	return
