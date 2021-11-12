@@ -277,27 +277,28 @@ func (x *AssessEvidenceResponse) GetStatus() bool {
 	return false
 }
 
-// A result resource, representing the result after assessing the cloud resource with id resource_id.
+// A result resource, representing the result after assessing the cloud resource
+// with id resource_id.
 type Result struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// assessment result id
+	// Assessment result id
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// time of assessment
+	// Time of assessment
 	Timestamp *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	// reference to the metric the assessment was based on
-	MetricId int32 `protobuf:"varint,3,opt,name=metric_id,json=metricId,proto3" json:"metric_id,omitempty"`
-	// data corresponding to the metric by the given metric id
+	// Reference to the metric the assessment was based on
+	MetricId string `protobuf:"bytes,3,opt,name=metric_id,json=metricId,proto3" json:"metric_id,omitempty"`
+	// Data corresponding to the metric by the given metric id
 	MetricData *MetricData `protobuf:"bytes,4,opt,name=metric_data,json=metricData,proto3" json:"metric_data,omitempty"`
-	// compliant case: true or false
+	// Compliant case: true or false
 	Compliant bool `protobuf:"varint,5,opt,name=compliant,proto3" json:"compliant,omitempty"`
-	// reference to the assessed evidence
+	// Reference to the assessed evidence
 	EvidenceId string `protobuf:"bytes,6,opt,name=evidence_id,json=evidenceId,proto3" json:"evidence_id,omitempty"`
-	// reference to the resource of the assessed evidence
+	// Reference to the resource of the assessed evidence
 	ResourceId string `protobuf:"bytes,7,opt,name=resource_id,json=resourceId,proto3" json:"resource_id,omitempty"`
-	// some comments on the reason for non-compliance
+	// Some comments on the reason for non-compliance
 	NonComplianceComments string `protobuf:"bytes,8,opt,name=non_compliance_comments,json=nonComplianceComments,proto3" json:"non_compliance_comments,omitempty"`
 }
 
@@ -347,11 +348,11 @@ func (x *Result) GetTimestamp() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *Result) GetMetricId() int32 {
+func (x *Result) GetMetricId() string {
 	if x != nil {
 		return x.MetricId
 	}
-	return 0
+	return ""
 }
 
 func (x *Result) GetMetricData() *MetricData {
@@ -482,7 +483,7 @@ var file_assessment_proto_rawDesc = []byte{
 	0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69,
 	0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61,
 	0x6d, 0x70, 0x12, 0x1b, 0x0a, 0x09, 0x6d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18,
-	0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x08, 0x6d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x49, 0x64, 0x12,
+	0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x6d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x49, 0x64, 0x12,
 	0x36, 0x0a, 0x0b, 0x6d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x18, 0x04,
 	0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72,
 	0x2e, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x44, 0x61, 0x74, 0x61, 0x52, 0x0a, 0x6d, 0x65, 0x74,

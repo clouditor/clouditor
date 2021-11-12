@@ -129,7 +129,7 @@ message DeregisterAssessmentToolRequest { string tool_id = 1; }
 message StoreAssessmentResultRequest { AssessmentResult result = 1; }
 message StoreAssessmentResultResponse {}
 
-message GetMetricsRequest { int32 metric_id = 1; }
+message GetMetricsRequest { string metric_id = 1; }
 
 message ListMetricsRequest {}
 message ListMetricsResponse { repeated Metric metrics = 1; }

@@ -65,9 +65,11 @@ type Evidence struct {
 	ServiceId string `protobuf:"bytes,3,opt,name=service_id,json=serviceId,proto3" json:"service_id,omitempty"`
 	// Reference to the tool which provided the evidence
 	ToolId string `protobuf:"bytes,4,opt,name=tool_id,json=toolId,proto3" json:"tool_id,omitempty"`
-	// Contains the evidence in its original form without following a defined schema, e.g. the raw JSON
+	// Contains the evidence in its original form without following a defined
+	// schema, e.g. the raw JSON
 	Raw string `protobuf:"bytes,5,opt,name=raw,proto3" json:"raw,omitempty"`
-	// Semantic representation of the Cloud resource according to our defined ontology
+	// Semantic representation of the Cloud resource according to our defined
+	// ontology
 	Resource *structpb.Value `protobuf:"bytes,6,opt,name=resource,proto3" json:"resource,omitempty"`
 }
 

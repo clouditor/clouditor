@@ -50,6 +50,8 @@ func init() {
 }
 
 type Service struct {
+	// ResultHook is a hook function that can be used if one wants to be
+	// informed about each assessment result
 	ResultHook func(result *assessment.Result, err error)
 
 	results map[string]*assessment.Result
@@ -139,19 +141,11 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 
 	log.Debugf("Evidence: %+v", evidence)
 
-	// TODO(all): The discovery already sets up the (UU)ID?
-	//listId++
-	//evidence.Id = fmt.Sprintf("%d", listId)
-
-	//if len(evidence.ApplicableMetrics) == 0 {
-	//	log.Warnf("Could not find a valid metric for evidence of resource %s", evidence.ResourceId)
-	//}
-
-	// TODO(oxisto): use go embed
 	evaluations, err := policies.RunEvidence(evidence)
 	if err != nil {
 		log.Errorf("Could not evaluate evidence: %v", err)
 
+		// Inform our hook, if we have any
 		if s.ResultHook != nil {
 			go s.ResultHook(nil, err)
 		}
@@ -160,11 +154,9 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 	}
 
 	for i, data := range evaluations {
-		//var metricID int64
-		//if metricID, err = data["metricID"].(json.Number).Int64(); err != nil {
-		//	return fmt.Errorf("could not convert metricID: %v", metricID)
-		//}
-		log.Infof("Evaluated evidence with metric '%v' as %v", data["name"], data["compliant"])
+		metricId := data["metricId"].(string)
+
+		log.Infof("Evaluated evidence with metric '%v' as %v", metricId, data["compliant"])
 
 		// Get output values of Rego evaluation. If they are not given, the zero value is used
 		operator, _ := data["operator"].(string)
@@ -174,8 +166,7 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 		result := &assessment.Result{
 			Id:        uuid.NewString(),
 			Timestamp: timestamppb.Now(),
-			// TODO(lebogg): Currently no metric IDs are used (in the future, e.g. data["metric_id"])
-			MetricId: int32(0),
+			MetricId:  metricId,
 			MetricData: &assessment.MetricData{
 				TargetValue: targetValue,
 				Operator:    operator,
@@ -185,17 +176,15 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 			ResourceId:            resourceId,
 			NonComplianceComments: "No comments so far",
 		}
-		// just a little hack to quickly enable multiple results per resource
+
+		// Just a little hack to quickly enable multiple results per resource
 		s.results[fmt.Sprintf("%s-%d", resourceId, i)] = result
 
-		// TODO(oxisto): What is this for? (lebogg)
+		// Inform our hook, if we have any
 		if s.ResultHook != nil {
 			go s.ResultHook(result, nil)
 		}
 	}
-	fmt.Println()
-
-	//}
 
 	return nil
 }

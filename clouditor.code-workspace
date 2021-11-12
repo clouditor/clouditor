@@ -7,11 +7,18 @@
 	"settings": {
 		"cSpell.words": [
 			"clouditor",
+			"Debugf",
+			"emptypb",
 			"grpc",
+			"Infof",
 			"Kubernetes",
+			"lebogg",
+			"oxisto",
 			"protobuf",
+			"Rego",
 			"structpb",
-			"timestamppb"
+			"timestamppb",
+			"Warnf"
 		],
 		"workbench.colorCustomizations": {
 			"debugConsole.errorForeground": "#a8a8a8"

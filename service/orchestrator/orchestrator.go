@@ -42,7 +42,7 @@ import (
 var f embed.FS
 
 var metrics []*assessment.Metric
-var metricIndex map[int32]*assessment.Metric
+var metricIndex map[string]*assessment.Metric
 var log *logrus.Entry
 
 var DefaultMetricsFile = "metrics.json"
@@ -59,7 +59,7 @@ func init() {
 		log.Errorf("Could not load embedded metrics. Will continue with empty metric list: %v", err)
 	}
 
-	metricIndex = make(map[int32]*assessment.Metric)
+	metricIndex = make(map[string]*assessment.Metric)
 	for _, v := range metrics {
 		metricIndex[v.Id] = v
 	}
@@ -97,7 +97,7 @@ func (*Service) GetMetric(_ context.Context, request *orchestrator.GetMetricsReq
 	var metric *assessment.Metric
 
 	if metric, ok = metricIndex[request.MetricId]; !ok {
-		return nil, status.Errorf(codes.NotFound, "Could not find metric with id %d", request.MetricId)
+		return nil, status.Errorf(codes.NotFound, "Could not find metric with id %s", request.MetricId)
 	}
 
 	response = metric

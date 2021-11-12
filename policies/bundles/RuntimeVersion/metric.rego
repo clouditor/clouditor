@@ -1,23 +1,21 @@
 package clouditor
 
 default applicable = false
+
 default compliant = false
 
-# this is an implementation of metric RuntimeVersion
-
-name := "RuntimeVersion"
-
 runtimeLanguage := input.runtimeLanguage
+
 runtimeVersion := input.runtimeVersion
 
 applicable {
-    runtimeLanguage
-    runtimeVersion
+	runtimeLanguage
+	runtimeVersion
 }
 
 # TODO(all): Consider to put `operator` into list of target_values for more granularity
 compliant {
-    some i
-    compare("==", data.target_value[i].runtimeLanguage, runtimeLanguage)
-    compare(data.operator, data.target_value[i].runtimeVersion, runtimeVersion)
+	some i
+	compare("==", data.target_value[i].runtimeLanguage, runtimeLanguage)
+	compare(data.operator, data.target_value[i].runtimeVersion, runtimeVersion)
 }

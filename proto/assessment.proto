@@ -87,7 +87,7 @@ message Result {
   google.protobuf.Timestamp timestamp = 2;
 
   // Reference to the metric the assessment was based on
-  int32 metric_id = 3;
+  string metric_id = 3;
 
   // Data corresponding to the metric by the given metric id
   MetricData metric_data = 4;

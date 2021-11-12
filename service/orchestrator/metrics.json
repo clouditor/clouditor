@@ -1,6 +1,100 @@
 [
   {
-    "id": 1,
+    "id": "AnomalyDetectionEnabled"
+  },
+  {
+    "id": "AnomalyDetectionOutput"
+  },
+  {
+    "id": "AnonymousAuthentication"
+  },
+  {
+    "id": "AtRestEncryptionEnabled",
+    "name": "Storage Encryption: Enabled",
+    "description": "This metric describes whether storage encryption is enabled",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        false,
+        true
+      ]
+    }
+  },
+  {
+    "id": "AtRestEncryptionAlgorithm",
+    "name": "Storage Encryption: Algorithm",
+    "description": "This metric describes the algorithm of a storage encryption block cipher",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        "AES-128",
+        "AES-256",
+        ""
+      ]
+    }
+  },
+  {
+    "id": "AutomaticUpdatesEnabled"
+  },
+  {
+    "id": "AutomaticUpdatesInterval"
+  },
+  {
+    "id": "AutomaticUpdatesSecurityOnly"
+  },
+  {
+    "id": "BootLoggingEnabled"
+  },
+  {
+    "id": "BootLoggingOutput"
+  },
+  {
+    "id": "BootLoggingRetention"
+  },
+  {
+    "id": "BroadAssignments"
+  },
+  {
+    "id": "CustomerKeyEncryption"
+  },
+  {
+    "id": "L3FirewallEnabled"
+  },
+  {
+    "id": "L3FirewallRestrictedPorts"
+  },
+  {
+    "id": "MalwareProtectionEnabled"
+  },
+  {
+    "id": "MalwareProtectionOutput"
+  },
+  {
+    "id": "MixedDuties"
+  },
+  {
+    "id": "MutualAuthentication"
+  },
+  {
+    "id": "OSLoggingEnabled"
+  },
+  {
+    "id": "OSLoggingOutput"
+  },
+  {
+    "id": "OSLoggingRetention"
+  },
+  {
+    "id": "RuntimeVersion"
+  },
+  {
+    "id": "SingleSignOnEnabled"
+  },
+  {
+    "id": "TLSVersion"
+  },
+  {
+    "id": "TransportEncryptionEnabled",
     "name": "Transport Encryption: Enabled",
     "description": "This metric describes, whether transport encryption is turned on or not",
     "scale": 1,
@@ -17,7 +111,7 @@
     ]
   },
   {
-    "id": 2,
+    "id": "TransportEncryptionAlgorithm",
     "name": "Transport Encryption: Protocol Version",
     "description": "This metric describes, whether a up-to-date transport encryption protocol version is used",
     "scale": 1,
@@ -36,28 +130,6 @@
     ]
   },
   {
-    "id": 3,
-    "name": "Storage Encryption: Enabled",
-    "description": "This metric describes whether storage encryption is enabled",
-    "scale": 1,
-    "allowedValues": {
-      "values": [
-        false,
-        true
-      ]
-    }
-  },
-  {
-    "id": 4,
-    "name": "Storage Encryption: Algorithm",
-    "description": "This metric describes the algorithm of a storage encryption block cipher",
-    "scale": 1,
-    "allowedValues": {
-      "values": [
-        "AES-128",
-        "AES-256",
-        ""
-      ]
-    }
+    "id": "WebApplicationFirewallEnabled"
   }
 ]

@@ -194,9 +194,8 @@ components:
         Metric:
             properties:
                 id:
-                    type: integer
+                    type: string
                     description: Required. The unique identifier of the metric.
-                    format: int32
                 name:
                     type: string
                     description: Required. The human readable name of the metric.

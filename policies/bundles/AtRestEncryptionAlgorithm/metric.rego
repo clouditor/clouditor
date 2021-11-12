@@ -4,12 +4,12 @@ default applicable = false
 
 default compliant = false
 
-ad := input.anomalyDetection
+enc := input.atRestEncryption
 
 applicable {
-	ad
+	enc
 }
 
 compliant {
-	isIn(data.target_value, ad.output)
+	compare(data.operator, data.target_value, enc.algorithm)
 }

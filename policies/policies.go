@@ -59,6 +59,7 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 			types[i] = t
 		}
 	}
+
 	// TODO(lebogg): Try to optimize duplicated code
 	if key := createKey(types); applicableMetrics[key] == nil {
 		files, err := scanBundleDir(baseDir)
@@ -71,8 +72,12 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 			if err != nil {
 				return nil, err
 			}
+
 			if runMap != nil {
-				applicableMetrics[key] = append(applicableMetrics[key], fileInfo.Name())
+				metricId := fileInfo.Name()
+				applicableMetrics[key] = append(applicableMetrics[key], metricId)
+				runMap["metricId"] = metricId
+
 				data = append(data, runMap)
 			}
 		}
@@ -82,9 +87,12 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 			if err != nil {
 				return nil, err
 			}
+
+			runMap["metricId"] = metric
 			data = append(data, runMap)
 		}
 	}
+
 	return data, nil
 }
 
