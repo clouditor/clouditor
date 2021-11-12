@@ -45,8 +45,6 @@ import (
 
 var log *logrus.Entry
 
-//var listId int32
-
 func init() {
 	log = logrus.WithField("component", "assessment")
 }

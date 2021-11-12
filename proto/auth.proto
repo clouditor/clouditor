@@ -33,14 +33,16 @@ import "google/api/annotations.proto";
 option go_package = "api/auth";
 
 service Authentication {
-  rpc Login(LoginRequest) returns(LoginResponse) {
-    option(google.api.http) = {
-      post : "/v1/auth/login" body : "*" response_body : "*"
+  rpc Login(LoginRequest) returns (LoginResponse) {
+    option (google.api.http) = {
+      post : "/v1/auth/login"
+      body : "*"
+      response_body : "*"
     };
   };
 }
 
-/* A clouditor user */
+// A clouditor user
 message User {
   string username = 1;
   string password = 2;

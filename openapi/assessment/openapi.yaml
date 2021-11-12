@@ -64,22 +64,29 @@ components:
             properties:
                 id:
                     type: string
+                    description: assessment result id
                 timestamp:
                     type: string
+                    description: time of assessment
                     format: RFC3339
                 metric_id:
                     type: integer
+                    description: reference to the metric the assessment was based on
                     format: int32
                 metric_data:
                     $ref: '#/components/schemas/MetricData'
                 compliant:
                     type: boolean
+                    description: 'compliant case: true or false'
                 evidence_id:
                     type: string
+                    description: reference to the assessed evidence
                 resource_id:
                     type: string
+                    description: reference to the resource of the assessed evidence
                 non_compliance_comments:
                     type: string
+                    description: some comments on the reason for non-compliance
             description: A result resource, representing the result after assessing the cloud resource with id resource_id.
         Struct:
             properties:

@@ -283,14 +283,22 @@ type Result struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id                    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`                                                                      // assessment result id
-	Timestamp             *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"`                                                        // time of assessment
-	MetricId              int32                  `protobuf:"varint,3,opt,name=metric_id,json=metricId,proto3" json:"metric_id,omitempty"`                                         // reference to the metric the assessment was based on
-	MetricData            *MetricData            `protobuf:"bytes,4,opt,name=metric_data,json=metricData,proto3" json:"metric_data,omitempty"`                                    // data corresponding to the metric by the given metric id
-	Compliant             bool                   `protobuf:"varint,5,opt,name=compliant,proto3" json:"compliant,omitempty"`                                                       // compliant case: true or false
-	EvidenceId            string                 `protobuf:"bytes,6,opt,name=evidence_id,json=evidenceId,proto3" json:"evidence_id,omitempty"`                                    // reference to the assessed evidence
-	ResourceId            string                 `protobuf:"bytes,7,opt,name=resource_id,json=resourceId,proto3" json:"resource_id,omitempty"`                                    // reference to the resource of the assessed evidence
-	NonComplianceComments string                 `protobuf:"bytes,8,opt,name=non_compliance_comments,json=nonComplianceComments,proto3" json:"non_compliance_comments,omitempty"` // some comments on the reason for non-compliance
+	// assessment result id
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// time of assessment
+	Timestamp *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	// reference to the metric the assessment was based on
+	MetricId int32 `protobuf:"varint,3,opt,name=metric_id,json=metricId,proto3" json:"metric_id,omitempty"`
+	// data corresponding to the metric by the given metric id
+	MetricData *MetricData `protobuf:"bytes,4,opt,name=metric_data,json=metricData,proto3" json:"metric_data,omitempty"`
+	// compliant case: true or false
+	Compliant bool `protobuf:"varint,5,opt,name=compliant,proto3" json:"compliant,omitempty"`
+	// reference to the assessed evidence
+	EvidenceId string `protobuf:"bytes,6,opt,name=evidence_id,json=evidenceId,proto3" json:"evidence_id,omitempty"`
+	// reference to the resource of the assessed evidence
+	ResourceId string `protobuf:"bytes,7,opt,name=resource_id,json=resourceId,proto3" json:"resource_id,omitempty"`
+	// some comments on the reason for non-compliance
+	NonComplianceComments string `protobuf:"bytes,8,opt,name=non_compliance_comments,json=nonComplianceComments,proto3" json:"non_compliance_comments,omitempty"`
 }
 
 func (x *Result) Reset() {

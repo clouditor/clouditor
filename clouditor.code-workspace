@@ -6,9 +6,12 @@
 	],
 	"settings": {
 		"cSpell.words": [
-			"Kubernetes",
 			"clouditor",
-			"grpc"
+			"grpc",
+			"Kubernetes",
+			"protobuf",
+			"structpb",
+			"timestamppb"
 		],
 		"workbench.colorCustomizations": {
 			"debugConsole.errorForeground": "#a8a8a8"
