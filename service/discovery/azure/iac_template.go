@@ -27,8 +27,8 @@ package azure
 
 import (
 	"context"
+	"errors"
 	"fmt"
-
 	"strings"
 
 	"clouditor.io/clouditor/api/discovery"
@@ -112,20 +112,20 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource
 		// TODO(garuppel) Storage template to global variable?
 		template, ok := result.Template.(map[string]interface{})
 		if !ok {
-			return nil, fmt.Errorf("IaC template type assertion failed")
+			return nil, errors.New("IaC template type assertion failed")
 		}
 
 		for templateKey, templateValue := range template {
 			if templateKey == "resources" {
 				azureResource, ok := templateValue.([]interface{})
 				if !ok {
-					return nil, fmt.Errorf("templateValue type assertion failed")
+					return nil, errors.New("templateValue type assertion failed")
 				}
 
 				for _, resourcesValue := range azureResource {
 					value, ok := resourcesValue.(map[string]interface{})
 					if !ok {
-						return nil, fmt.Errorf("azureResource type assertion failed")
+						return nil, errors.New("azureResource type assertion failed")
 					}
 
 					for valueKey, valueValue := range value {
@@ -218,7 +218,7 @@ func (d *azureIacTemplateDiscovery) handleObjectStorage(resourceValue map[string
 	// 'dependsOn' references to the related IaC resources. For the storage account information, we need the related storage account resource name
 	dependsOnList, ok := (resourceValue["dependsOn"]).([]interface{})
 	if !ok {
-		return nil, fmt.Errorf("dependsOn type assertion failed")
+		return nil, errors.New("dependsOn type assertion failed")
 	}
 
 	storageAccountResource, err := getStorageAccountResourceFromTemplate(dependsOnList, azureResources)
@@ -228,7 +228,7 @@ func (d *azureIacTemplateDiscovery) handleObjectStorage(resourceValue map[string
 
 	enc, err = getStorageAccountAtRestEncryptionFromIac(storageAccountResource)
 	if err != nil {
-		return nil, fmt.Errorf("cannot get atRestEncryption for storage account resource from IaC template: %v", err)
+		return nil, fmt.Errorf("cannot get atRestEncryption for storage account resource from IaC template: #{err)")
 	}
 
 
@@ -273,7 +273,7 @@ func (d *azureIacTemplateDiscovery) handleFileStorage(resourceValue map[string]i
 	// Necessary to get the needed information from the IaC template
 	dependsOnList, ok := (resourceValue["dependsOn"]).([]interface{})
 	if !ok {
-		return nil, fmt.Errorf("dependsOn type assertion failed")
+		return nil, errors.New("dependsOn type assertion failed")
 	}
 
 	storageAccountResource, err := getStorageAccountResourceFromTemplate(dependsOnList, azureResources)
@@ -320,7 +320,7 @@ func getStorageAccountAtRestEncryptionFromIac(storageAccountResource map[string]
 	encType, ok := storageAccountResource["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["keySource"].(string)
 
 	if !ok {
-		return nil, fmt.Errorf("type assertion failed")
+		return nil, errors.New("type assertion failed")
 	}
 
 	if encType == "Microsoft.Storage" {
@@ -365,7 +365,7 @@ func getStorageAccountResourceFromTemplate(resourceNames []interface{}, azureTem
 	for _, resourcesValue := range azureTemplateResources {
 		templateResources, ok := resourcesValue.(map[string]interface{})
 		if !ok {
-			return nil, fmt.Errorf("type assertion failed")
+			return nil, errors.New("type assertion failed")
 		}
 
 		if templateResources["type"] == resourceType && templateResources["name"] == resourceName {
@@ -373,7 +373,7 @@ func getStorageAccountResourceFromTemplate(resourceNames []interface{}, azureTem
 		}
 	}
 
-	return nil, fmt.Errorf("could not get resource from IaC template")
+	return nil, errors.New("could not get resource from IaC template")
 }
 
 func isHttpsTrafficOnlyEnabled(value map[string]interface{}) bool {
@@ -415,7 +415,7 @@ func (d *azureIacTemplateDiscovery) handleLoadBalancer(template map[string]inter
 		if key == "name" {
 			name, err = getDefaultResourceNameFromParameter(template, value.(string))
 			if err != nil{
-				return nil, fmt.Errorf("getting parameter default name failed")
+				return nil, errors.New("getting parameter default name failed")
 			}
 		}
 	}
@@ -467,7 +467,7 @@ func (d *azureIacTemplateDiscovery) handleVirtualMachine(template map[string]int
 			// name = getDefaultResourceName(value.(string))
 			name, err = getDefaultResourceNameFromParameter(template, value.(string))
 			if err != nil{
-				return nil, fmt.Errorf("getting parameter default name failed")
+				return nil, errors.New("getting parameter default name failed")
 			}
 		}
 
@@ -476,7 +476,7 @@ func (d *azureIacTemplateDiscovery) handleVirtualMachine(template map[string]int
 			properties, ok = value.(map[string]interface{})
 
 			if !ok {
-				return nil, fmt.Errorf("type assertion failed")
+				return nil, errors.New("type assertion failed")
 			}
 
 			for propertiesKey, propertiesValue := range properties {
@@ -543,19 +543,19 @@ func getDefaultResourceNameFromParameter(template map[string]interface{}, name s
 		if templateKey == "parameters" {
 			azureResource, ok := templateValue.(map[string]interface{})
 			if !ok {
-				return "", fmt.Errorf("templateValue type assertion failed")
+				return "", errors.New("templateValue type assertion failed")
 			}
 
 			resource, ok := azureResource[getCoreName(name)].(map[string]interface{}) // TODO get name without parameter stuff around
 			if !ok {
-				fmt.Errorf("parameter resource type assertion failed")
+				return "", errors.New("parameter resource type assertion failed")
 			}
 
 			return resource["defaultValue"].(string), nil
 		}
 	}
 
-	return "", fmt.Errorf("error getting default resource name ")
+	return "", errors.New("error getting default resource name ")
 }
 
 // getCoreName return the core resource name without the parameter stuff around from the resource name
