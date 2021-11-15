@@ -109,7 +109,6 @@ func (d *azureArmTemplateDiscovery) discoverArmTemplate() ([]voc.IsCloudResource
 		//	return nil, fmt.Errorf("could not save Azure ARM template: %w", err)
 		//}
 
-		// TODO(garuppel) Storage armTemplate to global variable?
 		armTemplate, ok := result.Template.(map[string]interface{})
 		if !ok {
 			return nil, errors.New("ARM template type assertion failed")
@@ -250,7 +249,7 @@ func (d *azureArmTemplateDiscovery) handleObjectStorage(resourceValue map[string
 				Enabled:    isServiceEncryptionEnabled("blob", storageAccountResource),
 				Enforced:   isHttpsTrafficOnlyEnabled(storageAccountResource),
 				TlsVersion: getMinTlsVersionOfStorageAccount(storageAccountResource),
-				Algorithm:  "", // not available
+				Algorithm:  "TLS",
 			},
 		},
 	}
@@ -304,7 +303,7 @@ func (d *azureArmTemplateDiscovery) handleFileStorage(resourceValue map[string]i
 				Enabled:    isServiceEncryptionEnabled("file", storageAccountResource),
 				Enforced:   isHttpsTrafficOnlyEnabled(storageAccountResource),
 				TlsVersion: getMinTlsVersionOfStorageAccount(storageAccountResource),
-				Algorithm:  "", // not available
+				Algorithm:  "TLS",
 			},
 		},
 	}
@@ -325,7 +324,7 @@ func getStorageAccountAtRestEncryptionFromArm(storageAccountResource map[string]
 	if encType == "Microsoft.Storage" {
 		enc = voc.ManagedKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
-				Algorithm: "AES-256", //
+				Algorithm: "AES256",
 				Enabled:   isServiceEncryptionEnabled("blob", storageAccountResource),
 			},
 		}
@@ -334,7 +333,7 @@ func getStorageAccountAtRestEncryptionFromArm(storageAccountResource map[string]
 
 		enc = voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
-				Algorithm: "", // not available
+				Algorithm: "", // TODO(garuppel): TBD
 				Enabled:   isServiceEncryptionEnabled("blob", storageAccountResource),
 			},
 			KeyUrl: keyVaultUrl,
@@ -463,7 +462,6 @@ func (d *azureArmTemplateDiscovery) handleVirtualMachine(template map[string]int
 
 		// Get VM name
 		if key == "name" {
-			// name = getDefaultResourceName(value.(string))
 			name, err = getDefaultResourceNameFromParameter(template, value.(string))
 			if err != nil {
 				return nil, errors.New("getting parameter default name failed")

@@ -334,12 +334,14 @@ func TestObjectStorageProperties(t *testing.T) {
 	assert.Equal(t, "eastus", objectStorage.GeoLocation.Region)
 	assert.Equal(t, true, objectStorage.HttpEndpoint.TransportEncryption.Enabled)
 	assert.Equal(t, true, objectStorage.HttpEndpoint.TransportEncryption.Enforced)
+	assert.Equal(t, "TLS", objectStorage.HttpEndpoint.TransportEncryption.Algorithm)
 
 	// Check ManagedKeyEncryption
 	atRestEncryption := *objectStorage.GetAtRestEncryption()
 	managedKeyEncryption, ok := atRestEncryption.(voc.ManagedKeyEncryption)
 	assert.True(t, ok)
 	assert.Equal(t, true, managedKeyEncryption.Enabled)
+	assert.Equal(t, "AES256", managedKeyEncryption.Algorithm)
 
 	// Check CustomerKeyEncryption
 	objectStorage, ok = list[5].(*voc.ObjectStorage)
@@ -373,6 +375,7 @@ func TestFileStorageProperties(t *testing.T) {
 	assert.Equal(t, "eastus", fileStorage.GeoLocation.Region)
 	assert.Equal(t, true, fileStorage.HttpEndpoint.TransportEncryption.Enabled)
 	assert.Equal(t, true, fileStorage.HttpEndpoint.TransportEncryption.Enforced)
+	assert.Equal(t, "TLS", fileStorage.HttpEndpoint.TransportEncryption.Algorithm)
 
 	// Check ManagedKeyEncryption
 	atRestEncryption := *fileStorage.GetAtRestEncryption()

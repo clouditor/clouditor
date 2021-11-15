@@ -221,9 +221,9 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 			Url: to.String(account.PrimaryEndpoints.Blob) + to.String(container.Name),
 			TransportEncryption: &voc.TransportEncryption{
 				Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
-				Enabled:    true, // TODO get from IaC template in all storages
+				Enabled:    true, // cannot be disabled
 				TlsVersion: string(account.MinimumTLSVersion),
-				Algorithm:  "", // not available
+				Algorithm:  "TLS",
 			},
 		},
 	}
@@ -251,7 +251,7 @@ func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem
 				Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
 				Enabled:    true, // cannot be disabled
 				TlsVersion: string(account.MinimumTLSVersion),
-				Algorithm:  "", // not available
+				Algorithm:  "TLS",
 			},
 		},
 	}
@@ -263,7 +263,7 @@ func getBlockStorageAtRestEncryption(disk compute.Disk) voc.HasAtRestEncryption 
 
 	if disk.Encryption.Type == compute.EncryptionAtRestWithPlatformKey {
 		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
-			Algorithm: "", // not available
+			Algorithm: "AES256",
 			Enabled:   true,
 		}}
 	} else if disk.Encryption.Type == compute.EncryptionAtRestWithCustomerKey && *disk.EncryptionSettingsCollection.Enabled {
@@ -285,13 +285,14 @@ func getBlockStorageAtRestEncryption(disk compute.Disk) voc.HasAtRestEncryption 
 	return enc
 }
 
+// TODO(garuppel): merge with getFIleStorageAtRestEncryption()
 func getObjectStorageAtRestEncryption(account *storage.Account) voc.HasAtRestEncryption {
 
 	var enc voc.HasAtRestEncryption
 
 	if account.Encryption.KeySource == storage.KeySourceMicrosoftStorage && *account.Encryption.Services.Blob.Enabled {
 		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
-			Algorithm: "AES-256",
+			Algorithm: "AES256",
 			Enabled:   true,
 		}}
 	} else if account.Encryption.KeySource == storage.KeySourceMicrosoftKeyvault && *account.Encryption.Services.Blob.Enabled {
@@ -313,7 +314,7 @@ func getFileStorageAtRestEncryption(account *storage.Account) voc.HasAtRestEncry
 
 	if account.Encryption.KeySource == storage.KeySourceMicrosoftStorage && *account.Encryption.Services.File.Enabled {
 		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
-			Algorithm: "AES-256",
+			Algorithm: "AES256",
 			Enabled:   true,
 		}}
 	} else if account.Encryption.KeySource == storage.KeySourceMicrosoftKeyvault && *account.Encryption.Services.File.Enabled {
