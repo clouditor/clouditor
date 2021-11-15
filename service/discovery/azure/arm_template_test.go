@@ -299,7 +299,7 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 }
 
 func TestIaCTemplateDiscovery(t *testing.T) {
-	d := azure.NewAzureIacTemplateDiscovery(
+	d := azure.NewAzureArmTemplateDiscovery(
 		azure.WithSender(&mockIacTemplateSender{}),
 		azure.WithAuthorizer(&mockAuthorizer{}),
 	)
@@ -313,7 +313,7 @@ func TestIaCTemplateDiscovery(t *testing.T) {
 }
 
 func TestObjectStorageProperties(t *testing.T) {
-	d := azure.NewAzureIacTemplateDiscovery(
+	d := azure.NewAzureArmTemplateDiscovery(
 		azure.WithSender(&mockIacTemplateSender{}),
 		azure.WithAuthorizer(&mockAuthorizer{}),
 	)
@@ -326,7 +326,7 @@ func TestObjectStorageProperties(t *testing.T) {
 	objectStorage, ok := list[2].(*voc.ObjectStorage)
 	assert.True(t, ok)
 
-	// That should be equal. The Problem is described in file 'service/discovery/azure/iac_template.go' TODO(all); do we need this comment any longer?
+	// That should be equal. The Problem is described in file 'service/discovery/azure/arm_template.go' TODO(all); do we need this comment any longer?
 	// TODO(garuppel): Tests for AtRestEncryption, ...
 	assert.Equal(t, "container1", objectStorage.Name)
 	assert.Equal(t, "TLS1_1", objectStorage.HttpEndpoint.TransportEncryption.TlsVersion)
@@ -352,7 +352,7 @@ func TestObjectStorageProperties(t *testing.T) {
 }
 
 func TestFileStorageProperties(t *testing.T) {
-	d := azure.NewAzureIacTemplateDiscovery(
+	d := azure.NewAzureArmTemplateDiscovery(
 		azure.WithSender(&mockIacTemplateSender{}),
 		azure.WithAuthorizer(&mockAuthorizer{}),
 	)
@@ -365,7 +365,7 @@ func TestFileStorageProperties(t *testing.T) {
 	fileStorage, ok := list[3].(*voc.FileStorage)
 	assert.True(t, ok)
 
-	// That should be equal. The Problem is described in file 'service/discovery/azure/iac_template.go' TODO(all); do we need this comment any longer?
+	// That should be equal. The Problem is described in file 'service/discovery/azure/arm_template.go' TODO(all); do we need this comment any longer?
 	// TODO(garuppel): Tests for AtRestEncryption, ...
 	assert.Equal(t, "share1", fileStorage.Name)
 	assert.Equal(t, "TLS1_1", fileStorage.HttpEndpoint.TransportEncryption.TlsVersion)
@@ -382,7 +382,7 @@ func TestFileStorageProperties(t *testing.T) {
 }
 
 func TestVmProperties(t *testing.T) {
-	d := azure.NewAzureIacTemplateDiscovery(
+	d := azure.NewAzureArmTemplateDiscovery(
 		azure.WithSender(&mockIacTemplateSender{}),
 		azure.WithAuthorizer(&mockAuthorizer{}),
 	)
@@ -403,7 +403,7 @@ func TestVmProperties(t *testing.T) {
 }
 
 func TestLoadBalancerProperties(t *testing.T) {
-	d := azure.NewAzureIacTemplateDiscovery(
+	d := azure.NewAzureArmTemplateDiscovery(
 		azure.WithSender(&mockIacTemplateSender{}),
 		azure.WithAuthorizer(&mockAuthorizer{}),
 	)

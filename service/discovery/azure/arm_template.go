@@ -37,12 +37,12 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 )
 
-type azureIacTemplateDiscovery struct {
+type azureArmTemplateDiscovery struct {
 	azureDiscovery
 }
 
-func NewAzureIacTemplateDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
-	d := &azureIacTemplateDiscovery{}
+func NewAzureArmTemplateDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
+	d := &azureArmTemplateDiscovery{}
 
 	for _, opt := range opts {
 		if auth, ok := opt.(*authorizerOption); ok {
@@ -55,30 +55,30 @@ func NewAzureIacTemplateDiscovery(opts ...DiscoveryOption) discovery.Discoverer 
 	return d
 }
 
-func (*azureIacTemplateDiscovery) Name() string {
+func (*azureArmTemplateDiscovery) Name() string {
 	return "Azure"
 }
 
-func (*azureIacTemplateDiscovery) Description() string {
-	return "Discovery IaC template."
+func (*azureArmTemplateDiscovery) Description() string {
+	return "Discovery Azure ARM template."
 }
 
-// List Azure resources by discovering IaC template
-func (d *azureIacTemplateDiscovery) List() (list []voc.IsCloudResource, err error) {
+// List Azure resources by discovering Azure ARM template
+func (d *azureArmTemplateDiscovery) List() (list []voc.IsCloudResource, err error) {
 	if err = d.authorize(); err != nil {
 		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
 	}
 
-	iacTemplate, err := d.discoverIaCTemplate()
+	armResources, err := d.discoverArmTemplate()
 	if err != nil {
-		return nil, fmt.Errorf("could not discover IaC template: %w", err)
+		return nil, fmt.Errorf("could not discover Azure ARM template: %w", err)
 	}
-	list = append(list, iacTemplate...)
+	list = append(list, armResources...)
 
 	return
 }
 
-func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource, error) {
+func (d *azureArmTemplateDiscovery) discoverArmTemplate() ([]voc.IsCloudResource, error) {
 
 	var (
 		list []voc.IsCloudResource
@@ -101,21 +101,21 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource
 		}
 		result, err := client.ExportTemplate(context.Background(), *resourceGroups[i].Name, expReq)
 		if err != nil {
-			return nil, fmt.Errorf("could not discover IaC template: %w", err)
+			return nil, fmt.Errorf("could not discover Azure ARM template: %w", err)
 		}
 
 		//err = saveExportTemplate(result, *resourceGroups[i].Name)
 		//if err != nil {
-		//	return nil, fmt.Errorf("could not save IaC template: %w", err)
+		//	return nil, fmt.Errorf("could not save Azure ARM template: %w", err)
 		//}
 
-		// TODO(garuppel) Storage template to global variable?
-		template, ok := result.Template.(map[string]interface{})
+		// TODO(garuppel) Storage armTemplate to global variable?
+		armTemplate, ok := result.Template.(map[string]interface{})
 		if !ok {
-			return nil, errors.New("IaC template type assertion failed")
+			return nil, errors.New("ARM template type assertion failed")
 		}
 
-		for templateKey, templateValue := range template {
+		for templateKey, templateValue := range armTemplate {
 			if templateKey == "resources" {
 				azureResource, ok := templateValue.([]interface{})
 				if !ok {
@@ -132,13 +132,13 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource
 						if valueKey == "type" {
 
 							if valueValue.(string) == "Microsoft.Compute/virtualMachines" {
-								vm, err := d.handleVirtualMachine(template, value, *resourceGroups[i].Name)
+								vm, err := d.handleVirtualMachine(armTemplate, value, *resourceGroups[i].Name)
 								if err != nil {
 									return nil, fmt.Errorf("could not create virtual machine resource: %w", err)
 								}
 								list = append(list, vm)
 							} else if valueValue.(string) == "Microsoft.Network/loadBalancers" {
-								lb, err := d.handleLoadBalancer(template, value, *resourceGroups[i].Name)
+								lb, err := d.handleLoadBalancer(armTemplate, value, *resourceGroups[i].Name)
 								if err != nil {
 									return nil, fmt.Errorf("could not create load balancer resource: %w", err)
 								}
@@ -196,14 +196,14 @@ func (d *azureIacTemplateDiscovery) discoverIaCTemplate() ([]voc.IsCloudResource
 //	if err != nil {
 //		return fmt.Errorf("write file failed %w", err)
 //	} else {
-//		log.Infof("raw IaC template file written to: {%s}{%s}", filepath, filename)
+//		log.Infof("raw Azure ARM template file written to: {%s}{%s}", filepath, filename)
 //
 //	}
 //
 //	return nil
 //}
 
-func (d *azureIacTemplateDiscovery) handleObjectStorage(resourceValue map[string]interface{}, azureResources []interface{}, resourceGroup string) (voc.IsCompute, error) {
+func (d *azureArmTemplateDiscovery) handleObjectStorage(resourceValue map[string]interface{}, azureResources []interface{}, resourceGroup string) (voc.IsCompute, error) {
 
 	var (
 		azureResourceName string
@@ -212,10 +212,10 @@ func (d *azureIacTemplateDiscovery) handleObjectStorage(resourceValue map[string
 	)
 
 	// The resources are only referencing to parameters instead of using the resource names
-	// In case of object storages, we take the container as resource
+	// In case of object storages, we take the container name as resource name
 	azureResourceName = getContainerName(resourceValue["name"].(string))
 
-	// 'dependsOn' references to the related IaC resources. For the storage account information, we need the related storage account resource name
+	// 'dependsOn' references to the related ARM template resources. For the storage account information, we need the related storage account resource name
 	dependsOnList, ok := (resourceValue["dependsOn"]).([]interface{})
 	if !ok {
 		return nil, errors.New("dependsOn type assertion failed")
@@ -223,12 +223,12 @@ func (d *azureIacTemplateDiscovery) handleObjectStorage(resourceValue map[string
 
 	storageAccountResource, err := getStorageAccountResourceFromTemplate(dependsOnList, azureResources)
 	if err != nil {
-		return nil, fmt.Errorf("cannot get storage account resource from IaC template: %v", err)
+		return nil, fmt.Errorf("cannot get storage account resource from Azure ARM template: %v", err)
 	}
 
-	enc, err = getStorageAccountAtRestEncryptionFromIac(storageAccountResource)
+	enc, err = getStorageAccountAtRestEncryptionFromArm(storageAccountResource)
 	if err != nil {
-		return nil, fmt.Errorf("cannot get atRestEncryption for storage account resource from IaC template: #{err)")
+		return nil, fmt.Errorf("cannot get atRestEncryption for storage account resource from Azure ARM template: #{err)")
 	}
 
 	storage = &voc.ObjectStorage{
@@ -258,7 +258,7 @@ func (d *azureIacTemplateDiscovery) handleObjectStorage(resourceValue map[string
 	return storage, nil
 }
 
-func (d *azureIacTemplateDiscovery) handleFileStorage(resourceValue map[string]interface{}, azureResources []interface{}, resourceGroup string) (voc.IsCompute, error) {
+func (d *azureArmTemplateDiscovery) handleFileStorage(resourceValue map[string]interface{}, azureResources []interface{}, resourceGroup string) (voc.IsCompute, error) {
 
 	var (
 		azureResourceName string
@@ -269,7 +269,7 @@ func (d *azureIacTemplateDiscovery) handleFileStorage(resourceValue map[string]i
 	// The resources are only referencing to parameters instead of using the resource names
 	azureResourceName = getContainerName(resourceValue["name"].(string))
 
-	// Necessary to get the needed information from the IaC template
+	// Necessary to get the needed information from the Azure ARM template
 	dependsOnList, ok := (resourceValue["dependsOn"]).([]interface{})
 	if !ok {
 		return nil, errors.New("dependsOn type assertion failed")
@@ -277,12 +277,12 @@ func (d *azureIacTemplateDiscovery) handleFileStorage(resourceValue map[string]i
 
 	storageAccountResource, err := getStorageAccountResourceFromTemplate(dependsOnList, azureResources)
 	if err != nil {
-		return nil, fmt.Errorf("cannot get storage account resource from IaC template: %v", err)
+		return nil, fmt.Errorf("cannot get storage account resource from the ARM template: %v", err)
 	}
 
-	enc, err = getStorageAccountAtRestEncryptionFromIac(storageAccountResource)
+	enc, err = getStorageAccountAtRestEncryptionFromArm(storageAccountResource)
 	if err != nil {
-		return nil, fmt.Errorf("cannot get atRestEncryption for storage account resource from IaC template: %v", err)
+		return nil, fmt.Errorf("cannot get atRestEncryption for storage account resource from the ARM template: %v", err)
 	}
 
 	storage = &voc.FileStorage{
@@ -312,7 +312,7 @@ func (d *azureIacTemplateDiscovery) handleFileStorage(resourceValue map[string]i
 	return storage, nil
 }
 
-func getStorageAccountAtRestEncryptionFromIac(storageAccountResource map[string]interface{}) (voc.HasAtRestEncryption, error) {
+func getStorageAccountAtRestEncryptionFromArm(storageAccountResource map[string]interface{}) (voc.HasAtRestEncryption, error) {
 
 	var enc voc.HasAtRestEncryption
 
@@ -372,7 +372,7 @@ func getStorageAccountResourceFromTemplate(resourceNames []interface{}, azureTem
 		}
 	}
 
-	return nil, errors.New("could not get resource from IaC template")
+	return nil, errors.New("could not get resource from the ARM template")
 }
 
 func isHttpsTrafficOnlyEnabled(value map[string]interface{}) bool {
@@ -402,7 +402,7 @@ func getMinTlsVersionOfStorageAccount(value map[string]interface{}) string {
 	return ""
 }
 
-func (d *azureIacTemplateDiscovery) handleLoadBalancer(template map[string]interface{}, resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
+func (d *azureArmTemplateDiscovery) handleLoadBalancer(template map[string]interface{}, resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
 
 	var name string
 	var err error
@@ -451,7 +451,7 @@ func (d *azureIacTemplateDiscovery) handleLoadBalancer(template map[string]inter
 	return lb, nil
 }
 
-func (d *azureIacTemplateDiscovery) handleVirtualMachine(template map[string]interface{}, resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
+func (d *azureArmTemplateDiscovery) handleVirtualMachine(template map[string]interface{}, resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
 	var id string
 	var name string
 	var bootDiagnosticsEnabled bool
@@ -510,7 +510,7 @@ func (d *azureIacTemplateDiscovery) handleVirtualMachine(template map[string]int
 		OSLog: &voc.OSLog{
 			Log: &voc.Log{
 				Enabled: false,
-			}, // TODO(all): available in IaC template/Azure?
+			}, // TODO(all): available in ARM template/Azure?
 		},
 		BlockStorage: d.getBlockStorageResourceIDs(properties, resourceGroup),
 	}
@@ -518,7 +518,7 @@ func (d *azureIacTemplateDiscovery) handleVirtualMachine(template map[string]int
 	return vm, nil
 }
 
-func (d *azureIacTemplateDiscovery) getBlockStorageResourceIDs(properties map[string]interface{}, resourceGroupName string) []voc.ResourceID {
+func (d *azureArmTemplateDiscovery) getBlockStorageResourceIDs(properties map[string]interface{}, resourceGroupName string) []voc.ResourceID {
 	var blockStorage []voc.ResourceID
 
 	dataDisks := properties["storageProfile"].(map[string]interface{})["dataDisks"].([]interface{})
@@ -531,13 +531,14 @@ func (d *azureIacTemplateDiscovery) getBlockStorageResourceIDs(properties map[st
 	return blockStorage
 }
 
-func (d *azureIacTemplateDiscovery) createID(resourceGroup, resourceType, name string) string {
+func (d *azureArmTemplateDiscovery) createID(resourceGroup, resourceType, name string) string {
 	return "/subscriptions/" + *d.sub.SubscriptionID + "/resourceGroups/" + resourceGroup + "/providers/" + resourceType + "/" + name
 }
 
 // getDefaultResourceNameFromParameter returns the default name given in the parameters section of the template
 func getDefaultResourceNameFromParameter(template map[string]interface{}, name string) (string, error) {
 
+	// [parameters('loadBalancers_kubernetes_name')]
 	for templateKey, templateValue := range template {
 		if templateKey == "parameters" {
 			azureResource, ok := templateValue.(map[string]interface{})
@@ -557,14 +558,15 @@ func getDefaultResourceNameFromParameter(template map[string]interface{}, name s
 	return "", errors.New("error getting default resource name ")
 }
 
-// getCoreName return the core resource name without the parameter stuff around from the resource name
+// getCoreName returns the parameter name without the additional information around
+// Example: [parameters('virtualMachines_vm3_name')] returns 'vm3'
 func getCoreName(name string) string {
-
 	return strings.Split(name, "'")[1]
 }
 
+// getContainerName return the container name of thr resource type 'Microsoft.Storage/storageAccounts/blobServices/containers'
+// Example: [concat(parameters('storageAccounts_storage1_name'), 'default/container1')] returns 'container1'
 func getContainerName(name string) string {
-	// Name in template is a parameter and unnecessary information must be shortened
 	nameSplit := strings.Split(name, "'")
 	anotherNameSplit := strings.Split(nameSplit[3], "/")
 
