@@ -231,7 +231,6 @@ func (d *azureIacTemplateDiscovery) handleObjectStorage(resourceValue map[string
 		return nil, fmt.Errorf("cannot get atRestEncryption for storage account resource from IaC template: #{err)")
 	}
 
-
 	storage = &voc.ObjectStorage{
 		Storage: &voc.Storage{
 			CloudResource: &voc.CloudResource{
@@ -403,7 +402,7 @@ func getMinTlsVersionOfStorageAccount(value map[string]interface{}) string {
 	return ""
 }
 
-func (d *azureIacTemplateDiscovery) handleLoadBalancer(template map[string]interface{},resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
+func (d *azureIacTemplateDiscovery) handleLoadBalancer(template map[string]interface{}, resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
 
 	var name string
 	var err error
@@ -414,7 +413,7 @@ func (d *azureIacTemplateDiscovery) handleLoadBalancer(template map[string]inter
 		// Get LB name
 		if key == "name" {
 			name, err = getDefaultResourceNameFromParameter(template, value.(string))
-			if err != nil{
+			if err != nil {
 				return nil, errors.New("getting parameter default name failed")
 			}
 		}
@@ -466,7 +465,7 @@ func (d *azureIacTemplateDiscovery) handleVirtualMachine(template map[string]int
 		if key == "name" {
 			// name = getDefaultResourceName(value.(string))
 			name, err = getDefaultResourceNameFromParameter(template, value.(string))
-			if err != nil{
+			if err != nil {
 				return nil, errors.New("getting parameter default name failed")
 			}
 		}

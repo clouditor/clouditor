@@ -62,19 +62,19 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 				"parameters": map[string]interface{}{
 					"virtualMachines_vm_1_2_name": map[string]interface{}{
 						"defaultValue": "vm1-2",
-						"type": "String",
+						"type":         "String",
 					},
 					"disks_disk1_name": map[string]interface{}{
 						"defaultValue": "disk1",
-						"type": "String",
+						"type":         "String",
 					},
 					"virtualMachines_vm2_name": map[string]interface{}{
 						"defaultValue": "vm-2",
-						"type": "String",
+						"type":         "String",
 					},
 					"storageAccounts_storage1_name": map[string]interface{}{
 						"defaultValue": "storage1",
-						"type": "String",
+						"type":         "String",
 					},
 				},
 				"resources": []map[string]interface{}{
@@ -204,15 +204,15 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 				"parameters": map[string]interface{}{
 					"virtualMachines_vm_3_name": map[string]interface{}{
 						"defaultValue": "vm3",
-						"type": "String",
+						"type":         "String",
 					},
 					"storageAccounts_storage3_name": map[string]interface{}{
 						"defaultValue": "storage3",
-						"type": "String",
+						"type":         "String",
 					},
 					"loadBalancers_kubernetes_name": map[string]interface{}{
 						"defaultValue": "kubernetes",
-						"type": "String",
+						"type":         "String",
 					},
 				},
 				"resources": []map[string]interface{}{
@@ -406,7 +406,7 @@ func TestLoadBalancerProperties(t *testing.T) {
 	d := azure.NewAzureIacTemplateDiscovery(
 		azure.WithSender(&mockIacTemplateSender{}),
 		azure.WithAuthorizer(&mockAuthorizer{}),
-		)
+	)
 
 	list, err := d.List()
 
