@@ -54,11 +54,11 @@ func NewAzureComputeDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	return d
 }
 
-func (d *azureComputeDiscovery) Name() string {
+func (*azureComputeDiscovery) Name() string {
 	return "Azure Compute"
 }
 
-func (d *azureComputeDiscovery) Description() string {
+func (*azureComputeDiscovery) Description() string {
 	return "Discovery Azure compute."
 }
 

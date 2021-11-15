@@ -54,11 +54,11 @@ func NewAzureNetworkDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	return d
 }
 
-func (d *azureNetworkDiscovery) Name() string {
+func (*azureNetworkDiscovery) Name() string {
 	return "Azure Network"
 }
 
-func (d *azureNetworkDiscovery) Description() string {
+func (*azureNetworkDiscovery) Description() string {
 	return "Discovery Azure network resources."
 }
 

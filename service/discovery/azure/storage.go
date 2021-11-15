@@ -53,11 +53,11 @@ func NewAzureStorageDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	return d
 }
 
-func (d *azureStorageDiscovery) Name() string {
+func (*azureStorageDiscovery) Name() string {
 	return "Azure Storage Account"
 }
 
-func (d *azureStorageDiscovery) Description() string {
+func (*azureStorageDiscovery) Description() string {
 	return "Discovery Azure storage accounts."
 }
 
