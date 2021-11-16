@@ -27,12 +27,46 @@ package orchestrator
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"os"
 
 	"clouditor.io/clouditor/api/orchestrator"
 )
 
 // TODO(oxisto): actually persist them
 var accounts []*orchestrator.CloudAccount
+
+func init() {
+	// initialize accounts if the directories exists for now, we need to
+	// replace this in the future
+	if existsInHome(".kube") {
+		accounts = append(accounts, &orchestrator.CloudAccount{AccountType: "k8s", AutoDiscover: true})
+	}
+
+	if existsInHome(".aws") {
+		accounts = append(accounts, &orchestrator.CloudAccount{AccountType: "aws", AutoDiscover: true})
+	}
+
+	if existsInHome(".Azure") {
+		accounts = append(accounts, &orchestrator.CloudAccount{AccountType: "azure", AutoDiscover: true})
+	}
+}
+
+func existsInHome(path string) bool {
+	home, err := os.UserHomeDir()
+	if err == nil {
+		_, err := os.Stat(fmt.Sprintf("%s/%s", home, path))
+		if err == nil {
+			return true
+		}
+		if errors.Is(err, os.ErrNotExist) {
+			return false
+		}
+	}
+
+	return false
+}
 
 func (*Service) CreateAccount(_ context.Context, req *orchestrator.CreateAccountRequest) (response *orchestrator.CloudAccount, err error) {
 	response = req.Account
