@@ -30,6 +30,10 @@ import (
 	"strings"
 	"time"
 
+	"clouditor.io/clouditor/service/discovery/azure"
+	"clouditor.io/clouditor/service/discovery/k8s"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/google/uuid"
 
 	"clouditor.io/clouditor/service/discovery/aws"
@@ -37,8 +41,6 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/service/discovery/azure"
-	"clouditor.io/clouditor/service/discovery/k8s"
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/go-co-op/gocron"
@@ -201,17 +203,13 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 			log.Errorf("Could not convert resource to protobuf struct: %v", err)
 		}
 
-		evidence := &evidence.Evidence{
-			Id:         uuid.New().String(),
-			Resource:   v,
-			ResourceId: string(resource.GetID()),
-		}
-
-		// check for object storage
-		for _, v := range resource.GetType() {
-			if v == "ObjectStorage" {
-				evidence.ApplicableMetrics = []int32{1, 2}
-			}
+		// TODO(all): What is the raw type in our case?
+		e := &evidence.Evidence{
+			Id:        uuid.New().String(),
+			Timestamp: timestamppb.Now(),
+			ToolId:    "Clouditor Evidences Collection",
+			Raw:       "",
+			Resource:  v,
 		}
 
 		if s.AssessmentStream == nil {
@@ -226,12 +224,12 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 
 		log.Debugf("Sending evidence for resource %s (%s)...", resource.GetID(), strings.Join(resource.GetType(), ", "))
 
-		err = s.AssessmentStream.Send(evidence)
+		err = s.AssessmentStream.Send(e)
 		if err != nil {
 			log.Errorf("Could not send evidence to Assessment: %v", err)
 		}
 
-		err = s.EvidenceStoreStream.Send(evidence)
+		err = s.EvidenceStoreStream.Send(e)
 		if err != nil {
 			log.Errorf("Could not send evidence to EvidenceStore: %v", err)
 		}
@@ -262,7 +260,7 @@ func (s Service) Query(_ context.Context, request *discovery.QueryRequest) (resp
 	}
 
 	return &discovery.QueryResponse{
-		Result: &structpb.ListValue{Values: r},
+		Results: &structpb.ListValue{Values: r},
 	}, nil
 }
 

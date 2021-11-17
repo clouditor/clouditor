@@ -48,11 +48,11 @@ import (
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/rest"
+	service_assessment "clouditor.io/clouditor/service/assessment"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_discovery "clouditor.io/clouditor/service/discovery"
 	service_evidenceStore "clouditor.io/clouditor/service/evidence"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
-	"clouditor.io/clouditor/service/standalone"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -171,7 +171,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 
 	discoveryService = service_discovery.NewService()
 	orchestratorService = &service_orchestrator.Service{}
-	assessmentService = standalone.NewAssessmentServer()
+	assessmentService = service_assessment.NewService()
 	evidenceStoreService = service_evidenceStore.NewService()
 
 	authService.CreateDefaultUser(viper.GetString(APIDefaultUserFlag), viper.GetString(APIDefaultPasswordFlag))

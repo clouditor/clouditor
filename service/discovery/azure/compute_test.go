@@ -28,6 +28,7 @@ package azure_test
 import (
 	"net/http"
 	"testing"
+	"time"
 
 	"clouditor.io/clouditor/service/discovery/azure"
 	"clouditor.io/clouditor/voc"
@@ -49,16 +50,24 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 					"properties": map[string]interface{}{
 						"diagnosticsProfile": map[string]interface{}{
 							"bootDiagnostics": map[string]interface{}{
-								"enabled": true,
+								"enabled":    true,
+								"storageUri": "https://logstoragevm1.blob.core.windows.net/",
 							},
 						},
 					},
 				},
 				{
-					"id":         "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2",
-					"name":       "vm2",
-					"location":   "eastus",
-					"properties": map[string]interface{}{},
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2",
+					"name":     "vm2",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"diagnosticsProfile": map[string]interface{}{
+							"bootDiagnostics": map[string]interface{}{
+								"enabled":    true,
+								"storageUri": "",
+							},
+						},
+					},
 				},
 			},
 		}, 200)
@@ -82,6 +91,12 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 								"id": "data_disk_2",
 							},
 						},
+					},
+				},
+				"diagnosticsProfile": map[string]interface{}{
+					"bootDiagnostics": map[string]interface{}{
+						"enabled":    false,
+						"storageUri": "test",
 					},
 				},
 				"networkProfile": map[string]interface{}{
@@ -116,6 +131,12 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 								"id": "data_disk_3",
 							},
 						},
+					},
+				},
+				"diagnosticsProfile": map[string]interface{}{
+					"bootDiagnostics": map[string]interface{}{
+						"enabled":    true,
+						"storageUri": "test",
 					},
 				},
 				"networkProfile": map[string]interface{}{
@@ -180,6 +201,12 @@ func TestVirtualMachine(t *testing.T) {
 	assert.Equal(t, "123", string(virtualMachine.NetworkInterface[0]))
 	assert.Equal(t, "eastus", virtualMachine.GeoLocation.Region)
 	assert.Equal(t, true, virtualMachine.BootLog.Enabled)
+	assert.Equal(t, voc.ResourceID("https://logstoragevm1.blob.core.windows.net/"), virtualMachine.BootLog.Output[0])
+	assert.Equal(t, time.Duration(0), virtualMachine.BootLog.RetentionPeriod)
+
+	virtualMachine2, ok := list[1].(*voc.VirtualMachine)
+	assert.True(t, ok)
+	assert.Equal(t, voc.ResourceID(""), virtualMachine2.BootLog.Output[0])
 }
 
 func TestFunction(t *testing.T) {

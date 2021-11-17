@@ -28,7 +28,6 @@ package metric
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
@@ -89,15 +88,9 @@ func NewGetMetricCommand() *cobra.Command {
 
 			client = orchestrator.NewOrchestratorClient(session)
 
-			metricID, err := strconv.Atoi(args[0])
-			metricIDInt32 := int32(metricID)
+			metricID := args[0]
 
-			if err != nil {
-				fmt.Printf("Error while parsing string to int32")
-				return nil
-			}
-
-			res, err = client.GetMetric(context.Background(), &orchestrator.GetMetricsRequest{MetricId: metricIDInt32})
+			res, err = client.GetMetric(context.Background(), &orchestrator.GetMetricsRequest{MetricId: metricID})
 
 			return session.HandleResponse(res, err)
 		},

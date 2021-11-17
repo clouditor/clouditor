@@ -402,6 +402,7 @@ func TestVmProperties(t *testing.T) {
 	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/blockStorage3", (string)(resourceVM.BlockStorage[0]))
 	assert.Equal(t, "eastus", resourceVM.GeoLocation.Region)
 	assert.True(t, resourceVM.BootLog.Enabled)
+	assert.Equal(t, voc.ResourceID("https://storage1.blob.core.windows.net/"), resourceVM.BootLog.Output[0])
 	assert.False(t, resourceVM.OSLog.Enabled)
 }
 

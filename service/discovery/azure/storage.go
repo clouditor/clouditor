@@ -26,10 +26,11 @@
 package azure
 
 import (
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/voc"
 	"context"
 	"fmt"
+
+	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/voc"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
@@ -153,7 +154,7 @@ func (d *azureStorageDiscovery) discoverFileStorages(account *storage.Account) (
 
 	result, err := client.List(context.Background(), GetResourceGroupName(*account.ID), *account.Name, "", "", "")
 	if err != nil {
-		return nil, fmt.Errorf("could not list file storage: %w", err)
+		return nil, fmt.Errorf("could not list file storages: %w", err)
 	}
 
 	for _, value := range result.Values() {

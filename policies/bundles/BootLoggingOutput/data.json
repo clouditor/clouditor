@@ -1,0 +1,4 @@
+{
+  "operator" : "==",
+  "target_value" : ["SomeResourceId1","SomeResourceId2"]
+}

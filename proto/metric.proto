@@ -37,7 +37,7 @@ option go_package = "api/assessment";
 // A metric resource
 message Metric {
   // Required. The unique identifier of the metric.
-  int32 id = 1;
+  string id = 1;
 
   // Required. The human readable name of the metric.
   string name = 2;

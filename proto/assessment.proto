@@ -30,23 +30,25 @@ package clouditor;
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
 import "evidence.proto";
 
 option go_package = "api/assessment";
 
-// Representing the link between orchestrator and discovery: Assessing evidences from discovery and sending results
-// to orchestrator
+// Representing the link between orchestrator and discovery: Assessing evidences
+// from discovery and sending results to orchestrator
 service Assessment {
   // Triggers the assessment. Part of the private API,
   // not exposed as REST.
   rpc TriggerAssessment(TriggerAssessmentRequest)
       returns (google.protobuf.Empty) {}
 
-  // TODO(all): Part of public API because external entities (mainly discoveries) can use it?
-  // List the latest set of assessment results. Part of the public API,
-  // also exposed as REST
+  // TODO(all): Part of public API because external entities (mainly
+  // discoveries) can use it? List the latest set of assessment results. Part of
+  // the public API, also exposed as REST
   rpc ListAssessmentResults(ListAssessmentResultsRequest)
-  returns (ListAssessmentResultsResponse) {
+      returns (ListAssessmentResultsResponse) {
     option (google.api.http) = {
       post : "/v1/assessment/results"
       response_body : "*"
@@ -62,8 +64,8 @@ service Assessment {
     };
   }
 
-  // Assesses stream of evidences coming from the discovery. Part of the public API,
-  // not exposed as REST
+  // Assesses stream of evidences coming from the discovery. Part of the public
+  // API, not exposed as REST
   rpc AssessEvidences(stream Evidence) returns (google.protobuf.Empty);
 };
 
@@ -72,15 +74,39 @@ message TriggerAssessmentRequest { string someOption = 1; }
 message ListAssessmentResultsRequest {}
 message ListAssessmentResultsResponse { repeated Result results = 1; }
 
-message AssessEvidenceRequest {Evidence evidence = 1; }
+message AssessEvidenceRequest { Evidence evidence = 1; }
 message AssessEvidenceResponse { bool status = 1; }
 
-// A result resource, representing the result after assessing the cloud resource with id resource_id.
+// A result resource, representing the result after assessing the cloud resource
+// with id resource_id.
 message Result {
-  string resource_id = 1;
+  // Assessment result id
+  string id = 1;
 
-  bool compliant = 2;
+  // Time of assessment
+  google.protobuf.Timestamp timestamp = 2;
 
-  int32 metric_id = 3;
+  // Reference to the metric the assessment was based on
+  string metric_id = 3;
+
+  // Data corresponding to the metric by the given metric id
+  MetricData metric_data = 4;
+
+  // Compliant case: true or false
+  bool compliant = 5;
+
+  // Reference to the assessed evidence
+  string evidence_id = 6;
+
+  // Reference to the resource of the assessed evidence
+  string resource_id = 7;
+
+  // Some comments on the reason for non-compliance
+  string non_compliance_comments = 8;
 }
 
+message MetricData {
+  google.protobuf.Value target_value =
+      1;               // target value, e.g. string, number, array, ...
+  string operator = 2; // the operator, e.g. "=="
+}

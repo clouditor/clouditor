@@ -101,16 +101,14 @@ func TestStartDiscovery(t *testing.T) {
 
 			// APIs for assessment and evidence store both send the same evidence. Thus, testing one is enough.
 			if tt.checkEvidence {
-				evidence := discoveryService.AssessmentStream.(*mockAssessmentStream).sentEvidence
+				e := discoveryService.AssessmentStream.(*mockAssessmentStream).sentEvidence
 				// Check if UUID has been created
-				assert.NotEmpty(t, evidence.Id)
+				assert.NotEmpty(t, e.Id)
 				// Check if cloud resources / properties are there
-				assert.NotEmpty(t, evidence.Resource)
-				// Currently, hard coded in discovery. This assertion will probably fail in future
-				assert.Equal(t, []int32{1, 2}, evidence.ApplicableMetrics)
+				assert.NotEmpty(t, e.Resource)
 				// Check if ID of mockDiscovery's resource is mapped to resource id of the evidence
 				list, _ := tt.fields.discoverer.List()
-				assert.Equal(t, string(list[0].GetID()), evidence.ResourceId)
+				assert.Equal(t, string(list[0].GetID()), e.Resource.GetStructValue().AsMap()["id"].(string))
 			}
 		})
 	}
@@ -167,7 +165,7 @@ func TestQuery(t *testing.T) {
 			if err != nil {
 				return
 			}
-			assert.Equal(t, tt.numberOfQueriedResources, len(response.Result.Values))
+			assert.Equal(t, tt.numberOfQueriedResources, len(response.Results.Values))
 		})
 		// If a bad resource was added it will be removed. Otherwise no-op
 		delete(s.resources, "MockResourceId")

@@ -29,26 +29,92 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"strings"
 
 	"clouditor.io/clouditor/api/evidence"
 	"github.com/open-policy-agent/opa/rego"
 )
 
-func RunEvidence(file string, evidence *evidence.Evidence) (data map[string]interface{}, err error) {
+// applicableMetrics stores a list of applicable metrics per resourceType
+var applicableMetrics = make(map[string][]string)
+
+func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) {
+	data := make([]map[string]interface{}, 0)
+	var baseDir string = "."
+
 	var m = evidence.Resource.GetStructValue().AsMap()
 
-	return RunMap(file, m)
+	var types []string
+
+	if rawTypes, ok := m["type"].([]interface{}); ok {
+		types = make([]string, len(rawTypes))
+	} else {
+		return nil, fmt.Errorf("got type '%T' but wanted '[]interface {}'. Check if resource types are specified ", rawTypes)
+	}
+	for i, v := range m["type"].([]interface{}) {
+		if t, ok := v.(string); !ok {
+			return nil, fmt.Errorf("got type '%T' but wanted 'string'", t)
+		} else {
+			types[i] = t
+		}
+	}
+
+	// TODO(lebogg): Try to optimize duplicated code
+	if key := createKey(types); applicableMetrics[key] == nil {
+		files, err := scanBundleDir(baseDir)
+		if err != nil {
+			return nil, fmt.Errorf("could not load metric bundles: %w", err)
+		}
+
+		for _, fileInfo := range files {
+			runMap, err := RunMap(baseDir, fileInfo.Name(), m)
+			if err != nil {
+				return nil, err
+			}
+
+			if runMap != nil {
+				metricId := fileInfo.Name()
+				applicableMetrics[key] = append(applicableMetrics[key], metricId)
+				runMap["metricId"] = metricId
+
+				data = append(data, runMap)
+			}
+		}
+	} else {
+		for _, metric := range applicableMetrics[key] {
+			runMap, err := RunMap(baseDir, metric, m)
+			if err != nil {
+				return nil, err
+			}
+
+			runMap["metricId"] = metric
+			data = append(data, runMap)
+		}
+	}
+
+	return data, nil
 }
 
-func RunMap(file string, m map[string]interface{}) (data map[string]interface{}, err error) {
+func RunMap(baseDir string, metric string, m map[string]interface{}) (data map[string]interface{}, err error) {
 	var (
 		ok bool
 	)
 
+	// Create paths for bundle directory and utility functions file
+	bundle := fmt.Sprintf("%s/policies/bundles/%s/", baseDir, metric)
+	operators := fmt.Sprintf("%s/policies/operators.rego", baseDir)
+
 	ctx := context.TODO()
 	r, err := rego.New(
 		rego.Query("data.clouditor"),
-		rego.Load([]string{file}, nil),
+		rego.Load(
+			[]string{
+				bundle + "metric.rego",
+				bundle + "data.json",
+				operators,
+			},
+			nil),
 	).PrepareForEval(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("could not prepare rego evaluation: %w", err)
@@ -61,7 +127,31 @@ func RunMap(file string, m map[string]interface{}) (data map[string]interface{},
 
 	if data, ok = results[0].Expressions[0].Value.(map[string]interface{}); !ok {
 		return nil, errors.New("expected data is not a map[string]interface{}")
+	} else if data["applicable"] == false {
+		return nil, nil
+	} else {
+		return data, nil
+	}
+}
+
+func scanBundleDir(baseDir string) ([]os.FileInfo, error) {
+	dirname := baseDir + "/policies/bundles"
+
+	f, err := os.Open(dirname)
+	if err != nil {
+		return nil, err
+	}
+	files, err := f.Readdir(-1)
+	_ = f.Close()
+	if err != nil {
+		return nil, err
 	}
 
+	return files, err
+}
+
+func createKey(types []string) (key string) {
+	key = strings.Join(types, "-")
+	key = strings.ReplaceAll(key, " ", "")
 	return
 }

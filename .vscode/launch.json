@@ -10,6 +10,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/engine/engine.go",
+            "cwd": "${workspaceFolder}",
             "env": {},
             "preLaunchTask": "go: generate"
         }
