@@ -33,8 +33,8 @@ import (
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
-	//TODO(garuppel): Update API to '2020-10-01/resources'
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2016-02-01/resources"
+	//TODO(garuppel): The bootDiagnosticsStorageURI is gone? Where can I find it in the ARM template. Do we need to update the API to '2020-10-01/resources'?
 	//"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2020-10-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 )
@@ -159,7 +159,7 @@ func (d *azureArmTemplateDiscovery) discoverArmTemplate() ([]voc.IsCloudResource
 								}
 								list = append(list, storage)
 							}
-							// TODO(garuppel): How do we get BlockStorage resources?
+							// TODO(garuppel): Handle BlockStorage resources?
 						}
 					}
 				}
@@ -484,7 +484,8 @@ func (d *azureArmTemplateDiscovery) handleVirtualMachine(template map[string]int
 			for propertiesKey, propertiesValue := range properties {
 				if propertiesKey == "diagnosticsProfile" {
 					bootDiagnosticsEnabled = propertiesValue.(map[string]interface{})["bootDiagnostics"].(map[string]interface{})["enabled"].(bool)
-					storageUri = getStorageUriFromArmTemplate(propertiesValue.(map[string]interface{})["bootDiagnostics"].(map[string]interface{})["storageUri"].(string))
+					// TODO(garuppel): Why is the storageURI gone? Where can I find the storageURI
+					//storageUri = getStorageUriFromArmTemplate(propertiesValue.(map[string]interface{})["bootDiagnostics"].(map[string]interface{})["storageUri"].(string))
 				}
 			}
 		}
@@ -583,13 +584,13 @@ func getContainerName(name string) string {
 	return anotherNameSplit[1]
 }
 
-func getStorageUriFromArmTemplate(name string) string {
-	var storageUri string
-
-	// "[concat('https://', parameters('storageAccounts_bcloudtest_name'), '.blob.core.windows.net/')]"
-	nameSplit := strings.Split(name, "'")
-	storageUriName := strings.Split(nameSplit[3], "_")
-	storageUri = nameSplit[1] + storageUriName[1] + nameSplit[5]
-
-	return storageUri
-}
+//func getStorageUriFromArmTemplate(name string) string {
+//	var storageUri string
+//
+//	// "[concat('https://', parameters('storageAccounts_bcloudtest_name'), '.blob.core.windows.net/')]"
+//	nameSplit := strings.Split(name, "'")
+//	storageUriName := strings.Split(nameSplit[3], "_")
+//	storageUri = nameSplit[1] + storageUriName[1] + nameSplit[5]
+//
+//	return storageUri
+//}

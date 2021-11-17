@@ -232,7 +232,7 @@ func TestStorage(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
 	assert.Equal(t, 8, len(list))
-	assert.Equal(t, "Azure Storage Account", d.Name())
+	assert.NotEmpty(t, d.Name())
 }
 
 func TestListObjectStorage(t *testing.T) {
