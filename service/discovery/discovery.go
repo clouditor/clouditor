@@ -247,18 +247,18 @@ func (s Service) Query(_ context.Context, request *discovery.QueryRequest) (resp
 	}
 
 	for _, v := range s.resources {
-		var s *structpb.Value
+		var resource *structpb.Value
 
 		if filteredType != "" && !v.HasType(filteredType) {
 			continue
 		}
 
-		s, err = voc.ToStruct(v)
+		resource, err = voc.ToStruct(v)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "error during JSON unmarshal: %v", err)
 		}
 
-		r = append(r, s)
+		r = append(r, resource)
 	}
 
 	return &discovery.QueryResponse{
