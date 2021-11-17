@@ -108,7 +108,6 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 						},
 					},
 					{
-						// TODO Do we need the OD disks?
 						"type":     "Microsoft.Compute/disks",
 						"name":     "[parameters('disks_disk1_name')]",
 						"location": "eastus",
@@ -327,7 +326,6 @@ func TestObjectStorageProperties(t *testing.T) {
 	assert.True(t, ok)
 
 	// That should be equal. The Problem is described in file 'service/discovery/azure/arm_template.go' TODO(all); do we need this comment any longer?
-	// TODO(garuppel): Tests for AtRestEncryption, ...
 	assert.Equal(t, "container1", objectStorage.Name)
 	assert.Equal(t, "TLS1_1", objectStorage.HttpEndpoint.TransportEncryption.TlsVersion)
 	assert.Equal(t, "ObjectStorage", objectStorage.Type[0])
@@ -368,7 +366,6 @@ func TestFileStorageProperties(t *testing.T) {
 	assert.True(t, ok)
 
 	// That should be equal. The Problem is described in file 'service/discovery/azure/arm_template.go' TODO(all); do we need this comment any longer?
-	// TODO(garuppel): Tests for AtRestEncryption, ...
 	assert.Equal(t, "share1", fileStorage.Name)
 	assert.Equal(t, "TLS1_1", fileStorage.HttpEndpoint.TransportEncryption.TlsVersion)
 	assert.Equal(t, "FileStorage", fileStorage.Type[0])

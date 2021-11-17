@@ -278,7 +278,6 @@ func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem
 	}, nil
 }
 
-// TODO(garuppel): Is EncryptionAtRestWithCustomerKey für block storages possible?
 func (d *azureStorageDiscovery) getBlockStorageAtRestEncryption(disk compute.Disk) (voc.HasAtRestEncryption, error) {
 
 	var enc voc.HasAtRestEncryption
@@ -309,7 +308,6 @@ func (d *azureStorageDiscovery) getBlockStorageAtRestEncryption(disk compute.Dis
 	return enc, nil
 }
 
-// TODO(garuppel): merge with getFIleStorageAtRestEncryption()
 func getStorageAtRestEncryption(account *storage.Account) (voc.HasAtRestEncryption, error) {
 
 	var enc voc.HasAtRestEncryption
@@ -352,25 +350,3 @@ func getDiskEncryptionSetName(discEncryptionSetID string) string {
 	splitName := strings.Split(discEncryptionSetID, "/")
 	return splitName[8]
 }
-
-//func getFileStorageAtRestEncryption(account *storage.Account) (voc.HasAtRestEncryption, error) {
-//
-//	var enc voc.HasAtRestEncryption
-//
-//	if account.Encryption.KeySource == storage.KeySourceMicrosoftStorage {
-//		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
-//			Algorithm: "AES256",
-//			Enabled:   true,
-//		}}
-//	} else if account.Encryption.KeySource == storage.KeySourceMicrosoftKeyvault {
-//		enc = voc.CustomerKeyEncryption{
-//			AtRestEncryption: &voc.AtRestEncryption{
-//				Algorithm: "", // TODO(garuppel): TBD
-//				Enabled:   true,
-//			},
-//			KeyUrl: to.String(account.Encryption.KeyVaultProperties.KeyVaultURI),
-//		}
-//	}
-//
-//	return enc, nil
-//}
