@@ -33,7 +33,9 @@ import (
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2016-02-01/resources"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
+	//TODO(garuppel): Update API to '2020-10-01/resources'
+	//"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2020-10-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 )
 
@@ -109,6 +111,8 @@ func (d *azureArmTemplateDiscovery) discoverArmTemplate() ([]voc.IsCloudResource
 		//	return nil, fmt.Errorf("could not save Azure ARM template: %w", err)
 		//}
 
+		// TODO Update to latest API version -> GroupsExportTemplateFuture
+		// result = GroupExportResult
 		armTemplate, ok := result.Template.(map[string]interface{})
 		if !ok {
 			return nil, errors.New("ARM template type assertion failed")
@@ -533,20 +537,24 @@ func (d *azureArmTemplateDiscovery) createID(resourceGroup, resourceType, name s
 	return "/subscriptions/" + *d.sub.SubscriptionID + "/resourceGroups/" + resourceGroup + "/providers/" + resourceType + "/" + name
 }
 
-// getDefaultResourceNameFromParameter returns the default name given in the parameters section of the template
+// getDefaultResourceNameFromParameter returns the default name given in the parameters section of the template. If not possible, get name from parameter name, e.g., [parameters('loadBalancers_kubernetes_name')]
 func getDefaultResourceNameFromParameter(template map[string]interface{}, name string) (string, error) {
 
 	// [parameters('loadBalancers_kubernetes_name')]
 	for templateKey, templateValue := range template {
 		if templateKey == "parameters" {
-			azureResource, ok := templateValue.(map[string]interface{})
+			resourceParameter, ok := templateValue.(map[string]interface{})
 			if !ok {
 				return "", errors.New("templateValue type assertion failed")
 			}
 
-			resource, ok := azureResource[getCoreName(name)].(map[string]interface{}) // TODO get name without parameter stuff around
+			resource, ok := resourceParameter[getCoreName(name)].(map[string]interface{})
 			if !ok {
 				return "", errors.New("parameter resource type assertion failed")
+			}
+
+			if resource["defaultValue"] == nil {
+				return getCoreName(name), nil
 			}
 
 			return resource["defaultValue"].(string), nil
@@ -556,7 +564,7 @@ func getDefaultResourceNameFromParameter(template map[string]interface{}, name s
 	return "", errors.New("error getting default resource name ")
 }
 
-// getCoreName returns the parameter name without the additional information around
+// getCoreName returns the parameter name without the additional information around. Necessary if in parameters no default name exists.
 // Example: [parameters('virtualMachines_vm3_name')] returns 'vm3'
 func getCoreName(name string) string {
 	return strings.Split(name, "'")[1]
