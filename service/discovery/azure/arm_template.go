@@ -485,7 +485,8 @@ func (d *azureArmTemplateDiscovery) handleVirtualMachine(template map[string]int
 				if propertiesKey == "diagnosticsProfile" {
 					bootDiagnosticsEnabled = propertiesValue.(map[string]interface{})["bootDiagnostics"].(map[string]interface{})["enabled"].(bool)
 					// TODO(garuppel): Why is the storageURI gone? Where can I find the storageURI
-					//storageUri = getStorageUriFromArmTemplate(propertiesValue.(map[string]interface{})["bootDiagnostics"].(map[string]interface{})["storageUri"].(string))
+					// storageUri = getStorageUriFromArmTemplate(propertiesValue.(map[string]interface{})["bootDiagnostics"].(map[string]interface{})["storageUri"].(string))
+					storageUri = getStorageUriFromArmTemplate(propertiesValue.(map[string]interface{}))
 				}
 			}
 		}
@@ -584,13 +585,17 @@ func getContainerName(name string) string {
 	return anotherNameSplit[1]
 }
 
-//func getStorageUriFromArmTemplate(name string) string {
-//	var storageUri string
-//
-//	// "[concat('https://', parameters('storageAccounts_bcloudtest_name'), '.blob.core.windows.net/')]"
-//	nameSplit := strings.Split(name, "'")
-//	storageUriName := strings.Split(nameSplit[3], "_")
-//	storageUri = nameSplit[1] + storageUriName[1] + nameSplit[5]
-//
-//	return storageUri
-//}
+func getStorageUriFromArmTemplate(name map[string]interface{}) string {
+	var storageUri string
+	if name["bootDiagnostics"].(map[string]interface{})["storageUri"] == nil {
+		return ""
+	}
+
+	// "[concat('https://', parameters('storageAccounts_bcloudtest_name'), '.blob.core.windows.net/')]"
+	storageUriInformation := name["bootDiagnostics"].(map[string]interface{})["storageUri"].(string)
+	nameSplit := strings.Split(storageUriInformation, "'")
+	storageUriName := strings.Split(nameSplit[3], "_")
+	storageUri = nameSplit[1] + storageUriName[1] + nameSplit[5]
+
+	return storageUri
+}
