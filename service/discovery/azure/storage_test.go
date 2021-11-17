@@ -168,7 +168,7 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 					"properties": map[string]interface{}{
 						"timeCreated": "2017-05-24T13:28:53.4540398Z",
 						"encryption": map[string]interface{}{
-							"diskEncryptionSetID": nil,
+							"diskEncryptionSetID": "",
 							"type":                "EncryptionAtRestWithPlatformKey",
 						},
 					},
@@ -181,23 +181,38 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 					"properties": map[string]interface{}{
 						"timeCreated": "2017-05-24T13:28:53.4540398Z",
 						"encryption": map[string]interface{}{
-							"diskEncryptionSetID": nil,
+							"diskEncryptionSetID": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1",
 							"type":                "EncryptionAtRestWithCustomerKey",
 						},
-						"encryptionSettingsCollection": map[string]interface{}{
-							"enabled": true,
-							"encryptionSettings": []map[string]interface{}{
-								{
-									"diskEncryptionKey": map[string]interface{}{
-										"secretUrl": "https://testvault.vault.azure.net/keys/testkey/123456",
-										"sourceVault": map[string]interface{}{
-											"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.KeyVault/vaults/vault1",
-										},
-									},
-								},
-							},
-						},
+						//"encryptionSettingsCollection": map[string]interface{}{
+						//	"enabled": true,
+						//	"encryptionSettings": []map[string]interface{}{
+						//		{
+						//			"diskEncryptionKey": map[string]interface{}{
+						//				"secretUrl": "https://testvault.vault.azure.net/keys/testkey/123456",
+						//				"sourceVault": map[string]interface{}{
+						//					"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.KeyVault/vaults/vault1",
+						//				},
+						//			},
+						//		},
+						//	},
+						//},
 					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1" { // ?api-version=2021-07-01?
+		return createResponse(map[string]interface{}{
+			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault1",
+			"type":     "Microsoft.Compute/diskEncryptionSets",
+			"name":     "encryptionkeyvault1",
+			"location": "germanywestcentral",
+			"properties": map[string]interface{}{
+				"activeKey": map[string]interface{}{
+					"sourceVault": map[string]interface{}{
+						"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.KeyVault/vaults/keyvault1",
+					},
+					"keyUrl": "https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382",
 				},
 			},
 		}, 200)
