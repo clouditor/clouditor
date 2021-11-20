@@ -58,18 +58,57 @@ var log *logrus.Entry
 type Service struct {
 	discovery.UnimplementedDiscoveryServer
 
-	Configurations map[discovery.Discoverer]*Configuration
+	Configurations map[discovery.Discoverer]*DiscoveryConfiguration
 	// TODO(oxisto) do not expose this. just makes tests easier for now
 	AssessmentStream assessment.Assessment_AssessEvidencesClient
 
 	EvidenceStoreStream evidence.EvidenceStore_StoreEvidencesClient
 
+	// resources holds an in-memory map of the discovered cloud resources keyed by
+	// the resource ID
 	resources map[string]voc.IsCloudResource
+
 	scheduler *gocron.Scheduler
+
 	serviceId string
 }
 
-type Configuration struct {
+// ServiceOption implements functional-style options to configure the Service.
+type ServiceOption func(*Service)
+
+func WithAzure(authorizer autorest.Authorizer) ServiceOption {
+	return func(s *Service) {
+		log.Info("Found an azure account. Configuring our discoverers accordingly")
+
+		/*var authorizer autorest.Authorizer
+
+		authorizer, err := auth.NewAuthorizerFromCLI()
+		if err != nil {
+			log.Errorf("Could not authenticate to Azure: %s", err)
+			//return err
+		}*/
+
+		/*s.Configurations[]
+		*discoverer = append(*discoverer,
+			azure.NewAzureIacTemplateDiscovery(azure.WithAuthorizer(authorizer)),
+			azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
+			azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
+			azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)),
+		)*/
+
+		discoverers := []discovery.Discoverer{
+			azure.NewAzureIacTemplateDiscovery(azure.WithAuthorizer(authorizer)),
+			azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
+			azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
+			azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)),
+		}
+
+		log.Debugf("Discoverers: %+v", discoverers)
+	}
+
+}
+
+type DiscoveryConfiguration struct {
 	Interval time.Duration
 }
 
@@ -85,7 +124,7 @@ func NewService() *Service {
 	return &Service{
 		resources:      make(map[string]voc.IsCloudResource),
 		scheduler:      gocron.NewScheduler(time.UTC),
-		Configurations: make(map[discovery.Discoverer]*Configuration),
+		Configurations: make(map[discovery.Discoverer]*DiscoveryConfiguration),
 	}
 }
 
@@ -149,7 +188,7 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	}
 
 	for _, v := range discoverer {
-		s.Configurations[v] = &Configuration{
+		s.Configurations[v] = &DiscoveryConfiguration{
 			Interval: 5 * time.Minute,
 		}
 

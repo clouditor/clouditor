@@ -16,6 +16,18 @@
             ]
         },
         {
+            "label": "go: build collector",
+            "type": "shell",
+            "command": "go build cmd/collector/collector.go",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$go"
+            ]
+        },
+        {
             "label": "go: build cli",
             "type": "shell",
             "command": "go build cmd/cli/cl.go",
