@@ -13,6 +13,16 @@
             "cwd": "${workspaceFolder}",
             "env": {},
             "preLaunchTask": "go: generate"
+        },
+        {
+            "name": "Launch collector",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/collector/collector.go",
+            "cwd": "${workspaceFolder}",
+            "env": {},
+            "preLaunchTask": "go: generate"
         }
     ]
 }

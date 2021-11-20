@@ -26,12 +26,29 @@
 package main
 
 import (
+	"context"
+	"errors"
+	"fmt"
+	"net"
+	"net/http"
 	"os"
 	"strings"
+
+	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/cli"
+	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/rest"
+
+	service_discovery "clouditor.io/clouditor/service/discovery"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
+	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 const (
@@ -61,6 +78,9 @@ const (
 
 	EnvPrefix = "CLOUDITOR"
 )
+
+var server *grpc.Server
+var discoveryService *service_discovery.Service
 
 var log *logrus.Entry
 
@@ -100,6 +120,83 @@ func initConfig() {
 }
 
 func doCmd(_ *cobra.Command, _ []string) (err error) {
+	log.Logger.Formatter = &logrus.TextFormatter{ForceColors: true}
+
+	log.Info("Welcome to new Clouditor Collector 2.0")
+
+	fmt.Println(`
+           $$\                           $$\ $$\   $$\
+           $$ |                          $$ |\__|  $$ |
+  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+ $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+ $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
+ $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+ \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+ `)
+
+	if err = persistence.InitDB(viper.GetBool(DBInMemoryFlag),
+		viper.GetString(DBHostFlag),
+		int16(viper.GetInt(DBPortFlag))); err != nil {
+		return fmt.Errorf("could not initialize DB: %w", err)
+	}
+
+	discoveryService = service_discovery.NewService()
+
+	grpcPort := viper.GetInt(APIgRPCPortFlag)
+	httpPort := viper.GetInt(APIHTTPPortFlag)
+
+	grpcLogger := logrus.New()
+	grpcLogger.Formatter = &cli.GRPCFormatter{TextFormatter: logrus.TextFormatter{ForceColors: true}}
+	grpcLoggerEntry := grpcLogger.WithField("component", "grpc")
+
+	// disabling the grpc log itself, because it will log everything on INFO, whereas DEBUG would be more
+	// appropriate
+	// grpc_logrus.ReplaceGrpcLogger(grpcLoggerEntry)
+
+	// create a new socket for gRPC communication
+	sock, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
+	if err != nil {
+		log.Errorf("could not listen: %v", err)
+	}
+
+	server = grpc.NewServer(
+		grpc_middleware.WithUnaryServerChain(
+			grpc_ctxtags.UnaryServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
+			grpc_logrus.UnaryServerInterceptor(grpcLoggerEntry),
+		),
+		grpc_middleware.WithStreamServerChain(
+			grpc_ctxtags.StreamServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
+			grpc_logrus.StreamServerInterceptor(grpcLoggerEntry),
+		))
+	discovery.RegisterDiscoveryServer(server, discoveryService)
+
+	// enable reflection, primary for testing in early stages
+	reflection.Register(server)
+
+	// start the gRPC-HTTP gateway
+	go func() {
+		err = rest.RunServer(context.Background(), grpcPort, httpPort)
+		if errors.Is(err, http.ErrServerClosed) {
+			// ToDo(oxisto): deepsource anti-pattern: calls to os.Exit only in main() or init() functions
+			os.Exit(0)
+			return
+		}
+
+		if err != nil {
+			// ToDo(oxisto): deepsource anti-pattern: calls to log.Fatalf only in main() or init() functions
+			log.Fatalf("failed to serve gRPC-HTTP gateway: %v", err)
+		}
+	}()
+
+	log.Infof("Starting gRPC endpoint on :%d", grpcPort)
+
+	// serve the gRPC socket
+	if err := server.Serve(sock); err != nil {
+		log.Infof("failed to serve gRPC endpoint: %s", err)
+		return err
+	}
+
 	return nil
 }
 
