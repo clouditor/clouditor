@@ -27,7 +27,11 @@ package azure_test
 
 import (
 	"clouditor.io/clouditor/voc"
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-04-01/storage"
+	"fmt"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
+	"io"
+	"k8s.io/apimachinery/pkg/util/json"
 	"net/http"
 	"testing"
 
@@ -38,6 +42,23 @@ import (
 type mockStorageSender struct {
 	mockSender
 }
+
+func NewMockStorageSender() *mockStorageSender {
+	m := &mockStorageSender{}
+	return m
+}
+
+type responseStorageAccount struct {
+	Value storage.Account `json:"value,omitempty"`
+}
+
+type responseDisk struct {
+	Value []compute.Disk `json:"value,omitempty"`
+}
+
+//type responseDiskEncryptionSet struct {
+//	Value compute.DiskEncryptionSet `json:"value,omitempty"`
+//}
 
 func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error) {
 	if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts" {
@@ -108,6 +129,39 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 				},
 			},
 		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3" {
+		return createResponse(map[string]interface{}{
+			"value": &map[string]interface{}{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account3",
+					"name":     "account3",
+					"location": "westus",
+					"properties": map[string]interface{}{
+						"creationTime": "2017-05-24T13:28:53.4540398Z",
+						"primaryEndpoints": map[string]interface{}{
+							"blob": "https://account3.blob.core.windows.net/",
+							"file": "https://account3.file.core.windows.net/",
+						},
+						"encryption": map[string]interface{}{
+							"services": map[string]interface{}{
+								"file": map[string]interface{}{
+									"keyType":         "Account",
+									"enabled":         true,
+									"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
+								},
+								"blob": map[string]interface{}{
+									"keyType":         "Account",
+									"enabled":         true,
+									"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
+								},
+							},
+							"keySource": storage.KeySourceMicrosoftStorage,
+						},
+						"minimumTlsVersion":        storage.MinimumTLSVersionTLS12,
+						"allowBlobPublicAccess":    false,
+						"supportsHttpsTrafficOnly": true,
+					},
+				},
+		},200 )
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers" {
 		return createResponse(map[string]interface{}{
 			"value": &[]map[string]interface{}{
@@ -216,9 +270,22 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 				},
 			},
 		}, 200)
+	} else {
+		res, err = createResponse(map[string]interface{}{}, 404)
+		log.Errorf("Not handling mock for %s yet", req.URL.Path)
 	}
 
 	return m.mockSender.Do(req)
+}
+
+func TestAzureAuthorizer(t *testing.T) {
+
+	d := azure.NewAzureStorageDiscovery()
+	list, err := d.List()
+
+	assert.NotNil(t, err)
+	assert.Nil(t, list)
+	assert.Equal(t, "could not authorize Azure account: no authorized was available", err.Error())
 }
 
 func TestStorage(t *testing.T) {
@@ -379,4 +446,144 @@ func TestBlockStorage(t *testing.T) {
 	assert.Equal(t, "BlockStorage", blockStorage.Type[0])
 	assert.Equal(t, "eastus", blockStorage.GeoLocation.Region)
 	assert.Equal(t, true, blockStorage.AtRestEncryption.GetAtRestEncryption().Enabled)
+}
+
+func TestHandleMethodsWhenInputIsInvalid(t *testing.T) {
+	// Get mocked storage.Account
+	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"
+	storageData := getMockedStorageAccount(reqURL)
+
+	// Test method handleObjectStorage
+	containerItem := storage.ListContainerItem{}
+
+	// Clear KeySource
+	storageData.Encryption.KeySource = ""
+
+	handleObjectStorageRespone, err := azure.HandleObjectStorage(&storageData, containerItem)
+	assert.NotNil(t, err)
+	assert.Nil(t, handleObjectStorageRespone)
+
+	// Test method handleFileStorage
+	fileShare := storage.FileShareItem{}
+
+	// Clear KeySource
+	storageData.Encryption.KeySource = ""
+
+	handleFileStorageRespone, err := azure.HandleFileStorage(&storageData, fileShare)
+	assert.NotNil(t, err)
+	assert.Nil(t, handleFileStorageRespone)
+
+	// Test method handleBlockStorage
+	reqURL = "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/disks"
+	disk := getMockedDisk(reqURL)
+	// Clear KeySource
+	disk.Encryption.Type = ""
+
+	handleBlockStorageRespone, err := azure.HandleBlockStorage(disk)
+	assert.NotNil(t, err)
+	assert.Nil(t, handleBlockStorageRespone)
+}
+
+func TestMethodsWhenInputIsInvalid(t *testing.T) {
+	// Get mocked storage.Account
+	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"
+	storageData := getMockedStorageAccount(reqURL)
+
+	// Test method getDiskEncryptionSetName
+	discEncryptionSetID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1"
+	assert.Equal(t, "encryptionkeyvault1", azure.GetDiskEncryptionSetName(discEncryptionSetID))
+
+	// Test method getStorageAtRestEncryption
+	atRestEncryption, err := azure.GetStorageAtRestEncryption(&storageData)
+	assert.Nil(t, err)
+
+	managedKeyEncryption := voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{Algorithm: "AES256", Enabled: true}}
+	assert.Equal(t, managedKeyEncryption, atRestEncryption)
+
+	// Test method getSourceVaultID
+	// Todo(garuppel): How to test? Problem: Azure call again
+	//diskEncryptionSetID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1"
+	//keyVaultID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.KeyVault/vaults/keyvault1"
+	//getSourceVaultIDResult, err := azure.GetSourceVaultID(diskEncryptionSetID)
+	//assert.Nil(t, err)
+	//assert.Equal(t, keyVaultID, getSourceVaultIDResult)
+
+	// Test method getBlockStorageAtRestEncryption
+	// Todo(garuppel): How to test? Problem: Azure call again
+}
+
+func TestDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
+	// Get mocked storage.Account
+	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"
+	storageData := getMockedStorageAccount(reqURL)
+
+	// Test method discoverStorageAccounts
+	discoverStorageAccountsResponse, err := azure.DiscoverStorageAccounts()
+	assert.NotNil(t, err)
+	assert.Nil(t, discoverStorageAccountsResponse)
+
+	// Test method discoverObjectStorages
+	discoverObjectStoragesResponse, err := azure.DiscoverObjectStorages(&storageData)
+	assert.NotNil(t, err)
+	assert.Nil(t, discoverObjectStoragesResponse)
+
+	// Test method discoverFileStorages
+	discoverFileStoragesResponse, err := azure.DiscoverFileStorages(&storageData)
+	assert.NotNil(t, err)
+	assert.Nil(t, discoverFileStoragesResponse)
+
+	// Test method discoverBlockStorages
+	discoverBlockStoragesResponse, err := azure.DiscoverBlockStorages()
+	assert.NotNil(t, err)
+	assert.Nil(t, discoverBlockStoragesResponse)
+}
+
+func getMockedDisk(reqUrl string) compute.Disk {
+	m := NewMockStorageSender()
+	req, err := http.NewRequest("GET", reqUrl, nil)
+	if err != nil {
+		fmt.Println("error creating new request")
+	}
+	resp, err  := m.Do(req)
+	if err != nil {
+		fmt.Errorf("error getting mock http response: %w", err)
+	}
+
+	defer resp.Body.Close()
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Errorf("error read all: %w", err)
+	}
+	var disks responseDisk
+	err = json.Unmarshal(responseBody, &disks)
+	if err != nil {
+		fmt.Errorf("error unmarshalling: %w", err)
+	}
+
+	return disks.Value[0]
+}
+
+func getMockedStorageAccount(reqUrl string) storage.Account {
+	m := NewMockStorageSender()
+	req, err := http.NewRequest("GET", reqUrl, nil)
+	if err != nil {
+		fmt.Println("error creating new request")
+	}
+	resp, err  := m.Do(req)
+	if err != nil {
+		fmt.Errorf("error getting mock http response: %w", err)
+	}
+
+	defer resp.Body.Close()
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Errorf("error read all: %w", err)
+	}
+	var storageData responseStorageAccount
+	err = json.Unmarshal(responseBody, &storageData)
+	if err != nil {
+		fmt.Errorf("error unmarshalling: %w", err)
+	}
+
+	return storageData.Value
 }
