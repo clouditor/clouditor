@@ -132,36 +132,36 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3" {
 		return createResponse(map[string]interface{}{
 			"value": &map[string]interface{}{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account3",
-					"name":     "account3",
-					"location": "westus",
-					"properties": map[string]interface{}{
-						"creationTime": "2017-05-24T13:28:53.4540398Z",
-						"primaryEndpoints": map[string]interface{}{
-							"blob": "https://account3.blob.core.windows.net/",
-							"file": "https://account3.file.core.windows.net/",
-						},
-						"encryption": map[string]interface{}{
-							"services": map[string]interface{}{
-								"file": map[string]interface{}{
-									"keyType":         "Account",
-									"enabled":         true,
-									"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
-								},
-								"blob": map[string]interface{}{
-									"keyType":         "Account",
-									"enabled":         true,
-									"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
-								},
-							},
-							"keySource": storage.KeySourceMicrosoftStorage,
-						},
-						"minimumTlsVersion":        storage.MinimumTLSVersionTLS12,
-						"allowBlobPublicAccess":    false,
-						"supportsHttpsTrafficOnly": true,
+				"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account3",
+				"name":     "account3",
+				"location": "westus",
+				"properties": map[string]interface{}{
+					"creationTime": "2017-05-24T13:28:53.4540398Z",
+					"primaryEndpoints": map[string]interface{}{
+						"blob": "https://account3.blob.core.windows.net/",
+						"file": "https://account3.file.core.windows.net/",
 					},
+					"encryption": map[string]interface{}{
+						"services": map[string]interface{}{
+							"file": map[string]interface{}{
+								"keyType":         "Account",
+								"enabled":         true,
+								"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
+							},
+							"blob": map[string]interface{}{
+								"keyType":         "Account",
+								"enabled":         true,
+								"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
+							},
+						},
+						"keySource": storage.KeySourceMicrosoftStorage,
+					},
+					"minimumTlsVersion":        storage.MinimumTLSVersionTLS12,
+					"allowBlobPublicAccess":    false,
+					"supportsHttpsTrafficOnly": true,
 				},
-		},200 )
+			},
+		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers" {
 		return createResponse(map[string]interface{}{
 			"value": &[]map[string]interface{}{
@@ -544,7 +544,7 @@ func getMockedDisk(reqUrl string) compute.Disk {
 	if err != nil {
 		fmt.Println("error creating new request")
 	}
-	resp, err  := m.Do(req)
+	resp, err := m.Do(req)
 	if err != nil {
 		fmt.Errorf("error getting mock http response: %w", err)
 	}
@@ -569,7 +569,7 @@ func getMockedStorageAccount(reqUrl string) storage.Account {
 	if err != nil {
 		fmt.Println("error creating new request")
 	}
-	resp, err  := m.Do(req)
+	resp, err := m.Do(req)
 	if err != nil {
 		fmt.Errorf("error getting mock http response: %w", err)
 	}
