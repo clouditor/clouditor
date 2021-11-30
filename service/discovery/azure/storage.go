@@ -27,6 +27,7 @@ package azure
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"clouditor.io/clouditor/api/discovery"
@@ -303,6 +304,8 @@ func (d *azureStorageDiscovery) getBlockStorageAtRestEncryption(disk compute.Dis
 			},
 			KeyUrl: keyUrl,
 		}
+	} else {
+		return enc, errors.New("error getting atRestEncryption properties of blockStorage")
 	}
 
 	return enc, nil
@@ -325,6 +328,8 @@ func getStorageAtRestEncryption(account *storage.Account) (voc.HasAtRestEncrypti
 			},
 			KeyUrl: to.String(account.Encryption.KeyVaultProperties.KeyVaultURI),
 		}
+	} else {
+		return enc, errors.New("error getting atRestEncryption properties of storage account")
 	}
 
 	return enc, nil
