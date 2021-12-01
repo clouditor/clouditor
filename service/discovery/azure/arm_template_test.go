@@ -399,7 +399,7 @@ func TestVmProperties(t *testing.T) {
 	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/blockStorage3", (string)(resourceVM.BlockStorage[0]))
 	assert.Equal(t, "eastus", resourceVM.GeoLocation.Region)
 	assert.True(t, resourceVM.BootLog.Enabled)
-	// TODO(garuppel): Currently, we do not get the BootLog Output URI from the Azure call. Do we have to fix the mocking? Check the Azure API call. 
+	// TODO(garuppel): Currently, we do not get the BootLog Output URI from the Azure call. Do we have to fix the mocking? Check the Azure API call.
 	assert.Equal(t, voc.ResourceID("https://storage1.blob.core.windows.net/"), resourceVM.BootLog.Output[0])
 	assert.False(t, resourceVM.OSLog.Enabled)
 }

@@ -43,7 +43,7 @@ type mockStorageSender struct {
 	mockSender
 }
 
-func NewMockStorageSender() *mockStorageSender {
+func newMockStorageSender() *mockStorageSender {
 	m := &mockStorageSender{}
 	return m
 }
@@ -539,7 +539,7 @@ func TestDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
 }
 
 func getMockedDisk(reqUrl string) compute.Disk {
-	m := NewMockStorageSender()
+	m := newMockStorageSender()
 	req, err := http.NewRequest("GET", reqUrl, nil)
 	if err != nil {
 		fmt.Println("error creating new request")
@@ -564,7 +564,7 @@ func getMockedDisk(reqUrl string) compute.Disk {
 }
 
 func getMockedStorageAccount(reqUrl string) storage.Account {
-	m := NewMockStorageSender()
+	m := newMockStorageSender()
 	req, err := http.NewRequest("GET", reqUrl, nil)
 	if err != nil {
 		fmt.Println("error creating new request")
