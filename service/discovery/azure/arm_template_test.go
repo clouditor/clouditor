@@ -515,8 +515,6 @@ func TestArmTemplateHandleFileStorageMethodWhenInputIsInvalid(t *testing.T) {
 }
 
 func TestIsHttpsTrafficOnlyEnabled(t *testing.T) {
-	var modifiedArmTemplateResources []interface{}
-
 	// Get mocked Azure Arm Template
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/exportTemplate"
 	mockedArmTemplate, err := getMockedArmTemplate(reqURL)
@@ -525,20 +523,13 @@ func TestIsHttpsTrafficOnlyEnabled(t *testing.T) {
 	}
 
 	armTemplateResources := mockedArmTemplate["template"].(map[string]interface{})["resources"].([]interface{})
+	// Delete "supportsHttpsTrafficOnly" for test
+	delete(armTemplateResources[3].(map[string]interface{})["properties"].(map[string]interface{})["encryption"].(map[string]interface{}), "supportsHttpsTrafficOnly")
 
-	// Copy Azure ARM template resources and delete "supportsHttpsTrafficOnly" property from resource "storageAccounts_storage1_name"
-	err = copier.Copy(&modifiedArmTemplateResources, &armTemplateResources)
-	if err != nil {
-		fmt.Println("error deep copy")
-	}
-	delete(modifiedArmTemplateResources[3].(map[string]interface{})["properties"].(map[string]interface{})["encryption"].(map[string]interface{}), "supportsHttpsTrafficOnly")
-
-	assert.False(t, azure.IsHttpsTrafficOnlyEnabled(modifiedArmTemplateResources[3].(map[string]interface{})))
+	assert.False(t, azure.IsHttpsTrafficOnlyEnabled(armTemplateResources[3].(map[string]interface{})))
 }
 
 func TestIsServiceEncryptionEnabled(t *testing.T) {
-	var modifiedArmTemplateResources []interface{}
-
 	// Get mocked Azure Arm Template
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/exportTemplate"
 	mockedArmTemplate, err := getMockedArmTemplate(reqURL)
@@ -547,19 +538,13 @@ func TestIsServiceEncryptionEnabled(t *testing.T) {
 	}
 
 	armTemplateResources := mockedArmTemplate["template"].(map[string]interface{})["resources"].([]interface{})
+	// Delete "enabled" for test
+	delete(armTemplateResources[3].(map[string]interface{})["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["services"].(map[string]interface{})["blob"].(map[string]interface{}), "enabled")
 
-	// Copy Azure ARM template resources and delete "encryption enabled" property from resource "storageAccounts_storage1_name"
-	err = copier.Copy(&modifiedArmTemplateResources, &armTemplateResources)
-	if err != nil {
-		fmt.Println("error deep copy")
-	}
-	delete(modifiedArmTemplateResources[3].(map[string]interface{})["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["services"].(map[string]interface{})["blob"].(map[string]interface{}), "enabled")
-
-	assert.False(t, azure.IsServiceEncryptionEnabled("blob", modifiedArmTemplateResources[3].(map[string]interface{})))
+	assert.False(t, azure.IsServiceEncryptionEnabled("blob", armTemplateResources[3].(map[string]interface{})))
 }
 
 func TestGetMinTlsVersionOfStorageAccount(t *testing.T) {
-	var modifiedArmTemplateResources []interface{}
 
 	// Get mocked Azure Arm Template
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/exportTemplate"
@@ -569,14 +554,9 @@ func TestGetMinTlsVersionOfStorageAccount(t *testing.T) {
 	}
 
 	armTemplateResources := mockedArmTemplate["template"].(map[string]interface{})["resources"].([]interface{})
-
-	// Copy Azure ARM template resources and delete "encryption enabled" property from resource "storageAccounts_storage1_name"
-	err = copier.Copy(&modifiedArmTemplateResources, &armTemplateResources)
-	if err != nil {
-		fmt.Println("error deep copy")
-	}
-	delete(modifiedArmTemplateResources[3].(map[string]interface{})["properties"].(map[string]interface{})["encryption"].(map[string]interface{}), "minimumTlsVersion")
-	assert.Empty(t, azure.GetMinTlsVersionOfStorageAccount(modifiedArmTemplateResources[3].(map[string]interface{})))
+	// Delete "minimumTlsVersion" for test
+	delete(armTemplateResources[3].(map[string]interface{})["properties"].(map[string]interface{})["encryption"].(map[string]interface{}), "minimumTlsVersion")
+	assert.Empty(t, azure.GetMinTlsVersionOfStorageAccount(armTemplateResources[3].(map[string]interface{})))
 }
 
 func TestGetDefaultResourceNameFromParameter(t *testing.T) {
