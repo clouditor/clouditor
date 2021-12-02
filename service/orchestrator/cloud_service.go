@@ -51,7 +51,7 @@ func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.Regi
 	return
 }
 
-func (s *Service) ListCloudServices(_ context.Context, req *orchestrator.ListCloudServicesRequest) (response *orchestrator.ListCloudServicesResponse, err error) {
+func (s *Service) ListCloudServices(_ context.Context, _ *orchestrator.ListCloudServicesRequest) (response *orchestrator.ListCloudServicesResponse, err error) {
 	response = &orchestrator.ListCloudServicesResponse{
 		Services: s.targetServices,
 	}

@@ -176,6 +176,9 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 
 	authService.CreateDefaultUser(viper.GetString(APIDefaultUserFlag), viper.GetString(APIDefaultPasswordFlag))
 
+	// create a default target cloud service
+	orchestratorService.RegisterCloudService(context.TODO(), &orchestrator.RegisterCloudServiceRequest{Service: &orchestrator.CloudService{Name: "default"}})
+
 	grpcPort := viper.GetInt(APIgRPCPortFlag)
 	httpPort := viper.GetInt(APIHTTPPortFlag)
 
