@@ -567,7 +567,7 @@ func getDefaultResourceNameFromParameter(template map[string]interface{}, name s
 		}
 	}
 
-	return "", errors.New("error getting default resource name ")
+	return "", errors.New("error getting default resource name")
 }
 
 // getCoreName returns the parameter name without the additional information around. Necessary if in parameters no default name exists.

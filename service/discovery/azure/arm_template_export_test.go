@@ -7,3 +7,5 @@ var ArmTemplateHandleFileStorage = a.handleFileStorage
 var IsHttpsTrafficOnlyEnabled = isHttpsTrafficOnlyEnabled
 var IsServiceEncryptionEnabled = isServiceEncryptionEnabled
 var GetMinTlsVersionOfStorageAccount = getMinTlsVersionOfStorageAccount
+var GetDefaultResourceNameFromParameter = getDefaultResourceNameFromParameter
+var GetStorageUriFromArmTemplate = getStorageUriFromArmTemplate
