@@ -28,6 +28,7 @@ package orchestrator_test
 import (
 	"context"
 	"io/fs"
+	"os"
 	"testing"
 
 	"clouditor.io/clouditor/api/assessment"
@@ -37,7 +38,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var service service_orchestrator.Service
+var service *service_orchestrator.Service
+
+func TestMain(m *testing.M) {
+	err := os.Chdir("../../")
+	if err != nil {
+		panic(err)
+	}
+
+	service = service_orchestrator.NewService()
+
+	os.Exit(m.Run())
+}
 
 func TestListMetrics(t *testing.T) {
 	var (

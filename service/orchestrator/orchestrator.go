@@ -60,24 +60,22 @@ type Service struct {
 	metricConfigurations map[string]map[string]*assessment.MetricConfiguration
 }
 
+func init() {
+	log = logrus.WithField("component", "orchestrator")
+}
+
 func NewService() *Service {
 	s := Service{
 		targetServices:       make([]*orchestrator.CloudService, 0),
 		metricConfigurations: make(map[string]map[string]*assessment.MetricConfiguration),
 	}
 
-	return &s
-}
-
-func init() {
-	log = logrus.WithField("component", "orchestrator")
-
 	if err := LoadMetrics(DefaultMetricsFile); err != nil {
 		log.Errorf("Could not load embedded metrics. Will continue with empty metric list: %v", err)
 	}
 
 	metricIndex = make(map[string]*assessment.Metric)
-	defaultMetricConfigurations = make(map[string]*assessment.MetricConfiguration, 0)
+	defaultMetricConfigurations = make(map[string]*assessment.MetricConfiguration)
 
 	for _, m := range metrics {
 		// Look for the data.json to include default metric configurations
@@ -100,6 +98,8 @@ func init() {
 		metricIndex[m.Id] = m
 		defaultMetricConfigurations[m.Id] = &config
 	}
+
+	return &s
 }
 
 // LoadMetrics loads metrics definitions from a JSON file.

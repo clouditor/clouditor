@@ -23,9 +23,11 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package tool_test
+package cloud_test
 
 import (
+	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -33,8 +35,9 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/cli"
+	"clouditor.io/clouditor/cli/commands/cloud"
 	"clouditor.io/clouditor/cli/commands/login"
-	"clouditor.io/clouditor/cli/commands/tool"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"github.com/spf13/viper"
@@ -44,12 +47,12 @@ import (
 
 var sock net.Listener
 var server *grpc.Server
+var service *service_orchestrator.Service
 
 func TestMain(m *testing.M) {
 	var (
-		err     error
-		dir     string
-		service *service_orchestrator.Service
+		err error
+		dir string
 	)
 
 	err = os.Chdir("../../../")
@@ -84,60 +87,26 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	os.Exit(m.Run())
+	defer os.Exit(m.Run())
 }
 
-func TestListTool(t *testing.T) {
-	var err error
+func TestGetMetricConfiguration(t *testing.T) {
+	var (
+		err    error
+		b      bytes.Buffer
+		target *orchestrator.CloudService
+	)
 
-	cmd := tool.NewListToolsCommand()
-	err = cmd.RunE(nil, []string{})
+	cli.Output = &b
 
-	// unsupported for now
-	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "method ListAssessmentTools not implemented")
-}
+	// create a default target service
+	target, err = service.RegisterCloudService(context.TODO(), &orchestrator.RegisterCloudServiceRequest{Service: &orchestrator.CloudService{Name: "default"}})
 
-func TestShowTool(t *testing.T) {
-	var err error
+	assert.NotNil(t, target)
+	assert.Nil(t, err)
 
-	cmd := tool.NewShowToolCommand()
-	err = cmd.RunE(nil, []string{"1"})
+	cmd := cloud.NewGetMetricConfigurationCommand()
+	err = cmd.RunE(nil, []string{target.Id, "TransportEncryptionEnabled"})
 
-	// unsupported for now
-	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "method GetAssessmentTool not implemented")
-}
-
-func TestUpdateTool(t *testing.T) {
-	var err error
-
-	cmd := tool.NewUpdateToolCommand()
-	err = cmd.RunE(nil, []string{"1"})
-
-	// unsupported for now
-	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "method UpdateAssessmentTool not implemented")
-}
-
-func TestRegisterTool(t *testing.T) {
-	var err error
-
-	cmd := tool.NewRegisterToolCommand()
-	err = cmd.RunE(nil, []string{})
-
-	// unsupported for now
-	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "method RegisterAssessmentTool not implemented")
-}
-
-func TestDeregisterTool(t *testing.T) {
-	var err error
-
-	cmd := tool.NewDeregisterToolCommand()
-	err = cmd.RunE(nil, []string{"1"})
-
-	// unsupported for now
-	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "method DeregisterAssessmentTool not implemented")
+	assert.Nil(t, err)
 }

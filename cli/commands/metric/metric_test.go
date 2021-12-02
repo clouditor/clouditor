@@ -50,12 +50,20 @@ var server *grpc.Server
 
 func TestMain(m *testing.M) {
 	var (
-		err error
-		dir string
+		err     error
+		dir     string
+		service *service_orchestrator.Service
 	)
 
+	err = os.Chdir("../../../")
+	if err != nil {
+		panic(err)
+	}
+
+	service = service_orchestrator.NewService()
+
 	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
-	orchestrator.RegisterOrchestratorServer(server, service_orchestrator.NewService())
+	orchestrator.RegisterOrchestratorServer(server, service)
 
 	if err != nil {
 		panic(err)
