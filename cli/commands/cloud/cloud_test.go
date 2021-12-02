@@ -43,6 +43,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 var sock net.Listener
@@ -88,6 +89,31 @@ func TestMain(m *testing.M) {
 	}
 
 	defer os.Exit(m.Run())
+}
+
+func TestListCloudServicesCommand(t *testing.T) {
+	var err error
+	var b bytes.Buffer
+
+	cmd := cloud.NewRegisterCloudServiceCommand()
+	err = cmd.RunE(nil, []string{"default"})
+
+	assert.Nil(t, err)
+
+	cli.Output = &b
+
+	cmd = cloud.NewListCloudServicesCommand()
+	err = cmd.RunE(nil, []string{})
+
+	assert.Nil(t, err)
+
+	var response *orchestrator.ListCloudServicesResponse = &orchestrator.ListCloudServicesResponse{}
+
+	err = protojson.Unmarshal(b.Bytes(), response)
+
+	assert.Nil(t, err)
+	assert.NotNil(t, response)
+	assert.NotEmpty(t, response.Services)
 }
 
 func TestGetMetricConfiguration(t *testing.T) {
