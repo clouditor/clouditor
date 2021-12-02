@@ -460,14 +460,14 @@ func TestArmTemplateHandleObjectStorageMethodWhenInputIsInvalid(t *testing.T) {
 
 	// Tests for method handleObjectStorage
 	// check for dependsOn type assertion error
-	armTemplateHandleObjectStorageResponse , err := getDependsOnTypeAssertionResponse("Object", armTemplateResources)
+	armTemplateHandleObjectStorageResponse, err := getDependsOnTypeAssertionResponse("Object", armTemplateResources)
 
 	assert.NotNil(t, err)
 	assert.Equal(t, "dependsOn type assertion failed", err.Error())
 	assert.Nil(t, armTemplateHandleObjectStorageResponse)
 
 	// check for getStorageAccountResourceFromTemplate() response error
-	armTemplateHandleObjectStorageResponse , err =  getStorageAccountResourceFromTemplateResponse("Object", armTemplateResources)
+	armTemplateHandleObjectStorageResponse, err = getStorageAccountResourceFromTemplateResponse("Object", armTemplateResources)
 
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "cannot get storage account resource from Azure ARM template:")
@@ -493,14 +493,14 @@ func TestArmTemplateHandleFileStorageMethodWhenInputIsInvalid(t *testing.T) {
 
 	// Tests for method handleFileStorage
 	// check for dependsOn type assertion error
-	armTemplateHandleFileStorageResponse , err := getDependsOnTypeAssertionResponse("File", armTemplateResources)
+	armTemplateHandleFileStorageResponse, err := getDependsOnTypeAssertionResponse("File", armTemplateResources)
 
 	assert.NotNil(t, err)
 	assert.Equal(t, "dependsOn type assertion failed", err.Error())
 	assert.Nil(t, armTemplateHandleFileStorageResponse)
 
 	// check for getStorageAccountResourceFromTemplate() response error
-	armTemplateHandleFileStorageResponse , err =  getStorageAccountResourceFromTemplateResponse("File", armTemplateResources)
+	armTemplateHandleFileStorageResponse, err = getStorageAccountResourceFromTemplateResponse("File", armTemplateResources)
 
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "cannot get storage account resource from Azure ARM template:")
@@ -516,9 +516,12 @@ func TestArmTemplateHandleFileStorageMethodWhenInputIsInvalid(t *testing.T) {
 
 func TestArmTemplateMethodsWhenInputIsInvalid(t *testing.T) {
 	var (
-		modifiedArmTemplateResources               []interface{}
-		err                                        error
+		modifiedArmTemplateResources                []interface{}
+		modifiedArmTemplate                         map[string]interface{}
+		err                                         error
+		getDefaultResourceNameFromParameterResponse string
 	)
+
 	// Get mocked Azure Arm Template
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/exportTemplate"
 	mockedArmTemplate, err := getMockedArmTemplate(reqURL)
@@ -530,26 +533,112 @@ func TestArmTemplateMethodsWhenInputIsInvalid(t *testing.T) {
 
 	// check isHttpsTrafficOnlyEnabled()
 	// Copy Azure ARM template resources and delete "supportsHttpsTrafficOnly" property from resource "storageAccounts_storage1_name"
-	copier.Copy(&modifiedArmTemplateResources, armTemplateResources)
+	copier.Copy(&modifiedArmTemplateResources, &armTemplateResources)
 	delete(modifiedArmTemplateResources[3].(map[string]interface{})["properties"].(map[string]interface{})["encryption"].(map[string]interface{}), "supportsHttpsTrafficOnly")
 	assert.False(t, azure.IsHttpsTrafficOnlyEnabled(modifiedArmTemplateResources[3].(map[string]interface{})))
 
 	// check isServiceEncryptionEnabled()
 	// Copy Azure ARM template resources and delete "encryption enabled" property from resource "storageAccounts_storage1_name"
-	copier.Copy(&modifiedArmTemplateResources, armTemplateResources)
+	copier.Copy(&modifiedArmTemplateResources, &armTemplateResources)
 	delete(modifiedArmTemplateResources[3].(map[string]interface{})["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["services"].(map[string]interface{})["blob"].(map[string]interface{}), "enabled")
 	assert.False(t, azure.IsServiceEncryptionEnabled("blob", modifiedArmTemplateResources[3].(map[string]interface{})))
 
 	// check isServiceEncryptionEnabled()
 	// Copy Azure ARM template resources and delete "encryption enabled" property from resource "storageAccounts_storage1_name"
-	copier.Copy(&modifiedArmTemplateResources, armTemplateResources)
+	copier.Copy(&modifiedArmTemplateResources, &armTemplateResources)
 	delete(modifiedArmTemplateResources[3].(map[string]interface{})["properties"].(map[string]interface{})["encryption"].(map[string]interface{}), "minimumTlsVersion")
 	assert.Empty(t, azure.GetMinTlsVersionOfStorageAccount(modifiedArmTemplateResources[3].(map[string]interface{})))
+
+	// check getDefaultResourceNameFromParameter() type assertion fail
+	// Get mocked Azure Arm Template
+	// TODO Why does it no deep copy? How to deep copy?
+	// copier.Copy(&modifiedArmTemplate, &mockedArmTemplate)
+	// Workaround for deep copy problem
+	modifiedArmTemplate, err = getMockedArmTemplate(reqURL)
+	if err != nil {
+		fmt.Println("error getting mocked storage account object: %w", err)
+	}
+
+	// Copy Azure ARM template and change "parameters" type
+	delete(modifiedArmTemplate["template"].(map[string]interface{}), "parameters")
+	modifiedArmTemplate["template"].(map[string]interface{})["parameters"] = []map[string]interface{}{}
+	getDefaultResourceNameFromParameterResponse, err = azure.GetDefaultResourceNameFromParameter(modifiedArmTemplate["template"].(map[string]interface{}), "")
+
+	assert.NotNil(t, err.Error())
+	assert.Contains(t, err.Error(), "templateValue type assertion failed")
+	assert.Empty(t, getDefaultResourceNameFromParameterResponse)
+
+	// check getDefaultResourceNameFromParameter() - error getting default resource name
+	// Get mocked Azure Arm Template
+	// Workaround for deep copy problem
+	modifiedArmTemplate, err = getMockedArmTemplate(reqURL)
+	if err != nil {
+		fmt.Println("error getting mocked storage account object: %w", err)
+	}
+
+	// TODO Why does it no deep copy? How to deep copy?
+	//copier.Copy(&modifiedArmTemplate, &mockedArmTemplate)
+
+	// TODO: update! Copy Azure ARM template and change resource name of [concat(parameters('storageAccounts_storage1_name'), 'default/container1')]
+	getDefaultResourceNameFromParameterResponse, err = azure.GetDefaultResourceNameFromParameter(modifiedArmTemplate["template"].(map[string]interface{}), "[parameters('storageAccounts_storageFAIL_name')]")
+	assert.NotNil(t, err.Error())
+	assert.Contains(t, err.Error(), "parameter resource type assertion failed")
+	assert.Empty(t, getDefaultResourceNameFromParameterResponse)
+
+	// check getDefaultResourceNameFromParameter() parameter resource type assertion fail
+	// Get mocked Azure Arm Template
+	// Workaround for deep copy problem
+	modifiedArmTemplate, err = getMockedArmTemplate(reqURL)
+	if err != nil {
+		fmt.Println("error getting mocked storage account object: %w", err)
+	}
+
+	// TODO Why does it no deep copy? How to deep copy?
+	// Copy Azure ARM template and update "parameters" to "parameter"
+	//copier.Copy(&modifiedArmTemplate, &mockedArmTemplate)
+	modifiedArmTemplate["template"].(map[string]interface{})["parameter"] = modifiedArmTemplate["template"].(map[string]interface{})["parameters"]
+	delete(modifiedArmTemplate["template"].(map[string]interface{}), "parameters")
+	getDefaultResourceNameFromParameterResponse, err = azure.GetDefaultResourceNameFromParameter(modifiedArmTemplate["template"].(map[string]interface{}), "")
+
+	assert.NotNil(t, err.Error())
+	assert.Contains(t, err.Error(), "error getting default resource name")
+	assert.Empty(t, getDefaultResourceNameFromParameterResponse)
+
+	// check getDefaultResourceNameFromParameter() no "defaultValue" available
+	// Get mocked Azure Arm Template
+	// Workaround for deep copy problem
+	modifiedArmTemplate, err = getMockedArmTemplate(reqURL)
+	if err != nil {
+		fmt.Println("error getting mocked storage account object: %w", err)
+	}
+
+	// Use parameter name that does not exist in Azure ARM template parameters
+	delete(modifiedArmTemplate["template"].(map[string]interface{})["parameters"].(map[string]interface{})["storageAccounts_storage1_name"].(map[string]interface{}), "defaultValue")
+	getDefaultResourceNameFromParameterResponse, err = azure.GetDefaultResourceNameFromParameter(modifiedArmTemplate["template"].(map[string]interface{}), "[parameters('storageAccounts_storage1_name')]")
+
+	assert.Nil(t, err)
+	assert.Equal(t, "storageAccounts_storage1_name", getDefaultResourceNameFromParameterResponse)
+}
+
+func TestMethodGetStorageUriFromArmTemplate(t *testing.T) {
+	// Get mocked Azure Arm Template
+	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/exportTemplate"
+	mockedArmTemplate, err := getMockedArmTemplate(reqURL)
+	if err != nil {
+		fmt.Println("error getting mocked storage account object: %w", err)
+	}
+
+	bootDiagnostics := mockedArmTemplate["template"].(map[string]interface{})["resources"].([]interface{})[0].(map[string]interface{})["properties"].(map[string]interface{})["diagnosticsProfile"].(map[string]interface{})
+	// Delete "storageUri"
+	delete(bootDiagnostics["bootDiagnostics"].(map[string]interface{}), "storageUri")
+	getStorageUriFromArmTemplateResponse := azure.GetStorageUriFromArmTemplate(bootDiagnostics)
+
+	assert.Empty(t, getStorageUriFromArmTemplateResponse)
 }
 
 func getDependsOnTypeAssertionResponse(storageType string, armTemplateResources []interface{}) (voc.IsCompute, error) {
 	var (
-		resource                     map[string]interface{}
+		resource                       map[string]interface{}
 		modifiedResource               map[string]interface{}
 		dependsOnTypeAssertionResponse voc.IsCompute
 		err                            error
@@ -576,16 +665,16 @@ func getDependsOnTypeAssertionResponse(storageType string, armTemplateResources 
 	return dependsOnTypeAssertionResponse, err
 }
 
-func getStorageAccountResourceFromTemplateResponse(storageType string, armTemplateResources []interface{}) (voc.IsCompute, error){
+func getStorageAccountResourceFromTemplateResponse(storageType string, armTemplateResources []interface{}) (voc.IsCompute, error) {
 	var (
-		resource                     map[string]interface{}
+		resource                                   map[string]interface{}
 		modifiedArmTemplateResources               []interface{}
 		storageAccountResourceFromTemplateResponse voc.IsCompute
 		err                                        error
 	)
 
 	// Copy Azure ARM template resources and delete resource "storageAccounts_storage1_name"
-	copier.Copy(&modifiedArmTemplateResources, armTemplateResources)
+	copier.Copy(&modifiedArmTemplateResources, &armTemplateResources)
 	modifiedArmTemplateResources[3] = map[string]interface{}{}
 
 	switch storageType {
@@ -602,9 +691,9 @@ func getStorageAccountResourceFromTemplateResponse(storageType string, armTempla
 	return storageAccountResourceFromTemplateResponse, err
 }
 
-func getStorageAccountAtRestEncryptionFromArmResponse(storageType string, armTemplateResources []interface{}) (voc.IsCompute, error){
+func getStorageAccountAtRestEncryptionFromArmResponse(storageType string, armTemplateResources []interface{}) (voc.IsCompute, error) {
 	var (
-		resource                     map[string]interface{}
+		resource                                     map[string]interface{}
 		modifiedArmTemplateResources                 []interface{}
 		storageAccountAtRestEncryptionFromArmRespone voc.IsCompute
 		err                                          error
