@@ -449,12 +449,12 @@ func TestLoadBalancerProperties(t *testing.T) {
 func TestArmTemplateHandleObjectStorageMethodWhenInputIsInvalid(t *testing.T) {
 	// Get mocked Azure Arm Template
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/exportTemplate"
-	mockedArmTemplateObject, err := getMockedArmTemplate(reqURL)
+	mockedArmTemplate, err := getMockedArmTemplate(reqURL)
 	if err != nil {
 		fmt.Println("error getting mocked storage account object: %w", err)
 	}
 
-	armTemplateResources := mockedArmTemplateObject["template"].(map[string]interface{})["resources"].([]interface{})
+	armTemplateResources := mockedArmTemplate["template"].(map[string]interface{})["resources"].([]interface{})
 
 	// TODO(garuppel): d.sub.SubscriptionID = nil
 
@@ -484,12 +484,12 @@ func TestArmTemplateHandleObjectStorageMethodWhenInputIsInvalid(t *testing.T) {
 func TestArmTemplateHandleFileStorageMethodWhenInputIsInvalid(t *testing.T) {
 	// Get mocked Azure Arm Template
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/exportTemplate"
-	mockedArmTemplateObject, err := getMockedArmTemplate(reqURL)
+	mockedArmTemplate, err := getMockedArmTemplate(reqURL)
 	if err != nil {
 		fmt.Println("error getting mocked storage account object: %w", err)
 	}
 
-	armTemplateResources := mockedArmTemplateObject["template"].(map[string]interface{})["resources"].([]interface{})
+	armTemplateResources := mockedArmTemplate["template"].(map[string]interface{})["resources"].([]interface{})
 
 	// Tests for method handleFileStorage
 	// check for dependsOn type assertion error
@@ -514,6 +514,39 @@ func TestArmTemplateHandleFileStorageMethodWhenInputIsInvalid(t *testing.T) {
 	assert.Nil(t, armTemplateHandleFileStorageResponse)
 }
 
+func TestArmTemplateMethodsWhenInputIsInvalid(t *testing.T) {
+	var (
+		modifiedArmTemplateResources               []interface{}
+		err                                        error
+	)
+	// Get mocked Azure Arm Template
+	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/exportTemplate"
+	mockedArmTemplate, err := getMockedArmTemplate(reqURL)
+	if err != nil {
+		fmt.Println("error getting mocked storage account object: %w", err)
+	}
+
+	armTemplateResources := mockedArmTemplate["template"].(map[string]interface{})["resources"].([]interface{})
+
+	// check isHttpsTrafficOnlyEnabled()
+	// Copy Azure ARM template resources and delete "supportsHttpsTrafficOnly" property from resource "storageAccounts_storage1_name"
+	copier.Copy(&modifiedArmTemplateResources, armTemplateResources)
+	delete(modifiedArmTemplateResources[3].(map[string]interface{})["properties"].(map[string]interface{})["encryption"].(map[string]interface{}), "supportsHttpsTrafficOnly")
+	assert.False(t, azure.IsHttpsTrafficOnlyEnabled(modifiedArmTemplateResources[3].(map[string]interface{})))
+
+	// check isServiceEncryptionEnabled()
+	// Copy Azure ARM template resources and delete "encryption enabled" property from resource "storageAccounts_storage1_name"
+	copier.Copy(&modifiedArmTemplateResources, armTemplateResources)
+	delete(modifiedArmTemplateResources[3].(map[string]interface{})["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["services"].(map[string]interface{})["blob"].(map[string]interface{}), "enabled")
+	assert.False(t, azure.IsServiceEncryptionEnabled("blob", modifiedArmTemplateResources[3].(map[string]interface{})))
+
+	// check isServiceEncryptionEnabled()
+	// Copy Azure ARM template resources and delete "encryption enabled" property from resource "storageAccounts_storage1_name"
+	copier.Copy(&modifiedArmTemplateResources, armTemplateResources)
+	delete(modifiedArmTemplateResources[3].(map[string]interface{})["properties"].(map[string]interface{})["encryption"].(map[string]interface{}), "minimumTlsVersion")
+	assert.Empty(t, azure.GetMinTlsVersionOfStorageAccount(modifiedArmTemplateResources[3].(map[string]interface{})))
+}
+
 func getDependsOnTypeAssertionResponse(storageType string, armTemplateResources []interface{}) (voc.IsCompute, error) {
 	var (
 		resource                     map[string]interface{}
@@ -531,7 +564,7 @@ func getDependsOnTypeAssertionResponse(storageType string, armTemplateResources 
 		delete(modifiedResource, "dependsOn")
 		dependsOnTypeAssertionResponse, err = azure.ArmTemplateHandleObjectStorage(modifiedResource, armTemplateResources, "res1")
 	case "Object":
-		resource = armTemplateResources[4].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/share1')]
+		resource = armTemplateResources[4].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/container1')]
 		// Copy ARM template resource and delete dependsOn from resource for test
 		copier.Copy(&modifiedResource, &resource)
 		delete(modifiedResource, "dependsOn")
@@ -551,8 +584,6 @@ func getStorageAccountResourceFromTemplateResponse(storageType string, armTempla
 		err                                        error
 	)
 
-	resource = armTemplateResources[5].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/share1')]
-
 	// Copy Azure ARM template resources and delete resource "storageAccounts_storage1_name"
 	copier.Copy(&modifiedArmTemplateResources, armTemplateResources)
 	modifiedArmTemplateResources[3] = map[string]interface{}{}
@@ -562,7 +593,7 @@ func getStorageAccountResourceFromTemplateResponse(storageType string, armTempla
 		resource = armTemplateResources[5].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/share1')]
 		storageAccountResourceFromTemplateResponse, err = azure.ArmTemplateHandleObjectStorage(resource, modifiedArmTemplateResources, "res1")
 	case "Object":
-		resource = armTemplateResources[4].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/share1')]
+		resource = armTemplateResources[4].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/container1')]
 		storageAccountResourceFromTemplateResponse, err = azure.ArmTemplateHandleFileStorage(resource, modifiedArmTemplateResources, "res1")
 	case "Block":
 		//TBD
@@ -579,8 +610,6 @@ func getStorageAccountAtRestEncryptionFromArmResponse(storageType string, armTem
 		err                                          error
 	)
 
-	resource = armTemplateResources[5].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/share1')]
-
 	// Copy ARM template resources and delete 'keySource' from storage account resource for test
 	copier.Copy(&modifiedArmTemplateResources, &armTemplateResources)
 	delete(modifiedArmTemplateResources[3].(map[string]interface{})["properties"].(map[string]interface{})["encryption"].(map[string]interface{}), "keySource")
@@ -590,7 +619,7 @@ func getStorageAccountAtRestEncryptionFromArmResponse(storageType string, armTem
 		resource = armTemplateResources[5].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/share1')]
 		storageAccountAtRestEncryptionFromArmRespone, err = azure.ArmTemplateHandleObjectStorage(resource, armTemplateResources, "res1")
 	case "Object":
-		resource = armTemplateResources[4].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/share1')]
+		resource = armTemplateResources[4].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/container1')]
 		storageAccountAtRestEncryptionFromArmRespone, err = azure.ArmTemplateHandleFileStorage(resource, armTemplateResources, "res1")
 	case "Block":
 		//TBD
