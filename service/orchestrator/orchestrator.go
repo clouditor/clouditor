@@ -30,6 +30,7 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
@@ -43,6 +44,7 @@ var f embed.FS
 
 var metrics []*assessment.Metric
 var metricIndex map[string]*assessment.Metric
+var defaultMetricConfigurations map[string]*assessment.MetricConfiguration
 var log *logrus.Entry
 
 var DefaultMetricsFile = "metrics.json"
@@ -50,6 +52,21 @@ var DefaultMetricsFile = "metrics.json"
 // Service is an implementation of the Clouditor Orchestrator service
 type Service struct {
 	orchestrator.UnimplementedOrchestratorServer
+
+	// targetServices is a list of cloud service targets that we want to assess / certify
+	targetServices []*orchestrator.CloudService
+
+	// metricConfigurations holds a double-map of metric configurations associated first by service ID and then metric ID
+	metricConfigurations map[string]map[string]*assessment.MetricConfiguration
+}
+
+func NewService() *Service {
+	s := Service{
+		targetServices:       make([]*orchestrator.CloudService, 0),
+		metricConfigurations: make(map[string]map[string]*assessment.MetricConfiguration),
+	}
+
+	return &s
 }
 
 func init() {
@@ -60,8 +77,28 @@ func init() {
 	}
 
 	metricIndex = make(map[string]*assessment.Metric)
-	for _, v := range metrics {
-		metricIndex[v.Id] = v
+	defaultMetricConfigurations = make(map[string]*assessment.MetricConfiguration, 0)
+
+	for _, m := range metrics {
+		// Look for the data.json to include default metric configurations
+		fileName := fmt.Sprintf("policies/bundles/%s/", m.Id)
+
+		b, err := ioutil.ReadFile(fileName)
+		if err != nil {
+			log.Errorf("Could not retrieve default configuration for metric %s. Ignoring metric", m.Id)
+			continue
+		}
+
+		var config assessment.MetricConfiguration
+
+		err = json.Unmarshal(b, &config)
+		if err != nil {
+			log.Errorf("Error in reading default configuration for metric %s: %w. Ignoring metric", m.Id, err)
+			continue
+		}
+
+		metricIndex[m.Id] = m
+		defaultMetricConfigurations[m.Id] = &config
 	}
 }
 
@@ -103,6 +140,20 @@ func (*Service) GetMetric(_ context.Context, request *orchestrator.GetMetricsReq
 	response = metric
 
 	return response, nil
+}
+
+func (s *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.GetMetricConfigurationRequest) (response *assessment.MetricConfiguration, err error) {
+	// Check, if we have a specific configuration for the metric
+	if config, ok := s.metricConfigurations[req.ServiceId][req.MetricId]; ok {
+		return config, nil
+	}
+
+	// Otherwise, fall back to our default configuration
+	if config, ok := defaultMetricConfigurations[req.ServiceId]; ok {
+		return config, nil
+	}
+
+	return nil, status.Errorf(codes.NotFound, "Could not find metric configuration for metric %s in service $s", req.MetricId, req.ServiceId)
 }
 
 //// Tools

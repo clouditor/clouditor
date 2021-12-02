@@ -52,7 +52,7 @@ func TestMain(m *testing.M) {
 	)
 
 	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
-	orchestrator.RegisterOrchestratorServer(server, &service_orchestrator.Service{})
+	orchestrator.RegisterOrchestratorServer(server, service_orchestrator.NewService())
 
 	if err != nil {
 		panic(err)

@@ -449,6 +449,64 @@ func (x *Order) GetValues() []*structpb.Value {
 	return nil
 }
 
+// Defines the operator and a target value for an individual metric
+type MetricConfiguration struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// The operator to compare the metric, such as == or >
+	Operator string `protobuf:"bytes,1,opt,name=operator,proto3" json:"operator,omitempty"`
+	// The target value
+	TargetValue *structpb.Value `protobuf:"bytes,2,opt,name=target_value,json=targetValue,proto3" json:"target_value,omitempty"`
+}
+
+func (x *MetricConfiguration) Reset() {
+	*x = MetricConfiguration{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_metric_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *MetricConfiguration) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MetricConfiguration) ProtoMessage() {}
+
+func (x *MetricConfiguration) ProtoReflect() protoreflect.Message {
+	mi := &file_metric_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MetricConfiguration.ProtoReflect.Descriptor instead.
+func (*MetricConfiguration) Descriptor() ([]byte, []int) {
+	return file_metric_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *MetricConfiguration) GetOperator() string {
+	if x != nil {
+		return x.Operator
+	}
+	return ""
+}
+
+func (x *MetricConfiguration) GetTargetValue() *structpb.Value {
+	if x != nil {
+		return x.TargetValue
+	}
+	return nil
+}
+
 var File_metric_proto protoreflect.FileDescriptor
 
 var file_metric_proto_rawDesc = []byte{
@@ -492,8 +550,15 @@ var file_metric_proto_rawDesc = []byte{
 	0x12, 0x2e, 0x0a, 0x06, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b,
 	0x32, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
 	0x75, 0x66, 0x2e, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x06, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73,
-	0x42, 0x10, 0x5a, 0x0e, 0x61, 0x70, 0x69, 0x2f, 0x61, 0x73, 0x73, 0x65, 0x73, 0x73, 0x6d, 0x65,
-	0x6e, 0x74, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x22, 0x6c, 0x0a, 0x13, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67,
+	0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x1a, 0x0a, 0x08, 0x6f, 0x70, 0x65, 0x72, 0x61,
+	0x74, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x6f, 0x70, 0x65, 0x72, 0x61,
+	0x74, 0x6f, 0x72, 0x12, 0x39, 0x0a, 0x0c, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x5f, 0x76, 0x61,
+	0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67,
+	0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x56, 0x61, 0x6c, 0x75,
+	0x65, 0x52, 0x0b, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x42, 0x10,
+	0x5a, 0x0e, 0x61, 0x70, 0x69, 0x2f, 0x61, 0x73, 0x73, 0x65, 0x73, 0x73, 0x6d, 0x65, 0x6e, 0x74,
+	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -509,15 +574,16 @@ func file_metric_proto_rawDescGZIP() []byte {
 }
 
 var file_metric_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_metric_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_metric_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_metric_proto_goTypes = []interface{}{
-	(Metric_Scale)(0),      // 0: clouditor.Metric.Scale
-	(*Metric)(nil),         // 1: clouditor.Metric
-	(*Range)(nil),          // 2: clouditor.Range
-	(*MinMax)(nil),         // 3: clouditor.MinMax
-	(*AllowedValues)(nil),  // 4: clouditor.AllowedValues
-	(*Order)(nil),          // 5: clouditor.Order
-	(*structpb.Value)(nil), // 6: google.protobuf.Value
+	(Metric_Scale)(0),           // 0: clouditor.Metric.Scale
+	(*Metric)(nil),              // 1: clouditor.Metric
+	(*Range)(nil),               // 2: clouditor.Range
+	(*MinMax)(nil),              // 3: clouditor.MinMax
+	(*AllowedValues)(nil),       // 4: clouditor.AllowedValues
+	(*Order)(nil),               // 5: clouditor.Order
+	(*MetricConfiguration)(nil), // 6: clouditor.MetricConfiguration
+	(*structpb.Value)(nil),      // 7: google.protobuf.Value
 }
 var file_metric_proto_depIdxs = []int32{
 	0, // 0: clouditor.Metric.scale:type_name -> clouditor.Metric.Scale
@@ -525,13 +591,14 @@ var file_metric_proto_depIdxs = []int32{
 	4, // 2: clouditor.Range.allowed_values:type_name -> clouditor.AllowedValues
 	5, // 3: clouditor.Range.order:type_name -> clouditor.Order
 	3, // 4: clouditor.Range.min_max:type_name -> clouditor.MinMax
-	6, // 5: clouditor.AllowedValues.values:type_name -> google.protobuf.Value
-	6, // 6: clouditor.Order.values:type_name -> google.protobuf.Value
-	7, // [7:7] is the sub-list for method output_type
-	7, // [7:7] is the sub-list for method input_type
-	7, // [7:7] is the sub-list for extension type_name
-	7, // [7:7] is the sub-list for extension extendee
-	0, // [0:7] is the sub-list for field type_name
+	7, // 5: clouditor.AllowedValues.values:type_name -> google.protobuf.Value
+	7, // 6: clouditor.Order.values:type_name -> google.protobuf.Value
+	7, // 7: clouditor.MetricConfiguration.target_value:type_name -> google.protobuf.Value
+	8, // [8:8] is the sub-list for method output_type
+	8, // [8:8] is the sub-list for method input_type
+	8, // [8:8] is the sub-list for extension type_name
+	8, // [8:8] is the sub-list for extension extendee
+	0, // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_metric_proto_init() }
@@ -600,6 +667,18 @@ func file_metric_proto_init() {
 				return nil
 			}
 		}
+		file_metric_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*MetricConfiguration); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	file_metric_proto_msgTypes[1].OneofWrappers = []interface{}{
 		(*Range_AllowedValues)(nil),
@@ -612,7 +691,7 @@ func file_metric_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_metric_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   5,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

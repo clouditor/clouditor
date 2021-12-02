@@ -133,6 +133,26 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/CloudService'
+    /v1/orchestrator/cloud_services/{service_id}/metric_configuration/{metric_id}:
+        get:
+            summary: Retrieves a metric configuration for a specific service and metric ID
+            operationId: Orchestrator_GetMetricConfiguration
+            parameters:
+                - name: service_id
+                  in: query
+                  schema:
+                    type: string
+                - name: metric_id
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MetricConfiguration'
     /v1/orchestrator/metrics:
         get:
             summary: List all metrics provided by the metric catalog
@@ -251,6 +271,14 @@ components:
                 range:
                     $ref: '#/components/schemas/Range'
             description: A metric resource
+        MetricConfiguration:
+            properties:
+                operator:
+                    type: string
+                    description: The operator to compare the metric, such as == or >
+                target_value:
+                    $ref: '#/components/schemas/Value'
+            description: Defines the operator and a target value for an individual metric
         MinMax:
             properties:
                 min:

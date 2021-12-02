@@ -91,3 +91,12 @@ message AllowedValues { repeated google.protobuf.Value values = 1; }
 // Defines a range of values in a pre-defined order from the lowest to the
 // highest.
 message Order { repeated google.protobuf.Value values = 1; }
+
+// Defines the operator and a target value for an individual metric
+message MetricConfiguration {
+  // The operator to compare the metric, such as == or >
+  string operator = 1;
+
+  // The target value
+  google.protobuf.Value target_value = 2;
+}

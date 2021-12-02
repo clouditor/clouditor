@@ -122,6 +122,15 @@ service Orchestrator {
       get : "/v1/orchestrator/cloud_services"
     };
   }
+
+  // Retrieves a metric configuration for a specific service and metric ID
+  rpc GetMetricConfiguration(GetMetricConfigurationRequest)
+      returns (MetricConfiguration) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/cloud_services/{service_id}/metric_configuration/"
+            "{metric_id}"
+    };
+  }
 }
 
 message RegisterAssessmentToolRequest { AssessmentTool tool = 1; }
@@ -154,6 +163,12 @@ message RegisterCloudServiceRequest { CloudService service = 1; }
 
 message ListCloudServicesRequest {}
 message ListCloudServicesResponse { repeated CloudService services = 1; }
+
+message GetMetricConfigurationRequest {
+  string service_id = 1;
+
+  string metric_id = 2;
+}
 
 // Represents an external tool or service that offers assessments according to
 // certain metrics

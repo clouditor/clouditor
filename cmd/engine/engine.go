@@ -170,7 +170,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	}
 
 	discoveryService = service_discovery.NewService()
-	orchestratorService = &service_orchestrator.Service{}
+	orchestratorService = service_orchestrator.NewService()
 	assessmentService = service_assessment.NewService()
 	evidenceStoreService = service_evidenceStore.NewService()
 

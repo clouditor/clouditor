@@ -34,9 +34,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var services []*orchestrator.CloudService
-
-func (*Service) RegisterCloudService(_ context.Context, req *orchestrator.RegisterCloudServiceRequest) (service *orchestrator.CloudService, err error) {
+func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.RegisterCloudServiceRequest) (service *orchestrator.CloudService, err error) {
 	if req.Service == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "Service is empty")
 	}
@@ -48,14 +46,14 @@ func (*Service) RegisterCloudService(_ context.Context, req *orchestrator.Regist
 	service.Name = req.Service.Name
 
 	// add it to the service slice
-	services = append(services, service)
+	s.targetServices = append(s.targetServices, service)
 
 	return
 }
 
-func (*Service) ListCloudServices(_ context.Context, req *orchestrator.ListCloudServicesRequest) (response *orchestrator.ListCloudServicesResponse, err error) {
+func (s *Service) ListCloudServices(_ context.Context, req *orchestrator.ListCloudServicesRequest) (response *orchestrator.ListCloudServicesResponse, err error) {
 	response = &orchestrator.ListCloudServicesResponse{
-		Services: services,
+		Services: s.targetServices,
 	}
 
 	return response, nil
