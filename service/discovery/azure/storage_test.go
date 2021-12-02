@@ -271,12 +271,12 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 				},
 			},
 		}, 200)
-	} 
+	}
 
 	return m.mockSender.Do(req)
 }
 
-func TestAzureAuthorizer(t *testing.T) {
+func TestAzureStorageAuthorizer(t *testing.T) {
 
 	d := azure.NewAzureStorageDiscovery()
 	list, err := d.List()
@@ -446,7 +446,7 @@ func TestBlockStorage(t *testing.T) {
 	assert.Equal(t, true, blockStorage.AtRestEncryption.GetAtRestEncryption().Enabled)
 }
 
-func TestHandleMethodsWhenInputIsInvalid(t *testing.T) {
+func TestStorageHandleMethodsWhenInputIsInvalid(t *testing.T) {
 	// Get mocked storage.Account
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"
 	mockedStorageAccountObject, err := getMockedStorageAccount(reqURL)
@@ -459,7 +459,7 @@ func TestHandleMethodsWhenInputIsInvalid(t *testing.T) {
 	// Clear KeySource
 	mockedStorageAccountObject.Encryption.KeySource = ""
 
-	handleObjectStorageRespone, err := azure.HandleObjectStorage(&mockedStorageAccountObject, containerItem)
+	handleObjectStorageRespone, err := azure.StorageHandleObjectStorage(&mockedStorageAccountObject, containerItem)
 	assert.NotNil(t, err)
 	assert.Nil(t, handleObjectStorageRespone)
 
@@ -469,7 +469,7 @@ func TestHandleMethodsWhenInputIsInvalid(t *testing.T) {
 	// Clear KeySource
 	mockedStorageAccountObject.Encryption.KeySource = ""
 
-	handleFileStorageRespone, err := azure.HandleFileStorage(&mockedStorageAccountObject, fileShare)
+	handleFileStorageRespone, err := azure.StorageHandleFileStorage(&mockedStorageAccountObject, fileShare)
 	assert.NotNil(t, err)
 	assert.Nil(t, handleFileStorageRespone)
 
@@ -482,12 +482,12 @@ func TestHandleMethodsWhenInputIsInvalid(t *testing.T) {
 	// Clear KeySource
 	disk.Encryption.Type = ""
 
-	handleBlockStorageResponse, err := azure.HandleBlockStorage(disk)
+	handleBlockStorageResponse, err := azure.StorageHandleBlockStorage(disk)
 	assert.NotNil(t, err)
 	assert.Nil(t, handleBlockStorageResponse)
 }
 
-func TestMethodsWhenInputIsInvalid(t *testing.T) {
+func TestStorageMethodsWhenInputIsInvalid(t *testing.T) {
 	// Get mocked storage.Account
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"
 	mockedStorageAccountObject, err := getMockedStorageAccount(reqURL)
@@ -497,10 +497,10 @@ func TestMethodsWhenInputIsInvalid(t *testing.T) {
 
 	// Test method getDiskEncryptionSetName
 	discEncryptionSetID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1"
-	assert.Equal(t, "encryptionkeyvault1", azure.GetDiskEncryptionSetName(discEncryptionSetID))
+	assert.Equal(t, "encryptionkeyvault1", azure.StorageGetDiskEncryptionSetName(discEncryptionSetID))
 
 	// Test method getStorageAtRestEncryption
-	atRestEncryption, err := azure.GetStorageAtRestEncryption(&mockedStorageAccountObject)
+	atRestEncryption, err := azure.StorageGetStorageAtRestEncryption(&mockedStorageAccountObject)
 	assert.Nil(t, err)
 
 	managedKeyEncryption := voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{Algorithm: "AES256", Enabled: true}}
@@ -518,7 +518,7 @@ func TestMethodsWhenInputIsInvalid(t *testing.T) {
 	// Todo(garuppel): How to test? Problem: Azure call again
 }
 
-func TestDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
+func TestStorageDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
 	// Get mocked storage.Account
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"
 	mockedStorageAccountObject, err := getMockedStorageAccount(reqURL)
@@ -526,22 +526,22 @@ func TestDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
 		fmt.Println("error getting mocked storage account object: %w", err)
 	}
 	// Test method discoverStorageAccounts
-	discoverStorageAccountsResponse, err := azure.DiscoverStorageAccounts()
+	discoverStorageAccountsResponse, err := azure.StorageDiscoverStorageAccounts()
 	assert.NotNil(t, err)
 	assert.Nil(t, discoverStorageAccountsResponse)
 
 	// Test method discoverObjectStorages
-	discoverObjectStoragesResponse, err := azure.DiscoverObjectStorages(&mockedStorageAccountObject)
+	discoverObjectStoragesResponse, err := azure.StorageDiscoverObjectStorages(&mockedStorageAccountObject)
 	assert.NotNil(t, err)
 	assert.Nil(t, discoverObjectStoragesResponse)
 
 	// Test method discoverFileStorages
-	discoverFileStoragesResponse, err := azure.DiscoverFileStorages(&mockedStorageAccountObject)
+	discoverFileStoragesResponse, err := azure.StorageDiscoverFileStorages(&mockedStorageAccountObject)
 	assert.NotNil(t, err)
 	assert.Nil(t, discoverFileStoragesResponse)
 
 	// Test method discoverBlockStorages
-	discoverBlockStoragesResponse, err := azure.DiscoverBlockStorages()
+	discoverBlockStoragesResponse, err := azure.StorageDiscoverBlockStorages()
 	assert.NotNil(t, err)
 	assert.Nil(t, discoverBlockStoragesResponse)
 }
@@ -584,7 +584,7 @@ func getMockedStorageAccount(reqUrl string) (storageAccount storage.Account, err
 	m := newMockStorageSender()
 	req, err := http.NewRequest("GET", reqUrl, nil)
 	if err != nil {
-		return storageAccount,  fmt.Errorf("error creating new request: %w", err)
+		return storageAccount, fmt.Errorf("error creating new request: %w", err)
 	}
 	resp, err := m.Do(req)
 	if err != nil {

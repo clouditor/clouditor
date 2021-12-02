@@ -27,14 +27,14 @@ package azure
 
 var d = &azureStorageDiscovery{}
 
-var GetDiskEncryptionSetName = getDiskEncryptionSetName
-var GetStorageAtRestEncryption = getStorageAtRestEncryption
-var HandleObjectStorage = handleObjectStorage
-var HandleFileStorage = handleFileStorage
-var HandleBlockStorage = d.handleBlockStorage
-var DiscoverObjectStorages = d.discoverObjectStorages
-var DiscoverFileStorages = d.discoverFileStorages
-var DiscoverBlockStorages = d.discoverBlockStorages
-var DiscoverStorageAccounts = d.discoverStorageAccounts
+var StorageGetDiskEncryptionSetName = getDiskEncryptionSetName
+var StorageGetStorageAtRestEncryption = getStorageAtRestEncryption
+var StorageHandleObjectStorage = handleObjectStorage
+var StorageHandleFileStorage = handleFileStorage
+var StorageHandleBlockStorage = d.handleBlockStorage
+var StorageDiscoverObjectStorages = d.discoverObjectStorages
+var StorageDiscoverFileStorages = d.discoverFileStorages
+var StorageDiscoverBlockStorages = d.discoverBlockStorages
+var StorageDiscoverStorageAccounts = d.discoverStorageAccounts
 
 // var GetSourceVaultID = d.getSourceVaultID

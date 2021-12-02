@@ -26,17 +26,30 @@
 package azure_test
 
 import (
+	"fmt"
+	"io"
+	"k8s.io/apimachinery/pkg/util/json"
 	"net/http"
 	"testing"
 
 	"clouditor.io/clouditor/service/discovery/azure"
 	"clouditor.io/clouditor/voc"
+	"github.com/jinzhu/copier"
 	"github.com/stretchr/testify/assert"
 )
 
 type mockIacTemplateSender struct {
 	mockSender
 }
+
+func newMockArmTemplateSender() *mockIacTemplateSender {
+	m := &mockIacTemplateSender{}
+	return m
+}
+
+//type responseArmTemplate struct {
+//	Value map[string]interface{} `json:"value,omitempty"`
+//}
 
 func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err error) {
 	if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups" {
@@ -266,7 +279,7 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 									"keyvaulturi": "https://testvault.vault.azure.net/keys/testkey/123456",
 								},
 								"minimumTlsVersion":        "TLS1_1",
-								"supportsHttpsTrafficOnly": true,
+								"supportsHttpsTrafficOnly": false,
 							},
 						},
 					},
@@ -295,6 +308,16 @@ func (m mockIacTemplateSender) Do(req *http.Request) (res *http.Response, err er
 	}
 
 	return m.mockSender.Do(req)
+}
+
+func TestAzureArmTemplateAuthorizer(t *testing.T) {
+
+	d := azure.NewAzureArmTemplateDiscovery()
+	list, err := d.List()
+
+	assert.NotNil(t, err)
+	assert.Nil(t, list)
+	assert.Equal(t, "could not authorize Azure account: no authorized was available", err.Error())
 }
 
 func TestIaCTemplateDiscovery(t *testing.T) {
@@ -421,4 +444,189 @@ func TestLoadBalancerProperties(t *testing.T) {
 	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Network/loadBalancers/kubernetes", (string)(resourceLoadBalancer.GetID()))
 	assert.Equal(t, "LoadBalancer", resourceLoadBalancer.Type[0])
 	assert.Equal(t, "eastus", resourceLoadBalancer.GeoLocation.Region)
+}
+
+func TestArmTemplateHandleObjectStorageMethodWhenInputIsInvalid(t *testing.T) {
+	// Get mocked Azure Arm Template
+	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/exportTemplate"
+	mockedArmTemplateObject, err := getMockedArmTemplate(reqURL)
+	if err != nil {
+		fmt.Println("error getting mocked storage account object: %w", err)
+	}
+
+	armTemplateResources := mockedArmTemplateObject["template"].(map[string]interface{})["resources"].([]interface{})
+
+	// TODO(garuppel): d.sub.SubscriptionID = nil
+
+	// Tests for method handleObjectStorage
+	// check for dependsOn type assertion error
+	armTemplateHandleObjectStorageResponse , err := getDependsOnTypeAssertionResponse("Object", armTemplateResources)
+
+	assert.NotNil(t, err)
+	assert.Equal(t, "dependsOn type assertion failed", err.Error())
+	assert.Nil(t, armTemplateHandleObjectStorageResponse)
+
+	// check for getStorageAccountResourceFromTemplate() response error
+	armTemplateHandleObjectStorageResponse , err =  getStorageAccountResourceFromTemplateResponse("Object", armTemplateResources)
+
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "cannot get storage account resource from Azure ARM template:")
+	assert.Nil(t, armTemplateHandleObjectStorageResponse)
+
+	// check for getStorageAccountAtRestEncryptionFromArm() response error
+	armTemplateHandleObjectStorageResponse, err = getStorageAccountAtRestEncryptionFromArmResponse("Object", armTemplateResources)
+
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "cannot get atRestEncryption for storage account resource from Azure ARM template")
+	assert.Nil(t, armTemplateHandleObjectStorageResponse)
+}
+
+func TestArmTemplateHandleFileStorageMethodWhenInputIsInvalid(t *testing.T) {
+	// Get mocked Azure Arm Template
+	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/exportTemplate"
+	mockedArmTemplateObject, err := getMockedArmTemplate(reqURL)
+	if err != nil {
+		fmt.Println("error getting mocked storage account object: %w", err)
+	}
+
+	armTemplateResources := mockedArmTemplateObject["template"].(map[string]interface{})["resources"].([]interface{})
+
+	// Tests for method handleFileStorage
+	// check for dependsOn type assertion error
+	armTemplateHandleFileStorageResponse , err := getDependsOnTypeAssertionResponse("File", armTemplateResources)
+
+	assert.NotNil(t, err)
+	assert.Equal(t, "dependsOn type assertion failed", err.Error())
+	assert.Nil(t, armTemplateHandleFileStorageResponse)
+
+	// check for getStorageAccountResourceFromTemplate() response error
+	armTemplateHandleFileStorageResponse , err =  getStorageAccountResourceFromTemplateResponse("File", armTemplateResources)
+
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "cannot get storage account resource from Azure ARM template:")
+	assert.Nil(t, armTemplateHandleFileStorageResponse)
+
+	// check for getStorageAccountAtRestEncryptionFromArm() response error
+	armTemplateHandleFileStorageResponse, err = getStorageAccountAtRestEncryptionFromArmResponse("File", armTemplateResources)
+
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "cannot get atRestEncryption for storage account resource from Azure ARM template")
+	assert.Nil(t, armTemplateHandleFileStorageResponse)
+}
+
+func getDependsOnTypeAssertionResponse(storageType string, armTemplateResources []interface{}) (voc.IsCompute, error) {
+	var (
+		resource                     map[string]interface{}
+		modifiedResource               map[string]interface{}
+		dependsOnTypeAssertionResponse voc.IsCompute
+		err                            error
+	)
+
+	// error check for dependsOn type assertion
+	switch storageType {
+	case "File":
+		resource = armTemplateResources[5].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/share1')]
+		// Copy ARM template resource and delete dependsOn from resource for test
+		copier.Copy(&modifiedResource, &resource)
+		delete(modifiedResource, "dependsOn")
+		dependsOnTypeAssertionResponse, err = azure.ArmTemplateHandleObjectStorage(modifiedResource, armTemplateResources, "res1")
+	case "Object":
+		resource = armTemplateResources[4].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/share1')]
+		// Copy ARM template resource and delete dependsOn from resource for test
+		copier.Copy(&modifiedResource, &resource)
+		delete(modifiedResource, "dependsOn")
+		dependsOnTypeAssertionResponse, err = azure.ArmTemplateHandleFileStorage(modifiedResource, armTemplateResources, "res1")
+	case "Block":
+		//TBD
+	}
+
+	return dependsOnTypeAssertionResponse, err
+}
+
+func getStorageAccountResourceFromTemplateResponse(storageType string, armTemplateResources []interface{}) (voc.IsCompute, error){
+	var (
+		resource                     map[string]interface{}
+		modifiedArmTemplateResources               []interface{}
+		storageAccountResourceFromTemplateResponse voc.IsCompute
+		err                                        error
+	)
+
+	resource = armTemplateResources[5].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/share1')]
+
+	// Copy Azure ARM template resources and delete resource "storageAccounts_storage1_name"
+	copier.Copy(&modifiedArmTemplateResources, armTemplateResources)
+	modifiedArmTemplateResources[3] = map[string]interface{}{}
+
+	switch storageType {
+	case "File":
+		resource = armTemplateResources[5].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/share1')]
+		storageAccountResourceFromTemplateResponse, err = azure.ArmTemplateHandleObjectStorage(resource, modifiedArmTemplateResources, "res1")
+	case "Object":
+		resource = armTemplateResources[4].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/share1')]
+		storageAccountResourceFromTemplateResponse, err = azure.ArmTemplateHandleFileStorage(resource, modifiedArmTemplateResources, "res1")
+	case "Block":
+		//TBD
+	}
+
+	return storageAccountResourceFromTemplateResponse, err
+}
+
+func getStorageAccountAtRestEncryptionFromArmResponse(storageType string, armTemplateResources []interface{}) (voc.IsCompute, error){
+	var (
+		resource                     map[string]interface{}
+		modifiedArmTemplateResources                 []interface{}
+		storageAccountAtRestEncryptionFromArmRespone voc.IsCompute
+		err                                          error
+	)
+
+	resource = armTemplateResources[5].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/share1')]
+
+	// Copy ARM template resources and delete 'keySource' from storage account resource for test
+	copier.Copy(&modifiedArmTemplateResources, &armTemplateResources)
+	delete(modifiedArmTemplateResources[3].(map[string]interface{})["properties"].(map[string]interface{})["encryption"].(map[string]interface{}), "keySource")
+
+	switch storageType {
+	case "File":
+		resource = armTemplateResources[5].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/share1')]
+		storageAccountAtRestEncryptionFromArmRespone, err = azure.ArmTemplateHandleObjectStorage(resource, armTemplateResources, "res1")
+	case "Object":
+		resource = armTemplateResources[4].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/share1')]
+		storageAccountAtRestEncryptionFromArmRespone, err = azure.ArmTemplateHandleFileStorage(resource, armTemplateResources, "res1")
+	case "Block":
+		//TBD
+	}
+
+	return storageAccountAtRestEncryptionFromArmRespone, err
+}
+
+func getMockedArmTemplate(reqUrl string) (map[string]interface{}, error) {
+	//var armTemplateResponse responseArmTemplate
+	var armTemplateResponse map[string]interface{}
+
+	m := newMockArmTemplateSender()
+	req, err := http.NewRequest("GET", reqUrl, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error creating new request: %w", err)
+	}
+	resp, err := m.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error getting mock http response: %w", err)
+	}
+
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			fmt.Println("error io.ReadCloser: %w", err)
+		}
+	}(resp.Body)
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error read all: %w", err)
+	}
+	err = json.Unmarshal(responseBody, &armTemplateResponse)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshalling: %w", err)
+	}
+
+	return armTemplateResponse, nil
 }

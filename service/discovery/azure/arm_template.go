@@ -280,12 +280,12 @@ func (d *azureArmTemplateDiscovery) handleFileStorage(resourceValue map[string]i
 
 	storageAccountResource, err := getStorageAccountResourceFromTemplate(dependsOnList, azureResources)
 	if err != nil {
-		return nil, fmt.Errorf("cannot get storage account resource from the ARM template: %v", err)
+		return nil, fmt.Errorf("cannot get storage account resource from Azure ARM template: %v", err)
 	}
 
 	enc, err = getStorageAccountAtRestEncryptionFromArm(storageAccountResource)
 	if err != nil {
-		return nil, fmt.Errorf("cannot get atRestEncryption for storage account resource from the ARM template: %v", err)
+		return nil, fmt.Errorf("cannot get atRestEncryption for storage account resource from Azure ARM template: %v", err)
 	}
 
 	storage = &voc.FileStorage{
@@ -375,7 +375,7 @@ func getStorageAccountResourceFromTemplate(resourceNames []interface{}, azureTem
 		}
 	}
 
-	return nil, errors.New("could not get resource from the ARM template")
+	return nil, errors.New("could not get resource from Azure ARM template")
 }
 
 func isHttpsTrafficOnlyEnabled(value map[string]interface{}) bool {
