@@ -29,6 +29,7 @@ import (
 	"context"
 	"fmt"
 
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
@@ -105,6 +106,43 @@ func NewListCloudServicesCommand() *cobra.Command {
 	return cmd
 }
 
+// NewGetMetricConfigurationCommand returns a cobra command for the `get-metric-configuration` subcommand
+// TODO(oxisto): Can we have something like cl cloud get <id> metric-configuration <id>?
+func NewGetMetricConfigurationCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "get-metric-configuration",
+		Short: "Retrieves a metric configuration for a specific target service",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var (
+				err     error
+				session *cli.Session
+				client  orchestrator.OrchestratorClient
+				res     *assessment.MetricConfiguration
+			)
+
+			if session, err = cli.ContinueSession(); err != nil {
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+				return nil
+			}
+
+			client = orchestrator.NewOrchestratorClient(session)
+
+			serviceID := args[0]
+			metricID := args[1]
+
+			res, err = client.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{ServiceId: serviceID, MetricId: metricID})
+
+			return session.HandleResponse(res, err)
+		},
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return []string{}, cobra.ShellCompDirectiveNoFileComp
+		},
+	}
+
+	return cmd
+}
+
 // NewCloudCommand returns a cobra command for `cloud` subcommands
 func NewCloudCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -122,5 +160,6 @@ func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewRegisterCloudServiceCommand(),
 		NewListCloudServicesCommand(),
+		NewGetMetricConfigurationCommand(),
 	)
 }

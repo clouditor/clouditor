@@ -81,11 +81,11 @@ func init() {
 
 	for _, m := range metrics {
 		// Look for the data.json to include default metric configurations
-		fileName := fmt.Sprintf("policies/bundles/%s/", m.Id)
+		fileName := fmt.Sprintf("policies/bundles/%s/data.json", m.Id)
 
 		b, err := ioutil.ReadFile(fileName)
 		if err != nil {
-			log.Errorf("Could not retrieve default configuration for metric %s. Ignoring metric", m.Id)
+			log.Errorf("Could not retrieve default configuration for metric %s: %s. Ignoring metric", m.Id, err)
 			continue
 		}
 
@@ -93,7 +93,7 @@ func init() {
 
 		err = json.Unmarshal(b, &config)
 		if err != nil {
-			log.Errorf("Error in reading default configuration for metric %s: %w. Ignoring metric", m.Id, err)
+			log.Errorf("Error in reading default configuration for metric %s: %s. Ignoring metric", m.Id, err)
 			continue
 		}
 
@@ -149,11 +149,11 @@ func (s *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.Ge
 	}
 
 	// Otherwise, fall back to our default configuration
-	if config, ok := defaultMetricConfigurations[req.ServiceId]; ok {
+	if config, ok := defaultMetricConfigurations[req.MetricId]; ok {
 		return config, nil
 	}
 
-	return nil, status.Errorf(codes.NotFound, "Could not find metric configuration for metric %s in service $s", req.MetricId, req.ServiceId)
+	return nil, status.Errorf(codes.NotFound, "Could not find metric configuration for metric %s in service %s", req.MetricId, req.ServiceId)
 }
 
 //// Tools
