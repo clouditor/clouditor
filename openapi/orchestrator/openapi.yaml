@@ -106,6 +106,33 @@ paths:
                 "200":
                     description: OK
                     content: {}
+    /v1/orchestrator/cloud_services:
+        get:
+            summary: Lists all target cloud services
+            operationId: Orchestrator_ListCloudServices
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListCloudServicesResponse'
+        post:
+            summary: Registers a new target cloud service
+            operationId: Orchestrator_RegisterCloudService
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CloudService'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CloudService'
     /v1/orchestrator/metrics:
         get:
             summary: List all metrics provided by the metric catalog
@@ -171,12 +198,24 @@ components:
                         type: string
                     description: a list of metrics that this tool can assess, referred by their ids
             description: Represents an external tool or service that offers assessments according to certain metrics
+        CloudService:
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
         ListAssessmentToolsResponse:
             properties:
                 tools:
                     type: array
                     items:
                         $ref: '#/components/schemas/AssessmentTool'
+        ListCloudServicesResponse:
+            properties:
+                services:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/CloudService'
         ListMetricsResponse:
             properties:
                 metrics:
