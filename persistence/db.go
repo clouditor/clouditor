@@ -29,6 +29,7 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/api/auth"
+	"clouditor.io/clouditor/api/orchestrator"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
@@ -58,6 +59,10 @@ func InitDB(inMemory bool, host string, port int16) (err error) {
 	}
 
 	if err = db.AutoMigrate(&auth.User{}); err != nil {
+		return fmt.Errorf("error during auto-migration: %w", err)
+	}
+
+	if err = db.AutoMigrate(&orchestrator.CloudService{}); err != nil {
 		return fmt.Errorf("error during auto-migration: %w", err)
 	}
 

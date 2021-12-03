@@ -29,6 +29,7 @@ import (
 	"context"
 
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/persistence"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -39,22 +40,50 @@ func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.Regi
 		return nil, status.Errorf(codes.InvalidArgument, "Service is empty")
 	}
 
+	if req.Service.Name == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "Service name is empty")
+	}
+
+	db := persistence.GetDatabase()
+
 	service = new(orchestrator.CloudService)
 
-	// generate a new ID
+	// Generate a new ID
 	service.Id = uuid.NewString()
 	service.Name = req.Service.Name
 
-	// add it to the service slice
-	s.targetServices = append(s.targetServices, service)
+	// Persist the service in our database
+	db.Create(&service)
 
 	return
 }
 
 func (s *Service) ListCloudServices(_ context.Context, _ *orchestrator.ListCloudServicesRequest) (response *orchestrator.ListCloudServicesResponse, err error) {
-	response = &orchestrator.ListCloudServicesResponse{
-		Services: s.targetServices,
+	db := persistence.GetDatabase()
+
+	response = new(orchestrator.ListCloudServicesResponse)
+	response.Services = make([]*orchestrator.CloudService, 0)
+
+	err = db.Find(&response.Services).Error
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
 
 	return response, nil
+}
+
+func (s *Service) CreateDefaultTargetCloudService() (err error) {
+	db := persistence.GetDatabase()
+
+	var count int64
+	db.Model(&orchestrator.CloudService{}).Count(&count)
+
+	if count == 0 {
+		// create a default target cloud service
+		_, err = s.RegisterCloudService(context.Background(),
+			&orchestrator.RegisterCloudServiceRequest{Service: &orchestrator.CloudService{Name: "default"}})
+		return err
+	}
+
+	return nil
 }

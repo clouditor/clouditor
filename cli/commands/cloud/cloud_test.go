@@ -64,8 +64,12 @@ func TestMain(m *testing.M) {
 	service = service_orchestrator.NewService()
 
 	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
+	if err != nil {
+		panic(err)
+	}
 	orchestrator.RegisterOrchestratorServer(server, service)
 
+	err = service.CreateDefaultTargetCloudService()
 	if err != nil {
 		panic(err)
 	}
@@ -95,14 +99,9 @@ func TestListCloudServicesCommand(t *testing.T) {
 	var err error
 	var b bytes.Buffer
 
-	cmd := cloud.NewRegisterCloudServiceCommand()
-	err = cmd.RunE(nil, []string{"default"})
-
-	assert.Nil(t, err)
-
 	cli.Output = &b
 
-	cmd = cloud.NewListCloudServicesCommand()
+	cmd := cloud.NewListCloudServicesCommand()
 	err = cmd.RunE(nil, []string{})
 
 	assert.Nil(t, err)
@@ -125,8 +124,8 @@ func TestGetMetricConfiguration(t *testing.T) {
 
 	cli.Output = &b
 
-	// create a default target service
-	target, err = service.RegisterCloudService(context.TODO(), &orchestrator.RegisterCloudServiceRequest{Service: &orchestrator.CloudService{Name: "default"}})
+	// create a new target service
+	target, err = service.RegisterCloudService(context.TODO(), &orchestrator.RegisterCloudServiceRequest{Service: &orchestrator.CloudService{Name: "myservice"}})
 
 	assert.NotNil(t, target)
 	assert.Nil(t, err)

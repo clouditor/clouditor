@@ -72,18 +72,20 @@ const (
 	DBNameFlag             = "db-name"
 	DBPortFlag             = "db-port"
 	DBInMemoryFlag         = "db-in-memory"
+	CreateDefaultTarget    = "target-default-create"
 
-	DefaultAPIDefaultUser     = "clouditor"
-	DefaultAPIDefaultPassword = "clouditor"
-	DefaultAPISecret          = "changeme"
-	DefaultAPIgRPCPort        = 9090
-	DefaultAPIHTTPPort        = 8080
-	DefaultDBUserName         = "postgres"
-	DefaultDBPassword         = "postgres"
-	DefaultDBHost             = "localhost"
-	DefaultDBName             = "postgres"
-	DefaultDBPort             = 5432
-	DefaultDBInMemory         = false
+	DefaultAPIDefaultUser      = "clouditor"
+	DefaultAPIDefaultPassword  = "clouditor"
+	DefaultAPISecret           = "changeme"
+	DefaultAPIgRPCPort         = 9090
+	DefaultAPIHTTPPort         = 8080
+	DefaultDBUserName          = "postgres"
+	DefaultDBPassword          = "postgres"
+	DefaultDBHost              = "localhost"
+	DefaultDBName              = "postgres"
+	DefaultDBPort              = 5432
+	DefaultDBInMemory          = false
+	DefaultCreateDefaultTarget = true
 
 	EnvPrefix = "CLOUDITOR"
 )
@@ -91,7 +93,7 @@ const (
 var server *grpc.Server
 var authService *service_auth.Service
 var discoveryService *service_discovery.Service
-var orchestratorService orchestrator.OrchestratorServer
+var orchestratorService *service_orchestrator.Service
 var assessmentService assessment.AssessmentServer
 var evidenceStoreService evidence.EvidenceStoreServer
 
@@ -120,6 +122,7 @@ func init() {
 	engineCmd.Flags().String(DBNameFlag, DefaultDBName, "Provides name of database")
 	engineCmd.Flags().Int16(DBPortFlag, DefaultDBPort, "Provides port for database")
 	engineCmd.Flags().Bool(DBInMemoryFlag, DefaultDBInMemory, "Uses an in-memory database which is not persisted at all")
+	engineCmd.Flags().Bool(CreateDefaultTarget, DefaultCreateDefaultTarget, "Creates a default target cloud service if it does not exist")
 
 	_ = viper.BindPFlag(APIDefaultUserFlag, engineCmd.Flags().Lookup(APIDefaultUserFlag))
 	_ = viper.BindPFlag(APIDefaultPasswordFlag, engineCmd.Flags().Lookup(APIDefaultPasswordFlag))
@@ -132,6 +135,7 @@ func init() {
 	_ = viper.BindPFlag(DBNameFlag, engineCmd.Flags().Lookup(DBNameFlag))
 	_ = viper.BindPFlag(DBPortFlag, engineCmd.Flags().Lookup(DBPortFlag))
 	_ = viper.BindPFlag(DBInMemoryFlag, engineCmd.Flags().Lookup(DBInMemoryFlag))
+	_ = viper.BindPFlag(CreateDefaultTarget, engineCmd.Flags().Lookup(CreateDefaultTarget))
 }
 
 func initConfig() {
@@ -176,11 +180,11 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 
 	authService.CreateDefaultUser(viper.GetString(APIDefaultUserFlag), viper.GetString(APIDefaultPasswordFlag))
 
-	// create a default target cloud service
-	_, err = orchestratorService.RegisterCloudService(context.Background(),
-		&orchestrator.RegisterCloudServiceRequest{Service: &orchestrator.CloudService{Name: "default"}})
-	if err != nil {
-		log.Errorf("could not register default target cloud service: %v", err)
+	if viper.GetBool(CreateDefaultTarget) {
+		err = orchestratorService.CreateDefaultTargetCloudService()
+		if err != nil {
+			log.Errorf("could not register default target cloud service: %v", err)
+		}
 	}
 
 	grpcPort := viper.GetInt(APIgRPCPortFlag)

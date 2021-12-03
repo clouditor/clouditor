@@ -53,9 +53,6 @@ var DefaultMetricsFile = "metrics.json"
 type Service struct {
 	orchestrator.UnimplementedOrchestratorServer
 
-	// targetServices is a list of cloud service targets that we want to assess / certify
-	targetServices []*orchestrator.CloudService
-
 	// metricConfigurations holds a double-map of metric configurations associated first by service ID and then metric ID
 	metricConfigurations map[string]map[string]*assessment.MetricConfiguration
 }
@@ -66,7 +63,6 @@ func init() {
 
 func NewService() *Service {
 	s := Service{
-		targetServices:       make([]*orchestrator.CloudService, 0),
 		metricConfigurations: make(map[string]map[string]*assessment.MetricConfiguration),
 	}
 
