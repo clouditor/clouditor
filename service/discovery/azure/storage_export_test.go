@@ -36,5 +36,4 @@ var StorageDiscoverObjectStorages = d.discoverObjectStorages
 var StorageDiscoverFileStorages = d.discoverFileStorages
 var StorageDiscoverBlockStorages = d.discoverBlockStorages
 var StorageDiscoverStorageAccounts = d.discoverStorageAccounts
-
-// var GetSourceVaultID = d.getSourceVaultID
+//var GetSourceVaultID = d.getSourceVaultID

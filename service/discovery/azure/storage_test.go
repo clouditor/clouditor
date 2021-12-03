@@ -506,16 +506,16 @@ func TestStorageMethodsWhenInputIsInvalid(t *testing.T) {
 	managedKeyEncryption := voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{Algorithm: "AES256", Enabled: true}}
 	assert.Equal(t, managedKeyEncryption, atRestEncryption)
 
-	// Test method getSourceVaultID
-	// Todo(garuppel): How to test? Problem: Azure call again
+	//// Test method getSourceVaultID
+	//// Todo(garuppel): How to test? Problem: Azure call again
 	//diskEncryptionSetID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1"
 	//keyVaultID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.KeyVault/vaults/keyvault1"
 	//getSourceVaultIDResult, err := azure.GetSourceVaultID(diskEncryptionSetID)
 	//assert.Nil(t, err)
 	//assert.Equal(t, keyVaultID, getSourceVaultIDResult)
-
-	// Test method getBlockStorageAtRestEncryption
-	// Todo(garuppel): How to test? Problem: Azure call again
+	//
+	//// Test method getBlockStorageAtRestEncryption
+	//// Todo(garuppel): How to test? Problem: Azure call again
 }
 
 func TestStorageDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
@@ -546,6 +546,7 @@ func TestStorageDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
 	assert.Nil(t, discoverBlockStoragesResponse)
 }
 
+// getMockedDisk returns one mocked compute disk
 func getMockedDisk(reqUrl string) (disk compute.Disk, err error) {
 
 	m := newMockStorageSender()
@@ -578,6 +579,7 @@ func getMockedDisk(reqUrl string) (disk compute.Disk, err error) {
 	return disks.Value[0], nil
 }
 
+// getMockedStorageAccount returns one mocked storage account
 func getMockedStorageAccount(reqUrl string) (storageAccount storage.Account, err error) {
 	var storageAccountResponse responseStorageAccount
 
