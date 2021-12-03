@@ -9,11 +9,11 @@ require (
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/alexedwards/argon2id v0.0.0-20210511081203-7d35d68092b8
 	github.com/aws/aws-sdk-go-v2 v1.11.2
-	github.com/aws/aws-sdk-go-v2/config v1.10.3
+	github.com/aws/aws-sdk-go-v2/config v1.11.0
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.25.0
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.14.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.21.0
-	github.com/aws/aws-sdk-go-v2/service/sts v1.11.0
+	github.com/aws/aws-sdk-go-v2/service/sts v1.11.1
 	github.com/aws/smithy-go v1.9.0
 	github.com/go-co-op/gocron v1.10.0
 	github.com/golang-jwt/jwt/v4 v4.1.0
@@ -50,15 +50,15 @@ require (
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
 	github.com/OneOfOne/xxhash v1.2.8 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.0.0 // indirect
-	github.com/aws/aws-sdk-go-v2/credentials v1.6.3 // indirect
-	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.8.1 // indirect
+	github.com/aws/aws-sdk-go-v2/credentials v1.6.4 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.8.2 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.2 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.0.2 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/ini v1.3.1 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/ini v1.3.2 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.5.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.5.2 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.9.2 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sso v1.6.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.6.2 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dimchansky/utfbom v1.1.1 // indirect
