@@ -117,6 +117,16 @@ func (m mockNetworkSender) Do(req *http.Request) (res *http.Response, err error)
 	return m.mockSender.Do(req)
 }
 
+func TestAzureNetworkAuthorizer(t *testing.T) {
+
+	d := azure.NewAzureNetworkDiscovery()
+	list, err := d.List()
+
+	assert.NotNil(t, err)
+	assert.Nil(t, list)
+	assert.Equal(t, "could not authorize Azure account: no authorized was available", err.Error())
+}
+
 func TestNetwork(t *testing.T) {
 	d := azure.NewAzureNetworkDiscovery(
 		azure.WithSender(&mockNetworkSender{}),
@@ -128,6 +138,7 @@ func TestNetwork(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
 	assert.Equal(t, 2, len(list))
+	assert.NotEmpty(t, d.Name())
 
 	iface, ok := list[0].(*voc.NetworkInterface)
 
@@ -141,4 +152,21 @@ func TestNetwork(t *testing.T) {
 	assert.Equal(t, "lb1", lb.Name)
 	assert.Equal(t, int16(1234), lb.Ports[0])
 	assert.Equal(t, "111.222.333.444", lb.Ips[0])
+}
+
+func TestComputeDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
+	// Test method discoverNetworkInterfaces
+	discoverNetworkInterfacesResponse, err := azure.DiscoverNetworkInterfaces()
+
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "could not list network interfaces")
+	assert.Nil(t, discoverNetworkInterfacesResponse)
+
+	// Test method discoverLoadBalancer
+	discoverLoadBalancerResponse, err := azure.DiscoverLoadBalancer()
+
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "could not list load balancer")
+	assert.Nil(t, discoverLoadBalancerResponse)
+
 }
