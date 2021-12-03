@@ -218,7 +218,7 @@ func DefaultArgsShellComp(cmd *cobra.Command, args []string, toComplete string) 
 	return []string{}, cobra.ShellCompDirectiveNoFileComp
 }
 
-func ValidArgsGetTools(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func ValidArgsGetTools(_ *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	if len(args) != 0 {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
@@ -226,7 +226,7 @@ func ValidArgsGetTools(cmd *cobra.Command, args []string, toComplete string) ([]
 	return getTools(toComplete), cobra.ShellCompDirectiveNoFileComp
 }
 
-func ValidArgsGetMetrics(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func ValidArgsGetMetrics(_ *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	if len(args) != 0 {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
@@ -234,7 +234,7 @@ func ValidArgsGetMetrics(cmd *cobra.Command, args []string, toComplete string) (
 	return getMetrics(toComplete), cobra.ShellCompDirectiveNoFileComp
 }
 
-func ValidArgsGetCloudServices(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func ValidArgsGetCloudServices(_ *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	if len(args) != 0 {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
@@ -242,7 +242,7 @@ func ValidArgsGetCloudServices(cmd *cobra.Command, args []string, toComplete str
 	return getCloudServices(toComplete), cobra.ShellCompDirectiveNoFileComp
 }
 
-func getTools(toComplete string) []string {
+func getTools(_ string) []string {
 	var (
 		err     error
 		session *Session
@@ -270,7 +270,7 @@ func getTools(toComplete string) []string {
 }
 
 // TODO(oxisto): This could be an interesting use case for 1.18 Go generics
-func getMetrics(toComplete string) []string {
+func getMetrics(_ string) []string {
 	var (
 		err     error
 		session *Session
@@ -297,7 +297,7 @@ func getMetrics(toComplete string) []string {
 	return metrics
 }
 
-func getCloudServices(toComplete string) []string {
+func getCloudServices(_ string) []string {
 	var (
 		err     error
 		session *Session
