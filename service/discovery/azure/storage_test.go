@@ -528,6 +528,7 @@ func TestStorageDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
 	// Test method discoverStorageAccounts
 	discoverStorageAccountsResponse, err := azure.StorageDiscoverStorageAccounts()
 	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "could not list storage accounts")
 	assert.Nil(t, discoverStorageAccountsResponse)
 
 	// Test method discoverObjectStorages

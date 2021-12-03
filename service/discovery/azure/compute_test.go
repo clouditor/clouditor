@@ -258,6 +258,14 @@ func TestComputeDiscoverFunctionWhenInputIsInvalid(t *testing.T) {
 	assert.Nil(t, discoverFunctionResponse)
 }
 
+func TestComputeDiscoverVirtualMachines(t *testing.T){
+	discoverVirtualMachineResponse, err := azure.DiscoverVirtualMachines()
+
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "could not list virtual machines")
+	assert.Nil(t, discoverVirtualMachineResponse)
+}
+
 func TestGetBootLogOutput(t *testing.T) {
 	// Get mocked compute.VirtualMachine
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/virtualMachines"
@@ -310,3 +318,4 @@ func getMockedVirtualMachines(reqUrl string) (virtualMachines []compute.VirtualM
 
 	return virtualMachines, nil
 }
+
