@@ -133,6 +133,43 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/CloudService'
+    /v1/orchestrator/cloud_services/{service_id}:
+        get:
+            summary: Retrieves a target cloud service
+            operationId: Orchestrator_GetCloudService
+            parameters:
+                - name: service_id
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CloudService'
+        put:
+            summary: Registers a new target cloud service
+            operationId: Orchestrator_UpdateCloudService
+            parameters:
+                - name: service_id
+                  in: query
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CloudService'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CloudService'
     /v1/orchestrator/cloud_services/{service_id}/metric_configuration/{metric_id}:
         get:
             summary: Retrieves a metric configuration for a specific service and metric ID
@@ -223,6 +260,8 @@ components:
                 id:
                     type: string
                 name:
+                    type: string
+                description:
                     type: string
         ListAssessmentToolsResponse:
             properties:

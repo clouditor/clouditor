@@ -38,6 +38,7 @@ import (
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/cloud"
 	"clouditor.io/clouditor/cli/commands/login"
+	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"github.com/spf13/viper"
@@ -49,6 +50,7 @@ import (
 var sock net.Listener
 var server *grpc.Server
 var service *service_orchestrator.Service
+var target *orchestrator.CloudService
 
 func TestMain(m *testing.M) {
 	var (
@@ -61,6 +63,11 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
+	err = persistence.InitDB(true, "", 0)
+	if err != nil {
+		panic(err)
+	}
+
 	service = service_orchestrator.NewService()
 
 	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
@@ -69,7 +76,7 @@ func TestMain(m *testing.M) {
 	}
 	orchestrator.RegisterOrchestratorServer(server, service)
 
-	err = service.CreateDefaultTargetCloudService()
+	target, err = service.CreateDefaultTargetCloudService()
 	if err != nil {
 		panic(err)
 	}
@@ -113,6 +120,18 @@ func TestListCloudServicesCommand(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response.Services)
+}
+
+func TestGetCloudServicesCommand(t *testing.T) {
+	var err error
+	var b bytes.Buffer
+
+	cli.Output = &b
+
+	cmd := cloud.NewGetCloudServiceComand()
+	err = cmd.RunE(nil, []string{target.Id})
+
+	assert.Nil(t, err)
 }
 
 func TestGetMetricConfiguration(t *testing.T) {

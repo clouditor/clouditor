@@ -35,6 +35,7 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/cli/commands/tool"
+	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"github.com/spf13/viper"
@@ -53,6 +54,11 @@ func TestMain(m *testing.M) {
 	)
 
 	err = os.Chdir("../../../")
+	if err != nil {
+		panic(err)
+	}
+
+	err = persistence.InitDB(true, "", 0)
 	if err != nil {
 		panic(err)
 	}

@@ -34,9 +34,11 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/persistence"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"gorm.io/gorm"
 )
 
 //go:embed metrics.json
@@ -55,6 +57,8 @@ type Service struct {
 
 	// metricConfigurations holds a double-map of metric configurations associated first by service ID and then metric ID
 	metricConfigurations map[string]map[string]*assessment.MetricConfiguration
+
+	db *gorm.DB
 }
 
 func init() {
@@ -94,6 +98,8 @@ func NewService() *Service {
 		metricIndex[m.Id] = m
 		defaultMetricConfigurations[m.Id] = &config
 	}
+
+	s.db = persistence.GetDatabase()
 
 	return &s
 }

@@ -181,7 +181,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	authService.CreateDefaultUser(viper.GetString(APIDefaultUserFlag), viper.GetString(APIDefaultPasswordFlag))
 
 	if viper.GetBool(CreateDefaultTarget) {
-		err = orchestratorService.CreateDefaultTargetCloudService()
+		_, err := orchestratorService.CreateDefaultTargetCloudService()
 		if err != nil {
 			log.Errorf("could not register default target cloud service: %v", err)
 		}

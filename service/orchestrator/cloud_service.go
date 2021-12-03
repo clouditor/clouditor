@@ -27,15 +27,17 @@ package orchestrator
 
 import (
 	"context"
+	"errors"
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"gorm.io/gorm"
 )
 
-func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.RegisterCloudServiceRequest) (service *orchestrator.CloudService, err error) {
+func (*Service) RegisterCloudService(_ context.Context, req *orchestrator.RegisterCloudServiceRequest) (service *orchestrator.CloudService, err error) {
 	if req.Service == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "Service is empty")
 	}
@@ -59,12 +61,10 @@ func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.Regi
 }
 
 func (s *Service) ListCloudServices(_ context.Context, _ *orchestrator.ListCloudServicesRequest) (response *orchestrator.ListCloudServicesResponse, err error) {
-	db := persistence.GetDatabase()
-
 	response = new(orchestrator.ListCloudServicesResponse)
 	response.Services = make([]*orchestrator.CloudService, 0)
 
-	err = db.Find(&response.Services).Error
+	err = s.db.Find(&response.Services).Error
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -72,18 +72,69 @@ func (s *Service) ListCloudServices(_ context.Context, _ *orchestrator.ListCloud
 	return response, nil
 }
 
-func (s *Service) CreateDefaultTargetCloudService() (err error) {
-	db := persistence.GetDatabase()
-
-	var count int64
-	db.Model(&orchestrator.CloudService{}).Count(&count)
-
-	if count == 0 {
-		// create a default target cloud service
-		_, err = s.RegisterCloudService(context.Background(),
-			&orchestrator.RegisterCloudServiceRequest{Service: &orchestrator.CloudService{Name: "default"}})
-		return err
+func (s *Service) GetCloudService(_ context.Context, req *orchestrator.GetCloudServiceRequest) (response *orchestrator.CloudService, err error) {
+	if req.ServiceId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "Service id is empty")
 	}
 
-	return nil
+	response = new(orchestrator.CloudService)
+	err = s.db.Find(&response).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, status.Errorf(codes.NotFound, "Service not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %s", err)
+	}
+
+	return response, nil
+}
+
+func (s *Service) UpdateCloudService(_ context.Context, req *orchestrator.UpdateCloudServiceRequest) (response *orchestrator.CloudService, err error) {
+	if req.Service == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "Service is empty")
+	}
+
+	if req.ServiceId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "Service id is empty")
+	}
+
+	var count int64
+	err = s.db.Count(&count).Error
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %s", err)
+	}
+
+	if count == 0 {
+		return nil, status.Error(codes.NotFound, "Service not found")
+	}
+
+	req.Service.Id = req.ServiceId
+	err = s.db.Save(&req.Service).Error
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %s", err)
+	}
+
+	return req.Service, nil
+}
+
+// CreateDefaultTargetCloudService creates a new "default" target cloud services,
+// if no target service exists in the database. If a new cloud service was created, it will be returned.
+func (s *Service) CreateDefaultTargetCloudService() (service *orchestrator.CloudService, err error) {
+	var count int64
+	s.db.Model(&orchestrator.CloudService{}).Count(&count)
+
+	if count == 0 {
+		// Create a default target cloud service
+		service, err = s.RegisterCloudService(context.Background(),
+			&orchestrator.RegisterCloudServiceRequest{
+				Service: &orchestrator.CloudService{
+					Name:        "default",
+					Description: "The default target cloud service",
+				}})
+
+		log.Infof("Created new default target cloud service %s", service.Id)
+
+		return service, err
+	}
+
+	return
 }

@@ -115,6 +115,21 @@ service Orchestrator {
     };
   }
 
+  // Registers a new target cloud service
+  rpc UpdateCloudService(UpdateCloudServiceRequest) returns (CloudService) {
+    option (google.api.http) = {
+      put : "/v1/orchestrator/cloud_services/{service_id}"
+      body : "service"
+    };
+  }
+
+  // Retrieves a target cloud service
+  rpc GetCloudService(GetCloudServiceRequest) returns (CloudService) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/cloud_services/{service_id}"
+    };
+  }
+
   // Lists all target cloud services
   rpc ListCloudServices(ListCloudServicesRequest)
       returns (ListCloudServicesResponse) {
@@ -159,7 +174,14 @@ message GetMetricsRequest { string metric_id = 1; }
 message ListMetricsRequest {}
 message ListMetricsResponse { repeated Metric metrics = 1; }
 
+message GetCloudServiceRequest { string service_id = 1; }
+
 message RegisterCloudServiceRequest { CloudService service = 1; }
+
+message UpdateCloudServiceRequest {
+  string service_id = 1;
+  CloudService service = 2;
+}
 
 message ListCloudServicesRequest {}
 message ListCloudServicesResponse { repeated CloudService services = 1; }
@@ -206,4 +228,6 @@ message CloudService {
   string id = 1;
 
   string name = 2;
+
+  string description = 3;
 }

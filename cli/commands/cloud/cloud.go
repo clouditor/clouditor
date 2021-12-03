@@ -106,6 +106,39 @@ func NewListCloudServicesCommand() *cobra.Command {
 	return cmd
 }
 
+// NewGetCloudServiceComand returns a cobra command for the `get` subcommand
+func NewGetCloudServiceComand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "get",
+		Short: "Retrieves a target cloud service by its ID",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var (
+				err     error
+				session *cli.Session
+				client  orchestrator.OrchestratorClient
+				res     *orchestrator.CloudService
+			)
+
+			if session, err = cli.ContinueSession(); err != nil {
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+				return nil
+			}
+
+			client = orchestrator.NewOrchestratorClient(session)
+
+			serviceID := args[0]
+
+			res, err = client.GetCloudService(context.Background(), &orchestrator.GetCloudServiceRequest{ServiceId: serviceID})
+
+			return session.HandleResponse(res, err)
+		},
+		ValidArgsFunction: cli.ValidArgsGetCloudServices,
+	}
+
+	return cmd
+}
+
 // NewGetMetricConfigurationCommand returns a cobra command for the `get-metric-configuration` subcommand
 // TODO(oxisto): Can we have something like cl cloud get <id> metric-configuration <id>?
 func NewGetMetricConfigurationCommand() *cobra.Command {
@@ -160,6 +193,7 @@ func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewRegisterCloudServiceCommand(),
 		NewListCloudServicesCommand(),
+		NewGetCloudServiceComand(),
 		NewGetMetricConfigurationCommand(),
 	)
 }
