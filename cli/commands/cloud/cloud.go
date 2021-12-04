@@ -33,6 +33,7 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // NewRegisterCloudServiceCommand returns a cobra command for the `discover` subcommand
@@ -109,7 +110,7 @@ func NewListCloudServicesCommand() *cobra.Command {
 // NewGetCloudServiceComand returns a cobra command for the `get` subcommand
 func NewGetCloudServiceComand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get",
+		Use:   "get [id]",
 		Short: "Retrieves a target cloud service by its ID",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -135,6 +136,55 @@ func NewGetCloudServiceComand() *cobra.Command {
 		},
 		ValidArgsFunction: cli.ValidArgsGetCloudServices,
 	}
+
+	return cmd
+}
+
+// NewUpdateCloudServiceCommand returns a cobra command for the `update` subcommand
+func NewUpdateCloudServiceCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update",
+		Short: "Updates a target cloud service",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var (
+				err     error
+				session *cli.Session
+				client  orchestrator.OrchestratorClient
+				res     *orchestrator.CloudService
+			)
+
+			if session, err = cli.ContinueSession(); err != nil {
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+				return nil
+			}
+
+			client = orchestrator.NewOrchestratorClient(session)
+
+			res, err = client.UpdateCloudService(context.Background(), &orchestrator.UpdateCloudServiceRequest{
+				ServiceId: viper.GetString("id"),
+				Service: &orchestrator.CloudService{
+					Name:        viper.GetString("name"),
+					Description: viper.GetString("description"),
+				},
+			})
+
+			return session.HandleResponse(res, err)
+		},
+		ValidArgsFunction: cli.ValidArgsGetCloudServices,
+	}
+
+	cmd.PersistentFlags().String("id", "", "the cloud service id to update")
+	cmd.PersistentFlags().StringP("name", "n", "", "the name of the service")
+	cmd.PersistentFlags().StringP("description", "d", "", "an optional description")
+	_ = cmd.MarkPersistentFlagRequired("id")
+	_ = cmd.MarkPersistentFlagRequired("name")
+	_ = viper.BindPFlag("id", cmd.PersistentFlags().Lookup("id"))
+	_ = viper.BindPFlag("name", cmd.PersistentFlags().Lookup("name"))
+	_ = viper.BindPFlag("description", cmd.PersistentFlags().Lookup("description"))
+
+	_ = cmd.RegisterFlagCompletionFunc("id", cli.ValidArgsGetCloudServices)
+	_ = cmd.RegisterFlagCompletionFunc("name", cli.DefaultArgsShellComp)
+	_ = cmd.RegisterFlagCompletionFunc("description", cli.DefaultArgsShellComp)
 
 	return cmd
 }
@@ -194,6 +244,7 @@ func AddCommands(cmd *cobra.Command) {
 		NewRegisterCloudServiceCommand(),
 		NewListCloudServicesCommand(),
 		NewGetCloudServiceComand(),
+		NewUpdateCloudServiceCommand(),
 		NewGetMetricConfigurationCommand(),
 	)
 }

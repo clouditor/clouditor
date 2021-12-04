@@ -98,7 +98,7 @@ func (s *Service) UpdateCloudService(_ context.Context, req *orchestrator.Update
 	}
 
 	var count int64
-	err = s.db.Count(&count).Error
+	err = s.db.Model(&orchestrator.CloudService{}).Count(&count).Error
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}

@@ -113,7 +113,7 @@ func NewShowToolCommand() *cobra.Command {
 func NewRegisterToolCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "register",
-		Short: "Registeres a new assessment tool",
+		Short: "Registers a new assessment tool",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err     error

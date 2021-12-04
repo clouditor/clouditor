@@ -105,6 +105,7 @@ func TestMain(m *testing.M) {
 func TestListCloudServicesCommand(t *testing.T) {
 	var err error
 	var b bytes.Buffer
+	var response orchestrator.ListCloudServicesResponse
 
 	cli.Output = &b
 
@@ -113,18 +114,16 @@ func TestListCloudServicesCommand(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	var response *orchestrator.ListCloudServicesResponse = &orchestrator.ListCloudServicesResponse{}
-
-	err = protojson.Unmarshal(b.Bytes(), response)
+	err = protojson.Unmarshal(b.Bytes(), &response)
 
 	assert.Nil(t, err)
-	assert.NotNil(t, response)
 	assert.NotEmpty(t, response.Services)
 }
 
 func TestGetCloudServicesCommand(t *testing.T) {
 	var err error
 	var b bytes.Buffer
+	var response orchestrator.CloudService
 
 	cli.Output = &b
 
@@ -132,6 +131,33 @@ func TestGetCloudServicesCommand(t *testing.T) {
 	err = cmd.RunE(nil, []string{target.Id})
 
 	assert.Nil(t, err)
+
+	err = protojson.Unmarshal(b.Bytes(), &response)
+
+	assert.Nil(t, err)
+	assert.Equal(t, target.Id, response.Id)
+}
+
+func TestUpdateCloudServiceCommand(t *testing.T) {
+	var err error
+	var b bytes.Buffer
+	var response orchestrator.CloudService
+
+	cli.Output = &b
+
+	viper.Set("id", target.Id)
+	viper.Set("name", "not_default")
+
+	cmd := cloud.NewUpdateCloudServiceCommand()
+	err = cmd.RunE(nil, []string{})
+
+	assert.Nil(t, err)
+
+	err = protojson.Unmarshal(b.Bytes(), &response)
+
+	assert.Nil(t, err)
+	assert.Equal(t, target.Id, response.Id)
+	assert.Equal(t, "not_default", response.Name)
 }
 
 func TestGetMetricConfiguration(t *testing.T) {
