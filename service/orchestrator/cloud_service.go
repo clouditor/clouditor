@@ -34,6 +34,7 @@ import (
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"gorm.io/gorm"
 )
 
@@ -114,6 +115,21 @@ func (s *Service) UpdateCloudService(_ context.Context, req *orchestrator.Update
 	}
 
 	return req.Service, nil
+}
+
+func (s *Service) RemoveCloudService(_ context.Context, req *orchestrator.RemoveCloudServiceRequest) (response *emptypb.Empty, err error) {
+	if req.ServiceId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "Service id is empty")
+	}
+
+	err = s.db.Delete(&orchestrator.CloudService{Id: req.ServiceId}).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, status.Errorf(codes.NotFound, "Service not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %s", err)
+	}
+
+	return &emptypb.Empty{}, nil
 }
 
 // CreateDefaultTargetCloudService creates a new "default" target cloud services,

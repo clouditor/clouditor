@@ -138,6 +138,14 @@ service Orchestrator {
     };
   }
 
+  // Removes a target cloud service
+  rpc RemoveCloudService(RemoveCloudServiceRequest)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete : "/v1/orchestrator/cloud_services/{service_id}"
+    };
+  }
+
   // Retrieves a metric configuration for a specific service and metric ID
   rpc GetMetricConfiguration(GetMetricConfigurationRequest)
       returns (MetricConfiguration) {
@@ -182,6 +190,8 @@ message UpdateCloudServiceRequest {
   string service_id = 1;
   CloudService service = 2;
 }
+
+message RemoveCloudServiceRequest { string service_id = 1; }
 
 message ListCloudServicesRequest {}
 message ListCloudServicesResponse { repeated CloudService services = 1; }

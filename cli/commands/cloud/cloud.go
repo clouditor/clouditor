@@ -34,6 +34,7 @@ import (
 	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // NewRegisterCloudServiceCommand returns a cobra command for the `discover` subcommand
@@ -134,7 +135,40 @@ func NewGetCloudServiceComand() *cobra.Command {
 
 			return session.HandleResponse(res, err)
 		},
-		ValidArgsFunction: cli.ValidArgsGetCloudServices,
+		ValidArgsFunction: cli.DefaultArgsShellComp,
+	}
+
+	return cmd
+}
+
+// NewRemoveCloudServiceComand returns a cobra command for the `get` subcommand
+func NewRemoveCloudServiceComand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "remove [id]",
+		Short: "Removes a target cloud service by its ID",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var (
+				err     error
+				session *cli.Session
+				client  orchestrator.OrchestratorClient
+				res     *emptypb.Empty
+			)
+
+			if session, err = cli.ContinueSession(); err != nil {
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+				return nil
+			}
+
+			client = orchestrator.NewOrchestratorClient(session)
+
+			serviceID := args[0]
+
+			res, err = client.RemoveCloudService(context.Background(), &orchestrator.RemoveCloudServiceRequest{ServiceId: serviceID})
+
+			return session.HandleResponse(res, err)
+		},
+		ValidArgsFunction: cli.DefaultArgsShellComp,
 	}
 
 	return cmd
@@ -245,6 +279,7 @@ func AddCommands(cmd *cobra.Command) {
 		NewListCloudServicesCommand(),
 		NewGetCloudServiceComand(),
 		NewUpdateCloudServiceCommand(),
+		NewRemoveCloudServiceComand(),
 		NewGetMetricConfigurationCommand(),
 	)
 }

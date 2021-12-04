@@ -41,6 +41,7 @@ import (
 	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -120,7 +121,7 @@ func TestListCloudServicesCommand(t *testing.T) {
 	assert.NotEmpty(t, response.Services)
 }
 
-func TestGetCloudServicesCommand(t *testing.T) {
+func TestGetCloudServiceCommand(t *testing.T) {
 	var err error
 	var b bytes.Buffer
 	var response orchestrator.CloudService
@@ -136,6 +137,23 @@ func TestGetCloudServicesCommand(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, target.Id, response.Id)
+}
+
+func TestRemoveCloudServicesCommand(t *testing.T) {
+	var err error
+	var b bytes.Buffer
+	var response empty.Empty
+
+	cli.Output = &b
+
+	cmd := cloud.NewRemoveCloudServiceComand()
+	err = cmd.RunE(nil, []string{target.Id})
+
+	assert.Nil(t, err)
+
+	err = protojson.Unmarshal(b.Bytes(), &response)
+
+	assert.Nil(t, err)
 }
 
 func TestUpdateCloudServiceCommand(t *testing.T) {

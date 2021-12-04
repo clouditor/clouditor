@@ -170,6 +170,18 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/CloudService'
+        delete:
+            summary: Removes a target cloud service
+            operationId: Orchestrator_RemoveCloudService
+            parameters:
+                - name: service_id
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
     /v1/orchestrator/cloud_services/{service_id}/metric_configuration/{metric_id}:
         get:
             summary: Retrieves a metric configuration for a specific service and metric ID

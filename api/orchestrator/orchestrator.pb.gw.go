@@ -601,6 +601,58 @@ func local_request_Orchestrator_ListCloudServices_0(ctx context.Context, marshal
 
 }
 
+func request_Orchestrator_RemoveCloudService_0(ctx context.Context, marshaler runtime.Marshaler, client OrchestratorClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq RemoveCloudServiceRequest
+	var metadata runtime.ServerMetadata
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["service_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "service_id")
+	}
+
+	protoReq.ServiceId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "service_id", err)
+	}
+
+	msg, err := client.RemoveCloudService(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_Orchestrator_RemoveCloudService_0(ctx context.Context, marshaler runtime.Marshaler, server OrchestratorServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq RemoveCloudServiceRequest
+	var metadata runtime.ServerMetadata
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["service_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "service_id")
+	}
+
+	protoReq.ServiceId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "service_id", err)
+	}
+
+	msg, err := server.RemoveCloudService(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
 func request_Orchestrator_GetMetricConfiguration_0(ctx context.Context, marshaler runtime.Marshaler, client OrchestratorClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetMetricConfigurationRequest
 	var metadata runtime.ServerMetadata
@@ -978,6 +1030,29 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 
 	})
 
+	mux.Handle("DELETE", pattern_Orchestrator_RemoveCloudService_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/RemoveCloudService", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{service_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_Orchestrator_RemoveCloudService_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_Orchestrator_RemoveCloudService_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	mux.Handle("GET", pattern_Orchestrator_GetMetricConfiguration_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -1302,6 +1377,26 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 
 	})
 
+	mux.Handle("DELETE", pattern_Orchestrator_RemoveCloudService_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/RemoveCloudService", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{service_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_Orchestrator_RemoveCloudService_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_Orchestrator_RemoveCloudService_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	mux.Handle("GET", pattern_Orchestrator_GetMetricConfiguration_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -1352,6 +1447,8 @@ var (
 
 	pattern_Orchestrator_ListCloudServices_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "cloud_services"}, ""))
 
+	pattern_Orchestrator_RemoveCloudService_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "cloud_services", "service_id"}, ""))
+
 	pattern_Orchestrator_GetMetricConfiguration_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "cloud_services", "service_id", "metric_configuration", "metric_id"}, ""))
 )
 
@@ -1381,6 +1478,8 @@ var (
 	forward_Orchestrator_GetCloudService_0 = runtime.ForwardResponseMessage
 
 	forward_Orchestrator_ListCloudServices_0 = runtime.ForwardResponseMessage
+
+	forward_Orchestrator_RemoveCloudService_0 = runtime.ForwardResponseMessage
 
 	forward_Orchestrator_GetMetricConfiguration_0 = runtime.ForwardResponseMessage
 )
