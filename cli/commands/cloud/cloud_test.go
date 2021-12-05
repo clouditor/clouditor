@@ -154,6 +154,11 @@ func TestRemoveCloudServicesCommand(t *testing.T) {
 	err = protojson.Unmarshal(b.Bytes(), &response)
 
 	assert.Nil(t, err)
+
+	// Re-create default service
+	_, err = service.CreateDefaultTargetCloudService()
+
+	assert.Nil(t, err)
 }
 
 func TestUpdateCloudServiceCommand(t *testing.T) {
