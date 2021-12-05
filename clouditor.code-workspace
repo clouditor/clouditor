@@ -33,6 +33,7 @@
 				"--proto_path=${workspaceRoot}/third_party",
 				"--proto_path=${env.GOPATH}/src"
 			]
-		}
+		},
+		"go.coverOnSave": true
 	}
 }

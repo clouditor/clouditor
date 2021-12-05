@@ -32,6 +32,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/persistence"
 
 	"clouditor.io/clouditor/api/orchestrator"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
@@ -42,6 +43,11 @@ var service *service_orchestrator.Service
 
 func TestMain(m *testing.M) {
 	err := os.Chdir("../../")
+	if err != nil {
+		panic(err)
+	}
+
+	err = persistence.InitDB(true, "", 0)
 	if err != nil {
 		panic(err)
 	}

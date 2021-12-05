@@ -30,7 +30,6 @@ import (
 	"errors"
 
 	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/persistence"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -38,8 +37,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func (*Service) RegisterCloudService(_ context.Context, req *orchestrator.RegisterCloudServiceRequest) (service *orchestrator.CloudService, err error) {
-	if req.Service == nil {
+func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.RegisterCloudServiceRequest) (service *orchestrator.CloudService, err error) {
+	if req == nil || req.Service == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "Service is empty")
 	}
 
@@ -47,16 +46,15 @@ func (*Service) RegisterCloudService(_ context.Context, req *orchestrator.Regist
 		return nil, status.Errorf(codes.InvalidArgument, "Service name is empty")
 	}
 
-	db := persistence.GetDatabase()
-
 	service = new(orchestrator.CloudService)
 
 	// Generate a new ID
 	service.Id = uuid.NewString()
 	service.Name = req.Service.Name
+	service.Description = req.Service.Description
 
 	// Persist the service in our database
-	db.Create(&service)
+	s.db.Create(&service)
 
 	return
 }

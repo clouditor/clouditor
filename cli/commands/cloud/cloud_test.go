@@ -103,6 +103,31 @@ func TestMain(m *testing.M) {
 	defer os.Exit(m.Run())
 }
 
+func TestNewCloudCommand(t *testing.T) {
+	cmd := cloud.NewCloudCommand()
+
+	assert.NotNil(t, cmd)
+	assert.True(t, cmd.HasSubCommands())
+}
+
+func TestRegisterCloudServiceCommand(t *testing.T) {
+	var err error
+	var b bytes.Buffer
+	var response orchestrator.CloudService
+
+	cli.Output = &b
+
+	cmd := cloud.NewRegisterCloudServiceCommand()
+	err = cmd.RunE(nil, []string{"not_default"})
+
+	assert.Nil(t, err)
+
+	err = protojson.Unmarshal(b.Bytes(), &response)
+
+	assert.Nil(t, err)
+	assert.Equal(t, "not_default", response.Name)
+}
+
 func TestListCloudServicesCommand(t *testing.T) {
 	var err error
 	var b bytes.Buffer
