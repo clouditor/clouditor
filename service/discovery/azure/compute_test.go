@@ -284,7 +284,7 @@ func TestGetBootLogOutput(t *testing.T) {
 	// Delete the "diagnosticsProfile" property
 	virtualMachine.DiagnosticsProfile = nil
 
-	getBootLogOutputResponse := getBootLogOutput(&virtualMachine)
+	getBootLogOutputResponse := BootLogOutput(&virtualMachine)
 
 	assert.Empty(t, getBootLogOutputResponse)
 }

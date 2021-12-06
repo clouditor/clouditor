@@ -165,7 +165,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 			}},
 		BootLog: &voc.BootLog{Log: &voc.Log{
 			Enabled:         IsBootDiagnosticEnabled(vm),
-			Output:          []voc.ResourceID{voc.ResourceID(getBootLogOutput(vm))},
+			Output:          []voc.ResourceID{voc.ResourceID(BootLogOutput(vm))},
 			RetentionPeriod: 0, // Currently, configuring the retention period for Managed Boot Diagnostics is not available. The logs will be overwritten after 1gb of space according to https://github.com/MicrosoftDocs/azure-docs/issues/69953
 		}},
 		OSLog: &voc.OSLog{}, // TODO(garuppel): Add OSLog
@@ -173,7 +173,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 		BlockStorage: []voc.ResourceID{},
 	}
 
-	vmExtended, err := d.getExtendedVirtualMachine(vm)
+	vmExtended, err := d.ExtendedVirtualMachine(vm)
 	if err != nil {
 		return nil, fmt.Errorf("could not get virtual machine with extended information: %w", err)
 	}
@@ -192,8 +192,8 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 	return r, nil
 }
 
-// Get virtual machine with extended information, e.g., managed disk ID, network interface ID
-func (d *azureComputeDiscovery) getExtendedVirtualMachine(vm *compute.VirtualMachine) (*compute.VirtualMachine, error) {
+// ExtendedVirtualMachine gets virtual machine with extended information, e.g., managed disk ID, network interface ID
+func (d *azureComputeDiscovery) ExtendedVirtualMachine(vm *compute.VirtualMachine) (*compute.VirtualMachine, error) {
 	client := compute.NewVirtualMachinesClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
 
@@ -212,7 +212,7 @@ func IsBootDiagnosticEnabled(vm *compute.VirtualMachine) bool {
 	}
 }
 
-func getBootLogOutput(vm *compute.VirtualMachine) string {
+func BootLogOutput(vm *compute.VirtualMachine) string {
 	if IsBootDiagnosticEnabled(vm) {
 		return *vm.DiagnosticsProfile.BootDiagnostics.StorageURI
 	}

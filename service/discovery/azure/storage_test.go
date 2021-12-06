@@ -479,18 +479,18 @@ func TestStorageMethodsWhenInputIsInvalid(t *testing.T) {
 		fmt.Println("error getting mocked storage account object: %w", err)
 	}
 
-	// Test method getDiskEncryptionSetName
+	// Test method DiskEncryptionSetName
 	discEncryptionSetID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1"
-	assert.Equal(t, "encryptionkeyvault1", getDiskEncryptionSetName(discEncryptionSetID))
+	assert.Equal(t, "encryptionkeyvault1", DiskEncryptionSetName(discEncryptionSetID))
 
-	// Test method getStorageAtRestEncryption
-	atRestEncryption, err := getStorageAtRestEncryption(&mockedStorageAccountObject)
+	// Test method StorageAtRestEncryption
+	atRestEncryption, err := StorageAtRestEncryption(&mockedStorageAccountObject)
 	assert.Nil(t, err)
 
 	managedKeyEncryption := voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{Algorithm: "AES256", Enabled: true}}
 	assert.Equal(t, managedKeyEncryption, atRestEncryption)
 
-	// Test method getBlockStorageAtRestEncryption
+	// Test method BlockStorageAtRestEncryption
 	// Todo(garuppel): How to test? Problem: Azure call again
 }
 
@@ -501,12 +501,12 @@ func TestStorageMethodsWhenInputIsInvalid(t *testing.T) {
 	//)
 	d := azureStorageDiscovery{}
 
-	// Test method getSourceVaultID
+	// Test method SourceVaultID
 	// Todo(garuppel): How to test? Problem: Azure call again
 	// TODO: change to err != nil
 	diskEncryptionSetID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1"
 	keyVaultID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.KeyVault/vaults/keyvault1"
-	getSourceVaultIDResult, err := d.getSourceVaultID(diskEncryptionSetID)
+	getSourceVaultIDResult, err := d.SourceVaultID(diskEncryptionSetID)
 	assert.Nil(t, err)
 	assert.Contains(t, err.Error(), "could not get discEncryptionSet")
 	assert.Equal(t, keyVaultID, getSourceVaultIDResult)
