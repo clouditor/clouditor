@@ -29,20 +29,33 @@ syntax = "proto3";
 package clouditor;
 
 import "evidence.proto";
+import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 
 option go_package = "api/evidence";
 
 // Manages the storage of evidences
 service EvidenceStore {
-  // Stores an evidence to the evidence storage
-  rpc StoreEvidence(Evidence) returns (StoreEvidenceResponse);
+  // Stores an evidence to the evidence storage. Part of the public API, also exposed at REST.
+  rpc StoreEvidence(Evidence) returns (StoreEvidenceResponse) {
+    option (google.api.http) = {
+      post : "/v1/evidence_store/evidence"
+      body : "evidence"
+      // TODO(all): What is the difference between this response_body ("*") and to don't specify it at all
+      response_body : "*"
+    };
+  }
 
-  // Stores a stream of evidences to the evidence storage
-  rpc StoreEvidences(stream Evidence) returns (google.protobuf.Empty);
+  // Stores a stream of evidences to the evidence storage. Part of the public API, not exposed at REST.
+  rpc StoreEvidences(stream Evidence) returns (google.protobuf.Empty) {};
 
-  // Returns the evidences lying in the evidence storage
-  rpc ListEvidences(ListEvidencesRequest) returns (ListEvidencesResponse);
+  // Returns all stored evidences. Part of the public API, also exposed at REST.
+  rpc ListEvidences(ListEvidencesRequest) returns (ListEvidencesResponse) {
+    option (google.api.http) = {
+      get : "/v1/evidence_store/evidences"
+      response_body : "*"
+    };
+  }
 }
 
 message StoreEvidenceResponse { bool status = 1; }

@@ -24,8 +24,6 @@
  *
  * This file is part of Clouditor Community Edition.
  */
-// ToDo(all): Change name of file to resources.proto or similar? (It is not
-// containing evidences only)
 syntax = "proto3";
 
 package clouditor;
@@ -56,7 +54,7 @@ message Metric {
 
   // The values a Scale accepts
   enum Scale {
-    NOMIMAL = 0;
+    NOMINAL = 0;
     ORDINAL = 1;
     METRIC = 2;
   }
