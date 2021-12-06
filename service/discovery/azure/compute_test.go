@@ -23,20 +23,32 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package azure_test
+package azure
 
 import (
+	"fmt"
+	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/compute/mgmt/compute"
+	"io"
+	"k8s.io/apimachinery/pkg/util/json"
 	"net/http"
 	"testing"
 	"time"
 
-	"clouditor.io/clouditor/service/discovery/azure"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 )
 
 type mockComputeSender struct {
 	mockSender
+}
+
+func newMockComputeSender() *mockComputeSender {
+	m := &mockComputeSender{}
+	return m
+}
+
+type mockedVirtualMachinesResponse struct {
+	Value []compute.VirtualMachine `json:"value,omitempty"`
 }
 
 func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error) {
@@ -167,10 +179,20 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 	return m.mockSender.Do(req)
 }
 
+func TestAzureComputeAuthorizer(t *testing.T) {
+
+	d := NewAzureComputeDiscovery()
+	list, err := d.List()
+
+	assert.NotNil(t, err)
+	assert.Nil(t, list)
+	assert.Equal(t, "could not authorize Azure account: no authorized was available", err.Error())
+}
+
 func TestCompute(t *testing.T) {
-	d := azure.NewAzureComputeDiscovery(
-		azure.WithSender(&mockComputeSender{}),
-		azure.WithAuthorizer(&mockAuthorizer{}),
+	d := NewAzureComputeDiscovery(
+		WithSender(&mockComputeSender{}),
+		WithAuthorizer(&mockAuthorizer{}),
 	)
 
 	list, err := d.List()
@@ -178,12 +200,13 @@ func TestCompute(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
 	assert.Equal(t, 3, len(list))
+	assert.NotEmpty(t, d.Name())
 }
 
 func TestVirtualMachine(t *testing.T) {
-	d := azure.NewAzureComputeDiscovery(
-		azure.WithSender(&mockComputeSender{}),
-		azure.WithAuthorizer(&mockAuthorizer{}),
+	d := NewAzureComputeDiscovery(
+		WithSender(&mockComputeSender{}),
+		WithAuthorizer(&mockAuthorizer{}),
 	)
 
 	list, err := d.List()
@@ -210,9 +233,9 @@ func TestVirtualMachine(t *testing.T) {
 }
 
 func TestFunction(t *testing.T) {
-	d := azure.NewAzureComputeDiscovery(
-		azure.WithSender(&mockComputeSender{}),
-		azure.WithAuthorizer(&mockAuthorizer{}),
+	d := NewAzureComputeDiscovery(
+		WithSender(&mockComputeSender{}),
+		WithAuthorizer(&mockAuthorizer{}),
 	)
 
 	list, err := d.List()
@@ -225,4 +248,77 @@ func TestFunction(t *testing.T) {
 
 	assert.True(t, ok)
 	assert.Equal(t, "function1", function.Name)
+}
+
+func TestComputeDiscoverFunctionWhenInputIsInvalid(t *testing.T) {
+	d := azureComputeDiscovery{}
+
+	discoverFunctionResponse, err := d.discoverFunction()
+
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "could not list functions")
+	assert.Nil(t, discoverFunctionResponse)
+}
+
+func TestComputeDiscoverVirtualMachines(t *testing.T) {
+	d := azureComputeDiscovery{}
+
+	discoverVirtualMachineResponse, err := d.discoverVirtualMachines()
+
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "could not list virtual machines")
+	assert.Nil(t, discoverVirtualMachineResponse)
+}
+
+func TestBootLogOutput(t *testing.T) {
+	// Get mocked compute.VirtualMachine
+	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/virtualMachines"
+	mockedVirtualMachinesResponse, err := mockedVirtualMachines(reqURL)
+	if err != nil {
+		fmt.Println("error getting mocked storage account object: %w", err)
+	}
+
+	virtualMachine := mockedVirtualMachinesResponse[0]
+
+	assert.NotEmpty(t, virtualMachine)
+	// Delete the "diagnosticsProfile" property
+	virtualMachine.DiagnosticsProfile = nil
+
+	getBootLogOutputResponse := bootLogOutput(&virtualMachine)
+
+	assert.Empty(t, getBootLogOutputResponse)
+}
+
+// mockedVirtualMachines returns the mocked virtualMachines list
+func mockedVirtualMachines(reqUrl string) (virtualMachines []compute.VirtualMachine, err error) {
+	var mockedVirtualMachinesResponse mockedVirtualMachinesResponse
+
+	m := newMockComputeSender()
+	req, err := http.NewRequest("GET", reqUrl, nil)
+	if err != nil {
+		return virtualMachines, fmt.Errorf("error creating new request: %w", err)
+	}
+	resp, err := m.Do(req)
+	if err != nil || resp.StatusCode == 404 {
+		return virtualMachines, fmt.Errorf("error getting mock http response: %w", err)
+	}
+
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			fmt.Println("error io.ReadCloser: %w", err)
+		}
+	}(resp.Body)
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return virtualMachines, fmt.Errorf("error read all: %w", err)
+	}
+	err = json.Unmarshal(responseBody, &mockedVirtualMachinesResponse)
+	if err != nil {
+		return virtualMachines, fmt.Errorf("error unmarshalling: %w", err)
+	}
+
+	virtualMachines = mockedVirtualMachinesResponse.Value
+
+	return virtualMachines, nil
 }
