@@ -154,15 +154,17 @@ func TestNetwork(t *testing.T) {
 }
 
 func TestComputeDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
+	d := azureNetworkDiscovery{}
+
 	// Test method discoverNetworkInterfaces
-	discoverNetworkInterfacesResponse, err := discoverNetworkInterfaces()
+	discoverNetworkInterfacesResponse, err := d.discoverNetworkInterfaces()
 
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "could not list network interfaces")
 	assert.Nil(t, discoverNetworkInterfacesResponse)
 
 	// Test method discoverLoadBalancer
-	discoverLoadBalancerResponse, err := discoverLoadBalancer()
+	discoverLoadBalancerResponse, err := d.discoverLoadBalancer()
 
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "could not list load balancer")
