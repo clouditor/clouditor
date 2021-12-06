@@ -433,7 +433,7 @@ func TestStorageHandleMethodsWhenInputIsInvalid(t *testing.T) {
 
 	// Get mocked storage.Account
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"
-	mockedStorageAccountObject, err := getMockedStorageAccount(reqURL)
+	mockedStorageAccountObject, err := MockedStorageAccount(reqURL)
 	if err != nil {
 		fmt.Println("error getting mocked storage account object: %w", err)
 	}
@@ -459,7 +459,7 @@ func TestStorageHandleMethodsWhenInputIsInvalid(t *testing.T) {
 
 	// Test method handleBlockStorage
 	reqURL = "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/disks"
-	disk, err := getMockedDisk(reqURL)
+	disk, err := MockedDisk(reqURL)
 	if err != nil {
 		fmt.Println("error getting mocked disk object: %w", err)
 	}
@@ -474,7 +474,7 @@ func TestStorageHandleMethodsWhenInputIsInvalid(t *testing.T) {
 func TestStorageMethodsWhenInputIsInvalid(t *testing.T) {
 	// Get mocked storage.Account
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"
-	mockedStorageAccountObject, err := getMockedStorageAccount(reqURL)
+	mockedStorageAccountObject, err := MockedStorageAccount(reqURL)
 	if err != nil {
 		fmt.Println("error getting mocked storage account object: %w", err)
 	}
@@ -499,7 +499,7 @@ func TestStorageDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
 
 	// Get mocked storage.Account
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"
-	mockedStorageAccountObject, err := getMockedStorageAccount(reqURL)
+	mockedStorageAccountObject, err := MockedStorageAccount(reqURL)
 	if err != nil {
 		fmt.Println("error getting mocked storage account object: %w", err)
 	}
@@ -525,8 +525,8 @@ func TestStorageDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
 	assert.Nil(t, discoverBlockStoragesResponse)
 }
 
-// getMockedDisk returns one mocked compute disk
-func getMockedDisk(reqUrl string) (disk compute.Disk, err error) {
+// MockedDisk returns one mocked compute disk
+func MockedDisk(reqUrl string) (disk compute.Disk, err error) {
 
 	m := newMockStorageSender()
 	req, err := http.NewRequest("GET", reqUrl, nil)
@@ -558,8 +558,8 @@ func getMockedDisk(reqUrl string) (disk compute.Disk, err error) {
 	return disks.Value[0], nil
 }
 
-// getMockedStorageAccount returns one mocked storage account
-func getMockedStorageAccount(reqUrl string) (storageAccount storage.Account, err error) {
+// MockedStorageAccount returns one mocked storage account
+func MockedStorageAccount(reqUrl string) (storageAccount storage.Account, err error) {
 	var storageAccountResponse responseStorageAccount
 
 	m := newMockStorageSender()

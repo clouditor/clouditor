@@ -197,7 +197,7 @@ func (d *azureComputeDiscovery) ExtendedVirtualMachine(vm *compute.VirtualMachin
 	client := compute.NewVirtualMachinesClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
 
-	vmExtended, err := client.Get(context.Background(), GetResourceGroupName(*vm.ID), *vm.Name, "")
+	vmExtended, err := client.Get(context.Background(), ResourceGroupName(*vm.ID), *vm.Name, "")
 	if err != nil {
 		return nil, fmt.Errorf("could not get virtual machine: %w", err)
 	}

@@ -37,12 +37,12 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 )
 
-type azureArmTemplateDiscovery struct {
+type azureARMTemplateDiscovery struct {
 	azureDiscovery
 }
 
-func NewAzureArmTemplateDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
-	d := &azureArmTemplateDiscovery{}
+func NewAzureARMTemplateDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
+	d := &azureARMTemplateDiscovery{}
 
 	for _, opt := range opts {
 		if auth, ok := opt.(*authorizerOption); ok {
@@ -55,21 +55,21 @@ func NewAzureArmTemplateDiscovery(opts ...DiscoveryOption) discovery.Discoverer 
 	return d
 }
 
-func (*azureArmTemplateDiscovery) Name() string {
+func (*azureARMTemplateDiscovery) Name() string {
 	return "Azure ARM template"
 }
 
-func (*azureArmTemplateDiscovery) Description() string {
+func (*azureARMTemplateDiscovery) Description() string {
 	return "Discovery using an Azure Resource Manager (ARM) template."
 }
 
 // List Azure resources by discovering Azure ARM template
-func (d *azureArmTemplateDiscovery) List() (list []voc.IsCloudResource, err error) {
+func (d *azureARMTemplateDiscovery) List() (list []voc.IsCloudResource, err error) {
 	if err = d.authorize(); err != nil {
 		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
 	}
 
-	armResources, err := d.discoverArmTemplate()
+	armResources, err := d.discoverARMTemplate()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover Azure ARM template: %w", err)
 	}
@@ -78,7 +78,7 @@ func (d *azureArmTemplateDiscovery) List() (list []voc.IsCloudResource, err erro
 	return
 }
 
-func (d *azureArmTemplateDiscovery) discoverArmTemplate() ([]voc.IsCloudResource, error) {
+func (d *azureARMTemplateDiscovery) discoverARMTemplate() ([]voc.IsCloudResource, error) {
 
 	var (
 		list []voc.IsCloudResource
@@ -204,7 +204,7 @@ func (d *azureArmTemplateDiscovery) discoverArmTemplate() ([]voc.IsCloudResource
 //	return nil
 //}
 
-func (d *azureArmTemplateDiscovery) handleObjectStorage(resourceValue map[string]interface{}, azureResources []interface{}, resourceGroup string) (voc.IsCompute, error) {
+func (d *azureARMTemplateDiscovery) handleObjectStorage(resourceValue map[string]interface{}, azureResources []interface{}, resourceGroup string) (voc.IsCompute, error) {
 
 	var (
 		azureResourceName string
@@ -259,7 +259,7 @@ func (d *azureArmTemplateDiscovery) handleObjectStorage(resourceValue map[string
 	return storage, nil
 }
 
-func (d *azureArmTemplateDiscovery) handleFileStorage(resourceValue map[string]interface{}, azureResources []interface{}, resourceGroup string) (voc.IsCompute, error) {
+func (d *azureARMTemplateDiscovery) handleFileStorage(resourceValue map[string]interface{}, azureResources []interface{}, resourceGroup string) (voc.IsCompute, error) {
 
 	var (
 		azureResourceName string
@@ -403,7 +403,7 @@ func MinTlsVersionOfStorageAccount(value map[string]interface{}) string {
 	return ""
 }
 
-func (d *azureArmTemplateDiscovery) handleLoadBalancer(template map[string]interface{}, resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
+func (d *azureARMTemplateDiscovery) handleLoadBalancer(template map[string]interface{}, resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
 
 	var name string
 	var err error
@@ -452,7 +452,7 @@ func (d *azureArmTemplateDiscovery) handleLoadBalancer(template map[string]inter
 	return lb, nil
 }
 
-func (d *azureArmTemplateDiscovery) handleVirtualMachine(template map[string]interface{}, resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
+func (d *azureARMTemplateDiscovery) handleVirtualMachine(template map[string]interface{}, resourceValue map[string]interface{}, resourceGroup string) (voc.IsCompute, error) {
 	var id string
 	var name string
 	var bootDiagnosticsEnabled bool
@@ -482,7 +482,7 @@ func (d *azureArmTemplateDiscovery) handleVirtualMachine(template map[string]int
 			for propertiesKey, propertiesValue := range properties {
 				if propertiesKey == "diagnosticsProfile" {
 					bootDiagnosticsEnabled = propertiesValue.(map[string]interface{})["bootDiagnostics"].(map[string]interface{})["enabled"].(bool)
-					storageUri = StorageURIFromArmTemplate(propertiesValue.(map[string]interface{}))
+					storageUri = StorageURIFromARMTemplate(propertiesValue.(map[string]interface{}))
 				}
 			}
 		}
@@ -522,7 +522,7 @@ func (d *azureArmTemplateDiscovery) handleVirtualMachine(template map[string]int
 	return vm, nil
 }
 
-func (d *azureArmTemplateDiscovery) getBlockStorageResourceIDs(properties map[string]interface{}, resourceGroupName string) []voc.ResourceID {
+func (d *azureARMTemplateDiscovery) getBlockStorageResourceIDs(properties map[string]interface{}, resourceGroupName string) []voc.ResourceID {
 	var blockStorage []voc.ResourceID
 
 	dataDisks := properties["storageProfile"].(map[string]interface{})["dataDisks"].([]interface{})
@@ -535,7 +535,7 @@ func (d *azureArmTemplateDiscovery) getBlockStorageResourceIDs(properties map[st
 	return blockStorage
 }
 
-func (d *azureArmTemplateDiscovery) createID(resourceGroup, resourceType, name string) string {
+func (d *azureARMTemplateDiscovery) createID(resourceGroup, resourceType, name string) string {
 	return "/subscriptions/" + *d.sub.SubscriptionID + "/resourceGroups/" + resourceGroup + "/providers/" + resourceType + "/" + name
 }
 
@@ -581,7 +581,7 @@ func ContainerNameFromResourceName(name string) string {
 	return anotherNameSplit[1]
 }
 
-func StorageURIFromArmTemplate(name map[string]interface{}) string {
+func StorageURIFromARMTemplate(name map[string]interface{}) string {
 	var storageUri string
 	if name["bootDiagnostics"].(map[string]interface{})["storageUri"] == nil {
 		return ""

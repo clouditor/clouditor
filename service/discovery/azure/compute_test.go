@@ -270,10 +270,10 @@ func TestComputeDiscoverVirtualMachines(t *testing.T) {
 	assert.Nil(t, discoverVirtualMachineResponse)
 }
 
-func TestGetBootLogOutput(t *testing.T) {
+func TestBootLogOutput(t *testing.T) {
 	// Get mocked compute.VirtualMachine
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/virtualMachines"
-	mockedVirtualMachinesResponse, err := getMockedVirtualMachines(reqURL)
+	mockedVirtualMachinesResponse, err := MockedVirtualMachines(reqURL)
 	if err != nil {
 		fmt.Println("error getting mocked storage account object: %w", err)
 	}
@@ -289,8 +289,8 @@ func TestGetBootLogOutput(t *testing.T) {
 	assert.Empty(t, getBootLogOutputResponse)
 }
 
-// getMockedVirtualMachines returns the mocked virtualMachines list
-func getMockedVirtualMachines(reqUrl string) (virtualMachines []compute.VirtualMachine, err error) {
+// MockedVirtualMachines returns the mocked virtualMachines list
+func MockedVirtualMachines(reqUrl string) (virtualMachines []compute.VirtualMachine, err error) {
 	var mockedVirtualMachinesResponse mockedVirtualMachinesResponse
 
 	m := newMockComputeSender()

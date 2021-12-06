@@ -41,7 +41,7 @@ type mockARMTemplateSender struct {
 	mockSender
 }
 
-func newMockArmTemplateSender() *mockARMTemplateSender {
+func newMockARMTemplateSender() *mockARMTemplateSender {
 	m := &mockARMTemplateSender{}
 	return m
 }
@@ -304,9 +304,9 @@ func (m mockARMTemplateSender) Do(req *http.Request) (res *http.Response, err er
 	return m.mockSender.Do(req)
 }
 
-func TestAzureArmTemplateAuthorizer(t *testing.T) {
+func TestAzureARMTemplateAuthorizer(t *testing.T) {
 
-	d := NewAzureArmTemplateDiscovery()
+	d := NewAzureARMTemplateDiscovery()
 	list, err := d.List()
 
 	assert.NotNil(t, err)
@@ -315,7 +315,7 @@ func TestAzureArmTemplateAuthorizer(t *testing.T) {
 }
 
 func TestARMTemplateDiscovery(t *testing.T) {
-	d := NewAzureArmTemplateDiscovery(
+	d := NewAzureARMTemplateDiscovery(
 		WithSender(&mockARMTemplateSender{}),
 		WithAuthorizer(&mockAuthorizer{}),
 	)
@@ -329,7 +329,7 @@ func TestARMTemplateDiscovery(t *testing.T) {
 }
 
 func TestObjectStorageProperties(t *testing.T) {
-	d := NewAzureArmTemplateDiscovery(
+	d := NewAzureARMTemplateDiscovery(
 		WithSender(&mockARMTemplateSender{}),
 		WithAuthorizer(&mockAuthorizer{}),
 	)
@@ -368,7 +368,7 @@ func TestObjectStorageProperties(t *testing.T) {
 }
 
 func TestFileStorageProperties(t *testing.T) {
-	d := NewAzureArmTemplateDiscovery(
+	d := NewAzureARMTemplateDiscovery(
 		WithSender(&mockARMTemplateSender{}),
 		WithAuthorizer(&mockAuthorizer{}),
 	)
@@ -397,7 +397,7 @@ func TestFileStorageProperties(t *testing.T) {
 }
 
 func TestVmProperties(t *testing.T) {
-	d := NewAzureArmTemplateDiscovery(
+	d := NewAzureARMTemplateDiscovery(
 		WithSender(&mockARMTemplateSender{}),
 		WithAuthorizer(&mockAuthorizer{}),
 	)
@@ -419,7 +419,7 @@ func TestVmProperties(t *testing.T) {
 }
 
 func TestLoadBalancerProperties(t *testing.T) {
-	d := NewAzureArmTemplateDiscovery(
+	d := NewAzureARMTemplateDiscovery(
 		WithSender(&mockARMTemplateSender{}),
 		WithAuthorizer(&mockAuthorizer{}),
 	)
@@ -437,67 +437,67 @@ func TestLoadBalancerProperties(t *testing.T) {
 	assert.Equal(t, "eastus", resourceLoadBalancer.GeoLocation.Region)
 }
 
-// TestArmTemplateHandleObjectStorageMethodWhenInputIsInvalid tests the method handleObjectStorage w
-func TestArmTemplateHandleObjectStorageMethodWhenInputIsInvalid(t *testing.T) {
-	// Get mocked Azure Arm Template
+// TestARMTemplateHandleObjectStorageMethodWhenInputIsInvalid tests the method handleObjectStorage w
+func TestARMTemplateHandleObjectStorageMethodWhenInputIsInvalid(t *testing.T) {
+	// Get mocked Azure ARM Template
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/exportTemplate"
-	mockedArmTemplate, err := getMockedArmTemplate(reqURL)
+	mockedARMTemplate, err := MockedARMTemplate(reqURL)
 	if err != nil {
 		fmt.Println("error getting mocked storage account object: %w", err)
 	}
 
-	armTemplateResources := mockedArmTemplate["template"].(map[string]interface{})["resources"].([]interface{})
+	armTemplateResources := mockedARMTemplate["template"].(map[string]interface{})["resources"].([]interface{})
 
 	// TODO(garuppel): d.sub.SubscriptionID = nil
 	// check for dependsOn type assertion error
-	armTemplateHandleObjectStorageResponse, err := getDependsOnTypeAssertionResponse("Object", armTemplateResources)
+	armTemplateHandleObjectStorageResponse, err := DependsOnTypeAssertionResponse("Object", armTemplateResources)
 
 	assert.NotNil(t, err)
 	assert.Equal(t, "dependsOn type assertion failed", err.Error())
 	assert.Nil(t, armTemplateHandleObjectStorageResponse)
 
 	// check for StorageAccountResourceFromARMTemplate() response error
-	armTemplateHandleObjectStorageResponse, err = getStorageAccountResourceFromTemplateResponse("Object", armTemplateResources)
+	armTemplateHandleObjectStorageResponse, err = StorageAccountResourceFromTemplateResponse("Object", armTemplateResources)
 
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "cannot get storage account resource from Azure ARM template:")
 	assert.Nil(t, armTemplateHandleObjectStorageResponse)
 
 	// check for StorageAccountAtRestEncryptionFromARMtemplate() response error
-	armTemplateHandleObjectStorageResponse, err = getStorageAccountAtRestEncryptionFromArmResponse("Object", armTemplateResources)
+	armTemplateHandleObjectStorageResponse, err = StorageAccountAtRestEncryptionFromARMResponse("Object", armTemplateResources)
 
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "cannot get atRestEncryption for storage account resource from Azure ARM template")
 	assert.Nil(t, armTemplateHandleObjectStorageResponse)
 }
 
-func TestArmTemplateHandleFileStorageMethodWhenInputIsInvalid(t *testing.T) {
-	// Get mocked Azure Arm Template
+func TestARMTemplateHandleFileStorageMethodWhenInputIsInvalid(t *testing.T) {
+	// Get mocked Azure ARM Template
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/exportTemplate"
-	mockedArmTemplate, err := getMockedArmTemplate(reqURL)
+	mockedARMTemplate, err := MockedARMTemplate(reqURL)
 	if err != nil {
 		fmt.Println("error getting mocked storage account object: %w", err)
 	}
 
-	armTemplateResources := mockedArmTemplate["template"].(map[string]interface{})["resources"].([]interface{})
+	armTemplateResources := mockedARMTemplate["template"].(map[string]interface{})["resources"].([]interface{})
 
 	// Tests for method handleFileStorage
 	// check for dependsOn type assertion error
-	armTemplateHandleFileStorageResponse, err := getDependsOnTypeAssertionResponse("File", armTemplateResources)
+	armTemplateHandleFileStorageResponse, err := DependsOnTypeAssertionResponse("File", armTemplateResources)
 
 	assert.NotNil(t, err)
 	assert.Equal(t, "dependsOn type assertion failed", err.Error())
 	assert.Nil(t, armTemplateHandleFileStorageResponse)
 
 	// check for StorageAccountResourceFromARMTemplate() response error
-	armTemplateHandleFileStorageResponse, err = getStorageAccountResourceFromTemplateResponse("File", armTemplateResources)
+	armTemplateHandleFileStorageResponse, err = StorageAccountResourceFromTemplateResponse("File", armTemplateResources)
 
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "cannot get storage account resource from Azure ARM template:")
 	assert.Nil(t, armTemplateHandleFileStorageResponse)
 
 	// check for StorageAccountAtRestEncryptionFromARMtemplate() response error
-	armTemplateHandleFileStorageResponse, err = getStorageAccountAtRestEncryptionFromArmResponse("File", armTemplateResources)
+	armTemplateHandleFileStorageResponse, err = StorageAccountAtRestEncryptionFromARMResponse("File", armTemplateResources)
 
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "cannot get atRestEncryption for storage account resource from Azure ARM template")
@@ -505,14 +505,14 @@ func TestArmTemplateHandleFileStorageMethodWhenInputIsInvalid(t *testing.T) {
 }
 
 func TestIsHttpsTrafficOnlyEnabled(t *testing.T) {
-	// Get mocked Azure Arm Template
+	// Get mocked Azure ARM Template
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/exportTemplate"
-	mockedArmTemplate, err := getMockedArmTemplate(reqURL)
+	mockedARMTemplate, err := MockedARMTemplate(reqURL)
 	if err != nil {
 		fmt.Println("error getting mocked storage account object: %w", err)
 	}
 
-	armTemplateResources := mockedArmTemplate["template"].(map[string]interface{})["resources"].([]interface{})
+	armTemplateResources := mockedARMTemplate["template"].(map[string]interface{})["resources"].([]interface{})
 	// Delete "supportsHttpsTrafficOnly" for test
 	delete(armTemplateResources[3].(map[string]interface{})["properties"].(map[string]interface{})["encryption"].(map[string]interface{}), "supportsHttpsTrafficOnly")
 
@@ -520,30 +520,30 @@ func TestIsHttpsTrafficOnlyEnabled(t *testing.T) {
 }
 
 func TestIsServiceEncryptionEnabled(t *testing.T) {
-	// Get mocked Azure Arm Template
+	// Get mocked Azure ARM Template
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/exportTemplate"
-	mockedArmTemplate, err := getMockedArmTemplate(reqURL)
+	mockedARMTemplate, err := MockedARMTemplate(reqURL)
 	if err != nil {
 		fmt.Println("error getting mocked storage account object: %w", err)
 	}
 
-	armTemplateResources := mockedArmTemplate["template"].(map[string]interface{})["resources"].([]interface{})
+	armTemplateResources := mockedARMTemplate["template"].(map[string]interface{})["resources"].([]interface{})
 	// Delete "enabled" for test
 	delete(armTemplateResources[3].(map[string]interface{})["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["services"].(map[string]interface{})["blob"].(map[string]interface{}), "enabled")
 
 	assert.False(t, isServiceEncryptionEnabled("blob", armTemplateResources[3].(map[string]interface{})))
 }
 
-func TestGetMinTlsVersionOfStorageAccount(t *testing.T) {
+func TestMinTlsVersionOfStorageAccount(t *testing.T) {
 
-	// Get mocked Azure Arm Template
+	// Get mocked Azure ARM Template
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/exportTemplate"
-	mockedArmTemplate, err := getMockedArmTemplate(reqURL)
+	mockedARMTemplate, err := MockedARMTemplate(reqURL)
 	if err != nil {
 		fmt.Println("error getting mocked storage account object: %w", err)
 	}
 
-	armTemplateResources := mockedArmTemplate["template"].(map[string]interface{})["resources"].([]interface{})
+	armTemplateResources := mockedARMTemplate["template"].(map[string]interface{})["resources"].([]interface{})
 	// Delete "minimumTlsVersion" for test
 	delete(armTemplateResources[3].(map[string]interface{})["properties"].(map[string]interface{})["encryption"].(map[string]interface{}), "minimumTlsVersion")
 	assert.Empty(t, MinTlsVersionOfStorageAccount(armTemplateResources[3].(map[string]interface{})))
@@ -551,96 +551,96 @@ func TestGetMinTlsVersionOfStorageAccount(t *testing.T) {
 
 func TestMethodGetDefaultResourceNameFromParameter(t *testing.T) {
 	var (
-		modifiedArmTemplate                         map[string]interface{}
+		modifiedARMTemplate                         map[string]interface{}
 		err                                         error
 		getDefaultResourceNameFromParameterResponse string
 	)
 
-	// URL mocked Azure Arm Template
+	// URL mocked Azure ARM Template
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/exportTemplate"
 
 	// check DefaultResourceNameFromParameter() type assertion fail
-	// Get mocked Azure Arm Template
-	modifiedArmTemplate, err = getMockedArmTemplate(reqURL)
+	// Get mocked Azure ARM Template
+	modifiedARMTemplate, err = MockedARMTemplate(reqURL)
 	if err != nil {
 		fmt.Println("error getting mocked storage account object: %w", err)
 	}
 
 	// Change "parameters" type
-	delete(modifiedArmTemplate["template"].(map[string]interface{}), "parameters")
-	modifiedArmTemplate["template"].(map[string]interface{})["parameters"] = []map[string]interface{}{}
-	getDefaultResourceNameFromParameterResponse, err = DefaultResourceNameFromParameter(modifiedArmTemplate["template"].(map[string]interface{}), "")
+	delete(modifiedARMTemplate["template"].(map[string]interface{}), "parameters")
+	modifiedARMTemplate["template"].(map[string]interface{})["parameters"] = []map[string]interface{}{}
+	getDefaultResourceNameFromParameterResponse, err = DefaultResourceNameFromParameter(modifiedARMTemplate["template"].(map[string]interface{}), "")
 
 	assert.NotNil(t, err.Error())
 	assert.Contains(t, err.Error(), "templateValue type assertion failed")
 	assert.Empty(t, getDefaultResourceNameFromParameterResponse)
 
 	// check DefaultResourceNameFromParameter() - error getting default resource name
-	// Get mocked Azure Arm Template
-	modifiedArmTemplate, err = getMockedArmTemplate(reqURL)
+	// Get mocked Azure ARM Template
+	modifiedARMTemplate, err = MockedARMTemplate(reqURL)
 	if err != nil {
 		fmt.Println("error getting mocked storage account object: %w", err)
 	}
 
 	// Use parameter resource name that is not existing in 'parameters'
 	parameterResourceNameNotExisting := "[parameters('storageAccounts_storageFAIL_name')]"
-	getDefaultResourceNameFromParameterResponse, err = DefaultResourceNameFromParameter(modifiedArmTemplate["template"].(map[string]interface{}), parameterResourceNameNotExisting)
+	getDefaultResourceNameFromParameterResponse, err = DefaultResourceNameFromParameter(modifiedARMTemplate["template"].(map[string]interface{}), parameterResourceNameNotExisting)
 
 	assert.NotNil(t, err.Error())
 	assert.Contains(t, err.Error(), "parameter resource type assertion failed")
 	assert.Empty(t, getDefaultResourceNameFromParameterResponse)
 
 	// check DefaultResourceNameFromParameter() parameter resource type assertion fail
-	// Get mocked Azure Arm Template
-	modifiedArmTemplate, err = getMockedArmTemplate(reqURL)
+	// Get mocked Azure ARM Template
+	modifiedARMTemplate, err = MockedARMTemplate(reqURL)
 	if err != nil {
 		fmt.Println("error getting mocked storage account object: %w", err)
 	}
 
 	// Change "parameters" to "parameter"
-	modifiedArmTemplate["template"].(map[string]interface{})["parameter"] = modifiedArmTemplate["template"].(map[string]interface{})["parameters"]
-	delete(modifiedArmTemplate["template"].(map[string]interface{}), "parameters")
-	getDefaultResourceNameFromParameterResponse, err = DefaultResourceNameFromParameter(modifiedArmTemplate["template"].(map[string]interface{}), "")
+	modifiedARMTemplate["template"].(map[string]interface{})["parameter"] = modifiedARMTemplate["template"].(map[string]interface{})["parameters"]
+	delete(modifiedARMTemplate["template"].(map[string]interface{}), "parameters")
+	getDefaultResourceNameFromParameterResponse, err = DefaultResourceNameFromParameter(modifiedARMTemplate["template"].(map[string]interface{}), "")
 
 	assert.NotNil(t, err.Error())
 	assert.Contains(t, err.Error(), "error getting default resource name")
 	assert.Empty(t, getDefaultResourceNameFromParameterResponse)
 
 	// check DefaultResourceNameFromParameter() no "defaultValue" available
-	// Get mocked Azure Arm Template
-	modifiedArmTemplate, err = getMockedArmTemplate(reqURL)
+	// Get mocked Azure ARM Template
+	modifiedARMTemplate, err = MockedARMTemplate(reqURL)
 	if err != nil {
 		fmt.Println("error getting mocked storage account object: %w", err)
 	}
 
 	// Delete "defaultValue" from parameters for resource "storageAccounts_storage1_name"
-	delete(modifiedArmTemplate["template"].(map[string]interface{})["parameters"].(map[string]interface{})["storageAccounts_storage1_name"].(map[string]interface{}), "defaultValue")
-	getDefaultResourceNameFromParameterResponse, err = DefaultResourceNameFromParameter(modifiedArmTemplate["template"].(map[string]interface{}), "[parameters('storageAccounts_storage1_name')]")
+	delete(modifiedARMTemplate["template"].(map[string]interface{})["parameters"].(map[string]interface{})["storageAccounts_storage1_name"].(map[string]interface{}), "defaultValue")
+	getDefaultResourceNameFromParameterResponse, err = DefaultResourceNameFromParameter(modifiedARMTemplate["template"].(map[string]interface{}), "[parameters('storageAccounts_storage1_name')]")
 
 	assert.Nil(t, err)
 	assert.Equal(t, "storageAccounts_storage1_name", getDefaultResourceNameFromParameterResponse)
 }
 
-// TestMethodGetStorageUriFromArmTemplate tests the  method handleXStorage (X is object or file). Input is invalid and method StorageAccountResourceFromARMTemplate() returns an error
-func TestMethodGetStorageUriFromArmTemplate(t *testing.T) {
-	// Get mocked Azure Arm Template
+// TestMethodGetStorageUriFromARMTemplate tests the  method handleXStorage (X is object or file). Input is invalid and method StorageAccountResourceFromARMTemplate() returns an error
+func TestMethodGetStorageUriFromARMTemplate(t *testing.T) {
+	// Get mocked Azure ARM Template
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/exportTemplate"
-	mockedArmTemplate, err := getMockedArmTemplate(reqURL)
+	mockedARMTemplate, err := MockedARMTemplate(reqURL)
 	if err != nil {
 		fmt.Println("error getting mocked storage account object: %w", err)
 	}
 
-	bootDiagnostics := mockedArmTemplate["template"].(map[string]interface{})["resources"].([]interface{})[0].(map[string]interface{})["properties"].(map[string]interface{})["diagnosticsProfile"].(map[string]interface{})
+	bootDiagnostics := mockedARMTemplate["template"].(map[string]interface{})["resources"].([]interface{})[0].(map[string]interface{})["properties"].(map[string]interface{})["diagnosticsProfile"].(map[string]interface{})
 	// Delete "storageUri"
 	delete(bootDiagnostics["bootDiagnostics"].(map[string]interface{}), "storageUri")
-	getStorageUriFromArmTemplateResponse := StorageURIFromArmTemplate(bootDiagnostics)
+	getStorageUriFromARMTemplateResponse := StorageURIFromARMTemplate(bootDiagnostics)
 
-	assert.Empty(t, getStorageUriFromArmTemplateResponse)
+	assert.Empty(t, getStorageUriFromARMTemplateResponse)
 }
 
-// getDependsOnTypeAssertionResponse returns the response from method handleXStorage() (X is object or file). Input is invalid and type assertion for "dependsOn" returns an error
-func getDependsOnTypeAssertionResponse(storageType string, armTemplateResources []interface{}) (voc.IsCompute, error) {
-	d := azureArmTemplateDiscovery{}
+// DependsOnTypeAssertionResponse returns the response from method handleXStorage() (X is object or file). Input is invalid and type assertion for "dependsOn" returns an error
+func DependsOnTypeAssertionResponse(storageType string, armTemplateResources []interface{}) (voc.IsCompute, error) {
+	d := azureARMTemplateDiscovery{}
 
 	var (
 		resource                       map[string]interface{}
@@ -676,31 +676,31 @@ func getDependsOnTypeAssertionResponse(storageType string, armTemplateResources 
 	return dependsOnTypeAssertionResponse, err
 }
 
-// getStorageAccountResourceFromTemplateResponse returns the response from method handleXStorage (X is object or file). Input is invalid and method StorageAccountResourceFromARMTemplate() returns an error
-func getStorageAccountResourceFromTemplateResponse(storageType string, armTemplateResources []interface{}) (voc.IsCompute, error) {
-	d := azureArmTemplateDiscovery{}
+// StorageAccountResourceFromTemplateResponse returns the response from method handleXStorage (X is object or file). Input is invalid and method StorageAccountResourceFromARMTemplate() returns an error
+func StorageAccountResourceFromTemplateResponse(storageType string, armTemplateResources []interface{}) (voc.IsCompute, error) {
+	d := azureARMTemplateDiscovery{}
 
 	var (
 		resource                                   map[string]interface{}
-		modifiedArmTemplateResources               []interface{}
+		modifiedARMTemplateResources               []interface{}
 		storageAccountResourceFromTemplateResponse voc.IsCompute
 		err                                        error
 	)
 
 	// Copy Azure ARM template resources and delete resource "storageAccounts_storage1_name"
-	err = copier.Copy(&modifiedArmTemplateResources, &armTemplateResources)
+	err = copier.Copy(&modifiedARMTemplateResources, &armTemplateResources)
 	if err != nil {
 		fmt.Println("error deep copy")
 	}
-	modifiedArmTemplateResources[3] = map[string]interface{}{}
+	modifiedARMTemplateResources[3] = map[string]interface{}{}
 
 	switch storageType {
 	case "File":
 		resource = armTemplateResources[5].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/share1')]
-		storageAccountResourceFromTemplateResponse, err = d.handleObjectStorage(resource, modifiedArmTemplateResources, "res1")
+		storageAccountResourceFromTemplateResponse, err = d.handleObjectStorage(resource, modifiedARMTemplateResources, "res1")
 	case "Object":
 		resource = armTemplateResources[4].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/container1')]
-		storageAccountResourceFromTemplateResponse, err = d.handleFileStorage(resource, modifiedArmTemplateResources, "res1")
+		storageAccountResourceFromTemplateResponse, err = d.handleFileStorage(resource, modifiedARMTemplateResources, "res1")
 	case "Block":
 		// TODO(garuppel): TBD
 	}
@@ -708,43 +708,43 @@ func getStorageAccountResourceFromTemplateResponse(storageType string, armTempla
 	return storageAccountResourceFromTemplateResponse, err
 }
 
-// getStorageAccountAtRestEncryptionFromArmResponse returns the response from method handleXStorage (X is object or file). Input is invalid and method StorageAccountAtRestEncryptionFromARMtemplate() returns an error.
-func getStorageAccountAtRestEncryptionFromArmResponse(storageType string, armTemplateResources []interface{}) (voc.IsCompute, error) {
-	d := azureArmTemplateDiscovery{}
+// StorageAccountAtRestEncryptionFromARMResponse returns the response from method handleXStorage (X is object or file). Input is invalid and method StorageAccountAtRestEncryptionFromARMtemplate() returns an error.
+func StorageAccountAtRestEncryptionFromARMResponse(storageType string, armTemplateResources []interface{}) (voc.IsCompute, error) {
+	d := azureARMTemplateDiscovery{}
 
 	var (
 		resource                                      map[string]interface{}
-		modifiedArmTemplateResources                  []interface{}
-		storageAccountAtRestEncryptionFromArmResponse voc.IsCompute
+		modifiedARMTemplateResources                  []interface{}
+		storageAccountAtRestEncryptionFromARMResponse voc.IsCompute
 		err                                           error
 	)
 
 	// Copy ARM template resources and delete 'keySource' from storage account resource for test
-	err = copier.Copy(&modifiedArmTemplateResources, &armTemplateResources)
+	err = copier.Copy(&modifiedARMTemplateResources, &armTemplateResources)
 	if err != nil {
 		fmt.Println("error deep copy")
 	}
-	delete(modifiedArmTemplateResources[3].(map[string]interface{})["properties"].(map[string]interface{})["encryption"].(map[string]interface{}), "keySource")
+	delete(modifiedARMTemplateResources[3].(map[string]interface{})["properties"].(map[string]interface{})["encryption"].(map[string]interface{}), "keySource")
 
 	switch storageType {
 	case "File":
 		resource = armTemplateResources[5].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/share1')]
-		storageAccountAtRestEncryptionFromArmResponse, err = d.handleObjectStorage(resource, armTemplateResources, "res1")
+		storageAccountAtRestEncryptionFromARMResponse, err = d.handleObjectStorage(resource, armTemplateResources, "res1")
 	case "Object":
 		resource = armTemplateResources[4].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/container1')]
-		storageAccountAtRestEncryptionFromArmResponse, err = d.handleFileStorage(resource, armTemplateResources, "res1")
+		storageAccountAtRestEncryptionFromARMResponse, err = d.handleFileStorage(resource, armTemplateResources, "res1")
 	case "Block":
 		// TODO(garuppel): TBD
 	}
 
-	return storageAccountAtRestEncryptionFromArmResponse, err
+	return storageAccountAtRestEncryptionFromARMResponse, err
 }
 
-// getMockedArmTemplate returns the Azure ARM template defined in Do() with requestURL (reqUrl).
-func getMockedArmTemplate(reqUrl string) (map[string]interface{}, error) {
+// MockedARMTemplate returns the Azure ARM template defined in Do() with requestURL (reqUrl).
+func MockedARMTemplate(reqUrl string) (map[string]interface{}, error) {
 	var armTemplateResponse map[string]interface{}
 
-	m := newMockArmTemplateSender()
+	m := newMockARMTemplateSender()
 	req, err := http.NewRequest("GET", reqUrl, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating new request: %w", err)
