@@ -46,10 +46,6 @@ func newMockArmTemplateSender() *mockARMTemplateSender {
 	return m
 }
 
-//type responseArmTemplate struct {
-//	Value map[string]interface{} `json:"value,omitempty"`
-//}
-
 func (m mockARMTemplateSender) Do(req *http.Request) (res *http.Response, err error) {
 	if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups" {
 		return createResponse(map[string]interface{}{
@@ -273,7 +269,6 @@ func (m mockARMTemplateSender) Do(req *http.Request) (res *http.Response, err er
 									},
 								},
 								"keySource": "Microsoft.Keyvault",
-								// TODO(all) Is the keyvaulturi correct? There is a difference between the keyUrl (URL), sourceVault (id) and keyvaulturi? Which do we need?
 								"keyvaultproperties": map[string]interface{}{
 									"keyvaulturi": "https://testvault.vault.azure.net/keys/testkey/123456",
 								},
@@ -319,7 +314,7 @@ func TestAzureArmTemplateAuthorizer(t *testing.T) {
 	assert.Equal(t, "could not authorize Azure account: no authorized was available", err.Error())
 }
 
-func TestIaCTemplateDiscovery(t *testing.T) {
+func TestARMTemplateDiscovery(t *testing.T) {
 	d := NewAzureArmTemplateDiscovery(
 		WithSender(&mockARMTemplateSender{}),
 		WithAuthorizer(&mockAuthorizer{}),
@@ -347,7 +342,6 @@ func TestObjectStorageProperties(t *testing.T) {
 	objectStorage, ok := list[2].(*voc.ObjectStorage)
 	assert.True(t, ok)
 
-	// That should be equal. The Problem is described in file 'service/discovery/azure/arm_template.go' TODO(all); do we need this comment any longer?
 	assert.Equal(t, "container1", objectStorage.Name)
 	assert.Equal(t, "TLS1_1", objectStorage.HttpEndpoint.TransportEncryption.TlsVersion)
 	assert.Equal(t, "ObjectStorage", objectStorage.Type[0])
@@ -387,7 +381,6 @@ func TestFileStorageProperties(t *testing.T) {
 	fileStorage, ok := list[3].(*voc.FileStorage)
 	assert.True(t, ok)
 
-	// That should be equal. The Problem is described in file 'service/discovery/azure/arm_template.go' TODO(all); do we need this comment any longer?
 	assert.Equal(t, "share1", fileStorage.Name)
 	assert.Equal(t, "TLS1_1", fileStorage.HttpEndpoint.TransportEncryption.TlsVersion)
 	assert.Equal(t, "FileStorage", fileStorage.Type[0])
@@ -421,7 +414,6 @@ func TestVmProperties(t *testing.T) {
 	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/blockStorage3", (string)(resourceVM.BlockStorage[0]))
 	assert.Equal(t, "eastus", resourceVM.GeoLocation.Region)
 	assert.True(t, resourceVM.BootLog.Enabled)
-	// TODO(garuppel): Currently, we do not get the BootLog Output URI from the Azure call. Do we have to fix the mocking? Check the Azure API call.
 	assert.Equal(t, voc.ResourceID("https://storage1.blob.core.windows.net/"), resourceVM.BootLog.Output[0])
 	assert.False(t, resourceVM.OSLog.Enabled)
 }
@@ -574,7 +566,7 @@ func TestMethodGetDefaultResourceNameFromParameter(t *testing.T) {
 		fmt.Println("error getting mocked storage account object: %w", err)
 	}
 
-	// Copy Azure ARM template and change "parameters" type
+	// Change "parameters" type
 	delete(modifiedArmTemplate["template"].(map[string]interface{}), "parameters")
 	modifiedArmTemplate["template"].(map[string]interface{})["parameters"] = []map[string]interface{}{}
 	getDefaultResourceNameFromParameterResponse, err = getDefaultResourceNameFromParameter(modifiedArmTemplate["template"].(map[string]interface{}), "")
@@ -589,8 +581,11 @@ func TestMethodGetDefaultResourceNameFromParameter(t *testing.T) {
 	if err != nil {
 		fmt.Println("error getting mocked storage account object: %w", err)
 	}
+
+	// Use parameter resource name that is not existing in 'parameters'
 	parameterResourceNameNotExisting := "[parameters('storageAccounts_storageFAIL_name')]"
 	getDefaultResourceNameFromParameterResponse, err = getDefaultResourceNameFromParameter(modifiedArmTemplate["template"].(map[string]interface{}), parameterResourceNameNotExisting)
+
 	assert.NotNil(t, err.Error())
 	assert.Contains(t, err.Error(), "parameter resource type assertion failed")
 	assert.Empty(t, getDefaultResourceNameFromParameterResponse)
@@ -602,7 +597,7 @@ func TestMethodGetDefaultResourceNameFromParameter(t *testing.T) {
 		fmt.Println("error getting mocked storage account object: %w", err)
 	}
 
-	// Update "parameters" to "parameter"
+	// Change "parameters" to "parameter"
 	modifiedArmTemplate["template"].(map[string]interface{})["parameter"] = modifiedArmTemplate["template"].(map[string]interface{})["parameters"]
 	delete(modifiedArmTemplate["template"].(map[string]interface{}), "parameters")
 	getDefaultResourceNameFromParameterResponse, err = getDefaultResourceNameFromParameter(modifiedArmTemplate["template"].(map[string]interface{}), "")
@@ -675,7 +670,7 @@ func getDependsOnTypeAssertionResponse(storageType string, armTemplateResources 
 		delete(modifiedResource, "dependsOn")
 		dependsOnTypeAssertionResponse, err = d.handleFileStorage(modifiedResource, armTemplateResources, "res1")
 	case "Block":
-		//TBD
+		// TODO(garuppel): TBD
 	}
 
 	return dependsOnTypeAssertionResponse, err
@@ -707,7 +702,7 @@ func getStorageAccountResourceFromTemplateResponse(storageType string, armTempla
 		resource = armTemplateResources[4].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/container1')]
 		storageAccountResourceFromTemplateResponse, err = d.handleFileStorage(resource, modifiedArmTemplateResources, "res1")
 	case "Block":
-		//TBD
+		// TODO(garuppel): TBD
 	}
 
 	return storageAccountResourceFromTemplateResponse, err
@@ -739,7 +734,7 @@ func getStorageAccountAtRestEncryptionFromArmResponse(storageType string, armTem
 		resource = armTemplateResources[4].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/container1')]
 		storageAccountAtRestEncryptionFromArmResponse, err = d.handleFileStorage(resource, armTemplateResources, "res1")
 	case "Block":
-		//TBD
+		// TODO(garuppel): TBD
 	}
 
 	return storageAccountAtRestEncryptionFromArmResponse, err
@@ -747,7 +742,6 @@ func getStorageAccountAtRestEncryptionFromArmResponse(storageType string, armTem
 
 // getMockedArmTemplate returns the Azure ARM template defined in Do() with requestURL (reqUrl).
 func getMockedArmTemplate(reqUrl string) (map[string]interface{}, error) {
-	//var armTemplateResponse responseArmTemplate
 	var armTemplateResponse map[string]interface{}
 
 	m := newMockArmTemplateSender()

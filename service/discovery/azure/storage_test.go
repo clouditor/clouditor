@@ -56,10 +56,6 @@ type responseDisk struct {
 	Value []compute.Disk `json:"value,omitempty"`
 }
 
-//type responseDiskEncryptionSet struct {
-//	Value compute.DiskEncryptionSet `json:"value,omitempty"`
-//}
-
 func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error) {
 	if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts" {
 		return createResponse(map[string]interface{}{
@@ -238,19 +234,6 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 							"diskEncryptionSetID": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1",
 							"type":                "EncryptionAtRestWithCustomerKey",
 						},
-						//"encryptionSettingsCollection": map[string]interface{}{
-						//	"enabled": true,
-						//	"encryptionSettings": []map[string]interface{}{
-						//		{
-						//			"diskEncryptionKey": map[string]interface{}{
-						//				"secretUrl": "https://testvault.vault.azure.net/keys/testkey/123456",
-						//				"sourceVault": map[string]interface{}{
-						//					"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.KeyVault/vaults/vault1",
-						//				},
-						//			},
-						//		},
-						//	},
-						//},
 					},
 				},
 			},

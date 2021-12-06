@@ -34,8 +34,6 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2016-02-01/resources"
-	//TODO(garuppel): The bootDiagnosticsStorageURI is gone? Where can I find it in the ARM template. Do we need to update the API to '2020-10-01/resources'?
-	//"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2020-10-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 )
 
@@ -58,11 +56,11 @@ func NewAzureArmTemplateDiscovery(opts ...DiscoveryOption) discovery.Discoverer 
 }
 
 func (*azureArmTemplateDiscovery) Name() string {
-	return "Azure"
+	return "Azure ARM template"
 }
 
 func (*azureArmTemplateDiscovery) Description() string {
-	return "Discovery Azure ARM template."
+	return "Discovery using an Azure Resource Manager (ARM) template."
 }
 
 // List Azure resources by discovering Azure ARM template
@@ -218,7 +216,7 @@ func (d *azureArmTemplateDiscovery) handleObjectStorage(resourceValue map[string
 	// In case of object storages, we take the container name as resource name
 	azureResourceName = getContainerName(resourceValue["name"].(string))
 
-	// 'dependsOn' references to the related ARM template resources. For the storage account information, we need the related storage account resource name
+	// 'dependsOn' references to the related Azure ARM template resources. For the storage account information, we need the related storage account resource name
 	dependsOnList, ok := (resourceValue["dependsOn"]).([]interface{})
 	if !ok {
 		return nil, errors.New("dependsOn type assertion failed")
@@ -484,8 +482,6 @@ func (d *azureArmTemplateDiscovery) handleVirtualMachine(template map[string]int
 			for propertiesKey, propertiesValue := range properties {
 				if propertiesKey == "diagnosticsProfile" {
 					bootDiagnosticsEnabled = propertiesValue.(map[string]interface{})["bootDiagnostics"].(map[string]interface{})["enabled"].(bool)
-					// TODO(garuppel): Why is the storageURI gone? Where can I find the storageURI
-					// storageUri = getStorageUriFromArmTemplate(propertiesValue.(map[string]interface{})["bootDiagnostics"].(map[string]interface{})["storageUri"].(string))
 					storageUri = getStorageUriFromArmTemplate(propertiesValue.(map[string]interface{}))
 				}
 			}
@@ -576,7 +572,7 @@ func getCoreName(name string) string {
 	return strings.Split(name, "'")[1]
 }
 
-// getContainerName return the container name of thr resource type 'Microsoft.Storage/storageAccounts/blobServices/containers'
+// getContainerName returns the container name of the resource type 'Microsoft.Storage/storageAccounts/blobServices/containers'
 // Example: [concat(parameters('storageAccounts_storage1_name'), 'default/container1')] returns 'container1'
 func getContainerName(name string) string {
 	nameSplit := strings.Split(name, "'")
@@ -591,7 +587,7 @@ func getStorageUriFromArmTemplate(name map[string]interface{}) string {
 		return ""
 	}
 
-	// "[concat('https://', parameters('storageAccounts_bcloudtest_name'), '.blob.core.windows.net/')]"
+	// URI example: "[concat('https://', parameters('storageAccounts_test_name'), '.blob.core.windows.net/')]"
 	storageUriInformation := name["bootDiagnostics"].(map[string]interface{})["storageUri"].(string)
 	nameSplit := strings.Split(storageUriInformation, "'")
 	storageUriName := strings.Split(nameSplit[3], "_")
