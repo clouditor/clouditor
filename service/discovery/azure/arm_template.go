@@ -214,7 +214,7 @@ func (d *azureARMTemplateDiscovery) handleObjectStorage(resourceValue map[string
 
 	// The resources are only referencing to parameters instead of using the resource names
 	// In case of object storages, we take the container name as resource name
-	azureResourceName = ContainerNameFromResourceName(resourceValue["name"].(string))
+	azureResourceName = containerNameFromResourceName(resourceValue["name"].(string))
 
 	// 'dependsOn' references to the related Azure ARM template resources. For the storage account information, we need the related storage account resource name
 	dependsOnList, ok := (resourceValue["dependsOn"]).([]interface{})
@@ -222,12 +222,12 @@ func (d *azureARMTemplateDiscovery) handleObjectStorage(resourceValue map[string
 		return nil, errors.New("dependsOn type assertion failed")
 	}
 
-	storageAccountResource, err := StorageAccountResourceFromARMTemplate(dependsOnList, azureResources)
+	storageAccountResource, err := storageAccountResourceFromARMTemplate(dependsOnList, azureResources)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get storage account resource from Azure ARM template: %w", err)
 	}
 
-	enc, err = StorageAccountAtRestEncryptionFromARMtemplate(storageAccountResource)
+	enc, err = storageAccountAtRestEncryptionFromARMtemplate(storageAccountResource)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get atRestEncryption for storage account resource from Azure ARM template: #{err)")
 	}
@@ -250,7 +250,7 @@ func (d *azureARMTemplateDiscovery) handleObjectStorage(resourceValue map[string
 			TransportEncryption: &voc.TransportEncryption{
 				Enabled:    isServiceEncryptionEnabled("blob", storageAccountResource),
 				Enforced:   isHttpsTrafficOnlyEnabled(storageAccountResource),
-				TlsVersion: MinTlsVersionOfStorageAccount(storageAccountResource),
+				TlsVersion: minTlsVersionOfStorageAccount(storageAccountResource),
 				Algorithm:  "TLS",
 			},
 		},
@@ -268,7 +268,7 @@ func (d *azureARMTemplateDiscovery) handleFileStorage(resourceValue map[string]i
 	)
 
 	// The resources are only referencing to parameters instead of using the resource names
-	azureResourceName = ContainerNameFromResourceName(resourceValue["name"].(string))
+	azureResourceName = containerNameFromResourceName(resourceValue["name"].(string))
 
 	// Necessary to get the needed information from the Azure ARM template
 	dependsOnList, ok := (resourceValue["dependsOn"]).([]interface{})
@@ -276,12 +276,12 @@ func (d *azureARMTemplateDiscovery) handleFileStorage(resourceValue map[string]i
 		return nil, errors.New("dependsOn type assertion failed")
 	}
 
-	storageAccountResource, err := StorageAccountResourceFromARMTemplate(dependsOnList, azureResources)
+	storageAccountResource, err := storageAccountResourceFromARMTemplate(dependsOnList, azureResources)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get storage account resource from Azure ARM template: %w", err)
 	}
 
-	enc, err = StorageAccountAtRestEncryptionFromARMtemplate(storageAccountResource)
+	enc, err = storageAccountAtRestEncryptionFromARMtemplate(storageAccountResource)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get atRestEncryption for storage account resource from Azure ARM template: %w", err)
 	}
@@ -304,7 +304,7 @@ func (d *azureARMTemplateDiscovery) handleFileStorage(resourceValue map[string]i
 			TransportEncryption: &voc.TransportEncryption{
 				Enabled:    isServiceEncryptionEnabled("file", storageAccountResource),
 				Enforced:   isHttpsTrafficOnlyEnabled(storageAccountResource),
-				TlsVersion: MinTlsVersionOfStorageAccount(storageAccountResource),
+				TlsVersion: minTlsVersionOfStorageAccount(storageAccountResource),
 				Algorithm:  "TLS",
 			},
 		},
@@ -313,7 +313,7 @@ func (d *azureARMTemplateDiscovery) handleFileStorage(resourceValue map[string]i
 	return storage, nil
 }
 
-func StorageAccountAtRestEncryptionFromARMtemplate(storageAccountResource map[string]interface{}) (voc.HasAtRestEncryption, error) {
+func storageAccountAtRestEncryptionFromARMtemplate(storageAccountResource map[string]interface{}) (voc.HasAtRestEncryption, error) {
 
 	var enc voc.HasAtRestEncryption
 
@@ -345,7 +345,7 @@ func StorageAccountAtRestEncryptionFromARMtemplate(storageAccountResource map[st
 	return enc, nil
 }
 
-func StorageAccountResourceFromARMTemplate(resourceNames []interface{}, azureTemplateResources []interface{}) (map[string]interface{}, error) {
+func storageAccountResourceFromARMTemplate(resourceNames []interface{}, azureTemplateResources []interface{}) (map[string]interface{}, error) {
 
 	var (
 		resourceType string
@@ -394,7 +394,7 @@ func isServiceEncryptionEnabled(serviceType string, value map[string]interface{}
 	return false
 }
 
-func MinTlsVersionOfStorageAccount(value map[string]interface{}) string {
+func minTlsVersionOfStorageAccount(value map[string]interface{}) string {
 
 	if minTlsVersion, ok := value["properties"].(map[string]interface{})["encryption"].(map[string]interface{})["minimumTlsVersion"].(string); ok {
 		return minTlsVersion
@@ -413,7 +413,7 @@ func (d *azureARMTemplateDiscovery) handleLoadBalancer(template map[string]inter
 	for key, value := range resourceValue {
 		// Get LB name
 		if key == "name" {
-			name, err = DefaultResourceNameFromParameter(template, value.(string))
+			name, err = defaultResourceNameFromParameter(template, value.(string))
 			if err != nil {
 				return nil, errors.New("getting parameter default name failed")
 			}
@@ -465,7 +465,7 @@ func (d *azureARMTemplateDiscovery) handleVirtualMachine(template map[string]int
 
 		// Get VM name
 		if key == "name" {
-			name, err = DefaultResourceNameFromParameter(template, value.(string))
+			name, err = defaultResourceNameFromParameter(template, value.(string))
 			if err != nil {
 				return nil, errors.New("getting parameter default name failed")
 			}
@@ -482,7 +482,7 @@ func (d *azureARMTemplateDiscovery) handleVirtualMachine(template map[string]int
 			for propertiesKey, propertiesValue := range properties {
 				if propertiesKey == "diagnosticsProfile" {
 					bootDiagnosticsEnabled = propertiesValue.(map[string]interface{})["bootDiagnostics"].(map[string]interface{})["enabled"].(bool)
-					storageUri = StorageURIFromARMTemplate(propertiesValue.(map[string]interface{}))
+					storageUri = storageURIFromARMTemplate(propertiesValue.(map[string]interface{}))
 				}
 			}
 		}
@@ -516,13 +516,13 @@ func (d *azureARMTemplateDiscovery) handleVirtualMachine(template map[string]int
 				Enabled: false,
 			}, // TODO(all): available in ARM template/Azure?
 		},
-		BlockStorage: d.getBlockStorageResourceIDs(properties, resourceGroup),
+		BlockStorage: d.blockStorageResourceIDs(properties, resourceGroup),
 	}
 
 	return vm, nil
 }
 
-func (d *azureARMTemplateDiscovery) getBlockStorageResourceIDs(properties map[string]interface{}, resourceGroupName string) []voc.ResourceID {
+func (d *azureARMTemplateDiscovery) blockStorageResourceIDs(properties map[string]interface{}, resourceGroupName string) []voc.ResourceID {
 	var blockStorage []voc.ResourceID
 
 	dataDisks := properties["storageProfile"].(map[string]interface{})["dataDisks"].([]interface{})
@@ -539,8 +539,8 @@ func (d *azureARMTemplateDiscovery) createID(resourceGroup, resourceType, name s
 	return "/subscriptions/" + *d.sub.SubscriptionID + "/resourceGroups/" + resourceGroup + "/providers/" + resourceType + "/" + name
 }
 
-// DefaultResourceNameFromParameter returns the default name given in the parameters section of the template. If not possible, get name from parameter name, e.g., [parameters('loadBalancers_kubernetes_name')]
-func DefaultResourceNameFromParameter(template map[string]interface{}, name string) (string, error) {
+// defaultResourceNameFromParameter returns the default name given in the parameters section of the template. If not possible, get name from parameter name, e.g., [parameters('loadBalancers_kubernetes_name')]
+func defaultResourceNameFromParameter(template map[string]interface{}, name string) (string, error) {
 
 	// [parameters('loadBalancers_kubernetes_name')]
 	for templateKey, templateValue := range template {
@@ -550,13 +550,13 @@ func DefaultResourceNameFromParameter(template map[string]interface{}, name stri
 				return "", errors.New("templateValue type assertion failed")
 			}
 
-			resource, ok := resourceParameter[CoreNameFromResourceName(name)].(map[string]interface{})
+			resource, ok := resourceParameter[coreNameFromResourceName(name)].(map[string]interface{})
 			if !ok {
 				return "", errors.New("parameter resource type assertion failed")
 			}
 
 			if resource["defaultValue"] == nil {
-				return CoreNameFromResourceName(name), nil
+				return coreNameFromResourceName(name), nil
 			}
 
 			return resource["defaultValue"].(string), nil
@@ -566,22 +566,22 @@ func DefaultResourceNameFromParameter(template map[string]interface{}, name stri
 	return "", errors.New("error getting default resource name")
 }
 
-// CoreNameFromResourceName returns the parameter name without the additional information around. Necessary if in parameters no default name exists.
+// coreNameFromResourceName returns the parameter name without the additional information around. Necessary if in parameters no default name exists.
 // Example: [parameters('virtualMachines_vm3_name')] returns 'vm3'
-func CoreNameFromResourceName(name string) string {
+func coreNameFromResourceName(name string) string {
 	return strings.Split(name, "'")[1]
 }
 
-// ContainerNameFromResourceName returns the container name of the resource type 'Microsoft.Storage/storageAccounts/blobServices/containers'
+// containerNameFromResourceName returns the container name of the resource type 'Microsoft.Storage/storageAccounts/blobServices/containers'
 // Example: [concat(parameters('storageAccounts_storage1_name'), 'default/container1')] returns 'container1'
-func ContainerNameFromResourceName(name string) string {
+func containerNameFromResourceName(name string) string {
 	nameSplit := strings.Split(name, "'")
 	anotherNameSplit := strings.Split(nameSplit[3], "/")
 
 	return anotherNameSplit[1]
 }
 
-func StorageURIFromARMTemplate(name map[string]interface{}) string {
+func storageURIFromARMTemplate(name map[string]interface{}) string {
 	var storageUri string
 	if name["bootDiagnostics"].(map[string]interface{})["storageUri"] == nil {
 		return ""

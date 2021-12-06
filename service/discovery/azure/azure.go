@@ -113,6 +113,6 @@ func (a azureDiscovery) apply(client *autorest.Client) {
 	}
 }
 
-func ResourceGroupName(id string) string {
+func resourceGroupName(id string) string {
 	return strings.Split(id, "/")[4]
 }

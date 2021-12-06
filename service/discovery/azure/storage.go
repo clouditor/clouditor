@@ -153,7 +153,7 @@ func (d *azureStorageDiscovery) discoverFileStorages(account *storage.Account) (
 	client := storage.NewFileSharesClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
 
-	result, err := client.List(context.Background(), ResourceGroupName(*account.ID), *account.Name, "", "", "")
+	result, err := client.List(context.Background(), resourceGroupName(*account.ID), *account.Name, "", "", "")
 	if err != nil {
 		return nil, fmt.Errorf("could not list file storages: %w", err)
 	}
@@ -178,7 +178,7 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *storage.Account)
 	client := storage.NewBlobContainersClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
 
-	result, err := client.List(context.Background(), ResourceGroupName(*account.ID), *account.Name, "", "", "")
+	result, err := client.List(context.Background(), resourceGroupName(*account.ID), *account.Name, "", "", "")
 	if err != nil {
 		return nil, fmt.Errorf("could not list object storages: %w", err)
 	}
@@ -197,7 +197,7 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *storage.Account)
 }
 
 func (d *azureStorageDiscovery) handleBlockStorage(disk compute.Disk) (*voc.BlockStorage, error) {
-	enc, err := d.BlockStorageAtRestEncryption(disk)
+	enc, err := d.blockStorageAtRestEncryption(disk)
 	if err != nil {
 		return nil, fmt.Errorf("could not get block storage properties for the atRestEncryption: %w", err)
 	}
@@ -219,7 +219,7 @@ func (d *azureStorageDiscovery) handleBlockStorage(disk compute.Disk) (*voc.Bloc
 }
 
 func handleObjectStorage(account *storage.Account, container storage.ListContainerItem) (*voc.ObjectStorage, error) {
-	enc, err := StorageAtRestEncryption(account)
+	enc, err := storageAtRestEncryption(account)
 	if err != nil {
 		return nil, fmt.Errorf("could not get object storage properties for the atRestEncryption: %w", err)
 	}
@@ -250,7 +250,7 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 }
 
 func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem) (*voc.FileStorage, error) {
-	enc, err := StorageAtRestEncryption(account)
+	enc, err := storageAtRestEncryption(account)
 	if err != nil {
 		return nil, fmt.Errorf("could not get file storage properties for the atRestEncryption: %w", err)
 	}
@@ -279,7 +279,7 @@ func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem
 	}, nil
 }
 
-func (d *azureStorageDiscovery) BlockStorageAtRestEncryption(disk compute.Disk) (voc.HasAtRestEncryption, error) {
+func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk compute.Disk) (voc.HasAtRestEncryption, error) {
 
 	var enc voc.HasAtRestEncryption
 
@@ -292,7 +292,7 @@ func (d *azureStorageDiscovery) BlockStorageAtRestEncryption(disk compute.Disk) 
 		var keyUrl string
 		discEncryptionSetID := disk.Encryption.DiskEncryptionSetID
 
-		keyUrl, err := d.SourceVaultID(*discEncryptionSetID)
+		keyUrl, err := d.sourceVaultID(*discEncryptionSetID)
 		if err != nil {
 			return nil, fmt.Errorf("could not get keyVaultID: %w", err)
 		}
@@ -311,7 +311,7 @@ func (d *azureStorageDiscovery) BlockStorageAtRestEncryption(disk compute.Disk) 
 	return enc, nil
 }
 
-func StorageAtRestEncryption(account *storage.Account) (voc.HasAtRestEncryption, error) {
+func storageAtRestEncryption(account *storage.Account) (voc.HasAtRestEncryption, error) {
 
 	var enc voc.HasAtRestEncryption
 
@@ -335,11 +335,11 @@ func StorageAtRestEncryption(account *storage.Account) (voc.HasAtRestEncryption,
 	return enc, nil
 }
 
-func (d *azureStorageDiscovery) SourceVaultID(discEncryptionSetID string) (string, error) {
+func (d *azureStorageDiscovery) sourceVaultID(discEncryptionSetID string) (string, error) {
 	client := compute.NewDiskEncryptionSetsClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
 
-	discEncryptionSet, err := client.Get(context.Background(), ResourceGroupName(discEncryptionSetID), DiskEncryptionSetName(discEncryptionSetID))
+	discEncryptionSet, err := client.Get(context.Background(), resourceGroupName(discEncryptionSetID), diskEncryptionSetName(discEncryptionSetID))
 	if err != nil {
 		return "", fmt.Errorf("could not get discEncryptionSet: %w", err)
 	}
@@ -351,7 +351,7 @@ func (d *azureStorageDiscovery) SourceVaultID(discEncryptionSetID string) (strin
 	return *discEncryptionSet.ActiveKey.SourceVault.ID, nil
 }
 
-func DiskEncryptionSetName(discEncryptionSetID string) string {
+func diskEncryptionSetName(discEncryptionSetID string) string {
 	splitName := strings.Split(discEncryptionSetID, "/")
 	return splitName[8]
 }

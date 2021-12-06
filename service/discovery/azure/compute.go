@@ -164,8 +164,8 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 				},
 			}},
 		BootLog: &voc.BootLog{Log: &voc.Log{
-			Enabled:         IsBootDiagnosticEnabled(vm),
-			Output:          []voc.ResourceID{voc.ResourceID(BootLogOutput(vm))},
+			Enabled:         isBootDiagnosticEnabled(vm),
+			Output:          []voc.ResourceID{voc.ResourceID(bootLogOutput(vm))},
 			RetentionPeriod: 0, // Currently, configuring the retention period for Managed Boot Diagnostics is not available. The logs will be overwritten after 1gb of space according to https://github.com/MicrosoftDocs/azure-docs/issues/69953
 		}},
 		OSLog: &voc.OSLog{}, // TODO(garuppel): Add OSLog
@@ -173,7 +173,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 		BlockStorage: []voc.ResourceID{},
 	}
 
-	vmExtended, err := d.ExtendedVirtualMachine(vm)
+	vmExtended, err := d.extendedVirtualMachine(vm)
 	if err != nil {
 		return nil, fmt.Errorf("could not get virtual machine with extended information: %w", err)
 	}
@@ -192,19 +192,19 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 	return r, nil
 }
 
-// ExtendedVirtualMachine gets virtual machine with extended information, e.g., managed disk ID, network interface ID
-func (d *azureComputeDiscovery) ExtendedVirtualMachine(vm *compute.VirtualMachine) (*compute.VirtualMachine, error) {
+// extendedVirtualMachine gets virtual machine with extended information, e.g., managed disk ID, network interface ID
+func (d *azureComputeDiscovery) extendedVirtualMachine(vm *compute.VirtualMachine) (*compute.VirtualMachine, error) {
 	client := compute.NewVirtualMachinesClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
 
-	vmExtended, err := client.Get(context.Background(), ResourceGroupName(*vm.ID), *vm.Name, "")
+	vmExtended, err := client.Get(context.Background(), resourceGroupName(*vm.ID), *vm.Name, "")
 	if err != nil {
 		return nil, fmt.Errorf("could not get virtual machine: %w", err)
 	}
 	return &vmExtended, nil
 }
 
-func IsBootDiagnosticEnabled(vm *compute.VirtualMachine) bool {
+func isBootDiagnosticEnabled(vm *compute.VirtualMachine) bool {
 	if vm.DiagnosticsProfile == nil {
 		return false
 	} else {
@@ -212,8 +212,8 @@ func IsBootDiagnosticEnabled(vm *compute.VirtualMachine) bool {
 	}
 }
 
-func BootLogOutput(vm *compute.VirtualMachine) string {
-	if IsBootDiagnosticEnabled(vm) {
+func bootLogOutput(vm *compute.VirtualMachine) string {
+	if isBootDiagnosticEnabled(vm) {
 		return *vm.DiagnosticsProfile.BootDiagnostics.StorageURI
 	}
 	return ""

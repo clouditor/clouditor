@@ -147,7 +147,7 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc
 					},
 				},
 			},
-			Ips:   []string{d.PublicIPAddressFromLoadBalancer(lb)},
+			Ips:   []string{d.publicIPAddressFromLoadBalancer(lb)},
 			Ports: LoadBalancerPorts(lb),
 		},
 		// TODO(all): do we need the AccessRestriction for load balancers?
@@ -203,7 +203,7 @@ func LoadBalancerPorts(lb *network.LoadBalancer) (loadBalancerPorts []int16) {
 //	d.apply(&client.Client)
 //
 //	// Get the Security Group of the network interface ni
-//	sg, err := client.Get(context.Background(), ResourceGroupName(nsgID), strings.Split(nsgID, "/")[8], "")
+//	sg, err := client.Get(context.Background(), resourceGroupName(nsgID), strings.Split(nsgID, "/")[8], "")
 //
 //	if err != nil {
 //		log.Errorf("Could not get security group: %s", err)
@@ -236,7 +236,7 @@ func LoadBalancerPorts(lb *network.LoadBalancer) (loadBalancerPorts []int16) {
 //	return list
 //}
 
-func (d *azureNetworkDiscovery) PublicIPAddressFromLoadBalancer(lb *network.LoadBalancer) string {
+func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *network.LoadBalancer) string {
 
 	var publicIPAddresses []string
 
@@ -247,7 +247,7 @@ func (d *azureNetworkDiscovery) PublicIPAddressFromLoadBalancer(lb *network.Load
 	if lb.LoadBalancerPropertiesFormat != nil && lb.LoadBalancerPropertiesFormat.FrontendIPConfigurations != nil {
 		for _, publicIpProperties := range *lb.FrontendIPConfigurations {
 
-			publicIPAddress, err := client.Get(context.Background(), ResourceGroupName(*publicIpProperties.ID), *publicIpProperties.Name, "")
+			publicIPAddress, err := client.Get(context.Background(), resourceGroupName(*publicIpProperties.ID), *publicIpProperties.Name, "")
 
 			if err != nil {
 				log.Infof("Error getting public IP address: %v", err)
