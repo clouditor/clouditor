@@ -494,24 +494,6 @@ func TestStorageMethodsWhenInputIsInvalid(t *testing.T) {
 	// Todo(garuppel): How to test? Problem: Azure call again
 }
 
-/*func TestGetSourceVaultID(t *testing.T) {
-	//d := NewAzureStorageDiscovery(
-	//	WithSender(&mockStorageSender{}),
-	//	WithAuthorizer(&mockAuthorizer{}),
-	//)
-	d := azureStorageDiscovery{}
-
-	// Test method SourceVaultID
-	// Todo(garuppel): How to test? Problem: Azure call again
-	// TODO: change to err != nil
-	diskEncryptionSetID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1"
-	keyVaultID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.KeyVault/vaults/keyvault1"
-	getSourceVaultIDResult, err := d.SourceVaultID(diskEncryptionSetID)
-	assert.Nil(t, err)
-	assert.Contains(t, err.Error(), "could not get discEncryptionSet")
-	assert.Equal(t, keyVaultID, getSourceVaultIDResult)
-}*/
-
 func TestStorageDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
 	d := azureStorageDiscovery{}
 
