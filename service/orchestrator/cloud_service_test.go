@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api/orchestrator"
+	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -59,6 +60,62 @@ func TestRegisterCloudService(t *testing.T) {
 
 			if tt.res != nil {
 				tt.res.Id = ""
+			}
+
+			assert.True(t, proto.Equal(res, tt.res), "%v != %v", res, tt.res)
+		})
+	}
+}
+
+func TestGetCloudService(t *testing.T) {
+	tests := []struct {
+		name string
+		req  *orchestrator.GetCloudServiceRequest
+		res  *orchestrator.CloudService
+		err  error
+	}{
+		{
+			"missing request",
+			nil,
+			nil,
+			status.Error(codes.InvalidArgument, "Service id is empty"),
+		},
+		{
+			"missing service id",
+			&orchestrator.GetCloudServiceRequest{},
+			nil,
+			status.Error(codes.InvalidArgument, "Service id is empty"),
+		},
+		{
+			"invalid service id",
+			&orchestrator.GetCloudServiceRequest{ServiceId: "does-not-exist"},
+			nil,
+			status.Error(codes.NotFound, "Service not found"),
+		},
+		{
+			"valid",
+			&orchestrator.GetCloudServiceRequest{ServiceId: defaultTarget.Id},
+			&orchestrator.CloudService{
+				Id:          service_orchestrator.DefaultTargetCloudServiceId,
+				Name:        service_orchestrator.DefaultTargetCloudServiceName,
+				Description: service_orchestrator.DefaultTargetCloudServiceDescription,
+			},
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res, err := service.GetCloudService(context.Background(), tt.req)
+
+			if tt.err == nil {
+				assert.Equal(t, err, tt.err)
+			} else {
+				assert.EqualError(t, err, tt.err.Error())
+			}
+
+			if tt.res != nil {
+				assert.NotEmpty(t, res.Id)
 			}
 
 			assert.True(t, proto.Equal(res, tt.res), "%v != %v", res, tt.res)

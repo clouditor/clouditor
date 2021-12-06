@@ -41,11 +41,11 @@ import (
 	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
-	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 var sock net.Listener
@@ -167,7 +167,7 @@ func TestGetCloudServiceCommand(t *testing.T) {
 func TestRemoveCloudServicesCommand(t *testing.T) {
 	var err error
 	var b bytes.Buffer
-	var response empty.Empty
+	var response emptypb.Empty
 
 	cli.Output = &b
 

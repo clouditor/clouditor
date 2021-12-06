@@ -37,6 +37,10 @@ import (
 	"gorm.io/gorm"
 )
 
+const DefaultTargetCloudServiceId = "00000000-0000-0000-000000000000"
+const DefaultTargetCloudServiceName = "default"
+const DefaultTargetCloudServiceDescription = "The default target cloud service"
+
 func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.RegisterCloudServiceRequest) (service *orchestrator.CloudService, err error) {
 	if req == nil || req.Service == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "Service is empty")
@@ -72,12 +76,12 @@ func (s *Service) ListCloudServices(_ context.Context, _ *orchestrator.ListCloud
 }
 
 func (s *Service) GetCloudService(_ context.Context, req *orchestrator.GetCloudServiceRequest) (response *orchestrator.CloudService, err error) {
-	if req.ServiceId == "" {
+	if req == nil || req.ServiceId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "Service id is empty")
 	}
 
 	response = new(orchestrator.CloudService)
-	err = s.db.Find(&response).Error
+	err = s.db.First(&response, "Id = ?", req.ServiceId).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "Service not found")
 	} else if err != nil {
@@ -138,14 +142,19 @@ func (s *Service) CreateDefaultTargetCloudService() (service *orchestrator.Cloud
 
 	if count == 0 {
 		// Create a default target cloud service
-		service, err = s.RegisterCloudService(context.Background(),
-			&orchestrator.RegisterCloudServiceRequest{
-				Service: &orchestrator.CloudService{
-					Name:        "default",
-					Description: "The default target cloud service",
-				}})
+		service =
+			&orchestrator.CloudService{
+				Id:          DefaultTargetCloudServiceId,
+				Name:        DefaultTargetCloudServiceName,
+				Description: DefaultTargetCloudServiceDescription,
+			}
 
-		log.Infof("Created new default target cloud service %s", service.Id)
+		// Save it directly into the database, so that we can set the ID
+		err = s.db.Create(&service).Error
+
+		if err != nil {
+			log.Infof("Created new default target cloud service %s", service.Id)
+		}
 
 		return service, err
 	}

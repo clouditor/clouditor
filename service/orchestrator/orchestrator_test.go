@@ -40,6 +40,7 @@ import (
 )
 
 var service *service_orchestrator.Service
+var defaultTarget *orchestrator.CloudService
 
 func TestMain(m *testing.M) {
 	err := os.Chdir("../../")
@@ -53,6 +54,10 @@ func TestMain(m *testing.M) {
 	}
 
 	service = service_orchestrator.NewService()
+	defaultTarget, err = service.CreateDefaultTargetCloudService()
+	if err != nil {
+		panic(err)
+	}
 
 	os.Exit(m.Run())
 }
