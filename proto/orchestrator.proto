@@ -84,7 +84,7 @@ service Orchestrator {
   rpc StoreAssessmentResult(StoreAssessmentResultRequest)
       returns (StoreAssessmentResultResponse) {
     option (google.api.http) = {
-      put : "/v1/orchestrator/assessment_results"
+      post : "/v1/orchestrator/assessment_results"
       body : "result"
     };
   }
