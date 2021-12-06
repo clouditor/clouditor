@@ -3,7 +3,7 @@ module clouditor.io/clouditor
 go 1.17
 
 require (
-	github.com/Azure/azure-sdk-for-go v59.4.0+incompatible
+	github.com/Azure/azure-sdk-for-go v60.0.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.11.22
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.9
 	github.com/Azure/go-autorest/autorest/to v0.4.0
@@ -16,7 +16,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.11.1
 	github.com/aws/smithy-go v1.9.0
 	github.com/go-co-op/gocron v1.10.0
-	github.com/golang-jwt/jwt/v4 v4.1.0
+	github.com/golang-jwt/jwt/v4 v4.2.0
 	github.com/google/addlicense v1.0.0
 	github.com/google/uuid v1.3.0
 	github.com/googleapis/gnostic v0.5.6-0.20210520165051-0320d74b3646
