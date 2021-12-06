@@ -23,13 +23,12 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package azure_test
+package azure
 
 import (
 	"net/http"
 	"testing"
 
-	"clouditor.io/clouditor/service/discovery/azure"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 )
@@ -119,7 +118,7 @@ func (m mockNetworkSender) Do(req *http.Request) (res *http.Response, err error)
 
 func TestAzureNetworkAuthorizer(t *testing.T) {
 
-	d := azure.NewAzureNetworkDiscovery()
+	d := NewAzureNetworkDiscovery()
 	list, err := d.List()
 
 	assert.NotNil(t, err)
@@ -128,9 +127,9 @@ func TestAzureNetworkAuthorizer(t *testing.T) {
 }
 
 func TestNetwork(t *testing.T) {
-	d := azure.NewAzureNetworkDiscovery(
-		azure.WithSender(&mockNetworkSender{}),
-		azure.WithAuthorizer(&mockAuthorizer{}),
+	d := NewAzureNetworkDiscovery(
+		WithSender(&mockNetworkSender{}),
+		WithAuthorizer(&mockAuthorizer{}),
 	)
 
 	list, err := d.List()
@@ -156,14 +155,14 @@ func TestNetwork(t *testing.T) {
 
 func TestComputeDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
 	// Test method discoverNetworkInterfaces
-	discoverNetworkInterfacesResponse, err := azure.DiscoverNetworkInterfaces()
+	discoverNetworkInterfacesResponse, err := discoverNetworkInterfaces()
 
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "could not list network interfaces")
 	assert.Nil(t, discoverNetworkInterfacesResponse)
 
 	// Test method discoverLoadBalancer
-	discoverLoadBalancerResponse, err := azure.DiscoverLoadBalancer()
+	discoverLoadBalancerResponse, err := discoverLoadBalancer()
 
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "could not list load balancer")

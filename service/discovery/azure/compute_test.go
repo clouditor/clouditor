@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package azure_test
+package azure
 
 import (
 	"fmt"
@@ -34,7 +34,6 @@ import (
 	"testing"
 	"time"
 
-	"clouditor.io/clouditor/service/discovery/azure"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 )
@@ -182,7 +181,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 
 func TestAzureComputeAuthorizer(t *testing.T) {
 
-	d := azure.NewAzureComputeDiscovery()
+	d := NewAzureComputeDiscovery()
 	list, err := d.List()
 
 	assert.NotNil(t, err)
@@ -191,9 +190,9 @@ func TestAzureComputeAuthorizer(t *testing.T) {
 }
 
 func TestCompute(t *testing.T) {
-	d := azure.NewAzureComputeDiscovery(
-		azure.WithSender(&mockComputeSender{}),
-		azure.WithAuthorizer(&mockAuthorizer{}),
+	d := NewAzureComputeDiscovery(
+		WithSender(&mockComputeSender{}),
+		WithAuthorizer(&mockAuthorizer{}),
 	)
 
 	list, err := d.List()
@@ -205,9 +204,9 @@ func TestCompute(t *testing.T) {
 }
 
 func TestVirtualMachine(t *testing.T) {
-	d := azure.NewAzureComputeDiscovery(
-		azure.WithSender(&mockComputeSender{}),
-		azure.WithAuthorizer(&mockAuthorizer{}),
+	d := NewAzureComputeDiscovery(
+		WithSender(&mockComputeSender{}),
+		WithAuthorizer(&mockAuthorizer{}),
 	)
 
 	list, err := d.List()
@@ -234,9 +233,9 @@ func TestVirtualMachine(t *testing.T) {
 }
 
 func TestFunction(t *testing.T) {
-	d := azure.NewAzureComputeDiscovery(
-		azure.WithSender(&mockComputeSender{}),
-		azure.WithAuthorizer(&mockAuthorizer{}),
+	d := NewAzureComputeDiscovery(
+		WithSender(&mockComputeSender{}),
+		WithAuthorizer(&mockAuthorizer{}),
 	)
 
 	list, err := d.List()
@@ -252,14 +251,19 @@ func TestFunction(t *testing.T) {
 }
 
 func TestComputeDiscoverFunctionWhenInputIsInvalid(t *testing.T) {
-	discoverFunctionResponse, err := azure.DiscoverFunction()
+	d := azureComputeDiscovery{}
+
+	discoverFunctionResponse, err := d.discoverFunction()
+
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "could not list functions")
 	assert.Nil(t, discoverFunctionResponse)
 }
 
-func TestComputeDiscoverVirtualMachines(t *testing.T){
-	discoverVirtualMachineResponse, err := azure.DiscoverVirtualMachines()
+func TestComputeDiscoverVirtualMachines(t *testing.T) {
+	d := azureComputeDiscovery{}
+
+	discoverVirtualMachineResponse, err := d.discoverVirtualMachines()
 
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "could not list virtual machines")
@@ -280,7 +284,7 @@ func TestGetBootLogOutput(t *testing.T) {
 	// Delete the "diagnosticsProfile" property
 	virtualMachine.DiagnosticsProfile = nil
 
-	getBootLogOutputResponse := azure.GetBootLogOutput(&virtualMachine)
+	getBootLogOutputResponse := getBootLogOutput(&virtualMachine)
 
 	assert.Empty(t, getBootLogOutputResponse)
 }
@@ -318,4 +322,3 @@ func getMockedVirtualMachines(reqUrl string) (virtualMachines []compute.VirtualM
 
 	return virtualMachines, nil
 }
-

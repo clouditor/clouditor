@@ -250,7 +250,7 @@ func (d *azureNetworkDiscovery) GetPublicIPAddress(lb *network.LoadBalancer) str
 			publicIPAddress, err := client.Get(context.Background(), GetResourceGroupName(*publicIpProperties.ID), *publicIpProperties.Name, "")
 
 			if err != nil {
-				log.Errorf("Error getting public IP address: %v", err)
+				log.Infof("Error getting public IP address: %v", err)
 				continue
 			}
 

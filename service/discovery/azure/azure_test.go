@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package azure_test
+package azure
 
 import (
 	"bytes"
@@ -36,8 +36,6 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/sirupsen/logrus"
 )
-
-var log *logrus.Entry
 
 func init() {
 	log = logrus.WithField("component", "azure-tests")
