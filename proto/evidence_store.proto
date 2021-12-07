@@ -40,7 +40,7 @@ service EvidenceStore {
   rpc StoreEvidence(Evidence) returns (StoreEvidenceResponse) {
     option (google.api.http) = {
       post : "/v1/evidence_store/evidence"
-      body : "evidence"
+      body : "*"
       // TODO(all): What is the difference between this response_body ("*") and to don't specify it at all
       response_body : "*"
     };

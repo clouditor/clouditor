@@ -57,7 +57,7 @@ service Assessment {
   rpc AssessEvidence(AssessEvidenceRequest) returns (AssessEvidenceResponse) {
     option (google.api.http) = {
       post : "/v1/assessment/evidences"
-      body: "evidence"
+      body: "*"
       response_body : "*"
     };
   }

@@ -41,7 +41,7 @@ service Orchestrator {
       returns (AssessmentTool) {
     option (google.api.http) = {
       post : "/v1/orchestrator/assessment_tools"
-      body : "tool"
+      body : "*"
     };
   }
 
@@ -67,7 +67,7 @@ service Orchestrator {
       returns (AssessmentTool) {
     option (google.api.http) = {
       put : "/v1/orchestrator/assessment_tools/{tool_id}"
-      body : "tool"
+      body : "*"
     };
   }
 
@@ -85,7 +85,7 @@ service Orchestrator {
       returns (StoreAssessmentResultResponse) {
     option (google.api.http) = {
       post : "/v1/orchestrator/assessment_results"
-      body : "result"
+      body : "*"
     };
   }
 
