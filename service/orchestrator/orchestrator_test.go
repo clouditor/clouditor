@@ -74,6 +74,18 @@ func TestListMetrics(t *testing.T) {
 	assert.NotEmpty(t, response.Metrics)
 }
 
+func TestListMetricConfigurations(t *testing.T) {
+	var (
+		response *orchestrator.ListMetricConfigurationResponse
+		err      error
+	)
+
+	response, err = service.ListMetricConfigurations(context.TODO(), &orchestrator.ListMetricConfigurationRequest{})
+
+	assert.Nil(t, err)
+	assert.NotEmpty(t, response.Configurations)
+}
+
 func TestGetMetric(t *testing.T) {
 	var (
 		request *orchestrator.GetMetricsRequest

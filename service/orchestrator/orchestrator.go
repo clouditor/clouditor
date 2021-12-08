@@ -170,7 +170,7 @@ func (s *Service) ListMetricConfigurations(ctx context.Context, req *orchestrato
 	}
 
 	// TODO(oxisto): This is not very efficient, we should do this once at startup so that we can just return the map
-	for metricId, _ := range metricIndex {
+	for metricId := range metricIndex {
 		config, err := s.GetMetricConfiguration(ctx, &orchestrator.GetMetricConfigurationRequest{ServiceId: req.ServiceId, MetricId: metricId})
 
 		if err != nil {
