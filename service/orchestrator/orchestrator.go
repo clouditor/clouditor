@@ -95,6 +95,8 @@ func NewService() *Service {
 			continue
 		}
 
+		config.IsDefault = true
+
 		metricIndex[m.Id] = m
 		defaultMetricConfigurations[m.Id] = &config
 	}
