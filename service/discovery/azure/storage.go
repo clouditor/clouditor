@@ -27,11 +27,14 @@ package azure
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
-	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/compute/mgmt/compute"
+	"strings"
+
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
 	"github.com/Azure/go-autorest/autorest/to"
 )
@@ -54,11 +57,11 @@ func NewAzureStorageDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	return d
 }
 
-func (d *azureStorageDiscovery) Name() string {
+func (*azureStorageDiscovery) Name() string {
 	return "Azure Storage Account"
 }
 
-func (d *azureStorageDiscovery) Description() string {
+func (*azureStorageDiscovery) Description() string {
 	return "Discovery Azure storage accounts."
 }
 
@@ -132,7 +135,10 @@ func (d *azureStorageDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, 
 	}
 
 	for _, disk := range *result.Response().Value {
-		blockStorages := handleBlockStorage(disk)
+		blockStorages, err := d.handleBlockStorage(disk)
+		if err != nil {
+			return nil, fmt.Errorf("could not handle block storage: %w", err)
+		}
 		log.Infof("Adding block storage %+v", blockStorages)
 
 		list = append(list, blockStorages)
@@ -147,13 +153,17 @@ func (d *azureStorageDiscovery) discoverFileStorages(account *storage.Account) (
 	client := storage.NewFileSharesClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
 
-	result, err := client.List(context.Background(), GetResourceGroupName(*account.ID), *account.Name, "", "", "")
+	result, err := client.List(context.Background(), resourceGroupName(*account.ID), *account.Name, "", "", "")
 	if err != nil {
 		return nil, fmt.Errorf("could not list file storages: %w", err)
 	}
 
 	for _, value := range result.Values() {
-		fileStorages := handleFileStorage(account, value)
+		fileStorages, err := handleFileStorage(account, value)
+		if err != nil {
+			return nil, fmt.Errorf("could not handle file storage: %w", err)
+		}
+
 		log.Infof("Adding file storage %+v", fileStorages)
 
 		list = append(list, fileStorages)
@@ -168,13 +178,16 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *storage.Account)
 	client := storage.NewBlobContainersClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
 
-	result, err := client.List(context.Background(), GetResourceGroupName(*account.ID), *account.Name, "", "", "")
+	result, err := client.List(context.Background(), resourceGroupName(*account.ID), *account.Name, "", "", "")
 	if err != nil {
 		return nil, fmt.Errorf("could not list object storages: %w", err)
 	}
 
 	for _, value := range result.Values() {
-		objectStorages := handleObjectStorage(account, value)
+		objectStorages, err := handleObjectStorage(account, value)
+		if err != nil {
+			return nil, fmt.Errorf("could not handle object storage: %w", err)
+		}
 		log.Infof("Adding object storage %+v", objectStorages)
 
 		list = append(list, objectStorages)
@@ -183,8 +196,11 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *storage.Account)
 	return list, nil
 }
 
-func handleBlockStorage(disk compute.Disk) *voc.BlockStorage {
-	enc := getBlockStorageAtRestEncryption(disk)
+func (d *azureStorageDiscovery) handleBlockStorage(disk compute.Disk) (*voc.BlockStorage, error) {
+	enc, err := d.blockStorageAtRestEncryption(disk)
+	if err != nil {
+		return nil, fmt.Errorf("could not get block storage properties for the atRestEncryption: %w", err)
+	}
 
 	return &voc.BlockStorage{
 		Storage: &voc.Storage{
@@ -199,11 +215,14 @@ func handleBlockStorage(disk compute.Disk) *voc.BlockStorage {
 			},
 			AtRestEncryption: enc,
 		},
-	}
+	}, nil
 }
 
-func handleObjectStorage(account *storage.Account, container storage.ListContainerItem) *voc.ObjectStorage {
-	enc := getObjectStorageAtRestEncryption(account)
+func handleObjectStorage(account *storage.Account, container storage.ListContainerItem) (*voc.ObjectStorage, error) {
+	enc, err := storageAtRestEncryption(account)
+	if err != nil {
+		return nil, fmt.Errorf("could not get object storage properties for the atRestEncryption: %w", err)
+	}
 
 	return &voc.ObjectStorage{
 		Storage: &voc.Storage{
@@ -222,17 +241,19 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 			Url: to.String(account.PrimaryEndpoints.Blob) + to.String(container.Name),
 			TransportEncryption: &voc.TransportEncryption{
 				Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
-				Enabled:    true, // TODO(garuppel): can we get that from the API
+				Enabled:    true, // cannot be disabled
 				TlsVersion: string(account.MinimumTLSVersion),
 				Algorithm:  "TLS",
 			},
 		},
-	}
+	}, nil
 }
 
-func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem) *voc.FileStorage {
-	enc := getFileStorageAtRestEncryption(account)
-
+func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem) (*voc.FileStorage, error) {
+	enc, err := storageAtRestEncryption(account)
+	if err != nil {
+		return nil, fmt.Errorf("could not get file storage properties for the atRestEncryption: %w", err)
+	}
 	return &voc.FileStorage{
 		Storage: &voc.Storage{
 			CloudResource: &voc.CloudResource{
@@ -252,23 +273,28 @@ func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem
 				Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
 				Enabled:    true, // cannot be disabled
 				TlsVersion: string(account.MinimumTLSVersion),
-				Algorithm:  "AES256", // TODO(garuppel): I changed it due to https://docs.microsoft.com/en-us/azure/storage/common/storage-service-encryption
+				Algorithm:  "TLS",
 			},
 		},
-	}
+	}, nil
 }
 
-func getBlockStorageAtRestEncryption(disk compute.Disk) (enc voc.HasAtRestEncryption) {
-	if disk.Encryption.Type == compute.EncryptionAtRestWithPlatformKey {
+func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk compute.Disk) (voc.HasAtRestEncryption, error) {
+
+	var enc voc.HasAtRestEncryption
+
+	if disk.Encryption.Type == compute.EncryptionTypeEncryptionAtRestWithPlatformKey {
 		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
-			Algorithm: "AES256", // See https://docs.microsoft.com/en-us/azure/storage/common/storage-service-encryption
+			Algorithm: "AES256",
 			Enabled:   true,
 		}}
-	} else if disk.Encryption.Type == compute.EncryptionAtRestWithCustomerKey {
+	} else if disk.Encryption.Type == compute.EncryptionTypeEncryptionAtRestWithCustomerKey {
 		var keyUrl string
-		for _, elem := range *disk.EncryptionSettingsCollection.EncryptionSettings {
-			keyUrl = *elem.DiskEncryptionKey.SourceVault.ID
-			break
+		discEncryptionSetID := disk.Encryption.DiskEncryptionSetID
+
+		keyUrl, err := d.sourceVaultID(*discEncryptionSetID)
+		if err != nil {
+			return nil, fmt.Errorf("could not get keyVaultID: %w", err)
 		}
 
 		enc = voc.CustomerKeyEncryption{
@@ -278,21 +304,23 @@ func getBlockStorageAtRestEncryption(disk compute.Disk) (enc voc.HasAtRestEncryp
 			},
 			KeyUrl: keyUrl,
 		}
+	} else {
+		return enc, errors.New("error getting atRestEncryption properties of blockStorage")
 	}
 
-	return enc
+	return enc, nil
 }
 
-func getObjectStorageAtRestEncryption(account *storage.Account) voc.HasAtRestEncryption {
+func storageAtRestEncryption(account *storage.Account) (voc.HasAtRestEncryption, error) {
 
 	var enc voc.HasAtRestEncryption
 
-	if account.Encryption.KeySource == storage.KeySourceMicrosoftStorage && *account.Encryption.Services.Blob.Enabled {
+	if account.Encryption.KeySource == storage.KeySourceMicrosoftStorage {
 		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
-			Algorithm: "AES-256",
+			Algorithm: "AES256",
 			Enabled:   true,
 		}}
-	} else if account.Encryption.KeySource == storage.KeySourceMicrosoftKeyvault && *account.Encryption.Services.Blob.Enabled {
+	} else if account.Encryption.KeySource == storage.KeySourceMicrosoftKeyvault {
 		enc = voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
 				Algorithm: "", // TODO(garuppel): TBD
@@ -300,29 +328,30 @@ func getObjectStorageAtRestEncryption(account *storage.Account) voc.HasAtRestEnc
 			},
 			KeyUrl: to.String(account.Encryption.KeyVaultProperties.KeyVaultURI),
 		}
+	} else {
+		return enc, errors.New("error getting atRestEncryption properties of storage account")
 	}
 
-	return enc
+	return enc, nil
 }
 
-func getFileStorageAtRestEncryption(account *storage.Account) voc.HasAtRestEncryption {
+func (d *azureStorageDiscovery) sourceVaultID(discEncryptionSetID string) (string, error) {
+	client := compute.NewDiskEncryptionSetsClient(to.String(d.sub.SubscriptionID))
+	d.apply(&client.Client)
 
-	var enc voc.HasAtRestEncryption
-
-	if account.Encryption.KeySource == storage.KeySourceMicrosoftStorage && *account.Encryption.Services.File.Enabled {
-		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
-			Algorithm: "AES-256",
-			Enabled:   true,
-		}}
-	} else if account.Encryption.KeySource == storage.KeySourceMicrosoftKeyvault && *account.Encryption.Services.File.Enabled {
-		enc = voc.CustomerKeyEncryption{
-			AtRestEncryption: &voc.AtRestEncryption{
-				Algorithm: "", // TODO(garuppel): TBD
-				Enabled:   true,
-			},
-			KeyUrl: to.String(account.Encryption.KeyVaultProperties.KeyVaultURI),
-		}
+	discEncryptionSet, err := client.Get(context.Background(), resourceGroupName(discEncryptionSetID), diskEncryptionSetName(discEncryptionSetID))
+	if err != nil {
+		return "", fmt.Errorf("could not get discEncryptionSet: %w", err)
 	}
 
-	return enc
+	if discEncryptionSet.EncryptionSetProperties.ActiveKey.SourceVault.ID == nil {
+		return "", fmt.Errorf("could not get sourceVaultID")
+	}
+
+	return *discEncryptionSet.ActiveKey.SourceVault.ID, nil
+}
+
+func diskEncryptionSetName(discEncryptionSetID string) string {
+	splitName := strings.Split(discEncryptionSetID, "/")
+	return splitName[8]
 }
