@@ -150,8 +150,19 @@ service Orchestrator {
   rpc GetMetricConfiguration(GetMetricConfigurationRequest)
       returns (MetricConfiguration) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/cloud_services/{service_id}/metric_configuration/"
+      get : "/v1/orchestrator/cloud_services/{service_id}/"
+            "metric_configurations/"
             "{metric_id}"
+    };
+  }
+
+  // Lists all a metric configurations for a specific service and metric ID
+  // TODO(oxisto): Do we actually want a specific endpoint for this or should we
+  // just include a map of metric configurations in the CloudService object?
+  rpc ListMetricConfigurations(ListMetricConfigurationRequest)
+      returns (ListMetricConfigurationResponse) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/cloud_services/{service_id}/metric_configurations"
     };
   }
 }
@@ -200,6 +211,13 @@ message GetMetricConfigurationRequest {
   string service_id = 1;
 
   string metric_id = 2;
+}
+
+message ListMetricConfigurationRequest { string service_id = 1; }
+
+message ListMetricConfigurationResponse {
+  // A map of metric configurations associated by their metric ID
+  map<string, MetricConfiguration> configurations = 1;
 }
 
 // Represents an external tool or service that offers assessments according to

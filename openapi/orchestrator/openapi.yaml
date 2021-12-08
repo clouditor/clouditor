@@ -182,7 +182,23 @@ paths:
                 "200":
                     description: OK
                     content: {}
-    /v1/orchestrator/cloud_services/{service_id}/metric_configuration/{metric_id}:
+    /v1/orchestrator/cloud_services/{service_id}/metric_configurations:
+        get:
+            summary: 'Lists all a metric configurations for a specific service and metric ID TODO(oxisto): Do we actually want a specific endpoint for this or should we just include a map of metric configurations in the CloudService object?'
+            operationId: Orchestrator_ListMetricConfigurations
+            parameters:
+                - name: service_id
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListMetricConfigurationResponse'
+    /v1/orchestrator/cloud_services/{service_id}/metric_configurations/{metric_id}:
         get:
             summary: Retrieves a metric configuration for a specific service and metric ID
             operationId: Orchestrator_GetMetricConfiguration
@@ -287,6 +303,10 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/CloudService'
+        ListMetricConfigurationResponse:
+            properties:
+                configurations:
+                    $ref: '#/components/schemas/ConfigurationsEntry'
         ListMetricsResponse:
             properties:
                 metrics:
@@ -329,6 +349,9 @@ components:
                     description: The operator to compare the metric, such as == or >
                 target_value:
                     $ref: '#/components/schemas/Value'
+                is_default:
+                    type: boolean
+                    description: Whether this configuration is a default configuration
             description: Defines the operator and a target value for an individual metric
         MinMax:
             properties:

@@ -54,12 +54,17 @@ components:
                         $ref: '#/components/schemas/Value'
                     description: Repeated field of dynamically typed values.
             description: '`ListValue` is a wrapper around a repeated field of values. The JSON representation for `ListValue` is JSON array.'
-        MetricData:
+        MetricConfiguration:
             properties:
-                target_value:
-                    $ref: '#/components/schemas/Value'
                 operator:
                     type: string
+                    description: The operator to compare the metric, such as == or >
+                target_value:
+                    $ref: '#/components/schemas/Value'
+                is_default:
+                    type: boolean
+                    description: Whether this configuration is a default configuration
+            description: Defines the operator and a target value for an individual metric
         Result:
             properties:
                 id:
@@ -73,7 +78,7 @@ components:
                     type: string
                     description: Reference to the metric the assessment was based on
                 metric_data:
-                    $ref: '#/components/schemas/MetricData'
+                    $ref: '#/components/schemas/MetricConfiguration'
                 compliant:
                     type: boolean
                     description: 'Compliant case: true or false'

@@ -158,6 +158,31 @@ func (s *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.Ge
 	return nil, status.Errorf(codes.NotFound, "Could not find metric configuration for metric %s in service %s", req.MetricId, req.ServiceId)
 }
 
+// ListMetricConfigurations retrieves a list of MetricConfiguration objects for a particular target
+// cloud service specified in req.
+//
+// The list MUST include a configuration for each known metric. If the user did not specify a custom
+// configuration for a particular metric within the service, the default metric configuration is
+// inserted into the list.
+func (s *Service) ListMetricConfigurations(ctx context.Context, req *orchestrator.ListMetricConfigurationRequest) (response *orchestrator.ListMetricConfigurationResponse, err error) {
+	response = &orchestrator.ListMetricConfigurationResponse{
+		Configurations: make(map[string]*assessment.MetricConfiguration),
+	}
+
+	// TODO(oxisto): This is not very efficient, we should do this once at startup so that we can just return the map
+	for metricId, _ := range metricIndex {
+		config, err := s.GetMetricConfiguration(ctx, &orchestrator.GetMetricConfigurationRequest{ServiceId: req.ServiceId, MetricId: metricId})
+
+		if err != nil {
+			return nil, err
+		}
+
+		response.Configurations[metricId] = config
+	}
+
+	return
+}
+
 //// Tools
 //
 //// TODO Implement DeregisterAssessmentTool

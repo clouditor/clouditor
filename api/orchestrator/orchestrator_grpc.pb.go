@@ -52,6 +52,10 @@ type OrchestratorClient interface {
 	RemoveCloudService(ctx context.Context, in *RemoveCloudServiceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Retrieves a metric configuration for a specific service and metric ID
 	GetMetricConfiguration(ctx context.Context, in *GetMetricConfigurationRequest, opts ...grpc.CallOption) (*assessment.MetricConfiguration, error)
+	// Lists all a metric configurations for a specific service and metric ID
+	// TODO(oxisto): Do we actually want a specific endpoint for this or should we
+	// just include a map of metric configurations in the CloudService object?
+	ListMetricConfigurations(ctx context.Context, in *ListMetricConfigurationRequest, opts ...grpc.CallOption) (*ListMetricConfigurationResponse, error)
 }
 
 type orchestratorClient struct {
@@ -222,6 +226,15 @@ func (c *orchestratorClient) GetMetricConfiguration(ctx context.Context, in *Get
 	return out, nil
 }
 
+func (c *orchestratorClient) ListMetricConfigurations(ctx context.Context, in *ListMetricConfigurationRequest, opts ...grpc.CallOption) (*ListMetricConfigurationResponse, error) {
+	out := new(ListMetricConfigurationResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/ListMetricConfigurations", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OrchestratorServer is the server API for Orchestrator service.
 // All implementations must embed UnimplementedOrchestratorServer
 // for forward compatibility
@@ -258,6 +271,10 @@ type OrchestratorServer interface {
 	RemoveCloudService(context.Context, *RemoveCloudServiceRequest) (*emptypb.Empty, error)
 	// Retrieves a metric configuration for a specific service and metric ID
 	GetMetricConfiguration(context.Context, *GetMetricConfigurationRequest) (*assessment.MetricConfiguration, error)
+	// Lists all a metric configurations for a specific service and metric ID
+	// TODO(oxisto): Do we actually want a specific endpoint for this or should we
+	// just include a map of metric configurations in the CloudService object?
+	ListMetricConfigurations(context.Context, *ListMetricConfigurationRequest) (*ListMetricConfigurationResponse, error)
 	mustEmbedUnimplementedOrchestratorServer()
 }
 
@@ -309,6 +326,9 @@ func (UnimplementedOrchestratorServer) RemoveCloudService(context.Context, *Remo
 }
 func (UnimplementedOrchestratorServer) GetMetricConfiguration(context.Context, *GetMetricConfigurationRequest) (*assessment.MetricConfiguration, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMetricConfiguration not implemented")
+}
+func (UnimplementedOrchestratorServer) ListMetricConfigurations(context.Context, *ListMetricConfigurationRequest) (*ListMetricConfigurationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListMetricConfigurations not implemented")
 }
 func (UnimplementedOrchestratorServer) mustEmbedUnimplementedOrchestratorServer() {}
 
@@ -601,6 +621,24 @@ func _Orchestrator_GetMetricConfiguration_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Orchestrator_ListMetricConfigurations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListMetricConfigurationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).ListMetricConfigurations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/ListMetricConfigurations",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).ListMetricConfigurations(ctx, req.(*ListMetricConfigurationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Orchestrator_ServiceDesc is the grpc.ServiceDesc for Orchestrator service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -663,6 +701,10 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetMetricConfiguration",
 			Handler:    _Orchestrator_GetMetricConfiguration_Handler,
+		},
+		{
+			MethodName: "ListMetricConfigurations",
+			Handler:    _Orchestrator_ListMetricConfigurations_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

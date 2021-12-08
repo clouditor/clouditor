@@ -99,4 +99,7 @@ message MetricConfiguration {
 
   // The target value
   google.protobuf.Value target_value = 2;
+
+  // Whether this configuration is a default configuration
+  bool is_default = 3;
 }

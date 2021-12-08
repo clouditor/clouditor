@@ -135,7 +135,9 @@ func (s *Service) RemoveCloudService(_ context.Context, req *orchestrator.Remove
 }
 
 // CreateDefaultTargetCloudService creates a new "default" target cloud services,
-// if no target service exists in the database. If a new cloud service was created, it will be returned.
+// if no target service exists in the database.
+//
+// If a new target cloud service was created, it will be returned.
 func (s *Service) CreateDefaultTargetCloudService() (service *orchestrator.CloudService, err error) {
 	var count int64
 	s.db.Model(&orchestrator.CloudService{}).Count(&count)

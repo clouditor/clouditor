@@ -92,7 +92,7 @@ func (x AssessmentResult_ComplianceStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use AssessmentResult_ComplianceStatus.Descriptor instead.
 func (AssessmentResult_ComplianceStatus) EnumDescriptor() ([]byte, []int) {
-	return file_orchestrator_proto_rawDescGZIP(), []int{19, 0}
+	return file_orchestrator_proto_rawDescGZIP(), []int{21, 0}
 }
 
 type RegisterAssessmentToolRequest struct {
@@ -940,6 +940,101 @@ func (x *GetMetricConfigurationRequest) GetMetricId() string {
 	return ""
 }
 
+type ListMetricConfigurationRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ServiceId string `protobuf:"bytes,1,opt,name=service_id,json=serviceId,proto3" json:"service_id,omitempty"`
+}
+
+func (x *ListMetricConfigurationRequest) Reset() {
+	*x = ListMetricConfigurationRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_orchestrator_proto_msgTypes[18]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ListMetricConfigurationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListMetricConfigurationRequest) ProtoMessage() {}
+
+func (x *ListMetricConfigurationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_orchestrator_proto_msgTypes[18]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListMetricConfigurationRequest.ProtoReflect.Descriptor instead.
+func (*ListMetricConfigurationRequest) Descriptor() ([]byte, []int) {
+	return file_orchestrator_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *ListMetricConfigurationRequest) GetServiceId() string {
+	if x != nil {
+		return x.ServiceId
+	}
+	return ""
+}
+
+type ListMetricConfigurationResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// A map of metric configurations associated by their metric ID
+	Configurations map[string]*assessment.MetricConfiguration `protobuf:"bytes,1,rep,name=configurations,proto3" json:"configurations,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+}
+
+func (x *ListMetricConfigurationResponse) Reset() {
+	*x = ListMetricConfigurationResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_orchestrator_proto_msgTypes[19]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ListMetricConfigurationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListMetricConfigurationResponse) ProtoMessage() {}
+
+func (x *ListMetricConfigurationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_orchestrator_proto_msgTypes[19]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListMetricConfigurationResponse.ProtoReflect.Descriptor instead.
+func (*ListMetricConfigurationResponse) Descriptor() ([]byte, []int) {
+	return file_orchestrator_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *ListMetricConfigurationResponse) GetConfigurations() map[string]*assessment.MetricConfiguration {
+	if x != nil {
+		return x.Configurations
+	}
+	return nil
+}
+
 // Represents an external tool or service that offers assessments according to
 // certain metrics
 type AssessmentTool struct {
@@ -957,7 +1052,7 @@ type AssessmentTool struct {
 func (x *AssessmentTool) Reset() {
 	*x = AssessmentTool{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_orchestrator_proto_msgTypes[18]
+		mi := &file_orchestrator_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -970,7 +1065,7 @@ func (x *AssessmentTool) String() string {
 func (*AssessmentTool) ProtoMessage() {}
 
 func (x *AssessmentTool) ProtoReflect() protoreflect.Message {
-	mi := &file_orchestrator_proto_msgTypes[18]
+	mi := &file_orchestrator_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -983,7 +1078,7 @@ func (x *AssessmentTool) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AssessmentTool.ProtoReflect.Descriptor instead.
 func (*AssessmentTool) Descriptor() ([]byte, []int) {
-	return file_orchestrator_proto_rawDescGZIP(), []int{18}
+	return file_orchestrator_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *AssessmentTool) GetId() string {
@@ -1031,7 +1126,7 @@ type AssessmentResult struct {
 func (x *AssessmentResult) Reset() {
 	*x = AssessmentResult{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_orchestrator_proto_msgTypes[19]
+		mi := &file_orchestrator_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1044,7 +1139,7 @@ func (x *AssessmentResult) String() string {
 func (*AssessmentResult) ProtoMessage() {}
 
 func (x *AssessmentResult) ProtoReflect() protoreflect.Message {
-	mi := &file_orchestrator_proto_msgTypes[19]
+	mi := &file_orchestrator_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1057,7 +1152,7 @@ func (x *AssessmentResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AssessmentResult.ProtoReflect.Descriptor instead.
 func (*AssessmentResult) Descriptor() ([]byte, []int) {
-	return file_orchestrator_proto_rawDescGZIP(), []int{19}
+	return file_orchestrator_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *AssessmentResult) GetId() string {
@@ -1108,7 +1203,7 @@ type CloudService struct {
 func (x *CloudService) Reset() {
 	*x = CloudService{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_orchestrator_proto_msgTypes[20]
+		mi := &file_orchestrator_proto_msgTypes[22]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1121,7 +1216,7 @@ func (x *CloudService) String() string {
 func (*CloudService) ProtoMessage() {}
 
 func (x *CloudService) ProtoReflect() protoreflect.Message {
-	mi := &file_orchestrator_proto_msgTypes[20]
+	mi := &file_orchestrator_proto_msgTypes[22]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1134,7 +1229,7 @@ func (x *CloudService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CloudService.ProtoReflect.Descriptor instead.
 func (*CloudService) Descriptor() ([]byte, []int) {
-	return file_orchestrator_proto_rawDescGZIP(), []int{20}
+	return file_orchestrator_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *CloudService) GetId() string {
@@ -1242,7 +1337,26 @@ var file_orchestrator_proto_rawDesc = []byte{
 	0x73, 0x74, 0x12, 0x1d, 0x0a, 0x0a, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x5f, 0x69, 0x64,
 	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x49,
 	0x64, 0x12, 0x1b, 0x0a, 0x09, 0x6d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x6d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x49, 0x64, 0x22, 0x83,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x6d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x49, 0x64, 0x22, 0x3f,
+	0x0a, 0x1e, 0x4c, 0x69, 0x73, 0x74, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x43, 0x6f, 0x6e, 0x66,
+	0x69, 0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x12, 0x1d, 0x0a, 0x0a, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x49, 0x64, 0x22,
+	0xec, 0x01, 0x0a, 0x1f, 0x4c, 0x69, 0x73, 0x74, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x43, 0x6f,
+	0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x12, 0x66, 0x0a, 0x0e, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x61,
+	0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x3e, 0x2e, 0x63, 0x6c,
+	0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x4d, 0x65, 0x74, 0x72,
+	0x69, 0x63, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x0e, 0x63, 0x6f, 0x6e,
+	0x66, 0x69, 0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x1a, 0x61, 0x0a, 0x13, 0x43,
+	0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x45, 0x6e, 0x74,
+	0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x03, 0x6b, 0x65, 0x79, 0x12, 0x34, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x1e, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e,
+	0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x61, 0x74,
+	0x69, 0x6f, 0x6e, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x22, 0x83,
 	0x01, 0x0a, 0x0e, 0x41, 0x73, 0x73, 0x65, 0x73, 0x73, 0x6d, 0x65, 0x6e, 0x74, 0x54, 0x6f, 0x6f,
 	0x6c, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69,
 	0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
@@ -1272,7 +1386,7 @@ var file_orchestrator_proto_rawDesc = []byte{
 	0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02,
 	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x20, 0x0a, 0x0b, 0x64, 0x65,
 	0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x32, 0xe0, 0x10, 0x0a,
+	0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x32, 0xa1, 0x12, 0x0a,
 	0x0c, 0x4f, 0x72, 0x63, 0x68, 0x65, 0x73, 0x74, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x8e, 0x01,
 	0x0a, 0x16, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x41, 0x73, 0x73, 0x65, 0x73, 0x73,
 	0x6d, 0x65, 0x6e, 0x74, 0x54, 0x6f, 0x6f, 0x6c, 0x12, 0x28, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64,
@@ -1395,20 +1509,32 @@ var file_orchestrator_proto_rawDesc = []byte{
 	0xd3, 0xe4, 0x93, 0x02, 0x2e, 0x2a, 0x2c, 0x2f, 0x76, 0x31, 0x2f, 0x6f, 0x72, 0x63, 0x68, 0x65,
 	0x73, 0x74, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x2f, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x5f, 0x73, 0x65,
 	0x72, 0x76, 0x69, 0x63, 0x65, 0x73, 0x2f, 0x7b, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x5f,
-	0x69, 0x64, 0x7d, 0x12, 0xb9, 0x01, 0x0a, 0x16, 0x47, 0x65, 0x74, 0x4d, 0x65, 0x74, 0x72, 0x69,
+	0x69, 0x64, 0x7d, 0x12, 0xba, 0x01, 0x0a, 0x16, 0x47, 0x65, 0x74, 0x4d, 0x65, 0x74, 0x72, 0x69,
 	0x63, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x28,
 	0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x47, 0x65, 0x74, 0x4d, 0x65,
 	0x74, 0x72, 0x69, 0x63, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f,
 	0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64,
 	0x69, 0x74, 0x6f, 0x72, 0x2e, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x43, 0x6f, 0x6e, 0x66, 0x69,
-	0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0x55, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x4f,
-	0x12, 0x4d, 0x2f, 0x76, 0x31, 0x2f, 0x6f, 0x72, 0x63, 0x68, 0x65, 0x73, 0x74, 0x72, 0x61, 0x74,
+	0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0x56, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x50,
+	0x12, 0x4e, 0x2f, 0x76, 0x31, 0x2f, 0x6f, 0x72, 0x63, 0x68, 0x65, 0x73, 0x74, 0x72, 0x61, 0x74,
 	0x6f, 0x72, 0x2f, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
 	0x73, 0x2f, 0x7b, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x5f, 0x69, 0x64, 0x7d, 0x2f, 0x6d,
 	0x65, 0x74, 0x72, 0x69, 0x63, 0x5f, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x61, 0x74,
-	0x69, 0x6f, 0x6e, 0x2f, 0x7b, 0x6d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x7d, 0x42,
-	0x12, 0x5a, 0x10, 0x61, 0x70, 0x69, 0x2f, 0x6f, 0x72, 0x63, 0x68, 0x65, 0x73, 0x74, 0x72, 0x61,
-	0x74, 0x6f, 0x72, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x7b, 0x6d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x7d,
+	0x12, 0xbd, 0x01, 0x0a, 0x18, 0x4c, 0x69, 0x73, 0x74, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x43,
+	0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x29, 0x2e,
+	0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x4d, 0x65,
+	0x74, 0x72, 0x69, 0x63, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f,
+	0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x2a, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64,
+	0x69, 0x74, 0x6f, 0x72, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x43,
+	0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x22, 0x4a, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x44, 0x12, 0x42, 0x2f, 0x76,
+	0x31, 0x2f, 0x6f, 0x72, 0x63, 0x68, 0x65, 0x73, 0x74, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x2f, 0x63,
+	0x6c, 0x6f, 0x75, 0x64, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x73, 0x2f, 0x7b, 0x73,
+	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x5f, 0x69, 0x64, 0x7d, 0x2f, 0x6d, 0x65, 0x74, 0x72, 0x69,
+	0x63, 0x5f, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73,
+	0x42, 0x12, 0x5a, 0x10, 0x61, 0x70, 0x69, 0x2f, 0x6f, 0x72, 0x63, 0x68, 0x65, 0x73, 0x74, 0x72,
+	0x61, 0x74, 0x6f, 0x72, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1424,7 +1550,7 @@ func file_orchestrator_proto_rawDescGZIP() []byte {
 }
 
 var file_orchestrator_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_orchestrator_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
+var file_orchestrator_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
 var file_orchestrator_proto_goTypes = []interface{}{
 	(AssessmentResult_ComplianceStatus)(0),  // 0: clouditor.AssessmentResult.ComplianceStatus
 	(*RegisterAssessmentToolRequest)(nil),   // 1: clouditor.RegisterAssessmentToolRequest
@@ -1445,58 +1571,65 @@ var file_orchestrator_proto_goTypes = []interface{}{
 	(*ListCloudServicesRequest)(nil),        // 16: clouditor.ListCloudServicesRequest
 	(*ListCloudServicesResponse)(nil),       // 17: clouditor.ListCloudServicesResponse
 	(*GetMetricConfigurationRequest)(nil),   // 18: clouditor.GetMetricConfigurationRequest
-	(*AssessmentTool)(nil),                  // 19: clouditor.AssessmentTool
-	(*AssessmentResult)(nil),                // 20: clouditor.AssessmentResult
-	(*CloudService)(nil),                    // 21: clouditor.CloudService
-	(*assessment.Metric)(nil),               // 22: clouditor.Metric
-	(*emptypb.Empty)(nil),                   // 23: google.protobuf.Empty
-	(*assessment.MetricConfiguration)(nil),  // 24: clouditor.MetricConfiguration
+	(*ListMetricConfigurationRequest)(nil),  // 19: clouditor.ListMetricConfigurationRequest
+	(*ListMetricConfigurationResponse)(nil), // 20: clouditor.ListMetricConfigurationResponse
+	(*AssessmentTool)(nil),                  // 21: clouditor.AssessmentTool
+	(*AssessmentResult)(nil),                // 22: clouditor.AssessmentResult
+	(*CloudService)(nil),                    // 23: clouditor.CloudService
+	nil,                                     // 24: clouditor.ListMetricConfigurationResponse.ConfigurationsEntry
+	(*assessment.Metric)(nil),               // 25: clouditor.Metric
+	(*assessment.MetricConfiguration)(nil),  // 26: clouditor.MetricConfiguration
+	(*emptypb.Empty)(nil),                   // 27: google.protobuf.Empty
 }
 var file_orchestrator_proto_depIdxs = []int32{
-	19, // 0: clouditor.RegisterAssessmentToolRequest.tool:type_name -> clouditor.AssessmentTool
-	19, // 1: clouditor.ListAssessmentToolsResponse.tools:type_name -> clouditor.AssessmentTool
-	19, // 2: clouditor.UpdateAssessmentToolRequest.tool:type_name -> clouditor.AssessmentTool
-	20, // 3: clouditor.StoreAssessmentResultRequest.result:type_name -> clouditor.AssessmentResult
-	22, // 4: clouditor.ListMetricsResponse.metrics:type_name -> clouditor.Metric
-	21, // 5: clouditor.RegisterCloudServiceRequest.service:type_name -> clouditor.CloudService
-	21, // 6: clouditor.UpdateCloudServiceRequest.service:type_name -> clouditor.CloudService
-	21, // 7: clouditor.ListCloudServicesResponse.services:type_name -> clouditor.CloudService
-	0,  // 8: clouditor.AssessmentResult.result:type_name -> clouditor.AssessmentResult.ComplianceStatus
-	1,  // 9: clouditor.Orchestrator.RegisterAssessmentTool:input_type -> clouditor.RegisterAssessmentToolRequest
-	2,  // 10: clouditor.Orchestrator.ListAssessmentTools:input_type -> clouditor.ListAssessmentToolsRequest
-	4,  // 11: clouditor.Orchestrator.GetAssessmentTool:input_type -> clouditor.GetAssessmentToolRequest
-	5,  // 12: clouditor.Orchestrator.UpdateAssessmentTool:input_type -> clouditor.UpdateAssessmentToolRequest
-	6,  // 13: clouditor.Orchestrator.DeregisterAssessmentTool:input_type -> clouditor.DeregisterAssessmentToolRequest
-	7,  // 14: clouditor.Orchestrator.StoreAssessmentResult:input_type -> clouditor.StoreAssessmentResultRequest
-	20, // 15: clouditor.Orchestrator.StoreAssessmentResults:input_type -> clouditor.AssessmentResult
-	10, // 16: clouditor.Orchestrator.ListMetrics:input_type -> clouditor.ListMetricsRequest
-	9,  // 17: clouditor.Orchestrator.GetMetric:input_type -> clouditor.GetMetricsRequest
-	13, // 18: clouditor.Orchestrator.RegisterCloudService:input_type -> clouditor.RegisterCloudServiceRequest
-	14, // 19: clouditor.Orchestrator.UpdateCloudService:input_type -> clouditor.UpdateCloudServiceRequest
-	12, // 20: clouditor.Orchestrator.GetCloudService:input_type -> clouditor.GetCloudServiceRequest
-	16, // 21: clouditor.Orchestrator.ListCloudServices:input_type -> clouditor.ListCloudServicesRequest
-	15, // 22: clouditor.Orchestrator.RemoveCloudService:input_type -> clouditor.RemoveCloudServiceRequest
-	18, // 23: clouditor.Orchestrator.GetMetricConfiguration:input_type -> clouditor.GetMetricConfigurationRequest
-	19, // 24: clouditor.Orchestrator.RegisterAssessmentTool:output_type -> clouditor.AssessmentTool
-	3,  // 25: clouditor.Orchestrator.ListAssessmentTools:output_type -> clouditor.ListAssessmentToolsResponse
-	19, // 26: clouditor.Orchestrator.GetAssessmentTool:output_type -> clouditor.AssessmentTool
-	19, // 27: clouditor.Orchestrator.UpdateAssessmentTool:output_type -> clouditor.AssessmentTool
-	23, // 28: clouditor.Orchestrator.DeregisterAssessmentTool:output_type -> google.protobuf.Empty
-	8,  // 29: clouditor.Orchestrator.StoreAssessmentResult:output_type -> clouditor.StoreAssessmentResultResponse
-	23, // 30: clouditor.Orchestrator.StoreAssessmentResults:output_type -> google.protobuf.Empty
-	11, // 31: clouditor.Orchestrator.ListMetrics:output_type -> clouditor.ListMetricsResponse
-	22, // 32: clouditor.Orchestrator.GetMetric:output_type -> clouditor.Metric
-	21, // 33: clouditor.Orchestrator.RegisterCloudService:output_type -> clouditor.CloudService
-	21, // 34: clouditor.Orchestrator.UpdateCloudService:output_type -> clouditor.CloudService
-	21, // 35: clouditor.Orchestrator.GetCloudService:output_type -> clouditor.CloudService
-	17, // 36: clouditor.Orchestrator.ListCloudServices:output_type -> clouditor.ListCloudServicesResponse
-	23, // 37: clouditor.Orchestrator.RemoveCloudService:output_type -> google.protobuf.Empty
-	24, // 38: clouditor.Orchestrator.GetMetricConfiguration:output_type -> clouditor.MetricConfiguration
-	24, // [24:39] is the sub-list for method output_type
-	9,  // [9:24] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	21, // 0: clouditor.RegisterAssessmentToolRequest.tool:type_name -> clouditor.AssessmentTool
+	21, // 1: clouditor.ListAssessmentToolsResponse.tools:type_name -> clouditor.AssessmentTool
+	21, // 2: clouditor.UpdateAssessmentToolRequest.tool:type_name -> clouditor.AssessmentTool
+	22, // 3: clouditor.StoreAssessmentResultRequest.result:type_name -> clouditor.AssessmentResult
+	25, // 4: clouditor.ListMetricsResponse.metrics:type_name -> clouditor.Metric
+	23, // 5: clouditor.RegisterCloudServiceRequest.service:type_name -> clouditor.CloudService
+	23, // 6: clouditor.UpdateCloudServiceRequest.service:type_name -> clouditor.CloudService
+	23, // 7: clouditor.ListCloudServicesResponse.services:type_name -> clouditor.CloudService
+	24, // 8: clouditor.ListMetricConfigurationResponse.configurations:type_name -> clouditor.ListMetricConfigurationResponse.ConfigurationsEntry
+	0,  // 9: clouditor.AssessmentResult.result:type_name -> clouditor.AssessmentResult.ComplianceStatus
+	26, // 10: clouditor.ListMetricConfigurationResponse.ConfigurationsEntry.value:type_name -> clouditor.MetricConfiguration
+	1,  // 11: clouditor.Orchestrator.RegisterAssessmentTool:input_type -> clouditor.RegisterAssessmentToolRequest
+	2,  // 12: clouditor.Orchestrator.ListAssessmentTools:input_type -> clouditor.ListAssessmentToolsRequest
+	4,  // 13: clouditor.Orchestrator.GetAssessmentTool:input_type -> clouditor.GetAssessmentToolRequest
+	5,  // 14: clouditor.Orchestrator.UpdateAssessmentTool:input_type -> clouditor.UpdateAssessmentToolRequest
+	6,  // 15: clouditor.Orchestrator.DeregisterAssessmentTool:input_type -> clouditor.DeregisterAssessmentToolRequest
+	7,  // 16: clouditor.Orchestrator.StoreAssessmentResult:input_type -> clouditor.StoreAssessmentResultRequest
+	22, // 17: clouditor.Orchestrator.StoreAssessmentResults:input_type -> clouditor.AssessmentResult
+	10, // 18: clouditor.Orchestrator.ListMetrics:input_type -> clouditor.ListMetricsRequest
+	9,  // 19: clouditor.Orchestrator.GetMetric:input_type -> clouditor.GetMetricsRequest
+	13, // 20: clouditor.Orchestrator.RegisterCloudService:input_type -> clouditor.RegisterCloudServiceRequest
+	14, // 21: clouditor.Orchestrator.UpdateCloudService:input_type -> clouditor.UpdateCloudServiceRequest
+	12, // 22: clouditor.Orchestrator.GetCloudService:input_type -> clouditor.GetCloudServiceRequest
+	16, // 23: clouditor.Orchestrator.ListCloudServices:input_type -> clouditor.ListCloudServicesRequest
+	15, // 24: clouditor.Orchestrator.RemoveCloudService:input_type -> clouditor.RemoveCloudServiceRequest
+	18, // 25: clouditor.Orchestrator.GetMetricConfiguration:input_type -> clouditor.GetMetricConfigurationRequest
+	19, // 26: clouditor.Orchestrator.ListMetricConfigurations:input_type -> clouditor.ListMetricConfigurationRequest
+	21, // 27: clouditor.Orchestrator.RegisterAssessmentTool:output_type -> clouditor.AssessmentTool
+	3,  // 28: clouditor.Orchestrator.ListAssessmentTools:output_type -> clouditor.ListAssessmentToolsResponse
+	21, // 29: clouditor.Orchestrator.GetAssessmentTool:output_type -> clouditor.AssessmentTool
+	21, // 30: clouditor.Orchestrator.UpdateAssessmentTool:output_type -> clouditor.AssessmentTool
+	27, // 31: clouditor.Orchestrator.DeregisterAssessmentTool:output_type -> google.protobuf.Empty
+	8,  // 32: clouditor.Orchestrator.StoreAssessmentResult:output_type -> clouditor.StoreAssessmentResultResponse
+	27, // 33: clouditor.Orchestrator.StoreAssessmentResults:output_type -> google.protobuf.Empty
+	11, // 34: clouditor.Orchestrator.ListMetrics:output_type -> clouditor.ListMetricsResponse
+	25, // 35: clouditor.Orchestrator.GetMetric:output_type -> clouditor.Metric
+	23, // 36: clouditor.Orchestrator.RegisterCloudService:output_type -> clouditor.CloudService
+	23, // 37: clouditor.Orchestrator.UpdateCloudService:output_type -> clouditor.CloudService
+	23, // 38: clouditor.Orchestrator.GetCloudService:output_type -> clouditor.CloudService
+	17, // 39: clouditor.Orchestrator.ListCloudServices:output_type -> clouditor.ListCloudServicesResponse
+	27, // 40: clouditor.Orchestrator.RemoveCloudService:output_type -> google.protobuf.Empty
+	26, // 41: clouditor.Orchestrator.GetMetricConfiguration:output_type -> clouditor.MetricConfiguration
+	20, // 42: clouditor.Orchestrator.ListMetricConfigurations:output_type -> clouditor.ListMetricConfigurationResponse
+	27, // [27:43] is the sub-list for method output_type
+	11, // [11:27] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_orchestrator_proto_init() }
@@ -1722,7 +1855,7 @@ func file_orchestrator_proto_init() {
 			}
 		}
 		file_orchestrator_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AssessmentTool); i {
+			switch v := v.(*ListMetricConfigurationRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1734,7 +1867,7 @@ func file_orchestrator_proto_init() {
 			}
 		}
 		file_orchestrator_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AssessmentResult); i {
+			switch v := v.(*ListMetricConfigurationResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1746,6 +1879,30 @@ func file_orchestrator_proto_init() {
 			}
 		}
 		file_orchestrator_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*AssessmentTool); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_orchestrator_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*AssessmentResult); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_orchestrator_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CloudService); i {
 			case 0:
 				return &v.state
@@ -1764,7 +1921,7 @@ func file_orchestrator_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_orchestrator_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   21,
+			NumMessages:   24,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
