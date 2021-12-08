@@ -85,9 +85,10 @@ func (a *azureDiscovery) authorize() (err error) {
 
 	// for now, do not re-authorize. in the future, we would probably need to check, if
 	// the token is still valid. or maybe Azure does this for us?
-	if a.isAuthorized {
-		return
-	}
+	// TODO(all): a.isAuthorized is never set to false!
+	//if a.isAuthorized {
+	//	return
+	//}
 
 	subClient := subscriptions.NewClient()
 	a.apply(&subClient.Client)
