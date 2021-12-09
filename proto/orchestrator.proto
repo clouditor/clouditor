@@ -157,8 +157,6 @@ service Orchestrator {
   }
 
   // Lists all a metric configurations for a specific service and metric ID
-  // TODO(oxisto): Do we actually want a specific endpoint for this or should we
-  // just include a map of metric configurations in the CloudService object?
   rpc ListMetricConfigurations(ListMetricConfigurationRequest)
       returns (ListMetricConfigurationResponse) {
     option (google.api.http) = {

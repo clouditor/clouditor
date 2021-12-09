@@ -53,8 +53,6 @@ type OrchestratorClient interface {
 	// Retrieves a metric configuration for a specific service and metric ID
 	GetMetricConfiguration(ctx context.Context, in *GetMetricConfigurationRequest, opts ...grpc.CallOption) (*assessment.MetricConfiguration, error)
 	// Lists all a metric configurations for a specific service and metric ID
-	// TODO(oxisto): Do we actually want a specific endpoint for this or should we
-	// just include a map of metric configurations in the CloudService object?
 	ListMetricConfigurations(ctx context.Context, in *ListMetricConfigurationRequest, opts ...grpc.CallOption) (*ListMetricConfigurationResponse, error)
 }
 
@@ -272,8 +270,6 @@ type OrchestratorServer interface {
 	// Retrieves a metric configuration for a specific service and metric ID
 	GetMetricConfiguration(context.Context, *GetMetricConfigurationRequest) (*assessment.MetricConfiguration, error)
 	// Lists all a metric configurations for a specific service and metric ID
-	// TODO(oxisto): Do we actually want a specific endpoint for this or should we
-	// just include a map of metric configurations in the CloudService object?
 	ListMetricConfigurations(context.Context, *ListMetricConfigurationRequest) (*ListMetricConfigurationResponse, error)
 	mustEmbedUnimplementedOrchestratorServer()
 }

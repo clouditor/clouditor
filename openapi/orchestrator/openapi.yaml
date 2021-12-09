@@ -184,7 +184,7 @@ paths:
                     content: {}
     /v1/orchestrator/cloud_services/{service_id}/metric_configurations:
         get:
-            summary: 'Lists all a metric configurations for a specific service and metric ID TODO(oxisto): Do we actually want a specific endpoint for this or should we just include a map of metric configurations in the CloudService object?'
+            summary: Lists all a metric configurations for a specific service and metric ID
             operationId: Orchestrator_ListMetricConfigurations
             parameters:
                 - name: service_id
