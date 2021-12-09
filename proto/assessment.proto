@@ -53,17 +53,16 @@ service Assessment {
   }
 
   // Assesses the evidence sent by the discovery. Part of the public API, also exposed as REST.
-  // TODO(all): Evidence instead of AssessEvidenceRequest?
   rpc AssessEvidence(AssessEvidenceRequest) returns (AssessEvidenceResponse) {
     option (google.api.http) = {
       post : "/v1/assessment/evidences"
-      body: "*"
+      body: "evidence"
       response_body : "*"
     };
   }
 
   // Assesses stream of evidences sent by the discovery. Part of the public API. Not exposed as REST.
-  rpc AssessEvidences(stream Evidence) returns (google.protobuf.Empty);
+  rpc AssessEvidences(stream AssessEvidenceRequest) returns (google.protobuf.Empty);
 };
 
 message TriggerAssessmentRequest { string someOption = 1; }

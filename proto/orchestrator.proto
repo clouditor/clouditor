@@ -41,7 +41,8 @@ service Orchestrator {
       returns (AssessmentTool) {
     option (google.api.http) = {
       post : "/v1/orchestrator/assessment_tools"
-      body : "*"
+      // TODO: I guess the best would be to unwrap it completely, e.g. {id = "", description = ""} instead of {tool : {id = ...}}?
+      body : "tool"
     };
   }
 
@@ -52,6 +53,7 @@ service Orchestrator {
     option (google.api.http) = {
       get : "/v1/orchestrator/assessment_tools"
       additional_bindings {get : "/v1/orchestrator/{metric_id}/assessment_tools"}
+      response_body : "tools"
     };
   }
 
@@ -59,6 +61,7 @@ service Orchestrator {
   rpc GetAssessmentTool(GetAssessmentToolRequest) returns (AssessmentTool) {
     option (google.api.http) = {
       get : "/v1/orchestrator/assessment_tools/{tool_id}"
+      response_body : "tool"
     };
   }
 
@@ -67,7 +70,10 @@ service Orchestrator {
       returns (AssessmentTool) {
     option (google.api.http) = {
       put : "/v1/orchestrator/assessment_tools/{tool_id}"
+      // TODO: like TODO above. How to avoid UpdateAssessmentToolRequest and directly fields: {provide tool_id = "", tool = {...}}
+      // TODO: Why do we have tool_id separated when it is in tool already? (when it is removed, forget TODO in the line above)
       body : "*"
+      response_body: "tool"
     };
   }
 
