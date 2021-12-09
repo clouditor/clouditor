@@ -186,7 +186,7 @@ func TestRunEvidence(t *testing.T) {
 			wantErr:    false,
 		},
 		{
-			name: "VM:Compliant Case",
+			name: "VM: Compliant Case",
 			fields: fields{
 				resource: voc.VirtualMachine{
 					Compute: &voc.Compute{
@@ -218,7 +218,7 @@ func TestRunEvidence(t *testing.T) {
 			wantErr:    false,
 		},
 		{
-			name: "VM:Non-Compliant Case",
+			name: "VM: Non-Compliant Case",
 			fields: fields{
 				resource: voc.VirtualMachine{
 					Compute: &voc.Compute{

@@ -33,6 +33,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/cli/commands/login"
+	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -45,8 +46,12 @@ var server *grpc.Server
 func TestMain(m *testing.M) {
 	var err error
 
-	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
+	err = persistence.InitDB(true, "", 0)
+	if err != nil {
+		panic(err)
+	}
 
+	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}

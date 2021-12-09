@@ -135,7 +135,7 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 			Id:        uuid.NewString(),
 			Timestamp: timestamppb.Now(),
 			MetricId:  metricId,
-			MetricData: &assessment.MetricData{
+			MetricData: &assessment.MetricConfiguration{
 				TargetValue: targetValue,
 				Operator:    operator,
 			},

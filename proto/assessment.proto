@@ -30,9 +30,9 @@ package clouditor;
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
-import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "evidence.proto";
+import "metric.proto";
 
 option go_package = "api/assessment";
 
@@ -90,7 +90,7 @@ message Result {
   string metric_id = 3;
 
   // Data corresponding to the metric by the given metric id
-  MetricData metric_data = 4;
+  MetricConfiguration metric_data = 4;
 
   // Compliant case: true or false
   bool compliant = 5;
@@ -103,10 +103,4 @@ message Result {
 
   // Some comments on the reason for non-compliance
   string non_compliance_comments = 8;
-}
-
-message MetricData {
-  google.protobuf.Value target_value =
-      1;               // target value, e.g. string, number, array, ...
-  string operator = 2; // the operator, e.g. "=="
 }

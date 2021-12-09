@@ -106,6 +106,63 @@ service Orchestrator {
       get : "/v1/orchestrator/metrics/{metric_id}"
     };
   }
+
+  // Registers a new target cloud service
+  rpc RegisterCloudService(RegisterCloudServiceRequest) returns (CloudService) {
+    option (google.api.http) = {
+      post : "/v1/orchestrator/cloud_services"
+      body : "service"
+    };
+  }
+
+  // Registers a new target cloud service
+  rpc UpdateCloudService(UpdateCloudServiceRequest) returns (CloudService) {
+    option (google.api.http) = {
+      put : "/v1/orchestrator/cloud_services/{service_id}"
+      body : "service"
+    };
+  }
+
+  // Retrieves a target cloud service
+  rpc GetCloudService(GetCloudServiceRequest) returns (CloudService) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/cloud_services/{service_id}"
+    };
+  }
+
+  // Lists all target cloud services
+  rpc ListCloudServices(ListCloudServicesRequest)
+      returns (ListCloudServicesResponse) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/cloud_services"
+    };
+  }
+
+  // Removes a target cloud service
+  rpc RemoveCloudService(RemoveCloudServiceRequest)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete : "/v1/orchestrator/cloud_services/{service_id}"
+    };
+  }
+
+  // Retrieves a metric configuration for a specific service and metric ID
+  rpc GetMetricConfiguration(GetMetricConfigurationRequest)
+      returns (MetricConfiguration) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/cloud_services/{service_id}/"
+            "metric_configurations/"
+            "{metric_id}"
+    };
+  }
+
+  // Lists all a metric configurations for a specific service and metric ID
+  rpc ListMetricConfigurations(ListMetricConfigurationRequest)
+      returns (ListMetricConfigurationResponse) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/cloud_services/{service_id}/metric_configurations"
+    };
+  }
 }
 
 message RegisterAssessmentToolRequest { AssessmentTool tool = 1; }
@@ -133,6 +190,33 @@ message GetMetricsRequest { string metric_id = 1; }
 
 message ListMetricsRequest {}
 message ListMetricsResponse { repeated Metric metrics = 1; }
+
+message GetCloudServiceRequest { string service_id = 1; }
+
+message RegisterCloudServiceRequest { CloudService service = 1; }
+
+message UpdateCloudServiceRequest {
+  string service_id = 1;
+  CloudService service = 2;
+}
+
+message RemoveCloudServiceRequest { string service_id = 1; }
+
+message ListCloudServicesRequest {}
+message ListCloudServicesResponse { repeated CloudService services = 1; }
+
+message GetMetricConfigurationRequest {
+  string service_id = 1;
+
+  string metric_id = 2;
+}
+
+message ListMetricConfigurationRequest { string service_id = 1; }
+
+message ListMetricConfigurationResponse {
+  // A map of metric configurations associated by their metric ID
+  map<string, MetricConfiguration> configurations = 1;
+}
 
 // Represents an external tool or service that offers assessments according to
 // certain metrics
@@ -164,4 +248,12 @@ message AssessmentResult {
     COMPLIANT = 0;
     NON_COMPLIANT = 1;
   }
+}
+
+message CloudService {
+  string id = 1;
+
+  string name = 2;
+
+  string description = 3;
 }
