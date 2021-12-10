@@ -31,12 +31,9 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/service/discovery/azure"
-	"clouditor.io/clouditor/service/discovery/k8s"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/google/uuid"
-
-	"clouditor.io/clouditor/service/discovery/aws"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
@@ -92,6 +89,8 @@ func NewService() *Service {
 // Start starts discovery
 func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (response *discovery.StartDiscoveryResponse, err error) {
 
+	log.Infof("Start time: %s", time.Now())
+
 	response = &discovery.StartDiscoveryResponse{Successful: true}
 
 	log.Infof("Starting discovery...")
@@ -126,29 +125,30 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 		return nil, err
 	}
 
-	k8sClient, err := k8s.AuthFromKubeConfig()
-	if err != nil {
-		log.Errorf("Could not authenticate to Kubernetes: %s", err)
-		return nil, err
-	}
-
-	awsClient, err := aws.NewClient()
-	if err != nil {
-		log.Errorf("Could not load credentials: %s", err)
-		return nil, err
-	}
+	//k8sClient, err := k8s.AuthFromKubeConfig()
+	//if err != nil {
+	//	log.Errorf("Could not authenticate to Kubernetes: %s", err)
+	//	return nil, err
+	//}
+	//
+	//awsClient, err := aws.NewClient()
+	//if err != nil {
+	//	log.Errorf("Could not load credentials: %s", err)
+	//	return nil, err
+	//}
 
 	var discoverer []discovery.Discoverer
 
 	discoverer = append(discoverer,
 		azure.NewAzureARMTemplateDiscovery(azure.WithAuthorizer(authorizer)),
-		azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
-		azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
-		azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)),
-		k8s.NewKubernetesComputeDiscovery(k8sClient),
-		k8s.NewKubernetesNetworkDiscovery(k8sClient),
-		aws.NewAwsStorageDiscovery(awsClient),
-		aws.NewComputeDiscovery(awsClient),
+		// Die 3 Services funktionieren auch nach 30 Minuten noch
+		//azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
+		//azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
+		//azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)),
+		//k8s.NewKubernetesComputeDiscovery(k8sClient),
+		//k8s.NewKubernetesNetworkDiscovery(k8sClient),
+		//aws.NewAwsStorageDiscovery(awsClient),
+		//aws.NewComputeDiscovery(awsClient),
 	)
 
 	for _, v := range discoverer {
@@ -159,7 +159,7 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 		log.Infof("Scheduling {%s} to execute every 5 minutes...", v.Name())
 
 		_, err = s.scheduler.
-			Every(5).
+			Every(30).
 			Minute().
 			Tag(v.Name()).
 			Do(s.StartDiscovery, v)
@@ -182,6 +182,8 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 		err  error
 		list []voc.IsCloudResource
 	)
+
+	log.Infof("Next iteration time: %s", time.Now())
 
 	list, err = discoverer.List()
 

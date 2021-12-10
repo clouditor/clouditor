@@ -93,7 +93,7 @@ func (a *azureDiscovery) authorize() (err error) {
 	subClient := subscriptions.NewClient()
 	a.apply(&subClient.Client)
 
-	// get first subcription
+	// get first subscription
 	page, _ := subClient.List(context.Background())
 	a.sub = page.Values()[0]
 
