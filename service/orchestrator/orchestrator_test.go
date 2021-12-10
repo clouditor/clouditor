@@ -28,8 +28,10 @@ package orchestrator_test
 import (
 	"context"
 	"io/fs"
+	"log"
 	"os"
 	"reflect"
+	"runtime"
 	"testing"
 
 	"clouditor.io/clouditor/api/assessment"
@@ -61,6 +63,79 @@ func TestMain(m *testing.M) {
 	}
 
 	os.Exit(m.Run())
+}
+
+func TestAssessmentResultHook(t *testing.T) {
+	hookFunction := func(assessmentResult *orchestrator.AssessmentResult, err error) {
+		log.Println("Test from inside the TestAssessmentResultHook function")
+	}
+
+	service := service_orchestrator.NewService()
+	service.RegisterAssessmentResultsHook(hookFunction)
+
+	// Check RegisterAssessmentResultsHook()
+	funcName1 := runtime.FuncForPC(reflect.ValueOf(service.AssessmentResultsHook).Pointer()).Name()
+	funcName2 := runtime.FuncForPC(reflect.ValueOf(hookFunction).Pointer()).Name()
+	assert.Equal(t, funcName1, funcName2)
+
+	type args struct {
+		in0        context.Context
+		assessment *orchestrator.StoreAssessmentResultRequest
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantResp *orchestrator.StoreAssessmentResultResponse
+		wantErr  bool
+	}{
+		{
+			name: "Store first assessment result to the map",
+			args: args{
+				in0: context.TODO(),
+				assessment: &orchestrator.StoreAssessmentResultRequest{
+					Result: &orchestrator.AssessmentResult{
+						Id:                    "assessmentResultID",
+						MetricId:              "assessmentResultMetricID",
+						EvidenceId:            "evidenceID",
+					},
+				},
+			},
+			wantErr:  false,
+			wantResp: &orchestrator.StoreAssessmentResultResponse{},
+		},
+		{
+			name: "Store second assessment result to the map",
+			args: args{
+				in0: context.TODO(),
+				assessment: &orchestrator.StoreAssessmentResultRequest{
+					Result: &orchestrator.AssessmentResult{
+						Id:                    "assessmentResultID",
+						MetricId:              "assessmentResultMetricID",
+						EvidenceId:            "evidenceID",
+					},
+				},
+			},
+			wantErr:  false,
+			wantResp: &orchestrator.StoreAssessmentResultResponse{},},
+	}
+
+	log.Println("Jetzt wird getestet.")
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := service
+			gotResp, err := s.StoreAssessmentResult(tt.args.in0, tt.args.assessment)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("StoreAssessmentResult() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotResp, tt.wantResp) {
+				t.Errorf("StoreAssessmentResult() gotResp = %v, want %v", gotResp, tt.wantResp)
+			}
+			assert.NotEmpty(t, s.Results)
+		})
+	}
+
 }
 
 func TestListMetrics(t *testing.T) {

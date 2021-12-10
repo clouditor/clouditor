@@ -63,7 +63,7 @@ type Service struct {
 	Results map[string]*orchestrator.AssessmentResult
 
 	// Hooks
-	AssessmentResultsHook func(result *assessment.Result, err error)
+	AssessmentResultsHook func(result *orchestrator.AssessmentResult, err error)
 	EvidenceResultHook    func(result *evidence.Evidence, err error)
 
 	db *gorm.DB
@@ -208,10 +208,15 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 
 	s.Results[req.Result.Id] = req.Result
 
+	// Inform our hook, if we have any
+	if s.AssessmentResultsHook != nil {
+		go s.AssessmentResultsHook(req.Result, nil)
+	}
+
 	return
 }
 
-func (s *Service) RegisterAssessmentResultsHook(assessmentResultsHook func(result *assessment.Result, err error)) {
+func (s *Service) RegisterAssessmentResultsHook(assessmentResultsHook func(result *orchestrator.AssessmentResult, err error)) {
 	s.AssessmentResultsHook = assessmentResultsHook
 }
 
