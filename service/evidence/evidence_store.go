@@ -31,10 +31,11 @@ func init() {
 }
 
 // StoreEvidence is a method implementation of the evidenceServer interface: It receives an evidence and stores it
-func (s *Service) StoreEvidence(_ context.Context, e *evidence.Evidence) (*evidence.StoreEvidenceResponse, error) {
+func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRequest) (*evidence.StoreEvidenceResponse, error) {
 	var (
 		resp = &evidence.StoreEvidenceResponse{}
 		err  error
+		e    = req.Evidence
 	)
 
 	_, err = e.Validate()
@@ -49,14 +50,18 @@ func (s *Service) StoreEvidence(_ context.Context, e *evidence.Evidence) (*evide
 
 // StoreEvidences is a method implementation of the evidenceServer interface: It receives evidences and stores them
 func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesServer) (err error) {
-	var receivedEvidence *evidence.Evidence
+	var (
+		req *evidence.StoreEvidenceRequest
+		e   *evidence.Evidence
+	)
 	for {
-		receivedEvidence, err = stream.Recv()
+		req, err = stream.Recv()
+		e = req.Evidence
 		if err == io.EOF {
 			log.Infof("Stopped receiving streamed evidences")
 			return stream.SendAndClose(&emptypb.Empty{})
 		}
-		s.evidences[receivedEvidence.Id] = receivedEvidence
+		s.evidences[e.Id] = e
 	}
 }
 

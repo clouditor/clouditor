@@ -41,18 +41,18 @@ service EvidenceStore {
     option (google.api.http) = {
       post : "/v1/evidence_store/evidence"
       body : "evidence"
-      response_body : "*"
+      response_body : "status"
     };
   }
 
   // Stores a stream of evidences to the evidence storage. Part of the public API, not exposed as REST.
   rpc StoreEvidences(stream StoreEvidenceRequest) returns (google.protobuf.Empty) {};
 
-  // Returns all stored evidences. Part of the public API, also exposed at REST.
+  // Returns all stored evidences. Part of the public API, also exposed as REST.
   rpc ListEvidences(ListEvidencesRequest) returns (ListEvidencesResponse) {
     option (google.api.http) = {
       get : "/v1/evidence_store/evidences"
-      response_body : "evidences"
+      response_body : "*"
     };
   }
 }

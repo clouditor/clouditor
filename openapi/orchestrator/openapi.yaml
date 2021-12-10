@@ -8,7 +8,7 @@ info:
     version: 0.0.1
 paths:
     /v1/orchestrator/assessment_results:
-        put:
+        post:
             summary: Stores the assessment result provided by an assessment tool
             operationId: Orchestrator_StoreAssessmentResult
             requestBody:

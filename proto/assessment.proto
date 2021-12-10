@@ -48,7 +48,6 @@ service Assessment {
       returns (ListAssessmentResultsResponse) {
     option (google.api.http) = {
       get : "/v1/assessment/results"
-      response_body : "*"
     };
   }
 
@@ -57,7 +56,7 @@ service Assessment {
     option (google.api.http) = {
       post : "/v1/assessment/evidences"
       body: "evidence"
-      response_body : "*"
+      response_body : "status"
     };
   }
 

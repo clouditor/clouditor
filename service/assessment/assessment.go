@@ -81,12 +81,15 @@ func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenc
 	return res, nil
 }
 
-func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) error {
-	var e *evidence.Evidence
-	var err error
+func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) (err error) {
+	var (
+		e   *evidence.Evidence
+		req *assessment.AssessEvidenceRequest
+	)
 
 	for {
-		e, err = stream.Recv()
+		req, err = stream.Recv()
+		e = req.Evidence
 
 		// TODO: Catch error?
 		_ = s.handleEvidence(e)

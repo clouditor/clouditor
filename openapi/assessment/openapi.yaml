@@ -9,13 +9,14 @@ info:
 paths:
     /v1/assessment/evidences:
         post:
-            summary: Assesses the evidence sent by discovery. Part of the public API, also exposed as REST
+            summary: Assesses the evidence sent by the discovery. Part of the public API, also exposed as REST.
             operationId: Assessment_AssessEvidence
-            parameters:
-                - name: evidence
-                  in: query
-                  schema:
-                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Evidence'
+                required: true
             responses:
                 "200":
                     description: OK
@@ -24,8 +25,8 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/AssessEvidenceResponse'
     /v1/assessment/results:
-        post:
-            summary: 'TODO(all): Part of public API because external entities (mainly discoveries) can use it? List the latest set of assessment results. Part of the public API, also exposed as REST'
+        get:
+            summary: List all assessment results. Part of the public API, also exposed as REST.
             operationId: Assessment_ListAssessmentResults
             responses:
                 "200":
@@ -40,6 +41,27 @@ components:
             properties:
                 status:
                     type: boolean
+        Evidence:
+            properties:
+                id:
+                    type: string
+                    description: the ID in a uuid format
+                timestamp:
+                    type: string
+                    description: time of evidence creation
+                    format: RFC3339
+                service_id:
+                    type: string
+                    description: Reference to a service this evidence was gathered from
+                tool_id:
+                    type: string
+                    description: Reference to the tool which provided the evidence
+                raw:
+                    type: string
+                    description: Contains the evidence in its original form without following a defined schema, e.g. the raw JSON
+                resource:
+                    $ref: '#/components/schemas/Value'
+            description: An evidence resource
         ListAssessmentResultsResponse:
             properties:
                 results:

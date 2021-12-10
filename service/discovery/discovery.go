@@ -224,12 +224,12 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 
 		log.Debugf("Sending evidence for resource %s (%s)...", resource.GetID(), strings.Join(resource.GetType(), ", "))
 
-		err = s.AssessmentStream.Send(e)
+		err = s.AssessmentStream.Send(&assessment.AssessEvidenceRequest{Evidence: e})
 		if err != nil {
 			log.Errorf("Could not send evidence to Assessment: %v", err)
 		}
 
-		err = s.EvidenceStoreStream.Send(e)
+		err = s.EvidenceStoreStream.Send(&evidence.StoreEvidenceRequest{Evidence: e})
 		if err != nil {
 			log.Errorf("Could not send evidence to EvidenceStore: %v", err)
 		}
