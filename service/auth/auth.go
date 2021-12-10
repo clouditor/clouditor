@@ -192,7 +192,6 @@ func StartDedicatedAuthServer(address string) (sock net.Listener, server *grpc.S
 		return nil, nil, fmt.Errorf("could not listen: %w", err)
 	}
 
-
 	authService = &Service{}
 	authService.CreateDefaultUser("clouditor", "clouditor")
 

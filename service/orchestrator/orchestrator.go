@@ -26,6 +26,7 @@
 package orchestrator
 
 import (
+	"clouditor.io/clouditor/api/evidence"
 	"context"
 	"embed"
 	"encoding/json"
@@ -58,6 +59,13 @@ type Service struct {
 	// metricConfigurations holds a double-map of metric configurations associated first by service ID and then metric ID
 	metricConfigurations map[string]map[string]*assessment.MetricConfiguration
 
+	// Currently only in-memory
+	Results map[string]*orchestrator.AssessmentResult
+
+	// Hooks
+	AssessmentResultsHook func(result *assessment.Result, err error)
+	EvidenceResultHook    func(result *evidence.Evidence, err error)
+
 	db *gorm.DB
 }
 
@@ -67,6 +75,7 @@ func init() {
 
 func NewService() *Service {
 	s := Service{
+		Results:              make(map[string]*orchestrator.AssessmentResult),
 		metricConfigurations: make(map[string]map[string]*assessment.MetricConfiguration),
 	}
 
@@ -183,6 +192,31 @@ func (s *Service) ListMetricConfigurations(ctx context.Context, req *orchestrato
 	}
 
 	return
+}
+
+// StoreAssessmentResult is a method implementation of the orchestrator interface: It receives an assessment result and stores it
+func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.StoreAssessmentResultRequest) (response *orchestrator.StoreAssessmentResultResponse, err error) {
+
+	response = &orchestrator.StoreAssessmentResultResponse{}
+
+	// TODO(all): TBD
+	// TODO(garuppel): Write validate function for assessmentResult
+	//_, err = e.Validate()
+	//if err != nil {
+	//	return nil, status.Errorf(codes.InvalidArgument, "invalid evidence: %v", err)
+	//}
+
+	s.Results[req.Result.Id] = req.Result
+
+	return
+}
+
+func (s *Service) RegisterAssessmentResultsHook(assessmentResultsHook func(result *assessment.Result, err error)) {
+	s.AssessmentResultsHook = assessmentResultsHook
+}
+
+func (s *Service) RegisterEvidenceHook(evidenceHook func(result *evidence.Evidence, err error)) {
+	s.EvidenceResultHook = evidenceHook
 }
 
 //// Tools

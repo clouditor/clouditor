@@ -29,6 +29,7 @@ import (
 	"context"
 	"io/fs"
 	"os"
+	"reflect"
 	"testing"
 
 	"clouditor.io/clouditor/api/assessment"
@@ -102,6 +103,50 @@ func TestGetMetric(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, metric)
 	assert.Equal(t, request.MetricId, metric.Id)
+}
+
+func TestAssessmentResult(t *testing.T) {
+	type args struct {
+		in0        context.Context
+		assessment *orchestrator.StoreAssessmentResultRequest
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantResp *orchestrator.StoreAssessmentResultResponse
+		wantErr  bool
+	}{
+		{
+			name: "Store assessment to the map",
+			args: args{
+				in0: context.TODO(),
+				assessment: &orchestrator.StoreAssessmentResultRequest{
+					Result: &orchestrator.AssessmentResult{
+						Id:                    "assessmentResultID",
+						MetricId:              "assessmentResultMetricID",
+						EvidenceId:            "evidenceID",
+					},
+				},
+			},
+			wantErr:  false,
+			wantResp: &orchestrator.StoreAssessmentResultResponse{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := service_orchestrator.NewService()
+			gotResp, err := s.StoreAssessmentResult(tt.args.in0, tt.args.assessment)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("StoreAssessmentResult() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotResp, tt.wantResp) {
+				t.Errorf("StoreAssessmentResult() gotResp = %v, want %v", gotResp, tt.wantResp)
+			}
+			assert.NotNil(t, s.Results["assessmentResultID"])
+		})
+	}
 }
 
 func TestLoad(t *testing.T) {

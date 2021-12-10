@@ -178,6 +178,15 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	assessmentService = service_assessment.NewService()
 	evidenceStoreService = service_evidenceStore.NewService()
 
+	orchestratorService.RegisterAssessmentResultsHook(func(result *assessment.Result, err error) {
+		// TODO(all): TBD
+		fmt.Println("orchestratorService.RegisterAssessmentResultsHook: ", result)
+	})
+	orchestratorService.RegisterEvidenceHook(func(result *evidence.Evidence, err error) {
+		// TODO(all): TBD
+		fmt.Println("orchestratorService.RegisterEvidenceHook: ", result)
+	})
+
 	authService.CreateDefaultUser(viper.GetString(APIDefaultUserFlag), viper.GetString(APIDefaultPasswordFlag))
 
 	if viper.GetBool(CreateDefaultTarget) {
