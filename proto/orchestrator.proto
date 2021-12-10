@@ -31,6 +31,7 @@ package clouditor;
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "metric.proto";
+import "assessment.proto";
 
 option go_package = "api/orchestrator";
 
@@ -92,7 +93,7 @@ service Orchestrator {
   }
 
   // Stores stream of assessment results provided by an assessment tool
-  rpc StoreAssessmentResults(stream AssessmentResult)
+  rpc StoreAssessmentResults(stream Result)
       returns (google.protobuf.Empty);
 
   // List all metrics provided by the metric catalog
@@ -127,7 +128,7 @@ message UpdateAssessmentToolRequest {
 
 message DeregisterAssessmentToolRequest { string tool_id = 1; }
 
-message StoreAssessmentResultRequest { AssessmentResult result = 1; }
+message StoreAssessmentResultRequest { Result result = 1; }
 message StoreAssessmentResultResponse {}
 
 message GetMetricsRequest { string metric_id = 1; }
@@ -146,23 +147,4 @@ message AssessmentTool {
 
   // a list of metrics that this tool can assess, referred by their ids
   repeated string available_metrics = 4;
-}
-
-message AssessmentResult {
-  // the ID in a uuid format
-  string id = 1;
-
-  // the ID of the metric it refers to
-  string metric_id = 2;
-
-  ComplianceStatus result = 3;
-
-  string target_value = 4;
-
-  string evidence_id = 5;
-
-  enum ComplianceStatus {
-    COMPLIANT = 0;
-    NON_COMPLIANT = 1;
-  }
 }
