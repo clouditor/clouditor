@@ -26,7 +26,6 @@
 package orchestrator
 
 import (
-	"clouditor.io/clouditor/api/evidence"
 	"context"
 	"embed"
 	"encoding/json"
@@ -64,7 +63,7 @@ type Service struct {
 
 	// Hooks
 	AssessmentResultsHook []func(result *orchestrator.AssessmentResult, err error)
-	EvidenceResultHook    func(result *evidence.Evidence, err error)
+	// EvidenceResultHook    []func(result *evidence.Evidence, err error)
 
 	db *gorm.DB
 }
@@ -221,9 +220,9 @@ func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result
 	s.AssessmentResultsHook = append(s.AssessmentResultsHook, assessmentResultsHook)
 }
 
-func (s *Service) RegisterEvidenceHook(evidenceHook func(result *evidence.Evidence, err error)) {
-	s.EvidenceResultHook = evidenceHook
-}
+/*func (s *Service) RegisterEvidenceHook(evidenceHook func(result *evidence.Evidence, err error)) {
+	s.EvidenceResultHook = append(s.EvidenceResultHook, evidenceHook)
+}*/
 
 //// Tools
 //
