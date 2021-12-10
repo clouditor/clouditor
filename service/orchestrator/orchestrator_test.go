@@ -33,6 +33,7 @@ import (
 	"reflect"
 	"runtime"
 	"testing"
+	"time"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/persistence"
@@ -66,12 +67,22 @@ func TestMain(m *testing.M) {
 }
 
 func TestAssessmentResultHook(t *testing.T) {
+	var ready1 = make(chan bool)
+	var ready2 = make(chan bool)
+	hookCallCounter := 0
+
 	firstHookFunction := func(assessmentResult *orchestrator.AssessmentResult, err error) {
-		log.Println("First test from inside the TestAssessmentResultHook function")
+		hookCallCounter++
+		log.Println("Hello from inside the firstHookFunction")
+
+		ready1 <- true
 	}
 
 	secondHookFunction := func(assessmentResult *orchestrator.AssessmentResult, err error) {
-		log.Println("Second test from inside the TestAssessmentResultHook function")
+		hookCallCounter++
+		log.Println("Hello from inside the secondHookFunction")
+
+		ready2 <- true
 	}
 
 	service := service_orchestrator.NewService()
@@ -133,8 +144,25 @@ func TestAssessmentResultHook(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			hookCallCounter = 0
 			s := service
 			gotResp, err := s.StoreAssessmentResult(tt.args.in0, tt.args.assessment)
+			//make the test wait
+				select {
+				case <- ready1:
+					break
+				case <-time.After(10 * time.Second):
+					assert.Fail(t, "Timeout while waiting for first storeAssessmentResult to be ready")
+				}
+
+			select {
+			case <- ready2:
+				break
+			case <-time.After(10 * time.Second):
+				assert.Fail(t, "Timeout while waiting for second storeAssessmentResult to be ready")
+			}
+
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("StoreAssessmentResult() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -143,8 +171,10 @@ func TestAssessmentResultHook(t *testing.T) {
 				t.Errorf("StoreAssessmentResult() gotResp = %v, want %v", gotResp, tt.wantResp)
 			}
 			assert.NotEmpty(t, s.Results)
+			assert.Equal(t, 2, hookCallCounter)
 		})
 	}
+
 
 }
 
