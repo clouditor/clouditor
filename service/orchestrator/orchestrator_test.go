@@ -66,18 +66,30 @@ func TestMain(m *testing.M) {
 }
 
 func TestAssessmentResultHook(t *testing.T) {
-	hookFunction := func(assessmentResult *orchestrator.AssessmentResult, err error) {
-		log.Println("Test from inside the TestAssessmentResultHook function")
+	firstHookFunction := func(assessmentResult *orchestrator.AssessmentResult, err error) {
+		log.Println("First test from inside the TestAssessmentResultHook function")
+	}
+
+	secondHookFunction := func(assessmentResult *orchestrator.AssessmentResult, err error) {
+		log.Println("Second test from inside the TestAssessmentResultHook function")
 	}
 
 	service := service_orchestrator.NewService()
-	service.RegisterAssessmentResultsHook(hookFunction)
+	service.RegisterAssessmentResultHook(firstHookFunction)
+	service.RegisterAssessmentResultHook(secondHookFunction)
 
-	// Check RegisterAssessmentResultsHook()
-	funcName1 := runtime.FuncForPC(reflect.ValueOf(service.AssessmentResultsHook).Pointer()).Name()
-	funcName2 := runtime.FuncForPC(reflect.ValueOf(hookFunction).Pointer()).Name()
+	// Check if first hook is registered
+	funcName1 := runtime.FuncForPC(reflect.ValueOf(service.AssessmentResultsHook[0]).Pointer()).Name()
+	funcName2 := runtime.FuncForPC(reflect.ValueOf(firstHookFunction).Pointer()).Name()
 	assert.Equal(t, funcName1, funcName2)
 
+	// Check if second hook is registered
+	funcName1 = runtime.FuncForPC(reflect.ValueOf(service.AssessmentResultsHook[1]).Pointer()).Name()
+	funcName2 = runtime.FuncForPC(reflect.ValueOf(secondHookFunction).Pointer()).Name()
+	assert.Equal(t, funcName1, funcName2)
+
+
+	// Check GRPC call
 	type args struct {
 		in0        context.Context
 		assessment *orchestrator.StoreAssessmentResultRequest
@@ -118,8 +130,6 @@ func TestAssessmentResultHook(t *testing.T) {
 			wantErr:  false,
 			wantResp: &orchestrator.StoreAssessmentResultResponse{},},
 	}
-
-	log.Println("Jetzt wird getestet.")
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -180,7 +190,7 @@ func TestGetMetric(t *testing.T) {
 	assert.Equal(t, request.MetricId, metric.Id)
 }
 
-func TestAssessmentResult(t *testing.T) {
+func TestStoreAssessmentResult(t *testing.T) {
 	type args struct {
 		in0        context.Context
 		assessment *orchestrator.StoreAssessmentResultRequest

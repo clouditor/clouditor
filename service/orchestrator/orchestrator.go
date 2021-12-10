@@ -63,7 +63,7 @@ type Service struct {
 	Results map[string]*orchestrator.AssessmentResult
 
 	// Hooks
-	AssessmentResultsHook func(result *orchestrator.AssessmentResult, err error)
+	AssessmentResultsHook []func(result *orchestrator.AssessmentResult, err error)
 	EvidenceResultHook    func(result *evidence.Evidence, err error)
 
 	db *gorm.DB
@@ -199,9 +199,8 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 
 	response = &orchestrator.StoreAssessmentResultResponse{}
 
-	// TODO(all): TBD
 	// TODO(garuppel): Write validate function for assessmentResult
-	//_, err = e.Validate()
+	//_, err = req.Result.Validate()
 	//if err != nil {
 	//	return nil, status.Errorf(codes.InvalidArgument, "invalid evidence: %v", err)
 	//}
@@ -210,14 +209,16 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 
 	// Inform our hook, if we have any
 	if s.AssessmentResultsHook != nil {
-		go s.AssessmentResultsHook(req.Result, nil)
+		for _, hook := range s.AssessmentResultsHook {
+			go hook(req.Result, nil)
+		}
 	}
 
 	return
 }
 
-func (s *Service) RegisterAssessmentResultsHook(assessmentResultsHook func(result *orchestrator.AssessmentResult, err error)) {
-	s.AssessmentResultsHook = assessmentResultsHook
+func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result *orchestrator.AssessmentResult, err error)) {
+	s.AssessmentResultsHook = append(s.AssessmentResultsHook, assessmentResultsHook)
 }
 
 func (s *Service) RegisterEvidenceHook(evidenceHook func(result *evidence.Evidence, err error)) {
