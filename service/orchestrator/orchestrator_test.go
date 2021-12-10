@@ -139,7 +139,8 @@ func TestAssessmentResultHook(t *testing.T) {
 				},
 			},
 			wantErr:  false,
-			wantResp: &orchestrator.StoreAssessmentResultResponse{},},
+			wantResp: &orchestrator.StoreAssessmentResultResponse{},
+		},
 	}
 
 	for _, tt := range tests {
