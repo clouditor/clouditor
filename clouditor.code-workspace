@@ -6,10 +6,12 @@
 	],
 	"settings": {
 		"cSpell.words": [
+			"AISEC",
 			"clouditor",
 			"Debugf",
 			"emptypb",
 			"garuppel",
+			"gocron",
 			"grpc",
 			"Infof",
 			"Kubernetes",
@@ -17,6 +19,7 @@
 			"oxisto",
 			"protobuf",
 			"Rego",
+			"stretchr",
 			"structpb",
 			"timestamppb",
 			"Warnf"
@@ -30,6 +33,7 @@
 				"--proto_path=${workspaceRoot}/third_party",
 				"--proto_path=${env.GOPATH}/src"
 			]
-		}
+		},
+		"go.coverOnSave": true
 	}
 }

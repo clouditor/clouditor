@@ -28,6 +28,7 @@ package commands
 import (
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/assessment"
+	"clouditor.io/clouditor/cli/commands/cloud"
 	"clouditor.io/clouditor/cli/commands/completion"
 	"clouditor.io/clouditor/cli/commands/discovery"
 	"clouditor.io/clouditor/cli/commands/login"
@@ -46,6 +47,7 @@ func AddCommands(cmd *cobra.Command) {
 		tool.NewToolCommand(),
 		assessment.NewAssessmentCommand(),
 		completion.NewCompletionCommand(),
+		cloud.NewCloudCommand(),
 	)
 
 	cmd.PersistentFlags().StringP("session-directory", "s", cli.DefaultSessionFolder, "the directory where the session will be saved and loaded from")

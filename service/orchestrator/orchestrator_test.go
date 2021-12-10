@@ -28,16 +28,39 @@ package orchestrator_test
 import (
 	"context"
 	"io/fs"
+	"os"
 	"testing"
 
 	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/persistence"
 
 	"clouditor.io/clouditor/api/orchestrator"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"github.com/stretchr/testify/assert"
 )
 
-var service service_orchestrator.Service
+var service *service_orchestrator.Service
+var defaultTarget *orchestrator.CloudService
+
+func TestMain(m *testing.M) {
+	err := os.Chdir("../../")
+	if err != nil {
+		panic(err)
+	}
+
+	err = persistence.InitDB(true, "", 0)
+	if err != nil {
+		panic(err)
+	}
+
+	service = service_orchestrator.NewService()
+	defaultTarget, err = service.CreateDefaultTargetCloudService()
+	if err != nil {
+		panic(err)
+	}
+
+	os.Exit(m.Run())
+}
 
 func TestListMetrics(t *testing.T) {
 	var (
@@ -49,6 +72,18 @@ func TestListMetrics(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.NotEmpty(t, response.Metrics)
+}
+
+func TestListMetricConfigurations(t *testing.T) {
+	var (
+		response *orchestrator.ListMetricConfigurationResponse
+		err      error
+	)
+
+	response, err = service.ListMetricConfigurations(context.TODO(), &orchestrator.ListMetricConfigurationRequest{})
+
+	assert.Nil(t, err)
+	assert.NotEmpty(t, response.Configurations)
 }
 
 func TestGetMetric(t *testing.T) {

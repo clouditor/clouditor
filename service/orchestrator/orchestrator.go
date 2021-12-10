@@ -30,12 +30,15 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/persistence"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"gorm.io/gorm"
 )
 
 //go:embed metrics.json
@@ -43,6 +46,7 @@ var f embed.FS
 
 var metrics []*assessment.Metric
 var metricIndex map[string]*assessment.Metric
+var defaultMetricConfigurations map[string]*assessment.MetricConfiguration
 var log *logrus.Entry
 
 var DefaultMetricsFile = "metrics.json"
@@ -50,19 +54,56 @@ var DefaultMetricsFile = "metrics.json"
 // Service is an implementation of the Clouditor Orchestrator service
 type Service struct {
 	orchestrator.UnimplementedOrchestratorServer
+
+	// metricConfigurations holds a double-map of metric configurations associated first by service ID and then metric ID
+	metricConfigurations map[string]map[string]*assessment.MetricConfiguration
+
+	db *gorm.DB
 }
 
 func init() {
 	log = logrus.WithField("component", "orchestrator")
+}
+
+func NewService() *Service {
+	s := Service{
+		metricConfigurations: make(map[string]map[string]*assessment.MetricConfiguration),
+	}
 
 	if err := LoadMetrics(DefaultMetricsFile); err != nil {
 		log.Errorf("Could not load embedded metrics. Will continue with empty metric list: %v", err)
 	}
 
 	metricIndex = make(map[string]*assessment.Metric)
-	for _, v := range metrics {
-		metricIndex[v.Id] = v
+	defaultMetricConfigurations = make(map[string]*assessment.MetricConfiguration)
+
+	for _, m := range metrics {
+		// Look for the data.json to include default metric configurations
+		fileName := fmt.Sprintf("policies/bundles/%s/data.json", m.Id)
+
+		b, err := ioutil.ReadFile(fileName)
+		if err != nil {
+			log.Errorf("Could not retrieve default configuration for metric %s: %s. Ignoring metric", m.Id, err)
+			continue
+		}
+
+		var config assessment.MetricConfiguration
+
+		err = json.Unmarshal(b, &config)
+		if err != nil {
+			log.Errorf("Error in reading default configuration for metric %s: %s. Ignoring metric", m.Id, err)
+			continue
+		}
+
+		config.IsDefault = true
+
+		metricIndex[m.Id] = m
+		defaultMetricConfigurations[m.Id] = &config
 	}
+
+	s.db = persistence.GetDatabase()
+
+	return &s
 }
 
 // LoadMetrics loads metrics definitions from a JSON file.
@@ -103,6 +144,45 @@ func (*Service) GetMetric(_ context.Context, request *orchestrator.GetMetricsReq
 	response = metric
 
 	return response, nil
+}
+
+func (s *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.GetMetricConfigurationRequest) (response *assessment.MetricConfiguration, err error) {
+	// Check, if we have a specific configuration for the metric
+	if config, ok := s.metricConfigurations[req.ServiceId][req.MetricId]; ok {
+		return config, nil
+	}
+
+	// Otherwise, fall back to our default configuration
+	if config, ok := defaultMetricConfigurations[req.MetricId]; ok {
+		return config, nil
+	}
+
+	return nil, status.Errorf(codes.NotFound, "Could not find metric configuration for metric %s in service %s", req.MetricId, req.ServiceId)
+}
+
+// ListMetricConfigurations retrieves a list of MetricConfiguration objects for a particular target
+// cloud service specified in req.
+//
+// The list MUST include a configuration for each known metric. If the user did not specify a custom
+// configuration for a particular metric within the service, the default metric configuration is
+// inserted into the list.
+func (s *Service) ListMetricConfigurations(ctx context.Context, req *orchestrator.ListMetricConfigurationRequest) (response *orchestrator.ListMetricConfigurationResponse, err error) {
+	response = &orchestrator.ListMetricConfigurationResponse{
+		Configurations: make(map[string]*assessment.MetricConfiguration),
+	}
+
+	// TODO(oxisto): This is not very efficient, we should do this once at startup so that we can just return the map
+	for metricId := range metricIndex {
+		config, err := s.GetMetricConfiguration(ctx, &orchestrator.GetMetricConfigurationRequest{ServiceId: req.ServiceId, MetricId: metricId})
+
+		if err != nil {
+			return nil, err
+		}
+
+		response.Configurations[metricId] = config
+	}
+
+	return
 }
 
 //// Tools
