@@ -148,3 +148,11 @@ message AssessmentTool {
   // a list of metrics that this tool can assess, referred by their ids
   repeated string available_metrics = 4;
 }
+
+message CloudService {
+  string id = 1;
+
+  string name = 2;
+
+  string description = 3;
+}

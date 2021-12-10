@@ -134,6 +134,118 @@ paths:
                 "200":
                     description: OK
                     content: {}
+    /v1/orchestrator/cloud_services:
+        get:
+            summary: Lists all target cloud services
+            operationId: Orchestrator_ListCloudServices
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListCloudServicesResponse'
+        post:
+            summary: Registers a new target cloud service
+            operationId: Orchestrator_RegisterCloudService
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CloudService'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CloudService'
+    /v1/orchestrator/cloud_services/{service_id}:
+        get:
+            summary: Retrieves a target cloud service
+            operationId: Orchestrator_GetCloudService
+            parameters:
+                - name: service_id
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CloudService'
+        put:
+            summary: Registers a new target cloud service
+            operationId: Orchestrator_UpdateCloudService
+            parameters:
+                - name: service_id
+                  in: query
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CloudService'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CloudService'
+        delete:
+            summary: Removes a target cloud service
+            operationId: Orchestrator_RemoveCloudService
+            parameters:
+                - name: service_id
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /v1/orchestrator/cloud_services/{service_id}/metric_configurations:
+        get:
+            summary: Lists all a metric configurations for a specific service and metric ID
+            operationId: Orchestrator_ListMetricConfigurations
+            parameters:
+                - name: service_id
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListMetricConfigurationResponse'
+    /v1/orchestrator/cloud_services/{service_id}/metric_configurations/{metric_id}:
+        get:
+            summary: Retrieves a metric configuration for a specific service and metric ID
+            operationId: Orchestrator_GetMetricConfiguration
+            parameters:
+                - name: service_id
+                  in: query
+                  schema:
+                    type: string
+                - name: metric_id
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MetricConfiguration'
     /v1/orchestrator/metrics:
         get:
             summary: List all metrics provided by the metric catalog
@@ -188,6 +300,14 @@ components:
                         type: string
                     description: a list of metrics that this tool can assess, referred by their ids
             description: Represents an external tool or service that offers assessments according to certain metrics
+        CloudService:
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                description:
+                    type: string
         Evidence:
             properties:
                 id:
@@ -221,6 +341,16 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/AssessmentTool'
+        ListCloudServicesResponse:
+            properties:
+                services:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/CloudService'
+        ListMetricConfigurationResponse:
+            properties:
+                configurations:
+                    $ref: '#/components/schemas/ConfigurationsEntry'
         ListMetricsResponse:
             properties:
                 metrics:
@@ -256,12 +386,17 @@ components:
                 range:
                     $ref: '#/components/schemas/Range'
             description: A metric resource
-        MetricData:
+        MetricConfiguration:
             properties:
-                target_value:
-                    $ref: '#/components/schemas/Value'
                 operator:
                     type: string
+                    description: The operator to compare the metric, such as == or >
+                target_value:
+                    $ref: '#/components/schemas/Value'
+                is_default:
+                    type: boolean
+                    description: Whether this configuration is a default configuration
+            description: Defines the operator and a target value for an individual metric
         MinMax:
             properties:
                 min:
@@ -302,7 +437,7 @@ components:
                     type: string
                     description: Reference to the metric the assessment was based on
                 metric_data:
-                    $ref: '#/components/schemas/MetricData'
+                    $ref: '#/components/schemas/MetricConfiguration'
                 compliant:
                     type: boolean
                     description: 'Compliant case: true or false'
