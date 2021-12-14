@@ -26,13 +26,11 @@
 package assessment
 
 import (
-	"context"
-	"fmt"
-	"io"
-
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/policies"
+	"context"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -40,6 +38,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	"io"
 )
 
 var log *logrus.Entry
@@ -95,9 +94,13 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 	for {
 		req, err = stream.Recv()
 
-		if err == io.EOF {
-			log.Infof("Stopped receiving streamed evidences")
-			return stream.SendAndClose(&emptypb.Empty{})
+		if err != nil {
+			// If no more input of the stream is available, return SendAndClose `error`
+			if err == io.EOF {
+				log.Infof("Stopped receiving streamed evidences")
+				return stream.SendAndClose(&emptypb.Empty{})
+			}
+			return err
 		}
 
 		err = s.handleEvidence(req.Evidence)
