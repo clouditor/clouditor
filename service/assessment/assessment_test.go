@@ -209,7 +209,9 @@ func TestListAssessmentResults(t *testing.T) {
 			Timestamp: timestamppb.Now(),
 			Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 		}})
-	results, err := s.ListAssessmentResults(context.TODO(), &assessment.ListAssessmentResultsRequest{})
+	assert.Nil(t, err)
+	var results *assessment.ListAssessmentResultsResponse
+	results, err = s.ListAssessmentResults(context.TODO(), &assessment.ListAssessmentResultsRequest{})
 	assert.Nil(t, err)
 	assert.NotNil(t, results)
 }
