@@ -66,7 +66,7 @@ func NewService() assessment.AssessmentServer {
 	}
 }
 
-// AssessEvidence assesses a single evidence
+// AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
 func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
 	err = s.handleEvidence(req.Evidence)
 
@@ -85,7 +85,7 @@ func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenc
 	return res, nil
 }
 
-// AssessEvidences assesses multiple evidences provided in a stream
+// AssessEvidences is a method implementation of the assessment interface: It assesses multiple evidences (stream)
 func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) (err error) {
 	var (
 		req *assessment.AssessEvidenceRequest
@@ -169,6 +169,7 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 	return nil
 }
 
+// ListAssessmentResults is a method implementation of the assessment interface
 func (s Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
 	res = new(assessment.ListAssessmentResultsResponse)
 	res.Results = []*assessment.AssessmentResult{}
