@@ -213,19 +213,15 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 
 	for {
 		receivedAssessmentResult, err = stream.Recv()
-		if err != nil {
-			return fmt.Errorf("error receiving the assessment result: %w", err)
+		if err == io.EOF {
+			log.Infof("Stopped receiving streamed evidences")
+			return stream.SendAndClose(&emptypb.Empty{})
 		}
 
 		err = s.handleAssessmentResult(receivedAssessmentResult)
 		// TODO(all): Or should we ignore the error?
 		if err != nil {
 			return fmt.Errorf("error handle assessment result: %w", err)
-		}
-
-		if err == io.EOF {
-			log.Infof("Stopped receiving streamed evidences")
-			return stream.SendAndClose(&emptypb.Empty{})
 		}
 	}
 

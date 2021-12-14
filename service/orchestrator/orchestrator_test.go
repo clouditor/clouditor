@@ -27,8 +27,11 @@ package orchestrator_test
 
 import (
 	"context"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	"io"
 	"io/fs"
 	"k8s.io/apimachinery/pkg/util/json"
 	"log"
@@ -123,7 +126,7 @@ func TestAssessmentResultHook(t *testing.T) {
 						EvidenceId: "evidenceID",
 						Timestamp:  timestamppb.Now(),
 						MetricData: &assessment.MetricConfiguration{
-							TargetValue: toStruct(1.0, t),
+							TargetValue: toStruct(1.0),
 							Operator:    "operator",
 							IsDefault:   true,
 						},
@@ -142,18 +145,18 @@ func TestAssessmentResultHook(t *testing.T) {
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
 					Result: &assessment.Result{
-						Id:         "assessmentResultID",
-						MetricId:   "assessmentResultMetricID",
-						EvidenceId: "evidenceID",
+						Id:         "assessmentResultID2",
+						MetricId:   "assessmentResultMetricID2",
+						EvidenceId: "evidenceID2",
 						Timestamp:  timestamppb.Now(),
 						MetricData: &assessment.MetricConfiguration{
-							TargetValue: toStruct(1.0, t),
-							Operator:    "operator",
-							IsDefault:   true,
+							TargetValue: toStruct(1.0),
+							Operator:    "operator2",
+							IsDefault:   false,
 						},
-						NonComplianceComments: "non_compliance_comment",
-						Compliant:             true,
-						ResourceId:            "resourceID",
+						NonComplianceComments: "non_compliance_comment2",
+						Compliant:             false,
+						ResourceId:            "resourceID2",
 					},
 				},
 			},
@@ -262,7 +265,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 						EvidenceId: "evidenceID",
 						Timestamp:  timestamppb.Now(),
 						MetricData: &assessment.MetricConfiguration{
-							TargetValue: toStruct(1.0, t),
+							TargetValue: toStruct(1.0),
 							Operator:    "operator",
 							IsDefault:   true,
 						},
@@ -293,6 +296,34 @@ func TestStoreAssessmentResult(t *testing.T) {
 	}
 }
 
+func TestStoreAssessmentResults(t *testing.T) {
+	type args struct {
+		stream orchestrator.Orchestrator_StoreAssessmentResultsServer
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name:    "Store 2 assessment results to the map",
+			args:    args{stream: &mockStreamer{counter: 0}},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := service_orchestrator.NewService()
+			if err := s.StoreAssessmentResults(tt.args.stream); (err != nil) != tt.wantErr {
+				t.Errorf("StoreEvidences() error = %v, wantErr %v", err, tt.wantErr)
+				assert.Equal(t, 2, len(s.Results))
+			}
+		})
+	}
+}
+
 func TestLoad(t *testing.T) {
 	var err = service_orchestrator.LoadMetrics("notfound.json")
 
@@ -303,7 +334,77 @@ func TestLoad(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func toStruct(f float32, t *testing.T) (s *structpb.Value) {
+type mockStreamer struct {
+	counter int
+}
+
+func (mockStreamer) SendAndClose(_ *emptypb.Empty) error {
+	return nil
+}
+
+func (m *mockStreamer) Recv() (*assessment.Result, error) {
+	if m.counter == 0 {
+		m.counter++
+		return &assessment.Result{
+			Id:         "assessmentResultID",
+			MetricId:   "assessmentResultMetricID",
+			EvidenceId: "evidenceID",
+			Timestamp:  timestamppb.Now(),
+			MetricData: &assessment.MetricConfiguration{
+				TargetValue: toStruct(1.0),
+				Operator:    "operator",
+				IsDefault:   true,
+			},
+			NonComplianceComments: "non_compliance_comment",
+			Compliant:             true,
+			ResourceId:            "resourceID",
+		}, nil
+	} else if m.counter == 1 {
+		m.counter++
+		return &assessment.Result{
+			Id:         "assessmentResultID2",
+			MetricId:   "assessmentResultMetricID2",
+			EvidenceId: "evidenceID2",
+			Timestamp:  timestamppb.Now(),
+			MetricData: &assessment.MetricConfiguration{
+				TargetValue: toStruct(1.0),
+				Operator:    "operator2",
+				IsDefault:   false,
+			},
+			NonComplianceComments: "non_compliance_comment",
+			Compliant:             true,
+			ResourceId:            "resourceID",
+		}, nil
+	} else {
+		return nil, io.EOF
+	}
+}
+
+func (mockStreamer) SetHeader(_ metadata.MD) error {
+	panic("implement me")
+}
+
+func (mockStreamer) SendHeader(_ metadata.MD) error {
+	panic("implement me")
+}
+
+func (mockStreamer) SetTrailer(_ metadata.MD) {
+	panic("implement me")
+}
+
+func (mockStreamer) Context() context.Context {
+	panic("implement me")
+}
+
+func (mockStreamer) SendMsg(_ interface{}) error {
+	panic("implement me")
+}
+
+func (mockStreamer) RecvMsg(_ interface{}) error {
+	panic("implement me")
+}
+
+func toStruct(f float32) (s *structpb.Value) {
 	var (
 		b   []byte
 		err error
@@ -317,10 +418,6 @@ func toStruct(f float32, t *testing.T) (s *structpb.Value) {
 	}
 	if err = json.Unmarshal(b, &s); err != nil {
 		return nil
-	}
-
-	if err != nil {
-		assert.NotNil(t, err)
 	}
 
 	return
