@@ -7,6 +7,33 @@ info:
     description: Manages the orchestration of components within the Clouditor architecture
     version: 0.0.1
 paths:
+    /v1/assessment/evidences:
+        post:
+            summary: Assesses the evidence sent by discovery. Part of the public API, also exposed as REST
+            operationId: Assessment_AssessEvidence
+            parameters:
+                - name: evidence
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AssessEvidenceResponse'
+    /v1/assessment/results:
+        post:
+            summary: 'TODO(all): Part of public API because external entities (mainly discoveries) can use it? List the latest set of assessment results. Part of the public API, also exposed as REST'
+            operationId: Assessment_ListAssessmentResults
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListAssessmentResultsResponse'
     /v1/orchestrator/assessment_results:
         put:
             summary: Stores the assessment result provided by an assessment tool
@@ -15,7 +42,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/AssessmentResult'
+                            $ref: '#/components/schemas/Result'
                 required: true
             responses:
                 "200":
@@ -254,21 +281,10 @@ components:
                     items:
                         $ref: '#/components/schemas/Value'
             description: Defines a range
-        AssessmentResult:
+        AssessEvidenceResponse:
             properties:
-                id:
-                    type: string
-                    description: the ID in a uuid format
-                metric_id:
-                    type: string
-                    description: the ID of the metric it refers to
-                result:
-                    type: integer
-                    format: enum
-                target_value:
-                    type: string
-                evidence_id:
-                    type: string
+                status:
+                    type: boolean
         AssessmentTool:
             properties:
                 id:
@@ -291,6 +307,12 @@ components:
                     type: string
                 description:
                     type: string
+        ListAssessmentResultsResponse:
+            properties:
+                results:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Result'
         ListAssessmentToolsResponse:
             properties:
                 tools:
@@ -380,6 +402,33 @@ components:
                 min_max:
                     $ref: '#/components/schemas/MinMax'
             description: A range resource representing the range of values
+        Result:
+            properties:
+                id:
+                    type: string
+                    description: Assessment result id
+                timestamp:
+                    type: string
+                    description: Time of assessment
+                    format: RFC3339
+                metric_id:
+                    type: string
+                    description: Reference to the metric the assessment was based on
+                metric_data:
+                    $ref: '#/components/schemas/MetricConfiguration'
+                compliant:
+                    type: boolean
+                    description: 'Compliant case: true or false'
+                evidence_id:
+                    type: string
+                    description: Reference to the assessed evidence
+                resource_id:
+                    type: string
+                    description: Reference to the resource of the assessed evidence
+                non_compliance_comments:
+                    type: string
+                    description: Some comments on the reason for non-compliance
+            description: A result resource, representing the result after assessing the cloud resource with id resource_id.
         StoreAssessmentResultResponse:
             properties: {}
         Struct:

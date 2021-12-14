@@ -59,10 +59,10 @@ type Service struct {
 	metricConfigurations map[string]map[string]*assessment.MetricConfiguration
 
 	// Currently only in-memory
-	Results map[string]*orchestrator.AssessmentResult
+	Results map[string]*assessment.Result
 
 	// Hook
-	AssessmentResultsHook []func(result *orchestrator.AssessmentResult, err error)
+	AssessmentResultsHook []func(result *assessment.Result, err error)
 
 	db *gorm.DB
 }
@@ -73,7 +73,7 @@ func init() {
 
 func NewService() *Service {
 	s := Service{
-		Results:              make(map[string]*orchestrator.AssessmentResult),
+		Results:              make(map[string]*assessment.Result),
 		metricConfigurations: make(map[string]map[string]*assessment.MetricConfiguration),
 	}
 
@@ -197,11 +197,10 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 
 	response = &orchestrator.StoreAssessmentResultResponse{}
 
-	// TODO(garuppel): comment in after fixing 'assessment results'
-	//_, err = req.Result.Validate()
-	//if err != nil {
-	//	return nil, status.Errorf(codes.InvalidArgument, "invalid evidence: %v", err)
-	//}
+	_, err = req.Result.Validate()
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid assessment result: %v", err)
+	}
 
 	s.Results[req.Result.Id] = req.Result
 
@@ -215,7 +214,7 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 	return
 }
 
-func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result *orchestrator.AssessmentResult, err error)) {
+func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result *assessment.Result, err error)) {
 	s.AssessmentResultsHook = append(s.AssessmentResultsHook, assessmentResultsHook)
 }
 
