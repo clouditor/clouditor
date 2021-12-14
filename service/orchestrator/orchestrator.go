@@ -30,6 +30,8 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"google.golang.org/protobuf/types/known/emptypb"
+	"io"
 	"io/ioutil"
 
 	"clouditor.io/clouditor/api/assessment"
@@ -197,21 +199,54 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 
 	response = &orchestrator.StoreAssessmentResultResponse{}
 
-	_, err = req.Result.Validate()
+	err = s.handleAssessmentResult(req.Result)
+
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid assessment result: %v", err)
+		return response, status.Errorf(codes.InvalidArgument, "invalid assessment result: %v", err)
 	}
 
-	s.Results[req.Result.Id] = req.Result
+	return
+}
+
+func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreAssessmentResultsServer) (err error) {
+	var receivedAssessmentResult *assessment.Result
+
+	for {
+		receivedAssessmentResult, err = stream.Recv()
+		if err != nil {
+			return fmt.Errorf("error receiving the assessment result: %w", err)
+		}
+
+		err = s.handleAssessmentResult(receivedAssessmentResult)
+		// TODO(all): Or should we ignore the error?
+		if err != nil {
+			return fmt.Errorf("error handle assessment result: %w", err)
+		}
+
+		if err == io.EOF {
+			log.Infof("Stopped receiving streamed evidences")
+			return stream.SendAndClose(&emptypb.Empty{})
+		}
+	}
+
+}
+
+func (s Service) handleAssessmentResult(result *assessment.Result) error {
+	_, err := result.Validate()
+	if err != nil {
+		return fmt.Errorf("invalid assessment result: %w", err)
+	}
+
+	s.Results[result.Id] = result
 
 	// Inform our hook, if we have any
 	if s.AssessmentResultsHook != nil {
 		for _, hook := range s.AssessmentResultsHook {
-			go hook(req.Result, nil)
+			go hook(result, nil)
 		}
 	}
 
-	return
+	return nil
 }
 
 func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result *assessment.Result, err error)) {
