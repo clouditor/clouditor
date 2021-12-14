@@ -61,9 +61,8 @@ type Service struct {
 	// Currently only in-memory
 	Results map[string]*orchestrator.AssessmentResult
 
-	// Hooks
+	// Hook
 	AssessmentResultsHook []func(result *orchestrator.AssessmentResult, err error)
-	// EvidenceResultHook    []func(result *evidence.Evidence, err error)
 
 	db *gorm.DB
 }
@@ -198,7 +197,7 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 
 	response = &orchestrator.StoreAssessmentResultResponse{}
 
-	// TODO(garuppel): Write validate function for assessmentResult
+	// TODO(garuppel): comment in after fixing 'assessment results'
 	//_, err = req.Result.Validate()
 	//if err != nil {
 	//	return nil, status.Errorf(codes.InvalidArgument, "invalid evidence: %v", err)
@@ -219,10 +218,6 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result *orchestrator.AssessmentResult, err error)) {
 	s.AssessmentResultsHook = append(s.AssessmentResultsHook, assessmentResultsHook)
 }
-
-/*func (s *Service) RegisterEvidenceHook(evidenceHook func(result *evidence.Evidence, err error)) {
-	s.EvidenceResultHook = append(s.EvidenceResultHook, evidenceHook)
-}*/
 
 //// Tools
 //
