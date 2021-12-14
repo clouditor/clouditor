@@ -48,6 +48,10 @@ func init() {
 	log = logrus.WithField("component", "assessment")
 }
 
+/*
+Service is an implementation of the Clouditor Assessment service. It should not be used directly, but rather the
+NewService constructor should be used. It implements the AssessmentServer interface
+*/
 type Service struct {
 	// ResultHook is a hook function that can be used if one wants to be
 	// informed about each assessment result
@@ -63,6 +67,7 @@ func NewService() assessment.AssessmentServer {
 	}
 }
 
+// AssessEvidence assesses a single evidence
 func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
 	err = s.handleEvidence(req.Evidence)
 
@@ -81,28 +86,29 @@ func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenc
 	return res, nil
 }
 
+// AssessEvidences assesses multiple evidences provided in a stream
 func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) (err error) {
 	var (
-		e   *evidence.Evidence
 		req *assessment.AssessEvidenceRequest
 	)
 
 	for {
 		req, err = stream.Recv()
-		e = req.Evidence
-
-		// TODO: Catch error?
-		_ = s.handleEvidence(e)
 
 		if err == io.EOF {
 			log.Infof("Stopped receiving streamed evidences")
-
 			return stream.SendAndClose(&emptypb.Empty{})
+		}
+
+		err = s.handleEvidence(req.Evidence)
+		if err != nil {
+			return status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
 		}
 
 	}
 }
 
+// handleEvidence is the common evidence assessment of AssessEvidence and AssessEvidences
 func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 	resourceId, err := evidence.Validate()
 	if err != nil {
