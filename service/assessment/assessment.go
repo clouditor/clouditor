@@ -55,15 +55,15 @@ NewService constructor should be used. It implements the AssessmentServer interf
 type Service struct {
 	// ResultHook is a hook function that can be used if one wants to be
 	// informed about each assessment result
-	ResultHook func(result *assessment.Result, err error)
+	ResultHook func(result *assessment.AssessmentResult, err error)
 
-	results map[string]*assessment.Result
+	results map[string]*assessment.AssessmentResult
 	assessment.UnimplementedAssessmentServer
 }
 
 func NewService() assessment.AssessmentServer {
 	return &Service{
-		results: make(map[string]*assessment.Result),
+		results: make(map[string]*assessment.AssessmentResult),
 	}
 }
 
@@ -140,7 +140,7 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 		targetValue, _ := data["target_value"].(*structpb.Value)
 		compliant, _ := data["compliant"].(bool)
 
-		result := &assessment.Result{
+		result := &assessment.AssessmentResult{
 			Id:        uuid.NewString(),
 			Timestamp: timestamppb.Now(),
 			MetricId:  metricId,
@@ -168,7 +168,7 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 
 func (s Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
 	res = new(assessment.ListAssessmentResultsResponse)
-	res.Results = []*assessment.Result{}
+	res.Results = []*assessment.AssessmentResult{}
 
 	for _, result := range s.results {
 		res.Results = append(res.Results, result)

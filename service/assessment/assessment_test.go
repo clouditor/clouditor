@@ -61,7 +61,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "AssessmentServer created with empty results map",
 			want: &Service{
-				results:                       make(map[string]*assessment.Result),
+				results:                       make(map[string]*assessment.AssessmentResult),
 				UnimplementedAssessmentServer: assessment.UnimplementedAssessmentServer{},
 			},
 		},
@@ -148,8 +148,8 @@ func TestAssessEvidence(t *testing.T) {
 
 func TestService_AssessEvidences(t *testing.T) {
 	type fields struct {
-		ResultHook                    func(result *assessment.Result, err error)
-		results                       map[string]*assessment.Result
+		ResultHook                    func(result *assessment.AssessmentResult, err error)
+		results                       map[string]*assessment.AssessmentResult
 		UnimplementedAssessmentServer assessment.UnimplementedAssessmentServer
 	}
 	type args struct {
@@ -163,7 +163,7 @@ func TestService_AssessEvidences(t *testing.T) {
 	}{
 		{
 			name:   "Assessing evidences fails due to missing toolId",
-			fields: fields{results: make(map[string]*assessment.Result)},
+			fields: fields{results: make(map[string]*assessment.AssessmentResult)},
 			args: args{stream: &mockAssessmentStream{
 				evidence: &evidence.Evidence{
 					Timestamp: timestamppb.Now(),
@@ -174,7 +174,7 @@ func TestService_AssessEvidences(t *testing.T) {
 		},
 		{
 			name:   "Assess evidences",
-			fields: fields{results: make(map[string]*assessment.Result)},
+			fields: fields{results: make(map[string]*assessment.AssessmentResult)},
 			args: args{stream: &mockAssessmentStream{
 				evidence: &evidence.Evidence{
 					ToolId:    "mock",

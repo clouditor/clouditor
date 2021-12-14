@@ -67,14 +67,14 @@ service Assessment {
 message TriggerAssessmentRequest { string someOption = 1; }
 
 message ListAssessmentResultsRequest {}
-message ListAssessmentResultsResponse { repeated Result results = 1; }
+message ListAssessmentResultsResponse { repeated AssessmentResult results = 1; }
 
 message AssessEvidenceRequest { Evidence evidence = 1; }
 message AssessEvidenceResponse { bool status = 1; }
 
 // A result resource, representing the result after assessing the cloud resource
 // with id resource_id.
-message Result {
+message AssessmentResult {
   // Assessment result id
   string id = 1;
 
