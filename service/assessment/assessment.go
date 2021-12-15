@@ -26,13 +26,11 @@
 package assessment
 
 import (
-	"context"
-	"fmt"
-	"io"
-
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/policies"
+	"context"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -40,6 +38,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	"io"
 )
 
 var log *logrus.Entry
@@ -48,10 +47,14 @@ func init() {
 	log = logrus.WithField("component", "assessment")
 }
 
+/*
+Service is an implementation of the Clouditor Assessment service. It should not be used directly, but rather the
+NewService constructor should be used. It implements the AssessmentServer interface
+*/
 type Service struct {
 	// ResultHook is a hook function that can be used if one wants to be
 	// informed about each assessment result
-	ResultHook func(result *assessment.Result, err error)
+	ResultHook func(result *assessment.AssessmentResult, err error)
 
 	AssessmentResults map[string]*assessment.Result
 	assessment.UnimplementedAssessmentServer
@@ -63,6 +66,7 @@ func NewService() *Service {
 	}
 }
 
+// AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
 func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
 	err = s.handleEvidence(req.Evidence)
 
@@ -81,17 +85,27 @@ func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenc
 	return res, nil
 }
 
-func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) error {
-	var e *evidence.Evidence
-	var err error
+// AssessEvidences is a method implementation of the assessment interface: It assesses multiple evidences (stream)
+func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) (err error) {
+	var (
+		req *assessment.AssessEvidenceRequest
+	)
 
 	for {
-		e, err = stream.Recv()
+		req, err = stream.Recv()
 
-		if err == io.EOF {
-			log.Infof("Stopped receiving streamed evidences")
+		if err != nil {
+			// If no more input of the stream is available, return SendAndClose `error`
+			if err == io.EOF {
+				log.Infof("Stopped receiving streamed evidences")
+				return stream.SendAndClose(&emptypb.Empty{})
+			}
+			return err
+		}
 
-			return stream.SendAndClose(&emptypb.Empty{})
+		err = s.handleEvidence(req.Evidence)
+		if err != nil {
+			return status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
 		}
 
 		// TODO: Catch error?
@@ -99,6 +113,7 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 	}
 }
 
+// handleEvidence is the common evidence assessment of AssessEvidence and AssessEvidences
 func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 	resourceId, err := evidence.Validate()
 	if err != nil {
@@ -130,7 +145,7 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 		targetValue, _ := data["target_value"].(*structpb.Value)
 		compliant, _ := data["compliant"].(bool)
 
-		result := &assessment.Result{
+		result := &assessment.AssessmentResult{
 			Id:        uuid.NewString(),
 			Timestamp: timestamppb.Now(),
 			MetricId:  metricId,
@@ -156,9 +171,10 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 	return nil
 }
 
+// ListAssessmentResults is a method implementation of the assessment interface
 func (s Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
 	res = new(assessment.ListAssessmentResultsResponse)
-	res.Results = []*assessment.Result{}
+	res.Results = []*assessment.AssessmentResult{}
 
 	for _, result := range s.AssessmentResults {
 		res.Results = append(res.Results, result)

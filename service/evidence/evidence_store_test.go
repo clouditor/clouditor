@@ -25,7 +25,7 @@ func TestNewService(t *testing.T) {
 		want evidence.EvidenceStoreServer
 	}{
 		{
-			name: "EvidenceStoreServer created with empty evidence map",
+			name: "EvidenceStoreServer created with empty req map",
 			want: &Service{
 				evidences:                        make(map[string]*evidence.Evidence),
 				UnimplementedEvidenceStoreServer: evidence.UnimplementedEvidenceStoreServer{},
@@ -44,8 +44,8 @@ func TestNewService(t *testing.T) {
 // TestStoreEvidence tests StoreEvidence
 func TestStoreEvidence(t *testing.T) {
 	type args struct {
-		in0      context.Context
-		evidence *evidence.Evidence
+		in0 context.Context
+		req *evidence.StoreEvidenceRequest
 	}
 	tests := []struct {
 		name     string
@@ -54,10 +54,10 @@ func TestStoreEvidence(t *testing.T) {
 		wantErr  bool
 	}{
 		{
-			name: "Store evidence to the map",
+			name: "Store req to the map",
 			args: args{
 				in0: context.TODO(),
-				evidence: &evidence.Evidence{
+				req: &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
 					Id:        "MockEvidenceId",
 					ServiceId: "MockServiceId",
 					ToolId:    "MockTool",
@@ -68,7 +68,7 @@ func TestStoreEvidence(t *testing.T) {
 							ID: "mock-id",
 						}},
 					}, t),
-				},
+				}},
 			},
 			wantErr:  false,
 			wantResp: &evidence.StoreEvidenceResponse{Status: true},
@@ -100,7 +100,7 @@ func TestStoreEvidence(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
-			gotResp, err := s.StoreEvidence(tt.args.in0, tt.args.evidence)
+			gotResp, err := s.StoreEvidence(tt.args.in0, tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("StoreEvidence() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -146,7 +146,7 @@ func TestStoreEvidences(t *testing.T) {
 	}
 }
 
-// TestListEvidences tests List evidence
+// TestListEvidences tests List req
 func TestListEvidences(t *testing.T) {
 	s := NewService()
 	s.evidences["MockEvidenceId-1"] = &evidence.Evidence{
@@ -282,25 +282,25 @@ func (mockStreamer) SendAndClose(_ *emptypb.Empty) error {
 	return nil
 }
 
-func (m *mockStreamer) Recv() (*evidence.Evidence, error) {
+func (m *mockStreamer) Recv() (req *evidence.StoreEvidenceRequest, err error) {
 	if m.counter == 0 {
 		m.counter++
-		return &evidence.Evidence{
+		return &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
 			Id:        "MockEvidenceId-1",
 			ServiceId: "MockServiceId-1",
 			Timestamp: timestamppb.Now(),
 			Raw:       "",
 			Resource:  nil,
-		}, nil
+		}}, nil
 	} else if m.counter == 1 {
 		m.counter++
-		return &evidence.Evidence{
+		return &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
 			Id:        "MockEvidenceId-2",
 			ServiceId: "MockServiceId-2",
 			Timestamp: timestamppb.Now(),
 			Raw:       "",
 			Resource:  nil,
-		}, nil
+		}}, nil
 	} else {
 		return nil, io.EOF
 	}

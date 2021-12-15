@@ -52,7 +52,7 @@ service Orchestrator {
       returns (ListAssessmentToolsResponse) {
     option (google.api.http) = {
       get : "/v1/orchestrator/assessment_tools"
-      additional_bindings {get : "/v1/orchestator/{metric_id}/assessment_tools"}
+      additional_bindings {get : "/v1/orchestrator/{metric_id}/assessment_tools"}
     };
   }
 
@@ -85,7 +85,7 @@ service Orchestrator {
   rpc StoreAssessmentResult(StoreAssessmentResultRequest)
       returns (StoreAssessmentResultResponse) {
     option (google.api.http) = {
-      put : "/v1/orchestrator/assessment_results"
+      post : "/v1/orchestrator/assessment_results"
       body : "result"
     };
   }
@@ -152,8 +152,8 @@ service Orchestrator {
       returns (MetricConfiguration) {
     option (google.api.http) = {
       get : "/v1/orchestrator/cloud_services/{service_id}/"
-            "metric_configurations/"
-            "{metric_id}"
+          "metric_configurations/"
+          "{metric_id}"
     };
   }
 
@@ -181,7 +181,6 @@ message UpdateAssessmentToolRequest {
   AssessmentTool tool = 2;
 }
 
-// TODO IDs as string or int32?
 message DeregisterAssessmentToolRequest { string tool_id = 1; }
 
 message StoreAssessmentResultRequest { Result result = 1; }

@@ -49,18 +49,15 @@ func local_request_Assessment_ListAssessmentResults_0(ctx context.Context, marsh
 
 }
 
-var (
-	filter_Assessment_AssessEvidence_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
-)
-
 func request_Assessment_AssessEvidence_0(ctx context.Context, marshaler runtime.Marshaler, client AssessmentClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq AssessEvidenceRequest
 	var metadata runtime.ServerMetadata
 
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_Assessment_AssessEvidence_0); err != nil {
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.Evidence); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -73,10 +70,11 @@ func local_request_Assessment_AssessEvidence_0(ctx context.Context, marshaler ru
 	var protoReq AssessEvidenceRequest
 	var metadata runtime.ServerMetadata
 
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_Assessment_AssessEvidence_0); err != nil {
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.Evidence); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -91,7 +89,7 @@ func local_request_Assessment_AssessEvidence_0(ctx context.Context, marshaler ru
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterAssessmentHandlerFromEndpoint instead.
 func RegisterAssessmentHandlerServer(ctx context.Context, mux *runtime.ServeMux, server AssessmentServer) error {
 
-	mux.Handle("POST", pattern_Assessment_ListAssessmentResults_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Assessment_ListAssessmentResults_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -133,7 +131,7 @@ func RegisterAssessmentHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 			return
 		}
 
-		forward_Assessment_AssessEvidence_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Assessment_AssessEvidence_0(ctx, mux, outboundMarshaler, w, req, response_Assessment_AssessEvidence_0{resp}, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -178,7 +176,7 @@ func RegisterAssessmentHandler(ctx context.Context, mux *runtime.ServeMux, conn 
 // "AssessmentClient" to call the correct interceptors.
 func RegisterAssessmentHandlerClient(ctx context.Context, mux *runtime.ServeMux, client AssessmentClient) error {
 
-	mux.Handle("POST", pattern_Assessment_ListAssessmentResults_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Assessment_ListAssessmentResults_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -214,11 +212,20 @@ func RegisterAssessmentHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 			return
 		}
 
-		forward_Assessment_AssessEvidence_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Assessment_AssessEvidence_0(ctx, mux, outboundMarshaler, w, req, response_Assessment_AssessEvidence_0{resp}, mux.GetForwardResponseOptions()...)
 
 	})
 
 	return nil
+}
+
+type response_Assessment_AssessEvidence_0 struct {
+	proto.Message
+}
+
+func (m response_Assessment_AssessEvidence_0) XXX_ResponseBody() interface{} {
+	response := m.Message.(*AssessEvidenceResponse)
+	return response.Status
 }
 
 var (

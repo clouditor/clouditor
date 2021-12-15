@@ -3,7 +3,6 @@
 package assessment
 
 import (
-	evidence "clouditor.io/clouditor/api/evidence"
 	context "context"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
@@ -20,18 +19,13 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AssessmentClient interface {
-	// Triggers the assessment. Part of the private API,
-	// not exposed as REST.
+	// Triggers the assessment. Part of the private API. Not exposed as REST.
 	TriggerAssessment(ctx context.Context, in *TriggerAssessmentRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// TODO(all): Part of public API because external entities (mainly
-	// discoveries) can use it? List the latest set of assessment results. Part of
-	// the public API, also exposed as REST
+	// List all assessment results. Part of the public API, also exposed as REST.
 	ListAssessmentResults(ctx context.Context, in *ListAssessmentResultsRequest, opts ...grpc.CallOption) (*ListAssessmentResultsResponse, error)
-	// Assesses the evidence sent by discovery. Part of the public API,
-	// also exposed as REST
+	// Assesses the evidence sent by the discovery. Part of the public API, also exposed as REST.
 	AssessEvidence(ctx context.Context, in *AssessEvidenceRequest, opts ...grpc.CallOption) (*AssessEvidenceResponse, error)
-	// Assesses stream of evidences coming from the discovery. Part of the public
-	// API, not exposed as REST
+	// Assesses stream of evidences sent by the discovery. Part of the public API. Not exposed as REST.
 	AssessEvidences(ctx context.Context, opts ...grpc.CallOption) (Assessment_AssessEvidencesClient, error)
 }
 
@@ -80,7 +74,7 @@ func (c *assessmentClient) AssessEvidences(ctx context.Context, opts ...grpc.Cal
 }
 
 type Assessment_AssessEvidencesClient interface {
-	Send(*evidence.Evidence) error
+	Send(*AssessEvidenceRequest) error
 	CloseAndRecv() (*emptypb.Empty, error)
 	grpc.ClientStream
 }
@@ -89,7 +83,7 @@ type assessmentAssessEvidencesClient struct {
 	grpc.ClientStream
 }
 
-func (x *assessmentAssessEvidencesClient) Send(m *evidence.Evidence) error {
+func (x *assessmentAssessEvidencesClient) Send(m *AssessEvidenceRequest) error {
 	return x.ClientStream.SendMsg(m)
 }
 
@@ -108,18 +102,13 @@ func (x *assessmentAssessEvidencesClient) CloseAndRecv() (*emptypb.Empty, error)
 // All implementations must embed UnimplementedAssessmentServer
 // for forward compatibility
 type AssessmentServer interface {
-	// Triggers the assessment. Part of the private API,
-	// not exposed as REST.
+	// Triggers the assessment. Part of the private API. Not exposed as REST.
 	TriggerAssessment(context.Context, *TriggerAssessmentRequest) (*emptypb.Empty, error)
-	// TODO(all): Part of public API because external entities (mainly
-	// discoveries) can use it? List the latest set of assessment results. Part of
-	// the public API, also exposed as REST
+	// List all assessment results. Part of the public API, also exposed as REST.
 	ListAssessmentResults(context.Context, *ListAssessmentResultsRequest) (*ListAssessmentResultsResponse, error)
-	// Assesses the evidence sent by discovery. Part of the public API,
-	// also exposed as REST
+	// Assesses the evidence sent by the discovery. Part of the public API, also exposed as REST.
 	AssessEvidence(context.Context, *AssessEvidenceRequest) (*AssessEvidenceResponse, error)
-	// Assesses stream of evidences coming from the discovery. Part of the public
-	// API, not exposed as REST
+	// Assesses stream of evidences sent by the discovery. Part of the public API. Not exposed as REST.
 	AssessEvidences(Assessment_AssessEvidencesServer) error
 	mustEmbedUnimplementedAssessmentServer()
 }
@@ -213,7 +202,7 @@ func _Assessment_AssessEvidences_Handler(srv interface{}, stream grpc.ServerStre
 
 type Assessment_AssessEvidencesServer interface {
 	SendAndClose(*emptypb.Empty) error
-	Recv() (*evidence.Evidence, error)
+	Recv() (*AssessEvidenceRequest, error)
 	grpc.ServerStream
 }
 
@@ -225,8 +214,8 @@ func (x *assessmentAssessEvidencesServer) SendAndClose(m *emptypb.Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *assessmentAssessEvidencesServer) Recv() (*evidence.Evidence, error) {
-	m := new(evidence.Evidence)
+func (x *assessmentAssessEvidencesServer) Recv() (*AssessEvidenceRequest, error) {
+	m := new(AssessEvidenceRequest)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}

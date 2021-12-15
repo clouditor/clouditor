@@ -226,7 +226,8 @@ type mockAssessmentStream struct {
 	connectionEstablished bool
 }
 
-func (m *mockAssessmentStream) Send(e *evidence.Evidence) (err error) {
+func (m *mockAssessmentStream) Send(req *assessment.AssessEvidenceRequest) (err error) {
+	e := req.Evidence
 	if m.connectionEstablished {
 		m.sentEvidence = e
 	} else {
@@ -267,7 +268,7 @@ func (*mockAssessmentStream) RecvMsg(_ interface{}) error {
 type mockEvidenceStoreStream struct {
 }
 
-func (mockEvidenceStoreStream) Send(_ *evidence.Evidence) error {
+func (mockEvidenceStoreStream) Send(_ *evidence.StoreEvidenceRequest) error {
 	return fmt.Errorf("MocK Send error")
 }
 

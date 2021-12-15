@@ -3,7 +3,7 @@ module clouditor.io/clouditor
 go 1.17
 
 require (
-	github.com/Azure/azure-sdk-for-go v60.0.0+incompatible
+	github.com/Azure/azure-sdk-for-go v60.1.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.11.22
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.9
 	github.com/Azure/go-autorest/autorest/to v0.4.0
@@ -15,13 +15,14 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.21.0
 	github.com/aws/aws-sdk-go-v2/service/sts v1.11.1
 	github.com/aws/smithy-go v1.9.0
-	github.com/go-co-op/gocron v1.10.0
+	github.com/go-co-op/gocron v1.11.0
 	github.com/golang-jwt/jwt/v4 v4.2.0
 	github.com/google/addlicense v1.0.0
 	github.com/google/uuid v1.3.0
 	github.com/googleapis/gnostic v0.5.6-0.20210520165051-0320d74b3646
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.0
+	github.com/jinzhu/copier v0.3.4
 	github.com/logrusorgru/aurora/v3 v3.0.0
 	github.com/open-policy-agent/opa v0.35.0
 	github.com/sirupsen/logrus v1.8.1
@@ -84,7 +85,6 @@ require (
 	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
 	github.com/jackc/pgtype v1.8.1 // indirect
 	github.com/jackc/pgx/v4 v4.13.0 // indirect
-	github.com/jinzhu/copier v0.3.4 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.2 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
