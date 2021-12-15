@@ -53,13 +53,13 @@ type Service struct {
 	// informed about each assessment result
 	ResultHook func(result *assessment.Result, err error)
 
-	assessmentResults map[string]*assessment.Result
+	AssessmentResults map[string]*assessment.Result
 	assessment.UnimplementedAssessmentServer
 }
 
 func NewService() assessment.AssessmentServer {
 	return &Service{
-		assessmentResults: make(map[string]*assessment.Result),
+		AssessmentResults: make(map[string]*assessment.Result),
 	}
 }
 
@@ -145,8 +145,8 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 			NonComplianceComments: "No comments so far",
 		}
 
-		// Just a little hack to quickly enable multiple assessmentResults per resource
-		s.assessmentResults[fmt.Sprintf("%s-%d", resourceId, i)] = result
+		// Just a little hack to quickly enable multiple AssessmentResults per resource
+		s.AssessmentResults[fmt.Sprintf("%s-%d", resourceId, i)] = result
 
 		// Inform our hook, if we have any
 		if s.ResultHook != nil {
@@ -161,7 +161,7 @@ func (s Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAsse
 	res = new(assessment.ListAssessmentResultsResponse)
 	res.Results = []*assessment.Result{}
 
-	for _, result := range s.assessmentResults {
+	for _, result := range s.AssessmentResults {
 		res.Results = append(res.Results, result)
 	}
 

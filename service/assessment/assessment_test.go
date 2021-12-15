@@ -27,6 +27,7 @@ package assessment
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -60,9 +61,9 @@ func TestNewService(t *testing.T) {
 		want assessment.AssessmentServer
 	}{
 		{
-			name: "AssessmentServer created with empty assessmentResults map",
+			name: "AssessmentServer created with empty AssessmentResults map",
 			want: &Service{
-				assessmentResults:             make(map[string]*assessment.Result),
+				AssessmentResults:             make(map[string]*assessment.Result),
 				UnimplementedAssessmentServer: assessment.UnimplementedAssessmentServer{},
 			},
 		},
@@ -202,6 +203,13 @@ func (mockStreamer) SendAndClose(_ *emptypb.Empty) error {
 }
 
 func (m *mockStreamer) Recv() (*evidence.Evidence, error) {
+
+	resource := toStructWithoutTest(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}})
+
+	if resource == nil {
+		return nil, errors.New("error getting struct")
+	}
+
 	if m.counter == 0 {
 		m.counter++
 		return &evidence.Evidence{
@@ -209,8 +217,8 @@ func (m *mockStreamer) Recv() (*evidence.Evidence, error) {
 			ServiceId: "MockServiceId-1",
 			Timestamp: timestamppb.Now(),
 			Raw:       "",
-			Resource:  toStructWithoutTest(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}),
-			ToolId: "MockToolId-1",
+			Resource:  resource,
+			ToolId:    "MockToolId-1",
 		}, nil
 	} else if m.counter == 1 {
 		m.counter++
@@ -219,8 +227,8 @@ func (m *mockStreamer) Recv() (*evidence.Evidence, error) {
 			ServiceId: "MockServiceId-2",
 			Timestamp: timestamppb.Now(),
 			Raw:       "",
-			Resource:  toStructWithoutTest(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}),
-			ToolId: "MockToolId-1",
+			Resource:  resource,
+			ToolId:    "MockToolId-1",
 		}, nil
 	} else {
 		return nil, io.EOF
@@ -263,7 +271,7 @@ func toStructWithTest(r voc.IsCloudResource, t *testing.T) (s *structpb.Value) {
 func toStructWithoutTest(r voc.IsCloudResource) (s *structpb.Value) {
 	s, err := voc.ToStruct(r)
 	if err != nil {
-		fmt.Errorf("error moving to struct: %w", err)
+		fmt.Println("error moving to struct: %w", err)
 		return nil
 	}
 

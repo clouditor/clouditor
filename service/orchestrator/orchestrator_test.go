@@ -176,7 +176,6 @@ func TestAssessmentResultHook(t *testing.T) {
 				break
 			case <-time.After(10 * time.Second):
 				log.Println("Timeout while waiting for first storeAssessmentResult to be ready")
-				//assert.Fail(t, "Timeout while waiting for first storeAssessmentResult to be ready")
 			}
 
 			select {
@@ -184,7 +183,6 @@ func TestAssessmentResultHook(t *testing.T) {
 				break
 			case <-time.After(10 * time.Second):
 				log.Println("Timeout while waiting for first storeAssessmentResult to be ready")
-				//assert.Fail(t, "Timeout while waiting for second storeAssessmentResult to be ready")
 			}
 
 			if (err != nil) != tt.wantErr {

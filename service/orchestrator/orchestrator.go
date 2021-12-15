@@ -219,7 +219,6 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 		}
 
 		err = s.handleAssessmentResult(receivedAssessmentResult)
-		// TODO(all): Or should we ignore the error?
 		if err != nil {
 			return fmt.Errorf("error handle assessment result: %w", err)
 		}
