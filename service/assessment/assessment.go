@@ -53,13 +53,13 @@ type Service struct {
 	// informed about each assessment result
 	ResultHook func(result *assessment.Result, err error)
 
-	results map[string]*assessment.Result
+	assessmentResults map[string]*assessment.Result
 	assessment.UnimplementedAssessmentServer
 }
 
 func NewService() assessment.AssessmentServer {
 	return &Service{
-		results: make(map[string]*assessment.Result),
+		assessmentResults: make(map[string]*assessment.Result),
 	}
 }
 
@@ -88,15 +88,15 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 	for {
 		e, err = stream.Recv()
 
-		// TODO: Catch error?
-		_ = s.handleEvidence(e)
-
 		if err == io.EOF {
 			log.Infof("Stopped receiving streamed evidences")
 
 			return stream.SendAndClose(&emptypb.Empty{})
 		}
 
+		// TODO: Catch error?
+		_ = s.handleEvidence(e)
+		fmt.Println(s)
 	}
 }
 
@@ -145,8 +145,8 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 			NonComplianceComments: "No comments so far",
 		}
 
-		// Just a little hack to quickly enable multiple results per resource
-		s.results[fmt.Sprintf("%s-%d", resourceId, i)] = result
+		// Just a little hack to quickly enable multiple assessmentResults per resource
+		s.assessmentResults[fmt.Sprintf("%s-%d", resourceId, i)] = result
 
 		// Inform our hook, if we have any
 		if s.ResultHook != nil {
@@ -161,7 +161,7 @@ func (s Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAsse
 	res = new(assessment.ListAssessmentResultsResponse)
 	res.Results = []*assessment.Result{}
 
-	for _, result := range s.results {
+	for _, result := range s.assessmentResults {
 		res.Results = append(res.Results, result)
 	}
 

@@ -317,7 +317,7 @@ func TestStoreAssessmentResults(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := service_orchestrator.NewService()
 			if err := s.StoreAssessmentResults(tt.args.stream); (err != nil) != tt.wantErr {
-				t.Errorf("StoreEvidences() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("StoreAssessmentResults() error = %v, wantErr %v", err, tt.wantErr)
 				assert.Equal(t, 2, len(s.Results))
 			}
 		})

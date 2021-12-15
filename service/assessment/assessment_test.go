@@ -27,6 +27,10 @@ package assessment
 
 import (
 	"context"
+	"fmt"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/types/known/emptypb"
+	"io"
 	"os"
 	"reflect"
 	"testing"
@@ -56,9 +60,9 @@ func TestNewService(t *testing.T) {
 		want assessment.AssessmentServer
 	}{
 		{
-			name: "AssessmentServer created with empty results map",
+			name: "AssessmentServer created with empty assessmentResults map",
 			want: &Service{
-				results:                       make(map[string]*assessment.Result),
+				assessmentResults:             make(map[string]*assessment.Result),
 				UnimplementedAssessmentServer: assessment.UnimplementedAssessmentServer{},
 			},
 		},
@@ -72,8 +76,22 @@ func TestNewService(t *testing.T) {
 	}
 }
 
+func TestListAssessmentResults(t *testing.T) {
+	var (
+		response *assessment.ListAssessmentResultsResponse
+		err      error
+	)
+
+	service := NewService()
+
+	response, err = service.ListAssessmentResults(context.TODO(), &assessment.ListAssessmentResultsRequest{})
+
+	assert.Nil(t, err)
+	assert.NotNil(t, response)
+}
+
 // TestStoreEvidence tests StoreEvidence
-func TestHandleEvidence(t *testing.T) {
+func TestAssessEvidence(t *testing.T) {
 	type args struct {
 		in0      context.Context
 		evidence *evidence.Evidence
@@ -91,7 +109,7 @@ func TestHandleEvidence(t *testing.T) {
 				evidence: &evidence.Evidence{
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
-					Resource:  toStruct(voc.VirtualMachine{}, t),
+					Resource:  toStructWithTest(voc.VirtualMachine{}, t),
 				},
 			},
 			wantErr:  true,
@@ -103,7 +121,7 @@ func TestHandleEvidence(t *testing.T) {
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
 					Timestamp: timestamppb.Now(),
-					Resource:  toStruct(voc.VirtualMachine{}, t),
+					Resource:  toStructWithTest(voc.VirtualMachine{}, t),
 				},
 			},
 			wantErr:  true,
@@ -115,7 +133,7 @@ func TestHandleEvidence(t *testing.T) {
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
 					ToolId:   "mock",
-					Resource: toStruct(voc.VirtualMachine{}, t),
+					Resource: toStructWithTest(voc.VirtualMachine{}, t),
 				},
 			},
 			wantErr:  true,
@@ -128,7 +146,7 @@ func TestHandleEvidence(t *testing.T) {
 				evidence: &evidence.Evidence{
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
-					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+					Resource:  toStructWithTest(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 				},
 			},
 			wantErr:  false,
@@ -148,10 +166,105 @@ func TestHandleEvidence(t *testing.T) {
 	}
 }
 
-func toStruct(r voc.IsCloudResource, t *testing.T) (s *structpb.Value) {
+func TestAssessEvidences(t *testing.T) {
+	type args struct {
+		stream assessment.Assessment_AssessEvidencesServer
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name:    "Store 2 evidences to the map",
+			args:    args{stream: &mockStreamer{counter: 0}},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := NewService()
+			if err := s.AssessEvidences(tt.args.stream); (err != nil) != tt.wantErr {
+				t.Errorf("AssessEvidences() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+type mockStreamer struct {
+	counter int
+}
+
+func (mockStreamer) SendAndClose(_ *emptypb.Empty) error {
+	return nil
+}
+
+func (m *mockStreamer) Recv() (*evidence.Evidence, error) {
+	if m.counter == 0 {
+		m.counter++
+		return &evidence.Evidence{
+			Id:        "MockEvidenceId-1",
+			ServiceId: "MockServiceId-1",
+			Timestamp: timestamppb.Now(),
+			Raw:       "",
+			Resource:  toStructWithoutTest(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}),
+			ToolId: "MockToolId-1",
+		}, nil
+	} else if m.counter == 1 {
+		m.counter++
+		return &evidence.Evidence{
+			Id:        "MockEvidenceId-2",
+			ServiceId: "MockServiceId-2",
+			Timestamp: timestamppb.Now(),
+			Raw:       "",
+			Resource:  toStructWithoutTest(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}),
+			ToolId: "MockToolId-1",
+		}, nil
+	} else {
+		return nil, io.EOF
+	}
+}
+
+func (mockStreamer) SetHeader(_ metadata.MD) error {
+	panic("implement me")
+}
+
+func (mockStreamer) SendHeader(_ metadata.MD) error {
+	panic("implement me")
+}
+
+func (mockStreamer) SetTrailer(_ metadata.MD) {
+	panic("implement me")
+}
+
+func (mockStreamer) Context() context.Context {
+	panic("implement me")
+}
+
+func (mockStreamer) SendMsg(_ interface{}) error {
+	panic("implement me")
+}
+
+func (mockStreamer) RecvMsg(_ interface{}) error {
+	panic("implement me")
+}
+
+func toStructWithTest(r voc.IsCloudResource, t *testing.T) (s *structpb.Value) {
 	s, err := voc.ToStruct(r)
 	if err != nil {
 		assert.NotNil(t, err)
+	}
+
+	return
+}
+
+func toStructWithoutTest(r voc.IsCloudResource) (s *structpb.Value) {
+	s, err := voc.ToStruct(r)
+	if err != nil {
+		fmt.Errorf("error moving to struct: %w", err)
+		return nil
 	}
 
 	return
