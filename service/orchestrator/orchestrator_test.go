@@ -104,6 +104,7 @@ func TestAssessmentResultHook(t *testing.T) {
 	funcName1 = runtime.FuncForPC(reflect.ValueOf(service.AssessmentResultsHook[1]).Pointer()).Name()
 	funcName2 = runtime.FuncForPC(reflect.ValueOf(secondHookFunction).Pointer()).Name()
 	assert.Equal(t, funcName1, funcName2)
+
 	// Check GRPC call
 	type args struct {
 		in0        context.Context
@@ -139,30 +140,6 @@ func TestAssessmentResultHook(t *testing.T) {
 			wantErr:  false,
 			wantResp: &orchestrator.StoreAssessmentResultResponse{},
 		},
-		{
-			name: "Store second assessment result to the map",
-			args: args{
-				in0: context.TODO(),
-				assessment: &orchestrator.StoreAssessmentResultRequest{
-					Result: &assessment.Result{
-						Id:         "assessmentResultID2",
-						MetricId:   "assessmentResultMetricID2",
-						EvidenceId: "evidenceID2",
-						Timestamp:  timestamppb.Now(),
-						MetricData: &assessment.MetricConfiguration{
-							TargetValue: toStruct(1.0),
-							Operator:    "operator2",
-							IsDefault:   false,
-						},
-						NonComplianceComments: "non_compliance_comment2",
-						Compliant:             false,
-						ResourceId:            "resourceID2",
-					},
-				},
-			},
-			wantErr:  false,
-			wantResp: &orchestrator.StoreAssessmentResultResponse{},
-		},
 	}
 
 	for _, tt := range tests {
@@ -175,14 +152,14 @@ func TestAssessmentResultHook(t *testing.T) {
 			case <-ready1:
 				break
 			case <-time.After(10 * time.Second):
-				log.Println("Timeout while waiting for first storeAssessmentResult to be ready")
+				log.Println("Timeout while waiting for first StoreAssessmentResult to be ready")
 			}
 
 			select {
 			case <-ready2:
 				break
 			case <-time.After(10 * time.Second):
-				log.Println("Timeout while waiting for first storeAssessmentResult to be ready")
+				log.Println("Timeout while waiting for second StoreAssessmentResult to be ready")
 			}
 
 			if (err != nil) != tt.wantErr {
