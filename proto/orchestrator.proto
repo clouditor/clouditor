@@ -68,7 +68,6 @@ service Orchestrator {
       returns (AssessmentTool) {
     option (google.api.http) = {
       put : "/v1/orchestrator/assessment_tools/{tool_id}"
-      // TODO: Why do we have tool_id separated when it is in tool already?
       body : "tool"
     };
   }
@@ -76,7 +75,6 @@ service Orchestrator {
   // Remove assessment tool with passed id from the list of active assessment
   // tools
   rpc DeregisterAssessmentTool(DeregisterAssessmentToolRequest)
-      // TODO(all): For delete, we keep the protobuf.empty? / We dont have soft deletes, right?
       returns (google.protobuf.Empty) {
     option (google.api.http) = {
       delete : "/v1/orchestrator/assessment_tools/{tool_id}"
