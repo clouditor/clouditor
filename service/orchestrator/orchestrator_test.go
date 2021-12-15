@@ -253,6 +253,30 @@ func TestStoreAssessmentResult(t *testing.T) {
 			wantErr:  false,
 			wantResp: &orchestrator.StoreAssessmentResultResponse{},
 		},
+		{
+			name: "Store assessment without metricId to the map",
+			args: args{
+				in0: context.TODO(),
+				assessment: &orchestrator.StoreAssessmentResultRequest{
+					Result: &assessment.Result{
+						Id:         "assessmentResultID",
+						EvidenceId: "evidenceID",
+						Timestamp:  timestamppb.Now(),
+						MetricData: &assessment.MetricConfiguration{
+							TargetValue: toStruct(1.0),
+							Operator:    "operator",
+							IsDefault:   true,
+						},
+						NonComplianceComments: "non_compliance_comment",
+						Compliant:             true,
+						ResourceId:            "resourceID",
+					},
+				},
+			},
+			wantErr:  true,
+			wantResp: &orchestrator.StoreAssessmentResultResponse{},
+		},
+
 	}
 
 	for _, tt := range tests {
@@ -266,7 +290,12 @@ func TestStoreAssessmentResult(t *testing.T) {
 			if !reflect.DeepEqual(gotResp, tt.wantResp) {
 				t.Errorf("StoreAssessmentResult() gotResp = %v, want %v", gotResp, tt.wantResp)
 			}
-			assert.NotNil(t, s.Results["assessmentResultID"])
+
+			if err == nil {
+				assert.NotNil(t, s.Results["assessmentResultID"])
+			} else {
+				assert.Empty(t, s.Results)
+			}
 		})
 	}
 }
