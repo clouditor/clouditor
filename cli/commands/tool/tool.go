@@ -34,6 +34,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -91,7 +92,7 @@ func NewShowToolCommand() *cobra.Command {
 				return nil
 			}
 
-			if conn, err = grpc.Dial(session.URL, grpc.WithInsecure()); err != nil {
+			if conn, err = grpc.Dial(session.URL, grpc.WithTransportCredentials(insecure.NewCredentials())); err != nil {
 				return fmt.Errorf("could not connect: %w", err)
 			}
 
