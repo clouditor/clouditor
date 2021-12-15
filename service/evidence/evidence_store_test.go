@@ -4,7 +4,9 @@ import (
 	"context"
 	"io"
 	"reflect"
+	"runtime"
 	"testing"
+	"time"
 
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -136,6 +138,111 @@ func TestListEvidences(t *testing.T) {
 	resp, err := s.ListEvidences(context.TODO(), &evidence.ListEvidencesRequest{})
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(resp.Evidences))
+}
+
+func TestEvidenceHook(t *testing.T) {
+	var ready1 = make(chan bool)
+	var ready2 = make(chan bool)
+	hookCallCounter := 0
+
+	firstHookFunction := func(evidence *evidence.Evidence, err error) {
+		hookCallCounter++
+		log.Println("Hello from inside the firstHookFunction")
+
+		ready1 <- true
+	}
+
+	secondHookFunction := func(evidence *evidence.Evidence, err error) {
+		hookCallCounter++
+		log.Println("Hello from inside the secondHookFunction")
+
+		ready2 <- true
+	}
+
+	service := NewService()
+	service.RegisterEvidenceHook(firstHookFunction)
+	service.RegisterEvidenceHook(secondHookFunction)
+
+	// Check if first hook is registered
+	funcName1 := runtime.FuncForPC(reflect.ValueOf(service.EvidenceHook[0]).Pointer()).Name()
+	funcName2 := runtime.FuncForPC(reflect.ValueOf(firstHookFunction).Pointer()).Name()
+	assert.Equal(t, funcName1, funcName2)
+
+	// Check if second hook is registered
+	funcName1 = runtime.FuncForPC(reflect.ValueOf(service.EvidenceHook[1]).Pointer()).Name()
+	funcName2 = runtime.FuncForPC(reflect.ValueOf(secondHookFunction).Pointer()).Name()
+	assert.Equal(t, funcName1, funcName2)
+
+	// Check GRPC call
+	type args struct {
+		in0      context.Context
+		evidence *evidence.Evidence
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantResp *evidence.StoreEvidenceResponse
+		wantErr  bool
+	}{
+		{
+			name: "Store first evidence to the map",
+			args: args{
+				in0: context.TODO(),
+				evidence: &evidence.Evidence{
+					Id:        "MockEvidenceId-1",
+					ServiceId: "MockServiceId-1",
+					Timestamp: timestamppb.Now(),
+					Raw:       "",
+					ToolId:    "mockToolId-1",
+					Resource: toStruct(voc.VirtualMachine{
+						Compute: &voc.Compute{
+							CloudResource: &voc.CloudResource{
+								ID: "mock-id-1",
+							},
+						},
+					}, t),
+				},
+			},
+			wantErr: false,
+			wantResp: &evidence.StoreEvidenceResponse{
+				Status: true,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			hookCallCounter = 0
+			s := service
+			gotResp, err := s.StoreEvidence(tt.args.in0, tt.args.evidence)
+
+			//make the test wait
+			select {
+			case <-ready1:
+				break
+			case <-time.After(10 * time.Second):
+				log.Println("Timeout while waiting for first StoreEvidence to be ready")
+			}
+
+			select {
+			case <-ready2:
+				break
+			case <-time.After(10 * time.Second):
+				log.Println("Timeout while waiting for second StoreEvidence to be ready")
+			}
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("StoreEvidence() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotResp, tt.wantResp) {
+				t.Errorf("StoreEvidence() gotResp = %v, want %v", gotResp, tt.wantResp)
+			}
+			assert.NotEmpty(t, s.evidences)
+			assert.Equal(t, 2, hookCallCounter)
+		})
+	}
+
 }
 
 type mockStreamer struct {

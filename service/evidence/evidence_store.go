@@ -17,6 +17,10 @@ var log *logrus.Entry
 type Service struct {
 	// Currently only in-memory
 	evidences map[string]*evidence.Evidence
+
+	// Hook
+	EvidenceHook []func(result *evidence.Evidence, err error)
+
 	evidence.UnimplementedEvidenceStoreServer
 }
 
@@ -44,12 +48,21 @@ func (s *Service) StoreEvidence(_ context.Context, e *evidence.Evidence) (*evide
 
 	s.evidences[e.Id] = e
 	resp.Status = true
+
+	// Inform our hook, if we have any
+	if s.EvidenceHook != nil {
+		for _, hook := range s.EvidenceHook {
+			go hook(e, nil)
+		}
+	}
+
 	return resp, err
 }
 
 // StoreEvidences is a method implementation of the evidenceServer interface: It receives evidences and stores them
 func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesServer) (err error) {
 	var receivedEvidence *evidence.Evidence
+
 	for {
 		receivedEvidence, err = stream.Recv()
 		if err == io.EOF {
@@ -57,6 +70,13 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 			return stream.SendAndClose(&emptypb.Empty{})
 		}
 		s.evidences[receivedEvidence.Id] = receivedEvidence
+
+		// Inform our hook, if we have any
+		if s.EvidenceHook != nil {
+			for _, hook := range s.EvidenceHook {
+				go hook(receivedEvidence, nil)
+			}
+		}
 	}
 }
 
@@ -68,4 +88,8 @@ func (s *Service) ListEvidences(_ context.Context, _ *evidence.ListEvidencesRequ
 	}
 
 	return &evidence.ListEvidencesResponse{Evidences: listOfEvidences}, nil
+}
+
+func (s *Service) RegisterEvidenceHook(evidenceHook func(result *evidence.Evidence, err error)) {
+	s.EvidenceHook = append(s.EvidenceHook, evidenceHook)
 }
