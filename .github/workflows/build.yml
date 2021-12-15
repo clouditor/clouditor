@@ -17,6 +17,15 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: 1.17
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+        if: github.ref != 'refs/heads/main'
       - name: Install Protoc
         uses: arduino/setup-protoc@v1
       - name: Generate
@@ -30,29 +39,6 @@ jobs:
         run: |
           mkdir -p build
           go build -o build ./...
-      - name: "Upload Artifact"
-        uses: actions/upload-artifact@v2
-        with:
-          name: build
-          path: build
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.17
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v1
-      - name: Generate
-        run: |
-          go install google.golang.org/protobuf/cmd/protoc-gen-go \
-          google.golang.org/grpc/cmd/protoc-gen-go-grpc \
-          github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
-          github.com/googleapis/gnostic/apps/protoc-gen-openapi
-          go generate ./...
       - name: Test
         run: |
           go test -v -coverprofile=coverage.cov -coverpkg ./... -covermode=atomic ./...
@@ -61,6 +47,11 @@ jobs:
           files: coverage.cov
           flags: unittests
           token: ${{ secrets.CODECOV_TOKEN }} # not needed, but seems to be more reliable
+      - name: "Upload Artifact"
+        uses: actions/upload-artifact@v2
+        with:
+          name: build
+          path: build
   lint:
     runs-on: ubuntu-latest
     steps:
