@@ -57,7 +57,7 @@ type Service struct {
 	assessment.UnimplementedAssessmentServer
 }
 
-func NewService() assessment.AssessmentServer {
+func NewService() *Service {
 	return &Service{
 		AssessmentResults: make(map[string]*assessment.Result),
 	}
@@ -96,7 +96,6 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 
 		// TODO: Catch error?
 		_ = s.handleEvidence(e)
-		fmt.Println(s)
 	}
 }
 
@@ -166,4 +165,8 @@ func (s Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAsse
 	}
 
 	return
+}
+
+func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result *assessment.Result, err error)) {
+	s.ResultHook = assessmentResultsHook
 }

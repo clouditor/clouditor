@@ -94,7 +94,9 @@ var server *grpc.Server
 var authService *service_auth.Service
 var discoveryService *service_discovery.Service
 var orchestratorService *service_orchestrator.Service
-var assessmentService assessment.AssessmentServer
+var assessmentService *service_assessment.Service
+
+//var assessmentService assessment.AssessmentServer
 var evidenceStoreService *service_evidenceStore.Service
 
 var log *logrus.Entry
@@ -177,6 +179,12 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	orchestratorService = service_orchestrator.NewService()
 	assessmentService = service_assessment.NewService()
 	evidenceStoreService = service_evidenceStore.NewService()
+
+	assessmentService.RegisterAssessmentResultHook(func(result *assessment.Result, err error) {
+		// TODO(garuppel): TBD
+		orchestratorService.StoreAssessmentResult(context.Background(), &orchestrator.StoreAssessmentResultRequest{
+			Result: result})
+	})
 
 	// TODO(all): register assessment result hook
 	orchestratorService.RegisterAssessmentResultHook(func(result *assessment.Result, err error) {

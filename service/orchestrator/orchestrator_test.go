@@ -276,7 +276,6 @@ func TestStoreAssessmentResult(t *testing.T) {
 			wantErr:  true,
 			wantResp: &orchestrator.StoreAssessmentResultResponse{},
 		},
-
 	}
 
 	for _, tt := range tests {
