@@ -190,7 +190,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	})
 
 	// TODO(all): register assessment result hook
-	orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
+	orchestratorService.RegisterAssessmentResultHook(func(result *assessment.Result, err error) {
 		// hash assessment result and send it to the DLT
 		// send assessment result to the Continuous Certification Evaluation
 	})
