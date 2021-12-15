@@ -40,6 +40,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -78,7 +79,7 @@ func NewSession(url string, opts ...grpc.DialOption) (session *Session, err erro
 
 	if len(opts) == 0 {
 		// TODO(oxisto): set flag depending on target url, insecure only for localhost
-		opts = []grpc.DialOption{grpc.WithInsecure()}
+		opts = []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	}
 
 	if session.ClientConn, err = grpc.Dial(session.URL, opts...); err != nil {
@@ -110,7 +111,7 @@ func ContinueSession() (session *Session, err error) {
 		return
 	}
 
-	if session.ClientConn, err = grpc.Dial(session.URL, grpc.WithInsecure()); err != nil {
+	if session.ClientConn, err = grpc.Dial(session.URL, grpc.WithTransportCredentials(insecure.NewCredentials())); err != nil {
 		return nil, fmt.Errorf("could not connect: %w", err)
 	}
 
