@@ -59,9 +59,9 @@ func TestNewService(t *testing.T) {
 		want assessment.AssessmentServer
 	}{
 		{
-			name: "AssessmentServer created with empty AssessmentResults map",
+			name: "AssessmentServer created with empty results map",
 			want: &Service{
-				AssessmentResults:             make(map[string]*assessment.AssessmentResult),
+				results:                       make(map[string]*assessment.AssessmentResult),
 				UnimplementedAssessmentServer: assessment.UnimplementedAssessmentServer{},
 			},
 		},
@@ -189,7 +189,7 @@ func TestService_AssessEvidences(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := Service{
 				ResultHook:                    tt.fields.ResultHook,
-				AssessmentResults:             tt.fields.results,
+				results:                       tt.fields.results,
 				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
 			}
 			err := s.AssessEvidences(tt.args.stream)
