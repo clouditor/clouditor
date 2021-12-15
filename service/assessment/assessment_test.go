@@ -27,8 +27,6 @@ package assessment
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"io"
@@ -63,7 +61,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "AssessmentServer created with empty AssessmentResults map",
 			want: &Service{
-				AssessmentResults:             make(map[string]*assessment.Result),
+				AssessmentResults:             make(map[string]*assessment.AssessmentResult),
 				UnimplementedAssessmentServer: assessment.UnimplementedAssessmentServer{},
 			},
 		},
@@ -75,20 +73,6 @@ func TestNewService(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestListAssessmentResults(t *testing.T) {
-	var (
-		response *assessment.ListAssessmentResultsResponse
-		err      error
-	)
-
-	service := NewService()
-
-	response, err = service.ListAssessmentResults(context.TODO(), &assessment.ListAssessmentResultsRequest{})
-
-	assert.Nil(t, err)
-	assert.NotNil(t, response)
 }
 
 // TestAssessEvidence tests AssessEvidence
@@ -109,7 +93,7 @@ func TestAssessEvidence(t *testing.T) {
 				evidence: &evidence.Evidence{
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
-					Resource:  toStructWithTest(voc.VirtualMachine{}, t),
+					Resource:  toStruct(voc.VirtualMachine{}, t),
 				},
 			},
 			wantErr: true,
@@ -120,7 +104,7 @@ func TestAssessEvidence(t *testing.T) {
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
 					Timestamp: timestamppb.Now(),
-					Resource:  toStructWithTest(voc.VirtualMachine{}, t),
+					Resource:  toStruct(voc.VirtualMachine{}, t),
 				},
 			},
 			wantErr: true,
@@ -131,7 +115,7 @@ func TestAssessEvidence(t *testing.T) {
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
 					ToolId:   "mock",
-					Resource: toStructWithTest(voc.VirtualMachine{}, t),
+					Resource: toStruct(voc.VirtualMachine{}, t),
 				},
 			},
 			wantErr: true,
@@ -143,7 +127,7 @@ func TestAssessEvidence(t *testing.T) {
 				evidence: &evidence.Evidence{
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
-					Resource:  toStructWithTest(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 				},
 			},
 			wantErr: false,
@@ -205,7 +189,7 @@ func TestService_AssessEvidences(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := Service{
 				ResultHook:                    tt.fields.ResultHook,
-				results:                       tt.fields.results,
+				AssessmentResults:             tt.fields.results,
 				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
 			}
 			err := s.AssessEvidences(tt.args.stream)
