@@ -27,6 +27,9 @@ package assessment
 
 import (
 	"context"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/types/known/emptypb"
+	"io"
 	"os"
 	"reflect"
 	"testing"
@@ -58,7 +61,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "AssessmentServer created with empty results map",
 			want: &Service{
-				results:                       make(map[string]*assessment.Result),
+				results:                       make(map[string]*assessment.AssessmentResult),
 				UnimplementedAssessmentServer: assessment.UnimplementedAssessmentServer{},
 			},
 		},
@@ -72,17 +75,16 @@ func TestNewService(t *testing.T) {
 	}
 }
 
-// TestStoreEvidence tests StoreEvidence
-func TestHandleEvidence(t *testing.T) {
+// TestAssessEvidence tests AssessEvidence
+func TestAssessEvidence(t *testing.T) {
 	type args struct {
 		in0      context.Context
 		evidence *evidence.Evidence
 	}
 	tests := []struct {
-		name     string
-		args     args
-		wantResp *evidence.StoreEvidenceResponse
-		wantErr  bool
+		name    string
+		args    args
+		wantErr bool
 	}{
 		{
 			name: "Assess resource without id",
@@ -94,8 +96,7 @@ func TestHandleEvidence(t *testing.T) {
 					Resource:  toStruct(voc.VirtualMachine{}, t),
 				},
 			},
-			wantErr:  true,
-			wantResp: &evidence.StoreEvidenceResponse{Status: true},
+			wantErr: true,
 		},
 		{
 			name: "Assess resource without tool id",
@@ -106,8 +107,7 @@ func TestHandleEvidence(t *testing.T) {
 					Resource:  toStruct(voc.VirtualMachine{}, t),
 				},
 			},
-			wantErr:  true,
-			wantResp: &evidence.StoreEvidenceResponse{Status: true},
+			wantErr: true,
 		},
 		{
 			name: "Assess resource without timestamp",
@@ -118,8 +118,7 @@ func TestHandleEvidence(t *testing.T) {
 					Resource: toStruct(voc.VirtualMachine{}, t),
 				},
 			},
-			wantErr:  true,
-			wantResp: &evidence.StoreEvidenceResponse{Status: true},
+			wantErr: true,
 		},
 		{
 			name: "Assess resource",
@@ -131,8 +130,7 @@ func TestHandleEvidence(t *testing.T) {
 					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 				},
 			},
-			wantErr:  false,
-			wantResp: &evidence.StoreEvidenceResponse{Status: true},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
@@ -148,6 +146,77 @@ func TestHandleEvidence(t *testing.T) {
 	}
 }
 
+func TestService_AssessEvidences(t *testing.T) {
+	type fields struct {
+		ResultHook                    func(result *assessment.AssessmentResult, err error)
+		results                       map[string]*assessment.AssessmentResult
+		UnimplementedAssessmentServer assessment.UnimplementedAssessmentServer
+	}
+	type args struct {
+		stream assessment.Assessment_AssessEvidencesServer
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name:   "Assessing evidences fails due to missing toolId",
+			fields: fields{results: make(map[string]*assessment.AssessmentResult)},
+			args: args{stream: &mockAssessmentStream{
+				evidence: &evidence.Evidence{
+					Timestamp: timestamppb.Now(),
+					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+				},
+			}},
+			wantErr: true,
+		},
+		{
+			name:   "Assess evidences",
+			fields: fields{results: make(map[string]*assessment.AssessmentResult)},
+			args: args{stream: &mockAssessmentStream{
+				evidence: &evidence.Evidence{
+					ToolId:    "mock",
+					Timestamp: timestamppb.Now(),
+					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+				},
+			}},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := Service{
+				ResultHook:                    tt.fields.ResultHook,
+				results:                       tt.fields.results,
+				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
+			}
+			err := s.AssessEvidences(tt.args.stream)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func TestListAssessmentResults(t *testing.T) {
+	s := NewService()
+	_, err := s.AssessEvidence(context.TODO(), &assessment.AssessEvidenceRequest{
+		Evidence: &evidence.Evidence{
+			ToolId:    "mock",
+			Timestamp: timestamppb.Now(),
+			Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+		}})
+	assert.Nil(t, err)
+	var results *assessment.ListAssessmentResultsResponse
+	results, err = s.ListAssessmentResults(context.TODO(), &assessment.ListAssessmentResultsRequest{})
+	assert.Nil(t, err)
+	assert.NotNil(t, results)
+}
+
+// toStruct transforms r to a struct and asserts if it was successful
 func toStruct(r voc.IsCloudResource, t *testing.T) (s *structpb.Value) {
 	s, err := voc.ToStruct(r)
 	if err != nil {
@@ -155,4 +224,49 @@ func toStruct(r voc.IsCloudResource, t *testing.T) (s *structpb.Value) {
 	}
 
 	return
+}
+
+// mockAssessmentStream implements Assessment_AssessEvidencesServer which is used to mock incoming evidences as a stream
+type mockAssessmentStream struct {
+	evidence         *evidence.Evidence
+	receivedEvidence bool
+}
+
+func (mockAssessmentStream) SendAndClose(*emptypb.Empty) error {
+	return nil
+}
+
+// For now, just receive one evidence and directly stop the stream (EOF)
+func (m *mockAssessmentStream) Recv() (req *assessment.AssessEvidenceRequest, err error) {
+	if !m.receivedEvidence {
+		req = new(assessment.AssessEvidenceRequest)
+		req.Evidence = m.evidence
+		m.receivedEvidence = true
+	} else {
+		err = io.EOF
+	}
+	return
+}
+
+func (mockAssessmentStream) SetHeader(metadata.MD) error {
+	return nil
+}
+
+func (mockAssessmentStream) SendHeader(metadata.MD) error {
+	return nil
+}
+
+func (mockAssessmentStream) SetTrailer(metadata.MD) {
+}
+
+func (mockAssessmentStream) Context() context.Context {
+	return nil
+}
+
+func (mockAssessmentStream) SendMsg(interface{}) error {
+	return nil
+}
+
+func (mockAssessmentStream) RecvMsg(interface{}) error {
+	return nil
 }

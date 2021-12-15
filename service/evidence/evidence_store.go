@@ -13,7 +13,7 @@ import (
 
 var log *logrus.Entry
 
-// Service is an implementation of the Clouditor evidence service (evidenceServer)
+// Service is an implementation of the Clouditor req service (evidenceServer)
 type Service struct {
 	// Currently only in-memory
 	evidences map[string]*evidence.Evidence
@@ -27,19 +27,20 @@ func NewService() *Service {
 }
 
 func init() {
-	log = logrus.WithField("component", "evidence")
+	log = logrus.WithField("component", "req")
 }
 
-// StoreEvidence is a method implementation of the evidenceServer interface: It receives an evidence and stores it
-func (s *Service) StoreEvidence(_ context.Context, e *evidence.Evidence) (*evidence.StoreEvidenceResponse, error) {
+// StoreEvidence is a method implementation of the evidenceServer interface: It receives an req and stores it
+func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRequest) (*evidence.StoreEvidenceResponse, error) {
 	var (
 		resp = &evidence.StoreEvidenceResponse{}
 		err  error
+		e    = req.GetEvidence()
 	)
 
 	_, err = e.Validate()
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid evidence: %v", err)
+		return nil, status.Errorf(codes.InvalidArgument, "invalid req: %v", err)
 	}
 
 	s.evidences[e.Id] = e
@@ -49,18 +50,22 @@ func (s *Service) StoreEvidence(_ context.Context, e *evidence.Evidence) (*evide
 
 // StoreEvidences is a method implementation of the evidenceServer interface: It receives evidences and stores them
 func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesServer) (err error) {
-	var receivedEvidence *evidence.Evidence
+	var (
+		req *evidence.StoreEvidenceRequest
+		e   *evidence.Evidence
+	)
 	for {
-		receivedEvidence, err = stream.Recv()
+		req, err = stream.Recv()
+		e = req.GetEvidence()
 		if err == io.EOF {
 			log.Infof("Stopped receiving streamed evidences")
 			return stream.SendAndClose(&emptypb.Empty{})
 		}
-		s.evidences[receivedEvidence.Id] = receivedEvidence
+		s.evidences[e.Id] = e
 	}
 }
 
-// ListEvidences is a method implementation of the evidenceServer interface: It returns the evidences lying in the evidence storage
+// ListEvidences is a method implementation of the evidenceServer interface: It returns the evidences lying in the req storage
 func (s *Service) ListEvidences(_ context.Context, _ *evidence.ListEvidencesRequest) (*evidence.ListEvidencesResponse, error) {
 	var listOfEvidences []*evidence.Evidence
 	for _, v := range s.evidences {
