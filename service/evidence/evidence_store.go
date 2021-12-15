@@ -43,7 +43,8 @@ func (s *Service) StoreEvidence(_ context.Context, e *evidence.Evidence) (*evide
 
 	_, err = e.Validate()
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid evidence: %v", err)
+		resp.Status = false
+		return resp, status.Errorf(codes.InvalidArgument, "invalid evidence: %v", err)
 	}
 
 	s.evidences[e.Id] = e

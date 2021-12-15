@@ -73,6 +73,29 @@ func TestStoreEvidence(t *testing.T) {
 			wantErr:  false,
 			wantResp: &evidence.StoreEvidenceResponse{Status: true},
 		},
+		{
+			name: "Store an evidence without toolId to the map",
+			args: args{
+				in0: context.TODO(),
+				evidence: &evidence.Evidence{
+					Id:        "MockEvidenceId-1",
+					ServiceId: "MockServiceId-1",
+					Timestamp: timestamppb.Now(),
+					Raw:       "",
+					Resource: toStruct(voc.VirtualMachine{
+						Compute: &voc.Compute{
+							CloudResource: &voc.CloudResource{
+								ID: "mock-id-1",
+							},
+						},
+					}, t),
+				},
+			},
+			wantErr: true,
+			wantResp: &evidence.StoreEvidenceResponse{
+				Status: false,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -82,10 +105,16 @@ func TestStoreEvidence(t *testing.T) {
 				t.Errorf("StoreEvidence() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
 			if !reflect.DeepEqual(gotResp, tt.wantResp) {
 				t.Errorf("StoreEvidence() gotResp = %v, want %v", gotResp, tt.wantResp)
 			}
-			assert.NotNil(t, s.evidences["MockEvidenceId"])
+
+			if gotResp.Status {
+				assert.NotNil(t, s.evidences["MockEvidenceId"])
+			} else {
+				assert.Empty(t, s.evidences)
+			}
 		})
 	}
 }
@@ -185,7 +214,7 @@ func TestEvidenceHook(t *testing.T) {
 		wantErr  bool
 	}{
 		{
-			name: "Store first evidence to the map",
+			name: "Store an evidence to the map",
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
