@@ -56,8 +56,6 @@ jobs:
       - name: Test
         run: |
           go test -v -coverprofile=coverage.cov -coverpkg ./... -covermode=atomic ./...
-          mkdir -p build
-          go build -o build ./...
       - uses: codecov/codecov-action@v2.1.0
         with:
           files: coverage.cov
