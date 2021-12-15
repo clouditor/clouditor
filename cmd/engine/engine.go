@@ -95,8 +95,6 @@ var authService *service_auth.Service
 var discoveryService *service_discovery.Service
 var orchestratorService *service_orchestrator.Service
 var assessmentService *service_assessment.Service
-
-//var assessmentService assessment.AssessmentServer
 var evidenceStoreService *service_evidenceStore.Service
 
 var log *logrus.Entry
@@ -181,6 +179,10 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	evidenceStoreService = service_evidenceStore.NewService()
 
 	assessmentService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
+
+		if err != nil {
+			log.Errorf("error was passed: %v", err)
+		}
 		_, err = orchestratorService.StoreAssessmentResult(context.Background(), &orchestrator.StoreAssessmentResultRequest{
 			Result: result})
 

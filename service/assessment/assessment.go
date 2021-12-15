@@ -107,9 +107,6 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 		if err != nil {
 			return status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
 		}
-
-		// TODO: Catch error?
-		_ = s.handleEvidence(req.Evidence)
 	}
 }
 
