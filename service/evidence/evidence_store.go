@@ -63,8 +63,8 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 // StoreEvidences is a method implementation of the evidenceServer interface: It receives evidences and stores them
 func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesServer) (err error) {
 	var (
-		req *evidence.StoreEvidenceRequest
-		receivedEvidence   *evidence.Evidence
+		req              *evidence.StoreEvidenceRequest
+		receivedEvidence *evidence.Evidence
 	)
 	for {
 		req, err = stream.Recv()

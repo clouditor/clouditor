@@ -43,7 +43,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/Result'
+                            $ref: '#/components/schemas/AssessmentResult'
                 required: true
             responses:
                 "200":
@@ -451,33 +451,6 @@ components:
                 min_max:
                     $ref: '#/components/schemas/MinMax'
             description: A range resource representing the range of values
-        Result:
-            properties:
-                id:
-                    type: string
-                    description: Assessment result id
-                timestamp:
-                    type: string
-                    description: Time of assessment
-                    format: RFC3339
-                metric_id:
-                    type: string
-                    description: Reference to the metric the assessment was based on
-                metric_data:
-                    $ref: '#/components/schemas/MetricConfiguration'
-                compliant:
-                    type: boolean
-                    description: 'Compliant case: true or false'
-                evidence_id:
-                    type: string
-                    description: Reference to the assessed evidence
-                resource_id:
-                    type: string
-                    description: Reference to the resource of the assessed evidence
-                non_compliance_comments:
-                    type: string
-                    description: Some comments on the reason for non-compliance
-            description: A result resource, representing the result after assessing the cloud resource with id resource_id.
         StoreAssessmentResultResponse:
             properties: {}
         Struct:

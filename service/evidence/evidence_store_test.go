@@ -77,7 +77,7 @@ func TestStoreEvidence(t *testing.T) {
 			name: "Store an evidence without toolId to the map",
 			args: args{
 				in0: context.TODO(),
-				evidence: &evidence.Evidence{
+				req: &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
 					Id:        "MockEvidenceId-1",
 					ServiceId: "MockServiceId-1",
 					Timestamp: timestamppb.Now(),
@@ -89,6 +89,7 @@ func TestStoreEvidence(t *testing.T) {
 							},
 						},
 					}, t),
+				},
 				},
 			},
 			wantErr: true,
@@ -205,7 +206,7 @@ func TestEvidenceHook(t *testing.T) {
 	// Check GRPC call
 	type args struct {
 		in0      context.Context
-		evidence *evidence.Evidence
+		evidence *evidence.StoreEvidenceRequest
 	}
 	tests := []struct {
 		name     string
@@ -217,7 +218,7 @@ func TestEvidenceHook(t *testing.T) {
 			name: "Store an evidence to the map",
 			args: args{
 				in0: context.TODO(),
-				evidence: &evidence.Evidence{
+				evidence: &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
 					Id:        "MockEvidenceId-1",
 					ServiceId: "MockServiceId-1",
 					Timestamp: timestamppb.Now(),
@@ -230,6 +231,7 @@ func TestEvidenceHook(t *testing.T) {
 							},
 						},
 					}, t),
+				},
 				},
 			},
 			wantErr: false,

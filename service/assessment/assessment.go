@@ -56,13 +56,13 @@ type Service struct {
 	// informed about each assessment result
 	ResultHook func(result *assessment.AssessmentResult, err error)
 
-	AssessmentResults map[string]*assessment.Result
+	AssessmentResults map[string]*assessment.AssessmentResult
 	assessment.UnimplementedAssessmentServer
 }
 
 func NewService() *Service {
 	return &Service{
-		AssessmentResults: make(map[string]*assessment.Result),
+		AssessmentResults: make(map[string]*assessment.AssessmentResult),
 	}
 }
 
@@ -109,7 +109,7 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 		}
 
 		// TODO: Catch error?
-		_ = s.handleEvidence(e)
+		_ = s.handleEvidence(req.Evidence)
 	}
 }
 
@@ -183,6 +183,6 @@ func (s Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAsse
 	return
 }
 
-func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result *assessment.Result, err error)) {
+func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result *assessment.AssessmentResult, err error)) {
 	s.ResultHook = assessmentResultsHook
 }

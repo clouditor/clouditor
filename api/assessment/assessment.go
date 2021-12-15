@@ -38,7 +38,7 @@ var (
 )
 
 // Validate validates the assessment result according to several required fields
-func (result *Result) Validate() (resourceId string, err error) {
+func (result *AssessmentResult) Validate() (resourceId string, err error) {
 	if result.Timestamp == nil {
 		return "", ErrTimestampMissing
 	}

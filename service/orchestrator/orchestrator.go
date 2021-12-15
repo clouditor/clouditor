@@ -61,10 +61,10 @@ type Service struct {
 	metricConfigurations map[string]map[string]*assessment.MetricConfiguration
 
 	// Currently only in-memory
-	Results map[string]*assessment.Result
+	Results map[string]*assessment.AssessmentResult
 
 	// Hook
-	AssessmentResultsHook []func(result *assessment.Result, err error)
+	AssessmentResultsHook []func(result *assessment.AssessmentResult, err error)
 
 	db *gorm.DB
 }
@@ -75,7 +75,7 @@ func init() {
 
 func NewService() *Service {
 	s := Service{
-		Results:              make(map[string]*assessment.Result),
+		Results:              make(map[string]*assessment.AssessmentResult),
 		metricConfigurations: make(map[string]map[string]*assessment.MetricConfiguration),
 	}
 
@@ -209,7 +209,7 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 }
 
 func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreAssessmentResultsServer) (err error) {
-	var receivedAssessmentResult *assessment.Result
+	var receivedAssessmentResult *assessment.AssessmentResult
 
 	for {
 		receivedAssessmentResult, err = stream.Recv()
@@ -226,7 +226,7 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 
 }
 
-func (s Service) handleAssessmentResult(result *assessment.Result) error {
+func (s Service) handleAssessmentResult(result *assessment.AssessmentResult) error {
 	_, err := result.Validate()
 	if err != nil {
 		return fmt.Errorf("invalid assessment result: %w", err)
@@ -244,7 +244,7 @@ func (s Service) handleAssessmentResult(result *assessment.Result) error {
 	return nil
 }
 
-func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result *assessment.Result, err error)) {
+func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result *assessment.AssessmentResult, err error)) {
 	s.AssessmentResultsHook = append(s.AssessmentResultsHook, assessmentResultsHook)
 }
 

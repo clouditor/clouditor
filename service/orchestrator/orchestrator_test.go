@@ -77,14 +77,14 @@ func TestAssessmentResultHook(t *testing.T) {
 	var ready2 = make(chan bool)
 	hookCallCounter := 0
 
-	firstHookFunction := func(assessmentResult *assessment.Result, err error) {
+	firstHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the firstHookFunction")
 
 		ready1 <- true
 	}
 
-	secondHookFunction := func(assessmentResult *assessment.Result, err error) {
+	secondHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the secondHookFunction")
 
@@ -121,7 +121,7 @@ func TestAssessmentResultHook(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
-					Result: &assessment.Result{
+					Result: &assessment.AssessmentResult{
 						Id:         "assessmentResultID",
 						MetricId:   "assessmentResultMetricID",
 						EvidenceId: "evidenceID",
@@ -234,7 +234,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
-					Result: &assessment.Result{
+					Result: &assessment.AssessmentResult{
 						Id:         "assessmentResultID",
 						MetricId:   "assessmentResultMetricID",
 						EvidenceId: "evidenceID",
@@ -258,7 +258,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
-					Result: &assessment.Result{
+					Result: &assessment.AssessmentResult{
 						Id:         "assessmentResultID",
 						EvidenceId: "evidenceID",
 						Timestamp:  timestamppb.Now(),
@@ -345,10 +345,10 @@ func (mockStreamer) SendAndClose(_ *emptypb.Empty) error {
 	return nil
 }
 
-func (m *mockStreamer) Recv() (*assessment.Result, error) {
+func (m *mockStreamer) Recv() (*assessment.AssessmentResult, error) {
 	if m.counter == 0 {
 		m.counter++
-		return &assessment.Result{
+		return &assessment.AssessmentResult{
 			Id:         "assessmentResultID",
 			MetricId:   "assessmentResultMetricID",
 			EvidenceId: "evidenceID",
@@ -364,7 +364,7 @@ func (m *mockStreamer) Recv() (*assessment.Result, error) {
 		}, nil
 	} else if m.counter == 1 {
 		m.counter++
-		return &assessment.Result{
+		return &assessment.AssessmentResult{
 			Id:         "assessmentResultID2",
 			MetricId:   "assessmentResultMetricID2",
 			EvidenceId: "evidenceID2",
