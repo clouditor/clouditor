@@ -47,6 +47,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
 )
@@ -101,7 +102,7 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	// Establish connection to assessment component
 	var client assessment.AssessmentClient
 	// TODO(oxisto): support assessment on Another tcp/port
-	cc, err := grpc.Dial("localhost:9090", grpc.WithInsecure())
+	cc, err := grpc.Dial("localhost:9090", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not connect to assessment service: %v", err)
 	}
@@ -111,7 +112,7 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 
 	// Establish connection to evidenceStore component
 	var evidenceStoreClient evidence.EvidenceStoreClient
-	cc, err = grpc.Dial("localhost:9090", grpc.WithInsecure())
+	cc, err = grpc.Dial("localhost:9090", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not connect to evidence store service: %v", err)
 	}
