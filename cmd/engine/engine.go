@@ -95,7 +95,7 @@ var authService *service_auth.Service
 var discoveryService *service_discovery.Service
 var orchestratorService *service_orchestrator.Service
 var assessmentService assessment.AssessmentServer
-var evidenceStoreService evidence.EvidenceStoreServer
+var evidenceStoreService *service_evidenceStore.Service
 
 var log *logrus.Entry
 
@@ -182,6 +182,11 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	orchestratorService.RegisterAssessmentResultHook(func(result *assessment.Result, err error) {
 		// hash assessment result and send it to the DLT
 		// send assessment result to the Continuous Certification Evaluation
+	})
+
+	// TODO(all): register evidence hook
+	evidenceStoreService.RegisterEvidenceHook(func(result *evidence.Evidence, err error) {
+		// hash evidence and send it to the DLT
 	})
 
 	authService.CreateDefaultUser(viper.GetString(APIDefaultUserFlag), viper.GetString(APIDefaultPasswordFlag))
