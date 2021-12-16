@@ -115,8 +115,7 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 	resourceId, err := evidence.Validate()
 	if err != nil {
 		log.Errorf("Invalid evidence: %v", err)
-		errMessage := "invalid evidence"
-		newError := fmt.Errorf("%v: %w", errMessage, err)
+		newError := fmt.Errorf("invalid evidence: %w", err)
 
 		// Inform our hook, if we have any
 		if s.ResultHook != nil {
@@ -125,7 +124,7 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 			}
 		}
 
-		return status.Errorf(codes.InvalidArgument, "%v: %v", errMessage, err)
+		return newError
 	}
 
 	log.Infof("Running evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, evidence.ToolId, evidence.Timestamp)
@@ -134,8 +133,7 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 	evaluations, err := policies.RunEvidence(evidence)
 	if err != nil {
 		log.Errorf("Could not evaluate evidence: %v", err)
-		errorMessage := "could not evaluate evidence"
-		newError := fmt.Errorf("%v: %w", errorMessage, err)
+		newError := fmt.Errorf("could not evaluate evidence: %w", err)
 
 		// Inform our hook, if we have any
 		if s.ResultHook != nil {
@@ -143,7 +141,7 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 				go hook(nil, newError)
 			}
 		}
-		return status.Errorf(codes.Canceled, "%v: %v", errorMessage, err)
+		return newError
 	}
 
 	for i, data := range evaluations {

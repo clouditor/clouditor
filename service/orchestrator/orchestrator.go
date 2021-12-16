@@ -199,7 +199,7 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 
 	response = &orchestrator.StoreAssessmentResultResponse{}
 
-	err = s.handleAssessmentResult(req.Result)
+	err = s.handleResult(req.Result)
 
 	if err != nil {
 		return response, status.Errorf(codes.InvalidArgument, "invalid assessment result: %v", err)
@@ -209,16 +209,16 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 }
 
 func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreAssessmentResultsServer) (err error) {
-	var receivedAssessmentResult *assessment.AssessmentResult
+	var result *assessment.AssessmentResult
 
 	for {
-		receivedAssessmentResult, err = stream.Recv()
+		result, err = stream.Recv()
 		if err == io.EOF {
 			log.Infof("Stopped receiving streamed assessment results")
 			return stream.SendAndClose(&emptypb.Empty{})
 		}
 
-		err = s.handleAssessmentResult(receivedAssessmentResult)
+		err = s.handleResult(result)
 		if err != nil {
 			return fmt.Errorf("error handle assessment result: %w", err)
 		}
@@ -226,12 +226,11 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 
 }
 
-func (s Service) handleAssessmentResult(result *assessment.AssessmentResult) error {
+func (s Service) handleResult(result *assessment.AssessmentResult) error {
 	_, err := result.Validate()
 	if err != nil {
 		log.Errorf("Invalid assessment result: %v", err)
-		errMessage := "invalid assessment result"
-		newError := fmt.Errorf("%v: %w", errMessage, err)
+		newError := fmt.Errorf("invalid assessment result: %w", err)
 
 		// Inform our hook, if we have any
 		if s.AssessmentResultsHook != nil {
@@ -240,7 +239,7 @@ func (s Service) handleAssessmentResult(result *assessment.AssessmentResult) err
 			}
 		}
 
-		return status.Errorf(codes.InvalidArgument, "%v: %v", errMessage, err)
+		return newError
 	}
 
 	s.Results[result.Id] = result
