@@ -52,6 +52,9 @@ jobs:
         with:
           name: build
           path: build
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Apply protobuf changes
   lint:
     runs-on: ubuntu-latest
     steps:
