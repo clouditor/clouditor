@@ -26,20 +26,19 @@
 package assessment
 
 import (
+	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/voc"
 	"context"
+	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"io"
 	"os"
 	"reflect"
 	"testing"
-
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/voc"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/protobuf/types/known/structpb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func TestMain(m *testing.M) {
@@ -148,7 +147,7 @@ func TestAssessEvidence(t *testing.T) {
 
 func TestService_AssessEvidences(t *testing.T) {
 	type fields struct {
-		ResultHook                    func(result *assessment.AssessmentResult, err error)
+		ResultHook                    []func(result *assessment.AssessmentResult, err error)
 		results                       map[string]*assessment.AssessmentResult
 		UnimplementedAssessmentServer assessment.UnimplementedAssessmentServer
 	}
@@ -200,6 +199,107 @@ func TestService_AssessEvidences(t *testing.T) {
 		})
 	}
 }
+
+/*func TestAssessmentResultHook(t *testing.T) {
+	var ready1 = make(chan bool)
+	var ready2 = make(chan bool)
+	hookCallCounter := 0
+
+	// TODO(garuppel): Warum kommt da mal 2, 4, 6, 10, 12 zurück?
+	firstHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
+		hookCallCounter++
+		log.Println("Hello from inside the firstHookFunction")
+
+		ready1 <- true
+	}
+
+	secondHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
+		hookCallCounter++
+		log.Println("Hello from inside the secondHookFunction")
+
+		ready2 <- true
+	}
+
+	service := NewService()
+	service.RegisterAssessmentResultHook(firstHookFunction)
+	service.RegisterAssessmentResultHook(secondHookFunction)
+
+	// Check if first hook is registered
+	funcName1 := runtime.FuncForPC(reflect.ValueOf(service.ResultHook[0]).Pointer()).Name()
+	funcName2 := runtime.FuncForPC(reflect.ValueOf(firstHookFunction).Pointer()).Name()
+	assert.Equal(t, funcName1, funcName2)
+
+	// Check if second hook is registered
+	funcName1 = runtime.FuncForPC(reflect.ValueOf(service.ResultHook[1]).Pointer()).Name()
+	funcName2 = runtime.FuncForPC(reflect.ValueOf(secondHookFunction).Pointer()).Name()
+	assert.Equal(t, funcName1, funcName2)
+
+	// Check GRPC call
+	type args struct {
+		in0      context.Context
+		evidence *assessment.AssessEvidenceRequest
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantResp *assessment.AssessEvidenceResponse
+		wantErr  bool
+	}{
+		{
+			name: "Store first assessment result to the map",
+			args: args{
+				in0: context.TODO(),
+				evidence: &assessment.AssessEvidenceRequest{
+					Evidence: &evidence.Evidence{
+						ToolId:    "mock",
+						Timestamp: timestamppb.Now(),
+						Resource: toStruct(voc.VirtualMachine{
+							Compute: &voc.Compute{
+								CloudResource: &voc.CloudResource{
+									ID:   "my-resource-id",
+									Type: []string{"VirtualMachine"}},
+							},
+						}, t),
+					}},
+			},
+			wantErr:  false,
+			wantResp: &assessment.AssessEvidenceResponse{Status: true},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			hookCallCounter = 0
+			s := service
+			gotResp, err := s.AssessEvidence(tt.args.in0, tt.args.evidence)
+			//make the test wait
+			select {
+			case <-ready1:
+				break
+			case <-time.After(10 * time.Second):
+				log.Println("Timeout while waiting for first StoreAssessmentResult to be ready")
+			}
+
+			select {
+			case <-ready2:
+				break
+			case <-time.After(10 * time.Second):
+				log.Println("Timeout while waiting for second StoreAssessmentResult to be ready")
+			}
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("StoreAssessmentResult() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotResp, tt.wantResp) {
+				t.Errorf("StoreAssessmentResult() gotResp = %v, want %v", gotResp, tt.wantResp)
+			}
+			assert.NotEmpty(t, s.results)
+			assert.Equal(t, 12, hookCallCounter)
+		})
+	}
+}
+*/
 
 func TestListAssessmentResults(t *testing.T) {
 	s := NewService()
