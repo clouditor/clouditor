@@ -1181,7 +1181,7 @@ func RegisterOrchestratorHandlerFromEndpoint(ctx context.Context, mux *runtime.S
 
 // RegisterOrchestratorHandler registers the http handlers for service Orchestrator to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterOrchestratorHandler(ctx context.Context, mux *runtime.ServeMux, conn grpc.ClientConnInterface) error {
+func RegisterOrchestratorHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
 	return RegisterOrchestratorHandlerClient(ctx, mux, NewOrchestratorClient(conn))
 }
 

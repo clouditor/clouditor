@@ -181,7 +181,7 @@ func RegisterDiscoveryHandlerFromEndpoint(ctx context.Context, mux *runtime.Serv
 
 // RegisterDiscoveryHandler registers the http handlers for service Discovery to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterDiscoveryHandler(ctx context.Context, mux *runtime.ServeMux, conn grpc.ClientConnInterface) error {
+func RegisterDiscoveryHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
 	return RegisterDiscoveryHandlerClient(ctx, mux, NewDiscoveryClient(conn))
 }
 

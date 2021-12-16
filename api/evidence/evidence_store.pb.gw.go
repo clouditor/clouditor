@@ -165,7 +165,7 @@ func RegisterEvidenceStoreHandlerFromEndpoint(ctx context.Context, mux *runtime.
 
 // RegisterEvidenceStoreHandler registers the http handlers for service EvidenceStore to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterEvidenceStoreHandler(ctx context.Context, mux *runtime.ServeMux, conn grpc.ClientConnInterface) error {
+func RegisterEvidenceStoreHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
 	return RegisterEvidenceStoreHandlerClient(ctx, mux, NewEvidenceStoreClient(conn))
 }
 
