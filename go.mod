@@ -18,8 +18,8 @@ require (
 	github.com/go-co-op/gocron v1.11.0
 	github.com/golang-jwt/jwt/v4 v4.2.0
 	github.com/google/addlicense v1.0.0
+	github.com/google/gnostic v0.5.7
 	github.com/google/uuid v1.3.0
-	github.com/googleapis/gnostic v0.5.6-0.20210520165051-0320d74b3646
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.0
 	github.com/jinzhu/copier v0.3.4
@@ -74,6 +74,7 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
+	github.com/googleapis/gnostic v0.5.5 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect

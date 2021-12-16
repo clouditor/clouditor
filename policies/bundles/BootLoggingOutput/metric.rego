@@ -4,7 +4,7 @@ default applicable = false
 
 default compliant = false
 
-metricData := data.target_value
+metricConfiguration := data.target_value
 
 bootLog := input.bootLog
 
