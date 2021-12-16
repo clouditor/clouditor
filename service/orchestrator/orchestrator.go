@@ -214,7 +214,7 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 	for {
 		receivedAssessmentResult, err = stream.Recv()
 		if err == io.EOF {
-			log.Infof("Stopped receiving streamed evidences")
+			log.Infof("Stopped receiving streamed assessment results")
 			return stream.SendAndClose(&emptypb.Empty{})
 		}
 
@@ -229,7 +229,18 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 func (s Service) handleAssessmentResult(result *assessment.AssessmentResult) error {
 	_, err := result.Validate()
 	if err != nil {
-		return fmt.Errorf("invalid assessment result: %w", err)
+		log.Errorf("Invalid assessment result: %v", err)
+		errMessage := "invalid assessment result"
+		newError := fmt.Errorf("%v: %w", errMessage, err)
+
+		// Inform our hook, if we have any
+		if s.AssessmentResultsHook != nil {
+			for _, hook := range s.AssessmentResultsHook {
+				go hook(nil, newError)
+			}
+		}
+
+		return status.Errorf(codes.InvalidArgument, "%v: %v", errMessage, err)
 	}
 
 	s.Results[result.Id] = result
@@ -244,8 +255,8 @@ func (s Service) handleAssessmentResult(result *assessment.AssessmentResult) err
 	return nil
 }
 
-func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result *assessment.AssessmentResult, err error)) {
-	s.AssessmentResultsHook = append(s.AssessmentResultsHook, assessmentResultsHook)
+func (s *Service) RegisterAssessmentResultHook(hook func(result *assessment.AssessmentResult, err error)) {
+	s.AssessmentResultsHook = append(s.AssessmentResultsHook, hook)
 }
 
 //// Tools

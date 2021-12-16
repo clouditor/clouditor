@@ -54,7 +54,7 @@ NewService constructor should be used. It implements the AssessmentServer interf
 type Service struct {
 	// ResultHook is a hook function that can be used if one wants to be
 	// informed about each assessment result
-	ResultHook func(result *assessment.AssessmentResult, err error)
+	ResultHook []func(result *assessment.AssessmentResult, err error)
 
 	results map[string]*assessment.AssessmentResult
 	assessment.UnimplementedAssessmentServer
@@ -114,7 +114,18 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 	resourceId, err := evidence.Validate()
 	if err != nil {
-		return fmt.Errorf("invalid evidence: %w", err)
+		log.Errorf("Invalid evidence: %v", err)
+		errMessage := "invalid evidence"
+		newError :=fmt.Errorf("%v: %w", errMessage, err)
+
+		// Inform our hook, if we have any
+		if s.ResultHook != nil {
+			for _, hook := range s.ResultHook {
+				go hook(nil, newError)
+			}
+		}
+
+		return status.Errorf(codes.InvalidArgument, "%v: %v", errMessage, err)
 	}
 
 	log.Infof("Running evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, evidence.ToolId, evidence.Timestamp)
@@ -123,13 +134,16 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 	evaluations, err := policies.RunEvidence(evidence)
 	if err != nil {
 		log.Errorf("Could not evaluate evidence: %v", err)
+		errorMessage := "could not evaluate evidence"
+		newError :=fmt.Errorf("%v: %w", errorMessage, err)
 
 		// Inform our hook, if we have any
 		if s.ResultHook != nil {
-			go s.ResultHook(nil, err)
+			for _, hook := range s.ResultHook {
+				go hook(nil, newError)
+			}
 		}
-
-		return err
+		return status.Errorf(codes.Canceled, "%v: %v", errorMessage, err)
 	}
 
 	for i, data := range evaluations {
@@ -161,7 +175,9 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 
 		// Inform our hook, if we have any
 		if s.ResultHook != nil {
-			go s.ResultHook(result, nil)
+			for _, hook := range s.ResultHook {
+				go hook(result, nil)
+			}
 		}
 	}
 
@@ -181,5 +197,5 @@ func (s Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAsse
 }
 
 func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result *assessment.AssessmentResult, err error)) {
-	s.ResultHook = assessmentResultsHook
+	s.ResultHook = append(s.ResultHook, assessmentResultsHook)
 }

@@ -2,6 +2,7 @@ package evidences
 
 import (
 	"context"
+	"fmt"
 	"io"
 
 	"clouditor.io/clouditor/api/evidence"
@@ -44,6 +45,16 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 
 	_, err = e.Validate()
 	if err != nil {
+		log.Errorf("Invalid evidence: %v", err)
+		newError := fmt.Errorf("invalid evidence: %w", err)
+
+		// Inform our hook, if we have any
+		if s.EvidenceHook != nil {
+			for _, hook := range s.EvidenceHook {
+				go hook(nil, newError)
+			}
+		}
+
 		return resp, status.Errorf(codes.InvalidArgument, "invalid req: %v", err)
 	}
 
@@ -63,22 +74,22 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 // StoreEvidences is a method implementation of the evidenceServer interface: It receives evidences and stores them
 func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesServer) (err error) {
 	var (
-		req              *evidence.StoreEvidenceRequest
-		receivedEvidence *evidence.Evidence
+		req *evidence.StoreEvidenceRequest
+		e   *evidence.Evidence
 	)
 	for {
 		req, err = stream.Recv()
-		receivedEvidence = req.GetEvidence()
+		e = req.GetEvidence()
 		if err == io.EOF {
 			log.Infof("Stopped receiving streamed evidences")
 			return stream.SendAndClose(&emptypb.Empty{})
 		}
-		s.evidences[receivedEvidence.Id] = receivedEvidence
+		s.evidences[e.Id] = e
 
 		// Inform our hook, if we have any
 		if s.EvidenceHook != nil {
 			for _, hook := range s.EvidenceHook {
-				go hook(receivedEvidence, nil)
+				go hook(e, nil)
 			}
 		}
 	}

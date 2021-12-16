@@ -178,10 +178,17 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	assessmentService = service_assessment.NewService()
 	evidenceStoreService = service_evidenceStore.NewService()
 
+	// It is possible to register hook functions for the orchestrator, evidenceStore and assessment service.
+	// The hook functions in orchestrator are implemented in StoreAssessmentResult(s)
+	// The hook functions in evidenceStore are implemented in StoreEvidence(s)
+	// The hook functions in assessment are implemented in AssessEvidence(s)
+
+	// orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {})
+	// evidenceStoreService.RegisterEvidenceHook(func(result *evidence.Evidence, err error) {})
 	assessmentService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
 
 		if err != nil {
-			log.Errorf("error was passed: %v", err)
+			return
 		}
 		_, err = orchestratorService.StoreAssessmentResult(context.Background(), &orchestrator.StoreAssessmentResultRequest{
 			Result: result})
@@ -189,17 +196,6 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		if err != nil {
 			log.Errorf("error storing assessment result in orchestrator: %v", err)
 		}
-	})
-
-	// TODO(all): register assessment result hook
-	orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
-		// hash assessment result and send it to the DLT
-		// send assessment result to the Continuous Certification Evaluation
-	})
-
-	// TODO(all): register evidence hook
-	evidenceStoreService.RegisterEvidenceHook(func(result *evidence.Evidence, err error) {
-		// hash evidence and send it to the DLT
 	})
 
 	authService.CreateDefaultUser(viper.GetString(APIDefaultUserFlag), viper.GetString(APIDefaultPasswordFlag))

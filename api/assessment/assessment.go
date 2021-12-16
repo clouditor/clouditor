@@ -59,18 +59,8 @@ func (result *AssessmentResult) Validate() (resourceId string, err error) {
 		return "", ErrMetricDataTargetValueMissing
 	}
 
-	// TODO(all): Do we have to check the target value type?
-	//value := result.MetricData.GetTargetValue()
-	//if value == nil {
-	//	return "", ErrResourceNotStruct
-	//}
-
 	if result.EvidenceId == "" {
 		return "", ErrEvidenceIdMissing
-	}
-
-	if result.NonComplianceComments == "" {
-		return "", ErrNonComplianceCommentsMissing
 	}
 
 	return

@@ -173,7 +173,6 @@ func TestAssessmentResultHook(t *testing.T) {
 			assert.Equal(t, 2, hookCallCounter)
 		})
 	}
-
 }
 
 func TestListMetrics(t *testing.T) {
