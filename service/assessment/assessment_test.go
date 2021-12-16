@@ -217,8 +217,8 @@ func TestAssessmentResultHook(t *testing.T) {
 
 	// Check GRPC call
 	type args struct {
-		in0      context.Context
-		evidence *assessment.AssessEvidenceRequest
+		in0                 context.Context
+		evidence            *assessment.AssessEvidenceRequest
 		resultHookFunctions []func(assessmentResult *assessment.AssessmentResult, err error)
 	}
 	tests := []struct {
@@ -243,7 +243,7 @@ func TestAssessmentResultHook(t *testing.T) {
 							},
 						}, t),
 					}},
-					resultHookFunctions: addResultHookFunctions(firstHookFunction, secondHookFunction),
+				resultHookFunctions: addResultHookFunctions(firstHookFunction, secondHookFunction),
 			},
 			wantErr:  false,
 			wantResp: &assessment.AssessEvidenceResponse{Status: true},
@@ -267,7 +267,7 @@ func TestAssessmentResultHook(t *testing.T) {
 			gotResp, err := s.AssessEvidence(tt.args.in0, tt.args.evidence)
 
 			// That isn´t nice, but we have somehow to wait for the hook functions
-			time.Sleep(3*time.Second)
+			time.Sleep(3 * time.Second)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("StoreAssessmentResult() error = %v, wantErr %v", err, tt.wantErr)
@@ -353,9 +353,5 @@ func (mockAssessmentStream) RecvMsg(interface{}) error {
 }
 
 func addResultHookFunctions(func1 func(assessmentResult *assessment.AssessmentResult, err error), func2 func(assessmentResult *assessment.AssessmentResult, err error)) (functions []func(assessmentResult *assessment.AssessmentResult, err error)) {
-
-	functions = append(functions, func1)
-	functions = append(functions, func2)
-
-	return
+	return append(functions, func1, func2)
 }
