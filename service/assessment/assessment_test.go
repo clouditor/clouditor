@@ -38,7 +38,9 @@ import (
 	"io"
 	"os"
 	"reflect"
+	"runtime"
 	"testing"
+	"time"
 )
 
 func TestMain(m *testing.M) {
@@ -200,7 +202,7 @@ func TestService_AssessEvidences(t *testing.T) {
 	}
 }
 
-/*func TestAssessmentResultHook(t *testing.T) {
+func TestAssessmentResultHook(t *testing.T) {
 	var ready1 = make(chan bool)
 	var ready2 = make(chan bool)
 	hookCallCounter := 0
@@ -246,7 +248,7 @@ func TestService_AssessEvidences(t *testing.T) {
 		wantErr  bool
 	}{
 		{
-			name: "Store first assessment result to the map",
+			name: "Store evidence to the map",
 			args: args{
 				in0: context.TODO(),
 				evidence: &assessment.AssessEvidenceRequest{
@@ -272,20 +274,9 @@ func TestService_AssessEvidences(t *testing.T) {
 			hookCallCounter = 0
 			s := service
 			gotResp, err := s.AssessEvidence(tt.args.in0, tt.args.evidence)
-			//make the test wait
-			select {
-			case <-ready1:
-				break
-			case <-time.After(10 * time.Second):
-				log.Println("Timeout while waiting for first StoreAssessmentResult to be ready")
-			}
 
-			select {
-			case <-ready2:
-				break
-			case <-time.After(10 * time.Second):
-				log.Println("Timeout while waiting for second StoreAssessmentResult to be ready")
-			}
+			// That isn´t nice, but we have somehow to wait for the hook functions
+			time.Sleep(3*time.Second)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("StoreAssessmentResult() error = %v, wantErr %v", err, tt.wantErr)
@@ -295,11 +286,10 @@ func TestService_AssessEvidences(t *testing.T) {
 				t.Errorf("StoreAssessmentResult() gotResp = %v, want %v", gotResp, tt.wantResp)
 			}
 			assert.NotEmpty(t, s.results)
-			assert.Equal(t, 12, hookCallCounter)
+			assert.Equal(t, 12, hookCallCounter) //
 		})
 	}
 }
-*/
 
 func TestListAssessmentResults(t *testing.T) {
 	s := NewService()
