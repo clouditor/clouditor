@@ -116,7 +116,7 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 	if err != nil {
 		log.Errorf("Invalid evidence: %v", err)
 		errMessage := "invalid evidence"
-		newError :=fmt.Errorf("%v: %w", errMessage, err)
+		newError := fmt.Errorf("%v: %w", errMessage, err)
 
 		// Inform our hook, if we have any
 		if s.ResultHook != nil {
@@ -135,7 +135,7 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 	if err != nil {
 		log.Errorf("Could not evaluate evidence: %v", err)
 		errorMessage := "could not evaluate evidence"
-		newError :=fmt.Errorf("%v: %w", errorMessage, err)
+		newError := fmt.Errorf("%v: %w", errorMessage, err)
 
 		// Inform our hook, if we have any
 		if s.ResultHook != nil {
