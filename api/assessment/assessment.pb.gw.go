@@ -165,7 +165,7 @@ func RegisterAssessmentHandlerFromEndpoint(ctx context.Context, mux *runtime.Ser
 
 // RegisterAssessmentHandler registers the http handlers for service Assessment to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterAssessmentHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+func RegisterAssessmentHandler(ctx context.Context, mux *runtime.ServeMux, conn grpc.ClientConnInterface) error {
 	return RegisterAssessmentHandlerClient(ctx, mux, NewAssessmentClient(conn))
 }
 
