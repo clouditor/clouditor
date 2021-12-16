@@ -203,43 +203,23 @@ func TestService_AssessEvidences(t *testing.T) {
 }
 
 func TestAssessmentResultHook(t *testing.T) {
-	var ready1 = make(chan bool)
-	var ready2 = make(chan bool)
 	hookCallCounter := 0
 
-	// TODO(garuppel): Warum kommt da mal 2, 4, 6, 10, 12 zurück?
 	firstHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the firstHookFunction")
-
-		ready1 <- true
 	}
 
 	secondHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the secondHookFunction")
-
-		ready2 <- true
 	}
-
-	service := NewService()
-	service.RegisterAssessmentResultHook(firstHookFunction)
-	service.RegisterAssessmentResultHook(secondHookFunction)
-
-	// Check if first hook is registered
-	funcName1 := runtime.FuncForPC(reflect.ValueOf(service.ResultHook[0]).Pointer()).Name()
-	funcName2 := runtime.FuncForPC(reflect.ValueOf(firstHookFunction).Pointer()).Name()
-	assert.Equal(t, funcName1, funcName2)
-
-	// Check if second hook is registered
-	funcName1 = runtime.FuncForPC(reflect.ValueOf(service.ResultHook[1]).Pointer()).Name()
-	funcName2 = runtime.FuncForPC(reflect.ValueOf(secondHookFunction).Pointer()).Name()
-	assert.Equal(t, funcName1, funcName2)
 
 	// Check GRPC call
 	type args struct {
 		in0      context.Context
 		evidence *assessment.AssessEvidenceRequest
+		resultHookFunctions []func(assessmentResult *assessment.AssessmentResult, err error)
 	}
 	tests := []struct {
 		name     string
@@ -263,6 +243,7 @@ func TestAssessmentResultHook(t *testing.T) {
 							},
 						}, t),
 					}},
+					resultHookFunctions: addResultHookFunctions(firstHookFunction, secondHookFunction),
 			},
 			wantErr:  false,
 			wantResp: &assessment.AssessEvidenceResponse{Status: true},
@@ -272,7 +253,17 @@ func TestAssessmentResultHook(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			hookCallCounter = 0
-			s := service
+			s := NewService()
+
+			for i, hookFunction := range tt.args.resultHookFunctions {
+				s.RegisterAssessmentResultHook(hookFunction)
+
+				// Check if hook is registered
+				funcName1 := runtime.FuncForPC(reflect.ValueOf(s.ResultHook[i]).Pointer()).Name()
+				funcName2 := runtime.FuncForPC(reflect.ValueOf(hookFunction).Pointer()).Name()
+				assert.Equal(t, funcName1, funcName2)
+			}
+
 			gotResp, err := s.AssessEvidence(tt.args.in0, tt.args.evidence)
 
 			// That isn´t nice, but we have somehow to wait for the hook functions
@@ -359,4 +350,12 @@ func (mockAssessmentStream) SendMsg(interface{}) error {
 
 func (mockAssessmentStream) RecvMsg(interface{}) error {
 	return nil
+}
+
+func addResultHookFunctions(func1 func(assessmentResult *assessment.AssessmentResult, err error), func2 func(assessmentResult *assessment.AssessmentResult, err error)) (functions []func(assessmentResult *assessment.AssessmentResult, err error)) {
+
+	functions = append(functions, func1)
+	functions = append(functions, func2)
+
+	return
 }
