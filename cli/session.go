@@ -158,8 +158,9 @@ func (s *Session) HandleResponse(msg proto.Message, err error) error {
 	}
 
 	opt := protojson.MarshalOptions{
-		Multiline: true,
-		Indent:    "  ",
+		Multiline:       true,
+		Indent:          "  ",
+		EmitUnpopulated: true,
 	}
 
 	b, _ := opt.Marshal(msg)
