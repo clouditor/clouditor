@@ -28,6 +28,8 @@ package assessment
 import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/orchestrator"
+	orchestrator_service "clouditor.io/clouditor/service/orchestrator"
 	"clouditor.io/clouditor/voc"
 	"context"
 	"github.com/stretchr/testify/assert"
@@ -203,7 +205,11 @@ func TestService_AssessEvidences(t *testing.T) {
 }
 
 func TestAssessmentResultHook(t *testing.T) {
-	hookCallCounter := 0
+	var (
+		hookCallCounter = 0
+		// Service needs to outlive the lifetime of the hook function
+		service = *orchestrator_service.NewService()
+	)
 
 	firstHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
 		hookCallCounter++
@@ -213,6 +219,27 @@ func TestAssessmentResultHook(t *testing.T) {
 	secondHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the secondHookFunction")
+	}
+
+	// TODO(garuppel): Delete that test after adding an additional test for assessment.Validate()
+	storeAssessmentResultToOrchestrator := func(result *assessment.AssessmentResult, err error) {
+
+		hookCallCounter++
+
+		if err != nil {
+			log.Println("error as input %w: ", err)
+			log.Infof("stop hook for storing assessment result")
+			return
+		}
+
+		_, err = service.StoreAssessmentResult(context.Background(), &orchestrator.StoreAssessmentResultRequest{
+			Result: result})
+
+		if err != nil {
+			log.Errorf("error storing assessment result in orchestrator: %v", err)
+		} else {
+			log.Infof("assessment result stored in orchestrator")
+		}
 	}
 
 	// Check GRPC call
@@ -233,6 +260,7 @@ func TestAssessmentResultHook(t *testing.T) {
 				in0: context.TODO(),
 				evidence: &assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
+						Id:        "MockEvidenceID",
 						ToolId:    "mock",
 						Timestamp: timestamppb.Now(),
 						Resource: toStruct(voc.VirtualMachine{
@@ -243,7 +271,7 @@ func TestAssessmentResultHook(t *testing.T) {
 							},
 						}, t),
 					}},
-				resultHookFunctions: addResultHookFunctions(firstHookFunction, secondHookFunction),
+				resultHookFunctions: []func(assessmentResult *assessment.AssessmentResult, err error){storeAssessmentResultToOrchestrator, firstHookFunction, secondHookFunction},
 			},
 			wantErr:  false,
 			wantResp: &assessment.AssessEvidenceResponse{Status: true},
@@ -277,7 +305,7 @@ func TestAssessmentResultHook(t *testing.T) {
 				t.Errorf("StoreAssessmentResult() gotResp = %v, want %v", gotResp, tt.wantResp)
 			}
 			assert.NotEmpty(t, s.results)
-			assert.Equal(t, 12, hookCallCounter) //
+			assert.Equal(t, 18, hookCallCounter) //
 		})
 	}
 }
@@ -350,8 +378,4 @@ func (mockAssessmentStream) SendMsg(interface{}) error {
 
 func (mockAssessmentStream) RecvMsg(interface{}) error {
 	return nil
-}
-
-func addResultHookFunctions(func1 func(assessmentResult *assessment.AssessmentResult, err error), func2 func(assessmentResult *assessment.AssessmentResult, err error)) (functions []func(assessmentResult *assessment.AssessmentResult, err error)) {
-	return append(functions, func1, func2)
 }
