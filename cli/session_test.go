@@ -186,3 +186,9 @@ func TestSession_HandleResponse(t *testing.T) {
 		})
 	}
 }
+
+// Test will fail due to no user input
+func TestPromptForLogin(t *testing.T) {
+	_, err := cli.PromptForLogin()
+	assert.NotNil(t, err)
+}
