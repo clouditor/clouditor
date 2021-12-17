@@ -172,7 +172,7 @@ func (s *Session) HandleResponse(msg proto.Message, err error) error {
 	return err
 }
 
-func PromtForLogin() (loginRequest *auth.LoginRequest, err error) {
+func PromptForLogin() (loginRequest *auth.LoginRequest, err error) {
 	reader := bufio.NewReader(os.Stdin)
 
 	fmt.Print("Enter username: ")
