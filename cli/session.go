@@ -102,6 +102,7 @@ func ContinueSession() (session *Session, err error) {
 		return
 	}
 
+	// TODO(all): Should we catch errors of deferred close operations?
 	defer file.Close()
 
 	session = new(Session)
@@ -133,6 +134,7 @@ func (s *Session) Save() (err error) {
 		return fmt.Errorf("could not save session.json: %w", err)
 	}
 
+	// TODO(all): Should we catch errors of deferred close operations?
 	defer file.Close()
 
 	if err = json.NewEncoder(file).Encode(s); err != nil {
@@ -158,18 +160,19 @@ func (s *Session) HandleResponse(msg proto.Message, err error) error {
 	}
 
 	opt := protojson.MarshalOptions{
-		Multiline: true,
-		Indent:    "  ",
+		Multiline:       true,
+		Indent:          "  ",
+		EmitUnpopulated: true,
 	}
 
 	b, _ := opt.Marshal(msg)
 
-	fmt.Fprintf(Output, "%s\n", string(b))
+	_, err = fmt.Fprintf(Output, "%s\n", string(b))
 
 	return err
 }
 
-func PromtForLogin() (loginRequest *auth.LoginRequest, err error) {
+func PromptForLogin() (loginRequest *auth.LoginRequest, err error) {
 	reader := bufio.NewReader(os.Stdin)
 
 	fmt.Print("Enter username: ")

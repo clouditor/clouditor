@@ -28,6 +28,7 @@ package cli_test
 import (
 	"context"
 	"fmt"
+	"google.golang.org/protobuf/proto"
 	"io/ioutil"
 	"net"
 	"os"
@@ -123,4 +124,71 @@ func TestSession(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, codes.Unauthenticated, s.Code())
 	assert.Nil(t, response)
+}
+
+func TestSession_HandleResponse(t *testing.T) {
+	type fields struct {
+		URL        string
+		Token      string
+		Folder     string
+		ClientConn *grpc.ClientConn
+	}
+	type args struct {
+		msg proto.Message
+		err error
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "grpc Error",
+			args: args{
+				msg: nil,
+				err: status.Errorf(codes.Internal, "Internal error occurred!"),
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				if err != nil {
+					return true
+				} else {
+					t.Errorf("Expected error.")
+					return false
+				}
+			},
+		},
+		{
+			name: "non-grpc error",
+			args: args{
+				msg: nil,
+				err: fmt.Errorf("random error"),
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				if err != nil {
+					return true
+				} else {
+					t.Errorf("Expected error.")
+					return false
+				}
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &cli.Session{
+				URL:        tt.fields.URL,
+				Token:      tt.fields.Token,
+				Folder:     tt.fields.Folder,
+				ClientConn: tt.fields.ClientConn,
+			}
+			tt.wantErr(t, s.HandleResponse(tt.args.msg, tt.args.err), fmt.Sprintf("HandleResponse(%v, %v)", tt.args.msg, tt.args.err))
+		})
+	}
+}
+
+// Test will fail due to no user input
+func TestPromptForLogin(t *testing.T) {
+	_, err := cli.PromptForLogin()
+	assert.NotNil(t, err)
 }
