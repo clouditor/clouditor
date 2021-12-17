@@ -1,5 +1,5 @@
 # Generated with protoc-gen-openapi
-# https://github.com/googleapis/gnostic/tree/master/apps/protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/apps/protoc-gen-openapi
 
 openapi: 3.0.3
 info:
@@ -53,7 +53,7 @@ components:
                 metric_id:
                     type: string
                     description: Reference to the metric the assessment was based on
-                metric_data:
+                metric_configuration:
                     $ref: '#/components/schemas/MetricConfiguration'
                 compliant:
                     type: boolean
