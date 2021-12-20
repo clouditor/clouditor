@@ -114,8 +114,8 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 	resourceId, err := evidence.Validate()
 	if err != nil {
-		log.Errorf("Invalid evidence: %v", err)
 		newError := fmt.Errorf("invalid evidence: %w", err)
+		log.Errorf(newError.Error())
 
 		// Inform our hook, if we have any
 		if s.ResultHook != nil {

@@ -32,6 +32,7 @@ import (
 	orchestrator_service "clouditor.io/clouditor/service/orchestrator"
 	"clouditor.io/clouditor/voc"
 	"context"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -213,12 +214,12 @@ func TestAssessmentResultHook(t *testing.T) {
 
 	firstHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
 		hookCallCounter++
-		log.Println("Hello from inside the firstHookFunction")
+		fmt.Println("Hello from inside the firstHookFunction")
 	}
 
 	secondHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
 		hookCallCounter++
-		log.Println("Hello from inside the secondHookFunction")
+		fmt.Println("Hello from inside the secondHookFunction")
 	}
 
 	// TODO(garuppel): Delete that test after adding an additional test for assessment.Validate()
@@ -227,8 +228,8 @@ func TestAssessmentResultHook(t *testing.T) {
 		hookCallCounter++
 
 		if err != nil {
-			log.Println("error as input %w: ", err)
-			log.Infof("stop hook for storing assessment result")
+			fmt.Errorf("error as input %w: ", err)
+			fmt.Println("Stop hook for storing assessment result")
 			return
 		}
 
@@ -236,9 +237,9 @@ func TestAssessmentResultHook(t *testing.T) {
 			Result: result})
 
 		if err != nil {
-			log.Errorf("error storing assessment result in orchestrator: %v", err)
+			fmt.Errorf("error storing assessment result in orchestrator: %w", err)
 		} else {
-			log.Infof("assessment result stored in orchestrator")
+			fmt.Println("Assessment result stored in orchestrator")
 		}
 	}
 
