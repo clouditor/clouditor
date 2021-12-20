@@ -228,14 +228,14 @@ func TestAssessmentResultHook(t *testing.T) {
 		hookCallCounter++
 
 		if err != nil {
-			fmt.Errorf("error as input %w: ", err)
+			fmt.Println("error as input %w: ", err)
 		}
 
-		_, err2 := service.StoreAssessmentResult(context.Background(), &orchestrator.StoreAssessmentResultRequest{
+		_, err = service.StoreAssessmentResult(context.Background(), &orchestrator.StoreAssessmentResultRequest{
 			Result: result})
 
-		if err2 != nil {
-			fmt.Errorf("error storing assessment result in orchestrator: %w", err)
+		if err != nil {
+			fmt.Println("error storing assessment result in orchestrator: %w", err)
 		}
 	}
 
