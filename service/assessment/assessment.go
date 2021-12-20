@@ -79,7 +79,7 @@ func NewService() *Service {
 	}
 }
 
-func (s Service) Start(_ context.Context, _ *assessment.StartAssessmentRequest) (*assessment.StartAssessmentResponse, error) {
+func (s *Service) Start(_ context.Context, _ *assessment.StartAssessmentRequest) (*assessment.StartAssessmentResponse, error) {
 	var (
 		cc                  *grpc.ClientConn
 		evidenceStoreClient evidence.EvidenceStoreClient
