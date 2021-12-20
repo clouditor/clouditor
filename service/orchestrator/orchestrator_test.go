@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package orchestrator_test
+package orchestrator
 
 import (
 	"context"
@@ -34,7 +34,6 @@ import (
 	"io"
 	"io/fs"
 	"k8s.io/apimachinery/pkg/util/json"
-	"log"
 	"os"
 	"reflect"
 	"runtime"
@@ -45,11 +44,10 @@ import (
 	"clouditor.io/clouditor/persistence"
 
 	"clouditor.io/clouditor/api/orchestrator"
-	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"github.com/stretchr/testify/assert"
 )
 
-var service *service_orchestrator.Service
+var service *Service
 var defaultTarget *orchestrator.CloudService
 
 func TestMain(m *testing.M) {
@@ -63,7 +61,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	service = service_orchestrator.NewService()
+	service = NewService()
 	defaultTarget, err = service.CreateDefaultTargetCloudService()
 	if err != nil {
 		panic(err)
@@ -91,7 +89,7 @@ func TestAssessmentResultHook(t *testing.T) {
 		ready2 <- true
 	}
 
-	service := service_orchestrator.NewService()
+	service := NewService()
 	service.RegisterAssessmentResultHook(firstHookFunction)
 	service.RegisterAssessmentResultHook(secondHookFunction)
 
@@ -279,7 +277,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := service_orchestrator.NewService()
+			s := NewService()
 			gotResp, err := s.StoreAssessmentResult(tt.args.in0, tt.args.assessment)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("StoreAssessmentResult() error = %v, wantErr %v", err, tt.wantErr)
@@ -317,7 +315,7 @@ func TestStoreAssessmentResults(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := service_orchestrator.NewService()
+			s := NewService()
 			if err := s.StoreAssessmentResults(tt.args.stream); (err != nil) != tt.wantErr {
 				t.Errorf("StoreAssessmentResults() error = %v, wantErr %v", err, tt.wantErr)
 				assert.Equal(t, 2, len(s.Results))
@@ -327,11 +325,11 @@ func TestStoreAssessmentResults(t *testing.T) {
 }
 
 func TestLoad(t *testing.T) {
-	var err = service_orchestrator.LoadMetrics("notfound.json")
+	var err = LoadMetrics("notfound.json")
 
 	assert.ErrorIs(t, err, fs.ErrNotExist)
 
-	err = service_orchestrator.LoadMetrics("metrics.json")
+	err = LoadMetrics("metrics.json")
 
 	assert.Nil(t, err)
 }
