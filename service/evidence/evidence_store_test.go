@@ -289,11 +289,11 @@ func (m *mockStreamer) Recv() (req *evidence.StoreEvidenceRequest, err error) {
 		m.counter++
 		return &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
 			Id:        "MockEvidenceId-1",
-			ToolId: "MockToolId-1",
+			ToolId:    "MockToolId-1",
 			ServiceId: "MockServiceId-1",
 			Timestamp: timestamppb.Now(),
 			Raw:       "",
-			Resource:  toStructWithoutTest(voc.VirtualMachine{
+			Resource: toStructWithoutTest(voc.VirtualMachine{
 				Compute: &voc.Compute{
 					CloudResource: &voc.CloudResource{
 						ID: "mock-id-1",
@@ -305,11 +305,11 @@ func (m *mockStreamer) Recv() (req *evidence.StoreEvidenceRequest, err error) {
 		m.counter++
 		return &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
 			Id:        "MockEvidenceId-2",
-			ToolId: "MockToolId-2",
+			ToolId:    "MockToolId-2",
 			ServiceId: "MockServiceId-2",
 			Timestamp: timestamppb.Now(),
 			Raw:       "",
-			Resource:  toStructWithoutTest(voc.VirtualMachine{
+			Resource: toStructWithoutTest(voc.VirtualMachine{
 				Compute: &voc.Compute{
 					CloudResource: &voc.CloudResource{
 						ID: "mock-id-1",
