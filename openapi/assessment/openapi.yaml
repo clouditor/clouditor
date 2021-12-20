@@ -1,5 +1,5 @@
 # Generated with protoc-gen-openapi
-# https://github.com/google/gnostic/tree/master/apps/protoc-gen-openapi
+# https://github.com/googleapis/gnostic/tree/master/apps/protoc-gen-openapi
 
 openapi: 3.0.3
 info:
@@ -35,6 +35,17 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListAssessmentResultsResponse'
+    /v1/assessment/start:
+        post:
+            summary: Starts assessment, e.g. setting up connections to other services
+            operationId: Assessment_Start
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/StartAssessmentResponse'
 components:
     schemas:
         AssessEvidenceResponse:
@@ -114,6 +125,8 @@ components:
                     type: boolean
                     description: Whether this configuration is a default configuration
             description: Defines the operator and a target value for an individual metric
+        StartAssessmentResponse:
+            properties: {}
         Struct:
             properties:
                 fields:

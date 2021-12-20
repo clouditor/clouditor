@@ -61,9 +61,9 @@ type Service struct {
 	discovery.UnimplementedDiscoveryServer
 
 	Configurations map[discovery.Discoverer]*Configuration
-	// TODO(oxisto) do not expose this. just makes tests easier for now
-	AssessmentStream assessment.Assessment_AssessEvidencesClient
 
+	// TODO(oxisto) do not expose this. just makes tests easier for now
+	AssessmentStream    assessment.Assessment_AssessEvidencesClient
 	EvidenceStoreStream evidence.EvidenceStore_StoreEvidencesClient
 
 	resources map[string]voc.IsCloudResource
@@ -195,8 +195,7 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 		s.resources[string(resource.GetID())] = resource
 
 		var (
-			v   *structpb.Value
-			err error
+			v *structpb.Value
 		)
 
 		v, err = voc.ToStruct(resource)
@@ -225,8 +224,7 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 
 		log.Debugf("Sending evidence for resource %s (%s)...", resource.GetID(), strings.Join(resource.GetType(), ", "))
 
-		err = s.AssessmentStream.Send(&assessment.AssessEvidenceRequest{Evidence: e})
-		if err != nil {
+		if err = s.AssessmentStream.Send(&assessment.AssessEvidenceRequest{Evidence: e}); err != nil {
 			log.Errorf("Could not send evidence to Assessment: %v", err)
 		}
 

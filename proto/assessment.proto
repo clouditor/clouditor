@@ -39,6 +39,13 @@ option go_package = "api/assessment";
 // Representing the link between orchestrator and discovery: Assessing evidences
 // from discovery and sending results to orchestrator
 service Assessment {
+  // Starts assessment, e.g. setting up connections to other services
+  rpc Start(StartAssessmentRequest) returns (StartAssessmentResponse) {
+    option (google.api.http) = {
+      post : "/v1/assessment/start"
+    };
+  }
+
   // Triggers the assessment. Part of the private API. Not exposed as REST.
   rpc TriggerAssessment(TriggerAssessmentRequest)
       returns (google.protobuf.Empty) {}
@@ -63,6 +70,9 @@ service Assessment {
   // Assesses stream of evidences sent by the discovery. Part of the public API. Not exposed as REST.
   rpc AssessEvidences(stream AssessEvidenceRequest) returns (google.protobuf.Empty);
 };
+
+message StartAssessmentRequest {}
+message StartAssessmentResponse{}
 
 message TriggerAssessmentRequest { string someOption = 1; }
 

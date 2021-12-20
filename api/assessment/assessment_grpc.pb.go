@@ -19,6 +19,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AssessmentClient interface {
+	// Starts assessment, e.g. setting up connections to other services
+	Start(ctx context.Context, in *StartAssessmentRequest, opts ...grpc.CallOption) (*StartAssessmentResponse, error)
 	// Triggers the assessment. Part of the private API. Not exposed as REST.
 	TriggerAssessment(ctx context.Context, in *TriggerAssessmentRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// List all assessment results. Part of the public API, also exposed as REST.
@@ -35,6 +37,15 @@ type assessmentClient struct {
 
 func NewAssessmentClient(cc grpc.ClientConnInterface) AssessmentClient {
 	return &assessmentClient{cc}
+}
+
+func (c *assessmentClient) Start(ctx context.Context, in *StartAssessmentRequest, opts ...grpc.CallOption) (*StartAssessmentResponse, error) {
+	out := new(StartAssessmentResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.Assessment/Start", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *assessmentClient) TriggerAssessment(ctx context.Context, in *TriggerAssessmentRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
@@ -102,6 +113,8 @@ func (x *assessmentAssessEvidencesClient) CloseAndRecv() (*emptypb.Empty, error)
 // All implementations must embed UnimplementedAssessmentServer
 // for forward compatibility
 type AssessmentServer interface {
+	// Starts assessment, e.g. setting up connections to other services
+	Start(context.Context, *StartAssessmentRequest) (*StartAssessmentResponse, error)
 	// Triggers the assessment. Part of the private API. Not exposed as REST.
 	TriggerAssessment(context.Context, *TriggerAssessmentRequest) (*emptypb.Empty, error)
 	// List all assessment results. Part of the public API, also exposed as REST.
@@ -117,6 +130,9 @@ type AssessmentServer interface {
 type UnimplementedAssessmentServer struct {
 }
 
+func (UnimplementedAssessmentServer) Start(context.Context, *StartAssessmentRequest) (*StartAssessmentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Start not implemented")
+}
 func (UnimplementedAssessmentServer) TriggerAssessment(context.Context, *TriggerAssessmentRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TriggerAssessment not implemented")
 }
@@ -140,6 +156,24 @@ type UnsafeAssessmentServer interface {
 
 func RegisterAssessmentServer(s grpc.ServiceRegistrar, srv AssessmentServer) {
 	s.RegisterService(&Assessment_ServiceDesc, srv)
+}
+
+func _Assessment_Start_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StartAssessmentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AssessmentServer).Start(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Assessment/Start",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AssessmentServer).Start(ctx, req.(*StartAssessmentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Assessment_TriggerAssessment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -229,6 +263,10 @@ var Assessment_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "clouditor.Assessment",
 	HandlerType: (*AssessmentServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Start",
+			Handler:    _Assessment_Start_Handler,
+		},
 		{
 			MethodName: "TriggerAssessment",
 			Handler:    _Assessment_TriggerAssessment_Handler,
