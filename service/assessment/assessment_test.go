@@ -67,6 +67,7 @@ func TestNewService(t *testing.T) {
 			want: &Service{
 				results:                       make(map[string]*assessment.AssessmentResult),
 				UnimplementedAssessmentServer: assessment.UnimplementedAssessmentServer{},
+				Configuration:                 Configuration{evidenceStoreTargetAddress: "localhost:9090"},
 			},
 		},
 	}
@@ -83,7 +84,7 @@ func TestStart(t *testing.T) {
 	type fields struct {
 		UnimplementedAssessmentServer assessment.UnimplementedAssessmentServer
 		evidenceStoreStream           evidence.EvidenceStore_StoreEvidencesClient
-		ResultHook                    func(result *assessment.AssessmentResult, err error)
+		ResultHook                    []func(result *assessment.AssessmentResult, err error)
 		results                       map[string]*assessment.AssessmentResult
 		Configuration
 	}
