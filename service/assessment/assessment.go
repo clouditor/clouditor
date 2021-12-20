@@ -56,6 +56,8 @@ NewService constructor should be used. It implements the AssessmentServer interf
 type Service struct {
 	assessment.UnimplementedAssessmentServer
 
+	Configuration
+
 	// TODO(lebogg): comment
 	evidenceStoreStream evidence.EvidenceStore_StoreEvidencesClient
 
@@ -66,9 +68,14 @@ type Service struct {
 	results map[string]*assessment.AssessmentResult
 }
 
+type Configuration struct {
+	evidenceStoreTargetAddress string
+}
+
 func NewService() assessment.AssessmentServer {
 	return &Service{
-		results: make(map[string]*assessment.AssessmentResult),
+		results:       make(map[string]*assessment.AssessmentResult),
+		Configuration: Configuration{evidenceStoreTargetAddress: "localhost:9090"},
 	}
 }
 
@@ -80,13 +87,11 @@ func (s Service) Start(_ context.Context, _ *assessment.StartAssessmentRequest) 
 	)
 
 	// Establish connection to evidenceStore component
-	// TODO(lebogg): port hardcoded for now -> add configuration struct or/and field in request for setting the port
-	cc, err = grpc.Dial("localhost:9090", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	cc, err = grpc.Dial(s.Configuration.evidenceStoreTargetAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not connect to evidence store service: %v", err)
 	}
 	evidenceStoreClient = evidence.NewEvidenceStoreClient(cc)
-	// TODO(lebogg): Find out which errors can occur and add tests accordingly
 	s.evidenceStoreStream, err = evidenceStoreClient.StoreEvidences(context.Background())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not set up stream for storing evidences: %v", err)
