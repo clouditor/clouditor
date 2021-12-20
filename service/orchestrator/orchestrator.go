@@ -229,8 +229,8 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 func (s Service) handleResult(result *assessment.AssessmentResult) error {
 	_, err := result.Validate()
 	if err != nil {
-		log.Errorf("Invalid assessment result: %v", err)
 		newError := fmt.Errorf("invalid assessment result: %w", err)
+		log.Errorf(newError.Error())
 
 		// Inform our hook, if we have any
 		if s.AssessmentResultsHook != nil {
