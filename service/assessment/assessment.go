@@ -33,7 +33,9 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -52,18 +54,44 @@ Service is an implementation of the Clouditor Assessment service. It should not 
 NewService constructor should be used. It implements the AssessmentServer interface
 */
 type Service struct {
+	assessment.UnimplementedAssessmentServer
+
+	// TODO(lebogg): comment
+	evidenceStoreStream evidence.EvidenceStore_StoreEvidencesClient
+
 	// ResultHook is a hook function that can be used if one wants to be
 	// informed about each assessment result
 	ResultHook func(result *assessment.AssessmentResult, err error)
 
 	results map[string]*assessment.AssessmentResult
-	assessment.UnimplementedAssessmentServer
 }
 
 func NewService() assessment.AssessmentServer {
 	return &Service{
 		results: make(map[string]*assessment.AssessmentResult),
 	}
+}
+
+func (s Service) Start(_ context.Context, _ *assessment.StartAssessmentRequest) (*assessment.StartAssessmentResponse, error) {
+	var (
+		cc                  *grpc.ClientConn
+		evidenceStoreClient evidence.EvidenceStoreClient
+		err                 error
+	)
+
+	// Establish connection to evidenceStore component
+	// TODO(lebogg): port hardcoded for now -> add configuration struct or/and field in request for setting the port
+	cc, err = grpc.Dial("localhost:9090", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not connect to evidence store service: %v", err)
+	}
+	evidenceStoreClient = evidence.NewEvidenceStoreClient(cc)
+	// TODO(lebogg): Find out which errors can occur and add tests accordingly
+	s.evidenceStoreStream, err = evidenceStoreClient.StoreEvidences(context.Background())
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not set up stream for storing evidences: %v", err)
+	}
+	return &assessment.StartAssessmentResponse{}, nil
 }
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
@@ -78,6 +106,8 @@ func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenc
 		return res, status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
 	}
 
+	// TODO(lebogg): Send evidence to evidence store (as stream)
+
 	res = &assessment.AssessEvidenceResponse{
 		Status: true,
 	}
@@ -86,6 +116,7 @@ func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenc
 }
 
 // AssessEvidences is a method implementation of the assessment interface: It assesses multiple evidences (stream)
+// TODO(lebogg): Send evidence to evidence store (as stream)
 func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) (err error) {
 	var (
 		req *assessment.AssessEvidenceRequest
