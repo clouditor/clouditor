@@ -2,6 +2,7 @@ package evidences
 
 import (
 	"context"
+	"fmt"
 	"io"
 
 	"clouditor.io/clouditor/api/evidence"
@@ -17,6 +18,10 @@ var log *logrus.Entry
 type Service struct {
 	// Currently only in-memory
 	evidences map[string]*evidence.Evidence
+
+	// Hook
+	EvidenceHook []func(result *evidence.Evidence, err error)
+
 	evidence.UnimplementedEvidenceStoreServer
 }
 
@@ -40,11 +45,29 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 
 	_, err = e.Validate()
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid req: %v", err)
+		log.Errorf("Invalid evidence: %v", err)
+		newError := fmt.Errorf("invalid evidence: %w", err)
+
+		// Inform our hook, if we have any
+		if s.EvidenceHook != nil {
+			for _, hook := range s.EvidenceHook {
+				go hook(nil, newError)
+			}
+		}
+
+		return resp, status.Errorf(codes.InvalidArgument, "invalid req: %v", err)
 	}
 
 	s.evidences[e.Id] = e
 	resp.Status = true
+
+	// Inform our hook, if we have any
+	if s.EvidenceHook != nil {
+		for _, hook := range s.EvidenceHook {
+			go hook(e, nil)
+		}
+	}
+
 	return resp, err
 }
 
@@ -62,6 +85,13 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 			return stream.SendAndClose(&emptypb.Empty{})
 		}
 		s.evidences[e.Id] = e
+
+		// Inform our hook, if we have any
+		if s.EvidenceHook != nil {
+			for _, hook := range s.EvidenceHook {
+				go hook(e, nil)
+			}
+		}
 	}
 }
 
@@ -73,4 +103,8 @@ func (s *Service) ListEvidences(_ context.Context, _ *evidence.ListEvidencesRequ
 	}
 
 	return &evidence.ListEvidencesResponse{Evidences: listOfEvidences}, nil
+}
+
+func (s *Service) RegisterEvidenceHook(evidenceHook func(result *evidence.Evidence, err error)) {
+	s.EvidenceHook = append(s.EvidenceHook, evidenceHook)
 }

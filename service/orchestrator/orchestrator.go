@@ -30,6 +30,8 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"google.golang.org/protobuf/types/known/emptypb"
+	"io"
 	"io/ioutil"
 
 	"clouditor.io/clouditor/api/assessment"
@@ -58,6 +60,12 @@ type Service struct {
 	// metricConfigurations holds a double-map of metric configurations associated first by service ID and then metric ID
 	metricConfigurations map[string]map[string]*assessment.MetricConfiguration
 
+	// Currently only in-memory
+	Results map[string]*assessment.AssessmentResult
+
+	// Hook
+	AssessmentResultsHook []func(result *assessment.AssessmentResult, err error)
+
 	db *gorm.DB
 }
 
@@ -67,6 +75,7 @@ func init() {
 
 func NewService() *Service {
 	s := Service{
+		Results:              make(map[string]*assessment.AssessmentResult),
 		metricConfigurations: make(map[string]map[string]*assessment.MetricConfiguration),
 	}
 
@@ -183,6 +192,70 @@ func (s *Service) ListMetricConfigurations(ctx context.Context, req *orchestrato
 	}
 
 	return
+}
+
+// StoreAssessmentResult is a method implementation of the orchestrator interface: It receives an assessment result and stores it
+func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.StoreAssessmentResultRequest) (response *orchestrator.StoreAssessmentResultResponse, err error) {
+
+	response = &orchestrator.StoreAssessmentResultResponse{}
+
+	err = s.handleResult(req.Result)
+
+	if err != nil {
+		return response, status.Errorf(codes.InvalidArgument, "invalid assessment result: %v", err)
+	}
+
+	return
+}
+
+func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreAssessmentResultsServer) (err error) {
+	var result *assessment.AssessmentResult
+
+	for {
+		result, err = stream.Recv()
+		if err == io.EOF {
+			log.Infof("Stopped receiving streamed assessment results")
+			return stream.SendAndClose(&emptypb.Empty{})
+		}
+
+		err = s.handleResult(result)
+		if err != nil {
+			return fmt.Errorf("error handle assessment result: %w", err)
+		}
+	}
+
+}
+
+func (s Service) handleResult(result *assessment.AssessmentResult) error {
+	_, err := result.Validate()
+	if err != nil {
+		log.Errorf("Invalid assessment result: %v", err)
+		newError := fmt.Errorf("invalid assessment result: %w", err)
+
+		// Inform our hook, if we have any
+		if s.AssessmentResultsHook != nil {
+			for _, hook := range s.AssessmentResultsHook {
+				go hook(nil, newError)
+			}
+		}
+
+		return newError
+	}
+
+	s.Results[result.Id] = result
+
+	// Inform our hook, if we have any
+	if s.AssessmentResultsHook != nil {
+		for _, hook := range s.AssessmentResultsHook {
+			go hook(result, nil)
+		}
+	}
+
+	return nil
+}
+
+func (s *Service) RegisterAssessmentResultHook(hook func(result *assessment.AssessmentResult, err error)) {
+	s.AssessmentResultsHook = append(s.AssessmentResultsHook, hook)
 }
 
 //// Tools
