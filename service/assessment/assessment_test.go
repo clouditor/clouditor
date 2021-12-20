@@ -26,20 +26,23 @@
 package assessment
 
 import (
+	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/orchestrator"
+	orchestrator_service "clouditor.io/clouditor/service/orchestrator"
+	"clouditor.io/clouditor/voc"
 	"context"
+	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"io"
 	"os"
 	"reflect"
+	"runtime"
 	"testing"
-
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/voc"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/protobuf/types/known/structpb"
-	"google.golang.org/protobuf/types/known/timestamppb"
+	"time"
 )
 
 func TestMain(m *testing.M) {
@@ -148,7 +151,7 @@ func TestAssessEvidence(t *testing.T) {
 
 func TestService_AssessEvidences(t *testing.T) {
 	type fields struct {
-		ResultHook                    func(result *assessment.AssessmentResult, err error)
+		ResultHook                    []func(result *assessment.AssessmentResult, err error)
 		results                       map[string]*assessment.AssessmentResult
 		UnimplementedAssessmentServer assessment.UnimplementedAssessmentServer
 	}
@@ -197,6 +200,112 @@ func TestService_AssessEvidences(t *testing.T) {
 				t.Errorf("AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+		})
+	}
+}
+
+func TestAssessmentResultHook(t *testing.T) {
+	var (
+		hookCallCounter = 0
+		// Service needs to outlive the lifetime of the hook function
+		service = *orchestrator_service.NewService()
+	)
+
+	firstHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
+		hookCallCounter++
+		log.Println("Hello from inside the firstHookFunction")
+	}
+
+	secondHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
+		hookCallCounter++
+		log.Println("Hello from inside the secondHookFunction")
+	}
+
+	// TODO(garuppel): Delete that test after adding an additional test for assessment.Validate()
+	storeAssessmentResultToOrchestrator := func(result *assessment.AssessmentResult, err error) {
+
+		hookCallCounter++
+
+		if err != nil {
+			log.Println("error as input %w: ", err)
+			log.Infof("stop hook for storing assessment result")
+			return
+		}
+
+		_, err = service.StoreAssessmentResult(context.Background(), &orchestrator.StoreAssessmentResultRequest{
+			Result: result})
+
+		if err != nil {
+			log.Errorf("error storing assessment result in orchestrator: %v", err)
+		} else {
+			log.Infof("assessment result stored in orchestrator")
+		}
+	}
+
+	// Check GRPC call
+	type args struct {
+		in0                 context.Context
+		evidence            *assessment.AssessEvidenceRequest
+		resultHookFunctions []func(assessmentResult *assessment.AssessmentResult, err error)
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantResp *assessment.AssessEvidenceResponse
+		wantErr  bool
+	}{
+		{
+			name: "Store evidence to the map",
+			args: args{
+				in0: context.TODO(),
+				evidence: &assessment.AssessEvidenceRequest{
+					Evidence: &evidence.Evidence{
+						Id:        "MockEvidenceID",
+						ToolId:    "mock",
+						Timestamp: timestamppb.Now(),
+						Resource: toStruct(voc.VirtualMachine{
+							Compute: &voc.Compute{
+								CloudResource: &voc.CloudResource{
+									ID:   "my-resource-id",
+									Type: []string{"VirtualMachine"}},
+							},
+						}, t),
+					}},
+				resultHookFunctions: []func(assessmentResult *assessment.AssessmentResult, err error){storeAssessmentResultToOrchestrator, firstHookFunction, secondHookFunction},
+			},
+			wantErr:  false,
+			wantResp: &assessment.AssessEvidenceResponse{Status: true},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			hookCallCounter = 0
+			s := NewService()
+
+			for i, hookFunction := range tt.args.resultHookFunctions {
+				s.RegisterAssessmentResultHook(hookFunction)
+
+				// Check if hook is registered
+				funcName1 := runtime.FuncForPC(reflect.ValueOf(s.ResultHook[i]).Pointer()).Name()
+				funcName2 := runtime.FuncForPC(reflect.ValueOf(hookFunction).Pointer()).Name()
+				assert.Equal(t, funcName1, funcName2)
+			}
+
+			gotResp, err := s.AssessEvidence(tt.args.in0, tt.args.evidence)
+
+			// That isn´t nice, but we have somehow to wait for the hook functions
+			time.Sleep(3 * time.Second)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("StoreAssessmentResult() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotResp, tt.wantResp) {
+				t.Errorf("StoreAssessmentResult() gotResp = %v, want %v", gotResp, tt.wantResp)
+			}
+			assert.NotEmpty(t, s.results)
+			assert.Equal(t, 18, hookCallCounter) //
 		})
 	}
 }

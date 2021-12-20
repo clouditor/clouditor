@@ -94,8 +94,8 @@ var server *grpc.Server
 var authService *service_auth.Service
 var discoveryService *service_discovery.Service
 var orchestratorService *service_orchestrator.Service
-var assessmentService assessment.AssessmentServer
-var evidenceStoreService evidence.EvidenceStoreServer
+var assessmentService *service_assessment.Service
+var evidenceStoreService *service_evidenceStore.Service
 
 var log *logrus.Entry
 
@@ -177,6 +177,26 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	orchestratorService = service_orchestrator.NewService()
 	assessmentService = service_assessment.NewService()
 	evidenceStoreService = service_evidenceStore.NewService()
+
+	// It is possible to register hook functions for the orchestrator, evidenceStore and assessment service.
+	// The hook functions in orchestrator are implemented in StoreAssessmentResult(s)
+	// The hook functions in evidenceStore are implemented in StoreEvidence(s)
+	// The hook functions in assessment are implemented in AssessEvidence(s)
+
+	// orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {})
+	// evidenceStoreService.RegisterEvidenceHook(func(result *evidence.Evidence, err error) {})
+	assessmentService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
+
+		if err != nil {
+			return
+		}
+		_, err = orchestratorService.StoreAssessmentResult(context.Background(), &orchestrator.StoreAssessmentResultRequest{
+			Result: result})
+
+		if err != nil {
+			log.Errorf("error storing assessment result in orchestrator: %v", err)
+		}
+	})
 
 	authService.CreateDefaultUser(viper.GetString(APIDefaultUserFlag), viper.GetString(APIDefaultPasswordFlag))
 
