@@ -16,7 +16,16 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.16
+          go-version: 1.17
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+        if: github.ref != 'refs/heads/main'
       - name: Install Protoc
         uses: arduino/setup-protoc@v1
       - name: Generate
@@ -24,13 +33,15 @@ jobs:
           go install google.golang.org/protobuf/cmd/protoc-gen-go \
           google.golang.org/grpc/cmd/protoc-gen-go-grpc \
           github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
-          github.com/googleapis/gnostic/apps/protoc-gen-openapi
+          github.com/google/gnostic/apps/protoc-gen-openapi
           go generate ./...
       - name: Build
         run: |
-          go test -v -coverprofile=coverage.cov -coverpkg ./... -covermode=atomic ./...
           mkdir -p build
           go build -o build ./...
+      - name: Test
+        run: |
+          go test -v -coverprofile=coverage.cov -coverpkg ./... -covermode=atomic ./...
       - uses: codecov/codecov-action@v2.1.0
         with:
           files: coverage.cov

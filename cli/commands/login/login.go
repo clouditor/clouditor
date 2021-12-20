@@ -60,7 +60,7 @@ func NewLoginCommand() *cobra.Command {
 			}
 
 			if viper.GetString("username") == "" || viper.GetString("password") == "" {
-				if req, err = cli.PromtForLogin(); err != nil {
+				if req, err = cli.PromptForLogin(); err != nil {
 					return fmt.Errorf("could not prompt for password: %w", err)
 				}
 			} else {

@@ -26,13 +26,14 @@
 package rest
 
 import (
-	"clouditor.io/clouditor/api/evidence"
 	"context"
 	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
+
+	"clouditor.io/clouditor/api/evidence"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/auth"
@@ -41,6 +42,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 var log *logrus.Entry
@@ -57,7 +59,7 @@ func RunServer(ctx context.Context, grpcPort int, httpPort int) error {
 
 	mux := runtime.NewServeMux()
 
-	opts := []grpc.DialOption{grpc.WithInsecure()}
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 	if err := auth.RegisterAuthenticationHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), opts); err != nil {
 		return fmt.Errorf("failed to connect to authentication gRPC service %w", err)

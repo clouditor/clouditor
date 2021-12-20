@@ -85,7 +85,7 @@ message AssessmentResult {
   string metric_id = 3;
 
   // Data corresponding to the metric by the given metric id
-  MetricConfiguration metric_data = 4;
+  MetricConfiguration metric_configuration = 4;
 
   // Compliant case: true or false
   bool compliant = 5;
