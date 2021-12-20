@@ -100,6 +100,7 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 				log.Infof("Stopped receiving streamed evidences")
 				return stream.SendAndClose(&emptypb.Empty{})
 			}
+
 			return err
 		}
 
