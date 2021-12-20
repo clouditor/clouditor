@@ -23,52 +23,44 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package evidence
+package assessment
 
 import "errors"
 
 var (
-	ErrNotValidResource    = errors.New("resource in evidence is not a map")
-	ErrResourceNotStruct   = errors.New("resource in evidence is not struct value")
-	ErrResourceNotMap      = errors.New("resource in evidence is not a map")
-	ErrResourceIdMissing   = errors.New("resource in evidence is missing the id field")
-	ErrResourceIdNotString = errors.New("resource id in evidence is not a string")
-	ErrToolIdMissing       = errors.New("tool id in evidence is missing")
-	ErrTimestampMissing    = errors.New("timestamp in evidence is missing")
+	ErrTimestampMissing             = errors.New("timestamp in assessment result is missing")
+	ErrMetricIdMissing              = errors.New("metric id in assessment result is missing")
+	ErrMetricDataMissing            = errors.New("metric data in assessment result is missing")
+	ErrEvidenceIdMissing            = errors.New("evidence id in assessment result is missing")
+	ErrNonComplianceCommentsMissing = errors.New("non-compliance comments in assessment result is missing")
+	ErrMetricDataOperatorMissing    = errors.New("operator in metric data is missing")
+	ErrMetricDataTargetValueMissing = errors.New("target value in metric data is missing")
 )
 
-// Validate validates the evidence according to several required fields
-func (evidence *Evidence) Validate() (resourceId string, err error) {
-	if evidence.Resource == nil {
-		return "", ErrNotValidResource
-	}
-
-	value := evidence.Resource.GetStructValue()
-	if value == nil {
-		return "", ErrResourceNotStruct
-	}
-
-	m := evidence.Resource.GetStructValue().AsMap()
-	if m == nil {
-		return "", ErrResourceNotMap
-	}
-
-	field, ok := m["id"]
-	if !ok {
-		return "", ErrResourceIdMissing
-	}
-
-	resourceId, ok = field.(string)
-	if !ok {
-		return "", ErrResourceIdNotString
-	}
-
-	if evidence.ToolId == "" {
-		return "", ErrToolIdMissing
-	}
-
-	if evidence.Timestamp == nil {
+// Validate validates the assessment result according to several required fields
+func (result *AssessmentResult) Validate() (resourceId string, err error) {
+	if result.Timestamp == nil {
 		return "", ErrTimestampMissing
+	}
+
+	if result.MetricId == "" {
+		return "", ErrMetricIdMissing
+	}
+
+	if result.MetricConfiguration == nil {
+		return "", ErrMetricDataMissing
+	}
+
+	if result.MetricConfiguration.Operator == "" {
+		return "", ErrMetricDataOperatorMissing
+	}
+
+	if result.MetricConfiguration.TargetValue == nil {
+		return "", ErrMetricDataTargetValueMissing
+	}
+
+	if result.EvidenceId == "" {
+		return "", ErrEvidenceIdMissing
 	}
 
 	return
