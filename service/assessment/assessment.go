@@ -132,8 +132,8 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 
 	evaluations, err := policies.RunEvidence(evidence)
 	if err != nil {
-		log.Errorf("Could not evaluate evidence: %v", err)
 		newError := fmt.Errorf("could not evaluate evidence: %w", err)
+		log.Errorf(newError.Error())
 
 		// Inform our hook, if we have any
 		if s.ResultHook != nil {
