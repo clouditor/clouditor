@@ -229,8 +229,6 @@ func TestAssessmentResultHook(t *testing.T) {
 
 		if err != nil {
 			fmt.Errorf("error as input %w: ", err)
-			fmt.Println("Stop hook for storing assessment result")
-			return
 		}
 
 		_, err = service.StoreAssessmentResult(context.Background(), &orchestrator.StoreAssessmentResultRequest{
@@ -238,8 +236,6 @@ func TestAssessmentResultHook(t *testing.T) {
 
 		if err != nil {
 			fmt.Errorf("error storing assessment result in orchestrator: %w", err)
-		} else {
-			fmt.Println("Assessment result stored in orchestrator")
 		}
 	}
 
