@@ -167,7 +167,7 @@ func TestAssessmentResultHook(t *testing.T) {
 			if !reflect.DeepEqual(gotResp, tt.wantResp) {
 				t.Errorf("StoreAssessmentResult() gotResp = %v, want %v", gotResp, tt.wantResp)
 			}
-			assert.NotEmpty(t, s.Results)
+			assert.NotEmpty(t, s.results)
 			assert.Equal(t, 2, hookCallCounter)
 		})
 	}
@@ -288,9 +288,9 @@ func TestStoreAssessmentResult(t *testing.T) {
 			}
 
 			if err == nil {
-				assert.NotNil(t, s.Results["assessmentResultID"])
+				assert.NotNil(t, s.results["assessmentResultID"])
 			} else {
-				assert.Empty(t, s.Results)
+				assert.Empty(t, s.results)
 			}
 		})
 	}
@@ -318,7 +318,7 @@ func TestStoreAssessmentResults(t *testing.T) {
 			s := NewService()
 			if err := s.StoreAssessmentResults(tt.args.stream); (err != nil) != tt.wantErr {
 				t.Errorf("StoreAssessmentResults() error = %v, wantErr %v", err, tt.wantErr)
-				assert.Equal(t, 2, len(s.Results))
+				assert.Equal(t, 2, len(s.results))
 			}
 		})
 	}
