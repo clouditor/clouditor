@@ -47,15 +47,15 @@ func (result *AssessmentResult) Validate() (resourceId string, err error) {
 		return "", ErrMetricIdMissing
 	}
 
-	if result.MetricData == nil {
+	if result.MetricConfiguration == nil {
 		return "", ErrMetricDataMissing
 	}
 
-	if result.MetricData.Operator == "" {
+	if result.MetricConfiguration.Operator == "" {
 		return "", ErrMetricDataOperatorMissing
 	}
 
-	if result.MetricData.TargetValue == nil {
+	if result.MetricConfiguration.TargetValue == nil {
 		return "", ErrMetricDataTargetValueMissing
 	}
 

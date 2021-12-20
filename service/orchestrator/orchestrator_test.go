@@ -126,7 +126,7 @@ func TestAssessmentResultHook(t *testing.T) {
 						MetricId:   "assessmentResultMetricID",
 						EvidenceId: "evidenceID",
 						Timestamp:  timestamppb.Now(),
-						MetricData: &assessment.MetricConfiguration{
+						MetricConfiguration: &assessment.MetricConfiguration{
 							TargetValue: toStruct(1.0),
 							Operator:    "operator",
 							IsDefault:   true,
@@ -238,7 +238,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 						MetricId:   "assessmentResultMetricID",
 						EvidenceId: "evidenceID",
 						Timestamp:  timestamppb.Now(),
-						MetricData: &assessment.MetricConfiguration{
+						MetricConfiguration: &assessment.MetricConfiguration{
 							TargetValue: toStruct(1.0),
 							Operator:    "operator",
 							IsDefault:   true,
@@ -261,7 +261,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 						Id:         "assessmentResultID",
 						EvidenceId: "evidenceID",
 						Timestamp:  timestamppb.Now(),
-						MetricData: &assessment.MetricConfiguration{
+						MetricConfiguration: &assessment.MetricConfiguration{
 							TargetValue: toStruct(1.0),
 							Operator:    "operator",
 							IsDefault:   true,
@@ -352,7 +352,7 @@ func (m *mockStreamer) Recv() (*assessment.AssessmentResult, error) {
 			MetricId:   "assessmentResultMetricID",
 			EvidenceId: "evidenceID",
 			Timestamp:  timestamppb.Now(),
-			MetricData: &assessment.MetricConfiguration{
+			MetricConfiguration: &assessment.MetricConfiguration{
 				TargetValue: toStruct(1.0),
 				Operator:    "operator",
 				IsDefault:   true,
@@ -368,7 +368,7 @@ func (m *mockStreamer) Recv() (*assessment.AssessmentResult, error) {
 			MetricId:   "assessmentResultMetricID2",
 			EvidenceId: "evidenceID2",
 			Timestamp:  timestamppb.Now(),
-			MetricData: &assessment.MetricConfiguration{
+			MetricConfiguration: &assessment.MetricConfiguration{
 				TargetValue: toStruct(1.0),
 				Operator:    "operator2",
 				IsDefault:   false,
