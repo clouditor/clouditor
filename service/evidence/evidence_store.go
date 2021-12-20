@@ -20,7 +20,7 @@ type Service struct {
 	evidences map[string]*evidence.Evidence
 
 	// Hook
-	EvidenceHook []func(result *evidence.Evidence, err error)
+	evidenceHook []func(result *evidence.Evidence, err error)
 
 	evidence.UnimplementedEvidenceStoreServer
 }
@@ -48,12 +48,7 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 		log.Errorf("Invalid evidence: %v", err)
 		newError := fmt.Errorf("invalid evidence: %w", err)
 
-		// Inform our hook, if we have any
-		if s.EvidenceHook != nil {
-			for _, hook := range s.EvidenceHook {
-				go hook(nil, newError)
-			}
-		}
+		s.informHook(nil, newError)
 
 		return resp, status.Errorf(codes.InvalidArgument, "invalid req: %v", err)
 	}
@@ -61,12 +56,7 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 	s.evidences[e.Id] = e
 	resp.Status = true
 
-	// Inform our hook, if we have any
-	if s.EvidenceHook != nil {
-		for _, hook := range s.EvidenceHook {
-			go hook(e, nil)
-		}
-	}
+	s.informHook(e, nil)
 
 	return resp, err
 }
@@ -86,12 +76,7 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 		}
 		s.evidences[e.Id] = e
 
-		// Inform our hook, if we have any
-		if s.EvidenceHook != nil {
-			for _, hook := range s.EvidenceHook {
-				go hook(e, nil)
-			}
-		}
+		s.informHook(e, nil)
 	}
 }
 
@@ -106,5 +91,14 @@ func (s *Service) ListEvidences(_ context.Context, _ *evidence.ListEvidencesRequ
 }
 
 func (s *Service) RegisterEvidenceHook(evidenceHook func(result *evidence.Evidence, err error)) {
-	s.EvidenceHook = append(s.EvidenceHook, evidenceHook)
+	s.evidenceHook = append(s.evidenceHook, evidenceHook)
+}
+
+func (s Service) informHook(result *evidence.Evidence, err error) {
+	// Inform our hook, if we have any
+	if s.evidenceHook != nil {
+		for _, hook := range s.evidenceHook {
+			go hook(result, err)
+		}
+	}
 }
