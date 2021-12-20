@@ -27,6 +27,7 @@ package assessment
 
 import (
 	"context"
+	"fmt"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"io"
@@ -71,6 +72,78 @@ func TestNewService(t *testing.T) {
 			if got := NewService(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewService() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestStart(t *testing.T) {
+	type fields struct {
+		UnimplementedAssessmentServer assessment.UnimplementedAssessmentServer
+		evidenceStoreStream           evidence.EvidenceStore_StoreEvidencesClient
+		ResultHook                    func(result *assessment.AssessmentResult, err error)
+		results                       map[string]*assessment.AssessmentResult
+		Configuration
+	}
+	type args struct {
+		in0 context.Context
+		in1 *assessment.StartAssessmentRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *assessment.StartAssessmentResponse
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "dial-error",
+			fields: fields{
+				UnimplementedAssessmentServer: assessment.UnimplementedAssessmentServer{},
+				// Setting invalid target causes grpc.dial to fail
+				Configuration: Configuration{evidenceStoreTargetAddress: "\n"},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.NotNil(t, err)
+			},
+		},
+		{
+			name: "evidenceStoreStream-error",
+			fields: fields{
+				UnimplementedAssessmentServer: assessment.UnimplementedAssessmentServer{},
+				// Target is valid but causes `StoreEvidences` to fail with "missing address"
+				Configuration: Configuration{evidenceStoreTargetAddress: ""},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.NotNil(t, err)
+			},
+		},
+		// TODO(lebogg): Test valid case. Have to mock evidenceStore component somehow
+		//{
+		//	name: "valid",
+		//	fields: fields{
+		//		UnimplementedAssessmentServer: assessment.UnimplementedAssessmentServer{},
+		//		Configuration:                 Configuration{evidenceStoreTargetAddress: "localhost:9090"},
+		//	},
+		//	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+		//		fmt.Print(err)
+		//		return assert.Nil(t, err)
+		//	},
+		//},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := Service{
+				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
+				evidenceStoreStream:           tt.fields.evidenceStoreStream,
+				ResultHook:                    tt.fields.ResultHook,
+				results:                       tt.fields.results,
+				Configuration:                 tt.fields.Configuration,
+			}
+			got, err := s.Start(tt.args.in0, tt.args.in1)
+			if !tt.wantErr(t, err, fmt.Sprintf("Start(%v, %v)", tt.args.in0, tt.args.in1)) {
+				return
+			}
+			assert.Equalf(t, tt.want, got, "Start(%v, %v)", tt.args.in0, tt.args.in1)
 		})
 	}
 }
