@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package cloud_test
+package cloud
 
 import (
 	"bytes"
@@ -36,7 +36,6 @@ import (
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/cli/commands/cloud"
 	"clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
@@ -104,7 +103,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestNewCloudCommand(t *testing.T) {
-	cmd := cloud.NewCloudCommand()
+	cmd := NewCloudCommand()
 
 	assert.NotNil(t, cmd)
 	assert.True(t, cmd.HasSubCommands())
@@ -117,7 +116,7 @@ func TestRegisterCloudServiceCommand(t *testing.T) {
 
 	cli.Output = &b
 
-	cmd := cloud.NewRegisterCloudServiceCommand()
+	cmd := NewRegisterCloudServiceCommand()
 	err = cmd.RunE(nil, []string{"not_default"})
 
 	assert.Nil(t, err)
@@ -135,7 +134,7 @@ func TestListCloudServicesCommand(t *testing.T) {
 
 	cli.Output = &b
 
-	cmd := cloud.NewListCloudServicesCommand()
+	cmd := NewListCloudServicesCommand()
 	err = cmd.RunE(nil, []string{})
 
 	assert.Nil(t, err)
@@ -153,7 +152,7 @@ func TestGetCloudServiceCommand(t *testing.T) {
 
 	cli.Output = &b
 
-	cmd := cloud.NewGetCloudServiceComand()
+	cmd := NewGetCloudServiceComand()
 	err = cmd.RunE(nil, []string{target.Id})
 
 	assert.Nil(t, err)
@@ -171,7 +170,7 @@ func TestRemoveCloudServicesCommand(t *testing.T) {
 
 	cli.Output = &b
 
-	cmd := cloud.NewRemoveCloudServiceComand()
+	cmd := NewRemoveCloudServiceComand()
 	err = cmd.RunE(nil, []string{target.Id})
 
 	assert.Nil(t, err)
@@ -196,7 +195,7 @@ func TestUpdateCloudServiceCommand(t *testing.T) {
 	viper.Set("id", target.Id)
 	viper.Set("name", "not_default")
 
-	cmd := cloud.NewUpdateCloudServiceCommand()
+	cmd := NewUpdateCloudServiceCommand()
 	err = cmd.RunE(nil, []string{})
 
 	assert.Nil(t, err)
@@ -223,7 +222,7 @@ func TestGetMetricConfiguration(t *testing.T) {
 	assert.NotNil(t, target)
 	assert.Nil(t, err)
 
-	cmd := cloud.NewGetMetricConfigurationCommand()
+	cmd := NewGetMetricConfigurationCommand()
 	err = cmd.RunE(nil, []string{target.Id, "TransportEncryptionEnabled"})
 
 	assert.Nil(t, err)
