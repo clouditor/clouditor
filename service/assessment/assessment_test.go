@@ -310,7 +310,7 @@ func TestAssessmentResultHook(t *testing.T) {
 	}
 }
 
-func TestListAssessmentResults(t *testing.T) {
+func TestService_ListAssessmentResults(t *testing.T) {
 	s := NewService()
 	_, err := s.AssessEvidence(context.TODO(), &assessment.AssessEvidenceRequest{
 		Evidence: &evidence.Evidence{
