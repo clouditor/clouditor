@@ -19,8 +19,9 @@ type Service struct {
 	// Currently only in-memory
 	evidences map[string]*evidence.Evidence
 
-	// Hook
-	evidenceHook []func(result *evidence.Evidence, err error)
+	// evidenceHooks is a list of hook functions that can be used if one wants to be
+	// informed about each evidence
+	evidenceHooks []func(result *evidence.Evidence, err error)
 
 	evidence.UnimplementedEvidenceStoreServer
 }
@@ -86,14 +87,14 @@ func (s *Service) handleEvidence(e *evidence.Evidence) (err error) {
 		log.Errorf("Invalid evidence: %v", err)
 		newError := fmt.Errorf("invalid evidence: %w", err)
 
-		s.informHook(nil, newError)
+		s.informHooks(nil, newError)
 
 		return
 	}
 
 	s.evidences[e.Id] = e
 
-	s.informHook(e, nil)
+	s.informHooks(e, nil)
 
 	return
 }
@@ -109,13 +110,13 @@ func (s *Service) ListEvidences(_ context.Context, _ *evidence.ListEvidencesRequ
 }
 
 func (s *Service) RegisterEvidenceHook(evidenceHook func(result *evidence.Evidence, err error)) {
-	s.evidenceHook = append(s.evidenceHook, evidenceHook)
+	s.evidenceHooks = append(s.evidenceHooks, evidenceHook)
 }
 
-func (s Service) informHook(result *evidence.Evidence, err error) {
+func (s Service) informHooks(result *evidence.Evidence, err error) {
 	// Inform our hook, if we have any
-	if s.evidenceHook != nil {
-		for _, hook := range s.evidenceHook {
+	if s.evidenceHooks != nil {
+		for _, hook := range s.evidenceHooks {
 			go hook(result, err)
 		}
 	}

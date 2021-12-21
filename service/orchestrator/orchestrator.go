@@ -238,14 +238,14 @@ func (s Service) handleResult(result *assessment.AssessmentResult) (err error) {
 		log.Errorf("Invalid assessment result: %v", err)
 		newError := fmt.Errorf("invalid assessment result: %w", err)
 
-		s.informHook(nil, newError)
+		s.informHooks(nil, newError)
 
 		return
 	}
 
 	s.Results[result.Id] = result
 
-	s.informHook(result, nil)
+	s.informHooks(result, nil)
 
 	return
 }
@@ -254,7 +254,7 @@ func (s *Service) RegisterAssessmentResultHook(hook func(result *assessment.Asse
 	s.AssessmentResultsHook = append(s.AssessmentResultsHook, hook)
 }
 
-func (s Service) informHook(result *assessment.AssessmentResult, err error) {
+func (s Service) informHooks(result *assessment.AssessmentResult, err error) {
 	// Inform our hook, if we have any
 	if s.AssessmentResultsHook != nil {
 		for _, hook := range s.AssessmentResultsHook {

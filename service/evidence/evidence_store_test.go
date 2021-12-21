@@ -194,12 +194,12 @@ func TestEvidenceHook(t *testing.T) {
 	service.RegisterEvidenceHook(secondHookFunction)
 
 	// Check if first hook is registered
-	funcName1 := runtime.FuncForPC(reflect.ValueOf(service.evidenceHook[0]).Pointer()).Name()
+	funcName1 := runtime.FuncForPC(reflect.ValueOf(service.evidenceHooks[0]).Pointer()).Name()
 	funcName2 := runtime.FuncForPC(reflect.ValueOf(firstHookFunction).Pointer()).Name()
 	assert.Equal(t, funcName1, funcName2)
 
 	// Check if second hook is registered
-	funcName1 = runtime.FuncForPC(reflect.ValueOf(service.evidenceHook[1]).Pointer()).Name()
+	funcName1 = runtime.FuncForPC(reflect.ValueOf(service.evidenceHooks[1]).Pointer()).Name()
 	funcName2 = runtime.FuncForPC(reflect.ValueOf(secondHookFunction).Pointer()).Name()
 	assert.Equal(t, funcName1, funcName2)
 
