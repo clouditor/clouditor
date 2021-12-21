@@ -151,8 +151,8 @@ func TestAssessEvidence(t *testing.T) {
 
 func TestService_AssessEvidences(t *testing.T) {
 	type fields struct {
-		ResultHooks []func(result *assessment.AssessmentResult, err error)
-		results     map[string]*assessment.AssessmentResult
+		ResultHooks                   []func(result *assessment.AssessmentResult, err error)
+		results                       map[string]*assessment.AssessmentResult
 		UnimplementedAssessmentServer assessment.UnimplementedAssessmentServer
 	}
 	type args struct {
@@ -244,7 +244,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 
 	// Check GRPC call
 	type args struct {
-		in0                 context.Context
+		in0         context.Context
 		evidence    *assessment.AssessEvidenceRequest
 		resultHooks []func(assessmentResult *assessment.AssessmentResult, err error)
 	}
