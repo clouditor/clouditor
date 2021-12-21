@@ -173,6 +173,14 @@ func TestQuery(t *testing.T) {
 
 }
 
+func TestShutdown(t *testing.T) {
+	service := NewService()
+	service.Shutdown()
+
+	assert.False(t, service.scheduler.IsRunning())
+
+}
+
 // mockDiscoverer implements Discoverer and mocks the API to cloud resources
 type mockDiscoverer struct {
 	// testCase allows for different implementations for table tests in TestStartDiscovery
