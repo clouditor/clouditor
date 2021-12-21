@@ -61,7 +61,7 @@ type Service struct {
 	metricConfigurations map[string]map[string]*assessment.MetricConfiguration
 
 	// Currently only in-memory
-	Results map[string]*assessment.AssessmentResult
+	results map[string]*assessment.AssessmentResult
 
 	// Hook
 	AssessmentResultsHook []func(result *assessment.AssessmentResult, err error)
@@ -75,7 +75,7 @@ func init() {
 
 func NewService() *Service {
 	s := Service{
-		Results:              make(map[string]*assessment.AssessmentResult),
+		results:              make(map[string]*assessment.AssessmentResult),
 		metricConfigurations: make(map[string]map[string]*assessment.MetricConfiguration),
 	}
 
@@ -243,7 +243,7 @@ func (s Service) handleResult(result *assessment.AssessmentResult) (err error) {
 		return
 	}
 
-	s.Results[result.Id] = result
+	s.results[result.Id] = result
 
 	s.informHook(result, nil)
 
