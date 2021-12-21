@@ -64,7 +64,7 @@ type Service struct {
 	Results map[string]*assessment.AssessmentResult
 
 	// Hook
-	AssessmentResultsHook []func(result *assessment.AssessmentResult, err error)
+	AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 
 	db *gorm.DB
 }
@@ -226,7 +226,7 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 
 		err = s.handleResult(result)
 		if err != nil {
-			return status.Errorf(codes.Internal, "Error while handling assessment result: %v", err)
+			return status.Errorf(codes.Internal, "error while handling assessment result: %v", err)
 		}
 	}
 
@@ -251,13 +251,13 @@ func (s Service) handleResult(result *assessment.AssessmentResult) (err error) {
 }
 
 func (s *Service) RegisterAssessmentResultHook(hook func(result *assessment.AssessmentResult, err error)) {
-	s.AssessmentResultsHook = append(s.AssessmentResultsHook, hook)
+	s.AssessmentResultHooks = append(s.AssessmentResultHooks, hook)
 }
 
 func (s Service) informHook(result *assessment.AssessmentResult, err error) {
 	// Inform our hook, if we have any
-	if s.AssessmentResultsHook != nil {
-		for _, hook := range s.AssessmentResultsHook {
+	if s.AssessmentResultHooks != nil {
+		for _, hook := range s.AssessmentResultHooks {
 			go hook(result, err)
 		}
 	}

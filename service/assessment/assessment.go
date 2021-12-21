@@ -52,9 +52,9 @@ Service is an implementation of the Clouditor Assessment service. It should not 
 NewService constructor should be used. It implements the AssessmentServer interface
 */
 type Service struct {
-	// resultHook is a hook function that can be used if one wants to be
+	// resultHooks is a hook function that can be used if one wants to be
 	// informed about each assessment result
-	resultHook []func(result *assessment.AssessmentResult, err error)
+	resultHooks []func(result *assessment.AssessmentResult, err error)
 
 	results map[string]*assessment.AssessmentResult
 	assessment.UnimplementedAssessmentServer
@@ -171,8 +171,8 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 
 func (s Service) informHook(result *assessment.AssessmentResult, err error) {
 	// Inform our hook, if we have any
-	if s.resultHook != nil {
-		for _, hook := range s.resultHook {
+	if s.resultHooks != nil {
+		for _, hook := range s.resultHooks {
 			go hook(result, err)
 		}
 	}
@@ -191,5 +191,5 @@ func (s Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAsse
 }
 
 func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result *assessment.AssessmentResult, err error)) {
-	s.resultHook = append(s.resultHook, assessmentResultsHook)
+	s.resultHooks = append(s.resultHooks, assessmentResultsHook)
 }
