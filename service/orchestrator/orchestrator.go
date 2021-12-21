@@ -64,7 +64,7 @@ type Service struct {
 	results map[string]*assessment.AssessmentResult
 
 	// Hook
-	AssessmentResultsHook []assessment.ResultHookFunc
+	AssessmentResultHooks []assessment.ResultHookFunc
 
 	db *gorm.DB
 }
@@ -251,13 +251,13 @@ func (s Service) handleResult(result *assessment.AssessmentResult) (err error) {
 }
 
 func (s *Service) RegisterAssessmentResultHook(hook func(result *assessment.AssessmentResult, err error)) {
-	s.AssessmentResultsHook = append(s.AssessmentResultsHook, hook)
+	s.AssessmentResultHooks = append(s.AssessmentResultHooks, hook)
 }
 
 func (s Service) informHooks(result *assessment.AssessmentResult, err error) {
 	// Inform our hook, if we have any
-	if s.AssessmentResultsHook != nil {
-		for _, hook := range s.AssessmentResultsHook {
+	if s.AssessmentResultHooks != nil {
+		for _, hook := range s.AssessmentResultHooks {
 			go hook(result, err)
 		}
 	}
