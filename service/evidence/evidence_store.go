@@ -39,19 +39,22 @@ func init() {
 // StoreEvidence is a method implementation of the evidenceServer interface: It receives an req and stores it
 func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRequest) (resp *evidence.StoreEvidenceResponse, err error) {
 
-	// Check if evidence is valid and inform hook. If not, return status error with code InvalidArgument
-	resp, err = s.validateEvidence(req.Evidence)
+	_, err = req.Evidence.Validate()
 	if err != nil {
-		return resp, err
-	}
+		log.Errorf("Invalid evidence: %v", err)
+		newError := fmt.Errorf("invalid evidence: %w", err)
 
-	err = s.handleEvidence(req.GetEvidence())
-	if err != nil {
+		s.informHooks(nil, newError)
+
 		resp = &evidence.StoreEvidenceResponse{
 			Status: false,
 		}
-		return resp, status.Errorf(codes.Internal, "error while handling evidence: %v", err)
+
+		return resp, status.Errorf(codes.InvalidArgument, "invalid req: %v", err)
 	}
+
+	s.evidences[req.Evidence.Id] = req.Evidence
+	s.informHooks(req.Evidence, nil)
 
 	resp = &evidence.StoreEvidenceResponse{
 		Status: true,
@@ -77,46 +80,15 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 			return err
 		}
 
-		// Check if evidence is valid and inform hook. If not, return status error with code InvalidArgument
-		_, err = s.validateEvidence(req.Evidence)
+		// Call StoreEvidence()
+		evidenceRequest := &evidence.StoreEvidenceRequest{
+			Evidence: req.Evidence,
+		}
+		_, err = s.StoreEvidence(context.Background(), evidenceRequest)
 		if err != nil {
 			return err
 		}
-
-		err = s.handleEvidence(req.GetEvidence())
-		if err != nil {
-			return status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
-		}
 	}
-}
-
-//validateEvidence checks if evidence is valid, informs the hook function and created the status error.
-func (s *Service) validateEvidence(e *evidence.Evidence) (resp *evidence.StoreEvidenceResponse, err error) {
-	_, err = e.Validate()
-	if err != nil {
-		log.Errorf("Invalid evidence: %v", err)
-		newError := fmt.Errorf("invalid evidence: %w", err)
-
-		s.informHooks(nil, newError)
-
-		resp = &evidence.StoreEvidenceResponse{
-			Status: false,
-		}
-
-		return resp, status.Errorf(codes.InvalidArgument, "invalid req: %v", err)
-	} else {
-		resp = &evidence.StoreEvidenceResponse{}
-
-		return resp, nil
-	}
-
-}
-
-func (s *Service) handleEvidence(e *evidence.Evidence) (err error) {
-	s.evidences[e.Id] = e
-	s.informHooks(e, nil)
-
-	return
 }
 
 // ListEvidences is a method implementation of the evidenceServer interface: It returns the evidences lying in the req storage
