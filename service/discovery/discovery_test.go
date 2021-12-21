@@ -28,6 +28,7 @@ package discovery
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
 
@@ -39,6 +40,46 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
+
+func TestStart(t *testing.T) {
+	discoveryService := NewService()
+
+	type args struct {
+		in0                 context.Context
+		startDiscoveryRequest *discovery.StartDiscoveryRequest
+	}
+
+	tests := []struct {
+		name          string
+		args args
+		wantResp *discovery.StartDiscoveryResponse
+		wantErr bool
+	}{
+		{
+			name: "Start discovery without error",
+			args: args{
+				in0: context.Background(),
+				startDiscoveryRequest: &discovery.StartDiscoveryRequest{},
+			},
+			wantResp: &discovery.StartDiscoveryResponse{Successful: true},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			gotResp, err := discoveryService.Start(tt.args.in0, tt.args.startDiscoveryRequest)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Start() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotResp, tt.wantResp) {
+				t.Errorf("Start() gotResp = %v, want %v", gotResp, tt.wantResp)
+			}
+		})
+	}
+}
 
 func TestStartDiscovery(t *testing.T) {
 	discoveryService := NewService()
