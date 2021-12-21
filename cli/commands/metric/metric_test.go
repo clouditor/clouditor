@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package metric_test
+package metric
 
 import (
 	"bytes"
@@ -36,7 +36,6 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
-	"clouditor.io/clouditor/cli/commands/metric"
 	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
@@ -103,7 +102,7 @@ func TestListMetrics(t *testing.T) {
 
 	cli.Output = &b
 
-	cmd := metric.NewListMetricsCommand()
+	cmd := NewListMetricsCommand()
 	err = cmd.RunE(nil, []string{})
 
 	assert.Nil(t, err)
@@ -123,7 +122,7 @@ func TestGetMetric(t *testing.T) {
 
 	cli.Output = &b
 
-	cmd := metric.NewGetMetricCommand()
+	cmd := NewGetMetricCommand()
 	err = cmd.RunE(nil, []string{"TransportEncryptionEnabled"})
 
 	assert.Nil(t, err)
