@@ -1,11 +1,10 @@
-package orchestrator_test
+package orchestrator
 
 import (
 	"context"
 	"testing"
 
 	"clouditor.io/clouditor/api/orchestrator"
-	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -96,9 +95,9 @@ func TestGetCloudService(t *testing.T) {
 			"valid",
 			&orchestrator.GetCloudServiceRequest{ServiceId: defaultTarget.Id},
 			&orchestrator.CloudService{
-				Id:          service_orchestrator.DefaultTargetCloudServiceId,
-				Name:        service_orchestrator.DefaultTargetCloudServiceName,
-				Description: service_orchestrator.DefaultTargetCloudServiceDescription,
+				Id:          DefaultTargetCloudServiceId,
+				Name:        DefaultTargetCloudServiceName,
+				Description: DefaultTargetCloudServiceDescription,
 			},
 			nil,
 		},
