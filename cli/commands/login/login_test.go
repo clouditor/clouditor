@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package login_test
+package login
 
 import (
 	"fmt"
@@ -32,7 +32,6 @@ import (
 	"os"
 	"testing"
 
-	"clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
 	"github.com/spf13/viper"
@@ -76,7 +75,7 @@ func TestLogin(t *testing.T) {
 	viper.Set("password", "clouditor")
 	viper.Set("session-directory", dir)
 
-	cmd := login.NewLoginCommand()
+	cmd := NewLoginCommand()
 	err = cmd.RunE(nil, []string{fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)})
 	assert.Nil(t, err)
 }
