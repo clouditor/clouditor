@@ -151,7 +151,7 @@ func TestAssessEvidence(t *testing.T) {
 
 func TestService_AssessEvidences(t *testing.T) {
 	type fields struct {
-		ResultHooks                   []func(result *assessment.AssessmentResult, err error)
+		ResultHooks                   []assessment.ResultHookFunc
 		results                       map[string]*assessment.AssessmentResult
 		UnimplementedAssessmentServer assessment.UnimplementedAssessmentServer
 	}
@@ -246,7 +246,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 	type args struct {
 		in0         context.Context
 		evidence    *assessment.AssessEvidenceRequest
-		resultHooks []func(assessmentResult *assessment.AssessmentResult, err error)
+		resultHooks []assessment.ResultHookFunc
 	}
 	tests := []struct {
 		name     string
@@ -271,7 +271,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 							},
 						}, t),
 					}},
-				resultHooks: []func(assessmentResult *assessment.AssessmentResult, err error){storeAssessmentResultToOrchestrator, firstHookFunction, secondHookFunction},
+				resultHooks: []assessment.ResultHookFunc{storeAssessmentResultToOrchestrator, firstHookFunction, secondHookFunction},
 			},
 			wantErr:  false,
 			wantResp: &assessment.AssessEvidenceResponse{Status: true},

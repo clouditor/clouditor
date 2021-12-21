@@ -21,7 +21,7 @@ type Service struct {
 
 	// evidenceHooks is a list of hook functions that can be used if one wants to be
 	// informed about each evidence
-	evidenceHooks []func(result *evidence.Evidence, err error)
+	evidenceHooks []evidence.EvidenceHookFunc
 
 	evidence.UnimplementedEvidenceStoreServer
 }
@@ -109,7 +109,7 @@ func (s *Service) ListEvidences(_ context.Context, _ *evidence.ListEvidencesRequ
 	return &evidence.ListEvidencesResponse{Evidences: listOfEvidences}, nil
 }
 
-func (s *Service) RegisterEvidenceHook(evidenceHook func(result *evidence.Evidence, err error)) {
+func (s *Service) RegisterEvidenceHook(evidenceHook evidence.EvidenceHookFunc) {
 	s.evidenceHooks = append(s.evidenceHooks, evidenceHook)
 }
 

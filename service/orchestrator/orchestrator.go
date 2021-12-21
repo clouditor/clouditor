@@ -64,7 +64,7 @@ type Service struct {
 	results map[string]*assessment.AssessmentResult
 
 	// Hook
-	AssessmentResultsHook []func(result *assessment.AssessmentResult, err error)
+	AssessmentResultsHook []assessment.ResultHookFunc
 
 	db *gorm.DB
 }

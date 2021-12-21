@@ -54,7 +54,7 @@ NewService constructor should be used. It implements the AssessmentServer interf
 type Service struct {
 	// resultHooks is a list of hook functions that can be used if one wants to be
 	// informed about each assessment result
-	resultHooks []func(result *assessment.AssessmentResult, err error)
+	resultHooks []assessment.ResultHookFunc
 
 	results map[string]*assessment.AssessmentResult
 	assessment.UnimplementedAssessmentServer
