@@ -45,7 +45,7 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 			Status: false,
 		}
 
-		return resp, status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
+		return resp, status.Errorf(codes.Internal, "error while handling evidence: %v", err)
 	}
 
 	resp = &evidence.StoreEvidenceResponse{
@@ -74,7 +74,7 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 
 		err = s.handleEvidence(req.GetEvidence())
 		if err != nil {
-			return status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
+			return status.Errorf(codes.Internal, "error while handling evidence: %v", err)
 		}
 	}
 }

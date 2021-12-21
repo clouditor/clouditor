@@ -75,7 +75,7 @@ func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenc
 			Status: false,
 		}
 
-		return res, status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
+		return res, status.Errorf(codes.Internal, "error while handling evidence: %v", err)
 	}
 
 	res = &assessment.AssessEvidenceResponse{
@@ -106,7 +106,7 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 
 		err = s.handleEvidence(req.Evidence)
 		if err != nil {
-			return status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
+			return status.Errorf(codes.Internal, "error while handling evidence: %v", err)
 		}
 	}
 }

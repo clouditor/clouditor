@@ -147,7 +147,7 @@ func (*Service) GetMetric(_ context.Context, request *orchestrator.GetMetricsReq
 	var metric *assessment.Metric
 
 	if metric, ok = metricIndex[request.MetricId]; !ok {
-		return nil, status.Errorf(codes.NotFound, "Could not find metric with id %s", request.MetricId)
+		return nil, status.Errorf(codes.NotFound, "could not find metric with id %s", request.MetricId)
 	}
 
 	response = metric
@@ -166,7 +166,7 @@ func (s *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.Ge
 		return config, nil
 	}
 
-	return nil, status.Errorf(codes.NotFound, "Could not find metric configuration for metric %s in service %s", req.MetricId, req.ServiceId)
+	return nil, status.Errorf(codes.NotFound, "could not find metric configuration for metric %s in service %s", req.MetricId, req.ServiceId)
 }
 
 // ListMetricConfigurations retrieves a list of MetricConfiguration objects for a particular target
