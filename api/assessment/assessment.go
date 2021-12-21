@@ -30,13 +30,13 @@ import "errors"
 type ResultHookFunc func(result *AssessmentResult, err error)
 
 var (
-	ErrTimestampMissing             = errors.New("timestamp in assessment result is missing")
-	ErrMetricIdMissing              = errors.New("metric id in assessment result is missing")
-	ErrMetricDataMissing            = errors.New("metric data in assessment result is missing")
-	ErrEvidenceIdMissing            = errors.New("evidence id in assessment result is missing")
-	ErrNonComplianceCommentsMissing = errors.New("non-compliance comments in assessment result is missing")
-	ErrMetricDataOperatorMissing    = errors.New("operator in metric data is missing")
-	ErrMetricDataTargetValueMissing = errors.New("target value in metric data is missing")
+	ErrTimestampMissing                      = errors.New("timestamp in assessment result is missing")
+	ErrMetricIdMissing                       = errors.New("metric id in assessment result is missing")
+	ErrMetricConfigurationMissing            = errors.New("metric configuration in assessment result is missing")
+	ErrEvidenceIdMissing                     = errors.New("evidence id in assessment result is missing")
+	ErrNonComplianceCommentsMissing          = errors.New("non-compliance comments in assessment result is missing")
+	ErrMetricConfigurationOperatorMissing    = errors.New("operator in metric data is missing")
+	ErrMetricConfigurationTargetValueMissing = errors.New("target value in metric data is missing")
 )
 
 // Validate validates the assessment result according to several required fields
@@ -50,20 +50,22 @@ func (result *AssessmentResult) Validate() (resourceId string, err error) {
 	}
 
 	if result.MetricConfiguration == nil {
-		return "", ErrMetricDataMissing
+		return "", ErrMetricConfigurationMissing
 	}
 
 	if result.MetricConfiguration.Operator == "" {
-		return "", ErrMetricDataOperatorMissing
+		return "", ErrMetricConfigurationOperatorMissing
 	}
 
 	if result.MetricConfiguration.TargetValue == nil {
-		return "", ErrMetricDataTargetValueMissing
+		return "", ErrMetricConfigurationTargetValueMissing
 	}
 
 	if result.EvidenceId == "" {
 		return "", ErrEvidenceIdMissing
 	}
+
+	// TODO(garuppel): Missing resource ID?
 
 	return
 }

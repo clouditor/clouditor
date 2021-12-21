@@ -30,13 +30,14 @@ import "errors"
 type EvidenceHookFunc func(result *Evidence, err error)
 
 var (
-	ErrNotValidResource    = errors.New("resource in evidence is not a map")
-	ErrResourceNotStruct   = errors.New("resource in evidence is not struct value")
-	ErrResourceNotMap      = errors.New("resource in evidence is not a map")
-	ErrResourceIdMissing   = errors.New("resource in evidence is missing the id field")
-	ErrResourceIdNotString = errors.New("resource id in evidence is not a string")
-	ErrToolIdMissing       = errors.New("tool id in evidence is missing")
-	ErrTimestampMissing    = errors.New("timestamp in evidence is missing")
+	ErrNotValidResource       = errors.New("resource in evidence is missing")
+	ErrResourceNotStruct      = errors.New("resource in evidence is not struct value")
+	ErrResourceNotMap         = errors.New("resource in evidence is not a map")
+	ErrResourceIdMissing      = errors.New("resource in evidence is missing the id field")
+	ErrResourceIdNotString    = errors.New("resource id in evidence is not a string")
+	ErrToolIdMissing          = errors.New("tool id in evidence is missing")
+	ErrTimestampMissing       = errors.New("timestamp in evidence is missing")
+	ErrResourceIdFieldMissing = errors.New("field id is missing")
 )
 
 // Validate validates the evidence according to several required fields
@@ -57,6 +58,8 @@ func (evidence *Evidence) Validate() (resourceId string, err error) {
 
 	field, ok := m["id"]
 	if !ok {
+		return "", ErrResourceIdFieldMissing
+	} else if field == "" {
 		return "", ErrResourceIdMissing
 	}
 
