@@ -146,7 +146,7 @@ func TestSession_HandleResponse(t *testing.T) {
 			name: "grpc Error",
 			args: args{
 				msg: nil,
-				err: status.Errorf(codes.Internal, "Internal error occurred!"),
+				err: status.Errorf(codes.Internal, "internal error occurred!"),
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				if err != nil {

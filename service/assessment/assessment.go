@@ -52,9 +52,9 @@ Service is an implementation of the Clouditor Assessment service. It should not 
 NewService constructor should be used. It implements the AssessmentServer interface
 */
 type Service struct {
-	// ResultHook is a hook function that can be used if one wants to be
+	// resultHooks is a hook function that can be used if one wants to be
 	// informed about each assessment result
-	ResultHook []func(result *assessment.AssessmentResult, err error)
+	resultHooks []func(result *assessment.AssessmentResult, err error)
 
 	results map[string]*assessment.AssessmentResult
 	assessment.UnimplementedAssessmentServer
@@ -75,7 +75,7 @@ func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenc
 			Status: false,
 		}
 
-		return res, status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
+		return res, status.Errorf(codes.Internal, "error while handling evidence: %v", err)
 	}
 
 	res = &assessment.AssessEvidenceResponse{
@@ -100,12 +100,13 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 				log.Infof("Stopped receiving streamed evidences")
 				return stream.SendAndClose(&emptypb.Empty{})
 			}
+
 			return err
 		}
 
 		err = s.handleEvidence(req.Evidence)
 		if err != nil {
-			return status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
+			return status.Errorf(codes.Internal, "error while handling evidence: %v", err)
 		}
 	}
 }
@@ -117,12 +118,7 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 		log.Errorf("Invalid evidence: %v", err)
 		newError := fmt.Errorf("invalid evidence: %w", err)
 
-		// Inform our hook, if we have any
-		if s.ResultHook != nil {
-			for _, hook := range s.ResultHook {
-				go hook(nil, newError)
-			}
-		}
+		s.informHook(nil, newError)
 
 		return newError
 	}
@@ -135,12 +131,8 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 		log.Errorf("Could not evaluate evidence: %v", err)
 		newError := fmt.Errorf("could not evaluate evidence: %w", err)
 
-		// Inform our hook, if we have any
-		if s.ResultHook != nil {
-			for _, hook := range s.ResultHook {
-				go hook(nil, newError)
-			}
-		}
+		s.informHook(nil, newError)
+
 		return newError
 	}
 
@@ -171,15 +163,19 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 		// Just a little hack to quickly enable multiple results per resource
 		s.results[fmt.Sprintf("%s-%d", resourceId, i)] = result
 
-		// Inform our hook, if we have any
-		if s.ResultHook != nil {
-			for _, hook := range s.ResultHook {
-				go hook(result, nil)
-			}
-		}
+		s.informHook(result, nil)
 	}
 
 	return nil
+}
+
+func (s Service) informHook(result *assessment.AssessmentResult, err error) {
+	// Inform our hook, if we have any
+	if s.resultHooks != nil {
+		for _, hook := range s.resultHooks {
+			go hook(result, err)
+		}
+	}
 }
 
 // ListAssessmentResults is a method implementation of the assessment interface
@@ -195,5 +191,5 @@ func (s Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAsse
 }
 
 func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result *assessment.AssessmentResult, err error)) {
-	s.ResultHook = append(s.ResultHook, assessmentResultsHook)
+	s.resultHooks = append(s.resultHooks, assessmentResultsHook)
 }

@@ -64,7 +64,7 @@ type Service struct {
 	results map[string]*assessment.AssessmentResult
 
 	// Hook
-	AssessmentResultsHook []func(result *assessment.AssessmentResult, err error)
+	AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 
 	db *gorm.DB
 }
@@ -147,7 +147,7 @@ func (*Service) GetMetric(_ context.Context, request *orchestrator.GetMetricsReq
 	var metric *assessment.Metric
 
 	if metric, ok = metricIndex[request.MetricId]; !ok {
-		return nil, status.Errorf(codes.NotFound, "Could not find metric with id %s", request.MetricId)
+		return nil, status.Errorf(codes.NotFound, "could not find metric with id %s", request.MetricId)
 	}
 
 	response = metric
@@ -166,7 +166,7 @@ func (s *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.Ge
 		return config, nil
 	}
 
-	return nil, status.Errorf(codes.NotFound, "Could not find metric configuration for metric %s in service %s", req.MetricId, req.ServiceId)
+	return nil, status.Errorf(codes.NotFound, "could not find metric configuration for metric %s in service %s", req.MetricId, req.ServiceId)
 }
 
 // ListMetricConfigurations retrieves a list of MetricConfiguration objects for a particular target
@@ -195,14 +195,14 @@ func (s *Service) ListMetricConfigurations(ctx context.Context, req *orchestrato
 }
 
 // StoreAssessmentResult is a method implementation of the orchestrator interface: It receives an assessment result and stores it
-func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.StoreAssessmentResultRequest) (response *orchestrator.StoreAssessmentResultResponse, err error) {
+func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.StoreAssessmentResultRequest) (resp *orchestrator.StoreAssessmentResultResponse, err error) {
 
-	response = &orchestrator.StoreAssessmentResultResponse{}
+	resp = &orchestrator.StoreAssessmentResultResponse{}
 
 	err = s.handleResult(req.Result)
 
 	if err != nil {
-		return response, status.Errorf(codes.InvalidArgument, "invalid assessment result: %v", err)
+		return resp, status.Errorf(codes.InvalidArgument, "error while handling assessment result: %v", err)
 	}
 
 	return
@@ -213,49 +213,54 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 
 	for {
 		result, err = stream.Recv()
-		if err == io.EOF {
-			log.Infof("Stopped receiving streamed assessment results")
-			return stream.SendAndClose(&emptypb.Empty{})
+
+		if err != nil {
+			// If no more input of the stream is available, return SendAndClose `error`
+			if err == io.EOF {
+				log.Infof("Stopped receiving streamed assessment results")
+				return stream.SendAndClose(&emptypb.Empty{})
+			}
+
+			return err
 		}
 
 		err = s.handleResult(result)
 		if err != nil {
-			return fmt.Errorf("error handle assessment result: %w", err)
+			return status.Errorf(codes.Internal, "error while handling assessment result: %v", err)
 		}
 	}
 
 }
 
-func (s Service) handleResult(result *assessment.AssessmentResult) error {
-	_, err := result.Validate()
+func (s Service) handleResult(result *assessment.AssessmentResult) (err error) {
+	_, err = result.Validate()
 	if err != nil {
 		log.Errorf("Invalid assessment result: %v", err)
 		newError := fmt.Errorf("invalid assessment result: %w", err)
 
-		// Inform our hook, if we have any
-		if s.AssessmentResultsHook != nil {
-			for _, hook := range s.AssessmentResultsHook {
-				go hook(nil, newError)
-			}
-		}
+		s.informHook(nil, newError)
 
-		return newError
+		return
 	}
 
 	s.results[result.Id] = result
 
-	// Inform our hook, if we have any
-	if s.AssessmentResultsHook != nil {
-		for _, hook := range s.AssessmentResultsHook {
-			go hook(result, nil)
-		}
-	}
+	s.informHook(result, nil)
 
-	return nil
+	return
 }
 
 func (s *Service) RegisterAssessmentResultHook(hook func(result *assessment.AssessmentResult, err error)) {
-	s.AssessmentResultsHook = append(s.AssessmentResultsHook, hook)
+	s.AssessmentResultHooks = append(s.AssessmentResultHooks, hook)
+}
+
+func (s Service) informHook(result *assessment.AssessmentResult, err error) {
+	// Inform our hook, if we have any
+	if s.AssessmentResultHooks != nil {
+		for _, hook := range s.AssessmentResultHooks {
+			go hook(result, err)
+		}
+	}
 }
 
 //// Tools

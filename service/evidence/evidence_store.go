@@ -20,7 +20,7 @@ type Service struct {
 	evidences map[string]*evidence.Evidence
 
 	// Hook
-	EvidenceHook []func(result *evidence.Evidence, err error)
+	evidenceHook []func(result *evidence.Evidence, err error)
 
 	evidence.UnimplementedEvidenceStoreServer
 }
@@ -36,63 +36,66 @@ func init() {
 }
 
 // StoreEvidence is a method implementation of the evidenceServer interface: It receives an req and stores it
-func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRequest) (*evidence.StoreEvidenceResponse, error) {
-	var (
-		resp = &evidence.StoreEvidenceResponse{}
-		err  error
-		e    = req.GetEvidence()
-	)
+func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRequest) (resp *evidence.StoreEvidenceResponse, err error) {
+
+	err = s.handleEvidence(req.GetEvidence())
+
+	if err != nil {
+		resp = &evidence.StoreEvidenceResponse{
+			Status: false,
+		}
+
+		return resp, status.Errorf(codes.Internal, "error while handling evidence: %v", err)
+	}
+
+	resp = &evidence.StoreEvidenceResponse{
+		Status: true,
+	}
+
+	return resp, nil
+}
+
+// StoreEvidences is a method implementation of the evidenceServer interface: It receives evidences and stores them
+func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesServer) (err error) {
+	var req *evidence.StoreEvidenceRequest
+
+	for {
+		req, err = stream.Recv()
+
+		if err != nil {
+			// If no more input of the stream is available, return SendAndClose `error`
+			if err == io.EOF {
+				log.Infof("Stopped receiving streamed evidences")
+				return stream.SendAndClose(&emptypb.Empty{})
+			}
+
+			return err
+		}
+
+		err = s.handleEvidence(req.GetEvidence())
+		if err != nil {
+			return status.Errorf(codes.Internal, "error while handling evidence: %v", err)
+		}
+	}
+}
+
+func (s *Service) handleEvidence(e *evidence.Evidence) (err error) {
 
 	_, err = e.Validate()
 	if err != nil {
 		log.Errorf("Invalid evidence: %v", err)
 		newError := fmt.Errorf("invalid evidence: %w", err)
 
-		// Inform our hook, if we have any
-		if s.EvidenceHook != nil {
-			for _, hook := range s.EvidenceHook {
-				go hook(nil, newError)
-			}
-		}
+		s.informHook(nil, newError)
 
-		return resp, status.Errorf(codes.InvalidArgument, "invalid req: %v", err)
+		return
 	}
 
 	s.evidences[e.Id] = e
-	resp.Status = true
 
-	// Inform our hook, if we have any
-	if s.EvidenceHook != nil {
-		for _, hook := range s.EvidenceHook {
-			go hook(e, nil)
-		}
-	}
+	s.informHook(e, nil)
 
-	return resp, err
-}
-
-// StoreEvidences is a method implementation of the evidenceServer interface: It receives evidences and stores them
-func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesServer) (err error) {
-	var (
-		req *evidence.StoreEvidenceRequest
-		e   *evidence.Evidence
-	)
-	for {
-		req, err = stream.Recv()
-		e = req.GetEvidence()
-		if err == io.EOF {
-			log.Infof("Stopped receiving streamed evidences")
-			return stream.SendAndClose(&emptypb.Empty{})
-		}
-		s.evidences[e.Id] = e
-
-		// Inform our hook, if we have any
-		if s.EvidenceHook != nil {
-			for _, hook := range s.EvidenceHook {
-				go hook(e, nil)
-			}
-		}
-	}
+	return
 }
 
 // ListEvidences is a method implementation of the evidenceServer interface: It returns the evidences lying in the req storage
@@ -106,5 +109,14 @@ func (s *Service) ListEvidences(_ context.Context, _ *evidence.ListEvidencesRequ
 }
 
 func (s *Service) RegisterEvidenceHook(evidenceHook func(result *evidence.Evidence, err error)) {
-	s.EvidenceHook = append(s.EvidenceHook, evidenceHook)
+	s.evidenceHook = append(s.evidenceHook, evidenceHook)
+}
+
+func (s Service) informHook(result *evidence.Evidence, err error) {
+	// Inform our hook, if we have any
+	if s.evidenceHook != nil {
+		for _, hook := range s.evidenceHook {
+			go hook(result, err)
+		}
+	}
 }
