@@ -39,14 +39,18 @@ func init() {
 // StoreEvidence is a method implementation of the evidenceServer interface: It receives an req and stores it
 func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRequest) (resp *evidence.StoreEvidenceResponse, err error) {
 
-	err = s.handleEvidence(req.GetEvidence())
+	// Check if evidence is valid and inform hook. If not, return status error with code InvalidArgument
+	resp, err = s.validateEvidence(req.Evidence)
+	if err != nil {
+		return resp, err
+	}
 
+	err = s.handleEvidence(req.GetEvidence())
 	if err != nil {
 		resp = &evidence.StoreEvidenceResponse{
 			Status: false,
 		}
-
-		return resp, status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
+		return resp, status.Errorf(codes.Internal, "error while handling evidence: %v", err)
 	}
 
 	resp = &evidence.StoreEvidenceResponse{
@@ -73,6 +77,12 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 			return err
 		}
 
+		// Check if evidence is valid and inform hook. If not, return status error with code InvalidArgument
+		_, err = s.validateEvidence(req.Evidence)
+		if err != nil {
+			return err
+		}
+
 		err = s.handleEvidence(req.GetEvidence())
 		if err != nil {
 			return status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
@@ -80,8 +90,8 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 	}
 }
 
-func (s *Service) handleEvidence(e *evidence.Evidence) (err error) {
-
+//validateEvidence checks if evidence is valid, informs the hook function and created the status error.
+func (s *Service) validateEvidence(e *evidence.Evidence) (resp *evidence.StoreEvidenceResponse, err error) {
 	_, err = e.Validate()
 	if err != nil {
 		log.Errorf("Invalid evidence: %v", err)
@@ -89,11 +99,21 @@ func (s *Service) handleEvidence(e *evidence.Evidence) (err error) {
 
 		s.informHooks(nil, newError)
 
-		return
+		resp = &evidence.StoreEvidenceResponse{
+			Status: false,
+		}
+
+		return resp, status.Errorf(codes.InvalidArgument, "invalid req: %v", err)
+	} else {
+		resp = &evidence.StoreEvidenceResponse{}
+
+		return resp, nil
 	}
 
-	s.evidences[e.Id] = e
+}
 
+func (s *Service) handleEvidence(e *evidence.Evidence) (err error) {
+	s.evidences[e.Id] = e
 	s.informHooks(e, nil)
 
 	return
