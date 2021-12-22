@@ -76,24 +76,6 @@ func Test_ValidateEvidence(t *testing.T) {
 			wantRespError: ErrResourceNotStruct,
 			wantErr:       true,
 		},
-		//{
-		//	name: "Missing resourceID",
-		//	args: args{
-		//		Evidence: &Evidence{
-		//			Id:        "MockEvidenceID",
-		//			ToolId:    "mock",
-		//			Timestamp: timestamppb.Now(),
-		//			Resource: toStruct(voc.VirtualMachine{
-		//				Compute: &voc.Compute{
-		//					CloudResource: &voc.CloudResource{
-		//						Type: []string{"VirtualMachine"}},
-		//				},
-		//			}, t),
-		//		}},
-		//	wantResp:      "",
-		//	wantRespError: ErrResourceIdMissing,
-		//	wantErr:       true,
-		//},
 		{
 			name: "Missing toolId",
 			args: args{
