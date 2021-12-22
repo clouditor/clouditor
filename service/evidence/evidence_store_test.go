@@ -219,12 +219,12 @@ func TestEvidenceHook(t *testing.T) {
 	service.RegisterEvidenceHook(secondHookFunction)
 
 	// Check if first hook is registered
-	funcName1 := runtime.FuncForPC(reflect.ValueOf(service.EvidenceHook[0]).Pointer()).Name()
+	funcName1 := runtime.FuncForPC(reflect.ValueOf(service.evidenceHook[0]).Pointer()).Name()
 	funcName2 := runtime.FuncForPC(reflect.ValueOf(firstHookFunction).Pointer()).Name()
 	assert.Equal(t, funcName1, funcName2)
 
 	// Check if second hook is registered
-	funcName1 = runtime.FuncForPC(reflect.ValueOf(service.EvidenceHook[1]).Pointer()).Name()
+	funcName1 = runtime.FuncForPC(reflect.ValueOf(service.evidenceHook[1]).Pointer()).Name()
 	funcName2 = runtime.FuncForPC(reflect.ValueOf(secondHookFunction).Pointer()).Name()
 	assert.Equal(t, funcName1, funcName2)
 
@@ -314,19 +314,33 @@ func (m *mockStreamer) Recv() (req *evidence.StoreEvidenceRequest, err error) {
 		m.counter++
 		return &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
 			Id:        "MockEvidenceId-1",
+			ToolId:    "MockToolId-1",
 			ServiceId: "MockServiceId-1",
 			Timestamp: timestamppb.Now(),
 			Raw:       "",
-			Resource:  nil,
+			Resource: toStructWithoutTest(voc.VirtualMachine{
+				Compute: &voc.Compute{
+					CloudResource: &voc.CloudResource{
+						ID: "mock-id-1",
+					},
+				},
+			}),
 		}}, nil
 	} else if m.counter == 1 {
 		m.counter++
 		return &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
 			Id:        "MockEvidenceId-2",
+			ToolId:    "MockToolId-2",
 			ServiceId: "MockServiceId-2",
 			Timestamp: timestamppb.Now(),
 			Raw:       "",
-			Resource:  nil,
+			Resource: toStructWithoutTest(voc.VirtualMachine{
+				Compute: &voc.Compute{
+					CloudResource: &voc.CloudResource{
+						ID: "mock-id-1",
+					},
+				},
+			}),
 		}}, nil
 	} else {
 		return nil, io.EOF
@@ -361,6 +375,15 @@ func toStruct(r voc.IsCloudResource, t *testing.T) (s *structpb.Value) {
 	s, err := voc.ToStruct(r)
 	if err != nil {
 		assert.NotNil(t, err)
+	}
+
+	return
+}
+
+func toStructWithoutTest(r voc.IsCloudResource) (s *structpb.Value) {
+	s, err := voc.ToStruct(r)
+	if err != nil {
+		log.Errorf("eror getting struct of resource: %v", err)
 	}
 
 	return

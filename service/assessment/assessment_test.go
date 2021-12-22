@@ -210,7 +210,7 @@ func TestService_AssessEvidences(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := Service{
-				ResultHook:                    tt.fields.ResultHook,
+				resultHooks:                   tt.fields.ResultHook,
 				results:                       tt.fields.results,
 				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
 			}
@@ -287,7 +287,7 @@ func TestAssessmentResultHook(t *testing.T) {
 				s.RegisterAssessmentResultHook(hookFunction)
 
 				// Check if hook is registered
-				funcName1 := runtime.FuncForPC(reflect.ValueOf(s.ResultHook[i]).Pointer()).Name()
+				funcName1 := runtime.FuncForPC(reflect.ValueOf(s.resultHooks[i]).Pointer()).Name()
 				funcName2 := runtime.FuncForPC(reflect.ValueOf(hookFunction).Pointer()).Name()
 				assert.Equal(t, funcName1, funcName2)
 			}
@@ -310,7 +310,7 @@ func TestAssessmentResultHook(t *testing.T) {
 	}
 }
 
-func TestListAssessmentResults(t *testing.T) {
+func TestService_ListAssessmentResults(t *testing.T) {
 	s := NewService()
 	_, err := s.AssessEvidence(context.TODO(), &assessment.AssessEvidenceRequest{
 		Evidence: &evidence.Evidence{

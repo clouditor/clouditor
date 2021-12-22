@@ -345,7 +345,7 @@ func (mockIsCloudResource) GetCreationTime() *time.Time {
 //	var ready = make(chan bool)
 //
 //	assessmentServer := standalone.NewAssessmentServer().(*service_assessment.Service)
-//	assessmentServer.ResultHook = func(result *assessment.Result, err error) {
+//	assessmentServer.resultHook = func(result *assessment.Result, err error) {
 //		if result.MetricId == 1 {
 //			assert.Nil(t, err)
 //			assert.NotNil(t, result)
