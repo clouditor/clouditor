@@ -85,7 +85,7 @@ func (d computeDiscovery) Name() string {
 
 // List is the method implementation defined in the discovery.Discoverer interface
 func (d computeDiscovery) List() (resources []voc.IsCloudResource, err error) {
-	log.Infof("Collecting evidences in %v", d.Name())
+	log.Infof("Collecting evidences in %s", d.Name())
 	listOfVMs, err := d.discoverVirtualMachines()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover virtual machines: %w", err)

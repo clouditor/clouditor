@@ -55,7 +55,7 @@ func (k k8sComputeDiscovery) List() ([]voc.IsCloudResource, error) {
 
 	pods, err := k.intf.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("could not list ingresses: %w", err)
+		return nil, fmt.Errorf("could not list ingresses: %v", err)
 	}
 
 	for i := range pods.Items {

@@ -28,8 +28,6 @@ package assessment
 import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/api/orchestrator"
-	orchestrator_service "clouditor.io/clouditor/service/orchestrator"
 	"clouditor.io/clouditor/voc"
 	"context"
 	"fmt"
@@ -180,8 +178,8 @@ func TestService_AssessEvidences(t *testing.T) {
 		name     string
 		fields   fields
 		args     args
-		wantErr  bool
-		wantResp string
+		wantErr        bool
+		wantErrMessage string
 	}{
 		{
 			name:   "Assessing evidences fails due to missing toolId",
@@ -192,8 +190,8 @@ func TestService_AssessEvidences(t *testing.T) {
 					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 				},
 			}},
-			wantErr:  true,
-			wantResp: "invalid evidence",
+			wantErr:        true,
+			wantErrMessage: "invalid evidence",
 		},
 		{
 			name:   "Assess evidences",
@@ -205,8 +203,8 @@ func TestService_AssessEvidences(t *testing.T) {
 					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 				},
 			}},
-			wantErr:  false,
-			wantResp: "",
+			wantErr:        false,
+			wantErrMessage: "",
 		},
 	}
 	for _, tt := range tests {
@@ -223,7 +221,7 @@ func TestService_AssessEvidences(t *testing.T) {
 			}
 
 			if err != nil {
-				assert.Contains(t, err.Error(), tt.wantResp)
+				assert.Contains(t, err.Error(), tt.wantErrMessage)
 			}
 		})
 	}
@@ -232,8 +230,6 @@ func TestService_AssessEvidences(t *testing.T) {
 func TestAssessmentResultHook(t *testing.T) {
 	var (
 		hookCallCounter = 0
-		// Service needs to outlive the lifetime of the hook function
-		service = *orchestrator_service.NewService()
 	)
 
 	firstHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
@@ -244,23 +240,6 @@ func TestAssessmentResultHook(t *testing.T) {
 	secondHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
 		hookCallCounter++
 		fmt.Println("Hello from inside the secondHookFunction")
-	}
-
-	// TODO(garuppel): Delete that test after adding an additional test for assessment.Validate()
-	storeAssessmentResultToOrchestrator := func(result *assessment.AssessmentResult, err error) {
-
-		hookCallCounter++
-
-		if err != nil {
-			fmt.Println("error as input %w: ", err)
-		}
-
-		_, err = service.StoreAssessmentResult(context.Background(), &orchestrator.StoreAssessmentResultRequest{
-			Result: result})
-
-		if err != nil {
-			fmt.Println("error storing assessment result in orchestrator: %w", err)
-		}
 	}
 
 	// Check GRPC call
@@ -292,7 +271,7 @@ func TestAssessmentResultHook(t *testing.T) {
 							},
 						}, t),
 					}},
-				resultHookFunctions: []func(assessmentResult *assessment.AssessmentResult, err error){storeAssessmentResultToOrchestrator, firstHookFunction, secondHookFunction},
+				resultHookFunctions: []func(assessmentResult *assessment.AssessmentResult, err error){firstHookFunction, secondHookFunction},
 			},
 			wantErr:  false,
 			wantResp: &assessment.AssessEvidenceResponse{Status: true},
@@ -319,14 +298,14 @@ func TestAssessmentResultHook(t *testing.T) {
 			time.Sleep(3 * time.Second)
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("StoreAssessmentResult() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(gotResp, tt.wantResp) {
-				t.Errorf("StoreAssessmentResult() gotResp = %v, want %v", gotResp, tt.wantResp)
+				t.Errorf("AssessEvidence() gotResp = %v, want %v", gotResp, tt.wantResp)
 			}
 			assert.NotEmpty(t, s.results)
-			assert.Equal(t, 18, hookCallCounter)
+			assert.Equal(t, 12, hookCallCounter)
 		})
 	}
 }
