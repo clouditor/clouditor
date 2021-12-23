@@ -68,8 +68,21 @@ func NewService() *Service {
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
 func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
-	err = s.handleEvidence(req.Evidence)
+	resourceId, err := req.Evidence.Validate()
+	if err != nil {
+		log.Errorf("Invalid evidence: %v", err)
+		newError := fmt.Errorf("invalid evidence: %w", err)
 
+		s.informHooks(nil, newError)
+
+		res = &assessment.AssessEvidenceResponse{
+			Status: false,
+		}
+
+		return res, status.Errorf(codes.InvalidArgument, "invalid req: %v", err)
+	}
+
+	err = s.handleEvidence(req.Evidence, resourceId)
 	if err != nil {
 		res = &assessment.AssessEvidenceResponse{
 			Status: false,
@@ -104,24 +117,20 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 			return err
 		}
 
-		err = s.handleEvidence(req.Evidence)
+		// Call StoreAssessmentResult()
+		assessEvidencesReq := &assessment.AssessEvidenceRequest{
+			Evidence: req.Evidence,
+		}
+
+		_, err = s.AssessEvidence(context.Background(), assessEvidencesReq)
 		if err != nil {
-			return status.Errorf(codes.Internal, "error while handling evidence: %v", err)
+			return err
 		}
 	}
 }
 
 // handleEvidence is the common evidence assessment of AssessEvidence and AssessEvidences
-func (s Service) handleEvidence(evidence *evidence.Evidence) error {
-	resourceId, err := evidence.Validate()
-	if err != nil {
-		log.Errorf("Invalid evidence: %v", err)
-		newError := fmt.Errorf("invalid evidence: %w", err)
-
-		s.informHooks(nil, newError)
-
-		return newError
-	}
+func (s Service) handleEvidence(evidence *evidence.Evidence, resourceId string) error {
 
 	log.Infof("Running evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, evidence.ToolId, evidence.Timestamp)
 	log.Debugf("Evidence: %+v", evidence)
@@ -169,6 +178,7 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 	return nil
 }
 
+// informHooks informs the registered hook functions
 func (s Service) informHooks(result *assessment.AssessmentResult, err error) {
 	// Inform our hook, if we have any
 	if s.resultHooks != nil {
