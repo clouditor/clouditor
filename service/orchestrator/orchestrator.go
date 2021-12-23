@@ -64,7 +64,7 @@ type Service struct {
 	results map[string]*assessment.AssessmentResult
 
 	// Hook
-	AssessmentResultHooks []assessment.ResultHookFunc
+	AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 
 	db *gorm.DB
 }
@@ -199,11 +199,20 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 
 	resp = &orchestrator.StoreAssessmentResultResponse{}
 
-	err = s.handleResult(req.Result)
+	_, err = req.Result.Validate()
 
 	if err != nil {
-		return resp, status.Errorf(codes.InvalidArgument, "error while handling assessment result: %v", err)
+		log.Errorf("Invalid assessment result: %v", err)
+		newError := fmt.Errorf("invalid assessment result: %w", err)
+
+		s.informHook(nil, newError)
+
+		return resp, status.Errorf(codes.InvalidArgument, "invalid req: %v", err)
 	}
+
+	s.results[req.Result.Id] = req.Result
+
+	s.informHook(req.Result, nil)
 
 	return
 }
@@ -224,37 +233,24 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 			return err
 		}
 
-		err = s.handleResult(result)
+		// Call StoreAssessmentResult()
+		storeAssessmentResultReq := &orchestrator.StoreAssessmentResultRequest{
+			Result: result,
+		}
+
+		_, err = s.StoreAssessmentResult(context.Background(), storeAssessmentResultReq)
 		if err != nil {
-			return status.Errorf(codes.Internal, "error while handling assessment result: %v", err)
+			return err
 		}
 	}
 
-}
-
-func (s Service) handleResult(result *assessment.AssessmentResult) (err error) {
-	_, err = result.Validate()
-	if err != nil {
-		log.Errorf("Invalid assessment result: %v", err)
-		newError := fmt.Errorf("invalid assessment result: %w", err)
-
-		s.informHooks(nil, newError)
-
-		return
-	}
-
-	s.results[result.Id] = result
-
-	s.informHooks(result, nil)
-
-	return
 }
 
 func (s *Service) RegisterAssessmentResultHook(hook func(result *assessment.AssessmentResult, err error)) {
 	s.AssessmentResultHooks = append(s.AssessmentResultHooks, hook)
 }
 
-func (s Service) informHooks(result *assessment.AssessmentResult, err error) {
+func (s Service) informHook(result *assessment.AssessmentResult, err error) {
 	// Inform our hook, if we have any
 	if s.AssessmentResultHooks != nil {
 		for _, hook := range s.AssessmentResultHooks {
