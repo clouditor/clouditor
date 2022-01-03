@@ -13,7 +13,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.25.0
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.14.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.21.0
-	github.com/aws/aws-sdk-go-v2/service/sts v1.11.1
+	github.com/aws/aws-sdk-go-v2/service/sts v1.12.0
 	github.com/aws/smithy-go v1.9.0
 	github.com/go-co-op/gocron v1.11.0
 	github.com/golang-jwt/jwt/v4 v4.2.0
