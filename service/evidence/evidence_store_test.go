@@ -57,18 +57,19 @@ func TestStoreEvidence(t *testing.T) {
 			name: "Store req to the map",
 			args: args{
 				in0: context.TODO(),
-				req: &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
-					Id:        "MockEvidenceId",
-					ServiceId: "MockServiceId",
-					ToolId:    "MockTool",
-					Timestamp: timestamppb.Now(),
-					Raw:       "",
-					Resource: toStruct(voc.VirtualMachine{
-						Compute: &voc.Compute{CloudResource: &voc.CloudResource{
-							ID: "mock-id",
-						}},
-					}, t),
-				}},
+				req: &evidence.StoreEvidenceRequest{
+					Evidence: &evidence.Evidence{
+						Id:        "MockEvidenceId",
+						ServiceId: "MockServiceId",
+						ToolId:    "MockTool",
+						Timestamp: timestamppb.Now(),
+						Raw:       "",
+						Resource: toStruct(voc.VirtualMachine{
+							Compute: &voc.Compute{CloudResource: &voc.CloudResource{
+								ID: "mock-id",
+							}},
+						}, t),
+					}},
 			},
 			wantErr:  false,
 			wantResp: &evidence.StoreEvidenceResponse{Status: true},
@@ -77,19 +78,20 @@ func TestStoreEvidence(t *testing.T) {
 			name: "Store an evidence without toolId to the map",
 			args: args{
 				in0: context.TODO(),
-				req: &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
-					Id:        "MockEvidenceId-1",
-					ServiceId: "MockServiceId-1",
-					Timestamp: timestamppb.Now(),
-					Raw:       "",
-					Resource: toStruct(voc.VirtualMachine{
-						Compute: &voc.Compute{
-							CloudResource: &voc.CloudResource{
-								ID: "mock-id-1",
+				req: &evidence.StoreEvidenceRequest{
+					Evidence: &evidence.Evidence{
+						Id:        "MockEvidenceId-1",
+						ServiceId: "MockServiceId-1",
+						Timestamp: timestamppb.Now(),
+						Raw:       "",
+						Resource: toStruct(voc.VirtualMachine{
+							Compute: &voc.Compute{
+								CloudResource: &voc.CloudResource{
+									ID: "mock-id-1",
+								},
 							},
-						},
-					}, t),
-				},
+						}, t),
+					},
 				},
 			},
 			wantErr: true,
@@ -194,12 +196,12 @@ func TestEvidenceHook(t *testing.T) {
 	service.RegisterEvidenceHook(secondHookFunction)
 
 	// Check if first hook is registered
-	funcName1 := runtime.FuncForPC(reflect.ValueOf(service.evidenceHook[0]).Pointer()).Name()
+	funcName1 := runtime.FuncForPC(reflect.ValueOf(service.evidenceHooks[0]).Pointer()).Name()
 	funcName2 := runtime.FuncForPC(reflect.ValueOf(firstHookFunction).Pointer()).Name()
 	assert.Equal(t, funcName1, funcName2)
 
 	// Check if second hook is registered
-	funcName1 = runtime.FuncForPC(reflect.ValueOf(service.evidenceHook[1]).Pointer()).Name()
+	funcName1 = runtime.FuncForPC(reflect.ValueOf(service.evidenceHooks[1]).Pointer()).Name()
 	funcName2 = runtime.FuncForPC(reflect.ValueOf(secondHookFunction).Pointer()).Name()
 	assert.Equal(t, funcName1, funcName2)
 
