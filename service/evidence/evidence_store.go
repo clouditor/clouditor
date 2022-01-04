@@ -80,7 +80,7 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 			return err
 		}
 
-		// Call StoreEvidence()
+		// Call StoreEvidence() for storing a single evidence
 		evidenceRequest := &evidence.StoreEvidenceRequest{
 			Evidence: req.Evidence,
 		}

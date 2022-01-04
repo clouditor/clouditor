@@ -117,11 +117,10 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 			return err
 		}
 
-		// Call StoreAssessmentResult()
+		// Call AssessEvidence for assessing a single evidence
 		assessEvidencesReq := &assessment.AssessEvidenceRequest{
 			Evidence: req.Evidence,
 		}
-
 		_, err = s.AssessEvidence(context.Background(), assessEvidencesReq)
 		if err != nil {
 			return err
@@ -129,7 +128,7 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 	}
 }
 
-// handleEvidence is the common evidence assessment of AssessEvidence and AssessEvidences
+// handleEvidence is the helper method for the actual assessment used by AssessEvidence and AssessEvidences
 func (s Service) handleEvidence(evidence *evidence.Evidence, resourceId string) error {
 
 	log.Infof("Running evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, evidence.ToolId, evidence.Timestamp)
