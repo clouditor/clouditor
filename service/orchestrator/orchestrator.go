@@ -233,7 +233,7 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 			return err
 		}
 
-		// Call StoreAssessmentResult()
+		// Call StoreAssessmentResult() for storing a single assessment
 		storeAssessmentResultReq := &orchestrator.StoreAssessmentResultRequest{
 			Result: result,
 		}
@@ -258,36 +258,3 @@ func (s Service) informHook(result *assessment.AssessmentResult, err error) {
 		}
 	}
 }
-
-//// Tools
-//
-//// TODO Implement DeregisterAssessmentTool
-//func ( *Service) RegisterAssessmentTool (ctx context.Context, request *orchestrator.RegisterAssessmentToolRequest) (tool *orchestrator.AssessmentTool, err error) {
-//	// TBD
-//	return tool, err
-//}
-//
-//// TODO Implement UpdateAssessmentTool
-//func ( *Service) UpdateAssessmentTool (ctx context.Context, request *orchestrator.UpdateAssessmentToolRequest) (tool *orchestrator.AssessmentTool, err error) {
-//	// TBD
-//	return tool, err
-//}
-//
-//// TODO Implement DeregisterAssessmentTool
-//func ( *Service) DeregisterAssessmentTool (ctx context.Context, request *orchestrator.DeregisterAssessmentToolRequest) (nil, err error) {
-//	// TBD
-//	return nil, err
-//}
-//
-//
-//// TODO Implement ListAssessmentTools
-//func ( *Service) ListAssessmentTools (ctx context.Context, request *orchestrator.ListAssessmentToolsRequest) (tools *orchestrator.ListAssessmentToolsResponse, err error) {
-//	// TBD
-//	return tools, err
-//}
-//
-//// TODO Implement GetAssessmentTool
-//func ( *Service) GetAssessmentTool (ctx context.Context, request *orchestrator.GetAssessmentToolRequest) (tool *orchestrator.AssessmentTool, err error) {
-//	// TBD
-//	return tool, err
-//}
