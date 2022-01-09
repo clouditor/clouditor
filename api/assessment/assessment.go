@@ -27,6 +27,8 @@ package assessment
 
 import "errors"
 
+type ResultHookFunc func(result *AssessmentResult, err error)
+
 var (
 	ErrTimestampMissing                      = errors.New("timestamp in assessment result is missing")
 	ErrMetricIdMissing                       = errors.New("metric id in assessment result is missing")
