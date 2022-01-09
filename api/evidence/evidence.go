@@ -27,6 +27,8 @@ package evidence
 
 import "errors"
 
+type EvidenceHookFunc func(result *Evidence, err error)
+
 var (
 	ErrNotValidResource       = errors.New("resource in evidence is missing")
 	ErrResourceNotStruct      = errors.New("resource in evidence is not struct value")
