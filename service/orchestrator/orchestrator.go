@@ -92,7 +92,7 @@ func NewService() *Service {
 
 		b, err := ioutil.ReadFile(fileName)
 		if err != nil {
-			log.Errorf("Could not retrieve default configuration for metric %s: %s. Ignoring metric", m.Id, err)
+			log.Errorf("Could not retrieve default configuration for metric %s: %v. Ignoring metric", m.Id, err)
 			continue
 		}
 
@@ -100,7 +100,7 @@ func NewService() *Service {
 
 		err = json.Unmarshal(b, &config)
 		if err != nil {
-			log.Errorf("Error in reading default configuration for metric %s: %s. Ignoring metric", m.Id, err)
+			log.Errorf("Error in reading default configuration for metric %s: %v. Ignoring metric", m.Id, err)
 			continue
 		}
 

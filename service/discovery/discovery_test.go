@@ -173,6 +173,14 @@ func TestQuery(t *testing.T) {
 
 }
 
+func TestShutdown(t *testing.T) {
+	service := NewService()
+	service.Shutdown()
+
+	assert.False(t, service.scheduler.IsRunning())
+
+}
+
 // mockDiscoverer implements Discoverer and mocks the API to cloud resources
 type mockDiscoverer struct {
 	// testCase allows for different implementations for table tests in TestStartDiscovery
@@ -184,7 +192,7 @@ func (m mockDiscoverer) Name() string { return "just mocking" }
 func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 	switch m.testCase {
 	case 0:
-		return nil, fmt.Errorf("mock Error in List()")
+		return nil, fmt.Errorf("mock error in List()")
 	case 1:
 		return []voc.IsCloudResource{wrongFormattedResource()}, nil
 	case 2:
@@ -231,7 +239,7 @@ func (m *mockAssessmentStream) Send(req *assessment.AssessEvidenceRequest) (err 
 	if m.connectionEstablished {
 		m.sentEvidence = e
 	} else {
-		err = fmt.Errorf("MocK Send error")
+		err = fmt.Errorf("mock send error")
 	}
 	return
 }
@@ -269,7 +277,7 @@ type mockEvidenceStoreStream struct {
 }
 
 func (mockEvidenceStoreStream) Send(_ *evidence.StoreEvidenceRequest) error {
-	return fmt.Errorf("MocK Send error")
+	return fmt.Errorf("mock send error")
 }
 
 func (mockEvidenceStoreStream) CloseAndRecv() (*emptypb.Empty, error) {

@@ -261,7 +261,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 
 	// serve the gRPC socket
 	if err := server.Serve(sock); err != nil {
-		log.Infof("failed to serve gRPC endpoint: %s", err)
+		log.Infof("Failed to serve gRPC endpoint: %s", err)
 		return err
 	}
 

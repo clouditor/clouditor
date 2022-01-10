@@ -104,11 +104,6 @@ func (d *azureARMTemplateDiscovery) discoverARMTemplate() ([]voc.IsCloudResource
 			return nil, fmt.Errorf("could not discover Azure ARM template: %w", err)
 		}
 
-		//err = saveExportTemplate(result, *resourceGroups[i].Name)
-		//if err != nil {
-		//	return nil, fmt.Errorf("could not save Azure ARM template: %w", err)
-		//}
-
 		// TODO Update to latest API version -> GroupsExportTemplateFuture
 		// result = GroupExportResult
 		armTemplate, ok := result.Template.(map[string]interface{})
@@ -167,42 +162,6 @@ func (d *azureARMTemplateDiscovery) discoverARMTemplate() ([]voc.IsCloudResource
 
 	return list, nil
 }
-
-// saveExportTemplate saves the resource group template in a json file.
-//func saveExportTemplate(template resources.GroupExportResult, groupName string) error {
-//
-//	var (
-//		filepath     string
-//		filename     string
-//		fileTemplate string
-//	)
-//
-//	prefix, indent := "", "    "
-//	exported, err := json.MarshalIndent(template, prefix, indent)
-//	if err != nil {
-//		return fmt.Errorf("MarshalIndent failed %w", err)
-//	}
-//
-//	filepath = "../../results/raw_discovery_results/azure_iac_raw_templates/"
-//	fileTemplate = "%s-template.json"
-//	filename = fmt.Sprintf(fileTemplate, groupName)
-//
-//	// Check if folder exists
-//	err = os.MkdirAll(filepath, os.ModePerm)
-//	if err != nil {
-//		return fmt.Errorf("check for directory existence failed:  %w", err)
-//	}
-//
-//	err = ioutil.WriteFile(filepath+filename, exported, 0666)
-//	if err != nil {
-//		return fmt.Errorf("write file failed %w", err)
-//	} else {
-//		log.Infof("raw Azure ARM template file written to: {%s}{%s}", filepath, filename)
-//
-//	}
-//
-//	return nil
-//}
 
 func (d *azureARMTemplateDiscovery) handleObjectStorage(resourceValue map[string]interface{}, azureResources []interface{}, resourceGroup string) (voc.IsCompute, error) {
 
