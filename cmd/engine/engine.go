@@ -27,6 +27,7 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"net"
@@ -183,8 +184,11 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	// The hook functions in evidenceStore are implemented in StoreEvidence(s)
 	// The hook functions in assessment are implemented in AssessEvidence(s)
 
+	// Possible hook functions
 	// orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {})
 	// evidenceStoreService.RegisterEvidenceHook(func(result *evidence.Evidence, err error) {})
+
+	// hook function sends the newly created assessment result to the orchestrator service
 	assessmentService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
 
 		if err != nil {
@@ -196,6 +200,27 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		if err != nil {
 			log.Errorf("error storing assessment result in orchestrator: %v", err)
 		}
+	})
+
+	assessmentService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
+		if err != nil {
+			return
+		}
+
+		// calculate SHA256 from assessmentResult
+		resultString := fmt.Sprintf("%#v", result)
+		byteResult := []byte(resultString)
+		hasher := sha256.New()
+		bv := []byte(byteResult)
+		hasher.Write(bv)
+
+		fmt.Println("String of SHA256(assessment result) is ", hasher.Sum(nil))
+
+		//conn, _ := grpc.Dial("DLT-URL", grpc.WithTransportCredentials(insecure.NewCredentials()));
+		//if err != nil {
+		//	return
+		//}
+
 	})
 
 	authService.CreateDefaultUser(viper.GetString(APIDefaultUserFlag), viper.GetString(APIDefaultPasswordFlag))
