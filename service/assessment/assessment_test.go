@@ -167,7 +167,7 @@ func TestAssessEvidence(t *testing.T) {
 
 func TestService_AssessEvidences(t *testing.T) {
 	type fields struct {
-		ResultHook                    []func(result *assessment.AssessmentResult, err error)
+		ResultHooks                   []assessment.ResultHookFunc
 		results                       map[string]*assessment.AssessmentResult
 		UnimplementedAssessmentServer assessment.UnimplementedAssessmentServer
 	}
@@ -210,7 +210,7 @@ func TestService_AssessEvidences(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := Service{
-				resultHooks:                   tt.fields.ResultHook,
+				resultHooks:                   tt.fields.ResultHooks,
 				results:                       tt.fields.results,
 				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
 			}
@@ -227,7 +227,7 @@ func TestService_AssessEvidences(t *testing.T) {
 	}
 }
 
-func TestAssessmentResultHook(t *testing.T) {
+func TestAssessmentResultHooks(t *testing.T) {
 	var (
 		hookCallCounter = 0
 	)
@@ -244,9 +244,9 @@ func TestAssessmentResultHook(t *testing.T) {
 
 	// Check GRPC call
 	type args struct {
-		in0                 context.Context
-		evidence            *assessment.AssessEvidenceRequest
-		resultHookFunctions []func(assessmentResult *assessment.AssessmentResult, err error)
+		in0         context.Context
+		evidence    *assessment.AssessEvidenceRequest
+		resultHooks []assessment.ResultHookFunc
 	}
 	tests := []struct {
 		name     string
@@ -271,7 +271,8 @@ func TestAssessmentResultHook(t *testing.T) {
 							},
 						}, t),
 					}},
-				resultHookFunctions: []func(assessmentResult *assessment.AssessmentResult, err error){firstHookFunction, secondHookFunction},
+
+				resultHooks: []assessment.ResultHookFunc{storeAssessmentResultToOrchestrator, firstHookFunction, secondHookFunction},
 			},
 			wantErr:  false,
 			wantResp: &assessment.AssessEvidenceResponse{Status: true},
@@ -283,7 +284,7 @@ func TestAssessmentResultHook(t *testing.T) {
 			hookCallCounter = 0
 			s := NewService()
 
-			for i, hookFunction := range tt.args.resultHookFunctions {
+			for i, hookFunction := range tt.args.resultHooks {
 				s.RegisterAssessmentResultHook(hookFunction)
 
 				// Check if hook is registered
@@ -310,7 +311,7 @@ func TestAssessmentResultHook(t *testing.T) {
 	}
 }
 
-func TestService_ListAssessmentResults(t *testing.T) {
+func TestListAssessmentResults(t *testing.T) {
 	s := NewService()
 	_, err := s.AssessEvidence(context.TODO(), &assessment.AssessEvidenceRequest{
 		Evidence: &evidence.Evidence{
