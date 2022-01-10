@@ -28,10 +28,10 @@ package assessment
 import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/api/orchestrator"
-	orchestrator_service "clouditor.io/clouditor/service/orchestrator"
 	"clouditor.io/clouditor/voc"
 	"context"
+	"crypto/sha256"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -208,7 +208,6 @@ func TestAssessmentResultHook(t *testing.T) {
 	var (
 		hookCallCounter = 0
 		// Service needs to outlive the lifetime of the hook function
-		service = *orchestrator_service.NewService()
 	)
 
 	firstHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
@@ -221,25 +220,22 @@ func TestAssessmentResultHook(t *testing.T) {
 		log.Println("Hello from inside the secondHookFunction")
 	}
 
-	// TODO(garuppel): Delete that test after adding an additional test for assessment.Validate()
-	storeAssessmentResultToOrchestrator := func(result *assessment.AssessmentResult, err error) {
-
+	thirdHookFunction := func(result *assessment.AssessmentResult, err error) {
 		hookCallCounter++
-
 		if err != nil {
-			log.Println("error as input %w: ", err)
-			log.Infof("stop hook for storing assessment result")
 			return
 		}
 
-		_, err = service.StoreAssessmentResult(context.Background(), &orchestrator.StoreAssessmentResultRequest{
-			Result: result})
+		sha256Output := sha256.Sum256([]byte(result.String()))
+		sha256OutputString := fmt.Sprintf("%x", sha256Output)
 
-		if err != nil {
-			log.Errorf("error storing assessment result in orchestrator: %v", err)
-		} else {
-			log.Infof("assessment result stored in orchestrator")
-		}
+		log.Println("assessment result: ", result)
+		log.Printf("sha265 string: %s", sha256OutputString)
+
+		//conn, _ := grpc.Dial("DLT-URL", grpc.WithTransportCredentials(insecure.NewCredentials()));
+		//if err != nil {
+		//	return
+		//}
 	}
 
 	// Check GRPC call
@@ -271,7 +267,7 @@ func TestAssessmentResultHook(t *testing.T) {
 							},
 						}, t),
 					}},
-				resultHookFunctions: []func(assessmentResult *assessment.AssessmentResult, err error){storeAssessmentResultToOrchestrator, firstHookFunction, secondHookFunction},
+				resultHookFunctions: []func(assessmentResult *assessment.AssessmentResult, err error){firstHookFunction, secondHookFunction, thirdHookFunction},
 			},
 			wantErr:  false,
 			wantResp: &assessment.AssessEvidenceResponse{Status: true},

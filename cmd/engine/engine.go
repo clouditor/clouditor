@@ -207,20 +207,16 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			return
 		}
 
-		// calculate SHA256 from assessmentResult
-		resultString := fmt.Sprintf("%#v", result)
-		byteResult := []byte(resultString)
-		hasher := sha256.New()
-		bv := []byte(byteResult)
-		hasher.Write(bv)
+		sha256Output := sha256.Sum256([]byte(result.String()))
+		sha256OutputString := fmt.Sprintf("%x", sha256Output)
 
-		fmt.Println("String of SHA256(assessment result) is ", hasher.Sum(nil))
+		log.Println("assessment result: ", result)
+		log.Printf("sha265 string: %s", sha256OutputString)
 
 		//conn, _ := grpc.Dial("DLT-URL", grpc.WithTransportCredentials(insecure.NewCredentials()));
 		//if err != nil {
 		//	return
 		//}
-
 	})
 
 	authService.CreateDefaultUser(viper.GetString(APIDefaultUserFlag), viper.GetString(APIDefaultPasswordFlag))

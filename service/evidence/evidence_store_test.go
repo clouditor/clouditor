@@ -252,14 +252,14 @@ func TestEvidenceHook(t *testing.T) {
 			case <-ready1:
 				break
 			case <-time.After(10 * time.Second):
-				log.Println("Timeout while waiting for first StoreEvidence to be ready")
+				t.Log("Timeout while waiting for first StoreEvidence to be ready")
 			}
 
 			select {
 			case <-ready2:
 				break
 			case <-time.After(10 * time.Second):
-				log.Println("Timeout while waiting for second StoreEvidence to be ready")
+				t.Log("Timeout while waiting for second StoreEvidence to be ready")
 			}
 
 			if (err != nil) != tt.wantErr {
