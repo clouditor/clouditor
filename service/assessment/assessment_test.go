@@ -175,9 +175,9 @@ func TestService_AssessEvidences(t *testing.T) {
 		stream assessment.Assessment_AssessEvidencesServer
 	}
 	tests := []struct {
-		name     string
-		fields   fields
-		args     args
+		name           string
+		fields         fields
+		args           args
 		wantErr        bool
 		wantErrMessage string
 	}{
@@ -272,7 +272,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 						}, t),
 					}},
 
-				resultHooks: []assessment.ResultHookFunc{storeAssessmentResultToOrchestrator, firstHookFunction, secondHookFunction},
+				resultHooks: []assessment.ResultHookFunc{firstHookFunction, secondHookFunction},
 			},
 			wantErr:  false,
 			wantResp: &assessment.AssessEvidenceResponse{Status: true},

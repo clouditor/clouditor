@@ -79,7 +79,7 @@ func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenc
 			Status: false,
 		}
 
-		return res, status.Errorf(codes.InvalidArgument, "invalid req: %v", err)
+		return res, status.Errorf(codes.InvalidArgument, "invalid req: %v", newError)
 	}
 
 	err = s.handleEvidence(req.Evidence, resourceId)
@@ -127,7 +127,6 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 		}
 	}
 }
-
 
 // handleEvidence is the helper method for the actual assessment used by AssessEvidence and AssessEvidences
 func (s Service) handleEvidence(evidence *evidence.Evidence, resourceId string) error {
