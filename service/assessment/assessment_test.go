@@ -30,7 +30,6 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/voc"
 	"context"
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
