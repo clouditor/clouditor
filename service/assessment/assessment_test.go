@@ -234,12 +234,12 @@ func TestAssessmentResultHooks(t *testing.T) {
 
 	firstHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
 		hookCallCounter++
-		fmt.Println("Hello from inside the firstHookFunction")
+		log.Println("Hello from inside the firstHookFunction")
 	}
 
 	secondHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
 		hookCallCounter++
-		fmt.Println("Hello from inside the secondHookFunction")
+		log.Println("Hello from inside the secondHookFunction")
 	}
 
 	// Check GRPC call
