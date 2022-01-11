@@ -92,7 +92,6 @@ func NewService() *Service {
 
 // Start starts discovery
 func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (response *discovery.StartDiscoveryResponse, err error) {
-
 	response = &discovery.StartDiscoveryResponse{Successful: true}
 
 	log.Infof("Starting discovery...")
@@ -102,23 +101,32 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	// Establish connection to assessment component
 	var client assessment.AssessmentClient
 	// TODO(oxisto): support assessment on Another tcp/port
-	cc, err := grpc.Dial("localhost:9090", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial("localhost:9090", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not connect to assessment service: %v", err)
 	}
-	client = assessment.NewAssessmentClient(cc)
-	// ToDo(lebogg): whats with the err?
-	s.AssessmentStream, _ = client.AssessEvidences(context.Background())
+	// TODO(lebogg for oxisto): Can sth. go wrong in the next conn assignment (~10 lines below) due to defer? E.g. in the next assignment, grpc.Dial
+	// could throw an error, conn might be nil and therefore conn.close() will fail right before return?
+	defer conn.Close()
+	client = assessment.NewAssessmentClient(conn)
+	s.AssessmentStream, err = client.AssessEvidences(context.Background())
+	if err != nil {
+		log.Errorf("Could not get 'Assessment_AssessEvidencesClient' stream: %v", err)
+		return
+	}
 
 	// Establish connection to evidenceStore component
 	var evidenceStoreClient evidence.EvidenceStoreClient
-	cc, err = grpc.Dial("localhost:9090", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err = grpc.Dial("localhost:9090", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not connect to evidence store service: %v", err)
 	}
-	evidenceStoreClient = evidence.NewEvidenceStoreClient(cc)
-	// ToDo(lebogg): whats with the err?
-	s.EvidenceStoreStream, _ = evidenceStoreClient.StoreEvidences(context.Background())
+	evidenceStoreClient = evidence.NewEvidenceStoreClient(conn)
+	s.EvidenceStoreStream, err = evidenceStoreClient.StoreEvidences(context.Background())
+	if err != nil {
+		log.Errorf("Could not get 'EvidenceStore_StoreEvidencesClient' stream: %v", err)
+		return
+	}
 
 	// create an authorizer from env vars or Azure Managed Service Identity
 	authorizer, err := auth.NewAuthorizerFromCLI()
@@ -225,12 +233,12 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 		log.Debugf("Sending evidence for resource %s (%s)...", resource.GetID(), strings.Join(resource.GetType(), ", "))
 
 		if err = s.AssessmentStream.Send(&assessment.AssessEvidenceRequest{Evidence: e}); err != nil {
-			log.Errorf("Could not send evidence to Assessment: %v", err)
+			handleError(err, "Assessment")
 		}
 
 		err = s.EvidenceStoreStream.Send(&evidence.StoreEvidenceRequest{Evidence: e})
 		if err != nil {
-			log.Errorf("Could not send evidence to EvidenceStore: %v", err)
+			handleError(err, "Evidence Store")
 		}
 	}
 }
@@ -261,6 +269,18 @@ func (s Service) Query(_ context.Context, request *discovery.QueryRequest) (resp
 	return &discovery.QueryResponse{
 		Results: &structpb.ListValue{Values: r},
 	}, nil
+}
+
+// handleError prints out the error according to the status code
+func handleError(err error, dest string) {
+	prefix := "Could not send evidence to " + dest
+	if status.Code(err) == codes.Internal {
+		log.Errorf("%s. Internal error on the server side: %v", prefix, err)
+	} else if status.Code(err) == codes.InvalidArgument {
+		log.Errorf("Invalid evidence - provide evidence in the right format: %v", err)
+	} else {
+		log.WithError(err)
+	}
 }
 
 /*func saveResourcesToFilesystem(result ResultOntology, filename string) error {
