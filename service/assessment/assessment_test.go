@@ -231,7 +231,6 @@ func TestAssessmentResultHook(t *testing.T) {
 		var (
 			hashComplianceField [32]byte
 		)
-		// We need: id, hashValue, hashCompliance, evidences, metric
 
 		// TODO(all): Which id is needed or could it be empty?
 		// Compute hashValue of the assessment result
@@ -258,10 +257,16 @@ func TestAssessmentResultHook(t *testing.T) {
 		//log.Printf("assessment result: %s\n hash(assessment result): %s \n compliance field: %v \n hash(compliance field): %s \n", result, hashAssessmentResultString, result.Compliant, hashComplianceFieldString)
 		log.Printf("hash(assessment result): %s\n hash(compliance field): %s\n evidenceID: %s\n metricID: %s\n metricConfiguration: %s\n", hashAssessmentResultString, hashComplianceFieldString, evidenceID, metricID, metricConfiguration)
 
-		//conn, _ := grpc.Dial("DLT-URL", grpc.WithTransportCredentials(insecure.NewCredentials()));
+		//conn, _ := grpc.Dial("DLT-URL", grpc.WithTransportCredentials(insecure.NewCredentials()))
 		//if err != nil {
-		//	return
+		//	log.Fatalf("fail to dial DLT: %v", err)
 		//}
+
+		//defer conn.Close()
+
+		// TODO(all): Change to correct DLT method
+		// client := dlt.NewDltClient(conn)
+		// call a method with the following variables: id, hashValue, hashCompliance, evidences, metric
 	}
 
 	// Check GRPC call
