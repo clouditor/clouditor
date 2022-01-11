@@ -294,9 +294,9 @@ func TestAssessmentResultHooks(t *testing.T) {
 
 	// Check GRPC call
 	type args struct {
-		in0         context.Context
-		evidence    *assessment.AssessEvidenceRequest
-		resultHooks []assessment.ResultHookFunc
+		in0                  context.Context
+		evidence             *assessment.AssessEvidenceRequest
+		resultHooksFunctions []assessment.ResultHookFunc
 	}
 	tests := []struct {
 		name     string
@@ -321,7 +321,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 							},
 						}, t),
 					}},
-				resultHookFunctions: []func(assessmentResult *assessment.AssessmentResult, err error){firstHookFunction, secondHookFunction, thirdHookFunction},
+				resultHooksFunctions: []assessment.ResultHookFunc{firstHookFunction, secondHookFunction, thirdHookFunction},
 			},
 			wantErr:  false,
 			wantResp: &assessment.AssessEvidenceResponse{Status: true},
@@ -333,7 +333,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 			hookCallCounter = 0
 			s := NewService()
 
-			for i, hookFunction := range tt.args.resultHooks {
+			for i, hookFunction := range tt.args.resultHooksFunctions {
 				s.RegisterAssessmentResultHook(hookFunction)
 
 				// Check if hook is registered
@@ -355,7 +355,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 				t.Errorf("AssessEvidence() gotResp = %v, want %v", gotResp, tt.wantResp)
 			}
 			assert.NotEmpty(t, s.results)
-			assert.Equal(t, 12, hookCallCounter)
+			assert.Equal(t, 18, hookCallCounter)
 		})
 	}
 }
