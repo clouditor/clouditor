@@ -52,9 +52,9 @@ Service is an implementation of the Clouditor Assessment service. It should not 
 NewService constructor should be used. It implements the AssessmentServer interface
 */
 type Service struct {
-	// resultHooks is a hook function that can be used if one wants to be
+	// resultHooks is a list of hook functions that can be used if one wants to be
 	// informed about each assessment result
-	resultHooks []func(result *assessment.AssessmentResult, err error)
+	resultHooks []assessment.ResultHookFunc
 
 	results map[string]*assessment.AssessmentResult
 	assessment.UnimplementedAssessmentServer
@@ -68,8 +68,21 @@ func NewService() *Service {
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
 func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
-	err = s.handleEvidence(req.Evidence)
+	resourceId, err := req.Evidence.Validate()
+	if err != nil {
+		log.Errorf("Invalid evidence: %v", err)
+		newError := fmt.Errorf("invalid evidence: %w", err)
 
+		s.informHooks(nil, newError)
+
+		res = &assessment.AssessEvidenceResponse{
+			Status: false,
+		}
+
+		return res, status.Errorf(codes.InvalidArgument, "invalid req: %v", newError)
+	}
+
+	err = s.handleEvidence(req.Evidence, resourceId)
 	if err != nil {
 		res = &assessment.AssessEvidenceResponse{
 			Status: false,
@@ -104,34 +117,29 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 			return err
 		}
 
-		err = s.handleEvidence(req.Evidence)
+		// Call AssessEvidence for assessing a single evidence
+		assessEvidencesReq := &assessment.AssessEvidenceRequest{
+			Evidence: req.Evidence,
+		}
+		_, err = s.AssessEvidence(context.Background(), assessEvidencesReq)
 		if err != nil {
-			return status.Errorf(codes.Internal, "error while handling evidence: %v", err)
+			return err
 		}
 	}
 }
 
-// handleEvidence is the common evidence assessment of AssessEvidence and AssessEvidences
-func (s Service) handleEvidence(evidence *evidence.Evidence) error {
-	resourceId, err := evidence.Validate()
-	if err != nil {
-		log.Errorf("Invalid evidence: %v", err)
-		newError := fmt.Errorf("invalid evidence: %w", err)
-
-		s.informHook(nil, newError)
-
-		return newError
-	}
+// handleEvidence is the helper method for the actual assessment used by AssessEvidence and AssessEvidences
+func (s Service) handleEvidence(evidence *evidence.Evidence, resourceId string) error {
 
 	log.Infof("Running evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, evidence.ToolId, evidence.Timestamp)
 	log.Debugf("Evidence: %+v", evidence)
 
 	evaluations, err := policies.RunEvidence(evidence)
 	if err != nil {
-		log.Errorf("Could not evaluate evidence: %v", err)
 		newError := fmt.Errorf("could not evaluate evidence: %w", err)
+		log.Errorf(newError.Error())
 
-		s.informHook(nil, newError)
+		s.informHooks(nil, newError)
 
 		return newError
 	}
@@ -163,13 +171,14 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 		// Just a little hack to quickly enable multiple results per resource
 		s.results[fmt.Sprintf("%s-%d", resourceId, i)] = result
 
-		s.informHook(result, nil)
+		s.informHooks(result, nil)
 	}
 
 	return nil
 }
 
-func (s Service) informHook(result *assessment.AssessmentResult, err error) {
+// informHooks informs the registered hook functions
+func (s Service) informHooks(result *assessment.AssessmentResult, err error) {
 	// Inform our hook, if we have any
 	if s.resultHooks != nil {
 		for _, hook := range s.resultHooks {

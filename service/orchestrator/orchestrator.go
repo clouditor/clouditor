@@ -92,7 +92,7 @@ func NewService() *Service {
 
 		b, err := ioutil.ReadFile(fileName)
 		if err != nil {
-			log.Errorf("Could not retrieve default configuration for metric %s: %s. Ignoring metric", m.Id, err)
+			log.Errorf("Could not retrieve default configuration for metric %s: %v. Ignoring metric", m.Id, err)
 			continue
 		}
 
@@ -100,7 +100,7 @@ func NewService() *Service {
 
 		err = json.Unmarshal(b, &config)
 		if err != nil {
-			log.Errorf("Error in reading default configuration for metric %s: %s. Ignoring metric", m.Id, err)
+			log.Errorf("Error in reading default configuration for metric %s: %v. Ignoring metric", m.Id, err)
 			continue
 		}
 
@@ -199,11 +199,20 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 
 	resp = &orchestrator.StoreAssessmentResultResponse{}
 
-	err = s.handleResult(req.Result)
+	_, err = req.Result.Validate()
 
 	if err != nil {
-		return resp, status.Errorf(codes.InvalidArgument, "error while handling assessment result: %v", err)
+		log.Errorf("Invalid assessment result: %v", err)
+		newError := fmt.Errorf("invalid assessment result: %w", err)
+
+		s.informHook(nil, newError)
+
+		return resp, status.Errorf(codes.InvalidArgument, "invalid req: %v", err)
 	}
+
+	s.results[req.Result.Id] = req.Result
+
+	s.informHook(req.Result, nil)
 
 	return
 }
@@ -224,30 +233,17 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 			return err
 		}
 
-		err = s.handleResult(result)
+		// Call StoreAssessmentResult() for storing a single assessment
+		storeAssessmentResultReq := &orchestrator.StoreAssessmentResultRequest{
+			Result: result,
+		}
+
+		_, err = s.StoreAssessmentResult(context.Background(), storeAssessmentResultReq)
 		if err != nil {
-			return status.Errorf(codes.Internal, "error while handling assessment result: %v", err)
+			return err
 		}
 	}
 
-}
-
-func (s Service) handleResult(result *assessment.AssessmentResult) (err error) {
-	_, err = result.Validate()
-	if err != nil {
-		log.Errorf("Invalid assessment result: %v", err)
-		newError := fmt.Errorf("invalid assessment result: %w", err)
-
-		s.informHook(nil, newError)
-
-		return
-	}
-
-	s.results[result.Id] = result
-
-	s.informHook(result, nil)
-
-	return
 }
 
 func (s *Service) RegisterAssessmentResultHook(hook func(result *assessment.AssessmentResult, err error)) {
@@ -262,36 +258,3 @@ func (s Service) informHook(result *assessment.AssessmentResult, err error) {
 		}
 	}
 }
-
-//// Tools
-//
-//// TODO Implement DeregisterAssessmentTool
-//func ( *Service) RegisterAssessmentTool (ctx context.Context, request *orchestrator.RegisterAssessmentToolRequest) (tool *orchestrator.AssessmentTool, err error) {
-//	// TBD
-//	return tool, err
-//}
-//
-//// TODO Implement UpdateAssessmentTool
-//func ( *Service) UpdateAssessmentTool (ctx context.Context, request *orchestrator.UpdateAssessmentToolRequest) (tool *orchestrator.AssessmentTool, err error) {
-//	// TBD
-//	return tool, err
-//}
-//
-//// TODO Implement DeregisterAssessmentTool
-//func ( *Service) DeregisterAssessmentTool (ctx context.Context, request *orchestrator.DeregisterAssessmentToolRequest) (nil, err error) {
-//	// TBD
-//	return nil, err
-//}
-//
-//
-//// TODO Implement ListAssessmentTools
-//func ( *Service) ListAssessmentTools (ctx context.Context, request *orchestrator.ListAssessmentToolsRequest) (tools *orchestrator.ListAssessmentToolsResponse, err error) {
-//	// TBD
-//	return tools, err
-//}
-//
-//// TODO Implement GetAssessmentTool
-//func ( *Service) GetAssessmentTool (ctx context.Context, request *orchestrator.GetAssessmentToolRequest) (tool *orchestrator.AssessmentTool, err error) {
-//	// TBD
-//	return tool, err
-//}
