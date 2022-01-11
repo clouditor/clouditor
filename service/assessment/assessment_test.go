@@ -220,17 +220,43 @@ func TestAssessmentResultHook(t *testing.T) {
 		log.Println("Hello from inside the secondHookFunction")
 	}
 
+	// example implementation for the DLT
+	// TODO(all): Delete when no longer needed
 	thirdHookFunction := func(result *assessment.AssessmentResult, err error) {
 		hookCallCounter++
 		if err != nil {
 			return
 		}
 
-		sha256Output := sha256.Sum256([]byte(result.String()))
-		sha256OutputString := fmt.Sprintf("%x", sha256Output)
+		var (
+			hashComplianceField [32]byte
+		)
+		// We need: id, hashValue, hashCompliance, evidences, metric
 
-		log.Println("assessment result: ", result)
-		log.Printf("sha265 string: %s", sha256OutputString)
+		// TODO(all): Which id is needed or could it be empty?
+		// Compute hashValue of the assessment result
+		hashAssessmentResult := sha256.Sum256([]byte(result.String()))
+		hashAssessmentResultString := fmt.Sprintf("%x", hashAssessmentResult)
+
+		// Compute hashCompliance of the assessment result compliance field
+		if result.Compliant {
+			hashComplianceField = sha256.Sum256([]byte("true"))
+		} else {
+			hashComplianceField = sha256.Sum256([]byte("false"))
+		}
+
+		// Get evidences
+		// TODO(all): Do we need the whole evidence or only the evidenceID?
+		evidenceID := result.EvidenceId
+
+		// Get metric
+		// TODO(all): metricID or metricConfiguration or both?
+		metricID := result.MetricId
+		metricConfiguration := result.MetricConfiguration
+
+		hashComplianceFieldString := fmt.Sprintf("%x", hashComplianceField)
+		//log.Printf("assessment result: %s\n hash(assessment result): %s \n compliance field: %v \n hash(compliance field): %s \n", result, hashAssessmentResultString, result.Compliant, hashComplianceFieldString)
+		log.Printf("hash(assessment result): %s\n hash(compliance field): %s\n evidenceID: %s\n metricID: %s\n metricConfiguration: %s\n", hashAssessmentResultString, hashComplianceFieldString, evidenceID, metricID, metricConfiguration)
 
 		//conn, _ := grpc.Dial("DLT-URL", grpc.WithTransportCredentials(insecure.NewCredentials()));
 		//if err != nil {
