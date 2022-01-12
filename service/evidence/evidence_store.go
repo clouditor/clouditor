@@ -29,6 +29,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"sync"
 
 	"clouditor.io/clouditor/api/evidence"
 	"github.com/sirupsen/logrus"
@@ -47,6 +48,8 @@ type Service struct {
 	// evidenceHooks is a list of hook functions that can be used if one wants to be
 	// informed about each evidence
 	evidenceHooks []evidence.EvidenceHookFunc
+	// mu is used for (un)locking result hook calls
+	mu sync.Mutex
 
 	evidence.UnimplementedEvidenceStoreServer
 }
@@ -69,7 +72,7 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 		log.Errorf("Invalid evidence: %v", err)
 		newError := fmt.Errorf("invalid evidence: %w", err)
 
-		s.informHooks(nil, newError)
+		go s.informHooks(nil, newError)
 
 		resp = &evidence.StoreEvidenceResponse{
 			Status: false,
@@ -79,7 +82,7 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 	}
 
 	s.evidences[req.Evidence.Id] = req.Evidence
-	s.informHooks(req.Evidence, nil)
+	go s.informHooks(req.Evidence, nil)
 
 	resp = &evidence.StoreEvidenceResponse{
 		Status: true,
@@ -130,11 +133,14 @@ func (s *Service) RegisterEvidenceHook(evidenceHook evidence.EvidenceHookFunc) {
 	s.evidenceHooks = append(s.evidenceHooks, evidenceHook)
 }
 
-func (s Service) informHooks(result *evidence.Evidence, err error) {
+func (s *Service) informHooks(result *evidence.Evidence, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	// Inform our hook, if we have any
 	if s.evidenceHooks != nil {
 		for _, hook := range s.evidenceHooks {
-			go hook(result, err)
+			// TODO(all): We could do hook concurrent again (assuming different hooks don't interfere with each other)
+			hook(result, err)
 		}
 	}
 }

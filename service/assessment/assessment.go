@@ -41,6 +41,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"io"
+	"sync"
 )
 
 var log *logrus.Entry
@@ -65,6 +66,8 @@ type Service struct {
 	// ResultHook is a hook function that can be used if one wants to be
 	// informed about each assessment result
 	resultHooks []assessment.ResultHookFunc
+	// mu is used for (un)locking result hook calls
+	mu sync.Mutex
 
 	// Currently, results are just stored as a map (=in-memory). In the future, we will use a DB.
 	results map[string]*assessment.AssessmentResult
@@ -105,7 +108,7 @@ func (s *Service) Start(_ context.Context, _ *assessment.StartAssessmentRequest)
 }
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
-func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
+func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
 	resourceId, err := req.Evidence.Validate()
 	if err != nil {
 		log.Errorf("Invalid evidence: %v", err)
@@ -147,7 +150,7 @@ func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenc
 }
 
 // AssessEvidences is a method implementation of the assessment interface: It assesses multiple evidences (stream)
-func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) (err error) { // Set up stream to Evidence Store.
+func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) (err error) { // Set up stream to Evidence Store.
 	var (
 		req *assessment.AssessEvidenceRequest
 	)
@@ -177,7 +180,7 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 }
 
 // handleEvidence is the helper method for the actual assessment used by AssessEvidence and AssessEvidences
-func (s Service) handleEvidence(evidence *evidence.Evidence, resourceId string) error {
+func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string) error {
 
 	log.Infof("Running evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, evidence.ToolId, evidence.Timestamp)
 	log.Debugf("Evidence: %+v", evidence)
@@ -187,7 +190,7 @@ func (s Service) handleEvidence(evidence *evidence.Evidence, resourceId string) 
 		newError := fmt.Errorf("could not evaluate evidence: %w", err)
 		log.Errorf(newError.Error())
 
-		s.informHooks(nil, newError)
+		go s.informHooks(nil, newError)
 
 		return newError
 	}
@@ -222,7 +225,7 @@ func (s Service) handleEvidence(evidence *evidence.Evidence, resourceId string) 
 		s.results[fmt.Sprintf("%s-%d", resourceId, i)] = result
 
 		// TODO(all): Currently, we sent result via hook. But I think it would be cleaner to do it straight here.
-		s.informHooks(result, nil)
+		go s.informHooks(result, nil)
 	}
 
 	return nil
@@ -239,17 +242,20 @@ func convertTargetValue(value interface{}) (convertedTargetValue *structpb.Value
 }
 
 // informHooks informs the registered hook functions
-func (s Service) informHooks(result *assessment.AssessmentResult, err error) {
+func (s *Service) informHooks(result *assessment.AssessmentResult, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	// Inform our hook, if we have any
 	if s.resultHooks != nil {
 		for _, hook := range s.resultHooks {
+			// TODO(all): We could do hook concurrent again (assuming different hooks don't interfere with each other)
 			hook(result, err)
 		}
 	}
 }
 
 // sendToEvidenceStore sends the provided evidence to the evidence store
-func (s Service) sendToEvidenceStore(e *evidence.Evidence) {
+func (s *Service) sendToEvidenceStore(e *evidence.Evidence) {
 	// Check if evidenceStoreStream is already established (via Start method)
 	if s.evidenceStoreStream != nil {
 		err := s.evidenceStoreStream.Send(&evidence.StoreEvidenceRequest{Evidence: e})
@@ -263,7 +269,7 @@ func (s Service) sendToEvidenceStore(e *evidence.Evidence) {
 }
 
 // ListAssessmentResults is a method implementation of the assessment interface
-func (s Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
+func (s *Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
 	res = new(assessment.ListAssessmentResultsResponse)
 	res.Results = []*assessment.AssessmentResult{}
 
