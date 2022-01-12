@@ -232,11 +232,33 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 }
 
 func convertTargetValue(value interface{}) (convertedTargetValue *structpb.Value) {
-	if str, ok := value.(string); ok {
-		convertedTargetValue = &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: str}}
+	if valueStr, ok := value.(string); ok {
+		convertedTargetValue = &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: valueStr}}
+	} else if valueBool, ok := value.(bool); ok {
+		convertedTargetValue = &structpb.Value{Kind: &structpb.Value_BoolValue{BoolValue: valueBool}}
+	} else if valueInt, ok := value.(int); ok {
+		convertedTargetValue = &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: float64(valueInt)}}
+	} else if valueFloat64, ok := value.(float64); ok {
+		convertedTargetValue = &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: valueFloat64}}
+	} else if valueFloat32, ok := value.(float32); ok {
+		convertedTargetValue = &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: float64(valueFloat32)}}
 	} else {
-		// TODO(lebogg): FOr now, for Testing!!! Change!
-		convertedTargetValue = &structpb.Value{Kind: &structpb.Value_BoolValue{BoolValue: true}}
+		// TODO(all): REPRESENT ALL TYPES BUT how to convert the following?
+		// "target_value" : [
+		//    {
+		//      "runtimeLanguage": "Java",
+		//      "runtimeVersion": 11
+		//    },
+		//    {
+		//      "runtimeLanguage": "Python",
+		//      "runtimeVersion": 3.8
+		//    },
+		//    {
+		//      "runtimeLanguage": "PHP",
+		//      "runtimeVersion": 7.4
+		//    }
+		//  ]
+		convertedTargetValue = &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "No way found to represent but is non-empty!"}}
 	}
 	return
 }
