@@ -254,7 +254,7 @@ func (s Service) informHook(result *assessment.AssessmentResult, err error) {
 	// Inform our hook, if we have any
 	if s.AssessmentResultHooks != nil {
 		for _, hook := range s.AssessmentResultHooks {
-			go hook(result, err)
+			hook(result, err)
 		}
 	}
 }
