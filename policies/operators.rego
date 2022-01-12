@@ -1,5 +1,9 @@
 package clouditor
 
+
+operator = data.operator
+target_value = data.target_value
+
 compare(operator, target_value, actual_value) {
     operator == "=="
     target_value == actual_value

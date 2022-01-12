@@ -130,6 +130,7 @@ func RunMap(baseDir string, metric string, m map[string]interface{}) (data map[s
 	} else if data["applicable"] == false {
 		return nil, nil
 	} else {
+		fmt.Println(data)
 		return data, nil
 	}
 }

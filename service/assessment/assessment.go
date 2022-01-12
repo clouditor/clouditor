@@ -201,7 +201,7 @@ func (s Service) handleEvidence(evidence *evidence.Evidence, resourceId string) 
 
 		// Get output values of Rego evaluation. If they are not given, the zero value is used
 		operator, _ := data["operator"].(string)
-		targetValue, _ := data["target_value"].(*structpb.Value)
+		targetValue, _ := data["target_value"]
 		compliant, _ := data["compliant"].(bool)
 
 		result := &assessment.AssessmentResult{
@@ -209,7 +209,7 @@ func (s Service) handleEvidence(evidence *evidence.Evidence, resourceId string) 
 			Timestamp: timestamppb.Now(),
 			MetricId:  metricId,
 			MetricConfiguration: &assessment.MetricConfiguration{
-				TargetValue: targetValue,
+				TargetValue: convertTargetValue(targetValue),
 				Operator:    operator,
 			},
 			Compliant:             compliant,
@@ -226,6 +226,16 @@ func (s Service) handleEvidence(evidence *evidence.Evidence, resourceId string) 
 	}
 
 	return nil
+}
+
+func convertTargetValue(value interface{}) (convertedTargetValue *structpb.Value) {
+	if str, ok := value.(string); ok {
+		convertedTargetValue = &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: str}}
+	} else {
+		// TODO(lebogg): FOr now, for Testing!!! Change!
+		convertedTargetValue = &structpb.Value{Kind: &structpb.Value_BoolValue{BoolValue: true}}
+	}
+	return
 }
 
 // informHooks informs the registered hook functions
