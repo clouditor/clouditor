@@ -58,20 +58,23 @@ type Service struct {
 
 	Configuration
 
-	// TODO(lebogg): comment
+	// evidenceStoreStream send evidences to the Evidence Store
 	evidenceStoreStream evidence.EvidenceStore_StoreEvidencesClient
 
 	// ResultHook is a hook function that can be used if one wants to be
 	// informed about each assessment result
 	ResultHook []func(result *assessment.AssessmentResult, err error)
 
+	// Currently, results are just stored as a map (=in-memory). In the future, we will use a DB.
 	results map[string]*assessment.AssessmentResult
 }
 
+// Configuration contains an assessment service's information about connection to other services, e.g. Evidence Store
 type Configuration struct {
 	evidenceStoreTargetAddress string
 }
 
+// NewService creates a new assessment service with default values
 func NewService() *Service {
 	return &Service{
 		results:       make(map[string]*assessment.AssessmentResult),
@@ -79,28 +82,38 @@ func NewService() *Service {
 	}
 }
 
-func (s *Service) Start(_ context.Context, _ *assessment.StartAssessmentRequest) (*assessment.StartAssessmentResponse, error) {
-	var (
-		cc                  *grpc.ClientConn
-		evidenceStoreClient evidence.EvidenceStoreClient
-		err                 error
-	)
-
+// Start starts assessment by setting up connections to other services. In the future, also with manual configurations in request
+// TODO: Maybe rename (proto) to ConfigureConnections. For now, we do it in assess evidence
+// TODO: Add CLI Command
+func (s *Service) Start(_ context.Context, _ *assessment.StartAssessmentRequest) (resp *assessment.StartAssessmentResponse, err error) {
 	// Establish connection to evidenceStore component
-	cc, err = grpc.Dial(s.Configuration.evidenceStoreTargetAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(s.Configuration.evidenceStoreTargetAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not connect to evidence store service: %v", err)
 	}
-	evidenceStoreClient = evidence.NewEvidenceStoreClient(cc)
+	// defer conn.Close()
+	evidenceStoreClient := evidence.NewEvidenceStoreClient(conn)
 	s.evidenceStoreStream, err = evidenceStoreClient.StoreEvidences(context.Background())
 	if err != nil {
+		// TODO(all): We dont have to print it, since the caller (e.g. CLI) can/should do it, right?
 		return nil, status.Errorf(codes.Internal, "could not set up stream for storing evidences: %v", err)
 	}
+
+	log.Infof("Assessment Started")
 	return &assessment.StartAssessmentResponse{}, nil
 }
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
 func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
+	// Set up stream to Evidence Store.
+	// TODO(lebogg): If assessment is used as standalone service (without fwd evidences) maybe adapt code, i.e. no error when ConfigureConnections sets no evidence store
+	if s.evidenceStoreStream == nil {
+		if err = s.setEvidenceStoreStream(); err != nil {
+			return nil, err
+		}
+	}
+
+	// Assess evidence
 	err = s.handleEvidence(req.Evidence)
 
 	if err != nil {
@@ -111,8 +124,6 @@ func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenc
 		return res, status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
 	}
 
-	// TODO(lebogg): Send evidence to evidence store (as stream)
-
 	res = &assessment.AssessEvidenceResponse{
 		Status: true,
 	}
@@ -121,8 +132,13 @@ func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenc
 }
 
 // AssessEvidences is a method implementation of the assessment interface: It assesses multiple evidences (stream)
-// TODO(lebogg): Send evidence to evidence store (as stream)
-func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) (err error) {
+func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) (err error) { // Set up stream to Evidence Store.
+	// TODO(lebogg): When merging, assess evidences will call assess evidence and this can be omitted
+	if s.evidenceStoreStream == nil {
+		if err = s.setEvidenceStoreStream(); err != nil {
+			return err
+		}
+	}
 	var (
 		req *assessment.AssessEvidenceRequest
 	)
@@ -179,6 +195,8 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 		}
 		return newError
 	}
+	// The evidence can be sent to the evidence store since it has been successfully evaluated
+	go s.sendToEvidenceStore(evidence)
 
 	for i, data := range evaluations {
 		metricId := data["metricId"].(string)
@@ -207,6 +225,7 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 		// Just a little hack to quickly enable multiple results per resource
 		s.results[fmt.Sprintf("%s-%d", resourceId, i)] = result
 
+		// TODO(all): Currently, we sent result via hook. But I think it would be cleaner to do it straight here.
 		// Inform our hook, if we have any
 		if s.ResultHook != nil {
 			for _, hook := range s.ResultHook {
@@ -216,6 +235,20 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 	}
 
 	return nil
+}
+
+// sendToEvidenceStore sends the provided evidence to the evidence store
+func (s Service) sendToEvidenceStore(e *evidence.Evidence) {
+	// Check if evidenceStoreStream is already established (via Start method)
+	if s.evidenceStoreStream != nil {
+		err := s.evidenceStoreStream.Send(&evidence.StoreEvidenceRequest{Evidence: e})
+		if err != nil {
+			log.WithError(err)
+		}
+
+	} else {
+		log.Errorf("Evidence couldn't be sent to Evidence Store. Did you establish connection by starting the assessment?")
+	}
 }
 
 // ListAssessmentResults is a method implementation of the assessment interface
@@ -232,4 +265,20 @@ func (s Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAsse
 
 func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result *assessment.AssessmentResult, err error)) {
 	s.ResultHook = append(s.ResultHook, assessmentResultsHook)
+}
+
+func (s *Service) setEvidenceStoreStream() error {
+	log.Infof("Establishing connection to Evidence Store")
+	// Establish connection to evidenceStore component
+	conn, err := grpc.Dial(s.Configuration.evidenceStoreTargetAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return status.Errorf(codes.Internal, "could not connect to evidence store service: %v", err)
+	}
+	evidenceStoreClient := evidence.NewEvidenceStoreClient(conn)
+	s.evidenceStoreStream, err = evidenceStoreClient.StoreEvidences(context.Background())
+	if err != nil {
+		return status.Errorf(codes.Internal, "could not set up stream for storing evidences: %v", err)
+	}
+	log.Infof("Connected to Evidence Store")
+	return nil
 }

@@ -61,6 +61,7 @@ components:
                     $ref: '#/components/schemas/ListValue'
         StartDiscoveryRequest:
             properties: {}
+            description: 'TODO(lebogg): Add destinations (url+port) for assessment and evidence store'
         StartDiscoveryResponse:
             properties:
                 successful:

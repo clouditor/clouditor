@@ -48,6 +48,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// TODO(lebogg): Add destinations (url+port) for assessment and evidence store
 type StartDiscoveryRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

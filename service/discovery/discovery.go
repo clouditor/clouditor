@@ -27,7 +27,6 @@ package discovery
 
 import (
 	"context"
-	"strings"
 	"time"
 
 	"clouditor.io/clouditor/service/discovery/azure"
@@ -63,8 +62,7 @@ type Service struct {
 	Configurations map[discovery.Discoverer]*Configuration
 
 	// TODO(oxisto) do not expose this. just makes tests easier for now
-	AssessmentStream    assessment.Assessment_AssessEvidencesClient
-	EvidenceStoreStream evidence.EvidenceStore_StoreEvidencesClient
+	AssessmentStream assessment.Assessment_AssessEvidencesClient
 
 	resources map[string]voc.IsCloudResource
 	scheduler *gocron.Scheduler
@@ -91,8 +89,8 @@ func NewService() *Service {
 }
 
 // Start starts discovery
-func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (response *discovery.StartDiscoveryResponse, err error) {
-	response = &discovery.StartDiscoveryResponse{Successful: true}
+func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
+	resp = &discovery.StartDiscoveryResponse{Successful: true}
 
 	log.Infof("Starting discovery...")
 
@@ -105,27 +103,10 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not connect to assessment service: %v", err)
 	}
-	// TODO(lebogg for oxisto): Can sth. go wrong in the next conn assignment (~10 lines below) due to defer? E.g. in the next assignment, grpc.Dial
-	// could throw an error, conn might be nil and therefore conn.close() will fail right before return?
-	defer conn.Close()
 	client = assessment.NewAssessmentClient(conn)
 	s.AssessmentStream, err = client.AssessEvidences(context.Background())
 	if err != nil {
-		log.Errorf("Could not get 'Assessment_AssessEvidencesClient' stream: %v", err)
-		return
-	}
-
-	// Establish connection to evidenceStore component
-	var evidenceStoreClient evidence.EvidenceStoreClient
-	conn, err = grpc.Dial("localhost:9090", grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not connect to evidence store service: %v", err)
-	}
-	evidenceStoreClient = evidence.NewEvidenceStoreClient(conn)
-	s.EvidenceStoreStream, err = evidenceStoreClient.StoreEvidences(context.Background())
-	if err != nil {
-		log.Errorf("Could not get 'EvidenceStore_StoreEvidencesClient' stream: %v", err)
-		return
+		return nil, status.Errorf(codes.Internal, "could not set up stream for assessing evidences: %v", err)
 	}
 
 	// create an authorizer from env vars or Azure Managed Service Identity
@@ -179,7 +160,7 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 
 	s.scheduler.StartAsync()
 
-	return response, nil
+	return resp, nil
 }
 
 func (s Service) Shutdown() {
@@ -225,21 +206,11 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 			continue
 		}
 
-		if s.EvidenceStoreStream == nil {
-			log.Warnf("Evidence stream to EvidenceStore component not available")
-			continue
-		}
-
-		log.Debugf("Sending evidence for resource %s (%s)...", resource.GetID(), strings.Join(resource.GetType(), ", "))
-
 		if err = s.AssessmentStream.Send(&assessment.AssessEvidenceRequest{Evidence: e}); err != nil {
 			handleError(err, "Assessment")
 		}
-
-		err = s.EvidenceStoreStream.Send(&evidence.StoreEvidenceRequest{Evidence: e})
-		if err != nil {
-			handleError(err, "Evidence Store")
-		}
+		// TODO(lebogg): Remove before Merge
+		log.Infof("Sent evidence to assessment")
 	}
 }
 
