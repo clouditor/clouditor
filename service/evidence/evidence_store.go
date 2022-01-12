@@ -1,3 +1,28 @@
+// Copyright 2016-2020 Fraunhofer AISEC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+//           $$\                           $$\ $$\   $$\
+//           $$ |                          $$ |\__|  $$ |
+//  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+// $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+// $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
+// $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+// \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+//  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+//
+// This file is part of Clouditor Community Edition.
+
 package evidences
 
 import (
@@ -19,8 +44,9 @@ type Service struct {
 	// Currently only in-memory
 	evidences map[string]*evidence.Evidence
 
-	// Hook
-	EvidenceHook []func(result *evidence.Evidence, err error)
+	// evidenceHooks is a list of hook functions that can be used if one wants to be
+	// informed about each evidence
+	evidenceHooks []evidence.EvidenceHookFunc
 
 	evidence.UnimplementedEvidenceStoreServer
 }
@@ -36,61 +62,56 @@ func init() {
 }
 
 // StoreEvidence is a method implementation of the evidenceServer interface: It receives an req and stores it
-func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRequest) (*evidence.StoreEvidenceResponse, error) {
-	var (
-		resp = &evidence.StoreEvidenceResponse{}
-		err  error
-		e    = req.GetEvidence()
-	)
+func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRequest) (resp *evidence.StoreEvidenceResponse, err error) {
 
-	_, err = e.Validate()
+	_, err = req.Evidence.Validate()
 	if err != nil {
 		log.Errorf("Invalid evidence: %v", err)
 		newError := fmt.Errorf("invalid evidence: %w", err)
 
-		// Inform our hook, if we have any
-		if s.EvidenceHook != nil {
-			for _, hook := range s.EvidenceHook {
-				go hook(nil, newError)
-			}
+		s.informHooks(nil, newError)
+
+		resp = &evidence.StoreEvidenceResponse{
+			Status: false,
 		}
 
 		return resp, status.Errorf(codes.InvalidArgument, "invalid req: %v", err)
 	}
 
-	s.evidences[e.Id] = e
-	resp.Status = true
+	s.evidences[req.Evidence.Id] = req.Evidence
+	s.informHooks(req.Evidence, nil)
 
-	// Inform our hook, if we have any
-	if s.EvidenceHook != nil {
-		for _, hook := range s.EvidenceHook {
-			go hook(e, nil)
-		}
+	resp = &evidence.StoreEvidenceResponse{
+		Status: true,
 	}
 
-	return resp, err
+	return resp, nil
 }
 
 // StoreEvidences is a method implementation of the evidenceServer interface: It receives evidences and stores them
 func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesServer) (err error) {
-	var (
-		req *evidence.StoreEvidenceRequest
-		e   *evidence.Evidence
-	)
+	var req *evidence.StoreEvidenceRequest
+
 	for {
 		req, err = stream.Recv()
-		e = req.GetEvidence()
-		if err == io.EOF {
-			log.Infof("Stopped receiving streamed evidences")
-			return stream.SendAndClose(&emptypb.Empty{})
-		}
-		s.evidences[e.Id] = e
 
-		// Inform our hook, if we have any
-		if s.EvidenceHook != nil {
-			for _, hook := range s.EvidenceHook {
-				go hook(e, nil)
+		if err != nil {
+			// If no more input of the stream is available, return SendAndClose `error`
+			if err == io.EOF {
+				log.Infof("Stopped receiving streamed evidences")
+				return stream.SendAndClose(&emptypb.Empty{})
 			}
+
+			return err
+		}
+
+		// Call StoreEvidence() for storing a single evidence
+		evidenceRequest := &evidence.StoreEvidenceRequest{
+			Evidence: req.Evidence,
+		}
+		_, err = s.StoreEvidence(context.Background(), evidenceRequest)
+		if err != nil {
+			return err
 		}
 	}
 }
@@ -105,6 +126,15 @@ func (s *Service) ListEvidences(_ context.Context, _ *evidence.ListEvidencesRequ
 	return &evidence.ListEvidencesResponse{Evidences: listOfEvidences}, nil
 }
 
-func (s *Service) RegisterEvidenceHook(evidenceHook func(result *evidence.Evidence, err error)) {
-	s.EvidenceHook = append(s.EvidenceHook, evidenceHook)
+func (s *Service) RegisterEvidenceHook(evidenceHook evidence.EvidenceHookFunc) {
+	s.evidenceHooks = append(s.evidenceHooks, evidenceHook)
+}
+
+func (s Service) informHooks(result *evidence.Evidence, err error) {
+	// Inform our hook, if we have any
+	if s.evidenceHooks != nil {
+		for _, hook := range s.evidenceHooks {
+			go hook(result, err)
+		}
+	}
 }

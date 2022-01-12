@@ -28,8 +28,6 @@ package assessment
 import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/api/orchestrator"
-	orchestrator_service "clouditor.io/clouditor/service/orchestrator"
 	"clouditor.io/clouditor/voc"
 	"context"
 	"fmt"
@@ -159,9 +157,10 @@ func TestAssessEvidence(t *testing.T) {
 		evidence *evidence.Evidence
 	}
 	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
+		name     string
+		args     args
+		wantResp *assessment.AssessEvidenceResponse
+		wantErr  bool
 	}{
 		{
 			name: "Assess resource without id",
@@ -172,6 +171,9 @@ func TestAssessEvidence(t *testing.T) {
 					Timestamp: timestamppb.Now(),
 					Resource:  toStruct(voc.VirtualMachine{}, t),
 				},
+			},
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status: false,
 			},
 			wantErr: true,
 		},
@@ -184,6 +186,9 @@ func TestAssessEvidence(t *testing.T) {
 					Resource:  toStruct(voc.VirtualMachine{}, t),
 				},
 			},
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status: false,
+			},
 			wantErr: true,
 		},
 		{
@@ -194,6 +199,9 @@ func TestAssessEvidence(t *testing.T) {
 					ToolId:   "mock",
 					Resource: toStruct(voc.VirtualMachine{}, t),
 				},
+			},
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status: false,
 			},
 			wantErr: true,
 		},
@@ -207,6 +215,9 @@ func TestAssessEvidence(t *testing.T) {
 					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 				},
 			},
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status: true,
+			},
 			wantErr: false,
 		},
 	}
@@ -214,10 +225,14 @@ func TestAssessEvidence(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
 
-			_, err := s.AssessEvidence(tt.args.in0, &assessment.AssessEvidenceRequest{Evidence: tt.args.evidence})
+			gotResp, err := s.AssessEvidence(tt.args.in0, &assessment.AssessEvidenceRequest{Evidence: tt.args.evidence})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
 				return
+			}
+
+			if !reflect.DeepEqual(gotResp, tt.wantResp) {
+				t.Errorf("AssessEvidence() gotResp = %v, want %v", gotResp, tt.wantResp)
 			}
 		})
 	}
@@ -225,7 +240,7 @@ func TestAssessEvidence(t *testing.T) {
 
 func TestService_AssessEvidences(t *testing.T) {
 	type fields struct {
-		ResultHook                    []func(result *assessment.AssessmentResult, err error)
+		ResultHooks                   []assessment.ResultHookFunc
 		results                       map[string]*assessment.AssessmentResult
 		UnimplementedAssessmentServer assessment.UnimplementedAssessmentServer
 	}
@@ -233,10 +248,11 @@ func TestService_AssessEvidences(t *testing.T) {
 		stream assessment.Assessment_AssessEvidencesServer
 	}
 	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
+		name           string
+		fields         fields
+		args           args
+		wantErr        bool
+		wantErrMessage string
 	}{
 		{
 			name:   "Assessing evidences fails due to missing toolId",
@@ -247,7 +263,8 @@ func TestService_AssessEvidences(t *testing.T) {
 					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 				},
 			}},
-			wantErr: true,
+			wantErr:        true,
+			wantErrMessage: "invalid evidence",
 		},
 		{
 			name:   "Assess evidences",
@@ -259,13 +276,14 @@ func TestService_AssessEvidences(t *testing.T) {
 					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 				},
 			}},
-			wantErr: false,
+			wantErr:        false,
+			wantErrMessage: "",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := Service{
-				ResultHook:                    tt.fields.ResultHook,
+				resultHooks:                   tt.fields.ResultHooks,
 				results:                       tt.fields.results,
 				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
 			}
@@ -274,15 +292,17 @@ func TestService_AssessEvidences(t *testing.T) {
 				t.Errorf("AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
+			if err != nil {
+				assert.Contains(t, err.Error(), tt.wantErrMessage)
+			}
 		})
 	}
 }
 
-func TestAssessmentResultHook(t *testing.T) {
+func TestAssessmentResultHooks(t *testing.T) {
 	var (
 		hookCallCounter = 0
-		// Service needs to outlive the lifetime of the hook function
-		service = *orchestrator_service.NewService()
 	)
 
 	firstHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
@@ -295,32 +315,11 @@ func TestAssessmentResultHook(t *testing.T) {
 		log.Println("Hello from inside the secondHookFunction")
 	}
 
-	// TODO(garuppel): Delete that test after adding an additional test for assessment.Validate()
-	storeAssessmentResultToOrchestrator := func(result *assessment.AssessmentResult, err error) {
-
-		hookCallCounter++
-
-		if err != nil {
-			log.Println("error as input %w: ", err)
-			log.Infof("stop hook for storing assessment result")
-			return
-		}
-
-		_, err = service.StoreAssessmentResult(context.Background(), &orchestrator.StoreAssessmentResultRequest{
-			Result: result})
-
-		if err != nil {
-			log.Errorf("error storing assessment result in orchestrator: %v", err)
-		} else {
-			log.Infof("assessment result stored in orchestrator")
-		}
-	}
-
 	// Check GRPC call
 	type args struct {
-		in0                 context.Context
-		evidence            *assessment.AssessEvidenceRequest
-		resultHookFunctions []func(assessmentResult *assessment.AssessmentResult, err error)
+		in0         context.Context
+		evidence    *assessment.AssessEvidenceRequest
+		resultHooks []assessment.ResultHookFunc
 	}
 	tests := []struct {
 		name     string
@@ -345,7 +344,8 @@ func TestAssessmentResultHook(t *testing.T) {
 							},
 						}, t),
 					}},
-				resultHookFunctions: []func(assessmentResult *assessment.AssessmentResult, err error){storeAssessmentResultToOrchestrator, firstHookFunction, secondHookFunction},
+
+				resultHooks: []assessment.ResultHookFunc{firstHookFunction, secondHookFunction},
 			},
 			wantErr:  false,
 			wantResp: &assessment.AssessEvidenceResponse{Status: true},
@@ -357,11 +357,11 @@ func TestAssessmentResultHook(t *testing.T) {
 			hookCallCounter = 0
 			s := NewService()
 
-			for i, hookFunction := range tt.args.resultHookFunctions {
+			for i, hookFunction := range tt.args.resultHooks {
 				s.RegisterAssessmentResultHook(hookFunction)
 
 				// Check if hook is registered
-				funcName1 := runtime.FuncForPC(reflect.ValueOf(s.ResultHook[i]).Pointer()).Name()
+				funcName1 := runtime.FuncForPC(reflect.ValueOf(s.resultHooks[i]).Pointer()).Name()
 				funcName2 := runtime.FuncForPC(reflect.ValueOf(hookFunction).Pointer()).Name()
 				assert.Equal(t, funcName1, funcName2)
 			}
@@ -372,14 +372,14 @@ func TestAssessmentResultHook(t *testing.T) {
 			time.Sleep(3 * time.Second)
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("StoreAssessmentResult() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(gotResp, tt.wantResp) {
-				t.Errorf("StoreAssessmentResult() gotResp = %v, want %v", gotResp, tt.wantResp)
+				t.Errorf("AssessEvidence() gotResp = %v, want %v", gotResp, tt.wantResp)
 			}
 			assert.NotEmpty(t, s.results)
-			assert.Equal(t, 18, hookCallCounter) //
+			assert.Equal(t, 12, hookCallCounter)
 		})
 	}
 }

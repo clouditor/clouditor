@@ -54,6 +54,7 @@ Service is an implementation of the Clouditor Assessment service. It should not 
 NewService constructor should be used. It implements the AssessmentServer interface
 */
 type Service struct {
+	// resultHooks is a list of hook functions that can be used if one wants to be
 	assessment.UnimplementedAssessmentServer
 
 	Configuration
@@ -63,7 +64,7 @@ type Service struct {
 
 	// ResultHook is a hook function that can be used if one wants to be
 	// informed about each assessment result
-	ResultHook []func(result *assessment.AssessmentResult, err error)
+	resultHooks []assessment.ResultHookFunc
 
 	// Currently, results are just stored as a map (=in-memory). In the future, we will use a DB.
 	results map[string]*assessment.AssessmentResult
@@ -105,6 +106,19 @@ func (s *Service) Start(_ context.Context, _ *assessment.StartAssessmentRequest)
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
 func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
+	resourceId, err := req.Evidence.Validate()
+	if err != nil {
+		log.Errorf("Invalid evidence: %v", err)
+		newError := fmt.Errorf("invalid evidence: %w", err)
+
+		s.informHooks(nil, newError)
+
+		res = &assessment.AssessEvidenceResponse{
+			Status: false,
+		}
+
+		return res, status.Errorf(codes.InvalidArgument, "invalid req: %v", newError)
+	}
 	// Set up stream to Evidence Store.
 	// TODO(lebogg): If assessment is used as standalone service (without fwd evidences) maybe adapt code, i.e. no error when ConfigureConnections sets no evidence store
 	if s.evidenceStoreStream == nil {
@@ -114,14 +128,15 @@ func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenc
 	}
 
 	// Assess evidence
-	err = s.handleEvidence(req.Evidence)
+	err = s.handleEvidence(req.Evidence, resourceId)
 
+	err = s.handleEvidence(req.Evidence, resourceId)
 	if err != nil {
 		res = &assessment.AssessEvidenceResponse{
 			Status: false,
 		}
 
-		return res, status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
+		return res, status.Errorf(codes.Internal, "error while handling evidence: %v", err)
 	}
 
 	res = &assessment.AssessEvidenceResponse{
@@ -133,12 +148,6 @@ func (s Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenc
 
 // AssessEvidences is a method implementation of the assessment interface: It assesses multiple evidences (stream)
 func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) (err error) { // Set up stream to Evidence Store.
-	// TODO(lebogg): When merging, assess evidences will call assess evidence and this can be omitted
-	if s.evidenceStoreStream == nil {
-		if err = s.setEvidenceStoreStream(); err != nil {
-			return err
-		}
-	}
 	var (
 		req *assessment.AssessEvidenceRequest
 	)
@@ -152,50 +161,37 @@ func (s Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSer
 				log.Infof("Stopped receiving streamed evidences")
 				return stream.SendAndClose(&emptypb.Empty{})
 			}
+
 			return err
 		}
 
-		err = s.handleEvidence(req.Evidence)
+		// Call AssessEvidence for assessing a single evidence
+		assessEvidencesReq := &assessment.AssessEvidenceRequest{
+			Evidence: req.Evidence,
+		}
+		_, err = s.AssessEvidence(context.Background(), assessEvidencesReq)
 		if err != nil {
-			return status.Errorf(codes.Internal, "Error while handling evidence: %v", err)
+			return err
 		}
 	}
 }
 
-// handleEvidence is the common evidence assessment of AssessEvidence and AssessEvidences
-func (s Service) handleEvidence(evidence *evidence.Evidence) error {
-	resourceId, err := evidence.Validate()
-	if err != nil {
-		log.Errorf("Invalid evidence: %v", err)
-		newError := fmt.Errorf("invalid evidence: %w", err)
-
-		// Inform our hook, if we have any
-		if s.ResultHook != nil {
-			for _, hook := range s.ResultHook {
-				go hook(nil, newError)
-			}
-		}
-
-		return newError
-	}
+// handleEvidence is the helper method for the actual assessment used by AssessEvidence and AssessEvidences
+func (s Service) handleEvidence(evidence *evidence.Evidence, resourceId string) error {
 
 	log.Infof("Running evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, evidence.ToolId, evidence.Timestamp)
 	log.Debugf("Evidence: %+v", evidence)
 
 	evaluations, err := policies.RunEvidence(evidence)
 	if err != nil {
-		log.Errorf("Could not evaluate evidence: %v", err)
 		newError := fmt.Errorf("could not evaluate evidence: %w", err)
+		log.Errorf(newError.Error())
 
-		// Inform our hook, if we have any
-		if s.ResultHook != nil {
-			for _, hook := range s.ResultHook {
-				go hook(nil, newError)
-			}
-		}
+		s.informHooks(nil, newError)
+
 		return newError
 	}
-	// The evidence can be sent to the evidence store since it has been successfully evaluated
+	// The evidence is sent to the evidence store since it has been successfully evaluated
 	go s.sendToEvidenceStore(evidence)
 
 	for i, data := range evaluations {
@@ -226,15 +222,20 @@ func (s Service) handleEvidence(evidence *evidence.Evidence) error {
 		s.results[fmt.Sprintf("%s-%d", resourceId, i)] = result
 
 		// TODO(all): Currently, we sent result via hook. But I think it would be cleaner to do it straight here.
-		// Inform our hook, if we have any
-		if s.ResultHook != nil {
-			for _, hook := range s.ResultHook {
-				go hook(result, nil)
-			}
-		}
+		s.informHooks(result, nil)
 	}
 
 	return nil
+}
+
+// informHooks informs the registered hook functions
+func (s Service) informHooks(result *assessment.AssessmentResult, err error) {
+	// Inform our hook, if we have any
+	if s.resultHooks != nil {
+		for _, hook := range s.resultHooks {
+			go hook(result, err)
+		}
+	}
 }
 
 // sendToEvidenceStore sends the provided evidence to the evidence store
@@ -264,7 +265,7 @@ func (s Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAsse
 }
 
 func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result *assessment.AssessmentResult, err error)) {
-	s.ResultHook = append(s.ResultHook, assessmentResultsHook)
+	s.resultHooks = append(s.resultHooks, assessmentResultsHook)
 }
 
 func (s *Service) setEvidenceStoreStream() error {

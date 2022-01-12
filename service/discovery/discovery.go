@@ -112,19 +112,19 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	// create an authorizer from env vars or Azure Managed Service Identity
 	authorizer, err := auth.NewAuthorizerFromCLI()
 	if err != nil {
-		log.Errorf("Could not authenticate to Azure: %s", err)
+		log.Errorf("Could not authenticate to Azure: %v", err)
 		return nil, err
 	}
 
 	k8sClient, err := k8s.AuthFromKubeConfig()
 	if err != nil {
-		log.Errorf("Could not authenticate to Kubernetes: %s", err)
+		log.Errorf("Could not authenticate to Kubernetes: %v", err)
 		return nil, err
 	}
 
 	awsClient, err := aws.NewClient()
 	if err != nil {
-		log.Errorf("Could not load credentials: %s", err)
+		log.Errorf("Could not load credentials: %v", err)
 		return nil, err
 	}
 

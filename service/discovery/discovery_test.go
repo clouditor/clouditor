@@ -173,6 +173,14 @@ func TestQuery(t *testing.T) {
 
 }
 
+func TestShutdown(t *testing.T) {
+	service := NewService()
+	service.Shutdown()
+
+	assert.False(t, service.scheduler.IsRunning())
+
+}
+
 // mockDiscoverer implements Discoverer and mocks the API to cloud resources
 type mockDiscoverer struct {
 	// testCase allows for different implementations for table tests in TestStartDiscovery
@@ -184,7 +192,7 @@ func (m mockDiscoverer) Name() string { return "just mocking" }
 func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 	switch m.testCase {
 	case 0:
-		return nil, fmt.Errorf("mock Error in List()")
+		return nil, fmt.Errorf("mock error in List()")
 	case 1:
 		return []voc.IsCloudResource{wrongFormattedResource()}, nil
 	case 2:
@@ -231,7 +239,7 @@ func (m *mockAssessmentStream) Send(req *assessment.AssessEvidenceRequest) (err 
 	if m.connectionEstablished {
 		m.sentEvidence = e
 	} else {
-		err = fmt.Errorf("MocK Send error")
+		err = fmt.Errorf("mock send error")
 	}
 	return
 }
@@ -269,7 +277,7 @@ type mockEvidenceStoreStream struct {
 }
 
 func (mockEvidenceStoreStream) Send(_ *evidence.StoreEvidenceRequest) error {
-	return fmt.Errorf("MocK Send error")
+	return fmt.Errorf("mock send error")
 }
 
 func (mockEvidenceStoreStream) CloseAndRecv() (*emptypb.Empty, error) {
@@ -325,62 +333,3 @@ func (mockIsCloudResource) HasType(_ string) bool {
 func (mockIsCloudResource) GetCreationTime() *time.Time {
 	return nil
 }
-
-//// ToDo: Adapt TestQuery at a later stage when we fully implement the standalone version
-//func TestQuery(t *testing.T) {
-//	var (
-//		discoverer discovery.Discoverer
-//		response   *discovery.QueryResponse
-//		err        error
-//	)
-//
-//	var ready = make(chan bool)
-//
-//	assessmentServer := standalone.NewAssessmentServer().(*service_assessment.Service)
-//	assessmentServer.ResultHook = func(result *assessment.Result, err error) {
-//		if result.MetricId == 1 {
-//			assert.Nil(t, err)
-//			assert.NotNil(t, result)
-//
-//			assert.Equal(t, "some-id", result.ResourceId)
-//			assert.Equal(t, true, result.Compliant)
-//		}
-//
-//		ready <- true
-//	}
-//
-//	client := standalone.NewAssessmentClient()
-//
-//	service = service_discovery.NewService()
-//	service.AssessmentStream, _ = client.AssessEvidences(context.Background())
-//
-//	// use our mock discoverer
-//	discoverer = mockDiscoverer{}
-//
-//	// discover some resources
-//	service.StartDiscovery(discoverer)
-//
-//	// make the test wait for streaming evidence
-//	select {
-//	case <-ready:
-//		break
-//	case <-time.After(10 * time.Second):
-//		assert.Fail(t, "Timeout while waiting for evidence assessment result to be ready")
-//	}
-//
-//	// query them
-//	response, err = service.Query(context.Background(), &discovery.QueryRequest{
-//		// this should only result 1 resource, and not the compute resource
-//		FilteredType: "ObjectStorage",
-//	})
-//
-//	assert.Nil(t, err)
-//	assert.NotNil(t, response)
-//	assert.NotEmpty(t, response.Result.Values)
-//
-//	m := response.Result.Values[0].GetStructValue().AsMap()
-//
-//	assert.NotNil(t, m)
-//	assert.Equal(t, "some-id", m["id"])
-//	assert.Equal(t, "some-name", m["name"])
-//}

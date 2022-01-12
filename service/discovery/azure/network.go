@@ -206,7 +206,7 @@ func LoadBalancerPorts(lb *network.LoadBalancer) (loadBalancerPorts []int16) {
 //	sg, err := client.Get(context.Background(), resourceGroupName(nsgID), strings.Split(nsgID, "/")[8], "")
 //
 //	if err != nil {
-//		log.Errorf("Could not get security group: %s", err)
+//		log.Errorf("Could not get security group: %v", err)
 //		return ""
 //	}
 //

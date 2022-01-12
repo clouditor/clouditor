@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package cli_test
+package cli
 
 import (
 	"context"
@@ -35,7 +35,6 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api/auth"
-	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
 	"github.com/spf13/viper"
@@ -67,7 +66,7 @@ func TestMain(m *testing.M) {
 func TestSession(t *testing.T) {
 	var (
 		err     error
-		session *cli.Session
+		session *Session
 		dir     string
 	)
 	defer sock.Close()
@@ -79,7 +78,7 @@ func TestSession(t *testing.T) {
 
 	viper.Set("session-directory", dir)
 
-	session, err = cli.NewSession(fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port))
+	session, err = NewSession(fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port))
 	if err != nil {
 		t.Fatalf("Failed to dial bufnet: %v", err)
 	}
@@ -107,7 +106,7 @@ func TestSession(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	session, err = cli.ContinueSession()
+	session, err = ContinueSession()
 	assert.Nil(t, err)
 	assert.NotNil(t, session)
 
@@ -147,7 +146,7 @@ func TestSession_HandleResponse(t *testing.T) {
 			name: "grpc Error",
 			args: args{
 				msg: nil,
-				err: status.Errorf(codes.Internal, "Internal error occurred!"),
+				err: status.Errorf(codes.Internal, "internal error occurred!"),
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				if err != nil {
@@ -176,7 +175,7 @@ func TestSession_HandleResponse(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &cli.Session{
+			s := &Session{
 				URL:        tt.fields.URL,
 				Token:      tt.fields.Token,
 				Folder:     tt.fields.Folder,
@@ -189,6 +188,6 @@ func TestSession_HandleResponse(t *testing.T) {
 
 // Test will fail due to no user input
 func TestPromptForLogin(t *testing.T) {
-	_, err := cli.PromptForLogin()
+	_, err := PromptForLogin()
 	assert.NotNil(t, err)
 }

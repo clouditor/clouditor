@@ -1,11 +1,10 @@
-package orchestrator_test
+package orchestrator
 
 import (
 	"context"
 	"testing"
 
 	"clouditor.io/clouditor/api/orchestrator"
-	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -23,13 +22,13 @@ func TestRegisterCloudService(t *testing.T) {
 			"missing service",
 			&orchestrator.RegisterCloudServiceRequest{},
 			nil,
-			status.Error(codes.InvalidArgument, "Service is empty"),
+			status.Error(codes.InvalidArgument, "service is empty"),
 		},
 		{
 			"missing service name",
 			&orchestrator.RegisterCloudServiceRequest{Service: &orchestrator.CloudService{}},
 			nil,
-			status.Error(codes.InvalidArgument, "Service name is empty"),
+			status.Error(codes.InvalidArgument, "service name is empty"),
 		},
 		{
 			"valid",
@@ -78,27 +77,27 @@ func TestGetCloudService(t *testing.T) {
 			"missing request",
 			nil,
 			nil,
-			status.Error(codes.InvalidArgument, "Service id is empty"),
+			status.Error(codes.InvalidArgument, "service id is empty"),
 		},
 		{
 			"missing service id",
 			&orchestrator.GetCloudServiceRequest{},
 			nil,
-			status.Error(codes.InvalidArgument, "Service id is empty"),
+			status.Error(codes.InvalidArgument, "service id is empty"),
 		},
 		{
 			"invalid service id",
 			&orchestrator.GetCloudServiceRequest{ServiceId: "does-not-exist"},
 			nil,
-			status.Error(codes.NotFound, "Service not found"),
+			status.Error(codes.NotFound, "service not found"),
 		},
 		{
 			"valid",
 			&orchestrator.GetCloudServiceRequest{ServiceId: defaultTarget.Id},
 			&orchestrator.CloudService{
-				Id:          service_orchestrator.DefaultTargetCloudServiceId,
-				Name:        service_orchestrator.DefaultTargetCloudServiceName,
-				Description: service_orchestrator.DefaultTargetCloudServiceDescription,
+				Id:          DefaultTargetCloudServiceId,
+				Name:        DefaultTargetCloudServiceName,
+				Description: DefaultTargetCloudServiceDescription,
 			},
 			nil,
 		},

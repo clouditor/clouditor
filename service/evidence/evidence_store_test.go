@@ -1,3 +1,28 @@
+// Copyright 2016-2020 Fraunhofer AISEC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+//           $$\                           $$\ $$\   $$\
+//           $$ |                          $$ |\__|  $$ |
+//  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+// $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+// $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
+// $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+// \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+//  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+//
+// This file is part of Clouditor Community Edition.
+
 package evidences
 
 import (
@@ -57,18 +82,19 @@ func TestStoreEvidence(t *testing.T) {
 			name: "Store req to the map",
 			args: args{
 				in0: context.TODO(),
-				req: &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
-					Id:        "MockEvidenceId",
-					ServiceId: "MockServiceId",
-					ToolId:    "MockTool",
-					Timestamp: timestamppb.Now(),
-					Raw:       "",
-					Resource: toStruct(voc.VirtualMachine{
-						Compute: &voc.Compute{CloudResource: &voc.CloudResource{
-							ID: "mock-id",
-						}},
-					}, t),
-				}},
+				req: &evidence.StoreEvidenceRequest{
+					Evidence: &evidence.Evidence{
+						Id:        "MockEvidenceId",
+						ServiceId: "MockServiceId",
+						ToolId:    "MockTool",
+						Timestamp: timestamppb.Now(),
+						Raw:       "",
+						Resource: toStruct(voc.VirtualMachine{
+							Compute: &voc.Compute{CloudResource: &voc.CloudResource{
+								ID: "mock-id",
+							}},
+						}, t),
+					}},
 			},
 			wantErr:  false,
 			wantResp: &evidence.StoreEvidenceResponse{Status: true},
@@ -77,19 +103,20 @@ func TestStoreEvidence(t *testing.T) {
 			name: "Store an evidence without toolId to the map",
 			args: args{
 				in0: context.TODO(),
-				req: &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
-					Id:        "MockEvidenceId-1",
-					ServiceId: "MockServiceId-1",
-					Timestamp: timestamppb.Now(),
-					Raw:       "",
-					Resource: toStruct(voc.VirtualMachine{
-						Compute: &voc.Compute{
-							CloudResource: &voc.CloudResource{
-								ID: "mock-id-1",
+				req: &evidence.StoreEvidenceRequest{
+					Evidence: &evidence.Evidence{
+						Id:        "MockEvidenceId-1",
+						ServiceId: "MockServiceId-1",
+						Timestamp: timestamppb.Now(),
+						Raw:       "",
+						Resource: toStruct(voc.VirtualMachine{
+							Compute: &voc.Compute{
+								CloudResource: &voc.CloudResource{
+									ID: "mock-id-1",
+								},
 							},
-						},
-					}, t),
-				},
+						}, t),
+					},
 				},
 			},
 			wantErr: true,
@@ -194,12 +221,12 @@ func TestEvidenceHook(t *testing.T) {
 	service.RegisterEvidenceHook(secondHookFunction)
 
 	// Check if first hook is registered
-	funcName1 := runtime.FuncForPC(reflect.ValueOf(service.EvidenceHook[0]).Pointer()).Name()
+	funcName1 := runtime.FuncForPC(reflect.ValueOf(service.evidenceHooks[0]).Pointer()).Name()
 	funcName2 := runtime.FuncForPC(reflect.ValueOf(firstHookFunction).Pointer()).Name()
 	assert.Equal(t, funcName1, funcName2)
 
 	// Check if second hook is registered
-	funcName1 = runtime.FuncForPC(reflect.ValueOf(service.EvidenceHook[1]).Pointer()).Name()
+	funcName1 = runtime.FuncForPC(reflect.ValueOf(service.evidenceHooks[1]).Pointer()).Name()
 	funcName2 = runtime.FuncForPC(reflect.ValueOf(secondHookFunction).Pointer()).Name()
 	assert.Equal(t, funcName1, funcName2)
 
@@ -289,19 +316,33 @@ func (m *mockStreamer) Recv() (req *evidence.StoreEvidenceRequest, err error) {
 		m.counter++
 		return &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
 			Id:        "MockEvidenceId-1",
+			ToolId:    "MockToolId-1",
 			ServiceId: "MockServiceId-1",
 			Timestamp: timestamppb.Now(),
 			Raw:       "",
-			Resource:  nil,
+			Resource: toStructWithoutTest(voc.VirtualMachine{
+				Compute: &voc.Compute{
+					CloudResource: &voc.CloudResource{
+						ID: "mock-id-1",
+					},
+				},
+			}),
 		}}, nil
 	} else if m.counter == 1 {
 		m.counter++
 		return &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
 			Id:        "MockEvidenceId-2",
+			ToolId:    "MockToolId-2",
 			ServiceId: "MockServiceId-2",
 			Timestamp: timestamppb.Now(),
 			Raw:       "",
-			Resource:  nil,
+			Resource: toStructWithoutTest(voc.VirtualMachine{
+				Compute: &voc.Compute{
+					CloudResource: &voc.CloudResource{
+						ID: "mock-id-1",
+					},
+				},
+			}),
 		}}, nil
 	} else {
 		return nil, io.EOF
@@ -336,6 +377,15 @@ func toStruct(r voc.IsCloudResource, t *testing.T) (s *structpb.Value) {
 	s, err := voc.ToStruct(r)
 	if err != nil {
 		assert.NotNil(t, err)
+	}
+
+	return
+}
+
+func toStructWithoutTest(r voc.IsCloudResource) (s *structpb.Value) {
+	s, err := voc.ToStruct(r)
+	if err != nil {
+		log.Errorf("eror getting struct of resource: %v", err)
 	}
 
 	return
