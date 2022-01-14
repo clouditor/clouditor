@@ -30,6 +30,7 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/policies"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
@@ -55,7 +56,7 @@ Service is an implementation of the Clouditor Assessment service. It should not 
 NewService constructor should be used. It implements the AssessmentServer interface
 */
 type Service struct {
-	// resultHooks is a list of hook functions that can be used if one wants to be
+	// Embedded for FWD compatibility
 	assessment.UnimplementedAssessmentServer
 
 	Configuration
@@ -63,7 +64,7 @@ type Service struct {
 	// evidenceStoreStream send evidences to the Evidence Store
 	evidenceStoreStream evidence.EvidenceStore_StoreEvidencesClient
 
-	// ResultHook is a hook function that can be used if one wants to be
+	// resultHooks is a list of hook functions that can be used if one wants to be
 	// informed about each assessment result
 	resultHooks []assessment.ResultHookFunc
 	// mu is used for (un)locking result hook calls
@@ -207,12 +208,17 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 		targetValue, _ := data["target_value"]
 		compliant, _ := data["compliant"].(bool)
 
+		convertedTargetValue, err := convertTargetValue(targetValue)
+		if err != nil {
+			return fmt.Errorf("could not convert target value: %w", err)
+		}
+
 		result := &assessment.AssessmentResult{
 			Id:        uuid.NewString(),
 			Timestamp: timestamppb.Now(),
 			MetricId:  metricId,
 			MetricConfiguration: &assessment.MetricConfiguration{
-				TargetValue: convertTargetValue(targetValue),
+				TargetValue: convertedTargetValue,
 				Operator:    operator,
 			},
 			Compliant:             compliant,
@@ -231,36 +237,131 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 	return nil
 }
 
-func convertTargetValue(value interface{}) (convertedTargetValue *structpb.Value) {
+// convertTargetValue converts the given target_value in a format accepted by protobuf
+// Note: Therefore, we have to be specific about the format of target values in the REGO code
+func convertTargetValue(value interface{}) (convertedTargetValue *structpb.Value, err error) {
 	if valueStr, ok := value.(string); ok {
 		convertedTargetValue = &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: valueStr}}
-	} else if valueBool, ok := value.(bool); ok {
-		convertedTargetValue = &structpb.Value{Kind: &structpb.Value_BoolValue{BoolValue: valueBool}}
-	} else if valueInt, ok := value.(int); ok {
-		convertedTargetValue = &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: float64(valueInt)}}
-	} else if valueFloat64, ok := value.(float64); ok {
-		convertedTargetValue = &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: valueFloat64}}
-	} else if valueFloat32, ok := value.(float32); ok {
-		convertedTargetValue = &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: float64(valueFloat32)}}
-	} else {
-		// TODO(all): REPRESENT ALL TYPES BUT how to convert the following?
-		// "target_value" : [
-		//    {
-		//      "runtimeLanguage": "Java",
-		//      "runtimeVersion": 11
-		//    },
-		//    {
-		//      "runtimeLanguage": "Python",
-		//      "runtimeVersion": 3.8
-		//    },
-		//    {
-		//      "runtimeLanguage": "PHP",
-		//      "runtimeVersion": 7.4
-		//    }
-		//  ]
-		convertedTargetValue = &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "No way found to represent but is non-empty!"}}
+		return
 	}
-	return
+	if valueBool, ok := value.(bool); ok {
+		convertedTargetValue = &structpb.Value{Kind: &structpb.Value_BoolValue{BoolValue: valueBool}}
+		return
+	}
+	if _, ok := value.(json.Number); ok {
+		convertedTargetValue, err = assertNumber(value)
+		if err != nil {
+			err = fmt.Errorf("could not convert jsonNumber %v to Float: %w", value, err)
+		}
+		return
+	}
+	if _, ok := value.(int); ok {
+		convertedTargetValue, err = assertNumber(value)
+		if err != nil {
+			err = fmt.Errorf("could not assert integer value %v: %w", value, err)
+		}
+		return
+	}
+	if _, ok := value.(float64); ok {
+		convertedTargetValue, err = assertNumber(value)
+		if err != nil {
+			err = fmt.Errorf("could not assert float64 value %v: %w", value, err)
+		}
+		return
+	}
+	if _, ok := value.(float32); ok {
+		convertedTargetValue, err = assertNumber(value)
+		if err != nil {
+			err = fmt.Errorf("could not assert float32 value %v: %w", value, err)
+		}
+		return
+	}
+	//if runtimeValues, ok := value.([]map[string]interface{}); ok {
+	//	var listOfValues []*structpb.Value
+	//	for _, language := range runtimeValues {
+	//		for k, v := range language {
+	//			var mapOfValues map[string]*structpb.Value
+	//			if k == "runtimeLanguage" {
+	//				if valueStr, ok := v.(string); ok {
+	//					mapOfValues[k] = &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: valueStr}}
+	//				} else {
+	//					return nil, fmt.Errorf("runtimeLanguage assertion failed. Wanted string but got %T (%v)", v, v)
+	//				}
+	//			} else if k == "runtimeVersion" {
+	//				mapOfValues[k], err = assertNumber(v)
+	//				if err != nil {
+	//					return nil, fmt.Errorf("runtimeVersion assertion failed. Could not convert '%v': %w", value, err)
+	//				}
+	//			}
+	//			listOfValues = append(listOfValues,
+	//				&structpb.Value{Kind: &structpb.Value_StructValue{StructValue: &structpb.Struct{Fields: mapOfValues}}})
+	//		}
+	//	}
+	//	convertedTargetValue = &structpb.Value{Kind: &structpb.Value_ListValue{ListValue: &structpb.ListValue{Values: listOfValues}}}
+	//	return
+	//}
+	if listOfValues, ok := value.([]interface{}); ok {
+		var listOfConvertedValues []*structpb.Value
+		for _, v := range listOfValues {
+			if valueStr, ok := v.(string); ok {
+				listOfConvertedValues = append(listOfConvertedValues, &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: valueStr}})
+			} else if valueBool, ok := v.(bool); ok {
+				listOfConvertedValues = append(listOfConvertedValues, &structpb.Value{Kind: &structpb.Value_BoolValue{BoolValue: valueBool}})
+			} else if valueMap, ok := v.(map[string]interface{}); ok {
+				var mapOfValues = make(map[string]*structpb.Value)
+				for k, mapValue := range valueMap {
+					if k == "runtimeLanguage" {
+						if mapValueString, ok := mapValue.(string); ok {
+							mapOfValues[k] = &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: mapValueString}}
+						} else {
+							return nil, fmt.Errorf("runtimeLanguage assertion failed. Wanted string but got %T (%v)", mapValue, mapValue)
+						}
+					} else if k == "runtimeVersion" {
+						mapOfValues[k], err = assertNumber(mapValue)
+						if err != nil {
+							return nil, fmt.Errorf("runtimeVersion assertion failed. Could not assert '%v': %w", mapValue, err)
+						}
+					} else {
+						return nil, fmt.Errorf("no supported key. Check if it is one of the supported (e.g. runtimeLanguage or runtimeVersion)." +
+							"Or consider adding it to the code")
+					}
+				}
+				listOfConvertedValues = append(listOfConvertedValues, &structpb.Value{Kind: &structpb.Value_StructValue{StructValue: &structpb.Struct{Fields: mapOfValues}}})
+			} else {
+				// When v is no string or boolean, check for numbers. If assertNumber fails, throw error.
+				var number *structpb.Value
+				number, err = assertNumber(v)
+				if err != nil {
+					return nil, fmt.Errorf("after it is no string or boolean, it is also not a supported number. Got %T (%v): %w", v, v, err)
+				}
+				listOfConvertedValues = append(listOfConvertedValues, number)
+			}
+		}
+		convertedTargetValue = &structpb.Value{Kind: &structpb.Value_ListValue{ListValue: &structpb.ListValue{Values: listOfConvertedValues}}}
+		return
+	}
+	return nil, fmt.Errorf("no assertion found for %v (%T). Consider adding it", value, value)
+}
+
+func assertNumber(rawTargetValue interface{}) (*structpb.Value, error) {
+	if valueJSONNumber, ok := rawTargetValue.(json.Number); ok {
+		asFloat, err := valueJSONNumber.Float64()
+		if err != nil {
+			return nil, fmt.Errorf("could not assert JSON number: %w", err)
+		}
+		return &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: asFloat}}, nil
+	}
+	if valueFloat64, ok := rawTargetValue.(float64); ok {
+		return &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: valueFloat64}}, nil
+	}
+	if valueFloat32, ok := rawTargetValue.(float32); ok {
+		return &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: float64(valueFloat32)}}, nil
+	}
+	if valueInt, ok := rawTargetValue.(int); ok {
+		return &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: float64(valueInt)}}, nil
+	}
+	return &structpb.Value{}, fmt.Errorf("number assertions not possible for '%v' (%T)", rawTargetValue, rawTargetValue)
+
 }
 
 // informHooks informs the registered hook functions

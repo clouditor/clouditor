@@ -82,7 +82,7 @@ func TestStart(t *testing.T) {
 	type fields struct {
 		UnimplementedAssessmentServer assessment.UnimplementedAssessmentServer
 		evidenceStoreStream           evidence.EvidenceStore_StoreEvidencesClient
-		ResultHook                    []func(result *assessment.AssessmentResult, err error)
+		ResultHook                    []assessment.ResultHookFunc
 		results                       map[string]*assessment.AssessmentResult
 		Configuration
 	}
@@ -137,7 +137,7 @@ func TestStart(t *testing.T) {
 			s := Service{
 				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
 				evidenceStoreStream:           tt.fields.evidenceStoreStream,
-				ResultHook:                    tt.fields.ResultHook,
+				resultHooks:                   tt.fields.ResultHook,
 				results:                       tt.fields.results,
 				Configuration:                 tt.fields.Configuration,
 			}
