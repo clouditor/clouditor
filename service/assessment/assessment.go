@@ -127,7 +127,7 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 	// TODO(lebogg): If assessment is used as standalone service (without fwd evidences) maybe adapt code, i.e. no error when ConfigureConnections sets no evidence store
 	if s.evidenceStoreStream == nil {
 		if err = s.setEvidenceStoreStream(); err != nil {
-			return nil, fmt.Errorf("could not assess evidence: %v", err)
+			return nil, status.Errorf(codes.Internal, "could not assess evidence: %v", err)
 		}
 	}
 
@@ -411,12 +411,12 @@ func (s *Service) setEvidenceStoreStream() error {
 	// Establish connection to evidenceStore component
 	conn, err := grpc.Dial(s.Configuration.evidenceStoreTargetAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		return status.Errorf(codes.Internal, "could not connect to evidence store service: %v", err)
+		return fmt.Errorf("could not connect to evidence store service: %v", err)
 	}
 	evidenceStoreClient := evidence.NewEvidenceStoreClient(conn)
 	s.evidenceStoreStream, err = evidenceStoreClient.StoreEvidences(context.Background())
 	if err != nil {
-		return status.Errorf(codes.Internal, "could not set up stream for storing evidences: %v", err)
+		return fmt.Errorf("could not set up stream for storing evidences: %v", err)
 	}
 	log.Infof("Connected to Evidence Store")
 	return nil
