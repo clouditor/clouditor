@@ -252,31 +252,3 @@ func handleError(err error, dest string) {
 	}
 }
 
-/*func saveResourcesToFilesystem(result ResultOntology, filename string) error {
-	var (
-		filepath string
-	)
-
-	prefix, indent := "", "    "
-	exported, err := json.MarshalIndent(result, prefix, indent)
-	if err != nil {
-		return fmt.Errorf("marshalling JSON failed %w", err)
-	}
-
-	filepath = "../../results/discovery_results/"
-
-	// Check if folder exists
-	err = os.MkdirAll(filepath, os.ModePerm)
-	if err != nil {
-		return fmt.Errorf("check for directory existence failed:  %w", err)
-	}
-
-	err = ioutil.WriteFile(filepath+filename, exported, 0666)
-	if err != nil {
-		return fmt.Errorf("write file failed %w", err)
-	} else {
-		fmt.Println("ontology resources written to: ", filepath+filename)
-	}
-
-	return nil
-}*/
