@@ -209,8 +209,6 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 		if err = s.AssessmentStream.Send(&assessment.AssessEvidenceRequest{Evidence: e}); err != nil {
 			handleError(err, "Assessment")
 		}
-		// TODO(lebogg): Remove before Merge
-		log.Infof("Sent evidence to assessment")
 	}
 }
 
