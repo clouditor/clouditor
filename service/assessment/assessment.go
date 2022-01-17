@@ -204,7 +204,7 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 
 		// Get output values of Rego evaluation. If they are not given, the zero value is used
 		operator, _ := data["operator"].(string)
-		targetValue, _ := data["target_value"]
+		targetValue := data["target_value"]
 		compliant, _ := data["compliant"].(bool)
 
 		convertedTargetValue, err := convertTargetValue(targetValue)
