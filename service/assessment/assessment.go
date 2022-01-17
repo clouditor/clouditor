@@ -127,7 +127,7 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 	// TODO(lebogg): If assessment is used as standalone service (without fwd evidences) maybe adapt code, i.e. no error when ConfigureConnections sets no evidence store
 	if s.evidenceStoreStream == nil {
 		if err = s.setEvidenceStoreStream(); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("could not assess evidence: %v", err)
 		}
 	}
 
@@ -230,7 +230,7 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 		// Just a little hack to quickly enable multiple results per resource
 		s.results[fmt.Sprintf("%s-%d", resourceId, i)] = result
 
-		// TODO(all): Currently, we sent result via hook. But I think it would be cleaner to do it straight here.
+		// TODO(all): Currently, we send result via hook. But I think it would be cleaner to do it straight here.
 		go s.informHooks(result, nil)
 	}
 
