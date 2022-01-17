@@ -515,10 +515,7 @@ func Test_convertTargetValue(t *testing.T) {
 			args:                     args{value: "TLS1.3"},
 			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "TLS1.3"}},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				if err == nil {
-					return true
-				}
-				return false
+				return err == nil
 			},
 		},
 		{
@@ -526,10 +523,7 @@ func Test_convertTargetValue(t *testing.T) {
 			args:                     args{value: false},
 			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_BoolValue{BoolValue: false}},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				if err == nil {
-					return true
-				}
-				return false
+				return err == nil
 			},
 		},
 		{
@@ -537,10 +531,7 @@ func Test_convertTargetValue(t *testing.T) {
 			args:                     args{value: json.Number("4")},
 			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: 4.}},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				if err == nil {
-					return true
-				}
-				return false
+				return err == nil
 			},
 		},
 		{
@@ -548,10 +539,7 @@ func Test_convertTargetValue(t *testing.T) {
 			args:                     args{value: 4},
 			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: 4.}},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				if err == nil {
-					return true
-				}
-				return false
+				return err == nil
 			},
 		},
 		{
@@ -559,10 +547,7 @@ func Test_convertTargetValue(t *testing.T) {
 			args:                     args{value: 4.},
 			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: 4.}},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				if err == nil {
-					return true
-				}
-				return false
+				return err == nil
 			},
 		},
 		{
@@ -570,10 +555,7 @@ func Test_convertTargetValue(t *testing.T) {
 			args:                     args{value: float32(4.)},
 			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: 4.}},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				if err == nil {
-					return true
-				}
-				return false
+				return err == nil
 			},
 		},
 	}
