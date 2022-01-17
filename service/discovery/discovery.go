@@ -244,7 +244,7 @@ func (s Service) Query(_ context.Context, request *discovery.QueryRequest) (resp
 
 // handleError prints out the error according to the status code
 func handleError(err error, dest string) {
-	prefix := "Could not send evidence to " + dest
+	prefix := "could not send evidence to " + dest
 	if status.Code(err) == codes.Internal {
 		log.Errorf("%s. Internal error on the server side: %v", prefix, err)
 	} else if status.Code(err) == codes.InvalidArgument {

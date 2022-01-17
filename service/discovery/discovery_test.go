@@ -27,7 +27,10 @@ package discovery
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"testing"
 	"time"
 
@@ -96,7 +99,6 @@ func TestStartDiscovery(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			discoveryService.AssessmentStream = tt.fields.assessmentStream
-			discoveryService.EvidenceStoreStream = tt.fields.evidenceStoreStream
 			discoveryService.StartDiscovery(tt.fields.discoverer)
 
 			// APIs for assessment and evidence store both send the same evidence. Thus, testing one is enough.
@@ -179,6 +181,45 @@ func TestShutdown(t *testing.T) {
 
 	assert.False(t, service.scheduler.IsRunning())
 
+}
+
+// TestHandleError tests handleError (if all error cases are executed/printed)
+func TestHandleError(t *testing.T) {
+	type args struct {
+		err  error
+		dest string
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "handleInternalError",
+			args: args{
+				err:  status.Error(codes.Internal, "internal error"),
+				dest: "Some Destination",
+			},
+		},
+		{
+			name: "handleInvalidError",
+			args: args{
+				err:  status.Errorf(codes.InvalidArgument, "invalid argument"),
+				dest: "Some Destination",
+			},
+		},
+		{
+			name: "someOtherErr",
+			args: args{
+				err:  errors.New("some other error"),
+				dest: "Some Destination",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			handleError(tt.args.err, tt.args.dest)
+		})
+	}
 }
 
 // mockDiscoverer implements Discoverer and mocks the API to cloud resources
