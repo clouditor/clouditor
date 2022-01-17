@@ -89,7 +89,7 @@ func NewService() *Service {
 
 // Configure configures assessment by setting up connections to other services. In the future, also with manual configurations in request
 // TODO: Add CLI Command
-func (s *Service) Configure(_ context.Context, _ *assessment.ConfigureAssessmentRequest) (resp *assessment.ConfigureAssessmentResponse, err error) {
+func (*Service) Configure(_ context.Context, _ *assessment.ConfigureAssessmentRequest) (resp *assessment.ConfigureAssessmentResponse, err error) {
 	// TODO
 	// s.evidenceStoreTargetAddress = someThingFromRequest
 	return &assessment.ConfigureAssessmentResponse{}, nil

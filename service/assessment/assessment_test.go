@@ -31,6 +31,8 @@ import (
 	service_evidenceStore "clouditor.io/clouditor/service/evidence"
 	"clouditor.io/clouditor/voc"
 	"context"
+	"encoding/json"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -423,4 +425,77 @@ func (s *Service) mockEvidenceStream() error {
 	}
 	s.evidenceStoreStream = client
 	return nil
+}
+
+func TestAssertNumber(t *testing.T) {
+	type args struct {
+		rawTargetValue interface{}
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *structpb.Value
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "JSONNumber",
+			args: args{rawTargetValue: json.Number("4")},
+			want: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: float64(4)}},
+			wantErr: assert.ErrorAssertionFunc(func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Nil(t, err)
+			}),
+		},
+		{
+			name: "JSONNumberErr",
+			args: args{rawTargetValue: json.Number("hi")},
+			want: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: float64(4)}},
+			wantErr: assert.ErrorAssertionFunc(func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.NotNil(t, err)
+				// return false. Since we do have an error, no result check should be done
+				return false
+			}),
+		},
+		{
+			name: "intNumber",
+			args: args{rawTargetValue: 4},
+			want: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: float64(4)}},
+			wantErr: assert.ErrorAssertionFunc(func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Nil(t, err)
+			}),
+		},
+		{
+			name: "float32Number",
+			args: args{rawTargetValue: float32(4)},
+			want: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: float64(4)}},
+			wantErr: assert.ErrorAssertionFunc(func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Nil(t, err)
+			}),
+		},
+		{
+			name: "float64Number",
+			args: args{rawTargetValue: 4.},
+			want: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: float64(4)}},
+			wantErr: assert.ErrorAssertionFunc(func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Nil(t, err)
+			}),
+		},
+		{
+			name: "NAN",
+			args: args{rawTargetValue: "NotANumber"},
+			wantErr: assert.ErrorAssertionFunc(func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.NotNil(t, err)
+				// return false. Since we do have an error, no result check should be done
+				return false
+			}),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := assertNumber(tt.args.rawTargetValue)
+			if !tt.wantErr(t, err, fmt.Sprintf("assertNumber(%v)", tt.args.rawTargetValue)) {
+				return
+			}
+			assert.Equalf(t, tt.want, got, "assertNumber(%v)", tt.args.rawTargetValue)
+		})
+	}
 }
