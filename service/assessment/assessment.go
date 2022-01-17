@@ -341,7 +341,7 @@ func (s *Service) informHooks(result *assessment.AssessmentResult, err error) {
 
 // sendToEvidenceStore sends the provided evidence to the evidence store
 func (s *Service) sendToEvidenceStore(e *evidence.Evidence) {
-	// Check if evidenceStoreStream is already established (via Start method)
+	// Check if evidenceStoreStream is already established (via Configure method)
 	if s.evidenceStoreStream != nil {
 		err := s.evidenceStoreStream.Send(&evidence.StoreEvidenceRequest{Evidence: e})
 		if err != nil {
