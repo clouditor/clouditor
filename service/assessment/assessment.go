@@ -262,30 +262,6 @@ func convertTargetValue(value interface{}) (convertedTargetValue *structpb.Value
 		}
 		return
 	}
-	//if runtimeValues, ok := value.([]map[string]interface{}); ok {
-	//	var listOfValues []*structpb.Value
-	//	for _, language := range runtimeValues {
-	//		for k, v := range language {
-	//			var mapOfValues map[string]*structpb.Value
-	//			if k == "runtimeLanguage" {
-	//				if valueStr, ok := v.(string); ok {
-	//					mapOfValues[k] = &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: valueStr}}
-	//				} else {
-	//					return nil, fmt.Errorf("runtimeLanguage assertion failed. Wanted string but got %T (%v)", v, v)
-	//				}
-	//			} else if k == "runtimeVersion" {
-	//				mapOfValues[k], err = assertNumber(v)
-	//				if err != nil {
-	//					return nil, fmt.Errorf("runtimeVersion assertion failed. Could not convert '%v': %w", value, err)
-	//				}
-	//			}
-	//			listOfValues = append(listOfValues,
-	//				&structpb.Value{Kind: &structpb.Value_StructValue{StructValue: &structpb.Struct{Fields: mapOfValues}}})
-	//		}
-	//	}
-	//	convertedTargetValue = &structpb.Value{Kind: &structpb.Value_ListValue{ListValue: &structpb.ListValue{Values: listOfValues}}}
-	//	return
-	//}
 	if listOfValues, ok := value.([]interface{}); ok {
 		var listOfConvertedValues []*structpb.Value
 		for _, v := range listOfValues {
