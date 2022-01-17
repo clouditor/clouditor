@@ -88,7 +88,7 @@ func NewService() *Service {
 }
 
 // Start starts assessment by setting up connections to other services. In the future, also with manual configurations in request
-// TODO: Maybe rename (proto) to ConfigureConnections. For now, we do it in assess evidence
+// TODO: CURRENTLY NOT USED. Maybe rename (proto) to ConfigureConnections in next PR. For now, we do it in assess evidence
 // TODO: Add CLI Command
 func (s *Service) Start(_ context.Context, _ *assessment.StartAssessmentRequest) (resp *assessment.StartAssessmentResponse, err error) {
 	// Establish connection to evidenceStore component
