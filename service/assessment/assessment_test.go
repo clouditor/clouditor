@@ -499,3 +499,91 @@ func TestAssertNumber(t *testing.T) {
 		})
 	}
 }
+
+func Test_convertTargetValue(t *testing.T) {
+	type args struct {
+		value interface{}
+	}
+	tests := []struct {
+		name                     string
+		args                     args
+		wantConvertedTargetValue *structpb.Value
+		wantErr                  assert.ErrorAssertionFunc
+	}{
+		{
+			name:                     "string",
+			args:                     args{value: "TLS1.3"},
+			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "TLS1.3"}},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				if err != nil {
+					return false
+				}
+				return true
+			},
+		},
+		{
+			name:                     "string",
+			args:                     args{value: false},
+			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_BoolValue{BoolValue: false}},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				if err != nil {
+					return false
+				}
+				return true
+			},
+		},
+		{
+			name:                     "string",
+			args:                     args{value: json.Number("4")},
+			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: 4.}},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				if err != nil {
+					return false
+				}
+				return true
+			},
+		},
+		{
+			name:                     "string",
+			args:                     args{value: 4},
+			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: 4.}},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				if err != nil {
+					return false
+				}
+				return true
+			},
+		},
+		{
+			name:                     "string",
+			args:                     args{value: 4.},
+			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: 4.}},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				if err != nil {
+					return false
+				}
+				return true
+			},
+		},
+		{
+			name:                     "string",
+			args:                     args{value: float32(4.)},
+			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: 4.}},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				if err != nil {
+					return false
+				}
+				return true
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotConvertedTargetValue, err := convertTargetValue(tt.args.value)
+			if !tt.wantErr(t, err, fmt.Sprintf("convertTargetValue(%v)", tt.args.value)) {
+				return
+			}
+			assert.Equalf(t, tt.wantConvertedTargetValue, gotConvertedTargetValue, "convertTargetValue(%v)", tt.args.value)
+		})
+	}
+}
