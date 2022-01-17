@@ -1,6 +1,7 @@
 package clouditor
 
 
+# operator and target_value are declared here to add them to the output of each single policy (so assessment can use it)
 operator = data.operator
 target_value = data.target_value
 
