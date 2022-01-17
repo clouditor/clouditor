@@ -134,7 +134,6 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 	// Assess evidence
 	err = s.handleEvidence(req.Evidence, resourceId)
 
-	err = s.handleEvidence(req.Evidence, resourceId)
 	if err != nil {
 		res = &assessment.AssessEvidenceResponse{
 			Status: false,

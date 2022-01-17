@@ -28,15 +28,19 @@ package assessment
 import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
+	service_evidenceStore "clouditor.io/clouditor/service/evidence"
 	"clouditor.io/clouditor/voc"
 	"context"
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"io"
+	"net"
 	"os"
 	"reflect"
 	"runtime"
@@ -44,7 +48,20 @@ import (
 	"time"
 )
 
+var lis *bufconn.Listener
+
 func TestMain(m *testing.M) {
+	// pre-configuration for mocking evidence store
+	const bufSize = 1024 * 1024
+	lis = bufconn.Listen(bufSize)
+	s := grpc.NewServer()
+	evidence.RegisterEvidenceStoreServer(s, service_evidenceStore.NewService())
+	go func() {
+		if err := s.Serve(lis); err != nil {
+			log.Fatalf("Server exited with error: %v", err)
+		}
+	}()
+
 	// make sure, that we are in the clouditor root folder to find the policies
 	err := os.Chdir("../../")
 	if err != nil {
@@ -224,6 +241,7 @@ func TestAssessEvidence(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
+			assert.NoError(t, s.mockEvidenceStream())
 
 			gotResp, err := s.AssessEvidence(tt.args.in0, &assessment.AssessEvidenceRequest{Evidence: tt.args.evidence})
 			if (err != nil) != tt.wantErr {
@@ -287,6 +305,8 @@ func TestService_AssessEvidences(t *testing.T) {
 				results:                       tt.fields.results,
 				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
 			}
+			assert.NoError(t, s.mockEvidenceStream())
+
 			err := s.AssessEvidences(tt.args.stream)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
@@ -356,6 +376,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			hookCallCounter = 0
 			s := NewService()
+			assert.NoError(t, s.mockEvidenceStream())
 
 			for i, hookFunction := range tt.args.resultHooks {
 				s.RegisterAssessmentResultHook(hookFunction)
@@ -386,6 +407,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 
 func TestListAssessmentResults(t *testing.T) {
 	s := NewService()
+	assert.NoError(t, s.mockEvidenceStream())
 	_, err := s.AssessEvidence(context.TODO(), &assessment.AssessEvidenceRequest{
 		Evidence: &evidence.Evidence{
 			ToolId:    "mock",
@@ -451,5 +473,26 @@ func (mockAssessmentStream) SendMsg(interface{}) error {
 }
 
 func (mockAssessmentStream) RecvMsg(interface{}) error {
+	return nil
+}
+
+// Mocking evidence store service
+
+func bufDialer(context.Context, string) (net.Conn, error) {
+	return lis.Dial()
+}
+
+func (s *Service) mockEvidenceStream() error {
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
+	if err != nil {
+		return err
+	}
+	// defer conn.Close()
+	client, err := evidence.NewEvidenceStoreClient(conn).StoreEvidences(ctx)
+	if err != nil {
+		return err
+	}
+	s.evidenceStoreStream = client
 	return nil
 }
