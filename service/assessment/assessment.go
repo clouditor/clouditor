@@ -76,14 +76,14 @@ type Service struct {
 
 // Configuration contains an assessment service's information about connection to other services, e.g. Evidence Store
 type Configuration struct {
-	evidenceStoreTargetAddress string
+	EvidenceStoreTargetAddress string
 }
 
 // NewService creates a new assessment service with default values
 func NewService() *Service {
 	return &Service{
 		results:       make(map[string]*assessment.AssessmentResult),
-		Configuration: Configuration{evidenceStoreTargetAddress: "localhost:9090"},
+		Configuration: Configuration{EvidenceStoreTargetAddress: "localhost:9090"},
 	}
 }
 
@@ -91,7 +91,7 @@ func NewService() *Service {
 // TODO: Add CLI Command
 func (*Service) Configure(_ context.Context, _ *assessment.ConfigureAssessmentRequest) (resp *assessment.ConfigureAssessmentResponse, err error) {
 	// TODO
-	// s.evidenceStoreTargetAddress = someThingFromRequest
+	// s.EvidenceStoreTargetAddress = someThingFromRequest
 	return &assessment.ConfigureAssessmentResponse{}, nil
 }
 
@@ -372,7 +372,7 @@ func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result
 func (s *Service) setEvidenceStoreStream() error {
 	log.Infof("Establishing connection to Evidence Store")
 	// Establish connection to evidenceStore component
-	conn, err := grpc.Dial(s.Configuration.evidenceStoreTargetAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(s.Configuration.EvidenceStoreTargetAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return fmt.Errorf("could not connect to evidence store service: %v", err)
 	}
