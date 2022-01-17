@@ -113,7 +113,7 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 	// Set up stream to Evidence Store.
 	// TODO(lebogg): If assessment is used as standalone service (without fwd evidences) maybe adapt code, i.e. no error when ConfigureConnections sets no evidence store
 	if s.evidenceStoreStream == nil {
-		if err = s.setEvidenceStoreStream(); err != nil {
+		if err = s.initEvidenceStoreStream(); err != nil {
 			return nil, status.Errorf(codes.Internal, "could not assess evidence: %v", err)
 		}
 	}
@@ -369,7 +369,7 @@ func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result
 	s.resultHooks = append(s.resultHooks, assessmentResultsHook)
 }
 
-func (s *Service) setEvidenceStoreStream() error {
+func (s *Service) initEvidenceStoreStream() error {
 	log.Infof("Establishing connection to Evidence Store")
 	// Establish connection to evidenceStore component
 	conn, err := grpc.Dial(s.Configuration.EvidenceStoreTargetAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
