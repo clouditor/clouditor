@@ -190,34 +190,39 @@ func TestHandleError(t *testing.T) {
 		dest string
 	}
 	tests := []struct {
-		name string
-		args args
+		name           string
+		args           args
+		wantErrSnippet string
 	}{
 		{
 			name: "handleInternalError",
 			args: args{
 				err:  status.Error(codes.Internal, "internal error"),
-				dest: "Some Destination",
+				dest: "SomeDestination",
 			},
+			wantErrSnippet: "internal",
 		},
 		{
 			name: "handleInvalidError",
 			args: args{
 				err:  status.Errorf(codes.InvalidArgument, "invalid argument"),
-				dest: "Some Destination",
+				dest: "SomeDestination",
 			},
+			wantErrSnippet: "invalid",
 		},
 		{
-			name: "someOtherErr",
+			name: "handleSomeOtherErr",
 			args: args{
 				err:  errors.New("some other error"),
-				dest: "Some Destination",
+				dest: "SomeDestination",
 			},
+			wantErrSnippet: "some other error",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			handleError(tt.args.err, tt.args.dest)
+			err := handleError(tt.args.err, tt.args.dest)
+			assert.Contains(t, err.Error(), tt.wantErrSnippet)
 		})
 	}
 }

@@ -27,6 +27,7 @@ package discovery
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"clouditor.io/clouditor/service/discovery/azure"
@@ -207,7 +208,7 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 		}
 
 		if err = s.AssessmentStream.Send(&assessment.AssessEvidenceRequest{Evidence: e}); err != nil {
-			handleError(err, "Assessment")
+			log.WithError(handleError(err, "Assessment"))
 		}
 	}
 }
@@ -241,14 +242,13 @@ func (s Service) Query(_ context.Context, request *discovery.QueryRequest) (resp
 }
 
 // handleError prints out the error according to the status code
-func handleError(err error, dest string) {
+func handleError(err error, dest string) error {
 	prefix := "could not send evidence to " + dest
 	if status.Code(err) == codes.Internal {
-		log.Errorf("%s. Internal error on the server side: %v", prefix, err)
+		return fmt.Errorf("%s. Internal error on the server side: %v", prefix, err)
 	} else if status.Code(err) == codes.InvalidArgument {
-		log.Errorf("Invalid evidence - provide evidence in the right format: %v", err)
+		return fmt.Errorf("invalid evidence - provide evidence in the right format: %v", err)
 	} else {
-		log.WithError(err)
+		return err
 	}
 }
-
