@@ -39,8 +39,8 @@ option go_package = "api/assessment";
 // Representing the link between orchestrator and discovery: Assessing evidences
 // from discovery and sending results to orchestrator
 service Assessment {
-  // Starts assessment, e.g. setting up connections to other services
-  rpc Start(StartAssessmentRequest) returns (StartAssessmentResponse) {
+  // Configure assessment, e.g. setting up connections to other services
+  rpc Configure(ConfigureAssessmentRequest) returns (ConfigureAssessmentResponse) {
     option (google.api.http) = {
       post : "/v1/assessment/start"
     };
@@ -71,8 +71,8 @@ service Assessment {
   rpc AssessEvidences(stream AssessEvidenceRequest) returns (google.protobuf.Empty);
 };
 
-message StartAssessmentRequest {}
-message StartAssessmentResponse{}
+message ConfigureAssessmentRequest {}
+message ConfigureAssessmentResponse{}
 
 message TriggerAssessmentRequest { string someOption = 1; }
 

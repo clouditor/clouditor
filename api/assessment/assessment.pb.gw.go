@@ -31,20 +31,20 @@ var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = metadata.Join
 
-func request_Assessment_Start_0(ctx context.Context, marshaler runtime.Marshaler, client AssessmentClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq StartAssessmentRequest
+func request_Assessment_Configure_0(ctx context.Context, marshaler runtime.Marshaler, client AssessmentClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ConfigureAssessmentRequest
 	var metadata runtime.ServerMetadata
 
-	msg, err := client.Start(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.Configure(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_Assessment_Start_0(ctx context.Context, marshaler runtime.Marshaler, server AssessmentServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq StartAssessmentRequest
+func local_request_Assessment_Configure_0(ctx context.Context, marshaler runtime.Marshaler, server AssessmentServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ConfigureAssessmentRequest
 	var metadata runtime.ServerMetadata
 
-	msg, err := server.Start(ctx, &protoReq)
+	msg, err := server.Configure(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -107,18 +107,18 @@ func local_request_Assessment_AssessEvidence_0(ctx context.Context, marshaler ru
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterAssessmentHandlerFromEndpoint instead.
 func RegisterAssessmentHandlerServer(ctx context.Context, mux *runtime.ServeMux, server AssessmentServer) error {
 
-	mux.Handle("POST", pattern_Assessment_Start_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_Assessment_Configure_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Assessment/Start", runtime.WithHTTPPathPattern("/v1/assessment/start"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Assessment/Configure", runtime.WithHTTPPathPattern("/v1/assessment/start"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Assessment_Start_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_Assessment_Configure_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -126,7 +126,7 @@ func RegisterAssessmentHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 			return
 		}
 
-		forward_Assessment_Start_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Assessment_Configure_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -217,23 +217,23 @@ func RegisterAssessmentHandler(ctx context.Context, mux *runtime.ServeMux, conn 
 // "AssessmentClient" to call the correct interceptors.
 func RegisterAssessmentHandlerClient(ctx context.Context, mux *runtime.ServeMux, client AssessmentClient) error {
 
-	mux.Handle("POST", pattern_Assessment_Start_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_Assessment_Configure_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.Assessment/Start", runtime.WithHTTPPathPattern("/v1/assessment/start"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.Assessment/Configure", runtime.WithHTTPPathPattern("/v1/assessment/start"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Assessment_Start_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Assessment_Configure_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Assessment_Start_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Assessment_Configure_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -290,7 +290,7 @@ func (m response_Assessment_AssessEvidence_0) XXX_ResponseBody() interface{} {
 }
 
 var (
-	pattern_Assessment_Start_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "assessment", "start"}, ""))
+	pattern_Assessment_Configure_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "assessment", "start"}, ""))
 
 	pattern_Assessment_ListAssessmentResults_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "assessment", "results"}, ""))
 
@@ -298,7 +298,7 @@ var (
 )
 
 var (
-	forward_Assessment_Start_0 = runtime.ForwardResponseMessage
+	forward_Assessment_Configure_0 = runtime.ForwardResponseMessage
 
 	forward_Assessment_ListAssessmentResults_0 = runtime.ForwardResponseMessage
 

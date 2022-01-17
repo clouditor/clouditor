@@ -37,15 +37,15 @@ paths:
                                 $ref: '#/components/schemas/ListAssessmentResultsResponse'
     /v1/assessment/start:
         post:
-            summary: Starts assessment, e.g. setting up connections to other services
-            operationId: Assessment_Start
+            summary: Configure assessment, e.g. setting up connections to other services
+            operationId: Assessment_Configure
             responses:
                 "200":
                     description: OK
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/StartAssessmentResponse'
+                                $ref: '#/components/schemas/ConfigureAssessmentResponse'
     /v1/orchestrator/assessment_results:
         post:
             summary: Stores the assessment result provided by an assessment tool
@@ -346,6 +346,8 @@ components:
                     type: string
                 description:
                     type: string
+        ConfigureAssessmentResponse:
+            properties: {}
         Evidence:
             properties:
                 id:
@@ -462,8 +464,6 @@ components:
                 min_max:
                     $ref: '#/components/schemas/MinMax'
             description: A range resource representing the range of values
-        StartAssessmentResponse:
-            properties: {}
         StoreAssessmentResultResponse:
             properties: {}
         Struct:

@@ -37,15 +37,15 @@ paths:
                                 $ref: '#/components/schemas/ListAssessmentResultsResponse'
     /v1/assessment/start:
         post:
-            summary: Starts assessment, e.g. setting up connections to other services
-            operationId: Assessment_Start
+            summary: Configure assessment, e.g. setting up connections to other services
+            operationId: Assessment_Configure
             responses:
                 "200":
                     description: OK
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/StartAssessmentResponse'
+                                $ref: '#/components/schemas/ConfigureAssessmentResponse'
 components:
     schemas:
         AssessEvidenceResponse:
@@ -79,6 +79,8 @@ components:
                     type: string
                     description: Some comments on the reason for non-compliance
             description: A result resource, representing the result after assessing the cloud resource with id resource_id.
+        ConfigureAssessmentResponse:
+            properties: {}
         Evidence:
             properties:
                 id:
@@ -125,8 +127,6 @@ components:
                     type: boolean
                     description: Whether this configuration is a default configuration
             description: Defines the operator and a target value for an individual metric
-        StartAssessmentResponse:
-            properties: {}
         Struct:
             properties:
                 fields:

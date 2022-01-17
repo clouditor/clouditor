@@ -87,25 +87,12 @@ func NewService() *Service {
 	}
 }
 
-// Start starts assessment by setting up connections to other services. In the future, also with manual configurations in request
-// TODO: CURRENTLY NOT USED. Maybe rename (proto) to ConfigureConnections in next PR. For now, we do it in assess evidence
+// Configure configures assessment by setting up connections to other services. In the future, also with manual configurations in request
 // TODO: Add CLI Command
-func (s *Service) Start(_ context.Context, _ *assessment.StartAssessmentRequest) (resp *assessment.StartAssessmentResponse, err error) {
-	// Establish connection to evidenceStore component
-	conn, err := grpc.Dial(s.Configuration.evidenceStoreTargetAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not connect to evidence store service: %v", err)
-	}
-	// defer conn.Close()
-	evidenceStoreClient := evidence.NewEvidenceStoreClient(conn)
-	s.evidenceStoreStream, err = evidenceStoreClient.StoreEvidences(context.Background())
-	if err != nil {
-		// TODO(all): We dont have to print it, since the caller (e.g. CLI) can/should do it, right?
-		return nil, status.Errorf(codes.Internal, "could not set up stream for storing evidences: %v", err)
-	}
-
-	log.Infof("Assessment Started")
-	return &assessment.StartAssessmentResponse{}, nil
+func (s *Service) Configure(_ context.Context, _ *assessment.ConfigureAssessmentRequest) (resp *assessment.ConfigureAssessmentResponse, err error) {
+	// TODO
+	// s.evidenceStoreTargetAddress = someThingFromRequest
+	return &assessment.ConfigureAssessmentResponse{}, nil
 }
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
