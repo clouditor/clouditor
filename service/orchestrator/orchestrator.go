@@ -213,6 +213,7 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 		return resp, status.Errorf(codes.InvalidArgument, "invalid req: %v", err)
 	}
 
+	// TODO(all): We do not check ID in Validate. Therefore, I assume that we have to set ID here?
 	s.results[req.Result.Id] = req.Result
 
 	go s.informHook(req.Result, nil)
