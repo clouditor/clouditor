@@ -185,18 +185,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 
 	// orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {})
 	// evidenceStoreService.RegisterEvidenceHook(func(result *evidence.Evidence, err error) {})
-	assessmentService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
-
-		if err != nil {
-			return
-		}
-		_, err = orchestratorService.StoreAssessmentResult(context.Background(), &orchestrator.StoreAssessmentResultRequest{
-			Result: result})
-
-		if err != nil {
-			log.Errorf("error storing assessment result in orchestrator: %v", err)
-		}
-	})
+	// assessmentService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {}
 
 	authService.CreateDefaultUser(viper.GetString(APIDefaultUserFlag), viper.GetString(APIDefaultPasswordFlag))
 

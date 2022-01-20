@@ -28,6 +28,7 @@ package assessment
 import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/policies"
 	"context"
 	"encoding/json"
@@ -61,14 +62,19 @@ type Service struct {
 
 	Configuration
 
-	// evidenceStoreStream send evidences to the Evidence Store
+	// evidenceStoreStream sends evidences to the Evidence Store
 	evidenceStoreStream evidence.EvidenceStore_StoreEvidencesClient
+	evidenceStoreMutex  sync.Mutex
+
+	// orchestratorStream sends ARs to the Orchestrator
+	orchestratorStream orchestrator.Orchestrator_StoreAssessmentResultsClient
+	orchestratorMutex  sync.Mutex
 
 	// resultHooks is a list of hook functions that can be used if one wants to be
 	// informed about each assessment result
 	resultHooks []assessment.ResultHookFunc
-	// mu is used for (un)locking result hook calls
-	mu sync.Mutex
+	// hookMutex is used for (un)locking result hook calls
+	hookMutex sync.Mutex
 
 	// Currently, results are just stored as a map (=in-memory). In the future, we will use a DB.
 	results map[string]*assessment.AssessmentResult
@@ -77,13 +83,17 @@ type Service struct {
 // Configuration contains an assessment service's information about connection to other services, e.g. Evidence Store
 type Configuration struct {
 	EvidenceStoreTargetAddress string
+	OrchestratorTargetAddress  string
 }
 
 // NewService creates a new assessment service with default values
 func NewService() *Service {
 	return &Service{
-		results:       make(map[string]*assessment.AssessmentResult),
-		Configuration: Configuration{EvidenceStoreTargetAddress: "localhost:9090"},
+		results: make(map[string]*assessment.AssessmentResult),
+		Configuration: Configuration{
+			EvidenceStoreTargetAddress: "localhost:9090",
+			OrchestratorTargetAddress:  "localhost:9090",
+		},
 	}
 }
 
@@ -101,13 +111,6 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 		}
 
 		return res, status.Errorf(codes.InvalidArgument, "invalid req: %v", newError)
-	}
-	// Set up stream to Evidence Store.
-	// TODO(lebogg): If assessment is used as standalone service (without fwd evidences) maybe adapt code, i.e. no error when ConfigureConnections sets no evidence store
-	if s.evidenceStoreStream == nil {
-		if err = s.initEvidenceStoreStream(); err != nil {
-			return nil, status.Errorf(codes.Internal, "could not assess evidence: %v", err)
-		}
 	}
 
 	// Assess evidence
@@ -159,7 +162,7 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 }
 
 // handleEvidence is the helper method for the actual assessment used by AssessEvidence and AssessEvidences
-func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string) error {
+func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string) (err error) {
 
 	log.Infof("Running evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, evidence.ToolId, evidence.Timestamp)
 	log.Debugf("Evidence: %+v", evidence)
@@ -174,7 +177,11 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 		return newError
 	}
 	// The evidence is sent to the evidence store since it has been successfully evaluated
-	go s.sendToEvidenceStore(evidence)
+	// We could also just log, but an AR could be sent without an accompanying evidence in the Evidence Store
+	err = s.sendToEvidenceStore(evidence)
+	if err != nil {
+		return fmt.Errorf("could not send evidence to the Evidence Store: %v", err)
+	}
 
 	for i, data := range evaluations {
 		metricId := data["metricId"].(string)
@@ -208,10 +215,14 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 		// Just a little hack to quickly enable multiple results per resource
 		s.results[fmt.Sprintf("%s-%d", resourceId, i)] = result
 
-		// TODO(all): Currently, we send result via hook. But I think it would be cleaner to do it straight here.
+		// Inform hooks about new assessment result
 		go s.informHooks(result, nil)
+		// Send assessment result to the Orchestrator
+		err = s.sendToOrchestrator(result)
+		if err != nil {
+			return fmt.Errorf("could not send assessment result to Orchestrator: %v", err)
+		}
 	}
-
 	return nil
 }
 
@@ -320,28 +331,15 @@ func assertNumber(rawTargetValue interface{}) (*structpb.Value, error) {
 
 // informHooks informs the registered hook functions
 func (s *Service) informHooks(result *assessment.AssessmentResult, err error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.hookMutex.Lock()
+	defer s.hookMutex.Unlock()
+
 	// Inform our hook, if we have any
 	if s.resultHooks != nil {
 		for _, hook := range s.resultHooks {
-			// TODO(all): We could do hook concurrent again (assuming different hooks don't interfere with each other)
+			// We could do hook concurrent again (assuming different hooks don't interfere with each other)
 			hook(result, err)
 		}
-	}
-}
-
-// sendToEvidenceStore sends the provided evidence to the evidence store
-func (s *Service) sendToEvidenceStore(e *evidence.Evidence) {
-	// Check if evidenceStoreStream is already established (via Configure method)
-	if s.evidenceStoreStream != nil {
-		err := s.evidenceStoreStream.Send(&evidence.StoreEvidenceRequest{Evidence: e})
-		if err != nil {
-			log.WithError(err)
-		}
-
-	} else {
-		log.Errorf("Evidence couldn't be sent to Evidence Store. Did you establish connection by starting the assessment?")
 	}
 }
 
@@ -361,12 +359,14 @@ func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result
 	s.resultHooks = append(s.resultHooks, assessmentResultsHook)
 }
 
+// initEvidenceStoreStream initializes the stream to the Evidence Store
 func (s *Service) initEvidenceStoreStream() error {
-	log.Infof("Establishing connection to Evidence Store")
 	// Establish connection to evidenceStore component
-	conn, err := grpc.Dial(s.Configuration.EvidenceStoreTargetAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	target := s.Configuration.EvidenceStoreTargetAddress
+	log.Infof("Establishing connection to Evidence Store (%v)", target)
+	conn, err := grpc.Dial(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		return fmt.Errorf("could not connect to evidence store service: %v", err)
+		return fmt.Errorf("could not connect to the Evidence Store service: %v", err)
 	}
 	evidenceStoreClient := evidence.NewEvidenceStoreClient(conn)
 	s.evidenceStoreStream, err = evidenceStoreClient.StoreEvidences(context.Background())
@@ -374,5 +374,55 @@ func (s *Service) initEvidenceStoreStream() error {
 		return fmt.Errorf("could not set up stream for storing evidences: %v", err)
 	}
 	log.Infof("Connected to Evidence Store")
+	return nil
+}
+
+// sendToEvidenceStore sends evidence e to the Evidence Store
+func (s *Service) sendToEvidenceStore(e *evidence.Evidence) error {
+	if s.evidenceStoreStream == nil {
+		err := s.initEvidenceStoreStream()
+		if err != nil {
+			return fmt.Errorf("could not initialize stream to Evidence Store: %v", err)
+		}
+	}
+	log.Infof("Sending evidence (%v) to Evidence Store", e.Id)
+	err := s.evidenceStoreStream.Send(&evidence.StoreEvidenceRequest{Evidence: e})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// initOrchestratorStream initializes the stream to the Orchestrator
+func (s *Service) initOrchestratorStream() error {
+	// Establish connection to orchestrator component
+	target := s.Configuration.OrchestratorTargetAddress
+	log.Infof("Establishing connection to Orchestrator (%v)", target)
+	conn, err := grpc.Dial(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return fmt.Errorf("could not connect to the Orchestrator service: %v", err)
+	}
+	orchestratorClient := orchestrator.NewOrchestratorClient(conn)
+	s.orchestratorStream, err = orchestratorClient.StoreAssessmentResults(context.Background())
+	if err != nil {
+		return fmt.Errorf("could not set up stream for storing assessment results: %v", err)
+	}
+	log.Infof("Connected to Orchestrator")
+	return nil
+}
+
+// sendToOrchestrator sends the assessment result to the Orchestrator
+func (s *Service) sendToOrchestrator(result *assessment.AssessmentResult) error {
+	if s.orchestratorStream == nil {
+		err := s.initOrchestratorStream()
+		if err != nil {
+			return fmt.Errorf("could not initialize stream to Orchestrator: %v", err)
+		}
+	}
+	log.Infof("Sending assessment result (%v) to Orchestrator", result.Id)
+	err := s.orchestratorStream.Send(result)
+	if err != nil {
+		return err
+	}
 	return nil
 }
