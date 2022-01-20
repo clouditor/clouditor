@@ -64,11 +64,9 @@ type Service struct {
 
 	// evidenceStoreStream sends evidences to the Evidence Store
 	evidenceStoreStream evidence.EvidenceStore_StoreEvidencesClient
-	evidenceStoreMutex  sync.Mutex
 
 	// orchestratorStream sends ARs to the Orchestrator
 	orchestratorStream orchestrator.Orchestrator_StoreAssessmentResultsClient
-	orchestratorMutex  sync.Mutex
 
 	// resultHooks is a list of hook functions that can be used if one wants to be
 	// informed about each assessment result
