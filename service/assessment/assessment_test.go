@@ -351,6 +351,7 @@ func TestListAssessmentResults(t *testing.T) {
 	assert.NoError(t, s.mockOrchestratorStream())
 	_, err := s.AssessEvidence(context.TODO(), &assessment.AssessEvidenceRequest{
 		Evidence: &evidence.Evidence{
+			Id:        "mockEvidenceId",
 			ToolId:    "mock",
 			Timestamp: timestamppb.Now(),
 			Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
