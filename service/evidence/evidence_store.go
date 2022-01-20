@@ -61,7 +61,7 @@ func NewService() *Service {
 }
 
 func init() {
-	log = logrus.WithField("component", "req")
+	log = logrus.WithField("component", "Evidence Store")
 }
 
 // StoreEvidence is a method implementation of the evidenceServer interface: It receives a req and stores it

@@ -122,7 +122,7 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 }
 
 // AssessEvidences is a method implementation of the assessment interface: It assesses multiple evidences (stream)
-func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) (err error) { // Set up stream to Evidence Store.
+func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) (err error) {
 	var (
 		req *assessment.AssessEvidenceRequest
 	)

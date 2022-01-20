@@ -161,6 +161,7 @@ func TestAssessEvidence(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
+					Id:        "mockEvidenceId",
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
 					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
@@ -224,6 +225,7 @@ func TestAssessEvidences(t *testing.T) {
 			fields: fields{results: make(map[string]*assessment.AssessmentResult)},
 			args: args{stream: &mockAssessmentStream{
 				evidence: &evidence.Evidence{
+					Id:        "MockEvidenceId",
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
 					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
