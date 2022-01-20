@@ -41,17 +41,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListAssessmentResultsResponse'
-    /v1/assessment/start:
-        post:
-            summary: Configure assessment, e.g. setting up connections to other services
-            operationId: Assessment_Configure
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ConfigureAssessmentResponse'
 components:
     schemas:
         AssessEvidenceResponse:
@@ -87,8 +76,6 @@ components:
                     type: string
                     description: Some comments on the reason for non-compliance
             description: A result resource, representing the result after assessing the cloud resource with id resource_id.
-        ConfigureAssessmentResponse:
-            properties: {}
         Evidence:
             type: object
             properties:

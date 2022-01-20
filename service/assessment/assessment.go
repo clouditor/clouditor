@@ -87,14 +87,6 @@ func NewService() *Service {
 	}
 }
 
-// Configure configures assessment by setting up connections to other services. In the future, also with manual configurations in request
-// TODO: Add CLI Command
-func (*Service) Configure(_ context.Context, _ *assessment.ConfigureAssessmentRequest) (resp *assessment.ConfigureAssessmentResponse, err error) {
-	// TODO
-	// s.EvidenceStoreTargetAddress = someThingFromRequest
-	return &assessment.ConfigureAssessmentResponse{}, nil
-}
-
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
 func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
 	resourceId, err := req.Evidence.Validate()

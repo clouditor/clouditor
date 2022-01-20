@@ -39,12 +39,6 @@ option go_package = "api/assessment";
 // Representing the link between orchestrator and discovery: Assessing evidences
 // from discovery and sending results to orchestrator
 service Assessment {
-  // Configure assessment, e.g. setting up connections to other services
-  rpc Configure(ConfigureAssessmentRequest) returns (ConfigureAssessmentResponse) {
-    option (google.api.http) = {
-      post : "/v1/assessment/start"
-    };
-  }
 
   // Triggers the assessment. Part of the private API. Not exposed as REST.
   rpc TriggerAssessment(TriggerAssessmentRequest)
