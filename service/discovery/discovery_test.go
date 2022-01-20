@@ -98,12 +98,12 @@ func TestStartDiscovery(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			discoveryService.AssessmentStream = tt.fields.assessmentStream
+			discoveryService.assessmentStream = tt.fields.assessmentStream
 			discoveryService.StartDiscovery(tt.fields.discoverer)
 
 			// APIs for assessment and evidence store both send the same evidence. Thus, testing one is enough.
 			if tt.checkEvidence {
-				e := discoveryService.AssessmentStream.(*mockAssessmentStream).sentEvidence
+				e := discoveryService.assessmentStream.(*mockAssessmentStream).sentEvidence
 				// Check if UUID has been created
 				assert.NotEmpty(t, e.Id)
 				// Check if cloud resources / properties are there

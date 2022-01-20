@@ -62,8 +62,8 @@ type Service struct {
 
 	Configurations map[discovery.Discoverer]*Configuration
 
-	// TODO(oxisto) do not expose this. just makes tests easier for now
-	AssessmentStream assessment.Assessment_AssessEvidencesClient
+	assessmentStream        assessment.Assessment_AssessEvidencesClient
+	AssessmentTargetAddress string
 
 	resources map[string]voc.IsCloudResource
 	scheduler *gocron.Scheduler
@@ -83,9 +83,10 @@ func init() {
 
 func NewService() *Service {
 	return &Service{
-		resources:      make(map[string]voc.IsCloudResource),
-		scheduler:      gocron.NewScheduler(time.UTC),
-		Configurations: make(map[discovery.Discoverer]*Configuration),
+		AssessmentTargetAddress: "localhost:9090",
+		resources:               make(map[string]voc.IsCloudResource),
+		scheduler:               gocron.NewScheduler(time.UTC),
+		Configurations:          make(map[discovery.Discoverer]*Configuration),
 	}
 }
 
@@ -100,12 +101,12 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	// Establish connection to assessment component
 	var client assessment.AssessmentClient
 	// TODO(oxisto): support assessment on Another tcp/port
-	conn, err := grpc.Dial("localhost:9090", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(s.AssessmentTargetAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not connect to assessment service: %v", err)
 	}
 	client = assessment.NewAssessmentClient(conn)
-	s.AssessmentStream, err = client.AssessEvidences(context.Background())
+	s.assessmentStream, err = client.AssessEvidences(context.Background())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not set up stream for assessing evidences: %v", err)
 	}
@@ -202,12 +203,12 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 			Resource:  v,
 		}
 
-		if s.AssessmentStream == nil {
+		if s.assessmentStream == nil {
 			log.Warnf("Evidence stream to Assessment component not available")
 			continue
 		}
 
-		if err = s.AssessmentStream.Send(&assessment.AssessEvidenceRequest{Evidence: e}); err != nil {
+		if err = s.assessmentStream.Send(&assessment.AssessEvidenceRequest{Evidence: e}); err != nil {
 			log.WithError(handleError(err, "Assessment"))
 		}
 	}
