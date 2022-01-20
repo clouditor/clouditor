@@ -233,7 +233,7 @@ type mockDiscoverer struct {
 	testCase int
 }
 
-func (m mockDiscoverer) Name() string { return "just mocking" }
+func (mockDiscoverer) Name() string { return "just mocking" }
 
 func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 	switch m.testCase {
