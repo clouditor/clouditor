@@ -56,7 +56,7 @@ var lis *bufconn.Listener
 
 func TestMain(m *testing.M) {
 	// pre-configuration for mocking evidence store
-	const bufSize = 1024 * 1024
+	const bufSize = 1024 * 1024 * 2
 	lis = bufconn.Listen(bufSize)
 	s := grpc.NewServer()
 	evidence.RegisterEvidenceStoreServer(s, service_evidenceStore.NewService())
@@ -191,7 +191,7 @@ func TestAssessEvidence(t *testing.T) {
 	}
 }
 
-func TestService_AssessEvidences(t *testing.T) {
+func TestAssessEvidences(t *testing.T) {
 	type fields struct {
 		ResultHooks                   []assessment.ResultHookFunc
 		results                       map[string]*assessment.AssessmentResult
@@ -244,8 +244,9 @@ func TestService_AssessEvidences(t *testing.T) {
 			assert.NoError(t, s.mockOrchestratorStream())
 
 			err := s.AssessEvidences(tt.args.stream)
+			fmt.Println(err)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Got AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
