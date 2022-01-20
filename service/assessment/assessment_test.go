@@ -28,7 +28,9 @@ package assessment
 import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/orchestrator"
 	service_evidenceStore "clouditor.io/clouditor/service/evidence"
+	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"clouditor.io/clouditor/voc"
 	"context"
 	"encoding/json"
@@ -58,6 +60,7 @@ func TestMain(m *testing.M) {
 	lis = bufconn.Listen(bufSize)
 	s := grpc.NewServer()
 	evidence.RegisterEvidenceStoreServer(s, service_evidenceStore.NewService())
+	orchestrator.RegisterOrchestratorServer(s, service_orchestrator.NewService())
 	go func() {
 		if err := s.Serve(lis); err != nil {
 			log.Fatalf("Server exited with error: %v", err)
@@ -84,7 +87,8 @@ func TestNewService(t *testing.T) {
 			want: &Service{
 				results:                       make(map[string]*assessment.AssessmentResult),
 				UnimplementedAssessmentServer: assessment.UnimplementedAssessmentServer{},
-				Configuration:                 Configuration{EvidenceStoreTargetAddress: "localhost:9090"},
+				EvidenceStoreTargetAddress:    "localhost:9090",
+				OrchestratorTargetAddress:     "localhost:9090",
 			},
 		},
 	}
@@ -172,6 +176,7 @@ func TestAssessEvidence(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
 			assert.NoError(t, s.mockEvidenceStream())
+			assert.NoError(t, s.mockOrchestratorStream())
 
 			gotResp, err := s.AssessEvidence(tt.args.in0, &assessment.AssessEvidenceRequest{Evidence: tt.args.evidence})
 			if (err != nil) != tt.wantErr {
@@ -236,6 +241,7 @@ func TestService_AssessEvidences(t *testing.T) {
 				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
 			}
 			assert.NoError(t, s.mockEvidenceStream())
+			assert.NoError(t, s.mockOrchestratorStream())
 
 			err := s.AssessEvidences(tt.args.stream)
 			if (err != nil) != tt.wantErr {
@@ -307,6 +313,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 			hookCallCounter = 0
 			s := NewService()
 			assert.NoError(t, s.mockEvidenceStream())
+			assert.NoError(t, s.mockOrchestratorStream())
 
 			for i, hookFunction := range tt.args.resultHooks {
 				s.RegisterAssessmentResultHook(hookFunction)
@@ -338,6 +345,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 func TestListAssessmentResults(t *testing.T) {
 	s := NewService()
 	assert.NoError(t, s.mockEvidenceStream())
+	assert.NoError(t, s.mockOrchestratorStream())
 	_, err := s.AssessEvidence(context.TODO(), &assessment.AssessEvidenceRequest{
 		Evidence: &evidence.Evidence{
 			ToolId:    "mock",
@@ -403,27 +411,6 @@ func (mockAssessmentStream) SendMsg(interface{}) error {
 }
 
 func (mockAssessmentStream) RecvMsg(interface{}) error {
-	return nil
-}
-
-// Mocking evidence store service
-
-func bufDialer(context.Context, string) (net.Conn, error) {
-	return lis.Dial()
-}
-
-func (s *Service) mockEvidenceStream() error {
-	ctx := context.Background()
-	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		return err
-	}
-	// defer conn.Close()
-	client, err := evidence.NewEvidenceStoreClient(conn).StoreEvidences(ctx)
-	if err != nil {
-		return err
-	}
-	s.evidenceStoreStream = client
 	return nil
 }
 
@@ -500,7 +487,7 @@ func TestAssertNumber(t *testing.T) {
 	}
 }
 
-func Test_convertTargetValue(t *testing.T) {
+func TestConvertTargetValue(t *testing.T) {
 	type args struct {
 		value interface{}
 	}
@@ -568,4 +555,38 @@ func Test_convertTargetValue(t *testing.T) {
 			assert.Equalf(t, tt.wantConvertedTargetValue, gotConvertedTargetValue, "convertTargetValue(%v)", tt.args.value)
 		})
 	}
+}
+
+// Mocking evidence store service
+
+func bufDialer(context.Context, string) (net.Conn, error) {
+	return lis.Dial()
+}
+
+func (s *Service) mockEvidenceStream() error {
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return err
+	}
+	client, err := evidence.NewEvidenceStoreClient(conn).StoreEvidences(ctx)
+	if err != nil {
+		return err
+	}
+	s.evidenceStoreStream = client
+	return nil
+}
+
+func (s *Service) mockOrchestratorStream() error {
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return err
+	}
+	client, err := orchestrator.NewOrchestratorClient(conn).StoreAssessmentResults(ctx)
+	if err != nil {
+		return err
+	}
+	s.orchestratorStream = client
+	return nil
 }
