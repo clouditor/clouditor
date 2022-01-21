@@ -37,8 +37,10 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -108,10 +110,12 @@ func TestAssessEvidence(t *testing.T) {
 		evidence *evidence.Evidence
 	}
 	tests := []struct {
-		name     string
-		args     args
-		wantResp *assessment.AssessEvidenceResponse
-		wantErr  bool
+		name string
+		args args
+		// hasRPCConnection is true when connected to orchestrator and evidence store
+		hasRPCConnection bool
+		wantResp         *assessment.AssessEvidenceResponse
+		wantErr          bool
 	}{
 		{
 			name: "Assess resource without id",
@@ -123,6 +127,7 @@ func TestAssessEvidence(t *testing.T) {
 					Resource:  toStruct(voc.VirtualMachine{}, t),
 				},
 			},
+			hasRPCConnection: true,
 			wantResp: &assessment.AssessEvidenceResponse{
 				Status: false,
 			},
@@ -137,6 +142,7 @@ func TestAssessEvidence(t *testing.T) {
 					Resource:  toStruct(voc.VirtualMachine{}, t),
 				},
 			},
+			hasRPCConnection: true,
 			wantResp: &assessment.AssessEvidenceResponse{
 				Status: false,
 			},
@@ -151,6 +157,7 @@ func TestAssessEvidence(t *testing.T) {
 					Resource: toStruct(voc.VirtualMachine{}, t),
 				},
 			},
+			hasRPCConnection: true,
 			wantResp: &assessment.AssessEvidenceResponse{
 				Status: false,
 			},
@@ -167,17 +174,35 @@ func TestAssessEvidence(t *testing.T) {
 					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 				},
 			},
+			hasRPCConnection: true,
 			wantResp: &assessment.AssessEvidenceResponse{
 				Status: true,
 			},
 			wantErr: false,
 		},
+		{
+			name: "No RPC connections",
+			args: args{
+				in0: context.TODO(),
+				evidence: &evidence.Evidence{
+					Id:        "mockEvidenceId",
+					ToolId:    "mock",
+					Timestamp: timestamppb.Now(),
+					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+				},
+			},
+			hasRPCConnection: false,
+			wantResp:         &assessment.AssessEvidenceResponse{Status: false},
+			wantErr:          true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
-			assert.NoError(t, s.mockEvidenceStream())
-			assert.NoError(t, s.mockOrchestratorStream())
+			if tt.hasRPCConnection {
+				assert.NoError(t, s.mockEvidenceStream())
+				assert.NoError(t, s.mockOrchestratorStream())
+			}
 
 			gotResp, err := s.AssessEvidence(tt.args.in0, &assessment.AssessEvidenceRequest{Evidence: tt.args.evidence})
 			if (err != nil) != tt.wantErr {
@@ -194,6 +219,7 @@ func TestAssessEvidence(t *testing.T) {
 
 func TestAssessEvidences(t *testing.T) {
 	type fields struct {
+		hasRPCConnection              bool
 		ResultHooks                   []assessment.ResultHookFunc
 		results                       map[string]*assessment.AssessmentResult
 		UnimplementedAssessmentServer assessment.UnimplementedAssessmentServer
@@ -209,8 +235,10 @@ func TestAssessEvidences(t *testing.T) {
 		wantErrMessage string
 	}{
 		{
-			name:   "Assessing evidences fails due to missing toolId",
-			fields: fields{results: make(map[string]*assessment.AssessmentResult)},
+			name: "Missing toolId",
+			fields: fields{
+				hasRPCConnection: true,
+				results:          make(map[string]*assessment.AssessmentResult)},
 			args: args{stream: &mockAssessmentStream{
 				evidence: &evidence.Evidence{
 					Timestamp: timestamppb.Now(),
@@ -221,8 +249,10 @@ func TestAssessEvidences(t *testing.T) {
 			wantErrMessage: "invalid evidence",
 		},
 		{
-			name:   "Assess evidences",
-			fields: fields{results: make(map[string]*assessment.AssessmentResult)},
+			name: "Assess evidences",
+			fields: fields{
+				hasRPCConnection: true,
+				results:          make(map[string]*assessment.AssessmentResult)},
 			args: args{stream: &mockAssessmentStream{
 				evidence: &evidence.Evidence{
 					Id:        "MockEvidenceId",
@@ -234,6 +264,15 @@ func TestAssessEvidences(t *testing.T) {
 			wantErr:        false,
 			wantErrMessage: "",
 		},
+		{
+			name: "No RPC connections",
+			fields: fields{
+				hasRPCConnection: false,
+			},
+			args:           args{stream: &mockAssessmentStreamWithRecvErr{}},
+			wantErr:        true,
+			wantErrMessage: codes.Internal.String(),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -242,8 +281,10 @@ func TestAssessEvidences(t *testing.T) {
 				results:                       tt.fields.results,
 				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
 			}
-			assert.NoError(t, s.mockEvidenceStream())
-			assert.NoError(t, s.mockOrchestratorStream())
+			if tt.fields.hasRPCConnection {
+				assert.NoError(t, s.mockEvidenceStream())
+				assert.NoError(t, s.mockOrchestratorStream())
+			}
 
 			err := s.AssessEvidences(tt.args.stream)
 			fmt.Println(err)
@@ -415,6 +456,41 @@ func (mockAssessmentStream) SendMsg(interface{}) error {
 }
 
 func (mockAssessmentStream) RecvMsg(interface{}) error {
+	return nil
+}
+
+// mockAssessmentStream implements Assessment_AssessEvidencesServer which directly throws error on Recv
+type mockAssessmentStreamWithRecvErr struct {
+}
+
+func (mockAssessmentStreamWithRecvErr) SendAndClose(*emptypb.Empty) error {
+	return nil
+}
+
+func (mockAssessmentStreamWithRecvErr) Recv() (*assessment.AssessEvidenceRequest, error) {
+	return nil, status.Errorf(codes.Internal, "receiving internal error")
+}
+
+func (mockAssessmentStreamWithRecvErr) SetHeader(metadata.MD) error {
+	return nil
+}
+
+func (mockAssessmentStreamWithRecvErr) SendHeader(metadata.MD) error {
+	return nil
+}
+
+func (mockAssessmentStreamWithRecvErr) SetTrailer(metadata.MD) {
+}
+
+func (mockAssessmentStreamWithRecvErr) Context() context.Context {
+	return nil
+}
+
+func (mockAssessmentStreamWithRecvErr) SendMsg(interface{}) error {
+	return nil
+}
+
+func (mockAssessmentStreamWithRecvErr) RecvMsg(interface{}) error {
 	return nil
 }
 
@@ -593,4 +669,128 @@ func (s *Service) mockOrchestratorStream() error {
 	}
 	s.orchestratorStream = client
 	return nil
+}
+
+func TestHandleEvidence(t *testing.T) {
+	type fields struct {
+		hasEvidenceStoreStream bool
+		hasOrchestratorStream  bool
+		//results                       map[string]*assessment.AssessmentResult
+	}
+	type args struct {
+		evidence   *evidence.Evidence
+		resourceId string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "correct evidence",
+			fields: fields{
+				hasOrchestratorStream:  true,
+				hasEvidenceStoreStream: true,
+			},
+			args: args{
+				evidence: &evidence.Evidence{
+					Id:        "mockEvidenceId",
+					ToolId:    "mock",
+					Timestamp: timestamppb.Now(),
+					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+				},
+				resourceId: "my-resource-id",
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.NoError(t, err)
+				return false
+			},
+		},
+		{
+			name: "missing type in evidence",
+			fields: fields{
+				hasOrchestratorStream:  true,
+				hasEvidenceStoreStream: true,
+			},
+			args: args{
+				evidence: &evidence.Evidence{
+					Id:        "mockEvidenceId",
+					ToolId:    "mock",
+					Timestamp: timestamppb.Now(),
+					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{}}}}, t),
+				},
+				resourceId: "my-resource-id",
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Error(t, err)
+				// Check if error message contains "empty" (list of types)
+				assert.Contains(t, err.Error(), "empty")
+				return true
+			},
+		},
+		{
+			name: "no connection to Evidence Store",
+			fields: fields{
+				hasOrchestratorStream:  true,
+				hasEvidenceStoreStream: false,
+			},
+			args: args{
+				evidence: &evidence.Evidence{
+					Id:        "mockEvidenceId",
+					ToolId:    "mock",
+					Timestamp: timestamppb.Now(),
+					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+				},
+				resourceId: "my-resource-id",
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Error(t, err)
+				// Check if error message contains "empty" (list of types)
+				assert.Contains(t, err.Error(), "Evidence Store")
+				assert.Contains(t, err.Error(), "Unavailable desc")
+				return true
+			},
+		},
+		{
+			name: "no connection to Orchestrator",
+			fields: fields{
+				hasOrchestratorStream:  false,
+				hasEvidenceStoreStream: true,
+			},
+			args: args{
+				evidence: &evidence.Evidence{
+					Id:        "mockEvidenceId",
+					ToolId:    "mock",
+					Timestamp: timestamppb.Now(),
+					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+				},
+				resourceId: "my-resource-id",
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Error(t, err)
+				// Check if error message contains "empty" (list of types)
+				assert.Contains(t, err.Error(), "Orchestrator")
+				assert.Contains(t, err.Error(), "Unavailable desc")
+				return true
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := NewService()
+			// Mock streams for target services if needed
+			if tt.fields.hasEvidenceStoreStream {
+				assert.NoError(t, s.mockEvidenceStream())
+			}
+			if tt.fields.hasOrchestratorStream {
+				assert.NoError(t, s.mockOrchestratorStream())
+			}
+			// Two tests: 1st) wantErr function. 2nd) if wantErr false then check if a result is added to map
+			if !tt.wantErr(t, s.handleEvidence(tt.args.evidence, tt.args.resourceId), fmt.Sprintf("handleEvidence(%v, %v)", tt.args.evidence, tt.args.resourceId)) {
+				assert.NotEmpty(t, s.results)
+			}
+
+		})
+	}
 }
