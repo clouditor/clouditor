@@ -36,10 +36,12 @@ type OrchestratorClient interface {
 	StoreAssessmentResult(ctx context.Context, in *StoreAssessmentResultRequest, opts ...grpc.CallOption) (*StoreAssessmentResultResponse, error)
 	// Stores stream of assessment results provided by an assessment tool
 	StoreAssessmentResults(ctx context.Context, opts ...grpc.CallOption) (Orchestrator_StoreAssessmentResultsClient, error)
-	// List all metrics provided by the metric catalog
-	ListMetrics(ctx context.Context, in *ListMetricsRequest, opts ...grpc.CallOption) (*ListMetricsResponse, error)
+	// List all assessment results. Part of the public API, also exposed as REST.
+	ListAssessmentResults(ctx context.Context, in *assessment.ListAssessmentResultsRequest, opts ...grpc.CallOption) (*assessment.ListAssessmentResultsResponse, error)
 	// Returns the metric with the passed metric id
 	GetMetric(ctx context.Context, in *GetMetricsRequest, opts ...grpc.CallOption) (*assessment.Metric, error)
+	// List all metrics provided by the metric catalog
+	ListMetrics(ctx context.Context, in *ListMetricsRequest, opts ...grpc.CallOption) (*ListMetricsResponse, error)
 	// Registers a new target cloud service
 	RegisterCloudService(ctx context.Context, in *RegisterCloudServiceRequest, opts ...grpc.CallOption) (*CloudService, error)
 	// Registers a new target cloud service
@@ -152,9 +154,9 @@ func (x *orchestratorStoreAssessmentResultsClient) CloseAndRecv() (*emptypb.Empt
 	return m, nil
 }
 
-func (c *orchestratorClient) ListMetrics(ctx context.Context, in *ListMetricsRequest, opts ...grpc.CallOption) (*ListMetricsResponse, error) {
-	out := new(ListMetricsResponse)
-	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/ListMetrics", in, out, opts...)
+func (c *orchestratorClient) ListAssessmentResults(ctx context.Context, in *assessment.ListAssessmentResultsRequest, opts ...grpc.CallOption) (*assessment.ListAssessmentResultsResponse, error) {
+	out := new(assessment.ListAssessmentResultsResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/ListAssessmentResults", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -164,6 +166,15 @@ func (c *orchestratorClient) ListMetrics(ctx context.Context, in *ListMetricsReq
 func (c *orchestratorClient) GetMetric(ctx context.Context, in *GetMetricsRequest, opts ...grpc.CallOption) (*assessment.Metric, error) {
 	out := new(assessment.Metric)
 	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/GetMetric", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orchestratorClient) ListMetrics(ctx context.Context, in *ListMetricsRequest, opts ...grpc.CallOption) (*ListMetricsResponse, error) {
+	out := new(ListMetricsResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/ListMetrics", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -253,10 +264,12 @@ type OrchestratorServer interface {
 	StoreAssessmentResult(context.Context, *StoreAssessmentResultRequest) (*StoreAssessmentResultResponse, error)
 	// Stores stream of assessment results provided by an assessment tool
 	StoreAssessmentResults(Orchestrator_StoreAssessmentResultsServer) error
-	// List all metrics provided by the metric catalog
-	ListMetrics(context.Context, *ListMetricsRequest) (*ListMetricsResponse, error)
+	// List all assessment results. Part of the public API, also exposed as REST.
+	ListAssessmentResults(context.Context, *assessment.ListAssessmentResultsRequest) (*assessment.ListAssessmentResultsResponse, error)
 	// Returns the metric with the passed metric id
 	GetMetric(context.Context, *GetMetricsRequest) (*assessment.Metric, error)
+	// List all metrics provided by the metric catalog
+	ListMetrics(context.Context, *ListMetricsRequest) (*ListMetricsResponse, error)
 	// Registers a new target cloud service
 	RegisterCloudService(context.Context, *RegisterCloudServiceRequest) (*CloudService, error)
 	// Registers a new target cloud service
@@ -299,11 +312,14 @@ func (UnimplementedOrchestratorServer) StoreAssessmentResult(context.Context, *S
 func (UnimplementedOrchestratorServer) StoreAssessmentResults(Orchestrator_StoreAssessmentResultsServer) error {
 	return status.Errorf(codes.Unimplemented, "method StoreAssessmentResults not implemented")
 }
-func (UnimplementedOrchestratorServer) ListMetrics(context.Context, *ListMetricsRequest) (*ListMetricsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListMetrics not implemented")
+func (UnimplementedOrchestratorServer) ListAssessmentResults(context.Context, *assessment.ListAssessmentResultsRequest) (*assessment.ListAssessmentResultsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListAssessmentResults not implemented")
 }
 func (UnimplementedOrchestratorServer) GetMetric(context.Context, *GetMetricsRequest) (*assessment.Metric, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMetric not implemented")
+}
+func (UnimplementedOrchestratorServer) ListMetrics(context.Context, *ListMetricsRequest) (*ListMetricsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListMetrics not implemented")
 }
 func (UnimplementedOrchestratorServer) RegisterCloudService(context.Context, *RegisterCloudServiceRequest) (*CloudService, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterCloudService not implemented")
@@ -473,20 +489,20 @@ func (x *orchestratorStoreAssessmentResultsServer) Recv() (*assessment.Assessmen
 	return m, nil
 }
 
-func _Orchestrator_ListMetrics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListMetricsRequest)
+func _Orchestrator_ListAssessmentResults_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(assessment.ListAssessmentResultsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrchestratorServer).ListMetrics(ctx, in)
+		return srv.(OrchestratorServer).ListAssessmentResults(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.Orchestrator/ListMetrics",
+		FullMethod: "/clouditor.Orchestrator/ListAssessmentResults",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).ListMetrics(ctx, req.(*ListMetricsRequest))
+		return srv.(OrchestratorServer).ListAssessmentResults(ctx, req.(*assessment.ListAssessmentResultsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -505,6 +521,24 @@ func _Orchestrator_GetMetric_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).GetMetric(ctx, req.(*GetMetricsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Orchestrator_ListMetrics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListMetricsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).ListMetrics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/ListMetrics",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).ListMetrics(ctx, req.(*ListMetricsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -667,12 +701,16 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Orchestrator_StoreAssessmentResult_Handler,
 		},
 		{
-			MethodName: "ListMetrics",
-			Handler:    _Orchestrator_ListMetrics_Handler,
+			MethodName: "ListAssessmentResults",
+			Handler:    _Orchestrator_ListAssessmentResults_Handler,
 		},
 		{
 			MethodName: "GetMetric",
 			Handler:    _Orchestrator_GetMetric_Handler,
+		},
+		{
+			MethodName: "ListMetrics",
+			Handler:    _Orchestrator_ListMetrics_Handler,
 		},
 		{
 			MethodName: "RegisterCloudService",

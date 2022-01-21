@@ -44,14 +44,6 @@ service Assessment {
   rpc TriggerAssessment(TriggerAssessmentRequest)
       returns (google.protobuf.Empty) {}
 
-  // List all assessment results. Part of the public API, also exposed as REST.
-  rpc ListAssessmentResults(ListAssessmentResultsRequest)
-      returns (ListAssessmentResultsResponse) {
-    option (google.api.http) = {
-      get : "/v1/assessment/results"
-    };
-  }
-
   // Assesses the evidence sent by the discovery. Part of the public API, also exposed as REST.
   rpc AssessEvidence(AssessEvidenceRequest) returns (AssessEvidenceResponse) {
     option (google.api.http) = {
@@ -63,15 +55,23 @@ service Assessment {
 
   // Assesses stream of evidences sent by the discovery. Part of the public API. Not exposed as REST.
   rpc AssessEvidences(stream AssessEvidenceRequest) returns (google.protobuf.Empty);
+
+  // List all assessment results. Part of the public API, also exposed as REST.
+  rpc ListAssessmentResults(ListAssessmentResultsRequest)
+      returns (ListAssessmentResultsResponse) {
+    option (google.api.http) = {
+      get : "/v1/assessment/results"
+    };
+  }
 };
+
+message ListAssessmentResultsRequest {}
+message ListAssessmentResultsResponse { repeated AssessmentResult results = 1; }
 
 message ConfigureAssessmentRequest {}
 message ConfigureAssessmentResponse{}
 
 message TriggerAssessmentRequest { string someOption = 1; }
-
-message ListAssessmentResultsRequest {}
-message ListAssessmentResultsResponse { repeated AssessmentResult results = 1; }
 
 message AssessEvidenceRequest { Evidence evidence = 1; }
 message AssessEvidenceResponse { bool status = 1; }

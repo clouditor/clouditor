@@ -94,10 +94,11 @@ service Orchestrator {
   rpc StoreAssessmentResults(stream AssessmentResult)
       returns (google.protobuf.Empty);
 
-  // List all metrics provided by the metric catalog
-  rpc ListMetrics(ListMetricsRequest) returns (ListMetricsResponse) {
+  // List all assessment results. Part of the public API, also exposed as REST.
+  rpc ListAssessmentResults(ListAssessmentResultsRequest)
+      returns (ListAssessmentResultsResponse) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/metrics"
+      get : "/v1/assessment/results"
     };
   }
 
@@ -105,6 +106,13 @@ service Orchestrator {
   rpc GetMetric(GetMetricsRequest) returns (Metric) {
     option (google.api.http) = {
       get : "/v1/orchestrator/metrics/{metric_id}"
+    };
+  }
+
+  // List all metrics provided by the metric catalog
+  rpc ListMetrics(ListMetricsRequest) returns (ListMetricsResponse) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/metrics"
     };
   }
 

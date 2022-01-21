@@ -250,6 +250,18 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 
 }
 
+// ListAssessmentResults is a method implementation of the orchestrator interface
+func (s *Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
+	res = new(assessment.ListAssessmentResultsResponse)
+	res.Results = []*assessment.AssessmentResult{}
+
+	for _, result := range s.results {
+		res.Results = append(res.Results, result)
+	}
+
+	return
+}
+
 func (s *Service) RegisterAssessmentResultHook(hook func(result *assessment.AssessmentResult, err error)) {
 	s.AssessmentResultHooks = append(s.AssessmentResultHooks, hook)
 }

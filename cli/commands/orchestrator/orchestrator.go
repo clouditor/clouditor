@@ -23,35 +23,65 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package commands
+package orchestrator
 
 import (
+	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/orchestrator"
+	"context"
+	"fmt"
+
 	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/cli/commands/assessment"
-	"clouditor.io/clouditor/cli/commands/cloud"
-	"clouditor.io/clouditor/cli/commands/completion"
-	"clouditor.io/clouditor/cli/commands/discovery"
-	"clouditor.io/clouditor/cli/commands/login"
-	"clouditor.io/clouditor/cli/commands/metric"
-	"clouditor.io/clouditor/cli/commands/orchestrator"
-	"clouditor.io/clouditor/cli/commands/tool"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
+
+// NewListResultsCommand returns a cobra command for the `list` subcommand
+func NewListResultsCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "Lists all assessment results",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var (
+				err     error
+				session *cli.Session
+				client  orchestrator.OrchestratorClient
+				res     *assessment.ListAssessmentResultsResponse
+			)
+
+			if session, err = cli.ContinueSession(); err != nil {
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+				return nil
+			}
+
+			client = orchestrator.NewOrchestratorClient(session)
+
+			res, err = client.ListAssessmentResults(context.Background(), &assessment.ListAssessmentResultsRequest{})
+
+			return session.HandleResponse(res, err)
+		},
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return []string{}, cobra.ShellCompDirectiveNoFileComp
+		},
+	}
+
+	return cmd
+}
+
+// NewOrchestratorCommand returns a cobra command for `assessment` subcommands
+func NewOrchestratorCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "orchestrator",
+		Short: "Orchestrator commands",
+	}
+
+	AddCommands(cmd)
+
+	return cmd
+}
 
 // AddCommands adds all subcommands
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
-		login.NewLoginCommand(),
-		discovery.NewDiscoveryCommand(),
-		metric.NewMetricCommand(),
-		tool.NewToolCommand(),
-		assessment.NewAssessmentCommand(),
-		orchestrator.NewOrchestratorCommand(),
-		completion.NewCompletionCommand(),
-		cloud.NewCloudCommand(),
+		NewListResultsCommand(),
 	)
-
-	cmd.PersistentFlags().StringP("session-directory", "s", cli.DefaultSessionFolder, "the directory where the session will be saved and loaded from")
-	_ = viper.BindPFlag("session-directory", cmd.PersistentFlags().Lookup("session-directory"))
 }
