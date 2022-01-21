@@ -216,106 +216,18 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 	return nil
 }
 
-// convertTargetValue converts the given target_value in a format accepted by protobuf
-// Note: Therefore, we have to be specific about the format of target values in the REGO code
-func convertTargetValue(value interface{}) (convertedTargetValue *structpb.Value, err error) {
-	if valueStr, ok := value.(string); ok {
-		convertedTargetValue = &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: valueStr}}
-		return
-	}
-	if valueBool, ok := value.(bool); ok {
-		convertedTargetValue = &structpb.Value{Kind: &structpb.Value_BoolValue{BoolValue: valueBool}}
-		return
-	}
-	if _, ok := value.(json.Number); ok {
-		convertedTargetValue, err = assertNumber(value)
-		if err != nil {
-			err = fmt.Errorf("could not convert jsonNumber %v to Float: %w", value, err)
-		}
-		return
-	}
-	if _, ok := value.(int); ok {
-		convertedTargetValue, err = assertNumber(value)
-		if err != nil {
-			err = fmt.Errorf("could not assert integer value %v: %w", value, err)
-		}
-		return
-	}
-	if _, ok := value.(float64); ok {
-		convertedTargetValue, err = assertNumber(value)
-		if err != nil {
-			err = fmt.Errorf("could not assert float64 value %v: %w", value, err)
-		}
-		return
-	}
-	if _, ok := value.(float32); ok {
-		convertedTargetValue, err = assertNumber(value)
-		if err != nil {
-			err = fmt.Errorf("could not assert float32 value %v: %w", value, err)
-		}
-		return
-	}
-	if listOfValues, ok := value.([]interface{}); ok {
-		var listOfConvertedValues []*structpb.Value
-		for _, v := range listOfValues {
-			if valueStr, ok := v.(string); ok {
-				listOfConvertedValues = append(listOfConvertedValues, &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: valueStr}})
-			} else if valueBool, ok := v.(bool); ok {
-				listOfConvertedValues = append(listOfConvertedValues, &structpb.Value{Kind: &structpb.Value_BoolValue{BoolValue: valueBool}})
-			} else if valueMap, ok := v.(map[string]interface{}); ok {
-				var mapOfValues = make(map[string]*structpb.Value)
-				for k, mapValue := range valueMap {
-					if k == "runtimeLanguage" {
-						if mapValueString, ok := mapValue.(string); ok {
-							mapOfValues[k] = &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: mapValueString}}
-						} else {
-							return nil, fmt.Errorf("runtimeLanguage assertion failed. Wanted string but got %T (%v)", mapValue, mapValue)
-						}
-					} else if k == "runtimeVersion" {
-						mapOfValues[k], err = assertNumber(mapValue)
-						if err != nil {
-							return nil, fmt.Errorf("runtimeVersion assertion failed. Could not assert '%v': %w", mapValue, err)
-						}
-					} else {
-						return nil, fmt.Errorf("no supported key. Check if it is one of the supported (e.g. runtimeLanguage or runtimeVersion)." +
-							"Or consider adding it to the code")
-					}
-				}
-				listOfConvertedValues = append(listOfConvertedValues, &structpb.Value{Kind: &structpb.Value_StructValue{StructValue: &structpb.Struct{Fields: mapOfValues}}})
-			} else {
-				// When v is no string or boolean, check for numbers. If assertNumber fails, throw error.
-				var number *structpb.Value
-				number, err = assertNumber(v)
-				if err != nil {
-					return nil, fmt.Errorf("after it is no string or boolean, it is also not a supported number. Got %T (%v): %w", v, v, err)
-				}
-				listOfConvertedValues = append(listOfConvertedValues, number)
-			}
-		}
-		convertedTargetValue = &structpb.Value{Kind: &structpb.Value_ListValue{ListValue: &structpb.ListValue{Values: listOfConvertedValues}}}
-		return
-	}
-	return nil, fmt.Errorf("no assertion found for %v (%T). Consider adding it", value, value)
-}
+// convertTargetValue converts v in a format accepted by protobuf (structpb.Value)
+func convertTargetValue(v interface{}) (s *structpb.Value, err error) {
+	var b []byte
 
-func assertNumber(rawTargetValue interface{}) (*structpb.Value, error) {
-	if valueJSONNumber, ok := rawTargetValue.(json.Number); ok {
-		asFloat, err := valueJSONNumber.Float64()
-		if err != nil {
-			return nil, fmt.Errorf("could not assert JSON number: %w", err)
-		}
-		return &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: asFloat}}, nil
+	// json.Marshal and json.Unmarshaling is used instead of structpb.NewValue() which cannot handle json numbers
+	if b, err = json.Marshal(v); err != nil {
+		return nil, fmt.Errorf("JSON marshal failed: %w", err)
 	}
-	if valueFloat64, ok := rawTargetValue.(float64); ok {
-		return &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: valueFloat64}}, nil
+	if err = json.Unmarshal(b, &s); err != nil {
+		return nil, fmt.Errorf("JSON unmarshal failed: %w", err)
 	}
-	if valueFloat32, ok := rawTargetValue.(float32); ok {
-		return &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: float64(valueFloat32)}}, nil
-	}
-	if valueInt, ok := rawTargetValue.(int); ok {
-		return &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: float64(valueInt)}}, nil
-	}
-	return &structpb.Value{}, fmt.Errorf("number assertions not possible for '%v' (%T)", rawTargetValue, rawTargetValue)
+	return
 
 }
 

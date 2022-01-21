@@ -494,79 +494,6 @@ func (mockAssessmentStreamWithRecvErr) RecvMsg(interface{}) error {
 	return nil
 }
 
-func TestAssertNumber(t *testing.T) {
-	type args struct {
-		rawTargetValue interface{}
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *structpb.Value
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "JSONNumber",
-			args: args{rawTargetValue: json.Number("4")},
-			want: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: float64(4)}},
-			wantErr: assert.ErrorAssertionFunc(func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.Nil(t, err)
-			}),
-		},
-		{
-			name: "JSONNumberErr",
-			args: args{rawTargetValue: json.Number("hi")},
-			want: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: float64(4)}},
-			wantErr: assert.ErrorAssertionFunc(func(t assert.TestingT, err error, i ...interface{}) bool {
-				assert.NotNil(t, err)
-				// return false. Since we do have an error, no result check should be done
-				return false
-			}),
-		},
-		{
-			name: "intNumber",
-			args: args{rawTargetValue: 4},
-			want: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: float64(4)}},
-			wantErr: assert.ErrorAssertionFunc(func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.Nil(t, err)
-			}),
-		},
-		{
-			name: "float32Number",
-			args: args{rawTargetValue: float32(4)},
-			want: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: float64(4)}},
-			wantErr: assert.ErrorAssertionFunc(func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.Nil(t, err)
-			}),
-		},
-		{
-			name: "float64Number",
-			args: args{rawTargetValue: 4.},
-			want: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: float64(4)}},
-			wantErr: assert.ErrorAssertionFunc(func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.Nil(t, err)
-			}),
-		},
-		{
-			name: "NAN",
-			args: args{rawTargetValue: "NotANumber"},
-			wantErr: assert.ErrorAssertionFunc(func(t assert.TestingT, err error, i ...interface{}) bool {
-				assert.NotNil(t, err)
-				// return false. Since we do have an error, no result check should be done
-				return false
-			}),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := assertNumber(tt.args.rawTargetValue)
-			if !tt.wantErr(t, err, fmt.Sprintf("assertNumber(%v)", tt.args.rawTargetValue)) {
-				return
-			}
-			assert.Equalf(t, tt.want, got, "assertNumber(%v)", tt.args.rawTargetValue)
-		})
-	}
-}
-
 func TestConvertTargetValue(t *testing.T) {
 	type args struct {
 		value interface{}
@@ -586,7 +513,7 @@ func TestConvertTargetValue(t *testing.T) {
 			},
 		},
 		{
-			name:                     "string",
+			name:                     "bool",
 			args:                     args{value: false},
 			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_BoolValue{BoolValue: false}},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -594,7 +521,7 @@ func TestConvertTargetValue(t *testing.T) {
 			},
 		},
 		{
-			name:                     "string",
+			name:                     "jsonNumber",
 			args:                     args{value: json.Number("4")},
 			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: 4.}},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -602,7 +529,7 @@ func TestConvertTargetValue(t *testing.T) {
 			},
 		},
 		{
-			name:                     "string",
+			name:                     "int",
 			args:                     args{value: 4},
 			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: 4.}},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -610,7 +537,7 @@ func TestConvertTargetValue(t *testing.T) {
 			},
 		},
 		{
-			name:                     "string",
+			name:                     "float64",
 			args:                     args{value: 4.},
 			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: 4.}},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -618,9 +545,20 @@ func TestConvertTargetValue(t *testing.T) {
 			},
 		},
 		{
-			name:                     "string",
+			name:                     "float32",
 			args:                     args{value: float32(4.)},
 			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: 4.}},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return err == nil
+			},
+		},
+		{
+			name: "list of strings",
+			args: args{value: []string{"TLS1.2", "TLS1.3"}},
+			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_ListValue{ListValue: &structpb.ListValue{Values: []*structpb.Value{
+				{Kind: &structpb.Value_StringValue{StringValue: "TLS1.2"}},
+				{Kind: &structpb.Value_StringValue{StringValue: "TLS1.3"}},
+			}}}},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				return err == nil
 			},
@@ -632,7 +570,8 @@ func TestConvertTargetValue(t *testing.T) {
 			if !tt.wantErr(t, err, fmt.Sprintf("convertTargetValue(%v)", tt.args.value)) {
 				return
 			}
-			assert.Equalf(t, tt.wantConvertedTargetValue, gotConvertedTargetValue, "convertTargetValue(%v)", tt.args.value)
+			// Checking against 'String()' allows to compare the actual values instead of the respective pointers
+			assert.Equalf(t, tt.wantConvertedTargetValue.String(), gotConvertedTargetValue.String(), "convertTargetValue(%v)", tt.args.value)
 		})
 	}
 }
