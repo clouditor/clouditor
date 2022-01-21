@@ -7,19 +7,6 @@ info:
     description: Manages the orchestration of components within the Clouditor architecture
     version: 0.0.1
 paths:
-    /v1/assessment/results:
-        get:
-            tags:
-                - Orchestrator
-            description: List all assessment results. Part of the public API, also exposed as REST.
-            operationId: Orchestrator_ListAssessmentResults
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ListAssessmentResultsResponse'
     /v1/orchestrator/assessment_results:
         post:
             tags:
@@ -302,6 +289,19 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Metric'
+    /v1/orchestrator/results:
+        get:
+            tags:
+                - Orchestrator
+            description: List all assessment results. Part of the public API, also exposed as REST.
+            operationId: Orchestrator_ListAssessmentResults
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListAssessmentResultsResponse'
 components:
     schemas:
         AllowedValues:
