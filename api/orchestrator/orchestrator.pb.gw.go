@@ -9,11 +9,11 @@ It translates gRPC into RESTful JSON APIs.
 package orchestrator
 
 import (
+	"api/assessment"
 	"context"
 	"io"
 	"net/http"
 
-	assessment_0 "clouditor.io/clouditor/api/assessment"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/utilities"
 	"google.golang.org/grpc"
@@ -361,7 +361,7 @@ func local_request_Orchestrator_StoreAssessmentResult_0(ctx context.Context, mar
 }
 
 func request_Orchestrator_ListAssessmentResults_0(ctx context.Context, marshaler runtime.Marshaler, client OrchestratorClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq assessment_0.ListAssessmentResultsRequest
+	var protoReq assessment.ListAssessmentResultsRequest
 	var metadata runtime.ServerMetadata
 
 	msg, err := client.ListAssessmentResults(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -370,7 +370,7 @@ func request_Orchestrator_ListAssessmentResults_0(ctx context.Context, marshaler
 }
 
 func local_request_Orchestrator_ListAssessmentResults_0(ctx context.Context, marshaler runtime.Marshaler, server OrchestratorServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq assessment_0.ListAssessmentResultsRequest
+	var protoReq assessment.ListAssessmentResultsRequest
 	var metadata runtime.ServerMetadata
 
 	msg, err := server.ListAssessmentResults(ctx, &protoReq)
