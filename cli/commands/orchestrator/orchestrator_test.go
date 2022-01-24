@@ -48,7 +48,7 @@ func TestMain(m *testing.M) {
 
 	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
 	if err != nil {
-		return
+		panic(err)
 	}
 	orchestrator.RegisterOrchestratorServer(server, service)
 	_, err = service.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
@@ -62,9 +62,6 @@ func TestMain(m *testing.M) {
 				Operator:    "operator",
 				IsDefault:   true,
 			}}})
-	if err != nil {
-		return
-	}
 
 	if err != nil {
 		panic(err)
