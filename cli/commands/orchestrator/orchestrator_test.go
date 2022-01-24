@@ -92,7 +92,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err)
 	}
-	os.Exit(m.Run())
+	defer os.Exit(m.Run())
 }
 
 func TestAddCommands(t *testing.T) {
