@@ -9,11 +9,11 @@ It translates gRPC into RESTful JSON APIs.
 package orchestrator
 
 import (
-	"api/assessment"
 	"context"
 	"io"
 	"net/http"
 
+	"clouditor.io/clouditor/api/assessment"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/utilities"
 	"google.golang.org/grpc"
