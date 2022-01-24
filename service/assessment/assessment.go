@@ -61,12 +61,12 @@ type Service struct {
 	assessment.UnimplementedAssessmentServer
 
 	// evidenceStoreStream sends evidences to the Evidence Store
-	evidenceStoreStream        evidence.EvidenceStore_StoreEvidencesClient
-	EvidenceStoreTargetAddress string
+	evidenceStoreStream  evidence.EvidenceStore_StoreEvidencesClient
+	EvidenceStoreAddress string
 
 	// orchestratorStream sends ARs to the Orchestrator
-	orchestratorStream        orchestrator.Orchestrator_StoreAssessmentResultsClient
-	OrchestratorTargetAddress string
+	orchestratorStream  orchestrator.Orchestrator_StoreAssessmentResultsClient
+	OrchestratorAddress string
 
 	// resultHooks is a list of hook functions that can be used if one wants to be
 	// informed about each assessment result
@@ -81,9 +81,9 @@ type Service struct {
 // NewService creates a new assessment service with default values
 func NewService() *Service {
 	return &Service{
-		results:                    make(map[string]*assessment.AssessmentResult),
-		EvidenceStoreTargetAddress: "localhost:9090",
-		OrchestratorTargetAddress:  "localhost:9090",
+		results:              make(map[string]*assessment.AssessmentResult),
+		EvidenceStoreAddress: "localhost:9090",
+		OrchestratorAddress:  "localhost:9090",
 	}
 }
 
@@ -264,7 +264,7 @@ func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result
 // initEvidenceStoreStream initializes the stream to the Evidence Store
 func (s *Service) initEvidenceStoreStream() error {
 	// Establish connection to evidenceStore component
-	target := s.EvidenceStoreTargetAddress
+	target := s.EvidenceStoreAddress
 	log.Infof("Establishing connection to Evidence Store (%v)", target)
 	conn, err := grpc.Dial(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -298,7 +298,7 @@ func (s *Service) sendToEvidenceStore(e *evidence.Evidence) error {
 // initOrchestratorStream initializes the stream to the Orchestrator
 func (s *Service) initOrchestratorStream() error {
 	// Establish connection to orchestrator component
-	target := s.OrchestratorTargetAddress
+	target := s.OrchestratorAddress
 	log.Infof("Establishing connection to Orchestrator (%v)", target)
 	conn, err := grpc.Dial(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {

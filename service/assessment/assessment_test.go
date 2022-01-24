@@ -89,8 +89,8 @@ func TestNewService(t *testing.T) {
 			want: &Service{
 				results:                       make(map[string]*assessment.AssessmentResult),
 				UnimplementedAssessmentServer: assessment.UnimplementedAssessmentServer{},
-				EvidenceStoreTargetAddress:    "localhost:9090",
-				OrchestratorTargetAddress:     "localhost:9090",
+				EvidenceStoreAddress:          "localhost:9090",
+				OrchestratorAddress:           "localhost:9090",
 			},
 		},
 	}

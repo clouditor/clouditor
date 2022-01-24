@@ -62,8 +62,8 @@ type Service struct {
 
 	Configurations map[discovery.Discoverer]*Configuration
 
-	assessmentStream        assessment.Assessment_AssessEvidencesClient
-	AssessmentTargetAddress string
+	assessmentStream  assessment.Assessment_AssessEvidencesClient
+	AssessmentAddress string
 
 	resources map[string]voc.IsCloudResource
 	scheduler *gocron.Scheduler
@@ -83,10 +83,10 @@ func init() {
 
 func NewService() *Service {
 	return &Service{
-		AssessmentTargetAddress: "localhost:9090",
-		resources:               make(map[string]voc.IsCloudResource),
-		scheduler:               gocron.NewScheduler(time.UTC),
-		Configurations:          make(map[discovery.Discoverer]*Configuration),
+		AssessmentAddress: "localhost:9090",
+		resources:         make(map[string]voc.IsCloudResource),
+		scheduler:         gocron.NewScheduler(time.UTC),
+		Configurations:    make(map[discovery.Discoverer]*Configuration),
 	}
 }
 
@@ -101,7 +101,7 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	// Establish connection to assessment component
 	var client assessment.AssessmentClient
 	// TODO(oxisto): support assessment on Another tcp/port
-	conn, err := grpc.Dial(s.AssessmentTargetAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(s.AssessmentAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not connect to assessment service: %v", err)
 	}
