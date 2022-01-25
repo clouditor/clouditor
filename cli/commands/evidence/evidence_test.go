@@ -23,17 +23,17 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package orchestrator
+package evidences
 
 import (
 	"bytes"
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
-	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+	service_evidenceStore "clouditor.io/clouditor/service/evidence"
+	"clouditor.io/clouditor/voc"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -56,7 +56,7 @@ func TestMain(m *testing.M) {
 	var (
 		err     error
 		dir     string
-		service *service_orchestrator.Service
+		service *service_evidenceStore.Service
 	)
 
 	err = os.Chdir("../../../")
@@ -69,24 +69,19 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	service = service_orchestrator.NewService()
+	service = service_evidenceStore.NewService()
 
 	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}
-	orchestrator.RegisterOrchestratorServer(server, service)
-	_, err = service.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
-		Result: &assessment.AssessmentResult{
-			Id:         "assessmentResultID",
-			MetricId:   "assessmentResultMetricID",
-			EvidenceId: "evidenceID",
-			Timestamp:  timestamppb.Now(),
-			MetricConfiguration: &assessment.MetricConfiguration{
-				TargetValue: toStruct(1.0),
-				Operator:    "operator",
-				IsDefault:   true,
-			}}})
+	evidence.RegisterEvidenceStoreServer(server, service)
+	_, err = service.StoreEvidence(context.TODO(), &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
+		Id:        "mockEvidenceId",
+		ToolId:    "mock",
+		Timestamp: timestamppb.Now(),
+		Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}),
+	}})
 
 	if err != nil {
 		panic(err)
@@ -118,7 +113,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestAddCommands(t *testing.T) {
-	cmd := NewOrchestratorCommand()
+	cmd := NewEvidenceCommand()
 
 	// Check if sub commands were added
 	assert.True(t, cmd.HasSubCommands())
@@ -137,19 +132,19 @@ func TestNewListResultsCommand(t *testing.T) {
 
 	cli.Output = &b
 
-	cmd := NewListResultsCommand()
+	cmd := NewListEvidencesCommand()
 	err := cmd.RunE(nil, []string{})
 	assert.Nil(t, err)
 
-	var response = &assessment.ListAssessmentResultsResponse{}
+	var response = &evidence.ListEvidencesResponse{}
 	err = protojson.Unmarshal(b.Bytes(), response)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, response)
-	assert.NotEmpty(t, response.Results)
+	assert.NotEmpty(t, response.Evidences)
 }
 
-func toStruct(f float32) (s *structpb.Value) {
+func toStruct(r voc.IsCloudResource) (s *structpb.Value) {
 	var (
 		b   []byte
 		err error
@@ -157,7 +152,7 @@ func toStruct(f float32) (s *structpb.Value) {
 
 	s = new(structpb.Value)
 
-	b, err = json.Marshal(f)
+	b, err = json.Marshal(r)
 	if err != nil {
 		return nil
 	}

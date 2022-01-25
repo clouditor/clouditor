@@ -23,37 +23,63 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package commands
+package evidences
 
 import (
+	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/cli/commands/assessment"
-	"clouditor.io/clouditor/cli/commands/cloud"
-	"clouditor.io/clouditor/cli/commands/completion"
-	"clouditor.io/clouditor/cli/commands/discovery"
-	evidences "clouditor.io/clouditor/cli/commands/evidence"
-	"clouditor.io/clouditor/cli/commands/login"
-	"clouditor.io/clouditor/cli/commands/metric"
-	"clouditor.io/clouditor/cli/commands/orchestrator"
-	"clouditor.io/clouditor/cli/commands/tool"
+	"context"
+	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
+
+// NewListEvidencesCommand returns a cobra command for the `list` subcommand
+func NewListEvidencesCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "Lists all evidences",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var (
+				err     error
+				session *cli.Session
+				client  evidence.EvidenceStoreClient
+				res     *evidence.ListEvidencesResponse
+			)
+
+			if session, err = cli.ContinueSession(); err != nil {
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+				return nil
+			}
+
+			client = evidence.NewEvidenceStoreClient(session)
+
+			res, err = client.ListEvidences(context.Background(), &evidence.ListEvidencesRequest{})
+
+			return session.HandleResponse(res, err)
+		},
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return []string{}, cobra.ShellCompDirectiveNoFileComp
+		},
+	}
+
+	return cmd
+}
+
+// NewEvidenceCommand returns a cobra command for `assessment` subcommands
+func NewEvidenceCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "evidence_store",
+		Short: "Evidence Store commands",
+	}
+
+	AddCommands(cmd)
+
+	return cmd
+}
 
 // AddCommands adds all subcommands
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
-		login.NewLoginCommand(),
-		discovery.NewDiscoveryCommand(),
-		metric.NewMetricCommand(),
-		tool.NewToolCommand(),
-		evidences.NewEvidenceCommand(),
-		assessment.NewAssessmentCommand(),
-		orchestrator.NewOrchestratorCommand(),
-		completion.NewCompletionCommand(),
-		cloud.NewCloudCommand(),
+		NewListEvidencesCommand(),
 	)
-
-	cmd.PersistentFlags().StringP("session-directory", "s", cli.DefaultSessionFolder, "the directory where the session will be saved and loaded from")
-	_ = viper.BindPFlag("session-directory", cmd.PersistentFlags().Lookup("session-directory"))
 }
