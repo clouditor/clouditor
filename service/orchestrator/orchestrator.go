@@ -33,6 +33,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"io"
 	"io/ioutil"
+	"sync"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
@@ -65,6 +66,8 @@ type Service struct {
 
 	// Hook
 	AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+	// mu is used for (un)locking result hook calls
+	mu sync.Mutex
 
 	db *gorm.DB
 }
@@ -205,14 +208,15 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 		log.Errorf("Invalid assessment result: %v", err)
 		newError := fmt.Errorf("invalid assessment result: %w", err)
 
-		s.informHook(nil, newError)
+		go s.informHook(nil, newError)
 
 		return resp, status.Errorf(codes.InvalidArgument, "invalid req: %v", err)
 	}
 
+	// TODO(all): We do not check ID in Validate. Therefore, I assume that we have to set ID here?
 	s.results[req.Result.Id] = req.Result
 
-	s.informHook(req.Result, nil)
+	go s.informHook(req.Result, nil)
 
 	return
 }
@@ -246,15 +250,30 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 
 }
 
+// ListAssessmentResults is a method implementation of the orchestrator interface
+func (s *Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
+	res = new(assessment.ListAssessmentResultsResponse)
+	res.Results = []*assessment.AssessmentResult{}
+
+	for _, result := range s.results {
+		res.Results = append(res.Results, result)
+	}
+
+	return
+}
+
 func (s *Service) RegisterAssessmentResultHook(hook func(result *assessment.AssessmentResult, err error)) {
 	s.AssessmentResultHooks = append(s.AssessmentResultHooks, hook)
 }
 
-func (s Service) informHook(result *assessment.AssessmentResult, err error) {
+func (s *Service) informHook(result *assessment.AssessmentResult, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	// Inform our hook, if we have any
 	if s.AssessmentResultHooks != nil {
 		for _, hook := range s.AssessmentResultHooks {
-			go hook(result, err)
+			// TODO(all): We could do hook concurrent again (assuming different hooks don't interfere with each other)
+			hook(result, err)
 		}
 	}
 }

@@ -51,8 +51,6 @@ func init() {
 	log = logrus.WithField("component", "rest")
 }
 
-//go:generate protoc -I ../proto -I ../third_party auth.proto discovery.proto orchestrator.proto assessment.proto evidence_store.proto --grpc-gateway_out=../ --grpc-gateway_opt logtostderr=true
-
 func RunServer(ctx context.Context, grpcPort int, httpPort int) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()

@@ -8,6 +8,18 @@ info:
     version: 0.0.1
 paths:
     /v1/orchestrator/assessment_results:
+        get:
+            tags:
+                - Orchestrator
+            description: List all assessment results. Part of the public API, also exposed as REST.
+            operationId: Orchestrator_ListAssessmentResults
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListAssessmentResultsResponse'
         post:
             tags:
                 - Orchestrator
@@ -351,6 +363,13 @@ components:
                     type: string
                 description:
                     type: string
+        ListAssessmentResultsResponse:
+            type: object
+            properties:
+                results:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/AssessmentResult'
         ListAssessmentToolsResponse:
             type: object
             properties:
