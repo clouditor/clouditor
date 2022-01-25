@@ -74,6 +74,7 @@ type azureDiscovery struct {
 	sub        subscriptions.Subscription
 
 	isAuthorized bool
+	expires      string
 
 	options []DiscoveryOption
 }
@@ -92,14 +93,22 @@ func (a *azureDiscovery) authorize() (err error) {
 
 	subClient := subscriptions.NewClient()
 	a.apply(&subClient.Client)
+	log.Printf("Expiry time: %+v", subClient.BaseClient.Client.Authorizer)
+	log.Printf("Token: %+v", a.authOption.authorizer)
 
 	// get first subscription
-	page, _ := subClient.List(context.Background())
+	page, err := subClient.List(context.Background())
+	if err != nil {
+		log.Errorf("could not retrieve list of subscriptions: '%v'", err)
+		return
+	}
+	log.Infof("page.Values: %v", len(page.Values()))
 	a.sub = page.Values()[0]
 
 	log.Infof("Using %s as subscription", *a.sub.SubscriptionID)
 
 	a.isAuthorized = true
+	//a.expires =
 
 	return nil
 }

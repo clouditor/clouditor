@@ -97,7 +97,7 @@ func RegisterAssessmentHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Assessment/ListAssessmentResults", runtime.WithHTTPPathPattern("/v1/assessment/results"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Assessment/ListAssessmentResults")
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -120,7 +120,7 @@ func RegisterAssessmentHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Assessment/AssessEvidence", runtime.WithHTTPPathPattern("/v1/assessment/evidences"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Assessment/AssessEvidence")
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -182,7 +182,7 @@ func RegisterAssessmentHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.Assessment/ListAssessmentResults", runtime.WithHTTPPathPattern("/v1/assessment/results"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.Assessment/ListAssessmentResults")
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -202,7 +202,7 @@ func RegisterAssessmentHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.Assessment/AssessEvidence", runtime.WithHTTPPathPattern("/v1/assessment/evidences"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.Assessment/AssessEvidence")
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return

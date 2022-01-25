@@ -27,6 +27,7 @@ package discovery
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -140,11 +141,11 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	var discoverer []discovery.Discoverer
 
 	discoverer = append(discoverer,
+		// The azure services storage, compute and network have no auth problems.
+		azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
+		azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
+		azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)),
 		azure.NewAzureARMTemplateDiscovery(azure.WithAuthorizer(authorizer)),
-		// Die 3 Services funktionieren auch nach 30 Minuten noch
-		//azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
-		//azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
-		//azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)),
 		//k8s.NewKubernetesComputeDiscovery(k8sClient),
 		//k8s.NewKubernetesNetworkDiscovery(k8sClient),
 		//aws.NewAwsStorageDiscovery(awsClient),
@@ -159,7 +160,7 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 		log.Infof("Scheduling {%s} to execute every 5 minutes...", v.Name())
 
 		_, err = s.scheduler.
-			Every(30).
+			Every(20).
 			Minute().
 			Tag(v.Name()).
 			Do(s.StartDiscovery, v)
@@ -183,7 +184,8 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 		list []voc.IsCloudResource
 	)
 
-	log.Infof("Next iteration time: %s", time.Now())
+	fmt.Print("\n\n\n\n\n\n")
+	log.Infof("Current iteration time: %s", time.Now())
 
 	list, err = discoverer.List()
 
@@ -265,32 +267,3 @@ func (s Service) Query(_ context.Context, request *discovery.QueryRequest) (resp
 		Results: &structpb.ListValue{Values: r},
 	}, nil
 }
-
-/*func saveResourcesToFilesystem(result ResultOntology, filename string) error {
-	var (
-		filepath string
-	)
-
-	prefix, indent := "", "    "
-	exported, err := json.MarshalIndent(result, prefix, indent)
-	if err != nil {
-		return fmt.Errorf("marshalling JSON failed %w", err)
-	}
-
-	filepath = "../../results/discovery_results/"
-
-	// Check if folder exists
-	err = os.MkdirAll(filepath, os.ModePerm)
-	if err != nil {
-		return fmt.Errorf("check for directory existence failed:  %w", err)
-	}
-
-	err = ioutil.WriteFile(filepath+filename, exported, 0666)
-	if err != nil {
-		return fmt.Errorf("write file failed %w", err)
-	} else {
-		fmt.Println("ontology resources written to: ", filepath+filename)
-	}
-
-	return nil
-}*/
