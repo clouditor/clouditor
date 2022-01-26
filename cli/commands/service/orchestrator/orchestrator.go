@@ -35,11 +35,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewListResultsCommand returns a cobra command for the `list` subcommand
-func NewListResultsCommand() *cobra.Command {
+// NewListAssessmentResultsCommand returns a cobra command for the `list` subcommand
+func NewListAssessmentResultsCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "Lists all assessment results",
+		Use:   "list_assessment_results",
+		Short: "Lists all assessment results stored in the Orchestrator service",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err     error
@@ -71,7 +71,7 @@ func NewListResultsCommand() *cobra.Command {
 func NewOrchestratorCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "orchestrator",
-		Short: "Orchestrator commands",
+		Short: "Orchestrator service commands",
 	}
 
 	AddCommands(cmd)
@@ -82,6 +82,6 @@ func NewOrchestratorCommand() *cobra.Command {
 // AddCommands adds all subcommands
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
-		NewListResultsCommand(),
+		NewListAssessmentResultsCommand(),
 	)
 }

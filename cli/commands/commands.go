@@ -33,7 +33,6 @@ import (
 	evidences "clouditor.io/clouditor/cli/commands/evidence"
 	"clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/cli/commands/metric"
-	"clouditor.io/clouditor/cli/commands/orchestrator"
 	"clouditor.io/clouditor/cli/commands/service"
 	"clouditor.io/clouditor/cli/commands/tool"
 	"github.com/spf13/cobra"
@@ -49,7 +48,6 @@ func AddCommands(cmd *cobra.Command) {
 		tool.NewToolCommand(),
 		evidences.NewEvidenceCommand(),
 		assessment.NewAssessmentCommand(),
-		orchestrator.NewOrchestratorCommand(),
 		completion.NewCompletionCommand(),
 		cloud.NewCloudCommand(),
 		// command consisting of service commands
