@@ -125,7 +125,7 @@ func TestAddCommands(t *testing.T) {
 
 	// Check if NewListResultsCommand was added
 	for _, v := range cmd.Commands() {
-		if v.Use == "list" {
+		if v.Use == "list_assessment_results" {
 			return
 		}
 	}
@@ -137,7 +137,7 @@ func TestNewListResultsCommand(t *testing.T) {
 
 	cli.Output = &b
 
-	cmd := NewListResultsCommand()
+	cmd := NewListAssessmentResultsCommand()
 	err := cmd.RunE(nil, []string{})
 	assert.Nil(t, err)
 
