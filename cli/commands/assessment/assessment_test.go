@@ -75,6 +75,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err)
 	}
+	// Store an assessment result that output of CMD 'list' is not empty
 	orchestrator.RegisterOrchestratorServer(server, service)
 	_, err = service.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
 		Result: &assessment.AssessmentResult{
