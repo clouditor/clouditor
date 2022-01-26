@@ -1,6 +1,7 @@
 package service
 
 import (
+	"clouditor.io/clouditor/cli/commands/service/assessment"
 	"clouditor.io/clouditor/cli/commands/service/discovery"
 	"github.com/spf13/cobra"
 )
@@ -20,5 +21,6 @@ func NewServiceCommand() *cobra.Command {
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		discovery.NewDiscoveryCommand(),
+		assessment.NewAssessmentCommand(),
 	)
 }

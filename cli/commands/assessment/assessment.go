@@ -26,6 +26,7 @@
 package assessment
 
 import (
+	"clouditor.io/clouditor/api/orchestrator"
 	"context"
 	"fmt"
 
@@ -43,7 +44,7 @@ func NewListResultsCommand() *cobra.Command {
 			var (
 				err     error
 				session *cli.Session
-				client  assessment.AssessmentClient
+				client  orchestrator.OrchestratorClient
 				res     *assessment.ListAssessmentResultsResponse
 			)
 
@@ -52,7 +53,7 @@ func NewListResultsCommand() *cobra.Command {
 				return nil
 			}
 
-			client = assessment.NewAssessmentClient(session)
+			client = orchestrator.NewOrchestratorClient(session)
 
 			res, err = client.ListAssessmentResults(context.Background(), &assessment.ListAssessmentResultsRequest{})
 
