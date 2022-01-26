@@ -68,8 +68,8 @@ func NewListEvidencesCommand() *cobra.Command {
 // NewEvidenceCommand returns a cobra command for `assessment` subcommands
 func NewEvidenceCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "evidence_store",
-		Short: "Evidence Store commands",
+		Use:   "evidence",
+		Short: "Evidence commands",
 	}
 
 	AddCommands(cmd)
