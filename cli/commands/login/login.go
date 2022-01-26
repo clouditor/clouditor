@@ -37,6 +37,7 @@ import (
 
 const (
 	// URLFlag is the viper flag for the server url
+	// TODO(oxisto): Unused constant?
 	URLFlag = "url"
 )
 
@@ -83,7 +84,7 @@ func NewLoginCommand() *cobra.Command {
 				return fmt.Errorf("could not save session: %w", err)
 			}
 
-			fmt.Print("\nLogin succesful\n")
+			fmt.Print("\nLogin successful\n")
 
 			return err
 		},
