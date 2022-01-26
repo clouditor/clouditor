@@ -59,7 +59,7 @@ func TestMain(m *testing.M) {
 		service *service_orchestrator.Service
 	)
 
-	err = os.Chdir("../../../")
+	err = os.Chdir("../../../../")
 	if err != nil {
 		panic(err)
 	}
