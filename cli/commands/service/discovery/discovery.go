@@ -97,11 +97,11 @@ func NewQueryDiscoveryCommand() *cobra.Command {
 	return cmd
 }
 
-// NewStartDiscoveryCommand returns a cobra command for `discovery` subcommands
+// NewDiscoveryCommand returns a cobra command for `discovery` subcommands
 func NewDiscoveryCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "discovery",
-		Short: "Discovery commands",
+		Short: "Discovery service commands",
 	}
 
 	AddCommands(cmd)

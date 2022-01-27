@@ -23,26 +23,30 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package metric
+package assessmentresult
 
 import (
 	"bytes"
-	"fmt"
-	"io/ioutil"
-	"net"
-	"os"
-	"testing"
-
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+	"context"
+	"encoding/json"
+	"fmt"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
+	"io/ioutil"
+	"net"
+	"os"
+	"testing"
 )
 
 var sock net.Listener
@@ -68,13 +72,33 @@ func TestMain(m *testing.M) {
 	service = service_orchestrator.NewService()
 
 	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
+	if err != nil {
+		panic(err)
+	}
+	// Store an assessment result that output of CMD 'list' is not empty
 	orchestrator.RegisterOrchestratorServer(server, service)
+	_, err = service.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
+		Result: &assessment.AssessmentResult{
+			Id:         "assessmentResultID",
+			MetricId:   "assessmentResultMetricID",
+			EvidenceId: "evidenceID",
+			Timestamp:  timestamppb.Now(),
+			MetricConfiguration: &assessment.MetricConfiguration{
+				TargetValue: toStruct(1.0),
+				Operator:    "operator",
+				IsDefault:   true,
+			}}})
 
 	if err != nil {
 		panic(err)
 	}
 
-	defer sock.Close()
+	defer func(sock net.Listener) {
+		err = sock.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(sock)
 	defer server.Stop()
 
 	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
@@ -91,38 +115,56 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err)
 	}
-
 	defer os.Exit(m.Run())
 }
 
-func TestListMetrics(t *testing.T) {
-	var err error
+func TestAddCommands(t *testing.T) {
+	cmd := NewAssessmentResultCommand()
+
+	// Check if sub commands were added
+	assert.True(t, cmd.HasSubCommands())
+
+	// Check if NewListAssessmentResultsCommand was added
+	for _, v := range cmd.Commands() {
+		if v.Use == "list" {
+			return
+		}
+	}
+	t.Errorf("No list command was added")
+}
+
+func TestNewListResultsCommand(t *testing.T) {
 	var b bytes.Buffer
 
 	cli.Output = &b
 
-	cmd := NewListMetricsCommand()
-	err = cmd.RunE(nil, []string{})
-
+	cmd := NewListAssessmentResultsCommand()
+	err := cmd.RunE(nil, []string{})
 	assert.Nil(t, err)
 
-	var response *orchestrator.ListMetricsResponse = &orchestrator.ListMetricsResponse{}
-
+	var response = &assessment.ListAssessmentResultsResponse{}
 	err = protojson.Unmarshal(b.Bytes(), response)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, response)
-	assert.NotEmpty(t, response.Metrics)
+	assert.NotEmpty(t, response.Results)
 }
 
-func TestGetMetric(t *testing.T) {
-	var err error
-	var b bytes.Buffer
+func toStruct(f float32) (s *structpb.Value) {
+	var (
+		b   []byte
+		err error
+	)
 
-	cli.Output = &b
+	s = new(structpb.Value)
 
-	cmd := NewGetMetricCommand()
-	err = cmd.RunE(nil, []string{"TransportEncryptionEnabled"})
+	b, err = json.Marshal(f)
+	if err != nil {
+		return nil
+	}
+	if err = json.Unmarshal(b, &s); err != nil {
+		return nil
+	}
 
-	assert.Nil(t, err)
+	return
 }

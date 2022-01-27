@@ -23,26 +23,30 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package metric
+package evidence
 
 import (
 	"bytes"
-	"fmt"
-	"io/ioutil"
-	"net"
-	"os"
-	"testing"
-
-	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
-	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+	service_evidenceStore "clouditor.io/clouditor/service/evidence"
+	"clouditor.io/clouditor/voc"
+	"context"
+	"encoding/json"
+	"fmt"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
+	"io/ioutil"
+	"net"
+	"os"
+	"testing"
 )
 
 var sock net.Listener
@@ -52,7 +56,7 @@ func TestMain(m *testing.M) {
 	var (
 		err     error
 		dir     string
-		service *service_orchestrator.Service
+		service *service_evidenceStore.Service
 	)
 
 	err = os.Chdir("../../../")
@@ -65,16 +69,30 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	service = service_orchestrator.NewService()
+	service = service_evidenceStore.NewService()
 
 	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
-	orchestrator.RegisterOrchestratorServer(server, service)
+	if err != nil {
+		panic(err)
+	}
+	evidence.RegisterEvidenceStoreServer(server, service)
+	_, err = service.StoreEvidence(context.TODO(), &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
+		Id:        "mockEvidenceId",
+		ToolId:    "mock",
+		Timestamp: timestamppb.Now(),
+		Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}),
+	}})
 
 	if err != nil {
 		panic(err)
 	}
 
-	defer sock.Close()
+	defer func(sock net.Listener) {
+		err = sock.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(sock)
 	defer server.Stop()
 
 	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
@@ -91,38 +109,56 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err)
 	}
-
 	defer os.Exit(m.Run())
 }
 
-func TestListMetrics(t *testing.T) {
-	var err error
+func TestAddCommands(t *testing.T) {
+	cmd := NewEvidenceCommand()
+
+	// Check if sub commands were added
+	assert.True(t, cmd.HasSubCommands())
+
+	// Check if NewListResultsCommand was added
+	for _, v := range cmd.Commands() {
+		if v.Use == "list" {
+			return
+		}
+	}
+	t.Errorf("No list command was added")
+}
+
+func TestNewListResultsCommand(t *testing.T) {
 	var b bytes.Buffer
 
 	cli.Output = &b
 
-	cmd := NewListMetricsCommand()
-	err = cmd.RunE(nil, []string{})
-
+	cmd := NewListEvidencesCommand()
+	err := cmd.RunE(nil, []string{})
 	assert.Nil(t, err)
 
-	var response *orchestrator.ListMetricsResponse = &orchestrator.ListMetricsResponse{}
-
+	var response = &evidence.ListEvidencesResponse{}
 	err = protojson.Unmarshal(b.Bytes(), response)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, response)
-	assert.NotEmpty(t, response.Metrics)
+	assert.NotEmpty(t, response.Evidences)
 }
 
-func TestGetMetric(t *testing.T) {
-	var err error
-	var b bytes.Buffer
+func toStruct(r voc.IsCloudResource) (s *structpb.Value) {
+	var (
+		b   []byte
+		err error
+	)
 
-	cli.Output = &b
+	s = new(structpb.Value)
 
-	cmd := NewGetMetricCommand()
-	err = cmd.RunE(nil, []string{"TransportEncryptionEnabled"})
+	b, err = json.Marshal(r)
+	if err != nil {
+		return nil
+	}
+	if err = json.Unmarshal(b, &s); err != nil {
+		return nil
+	}
 
-	assert.Nil(t, err)
+	return
 }

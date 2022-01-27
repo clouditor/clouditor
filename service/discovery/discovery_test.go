@@ -27,7 +27,10 @@ package discovery
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"testing"
 	"time"
 
@@ -95,13 +98,12 @@ func TestStartDiscovery(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			discoveryService.AssessmentStream = tt.fields.assessmentStream
-			discoveryService.EvidenceStoreStream = tt.fields.evidenceStoreStream
+			discoveryService.assessmentStream = tt.fields.assessmentStream
 			discoveryService.StartDiscovery(tt.fields.discoverer)
 
 			// APIs for assessment and evidence store both send the same evidence. Thus, testing one is enough.
 			if tt.checkEvidence {
-				e := discoveryService.AssessmentStream.(*mockAssessmentStream).sentEvidence
+				e := discoveryService.assessmentStream.(*mockAssessmentStream).sentEvidence
 				// Check if UUID has been created
 				assert.NotEmpty(t, e.Id)
 				// Check if cloud resources / properties are there
@@ -181,13 +183,57 @@ func TestShutdown(t *testing.T) {
 
 }
 
+// TestHandleError tests handleError (if all error cases are executed/printed)
+func TestHandleError(t *testing.T) {
+	type args struct {
+		err  error
+		dest string
+	}
+	tests := []struct {
+		name           string
+		args           args
+		wantErrSnippet string
+	}{
+		{
+			name: "handleInternalError",
+			args: args{
+				err:  status.Error(codes.Internal, "internal error"),
+				dest: "SomeDestination",
+			},
+			wantErrSnippet: "internal",
+		},
+		{
+			name: "handleInvalidError",
+			args: args{
+				err:  status.Errorf(codes.InvalidArgument, "invalid argument"),
+				dest: "SomeDestination",
+			},
+			wantErrSnippet: "invalid",
+		},
+		{
+			name: "handleSomeOtherErr",
+			args: args{
+				err:  errors.New("some other error"),
+				dest: "SomeDestination",
+			},
+			wantErrSnippet: "some other error",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := handleError(tt.args.err, tt.args.dest)
+			assert.Contains(t, err.Error(), tt.wantErrSnippet)
+		})
+	}
+}
+
 // mockDiscoverer implements Discoverer and mocks the API to cloud resources
 type mockDiscoverer struct {
 	// testCase allows for different implementations for table tests in TestStartDiscovery
 	testCase int
 }
 
-func (m mockDiscoverer) Name() string { return "just mocking" }
+func (mockDiscoverer) Name() string { return "just mocking" }
 
 func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 	switch m.testCase {
