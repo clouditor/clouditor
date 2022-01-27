@@ -46,6 +46,28 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 		wantErr       bool
 	}{
 		{
+			name: "Missing assessment result id",
+			args: args{
+				&AssessmentResult{
+					// Empty id
+					Id:       "",
+					MetricId: "MockMetricID",
+					MetricConfiguration: &MetricConfiguration{
+						Operator: "MockOperator",
+						TargetValue: &structpb.Value{
+							Kind: &structpb.Value_StringValue{
+								StringValue: "MockTargetValue",
+							},
+						},
+					},
+					EvidenceId: "MockEvidenceID",
+				},
+			},
+			wantResp:      "",
+			wantRespError: ErrIdMissing,
+			wantErr:       true,
+		},
+		{
 			name: "Missing assessment result timestamp",
 			args: args{
 				&AssessmentResult{

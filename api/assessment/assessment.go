@@ -30,17 +30,21 @@ import "errors"
 type ResultHookFunc func(result *AssessmentResult, err error)
 
 var (
+	ErrIdMissing                             = errors.New("id in assessment result is missing")
 	ErrTimestampMissing                      = errors.New("timestamp in assessment result is missing")
 	ErrMetricIdMissing                       = errors.New("metric id in assessment result is missing")
 	ErrMetricConfigurationMissing            = errors.New("metric configuration in assessment result is missing")
 	ErrEvidenceIdMissing                     = errors.New("evidence id in assessment result is missing")
-	ErrNonComplianceCommentsMissing          = errors.New("non-compliance comments in assessment result is missing")
 	ErrMetricConfigurationOperatorMissing    = errors.New("operator in metric data is missing")
 	ErrMetricConfigurationTargetValueMissing = errors.New("target value in metric data is missing")
 )
 
 // Validate validates the assessment result according to several required fields
 func (result *AssessmentResult) Validate() (resourceId string, err error) {
+	if result.Id == "" {
+		return "", ErrIdMissing
+	}
+
 	if result.Timestamp == nil {
 		return "", ErrTimestampMissing
 	}
