@@ -32,7 +32,7 @@ import (
 
 // NewListResourcesCommand returns a cobra command for the `list` subcommand
 func NewListResourcesCommand() *cobra.Command {
-	// Use Discovery's function for listing assessment results
+	// Use Discovery's function for listing resources
 	cmd := discovery.NewQueryDiscoveryCommand()
 	// Change use for consistency (cl resource list vs cl resource query)
 	cmd.Use = "list"
@@ -40,7 +40,7 @@ func NewListResourcesCommand() *cobra.Command {
 	return cmd
 }
 
-// NewResourceCommand returns a cobra command for `assessment` subcommands
+// NewResourceCommand returns a cobra command for `resource` subcommands
 func NewResourceCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "resource",

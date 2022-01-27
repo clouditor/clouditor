@@ -106,7 +106,7 @@ func TestAddCommands(t *testing.T) {
 	// Check if sub commands were added
 	assert.True(t, cmd.HasSubCommands())
 
-	// Check if NewQueryDiscoveryCommand was added
+	// Check if NewListCommand was added
 	for _, v := range cmd.Commands() {
 		if v.Use == "list" {
 			return
