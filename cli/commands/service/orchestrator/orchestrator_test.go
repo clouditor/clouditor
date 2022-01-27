@@ -1,3 +1,28 @@
+// Copyright 2021 Fraunhofer AISEC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+//           $$\                           $$\ $$\   $$\
+//           $$ |                          $$ |\__|  $$ |
+//  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+// $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+// $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
+// $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+// \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+//  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+//
+// This file is part of Clouditor Community Edition.
+
 package orchestrator
 
 import (
@@ -34,7 +59,7 @@ func TestMain(m *testing.M) {
 		service *service_orchestrator.Service
 	)
 
-	err = os.Chdir("../../../")
+	err = os.Chdir("../../../../")
 	if err != nil {
 		panic(err)
 	}
@@ -51,6 +76,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 	orchestrator.RegisterOrchestratorServer(server, service)
+	// Store an assessment result that output of CMD 'list_results' is not empty
 	_, err = service.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
 		Result: &assessment.AssessmentResult{
 			Id:         "assessmentResultID",
@@ -100,7 +126,7 @@ func TestAddCommands(t *testing.T) {
 
 	// Check if NewListResultsCommand was added
 	for _, v := range cmd.Commands() {
-		if v.Use == "list" {
+		if v.Use == "list-assessment-results" {
 			return
 		}
 	}
@@ -112,7 +138,7 @@ func TestNewListResultsCommand(t *testing.T) {
 
 	cli.Output = &b
 
-	cmd := NewListResultsCommand()
+	cmd := NewListAssessmentResultsCommand()
 	err := cmd.RunE(nil, []string{})
 	assert.Nil(t, err)
 

@@ -23,55 +23,27 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package orchestrator
+package assessmentresult
 
 import (
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/orchestrator"
-	"context"
-	"fmt"
-
-	"clouditor.io/clouditor/cli"
+	"clouditor.io/clouditor/cli/commands/service/orchestrator"
 	"github.com/spf13/cobra"
 )
 
-// NewListResultsCommand returns a cobra command for the `list` subcommand
-func NewListResultsCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "Lists all assessment results",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			var (
-				err     error
-				session *cli.Session
-				client  orchestrator.OrchestratorClient
-				res     *assessment.ListAssessmentResultsResponse
-			)
-
-			if session, err = cli.ContinueSession(); err != nil {
-				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
-				return nil
-			}
-
-			client = orchestrator.NewOrchestratorClient(session)
-
-			res, err = client.ListAssessmentResults(context.Background(), &assessment.ListAssessmentResultsRequest{})
-
-			return session.HandleResponse(res, err)
-		},
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return []string{}, cobra.ShellCompDirectiveNoFileComp
-		},
-	}
-
+// NewListAssessmentResultsCommand returns a cobra command for the `list` subcommand
+func NewListAssessmentResultsCommand() *cobra.Command {
+	// Use Orchestrator's function for listing assessment results
+	cmd := orchestrator.NewListAssessmentResultsCommand()
+	// Change use for better readability (cl assessment_result list vs cl assessment_result list_assessment_results)
+	cmd.Use = "list"
 	return cmd
 }
 
-// NewOrchestratorCommand returns a cobra command for `assessment` subcommands
-func NewOrchestratorCommand() *cobra.Command {
+// NewAssessmentResultCommand returns a cobra command for `assessment` subcommands
+func NewAssessmentResultCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "orchestrator",
-		Short: "Orchestrator commands",
+		Use:   "assessment-result",
+		Short: "Assessment result commands",
 	}
 
 	AddCommands(cmd)
@@ -82,6 +54,6 @@ func NewOrchestratorCommand() *cobra.Command {
 // AddCommands adds all subcommands
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
-		NewListResultsCommand(),
+		NewListAssessmentResultsCommand(),
 	)
 }

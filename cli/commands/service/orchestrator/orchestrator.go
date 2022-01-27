@@ -23,28 +23,29 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package discovery
+package orchestrator
 
 import (
+	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/orchestrator"
 	"context"
 	"fmt"
 
-	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
 )
 
-// NewStartDiscoveryCommand returns a cobra command for the `start` subcommand
-func NewStartDiscoveryCommand() *cobra.Command {
+// NewListAssessmentResultsCommand returns a cobra command for the `list` subcommand
+func NewListAssessmentResultsCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "start",
-		Short: "Starts the discovery",
+		Use:   "list-assessment-results",
+		Short: "Lists all assessment results stored in the Orchestrator service",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err     error
 				session *cli.Session
-				client  discovery.DiscoveryClient
-				res     *discovery.StartDiscoveryResponse
+				client  orchestrator.OrchestratorClient
+				res     *assessment.ListAssessmentResultsResponse
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -52,56 +53,25 @@ func NewStartDiscoveryCommand() *cobra.Command {
 				return nil
 			}
 
-			client = discovery.NewDiscoveryClient(session)
+			client = orchestrator.NewOrchestratorClient(session)
 
-			res, err = client.Start(context.Background(), &discovery.StartDiscoveryRequest{})
+			res, err = client.ListAssessmentResults(context.Background(), &assessment.ListAssessmentResultsRequest{})
 
 			return session.HandleResponse(res, err)
+		},
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return []string{}, cobra.ShellCompDirectiveNoFileComp
 		},
 	}
 
 	return cmd
 }
 
-// NewQueryDiscoveryCommand returns a cobra command for the `start` subcommand
-func NewQueryDiscoveryCommand() *cobra.Command {
+// NewOrchestratorCommand returns a cobra command for `assessment` subcommands
+func NewOrchestratorCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "query",
-		Short: "Queries the discovery",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			var (
-				err     error
-				session *cli.Session
-				client  discovery.DiscoveryClient
-				res     *discovery.QueryResponse
-				req     discovery.QueryRequest
-			)
-
-			if session, err = cli.ContinueSession(); err != nil {
-				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
-				return nil
-			}
-
-			client = discovery.NewDiscoveryClient(session)
-
-			if len(args) > 0 {
-				req.FilteredType = args[0]
-			}
-
-			res, err = client.Query(context.Background(), &req)
-
-			return session.HandleResponse(res, err)
-		},
-	}
-
-	return cmd
-}
-
-// NewStartDiscoveryCommand returns a cobra command for `discovery` subcommands
-func NewDiscoveryCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "discovery",
-		Short: "Discovery commands",
+		Use:   "orchestrator",
+		Short: "Orchestrator service commands",
 	}
 
 	AddCommands(cmd)
@@ -112,7 +82,6 @@ func NewDiscoveryCommand() *cobra.Command {
 // AddCommands adds all subcommands
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
-		NewStartDiscoveryCommand(),
-		NewQueryDiscoveryCommand(),
+		NewListAssessmentResultsCommand(),
 	)
 }

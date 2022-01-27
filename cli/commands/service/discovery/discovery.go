@@ -23,28 +23,28 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package assessment
+package discovery
 
 import (
 	"context"
 	"fmt"
 
-	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
 )
 
-// NewListResultsCommand returns a cobra command for the `list` subcommand
-func NewListResultsCommand() *cobra.Command {
+// NewStartDiscoveryCommand returns a cobra command for the `start` subcommand
+func NewStartDiscoveryCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "Lists all assessment results",
+		Use:   "start",
+		Short: "Starts the discovery",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err     error
 				session *cli.Session
-				client  assessment.AssessmentClient
-				res     *assessment.ListAssessmentResultsResponse
+				client  discovery.DiscoveryClient
+				res     *discovery.StartDiscoveryResponse
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -52,25 +52,56 @@ func NewListResultsCommand() *cobra.Command {
 				return nil
 			}
 
-			client = assessment.NewAssessmentClient(session)
+			client = discovery.NewDiscoveryClient(session)
 
-			res, err = client.ListAssessmentResults(context.Background(), &assessment.ListAssessmentResultsRequest{})
+			res, err = client.Start(context.Background(), &discovery.StartDiscoveryRequest{})
 
 			return session.HandleResponse(res, err)
-		},
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return []string{}, cobra.ShellCompDirectiveNoFileComp
 		},
 	}
 
 	return cmd
 }
 
-// NewAssessmentCommand returns a cobra command for `assessment` subcommands
-func NewAssessmentCommand() *cobra.Command {
+// NewQueryDiscoveryCommand returns a cobra command for the `start` subcommand
+func NewQueryDiscoveryCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "assessment",
-		Short: "Assessment result commands",
+		Use:   "query",
+		Short: "Queries the discovery",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var (
+				err     error
+				session *cli.Session
+				client  discovery.DiscoveryClient
+				res     *discovery.QueryResponse
+				req     discovery.QueryRequest
+			)
+
+			if session, err = cli.ContinueSession(); err != nil {
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+				return nil
+			}
+
+			client = discovery.NewDiscoveryClient(session)
+
+			if len(args) > 0 {
+				req.FilteredType = args[0]
+			}
+
+			res, err = client.Query(context.Background(), &req)
+
+			return session.HandleResponse(res, err)
+		},
+	}
+
+	return cmd
+}
+
+// NewDiscoveryCommand returns a cobra command for `discovery` subcommands
+func NewDiscoveryCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "discovery",
+		Short: "Discovery service commands",
 	}
 
 	AddCommands(cmd)
@@ -81,6 +112,7 @@ func NewAssessmentCommand() *cobra.Command {
 // AddCommands adds all subcommands
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
-		NewListResultsCommand(),
+		NewStartDiscoveryCommand(),
+		NewQueryDiscoveryCommand(),
 	)
 }
