@@ -146,10 +146,9 @@ func TestNewQueryDiscoveryCommand(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response.Results.Values)
-
 }
 
-// TODO(lebogg): Copied discoverer mocking stuff from discovery tests. Maybe expose it there?
+// Mocking code below is copied from clouditor.io/service/discovery
 
 // mockDiscoverer implements Discoverer and mocks the API to cloud resources
 type mockDiscoverer struct {

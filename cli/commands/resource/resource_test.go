@@ -134,7 +134,7 @@ func TestNewListCommand(t *testing.T) {
 
 }
 
-// TODO(lebogg): Copied discoverer mocking stuff from discovery tests. Maybe expose it there?
+// Mocking code below is copied from clouditor.io/service/discovery
 
 // mockDiscoverer implements Discoverer and mocks the API to cloud resources
 type mockDiscoverer struct {
