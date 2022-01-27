@@ -21,12 +21,12 @@ const _ = grpc.SupportPackageIsVersion7
 type AssessmentClient interface {
 	// Triggers the assessment. Part of the private API. Not exposed as REST.
 	TriggerAssessment(ctx context.Context, in *TriggerAssessmentRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// List all assessment results. Part of the public API, also exposed as REST.
-	ListAssessmentResults(ctx context.Context, in *ListAssessmentResultsRequest, opts ...grpc.CallOption) (*ListAssessmentResultsResponse, error)
 	// Assesses the evidence sent by the discovery. Part of the public API, also exposed as REST.
 	AssessEvidence(ctx context.Context, in *AssessEvidenceRequest, opts ...grpc.CallOption) (*AssessEvidenceResponse, error)
 	// Assesses stream of evidences sent by the discovery. Part of the public API. Not exposed as REST.
 	AssessEvidences(ctx context.Context, opts ...grpc.CallOption) (Assessment_AssessEvidencesClient, error)
+	// List all assessment results. Part of the public API, also exposed as REST.
+	ListAssessmentResults(ctx context.Context, in *ListAssessmentResultsRequest, opts ...grpc.CallOption) (*ListAssessmentResultsResponse, error)
 }
 
 type assessmentClient struct {
@@ -40,15 +40,6 @@ func NewAssessmentClient(cc grpc.ClientConnInterface) AssessmentClient {
 func (c *assessmentClient) TriggerAssessment(ctx context.Context, in *TriggerAssessmentRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/clouditor.Assessment/TriggerAssessment", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *assessmentClient) ListAssessmentResults(ctx context.Context, in *ListAssessmentResultsRequest, opts ...grpc.CallOption) (*ListAssessmentResultsResponse, error) {
-	out := new(ListAssessmentResultsResponse)
-	err := c.cc.Invoke(ctx, "/clouditor.Assessment/ListAssessmentResults", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -98,18 +89,27 @@ func (x *assessmentAssessEvidencesClient) CloseAndRecv() (*emptypb.Empty, error)
 	return m, nil
 }
 
+func (c *assessmentClient) ListAssessmentResults(ctx context.Context, in *ListAssessmentResultsRequest, opts ...grpc.CallOption) (*ListAssessmentResultsResponse, error) {
+	out := new(ListAssessmentResultsResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.Assessment/ListAssessmentResults", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AssessmentServer is the server API for Assessment service.
 // All implementations must embed UnimplementedAssessmentServer
 // for forward compatibility
 type AssessmentServer interface {
 	// Triggers the assessment. Part of the private API. Not exposed as REST.
 	TriggerAssessment(context.Context, *TriggerAssessmentRequest) (*emptypb.Empty, error)
-	// List all assessment results. Part of the public API, also exposed as REST.
-	ListAssessmentResults(context.Context, *ListAssessmentResultsRequest) (*ListAssessmentResultsResponse, error)
 	// Assesses the evidence sent by the discovery. Part of the public API, also exposed as REST.
 	AssessEvidence(context.Context, *AssessEvidenceRequest) (*AssessEvidenceResponse, error)
 	// Assesses stream of evidences sent by the discovery. Part of the public API. Not exposed as REST.
 	AssessEvidences(Assessment_AssessEvidencesServer) error
+	// List all assessment results. Part of the public API, also exposed as REST.
+	ListAssessmentResults(context.Context, *ListAssessmentResultsRequest) (*ListAssessmentResultsResponse, error)
 	mustEmbedUnimplementedAssessmentServer()
 }
 
@@ -120,14 +120,14 @@ type UnimplementedAssessmentServer struct {
 func (UnimplementedAssessmentServer) TriggerAssessment(context.Context, *TriggerAssessmentRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TriggerAssessment not implemented")
 }
-func (UnimplementedAssessmentServer) ListAssessmentResults(context.Context, *ListAssessmentResultsRequest) (*ListAssessmentResultsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListAssessmentResults not implemented")
-}
 func (UnimplementedAssessmentServer) AssessEvidence(context.Context, *AssessEvidenceRequest) (*AssessEvidenceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AssessEvidence not implemented")
 }
 func (UnimplementedAssessmentServer) AssessEvidences(Assessment_AssessEvidencesServer) error {
 	return status.Errorf(codes.Unimplemented, "method AssessEvidences not implemented")
+}
+func (UnimplementedAssessmentServer) ListAssessmentResults(context.Context, *ListAssessmentResultsRequest) (*ListAssessmentResultsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListAssessmentResults not implemented")
 }
 func (UnimplementedAssessmentServer) mustEmbedUnimplementedAssessmentServer() {}
 
@@ -156,24 +156,6 @@ func _Assessment_TriggerAssessment_Handler(srv interface{}, ctx context.Context,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AssessmentServer).TriggerAssessment(ctx, req.(*TriggerAssessmentRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Assessment_ListAssessmentResults_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListAssessmentResultsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AssessmentServer).ListAssessmentResults(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/clouditor.Assessment/ListAssessmentResults",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AssessmentServer).ListAssessmentResults(ctx, req.(*ListAssessmentResultsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -222,6 +204,24 @@ func (x *assessmentAssessEvidencesServer) Recv() (*AssessEvidenceRequest, error)
 	return m, nil
 }
 
+func _Assessment_ListAssessmentResults_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAssessmentResultsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AssessmentServer).ListAssessmentResults(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Assessment/ListAssessmentResults",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AssessmentServer).ListAssessmentResults(ctx, req.(*ListAssessmentResultsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Assessment_ServiceDesc is the grpc.ServiceDesc for Assessment service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -234,12 +234,12 @@ var Assessment_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Assessment_TriggerAssessment_Handler,
 		},
 		{
-			MethodName: "ListAssessmentResults",
-			Handler:    _Assessment_ListAssessmentResults_Handler,
-		},
-		{
 			MethodName: "AssessEvidence",
 			Handler:    _Assessment_AssessEvidence_Handler,
+		},
+		{
+			MethodName: "ListAssessmentResults",
+			Handler:    _Assessment_ListAssessmentResults_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

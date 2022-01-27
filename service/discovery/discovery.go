@@ -27,7 +27,7 @@ package discovery
 
 import (
 	"context"
-	"strings"
+	"fmt"
 	"time"
 
 	"clouditor.io/clouditor/service/discovery/azure"
@@ -61,10 +61,9 @@ type Service struct {
 	discovery.UnimplementedDiscoveryServer
 
 	Configurations map[discovery.Discoverer]*Configuration
-	// TODO(oxisto) do not expose this. just makes tests easier for now
-	AssessmentStream assessment.Assessment_AssessEvidencesClient
 
-	EvidenceStoreStream evidence.EvidenceStore_StoreEvidencesClient
+	assessmentStream  assessment.Assessment_AssessEvidencesClient
+	AssessmentAddress string
 
 	resources map[string]voc.IsCloudResource
 	scheduler *gocron.Scheduler
@@ -84,16 +83,16 @@ func init() {
 
 func NewService() *Service {
 	return &Service{
-		resources:      make(map[string]voc.IsCloudResource),
-		scheduler:      gocron.NewScheduler(time.UTC),
-		Configurations: make(map[discovery.Discoverer]*Configuration),
+		AssessmentAddress: "localhost:9090",
+		resources:         make(map[string]voc.IsCloudResource),
+		scheduler:         gocron.NewScheduler(time.UTC),
+		Configurations:    make(map[discovery.Discoverer]*Configuration),
 	}
 }
 
 // Start starts discovery
-func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (response *discovery.StartDiscoveryResponse, err error) {
-
-	response = &discovery.StartDiscoveryResponse{Successful: true}
+func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
+	resp = &discovery.StartDiscoveryResponse{Successful: true}
 
 	log.Infof("Starting discovery...")
 
@@ -102,23 +101,15 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	// Establish connection to assessment component
 	var client assessment.AssessmentClient
 	// TODO(oxisto): support assessment on Another tcp/port
-	cc, err := grpc.Dial("localhost:9090", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(s.AssessmentAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not connect to assessment service: %v", err)
 	}
-	client = assessment.NewAssessmentClient(cc)
-	// ToDo(lebogg): whats with the err?
-	s.AssessmentStream, _ = client.AssessEvidences(context.Background())
-
-	// Establish connection to evidenceStore component
-	var evidenceStoreClient evidence.EvidenceStoreClient
-	cc, err = grpc.Dial("localhost:9090", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	client = assessment.NewAssessmentClient(conn)
+	s.assessmentStream, err = client.AssessEvidences(context.Background())
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not connect to evidence store service: %v", err)
+		return nil, status.Errorf(codes.Internal, "could not set up stream for assessing evidences: %v", err)
 	}
-	evidenceStoreClient = evidence.NewEvidenceStoreClient(cc)
-	// ToDo(lebogg): whats with the err?
-	s.EvidenceStoreStream, _ = evidenceStoreClient.StoreEvidences(context.Background())
 
 	// create an authorizer from env vars or Azure Managed Service Identity
 	authorizer, err := auth.NewAuthorizerFromCLI()
@@ -171,7 +162,7 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 
 	s.scheduler.StartAsync()
 
-	return response, nil
+	return resp, nil
 }
 
 func (s Service) Shutdown() {
@@ -195,8 +186,7 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 		s.resources[string(resource.GetID())] = resource
 
 		var (
-			v   *structpb.Value
-			err error
+			v *structpb.Value
 		)
 
 		v, err = voc.ToStruct(resource)
@@ -213,26 +203,13 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 			Resource:  v,
 		}
 
-		if s.AssessmentStream == nil {
+		if s.assessmentStream == nil {
 			log.Warnf("Evidence stream to Assessment component not available")
 			continue
 		}
 
-		if s.EvidenceStoreStream == nil {
-			log.Warnf("Evidence stream to EvidenceStore component not available")
-			continue
-		}
-
-		log.Debugf("Sending evidence for resource %s (%s)...", resource.GetID(), strings.Join(resource.GetType(), ", "))
-
-		err = s.AssessmentStream.Send(&assessment.AssessEvidenceRequest{Evidence: e})
-		if err != nil {
-			log.Errorf("Could not send evidence to Assessment: %v", err)
-		}
-
-		err = s.EvidenceStoreStream.Send(&evidence.StoreEvidenceRequest{Evidence: e})
-		if err != nil {
-			log.Errorf("Could not send evidence to EvidenceStore: %v", err)
+		if err = s.assessmentStream.Send(&assessment.AssessEvidenceRequest{Evidence: e}); err != nil {
+			log.WithError(handleError(err, "Assessment"))
 		}
 	}
 }
@@ -263,4 +240,16 @@ func (s Service) Query(_ context.Context, request *discovery.QueryRequest) (resp
 	return &discovery.QueryResponse{
 		Results: &structpb.ListValue{Values: r},
 	}, nil
+}
+
+// handleError prints out the error according to the status code
+func handleError(err error, dest string) error {
+	prefix := "could not send evidence to " + dest
+	if status.Code(err) == codes.Internal {
+		return fmt.Errorf("%s. Internal error on the server side: %v", prefix, err)
+	} else if status.Code(err) == codes.InvalidArgument {
+		return fmt.Errorf("invalid evidence - provide evidence in the right format: %v", err)
+	} else {
+		return err
+	}
 }
