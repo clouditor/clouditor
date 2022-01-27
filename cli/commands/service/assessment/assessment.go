@@ -37,7 +37,7 @@ import (
 // NewListAssessmentResultsCommand returns a cobra command for the `list` subcommand
 func NewListAssessmentResultsCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list_assessment_results",
+		Use:   "list-assessment-results",
 		Short: "Lists all assessment results stored in the assessment service",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (

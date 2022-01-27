@@ -42,7 +42,7 @@ func NewListResultsCommand() *cobra.Command {
 // NewAssessmentCommand returns a cobra command for `assessment` subcommands
 func NewAssessmentCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "assessment_result",
+		Use:   "assessment-result",
 		Short: "Assessment result commands",
 	}
 

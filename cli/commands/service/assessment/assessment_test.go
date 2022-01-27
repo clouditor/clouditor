@@ -38,7 +38,7 @@ func TestAddCommands(t *testing.T) {
 
 	// Check if NewListResultsCommand was added
 	for _, v := range cmd.Commands() {
-		if v.Use == "list_assessment_results" {
+		if v.Use == "list-assessment-results" {
 			return
 		}
 	}

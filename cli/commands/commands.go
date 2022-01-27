@@ -30,7 +30,7 @@ import (
 	"clouditor.io/clouditor/cli/commands/assessment"
 	"clouditor.io/clouditor/cli/commands/cloud"
 	"clouditor.io/clouditor/cli/commands/completion"
-	evidences "clouditor.io/clouditor/cli/commands/evidence"
+	"clouditor.io/clouditor/cli/commands/evidence"
 	"clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/cli/commands/metric"
 	"clouditor.io/clouditor/cli/commands/service"

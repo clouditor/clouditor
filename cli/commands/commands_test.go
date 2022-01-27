@@ -13,9 +13,9 @@ func TestAddCommands(t *testing.T) {
 	assert.True(t, cmd.HasSubCommands())
 	// Check if 'assessment_result' CMD is part of the sub commands
 	for _, v := range cmd.Commands() {
-		if v.Use == "assessment_result" {
+		if v.Use == "assessment-result" {
 			return
 		}
 	}
-	t.Error("CMD 'assessment_result' is not part of the sub commands but should be")
+	t.Error("CMD 'assessment-result' is not part of the sub commands but should be")
 }
