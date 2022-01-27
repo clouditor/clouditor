@@ -112,7 +112,7 @@ func TestAddCommands(t *testing.T) {
 			return
 		}
 	}
-	t.Errorf("No list command was added")
+	t.Errorf("No query command was added")
 }
 
 // TestNewStartDiscoveryCommand currently tests only the error case

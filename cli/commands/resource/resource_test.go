@@ -23,30 +23,27 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package assessment
+package resource
 
 import (
 	"bytes"
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
-	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
-	"context"
-	"encoding/json"
+	service_discovery "clouditor.io/clouditor/service/discovery"
+	"clouditor.io/clouditor/voc"
 	"fmt"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/types/known/structpb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"io/ioutil"
 	"net"
 	"os"
 	"testing"
+	"time"
 )
 
 var sock net.Listener
@@ -56,10 +53,10 @@ func TestMain(m *testing.M) {
 	var (
 		err     error
 		dir     string
-		service *service_orchestrator.Service
+		service *service_discovery.Service
 	)
 
-	err = os.Chdir("../../../")
+	err = os.Chdir("../../../../")
 	if err != nil {
 		panic(err)
 	}
@@ -69,29 +66,14 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	service = service_orchestrator.NewService()
+	service = service_discovery.NewService()
+	service.StartDiscovery(mockDiscoverer{testCase: 2})
 
 	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}
-	// Store an assessment result that output of CMD 'list' is not empty
-	orchestrator.RegisterOrchestratorServer(server, service)
-	_, err = service.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
-		Result: &assessment.AssessmentResult{
-			Id:         "assessmentResultID",
-			MetricId:   "assessmentResultMetricID",
-			EvidenceId: "evidenceID",
-			Timestamp:  timestamppb.Now(),
-			MetricConfiguration: &assessment.MetricConfiguration{
-				TargetValue: toStruct(1.0),
-				Operator:    "operator",
-				IsDefault:   true,
-			}}})
-
-	if err != nil {
-		panic(err)
-	}
+	discovery.RegisterDiscoveryServer(server, service)
 
 	defer func(sock net.Listener) {
 		err = sock.Close()
@@ -119,12 +101,12 @@ func TestMain(m *testing.M) {
 }
 
 func TestAddCommands(t *testing.T) {
-	cmd := NewAssessmentCommand()
+	cmd := NewResourceCommand()
 
 	// Check if sub commands were added
 	assert.True(t, cmd.HasSubCommands())
 
-	// Check if NewListResultsCommand was added
+	// Check if NewQueryDiscoveryCommand was added
 	for _, v := range cmd.Commands() {
 		if v.Use == "list" {
 			return
@@ -133,38 +115,94 @@ func TestAddCommands(t *testing.T) {
 	t.Errorf("No list command was added")
 }
 
-func TestNewListResultsCommand(t *testing.T) {
+func TestNewListCommand(t *testing.T) {
+	var err error
 	var b bytes.Buffer
 
 	cli.Output = &b
 
-	cmd := NewListResultsCommand()
-	err := cmd.RunE(nil, []string{})
+	cmd := NewListResourcesCommand()
+	err = cmd.RunE(nil, []string{})
 	assert.Nil(t, err)
 
-	var response = &assessment.ListAssessmentResultsResponse{}
+	var response = &discovery.QueryResponse{}
 	err = protojson.Unmarshal(b.Bytes(), response)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, response)
-	assert.NotEmpty(t, response.Results)
+	assert.NotEmpty(t, response.Results.Values)
+
 }
 
-func toStruct(f float32) (s *structpb.Value) {
-	var (
-		b   []byte
-		err error
-	)
+// TODO(lebogg): Copied discoverer mocking stuff from discovery tests. Maybe expose it there?
 
-	s = new(structpb.Value)
+// mockDiscoverer implements Discoverer and mocks the API to cloud resources
+type mockDiscoverer struct {
+	// testCase allows for different implementations for table tests in TestStartDiscovery
+	testCase int
+}
 
-	b, err = json.Marshal(f)
-	if err != nil {
-		return nil
+func (mockDiscoverer) Name() string { return "just mocking" }
+
+func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
+	switch m.testCase {
+	case 0:
+		return nil, fmt.Errorf("mock error in List()")
+	case 1:
+		return []voc.IsCloudResource{wrongFormattedResource()}, nil
+	case 2:
+		return []voc.IsCloudResource{
+			&voc.ObjectStorage{
+				Storage: &voc.Storage{
+					CloudResource: &voc.CloudResource{
+						ID:   "some-id",
+						Name: "some-name",
+						Type: []string{"ObjectStorage", "Storage", "Resource"},
+					},
+				},
+				HttpEndpoint: &voc.HttpEndpoint{
+					TransportEncryption: &voc.TransportEncryption{
+						Enforced:   false,
+						Enabled:    true,
+						TlsVersion: "TLS1_2",
+					},
+				},
+			},
+		}, nil
+	default:
+		return nil, nil
 	}
-	if err = json.Unmarshal(b, &s); err != nil {
-		return nil
-	}
+}
 
-	return
+func wrongFormattedResource() voc.IsCloudResource {
+	res1 := mockIsCloudResource{Another: nil}
+	res2 := mockIsCloudResource{Another: &res1}
+	res1.Another = &res2
+	return res1
+}
+
+// mockIsCloudResource implements mockIsCloudResource interface.
+// It is used for json.marshal to fail since it contains circular dependency
+type mockIsCloudResource struct {
+	Another *mockIsCloudResource `json:"Another"`
+}
+
+func (mockIsCloudResource) GetID() voc.ResourceID {
+	return "MockResourceId"
+}
+
+func (mockIsCloudResource) GetName() string {
+	return ""
+}
+
+func (mockIsCloudResource) GetType() []string {
+	return nil
+}
+
+func (mockIsCloudResource) HasType(_ string) bool {
+	return false
+}
+
+func (mockIsCloudResource) GetCreationTime() *time.Time {
+	return nil
 }

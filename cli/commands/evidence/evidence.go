@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package evidences
+package evidence
 
 import (
 	"clouditor.io/clouditor/api/evidence"

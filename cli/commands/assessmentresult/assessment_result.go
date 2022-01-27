@@ -23,24 +23,24 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package assessment
+package assessmentresult
 
 import (
 	"clouditor.io/clouditor/cli/commands/service/orchestrator"
 	"github.com/spf13/cobra"
 )
 
-// NewListResultsCommand returns a cobra command for the `list` subcommand
-func NewListResultsCommand() *cobra.Command {
-	// Use Orchestrator's method for listing assessment results
+// NewListAssessmentResultsCommand returns a cobra command for the `list` subcommand
+func NewListAssessmentResultsCommand() *cobra.Command {
+	// Use Orchestrator's function for listing assessment results
 	cmd := orchestrator.NewListAssessmentResultsCommand()
 	// Change use for better readability (cl assessment_result list vs cl assessment_result list_assessment_results)
 	cmd.Use = "list"
 	return cmd
 }
 
-// NewAssessmentCommand returns a cobra command for `assessment` subcommands
-func NewAssessmentCommand() *cobra.Command {
+// NewAssessmentResultCommand returns a cobra command for `assessment` subcommands
+func NewAssessmentResultCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "assessment-result",
 		Short: "Assessment result commands",
@@ -54,6 +54,6 @@ func NewAssessmentCommand() *cobra.Command {
 // AddCommands adds all subcommands
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
-		NewListResultsCommand(),
+		NewListAssessmentResultsCommand(),
 	)
 }

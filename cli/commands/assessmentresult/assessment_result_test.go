@@ -23,17 +23,17 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package evidence
+package assessmentresult
 
 import (
 	"bytes"
-	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
-	service_evidenceStore "clouditor.io/clouditor/service/evidence"
-	"clouditor.io/clouditor/voc"
+	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -56,7 +56,7 @@ func TestMain(m *testing.M) {
 	var (
 		err     error
 		dir     string
-		service *service_evidenceStore.Service
+		service *service_orchestrator.Service
 	)
 
 	err = os.Chdir("../../../")
@@ -69,19 +69,25 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	service = service_evidenceStore.NewService()
+	service = service_orchestrator.NewService()
 
 	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}
-	evidence.RegisterEvidenceStoreServer(server, service)
-	_, err = service.StoreEvidence(context.TODO(), &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
-		Id:        "mockEvidenceId",
-		ToolId:    "mock",
-		Timestamp: timestamppb.Now(),
-		Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}),
-	}})
+	// Store an assessment result that output of CMD 'list' is not empty
+	orchestrator.RegisterOrchestratorServer(server, service)
+	_, err = service.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
+		Result: &assessment.AssessmentResult{
+			Id:         "assessmentResultID",
+			MetricId:   "assessmentResultMetricID",
+			EvidenceId: "evidenceID",
+			Timestamp:  timestamppb.Now(),
+			MetricConfiguration: &assessment.MetricConfiguration{
+				TargetValue: toStruct(1.0),
+				Operator:    "operator",
+				IsDefault:   true,
+			}}})
 
 	if err != nil {
 		panic(err)
@@ -113,12 +119,12 @@ func TestMain(m *testing.M) {
 }
 
 func TestAddCommands(t *testing.T) {
-	cmd := NewEvidenceCommand()
+	cmd := NewAssessmentResultCommand()
 
 	// Check if sub commands were added
 	assert.True(t, cmd.HasSubCommands())
 
-	// Check if NewListResultsCommand was added
+	// Check if NewListAssessmentResultsCommand was added
 	for _, v := range cmd.Commands() {
 		if v.Use == "list" {
 			return
@@ -132,19 +138,19 @@ func TestNewListResultsCommand(t *testing.T) {
 
 	cli.Output = &b
 
-	cmd := NewListEvidencesCommand()
+	cmd := NewListAssessmentResultsCommand()
 	err := cmd.RunE(nil, []string{})
 	assert.Nil(t, err)
 
-	var response = &evidence.ListEvidencesResponse{}
+	var response = &assessment.ListAssessmentResultsResponse{}
 	err = protojson.Unmarshal(b.Bytes(), response)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, response)
-	assert.NotEmpty(t, response.Evidences)
+	assert.NotEmpty(t, response.Results)
 }
 
-func toStruct(r voc.IsCloudResource) (s *structpb.Value) {
+func toStruct(f float32) (s *structpb.Value) {
 	var (
 		b   []byte
 		err error
@@ -152,7 +158,7 @@ func toStruct(r voc.IsCloudResource) (s *structpb.Value) {
 
 	s = new(structpb.Value)
 
-	b, err = json.Marshal(r)
+	b, err = json.Marshal(f)
 	if err != nil {
 		return nil
 	}
