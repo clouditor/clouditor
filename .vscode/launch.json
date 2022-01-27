@@ -13,6 +13,17 @@
             "cwd": "${workspaceFolder}",
             "env": {},
             "preLaunchTask": "go: generate"
+        },
+        {
+            "name": "Launch engine (in-memory)",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/engine/engine.go",
+            "cwd": "${workspaceFolder}",
+            "args": ["--db-in-memory"],
+            "env": {},
+            "preLaunchTask": "go: generate"
         }
     ]
 }
