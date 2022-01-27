@@ -3,7 +3,7 @@ module clouditor.io/clouditor
 go 1.17
 
 require (
-	github.com/Azure/azure-sdk-for-go v61.1.0+incompatible
+	github.com/Azure/azure-sdk-for-go v61.3.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.11.22
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.9
 	github.com/Azure/go-autorest/autorest/to v0.4.0
