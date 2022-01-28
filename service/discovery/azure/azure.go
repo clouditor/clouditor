@@ -73,9 +73,6 @@ type azureDiscovery struct {
 	authOption *authorizerOption
 	sub        subscriptions.Subscription
 
-	isAuthorized bool
-	expires      string
-
 	options []DiscoveryOption
 }
 
@@ -84,31 +81,24 @@ func (a *azureDiscovery) authorize() (err error) {
 		return errors.New("no authorized was available")
 	}
 
-	// for now, do not re-authorize. in the future, we would probably need to check, if
-	// the token is still valid. or maybe Azure does this for us?
-	// TODO(all): a.isAuthorized is never set to false!
-	//if a.isAuthorized {
-	//	return
-	//}
-
 	subClient := subscriptions.NewClient()
 	a.apply(&subClient.Client)
-	log.Printf("Expiry time: %+v", subClient.BaseClient.Client.Authorizer)
-	log.Printf("Token: %+v", a.authOption.authorizer)
 
 	// get first subscription
 	page, err := subClient.List(context.Background())
 	if err != nil {
-		log.Errorf("could not retrieve list of subscriptions: '%v'", err)
 		return
 	}
-	log.Infof("page.Values: %v", len(page.Values()))
+
+	// check if list of subscriptions is empty
+	if len(page.Values()) == 0 {
+		err = errors.New("list of subscriptions is empty")
+		return
+	}
+
 	a.sub = page.Values()[0]
 
 	log.Infof("Using %s as subscription", *a.sub.SubscriptionID)
-
-	a.isAuthorized = true
-	//a.expires =
 
 	return nil
 }

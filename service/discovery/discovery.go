@@ -27,7 +27,6 @@ package discovery
 
 import (
 	"context"
-	"fmt"
 	autorest_azure "github.com/Azure/go-autorest/autorest/azure"
 	"strings"
 	"time"
@@ -121,16 +120,18 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	s.EvidenceStoreStream, _ = evidenceStoreClient.StoreEvidences(context.Background())
 
 	// create an authorizer from env vars or Azure Managed Service Identity
-	//authorizer, err := auth.NewAuthorizerFromCLI()
-	//authorizer, err := auth.NewAuthorizerFromFileWithResource("https://management.azure.com")
-	// TODO: Das funktioniert jetzt über einen längeren Zeitraum, warum es mit NewAuthorizerFromCLI nicht funktioniert
-	// weiß ich nicht. In aktueller Main einbauen und als Fallback NewAuthorizerFromCLI nutzen.
-	// Testen ob Clouditor und user credentials funktionieren.
 	authorizer, err := auth.NewAuthorizerFromFile(autorest_azure.PublicCloud.ResourceManagerEndpoint)
 	if err != nil {
-		log.Errorf("Could not authenticate to Azure: %s", err)
-		return nil, err
+		log.Errorf("Could not authenticate to Azure with authorizer from file: %v", err)
+		log.Infof("Fall back to Azure authorizer from CLI.")
+		authorizer, err = auth.NewAuthorizerFromCLI()
+		if err != nil {
+			log.Errorf("Could not authenticate to Azure authorizer from CLI: %v", err)
+			return nil, err
+		}
+		log.Info("Using Azure authorizer from CLI. The discovery times out after 1 hour.")
 	}
+	log.Info("Using Azure authorizer from file.")
 
 	//k8sClient, err := k8s.AuthFromKubeConfig()
 	//if err != nil {
@@ -189,9 +190,6 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 		err  error
 		list []voc.IsCloudResource
 	)
-
-	fmt.Print("\n\n\n\n\n\n")
-	log.Infof("Current iteration time: %s", time.Now())
 
 	list, err = discoverer.List()
 
