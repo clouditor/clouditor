@@ -79,6 +79,7 @@ func NewService(db persistence.IsDatabase) *Service {
 	s := Service{
 		results:              make(map[string]*assessment.AssessmentResult),
 		metricConfigurations: make(map[string]map[string]*assessment.MetricConfiguration),
+		db:                   db,
 	}
 
 	if err := LoadMetrics(DefaultMetricsFile); err != nil {
@@ -111,8 +112,6 @@ func NewService(db persistence.IsDatabase) *Service {
 		metricIndex[m.Id] = m
 		defaultMetricConfigurations[m.Id] = &config
 	}
-
-	s.db = db
 
 	return &s
 }
