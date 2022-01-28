@@ -39,6 +39,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 		AssessmentResult *AssessmentResult
 	}
 
+	const assessmentResultID = "11111111-1111-1111-1111-111111111111"
 	tests := []struct {
 		name          string
 		args          args
@@ -119,7 +120,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Missing assessment result timestamp",
 			args: args{
 				&AssessmentResult{
-					Id:       "MockAssessmentID",
+					Id:       assessmentResultID,
 					MetricId: "MockMetricID",
 					MetricConfiguration: &MetricConfiguration{
 						Operator: "MockOperator",
@@ -140,7 +141,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Missing assessment result metric id",
 			args: args{
 				&AssessmentResult{
-					Id:        "MockAssessmentID",
+					Id:        assessmentResultID,
 					Timestamp: timestamppb.Now(),
 					MetricConfiguration: &MetricConfiguration{
 						Operator: "MockOperator",
@@ -161,7 +162,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Missing assessment result metric configuration",
 			args: args{
 				&AssessmentResult{
-					Id:         "MockAssessmentID",
+					Id:         assessmentResultID,
 					Timestamp:  timestamppb.Now(),
 					MetricId:   "MockMetricID",
 					EvidenceId: "MockEvidenceID",
@@ -175,7 +176,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Missing assessment result metric configuration operator",
 			args: args{
 				&AssessmentResult{
-					Id:        "MockAssessmentID",
+					Id:        assessmentResultID,
 					Timestamp: timestamppb.Now(),
 					MetricId:  "MockMetricID",
 					MetricConfiguration: &MetricConfiguration{
@@ -196,7 +197,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Missing assessment result metric configuration target value",
 			args: args{
 				&AssessmentResult{
-					Id:        "MockAssessmentID",
+					Id:        assessmentResultID,
 					Timestamp: timestamppb.Now(),
 					MetricId:  "MockMetricID",
 					MetricConfiguration: &MetricConfiguration{
@@ -213,7 +214,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Missing assessment result evidence id",
 			args: args{
 				&AssessmentResult{
-					Id:        "MockAssessmentID",
+					Id:        assessmentResultID,
 					Timestamp: timestamppb.Now(),
 					MetricId:  "MockMetricID",
 					MetricConfiguration: &MetricConfiguration{
@@ -234,7 +235,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Valid assessment result",
 			args: args{
 				&AssessmentResult{
-					Id:        "MockAssessmentID",
+					Id:        assessmentResultID,
 					Timestamp: timestamppb.Now(),
 					MetricId:  "MockMetricID",
 					MetricConfiguration: &MetricConfiguration{

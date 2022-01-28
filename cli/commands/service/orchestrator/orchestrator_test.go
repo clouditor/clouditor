@@ -79,7 +79,7 @@ func TestMain(m *testing.M) {
 	// Store an assessment result that output of CMD 'list_results' is not empty
 	_, err = service.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
 		Result: &assessment.AssessmentResult{
-			Id:         "assessmentResultID",
+			Id:         "11111111-1111-1111-1111-111111111111",
 			MetricId:   "assessmentResultMetricID",
 			EvidenceId: "evidenceID",
 			Timestamp:  timestamppb.Now(),
