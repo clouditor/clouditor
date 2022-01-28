@@ -67,7 +67,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			},
 			wantResp: "",
 			// cannot access unexported invalidLengthError of uuid package. Use the error string directly
-			wantRespError: fmt.Errorf("%v: invalid UUID length: 0", ErrAssessmentIdConfiguredIncorrectly),
+			wantRespError: fmt.Errorf("%v: invalid UUID length: 0", ErrInvalidFormat),
 			wantErr:       true,
 		},
 		{
@@ -90,7 +90,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			},
 			wantResp: "",
 			// cannot access unexported invalidLengthError of uuid package. Use the error string directly
-			wantRespError: fmt.Errorf("%v: invalid UUID length: 4", ErrAssessmentIdConfiguredIncorrectly),
+			wantRespError: fmt.Errorf("%v: invalid UUID length: 4", ErrInvalidFormat),
 			wantErr:       true,
 		},
 		{
@@ -113,7 +113,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			},
 			wantResp: "",
 			// Copied error of uuid package.
-			wantRespError: fmt.Errorf("%v: invalid UUID format", ErrAssessmentIdConfiguredIncorrectly),
+			wantRespError: fmt.Errorf("%v: invalid UUID format", ErrInvalidFormat),
 			wantErr:       true,
 		},
 		{
