@@ -54,6 +54,9 @@ type Service struct {
 	auth.UnimplementedAuthenticationServer
 
 	TokenSecret string
+
+	// TODO(lebogg): Make unexported and add NewService?
+	db persistence.IsDatabase
 }
 
 // UserClaims extend jwt.StandardClaims with more detailed claims about a user
@@ -67,12 +70,18 @@ func init() {
 	log = logrus.WithField("component", "auth")
 }
 
+func NewService(db persistence.IsDatabase) *Service {
+	return &Service{
+		db: db,
+	}
+}
+
 // Login handles a login request
 func (s Service) Login(_ context.Context, request *auth.LoginRequest) (response *auth.LoginResponse, err error) {
 	var result bool
 	var user *auth.User
 
-	if result, user, err = verifyLogin(request); err != nil {
+	if result, user, err = s.verifyLogin(request); err != nil {
 		// a returned error means, something has gone wrong
 		return nil, status.Errorf(codes.Internal, "error during login: %v", err)
 	}
@@ -97,14 +106,14 @@ func (s Service) Login(_ context.Context, request *auth.LoginRequest) (response 
 // It will return an error in err only if a database error or something else is occurred, this should be
 // returned to the user as an internal server error. For security reasons, if authentication failed, only
 // the result will be set to false, but no detailed error will be returned to the user.
-func verifyLogin(request *auth.LoginRequest) (result bool, user *auth.User, err error) {
+func (s *Service) verifyLogin(request *auth.LoginRequest) (result bool, user *auth.User, err error) {
 	var match bool
-
-	db := persistence.GetDatabase()
 
 	user = new(auth.User)
 
-	err = db.Where("username = ?", request.Username).First(user).Error
+	// TODO(lebogg): Check if this re-write is the same
+	//err = db.Where("username = ?", request.Username).First(user).Error
+	err = s.db.Read(user, "username = ?", request.Username)
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		// user not found, set result to false, but hide the error
@@ -140,11 +149,11 @@ func hashPassword(password string) (string, error) {
 }
 
 // CreateDefaultUser creates a default user in the database
-func (Service) CreateDefaultUser(username string, password string) {
-	db := persistence.GetDatabase()
+func (s *Service) CreateDefaultUser(username string, password string) error {
 
 	var count int64
-	db.Model(&auth.User{}).Count(&count)
+	// TODO(lebogg): Check model stuff
+	//db.Model(&auth.User{}).Count(&count)
 
 	if count == 0 {
 		hash, _ := hashPassword(password)
@@ -157,8 +166,12 @@ func (Service) CreateDefaultUser(username string, password string) {
 
 		log.Infof("Creating default user %s\n", user.Username)
 
-		db.Create(&user)
+		err := s.db.Create(&user)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 // issueToken issues a JWT-based token
@@ -193,7 +206,10 @@ func StartDedicatedAuthServer(address string) (sock net.Listener, server *grpc.S
 	}
 
 	authService = &Service{}
-	authService.CreateDefaultUser("clouditor", "clouditor")
+	err = authService.CreateDefaultUser("clouditor", "clouditor")
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not create default user: %v", err)
+	}
 
 	server = grpc.NewServer()
 	auth.RegisterAuthenticationServer(server, authService)
