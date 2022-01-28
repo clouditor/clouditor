@@ -67,7 +67,7 @@ func (s *Service) ListCloudServices(_ context.Context, _ *orchestrator.ListCloud
 	response = new(orchestrator.ListCloudServicesResponse)
 	response.Services = make([]*orchestrator.CloudService, 0)
 
-	err = s.db.Find(&response.Services).Error
+	err = s.db.Read(&response.Services)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -81,7 +81,8 @@ func (s *Service) GetCloudService(_ context.Context, req *orchestrator.GetCloudS
 	}
 
 	response = new(orchestrator.CloudService)
-	err = s.db.First(&response, "Id = ?", req.ServiceId).Error
+	// TODO(lebogg): Replaced Find -> Check if I can incorporate into Read or if Read can handle it? Otherwise rethink CRUD approach
+	err = s.db.Read(&response, "Id = ?", req.ServiceId)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "service not found")
 	} else if err != nil {
@@ -101,6 +102,7 @@ func (s *Service) UpdateCloudService(_ context.Context, req *orchestrator.Update
 	}
 
 	var count int64
+	// TODO(lebogg): Check how Model works and how to generalize it
 	err = s.db.Model(&orchestrator.CloudService{}).Count(&count).Error
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
@@ -111,7 +113,7 @@ func (s *Service) UpdateCloudService(_ context.Context, req *orchestrator.Update
 	}
 
 	req.Service.Id = req.ServiceId
-	err = s.db.Save(&req.Service).Error
+	err = s.db.Update(&req.Service)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -124,7 +126,8 @@ func (s *Service) RemoveCloudService(_ context.Context, req *orchestrator.Remove
 		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
 	}
 
-	err = s.db.Delete(&orchestrator.CloudService{Id: req.ServiceId}).Error
+	// TODO(lebogg): Test if working
+	err = s.db.Delete(&orchestrator.CloudService{}, req.ServiceId)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "service not found")
 	} else if err != nil {
