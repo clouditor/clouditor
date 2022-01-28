@@ -348,6 +348,7 @@ func (mockStreamer) SendAndClose(_ *emptypb.Empty) error {
 }
 
 func (m *mockStreamer) Recv() (*assessment.AssessmentResult, error) {
+
 	if m.counter == 0 {
 		m.counter++
 		return &assessment.AssessmentResult{
