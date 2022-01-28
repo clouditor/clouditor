@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package tool_test
+package tool
 
 import (
 	"fmt"
@@ -34,7 +34,7 @@ import (
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli/commands/login"
-	"clouditor.io/clouditor/cli/commands/tool"
+	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"github.com/spf13/viper"
@@ -47,12 +47,25 @@ var server *grpc.Server
 
 func TestMain(m *testing.M) {
 	var (
-		err error
-		dir string
+		err     error
+		dir     string
+		service *service_orchestrator.Service
 	)
 
+	err = os.Chdir("../../../")
+	if err != nil {
+		panic(err)
+	}
+
+	err = persistence.InitDB(true, "", 0)
+	if err != nil {
+		panic(err)
+	}
+
+	service = service_orchestrator.NewService()
+
 	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
-	orchestrator.RegisterOrchestratorServer(server, &service_orchestrator.Service{})
+	orchestrator.RegisterOrchestratorServer(server, service)
 
 	if err != nil {
 		panic(err)
@@ -82,7 +95,7 @@ func TestMain(m *testing.M) {
 func TestListTool(t *testing.T) {
 	var err error
 
-	cmd := tool.NewListToolsCommand()
+	cmd := NewListToolsCommand()
 	err = cmd.RunE(nil, []string{})
 
 	// unsupported for now
@@ -93,7 +106,7 @@ func TestListTool(t *testing.T) {
 func TestShowTool(t *testing.T) {
 	var err error
 
-	cmd := tool.NewShowToolCommand()
+	cmd := NewShowToolCommand()
 	err = cmd.RunE(nil, []string{"1"})
 
 	// unsupported for now
@@ -104,7 +117,7 @@ func TestShowTool(t *testing.T) {
 func TestUpdateTool(t *testing.T) {
 	var err error
 
-	cmd := tool.NewUpdateToolCommand()
+	cmd := NewUpdateToolCommand()
 	err = cmd.RunE(nil, []string{"1"})
 
 	// unsupported for now
@@ -115,7 +128,7 @@ func TestUpdateTool(t *testing.T) {
 func TestRegisterTool(t *testing.T) {
 	var err error
 
-	cmd := tool.NewRegisterToolCommand()
+	cmd := NewRegisterToolCommand()
 	err = cmd.RunE(nil, []string{})
 
 	// unsupported for now
@@ -126,7 +139,7 @@ func TestRegisterTool(t *testing.T) {
 func TestDeregisterTool(t *testing.T) {
 	var err error
 
-	cmd := tool.NewDeregisterToolCommand()
+	cmd := NewDeregisterToolCommand()
 	err = cmd.RunE(nil, []string{"1"})
 
 	// unsupported for now

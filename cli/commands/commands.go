@@ -27,11 +27,14 @@ package commands
 
 import (
 	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/cli/commands/assessment"
+	"clouditor.io/clouditor/cli/commands/assessmentresult"
+	"clouditor.io/clouditor/cli/commands/cloud"
 	"clouditor.io/clouditor/cli/commands/completion"
-	"clouditor.io/clouditor/cli/commands/discovery"
+	"clouditor.io/clouditor/cli/commands/evidence"
 	"clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/cli/commands/metric"
+	"clouditor.io/clouditor/cli/commands/resource"
+	"clouditor.io/clouditor/cli/commands/service"
 	"clouditor.io/clouditor/cli/commands/tool"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -40,12 +43,17 @@ import (
 // AddCommands adds all subcommands
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
+		// commands for resources
 		login.NewLoginCommand(),
-		discovery.NewDiscoveryCommand(),
 		metric.NewMetricCommand(),
 		tool.NewToolCommand(),
-		assessment.NewAssessmentCommand(),
+		resource.NewResourceCommand(),
+		evidence.NewEvidenceCommand(),
+		assessmentresult.NewAssessmentResultCommand(),
 		completion.NewCompletionCommand(),
+		cloud.NewCloudCommand(),
+		// command consisting of service commands
+		service.NewServiceCommand(),
 	)
 
 	cmd.PersistentFlags().StringP("session-directory", "s", cli.DefaultSessionFolder, "the directory where the session will be saved and loaded from")

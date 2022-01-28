@@ -18,6 +18,8 @@ guide](https://cloud.google.com/apis/design/), including the following conventio
 * ENUM (Scale): The first value should be named ENUM_TYPE_UNSPECIFIED
 * Commenting: Comment services, RPCs and messages
 * Request and response messages
+  * A **custom method** should have a response message even if it is empty (see [Cloud APIs Common design patterns](https://cloud.google.com/apis/design/design_patterns#empty_responses)).
+
   * **Standard methods** use request and response messages according to the following table (see [Cloud APIs Naming conventions](https://cloud.google.com/apis/design/naming_convention#method_names)). 
 
 | Method name | Request Body      | Response Body         |
@@ -29,8 +31,7 @@ guide](https://cloud.google.com/apis/design/), including the following conventio
 | RenameBook  | RenameBookRequest | RenameBookResponse    |
 | DeleteBook  | DeleteBookRequest | google.brotobuf.Empty |
 
-* A **custom method** should have a response message even if it is empty (see [Cloud APIs Common design patterns](https://cloud.google.com/apis/design/design_patterns#empty_responses)).
-* If we *transfer* a single resource, e.g. in the case of `StoreEvidence`, it is not necessary to create an additional `StoreEvidenceRequest`, instead `Evidence` can be used.
+* Even if we *transfer* a single resource (e.g. in the case of `StoreEvidence`) we create a corresponding `XxxRequest` message (`StoreEvidenceRequest`). `XxxRequest` allows adding new fields to the request (e.g. metadata) while not breaking the code.
 
 ## Generate Go files
 

@@ -23,13 +23,12 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package k8s_test
+package k8s
 
 import (
 	"context"
 	"testing"
 
-	"clouditor.io/clouditor/service/discovery/k8s"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
@@ -46,7 +45,7 @@ func TestListPods(t *testing.T) {
 		t.Fatalf("error injecting pod add: %v", err)
 	}
 
-	d := k8s.NewKubernetesComputeDiscovery(client)
+	d := NewKubernetesComputeDiscovery(client)
 
 	list, err := d.List()
 

@@ -192,12 +192,6 @@ func StartDedicatedAuthServer(address string) (sock net.Listener, server *grpc.S
 		return nil, nil, fmt.Errorf("could not listen: %w", err)
 	}
 
-	err = persistence.InitDB(true, "", 0)
-
-	if err != nil {
-		return nil, nil, fmt.Errorf("could not initialize in-memory DB: %w", err)
-	}
-
 	authService = &Service{}
 	authService.CreateDefaultUser("clouditor", "clouditor")
 

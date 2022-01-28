@@ -1,10 +1,37 @@
+// Copyright 2016-2020 Fraunhofer AISEC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+//           $$\                           $$\ $$\   $$\
+//           $$ |                          $$ |\__|  $$ |
+//  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+// $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+// $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
+// $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+// \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+//  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+//
+// This file is part of Clouditor Community Edition.
+
 package evidences
 
 import (
 	"context"
 	"io"
 	"reflect"
+	"runtime"
 	"testing"
+	"time"
 
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -23,7 +50,7 @@ func TestNewService(t *testing.T) {
 		want evidence.EvidenceStoreServer
 	}{
 		{
-			name: "EvidenceStoreServer created with empty evidence map",
+			name: "EvidenceStoreServer created with empty req map",
 			want: &Service{
 				evidences:                        make(map[string]*evidence.Evidence),
 				UnimplementedEvidenceStoreServer: evidence.UnimplementedEvidenceStoreServer{},
@@ -42,8 +69,8 @@ func TestNewService(t *testing.T) {
 // TestStoreEvidence tests StoreEvidence
 func TestStoreEvidence(t *testing.T) {
 	type args struct {
-		in0      context.Context
-		evidence *evidence.Evidence
+		in0 context.Context
+		req *evidence.StoreEvidenceRequest
 	}
 	tests := []struct {
 		name     string
@@ -52,38 +79,70 @@ func TestStoreEvidence(t *testing.T) {
 		wantErr  bool
 	}{
 		{
-			name: "Store evidence to the map",
+			name: "Store req to the map",
 			args: args{
 				in0: context.TODO(),
-				evidence: &evidence.Evidence{
-					Id:        "MockEvidenceId",
-					ServiceId: "MockServiceId",
-					ToolId:    "MockTool",
-					Timestamp: timestamppb.Now(),
-					Raw:       "",
-					Resource: toStruct(voc.VirtualMachine{
-						Compute: &voc.Compute{CloudResource: &voc.CloudResource{
-							ID: "mock-id",
-						}},
-					}, t),
-				},
+				req: &evidence.StoreEvidenceRequest{
+					Evidence: &evidence.Evidence{
+						Id:        "MockEvidenceId",
+						ServiceId: "MockServiceId",
+						ToolId:    "MockTool",
+						Timestamp: timestamppb.Now(),
+						Raw:       "",
+						Resource: toStruct(voc.VirtualMachine{
+							Compute: &voc.Compute{CloudResource: &voc.CloudResource{
+								ID: "mock-id",
+							}},
+						}, t),
+					}},
 			},
 			wantErr:  false,
 			wantResp: &evidence.StoreEvidenceResponse{Status: true},
+		},
+		{
+			name: "Store an evidence without toolId to the map",
+			args: args{
+				in0: context.TODO(),
+				req: &evidence.StoreEvidenceRequest{
+					Evidence: &evidence.Evidence{
+						Id:        "MockEvidenceId-1",
+						ServiceId: "MockServiceId-1",
+						Timestamp: timestamppb.Now(),
+						Raw:       "",
+						Resource: toStruct(voc.VirtualMachine{
+							Compute: &voc.Compute{
+								CloudResource: &voc.CloudResource{
+									ID: "mock-id-1",
+								},
+							},
+						}, t),
+					},
+				},
+			},
+			wantErr: true,
+			wantResp: &evidence.StoreEvidenceResponse{
+				Status: false,
+			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
-			gotResp, err := s.StoreEvidence(tt.args.in0, tt.args.evidence)
+			gotResp, err := s.StoreEvidence(tt.args.in0, tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("StoreEvidence() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
 			if !reflect.DeepEqual(gotResp, tt.wantResp) {
 				t.Errorf("StoreEvidence() gotResp = %v, want %v", gotResp, tt.wantResp)
 			}
-			assert.NotNil(t, s.evidences["MockEvidenceId"])
+
+			if gotResp.Status {
+				assert.NotNil(t, s.evidences["MockEvidenceId"])
+			} else {
+				assert.Empty(t, s.evidences)
+			}
 		})
 	}
 }
@@ -115,7 +174,7 @@ func TestStoreEvidences(t *testing.T) {
 	}
 }
 
-// TestListEvidences tests List evidence
+// TestListEvidences tests List req
 func TestListEvidences(t *testing.T) {
 	s := NewService()
 	s.evidences["MockEvidenceId-1"] = &evidence.Evidence{
@@ -138,6 +197,112 @@ func TestListEvidences(t *testing.T) {
 	assert.Equal(t, 2, len(resp.Evidences))
 }
 
+func TestEvidenceHook(t *testing.T) {
+	var ready1 = make(chan bool)
+	var ready2 = make(chan bool)
+	hookCallCounter := 0
+
+	firstHookFunction := func(evidence *evidence.Evidence, err error) {
+		hookCallCounter++
+		log.Println("Hello from inside the firstHookFunction")
+
+		ready1 <- true
+	}
+
+	secondHookFunction := func(evidence *evidence.Evidence, err error) {
+		hookCallCounter++
+		log.Println("Hello from inside the secondHookFunction")
+
+		ready2 <- true
+	}
+
+	service := NewService()
+	service.RegisterEvidenceHook(firstHookFunction)
+	service.RegisterEvidenceHook(secondHookFunction)
+
+	// Check if first hook is registered
+	funcName1 := runtime.FuncForPC(reflect.ValueOf(service.evidenceHooks[0]).Pointer()).Name()
+	funcName2 := runtime.FuncForPC(reflect.ValueOf(firstHookFunction).Pointer()).Name()
+	assert.Equal(t, funcName1, funcName2)
+
+	// Check if second hook is registered
+	funcName1 = runtime.FuncForPC(reflect.ValueOf(service.evidenceHooks[1]).Pointer()).Name()
+	funcName2 = runtime.FuncForPC(reflect.ValueOf(secondHookFunction).Pointer()).Name()
+	assert.Equal(t, funcName1, funcName2)
+
+	// Check GRPC call
+	type args struct {
+		in0      context.Context
+		evidence *evidence.StoreEvidenceRequest
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantResp *evidence.StoreEvidenceResponse
+		wantErr  bool
+	}{
+		{
+			name: "Store an evidence to the map",
+			args: args{
+				in0: context.TODO(),
+				evidence: &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
+					Id:        "MockEvidenceId-1",
+					ServiceId: "MockServiceId-1",
+					Timestamp: timestamppb.Now(),
+					Raw:       "",
+					ToolId:    "mockToolId-1",
+					Resource: toStruct(voc.VirtualMachine{
+						Compute: &voc.Compute{
+							CloudResource: &voc.CloudResource{
+								ID: "mock-id-1",
+							},
+						},
+					}, t),
+				},
+				},
+			},
+			wantErr: false,
+			wantResp: &evidence.StoreEvidenceResponse{
+				Status: true,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			hookCallCounter = 0
+			s := service
+			gotResp, err := s.StoreEvidence(tt.args.in0, tt.args.evidence)
+
+			//make the test wait
+			select {
+			case <-ready1:
+				break
+			case <-time.After(10 * time.Second):
+				log.Println("Timeout while waiting for first StoreEvidence to be ready")
+			}
+
+			select {
+			case <-ready2:
+				break
+			case <-time.After(10 * time.Second):
+				log.Println("Timeout while waiting for second StoreEvidence to be ready")
+			}
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("StoreEvidence() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotResp, tt.wantResp) {
+				t.Errorf("StoreEvidence() gotResp = %v, want %v", gotResp, tt.wantResp)
+			}
+			assert.NotEmpty(t, s.evidences)
+			assert.Equal(t, 2, hookCallCounter)
+		})
+	}
+
+}
+
 type mockStreamer struct {
 	counter int
 }
@@ -146,25 +311,39 @@ func (mockStreamer) SendAndClose(_ *emptypb.Empty) error {
 	return nil
 }
 
-func (m *mockStreamer) Recv() (*evidence.Evidence, error) {
+func (m *mockStreamer) Recv() (req *evidence.StoreEvidenceRequest, err error) {
 	if m.counter == 0 {
 		m.counter++
-		return &evidence.Evidence{
+		return &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
 			Id:        "MockEvidenceId-1",
+			ToolId:    "MockToolId-1",
 			ServiceId: "MockServiceId-1",
 			Timestamp: timestamppb.Now(),
 			Raw:       "",
-			Resource:  nil,
-		}, nil
+			Resource: toStructWithoutTest(voc.VirtualMachine{
+				Compute: &voc.Compute{
+					CloudResource: &voc.CloudResource{
+						ID: "mock-id-1",
+					},
+				},
+			}),
+		}}, nil
 	} else if m.counter == 1 {
 		m.counter++
-		return &evidence.Evidence{
+		return &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
 			Id:        "MockEvidenceId-2",
+			ToolId:    "MockToolId-2",
 			ServiceId: "MockServiceId-2",
 			Timestamp: timestamppb.Now(),
 			Raw:       "",
-			Resource:  nil,
-		}, nil
+			Resource: toStructWithoutTest(voc.VirtualMachine{
+				Compute: &voc.Compute{
+					CloudResource: &voc.CloudResource{
+						ID: "mock-id-1",
+					},
+				},
+			}),
+		}}, nil
 	} else {
 		return nil, io.EOF
 	}
@@ -198,6 +377,15 @@ func toStruct(r voc.IsCloudResource, t *testing.T) (s *structpb.Value) {
 	s, err := voc.ToStruct(r)
 	if err != nil {
 		assert.NotNil(t, err)
+	}
+
+	return
+}
+
+func toStructWithoutTest(r voc.IsCloudResource) (s *structpb.Value) {
+	s, err := voc.ToStruct(r)
+	if err != nil {
+		log.Errorf("eror getting struct of resource: %v", err)
 	}
 
 	return

@@ -48,7 +48,11 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 	var types []string
 
 	if rawTypes, ok := m["type"].([]interface{}); ok {
-		types = make([]string, len(rawTypes))
+		if len(rawTypes) != 0 {
+			types = make([]string, len(rawTypes))
+		} else {
+			return nil, fmt.Errorf("list of types is empty")
+		}
 	} else {
 		return nil, fmt.Errorf("got type '%T' but wanted '[]interface {}'. Check if resource types are specified ", rawTypes)
 	}

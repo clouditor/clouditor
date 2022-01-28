@@ -18,9 +18,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DiscoveryClient interface {
-	// Starts discovering the cloud resources
+	// Starts discovering the cloud resources, exposed as REST.
 	Start(ctx context.Context, in *StartDiscoveryRequest, opts ...grpc.CallOption) (*StartDiscoveryResponse, error)
-	// Lists all evidences collected in the last run
+	// Lists all evidences collected in the last run, exposed as REST.
 	Query(ctx context.Context, in *QueryRequest, opts ...grpc.CallOption) (*QueryResponse, error)
 }
 
@@ -54,9 +54,9 @@ func (c *discoveryClient) Query(ctx context.Context, in *QueryRequest, opts ...g
 // All implementations must embed UnimplementedDiscoveryServer
 // for forward compatibility
 type DiscoveryServer interface {
-	// Starts discovering the cloud resources
+	// Starts discovering the cloud resources, exposed as REST.
 	Start(context.Context, *StartDiscoveryRequest) (*StartDiscoveryResponse, error)
-	// Lists all evidences collected in the last run
+	// Lists all evidences collected in the last run, exposed as REST.
 	Query(context.Context, *QueryRequest) (*QueryResponse, error)
 	mustEmbedUnimplementedDiscoveryServer()
 }

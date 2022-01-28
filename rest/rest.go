@@ -33,6 +33,8 @@ import (
 	"os/signal"
 	"time"
 
+	"clouditor.io/clouditor/api/evidence"
+
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/discovery"
@@ -40,6 +42,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 var log *logrus.Entry
@@ -48,15 +51,13 @@ func init() {
 	log = logrus.WithField("component", "rest")
 }
 
-//go:generate protoc -I ../proto -I ../third_party auth.proto discovery.proto orchestrator.proto assessment.proto --grpc-gateway_out=../ --grpc-gateway_opt logtostderr=true
-
 func RunServer(ctx context.Context, grpcPort int, httpPort int) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
 	mux := runtime.NewServeMux()
 
-	opts := []grpc.DialOption{grpc.WithInsecure()}
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 	if err := auth.RegisterAuthenticationHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), opts); err != nil {
 		return fmt.Errorf("failed to connect to authentication gRPC service %w", err)
@@ -67,11 +68,15 @@ func RunServer(ctx context.Context, grpcPort int, httpPort int) error {
 	}
 
 	if err := assessment.RegisterAssessmentHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), opts); err != nil {
-		return fmt.Errorf("failed to connect to discovery gRPC service %w", err)
+		return fmt.Errorf("failed to connect to assessment gRPC service %w", err)
 	}
 
 	if err := orchestrator.RegisterOrchestratorHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), opts); err != nil {
-		return fmt.Errorf("failed to connect to discovery gRPC service %w", err)
+		return fmt.Errorf("failed to connect to orchestrator gRPC service %w", err)
+	}
+
+	if err := evidence.RegisterEvidenceStoreHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), opts); err != nil {
+		return fmt.Errorf("failed to connect to evidence gRPC service %w", err)
 	}
 
 	srv := &http.Server{

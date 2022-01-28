@@ -73,7 +73,8 @@ type azureDiscovery struct {
 	authOption *authorizerOption
 	sub        subscriptions.Subscription
 
-	options []DiscoveryOption
+	isAuthorized bool
+	options      []DiscoveryOption
 }
 
 func (a *azureDiscovery) authorize() (err error) {
@@ -81,10 +82,17 @@ func (a *azureDiscovery) authorize() (err error) {
 		return errors.New("no authorized was available")
 	}
 
+	// If using NewAuthorizerFromFile() in discovery file, we do not need to re-authorize.
+	// If using NewAuthorizerFromCLI() in discovery file, the token expires after 75 minutes.
+	// TODO: How do we check, if the token is still valid?
+	if a.isAuthorized {
+		return
+	}
+
 	subClient := subscriptions.NewClient()
 	a.apply(&subClient.Client)
 
-	// get first subscription
+	// get subscriptions
 	page, err := subClient.List(context.Background())
 	if err != nil {
 		return
@@ -96,7 +104,10 @@ func (a *azureDiscovery) authorize() (err error) {
 		return
 	}
 
+	// get first subscription
 	a.sub = page.Values()[0]
+
+	a.isAuthorized = true
 
 	log.Infof("Using %s as subscription", *a.sub.SubscriptionID)
 

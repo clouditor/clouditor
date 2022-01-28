@@ -23,18 +23,19 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package cli_test
+package cli
 
 import (
 	"context"
 	"fmt"
+	"google.golang.org/protobuf/proto"
 	"io/ioutil"
 	"net"
 	"os"
 	"testing"
 
 	"clouditor.io/clouditor/api/auth"
-	"clouditor.io/clouditor/cli"
+	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -49,8 +50,12 @@ var server *grpc.Server
 func TestMain(m *testing.M) {
 	var err error
 
-	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
+	err = persistence.InitDB(true, "", 0)
+	if err != nil {
+		panic(err)
+	}
 
+	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}
@@ -61,7 +66,7 @@ func TestMain(m *testing.M) {
 func TestSession(t *testing.T) {
 	var (
 		err     error
-		session *cli.Session
+		session *Session
 		dir     string
 	)
 	defer sock.Close()
@@ -73,7 +78,7 @@ func TestSession(t *testing.T) {
 
 	viper.Set("session-directory", dir)
 
-	session, err = cli.NewSession(fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port))
+	session, err = NewSession(fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port))
 	if err != nil {
 		t.Fatalf("Failed to dial bufnet: %v", err)
 	}
@@ -101,7 +106,7 @@ func TestSession(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	session, err = cli.ContinueSession()
+	session, err = ContinueSession()
 	assert.Nil(t, err)
 	assert.NotNil(t, session)
 
@@ -118,4 +123,71 @@ func TestSession(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, codes.Unauthenticated, s.Code())
 	assert.Nil(t, response)
+}
+
+func TestSession_HandleResponse(t *testing.T) {
+	type fields struct {
+		URL        string
+		Token      string
+		Folder     string
+		ClientConn *grpc.ClientConn
+	}
+	type args struct {
+		msg proto.Message
+		err error
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "grpc Error",
+			args: args{
+				msg: nil,
+				err: status.Errorf(codes.Internal, "internal error occurred!"),
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				if err != nil {
+					return true
+				} else {
+					t.Errorf("Expected error.")
+					return false
+				}
+			},
+		},
+		{
+			name: "non-grpc error",
+			args: args{
+				msg: nil,
+				err: fmt.Errorf("random error"),
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				if err != nil {
+					return true
+				} else {
+					t.Errorf("Expected error.")
+					return false
+				}
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Session{
+				URL:        tt.fields.URL,
+				Token:      tt.fields.Token,
+				Folder:     tt.fields.Folder,
+				ClientConn: tt.fields.ClientConn,
+			}
+			tt.wantErr(t, s.HandleResponse(tt.args.msg, tt.args.err), fmt.Sprintf("HandleResponse(%v, %v)", tt.args.msg, tt.args.err))
+		})
+	}
+}
+
+// Test will fail due to no user input
+func TestPromptForLogin(t *testing.T) {
+	_, err := PromptForLogin()
+	assert.NotNil(t, err)
 }

@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package login_test
+package login
 
 import (
 	"fmt"
@@ -32,7 +32,7 @@ import (
 	"os"
 	"testing"
 
-	"clouditor.io/clouditor/cli/commands/login"
+	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -45,8 +45,12 @@ var server *grpc.Server
 func TestMain(m *testing.M) {
 	var err error
 
-	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
+	err = persistence.InitDB(true, "", 0)
+	if err != nil {
+		panic(err)
+	}
 
+	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}
@@ -71,7 +75,7 @@ func TestLogin(t *testing.T) {
 	viper.Set("password", "clouditor")
 	viper.Set("session-directory", dir)
 
-	cmd := login.NewLoginCommand()
+	cmd := NewLoginCommand()
 	err = cmd.RunE(nil, []string{fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)})
 	assert.Nil(t, err)
 }

@@ -37,6 +37,7 @@ import (
 
 const (
 	// URLFlag is the viper flag for the server url
+	// TODO(oxisto): Unused constant?
 	URLFlag = "url"
 )
 
@@ -60,7 +61,7 @@ func NewLoginCommand() *cobra.Command {
 			}
 
 			if viper.GetString("username") == "" || viper.GetString("password") == "" {
-				if req, err = cli.PromtForLogin(); err != nil {
+				if req, err = cli.PromptForLogin(); err != nil {
 					return fmt.Errorf("could not prompt for password: %w", err)
 				}
 			} else {
@@ -83,7 +84,7 @@ func NewLoginCommand() *cobra.Command {
 				return fmt.Errorf("could not save session: %w", err)
 			}
 
-			fmt.Print("\nLogin succesful\n")
+			fmt.Print("\nLogin successful\n")
 
 			return err
 		},

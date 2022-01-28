@@ -36,6 +36,7 @@ service Authentication {
   rpc Login(LoginRequest) returns (LoginResponse) {
     option (google.api.http) = {
       post : "/v1/auth/login"
+      // TODO: Here, "*" is good since username and password (fields of LoginRequest) will be the corresponding fields, right?
       body : "*"
       response_body : "*"
     };

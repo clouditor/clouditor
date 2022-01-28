@@ -72,18 +72,20 @@ const (
 	DBNameFlag             = "db-name"
 	DBPortFlag             = "db-port"
 	DBInMemoryFlag         = "db-in-memory"
+	CreateDefaultTarget    = "target-default-create"
 
-	DefaultAPIDefaultUser     = "clouditor"
-	DefaultAPIDefaultPassword = "clouditor"
-	DefaultAPISecret          = "changeme"
-	DefaultAPIgRPCPort        = 9090
-	DefaultAPIHTTPPort        = 8080
-	DefaultDBUserName         = "postgres"
-	DefaultDBPassword         = "postgres"
-	DefaultDBHost             = "localhost"
-	DefaultDBName             = "postgres"
-	DefaultDBPort             = 5432
-	DefaultDBInMemory         = false
+	DefaultAPIDefaultUser      = "clouditor"
+	DefaultAPIDefaultPassword  = "clouditor"
+	DefaultAPISecret           = "changeme"
+	DefaultAPIgRPCPort         = 9090
+	DefaultAPIHTTPPort         = 8080
+	DefaultDBUserName          = "postgres"
+	DefaultDBPassword          = "postgres"
+	DefaultDBHost              = "localhost"
+	DefaultDBName              = "postgres"
+	DefaultDBPort              = 5432
+	DefaultDBInMemory          = false
+	DefaultCreateDefaultTarget = true
 
 	EnvPrefix = "CLOUDITOR"
 )
@@ -91,9 +93,9 @@ const (
 var server *grpc.Server
 var authService *service_auth.Service
 var discoveryService *service_discovery.Service
-var orchestratorService orchestrator.OrchestratorServer
-var assessmentService assessment.AssessmentServer
-var evidenceStoreService evidence.EvidenceStoreServer
+var orchestratorService *service_orchestrator.Service
+var assessmentService *service_assessment.Service
+var evidenceStoreService *service_evidenceStore.Service
 
 var log *logrus.Entry
 
@@ -120,6 +122,7 @@ func init() {
 	engineCmd.Flags().String(DBNameFlag, DefaultDBName, "Provides name of database")
 	engineCmd.Flags().Int16(DBPortFlag, DefaultDBPort, "Provides port for database")
 	engineCmd.Flags().Bool(DBInMemoryFlag, DefaultDBInMemory, "Uses an in-memory database which is not persisted at all")
+	engineCmd.Flags().Bool(CreateDefaultTarget, DefaultCreateDefaultTarget, "Creates a default target cloud service if it does not exist")
 
 	_ = viper.BindPFlag(APIDefaultUserFlag, engineCmd.Flags().Lookup(APIDefaultUserFlag))
 	_ = viper.BindPFlag(APIDefaultPasswordFlag, engineCmd.Flags().Lookup(APIDefaultPasswordFlag))
@@ -132,6 +135,7 @@ func init() {
 	_ = viper.BindPFlag(DBNameFlag, engineCmd.Flags().Lookup(DBNameFlag))
 	_ = viper.BindPFlag(DBPortFlag, engineCmd.Flags().Lookup(DBPortFlag))
 	_ = viper.BindPFlag(DBInMemoryFlag, engineCmd.Flags().Lookup(DBInMemoryFlag))
+	_ = viper.BindPFlag(CreateDefaultTarget, engineCmd.Flags().Lookup(CreateDefaultTarget))
 }
 
 func initConfig() {
@@ -170,11 +174,27 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	}
 
 	discoveryService = service_discovery.NewService()
-	orchestratorService = &service_orchestrator.Service{}
+	orchestratorService = service_orchestrator.NewService()
 	assessmentService = service_assessment.NewService()
 	evidenceStoreService = service_evidenceStore.NewService()
 
+	// It is possible to register hook functions for the orchestrator, evidenceStore and assessment service.
+	// The hook functions in orchestrator are implemented in StoreAssessmentResult(s)
+	// The hook functions in evidenceStore are implemented in StoreEvidence(s)
+	// The hook functions in assessment are implemented in AssessEvidence(s)
+
+	// orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {})
+	// evidenceStoreService.RegisterEvidenceHook(func(result *evidence.Evidence, err error) {})
+	// assessmentService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {}
+
 	authService.CreateDefaultUser(viper.GetString(APIDefaultUserFlag), viper.GetString(APIDefaultPasswordFlag))
+
+	if viper.GetBool(CreateDefaultTarget) {
+		_, err := orchestratorService.CreateDefaultTargetCloudService()
+		if err != nil {
+			log.Errorf("could not register default target cloud service: %v", err)
+		}
+	}
 
 	grpcPort := viper.GetInt(APIgRPCPortFlag)
 	httpPort := viper.GetInt(APIHTTPPortFlag)
@@ -230,7 +250,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 
 	// serve the gRPC socket
 	if err := server.Serve(sock); err != nil {
-		log.Infof("failed to serve gRPC endpoint: %s", err)
+		log.Infof("Failed to serve gRPC endpoint: %s", err)
 		return err
 	}
 

@@ -9,7 +9,7 @@ info:
 paths:
     /v1/discovery/query:
         post:
-            summary: Lists all evidences collected in the last run
+            summary: Lists all evidences collected in the last run, exposed as REST.
             operationId: Discovery_Query
             requestBody:
                 content:
@@ -26,7 +26,7 @@ paths:
                                 $ref: '#/components/schemas/QueryResponse'
     /v1/discovery/start:
         post:
-            summary: Starts discovering the cloud resources
+            summary: Starts discovering the cloud resources, exposed as REST.
             operationId: Discovery_Start
             requestBody:
                 content:
@@ -61,6 +61,7 @@ components:
                     $ref: '#/components/schemas/ListValue'
         StartDiscoveryRequest:
             properties: {}
+            description: 'TODO(lebogg): Add destinations (url+port) for assessment and evidence store'
         StartDiscoveryResponse:
             properties:
                 successful:

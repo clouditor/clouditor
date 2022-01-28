@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package policies_test
+package policies
 
 import (
 	"os"
@@ -32,7 +32,6 @@ import (
 	"clouditor.io/clouditor/voc"
 
 	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/policies"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -186,7 +185,7 @@ func TestRunEvidence(t *testing.T) {
 			wantErr:    false,
 		},
 		{
-			name: "VM:Compliant Case",
+			name: "VM: Compliant Case",
 			fields: fields{
 				resource: voc.VirtualMachine{
 					Compute: &voc.Compute{
@@ -218,7 +217,7 @@ func TestRunEvidence(t *testing.T) {
 			wantErr:    false,
 		},
 		{
-			name: "VM:Non-Compliant Case",
+			name: "VM: Non-Compliant Case",
 			fields: fields{
 				resource: voc.VirtualMachine{
 					Compute: &voc.Compute{
@@ -254,7 +253,7 @@ func TestRunEvidence(t *testing.T) {
 		resource, err := voc.ToStruct(tt.fields.resource)
 		assert.Nil(t, err)
 		t.Run(tt.name, func(t *testing.T) {
-			results, err := policies.RunEvidence(&evidence.Evidence{
+			results, err := RunEvidence(&evidence.Evidence{
 				Id:       tt.fields.evidenceID,
 				Resource: resource,
 			})

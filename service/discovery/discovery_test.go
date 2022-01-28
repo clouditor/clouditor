@@ -27,7 +27,10 @@ package discovery
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"testing"
 	"time"
 
@@ -95,13 +98,12 @@ func TestStartDiscovery(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			discoveryService.AssessmentStream = tt.fields.assessmentStream
-			discoveryService.EvidenceStoreStream = tt.fields.evidenceStoreStream
+			discoveryService.assessmentStream = tt.fields.assessmentStream
 			discoveryService.StartDiscovery(tt.fields.discoverer)
 
 			// APIs for assessment and evidence store both send the same evidence. Thus, testing one is enough.
 			if tt.checkEvidence {
-				e := discoveryService.AssessmentStream.(*mockAssessmentStream).sentEvidence
+				e := discoveryService.assessmentStream.(*mockAssessmentStream).sentEvidence
 				// Check if UUID has been created
 				assert.NotEmpty(t, e.Id)
 				// Check if cloud resources / properties are there
@@ -173,18 +175,70 @@ func TestQuery(t *testing.T) {
 
 }
 
+func TestShutdown(t *testing.T) {
+	service := NewService()
+	service.Shutdown()
+
+	assert.False(t, service.scheduler.IsRunning())
+
+}
+
+// TestHandleError tests handleError (if all error cases are executed/printed)
+func TestHandleError(t *testing.T) {
+	type args struct {
+		err  error
+		dest string
+	}
+	tests := []struct {
+		name           string
+		args           args
+		wantErrSnippet string
+	}{
+		{
+			name: "handleInternalError",
+			args: args{
+				err:  status.Error(codes.Internal, "internal error"),
+				dest: "SomeDestination",
+			},
+			wantErrSnippet: "internal",
+		},
+		{
+			name: "handleInvalidError",
+			args: args{
+				err:  status.Errorf(codes.InvalidArgument, "invalid argument"),
+				dest: "SomeDestination",
+			},
+			wantErrSnippet: "invalid",
+		},
+		{
+			name: "handleSomeOtherErr",
+			args: args{
+				err:  errors.New("some other error"),
+				dest: "SomeDestination",
+			},
+			wantErrSnippet: "some other error",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := handleError(tt.args.err, tt.args.dest)
+			assert.Contains(t, err.Error(), tt.wantErrSnippet)
+		})
+	}
+}
+
 // mockDiscoverer implements Discoverer and mocks the API to cloud resources
 type mockDiscoverer struct {
 	// testCase allows for different implementations for table tests in TestStartDiscovery
 	testCase int
 }
 
-func (m mockDiscoverer) Name() string { return "just mocking" }
+func (mockDiscoverer) Name() string { return "just mocking" }
 
 func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 	switch m.testCase {
 	case 0:
-		return nil, fmt.Errorf("mock Error in List()")
+		return nil, fmt.Errorf("mock error in List()")
 	case 1:
 		return []voc.IsCloudResource{wrongFormattedResource()}, nil
 	case 2:
@@ -226,11 +280,12 @@ type mockAssessmentStream struct {
 	connectionEstablished bool
 }
 
-func (m *mockAssessmentStream) Send(e *evidence.Evidence) (err error) {
+func (m *mockAssessmentStream) Send(req *assessment.AssessEvidenceRequest) (err error) {
+	e := req.Evidence
 	if m.connectionEstablished {
 		m.sentEvidence = e
 	} else {
-		err = fmt.Errorf("MocK Send error")
+		err = fmt.Errorf("mock send error")
 	}
 	return
 }
@@ -267,8 +322,8 @@ func (*mockAssessmentStream) RecvMsg(_ interface{}) error {
 type mockEvidenceStoreStream struct {
 }
 
-func (mockEvidenceStoreStream) Send(_ *evidence.Evidence) error {
-	return fmt.Errorf("MocK Send error")
+func (mockEvidenceStoreStream) Send(_ *evidence.StoreEvidenceRequest) error {
+	return fmt.Errorf("mock send error")
 }
 
 func (mockEvidenceStoreStream) CloseAndRecv() (*emptypb.Empty, error) {
@@ -324,62 +379,3 @@ func (mockIsCloudResource) HasType(_ string) bool {
 func (mockIsCloudResource) GetCreationTime() *time.Time {
 	return nil
 }
-
-//// ToDo: Adapt TestQuery at a later stage when we fully implement the standalone version
-//func TestQuery(t *testing.T) {
-//	var (
-//		discoverer discovery.Discoverer
-//		response   *discovery.QueryResponse
-//		err        error
-//	)
-//
-//	var ready = make(chan bool)
-//
-//	assessmentServer := standalone.NewAssessmentServer().(*service_assessment.Service)
-//	assessmentServer.ResultHook = func(result *assessment.Result, err error) {
-//		if result.MetricId == 1 {
-//			assert.Nil(t, err)
-//			assert.NotNil(t, result)
-//
-//			assert.Equal(t, "some-id", result.ResourceId)
-//			assert.Equal(t, true, result.Compliant)
-//		}
-//
-//		ready <- true
-//	}
-//
-//	client := standalone.NewAssessmentClient()
-//
-//	service = service_discovery.NewService()
-//	service.AssessmentStream, _ = client.AssessEvidences(context.Background())
-//
-//	// use our mock discoverer
-//	discoverer = mockDiscoverer{}
-//
-//	// discover some resources
-//	service.StartDiscovery(discoverer)
-//
-//	// make the test wait for streaming evidence
-//	select {
-//	case <-ready:
-//		break
-//	case <-time.After(10 * time.Second):
-//		assert.Fail(t, "Timeout while waiting for evidence assessment result to be ready")
-//	}
-//
-//	// query them
-//	response, err = service.Query(context.Background(), &discovery.QueryRequest{
-//		// this should only result 1 resource, and not the compute resource
-//		FilteredType: "ObjectStorage",
-//	})
-//
-//	assert.Nil(t, err)
-//	assert.NotNil(t, response)
-//	assert.NotEmpty(t, response.Result.Values)
-//
-//	m := response.Result.Values[0].GetStructValue().AsMap()
-//
-//	assert.NotNil(t, m)
-//	assert.Equal(t, "some-id", m["id"])
-//	assert.Equal(t, "some-name", m["name"])
-//}

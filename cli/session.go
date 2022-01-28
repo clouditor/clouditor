@@ -40,6 +40,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -78,7 +79,7 @@ func NewSession(url string, opts ...grpc.DialOption) (session *Session, err erro
 
 	if len(opts) == 0 {
 		// TODO(oxisto): set flag depending on target url, insecure only for localhost
-		opts = []grpc.DialOption{grpc.WithInsecure()}
+		opts = []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	}
 
 	if session.ClientConn, err = grpc.Dial(session.URL, opts...); err != nil {
@@ -101,6 +102,7 @@ func ContinueSession() (session *Session, err error) {
 		return
 	}
 
+	// TODO(all): Should we catch errors of deferred close operations?
 	defer file.Close()
 
 	session = new(Session)
@@ -110,7 +112,7 @@ func ContinueSession() (session *Session, err error) {
 		return
 	}
 
-	if session.ClientConn, err = grpc.Dial(session.URL, grpc.WithInsecure()); err != nil {
+	if session.ClientConn, err = grpc.Dial(session.URL, grpc.WithTransportCredentials(insecure.NewCredentials())); err != nil {
 		return nil, fmt.Errorf("could not connect: %w", err)
 	}
 
@@ -132,6 +134,7 @@ func (s *Session) Save() (err error) {
 		return fmt.Errorf("could not save session.json: %w", err)
 	}
 
+	// TODO(all): Should we catch errors of deferred close operations?
 	defer file.Close()
 
 	if err = json.NewEncoder(file).Encode(s); err != nil {
@@ -157,18 +160,19 @@ func (s *Session) HandleResponse(msg proto.Message, err error) error {
 	}
 
 	opt := protojson.MarshalOptions{
-		Multiline: true,
-		Indent:    "  ",
+		Multiline:       true,
+		Indent:          "  ",
+		EmitUnpopulated: true,
 	}
 
 	b, _ := opt.Marshal(msg)
 
-	fmt.Fprintf(Output, "%s\n", string(b))
+	_, err = fmt.Fprintf(Output, "%s\n", string(b))
 
 	return err
 }
 
-func PromtForLogin() (loginRequest *auth.LoginRequest, err error) {
+func PromptForLogin() (loginRequest *auth.LoginRequest, err error) {
 	reader := bufio.NewReader(os.Stdin)
 
 	fmt.Print("Enter username: ")
@@ -218,7 +222,7 @@ func DefaultArgsShellComp(cmd *cobra.Command, args []string, toComplete string) 
 	return []string{}, cobra.ShellCompDirectiveNoFileComp
 }
 
-func ValidArgsGetTools(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func ValidArgsGetTools(_ *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	if len(args) != 0 {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
@@ -226,7 +230,7 @@ func ValidArgsGetTools(cmd *cobra.Command, args []string, toComplete string) ([]
 	return getTools(toComplete), cobra.ShellCompDirectiveNoFileComp
 }
 
-func ValidArgsGetMetrics(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func ValidArgsGetMetrics(_ *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	if len(args) != 0 {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
@@ -234,7 +238,15 @@ func ValidArgsGetMetrics(cmd *cobra.Command, args []string, toComplete string) (
 	return getMetrics(toComplete), cobra.ShellCompDirectiveNoFileComp
 }
 
-func getTools(toComplete string) []string {
+func ValidArgsGetCloudServices(_ *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if len(args) != 0 {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	return getCloudServices(toComplete), cobra.ShellCompDirectiveNoFileComp
+}
+
+func getTools(_ string) []string {
 	var (
 		err     error
 		session *Session
@@ -261,7 +273,8 @@ func getTools(toComplete string) []string {
 	return tools
 }
 
-func getMetrics(toComplete string) []string {
+// TODO(oxisto): This could be an interesting use case for 1.18 Go generics
+func getMetrics(_ string) []string {
 	var (
 		err     error
 		session *Session
@@ -282,6 +295,33 @@ func getMetrics(toComplete string) []string {
 
 	var metrics []string
 	for _, v := range res.Metrics {
+		metrics = append(metrics, fmt.Sprintf("%s\t%s: %s", v.Id, v.Name, v.Description))
+	}
+
+	return metrics
+}
+
+func getCloudServices(_ string) []string {
+	var (
+		err     error
+		session *Session
+		client  orchestrator.OrchestratorClient
+		res     *orchestrator.ListCloudServicesResponse
+	)
+
+	if session, err = ContinueSession(); err != nil {
+		fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+		return nil
+	}
+
+	client = orchestrator.NewOrchestratorClient(session)
+
+	if res, err = client.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{}); err != nil {
+		return []string{}
+	}
+
+	var metrics []string
+	for _, v := range res.Services {
 		metrics = append(metrics, fmt.Sprintf("%s\t%s: %s", v.Id, v.Name, v.Description))
 	}
 
