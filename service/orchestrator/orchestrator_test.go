@@ -56,12 +56,13 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	err = persistence.InitDB(true, "", 0)
+	var gormX = new(persistence.GormX)
+	err = gormX.Init(true, "", 0)
 	if err != nil {
 		panic(err)
 	}
 
-	service = NewService()
+	service = NewService(gormX)
 	defaultTarget, err = service.CreateDefaultTargetCloudService()
 	if err != nil {
 		panic(err)
@@ -89,7 +90,7 @@ func TestAssessmentResultHook(t *testing.T) {
 		ready2 <- true
 	}
 
-	service := NewService()
+	service := NewService(nil)
 	service.RegisterAssessmentResultHook(firstHookFunction)
 	service.RegisterAssessmentResultHook(secondHookFunction)
 
@@ -277,7 +278,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService()
+			s := NewService(nil)
 			gotResp, err := s.StoreAssessmentResult(tt.args.in0, tt.args.assessment)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("StoreAssessmentResult() error = %v, wantErr %v", err, tt.wantErr)
@@ -315,7 +316,7 @@ func TestStoreAssessmentResults(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService()
+			s := NewService(nil)
 			if err := s.StoreAssessmentResults(tt.args.stream); (err != nil) != tt.wantErr {
 				t.Errorf("StoreAssessmentResults() error = %v, wantErr %v", err, tt.wantErr)
 				assert.Equal(t, 2, len(s.results))

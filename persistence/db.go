@@ -47,7 +47,7 @@ func init() {
 	log = logrus.WithField("component", "db")
 }
 
-func (g GormX) Init(inMemory bool, host string, port int16) (err error) {
+func (g *GormX) Init(inMemory bool, host string, port int16) (err error) {
 	if inMemory {
 		if g.db, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{}); err != nil {
 			return err
@@ -73,24 +73,28 @@ func (g GormX) Init(inMemory bool, host string, port int16) (err error) {
 	return nil
 }
 
-func (g GormX) Create(r interface{}) {
-	g.db.Create(r)
+func (g *GormX) Create(r interface{}) error {
+	return g.db.Create(r).Error
 }
 
-func (g GormX) Read(r interface{}, conds ...interface{}) error {
-	return g.db.Find(r, conds).Error
+func (g *GormX) Read(r interface{}, conds ...interface{}) error {
+	if len(conds) == 0 {
+		return g.db.Find(r).Error
+	} else {
+		return g.db.First(r, conds).Error
+	}
 }
 
-func (g GormX) Update(r interface{}) error {
+func (g *GormX) Update(r interface{}) error {
 	// g.db.Model(r).Count()
 	return g.db.Save(r).Error
 }
 
-func (g GormX) Delete(r interface{}, id string) error {
+func (g *GormX) Delete(r interface{}, id string) error {
 	return g.db.Delete(r, "Id = ?", id).Error
 }
 
 // GetDatabase returns the database
-func (g GormX) GetDatabase() *gorm.DB {
+func (g *GormX) GetDatabase() *gorm.DB {
 	return g.db
 }

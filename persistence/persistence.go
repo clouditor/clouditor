@@ -32,7 +32,7 @@ type IsDatabase interface {
 	Init(inMemory bool, host string, port int16) error
 
 	// Create creates a new object and put it into the DB
-	Create(interface{})
+	Create(interface{}) error
 	// Read gets the record with given id of the DB
 	Read(interface{}, ...interface{}) error
 	// Update updates the record with given id of the DB
