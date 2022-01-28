@@ -34,9 +34,9 @@ type IsDatabase interface {
 	// Create creates a new object and put it into the DB
 	Create(interface{})
 	// Read gets the record with given id of the DB
-	Read(id string)
+	Read(interface{}, ...interface{}) error
 	// Update updates the record with given id of the DB
-	Update(interface{})
+	Update(interface{}) error
 	// Delete deletes the record with given id of the DB
-	Delete(id string)
+	Delete(interface{}, string) error
 }

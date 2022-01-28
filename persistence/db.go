@@ -47,54 +47,50 @@ func init() {
 	log = logrus.WithField("component", "db")
 }
 
-func (d GormX) Init(inMemory bool, host string, port int16) (err error) {
+func (g GormX) Init(inMemory bool, host string, port int16) (err error) {
 	if inMemory {
-		if d.db, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{}); err != nil {
+		if g.db, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{}); err != nil {
 			return err
 		}
 
 		log.Println("Using in-memory DB")
 	} else {
-		if d.db, err = gorm.Open(postgres.Open(fmt.Sprintf("postgres://postgres@%s:%d/postgres?sslmode=disable", host, port)), &gorm.Config{}); err != nil {
+		if g.db, err = gorm.Open(postgres.Open(fmt.Sprintf("postgres://postgres@%s:%d/postgres?sslmode=disable", host, port)), &gorm.Config{}); err != nil {
 			return err
 		}
 
 		log.Printf("Using postgres DB @ %s", host)
 	}
 
-	if err = d.db.AutoMigrate(&auth.User{}); err != nil {
+	if err = g.db.AutoMigrate(&auth.User{}); err != nil {
 		return fmt.Errorf("error during auto-migration: %w", err)
 	}
 
-	if err = d.db.AutoMigrate(&orchestrator.CloudService{}); err != nil {
+	if err = g.db.AutoMigrate(&orchestrator.CloudService{}); err != nil {
 		return fmt.Errorf("error during auto-migration: %w", err)
 	}
 
 	return nil
 }
 
-func (d GormX) Create(r interface{}) {
-	d.db.Create(r)
-	//TODO implement me
-	panic("implement me")
+func (g GormX) Create(r interface{}) {
+	g.db.Create(r)
 }
 
-func (d GormX) Read(id string) {
-	//TODO implement me
-	panic("implement me")
+func (g GormX) Read(r interface{}, conds ...interface{}) error {
+	return g.db.Find(r, conds).Error
 }
 
-func (d GormX) Update(r interface{}) {
-	//TODO implement me
-	panic("implement me")
+func (g GormX) Update(r interface{}) error {
+	// g.db.Model(r).Count()
+	return g.db.Save(r).Error
 }
 
-func (d GormX) Delete(id string) {
-	//TODO implement me
-	panic("implement me")
+func (g GormX) Delete(r interface{}, id string) error {
+	return g.db.Delete(r, "Id = ?", id).Error
 }
 
 // GetDatabase returns the database
-func (d GormX) GetDatabase() *gorm.DB {
-	return d.db
+func (g GormX) GetDatabase() *gorm.DB {
+	return g.db
 }
