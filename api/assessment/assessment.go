@@ -34,6 +34,7 @@ import (
 type ResultHookFunc func(result *AssessmentResult, err error)
 
 var (
+	ErrAssessmentIdConfiguredIncorrectly     = errors.New("assessment result id is configured incorrectly")
 	ErrTimestampMissing                      = errors.New("timestamp in assessment result is missing")
 	ErrMetricIdMissing                       = errors.New("metric id in assessment result is missing")
 	ErrMetricConfigurationMissing            = errors.New("metric configuration in assessment result is missing")
@@ -46,7 +47,7 @@ var (
 func (result *AssessmentResult) Validate() (resourceId string, err error) {
 	if _, err = uuid.Parse(result.Id); err != nil {
 		fmt.Println(uuid.IsInvalidLengthError(err))
-		return "", err
+		return "", fmt.Errorf("%v: %v", ErrAssessmentIdConfiguredIncorrectly, err)
 	}
 
 	if result.Timestamp == nil {

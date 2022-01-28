@@ -26,7 +26,7 @@
 package assessment
 
 import (
-	"errors"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -67,7 +67,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			},
 			wantResp: "",
 			// cannot access unexported invalidLengthError of uuid package. Use the error string directly
-			wantRespError: errors.New("invalid UUID length: 0"),
+			wantRespError: fmt.Errorf("%v: invalid UUID length: 0", ErrAssessmentIdConfiguredIncorrectly),
 			wantErr:       true,
 		},
 		{
@@ -90,7 +90,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			},
 			wantResp: "",
 			// cannot access unexported invalidLengthError of uuid package. Use the error string directly
-			wantRespError: errors.New("invalid UUID length: 4"),
+			wantRespError: fmt.Errorf("%v: invalid UUID length: 4", ErrAssessmentIdConfiguredIncorrectly),
 			wantErr:       true,
 		},
 		{
@@ -113,7 +113,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			},
 			wantResp: "",
 			// Copied error of uuid package.
-			wantRespError: errors.New("invalid UUID format"),
+			wantRespError: fmt.Errorf("%v: invalid UUID format", ErrAssessmentIdConfiguredIncorrectly),
 			wantErr:       true,
 		},
 		{
