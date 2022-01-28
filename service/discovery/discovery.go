@@ -28,6 +28,7 @@ package discovery
 import (
 	"context"
 	"fmt"
+	autorest_azure "github.com/Azure/go-autorest/autorest/azure"
 	"strings"
 	"time"
 
@@ -120,7 +121,12 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	s.EvidenceStoreStream, _ = evidenceStoreClient.StoreEvidences(context.Background())
 
 	// create an authorizer from env vars or Azure Managed Service Identity
-	authorizer, err := auth.NewAuthorizerFromCLI()
+	//authorizer, err := auth.NewAuthorizerFromCLI()
+	//authorizer, err := auth.NewAuthorizerFromFileWithResource("https://management.azure.com")
+	// TODO: Das funktioniert jetzt über einen längeren Zeitraum, warum es mit NewAuthorizerFromCLI nicht funktioniert
+	// weiß ich nicht. In aktueller Main einbauen und als Fallback NewAuthorizerFromCLI nutzen.
+	// Testen ob Clouditor und user credentials funktionieren.
+	authorizer, err := auth.NewAuthorizerFromFile(autorest_azure.PublicCloud.ResourceManagerEndpoint)
 	if err != nil {
 		log.Errorf("Could not authenticate to Azure: %s", err)
 		return nil, err
