@@ -50,6 +50,9 @@ import (
 var service *Service
 var defaultTarget *orchestrator.CloudService
 
+const assessmentResultID1 = "11111111-1111-1111-1111-111111111111"
+const assessmentResultID2 = "11111111-1111-1111-1111-111111111112"
+
 func TestMain(m *testing.M) {
 	err := os.Chdir("../../")
 	if err != nil {
@@ -121,7 +124,7 @@ func TestAssessmentResultHook(t *testing.T) {
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
 					Result: &assessment.AssessmentResult{
-						Id:         "assessmentResultID",
+						Id:         assessmentResultID1,
 						MetricId:   "assessmentResultMetricID",
 						EvidenceId: "evidenceID",
 						Timestamp:  timestamppb.Now(),
@@ -233,7 +236,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
 					Result: &assessment.AssessmentResult{
-						Id:         "assessmentResultID",
+						Id:         assessmentResultID1,
 						MetricId:   "assessmentResultMetricID",
 						EvidenceId: "evidenceID",
 						Timestamp:  timestamppb.Now(),
@@ -289,7 +292,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 			}
 
 			if err == nil {
-				assert.NotNil(t, s.results["assessmentResultID"])
+				assert.NotNil(t, s.results[assessmentResultID1])
 			} else {
 				assert.Empty(t, s.results)
 			}
@@ -344,10 +347,11 @@ func (mockStreamer) SendAndClose(_ *emptypb.Empty) error {
 }
 
 func (m *mockStreamer) Recv() (*assessment.AssessmentResult, error) {
+
 	if m.counter == 0 {
 		m.counter++
 		return &assessment.AssessmentResult{
-			Id:         "assessmentResultID",
+			Id:         assessmentResultID1,
 			MetricId:   "assessmentResultMetricID",
 			EvidenceId: "evidenceID",
 			Timestamp:  timestamppb.Now(),
@@ -363,7 +367,7 @@ func (m *mockStreamer) Recv() (*assessment.AssessmentResult, error) {
 	} else if m.counter == 1 {
 		m.counter++
 		return &assessment.AssessmentResult{
-			Id:         "assessmentResultID2",
+			Id:         assessmentResultID2,
 			MetricId:   "assessmentResultMetricID2",
 			EvidenceId: "evidenceID2",
 			Timestamp:  timestamppb.Now(),

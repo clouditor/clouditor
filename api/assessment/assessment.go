@@ -25,12 +25,16 @@
 
 package assessment
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+	"github.com/google/uuid"
+)
 
 type ResultHookFunc func(result *AssessmentResult, err error)
 
 var (
-	ErrIdMissing                             = errors.New("id in assessment result is missing")
+	ErrInvalidFormat                         = errors.New("assessment result id not in expected format (UUID)")
 	ErrTimestampMissing                      = errors.New("timestamp in assessment result is missing")
 	ErrMetricIdMissing                       = errors.New("metric id in assessment result is missing")
 	ErrMetricConfigurationMissing            = errors.New("metric configuration in assessment result is missing")
@@ -41,8 +45,8 @@ var (
 
 // Validate validates the assessment result according to several required fields
 func (result *AssessmentResult) Validate() (resourceId string, err error) {
-	if result.Id == "" {
-		return "", ErrIdMissing
+	if _, err = uuid.Parse(result.Id); err != nil {
+		return "", fmt.Errorf("%v: %v", ErrInvalidFormat, err)
 	}
 
 	if result.Timestamp == nil {

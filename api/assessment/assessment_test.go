@@ -26,6 +26,7 @@
 package assessment
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -38,6 +39,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 		AssessmentResult *AssessmentResult
 	}
 
+	const assessmentResultID = "11111111-1111-1111-1111-111111111111"
 	tests := []struct {
 		name          string
 		args          args
@@ -63,15 +65,62 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 					EvidenceId: "MockEvidenceID",
 				},
 			},
-			wantResp:      "",
-			wantRespError: ErrIdMissing,
+			wantResp: "",
+			// cannot access unexported invalidLengthError of uuid package. Use the error string directly
+			wantRespError: fmt.Errorf("%v: invalid UUID length: 0", ErrInvalidFormat),
+			wantErr:       true,
+		},
+		{
+			name: "Wrong length of assessment result id",
+			args: args{
+				&AssessmentResult{
+					// Only 4 characters
+					Id:       "1234",
+					MetricId: "MockMetricID",
+					MetricConfiguration: &MetricConfiguration{
+						Operator: "MockOperator",
+						TargetValue: &structpb.Value{
+							Kind: &structpb.Value_StringValue{
+								StringValue: "MockTargetValue",
+							},
+						},
+					},
+					EvidenceId: "MockEvidenceID",
+				},
+			},
+			wantResp: "",
+			// cannot access unexported invalidLengthError of uuid package. Use the error string directly
+			wantRespError: fmt.Errorf("%v: invalid UUID length: 4", ErrInvalidFormat),
+			wantErr:       true,
+		},
+		{
+			name: "Wrong format of assessment result id",
+			args: args{
+				&AssessmentResult{
+					// Wrong format: 'x' not allowed (no hexadecimal character)
+					Id:       "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+					MetricId: "MockMetricID",
+					MetricConfiguration: &MetricConfiguration{
+						Operator: "MockOperator",
+						TargetValue: &structpb.Value{
+							Kind: &structpb.Value_StringValue{
+								StringValue: "MockTargetValue",
+							},
+						},
+					},
+					EvidenceId: "MockEvidenceID",
+				},
+			},
+			wantResp: "",
+			// Copied error of uuid package.
+			wantRespError: fmt.Errorf("%v: invalid UUID format", ErrInvalidFormat),
 			wantErr:       true,
 		},
 		{
 			name: "Missing assessment result timestamp",
 			args: args{
 				&AssessmentResult{
-					Id:       "MockAssessmentID",
+					Id:       assessmentResultID,
 					MetricId: "MockMetricID",
 					MetricConfiguration: &MetricConfiguration{
 						Operator: "MockOperator",
@@ -92,7 +141,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Missing assessment result metric id",
 			args: args{
 				&AssessmentResult{
-					Id:        "MockAssessmentID",
+					Id:        assessmentResultID,
 					Timestamp: timestamppb.Now(),
 					MetricConfiguration: &MetricConfiguration{
 						Operator: "MockOperator",
@@ -113,7 +162,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Missing assessment result metric configuration",
 			args: args{
 				&AssessmentResult{
-					Id:         "MockAssessmentID",
+					Id:         assessmentResultID,
 					Timestamp:  timestamppb.Now(),
 					MetricId:   "MockMetricID",
 					EvidenceId: "MockEvidenceID",
@@ -127,7 +176,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Missing assessment result metric configuration operator",
 			args: args{
 				&AssessmentResult{
-					Id:        "MockAssessmentID",
+					Id:        assessmentResultID,
 					Timestamp: timestamppb.Now(),
 					MetricId:  "MockMetricID",
 					MetricConfiguration: &MetricConfiguration{
@@ -148,7 +197,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Missing assessment result metric configuration target value",
 			args: args{
 				&AssessmentResult{
-					Id:        "MockAssessmentID",
+					Id:        assessmentResultID,
 					Timestamp: timestamppb.Now(),
 					MetricId:  "MockMetricID",
 					MetricConfiguration: &MetricConfiguration{
@@ -165,7 +214,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Missing assessment result evidence id",
 			args: args{
 				&AssessmentResult{
-					Id:        "MockAssessmentID",
+					Id:        assessmentResultID,
 					Timestamp: timestamppb.Now(),
 					MetricId:  "MockMetricID",
 					MetricConfiguration: &MetricConfiguration{
@@ -186,7 +235,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Valid assessment result",
 			args: args{
 				&AssessmentResult{
-					Id:        "MockAssessmentID",
+					Id:        assessmentResultID,
 					Timestamp: timestamppb.Now(),
 					MetricId:  "MockMetricID",
 					MetricConfiguration: &MetricConfiguration{
