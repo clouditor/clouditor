@@ -116,8 +116,6 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	// if authorizer is from CLI, the access token expires after 75 minutes
 	authorizer, err := auth.NewAuthorizerFromFile(autorest_azure.PublicCloud.ResourceManagerEndpoint)
 	if err != nil {
-		log.Errorf("Could not authenticate to Azure: %v", err)
-		return nil, err
 		log.Errorf("Could not authenticate to Azure with authorizer from file: %v", err)
 		log.Infof("Fallback to Azure authorizer from CLI.")
 		authorizer, err = auth.NewAuthorizerFromCLI()
