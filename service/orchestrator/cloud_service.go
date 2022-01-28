@@ -58,7 +58,10 @@ func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.Regi
 	service.Description = req.Service.Description
 
 	// Persist the service in our database
-	s.db.Create(&service)
+	err = s.db.Create(&service)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not add cloud service to the database: %v", err)
+	}
 
 	return
 }
@@ -81,7 +84,6 @@ func (s *Service) GetCloudService(_ context.Context, req *orchestrator.GetCloudS
 	}
 
 	response = new(orchestrator.CloudService)
-	// TODO(lebogg): Replaced Find -> Check if I can incorporate into Read or if Read can handle it? Otherwise rethink CRUD approach
 	err = s.db.Read(&response, "Id = ?", req.ServiceId)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "service not found")
@@ -103,10 +105,10 @@ func (s *Service) UpdateCloudService(_ context.Context, req *orchestrator.Update
 
 	var count int64
 	// TODO(lebogg): Check how Model works and how to generalize it
-	err = s.db.Model(&orchestrator.CloudService{}).Count(&count).Error
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %s", err)
-	}
+	//err = s.db.Model(&orchestrator.CloudService{}).Count(&count).Error
+	//if err != nil {
+	//	return nil, status.Errorf(codes.Internal, "database error: %s", err)
+	//}
 
 	if count == 0 {
 		return nil, status.Error(codes.NotFound, "service not found")
@@ -143,7 +145,8 @@ func (s *Service) RemoveCloudService(_ context.Context, req *orchestrator.Remove
 // If a new target cloud service was created, it will be returned.
 func (s *Service) CreateDefaultTargetCloudService() (service *orchestrator.CloudService, err error) {
 	var count int64
-	s.db.Model(&orchestrator.CloudService{}).Count(&count)
+	// TODO(lebogg): CHeck model stuff
+	//s.db.Model(&orchestrator.CloudService{}).Count(&count)
 
 	if count == 0 {
 		// Create a default target cloud service
@@ -155,7 +158,7 @@ func (s *Service) CreateDefaultTargetCloudService() (service *orchestrator.Cloud
 			}
 
 		// Save it directly into the database, so that we can set the ID
-		err = s.db.Create(&service).Error
+		err = s.db.Create(&service)
 
 		if err != nil {
 			log.Infof("Created new default target cloud service %s", service.Id)
