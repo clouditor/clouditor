@@ -26,6 +26,7 @@
 package assessment
 
 import (
+	"errors"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -63,8 +64,55 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 					EvidenceId: "MockEvidenceID",
 				},
 			},
-			wantResp:      "",
-			wantRespError: ErrIdMissing,
+			wantResp: "",
+			// cannot access unexported invalidLengthError of uuid package. Use the error string directly
+			wantRespError: errors.New("invalid UUID length: 0"),
+			wantErr:       true,
+		},
+		{
+			name: "Wrong length of assessment result id",
+			args: args{
+				&AssessmentResult{
+					// Only 4 characters
+					Id:       "1234",
+					MetricId: "MockMetricID",
+					MetricConfiguration: &MetricConfiguration{
+						Operator: "MockOperator",
+						TargetValue: &structpb.Value{
+							Kind: &structpb.Value_StringValue{
+								StringValue: "MockTargetValue",
+							},
+						},
+					},
+					EvidenceId: "MockEvidenceID",
+				},
+			},
+			wantResp: "",
+			// cannot access unexported invalidLengthError of uuid package. Use the error string directly
+			wantRespError: errors.New("invalid UUID length: 4"),
+			wantErr:       true,
+		},
+		{
+			name: "Wrong format of assessment result id",
+			args: args{
+				&AssessmentResult{
+					// Wrong format: 'x' not allowed (no hexadecimal character)
+					Id:       "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+					MetricId: "MockMetricID",
+					MetricConfiguration: &MetricConfiguration{
+						Operator: "MockOperator",
+						TargetValue: &structpb.Value{
+							Kind: &structpb.Value_StringValue{
+								StringValue: "MockTargetValue",
+							},
+						},
+					},
+					EvidenceId: "MockEvidenceID",
+				},
+			},
+			wantResp: "",
+			// Copied error of uuid package.
+			wantRespError: errors.New("invalid UUID format"),
 			wantErr:       true,
 		},
 		{
