@@ -34,6 +34,7 @@ import (
 	"clouditor.io/clouditor/service/discovery/k8s"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	autorest_azure "github.com/Azure/go-autorest/autorest/azure"
 	"github.com/google/uuid"
 
 	"clouditor.io/clouditor/service/discovery/aws"
@@ -111,11 +112,22 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 		return nil, status.Errorf(codes.Internal, "could not set up stream for assessing evidences: %v", err)
 	}
 
-	// create an authorizer from env vars or Azure Managed Service Identity
-	authorizer, err := auth.NewAuthorizerFromCLI()
+	// create an authorizer from file or as fallback from the CLI
+	// if authorizer is from CLI, the access token expires after 75 minutes
+	authorizer, err := auth.NewAuthorizerFromFile(autorest_azure.PublicCloud.ResourceManagerEndpoint)
 	if err != nil {
 		log.Errorf("Could not authenticate to Azure: %v", err)
 		return nil, err
+		log.Errorf("Could not authenticate to Azure with authorizer from file: %v", err)
+		log.Infof("Fall back to Azure authorizer from CLI.")
+		authorizer, err = auth.NewAuthorizerFromCLI()
+		if err != nil {
+			log.Errorf("Could not authenticate to Azure authorizer from CLI: %v", err)
+			return nil, err
+		}
+		log.Info("Using Azure authorizer from CLI. The discovery times out after 1 hour.")
+	} else {
+		log.Info("Using Azure authorizer from file.")
 	}
 
 	k8sClient, err := k8s.AuthFromKubeConfig()
@@ -140,7 +152,7 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 		k8s.NewKubernetesComputeDiscovery(k8sClient),
 		k8s.NewKubernetesNetworkDiscovery(k8sClient),
 		aws.NewAwsStorageDiscovery(awsClient),
-		aws.NewComputeDiscovery(awsClient),
+		aws.NewAwsComputeDiscovery(awsClient),
 	)
 
 	for _, v := range discoverer {

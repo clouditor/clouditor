@@ -68,8 +68,8 @@ var newFromConfigEC2 = ec2.NewFromConfig
 // newFromConfigLambda holds lambda.NewFromConfig(...) allowing a test function tp mock it
 var newFromConfigLambda = lambda.NewFromConfig
 
-// NewComputeDiscovery constructs a new awsS3Discovery initializing the s3-virtualMachineAPI and isDiscovering with true
-func NewComputeDiscovery(client *Client) discovery.Discoverer {
+// NewAwsComputeDiscovery constructs a new awsS3Discovery initializing the s3-virtualMachineAPI and isDiscovering with true
+func NewAwsComputeDiscovery(client *Client) discovery.Discoverer {
 	return &computeDiscovery{
 		virtualMachineAPI: newFromConfigEC2(client.cfg),
 		functionAPI:       newFromConfigLambda(client.cfg),

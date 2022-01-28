@@ -83,8 +83,9 @@ func (a *azureDiscovery) authorize() (err error) {
 		return errors.New("no authorized was available")
 	}
 
-	// for now, do not re-authorize. in the future, we would probably need to check, if
-	// the token is still valid. or maybe Azure does this for us?
+	// If using NewAuthorizerFromFile() in discovery file, we do not need to re-authorize.
+	// If using NewAuthorizerFromCLI() in discovery file, the token expires after 75 minutes.
+	// TODO: How do we check, if the token is still valid?
 	if a.isAuthorized {
 		return
 	}
@@ -92,8 +93,19 @@ func (a *azureDiscovery) authorize() (err error) {
 	subClient := subscriptions.NewClient()
 	a.apply(&subClient.Client)
 
+	// get subscriptions
+	page, err := subClient.List(context.Background())
+	if err != nil {
+		return
+	}
+
+	// check if list of subscriptions is empty
+	if len(page.Values()) == 0 {
+		err = errors.New("list of subscriptions is empty")
+		return
+	}
+
 	// get first subscription
-	page, _ := subClient.List(context.Background())
 	a.sub = page.Values()[0]
 
 	log.Infof("Using %s as subscription", *a.sub.SubscriptionID)

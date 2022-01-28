@@ -437,8 +437,8 @@ func TestComputeDiscovery_NewComputeDiscovery(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewComputeDiscovery(tt.args.client); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewComputeDiscovery() = %v, want %v", got, tt.want)
+			if got := NewAwsComputeDiscovery(tt.args.client); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewAwsComputeDiscovery() = %v, want %v", got, tt.want)
 			}
 		})
 	}
