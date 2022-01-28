@@ -119,7 +119,7 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 		log.Errorf("Could not authenticate to Azure: %v", err)
 		return nil, err
 		log.Errorf("Could not authenticate to Azure with authorizer from file: %v", err)
-		log.Infof("Fall back to Azure authorizer from CLI.")
+		log.Infof("Fallback to Azure authorizer from CLI.")
 		authorizer, err = auth.NewAuthorizerFromCLI()
 		if err != nil {
 			log.Errorf("Could not authenticate to Azure authorizer from CLI: %v", err)
