@@ -55,7 +55,6 @@ type Service struct {
 
 	TokenSecret string
 
-	// TODO(lebogg): Make unexported and add NewService?
 	db persistence.IsDatabase
 }
 
