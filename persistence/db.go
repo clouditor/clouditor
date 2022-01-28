@@ -37,39 +37,64 @@ import (
 )
 
 var log *logrus.Entry
-var db *gorm.DB
+
+// TODO(lebogg): Lack for better term
+type GormX struct {
+	db *gorm.DB
+}
 
 func init() {
 	log = logrus.WithField("component", "db")
 }
 
-func InitDB(inMemory bool, host string, port int16) (err error) {
+func (d GormX) Init(inMemory bool, host string, port int16) (err error) {
 	if inMemory {
-		if db, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{}); err != nil {
+		if d.db, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{}); err != nil {
 			return err
 		}
 
 		log.Println("Using in-memory DB")
 	} else {
-		if db, err = gorm.Open(postgres.Open(fmt.Sprintf("postgres://postgres@%s:%d/postgres?sslmode=disable", host, port)), &gorm.Config{}); err != nil {
+		if d.db, err = gorm.Open(postgres.Open(fmt.Sprintf("postgres://postgres@%s:%d/postgres?sslmode=disable", host, port)), &gorm.Config{}); err != nil {
 			return err
 		}
 
 		log.Printf("Using postgres DB @ %s", host)
 	}
 
-	if err = db.AutoMigrate(&auth.User{}); err != nil {
+	if err = d.db.AutoMigrate(&auth.User{}); err != nil {
 		return fmt.Errorf("error during auto-migration: %w", err)
 	}
 
-	if err = db.AutoMigrate(&orchestrator.CloudService{}); err != nil {
+	if err = d.db.AutoMigrate(&orchestrator.CloudService{}); err != nil {
 		return fmt.Errorf("error during auto-migration: %w", err)
 	}
 
 	return nil
 }
 
+func (d GormX) Create(r interface{}) {
+	d.db.Create(r)
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d GormX) Read(id string) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d GormX) Update(r interface{}) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d GormX) Delete(id string) {
+	//TODO implement me
+	panic("implement me")
+}
+
 // GetDatabase returns the database
-func GetDatabase() *gorm.DB {
-	return db
+func (d GormX) GetDatabase() *gorm.DB {
+	return d.db
 }

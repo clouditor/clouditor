@@ -163,7 +163,8 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
  `)
 
-	if err = persistence.InitDB(viper.GetBool(DBInMemoryFlag),
+	var db *persistence.GormX
+	if err = db.Init(viper.GetBool(DBInMemoryFlag),
 		viper.GetString(DBHostFlag),
 		int16(viper.GetInt(DBPortFlag))); err != nil {
 		return fmt.Errorf("could not initialize DB: %w", err)
@@ -174,7 +175,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	}
 
 	discoveryService = service_discovery.NewService()
-	orchestratorService = service_orchestrator.NewService()
+	orchestratorService = service_orchestrator.NewService(db)
 	assessmentService = service_assessment.NewService()
 	evidenceStoreService = service_evidenceStore.NewService()
 

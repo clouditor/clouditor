@@ -29,14 +29,14 @@ package persistence
 // TODO(all): CRUD Pattern good enough?
 type IsDatabase interface {
 	// Init initializes the database
-	Init()
+	Init(inMemory bool, host string, port int16) error
 
 	// Create creates a new object and put it into the DB
-	Create()
+	Create(interface{})
 	// Read gets the record with given id of the DB
 	Read(id string)
 	// Update updates the record with given id of the DB
-	Update(id string)
+	Update(interface{})
 	// Delete deletes the record with given id of the DB
 	Delete(id string)
 }

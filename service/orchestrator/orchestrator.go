@@ -41,7 +41,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"gorm.io/gorm"
 )
 
 //go:embed metrics.json
@@ -69,14 +68,14 @@ type Service struct {
 	// mu is used for (un)locking result hook calls
 	mu sync.Mutex
 
-	db *gorm.DB
+	db persistence.IsDatabase
 }
 
 func init() {
 	log = logrus.WithField("component", "orchestrator")
 }
 
-func NewService() *Service {
+func NewService(db persistence.IsDatabase) *Service {
 	s := Service{
 		results:              make(map[string]*assessment.AssessmentResult),
 		metricConfigurations: make(map[string]map[string]*assessment.MetricConfiguration),
@@ -113,7 +112,7 @@ func NewService() *Service {
 		defaultMetricConfigurations[m.Id] = &config
 	}
 
-	s.db = persistence.GetDatabase()
+	s.db = db
 
 	return &s
 }
