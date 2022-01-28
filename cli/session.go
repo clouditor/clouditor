@@ -177,6 +177,7 @@ func PromptForLogin() (loginRequest *auth.LoginRequest, err error) {
 
 	fmt.Print("Enter username: ")
 	username, err := reader.ReadString('\n')
+	fmt.Println()
 
 	if err != nil {
 		return
