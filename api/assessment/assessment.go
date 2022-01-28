@@ -46,7 +46,7 @@ var (
 // Validate validates the assessment result according to several required fields
 func (result *AssessmentResult) Validate() (resourceId string, err error) {
 	if _, err = uuid.Parse(result.Id); err != nil {
-		return "", fmt.Errorf("%v: %v", ErrInvalidFormat, err)
+		return "", fmt.Errorf("%v: %w", ErrInvalidFormat, err)
 	}
 
 	if result.Timestamp == nil {
