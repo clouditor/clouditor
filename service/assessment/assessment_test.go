@@ -26,15 +26,23 @@
 package assessment
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net"
+	"os"
+	"reflect"
+	"runtime"
+	"testing"
+	"time"
+
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	service_evidenceStore "clouditor.io/clouditor/service/evidence"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"clouditor.io/clouditor/voc"
-	"context"
-	"encoding/json"
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -45,13 +53,6 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"io"
-	"net"
-	"os"
-	"reflect"
-	"runtime"
-	"testing"
-	"time"
 )
 
 var lis *bufconn.Listener
@@ -255,7 +256,7 @@ func TestAssessEvidences(t *testing.T) {
 				results:          make(map[string]*assessment.AssessmentResult)},
 			args: args{stream: &mockAssessmentStream{
 				evidence: &evidence.Evidence{
-					Id:        "MockEvidenceId",
+					Id:        "11111111-1111-1111-1111-111111111111",
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
 					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
@@ -333,7 +334,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 				in0: context.TODO(),
 				evidence: &assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:        "MockEvidenceID",
+						Id:        "11111111-1111-1111-1111-111111111111",
 						ToolId:    "mock",
 						Timestamp: timestamppb.Now(),
 						Resource: toStruct(voc.VirtualMachine{
@@ -392,7 +393,7 @@ func TestListAssessmentResults(t *testing.T) {
 	assert.NoError(t, s.mockOrchestratorStream())
 	_, err := s.AssessEvidence(context.TODO(), &assessment.AssessEvidenceRequest{
 		Evidence: &evidence.Evidence{
-			Id:        "mockEvidenceId",
+			Id:        "11111111-1111-1111-1111-111111111111",
 			ToolId:    "mock",
 			Timestamp: timestamppb.Now(),
 			Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
@@ -634,7 +635,7 @@ func TestHandleEvidence(t *testing.T) {
 			},
 			args: args{
 				evidence: &evidence.Evidence{
-					Id:        "mockEvidenceId",
+					Id:        "11111111-1111-1111-1111-111111111111",
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
 					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
@@ -654,7 +655,7 @@ func TestHandleEvidence(t *testing.T) {
 			},
 			args: args{
 				evidence: &evidence.Evidence{
-					Id:        "mockEvidenceId",
+					Id:        "11111111-1111-1111-1111-111111111111",
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
 					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{}}}}, t),

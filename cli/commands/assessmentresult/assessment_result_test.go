@@ -27,6 +27,14 @@ package assessmentresult
 
 import (
 	"bytes"
+	"context"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net"
+	"os"
+	"testing"
+
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
@@ -34,19 +42,12 @@ import (
 	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
-	"context"
-	"encoding/json"
-	"fmt"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"io/ioutil"
-	"net"
-	"os"
-	"testing"
 )
 
 var sock net.Listener
@@ -79,10 +80,11 @@ func TestMain(m *testing.M) {
 	orchestrator.RegisterOrchestratorServer(server, service)
 	_, err = service.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
 		Result: &assessment.AssessmentResult{
-			Id:         "assessmentResultID",
+			Id:         "11111111-1111-1111-1111-111111111111",
 			MetricId:   "assessmentResultMetricID",
-			EvidenceId: "evidenceID",
+			EvidenceId: "11111111-1111-1111-1111-111111111111",
 			Timestamp:  timestamppb.Now(),
+			ResourceId: "myResource",
 			MetricConfiguration: &assessment.MetricConfiguration{
 				TargetValue: toStruct(1.0),
 				Operator:    "operator",

@@ -27,18 +27,19 @@ package orchestrator
 
 import (
 	"context"
-	"google.golang.org/grpc/metadata"
-	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/structpb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"io"
 	"io/fs"
-	"k8s.io/apimachinery/pkg/util/json"
 	"os"
 	"reflect"
 	"runtime"
 	"testing"
 	"time"
+
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
+	"k8s.io/apimachinery/pkg/util/json"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/persistence"
@@ -49,6 +50,9 @@ import (
 
 var service *Service
 var defaultTarget *orchestrator.CloudService
+
+const assessmentResultID1 = "11111111-1111-1111-1111-111111111111"
+const assessmentResultID2 = "11111111-1111-1111-1111-111111111112"
 
 func TestMain(m *testing.M) {
 	err := os.Chdir("../../")
@@ -120,9 +124,9 @@ func TestAssessmentResultHook(t *testing.T) {
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
 					Result: &assessment.AssessmentResult{
-						Id:         "assessmentResultID",
+						Id:         assessmentResultID1,
 						MetricId:   "assessmentResultMetricID",
-						EvidenceId: "evidenceID",
+						EvidenceId: "11111111-1111-1111-1111-111111111111",
 						Timestamp:  timestamppb.Now(),
 						MetricConfiguration: &assessment.MetricConfiguration{
 							TargetValue: toStruct(1.0),
@@ -232,9 +236,9 @@ func TestStoreAssessmentResult(t *testing.T) {
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
 					Result: &assessment.AssessmentResult{
-						Id:         "assessmentResultID",
+						Id:         assessmentResultID1,
 						MetricId:   "assessmentResultMetricID",
-						EvidenceId: "evidenceID",
+						EvidenceId: "11111111-1111-1111-1111-111111111111",
 						Timestamp:  timestamppb.Now(),
 						MetricConfiguration: &assessment.MetricConfiguration{
 							TargetValue: toStruct(1.0),
@@ -256,8 +260,8 @@ func TestStoreAssessmentResult(t *testing.T) {
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
 					Result: &assessment.AssessmentResult{
-						Id:         "assessmentResultID",
-						EvidenceId: "evidenceID",
+						Id:         assessmentResultID1,
+						EvidenceId: "11111111-1111-1111-1111-111111111111",
 						Timestamp:  timestamppb.Now(),
 						MetricConfiguration: &assessment.MetricConfiguration{
 							TargetValue: toStruct(1.0),
@@ -288,7 +292,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 			}
 
 			if err == nil {
-				assert.NotNil(t, s.results["assessmentResultID"])
+				assert.NotNil(t, s.results[assessmentResultID1])
 			} else {
 				assert.Empty(t, s.results)
 			}
@@ -346,9 +350,9 @@ func (m *mockStreamer) Recv() (*assessment.AssessmentResult, error) {
 	if m.counter == 0 {
 		m.counter++
 		return &assessment.AssessmentResult{
-			Id:         "assessmentResultID",
+			Id:         assessmentResultID1,
 			MetricId:   "assessmentResultMetricID",
-			EvidenceId: "evidenceID",
+			EvidenceId: "11111111-1111-1111-1111-111111111111",
 			Timestamp:  timestamppb.Now(),
 			MetricConfiguration: &assessment.MetricConfiguration{
 				TargetValue: toStruct(1.0),
@@ -362,9 +366,9 @@ func (m *mockStreamer) Recv() (*assessment.AssessmentResult, error) {
 	} else if m.counter == 1 {
 		m.counter++
 		return &assessment.AssessmentResult{
-			Id:         "assessmentResultID2",
+			Id:         assessmentResultID2,
 			MetricId:   "assessmentResultMetricID2",
-			EvidenceId: "evidenceID2",
+			EvidenceId: "11111111-1111-1111-1111-111111111112",
 			Timestamp:  timestamppb.Now(),
 			MetricConfiguration: &assessment.MetricConfiguration{
 				TargetValue: toStruct(1.0),
