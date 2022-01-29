@@ -27,6 +27,14 @@ package evidence
 
 import (
 	"bytes"
+	"context"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net"
+	"os"
+	"testing"
+
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
@@ -34,19 +42,12 @@ import (
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_evidenceStore "clouditor.io/clouditor/service/evidence"
 	"clouditor.io/clouditor/voc"
-	"context"
-	"encoding/json"
-	"fmt"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"io/ioutil"
-	"net"
-	"os"
-	"testing"
 )
 
 var sock net.Listener
@@ -77,7 +78,7 @@ func TestMain(m *testing.M) {
 	}
 	evidence.RegisterEvidenceStoreServer(server, service)
 	_, err = service.StoreEvidence(context.TODO(), &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
-		Id:        "mockEvidenceId",
+		Id:        "11111111-1111-1111-1111-111111111111",
 		ToolId:    "mock",
 		Timestamp: timestamppb.Now(),
 		Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}),

@@ -169,7 +169,7 @@ func TestAssessEvidence(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
-					Id:        "mockEvidenceId",
+					Id:        "11111111-1111-1111-1111-111111111111",
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
 					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
@@ -186,7 +186,7 @@ func TestAssessEvidence(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
-					Id:        "mockEvidenceId",
+					Id:        "11111111-1111-1111-1111-111111111111",
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
 					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
@@ -677,7 +677,7 @@ func TestHandleEvidence(t *testing.T) {
 			},
 			args: args{
 				evidence: &evidence.Evidence{
-					Id:        "mockEvidenceId",
+					Id:        "11111111-1111-1111-1111-111111111111",
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
 					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
@@ -700,7 +700,7 @@ func TestHandleEvidence(t *testing.T) {
 			},
 			args: args{
 				evidence: &evidence.Evidence{
-					Id:        "mockEvidenceId",
+					Id:        "11111111-1111-1111-1111-111111111111",
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
 					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),

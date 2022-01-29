@@ -26,12 +26,13 @@
 package evidence
 
 import (
+	"reflect"
+	"testing"
+
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"reflect"
-	"testing"
 )
 
 func Test_ValidateEvidence(t *testing.T) {
@@ -50,7 +51,7 @@ func Test_ValidateEvidence(t *testing.T) {
 			name: "Missing resource",
 			args: args{
 				Evidence: &Evidence{
-					Id:        "MockEvidenceID",
+					Id:        "11111111-1111-1111-1111-111111111111",
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
 				},
@@ -63,7 +64,7 @@ func Test_ValidateEvidence(t *testing.T) {
 			name: "Resource is not a struct",
 			args: args{
 				Evidence: &Evidence{
-					Id:        "MockEvidenceID",
+					Id:        "11111111-1111-1111-1111-111111111111",
 					Timestamp: timestamppb.Now(),
 					ToolId:    "mock",
 					Resource: &structpb.Value{
@@ -80,7 +81,7 @@ func Test_ValidateEvidence(t *testing.T) {
 			name: "Missing toolId",
 			args: args{
 				Evidence: &Evidence{
-					Id:        "MockEvidenceID",
+					Id:        "11111111-1111-1111-1111-111111111111",
 					Timestamp: timestamppb.Now(),
 					Resource: toStruct(voc.VirtualMachine{
 						Compute: &voc.Compute{
@@ -98,7 +99,7 @@ func Test_ValidateEvidence(t *testing.T) {
 			name: "Missing timestamp",
 			args: args{
 				Evidence: &Evidence{
-					Id:     "MockEvidenceID",
+					Id:     "11111111-1111-1111-1111-111111111111",
 					ToolId: "mock",
 					Resource: toStruct(voc.VirtualMachine{
 						Compute: &voc.Compute{
@@ -116,7 +117,7 @@ func Test_ValidateEvidence(t *testing.T) {
 			name: "Valid evidence",
 			args: args{
 				Evidence: &Evidence{
-					Id:        "MockEvidenceID",
+					Id:        "11111111-1111-1111-1111-111111111111",
 					Timestamp: timestamppb.Now(),
 					ToolId:    "mock",
 					Resource: toStruct(voc.VirtualMachine{

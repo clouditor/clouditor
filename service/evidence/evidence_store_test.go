@@ -84,7 +84,7 @@ func TestStoreEvidence(t *testing.T) {
 				in0: context.TODO(),
 				req: &evidence.StoreEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:        "MockEvidenceId",
+						Id:        "11111111-1111-1111-1111-111111111111",
 						ServiceId: "MockServiceId",
 						ToolId:    "MockTool",
 						Timestamp: timestamppb.Now(),
@@ -139,7 +139,7 @@ func TestStoreEvidence(t *testing.T) {
 			}
 
 			if gotResp.Status {
-				assert.NotNil(t, s.evidences["MockEvidenceId"])
+				assert.NotNil(t, s.evidences["11111111-1111-1111-1111-111111111111"])
 			} else {
 				assert.Empty(t, s.evidences)
 			}
