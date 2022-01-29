@@ -32,8 +32,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"time"
+
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
@@ -208,7 +209,7 @@ func (d *awsS3Discovery) getEncryptionAtRest(bucket bucket) (e voc.HasAtRestEncr
 		if errors.As(err, &ae) {
 			if ae.ErrorCode() == "ServerSideEncryptionConfigurationNotFoundError" {
 				// This error code is equivalent to "encryption not enabled": set err to nil
-				e = voc.AtRestEncryption{
+				e = &voc.AtRestEncryption{
 					Confidentiality: nil,
 					Algorithm:       "",
 					Enabled:         false,
