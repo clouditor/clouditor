@@ -28,12 +28,13 @@
 package aws
 
 import (
-	"clouditor.io/clouditor/voc"
 	"context"
 	"encoding/json"
 	"errors"
 	"testing"
 	"time"
+
+	"clouditor.io/clouditor/voc"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -337,10 +338,10 @@ func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 		encryptionAtRest   voc.HasAtRestEncryption
 		managedEncryption  voc.ManagedKeyEncryption
 		customerEncryption voc.CustomerKeyEncryption
-		atRestEncryption   voc.AtRestEncryption
-		ok                 bool
-		err                error
-		mockAccountID      = "123456789"
+
+		ok            bool
+		err           error
+		mockAccountID = "123456789"
 	)
 
 	d := awsS3Discovery{
@@ -371,10 +372,8 @@ func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 
 	// Third case: No encryption
 	encryptionAtRest, err = d.getEncryptionAtRest(bucket{name: "mockbucket3"})
-	atRestEncryption, ok = encryptionAtRest.(voc.AtRestEncryption)
-	assert.True(t, ok)
 	assert.Nil(t, err)
-	assert.False(t, atRestEncryption.Enabled)
+	assert.False(t, encryptionAtRest.GetAtRestEncryption().Enabled)
 
 	// 4th case: Connection error
 	d = awsS3Discovery{
