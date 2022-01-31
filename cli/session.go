@@ -102,8 +102,9 @@ func ContinueSession() (session *Session, err error) {
 		return
 	}
 
-	// TODO(all): Should we catch errors of deferred close operations?
-	defer file.Close()
+	defer func(file *os.File) {
+		err = file.Close()
+	}(file)
 
 	session = new(Session)
 	session.Folder = folder
@@ -134,8 +135,9 @@ func (s *Session) Save() (err error) {
 		return fmt.Errorf("could not save session.json: %w", err)
 	}
 
-	// TODO(all): Should we catch errors of deferred close operations?
-	defer file.Close()
+	defer func(file *os.File) {
+		err = file.Close()
+	}(file)
 
 	if err = json.NewEncoder(file).Encode(s); err != nil {
 		return fmt.Errorf("could not serialize JSON: %w", err)
@@ -145,7 +147,7 @@ func (s *Session) Save() (err error) {
 }
 
 // HandleResponse handles the response and error message of an gRPC call
-func (s *Session) HandleResponse(msg proto.Message, err error) error {
+func (*Session) HandleResponse(msg proto.Message, err error) error {
 	if err != nil {
 		// check, if it is a gRPC error
 		s, ok := status.FromError(err)
@@ -177,6 +179,7 @@ func PromptForLogin() (loginRequest *auth.LoginRequest, err error) {
 
 	fmt.Print("Enter username: ")
 	username, err := reader.ReadString('\n')
+	fmt.Println()
 
 	if err != nil {
 		return
@@ -218,7 +221,7 @@ func (s *Session) AuthenticatedContext(ctx context.Context) context.Context {
 		))
 }
 
-func DefaultArgsShellComp(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func DefaultArgsShellComp(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
 	return []string{}, cobra.ShellCompDirectiveNoFileComp
 }
 

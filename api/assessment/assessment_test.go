@@ -26,11 +26,12 @@
 package assessment
 
 import (
+	"reflect"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"reflect"
-	"testing"
 )
 
 func Test_ValidateAssessmentResult(t *testing.T) {
@@ -38,6 +39,8 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 		AssessmentResult *AssessmentResult
 	}
 
+	const assessmentResultID = "11111111-1111-1111-1111-111111111111"
+	const mockEvidenceID = "11111111-1111-1111-1111-111111111111"
 	tests := []struct {
 		name          string
 		args          args
@@ -46,9 +49,11 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 		wantErr       bool
 	}{
 		{
-			name: "Missing assessment result timestamp",
+			name: "Missing assessment result id",
 			args: args{
 				&AssessmentResult{
+					// Empty id
+					Id:       "",
 					MetricId: "MockMetricID",
 					MetricConfiguration: &MetricConfiguration{
 						Operator: "MockOperator",
@@ -58,7 +63,75 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 							},
 						},
 					},
-					EvidenceId: "MockEvidenceID",
+					EvidenceId: mockEvidenceID,
+				},
+			},
+			wantResp: "",
+			// cannot access unexported invalidLengthError of uuid package. Use the error string directly
+			wantRespError: ErrIdInvalidFormat,
+			wantErr:       true,
+		},
+		{
+			name: "Wrong length of assessment result id",
+			args: args{
+				&AssessmentResult{
+					// Only 4 characters
+					Id:       "1234",
+					MetricId: "MockMetricID",
+					MetricConfiguration: &MetricConfiguration{
+						Operator: "MockOperator",
+						TargetValue: &structpb.Value{
+							Kind: &structpb.Value_StringValue{
+								StringValue: "MockTargetValue",
+							},
+						},
+					},
+					EvidenceId: mockEvidenceID,
+				},
+			},
+			wantResp: "",
+			// cannot access unexported invalidLengthError of uuid package. Use the error string directly
+			wantRespError: ErrIdInvalidFormat,
+			wantErr:       true,
+		},
+		{
+			name: "Wrong format of assessment result id",
+			args: args{
+				&AssessmentResult{
+					// Wrong format: 'x' not allowed (no hexadecimal character)
+					Id:       "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+					MetricId: "MockMetricID",
+					MetricConfiguration: &MetricConfiguration{
+						Operator: "MockOperator",
+						TargetValue: &structpb.Value{
+							Kind: &structpb.Value_StringValue{
+								StringValue: "MockTargetValue",
+							},
+						},
+					},
+					EvidenceId: mockEvidenceID,
+				},
+			},
+			wantResp: "",
+			// Copied error of uuid package.
+			wantRespError: ErrIdInvalidFormat,
+			wantErr:       true,
+		},
+		{
+			name: "Missing assessment result timestamp",
+			args: args{
+				&AssessmentResult{
+					Id:       assessmentResultID,
+					MetricId: "MockMetricID",
+					MetricConfiguration: &MetricConfiguration{
+						Operator: "MockOperator",
+						TargetValue: &structpb.Value{
+							Kind: &structpb.Value_StringValue{
+								StringValue: "MockTargetValue",
+							},
+						},
+					},
+					EvidenceId: mockEvidenceID,
 				},
 			},
 			wantResp:      "",
@@ -69,6 +142,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Missing assessment result metric id",
 			args: args{
 				&AssessmentResult{
+					Id:        assessmentResultID,
 					Timestamp: timestamppb.Now(),
 					MetricConfiguration: &MetricConfiguration{
 						Operator: "MockOperator",
@@ -78,7 +152,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 							},
 						},
 					},
-					EvidenceId: "MockEvidenceID",
+					EvidenceId: mockEvidenceID,
 				},
 			},
 			wantResp:      "",
@@ -89,9 +163,10 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Missing assessment result metric configuration",
 			args: args{
 				&AssessmentResult{
+					Id:         assessmentResultID,
 					Timestamp:  timestamppb.Now(),
 					MetricId:   "MockMetricID",
-					EvidenceId: "MockEvidenceID",
+					EvidenceId: mockEvidenceID,
 				},
 			},
 			wantResp:      "",
@@ -102,6 +177,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Missing assessment result metric configuration operator",
 			args: args{
 				&AssessmentResult{
+					Id:        assessmentResultID,
 					Timestamp: timestamppb.Now(),
 					MetricId:  "MockMetricID",
 					MetricConfiguration: &MetricConfiguration{
@@ -111,7 +187,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 							},
 						},
 					},
-					EvidenceId: "MockEvidenceID",
+					EvidenceId: mockEvidenceID,
 				},
 			},
 			wantResp:      "",
@@ -122,12 +198,13 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Missing assessment result metric configuration target value",
 			args: args{
 				&AssessmentResult{
+					Id:        assessmentResultID,
 					Timestamp: timestamppb.Now(),
 					MetricId:  "MockMetricID",
 					MetricConfiguration: &MetricConfiguration{
 						Operator: "MockOperator",
 					},
-					EvidenceId: "MockEvidenceID",
+					EvidenceId: mockEvidenceID,
 				},
 			},
 			wantResp:      "",
@@ -138,6 +215,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Missing assessment result evidence id",
 			args: args{
 				&AssessmentResult{
+					Id:        assessmentResultID,
 					Timestamp: timestamppb.Now(),
 					MetricId:  "MockMetricID",
 					MetricConfiguration: &MetricConfiguration{
@@ -151,13 +229,14 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 				},
 			},
 			wantResp:      "",
-			wantRespError: ErrEvidenceIdMissing,
+			wantRespError: ErrEvidenceIdInvalidFormat,
 			wantErr:       true,
 		},
 		{
 			name: "Valid assessment result",
 			args: args{
 				&AssessmentResult{
+					Id:        assessmentResultID,
 					Timestamp: timestamppb.Now(),
 					MetricId:  "MockMetricID",
 					MetricConfiguration: &MetricConfiguration{
@@ -168,7 +247,8 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 							},
 						},
 					},
-					EvidenceId: "MockEvidenceID",
+					EvidenceId: mockEvidenceID,
+					ResourceId: "myResource",
 				},
 			},
 			wantResp:      "",
@@ -191,7 +271,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			assert.Equal(t, resourceId, tt.wantResp)
 
 			if err != nil {
-				assert.Equal(t, tt.wantRespError.Error(), err.Error())
+				assert.ErrorIs(t, err, tt.wantRespError)
 			}
 		})
 	}

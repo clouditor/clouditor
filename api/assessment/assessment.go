@@ -25,22 +25,31 @@
 
 package assessment
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/google/uuid"
+)
 
 type ResultHookFunc func(result *AssessmentResult, err error)
 
 var (
+	ErrIdInvalidFormat                       = errors.New("assessment result id not in expected format (UUID) or missing")
+	ErrEvidenceIdInvalidFormat               = errors.New("evidence id not in expected format (UUID) or missing")
 	ErrTimestampMissing                      = errors.New("timestamp in assessment result is missing")
+	ErrResourceIdMissing                     = errors.New("resource id in assessment result is missing")
 	ErrMetricIdMissing                       = errors.New("metric id in assessment result is missing")
 	ErrMetricConfigurationMissing            = errors.New("metric configuration in assessment result is missing")
-	ErrEvidenceIdMissing                     = errors.New("evidence id in assessment result is missing")
-	ErrNonComplianceCommentsMissing          = errors.New("non-compliance comments in assessment result is missing")
 	ErrMetricConfigurationOperatorMissing    = errors.New("operator in metric data is missing")
 	ErrMetricConfigurationTargetValueMissing = errors.New("target value in metric data is missing")
 )
 
 // Validate validates the assessment result according to several required fields
 func (result *AssessmentResult) Validate() (resourceId string, err error) {
+	if _, err = uuid.Parse(result.Id); err != nil {
+		return "", ErrIdInvalidFormat
+	}
+
 	if result.Timestamp == nil {
 		return "", ErrTimestampMissing
 	}
@@ -61,11 +70,13 @@ func (result *AssessmentResult) Validate() (resourceId string, err error) {
 		return "", ErrMetricConfigurationTargetValueMissing
 	}
 
-	if result.EvidenceId == "" {
-		return "", ErrEvidenceIdMissing
+	if _, err = uuid.Parse(result.EvidenceId); err != nil {
+		return "", ErrEvidenceIdInvalidFormat
 	}
 
-	// TODO(garuppel): Missing resource ID?
+	if result.ResourceId == "" {
+		return "", ErrResourceIdMissing
+	}
 
 	return
 }
