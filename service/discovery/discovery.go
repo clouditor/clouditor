@@ -124,7 +124,7 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	if s.assessmentStream == nil {
 		err = s.initAssessmentStream()
 		if err != nil {
-			return nil, status.Errorf(codes.Internal,"could not initialize stream to Assessment: %v", err)
+			return nil, status.Errorf(codes.Internal, "could not initialize stream to Assessment: %v", err)
 		}
 	}
 

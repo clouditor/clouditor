@@ -207,8 +207,8 @@ func TestQuery(t *testing.T) {
 func TestStart(t *testing.T) {
 
 	type envVariable struct {
-		hasEnvVariable bool
-		envVariableKey string
+		hasEnvVariable   bool
+		envVariableKey   string
 		envVariableValue string
 	}
 
@@ -219,61 +219,33 @@ func TestStart(t *testing.T) {
 	}
 
 	tests := []struct {
-		name string
-		fields fields
-		wantResp *discovery.StartDiscoveryResponse
-		wantErr bool
+		name           string
+		fields         fields
+		wantResp       *discovery.StartDiscoveryResponse
+		wantErr        bool
 		wantErrMessage string
 	}{
-		{
-			name: "no error",
-			fields: fields{
-				hasRPCConnection: true,
-			},
-			wantResp: &discovery.StartDiscoveryResponse{
-				Successful: true,
-			},
-			wantErr: false,
-			wantErrMessage: "",
-		},
 		{
 			name: "No RPC connection",
 			fields: fields{
 				hasRPCConnection: false,
 			},
-			wantResp: nil,
-			wantErr: true,
+			wantResp:       nil,
+			wantErr:        true,
 			wantErrMessage: codes.Internal.String(),
 		},
 		{
-			name: "AZURE_AUTH_LOCATION not set correctly, fallback to authorize via Azure CLI",
+			name: "No Azure auhtorizer",
 			fields: fields{
 				hasRPCConnection: true,
 				envVariable: envVariable{
-					hasEnvVariable: true,
-					envVariableKey: "AZURE_AUTH_LOCATION",
+					hasEnvVariable:   true,
+					envVariableKey:   "AZURE_AUTH_LOCATION",
 					envVariableValue: "",
 				},
 			},
-			wantResp: &discovery.StartDiscoveryResponse{
-				Successful: true,
-			},
-			wantErr: false,
-			wantErrMessage: "",
-		},
-		{
-			name: "AZURE_AUTH_LOCATION not set correctly and not logged in via Azure CLI",
-			fields: fields{
-				hasRPCConnection: true,
-				envVariable: envVariable{
-					hasEnvVariable: true,
-					envVariableKey: "AZURE_AUTH_LOCATION",
-					envVariableValue: "",
-				},
-				azLogout: true,
-			},
-			wantResp: nil,
-			wantErr: true,
+			wantResp:       nil,
+			wantErr:        true,
 			wantErrMessage: "Invoking Azure CLI failed with the following error",
 		},
 	}
@@ -291,12 +263,12 @@ func TestStart(t *testing.T) {
 
 			if tt.fields.azLogout {
 				cmd := exec.Command("az", "logout")
-				_, err := cmd.Output()
+				resp, _ := cmd.Output()
 
-				assert.Nil(t, err)
+				assert.Empty(t, resp)
 			}
 
-			resp, err := s.Start(nil, nil)
+			resp, err := s.Start(context.TODO(), nil)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Got Start() error = %v, wantErr %v", err, tt.wantErr)
 				return
