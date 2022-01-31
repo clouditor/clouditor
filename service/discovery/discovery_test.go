@@ -35,9 +35,9 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
-	"google.golang.org/protobuf/types/known/structpb"
 	"net"
 	"os"
+	"os/exec"
 	"testing"
 	"time"
 
@@ -206,8 +206,16 @@ func TestQuery(t *testing.T) {
 
 func TestStart(t *testing.T) {
 
+	type envVariable struct {
+		hasEnvVariable bool
+		envVariableKey string
+		envVariableValue string
+	}
+
 	type fields struct {
 		hasRPCConnection bool
+		envVariable
+		azLogout bool
 	}
 
 	tests := []struct {
@@ -237,6 +245,37 @@ func TestStart(t *testing.T) {
 			wantErr: true,
 			wantErrMessage: codes.Internal.String(),
 		},
+		{
+			name: "AZURE_AUTH_LOCATION not set correctly, fallback to authorize via Azure CLI",
+			fields: fields{
+				hasRPCConnection: true,
+				envVariable: envVariable{
+					hasEnvVariable: true,
+					envVariableKey: "AZURE_AUTH_LOCATION",
+					envVariableValue: "",
+				},
+			},
+			wantResp: &discovery.StartDiscoveryResponse{
+				Successful: true,
+			},
+			wantErr: false,
+			wantErrMessage: "",
+		},
+		{
+			name: "AZURE_AUTH_LOCATION not set correctly and not logged in via Azure CLI",
+			fields: fields{
+				hasRPCConnection: true,
+				envVariable: envVariable{
+					hasEnvVariable: true,
+					envVariableKey: "AZURE_AUTH_LOCATION",
+					envVariableValue: "",
+				},
+				azLogout: true,
+			},
+			wantResp: nil,
+			wantErr: true,
+			wantErrMessage: "Invoking Azure CLI failed with the following error",
+		},
 	}
 
 	for _, tt := range tests {
@@ -244,6 +283,17 @@ func TestStart(t *testing.T) {
 			s := NewService()
 			if tt.fields.hasRPCConnection {
 				assert.NoError(t, s.mockAssessmentStream())
+			}
+
+			if tt.fields.hasEnvVariable {
+				t.Setenv(tt.fields.envVariableKey, tt.fields.envVariableValue)
+			}
+
+			if tt.fields.azLogout {
+				cmd := exec.Command("az", "logout")
+				_, err := cmd.Output()
+
+				assert.Nil(t, err)
 			}
 
 			resp, err := s.Start(nil, nil)
@@ -483,14 +533,4 @@ func (mockIsCloudResource) HasType(_ string) bool {
 
 func (mockIsCloudResource) GetCreationTime() *time.Time {
 	return nil
-}
-
-// toStruct transforms r to a struct and asserts if it was successful
-func toStruct(r voc.IsCloudResource, t *testing.T) (s *structpb.Value) {
-	s, err := voc.ToStruct(r)
-	if err != nil {
-		assert.NotNil(t, err)
-	}
-
-	return
 }
