@@ -228,6 +228,15 @@ func TestStart(t *testing.T) {
 			wantErr: false,
 			wantErrMessage: "",
 		},
+		{
+			name: "No RPC connection",
+			fields: fields{
+				hasRPCConnection: false,
+			},
+			wantResp: nil,
+			wantErr: true,
+			wantErrMessage: codes.Internal.String(),
+		},
 	}
 
 	for _, tt := range tests {
@@ -242,7 +251,7 @@ func TestStart(t *testing.T) {
 				t.Errorf("Got Start() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			} else {
-				assert.NotNil(t, resp)
+				assert.Equal(t, tt.wantResp, resp)
 			}
 
 			if err != nil {
