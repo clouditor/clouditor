@@ -31,9 +31,11 @@ import (
 	"fmt"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httputil"
+	"testing"
 )
 
 func init() {
@@ -118,4 +120,64 @@ func LogResponse() autorest.RespondDecorator {
 			return err
 		})
 	}
+}
+
+
+func TestResourceGroupName(t *testing.T) {
+	accountId :="/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account3"
+	result := resourceGroupName(accountId)
+
+	assert.Equal(t, "res1", result)
+}
+
+func TestApply(t *testing.T) {
+
+	// Test senderOption
+	so := senderOption{
+		sender: mockStorageSender{},
+	}
+
+	client := autorest.Client{}
+	so.apply(&client)
+	assert.Equal(t, so.sender, client.Sender)
+
+	// Test authorizerOption
+	ao := authorizerOption{
+		authorizer: mockAuthorizer{},
+	}
+
+	ao.apply(&client)
+	assert.Equal(t, ao.authorizer, client.Authorizer)
+
+	// Test azureDiscovery
+	//storageClient := storage.NewAccountsClient("00000000-0000-0000-0000-000000000000")
+
+	ad := azureDiscovery{
+		authOption: &authorizerOption{
+			authorizer: mockAuthorizer{},
+		},
+	}
+
+	ad.apply(&client)
+	assert.Equal(t, ad.authOption.authorizer, client.Authorizer)
+}
+
+func TestWithSender(t *testing.T) {
+	expected := &senderOption{
+		sender: mockStorageSender{},
+	}
+
+	resp := WithSender(mockStorageSender{})
+
+	assert.Equal(t, expected, resp)
+}
+
+func TestWithAuthorizer(t *testing.T) {
+	expected := &authorizerOption{
+		authorizer: mockAuthorizer{},
+	}
+
+	resp := WithAuthorizer(mockAuthorizer{})
+
+	assert.Equal(t, expected, resp)
 }
