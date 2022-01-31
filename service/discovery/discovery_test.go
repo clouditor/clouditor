@@ -26,11 +26,18 @@
 package discovery
 
 import (
+	service_assessment "clouditor.io/clouditor/service/assessment"
 	"context"
 	"errors"
 	"fmt"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
+	"google.golang.org/grpc/test/bufconn"
+	"google.golang.org/protobuf/types/known/structpb"
+	"net"
+	"os"
 	"testing"
 	"time"
 
@@ -42,6 +49,29 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
+
+var lis *bufconn.Listener
+
+func TestMain(m *testing.M) {
+	// pre-configuration for mocking evidence store
+	const bufSize = 1024 * 1024 * 2
+	lis = bufconn.Listen(bufSize)
+	s := grpc.NewServer()
+	assessment.RegisterAssessmentServer(s, service_assessment.NewService())
+	go func() {
+		if err := s.Serve(lis); err != nil {
+			log.Fatalf("Server exited with error: %v", err)
+		}
+	}()
+
+	// make sure, that we are in the clouditor root folder to find the policies
+	err := os.Chdir("../../")
+	if err != nil {
+		panic(err)
+	}
+
+	os.Exit(m.Run())
+}
 
 func TestStartDiscovery(t *testing.T) {
 	discoveryService := NewService()
@@ -172,7 +202,73 @@ func TestQuery(t *testing.T) {
 		// If a bad resource was added it will be removed. Otherwise no-op
 		delete(s.resources, "MockResourceId")
 	}
+}
 
+func TestStart(t *testing.T) {
+
+	type fields struct {
+		hasRPCConnection bool
+	}
+
+	tests := []struct {
+		name string
+		fields fields
+		wantResp *discovery.StartDiscoveryResponse
+		wantErr bool
+		wantErrMessage string
+	}{
+		{
+			name: "no error",
+			fields: fields{
+				hasRPCConnection: true,
+			},
+			wantResp: &discovery.StartDiscoveryResponse{
+				Successful: true,
+			},
+			wantErr: false,
+			wantErrMessage: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := NewService()
+			if tt.fields.hasRPCConnection {
+				assert.NoError(t, s.mockAssessmentStream())
+			}
+
+			resp, err := s.Start(nil, nil)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Got Start() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			} else {
+				assert.NotNil(t, resp)
+			}
+
+			if err != nil {
+				assert.Contains(t, err.Error(), tt.wantErrMessage)
+			}
+		})
+	}
+}
+
+// Mocking assessment service
+func bufDialer(context.Context, string) (net.Conn, error) {
+	return lis.Dial()
+}
+
+func (s *Service) mockAssessmentStream() error {
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return err
+	}
+	client, err := assessment.NewAssessmentClient(conn).AssessEvidences(ctx)
+	if err != nil {
+		return err
+	}
+	s.assessmentStream = client
+	return nil
 }
 
 func TestShutdown(t *testing.T) {
@@ -378,4 +474,14 @@ func (mockIsCloudResource) HasType(_ string) bool {
 
 func (mockIsCloudResource) GetCreationTime() *time.Time {
 	return nil
+}
+
+// toStruct transforms r to a struct and asserts if it was successful
+func toStruct(r voc.IsCloudResource, t *testing.T) (s *structpb.Value) {
+	s, err := voc.ToStruct(r)
+	if err != nil {
+		assert.NotNil(t, err)
+	}
+
+	return
 }

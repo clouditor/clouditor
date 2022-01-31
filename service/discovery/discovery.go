@@ -91,25 +91,41 @@ func NewService() *Service {
 	}
 }
 
+func (s *Service) initAssessmentStream() error {
+	// Establish connection to assessment component
+	// TODO(oxisto): support assessment on Another tcp/port
+	target := s.AssessmentAddress
+	log.Infof("Establishing connection to Assessment (%v)", target)
+
+	conn, err := grpc.Dial(s.AssessmentAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return fmt.Errorf("could not connect to Assessment service: %v", err)
+	}
+
+	client := assessment.NewAssessmentClient(conn)
+	s.assessmentStream, err = client.AssessEvidences(context.Background())
+	if err != nil {
+		return fmt.Errorf("could not set up stream for assessing evidences: %v", err)
+	}
+
+	log.Infof("Connected to Assessment")
+
+	return nil
+}
+
 // Start starts discovery
 func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
 	resp = &discovery.StartDiscoveryResponse{Successful: true}
 
 	log.Infof("Starting discovery...")
-
 	s.scheduler.TagsUnique()
 
 	// Establish connection to assessment component
-	var client assessment.AssessmentClient
-	// TODO(oxisto): support assessment on Another tcp/port
-	conn, err := grpc.Dial(s.AssessmentAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not connect to assessment service: %v", err)
-	}
-	client = assessment.NewAssessmentClient(conn)
-	s.assessmentStream, err = client.AssessEvidences(context.Background())
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not set up stream for assessing evidences: %v", err)
+	if s.assessmentStream == nil {
+		err = s.initAssessmentStream()
+		if err != nil {
+			return nil, status.Errorf(codes.Internal,"could not initialize stream to Assessment: %v", err)
+		}
 	}
 
 	// create an authorizer from file or as fallback from the CLI
