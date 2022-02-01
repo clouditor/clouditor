@@ -203,6 +203,7 @@ message GetCloudServiceRequest { string service_id = 1; }
 
 message RegisterCloudServiceRequest { CloudService service = 1; }
 
+// TODO(oxisto): Why separate service_id when it is in service already?
 message UpdateCloudServiceRequest {
   string service_id = 1;
   CloudService service = 2;

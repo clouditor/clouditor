@@ -42,12 +42,9 @@ const DefaultTargetCloudServiceName = "default"
 const DefaultTargetCloudServiceDescription = "The default target cloud service"
 
 func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.RegisterCloudServiceRequest) (service *orchestrator.CloudService, err error) {
-	if req == nil || req.Service == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "service is empty")
-	}
-
-	if req.Service.Name == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "service name is empty")
+	// TODO(lebogg for oxisto): Before req was checked to be not nil but it is necessary?
+	if err = req.Service.Validate(); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	service = new(orchestrator.CloudService)
