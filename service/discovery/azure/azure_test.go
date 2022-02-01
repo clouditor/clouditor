@@ -45,7 +45,7 @@ func init() {
 type mockSender struct {
 }
 
-func (m mockSender) Do(req *http.Request) (res *http.Response, err error) {
+func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 	if req.URL.Path == "/subscriptions" {
 		res, err = createResponse(map[string]interface{}{
 			"value": &[]map[string]interface{}{
@@ -66,7 +66,7 @@ func (m mockSender) Do(req *http.Request) (res *http.Response, err error) {
 
 type mockAuthorizer struct{}
 
-func (a mockAuthorizer) WithAuthorization() autorest.PrepareDecorator {
+func (mockAuthorizer) WithAuthorization() autorest.PrepareDecorator {
 	return func(p autorest.Preparer) autorest.Preparer {
 		return p
 	}
@@ -122,7 +122,6 @@ func LogResponse() autorest.RespondDecorator {
 	}
 }
 
-
 func TestResourceGroupName(t *testing.T) {
 	accountId :="/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account3"
 	result := resourceGroupName(accountId)
@@ -150,8 +149,6 @@ func TestApply(t *testing.T) {
 	assert.Equal(t, ao.authorizer, client.Authorizer)
 
 	// Test azureDiscovery
-	//storageClient := storage.NewAccountsClient("00000000-0000-0000-0000-000000000000")
-
 	ad := azureDiscovery{
 		authOption: &authorizerOption{
 			authorizer: mockAuthorizer{},
