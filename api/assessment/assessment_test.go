@@ -26,12 +26,12 @@
 package assessment
 
 import (
-	"fmt"
+	"reflect"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"reflect"
-	"testing"
 )
 
 func Test_ValidateAssessmentResult(t *testing.T) {
@@ -40,6 +40,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 	}
 
 	const assessmentResultID = "11111111-1111-1111-1111-111111111111"
+	const mockEvidenceID = "11111111-1111-1111-1111-111111111111"
 	tests := []struct {
 		name          string
 		args          args
@@ -62,12 +63,12 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 							},
 						},
 					},
-					EvidenceId: "MockEvidenceID",
+					EvidenceId: mockEvidenceID,
 				},
 			},
 			wantResp: "",
 			// cannot access unexported invalidLengthError of uuid package. Use the error string directly
-			wantRespError: fmt.Errorf("%v: invalid UUID length: 0", ErrInvalidFormat),
+			wantRespError: ErrIdInvalidFormat,
 			wantErr:       true,
 		},
 		{
@@ -85,12 +86,12 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 							},
 						},
 					},
-					EvidenceId: "MockEvidenceID",
+					EvidenceId: mockEvidenceID,
 				},
 			},
 			wantResp: "",
 			// cannot access unexported invalidLengthError of uuid package. Use the error string directly
-			wantRespError: fmt.Errorf("%v: invalid UUID length: 4", ErrInvalidFormat),
+			wantRespError: ErrIdInvalidFormat,
 			wantErr:       true,
 		},
 		{
@@ -108,12 +109,12 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 							},
 						},
 					},
-					EvidenceId: "MockEvidenceID",
+					EvidenceId: mockEvidenceID,
 				},
 			},
 			wantResp: "",
 			// Copied error of uuid package.
-			wantRespError: fmt.Errorf("%v: invalid UUID format", ErrInvalidFormat),
+			wantRespError: ErrIdInvalidFormat,
 			wantErr:       true,
 		},
 		{
@@ -130,7 +131,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 							},
 						},
 					},
-					EvidenceId: "MockEvidenceID",
+					EvidenceId: mockEvidenceID,
 				},
 			},
 			wantResp:      "",
@@ -151,7 +152,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 							},
 						},
 					},
-					EvidenceId: "MockEvidenceID",
+					EvidenceId: mockEvidenceID,
 				},
 			},
 			wantResp:      "",
@@ -165,7 +166,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 					Id:         assessmentResultID,
 					Timestamp:  timestamppb.Now(),
 					MetricId:   "MockMetricID",
-					EvidenceId: "MockEvidenceID",
+					EvidenceId: mockEvidenceID,
 				},
 			},
 			wantResp:      "",
@@ -186,7 +187,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 							},
 						},
 					},
-					EvidenceId: "MockEvidenceID",
+					EvidenceId: mockEvidenceID,
 				},
 			},
 			wantResp:      "",
@@ -203,7 +204,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 					MetricConfiguration: &MetricConfiguration{
 						Operator: "MockOperator",
 					},
-					EvidenceId: "MockEvidenceID",
+					EvidenceId: mockEvidenceID,
 				},
 			},
 			wantResp:      "",
@@ -228,7 +229,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 				},
 			},
 			wantResp:      "",
-			wantRespError: ErrEvidenceIdMissing,
+			wantRespError: ErrEvidenceIdInvalidFormat,
 			wantErr:       true,
 		},
 		{
@@ -246,7 +247,8 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 							},
 						},
 					},
-					EvidenceId: "MockEvidenceID",
+					EvidenceId: mockEvidenceID,
+					ResourceId: "myResource",
 				},
 			},
 			wantResp:      "",
@@ -269,7 +271,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			assert.Equal(t, resourceId, tt.wantResp)
 
 			if err != nil {
-				assert.Equal(t, tt.wantRespError.Error(), err.Error())
+				assert.ErrorIs(t, err, tt.wantRespError)
 			}
 		})
 	}

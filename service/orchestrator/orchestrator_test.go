@@ -27,18 +27,19 @@ package orchestrator
 
 import (
 	"context"
-	"google.golang.org/grpc/metadata"
-	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/structpb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"io"
 	"io/fs"
-	"k8s.io/apimachinery/pkg/util/json"
 	"os"
 	"reflect"
 	"runtime"
 	"testing"
 	"time"
+
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
+	"k8s.io/apimachinery/pkg/util/json"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/persistence"
@@ -126,7 +127,7 @@ func TestAssessmentResultHook(t *testing.T) {
 					Result: &assessment.AssessmentResult{
 						Id:         assessmentResultID1,
 						MetricId:   "assessmentResultMetricID",
-						EvidenceId: "evidenceID",
+						EvidenceId: "11111111-1111-1111-1111-111111111111",
 						Timestamp:  timestamppb.Now(),
 						MetricConfiguration: &assessment.MetricConfiguration{
 							TargetValue: toStruct(1.0),
@@ -238,7 +239,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 					Result: &assessment.AssessmentResult{
 						Id:         assessmentResultID1,
 						MetricId:   "assessmentResultMetricID",
-						EvidenceId: "evidenceID",
+						EvidenceId: "11111111-1111-1111-1111-111111111111",
 						Timestamp:  timestamppb.Now(),
 						MetricConfiguration: &assessment.MetricConfiguration{
 							TargetValue: toStruct(1.0),
@@ -260,8 +261,8 @@ func TestStoreAssessmentResult(t *testing.T) {
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
 					Result: &assessment.AssessmentResult{
-						Id:         "assessmentResultID",
-						EvidenceId: "evidenceID",
+						Id:         assessmentResultID1,
+						EvidenceId: "11111111-1111-1111-1111-111111111111",
 						Timestamp:  timestamppb.Now(),
 						MetricConfiguration: &assessment.MetricConfiguration{
 							TargetValue: toStruct(1.0),
@@ -353,7 +354,7 @@ func (m *mockStreamer) Recv() (*assessment.AssessmentResult, error) {
 		return &assessment.AssessmentResult{
 			Id:         assessmentResultID1,
 			MetricId:   "assessmentResultMetricID",
-			EvidenceId: "evidenceID",
+			EvidenceId: "11111111-1111-1111-1111-111111111111",
 			Timestamp:  timestamppb.Now(),
 			MetricConfiguration: &assessment.MetricConfiguration{
 				TargetValue: toStruct(1.0),
@@ -369,7 +370,7 @@ func (m *mockStreamer) Recv() (*assessment.AssessmentResult, error) {
 		return &assessment.AssessmentResult{
 			Id:         assessmentResultID2,
 			MetricId:   "assessmentResultMetricID2",
-			EvidenceId: "evidenceID2",
+			EvidenceId: "11111111-1111-1111-1111-111111111112",
 			Timestamp:  timestamppb.Now(),
 			MetricConfiguration: &assessment.MetricConfiguration{
 				TargetValue: toStruct(1.0),
