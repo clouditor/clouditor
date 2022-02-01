@@ -235,19 +235,27 @@ func TestStart(t *testing.T) {
 						envVariableKey:   "AZURE_AUTH_LOCATION",
 						envVariableValue: "service/discovery/testfile/credentials_test_file",
 					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "HOME",
+						envVariableValue: "",
+					},
 				},
 			},
-			wantResp: &discovery.StartDiscoveryResponse{
-				Successful: true,
-			},
-			wantErr:        false,
-			wantErrMessage: "",
+			wantResp: nil,
+			wantErr:        true,
+			wantErrMessage: "could not authenticate to Kubernetes",
 		},
 		{
 			name: "No K8s authorizer",
 			fields: fields{
 				hasRPCConnection: true,
 				envVariables: []envVariable{
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_AUTH_LOCATION",
+						envVariableValue: "service/discovery/testfile/credentials_test_file",
+					},
 					{
 						hasEnvVariable:   true,
 						envVariableKey:   "HOME",
@@ -257,7 +265,7 @@ func TestStart(t *testing.T) {
 			},
 			wantResp:       nil,
 			wantErr:        true,
-			wantErrMessage: codes.FailedPrecondition.String(),
+			wantErrMessage: "could not authenticate to Kubernetes",
 		},
 		{
 			name: "No Azure authorizer",
