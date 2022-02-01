@@ -28,7 +28,6 @@ package discovery
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"clouditor.io/clouditor/service/discovery/azure"
