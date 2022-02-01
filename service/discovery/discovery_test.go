@@ -214,8 +214,8 @@ func TestStart(t *testing.T) {
 
 	type fields struct {
 		hasRPCConnection bool
-		envVariables []envVariable
-		azLogout bool
+		envVariables     []envVariable
+		azLogout         bool
 	}
 
 	tests := []struct {
@@ -237,7 +237,7 @@ func TestStart(t *testing.T) {
 					},
 				},
 			},
-			wantResp:       &discovery.StartDiscoveryResponse{
+			wantResp: &discovery.StartDiscoveryResponse{
 				Successful: true,
 			},
 			wantErr:        false,
