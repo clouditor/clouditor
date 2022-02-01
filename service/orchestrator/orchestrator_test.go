@@ -66,11 +66,11 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	service = NewService(gormX)
-	defaultTarget, err = service.CreateDefaultTargetCloudService()
-	if err != nil {
-		panic(err)
-	}
+	service = NewService(nil)
+	//defaultTarget, err = service.CreateDefaultTargetCloudService()
+	//if err != nil {
+	//	panic(err)
+	//}
 
 	os.Exit(m.Run())
 }

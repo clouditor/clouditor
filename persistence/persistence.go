@@ -33,7 +33,7 @@ type IsDatabase interface {
 
 	// Create creates a new object and put it into the DB
 	Create(interface{}) error
-	// Read gets the record with given id of the DB
+	// Read gets the record with given conditions
 	Read(interface{}, ...interface{}) error
 	// Update updates the record with given id of the DB
 	Update(interface{}) error

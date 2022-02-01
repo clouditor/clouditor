@@ -1,7 +1,9 @@
 package orchestrator
 
 import (
+	"clouditor.io/clouditor/persistence"
 	"context"
+	"fmt"
 	"testing"
 
 	"clouditor.io/clouditor/api/orchestrator"
@@ -120,4 +122,54 @@ func TestGetCloudService(t *testing.T) {
 			assert.True(t, proto.Equal(res, tt.res), "%v != %v", res, tt.res)
 		})
 	}
+}
+
+// TODO(lebogg): Do it without table tests (strict ordering)
+func TestService_CreateDefaultTargetCloudService(t *testing.T) {
+	type fields struct {
+	}
+	tests := []struct {
+		name        string
+		fields      fields
+		wantService *orchestrator.CloudService
+		wantErr     assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Tesst",
+			wantService: &orchestrator.CloudService{
+				Id:          DefaultTargetCloudServiceId,
+				Name:        DefaultTargetCloudServiceName,
+				Description: DefaultTargetCloudServiceDescription,
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return false
+			},
+		},
+		{
+			name:        "AlreadyCreated",
+			wantService: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return false
+			},
+		},
+	}
+	s := startTestService()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotService, err := s.CreateDefaultTargetCloudService()
+			if tt.wantErr(t, err, fmt.Sprintf("CreateDefaultTargetCloudService()")) {
+				return
+			}
+			assert.Equalf(t, tt.wantService.String(), gotService.String(), "CreateDefaultTargetCloudService()")
+		})
+	}
+}
+
+func startTestService() *Service {
+	gormX := new(persistence.GormX)
+	err := gormX.Init(true, "", 0)
+	if err != nil {
+		panic(err)
+	}
+	return NewService(gormX)
 }

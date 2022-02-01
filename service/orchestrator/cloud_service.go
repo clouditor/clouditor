@@ -26,10 +26,9 @@
 package orchestrator
 
 import (
+	"clouditor.io/clouditor/api/orchestrator"
 	"context"
 	"errors"
-
-	"clouditor.io/clouditor/api/orchestrator"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -87,6 +86,9 @@ func (s *Service) GetCloudService(_ context.Context, req *orchestrator.GetCloudS
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
+	//if response, ok := result.([]orchestrator.CloudService); ok {
+	//
+	//}
 
 	return response, nil
 }
@@ -140,29 +142,29 @@ func (s *Service) RemoveCloudService(_ context.Context, req *orchestrator.Remove
 // if no target service exists in the database.
 //
 // If a new target cloud service was created, it will be returned.
-func (s *Service) CreateDefaultTargetCloudService() (service *orchestrator.CloudService, err error) {
-	var count int64
-	// TODO(lebogg): CHeck model stuff
-	//s.db.Model(&orchestrator.CloudService{}).Count(&count)
-
-	if count == 0 {
-		// Create a default target cloud service
-		service =
+func (s *Service) CreateDefaultTargetCloudService() (*orchestrator.CloudService, error) {
+	var currentServices []orchestrator.CloudService
+	err := s.db.Read(&currentServices)
+	// Error while reading DB
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, status.Errorf(codes.Internal, "db error: %v", err)
+	} else if len(currentServices) == 0 {
+		// There are no cloud services yet -> Create a default target cloud service and return it
+		service :=
 			&orchestrator.CloudService{
 				Id:          DefaultTargetCloudServiceId,
 				Name:        DefaultTargetCloudServiceName,
 				Description: DefaultTargetCloudServiceDescription,
 			}
-
 		// Save it directly into the database, so that we can set the ID
 		err = s.db.Create(&service)
-
 		if err != nil {
-			log.Infof("Created new default target cloud service %s", service.Id)
+			return nil, status.Errorf(codes.Internal, "error while writing new target cloud service to db: %v", err)
 		}
 
-		return service, err
+		return service, nil
+	} else {
+		// There is at least one cloud service -> Return no new default target service and no error
+		return nil, nil
 	}
-
-	return
 }

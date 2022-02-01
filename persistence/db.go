@@ -26,10 +26,9 @@
 package persistence
 
 import (
-	"fmt"
-
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
+	"fmt"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
@@ -77,12 +76,18 @@ func (g *GormX) Create(r interface{}) error {
 	return g.db.Create(r).Error
 }
 
-func (g *GormX) Read(r interface{}, conds ...interface{}) error {
-	if len(conds) == 0 {
-		return g.db.Find(r).Error
-	} else {
-		return g.db.First(r, conds).Error
+func (g *GormX) Read(r interface{}, conds ...interface{}) (err error) {
+	switch t := r.(type) {
+	case *[]orchestrator.CloudService:
+		err = g.db.Find(t, conds).Error
+		break
+	case *orchestrator.CloudService:
+		err = g.db.First(r, conds).Error
+		break
+	default:
+		err = fmt.Errorf("unsupported type of %v: %T", r, r)
 	}
+	return
 }
 
 func (g *GormX) Update(r interface{}) error {
