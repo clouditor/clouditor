@@ -53,7 +53,7 @@ import (
 var lis *bufconn.Listener
 
 func TestMain(m *testing.M) {
-	// pre-configuration for mocking evidence store
+	// pre-configuration for mocking assessment
 	const bufSize = 1024 * 1024 * 2
 	lis = bufconn.Listen(bufSize)
 	s := grpc.NewServer()
@@ -235,7 +235,7 @@ func TestStart(t *testing.T) {
 			wantErrMessage: codes.Internal.String(),
 		},
 		{
-			name: "No Azure auhtorizer",
+			name: "No Azure authorizer",
 			fields: fields{
 				hasRPCConnection: true,
 				envVariable: envVariable{
@@ -246,7 +246,7 @@ func TestStart(t *testing.T) {
 			},
 			wantResp:       nil,
 			wantErr:        true,
-			wantErrMessage: "Invoking Azure CLI failed with the following error",
+			wantErrMessage: codes.FailedPrecondition.String(),
 		},
 	}
 
@@ -276,6 +276,43 @@ func TestStart(t *testing.T) {
 				assert.Equal(t, tt.wantResp, resp)
 			}
 
+			if err != nil {
+				assert.Contains(t, err.Error(), tt.wantErrMessage)
+			}
+		})
+	}
+}
+
+func TestInitAssessmentStream(t *testing.T) {
+	type fields struct {
+		hasRPCConnection bool
+	}
+
+	tests := []struct {
+		name           string
+		fields         fields
+		wantErr        bool
+		wantErrMessage string
+	}{
+		{
+			name: "No RPC connection",
+			fields: fields{
+				hasRPCConnection: false,
+			},
+			wantErr:        true,
+			wantErrMessage: "could not set up stream for assessing evidences",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := NewService()
+
+			err := s.initAssessmentStream()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Got initAssessmentStream() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 			if err != nil {
 				assert.Contains(t, err.Error(), tt.wantErrMessage)
 			}

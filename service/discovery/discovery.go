@@ -133,11 +133,11 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	authorizer, err := auth.NewAuthorizerFromFile(autorest_azure.PublicCloud.ResourceManagerEndpoint)
 	if err != nil {
 		log.Errorf("Could not authenticate to Azure with authorizer from file: %v", err)
-		log.Infof("Fallback to Azure authorizer from CLI.")
+		log.Infof("Fallback to Azure with authorizer from CLI.")
 		authorizer, err = auth.NewAuthorizerFromCLI()
 		if err != nil {
-			log.Errorf("Could not authenticate to Azure authorizer from CLI: %v", err)
-			return nil, err
+			log.Errorf("Could not authenticate to Azure with authorizer from CLI: %v", err)
+			return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
 		}
 		log.Info("Using Azure authorizer from CLI. The discovery times out after 1 hour.")
 	} else {
