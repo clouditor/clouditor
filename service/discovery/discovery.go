@@ -28,6 +28,7 @@ package discovery
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"clouditor.io/clouditor/service/discovery/azure"
@@ -147,7 +148,7 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	k8sClient, err := k8s.AuthFromKubeConfig()
 	if err != nil {
 		log.Errorf("Could not authenticate to Kubernetes: %v", err)
-		return nil, err
+		return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Kubernetes: %v", err)
 	}
 
 	awsClient, err := aws.NewClient()

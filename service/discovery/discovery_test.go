@@ -214,7 +214,7 @@ func TestStart(t *testing.T) {
 
 	type fields struct {
 		hasRPCConnection bool
-		envVariable
+		envVariables []envVariable
 		azLogout bool
 	}
 
@@ -226,27 +226,63 @@ func TestStart(t *testing.T) {
 		wantErrMessage string
 	}{
 		{
+			name: "Azure authorizer from file",
+			fields: fields{
+				hasRPCConnection: true,
+				envVariables: []envVariable{
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_AUTH_LOCATION",
+						envVariableValue: "service/discovery/testfile/credentials_test_file",
+					},
+				},
+			},
+			wantResp:       &discovery.StartDiscoveryResponse{
+				Successful: true,
+			},
+			wantErr:        false,
+			wantErrMessage: "",
+		},
+		{
+			name: "No K8s authorizer",
+			fields: fields{
+				hasRPCConnection: true,
+				envVariables: []envVariable{
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "HOME",
+						envVariableValue: "",
+					},
+				},
+			},
+			wantResp:       nil,
+			wantErr:        true,
+			wantErrMessage: codes.FailedPrecondition.String(),
+		},
+		{
+			name: "No Azure authorizer",
+			fields: fields{
+				hasRPCConnection: true,
+				envVariables: []envVariable{
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_AUTH_LOCATION",
+						envVariableValue: "",
+					},
+				},
+			},
+			wantResp:       nil,
+			wantErr:        true,
+			wantErrMessage: "could not authenticate to Azure",
+		},
+		{
 			name: "No RPC connection",
 			fields: fields{
 				hasRPCConnection: false,
 			},
 			wantResp:       nil,
 			wantErr:        true,
-			wantErrMessage: codes.Internal.String(),
-		},
-		{
-			name: "No Azure authorizer",
-			fields: fields{
-				hasRPCConnection: true,
-				envVariable: envVariable{
-					hasEnvVariable:   true,
-					envVariableKey:   "AZURE_AUTH_LOCATION",
-					envVariableValue: "",
-				},
-			},
-			wantResp:       nil,
-			wantErr:        true,
-			wantErrMessage: codes.FailedPrecondition.String(),
+			wantErrMessage: "could not authenticate to Kubernetes",
 		},
 	}
 
@@ -257,10 +293,13 @@ func TestStart(t *testing.T) {
 				assert.NoError(t, s.mockAssessmentStream())
 			}
 
-			if tt.fields.hasEnvVariable {
-				t.Setenv(tt.fields.envVariableKey, tt.fields.envVariableValue)
+			for _, env := range tt.fields.envVariables {
+				if env.hasEnvVariable {
+					t.Setenv(env.envVariableKey, env.envVariableValue)
+				}
 			}
 
+			// We need to logout from Azure to check if no authorizer is present
 			if tt.fields.azLogout {
 				cmd := exec.Command("az", "logout")
 				resp, _ := cmd.Output()
