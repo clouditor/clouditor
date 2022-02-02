@@ -64,7 +64,7 @@ func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.Regi
 
 func (s *Service) ListCloudServices(_ context.Context, _ *orchestrator.ListCloudServicesRequest) (response *orchestrator.ListCloudServicesResponse, err error) {
 	response = new(orchestrator.ListCloudServicesResponse)
-	response.Services = make([]*orchestrator.CloudService, 0)
+	response.Services = make([]*orchestrator.CloudService, 0, 10)
 
 	err = s.db.Read(&response.Services)
 	if err != nil {
@@ -128,7 +128,6 @@ func (s *Service) RemoveCloudService(_ context.Context, req *orchestrator.Remove
 		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
 	}
 
-	// TODO(lebogg): Test if working
 	err = s.db.Delete(&orchestrator.CloudService{}, req.ServiceId)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "service not found")
@@ -143,7 +142,7 @@ func (s *Service) RemoveCloudService(_ context.Context, req *orchestrator.Remove
 // target cloud services, if no target service exists in the database.
 // Returns new created target cloud service. Otherwise, returns nil (if a record exists) or error if sth went wrong
 func (s *Service) CreateDefaultTargetCloudService() (*orchestrator.CloudService, error) {
-	var currentServices []orchestrator.CloudService
+	var currentServices []*orchestrator.CloudService
 	err := s.db.Read(&currentServices)
 	// Error while reading DB
 	if err != nil && err != gorm.ErrRecordNotFound {

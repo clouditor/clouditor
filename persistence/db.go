@@ -77,15 +77,15 @@ func (g *GormX) Create(r interface{}) error {
 }
 
 func (g *GormX) Read(r interface{}, conds ...interface{}) (err error) {
-	switch t := r.(type) {
-	case *[]orchestrator.CloudService:
-		err = g.db.Find(t, conds).Error
+	switch r.(type) {
+	case *[]*orchestrator.CloudService:
+		err = g.db.Find(r, conds).Error
 		break
 	case *orchestrator.CloudService:
 		err = g.db.First(r, conds).Error
 		break
 	default:
-		err = fmt.Errorf("unsupported type of %v: %T", r, r)
+		err = fmt.Errorf("unsupported type: %v (%T)", r, r)
 	}
 	return
 }
@@ -95,8 +95,18 @@ func (g *GormX) Update(r interface{}) error {
 	return g.db.Save(r).Error
 }
 
+// Delete deletes record with given id. If no record was found, returns ErrRecordNotFound
 func (g *GormX) Delete(r interface{}, id string) error {
-	return g.db.Delete(r, "Id = ?", id).Error
+	tx := g.db.Delete(r, "Id = ?", id)
+	if err := tx.Error; err != nil {
+		return err
+	}
+	// No record with given ID found
+	if tx.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+
+	return nil
 }
 
 // GetDatabase returns the database
