@@ -1,4 +1,4 @@
-// Copyright 2016-2020 Fraunhofer AISEC
+// Copyright 2016-2021 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -47,17 +47,25 @@ import (
 )
 
 var (
-	log  *logrus.Entry
+	log *logrus.Entry
+
+	// cors holds the global CORS configuration.
 	cors *corsConfig
 )
 
 // corsConfig holds all necessary configuration options for Cross-Origin Resource Sharing of our REST API.
 type corsConfig struct {
+	// allowedOrigins contains a list of the allowed origins
 	allowedOrigins []string
+
+	// allowedHeaders contains a list of the allowed headers
 	allowedHeaders []string
+
+	// allowedMethods contains a list of the allowed methods
 	allowedMethods []string
 }
 
+// CORSConfigOption represents functional-style options to modify the CORS configuration in RunServer.
 type CORSConfigOption func(*corsConfig)
 
 var (
@@ -73,18 +81,21 @@ var (
 	DefaultAllowedMethods = []string{"GET", "POST", "PUT", "DELETE"}
 )
 
+// WithAllowedOrigins is an option to supply allowed origins in CORS.
 func WithAllowedOrigins(origins []string) CORSConfigOption {
 	return func(cc *corsConfig) {
 		cc.allowedOrigins = origins
 	}
 }
 
+// WithAllowedHeaders is an option to supply allowed headers in CORS.
 func WithAllowedHeaders(headers []string) CORSConfigOption {
 	return func(cc *corsConfig) {
 		cc.allowedHeaders = headers
 	}
 }
 
+// WithAllowedMethods is an option to supply allowed methods in CORS.
 func WithAllowedMethods(methods []string) CORSConfigOption {
 	return func(cc *corsConfig) {
 		cc.allowedMethods = methods
@@ -94,6 +105,7 @@ func WithAllowedMethods(methods []string) CORSConfigOption {
 func init() {
 	log = logrus.WithField("component", "rest")
 
+	// initialize the CORS config with restrictive default values, e.g. no origin allowed
 	cors = &corsConfig{
 		allowedOrigins: DefaultAllowedOrigins,
 		allowedHeaders: DefaultAllowedHeaders,
@@ -101,6 +113,8 @@ func init() {
 	}
 }
 
+// RunServer starts our REST API. The REST API is a reverse proxy using grpc-gateway that
+// exposes certain gRPC calls as RESTful HTTP methods.
 func RunServer(ctx context.Context, grpcPort int, httpPort int, corsOpts ...CORSConfigOption) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -135,7 +149,7 @@ func RunServer(ctx context.Context, grpcPort int, httpPort int, corsOpts ...CORS
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", httpPort),
-		Handler: allowCORS(mux),
+		Handler: handleCORS(mux),
 	}
 
 	// graceful shutdown
@@ -160,33 +174,28 @@ func RunServer(ctx context.Context, grpcPort int, httpPort int, corsOpts ...CORS
 	return srv.ListenAndServe()
 }
 
-func allowCORS(h http.Handler) http.Handler {
+// handleCORS adds an appropriate http.HandlerFunc to an existing http.Handler to configure
+// Cross-Origin Resource Sharing (CORS) according to our global configuration.
+func handleCORS(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// check, if we allow this specific origin
+		// Check, if we allow this specific origin
 		origin := r.Header.Get("Origin")
 		if originAllowed(origin) {
-			// set the appropriate access control header
+			// Set the appropriate access control header
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 
-			// additionally, we need to handle preflight (OPTIONS) requests differently
+			// Additionally, we need to handle preflight (OPTIONS) requests to specify allowed headers and methods
 			if r.Method == "OPTIONS" && r.Header.Get("Access-Control-Request-Method") != "" {
-				handlePreflight(w, r)
+				w.Header().Set("Access-Control-Allow-Headers", strings.Join(cors.allowedHeaders, ","))
+				w.Header().Set("Access-Control-Allow-Methods", strings.Join(cors.allowedMethods, ","))
 				return
 			}
 		}
 	})
 }
 
-func handlePreflight(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Headers", strings.Join(cors.allowedHeaders, ","))
-	w.Header().Set("Access-Control-Allow-Methods", strings.Join(cors.allowedMethods, ","))
-}
-
+// originAllowed checks if the supplised origin is allowed according to our global CORS configuration.
 func originAllowed(origin string) bool {
-	if cors.allowedOrigins == nil || len(cors.allowedOrigins) == 0 {
-		return false
-	}
-
 	for _, v := range cors.allowedOrigins {
 		if origin == v {
 			return true
