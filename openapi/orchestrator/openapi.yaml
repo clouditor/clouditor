@@ -282,6 +282,47 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListMetricsResponse'
+        put:
+            tags:
+                - Orchestrator
+            description: Updates an existing metric
+            operationId: Orchestrator_UpdateMetric
+            parameters:
+                - name: metricId
+                  in: query
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Metric'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Metric'
+        post:
+            tags:
+                - Orchestrator
+            description: Creats a new metric
+            operationId: Orchestrator_CreateMetric
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Metric'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Metric'
     /v1/orchestrator/metrics/{metricId}:
         get:
             tags:

@@ -2,6 +2,12 @@ package assessment
 
 import (
 	"encoding/json"
+	"errors"
+)
+
+var (
+	//ErrMetricIdMissing   = errors.New("metric id is missing")
+	ErrMetricNameMissing = errors.New("metric name is missing")
 )
 
 func (r *Range) UnmarshalJSON(b []byte) (err error) {
@@ -28,4 +34,17 @@ func (r *Range) UnmarshalJSON(b []byte) (err error) {
 	}
 
 	return
+}
+
+// Validate validates the metric according to several required fields
+func (m *Metric) Validate() (err error) {
+	if m.Id == "" {
+		return ErrMetricIdMissing
+	}
+
+	if m.Name == "" {
+		return ErrMetricNameMissing
+	}
+
+	return nil
 }

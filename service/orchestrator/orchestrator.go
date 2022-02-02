@@ -30,10 +30,11 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"io"
 	"io/ioutil"
 	"sync"
+
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
@@ -116,46 +117,6 @@ func NewService() *Service {
 	s.db = persistence.GetDatabase()
 
 	return &s
-}
-
-// LoadMetrics loads metrics definitions from a JSON file.
-func LoadMetrics(metricsFile string) (err error) {
-	var (
-		b []byte
-	)
-
-	b, err = f.ReadFile(metricsFile)
-	if err != nil {
-		return fmt.Errorf("error while loading %s: %w", metricsFile, err)
-	}
-
-	err = json.Unmarshal(b, &metrics)
-	if err != nil {
-		return fmt.Errorf("error in JSON marshal: %w", err)
-	}
-
-	return nil
-}
-
-func (*Service) ListMetrics(_ context.Context, _ *orchestrator.ListMetricsRequest) (response *orchestrator.ListMetricsResponse, err error) {
-	response = &orchestrator.ListMetricsResponse{
-		Metrics: metrics,
-	}
-
-	return response, nil
-}
-
-func (*Service) GetMetric(_ context.Context, request *orchestrator.GetMetricsRequest) (response *assessment.Metric, err error) {
-	var ok bool
-	var metric *assessment.Metric
-
-	if metric, ok = metricIndex[request.MetricId]; !ok {
-		return nil, status.Errorf(codes.NotFound, "could not find metric with id %s", request.MetricId)
-	}
-
-	response = metric
-
-	return response, nil
 }
 
 func (s *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.GetMetricConfigurationRequest) (response *assessment.MetricConfiguration, err error) {
