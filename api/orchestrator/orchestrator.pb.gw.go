@@ -465,7 +465,7 @@ func local_request_Orchestrator_UpdateMetric_0(ctx context.Context, marshaler ru
 }
 
 func request_Orchestrator_GetMetric_0(ctx context.Context, marshaler runtime.Marshaler, client OrchestratorClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetMetricsRequest
+	var protoReq GetMetricRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -491,7 +491,7 @@ func request_Orchestrator_GetMetric_0(ctx context.Context, marshaler runtime.Mar
 }
 
 func local_request_Orchestrator_GetMetric_0(ctx context.Context, marshaler runtime.Marshaler, server OrchestratorServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetMetricsRequest
+	var protoReq GetMetricRequest
 	var metadata runtime.ServerMetadata
 
 	var (

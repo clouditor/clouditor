@@ -8,10 +8,11 @@ import (
 var (
 	//ErrMetricIdMissing   = errors.New("metric id is missing")
 	ErrMetricNameMissing = errors.New("metric name is missing")
+	ErrMetricEmpty       = errors.New("metric is missing or empty")
 )
 
 func (r *Range) UnmarshalJSON(b []byte) (err error) {
-	// check for the different range types
+	// Check for the different range types
 	var (
 		r1 Range_AllowedValues
 		r2 Range_Order
@@ -36,10 +37,32 @@ func (r *Range) UnmarshalJSON(b []byte) (err error) {
 	return
 }
 
-// Validate validates the metric according to several required fields
-func (m *Metric) Validate() (err error) {
-	if m.Id == "" {
-		return ErrMetricIdMissing
+// MetricValidationOption is a function-style option to fine-tune metric validation.
+type MetricValidationOption func(*Metric) error
+
+// WithMetricRequiresId is a validation option that specifies that Id must not be empty.
+func WithMetricRequiresId() MetricValidationOption {
+	return func(m *Metric) error {
+		if m.Id == "" {
+			return ErrMetricIdMissing
+		}
+
+		return nil
+	}
+}
+
+// Validate validates the metric according to several required fields.
+func (m *Metric) Validate(opts ...MetricValidationOption) (err error) {
+	if m == nil {
+		return ErrMetricEmpty
+	}
+
+	// Check for extra validation options
+	for _, o := range opts {
+		err = o(m)
+		if err != nil {
+			return err
+		}
 	}
 
 	if m.Name == "" {

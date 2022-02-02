@@ -308,7 +308,7 @@ paths:
         post:
             tags:
                 - Orchestrator
-            description: Creats a new metric
+            description: Creates a new metric
             operationId: Orchestrator_CreateMetric
             requestBody:
                 content:
