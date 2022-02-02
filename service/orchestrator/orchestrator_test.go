@@ -49,7 +49,6 @@ import (
 )
 
 var service *Service
-var defaultTarget *orchestrator.CloudService
 
 const assessmentResultID1 = "11111111-1111-1111-1111-111111111111"
 const assessmentResultID2 = "11111111-1111-1111-1111-111111111112"

@@ -39,9 +39,15 @@ func TestRegisterCloudService(t *testing.T) {
 		},
 	}
 
+	// Start Orchestrator service with DB and add one cloud service
+	s := startTestService()
+	cloudService, err := s.CreateDefaultTargetCloudService()
+	assert.Nil(t, err)
+	assert.NotNil(t, cloudService)
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := service.RegisterCloudService(context.Background(), tt.req)
+			res, err := s.RegisterCloudService(context.Background(), tt.req)
 
 			if tt.err == nil {
 				assert.Equal(t, err, tt.err)
@@ -94,7 +100,7 @@ func TestGetCloudService(t *testing.T) {
 		},
 		{
 			"valid",
-			&orchestrator.GetCloudServiceRequest{ServiceId: defaultTarget.Id},
+			&orchestrator.GetCloudServiceRequest{ServiceId: DefaultTargetCloudServiceId},
 			&orchestrator.CloudService{
 				Id:          DefaultTargetCloudServiceId,
 				Name:        DefaultTargetCloudServiceName,
@@ -104,12 +110,18 @@ func TestGetCloudService(t *testing.T) {
 		},
 	}
 
+	// Start Orchestrator service with DB and add one cloud service
+	s := startTestService()
+	cloudService, err := s.CreateDefaultTargetCloudService()
+	assert.Nil(t, err)
+	assert.NotNil(t, cloudService)
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := service.GetCloudService(context.Background(), tt.req)
+			res, err := s.GetCloudService(context.Background(), tt.req)
 
 			if tt.err == nil {
-				assert.Equal(t, err, tt.err)
+				assert.Equal(t, tt.err, err)
 			} else {
 				assert.EqualError(t, err, tt.err.Error())
 			}

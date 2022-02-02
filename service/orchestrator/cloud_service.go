@@ -80,15 +80,12 @@ func (s *Service) GetCloudService(_ context.Context, req *orchestrator.GetCloudS
 	}
 
 	response = new(orchestrator.CloudService)
-	err = s.db.Read(&response, "Id = ?", req.ServiceId)
+	err = s.db.Read(response, "Id = ?", req.ServiceId)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "service not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
-	//if response, ok := result.([]orchestrator.CloudService); ok {
-	//
-	//}
 
 	return response, nil
 }
