@@ -64,7 +64,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 	return
 }
 
-type  mockAuthorizer struct{}
+type mockAuthorizer struct{}
 
 func (mockAuthorizer) WithAuthorization() autorest.PrepareDecorator {
 	return func(p autorest.Preparer) autorest.Preparer {
