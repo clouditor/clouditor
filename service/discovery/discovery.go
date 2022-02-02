@@ -34,7 +34,6 @@ import (
 	"clouditor.io/clouditor/service/discovery/k8s"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	autorest_azure "github.com/Azure/go-autorest/autorest/azure"
 	"github.com/google/uuid"
 
 	"clouditor.io/clouditor/service/discovery/aws"
@@ -43,7 +42,6 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/voc"
-	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/go-co-op/gocron"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -128,20 +126,10 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 		}
 	}
 
-	// create an authorizer from file or as fallback from the CLI
-	// if authorizer is from CLI, the access token expires after 75 minutes
-	authorizer, err := auth.NewAuthorizerFromFile(autorest_azure.PublicCloud.ResourceManagerEndpoint)
+	authorizer, err := azure.NewAuthorizer()
 	if err != nil {
-		log.Errorf("Could not authenticate to Azure with authorizer from file: %v", err)
-		log.Infof("Fallback to Azure with authorizer from CLI.")
-		authorizer, err = auth.NewAuthorizerFromCLI()
-		if err != nil {
-			log.Errorf("Could not authenticate to Azure with authorizer from CLI: %v", err)
-			return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
-		}
-		log.Info("Using Azure authorizer from CLI. The discovery times out after 1 hour.")
-	} else {
-		log.Info("Using Azure authorizer from file.")
+		log.Errorf("Could not authenticate to Azure: %v", err)
+		return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
 	}
 
 	k8sClient, err := k8s.AuthFromKubeConfig()
