@@ -41,6 +41,12 @@ import (
 	"google.golang.org/grpc"
 )
 
+var (
+	origins = []string{"clouditor.io", "localhost"}
+	methods = []string{"GET", "POST"}
+	headers = DefaultAllowedHeaders
+)
+
 func TestMain(m *testing.M) {
 	var (
 		err    error
@@ -54,18 +60,25 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	// Start at least an orchestrator server, so that we have something to forward
+	// Start at least an authentication server, so that we have something to forward
 	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}
 
-	go RunServer(
-		context.Background(),
-		sock.Addr().(*net.TCPAddr).Port,
-		0,
-		WithAllowedOrigins([]string{"clouditor.io"}),
-	)
+	go func() {
+		err := RunServer(
+			context.Background(),
+			sock.Addr().(*net.TCPAddr).Port,
+			0,
+			WithAllowedOrigins(origins),
+			WithAllowedMethods(methods),
+			WithAllowedHeaders(headers),
+		)
+		if err != nil {
+			panic(err)
+		}
+	}()
 
 	defer sock.Close()
 	defer server.Stop()
@@ -88,20 +101,104 @@ func TestCORS(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotEqual(t, 0, port)
 
-	client := &http.Client{}
+	type args struct {
+		origin    string
+		method    string
+		preflight bool
+	}
 
-	req, err := http.NewRequest("OPTIONS", fmt.Sprintf("http://localhost:%d/v1/auth/login", port), nil)
-	assert.Nil(t, err)
-	assert.NotNil(t, req)
+	tests := []struct {
+		name       string
+		args       args
+		statusCode int
+		headers    map[string]string
+	}{
+		{
+			name: "Preflight request from valid origin",
+			args: args{
+				origin:    "clouditor.io",
+				method:    "POST",
+				preflight: true,
+			},
+			statusCode: 200,
+			headers: map[string]string{
+				"Access-Control-Allow-Origin":  "clouditor.io",
+				"Access-Control-Allow-Headers": strings.Join(headers, ","),
+				"Access-Control-Allow-Methods": strings.Join(methods, ","),
+			},
+		},
+		{
+			name: "Actual request from valid origin",
+			args: args{
+				origin:    "clouditor.io",
+				method:    "POST",
+				preflight: false,
+			},
+			statusCode: 401, // because we are not supplying an actual login request
+			headers: map[string]string{
+				"Access-Control-Allow-Origin":  "clouditor.io",
+				"Access-Control-Allow-Headers": "", // should only be part of preflight, not the actual request
+				"Access-Control-Allow-Methods": "", // should only be part of preflight, not the actual request
+			},
+		},
+		{
+			name: "Preflight request from valid origin",
+			args: args{
+				origin:    "clouditor.com",
+				method:    "POST",
+				preflight: true,
+			},
+			statusCode: 501,
+			headers: map[string]string{
+				"Access-Control-Allow-Origin": "", // should not leak any origin
+			},
+		},
+		{
+			name: "Actual request from invalid origin",
+			args: args{
+				origin:    "clouditor.com",
+				method:    "POST",
+				preflight: false,
+			},
+			statusCode: 401, // because we are not supplying an actual login request
+			headers: map[string]string{
+				"Access-Control-Allow-Origin": "", // should not leak any origin
+			},
+		},
+	}
 
-	req.Header.Add("Origin", "clouditor.io")
-	req.Header.Add("Access-Control-Request-Method", "POST")
-	resp, err := client.Do(req)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			client := &http.Client{}
 
-	assert.Nil(t, err)
-	assert.NotNil(t, resp)
+			var method string
+			if tt.args.preflight {
+				method = "OPTIONS"
+			} else {
+				method = tt.args.method
+			}
 
-	assert.Equal(t, "clouditor.io", resp.Header.Get("Access-Control-Allow-Origin"))
-	assert.Equal(t, strings.Join(DefaultAllowedHeaders, ","), resp.Header.Get("Access-Control-Allow-Headers"))
-	assert.Equal(t, strings.Join(DefaultAllowedMethods, ","), resp.Header.Get("Access-Control-Allow-Methods"))
+			req, err := http.NewRequest(method, fmt.Sprintf("http://localhost:%d/v1/auth/login", port), nil)
+			assert.Nil(t, err)
+			assert.NotNil(t, req)
+
+			req.Header.Add("Origin", tt.args.origin)
+
+			if tt.args.preflight {
+				req.Header.Add("Access-Control-Request-Method", tt.args.method)
+			}
+
+			resp, err := client.Do(req)
+
+			assert.Equal(t, tt.statusCode, resp.StatusCode)
+
+			assert.Nil(t, err)
+			assert.NotNil(t, resp)
+
+			for key, value := range tt.headers {
+				assert.Equal(t, value, resp.Header.Get(key))
+			}
+		})
+	}
+
 }

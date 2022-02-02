@@ -217,6 +217,7 @@ func handleCORS(h http.Handler) http.Handler {
 		if originAllowed(origin) {
 			// Set the appropriate access control header
 			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Add("Vary", "Origin")
 
 			// Additionally, we need to handle preflight (OPTIONS) requests to specify allowed headers and methods
 			if r.Method == "OPTIONS" && r.Header.Get("Access-Control-Request-Method") != "" {
