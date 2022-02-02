@@ -226,7 +226,7 @@ func TestStart(t *testing.T) {
 		wantErrMessage string
 	}{
 		{
-			name: "Azure authorizer from file",
+			name: "Azure authorizer from CLI",
 			fields: fields{
 				hasRPCConnection: true,
 				envVariables: []envVariable{
@@ -242,7 +242,7 @@ func TestStart(t *testing.T) {
 					},
 				},
 			},
-			wantResp: nil,
+			wantResp:       nil,
 			wantErr:        true,
 			wantErrMessage: "could not authenticate to Kubernetes",
 		},
@@ -268,7 +268,7 @@ func TestStart(t *testing.T) {
 			wantErrMessage: "could not authenticate to Kubernetes",
 		},
 		{
-			name: "No Azure authorizer",
+			name: "No Azure authorizer from File",
 			fields: fields{
 				hasRPCConnection: true,
 				envVariables: []envVariable{
@@ -284,13 +284,34 @@ func TestStart(t *testing.T) {
 			wantErrMessage: "could not authenticate to Azure",
 		},
 		{
+			name: "No Azure authorizer from CLI",
+			fields: fields{
+				hasRPCConnection: true,
+				envVariables: []envVariable{
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_AUTH_LOCATION",
+						envVariableValue: "",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "HOME",
+						envVariableValue: "",
+					},
+				},
+			},
+			wantResp:       nil,
+			wantErr:        true,
+			wantErrMessage: "could not authenticate to Azure",
+		},
+		{
 			name: "No RPC connection",
 			fields: fields{
 				hasRPCConnection: false,
 			},
 			wantResp:       nil,
 			wantErr:        true,
-			wantErrMessage: "could not authenticate to Kubernetes",
+			wantErrMessage: "could not initialize stream to Assessment",
 		},
 	}
 
