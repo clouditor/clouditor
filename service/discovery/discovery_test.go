@@ -232,7 +232,7 @@ func TestStart(t *testing.T) {
 					{
 						hasEnvVariable:   true,
 						envVariableKey:   "AZURE_AUTH_LOCATION",
-						envVariableValue: "service/discovery/testfile/credentials_test_file",
+						envVariableValue: "service/discovery/testing/credentials_test_file",
 					},
 					{
 						hasEnvVariable:   true,
@@ -276,7 +276,7 @@ func TestStart(t *testing.T) {
 					{
 						hasEnvVariable:   true,
 						envVariableKey:   "AZURE_AUTH_LOCATION",
-						envVariableValue: "service/discovery/testfile/credentials_test_file",
+						envVariableValue: "service/discovery/testing/credentials_test_file",
 					},
 					{
 						hasEnvVariable:   true,
