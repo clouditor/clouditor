@@ -90,7 +90,6 @@ func (a *azureDiscovery) authorize() (err error) {
 
 	// If using NewAuthorizerFromFile() in discovery file, we do not need to re-authorize.
 	// If using NewAuthorizerFromCLI() in discovery file, the token expires after 75 minutes.
-	// TODO: How do we check, if the token is still valid?
 	if a.isAuthorized {
 		return
 	}

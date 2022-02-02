@@ -106,7 +106,7 @@ func (d *azureComputeDiscovery) discoverFunction() ([]voc.IsCloudResource, error
 	return list, err
 }
 
-func (d *azureComputeDiscovery) handleFunction(function *web.Site) voc.IsCompute {
+func (*azureComputeDiscovery) handleFunction(function *web.Site) voc.IsCompute {
 	return &voc.Function{
 		Compute: &voc.Compute{
 			CloudResource: &voc.CloudResource{
