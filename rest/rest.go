@@ -1,4 +1,4 @@
-// Copyright 2016-2021 Fraunhofer AISEC
+// Copyright 2016-2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,7 +27,9 @@ package rest
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -48,6 +50,14 @@ import (
 
 var (
 	log *logrus.Entry
+
+	// srv holds the global http.Server of our REST API.
+	srv *http.Server
+
+	// sock holds the listener socket of our REST API.
+	sock net.Listener
+
+	ready = make(chan bool)
 
 	// cors holds the global CORS configuration.
 	cors *corsConfig
@@ -115,7 +125,7 @@ func init() {
 
 // RunServer starts our REST API. The REST API is a reverse proxy using grpc-gateway that
 // exposes certain gRPC calls as RESTful HTTP methods.
-func RunServer(ctx context.Context, grpcPort int, httpPort int, corsOpts ...CORSConfigOption) error {
+func RunServer(ctx context.Context, grpcPort int, httpPort int, corsOpts ...CORSConfigOption) (err error) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -147,7 +157,7 @@ func RunServer(ctx context.Context, grpcPort int, httpPort int, corsOpts ...CORS
 		return fmt.Errorf("failed to connect to evidence gRPC service %w", err)
 	}
 
-	srv := &http.Server{
+	srv = &http.Server{
 		Addr:    fmt.Sprintf(":%d", httpPort),
 		Handler: handleCORS(mux),
 	}
@@ -161,6 +171,8 @@ func RunServer(ctx context.Context, grpcPort int, httpPort int, corsOpts ...CORS
 			break
 		}
 
+		ready <- false
+
 		_, cancel := context.WithTimeout(ctx, 5*time.Second)
 		defer cancel()
 
@@ -171,7 +183,29 @@ func RunServer(ctx context.Context, grpcPort int, httpPort int, corsOpts ...CORS
 
 	log.Printf("Starting REST gateway on :%d", httpPort)
 
-	return srv.ListenAndServe()
+	sock, err = net.Listen("tcp", srv.Addr)
+	if err != nil {
+		return err
+	}
+
+	ready <- true
+
+	return srv.Serve(sock)
+}
+
+// GetServerPort returns the actual port used by the REST API
+func GetServerPort() (int, error) {
+	if sock == nil {
+		return 0, errors.New("server socket is empty")
+	}
+
+	tcpAddr, ok := sock.Addr().(*net.TCPAddr)
+
+	if !ok {
+		return 0, errors.New("server socket address is not a TCP address")
+	}
+
+	return tcpAddr.Port, nil
 }
 
 // handleCORS adds an appropriate http.HandlerFunc to an existing http.Handler to configure
@@ -191,6 +225,8 @@ func handleCORS(h http.Handler) http.Handler {
 				return
 			}
 		}
+
+		h.ServeHTTP(w, r)
 	})
 }
 
