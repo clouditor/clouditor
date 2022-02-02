@@ -122,6 +122,7 @@ func (s *Service) UpdateCloudService(_ context.Context, req *orchestrator.Update
 	return req.Service, nil
 }
 
+// RemoveCloudService implements method for OrchestratorServer interface for removing a cloud service
 func (s *Service) RemoveCloudService(_ context.Context, req *orchestrator.RemoveCloudServiceRequest) (response *emptypb.Empty, err error) {
 	if req.ServiceId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
@@ -138,10 +139,9 @@ func (s *Service) RemoveCloudService(_ context.Context, req *orchestrator.Remove
 	return &emptypb.Empty{}, nil
 }
 
-// CreateDefaultTargetCloudService creates a new "default" target cloud services,
-// if no target service exists in the database.
-//
-// If a new target cloud service was created, it will be returned.
+// CreateDefaultTargetCloudService implements method for OrchestratorServer interface for creating a new "default"
+// target cloud services, if no target service exists in the database.
+// Returns new created target cloud service. Otherwise, returns nil (if a record exists) or error if sth went wrong
 func (s *Service) CreateDefaultTargetCloudService() (*orchestrator.CloudService, error) {
 	var currentServices []orchestrator.CloudService
 	err := s.db.Read(&currentServices)

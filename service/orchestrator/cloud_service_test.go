@@ -3,7 +3,6 @@ package orchestrator
 import (
 	"clouditor.io/clouditor/persistence"
 	"context"
-	"fmt"
 	"testing"
 
 	"clouditor.io/clouditor/api/orchestrator"
@@ -124,47 +123,31 @@ func TestGetCloudService(t *testing.T) {
 	}
 }
 
-// TODO(lebogg): Do it without table tests (strict ordering)
 func TestService_CreateDefaultTargetCloudService(t *testing.T) {
-	type fields struct {
-	}
-	tests := []struct {
-		name        string
-		fields      fields
-		wantService *orchestrator.CloudService
-		wantErr     assert.ErrorAssertionFunc
-	}{
-		{
-			name: "Tesst",
-			wantService: &orchestrator.CloudService{
-				Id:          DefaultTargetCloudServiceId,
-				Name:        DefaultTargetCloudServiceName,
-				Description: DefaultTargetCloudServiceDescription,
-			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return false
-			},
-		},
-		{
-			name:        "AlreadyCreated",
-			wantService: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return false
-			},
-		},
-	}
+	var (
+		cloudServiceResponse *orchestrator.CloudService
+		err                  error
+	)
+
+	// Create service with DB
 	s := startTestService()
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotService, err := s.CreateDefaultTargetCloudService()
-			if tt.wantErr(t, err, fmt.Sprintf("CreateDefaultTargetCloudService()")) {
-				return
-			}
-			assert.Equalf(t, tt.wantService.String(), gotService.String(), "CreateDefaultTargetCloudService()")
-		})
-	}
+
+	// 1st case: No records for cloud services -> Default target service is created
+	cloudServiceResponse, err = s.CreateDefaultTargetCloudService()
+	assert.Nil(t, err)
+	assert.Equal(t, &orchestrator.CloudService{
+		Id:          DefaultTargetCloudServiceId,
+		Name:        DefaultTargetCloudServiceName,
+		Description: DefaultTargetCloudServiceDescription,
+	}, cloudServiceResponse)
+
+	// 2nd case: There is already a record for service (the default target service) -> Nothing added and no error
+	cloudServiceResponse, err = s.CreateDefaultTargetCloudService()
+	assert.Nil(t, err)
+	assert.Nil(t, cloudServiceResponse)
 }
 
+// startTestService starts service with DB initialization
 func startTestService() *Service {
 	gormX := new(persistence.GormX)
 	err := gormX.Init(true, "", 0)
