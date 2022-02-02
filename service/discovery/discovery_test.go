@@ -37,7 +37,6 @@ import (
 	"google.golang.org/grpc/test/bufconn"
 	"net"
 	"os"
-	"os/exec"
 	"testing"
 	"time"
 
@@ -215,7 +214,6 @@ func TestStart(t *testing.T) {
 	type fields struct {
 		hasRPCConnection bool
 		envVariables     []envVariable
-		azLogout         bool
 	}
 
 	tests := []struct {
@@ -230,6 +228,7 @@ func TestStart(t *testing.T) {
 			fields: fields{
 				hasRPCConnection: true,
 				envVariables: []envVariable{
+					// We must set AZURE_AUTH_LOCATION to the Azure credentials test file and the set HOME to a wrong path so that the Azure authorizer passes and the K8S authorizer fails
 					{
 						hasEnvVariable:   true,
 						envVariableKey:   "AZURE_AUTH_LOCATION",
@@ -251,6 +250,7 @@ func TestStart(t *testing.T) {
 			fields: fields{
 				hasRPCConnection: true,
 				envVariables: []envVariable{
+					// We must set AZURE_AUTH_LOCATION and HOME to a wrong pahth so that both Azure authorizer fail
 					{
 						hasEnvVariable:   true,
 						envVariableKey:   "AZURE_AUTH_LOCATION",
@@ -272,6 +272,7 @@ func TestStart(t *testing.T) {
 			fields: fields{
 				hasRPCConnection: true,
 				envVariables: []envVariable{
+					// We must set AZURE_AUTH_LOCATION to the Azure credentials test file and the set HOME to a wrong path so that the Azure authorizer passes and the K8S authorizer fails
 					{
 						hasEnvVariable:   true,
 						envVariableKey:   "AZURE_AUTH_LOCATION",
@@ -310,14 +311,6 @@ func TestStart(t *testing.T) {
 				if env.hasEnvVariable {
 					t.Setenv(env.envVariableKey, env.envVariableValue)
 				}
-			}
-
-			// We need to logout from Azure to check if no authorizer is present
-			if tt.fields.azLogout {
-				cmd := exec.Command("az", "logout")
-				resp, _ := cmd.Output()
-
-				assert.Empty(t, resp)
 			}
 
 			resp, err := s.Start(context.TODO(), nil)
