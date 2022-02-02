@@ -122,7 +122,7 @@ func LogResponse() autorest.RespondDecorator {
 	}
 }
 
-func TestResourceGroupName(t *testing.T) {
+func TestGetResourceGroupName(t *testing.T) {
 	accountId := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account3"
 	result := getResourceGroupName(accountId)
 
