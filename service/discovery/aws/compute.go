@@ -68,8 +68,8 @@ var newFromConfigEC2 = ec2.NewFromConfig
 // newFromConfigLambda holds lambda.NewFromConfig(...) allowing a test function tp mock it
 var newFromConfigLambda = lambda.NewFromConfig
 
-// NewComputeDiscovery constructs a new awsS3Discovery initializing the s3-virtualMachineAPI and isDiscovering with true
-func NewComputeDiscovery(client *Client) discovery.Discoverer {
+// NewAwsComputeDiscovery constructs a new awsS3Discovery initializing the s3-virtualMachineAPI and isDiscovering with true
+func NewAwsComputeDiscovery(client *Client) discovery.Discoverer {
 	return &computeDiscovery{
 		virtualMachineAPI: newFromConfigEC2(client.cfg),
 		functionAPI:       newFromConfigLambda(client.cfg),
@@ -79,7 +79,7 @@ func NewComputeDiscovery(client *Client) discovery.Discoverer {
 }
 
 // Name is the method implementation defined in the discovery.Discoverer interface
-func (d computeDiscovery) Name() string {
+func (*computeDiscovery) Name() string {
 	return "AWS Compute"
 }
 
@@ -218,7 +218,7 @@ func (*computeDiscovery) getOSLog(_ *typesEC2.Instance) (l *voc.OSLog) {
 }
 
 // mapBlockStorageIDsOfVM returns block storages IDs by iterating the VMs block storages
-func (d *computeDiscovery) mapBlockStorageIDsOfVM(vm *typesEC2.Instance) (blockStorageIDs []voc.ResourceID) {
+func (*computeDiscovery) mapBlockStorageIDsOfVM(vm *typesEC2.Instance) (blockStorageIDs []voc.ResourceID) {
 	for _, mapping := range vm.BlockDeviceMappings {
 		blockStorageIDs = append(blockStorageIDs, voc.ResourceID(aws.ToString(mapping.Ebs.VolumeId)))
 	}
@@ -226,7 +226,7 @@ func (d *computeDiscovery) mapBlockStorageIDsOfVM(vm *typesEC2.Instance) (blockS
 }
 
 // getNetworkInterfacesOfVM returns the network interface IDs by iterating the VMs network interfaces
-func (d *computeDiscovery) getNetworkInterfacesOfVM(vm *typesEC2.Instance) (networkInterfaceIDs []voc.ResourceID) {
+func (*computeDiscovery) getNetworkInterfacesOfVM(vm *typesEC2.Instance) (networkInterfaceIDs []voc.ResourceID) {
 	for _, networkInterface := range vm.NetworkInterfaces {
 		networkInterfaceIDs = append(networkInterfaceIDs, voc.ResourceID(aws.ToString(networkInterface.NetworkInterfaceId)))
 	}
@@ -234,7 +234,7 @@ func (d *computeDiscovery) getNetworkInterfacesOfVM(vm *typesEC2.Instance) (netw
 }
 
 // getNameOfVM returns the name if exists (i.e. a tag with key 'name' exists), otherwise instance ID is used
-func (d *computeDiscovery) getNameOfVM(vm *typesEC2.Instance) string {
+func (*computeDiscovery) getNameOfVM(vm *typesEC2.Instance) string {
 	for _, tag := range vm.Tags {
 		if aws.ToString(tag.Key) == "Name" {
 			return aws.ToString(tag.Value)

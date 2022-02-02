@@ -31,9 +31,11 @@ import (
 	"fmt"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httputil"
+	"testing"
 )
 
 func init() {
@@ -43,7 +45,7 @@ func init() {
 type mockSender struct {
 }
 
-func (m mockSender) Do(req *http.Request) (res *http.Response, err error) {
+func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 	if req.URL.Path == "/subscriptions" {
 		res, err = createResponse(map[string]interface{}{
 			"value": &[]map[string]interface{}{
@@ -64,7 +66,7 @@ func (m mockSender) Do(req *http.Request) (res *http.Response, err error) {
 
 type mockAuthorizer struct{}
 
-func (a mockAuthorizer) WithAuthorization() autorest.PrepareDecorator {
+func (mockAuthorizer) WithAuthorization() autorest.PrepareDecorator {
 	return func(p autorest.Preparer) autorest.Preparer {
 		return p
 	}
@@ -118,4 +120,61 @@ func LogResponse() autorest.RespondDecorator {
 			return err
 		})
 	}
+}
+
+func TestGetResourceGroupName(t *testing.T) {
+	accountId := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account3"
+	result := getResourceGroupName(accountId)
+
+	assert.Equal(t, "res1", result)
+}
+
+func TestApply(t *testing.T) {
+
+	// Test senderOption
+	so := senderOption{
+		sender: mockStorageSender{},
+	}
+
+	client := autorest.Client{}
+	so.apply(&client)
+	assert.Equal(t, so.sender, client.Sender)
+
+	// Test authorizerOption
+	ao := authorizerOption{
+		authorizer: mockAuthorizer{},
+	}
+
+	ao.apply(&client)
+	assert.Equal(t, ao.authorizer, client.Authorizer)
+
+	// Test azureDiscovery
+	ad := azureDiscovery{
+		authOption: &authorizerOption{
+			authorizer: mockAuthorizer{},
+		},
+	}
+
+	ad.apply(&client)
+	assert.Equal(t, ad.authOption.authorizer, client.Authorizer)
+}
+
+func TestWithSender(t *testing.T) {
+	expected := &senderOption{
+		sender: mockStorageSender{},
+	}
+
+	resp := WithSender(mockStorageSender{})
+
+	assert.Equal(t, expected, resp)
+}
+
+func TestWithAuthorizer(t *testing.T) {
+	expected := &authorizerOption{
+		authorizer: mockAuthorizer{},
+	}
+
+	resp := WithAuthorizer(mockAuthorizer{})
+
+	assert.Equal(t, expected, resp)
 }

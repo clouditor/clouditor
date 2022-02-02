@@ -26,11 +26,17 @@
 package discovery
 
 import (
+	service_assessment "clouditor.io/clouditor/service/assessment"
 	"context"
 	"errors"
 	"fmt"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
+	"google.golang.org/grpc/test/bufconn"
+	"net"
+	"os"
 	"testing"
 	"time"
 
@@ -42,6 +48,29 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
+
+var lis *bufconn.Listener
+
+func TestMain(m *testing.M) {
+	// pre-configuration for mocking assessment
+	const bufSize = 1024 * 1024 * 2
+	lis = bufconn.Listen(bufSize)
+	s := grpc.NewServer()
+	assessment.RegisterAssessmentServer(s, service_assessment.NewService())
+	go func() {
+		if err := s.Serve(lis); err != nil {
+			log.Fatalf("Server exited with error: %v", err)
+		}
+	}()
+
+	// make sure, that we are in the clouditor root folder to find the policies
+	err := os.Chdir("../../")
+	if err != nil {
+		panic(err)
+	}
+
+	os.Exit(m.Run())
+}
 
 func TestStartDiscovery(t *testing.T) {
 	discoveryService := NewService()
@@ -172,7 +201,187 @@ func TestQuery(t *testing.T) {
 		// If a bad resource was added it will be removed. Otherwise no-op
 		delete(s.resources, "MockResourceId")
 	}
+}
 
+func TestStart(t *testing.T) {
+
+	type envVariable struct {
+		hasEnvVariable   bool
+		envVariableKey   string
+		envVariableValue string
+	}
+
+	type fields struct {
+		hasRPCConnection bool
+		envVariables     []envVariable
+	}
+
+	tests := []struct {
+		name           string
+		fields         fields
+		wantResp       *discovery.StartDiscoveryResponse
+		wantErr        bool
+		wantErrMessage string
+	}{
+		{
+			name: "Azure authorizer from file",
+			fields: fields{
+				hasRPCConnection: true,
+				envVariables: []envVariable{
+					// We must set AZURE_AUTH_LOCATION to the Azure credentials test file and the set HOME to a wrong path so that the Azure authorizer passes and the K8S authorizer fails
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_AUTH_LOCATION",
+						envVariableValue: "service/discovery/testdata/credentials_test_file",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "HOME",
+						envVariableValue: "",
+					},
+				},
+			},
+			wantResp:       nil,
+			wantErr:        true,
+			wantErrMessage: "could not authenticate to Kubernetes",
+		},
+		{
+			name: "No Azure authorizer from file nor CLI",
+			fields: fields{
+				hasRPCConnection: true,
+				envVariables: []envVariable{
+					// We must set AZURE_AUTH_LOCATION and HOME to a wrong pahth so that both Azure authorizer fail
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_AUTH_LOCATION",
+						envVariableValue: "",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "HOME",
+						envVariableValue: "",
+					},
+				},
+			},
+			wantResp:       nil,
+			wantErr:        true,
+			wantErrMessage: "could not authenticate to Azure",
+		},
+		{
+			name: "No K8s authorizer",
+			fields: fields{
+				hasRPCConnection: true,
+				envVariables: []envVariable{
+					// We must set AZURE_AUTH_LOCATION to the Azure credentials test file and the set HOME to a wrong path so that the Azure authorizer passes and the K8S authorizer fails
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_AUTH_LOCATION",
+						envVariableValue: "service/discovery/testdata/credentials_test_file",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "HOME",
+						envVariableValue: "",
+					},
+				},
+			},
+			wantResp:       nil,
+			wantErr:        true,
+			wantErrMessage: "could not authenticate to Kubernetes",
+		},
+		{
+			name: "No RPC connection",
+			fields: fields{
+				hasRPCConnection: false,
+			},
+			wantResp:       nil,
+			wantErr:        true,
+			wantErrMessage: "could not initialize stream to Assessment",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := NewService()
+			if tt.fields.hasRPCConnection {
+				assert.NoError(t, s.mockAssessmentStream())
+			}
+
+			for _, env := range tt.fields.envVariables {
+				if env.hasEnvVariable {
+					t.Setenv(env.envVariableKey, env.envVariableValue)
+				}
+			}
+
+			resp, err := s.Start(context.TODO(), nil)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Got Start() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			} else {
+				assert.Equal(t, tt.wantResp, resp)
+			}
+
+			if err != nil {
+				assert.Contains(t, err.Error(), tt.wantErrMessage)
+			}
+		})
+	}
+}
+
+func TestInitAssessmentStream(t *testing.T) {
+	type fields struct {
+		hasRPCConnection bool
+	}
+
+	tests := []struct {
+		name           string
+		fields         fields
+		wantErr        bool
+		wantErrMessage string
+	}{
+		{
+			name: "No RPC connection",
+			fields: fields{
+				hasRPCConnection: false,
+			},
+			wantErr:        true,
+			wantErrMessage: "could not set up stream for assessing evidences",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := NewService()
+
+			err := s.initAssessmentStream()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Got initAssessmentStream() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if err != nil {
+				assert.Contains(t, err.Error(), tt.wantErrMessage)
+			}
+		})
+	}
+}
+
+// Mocking assessment service
+func bufDialer(context.Context, string) (net.Conn, error) {
+	return lis.Dial()
+}
+
+func (s *Service) mockAssessmentStream() error {
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return err
+	}
+	client, err := assessment.NewAssessmentClient(conn).AssessEvidences(ctx)
+	if err != nil {
+		return err
+	}
+	s.assessmentStream = client
+	return nil
 }
 
 func TestShutdown(t *testing.T) {
