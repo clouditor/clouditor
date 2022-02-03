@@ -47,15 +47,20 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-var sock net.Listener
-var server *grpc.Server
-var service *service_orchestrator.Service
-var target *orchestrator.CloudService
+var (
+	sock                net.Listener
+	server              *grpc.Server
+	authService         *service_auth.Service
+	orchestratorService *service_orchestrator.Service
+	target              *orchestrator.CloudService
+)
 
 func TestMain(m *testing.M) {
 	var (
 		err error
 		dir string
+
+		gormX = new(persistence.GormX)
 	)
 
 	err = os.Chdir("../../../")
@@ -63,20 +68,21 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	err = persistence.InitDB(true, "", 0)
+	err = gormX.Init(true, "", 0)
 	if err != nil {
 		panic(err)
 	}
 
-	service = service_orchestrator.NewService()
+	orchestratorService = service_orchestrator.NewService(gormX)
+	authService = service_auth.NewService(gormX)
 
-	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
+	sock, server, err = authService.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}
-	orchestrator.RegisterOrchestratorServer(server, service)
+	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
 
-	target, err = service.CreateDefaultTargetCloudService()
+	target, err = orchestratorService.CreateDefaultTargetCloudService()
 	if err != nil {
 		panic(err)
 	}
@@ -180,7 +186,7 @@ func TestRemoveCloudServicesCommand(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Re-create default service
-	_, err = service.CreateDefaultTargetCloudService()
+	_, err = orchestratorService.CreateDefaultTargetCloudService()
 
 	assert.Nil(t, err)
 }
@@ -217,7 +223,7 @@ func TestGetMetricConfiguration(t *testing.T) {
 	cli.Output = &b
 
 	// create a new target service
-	target, err = service.RegisterCloudService(context.TODO(), &orchestrator.RegisterCloudServiceRequest{Service: &orchestrator.CloudService{Name: "myservice"}})
+	target, err = orchestratorService.RegisterCloudService(context.TODO(), &orchestrator.RegisterCloudServiceRequest{Service: &orchestrator.CloudService{Name: "myservice"}})
 
 	assert.NotNil(t, target)
 	assert.Nil(t, err)

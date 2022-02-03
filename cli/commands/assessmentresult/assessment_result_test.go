@@ -55,9 +55,10 @@ var server *grpc.Server
 
 func TestMain(m *testing.M) {
 	var (
-		err     error
-		dir     string
-		service *service_orchestrator.Service
+		err                 error
+		dir                 string
+		orchestratorService *service_orchestrator.Service
+		authService         *service_auth.Service
 	)
 
 	err = os.Chdir("../../../")
@@ -70,15 +71,17 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err)
 	}
-	service = service_orchestrator.NewService(gormX)
 
-	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
+	orchestratorService = service_orchestrator.NewService(gormX)
+	authService = service_auth.NewService(gormX)
+
+	sock, server, err = authService.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}
 	// Store an assessment result that output of CMD 'list' is not empty
-	orchestrator.RegisterOrchestratorServer(server, service)
-	_, err = service.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
+	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
+	_, err = orchestratorService.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
 		Result: &assessment.AssessmentResult{
 			Id:         "11111111-1111-1111-1111-111111111111",
 			MetricId:   "assessmentResultMetricID",

@@ -42,9 +42,10 @@ import (
 )
 
 var (
-	origins = []string{"clouditor.io", "localhost"}
-	methods = []string{"GET", "POST"}
-	headers = DefaultAllowedHeaders
+	origins     = []string{"clouditor.io", "localhost"}
+	methods     = []string{"GET", "POST"}
+	headers     = DefaultAllowedHeaders
+	authService *service_auth.Service
 )
 
 func TestMain(m *testing.M) {
@@ -52,14 +53,15 @@ func TestMain(m *testing.M) {
 		err    error
 		server *grpc.Server
 		sock   net.Listener
+
+		gormX = new(persistence.GormX)
 	)
 
-	var gormX = new(persistence.GormX)
 	err = gormX.Init(true, "", 0)
 	if err != nil {
 		panic(err)
 	}
-	authService := service_auth.NewService(gormX)
+	authService = service_auth.NewService(gormX)
 
 	// Start at least an authentication server, so that we have something to forward
 	sock, server, err = authService.StartDedicatedAuthServer(":0")

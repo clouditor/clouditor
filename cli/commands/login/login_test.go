@@ -39,18 +39,27 @@ import (
 	"google.golang.org/grpc"
 )
 
-var sock net.Listener
-var server *grpc.Server
+var (
+	sock        net.Listener
+	server      *grpc.Server
+	authService *service_auth.Service
+)
 
 func TestMain(m *testing.M) {
-	var err error
+	var (
+		err error
 
-	err = persistence.InitDB(true, "", 0)
+		gormX = new(persistence.GormX)
+	)
+
+	err = gormX.Init(true, "", 0)
 	if err != nil {
 		panic(err)
 	}
 
-	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
+	authService = service_auth.NewService(gormX)
+
+	sock, server, err = authService.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}

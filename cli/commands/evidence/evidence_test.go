@@ -50,14 +50,19 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-var sock net.Listener
-var server *grpc.Server
+var (
+	sock                 net.Listener
+	server               *grpc.Server
+	evidenceStoreService *service_evidenceStore.Service
+	authService          *service_auth.Service
+)
 
 func TestMain(m *testing.M) {
 	var (
-		err     error
-		dir     string
-		service *service_evidenceStore.Service
+		err error
+		dir string
+
+		gormX = new(persistence.GormX)
 	)
 
 	err = os.Chdir("../../../")
@@ -65,19 +70,20 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	err = persistence.InitDB(true, "", 0)
+	err = gormX.Init(true, "", 0)
 	if err != nil {
 		panic(err)
 	}
 
-	service = service_evidenceStore.NewService()
+	authService = service_auth.NewService(gormX)
+	evidenceStoreService = service_evidenceStore.NewService()
 
-	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
+	sock, server, err = authService.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}
-	evidence.RegisterEvidenceStoreServer(server, service)
-	_, err = service.StoreEvidence(context.TODO(), &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
+	evidence.RegisterEvidenceStoreServer(server, evidenceStoreService)
+	_, err = evidenceStoreService.StoreEvidence(context.TODO(), &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
 		Id:        "11111111-1111-1111-1111-111111111111",
 		ToolId:    "mock",
 		Timestamp: timestamppb.Now(),

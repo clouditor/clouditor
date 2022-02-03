@@ -45,14 +45,19 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-var sock net.Listener
-var server *grpc.Server
+var (
+	sock                net.Listener
+	server              *grpc.Server
+	orchestratorService *service_orchestrator.Service
+	authService         *service_auth.Service
+)
 
 func TestMain(m *testing.M) {
 	var (
-		err     error
-		dir     string
-		service *service_orchestrator.Service
+		err error
+		dir string
+
+		gormX = new(persistence.GormX)
 	)
 
 	err = os.Chdir("../../../")
@@ -60,15 +65,16 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	err = persistence.InitDB(true, "", 0)
+	err = gormX.Init(true, "", 0)
 	if err != nil {
 		panic(err)
 	}
 
-	service = service_orchestrator.NewService()
+	orchestratorService = service_orchestrator.NewService(gormX)
+	authService = service_auth.NewService(gormX)
 
-	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
-	orchestrator.RegisterOrchestratorServer(server, service)
+	sock, server, err = authService.StartDedicatedAuthServer(":0")
+	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
 
 	if err != nil {
 		panic(err)
