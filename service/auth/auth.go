@@ -191,10 +191,7 @@ func (s Service) issueToken(subject string, fullName string, email string, expir
 }
 
 // StartDedicatedAuthServer starts a gRPC server containing just the auth service
-func StartDedicatedAuthServer(address string) (sock net.Listener, server *grpc.Server, err error) {
-	var (
-		authService *Service
-	)
+func (s *Service) StartDedicatedAuthServer(address string) (sock net.Listener, server *grpc.Server, err error) {
 
 	// create a new socket for gRPC communication
 	sock, err = net.Listen("tcp", address)
@@ -202,21 +199,13 @@ func StartDedicatedAuthServer(address string) (sock net.Listener, server *grpc.S
 		return nil, nil, fmt.Errorf("could not listen: %w", err)
 	}
 
-	// TODO(lebogg): Make configurable. Maybe bind function as method to service?
-	var gormX = new(persistence.GormX)
-	err = gormX.Init(true, "", 0)
-	if err != nil {
-		panic(err)
-	}
-	authService = NewService(gormX)
-
-	err = authService.CreateDefaultUser("clouditor", "clouditor")
+	err = s.CreateDefaultUser("clouditor", "clouditor")
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not create default user: %v", err)
 	}
 
 	server = grpc.NewServer()
-	auth.RegisterAuthenticationServer(server, authService)
+	auth.RegisterAuthenticationServer(server, s)
 
 	go func() {
 		// serve the gRPC socket

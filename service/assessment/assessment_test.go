@@ -63,7 +63,7 @@ func TestMain(m *testing.M) {
 	lis = bufconn.Listen(bufSize)
 	s := grpc.NewServer()
 	evidence.RegisterEvidenceStoreServer(s, service_evidenceStore.NewService())
-	orchestrator.RegisterOrchestratorServer(s, service_orchestrator.NewService())
+	orchestrator.RegisterOrchestratorServer(s, service_orchestrator.NewService(nil))
 	go func() {
 		if err := s.Serve(lis); err != nil {
 			log.Fatalf("Server exited with error: %v", err)
