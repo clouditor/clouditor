@@ -110,8 +110,6 @@ func (s *Service) verifyLogin(request *auth.LoginRequest) (result bool, user *au
 
 	user = new(auth.User)
 
-	// TODO(lebogg): Check if this re-write is the same
-	//err = db.Where("username = ?", request.Username).First(user).Error
 	err = s.db.Read(user, "username = ?", request.Username)
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -204,7 +202,14 @@ func StartDedicatedAuthServer(address string) (sock net.Listener, server *grpc.S
 		return nil, nil, fmt.Errorf("could not listen: %w", err)
 	}
 
-	authService = &Service{}
+	// TODO(lebogg): Make configurable. Maybe bind function as method to service?
+	var gormX = new(persistence.GormX)
+	err = gormX.Init(true, "", 0)
+	if err != nil {
+		panic(err)
+	}
+	authService = NewService(gormX)
+
 	err = authService.CreateDefaultUser("clouditor", "clouditor")
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not create default user: %v", err)

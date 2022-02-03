@@ -84,6 +84,12 @@ func (g *GormX) Read(r interface{}, conds ...interface{}) (err error) {
 	case *orchestrator.CloudService:
 		err = g.db.First(r, conds).Error
 		break
+	case *[]*auth.User:
+		err = g.db.Find(r, conds).Error
+		break
+	case *auth.User:
+		err = g.db.First(r, conds).Error
+		break
 	default:
 		err = fmt.Errorf("unsupported type: %v (%T)", r, r)
 	}

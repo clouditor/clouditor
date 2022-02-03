@@ -65,12 +65,12 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	err = persistence.InitDB(true, "", 0)
+	var gormX = new(persistence.GormX)
+	err = gormX.Init(true, "", 0)
 	if err != nil {
 		panic(err)
 	}
-
-	service = service_orchestrator.NewService()
+	service = service_orchestrator.NewService(gormX)
 
 	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
 	if err != nil {
