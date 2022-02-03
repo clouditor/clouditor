@@ -1,4 +1,4 @@
-// Copyright 2016-2020 Fraunhofer AISEC
+// Copyright 2016-2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,10 +27,13 @@ package rest
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	"clouditor.io/clouditor/api/evidence"
@@ -45,15 +48,90 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-var log *logrus.Entry
+var (
+	log *logrus.Entry
+
+	// srv holds the global http.Server of our REST API.
+	srv *http.Server
+
+	// sock holds the listener socket of our REST API.
+	sock net.Listener
+
+	ready = make(chan bool)
+
+	// cors holds the global CORS configuration.
+	cors *corsConfig
+)
+
+// corsConfig holds all necessary configuration options for Cross-Origin Resource Sharing of our REST API.
+type corsConfig struct {
+	// allowedOrigins contains a list of the allowed origins
+	allowedOrigins []string
+
+	// allowedHeaders contains a list of the allowed headers
+	allowedHeaders []string
+
+	// allowedMethods contains a list of the allowed methods
+	allowedMethods []string
+}
+
+// CORSConfigOption represents functional-style options to modify the CORS configuration in RunServer.
+type CORSConfigOption func(*corsConfig)
+
+var (
+	// DefaultAllowedOrigins contains a nil slice, as per default, no origins are allowed.
+	DefaultAllowedOrigins []string = nil
+
+	// DefaultAllowedHeaders contains sensible defaults for the Access-Control-Allow-Headers header.
+	// Please adjust accordingly in production using WithAllowedHeaders.
+	DefaultAllowedHeaders = []string{"Content-Type", "Accept", "Authorization"}
+
+	// DefaultAllowedMethods contains sensible defaults for the Access-Control-Allow-Methods header.
+	// Please adjust accordingly in production using WithAllowedMethods.
+	DefaultAllowedMethods = []string{"GET", "POST", "PUT", "DELETE"}
+)
+
+// WithAllowedOrigins is an option to supply allowed origins in CORS.
+func WithAllowedOrigins(origins []string) CORSConfigOption {
+	return func(cc *corsConfig) {
+		cc.allowedOrigins = origins
+	}
+}
+
+// WithAllowedHeaders is an option to supply allowed headers in CORS.
+func WithAllowedHeaders(headers []string) CORSConfigOption {
+	return func(cc *corsConfig) {
+		cc.allowedHeaders = headers
+	}
+}
+
+// WithAllowedMethods is an option to supply allowed methods in CORS.
+func WithAllowedMethods(methods []string) CORSConfigOption {
+	return func(cc *corsConfig) {
+		cc.allowedMethods = methods
+	}
+}
 
 func init() {
 	log = logrus.WithField("component", "rest")
+
+	// initialize the CORS config with restrictive default values, e.g. no origin allowed
+	cors = &corsConfig{
+		allowedOrigins: DefaultAllowedOrigins,
+		allowedHeaders: DefaultAllowedHeaders,
+		allowedMethods: DefaultAllowedMethods,
+	}
 }
 
-func RunServer(ctx context.Context, grpcPort int, httpPort int) error {
+// RunServer starts our REST API. The REST API is a reverse proxy using grpc-gateway that
+// exposes certain gRPC calls as RESTful HTTP methods.
+func RunServer(ctx context.Context, grpcPort int, httpPort int, corsOpts ...CORSConfigOption) (err error) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+
+	for _, o := range corsOpts {
+		o(cors)
+	}
 
 	mux := runtime.NewServeMux()
 
@@ -79,9 +157,9 @@ func RunServer(ctx context.Context, grpcPort int, httpPort int) error {
 		return fmt.Errorf("failed to connect to evidence gRPC service %w", err)
 	}
 
-	srv := &http.Server{
+	srv = &http.Server{
 		Addr:    fmt.Sprintf(":%d", httpPort),
-		Handler: mux,
+		Handler: handleCORS(mux),
 	}
 
 	// graceful shutdown
@@ -93,6 +171,8 @@ func RunServer(ctx context.Context, grpcPort int, httpPort int) error {
 			break
 		}
 
+		ready <- false
+
 		_, cancel := context.WithTimeout(ctx, 5*time.Second)
 		defer cancel()
 
@@ -103,5 +183,61 @@ func RunServer(ctx context.Context, grpcPort int, httpPort int) error {
 
 	log.Printf("Starting REST gateway on :%d", httpPort)
 
-	return srv.ListenAndServe()
+	sock, err = net.Listen("tcp", srv.Addr)
+	if err != nil {
+		return err
+	}
+
+	ready <- true
+
+	return srv.Serve(sock)
+}
+
+// GetServerPort returns the actual port used by the REST API
+func GetServerPort() (int, error) {
+	if sock == nil {
+		return 0, errors.New("server socket is empty")
+	}
+
+	tcpAddr, ok := sock.Addr().(*net.TCPAddr)
+
+	if !ok {
+		return 0, errors.New("server socket address is not a TCP address")
+	}
+
+	return tcpAddr.Port, nil
+}
+
+// handleCORS adds an appropriate http.HandlerFunc to an existing http.Handler to configure
+// Cross-Origin Resource Sharing (CORS) according to our global configuration.
+func handleCORS(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Check, if we allow this specific origin
+		origin := r.Header.Get("Origin")
+		if originAllowed(origin) {
+			// Set the appropriate access control header
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Add("Vary", "Origin")
+
+			// Additionally, we need to handle preflight (OPTIONS) requests to specify allowed headers and methods
+			if r.Method == "OPTIONS" && r.Header.Get("Access-Control-Request-Method") != "" {
+				w.Header().Set("Access-Control-Allow-Headers", strings.Join(cors.allowedHeaders, ","))
+				w.Header().Set("Access-Control-Allow-Methods", strings.Join(cors.allowedMethods, ","))
+				return
+			}
+		}
+
+		h.ServeHTTP(w, r)
+	})
+}
+
+// originAllowed checks if the supplied origin is allowed according to our global CORS configuration.
+func originAllowed(origin string) bool {
+	for _, v := range cors.allowedOrigins {
+		if origin == v {
+			return true
+		}
+	}
+
+	return false
 }
