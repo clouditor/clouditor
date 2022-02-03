@@ -79,7 +79,7 @@ type corsConfig struct {
 type CORSConfigOption func(*corsConfig)
 
 var (
-	// DefaultAllowedOrigins contains an nil slice, as per default, no origins are allowed.
+	// DefaultAllowedOrigins contains a nil slice, as per default, no origins are allowed.
 	DefaultAllowedOrigins []string = nil
 
 	// DefaultAllowedHeaders contains sensible defaults for the Access-Control-Allow-Headers header.
@@ -231,7 +231,7 @@ func handleCORS(h http.Handler) http.Handler {
 	})
 }
 
-// originAllowed checks if the supplised origin is allowed according to our global CORS configuration.
+// originAllowed checks if the supplied origin is allowed according to our global CORS configuration.
 func originAllowed(origin string) bool {
 	for _, v := range cors.allowedOrigins {
 		if origin == v {
