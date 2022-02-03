@@ -110,9 +110,11 @@ func TestNewCloudCommand(t *testing.T) {
 }
 
 func TestRegisterCloudServiceCommand(t *testing.T) {
-	var err error
-	var b bytes.Buffer
-	var response orchestrator.CloudService
+	var (
+		err      error
+		b        bytes.Buffer
+		response orchestrator.CloudService
+	)
 
 	cli.Output = &b
 
@@ -136,7 +138,6 @@ func TestListCloudServicesCommand(t *testing.T) {
 
 	_, err = orchestratorService.CreateDefaultTargetCloudService()
 	assert.Nil(t, err)
-	defer gormX.Reset()
 
 	cli.Output = &b
 
@@ -149,6 +150,9 @@ func TestListCloudServicesCommand(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.NotEmpty(t, response.Services)
+
+	// Reset DB
+	assert.Nil(t, gormX.Reset())
 }
 
 func TestGetCloudServiceCommand(t *testing.T) {
@@ -160,7 +164,6 @@ func TestGetCloudServiceCommand(t *testing.T) {
 
 	target, err = orchestratorService.CreateDefaultTargetCloudService()
 	assert.Nil(t, err)
-	defer gormX.Reset()
 
 	cli.Output = &b
 
@@ -173,6 +176,9 @@ func TestGetCloudServiceCommand(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, target.Id, response.Id)
+
+	// Reset DB
+	assert.Nil(t, gormX.Reset())
 }
 
 func TestRemoveCloudServicesCommand(t *testing.T) {
@@ -184,7 +190,6 @@ func TestRemoveCloudServicesCommand(t *testing.T) {
 
 	target, err = orchestratorService.CreateDefaultTargetCloudService()
 	assert.Nil(t, err)
-	defer gormX.Reset()
 
 	cli.Output = &b
 
@@ -201,6 +206,9 @@ func TestRemoveCloudServicesCommand(t *testing.T) {
 	_, err = orchestratorService.CreateDefaultTargetCloudService()
 
 	assert.Nil(t, err)
+
+	// Reset DB
+	assert.Nil(t, gormX.Reset())
 }
 
 func TestUpdateCloudServiceCommand(t *testing.T) {
@@ -212,7 +220,6 @@ func TestUpdateCloudServiceCommand(t *testing.T) {
 
 	target, err = orchestratorService.CreateDefaultTargetCloudService()
 	assert.Nil(t, err)
-	defer gormX.Reset()
 
 	cli.Output = &b
 
@@ -229,18 +236,19 @@ func TestUpdateCloudServiceCommand(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, target.Id, response.Id)
 	assert.Equal(t, "not_default", response.Name)
+
+	// Reset DB
+	assert.Nil(t, gormX.Reset())
 }
 
 func TestGetMetricConfiguration(t *testing.T) {
 	var (
-		err    error
-		b      bytes.Buffer
-		target *orchestrator.CloudService
+		err error
+		b   bytes.Buffer
 	)
 
 	target, err = orchestratorService.CreateDefaultTargetCloudService()
 	assert.Nil(t, err)
-	defer gormX.Reset()
 
 	cli.Output = &b
 
@@ -254,4 +262,7 @@ func TestGetMetricConfiguration(t *testing.T) {
 	err = cmd.RunE(nil, []string{target.Id, "TransportEncryptionEnabled"})
 
 	assert.Nil(t, err)
+
+	// Reset DB
+	assert.Nil(t, gormX.Reset())
 }
