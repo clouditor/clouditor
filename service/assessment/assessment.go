@@ -26,13 +26,16 @@
 package assessment
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"sync"
+
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/policies"
-	"context"
-	"encoding/json"
-	"fmt"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -42,8 +45,6 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"io"
-	"sync"
 )
 
 var log *logrus.Entry
@@ -52,21 +53,19 @@ func init() {
 	log = logrus.WithField("component", "assessment")
 }
 
-/*
-Service is an implementation of the Clouditor Assessment service. It should not be used directly, but rather the
-NewService constructor should be used. It implements the AssessmentServer interface
-*/
+// Service is an implementation of the Clouditor Assessment service. It should not be used directly,
+// but rather the NewService constructor should be used. It implements the AssessmentServer interface
 type Service struct {
 	// Embedded for FWD compatibility
 	assessment.UnimplementedAssessmentServer
 
 	// evidenceStoreStream sends evidences to the Evidence Store
 	evidenceStoreStream  evidence.EvidenceStore_StoreEvidencesClient
-	EvidenceStoreAddress string
+	evidenceStoreAddress string
 
 	// orchestratorStream sends ARs to the Orchestrator
 	orchestratorStream  orchestrator.Orchestrator_StoreAssessmentResultsClient
-	OrchestratorAddress string
+	orchestratorAddress string
 
 	// resultHooks is a list of hook functions that can be used if one wants to be
 	// informed about each assessment result
@@ -78,13 +77,45 @@ type Service struct {
 	results map[string]*assessment.AssessmentResult
 }
 
-// NewService creates a new assessment service with default values
-func NewService() *Service {
-	return &Service{
-		results:              make(map[string]*assessment.AssessmentResult),
-		EvidenceStoreAddress: "localhost:9090",
-		OrchestratorAddress:  "localhost:9090",
+const (
+	// DefaultEvidenceStoreAddress specifies the default gRPC address of the evidence store.
+	DefaultEvidenceStoreAddress = "localhost:9090"
+
+	// DefaultEvidenceStoreAddress specifies the default gRPC address of the orchestrator.
+	DefaultOrchestratorAddress = "localhost:9090"
+)
+
+// ServiceOption is a functional option type to configure the assessment service.
+type ServiceOption func(*Service)
+
+// WithEvidenceStoreAddress is an option to configure the evidence store gRPC address.
+func WithEvidenceStoreAddress(address string) ServiceOption {
+	return func(s *Service) {
+		s.evidenceStoreAddress = address
 	}
+}
+
+// WithEvidenceStoreAddress is an option to configure the orchestrator gRPC address.
+func WithOrchestratorAddress(address string) ServiceOption {
+	return func(s *Service) {
+		s.orchestratorAddress = address
+	}
+}
+
+// NewService creates a new assessment service with default values
+func NewService(opts ...ServiceOption) *Service {
+	s := &Service{
+		results:              make(map[string]*assessment.AssessmentResult),
+		evidenceStoreAddress: DefaultEvidenceStoreAddress,
+		orchestratorAddress:  DefaultOrchestratorAddress,
+	}
+
+	// Apply any options
+	for _, o := range opts {
+		o(s)
+	}
+
+	return s
 }
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
@@ -153,7 +184,6 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 
 // handleEvidence is the helper method for the actual assessment used by AssessEvidence and AssessEvidences
 func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string) (err error) {
-
 	log.Infof("Running evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, evidence.ToolId, evidence.Timestamp)
 	log.Debugf("Evidence: %+v", evidence)
 
@@ -264,7 +294,7 @@ func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result
 // initEvidenceStoreStream initializes the stream to the Evidence Store
 func (s *Service) initEvidenceStoreStream() error {
 	// Establish connection to evidenceStore component
-	target := s.EvidenceStoreAddress
+	target := s.evidenceStoreAddress
 	log.Infof("Establishing connection to Evidence Store (%v)", target)
 	conn, err := grpc.Dial(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -298,7 +328,7 @@ func (s *Service) sendToEvidenceStore(e *evidence.Evidence) error {
 // initOrchestratorStream initializes the stream to the Orchestrator
 func (s *Service) initOrchestratorStream() error {
 	// Establish connection to orchestrator component
-	target := s.OrchestratorAddress
+	target := s.orchestratorAddress
 	log.Infof("Establishing connection to Orchestrator (%v)", target)
 	conn, err := grpc.Dial(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {

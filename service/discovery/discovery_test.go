@@ -26,26 +26,27 @@
 package discovery
 
 import (
-	service_assessment "clouditor.io/clouditor/service/assessment"
 	"context"
 	"errors"
 	"fmt"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/status"
-	"google.golang.org/grpc/test/bufconn"
 	"net"
 	"os"
+	"reflect"
 	"testing"
 	"time"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
+	service_assessment "clouditor.io/clouditor/service/assessment"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
+	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -70,6 +71,45 @@ func TestMain(m *testing.M) {
 	}
 
 	os.Exit(m.Run())
+}
+
+func TestNewService(t *testing.T) {
+	type args struct {
+		opts []ServiceOption
+	}
+	tests := []struct {
+		name string
+		args args
+		want *Service
+	}{
+		{
+			name: "Create service with options",
+			args: args{
+				opts: []ServiceOption{
+					WithAssessmentAddress("localhost:9091"),
+				},
+			},
+			want: &Service{
+				assessmentAddress: "localhost:9091",
+				resources:         make(map[string]voc.IsCloudResource),
+				Configurations:    make(map[discovery.Discoverer]*Configuration),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewService(tt.args.opts...)
+
+			// we cannot compare the scheduler, so we need to nil it
+			got.scheduler = nil
+			tt.want.scheduler = nil
+
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewService() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
 
 func TestStartDiscovery(t *testing.T) {
