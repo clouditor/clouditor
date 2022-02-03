@@ -53,14 +53,13 @@ var (
 	authService         *service_auth.Service
 	orchestratorService *service_orchestrator.Service
 	target              *orchestrator.CloudService
+	gormX               = new(persistence.GormX)
 )
 
 func TestMain(m *testing.M) {
 	var (
 		err error
 		dir string
-
-		gormX = new(persistence.GormX)
 	)
 
 	err = os.Chdir("../../../")
@@ -81,11 +80,6 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
-
-	target, err = orchestratorService.CreateDefaultTargetCloudService()
-	if err != nil {
-		panic(err)
-	}
 
 	defer sock.Close()
 	defer server.Stop()
@@ -134,9 +128,15 @@ func TestRegisterCloudServiceCommand(t *testing.T) {
 }
 
 func TestListCloudServicesCommand(t *testing.T) {
-	var err error
-	var b bytes.Buffer
-	var response orchestrator.ListCloudServicesResponse
+	var (
+		err      error
+		b        bytes.Buffer
+		response orchestrator.ListCloudServicesResponse
+	)
+
+	_, err = orchestratorService.CreateDefaultTargetCloudService()
+	assert.Nil(t, err)
+	defer gormX.Reset()
 
 	cli.Output = &b
 
@@ -152,9 +152,15 @@ func TestListCloudServicesCommand(t *testing.T) {
 }
 
 func TestGetCloudServiceCommand(t *testing.T) {
-	var err error
-	var b bytes.Buffer
-	var response orchestrator.CloudService
+	var (
+		err      error
+		b        bytes.Buffer
+		response orchestrator.CloudService
+	)
+
+	target, err = orchestratorService.CreateDefaultTargetCloudService()
+	assert.Nil(t, err)
+	defer gormX.Reset()
 
 	cli.Output = &b
 
@@ -170,9 +176,15 @@ func TestGetCloudServiceCommand(t *testing.T) {
 }
 
 func TestRemoveCloudServicesCommand(t *testing.T) {
-	var err error
-	var b bytes.Buffer
-	var response emptypb.Empty
+	var (
+		err      error
+		b        bytes.Buffer
+		response emptypb.Empty
+	)
+
+	target, err = orchestratorService.CreateDefaultTargetCloudService()
+	assert.Nil(t, err)
+	defer gormX.Reset()
 
 	cli.Output = &b
 
@@ -192,9 +204,15 @@ func TestRemoveCloudServicesCommand(t *testing.T) {
 }
 
 func TestUpdateCloudServiceCommand(t *testing.T) {
-	var err error
-	var b bytes.Buffer
-	var response orchestrator.CloudService
+	var (
+		err      error
+		b        bytes.Buffer
+		response orchestrator.CloudService
+	)
+
+	target, err = orchestratorService.CreateDefaultTargetCloudService()
+	assert.Nil(t, err)
+	defer gormX.Reset()
 
 	cli.Output = &b
 
@@ -219,6 +237,10 @@ func TestGetMetricConfiguration(t *testing.T) {
 		b      bytes.Buffer
 		target *orchestrator.CloudService
 	)
+
+	target, err = orchestratorService.CreateDefaultTargetCloudService()
+	assert.Nil(t, err)
+	defer gormX.Reset()
 
 	cli.Output = &b
 

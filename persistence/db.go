@@ -125,3 +125,10 @@ func (g *GormX) Delete(r interface{}, id string) error {
 func (g *GormX) GetDatabase() *gorm.DB {
 	return g.db
 }
+
+// Reset resets entire the database
+func (g *GormX) Reset() (err error) {
+	err = g.Delete(&orchestrator.CloudService{}, "")
+	err = g.Delete(&auth.User{}, "")
+	return
+}
