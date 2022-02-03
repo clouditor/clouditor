@@ -46,16 +46,19 @@ import (
 
 var sock net.Listener
 var server *grpc.Server
+var authService *service_auth.Service
+var gormX = new(persistence.GormX)
 
 func TestMain(m *testing.M) {
 	var err error
 
-	err = persistence.InitDB(true, "", 0)
+	err = gormX.Init(true, "", 0)
 	if err != nil {
 		panic(err)
 	}
+	authService = service_auth.NewService(gormX)
 
-	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
+	sock, server, err = authService.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}

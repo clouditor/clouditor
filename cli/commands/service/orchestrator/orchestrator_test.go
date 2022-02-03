@@ -52,12 +52,14 @@ import (
 
 var sock net.Listener
 var server *grpc.Server
+var authServices *service_auth.Service
+var orchestratorService *service_orchestrator.Service
+var gormX = new(persistence.GormX)
 
 func TestMain(m *testing.M) {
 	var (
-		err     error
-		dir     string
-		service *service_orchestrator.Service
+		err error
+		dir string
 	)
 
 	err = os.Chdir("../../../../")
@@ -65,20 +67,20 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	err = persistence.InitDB(true, "", 0)
+	err = gormX.Init(true, "", 0)
 	if err != nil {
 		panic(err)
 	}
+	authServices = service_auth.NewService(gormX)
+	orchestratorService = service_orchestrator.NewService(gormX)
 
-	service = service_orchestrator.NewService()
-
-	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
+	sock, server, err = authServices.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}
-	orchestrator.RegisterOrchestratorServer(server, service)
+	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
 	// Store an assessment result that output of CMD 'list_results' is not empty
-	_, err = service.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
+	_, err = orchestratorService.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
 		Result: &assessment.AssessmentResult{
 			Id:         "11111111-1111-1111-1111-111111111111",
 			MetricId:   "assessmentResultMetricID",

@@ -48,12 +48,14 @@ import (
 
 var sock net.Listener
 var server *grpc.Server
+var authServices *service_auth.Service
+var discoveryService *service_discovery.Service
+var gormX = new(persistence.GormX)
 
 func TestMain(m *testing.M) {
 	var (
-		err     error
-		dir     string
-		service *service_discovery.Service
+		err error
+		dir string
 	)
 
 	err = os.Chdir("../../../../")
@@ -61,19 +63,19 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	err = persistence.InitDB(true, "", 0)
+	err = gormX.Init(true, "", 0)
 	if err != nil {
 		panic(err)
 	}
+	authServices = service_auth.NewService(gormX)
+	discoveryService = service_discovery.NewService()
+	discoveryService.StartDiscovery(mockDiscoverer{testCase: 2})
 
-	service = service_discovery.NewService()
-	service.StartDiscovery(mockDiscoverer{testCase: 2})
-
-	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
+	sock, server, err = authServices.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}
-	discovery.RegisterDiscoveryServer(server, service)
+	discovery.RegisterDiscoveryServer(server, discoveryService)
 
 	defer func(sock net.Listener) {
 		err = sock.Close()
