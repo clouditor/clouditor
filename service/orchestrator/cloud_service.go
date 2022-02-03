@@ -1,4 +1,4 @@
-// Copyright 2021 Fraunhofer AISEC
+// Copyright 2021-2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ const DefaultTargetCloudServiceId = "00000000-0000-0000-000000000000"
 const DefaultTargetCloudServiceName = "default"
 const DefaultTargetCloudServiceDescription = "The default target cloud service"
 
+// RegisterCloudService implements method for OrchestratorServer interface for registering a cloud service
 func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.RegisterCloudServiceRequest) (service *orchestrator.CloudService, err error) {
 	// TODO(lebogg for oxisto): Before req was checked to be not nil but it is necessary?
 	if err = req.Service.Validate(); err != nil {
@@ -62,6 +63,7 @@ func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.Regi
 	return
 }
 
+// ListCloudServices implements method for OrchestratorServer interface for listing all cloud services
 func (s *Service) ListCloudServices(_ context.Context, _ *orchestrator.ListCloudServicesRequest) (response *orchestrator.ListCloudServicesResponse, err error) {
 	response = new(orchestrator.ListCloudServicesResponse)
 	response.Services = make([]*orchestrator.CloudService, 0, 10)
@@ -74,6 +76,7 @@ func (s *Service) ListCloudServices(_ context.Context, _ *orchestrator.ListCloud
 	return response, nil
 }
 
+// GetCloudService implements method for OrchestratorServer interface for getting a cloud service with provided id
 func (s *Service) GetCloudService(_ context.Context, req *orchestrator.GetCloudServiceRequest) (response *orchestrator.CloudService, err error) {
 	if req == nil || req.ServiceId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
@@ -90,6 +93,8 @@ func (s *Service) GetCloudService(_ context.Context, req *orchestrator.GetCloudS
 	return response, nil
 }
 
+// UpdateCloudService implements method for OrchestratorServer interface for updating a cloud service
+// TODO(all): remove ServiceId from request since it is accessible in service already
 func (s *Service) UpdateCloudService(_ context.Context, req *orchestrator.UpdateCloudServiceRequest) (response *orchestrator.CloudService, err error) {
 	if req.Service == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "service is empty")
@@ -99,21 +104,15 @@ func (s *Service) UpdateCloudService(_ context.Context, req *orchestrator.Update
 		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
 	}
 
-	var count int64
-	// TODO(lebogg): Check how Model works and how to generalize it
-	//err = s.db.Model(&orchestrator.CloudService{}).Count(&count).Error
-	//if err != nil {
-	//	return nil, status.Errorf(codes.Internal, "database error: %s", err)
-	//}
-
-	if count == 0 {
-		return nil, status.Error(codes.NotFound, "service not found")
-	}
-
 	req.Service.Id = req.ServiceId
-	err = s.db.Update(&req.Service)
+	// Check if cloud service is in the DB
+	_, err = s.GetCloudService(context.Background(), &orchestrator.GetCloudServiceRequest{ServiceId: req.ServiceId})
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %s", err)
+		return nil, err
+	}
+	err = s.db.Update(req.Service)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
 	return req.Service, nil

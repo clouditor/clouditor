@@ -1,4 +1,4 @@
-// Copyright 2016-2020 Fraunhofer AISEC
+// Copyright 2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -91,12 +91,18 @@ func (g *GormX) Read(r interface{}, conds ...interface{}) (err error) {
 }
 
 func (g *GormX) Update(r interface{}) error {
-	// g.db.Model(r).Count()
+	// TODO(all): Save will update all fields. We could also use "Update" which only update non-empty fields
 	return g.db.Save(r).Error
 }
 
 // Delete deletes record with given id. If no record was found, returns ErrRecordNotFound
 func (g *GormX) Delete(r interface{}, id string) error {
+	// if id is empty remove all records -> currently used for testing.
+	// In implemented RPCs validate always remove functions to not have an empty ID
+	if id == "" {
+		return g.db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(r).Error
+	}
+	// Remove record r with given ID
 	tx := g.db.Delete(r, "Id = ?", id)
 	if err := tx.Error; err != nil {
 		return err

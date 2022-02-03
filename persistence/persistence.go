@@ -1,4 +1,4 @@
-// Copyright 2016-2020 Fraunhofer AISEC
+// Copyright 2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,11 +32,11 @@ type IsDatabase interface {
 	Init(inMemory bool, host string, port int16) error
 
 	// Create creates a new object and put it into the DB
-	Create(interface{}) error
+	Create(r interface{}) error
 	// Read gets the record with given conditions
-	Read(interface{}, ...interface{}) error
+	Read(r interface{}, conds ...interface{}) error
 	// Update updates the record with given id of the DB
-	Update(interface{}) error
+	Update(r interface{}) error
 	// Delete deletes the record with given id of the DB
-	Delete(interface{}, string) error
+	Delete(r interface{}, id string) error
 }

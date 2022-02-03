@@ -1,8 +1,33 @@
+// Copyright 2022 Fraunhofer AISEC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+//           $$\                           $$\ $$\   $$\
+//           $$ |                          $$ |\__|  $$ |
+//  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+// $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+// $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
+// $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+// \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+//  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+//
+// This file is part of Clouditor Community Edition.
+
 package orchestrator
 
 import (
-	"clouditor.io/clouditor/persistence"
 	"context"
+	"fmt"
 	"testing"
 
 	"clouditor.io/clouditor/api/orchestrator"
@@ -13,6 +38,8 @@ import (
 )
 
 func TestRegisterCloudService(t *testing.T) {
+	defer resetDB(t, service)
+
 	tests := []struct {
 		name string
 		req  *orchestrator.RegisterCloudServiceRequest
@@ -39,15 +66,13 @@ func TestRegisterCloudService(t *testing.T) {
 		},
 	}
 
-	// Start Orchestrator service with DB and add one cloud service
-	s := startTestService()
-	cloudService, err := s.CreateDefaultTargetCloudService()
+	cloudService, err := service.CreateDefaultTargetCloudService()
 	assert.Nil(t, err)
 	assert.NotNil(t, cloudService)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := s.RegisterCloudService(context.Background(), tt.req)
+			res, err := service.RegisterCloudService(context.Background(), tt.req)
 
 			if tt.err == nil {
 				assert.Equal(t, err, tt.err)
@@ -73,7 +98,40 @@ func TestRegisterCloudService(t *testing.T) {
 	}
 }
 
+func TestService_ListCloudServices(t *testing.T) {
+	resetDB(t, service)
+
+	var (
+		listCloudServicesResponse *orchestrator.ListCloudServicesResponse
+		cloudService              *orchestrator.CloudService
+		err                       error
+	)
+
+	// 1st case: No services stored
+	listCloudServicesResponse, err = service.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{})
+	assert.Nil(t, err)
+	assert.NotNil(t, listCloudServicesResponse.Services)
+	assert.Empty(t, listCloudServicesResponse.Services)
+
+	// 2nd case: One service stored
+	cloudService, err = service.CreateDefaultTargetCloudService()
+	assert.Nil(t, err)
+	assert.NotNil(t, cloudService)
+
+	listCloudServicesResponse, err = service.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{})
+	assert.Nil(t, err)
+	assert.NotNil(t, listCloudServicesResponse.Services)
+	assert.NotEmpty(t, listCloudServicesResponse.Services)
+	assert.Equal(t, len(listCloudServicesResponse.Services), 1)
+
+	// Reset DB so that other tests work correctly
+	err = service.db.Delete(&orchestrator.CloudService{}, "")
+	assert.Nil(t, err)
+}
+
 func TestGetCloudService(t *testing.T) {
+	defer resetDB(t, service)
+
 	tests := []struct {
 		name string
 		req  *orchestrator.GetCloudServiceRequest
@@ -110,15 +168,13 @@ func TestGetCloudService(t *testing.T) {
 		},
 	}
 
-	// Start Orchestrator service with DB and add one cloud service
-	s := startTestService()
-	cloudService, err := s.CreateDefaultTargetCloudService()
+	cloudService, err := service.CreateDefaultTargetCloudService()
 	assert.Nil(t, err)
 	assert.NotNil(t, cloudService)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := s.GetCloudService(context.Background(), tt.req)
+			res, err := service.GetCloudService(context.Background(), tt.req)
 
 			if tt.err == nil {
 				assert.Equal(t, tt.err, err)
@@ -133,90 +189,125 @@ func TestGetCloudService(t *testing.T) {
 			assert.True(t, proto.Equal(res, tt.res), "%v != %v", res, tt.res)
 		})
 	}
+
+	// Reset DB so that other tests work correctly
+	err = service.db.Delete(&orchestrator.CloudService{}, "")
+	assert.Nil(t, err)
 }
 
-func TestService_ListCloudServices(t *testing.T) {
+func TestService_UpdateCloudService(t *testing.T) {
+	defer resetDB(t, service)
+
 	var (
-		listCloudServicesResponse *orchestrator.ListCloudServicesResponse
-		cloudService              *orchestrator.CloudService
-		err                       error
+		cloudService *orchestrator.CloudService
+		err          error
 	)
 
-	// Create service with DB
-	s := startTestService()
+	// 1st case: Service is nil
+	_, err = service.UpdateCloudService(context.Background(), &orchestrator.UpdateCloudServiceRequest{})
+	assert.Equal(t, codes.InvalidArgument, status.Code(err))
 
-	// 1st case: No services stored
-	listCloudServicesResponse, err = s.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{})
+	// 2nd case: Service ID is nil
+	_, err = service.UpdateCloudService(context.Background(), &orchestrator.UpdateCloudServiceRequest{
+		Service: &orchestrator.CloudService{},
+	})
+	assert.Equal(t, codes.InvalidArgument, status.Code(err))
+
+	// 3rd case: Service not found since there are no services yet
+	_, err = service.UpdateCloudService(context.Background(), &orchestrator.UpdateCloudServiceRequest{
+		Service: &orchestrator.CloudService{
+			Id: DefaultTargetCloudServiceId,
+		},
+		ServiceId: DefaultTargetCloudServiceId,
+	})
+	assert.Equal(t, codes.NotFound, status.Code(err))
+	// 4th case: Service updated successfully
+	_, err = service.CreateDefaultTargetCloudService()
 	assert.Nil(t, err)
-	assert.NotNil(t, listCloudServicesResponse.Services)
-	assert.Empty(t, listCloudServicesResponse.Services)
-
-	// 2nd case: One service stored
-	cloudService, err = s.CreateDefaultTargetCloudService()
+	if err != nil {
+		return
+	}
+	cloudService, err = service.UpdateCloudService(context.Background(), &orchestrator.UpdateCloudServiceRequest{
+		Service: &orchestrator.CloudService{
+			Id:          DefaultTargetCloudServiceId,
+			Name:        "NewName",
+			Description: "NewDescription",
+		},
+		ServiceId: DefaultTargetCloudServiceId,
+	})
 	assert.Nil(t, err)
 	assert.NotNil(t, cloudService)
+	assert.Equal(t, "NewName", cloudService.Name)
+	assert.Equal(t, "NewDescription", cloudService.Description)
 
-	listCloudServicesResponse, err = s.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{})
-	assert.Nil(t, err)
-	assert.NotNil(t, listCloudServicesResponse.Services)
-	assert.NotEmpty(t, listCloudServicesResponse.Services)
-	assert.Equal(t, len(listCloudServicesResponse.Services), 1)
+	cloudService, err = service.UpdateCloudService(context.Background(), &orchestrator.UpdateCloudServiceRequest{
+		ServiceId: DefaultTargetCloudServiceId,
+		Service: &orchestrator.CloudService{
+			Id:          "",
+			Name:        "",
+			Description: "",
+		},
+	})
+	fmt.Println(err)
+	fmt.Println(cloudService)
 
 }
 
 func TestService_RemoveCloudService(t *testing.T) {
+	defer resetDB(t, service)
+
 	var (
 		cloudServiceResponse      *orchestrator.CloudService
 		err                       error
 		listCloudServicesResponse *orchestrator.ListCloudServicesResponse
 	)
 
-	// Create service with DB
-	s := startTestService()
-
 	// 1st case: Empty service ID error
-	_, err = s.RemoveCloudService(context.Background(), &orchestrator.RemoveCloudServiceRequest{ServiceId: ""})
+	_, err = service.RemoveCloudService(context.Background(), &orchestrator.RemoveCloudServiceRequest{ServiceId: ""})
 	assert.NotNil(t, err)
 	assert.Equal(t, status.Code(err), codes.InvalidArgument)
 
 	// 2nd case: ErrRecordNotFound
-	_, err = s.RemoveCloudService(context.Background(), &orchestrator.RemoveCloudServiceRequest{ServiceId: DefaultTargetCloudServiceId})
+	_, err = service.RemoveCloudService(context.Background(), &orchestrator.RemoveCloudServiceRequest{ServiceId: DefaultTargetCloudServiceId})
 	assert.NotNil(t, err)
 	assert.Equal(t, status.Code(err), codes.NotFound)
 
 	// 3rd case: Record removed successfully
-	cloudServiceResponse, err = s.CreateDefaultTargetCloudService()
+	cloudServiceResponse, err = service.CreateDefaultTargetCloudService()
 	assert.Nil(t, err)
 	assert.NotNil(t, cloudServiceResponse)
 
 	// There is a record for cloud services in the DB (default one)
-	listCloudServicesResponse, err = s.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{})
+	listCloudServicesResponse, err = service.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{})
 	assert.Nil(t, err)
 	assert.NotNil(t, listCloudServicesResponse.Services)
 	assert.NotEmpty(t, listCloudServicesResponse.Services)
 
 	// Remove record
-	_, err = s.RemoveCloudService(context.Background(), &orchestrator.RemoveCloudServiceRequest{ServiceId: DefaultTargetCloudServiceId})
+	_, err = service.RemoveCloudService(context.Background(), &orchestrator.RemoveCloudServiceRequest{ServiceId: DefaultTargetCloudServiceId})
 	assert.Nil(t, err)
 
 	// There is a record for cloud services in the DB (default one)
-	listCloudServicesResponse, err = s.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{})
+	listCloudServicesResponse, err = service.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{})
 	assert.Nil(t, err)
 	assert.NotNil(t, listCloudServicesResponse.Services)
 	assert.Empty(t, listCloudServicesResponse.Services)
+
+	// Reset DB so that other tests work correctly
+	err = service.db.Delete(&orchestrator.CloudService{}, "")
+	assert.Nil(t, err)
 }
 
 func TestService_CreateDefaultTargetCloudService(t *testing.T) {
+	defer resetDB(t, service)
+
 	var (
 		cloudServiceResponse *orchestrator.CloudService
 		err                  error
 	)
 
-	// Create service with DB
-	s := startTestService()
-
 	// 1st case: No records for cloud services -> Default target service is created
-	cloudServiceResponse, err = s.CreateDefaultTargetCloudService()
+	cloudServiceResponse, err = service.CreateDefaultTargetCloudService()
 	assert.Nil(t, err)
 	assert.Equal(t, &orchestrator.CloudService{
 		Id:          DefaultTargetCloudServiceId,
@@ -225,17 +316,17 @@ func TestService_CreateDefaultTargetCloudService(t *testing.T) {
 	}, cloudServiceResponse)
 
 	// 2nd case: There is already a record for service (the default target service) -> Nothing added and no error
-	cloudServiceResponse, err = s.CreateDefaultTargetCloudService()
+	cloudServiceResponse, err = service.CreateDefaultTargetCloudService()
 	assert.Nil(t, err)
 	assert.Nil(t, cloudServiceResponse)
+
+	// Reset DB so that other tests work correctly
+	err = service.db.Delete(&orchestrator.CloudService{}, "")
+	assert.Nil(t, err)
 }
 
-// startTestService starts service with DB initialization
-func startTestService() *Service {
-	gormX := new(persistence.GormX)
-	err := gormX.Init(true, "", 0)
-	if err != nil {
-		panic(err)
-	}
-	return NewService(gormX)
+// resetDB resets DB making next test to be independent of current one
+func resetDB(t *testing.T, s *Service) {
+	err := s.db.Delete(&orchestrator.CloudService{}, "")
+	assert.Nil(t, err)
 }
