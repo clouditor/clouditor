@@ -92,7 +92,7 @@ func TestNewService(t *testing.T) {
 			want: &Service{
 				assessmentAddress: "localhost:9091",
 				resources:         make(map[string]voc.IsCloudResource),
-				Configurations:    make(map[discovery.Discoverer]*Configuration),
+				configurations:    make(map[discovery.Discoverer]*Configuration),
 			},
 		},
 	}

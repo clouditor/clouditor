@@ -59,7 +59,7 @@ var log *logrus.Entry
 type Service struct {
 	discovery.UnimplementedDiscoveryServer
 
-	Configurations map[discovery.Discoverer]*Configuration
+	configurations map[discovery.Discoverer]*Configuration
 
 	assessmentStream  assessment.Assessment_AssessEvidencesClient
 	assessmentAddress string
@@ -96,7 +96,7 @@ func NewService(opts ...ServiceOption) *Service {
 		assessmentAddress: DefaultAssessmentAddress,
 		resources:         make(map[string]voc.IsCloudResource),
 		scheduler:         gocron.NewScheduler(time.UTC),
-		Configurations:    make(map[discovery.Discoverer]*Configuration),
+		configurations:    make(map[discovery.Discoverer]*Configuration),
 	}
 
 	// Apply any options
@@ -175,7 +175,7 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	)
 
 	for _, v := range discoverer {
-		s.Configurations[v] = &Configuration{
+		s.configurations[v] = &Configuration{
 			Interval: 5 * time.Minute,
 		}
 

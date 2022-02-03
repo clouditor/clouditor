@@ -54,7 +54,7 @@ func init() {
 }
 
 // Service is an implementation of the Clouditor Assessment service. It should not be used directly,
-// but rather the NewService constructor should be used. It implements the AssessmentServer interface
+// but rather the NewService constructor should be used. It implements the AssessmentServer interface.
 type Service struct {
 	// Embedded for FWD compatibility
 	assessment.UnimplementedAssessmentServer
@@ -102,7 +102,7 @@ func WithOrchestratorAddress(address string) ServiceOption {
 	}
 }
 
-// NewService creates a new assessment service with default values
+// NewService creates a new assessment service with default values.
 func NewService(opts ...ServiceOption) *Service {
 	s := &Service{
 		results:              make(map[string]*assessment.AssessmentResult),
