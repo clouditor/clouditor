@@ -78,7 +78,7 @@ type mockLambdaAPIWithErrors struct {
 }
 
 // ListFunctions is the method implementation of the LambdaAPI interface
-func (m mockLambdaAPI) ListFunctions(_ context.Context, _ *lambda.ListFunctionsInput, _ ...func(*lambda.Options)) (*lambda.ListFunctionsOutput, error) {
+func (mockLambdaAPI) ListFunctions(_ context.Context, _ *lambda.ListFunctionsInput, _ ...func(*lambda.Options)) (*lambda.ListFunctionsOutput, error) {
 	return &lambda.ListFunctionsOutput{
 		Functions: []lambdaTypes.FunctionConfiguration{
 			{
@@ -92,7 +92,7 @@ func (m mockLambdaAPI) ListFunctions(_ context.Context, _ *lambda.ListFunctionsI
 	}, nil
 }
 
-func (m mockLambdaAPI51LambdaFunctions) ListFunctions(_ context.Context, input *lambda.ListFunctionsInput, _ ...func(*lambda.Options)) (output *lambda.ListFunctionsOutput, err error) {
+func (mockLambdaAPI51LambdaFunctions) ListFunctions(_ context.Context, input *lambda.ListFunctionsInput, _ ...func(*lambda.Options)) (output *lambda.ListFunctionsOutput, err error) {
 	var lambdaFunctions []lambdaTypes.FunctionConfiguration
 	nextMarker := "ShowNext"
 	if input.Marker == nil {
@@ -122,7 +122,7 @@ func (m mockLambdaAPI51LambdaFunctions) ListFunctions(_ context.Context, input *
 }
 
 // ListFunctions is the method implementation of the LambdaAPI interface
-func (m mockLambdaAPIWithErrors) ListFunctions(_ context.Context, _ *lambda.ListFunctionsInput, _ ...func(*lambda.Options)) (*lambda.ListFunctionsOutput, error) {
+func (mockLambdaAPIWithErrors) ListFunctions(_ context.Context, _ *lambda.ListFunctionsInput, _ ...func(*lambda.Options)) (*lambda.ListFunctionsOutput, error) {
 	err := &smithy.GenericAPIError{
 		Code:    "500",
 		Message: "Internal Server Error",
@@ -131,7 +131,7 @@ func (m mockLambdaAPIWithErrors) ListFunctions(_ context.Context, _ *lambda.List
 }
 
 // DescribeInstances is the method implementation of the EC2API interface
-func (m mockEC2API) DescribeInstances(_ context.Context, _ *ec2.DescribeInstancesInput, _ ...func(options *ec2.Options)) (*ec2.DescribeInstancesOutput, error) {
+func (mockEC2API) DescribeInstances(_ context.Context, _ *ec2.DescribeInstancesInput, _ ...func(options *ec2.Options)) (*ec2.DescribeInstancesOutput, error) {
 	// block device mappings for output struct
 	blockDeviceMappings := []types.InstanceBlockDeviceMapping{
 		{
@@ -184,7 +184,7 @@ func (m mockEC2API) DescribeInstances(_ context.Context, _ *ec2.DescribeInstance
 }
 
 // DescribeInstances is the method implementation of the EC2API interface
-func (m mockEC2APIWithErrors) DescribeInstances(_ context.Context, _ *ec2.DescribeInstancesInput, _ ...func(options *ec2.Options)) (*ec2.DescribeInstancesOutput, error) {
+func (mockEC2APIWithErrors) DescribeInstances(_ context.Context, _ *ec2.DescribeInstancesInput, _ ...func(options *ec2.Options)) (*ec2.DescribeInstancesOutput, error) {
 	err := &smithy.GenericAPIError{
 		Code:    "ConnectionError",
 		Message: "Couldn't resolve host. Bad connection?",
@@ -437,8 +437,8 @@ func TestComputeDiscovery_NewComputeDiscovery(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewComputeDiscovery(tt.args.client); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewComputeDiscovery() = %v, want %v", got, tt.want)
+			if got := NewAwsComputeDiscovery(tt.args.client); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewAwsComputeDiscovery() = %v, want %v", got, tt.want)
 			}
 		})
 	}

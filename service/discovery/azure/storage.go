@@ -153,7 +153,7 @@ func (d *azureStorageDiscovery) discoverFileStorages(account *storage.Account) (
 	client := storage.NewFileSharesClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
 
-	result, err := client.List(context.Background(), resourceGroupName(*account.ID), *account.Name, "", "", "")
+	result, err := client.List(context.Background(), getResourceGroupName(*account.ID), *account.Name, "", "", "")
 	if err != nil {
 		return nil, fmt.Errorf("could not list file storages: %w", err)
 	}
@@ -178,7 +178,7 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *storage.Account)
 	client := storage.NewBlobContainersClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
 
-	result, err := client.List(context.Background(), resourceGroupName(*account.ID), *account.Name, "", "", "")
+	result, err := client.List(context.Background(), getResourceGroupName(*account.ID), *account.Name, "", "", "")
 	if err != nil {
 		return nil, fmt.Errorf("could not list object storages: %w", err)
 	}
@@ -339,7 +339,7 @@ func (d *azureStorageDiscovery) sourceVaultID(discEncryptionSetID string) (strin
 	client := compute.NewDiskEncryptionSetsClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
 
-	discEncryptionSet, err := client.Get(context.Background(), resourceGroupName(discEncryptionSetID), diskEncryptionSetName(discEncryptionSetID))
+	discEncryptionSet, err := client.Get(context.Background(), getResourceGroupName(discEncryptionSetID), diskEncryptionSetName(discEncryptionSetID))
 	if err != nil {
 		return "", fmt.Errorf("could not get discEncryptionSet: %w", err)
 	}

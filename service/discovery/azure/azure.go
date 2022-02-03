@@ -28,6 +28,11 @@ package azure
 import (
 	"context"
 	"errors"
+	"fmt"
+	autorest_azure "github.com/Azure/go-autorest/autorest/azure"
+	"github.com/Azure/go-autorest/autorest/azure/auth"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/resources/mgmt/subscriptions"
@@ -83,8 +88,8 @@ func (a *azureDiscovery) authorize() (err error) {
 		return errors.New("no authorized was available")
 	}
 
-	// for now, do not re-authorize. in the future, we would probably need to check, if
-	// the token is still valid. or maybe Azure does this for us?
+	// If using NewAuthorizerFromFile() in discovery file, we do not need to re-authorize.
+	// If using NewAuthorizerFromCLI() in discovery file, the token expires after 75 minutes.
 	if a.isAuthorized {
 		return
 	}
@@ -92,8 +97,20 @@ func (a *azureDiscovery) authorize() (err error) {
 	subClient := subscriptions.NewClient()
 	a.apply(&subClient.Client)
 
+	// get subscriptions
+	page, err := subClient.List(context.Background())
+	if err != nil {
+		err = fmt.Errorf("could not get azure subscription: %v", err)
+		return
+	}
+
+	// check if list of subscriptions is empty
+	if len(page.Values()) == 0 {
+		err = errors.New("list of subscriptions is empty")
+		return
+	}
+
 	// get first subscription
-	page, _ := subClient.List(context.Background())
 	a.sub = page.Values()[0]
 
 	log.Infof("Using %s as subscription", *a.sub.SubscriptionID)
@@ -113,6 +130,26 @@ func (a azureDiscovery) apply(client *autorest.Client) {
 	}
 }
 
-func resourceGroupName(id string) string {
+func NewAuthorizer() (autorest.Authorizer, error) {
+	// create an authorizer from file or as fallback from the CLI
+	// if authorizer is from CLI, the access token expires after 75 minutes
+	authorizer, err := auth.NewAuthorizerFromFile(autorest_azure.PublicCloud.ResourceManagerEndpoint)
+	if err != nil {
+		log.Errorf("Could not authenticate to Azure with authorizer from file: %v", err)
+		log.Infof("Fallback to Azure with authorizer from CLI.")
+		authorizer, err = auth.NewAuthorizerFromCLI()
+		if err != nil {
+			log.Errorf("Could not authenticate to Azure with authorizer from CLI: %v", err)
+			return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
+		}
+		log.Info("Using Azure authorizer from CLI. The discovery times out after 1 hour.")
+	} else {
+		log.Info("Using Azure authorizer from file.")
+	}
+
+	return authorizer, nil
+}
+
+func getResourceGroupName(id string) string {
 	return strings.Split(id, "/")[4]
 }

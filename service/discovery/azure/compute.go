@@ -106,7 +106,7 @@ func (d *azureComputeDiscovery) discoverFunction() ([]voc.IsCloudResource, error
 	return list, err
 }
 
-func (d *azureComputeDiscovery) handleFunction(function *web.Site) voc.IsCompute {
+func (*azureComputeDiscovery) handleFunction(function *web.Site) voc.IsCompute {
 	return &voc.Function{
 		Compute: &voc.Compute{
 			CloudResource: &voc.CloudResource{
@@ -197,7 +197,7 @@ func (d *azureComputeDiscovery) extendedVirtualMachine(vm *compute.VirtualMachin
 	client := compute.NewVirtualMachinesClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
 
-	vmExtended, err := client.Get(context.Background(), resourceGroupName(*vm.ID), *vm.Name, "")
+	vmExtended, err := client.Get(context.Background(), getResourceGroupName(*vm.ID), *vm.Name, "")
 	if err != nil {
 		return nil, fmt.Errorf("could not get virtual machine: %w", err)
 	}

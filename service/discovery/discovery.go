@@ -42,7 +42,6 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/voc"
-	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/go-co-op/gocron"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -90,38 +89,53 @@ func NewService() *Service {
 	}
 }
 
+func (s *Service) initAssessmentStream() error {
+	// Establish connection to assessment component
+	// TODO(oxisto): support assessment on Another tcp/port
+	target := s.AssessmentAddress
+	log.Infof("Establishing connection to Assessment (%v)", target)
+
+	conn, err := grpc.Dial(s.AssessmentAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return fmt.Errorf("could not connect to Assessment service: %v", err)
+	}
+
+	client := assessment.NewAssessmentClient(conn)
+	s.assessmentStream, err = client.AssessEvidences(context.Background())
+	if err != nil {
+		return fmt.Errorf("could not set up stream for assessing evidences: %v", err)
+	}
+
+	log.Infof("Connected to Assessment")
+
+	return nil
+}
+
 // Start starts discovery
 func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
 	resp = &discovery.StartDiscoveryResponse{Successful: true}
 
 	log.Infof("Starting discovery...")
-
 	s.scheduler.TagsUnique()
 
 	// Establish connection to assessment component
-	var client assessment.AssessmentClient
-	// TODO(oxisto): support assessment on Another tcp/port
-	conn, err := grpc.Dial(s.AssessmentAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not connect to assessment service: %v", err)
-	}
-	client = assessment.NewAssessmentClient(conn)
-	s.assessmentStream, err = client.AssessEvidences(context.Background())
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not set up stream for assessing evidences: %v", err)
+	if s.assessmentStream == nil {
+		err = s.initAssessmentStream()
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "could not initialize stream to Assessment: %v", err)
+		}
 	}
 
-	// create an authorizer from env vars or Azure Managed Service Identity
-	authorizer, err := auth.NewAuthorizerFromCLI()
+	authorizer, err := azure.NewAuthorizer()
 	if err != nil {
 		log.Errorf("Could not authenticate to Azure: %v", err)
-		return nil, err
+		return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
 	}
 
 	k8sClient, err := k8s.AuthFromKubeConfig()
 	if err != nil {
 		log.Errorf("Could not authenticate to Kubernetes: %v", err)
-		return nil, err
+		return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Kubernetes: %v", err)
 	}
 
 	awsClient, err := aws.NewClient()
@@ -140,7 +154,7 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 		k8s.NewKubernetesComputeDiscovery(k8sClient),
 		k8s.NewKubernetesNetworkDiscovery(k8sClient),
 		aws.NewAwsStorageDiscovery(awsClient),
-		aws.NewComputeDiscovery(awsClient),
+		aws.NewAwsComputeDiscovery(awsClient),
 	)
 
 	for _, v := range discoverer {
