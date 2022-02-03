@@ -27,6 +27,7 @@ package rest
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -75,14 +76,18 @@ func TestMain(m *testing.M) {
 			WithAllowedMethods(methods),
 			WithAllowedHeaders(headers),
 		)
-		if err != nil {
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			panic(err)
 		}
 	}()
 
-	defer sock.Close()
-	defer server.Stop()
-	defer os.Exit(m.Run())
+	exit := m.Run()
+
+	StopServer(context.Background())
+	sock.Close()
+	server.Stop()
+
+	os.Exit(exit)
 }
 
 func TestCORS(t *testing.T) {
