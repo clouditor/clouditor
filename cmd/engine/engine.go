@@ -61,18 +61,21 @@ import (
 )
 
 const (
-	APIDefaultUserFlag     = "api-default-user"
-	APIDefaultPasswordFlag = "api-default-password"
-	APISecretFlag          = "api-secret"
-	APIgRPCPortFlag        = "api-grpc-port"
-	APIHTTPPortFlag        = "api-http-port"
-	DBUserNameFlag         = "db-user-name"
-	DBPasswordFlag         = "db-password"
-	DBHostFlag             = "db-host"
-	DBNameFlag             = "db-name"
-	DBPortFlag             = "db-port"
-	DBInMemoryFlag         = "db-in-memory"
-	CreateDefaultTarget    = "target-default-create"
+	APIDefaultUserFlag         = "api-default-user"
+	APIDefaultPasswordFlag     = "api-default-password"
+	APISecretFlag              = "api-secret"
+	APIgRPCPortFlag            = "api-grpc-port"
+	APIHTTPPortFlag            = "api-http-port"
+	APICORSAllowedOriginsFlags = "api-cors-allowed-origins"
+	APICORSAllowedHeadersFlags = "api-cors-allowed-headers"
+	APICORSAllowedMethodsFlags = "api-cors-allowed-methods"
+	DBUserNameFlag             = "db-user-name"
+	DBPasswordFlag             = "db-password"
+	DBHostFlag                 = "db-host"
+	DBNameFlag                 = "db-name"
+	DBPortFlag                 = "db-port"
+	DBInMemoryFlag             = "db-in-memory"
+	CreateDefaultTarget        = "target-default-create"
 
 	DefaultAPIDefaultUser      = "clouditor"
 	DefaultAPIDefaultPassword  = "clouditor"
@@ -116,6 +119,9 @@ func init() {
 	engineCmd.Flags().String(APISecretFlag, DefaultAPISecret, "Specifies the secret used by API tokens")
 	engineCmd.Flags().Int16(APIgRPCPortFlag, DefaultAPIgRPCPort, "Specifies the port used for the gRPC API")
 	engineCmd.Flags().Int16(APIHTTPPortFlag, DefaultAPIHTTPPort, "Specifies the port used for the HTTP API")
+	engineCmd.Flags().StringArray(APICORSAllowedOriginsFlags, rest.DefaultAllowedOrigins, "Specifies the origins allowed in CORS")
+	engineCmd.Flags().StringArray(APICORSAllowedHeadersFlags, rest.DefaultAllowedHeaders, "Specifies the headers allowed in CORS")
+	engineCmd.Flags().StringArray(APICORSAllowedMethodsFlags, rest.DefaultAllowedMethods, "Specifies the methods allowed in CORS")
 	engineCmd.Flags().String(DBUserNameFlag, DefaultDBUserName, "Provides user name of database")
 	engineCmd.Flags().String(DBPasswordFlag, DefaultDBPassword, "Provides password of database")
 	engineCmd.Flags().String(DBHostFlag, DefaultDBHost, "Provides address of database")
@@ -129,6 +135,9 @@ func init() {
 	_ = viper.BindPFlag(APISecretFlag, engineCmd.Flags().Lookup(APISecretFlag))
 	_ = viper.BindPFlag(APIgRPCPortFlag, engineCmd.Flags().Lookup(APIgRPCPortFlag))
 	_ = viper.BindPFlag(APIHTTPPortFlag, engineCmd.Flags().Lookup(APIHTTPPortFlag))
+	_ = viper.BindPFlag(APICORSAllowedOriginsFlags, engineCmd.Flags().Lookup(APICORSAllowedOriginsFlags))
+	_ = viper.BindPFlag(APICORSAllowedHeadersFlags, engineCmd.Flags().Lookup(APICORSAllowedHeadersFlags))
+	_ = viper.BindPFlag(APICORSAllowedMethodsFlags, engineCmd.Flags().Lookup(APICORSAllowedMethodsFlags))
 	_ = viper.BindPFlag(DBUserNameFlag, engineCmd.Flags().Lookup(DBUserNameFlag))
 	_ = viper.BindPFlag(DBPasswordFlag, engineCmd.Flags().Lookup(DBPasswordFlag))
 	_ = viper.BindPFlag(DBHostFlag, engineCmd.Flags().Lookup(DBHostFlag))
@@ -233,7 +242,13 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 
 	// start the gRPC-HTTP gateway
 	go func() {
-		err = rest.RunServer(context.Background(), grpcPort, httpPort)
+		err = rest.RunServer(context.Background(),
+			grpcPort,
+			httpPort,
+			rest.WithAllowedOrigins(viper.GetStringSlice(APICORSAllowedOriginsFlags)),
+			rest.WithAllowedHeaders(viper.GetStringSlice(APICORSAllowedHeadersFlags)),
+			rest.WithAllowedMethods(viper.GetStringSlice(APICORSAllowedMethodsFlags)),
+		)
 		if errors.Is(err, http.ErrServerClosed) {
 			// ToDo(oxisto): deepsource anti-pattern: calls to os.Exit only in main() or init() functions
 			os.Exit(0)
