@@ -71,19 +71,37 @@ type Service struct {
 	mu sync.Mutex
 
 	db *gorm.DB
+
+	metricsFile string
 }
 
 func init() {
 	log = logrus.WithField("component", "orchestrator")
 }
 
-func NewService() *Service {
+// ServiceOption is a function-style option to configure the Orchestrator Service
+type ServiceOption func(*Service)
+
+// WithMetricsFile can be used to load a different metrics file
+func WithMetricsFile(file string) ServiceOption {
+	return func(s *Service) {
+		s.metricsFile = file
+	}
+}
+
+func NewService(opts ...ServiceOption) *Service {
 	s := Service{
 		results:              make(map[string]*assessment.AssessmentResult),
 		metricConfigurations: make(map[string]map[string]*assessment.MetricConfiguration),
+		metricsFile:          DefaultMetricsFile,
 	}
 
-	if err := LoadMetrics(DefaultMetricsFile); err != nil {
+	// Apply service options
+	for _, o := range opts {
+		o(&s)
+	}
+
+	if err := LoadMetrics(s.metricsFile); err != nil {
 		log.Errorf("Could not load embedded metrics. Will continue with empty metric list: %v", err)
 	}
 
