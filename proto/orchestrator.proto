@@ -52,7 +52,9 @@ service Orchestrator {
       returns (ListAssessmentToolsResponse) {
     option (google.api.http) = {
       get : "/v1/orchestrator/assessment_tools"
-      additional_bindings {get : "/v1/orchestrator/{metric_id}/assessment_tools"}
+      additional_bindings {
+        get : "/v1/orchestrator/{metric_id}/assessment_tools"
+      }
     };
   }
 
@@ -102,8 +104,24 @@ service Orchestrator {
     };
   }
 
+  // Creates a new metric
+  rpc CreateMetric(CreateMetricRequest) returns (Metric) {
+    option (google.api.http) = {
+      post : "/v1/orchestrator/metrics"
+      body : "metric"
+    };
+  }
+
+  // Updates an existing metric
+  rpc UpdateMetric(UpdateMetricRequest) returns (Metric) {
+    option (google.api.http) = {
+      put : "/v1/orchestrator/metrics"
+      body : "metric"
+    };
+  }
+
   // Returns the metric with the passed metric id
-  rpc GetMetric(GetMetricsRequest) returns (Metric) {
+  rpc GetMetric(GetMetricRequest) returns (Metric) {
     option (google.api.http) = {
       get : "/v1/orchestrator/metrics/{metric_id}"
     };
@@ -160,8 +178,8 @@ service Orchestrator {
       returns (MetricConfiguration) {
     option (google.api.http) = {
       get : "/v1/orchestrator/cloud_services/{service_id}/"
-          "metric_configurations/"
-          "{metric_id}"
+            "metric_configurations/"
+            "{metric_id}"
     };
   }
 
@@ -194,7 +212,14 @@ message DeregisterAssessmentToolRequest { string tool_id = 1; }
 message StoreAssessmentResultRequest { AssessmentResult result = 1; }
 message StoreAssessmentResultResponse {}
 
-message GetMetricsRequest { string metric_id = 1; }
+message CreateMetricRequest { Metric metric = 1; }
+
+message UpdateMetricRequest {
+  string metric_id = 1;
+  Metric metric = 2;
+}
+
+message GetMetricRequest { string metric_id = 1; }
 
 message ListMetricsRequest {}
 message ListMetricsResponse { repeated Metric metrics = 1; }

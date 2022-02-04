@@ -27,6 +27,7 @@ package rest
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -45,6 +46,8 @@ var (
 	origins = []string{"clouditor.io", "localhost"}
 	methods = []string{"GET", "POST"}
 	headers = DefaultAllowedHeaders
+
+	grpcPort int = 0
 )
 
 func TestMain(m *testing.M) {
@@ -66,26 +69,32 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
+	grpcPort = sock.Addr().(*net.TCPAddr).Port
+
+	exit := m.Run()
+
+	sock.Close()
+	server.Stop()
+
+	os.Exit(exit)
+}
+
+func TestCORS(t *testing.T) {
 	go func() {
 		err := RunServer(
 			context.Background(),
-			sock.Addr().(*net.TCPAddr).Port,
+			grpcPort,
 			0,
 			WithAllowedOrigins(origins),
 			WithAllowedMethods(methods),
 			WithAllowedHeaders(headers),
 		)
-		if err != nil {
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			panic(err)
 		}
 	}()
+	defer StopServer(context.Background())
 
-	defer sock.Close()
-	defer server.Stop()
-	defer os.Exit(m.Run())
-}
-
-func TestCORS(t *testing.T) {
 	// wait until server is ready to serve
 	select {
 	case <-ready:
