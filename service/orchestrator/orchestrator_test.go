@@ -48,10 +48,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var service *Service
+var (
+	service *Service
+	gormX   *persistence.GormX
+)
 
-const assessmentResultID1 = "11111111-1111-1111-1111-111111111111"
-const assessmentResultID2 = "11111111-1111-1111-1111-111111111112"
+const (
+	assessmentResultID1 = "11111111-1111-1111-1111-111111111111"
+	assessmentResultID2 = "11111111-1111-1111-1111-111111111112"
+)
 
 func TestMain(m *testing.M) {
 	err := os.Chdir("../../")
@@ -59,7 +64,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	var gormX = new(persistence.GormX)
+	gormX = new(persistence.GormX)
 	err = gormX.Init(true, "", 0)
 	if err != nil {
 		panic(err)

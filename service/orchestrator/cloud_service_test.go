@@ -27,7 +27,6 @@ package orchestrator
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"clouditor.io/clouditor/api/orchestrator"
@@ -38,8 +37,6 @@ import (
 )
 
 func TestRegisterCloudService(t *testing.T) {
-	defer resetDB(t, service)
-
 	tests := []struct {
 		name string
 		req  *orchestrator.RegisterCloudServiceRequest
@@ -96,11 +93,12 @@ func TestRegisterCloudService(t *testing.T) {
 			assert.True(t, proto.Equal(res, tt.res), "%v != %v", res, tt.res)
 		})
 	}
+
+	// Reset DB
+	assert.Nil(t, gormX.Reset())
 }
 
 func TestService_ListCloudServices(t *testing.T) {
-	resetDB(t, service)
-
 	var (
 		listCloudServicesResponse *orchestrator.ListCloudServicesResponse
 		cloudService              *orchestrator.CloudService
@@ -127,11 +125,12 @@ func TestService_ListCloudServices(t *testing.T) {
 	// Reset DB so that other tests work correctly
 	err = service.db.Delete(&orchestrator.CloudService{}, "")
 	assert.Nil(t, err)
+
+	// Reset DB
+	assert.Nil(t, gormX.Reset())
 }
 
 func TestGetCloudService(t *testing.T) {
-	defer resetDB(t, service)
-
 	tests := []struct {
 		name string
 		req  *orchestrator.GetCloudServiceRequest
@@ -193,11 +192,12 @@ func TestGetCloudService(t *testing.T) {
 	// Reset DB so that other tests work correctly
 	err = service.db.Delete(&orchestrator.CloudService{}, "")
 	assert.Nil(t, err)
+
+	// Reset DB
+	assert.Nil(t, gormX.Reset())
 }
 
 func TestService_UpdateCloudService(t *testing.T) {
-	defer resetDB(t, service)
-
 	var (
 		cloudService *orchestrator.CloudService
 		err          error
@@ -248,14 +248,12 @@ func TestService_UpdateCloudService(t *testing.T) {
 			Description: "",
 		},
 	})
-	fmt.Println(err)
-	fmt.Println(cloudService)
 
+	// Reset DB
+	assert.Nil(t, gormX.Reset())
 }
 
 func TestService_RemoveCloudService(t *testing.T) {
-	defer resetDB(t, service)
-
 	var (
 		cloudServiceResponse      *orchestrator.CloudService
 		err                       error
@@ -296,11 +294,12 @@ func TestService_RemoveCloudService(t *testing.T) {
 	// Reset DB so that other tests work correctly
 	err = service.db.Delete(&orchestrator.CloudService{}, "")
 	assert.Nil(t, err)
+
+	// Reset DB
+	assert.Nil(t, gormX.Reset())
 }
 
 func TestService_CreateDefaultTargetCloudService(t *testing.T) {
-	defer resetDB(t, service)
-
 	var (
 		cloudServiceResponse *orchestrator.CloudService
 		err                  error
@@ -323,10 +322,7 @@ func TestService_CreateDefaultTargetCloudService(t *testing.T) {
 	// Reset DB so that other tests work correctly
 	err = service.db.Delete(&orchestrator.CloudService{}, "")
 	assert.Nil(t, err)
-}
 
-// resetDB resets DB making next test to be independent of current one
-func resetDB(t *testing.T, s *Service) {
-	err := s.db.Delete(&orchestrator.CloudService{}, "")
-	assert.Nil(t, err)
+	// Reset DB
+	assert.Nil(t, gormX.Reset())
 }
