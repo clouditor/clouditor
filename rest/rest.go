@@ -171,14 +171,7 @@ func RunServer(ctx context.Context, grpcPort int, httpPort int, corsOpts ...CORS
 			break
 		}
 
-		ready <- false
-
-		_, cancel := context.WithTimeout(ctx, 5*time.Second)
-		defer cancel()
-
-		log.Printf("Shutting down REST gateway on :%d", httpPort)
-
-		_ = srv.Shutdown(ctx)
+		StopServer(ctx)
 	}()
 
 	log.Printf("Starting REST gateway on :%d", httpPort)
@@ -191,6 +184,22 @@ func RunServer(ctx context.Context, grpcPort int, httpPort int, corsOpts ...CORS
 	ready <- true
 
 	return srv.Serve(sock)
+}
+
+// StopServer is in charge of stopping the REST API.
+func StopServer(ctx context.Context) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	log.Printf("Shutting down REST gateway")
+
+	// Clear our ready channel, otherwise, this will block the exit
+	select {
+	case <-ready:
+	default:
+	}
+
+	_ = srv.Shutdown(ctx)
 }
 
 // GetServerPort returns the actual port used by the REST API
