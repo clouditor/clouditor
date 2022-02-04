@@ -224,16 +224,19 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		log.Errorf("could not listen: %v", err)
 	}
 
+	authConfig := common.ConfigureAuth()
+	defer authConfig.Jwks.EndBackground()
+
 	server = grpc.NewServer(
 		grpc_middleware.WithUnaryServerChain(
 			grpc_ctxtags.UnaryServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
 			grpc_logrus.UnaryServerInterceptor(grpcLoggerEntry),
-			grpc_auth.UnaryServerInterceptor(common.MyAuth),
+			grpc_auth.UnaryServerInterceptor(authConfig.AuthFunc),
 		),
 		grpc_middleware.WithStreamServerChain(
 			grpc_ctxtags.StreamServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
 			grpc_logrus.StreamServerInterceptor(grpcLoggerEntry),
-			grpc_auth.StreamServerInterceptor(common.MyAuth),
+			grpc_auth.StreamServerInterceptor(authConfig.AuthFunc),
 		))
 	auth.RegisterAuthenticationServer(server, authService)
 	discovery.RegisterDiscoveryServer(server, discoveryService)

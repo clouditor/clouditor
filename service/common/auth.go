@@ -13,62 +13,77 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var JwkURL = "http://localhost/.well-known/jwks.json"
-var jwks *keyfunc.JWKS
-
 var log *logrus.Entry
 
+type AuthConfig struct {
+	jwksUrl string
+
+	Jwks     *keyfunc.JWKS
+	AuthFunc grpc_auth.AuthFunc
+}
+
+const DefaultJwkUrl = "http://localhost/.well-known/jwks.json"
+
 func init() {
-	var err error
-
 	log = logrus.WithField("component", "service-auth")
+}
 
-	jwks, err = keyfunc.Get(JwkURL, keyfunc.Options{
-		RefreshInterval: time.Hour,
-	})
-	if err != nil {
-		log.Errorf("Failed to get the JWKS from the given URL :%v", err)
+type AuthOption func(*AuthConfig)
+
+func WithJwksUrl(url string) AuthOption {
+	return func(ac *AuthConfig) {
+		ac.jwksUrl = url
 	}
 }
 
-func MyAuth(ctx context.Context) (context.Context, error) {
-	token, err := grpc_auth.AuthFromMD(ctx, "bearer")
-	if err != nil {
-		return nil, err
+type AuthContextKey string
+
+func ConfigureAuth(opts ...AuthOption) *AuthConfig {
+	var config = &AuthConfig{
+		jwksUrl: DefaultJwkUrl,
 	}
 
-	tokenInfo, err := parseToken(token)
-	if err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
+	// Apply options
+	for _, o := range opts {
+		o(config)
 	}
 
-	newCtx := context.WithValue(ctx, "something", tokenInfo)
+	config.AuthFunc = func(ctx context.Context) (newCtx context.Context, err error) {
+		// Lazy loading of JWKS
+		if config.Jwks == nil {
+			config.Jwks, err = keyfunc.Get(config.jwksUrl, keyfunc.Options{
+				RefreshInterval: time.Hour,
+			})
+			if err != nil {
+				log.Debugf("Could not retrieve JWKS. API authentication will fail: %v", err)
+				return nil, status.Errorf(codes.FailedPrecondition, "could not retrieve JWKS: %v", err)
+			}
+		}
 
-	return newCtx, nil
+		token, err := grpc_auth.AuthFromMD(ctx, "bearer")
+		if err != nil {
+			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
+		}
+
+		tokenInfo, err := parseToken(token, config)
+		if err != nil {
+			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
+		}
+
+		newCtx = context.WithValue(ctx, AuthContextKey("token"), tokenInfo)
+
+		return newCtx, nil
+	}
+
+	return config
 }
 
-func parseToken(token string) (jwt.Claims, error) {
-	parsedToken, err := jwt.ParseWithClaims(token, &jwt.RegisteredClaims{}, KeyFuncJwk)
+func parseToken(token string, authConfig *AuthConfig) (jwt.Claims, error) {
+	parsedToken, err := jwt.ParseWithClaims(token, &jwt.RegisteredClaims{}, authConfig.Jwks.Keyfunc)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not validate JWT: %w", err)
 	}
 
 	return parsedToken.Claims, nil
-}
-
-func RetrieveJWK() (*keyfunc.JWKS, error) {
-
-	return jwks, nil
-}
-
-func KeyFuncJwk(t *jwt.Token) (interface{}, error) {
-	set, err := RetrieveJWK()
-
-	if err != nil {
-		return nil, fmt.Errorf("could not retrieve JWKS: %w", err)
-	}
-
-	// get key from key set
-	return set.Keyfunc(t)
 }
