@@ -95,10 +95,10 @@ const (
 
 var server *grpc.Server
 var authService *service_auth.Service
-var discoveryService *service_discovery.Service
+var discoveryService discovery.DiscoveryServer
 var orchestratorService *service_orchestrator.Service
-var assessmentService *service_assessment.Service
-var evidenceStoreService *service_evidenceStore.Service
+var assessmentService assessment.AssessmentServer
+var evidenceStoreService evidence.EvidenceStoreServer
 
 var log *logrus.Entry
 
