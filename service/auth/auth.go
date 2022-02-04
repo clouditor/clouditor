@@ -27,6 +27,10 @@ package auth
 
 import (
 	"context"
+	"crypto"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
 	"errors"
 	"fmt"
 	"net"
@@ -53,7 +57,8 @@ var log *logrus.Entry
 type Service struct {
 	auth.UnimplementedAuthenticationServer
 
-	TokenSecret string
+	// TODO(oxisto): re-use private key / store somewhere secure (pw protected)
+	apiKey *ecdsa.PrivateKey
 }
 
 // UserClaims extend jwt.StandardClaims with more detailed claims about a user
@@ -65,6 +70,14 @@ type UserClaims struct {
 
 func init() {
 	log = logrus.WithField("component", "auth")
+}
+
+func NewService() *Service {
+	key, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+
+	return &Service{
+		apiKey: key,
+	}
 }
 
 // Login handles a login request
@@ -84,7 +97,7 @@ func (s Service) Login(_ context.Context, request *auth.LoginRequest) (response 
 
 	var token string
 
-	if token, err = s.issueToken(user.Username, user.FullName, user.Email, time.Now().Add(1*3600*24)); err != nil {
+	if token, err = s.issueToken(user.Username, user.FullName, user.Email, time.Now().Add(time.Hour*24)); err != nil {
 		return nil, status.Errorf(codes.Internal, "token issue failed: %v", err)
 	}
 
@@ -163,9 +176,7 @@ func (Service) CreateDefaultUser(username string, password string) {
 
 // issueToken issues a JWT-based token
 func (s Service) issueToken(subject string, fullName string, email string, expiry time.Time) (token string, err error) {
-	key := []byte(s.TokenSecret)
-
-	claims := jwt.NewWithClaims(jwt.SigningMethodHS256,
+	claims := jwt.NewWithClaims(jwt.SigningMethodES256,
 		&UserClaims{
 			FullName: fullName,
 			EMail:    email,
@@ -175,9 +186,14 @@ func (s Service) issueToken(subject string, fullName string, email string, expir
 				Subject:   subject,
 			}},
 	)
+	claims.Header["kid"] = "1"
 
-	token, err = claims.SignedString(key)
+	token, err = claims.SignedString(s.apiKey)
 	return
+}
+
+func (s Service) GetPublicKey() crypto.PublicKey {
+	return s.apiKey.PublicKey
 }
 
 // StartDedicatedAuthServer starts a gRPC server containing just the auth service
@@ -188,7 +204,7 @@ func StartDedicatedAuthServer(address string) (sock net.Listener, server *grpc.S
 		return nil, nil, nil, fmt.Errorf("could not listen: %w", err)
 	}
 
-	authService = &Service{}
+	authService = NewService()
 	authService.CreateDefaultUser("clouditor", "clouditor")
 
 	server = grpc.NewServer()

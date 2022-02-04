@@ -83,7 +83,7 @@ func TestMain(m *testing.M) {
 	os.Exit(exit)
 }
 
-func TestCORS(t *testing.T) {
+func TestREST(t *testing.T) {
 	go func() {
 		err := RunServer(
 			context.Background(),
@@ -92,7 +92,7 @@ func TestCORS(t *testing.T) {
 			WithAllowedOrigins(origins),
 			WithAllowedMethods(methods),
 			WithAllowedHeaders(headers),
-			WithJwks(authService),
+			WithJwks(authService.GetPublicKey()),
 		)
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			panic(err)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"clouditor.io/clouditor/rest"
 	"github.com/MicahParks/keyfunc"
 	"github.com/golang-jwt/jwt/v4"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
@@ -22,7 +23,7 @@ type AuthConfig struct {
 	AuthFunc grpc_auth.AuthFunc
 }
 
-const DefaultJwkUrl = "http://localhost/.well-known/jwks.json"
+var DefaultJwkUrl = fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", rest.DefaultAPIHTTPPort)
 
 func init() {
 	log = logrus.WithField("component", "service-auth")

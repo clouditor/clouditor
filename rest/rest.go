@@ -27,6 +27,8 @@ package rest
 
 import (
 	"context"
+	"crypto"
+	"crypto/ecdsa"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -42,7 +44,6 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
-	service_auth "clouditor.io/clouditor/service/auth"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -90,6 +91,9 @@ var (
 	// DefaultAllowedMethods contains sensible defaults for the Access-Control-Allow-Methods header.
 	// Please adjust accordingly in production using WithAllowedMethods.
 	DefaultAllowedMethods = []string{"GET", "POST", "PUT", "DELETE"}
+
+	// DefaultAPIHTTPPort specifies the default port for the REST API.
+	DefaultAPIHTTPPort int16 = 8080
 )
 
 // WithAllowedOrigins is an option to supply allowed origins in CORS.
@@ -120,15 +124,25 @@ func WithAdditionalHandler(method string, path string, h runtime.HandlerFunc) Se
 	}
 }
 
-// WithJwks is a short for a functional-stype option to configure a REST server with JWKS support.
-func WithJwks(s *service_auth.Service) ServerConfigOption {
+// WithJwks is a shortcut for a functional-stype option to configure a REST server
+// with JWKS support based on a ecdsa.PublicKey.
+func WithJwks(publicKey crypto.PublicKey) ServerConfigOption {
 	return WithAdditionalHandler("GET", "/.well-known/jwks.json", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
-		var json = fmt.Sprintf(`{"keys":[{"kty":"oct","k":"%s","kid":"1"}]}`,
-			base64.RawURLEncoding.EncodeToString([]byte(s.TokenSecret)),
-		)
+		switch v := publicKey.(type) {
+		// Currently, we only support EC keys
+		case *ecdsa.PublicKey:
+		case ecdsa.PublicKey:
+			var json = fmt.Sprintf(`{"keys":[{"crv":"%s","kty":"EC","x":"%s","y":"%s","kid":"1"}]}`,
+				v.Curve.Params().Name,
+				base64.RawURLEncoding.EncodeToString(v.X.Bytes()),
+				base64.RawURLEncoding.EncodeToString(v.Y.Bytes()),
+			)
+			w.Write([]byte(json))
+		default:
+			log.Errorf("Unsupported key type for JWKS: %T", v)
+			w.WriteHeader(500)
+		}
 
-		w.Write([]byte(json))
-		w.WriteHeader(200)
 	})
 }
 
@@ -201,7 +215,9 @@ func RunServer(ctx context.Context, grpcPort int, httpPort int, serverOpts ...Se
 		return err
 	}
 
-	ready <- true
+	go func() {
+		ready <- true
+	}()
 
 	return srv.Serve(sock)
 }

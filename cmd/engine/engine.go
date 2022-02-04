@@ -83,7 +83,6 @@ const (
 	DefaultAPIDefaultPassword  = "clouditor"
 	DefaultAPISecret           = "changeme"
 	DefaultAPIgRPCPort         = 9090
-	DefaultAPIHTTPPort         = 8080
 	DefaultDBUserName          = "postgres"
 	DefaultDBPassword          = "postgres"
 	DefaultDBHost              = "localhost"
@@ -120,7 +119,7 @@ func init() {
 	engineCmd.Flags().String(APIDefaultPasswordFlag, DefaultAPIDefaultPassword, "Specifies the default API password")
 	engineCmd.Flags().String(APISecretFlag, DefaultAPISecret, "Specifies the secret used by API tokens")
 	engineCmd.Flags().Int16(APIgRPCPortFlag, DefaultAPIgRPCPort, "Specifies the port used for the gRPC API")
-	engineCmd.Flags().Int16(APIHTTPPortFlag, DefaultAPIHTTPPort, "Specifies the port used for the HTTP API")
+	engineCmd.Flags().Int16(APIHTTPPortFlag, rest.DefaultAPIHTTPPort, "Specifies the port used for the HTTP API")
 	engineCmd.Flags().StringArray(APICORSAllowedOriginsFlags, rest.DefaultAllowedOrigins, "Specifies the origins allowed in CORS")
 	engineCmd.Flags().StringArray(APICORSAllowedHeadersFlags, rest.DefaultAllowedHeaders, "Specifies the headers allowed in CORS")
 	engineCmd.Flags().StringArray(APICORSAllowedMethodsFlags, rest.DefaultAllowedMethods, "Specifies the methods allowed in CORS")
@@ -255,7 +254,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			rest.WithAllowedOrigins(viper.GetStringSlice(APICORSAllowedOriginsFlags)),
 			rest.WithAllowedHeaders(viper.GetStringSlice(APICORSAllowedHeadersFlags)),
 			rest.WithAllowedMethods(viper.GetStringSlice(APICORSAllowedMethodsFlags)),
-			service_auth.WithJwks(authService),
+			rest.WithJwks(authService),
 		)
 		if errors.Is(err, http.ErrServerClosed) {
 			// ToDo(oxisto): deepsource anti-pattern: calls to os.Exit only in main() or init() functions
