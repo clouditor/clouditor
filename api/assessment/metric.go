@@ -6,7 +6,6 @@ import (
 )
 
 var (
-	//ErrMetricIdMissing   = errors.New("metric id is missing")
 	ErrMetricNameMissing = errors.New("metric name is missing")
 	ErrMetricEmpty       = errors.New("metric is missing or empty")
 )
