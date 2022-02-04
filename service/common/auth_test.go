@@ -59,26 +59,3 @@ func Test(t *testing.T) {
 	assert.NotNil(t, pkey)
 }
 
-func handle() http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/.well-known/jwks.json" {
-			var json = fmt.Sprintf(`{"keys":
-			[
-			  {"kty":"EC",
-			   "crv":"P-256",
-			   "x":"%s",
-			   "y":"%s",
-			   "use":"enc",
-			   "kid":"1"}
-			]
-		  }`,
-				base64.RawURLEncoding.EncodeToString(privateKey.PublicKey.X.Bytes()),
-				base64.RawURLEncoding.EncodeToString(privateKey.PublicKey.Y.Bytes()),
-			)
-
-			fmt.Printf(json)
-			// Example key from RFC 7517 A.1
-			w.Write([]byte(json))
-		}
-	})
-}

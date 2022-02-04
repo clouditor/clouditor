@@ -29,6 +29,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -38,6 +39,7 @@ import (
 
 	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
+	"github.com/MicahParks/keyfunc"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 )
@@ -46,6 +48,8 @@ var (
 	origins = []string{"clouditor.io", "localhost"}
 	methods = []string{"GET", "POST"}
 	headers = DefaultAllowedHeaders
+
+	authService *service_auth.Service
 
 	grpcPort int = 0
 )
@@ -64,7 +68,7 @@ func TestMain(m *testing.M) {
 	}
 
 	// Start at least an authentication server, so that we have something to forward
-	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
+	sock, server, authService, err = service_auth.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}
@@ -88,6 +92,7 @@ func TestCORS(t *testing.T) {
 			WithAllowedOrigins(origins),
 			WithAllowedMethods(methods),
 			WithAllowedHeaders(headers),
+			WithJwks(authService),
 		)
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			panic(err)
@@ -113,14 +118,15 @@ func TestCORS(t *testing.T) {
 	type args struct {
 		origin    string
 		method    string
+		url       string
 		preflight bool
 	}
-
 	tests := []struct {
-		name       string
-		args       args
-		statusCode int
-		headers    map[string]string
+		name         string
+		args         args
+		statusCode   int
+		headers      map[string]string
+		wantResponse func(assert.TestingT, *http.Response) bool
 	}{
 		{
 			name: "Preflight request from valid origin",
@@ -141,6 +147,7 @@ func TestCORS(t *testing.T) {
 			args: args{
 				origin:    "clouditor.io",
 				method:    "POST",
+				url:       "v1/auth/login",
 				preflight: false,
 			},
 			statusCode: 401, // because we are not supplying an actual login request
@@ -155,6 +162,7 @@ func TestCORS(t *testing.T) {
 			args: args{
 				origin:    "clouditor.com",
 				method:    "POST",
+				url:       "v1/auth/login",
 				preflight: true,
 			},
 			statusCode: 501,
@@ -167,11 +175,38 @@ func TestCORS(t *testing.T) {
 			args: args{
 				origin:    "clouditor.com",
 				method:    "POST",
+				url:       "v1/auth/login",
 				preflight: false,
 			},
 			statusCode: 401, // because we are not supplying an actual login request
 			headers: map[string]string{
 				"Access-Control-Allow-Origin": "", // should not leak any origin
+			},
+		},
+		{
+			name: "JWKS request",
+			args: args{
+				origin:    "localhost",
+				method:    "GET",
+				url:       ".well-known/jwks.json",
+				preflight: false,
+			},
+			statusCode: 200,
+			headers:    map[string]string{},
+			wantResponse: func(tt assert.TestingT, r *http.Response) bool {
+				bytes, err := ioutil.ReadAll(r.Body)
+				if err != nil {
+					tt.Errorf("Unexpected error: %v", err)
+					return false
+				}
+
+				jwks, err := keyfunc.NewJSON(bytes)
+				if err != nil {
+					tt.Errorf("Unexpected error: %v", err)
+					return false
+				}
+
+				return len(jwks.ReadOnlyKeys()) > 0
 			},
 		},
 	}
@@ -187,7 +222,7 @@ func TestCORS(t *testing.T) {
 				method = tt.args.method
 			}
 
-			req, err := http.NewRequest(method, fmt.Sprintf("http://localhost:%d/v1/auth/login", port), nil)
+			req, err := http.NewRequest(method, fmt.Sprintf("http://localhost:%d/%s", port, tt.args.url), nil)
 			assert.Nil(t, err)
 			assert.NotNil(t, req)
 
@@ -207,7 +242,10 @@ func TestCORS(t *testing.T) {
 			for key, value := range tt.headers {
 				assert.Equal(t, value, resp.Header.Get(key))
 			}
+
+			if tt.wantResponse != nil {
+				tt.wantResponse(t, resp)
+			}
 		})
 	}
-
 }

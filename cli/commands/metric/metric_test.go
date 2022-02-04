@@ -67,7 +67,7 @@ func TestMain(m *testing.M) {
 
 	service = service_orchestrator.NewService()
 
-	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
+	sock, server, _, err = service_auth.StartDedicatedAuthServer(":0")
 	orchestrator.RegisterOrchestratorServer(server, service)
 
 	if err != nil {

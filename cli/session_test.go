@@ -28,11 +28,12 @@ package cli
 import (
 	"context"
 	"fmt"
-	"google.golang.org/protobuf/proto"
 	"io/ioutil"
 	"net"
 	"os"
 	"testing"
+
+	"google.golang.org/protobuf/proto"
 
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/persistence"
@@ -55,7 +56,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
+	sock, server, _, err = service_auth.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}
