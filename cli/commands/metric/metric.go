@@ -90,7 +90,7 @@ func NewGetMetricCommand() *cobra.Command {
 
 			metricID := args[0]
 
-			res, err = client.GetMetric(context.Background(), &orchestrator.GetMetricsRequest{MetricId: metricID})
+			res, err = client.GetMetric(context.Background(), &orchestrator.GetMetricRequest{MetricId: metricID})
 
 			return session.HandleResponse(res, err)
 		},

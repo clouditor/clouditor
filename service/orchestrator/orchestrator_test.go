@@ -28,7 +28,6 @@ package orchestrator
 import (
 	"context"
 	"io"
-	"io/fs"
 	"os"
 	"reflect"
 	"runtime"
@@ -177,18 +176,6 @@ func TestAssessmentResultHook(t *testing.T) {
 	}
 }
 
-func TestListMetrics(t *testing.T) {
-	var (
-		response *orchestrator.ListMetricsResponse
-		err      error
-	)
-
-	response, err = service.ListMetrics(context.TODO(), &orchestrator.ListMetricsRequest{})
-
-	assert.Nil(t, err)
-	assert.NotEmpty(t, response.Metrics)
-}
-
 func TestListMetricConfigurations(t *testing.T) {
 	var (
 		response *orchestrator.ListMetricConfigurationResponse
@@ -199,24 +186,6 @@ func TestListMetricConfigurations(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.NotEmpty(t, response.Configurations)
-}
-
-func TestGetMetric(t *testing.T) {
-	var (
-		request *orchestrator.GetMetricsRequest
-		metric  *assessment.Metric
-		err     error
-	)
-
-	request = &orchestrator.GetMetricsRequest{
-		MetricId: "TransportEncryptionEnabled",
-	}
-
-	metric, err = service.GetMetric(context.TODO(), request)
-
-	assert.Nil(t, err)
-	assert.NotNil(t, metric)
-	assert.Equal(t, request.MetricId, metric.Id)
 }
 
 func TestStoreAssessmentResult(t *testing.T) {
@@ -326,16 +295,6 @@ func TestStoreAssessmentResults(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestLoad(t *testing.T) {
-	var err = LoadMetrics("notfound.json")
-
-	assert.ErrorIs(t, err, fs.ErrNotExist)
-
-	err = LoadMetrics("metrics.json")
-
-	assert.Nil(t, err)
 }
 
 type mockStreamer struct {
