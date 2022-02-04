@@ -45,7 +45,6 @@ func WithMetricRequiresId() MetricValidationOption {
 		if m.Id == "" {
 			return ErrMetricIdMissing
 		}
-
 		return nil
 	}
 }
