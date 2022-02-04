@@ -124,7 +124,7 @@ func RegisterAuthenticationHandlerFromEndpoint(ctx context.Context, mux *runtime
 
 // RegisterAuthenticationHandler registers the http handlers for service Authentication to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterAuthenticationHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+func RegisterAuthenticationHandler(ctx context.Context, mux *runtime.ServeMux, conn grpc.ClientConnInterface) error {
 	return RegisterAuthenticationHandlerClient(ctx, mux, NewAuthenticationClient(conn))
 }
 
