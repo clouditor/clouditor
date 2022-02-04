@@ -1,6 +1,7 @@
 package common
 
 import (
+	"crypto/ecdsa"
 	"fmt"
 	"net"
 	"net/http"
@@ -28,10 +29,15 @@ func Test(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, set)
 
-	key, err := set.ByID("Public key used in JWS spec Appendix A.3 example")
+	key, ok := set.ReadOnlyKeys()["Public key used in JWS spec Appendix A.3 example"]
 
-	assert.Nil(t, err)
+	assert.True(t, ok)
 	assert.NotNil(t, key)
+
+	pkey, ok := key.(*ecdsa.PublicKey)
+
+	assert.True(t, ok)
+	assert.NotNil(t, pkey)
 }
 
 func handle() http.Handler {
