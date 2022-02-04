@@ -51,7 +51,6 @@ func (g *GormX) Init(inMemory bool, host string, port int16) (err error) {
 		if g.db, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{}); err != nil {
 			return err
 		}
-
 		log.Println("Using in-memory DB")
 	} else {
 		if g.db, err = gorm.Open(postgres.Open(fmt.Sprintf("postgres://postgres@%s:%d/postgres?sslmode=disable", host, port)), &gorm.Config{}); err != nil {
@@ -80,16 +79,12 @@ func (g *GormX) Read(r interface{}, conds ...interface{}) (err error) {
 	switch r.(type) {
 	case *[]*orchestrator.CloudService:
 		err = g.db.Find(r, conds).Error
-		break
 	case *orchestrator.CloudService:
 		err = g.db.First(r, conds).Error
-		break
 	case *[]*auth.User:
 		err = g.db.Find(r, conds).Error
-		break
 	case *auth.User:
 		err = g.db.First(r, conds).Error
-		break
 	default:
 		err = fmt.Errorf("unsupported type: %v (%T)", r, r)
 	}
@@ -128,7 +123,11 @@ func (g *GormX) GetDatabase() *gorm.DB {
 
 // Reset resets entire the database
 func (g *GormX) Reset() (err error) {
-	err = g.Delete(&orchestrator.CloudService{}, "")
-	err = g.Delete(&auth.User{}, "")
+	if err = g.Delete(&orchestrator.CloudService{}, ""); err != nil {
+		return
+	}
+	if err = g.Delete(&auth.User{}, ""); err != nil {
+		return
+	}
 	return
 }
