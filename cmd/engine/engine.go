@@ -35,6 +35,7 @@ import (
 	"strings"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 
@@ -50,6 +51,7 @@ import (
 	"clouditor.io/clouditor/rest"
 	service_assessment "clouditor.io/clouditor/service/assessment"
 	service_auth "clouditor.io/clouditor/service/auth"
+	"clouditor.io/clouditor/service/common"
 	service_discovery "clouditor.io/clouditor/service/discovery"
 	service_evidenceStore "clouditor.io/clouditor/service/evidence"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
@@ -226,10 +228,12 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		grpc_middleware.WithUnaryServerChain(
 			grpc_ctxtags.UnaryServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
 			grpc_logrus.UnaryServerInterceptor(grpcLoggerEntry),
+			grpc_auth.UnaryServerInterceptor(common.MyAuth),
 		),
 		grpc_middleware.WithStreamServerChain(
 			grpc_ctxtags.StreamServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
 			grpc_logrus.StreamServerInterceptor(grpcLoggerEntry),
+			grpc_auth.StreamServerInterceptor(common.MyAuth),
 		))
 	auth.RegisterAuthenticationServer(server, authService)
 	discovery.RegisterDiscoveryServer(server, discoveryService)
