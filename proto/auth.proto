@@ -36,11 +36,21 @@ service Authentication {
   rpc Login(LoginRequest) returns (LoginResponse) {
     option (google.api.http) = {
       post : "/v1/auth/login"
-      // TODO: Here, "*" is good since username and password (fields of LoginRequest) will be the corresponding fields, right?
+      // TODO: Here, "*" is good since username and password (fields of
+      // LoginRequest) will be the corresponding fields, right?
       body : "*"
       response_body : "*"
     };
   };
+
+  // ListPublicKeys lists all available public keys of the authentication server
+  // in the JSON Web Key Set (JWKS) format.
+  rpc ListPublicKeys(ListPublicKeysRequest) returns (ListPublicResponse) {
+    option (google.api.http) = {
+      get : "/.well-known/jwks.json"
+      response_body : "*"
+    };
+  }
 }
 
 // A clouditor user
@@ -58,3 +68,14 @@ message LoginRequest {
 }
 
 message LoginResponse { string token = 1; }
+
+message ListPublicKeysRequest {}
+message ListPublicResponse { repeated JsonWebKey keys = 1; }
+
+message JsonWebKey {
+  string kid = 1;
+  string kty = 22;
+  string crv = 10;
+  string x = 11;
+  string y = 12;
+}

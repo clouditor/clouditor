@@ -27,9 +27,6 @@ package rest
 
 import (
 	"context"
-	"crypto"
-	"crypto/ecdsa"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"net"
@@ -122,31 +119,6 @@ func WithAdditionalHandler(method string, path string, h runtime.HandlerFunc) Se
 	return func(cc *corsConfig, sm *runtime.ServeMux) {
 		_ = sm.HandlePath(method, path, h)
 	}
-}
-
-// WithJwks is a shortcut for a functional-stype option to configure a REST server
-// with JWKS support based on a ecdsa.PublicKey.
-func WithJwks(publicKey crypto.PublicKey) ServerConfigOption {
-	return WithAdditionalHandler("GET", "/.well-known/jwks.json", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
-		switch v := publicKey.(type) {
-		// Currently, we only support EC keys
-		case *ecdsa.PublicKey:
-		case ecdsa.PublicKey:
-			var json = fmt.Sprintf(`{"keys":[{"crv":"%s","kty":"EC","x":"%s","y":"%s","kid":"1"}]}`,
-				v.Curve.Params().Name,
-				base64.RawURLEncoding.EncodeToString(v.X.Bytes()),
-				base64.RawURLEncoding.EncodeToString(v.Y.Bytes()),
-			)
-			_, err := w.Write([]byte(json))
-			if err != nil {
-				w.WriteHeader(500)
-			}
-		default:
-			log.Errorf("Unsupported key type for JWKS: %T", v)
-			w.WriteHeader(500)
-		}
-
-	})
 }
 
 func init() {

@@ -84,7 +84,6 @@ func Test(t *testing.T) {
 			context.Background(),
 			grpcPort,
 			0,
-			rest.WithJwks(authService.GetPublicKey()),
 		)
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			panic(err)

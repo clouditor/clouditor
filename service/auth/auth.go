@@ -31,6 +31,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"net"
@@ -102,6 +103,22 @@ func (s Service) Login(_ context.Context, request *auth.LoginRequest) (response 
 	}
 
 	response = &auth.LoginResponse{Token: token}
+
+	return response, nil
+}
+
+func (s Service) ListPublicKeys(_ context.Context, _ *auth.ListPublicKeysRequest) (response *auth.ListPublicResponse, err error) {
+	response = &auth.ListPublicResponse{
+		Keys: []*auth.JsonWebKey{
+			{
+				Kid: "1",
+				Kty: "EC",
+				Crv: s.apiKey.Params().Name,
+				X:   base64.RawURLEncoding.EncodeToString(s.apiKey.X.Bytes()),
+				Y:   base64.RawURLEncoding.EncodeToString(s.apiKey.Y.Bytes()),
+			},
+		},
+	}
 
 	return response, nil
 }
@@ -194,6 +211,14 @@ func (s Service) issueToken(subject string, fullName string, email string, expir
 
 func (s Service) GetPublicKey() crypto.PublicKey {
 	return s.apiKey.PublicKey
+}
+
+// AuthFuncOverride uses the ServiceAuthFuncOverride interface to override the AuthFunc for this service.
+// The reason is to actually disable authentication checking in the auth service, functions such as login
+// need to be publically available.
+func (s Service) AuthFuncOverride(ctx context.Context, fullMethodName string) (context.Context, error) {
+	// No authentication needed for login functions, otherwise we could not login
+	return ctx, nil
 }
 
 // StartDedicatedAuthServer starts a gRPC server containing just the auth service

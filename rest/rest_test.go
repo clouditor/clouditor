@@ -29,7 +29,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -39,7 +38,6 @@ import (
 
 	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
-	"github.com/MicahParks/keyfunc"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 )
@@ -92,7 +90,6 @@ func TestREST(t *testing.T) {
 			WithAllowedOrigins(origins),
 			WithAllowedMethods(methods),
 			WithAllowedHeaders(headers),
-			WithJwks(authService.GetPublicKey()),
 		)
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			panic(err)
@@ -181,32 +178,6 @@ func TestREST(t *testing.T) {
 			statusCode: 401, // because we are not supplying an actual login request
 			headers: map[string]string{
 				"Access-Control-Allow-Origin": "", // should not leak any origin
-			},
-		},
-		{
-			name: "JWKS request",
-			args: args{
-				origin:    "localhost",
-				method:    "GET",
-				url:       ".well-known/jwks.json",
-				preflight: false,
-			},
-			statusCode: 200,
-			headers:    map[string]string{},
-			wantResponse: func(tt assert.TestingT, r *http.Response) bool {
-				bytes, err := ioutil.ReadAll(r.Body)
-				if err != nil {
-					tt.Errorf("Unexpected error: %v", err)
-					return false
-				}
-
-				jwks, err := keyfunc.NewJSON(bytes)
-				if err != nil {
-					tt.Errorf("Unexpected error: %v", err)
-					return false
-				}
-
-				return len(jwks.ReadOnlyKeys()) > 0
 			},
 		},
 	}

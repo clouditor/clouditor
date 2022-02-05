@@ -252,7 +252,6 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			rest.WithAllowedOrigins(viper.GetStringSlice(APICORSAllowedOriginsFlags)),
 			rest.WithAllowedHeaders(viper.GetStringSlice(APICORSAllowedHeadersFlags)),
 			rest.WithAllowedMethods(viper.GetStringSlice(APICORSAllowedMethodsFlags)),
-			rest.WithJwks(authService.GetPublicKey()),
 		)
 		if errors.Is(err, http.ErrServerClosed) {
 			// ToDo(oxisto): deepsource anti-pattern: calls to os.Exit only in main() or init() functions
