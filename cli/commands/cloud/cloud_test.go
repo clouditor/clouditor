@@ -38,7 +38,7 @@ import (
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/persistence"
-	service_auth "clouditor.io/clouditor/service/auth"
+	"clouditor.io/clouditor/service"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -49,7 +49,7 @@ import (
 
 var sock net.Listener
 var server *grpc.Server
-var service *service_orchestrator.Service
+var s *service_orchestrator.Service
 var target *orchestrator.CloudService
 
 func TestMain(m *testing.M) {
@@ -68,15 +68,15 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	service = service_orchestrator.NewService()
+	s = service_orchestrator.NewService()
 
-	sock, server, _, err = service_auth.StartDedicatedAuthServer(":0")
+	sock, server, _, err = service.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}
-	orchestrator.RegisterOrchestratorServer(server, service)
+	orchestrator.RegisterOrchestratorServer(server, s)
 
-	target, err = service.CreateDefaultTargetCloudService()
+	target, err = s.CreateDefaultTargetCloudService()
 	if err != nil {
 		panic(err)
 	}
@@ -180,7 +180,7 @@ func TestRemoveCloudServicesCommand(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Re-create default service
-	_, err = service.CreateDefaultTargetCloudService()
+	_, err = s.CreateDefaultTargetCloudService()
 
 	assert.Nil(t, err)
 }
@@ -217,7 +217,7 @@ func TestGetMetricConfiguration(t *testing.T) {
 	cli.Output = &b
 
 	// create a new target service
-	target, err = service.RegisterCloudService(context.TODO(), &orchestrator.RegisterCloudServiceRequest{Service: &orchestrator.CloudService{Name: "myservice"}})
+	target, err = s.RegisterCloudService(context.TODO(), &orchestrator.RegisterCloudServiceRequest{Service: &orchestrator.CloudService{Name: "myservice"}})
 
 	assert.NotNil(t, target)
 	assert.Nil(t, err)

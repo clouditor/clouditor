@@ -27,14 +27,11 @@ package auth
 
 import (
 	"context"
-	"crypto"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
-	"fmt"
-	"net"
 	"time"
 
 	"clouditor.io/clouditor/api/auth"
@@ -42,7 +39,6 @@ import (
 	argon2 "github.com/alexedwards/argon2id"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
@@ -209,8 +205,8 @@ func (s Service) issueToken(subject string, fullName string, email string, expir
 	return
 }
 
-func (s Service) GetPublicKey() crypto.PublicKey {
-	return s.apiKey.PublicKey
+func (s Service) GetPublicKey() *ecdsa.PublicKey {
+	return &s.apiKey.PublicKey
 }
 
 // AuthFuncOverride implements the ServiceAuthFuncOverride interface to override the AuthFunc for this service.
@@ -219,26 +215,4 @@ func (s Service) GetPublicKey() crypto.PublicKey {
 func (Service) AuthFuncOverride(ctx context.Context, _ string) (context.Context, error) {
 	// No authentication needed for login functions, otherwise we could not login
 	return ctx, nil
-}
-
-// StartDedicatedAuthServer starts a gRPC server containing just the auth service
-func StartDedicatedAuthServer(address string) (sock net.Listener, server *grpc.Server, authService *Service, err error) {
-	// create a new socket for gRPC communication
-	sock, err = net.Listen("tcp", address)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("could not listen: %w", err)
-	}
-
-	authService = NewService()
-	authService.CreateDefaultUser("clouditor", "clouditor")
-
-	server = grpc.NewServer()
-	auth.RegisterAuthenticationServer(server, authService)
-
-	go func() {
-		// serve the gRPC socket
-		_ = server.Serve(sock)
-	}()
-
-	return sock, server, authService, nil
 }

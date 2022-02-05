@@ -27,14 +27,19 @@ package service
 
 import (
 	"context"
+	"crypto/ecdsa"
 	"fmt"
+	"net"
 	"time"
 
-	"clouditor.io/clouditor/rest"
+	"clouditor.io/clouditor/api/auth"
+	service_auth "clouditor.io/clouditor/service/auth"
 	"github.com/MicahParks/keyfunc"
 	"github.com/golang-jwt/jwt/v4"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -43,12 +48,19 @@ var log *logrus.Entry
 
 type AuthConfig struct {
 	jwksUrl string
+	useJwks bool
 
-	Jwks     *keyfunc.JWKS
+	// Jwks contains a JSON Web Key Set, that is used if JWKS support is enabled. Otherwise a
+	// stored public key will be used
+	Jwks *keyfunc.JWKS
+
+	// publicKey will be used to validate API tokens, if JWKS is not enabled
+	publicKey *ecdsa.PublicKey
+
 	AuthFunc grpc_auth.AuthFunc
 }
 
-var DefaultJwksUrl = fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", rest.DefaultAPIHTTPPort)
+var DefaultJwksUrl = "http://localhost:8080/.well-known/jwks.json"
 
 func init() {
 	log = logrus.WithField("component", "service-auth")
@@ -59,6 +71,13 @@ type AuthOption func(*AuthConfig)
 func WithJwksUrl(url string) AuthOption {
 	return func(ac *AuthConfig) {
 		ac.jwksUrl = url
+		ac.useJwks = true
+	}
+}
+
+func WithPublicKey(publicKey *ecdsa.PublicKey) AuthOption {
+	return func(ac *AuthConfig) {
+		ac.publicKey = publicKey
 	}
 }
 
@@ -76,7 +95,7 @@ func ConfigureAuth(opts ...AuthOption) *AuthConfig {
 
 	config.AuthFunc = func(ctx context.Context) (newCtx context.Context, err error) {
 		// Lazy loading of JWKS
-		if config.Jwks == nil {
+		if config.Jwks == nil && config.useJwks {
 			config.Jwks, err = keyfunc.Get(config.jwksUrl, keyfunc.Options{
 				RefreshInterval: time.Hour,
 			})
@@ -109,11 +128,51 @@ func ConfigureAuth(opts ...AuthOption) *AuthConfig {
 }
 
 func parseToken(token string, authConfig *AuthConfig) (jwt.Claims, error) {
-	parsedToken, err := jwt.ParseWithClaims(token, &jwt.RegisteredClaims{}, authConfig.Jwks.Keyfunc)
+	var parsedToken *jwt.Token
+	var err error
+
+	// Use JWKS, if enabled
+	if authConfig.useJwks {
+		parsedToken, err = jwt.ParseWithClaims(token, &jwt.RegisteredClaims{}, authConfig.Jwks.Keyfunc)
+	} else {
+		// Otherwise, we will use the supplied public key
+		parsedToken, err = jwt.ParseWithClaims(token, &jwt.RegisteredClaims{}, func(t *jwt.Token) (interface{}, error) {
+			return authConfig.publicKey, nil
+		})
+	}
 
 	if err != nil {
 		return nil, fmt.Errorf("could not validate JWT: %w", err)
 	}
 
 	return parsedToken.Claims, nil
+}
+
+// StartDedicatedAuthServer starts a gRPC server containing just the auth service
+func StartDedicatedAuthServer(address string) (sock net.Listener, server *grpc.Server, authService *service_auth.Service, err error) {
+	// create a new socket for gRPC communication
+	sock, err = net.Listen("tcp", address)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("could not listen: %w", err)
+	}
+
+	authService = service_auth.NewService()
+	authService.CreateDefaultUser("clouditor", "clouditor")
+
+	authConfig := ConfigureAuth(WithPublicKey(authService.GetPublicKey()))
+
+	// We also add our authentication middleware, because we usually add additional service later
+	server = grpc.NewServer(
+		grpc_middleware.WithUnaryServerChain(
+			grpc_auth.UnaryServerInterceptor(authConfig.AuthFunc),
+		),
+	)
+	auth.RegisterAuthenticationServer(server, authService)
+
+	go func() {
+		// serve the gRPC socket
+		_ = server.Serve(sock)
+	}()
+
+	return sock, server, authService, nil
 }

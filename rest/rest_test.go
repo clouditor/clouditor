@@ -37,6 +37,7 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/service"
 	service_auth "clouditor.io/clouditor/service/auth"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -66,7 +67,7 @@ func TestMain(m *testing.M) {
 	}
 
 	// Start at least an authentication server, so that we have something to forward
-	sock, server, authService, err = service_auth.StartDedicatedAuthServer(":0")
+	sock, server, authService, err = service.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}
@@ -97,7 +98,7 @@ func TestREST(t *testing.T) {
 	}()
 	defer StopServer(context.Background())
 
-	// wait until server is ready to serve
+	// Wait until server is ready to serve
 	select {
 	case <-ready:
 		break

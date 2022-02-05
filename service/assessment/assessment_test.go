@@ -220,6 +220,10 @@ func TestAssessEvidence(t *testing.T) {
 			if tt.hasRPCConnection {
 				assert.NoError(t, s.mockEvidenceStream())
 				assert.NoError(t, s.mockOrchestratorStream())
+			} else {
+				// clear the evidence URL, just to be sure
+				s.evidenceStoreAddress = ""
+				s.orchestratorAddress = ""
 			}
 
 			gotResp, err := s.AssessEvidence(tt.args.in0, &assessment.AssessEvidenceRequest{Evidence: tt.args.evidence})
