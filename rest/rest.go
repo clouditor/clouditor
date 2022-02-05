@@ -120,7 +120,7 @@ func WithAllowedMethods(methods []string) ServerConfigOption {
 // WithAdditionalHandler is an option to add an additional handler func in the REST server.
 func WithAdditionalHandler(method string, path string, h runtime.HandlerFunc) ServerConfigOption {
 	return func(cc *corsConfig, sm *runtime.ServeMux) {
-		sm.HandlePath(method, path, h)
+		_ = sm.HandlePath(method, path, h)
 	}
 }
 
@@ -137,7 +137,10 @@ func WithJwks(publicKey crypto.PublicKey) ServerConfigOption {
 				base64.RawURLEncoding.EncodeToString(v.X.Bytes()),
 				base64.RawURLEncoding.EncodeToString(v.Y.Bytes()),
 			)
-			w.Write([]byte(json))
+			_, err := w.Write([]byte(json))
+			if err != nil {
+				w.WriteHeader(500)
+			}
 		default:
 			log.Errorf("Unsupported key type for JWKS: %T", v)
 			w.WriteHeader(500)

@@ -49,9 +49,10 @@ import (
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/rest"
+	"clouditor.io/clouditor/service"
+
 	service_assessment "clouditor.io/clouditor/service/assessment"
 	service_auth "clouditor.io/clouditor/service/auth"
-	"clouditor.io/clouditor/service/common"
 	service_discovery "clouditor.io/clouditor/service/discovery"
 	service_evidenceStore "clouditor.io/clouditor/service/evidence"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
@@ -179,10 +180,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		return fmt.Errorf("could not initialize DB: %w", err)
 	}
 
-	authService = &service_auth.Service{
-		TokenSecret: viper.GetString(APISecretFlag),
-	}
-
+	authService = service_auth.NewService()
 	discoveryService = service_discovery.NewService()
 	orchestratorService = service_orchestrator.NewService()
 	assessmentService = service_assessment.NewService()
@@ -223,7 +221,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		log.Errorf("could not listen: %v", err)
 	}
 
-	authConfig := common.ConfigureAuth()
+	authConfig := service.ConfigureAuth()
 	defer authConfig.Jwks.EndBackground()
 
 	server = grpc.NewServer(
@@ -254,7 +252,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			rest.WithAllowedOrigins(viper.GetStringSlice(APICORSAllowedOriginsFlags)),
 			rest.WithAllowedHeaders(viper.GetStringSlice(APICORSAllowedHeadersFlags)),
 			rest.WithAllowedMethods(viper.GetStringSlice(APICORSAllowedMethodsFlags)),
-			rest.WithJwks(authService),
+			rest.WithJwks(authService.GetPublicKey()),
 		)
 		if errors.Is(err, http.ErrServerClosed) {
 			// ToDo(oxisto): deepsource anti-pattern: calls to os.Exit only in main() or init() functions
