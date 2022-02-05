@@ -33,8 +33,6 @@ import (
 	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -82,7 +80,6 @@ func NewShowToolCommand() *cobra.Command {
 			var (
 				err     error
 				session *cli.Session
-				conn    *grpc.ClientConn
 				client  orchestrator.OrchestratorClient
 				res     *orchestrator.AssessmentTool
 			)
@@ -92,11 +89,7 @@ func NewShowToolCommand() *cobra.Command {
 				return nil
 			}
 
-			if conn, err = grpc.Dial(session.URL, grpc.WithTransportCredentials(insecure.NewCredentials())); err != nil {
-				return fmt.Errorf("could not connect: %w", err)
-			}
-
-			client = orchestrator.NewOrchestratorClient(conn)
+			client = orchestrator.NewOrchestratorClient(session)
 
 			res, err = client.GetAssessmentTool(context.Background(), &orchestrator.GetAssessmentToolRequest{
 				ToolId: args[0],

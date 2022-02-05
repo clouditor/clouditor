@@ -82,7 +82,7 @@ func TestMain(m *testing.M) {
 	os.Exit(exit)
 }
 
-func ValidClaimAssertion(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+func ValidClaimAssertion(tt assert.TestingT, i1 interface{}, _ ...interface{}) bool {
 	ctx, ok := i1.(context.Context)
 	if !ok {
 		tt.Errorf("Return value is not a context")

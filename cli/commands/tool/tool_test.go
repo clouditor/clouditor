@@ -100,7 +100,7 @@ func TestListTool(t *testing.T) {
 
 	// unsupported for now
 	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "method ListAssessmentTools not implemented")
+	assert.Equal(t, "method ListAssessmentTools not implemented", err.Error())
 }
 
 func TestShowTool(t *testing.T) {
@@ -111,7 +111,7 @@ func TestShowTool(t *testing.T) {
 
 	// unsupported for now
 	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "method GetAssessmentTool not implemented")
+	assert.Equal(t, "method GetAssessmentTool not implemented", err.Error())
 }
 
 func TestUpdateTool(t *testing.T) {
@@ -122,7 +122,7 @@ func TestUpdateTool(t *testing.T) {
 
 	// unsupported for now
 	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "method UpdateAssessmentTool not implemented")
+	assert.Equal(t, "method UpdateAssessmentTool not implemented", err.Error())
 }
 
 func TestRegisterTool(t *testing.T) {
@@ -133,7 +133,7 @@ func TestRegisterTool(t *testing.T) {
 
 	// unsupported for now
 	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "method RegisterAssessmentTool not implemented")
+	assert.Equal(t, "method RegisterAssessmentTool not implemented", err.Error())
 }
 
 func TestDeregisterTool(t *testing.T) {
