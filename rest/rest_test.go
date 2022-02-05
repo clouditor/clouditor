@@ -123,7 +123,7 @@ func TestREST(t *testing.T) {
 		args         args
 		statusCode   int
 		headers      map[string]string
-		wantResponse func(assert.TestingT, *http.Response) bool
+		wantResponse assert.ValueAssertionFunc
 	}{
 		{
 			name: "Preflight request from valid origin",

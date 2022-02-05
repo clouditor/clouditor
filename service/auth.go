@@ -48,7 +48,7 @@ type AuthConfig struct {
 	AuthFunc grpc_auth.AuthFunc
 }
 
-var DefaultJwkUrl = fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", rest.DefaultAPIHTTPPort)
+var DefaultJwksUrl = fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", rest.DefaultAPIHTTPPort)
 
 func init() {
 	log = logrus.WithField("component", "service-auth")
@@ -66,7 +66,7 @@ type AuthContextKey string
 
 func ConfigureAuth(opts ...AuthOption) *AuthConfig {
 	var config = &AuthConfig{
-		jwksUrl: DefaultJwkUrl,
+		jwksUrl: DefaultJwksUrl,
 	}
 
 	// Apply options

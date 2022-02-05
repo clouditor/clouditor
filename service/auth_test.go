@@ -39,6 +39,7 @@ import (
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/rest"
 	service_auth "clouditor.io/clouditor/service/auth"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -78,7 +79,7 @@ func TestMain(m *testing.M) {
 	os.Exit(exit)
 }
 
-func Test(t *testing.T) {
+func TestAuthConfig_AuthFunc(t *testing.T) {
 	go func() {
 		err := rest.RunServer(
 			context.Background(),
@@ -97,20 +98,67 @@ func Test(t *testing.T) {
 	port, err := rest.GetServerPort()
 	assert.ErrorIs(t, err, nil)
 
+	// Some pre-work to retrieve a valid token
 	loginResponse, err := authService.Login(context.TODO(), &auth.LoginRequest{Username: "clouditor", Password: "clouditor"})
 	assert.ErrorIs(t, err, nil)
 	assert.NotNil(t, loginResponse)
 
-	config := ConfigureAuth(WithJwksUrl(fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", port)))
-	ctx := metadata.NewIncomingContext(context.TODO(), metadata.MD{"Authorization": []string{fmt.Sprintf("bearer %s", loginResponse.GetToken())}})
+	type args struct {
+		ctx context.Context
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantCtx assert.ValueAssertionFunc
+		wantErr bool
+	}{
+		{
+			name: "Authenticated request",
+			args: args{
+				ctx: metadata.NewIncomingContext(context.TODO(), metadata.MD{"Authorization": []string{fmt.Sprintf("bearer %s", loginResponse.GetToken())}}),
+			},
+			wantCtx: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				ctx, ok := i1.(context.Context)
+				if !ok {
+					tt.Errorf("Return value is not a context")
+					return false
+				}
 
-	newCtx, err := config.AuthFunc(ctx)
+				claims, ok := ctx.Value(AuthContextKey("token")).(*jwt.RegisteredClaims)
+				if !ok {
+					tt.Errorf("Token value in context not a JWT claims object")
+					return false
+				}
 
-	assert.ErrorIs(t, err, nil)
-	assert.NotNil(t, newCtx)
+				if claims.Subject != "clouditor" {
+					tt.Errorf("Subject is not correct")
+					return true
+				}
 
-	key, ok := config.Jwks.ReadOnlyKeys()["1"]
+				return true
+			},
+		},
+		{
+			name: "Unauthenticated request",
+			args: args{
+				ctx: context.TODO(),
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config := ConfigureAuth(WithJwksUrl(fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", port)))
+			got, err := config.AuthFunc(tt.args.ctx)
 
-	assert.True(t, ok)
-	assert.NotNil(t, key)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Got AuthFunc() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantCtx != nil {
+				tt.wantCtx(t, got, tt.args.ctx)
+			}
+		})
+	}
 }
