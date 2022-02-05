@@ -216,7 +216,7 @@ func (s Service) GetPublicKey() crypto.PublicKey {
 // AuthFuncOverride implements the ServiceAuthFuncOverride interface to override the AuthFunc for this service.
 // The reason is to actually disable authentication checking in the auth service, because functions such as login
 // need to be publically available.
-func (Service) AuthFuncOverride(ctx context.Context, fullMethodName string) (context.Context, error) {
+func (Service) AuthFuncOverride(ctx context.Context, _ string) (context.Context, error) {
 	// No authentication needed for login functions, otherwise we could not login
 	return ctx, nil
 }

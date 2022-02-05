@@ -213,6 +213,11 @@ func StopServer(ctx context.Context) {
 	_ = srv.Shutdown(ctx)
 }
 
+// GetReadyChannel returns a channel which will notify when the server is ready
+func GetReadyChannel() chan bool {
+	return ready
+}
+
 // GetServerPort returns the actual port used by the REST API
 func GetServerPort() (int, error) {
 	if sock == nil {

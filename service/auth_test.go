@@ -42,7 +42,9 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 var (
@@ -80,6 +82,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestAuthConfig_AuthFunc(t *testing.T) {
+	// We need to start a REST server for JWKS (using our auth server)
 	go func() {
 		err := rest.RunServer(
 			context.Background(),
@@ -92,8 +95,13 @@ func TestAuthConfig_AuthFunc(t *testing.T) {
 	}()
 	defer rest.StopServer(context.Background())
 
-	// meh
-	time.Sleep(time.Millisecond * 300)
+	// Wait until server is ready to serve
+	select {
+	case <-rest.GetReadyChannel():
+		break
+	case <-time.After(10 * time.Second):
+		log.Println("Timeout while waiting for REST API")
+	}
 
 	port, err := rest.GetServerPort()
 	assert.ErrorIs(t, err, nil)
@@ -110,10 +118,10 @@ func TestAuthConfig_AuthFunc(t *testing.T) {
 		name    string
 		args    args
 		wantCtx assert.ValueAssertionFunc
-		wantErr bool
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Authenticated request",
+			name: "Request with valid bearer token",
 			args: args{
 				ctx: metadata.NewIncomingContext(context.TODO(), metadata.MD{"Authorization": []string{fmt.Sprintf("bearer %s", loginResponse.GetToken())}}),
 			},
@@ -139,11 +147,22 @@ func TestAuthConfig_AuthFunc(t *testing.T) {
 			},
 		},
 		{
-			name: "Unauthenticated request",
+			name: "Request with invalid bearer token",
+			args: args{
+				ctx: metadata.NewIncomingContext(context.TODO(), metadata.MD{"Authorization": []string{"bearer not_really"}}),
+			},
+			wantErr: func(tt assert.TestingT, e error, i ...interface{}) bool {
+				return assert.ErrorIs(tt, e, status.Error(codes.Unauthenticated, "invalid auth token"))
+			},
+		},
+		{
+			name: "Request without bearer token",
 			args: args{
 				ctx: context.TODO(),
 			},
-			wantErr: true,
+			wantErr: func(tt assert.TestingT, e error, i ...interface{}) bool {
+				return assert.ErrorIs(tt, e, status.Error(codes.Unauthenticated, "invalid auth token"))
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -151,9 +170,8 @@ func TestAuthConfig_AuthFunc(t *testing.T) {
 			config := ConfigureAuth(WithJwksUrl(fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", port)))
 			got, err := config.AuthFunc(tt.args.ctx)
 
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Got AuthFunc() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			if tt.wantErr != nil {
+				tt.wantErr(t, err, tt.args.ctx)
 			}
 
 			if tt.wantCtx != nil {

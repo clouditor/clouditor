@@ -88,12 +88,16 @@ func ConfigureAuth(opts ...AuthOption) *AuthConfig {
 
 		token, err := grpc_auth.AuthFromMD(ctx, "bearer")
 		if err != nil {
-			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
+			// We do not want to disclose any error details which could be security related,
+			// so we do not wrap the original error
+			return nil, status.Error(codes.Unauthenticated, "invalid auth token")
 		}
 
 		tokenInfo, err := parseToken(token, config)
 		if err != nil {
-			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
+			// We do not want to disclose any error details which could be security related,
+			// so we do not wrap the original error
+			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token")
 		}
 
 		newCtx = context.WithValue(ctx, AuthContextKey("token"), tokenInfo)
