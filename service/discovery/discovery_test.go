@@ -70,6 +70,8 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
+	startBufAuthServer()
+
 	os.Exit(m.Run())
 }
 
@@ -391,7 +393,12 @@ func TestInitAssessmentStream(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService()
+			s := NewService(WithInternalAuthorizer(
+				"bufnet",
+				"clouditor",
+				"clouditor",
+				grpc.WithContextDialer(bufAuthDialer),
+			))
 
 			err := s.initAssessmentStream()
 			if (err != nil) != tt.wantErr {
@@ -412,7 +419,13 @@ func bufDialer(context.Context, string) (net.Conn, error) {
 
 func (s *Service) mockAssessmentStream() error {
 	ctx := context.Background()
-	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.DialContext(
+		ctx,
+		"bufnet",
+		grpc.WithContextDialer(bufDialer),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithPerRPCCredentials(s.authorizer),
+	)
 	if err != nil {
 		return err
 	}

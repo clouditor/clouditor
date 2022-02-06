@@ -27,9 +27,11 @@ package discovery
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
+	"clouditor.io/clouditor/service"
 	"clouditor.io/clouditor/service/discovery/azure"
 	"clouditor.io/clouditor/service/discovery/k8s"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -53,6 +55,10 @@ import (
 
 var log *logrus.Entry
 
+var (
+	ErrNoAuthorizerConfigured = errors.New("no authorizer configured")
+)
+
 // Service is an implementation of the Clouditor Discovery service.
 // It should not be used directly, but rather the NewService constructor
 // should be used.
@@ -66,6 +72,8 @@ type Service struct {
 
 	resources map[string]voc.IsCloudResource
 	scheduler *gocron.Scheduler
+
+	authorizer service.Authorizer
 }
 
 type Configuration struct {
@@ -79,6 +87,9 @@ func init() {
 const (
 	// DefaultEvidenceStoreAddress specifies the default gRPC address of the assessment service.
 	DefaultAssessmentAddress = "localhost:9090"
+
+	// DefaultEvidenceStoreAddress specifies the default gRPC address of the auth service.
+	DefaultAuthAddress = "localhost:9090"
 )
 
 // ServiceOption is a functional option type to configure the discovery service.
@@ -88,6 +99,18 @@ type ServiceOption func(*Service)
 func WithAssessmentAddress(address string) ServiceOption {
 	return func(s *Service) {
 		s.assessmentAddress = address
+	}
+}
+
+// WithInternalAuthorizer is an option to use an authorizer to the internal Clouditor auth service.
+func WithInternalAuthorizer(address string, username string, password string, opts ...grpc.DialOption) ServiceOption {
+	return func(s *Service) {
+		s.authorizer = &service.InternalAuthorizer{
+			Url:         address,
+			GrpcOptions: opts,
+			Username:    username,
+			Password:    password,
+		}
 	}
 }
 
@@ -112,15 +135,18 @@ func (s *Service) initAssessmentStream() error {
 	target := s.assessmentAddress
 	log.Infof("Establishing connection to assessment (%v)", target)
 
-	conn, err := grpc.Dial(s.assessmentAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(s.assessmentAddress,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithPerRPCCredentials(s.authorizer),
+	)
 	if err != nil {
-		return fmt.Errorf("could not connect to assessment service: %v", err)
+		return fmt.Errorf("could not connect to assessment service: %w", err)
 	}
 
 	client := assessment.NewAssessmentClient(conn)
 	s.assessmentStream, err = client.AssessEvidences(context.Background())
 	if err != nil {
-		return fmt.Errorf("could not set up stream for assessing evidences: %v", err)
+		return fmt.Errorf("could not set up stream for assessing evidences: %w", err)
 	}
 
 	log.Infof("Connected to Assessment")
