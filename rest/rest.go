@@ -239,7 +239,7 @@ func handleCORS(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check, if we allow this specific origin
 		origin := r.Header.Get("Origin")
-		if originAllowed(origin) {
+		if cors.OriginAllowed(origin) {
 			// Set the appropriate access control header
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 			w.Header().Add("Vary", "Origin")
@@ -256,8 +256,14 @@ func handleCORS(h http.Handler) http.Handler {
 	})
 }
 
-// originAllowed checks if the supplied origin is allowed according to our global CORS configuration.
-func originAllowed(origin string) bool {
+// OriginAllowed checks if the supplied origin is allowed according to our global CORS configuration.
+func (cors *corsConfig) OriginAllowed(origin string) bool {
+	// If no origin is specified, we are running in a non-browser environment and
+	// this means, that all origins are allowed
+	if origin == "" {
+		return true
+	}
+
 	for _, v := range cors.allowedOrigins {
 		if origin == v {
 			return true
