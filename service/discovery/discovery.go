@@ -135,9 +135,18 @@ func (s *Service) initAssessmentStream() error {
 	target := s.assessmentAddress
 	log.Infof("Establishing connection to assessment (%v)", target)
 
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+
+	// In practice, we should always have an authorizer, so we could fail early here. However,
+	// if the server-side has not enabled the auth middleware (for example in testing), it is perfectly
+	// fine to at least attempt to run it without one. If the server-side has enabled auth middleware
+	// and does not receive any client credentials, the actual RPC call will then fail later.
+	if s.authorizer != nil {
+		opts = append(opts, grpc.WithPerRPCCredentials(s.authorizer))
+	}
+
 	conn, err := grpc.Dial(s.assessmentAddress,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithPerRPCCredentials(s.authorizer),
+		opts...,
 	)
 	if err != nil {
 		return fmt.Errorf("could not connect to assessment service: %w", err)
