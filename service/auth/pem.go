@@ -104,10 +104,14 @@ func ParseECPrivateKeyFromPEMWithPassword(data []byte, password []byte) (key *ec
 
 func EncryptPEMBlock(rand io.Reader, data, password []byte) (block *pem.Block, err error) {
 	var salt = make([]byte, 8)
-	rand.Read(salt)
+	if _, err = rand.Read(salt); err != nil {
+		return nil, fmt.Errorf("error creating salt: %w", err)
+	}
 
 	var iv = make([]byte, 16)
-	rand.Read(iv)
+	if _, err = rand.Read(iv); err != nil {
+		return nil, fmt.Errorf("error creating IV: %w", err)
+	}
 
 	var pad = 16 - len(data)%16
 
