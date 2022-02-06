@@ -130,11 +130,10 @@ func NewService(opts ...ServiceOption) *Service {
 	return s
 }
 
+// initAssessmentStream initializes the stream that is used to send evidences to the assessment service.
+// If configured, it uses the Authorizer of the discovery service to authenticate requests to the assessment.
 func (s *Service) initAssessmentStream() error {
-	// Establish connection to assessment component
-	target := s.assessmentAddress
-	log.Infof("Establishing connection to assessment (%v)", target)
-
+	// TODO(oxisto): Enable TLS to external based on the URL (scheme)
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 	// In practice, we should always have an authorizer, so we could fail early here. However,
@@ -145,6 +144,9 @@ func (s *Service) initAssessmentStream() error {
 		opts = append(opts, grpc.WithPerRPCCredentials(s.authorizer))
 	}
 
+	log.Infof("Trying to establish a connection to assessment service @ %v", s.assessmentAddress)
+
+	// Establish connection to assessment gRPC service
 	conn, err := grpc.Dial(s.assessmentAddress,
 		opts...,
 	)
@@ -153,6 +155,9 @@ func (s *Service) initAssessmentStream() error {
 	}
 
 	client := assessment.NewAssessmentClient(conn)
+
+	// Set up the stream and store it in our service struct, so we can access it later to actually
+	// send the evidence data
 	s.assessmentStream, err = client.AssessEvidences(context.Background())
 	if err != nil {
 		return fmt.Errorf("could not set up stream for assessing evidences: %w", err)

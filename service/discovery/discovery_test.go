@@ -418,13 +418,20 @@ func bufDialer(context.Context, string) (net.Conn, error) {
 }
 
 func (s *Service) mockAssessmentStream() error {
+	opts := []grpc.DialOption{
+		grpc.WithContextDialer(bufDialer),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	}
+
+	if s.authorizer != nil {
+		opts = append(opts, grpc.WithPerRPCCredentials(s.authorizer))
+	}
+
 	ctx := context.Background()
 	conn, err := grpc.DialContext(
 		ctx,
 		"bufnet",
-		grpc.WithContextDialer(bufDialer),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithPerRPCCredentials(s.authorizer),
+		opts...,
 	)
 	if err != nil {
 		return err
