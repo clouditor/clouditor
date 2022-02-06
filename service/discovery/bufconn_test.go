@@ -53,7 +53,7 @@ func startBufAssessmentServer(opts ...service_assessment.ServiceOption) (*grpc.S
 	bufAssessmentListener = bufconn.Listen(DefaultBufferSize)
 
 	server := grpc.NewServer()
-	service := service_assessment.NewService()
+	service := service_assessment.NewService(opts...)
 	assessment.RegisterAssessmentServer(server, service)
 
 	go func() {
