@@ -83,14 +83,14 @@ func NewService() *Service {
 	}
 }
 
-func (s Service) loadApiKey() {
-	//keyFile := DefaultApiKeyPath
+//func (s Service) loadApiKey() {
+//keyFile := DefaultApiKeyPath
 
-	// Check, if we already have a persisted API key
-	//os.OpenFile(keyFile, os.O_RDONLY, 0600)
+// Check, if we already have a persisted API key
+//os.OpenFile(keyFile, os.O_RDONLY, 0600)
 
-	//x509.ParsePKCS1PrivateKey()
-}
+//x509.ParsePKCS1PrivateKey()
+//}
 
 // Login handles a login request
 func (s Service) Login(_ context.Context, request *auth.LoginRequest) (response *auth.LoginResponse, err error) {
