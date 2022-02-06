@@ -29,7 +29,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net"
 	"os"
 	"reflect"
 	"testing"
@@ -38,7 +37,7 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
-	service_assessment "clouditor.io/clouditor/service/assessment"
+	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -46,31 +45,25 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-var lis *bufconn.Listener
-
 func TestMain(m *testing.M) {
-	// pre-configuration for mocking assessment
-	const bufSize = 1024 * 1024 * 2
-	lis = bufconn.Listen(bufSize)
-	s := grpc.NewServer()
-	assessment.RegisterAssessmentServer(s, service_assessment.NewService())
-	go func() {
-		if err := s.Serve(lis); err != nil {
-			log.Fatalf("Server exited with error: %v", err)
-		}
-	}()
-
 	// make sure, that we are in the clouditor root folder to find the policies
 	err := os.Chdir("../../")
 	if err != nil {
 		panic(err)
 	}
 
-	startBufAuthServer()
+	// We need an embedded DB for the auth server
+	err = persistence.InitDB(true, "", 0)
+	if err != nil {
+		panic(err)
+	}
+
+	startBufAssessmentServer()
+	_, authService := startBufAuthServer()
+	authService.CreateDefaultUser("clouditor", "clouditor")
 
 	os.Exit(m.Run())
 }
@@ -373,21 +366,52 @@ func TestStart(t *testing.T) {
 func TestInitAssessmentStream(t *testing.T) {
 	type fields struct {
 		hasRPCConnection bool
+		username         string
+		password         string
 	}
 
 	tests := []struct {
-		name           string
-		fields         fields
-		wantErr        bool
-		wantErrMessage string
+		name    string
+		fields  fields
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "No RPC connection",
 			fields: fields{
 				hasRPCConnection: false,
 			},
-			wantErr:        true,
-			wantErrMessage: "could not set up stream for assessing evidences",
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				// We are looking for a connection refused message
+				innerErr := errors.Unwrap(err)
+				s, _ := status.FromError(innerErr)
+
+				if s.Code() != codes.Unavailable {
+					tt.Errorf("Status should be codes.Unavailable: %v", s.Code())
+					return false
+				}
+
+				return true
+			},
+		},
+		{
+			name: "Authenticated RPC connection with valid user",
+			fields: fields{
+				hasRPCConnection: true,
+				username:         "clouditor",
+				password:         "clouditor",
+			},
+			wantErr: nil,
+		},
+		{
+			name: "Authenticated RPC connection with invalid user",
+			fields: fields{
+				hasRPCConnection: true,
+				username:         "notclouditor",
+				password:         "password",
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Equal(tt, err.Error(), "could not set up stream for assessing evidences: rpc error: code = Unauthenticated desc = transport: per-RPC creds failed due to error: error while logging in: rpc error: code = Unauthenticated desc = login failed")
+			},
 		},
 	}
 
@@ -395,31 +419,31 @@ func TestInitAssessmentStream(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService(WithInternalAuthorizer(
 				"bufnet",
-				"clouditor",
-				"clouditor",
+				tt.fields.username,
+				tt.fields.password,
 				grpc.WithContextDialer(bufAuthDialer),
 			))
 
-			err := s.initAssessmentStream()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Got initAssessmentStream() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			var opts []grpc.DialOption
+			if tt.fields.hasRPCConnection {
+				// Make this a valid RPC connection by connecting to our bufnet service
+				opts = []grpc.DialOption{grpc.WithContextDialer(bufAssessmentDialer)}
+				s.assessmentAddress = "bufnet"
 			}
-			if err != nil {
-				assert.Contains(t, err.Error(), tt.wantErrMessage)
+
+			err := s.initAssessmentStream(opts...)
+			if tt.wantErr != nil {
+				tt.wantErr(t, err)
 			}
 		})
 	}
 }
 
-// Mocking assessment service
-func bufDialer(context.Context, string) (net.Conn, error) {
-	return lis.Dial()
-}
-
+// Remove this and supply options directly and supply the necessary opt to gRPC
+// Deprecated use initAssessmentDtream
 func (s *Service) mockAssessmentStream() error {
 	opts := []grpc.DialOption{
-		grpc.WithContextDialer(bufDialer),
+		grpc.WithContextDialer(bufAssessmentDialer),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 

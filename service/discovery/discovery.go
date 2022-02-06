@@ -129,7 +129,7 @@ func NewService(opts ...ServiceOption) *Service {
 
 // initAssessmentStream initializes the stream that is used to send evidences to the assessment service.
 // If configured, it uses the Authorizer of the discovery service to authenticate requests to the assessment.
-func (s *Service) initAssessmentStream() error {
+func (s *Service) initAssessmentStream(additionalOpts ...grpc.DialOption) error {
 	// TODO(oxisto): Enable TLS to external based on the URL (scheme)
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
@@ -140,6 +140,9 @@ func (s *Service) initAssessmentStream() error {
 	if s.authorizer != nil {
 		opts = append(opts, grpc.WithPerRPCCredentials(s.authorizer))
 	}
+
+	// Appply any additional options that we might have
+	opts = append(opts, additionalOpts...)
 
 	log.Infof("Trying to establish a connection to assessment service @ %v", s.assessmentAddress)
 

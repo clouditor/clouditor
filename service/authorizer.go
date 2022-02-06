@@ -156,10 +156,11 @@ func (i *InternalAuthorizer) GetRequestMetadata(ctx context.Context, uri ...stri
 		return nil, err
 	}
 
-	ri, _ := credentials.RequestInfoFromContext(ctx)
-	if err = credentials.CheckSecurityLevel(ri.AuthInfo, credentials.PrivacyAndIntegrity); err != nil {
-		return nil, fmt.Errorf("unable to transfer InternalAuthorizer PerRPCCredentials: %v", err)
-	}
+	// TODO(oxisto): We need to enable the following words for non-local connections
+	// ri, _ := credentials.RequestInfoFromContext(ctx)
+	// if err = credentials.CheckSecurityLevel(ri.AuthInfo, credentials.PrivacyAndIntegrity); err != nil {
+	// 		return nil, fmt.Errorf("unable to transfer InternalAuthorizer PerRPCCredentials: %v", err)
+	// }
 
 	return map[string]string{
 		"authorization": token.Type() + " " + token.AccessToken,
