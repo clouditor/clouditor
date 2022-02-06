@@ -192,7 +192,13 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		),
 	)
 	orchestratorService = service_orchestrator.NewService()
-	assessmentService = service_assessment.NewService()
+	assessmentService = service_assessment.NewService(
+		service_assessment.WithInternalAuthorizer(
+			service.DefaultInternalAuthorizerAddress,
+			viper.GetString(APIDefaultUserFlag),
+			viper.GetString(APIDefaultPasswordFlag),
+		),
+	)
 	evidenceStoreService = service_evidenceStore.NewService()
 
 	// It is possible to register hook functions for the orchestrator, evidenceStore and assessment service.

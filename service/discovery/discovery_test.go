@@ -61,11 +61,13 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	startBufAssessmentServer()
-	_, authService := startBufAuthServer()
+	server, authService, _ := startBufConnServer()
 	authService.CreateDefaultUser("clouditor", "clouditor")
 
-	os.Exit(m.Run())
+	code := m.Run()
+
+	server.Stop()
+	os.Exit(code)
 }
 
 func TestNewService(t *testing.T) {
@@ -421,13 +423,13 @@ func TestInitAssessmentStream(t *testing.T) {
 				"bufnet",
 				tt.fields.username,
 				tt.fields.password,
-				grpc.WithContextDialer(bufAuthDialer),
+				grpc.WithContextDialer(bufConnDialer),
 			))
 
 			var opts []grpc.DialOption
 			if tt.fields.hasRPCConnection {
 				// Make this a valid RPC connection by connecting to our bufnet service
-				opts = []grpc.DialOption{grpc.WithContextDialer(bufAssessmentDialer)}
+				opts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
 				s.assessmentAddress = "bufnet"
 			}
 
@@ -440,10 +442,10 @@ func TestInitAssessmentStream(t *testing.T) {
 }
 
 // Remove this and supply options directly and supply the necessary opt to gRPC
-// Deprecated use initAssessmentDtream
+// Deprecated use initAssessmentStream
 func (s *Service) mockAssessmentStream() error {
 	opts := []grpc.DialOption{
-		grpc.WithContextDialer(bufAssessmentDialer),
+		grpc.WithContextDialer(bufConnDialer),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
@@ -460,6 +462,7 @@ func (s *Service) mockAssessmentStream() error {
 	if err != nil {
 		return err
 	}
+
 	client, err := assessment.NewAssessmentClient(conn).AssessEvidences(ctx)
 	if err != nil {
 		return err

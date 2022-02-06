@@ -43,6 +43,13 @@ type Authorizer interface {
 	oauth2.TokenSource
 }
 
+// UsesAuthorizer is an interface to denote that a struct is willing to accept and use
+// an Authorizer
+type UsesAuthorizer interface {
+	SetAuthorizer(auth Authorizer)
+	Authorizer() Authorizer
+}
+
 // DefaultInternalAuthorizerAddress specifies the default gRPC address of the internal Clouditor auth service.
 const DefaultInternalAuthorizerAddress = "localhost:9090"
 
@@ -170,4 +177,26 @@ func (i *InternalAuthorizer) GetRequestMetadata(_ context.Context, _ ...string) 
 func (*InternalAuthorizer) RequireTransportSecurity() bool {
 	// TODO(oxisto): This should be set to true because we transmit credentials (except localhost)
 	return false
+}
+
+// DefaultGrpcDialOptions returns a set of sensible default list of grpc.DialOption values. It includes
+// transport credentials and configures per-RPC credentials using an authorizer, if one is configured.
+func DefaultGrpcDialOptions(s UsesAuthorizer, additionalOpts ...grpc.DialOption) (opts []grpc.DialOption) {
+	// TODO(oxisto): Enable TLS to external based on the URL (scheme)
+	opts = []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+
+	// In practice, we should always have an authorizer, so we could fail early here. However,
+	// if the server-side has not enabled the auth middleware (for example in testing), it is perfectly
+	// fine to at least attempt to run it without one. If the server-side has enabled auth middleware
+	// and does not receive any client credentials, the actual RPC call will then fail later.
+	authorizer := s.Authorizer()
+
+	if authorizer != nil {
+		opts = append(opts, grpc.WithPerRPCCredentials(authorizer))
+	}
+
+	// Appply any additional options that we might have
+	opts = append(opts, additionalOpts...)
+
+	return opts
 }

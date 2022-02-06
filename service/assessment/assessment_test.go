@@ -30,7 +30,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"net"
 	"os"
 	"reflect"
 	"runtime"
@@ -40,8 +39,7 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
-	service_evidenceStore "clouditor.io/clouditor/service/evidence"
-	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -49,34 +47,31 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-var lis *bufconn.Listener
-
 func TestMain(m *testing.M) {
-	// pre-configuration for mocking evidence store
-	const bufSize = 1024 * 1024 * 2
-	lis = bufconn.Listen(bufSize)
-	s := grpc.NewServer()
-	evidence.RegisterEvidenceStoreServer(s, service_evidenceStore.NewService())
-	orchestrator.RegisterOrchestratorServer(s, service_orchestrator.NewService())
-	go func() {
-		if err := s.Serve(lis); err != nil {
-			log.Fatalf("Server exited with error: %v", err)
-		}
-	}()
-
 	// make sure, that we are in the clouditor root folder to find the policies
 	err := os.Chdir("../../")
 	if err != nil {
 		panic(err)
 	}
 
-	os.Exit(m.Run())
+	// We need an embedded DB for the auth server
+	err = persistence.InitDB(true, "", 0)
+	if err != nil {
+		panic(err)
+	}
+
+	server, authService, _, _ := startBufConnServer()
+	authService.CreateDefaultUser("clouditor", "clouditor")
+
+	code := m.Run()
+
+	server.Stop()
+	os.Exit(code)
 }
 
 // TestNewService is a simply test for NewService
@@ -214,6 +209,7 @@ func TestAssessEvidence(t *testing.T) {
 			wantErr:          true,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
@@ -598,32 +594,57 @@ func TestConvertTargetValue(t *testing.T) {
 	}
 }
 
-// Mocking evidence store service
-
-func bufDialer(context.Context, string) (net.Conn, error) {
-	return lis.Dial()
-}
-
+// TODO(oxisto): Use options of initEvidenceStream() instead
 func (s *Service) mockEvidenceStream() error {
+	opts := []grpc.DialOption{
+		grpc.WithContextDialer(bufConnDialer),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	}
+
+	if s.authorizer != nil {
+		opts = append(opts, grpc.WithPerRPCCredentials(s.authorizer))
+	}
+
 	ctx := context.Background()
-	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.DialContext(
+		ctx,
+		"bufnet",
+		opts...,
+	)
 	if err != nil {
 		return err
 	}
+
 	client, err := evidence.NewEvidenceStoreClient(conn).StoreEvidences(ctx)
 	if err != nil {
 		return err
 	}
+
 	s.evidenceStoreStream = client
 	return nil
 }
 
+// TODO(oxisto): Use options of initOrchestrstorStream() instead
 func (s *Service) mockOrchestratorStream() error {
+	opts := []grpc.DialOption{
+		grpc.WithContextDialer(bufConnDialer),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	}
+
+	if s.authorizer != nil {
+		opts = append(opts, grpc.WithPerRPCCredentials(s.authorizer))
+	}
+
 	ctx := context.Background()
-	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.DialContext(
+		ctx,
+		"bufnet",
+		opts...,
+	)
 	if err != nil {
 		return err
 	}
+
 	client, err := orchestrator.NewOrchestratorClient(conn).StoreAssessmentResults(ctx)
 	if err != nil {
 		return err

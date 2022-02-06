@@ -48,7 +48,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
 )
@@ -102,12 +101,12 @@ func WithAssessmentAddress(address string) ServiceOption {
 // WithInternalAuthorizer is an option to use an authorizer to the internal Clouditor auth service.
 func WithInternalAuthorizer(address string, username string, password string, opts ...grpc.DialOption) ServiceOption {
 	return func(s *Service) {
-		s.authorizer = &service.InternalAuthorizer{
+		s.SetAuthorizer(&service.InternalAuthorizer{
 			Url:         address,
 			GrpcOptions: opts,
 			Username:    username,
 			Password:    password,
-		}
+		})
 	}
 }
 
@@ -127,28 +126,23 @@ func NewService(opts ...ServiceOption) *Service {
 	return s
 }
 
+// UsesAuthorizer implements UsesAuthorizer
+func (s *Service) SetAuthorizer(auth service.Authorizer) {
+	s.authorizer = auth
+}
+
+func (s *Service) Authorizer() service.Authorizer {
+	return s.authorizer
+}
+
 // initAssessmentStream initializes the stream that is used to send evidences to the assessment service.
 // If configured, it uses the Authorizer of the discovery service to authenticate requests to the assessment.
 func (s *Service) initAssessmentStream(additionalOpts ...grpc.DialOption) error {
-	// TODO(oxisto): Enable TLS to external based on the URL (scheme)
-	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-
-	// In practice, we should always have an authorizer, so we could fail early here. However,
-	// if the server-side has not enabled the auth middleware (for example in testing), it is perfectly
-	// fine to at least attempt to run it without one. If the server-side has enabled auth middleware
-	// and does not receive any client credentials, the actual RPC call will then fail later.
-	if s.authorizer != nil {
-		opts = append(opts, grpc.WithPerRPCCredentials(s.authorizer))
-	}
-
-	// Appply any additional options that we might have
-	opts = append(opts, additionalOpts...)
-
 	log.Infof("Trying to establish a connection to assessment service @ %v", s.assessmentAddress)
 
 	// Establish connection to assessment gRPC service
 	conn, err := grpc.Dial(s.assessmentAddress,
-		opts...,
+		service.DefaultGrpcDialOptions(s, additionalOpts...)...,
 	)
 	if err != nil {
 		return fmt.Errorf("could not connect to assessment service: %w", err)
