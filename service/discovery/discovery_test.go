@@ -365,7 +365,7 @@ func TestStart(t *testing.T) {
 	}
 }
 
-func TestInitAssessmentStream(t *testing.T) {
+func TestService_initAssessmentStream(t *testing.T) {
 	type fields struct {
 		hasRPCConnection bool
 		username         string

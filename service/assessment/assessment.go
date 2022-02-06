@@ -330,7 +330,7 @@ func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) err
 	evidenceStoreClient := evidence.NewEvidenceStoreClient(conn)
 	s.evidenceStoreStream, err = evidenceStoreClient.StoreEvidences(context.Background())
 	if err != nil {
-		return fmt.Errorf("could not set up stream for storing evidences: %v", err)
+		return fmt.Errorf("could not set up stream for storing evidences: %w", err)
 	}
 
 	log.Infof("Connected to Evidence Store")
@@ -369,7 +369,7 @@ func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) erro
 	orchestratorClient := orchestrator.NewOrchestratorClient(conn)
 	s.orchestratorStream, err = orchestratorClient.StoreAssessmentResults(context.Background())
 	if err != nil {
-		return fmt.Errorf("could not set up stream for storing assessment results: %v", err)
+		return fmt.Errorf("could not set up stream for storing assessment results: %w", err)
 	}
 	log.Infof("Connected to Orchestrator")
 	return nil
