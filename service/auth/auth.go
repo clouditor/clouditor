@@ -51,6 +51,11 @@ const (
 
 var log *logrus.Entry
 
+// DefaultApiKeyPassword is the default password to protect the API key
+const DefaultApiKeyPassword = "changeme"
+
+const DefaultApiKeyPath = "~/.clouditor/api.key"
+
 // Service is an implementation of the gRPC Authentication service
 type Service struct {
 	auth.UnimplementedAuthenticationServer
@@ -76,6 +81,15 @@ func NewService() *Service {
 	return &Service{
 		apiKey: key,
 	}
+}
+
+func (s Service) loadApiKey() {
+	//keyFile := DefaultApiKeyPath
+
+	// Check, if we already have a persisted API key
+	//os.OpenFile(keyFile, os.O_RDONLY, 0600)
+
+	//x509.ParsePKCS1PrivateKey()
 }
 
 // Login handles a login request
