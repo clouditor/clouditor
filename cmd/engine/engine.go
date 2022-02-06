@@ -184,7 +184,13 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	}
 
 	authService = service_auth.NewService()
-	discoveryService = service_discovery.NewService()
+	discoveryService = service_discovery.NewService(
+		service_discovery.WithInternalAuthorizer(
+			service.DefaultInternalAuthorizerAddress,
+			viper.GetString(APIDefaultUserFlag),
+			viper.GetString(APIDefaultPasswordFlag),
+		),
+	)
 	orchestratorService = service_orchestrator.NewService()
 	assessmentService = service_assessment.NewService()
 	evidenceStoreService = service_evidenceStore.NewService()

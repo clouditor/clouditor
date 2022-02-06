@@ -87,9 +87,6 @@ func init() {
 const (
 	// DefaultEvidenceStoreAddress specifies the default gRPC address of the assessment service.
 	DefaultAssessmentAddress = "localhost:9090"
-
-	// DefaultEvidenceStoreAddress specifies the default gRPC address of the auth service.
-	DefaultAuthAddress = "localhost:9090"
 )
 
 // ServiceOption is a functional option type to configure the discovery service.

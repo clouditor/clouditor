@@ -43,6 +43,9 @@ type Authorizer interface {
 	oauth2.TokenSource
 }
 
+// DefaultInternalAuthorizerAddress specifies the default gRPC address of the internal Clouditor auth service.
+const DefaultInternalAuthorizerAddress = "localhost:9090"
+
 // InternalAuthorizer is an authorizer that uses the Clouditor internal auth server (using gRPC) and
 // does a login flow using username and password
 type InternalAuthorizer struct {
@@ -90,8 +93,11 @@ func (i *InternalAuthorizer) init() (err error) {
 // Token is an implementation for the interface oauth2.TokenSource so we can use this authorizer
 // in (almost) the same way as any other OAuth 2.0 token endpoint. It will fetch an access token
 // using the stored username / password credentials and refresh the access token, if it is expired.
-func (i *InternalAuthorizer) Token() (token *oauth2.Token, err error) {
-	var resp *auth.LoginResponse
+func (i *InternalAuthorizer) Token() (*oauth2.Token, error) {
+	var (
+		resp *auth.LoginResponse
+		err  error
+	)
 
 	// We do a lazy initialization here, so the first request might take a little bit longer.
 	// This might not be entirely thread-safe.
@@ -107,10 +113,10 @@ func (i *InternalAuthorizer) Token() (token *oauth2.Token, err error) {
 	i.tokenMutex.RLock()
 
 	// Check if we already have a token or if it is still ok
-	if token != nil && token.Expiry.After(time.Now()) {
+	if i.token != nil && i.token.Expiry.After(time.Now()) {
 		// Defer the unlock, if we return here
 		defer i.tokenMutex.RUnlock()
-		return token, nil
+		return i.token, nil
 	}
 
 	// Unlock a previous read, if we did not return. Otherwise we will block ourselves.
@@ -133,12 +139,12 @@ func (i *InternalAuthorizer) Token() (token *oauth2.Token, err error) {
 	}
 
 	// Store the current token, if login was successful
-	token = &oauth2.Token{
+	i.token = &oauth2.Token{
 		AccessToken: resp.AccessToken,
 		Expiry:      resp.Expiry.AsTime(),
 	}
 
-	return token, nil
+	return i.token, nil
 }
 
 // GetRequestMetadata is an implementation for credentials.PerRPCCredentials. It is called before
