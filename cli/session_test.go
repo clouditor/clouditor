@@ -98,10 +98,10 @@ func TestSession(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.NotNil(t, response)
-	assert.NotEmpty(t, response.Token)
+	assert.NotEmpty(t, response.AccessToken)
 
 	// update the session
-	session.Token = response.Token
+	session.Token = response.AccessToken
 
 	err = session.Save()
 

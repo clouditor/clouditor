@@ -28,6 +28,7 @@ syntax = "proto3";
 
 package clouditor;
 
+import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
 
 option go_package = "api/auth";
@@ -67,7 +68,20 @@ message LoginRequest {
   string password = 2;
 }
 
-message LoginResponse { string token = 1; }
+// LoginResponse is a response to a Login call, it is aligned to a OAuth 2.0
+// token response.
+message LoginResponse {
+  string access_token = 1;
+
+  string token_type = 2;
+
+  // refresh_token is a token that can be used to refresh the access token if it
+  // expires. Reserved for future use, not currently used.
+  string refresh_token = 3;
+
+  // expiry is an optional expiration time of the access token.
+  google.protobuf.Timestamp expiry = 4;
+}
 
 message ListPublicKeysRequest {}
 message ListPublicResponse { repeated JsonWebKey keys = 1; }

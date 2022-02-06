@@ -41,6 +41,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
 )
 
@@ -94,11 +95,17 @@ func (s Service) Login(_ context.Context, request *auth.LoginRequest) (response 
 
 	var token string
 
-	if token, err = s.issueToken(user.Username, user.FullName, user.Email, time.Now().Add(time.Hour*24)); err != nil {
+	var expiry = time.Now().Add(time.Hour * 24)
+
+	if token, err = s.issueToken(user.Username, user.FullName, user.Email, expiry); err != nil {
 		return nil, status.Errorf(codes.Internal, "token issue failed: %v", err)
 	}
 
-	response = &auth.LoginResponse{Token: token}
+	response = &auth.LoginResponse{
+		AccessToken: token,
+		TokenType:   "Bearer",
+		Expiry:      timestamppb.New(expiry),
+	}
 
 	return response, nil
 }

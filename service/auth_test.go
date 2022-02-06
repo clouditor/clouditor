@@ -153,7 +153,7 @@ func TestAuthConfig_AuthFunc(t *testing.T) {
 				opts: []AuthOption{WithJwksUrl(fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", port))},
 			},
 			args: args{
-				ctx: metadata.NewIncomingContext(context.TODO(), metadata.MD{"Authorization": []string{fmt.Sprintf("bearer %s", loginResponse.GetToken())}}),
+				ctx: metadata.NewIncomingContext(context.TODO(), metadata.MD{"Authorization": []string{fmt.Sprintf("bearer %s", loginResponse.AccessToken)}}),
 			},
 			wantCtx: ValidClaimAssertion,
 		},
@@ -187,7 +187,7 @@ func TestAuthConfig_AuthFunc(t *testing.T) {
 				opts: []AuthOption{WithPublicKey(authService.GetPublicKey())},
 			},
 			args: args{
-				ctx: metadata.NewIncomingContext(context.TODO(), metadata.MD{"Authorization": []string{fmt.Sprintf("bearer %s", loginResponse.GetToken())}}),
+				ctx: metadata.NewIncomingContext(context.TODO(), metadata.MD{"Authorization": []string{fmt.Sprintf("bearer %s", loginResponse.AccessToken)}}),
 			},
 			wantCtx: ValidClaimAssertion,
 		},
