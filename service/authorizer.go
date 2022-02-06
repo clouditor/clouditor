@@ -149,7 +149,7 @@ func (i *InternalAuthorizer) Token() (*oauth2.Token, error) {
 
 // GetRequestMetadata is an implementation for credentials.PerRPCCredentials. It is called before
 // each RPC request and is used to inject our client credentials into the context of the RPC call.
-func (i *InternalAuthorizer) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
+func (i *InternalAuthorizer) GetRequestMetadata(_ context.Context, _ ...string) (map[string]string, error) {
 	// Fetch a token from our token source. This will also refresh an access token, if it has expired
 	token, err := i.Token()
 	if err != nil {
@@ -167,7 +167,7 @@ func (i *InternalAuthorizer) GetRequestMetadata(ctx context.Context, uri ...stri
 	}, nil
 }
 
-func (i *InternalAuthorizer) RequireTransportSecurity() bool {
+func (*InternalAuthorizer) RequireTransportSecurity() bool {
 	// TODO(oxisto): This should be set to true because we transmit credentials (except localhost)
 	return false
 }

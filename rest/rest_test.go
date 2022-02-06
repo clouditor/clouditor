@@ -93,7 +93,10 @@ func TestREST(t *testing.T) {
 			WithAllowedMethods(methods),
 			WithAllowedHeaders(headers),
 			WithAdditionalHandler("GET", "/test", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
-				w.Write([]byte("just a test"))
+				_, err := w.Write([]byte("just a test"))
+				if err != nil {
+					panic(err)
+				}
 			}),
 		)
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
