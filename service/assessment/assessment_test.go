@@ -35,7 +35,7 @@ import (
 	"reflect"
 	"runtime"
 	"testing"
-	"time"
+	"sync"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
