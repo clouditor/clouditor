@@ -224,7 +224,7 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 	// We could also just log, but an AR could be sent without an accompanying evidence in the Evidence Store
 	err = s.sendToEvidenceStore(evidence)
 	if err != nil {
-		return fmt.Errorf("could not send evidence to the Evidence Store: %v", err)
+		return fmt.Errorf("could not send evidence to the evidence store: %v", err)
 	}
 
 	for i, data := range evaluations {
@@ -264,7 +264,7 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 		// Send assessment result to the Orchestrator
 		err = s.sendToOrchestrator(result)
 		if err != nil {
-			return fmt.Errorf("could not send assessment result to Orchestrator: %v", err)
+			return fmt.Errorf("could not send assessment result to orchestrator: %v", err)
 		}
 	}
 	return nil
@@ -356,14 +356,14 @@ func (s *Service) sendToEvidenceStore(e *evidence.Evidence) error {
 
 // initOrchestratorStream initializes the stream to the Orchestrator
 func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) error {
-	log.Infof("Trying to establish a connection to evidence store service @ %v", s.orchestratorAddress)
+	log.Infof("Trying to establish a connection to orchestrator service @ %v", s.orchestratorAddress)
 
 	// Establish connection to orchestrator gRPC service
 	conn, err := grpc.Dial(s.orchestratorAddress,
 		service.DefaultGrpcDialOptions(s, additionalOpts...)...,
 	)
 	if err != nil {
-		return fmt.Errorf("could not connect to evidence store service: %w", err)
+		return fmt.Errorf("could not connect to orchestrator service: %w", err)
 	}
 
 	orchestratorClient := orchestrator.NewOrchestratorClient(conn)

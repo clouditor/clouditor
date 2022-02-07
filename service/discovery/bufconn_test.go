@@ -1,4 +1,4 @@
-// Copyright 2021 Fraunhofer AISEC
+// Copyright 2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import (
 	"google.golang.org/grpc/test/bufconn"
 )
 
-const DefaultBufferSize = 1024 * 1024 * 2
+const DefaultBufferSize = 1024 * 1024
 
 var (
 	bufConnListener *bufconn.Listener
