@@ -43,6 +43,21 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListAssessmentResultsResponse'
+    /v1/assessment/statistics:
+        get:
+            tags:
+                - Assessment
+            description: |-
+                ListStatistics returns several statistics about this assessment service,
+                 such as processed evidences and evidences waiting for more resources.
+            operationId: Assessment_ListStatistics
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListStatisticsResponse'
 components:
     schemas:
         AssessEvidenceResponse:
@@ -102,6 +117,11 @@ components:
                     description: Contains the evidence in its original form without following a defined schema, e.g. the raw JSON
                 resource:
                     $ref: '#/components/schemas/Value'
+                relatedResourceIds:
+                    type: array
+                    items:
+                        type: string
+                    description: Related resource IDs. The assessment will wait until all evidences for related resource have arrived in the assessment and are recent enough
             description: An evidence resource
         ListAssessmentResultsResponse:
             type: object
@@ -110,6 +130,18 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/AssessmentResult'
+        ListStatisticsResponse:
+            type: object
+            properties:
+                numberProcessedEvidences:
+                    type: integer
+                    format: int64
+                numberEvidencesWaiting:
+                    type: integer
+                    format: int64
+                averageWaitingTime:
+                    type: number
+                    format: float
         ListValue:
             type: object
             properties:

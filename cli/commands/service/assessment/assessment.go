@@ -66,6 +66,38 @@ func NewListAssessmentResultsCommand() *cobra.Command {
 	return cmd
 }
 
+// NewListStatisticsCommand returns a cobra command for the `list` subcommand
+func NewListStatisticsCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "list-statistics",
+		Short: "Lists statistics in the assessment service",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var (
+				err     error
+				session *cli.Session
+				client  assessment.AssessmentClient
+				res     *assessment.ListStatisticsResponse
+			)
+
+			if session, err = cli.ContinueSession(); err != nil {
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+				return nil
+			}
+
+			client = assessment.NewAssessmentClient(session)
+
+			res, err = client.ListStatistics(context.Background(), &assessment.ListStatisticsRequest{})
+
+			return session.HandleResponse(res, err)
+		},
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return []string{}, cobra.ShellCompDirectiveNoFileComp
+		},
+	}
+
+	return cmd
+}
+
 // NewAssessmentCommand returns a cobra command for `assessment` subcommands
 func NewAssessmentCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -82,5 +114,6 @@ func NewAssessmentCommand() *cobra.Command {
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewListAssessmentResultsCommand(),
+		NewListStatisticsCommand(),
 	)
 }

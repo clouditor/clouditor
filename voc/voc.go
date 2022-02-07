@@ -41,6 +41,7 @@ type IsCloudResource interface {
 	GetType() []string
 	HasType(string) bool
 	GetCreationTime() *time.Time
+	Related() []string
 }
 
 type ResourceID string
@@ -83,6 +84,10 @@ func (r *Resource) HasType(resourceType string) (ok bool) {
 func (r *Resource) GetCreationTime() *time.Time {
 	t := time.Unix(r.CreationTime, 0)
 	return &t
+}
+
+func (*Resource) Related() []string {
+	return []string{}
 }
 
 func ToStruct(r IsCloudResource) (s *structpb.Value, err error) {

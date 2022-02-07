@@ -1,14 +1,5 @@
 [
   {
-    "id": "AnomalyDetectionEnabled"
-  },
-  {
-    "id": "AnomalyDetectionOutput"
-  },
-  {
-    "id": "AnonymousAuthentication"
-  },
-  {
     "id": "AtRestEncryptionEnabled",
     "name": "Storage Encryption: Enabled",
     "description": "This metric describes whether storage encryption is enabled",

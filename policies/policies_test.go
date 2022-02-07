@@ -31,13 +31,13 @@ import (
 	"os"
 	"testing"
 
-	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/voc"
-	"google.golang.org/protobuf/encoding/protojson"
-
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 const (
@@ -63,7 +63,8 @@ func TestRunEvidence(t *testing.T) {
 		evidenceID string
 	}
 	type args struct {
-		source MetricConfigurationSource
+		source  MetricConfigurationSource
+		related map[string]*structpb.Value
 	}
 	tests := []struct {
 		name       string
@@ -234,7 +235,7 @@ func TestRunEvidence(t *testing.T) {
 			results, err := RunEvidence(&evidence.Evidence{
 				Id:       tt.fields.evidenceID,
 				Resource: resource,
-			}, tt.args.source)
+			}, tt.args.source, tt.args.related)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RunEvidence() error = %v, wantErr %v", err, tt.wantErr)
 				return

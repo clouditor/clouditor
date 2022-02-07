@@ -302,11 +302,12 @@ func (s *Service) StartDiscovery(discoverer discovery.Discoverer) {
 
 		// TODO(all): What is the raw type in our case?
 		e := &evidence.Evidence{
-			Id:        uuid.New().String(),
-			Timestamp: timestamppb.Now(),
-			ToolId:    "Clouditor Evidences Collection",
-			Raw:       "",
-			Resource:  v,
+			Id:                 uuid.New().String(),
+			Timestamp:          timestamppb.Now(),
+			ToolId:             "Clouditor Evidences Collection",
+			Raw:                "",
+			Resource:           v,
+			RelatedResourceIds: resource.Related(),
 		}
 
 		if s.assessmentStream == nil {
