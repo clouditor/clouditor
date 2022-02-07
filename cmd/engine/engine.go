@@ -197,7 +197,10 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	// evidenceStoreService.RegisterEvidenceHook(func(result *evidence.Evidence, err error) {})
 	// assessmentService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {}
 
-	authService.CreateDefaultUser(viper.GetString(APIDefaultUserFlag), viper.GetString(APIDefaultPasswordFlag))
+	err = authService.CreateDefaultUser(viper.GetString(APIDefaultUserFlag), viper.GetString(APIDefaultPasswordFlag))
+	if err != nil {
+		log.Errorf("could not create default user: %v", err)
+	}
 
 	if viper.GetBool(CreateDefaultTarget) {
 		_, err := orchestratorService.CreateDefaultTargetCloudService()

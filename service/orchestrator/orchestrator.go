@@ -88,6 +88,8 @@ func WithMetricsFile(file string) ServiceOption {
 	}
 }
 
+// NewService creates a new Orchestrator service
+// TODO(lebogg to oxisto): We could also provide dv via opts?
 func NewService(db persistence.IsDatabase, opts ...ServiceOption) *Service {
 	s := Service{
 		results:              make(map[string]*assessment.AssessmentResult),
