@@ -31,6 +31,7 @@ import (
 	"fmt"
 	"io"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"clouditor.io/clouditor/api"
@@ -41,6 +42,7 @@ import (
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/policies"
 	"clouditor.io/clouditor/service"
+	"clouditor.io/clouditor/voc"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
@@ -48,6 +50,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -100,11 +103,98 @@ type Service struct {
 
 	authz service.AuthorizationStrategy
 
+	// evidenceResourceMap is a cache which maps a resource ID (key) to its latest available evidence
+	evidenceResourceMap map[string]*evidence.Evidence
+	em                  sync.RWMutex
+
+	wg sync.WaitGroup
+
 	// pe contains the actual policy evaluation engine we use
 	pe policies.PolicyEval
 
 	// evalPkg specifies the package used for the evaluation engine
 	evalPkg string
+	// requests contains a map of our left-over requests
+	requests map[string]leftOverRequest
+
+	// rm is a RWMutex for the requests property
+	rm sync.RWMutex
+
+	stats struct {
+		processed  int64
+		waiting    int64
+		avgWaiting time.Duration
+	}
+}
+
+// leftOverRequest contains all information of an evidence request that still waits for
+// more data
+type leftOverRequest struct {
+	*evidence.Evidence
+
+	started time.Time
+
+	// waitingFor should ideally be empty at some point
+	waitingFor map[voc.ResourceID]bool
+
+	resourceId string
+
+	s *Service
+
+	newResources chan voc.ResourceID
+}
+
+func (l *leftOverRequest) WaitAndHandle() {
+	for {
+		// Wait for an incoming resource
+		resource := <-l.newResources
+
+		// Check, if the incoming resource is of interest for us
+		delete(l.waitingFor, resource)
+
+		// Are we ready to assess?
+		if len(l.waitingFor) == 0 {
+			log.Infof("Evidence %s is now ready to assess", l.Evidence.Id)
+
+			// Gather our additional resources
+			additional := make(map[string]*structpb.Value)
+
+			for _, r := range l.Evidence.RelatedResourceIds {
+				l.s.em.RLock()
+				e, ok := l.s.evidenceResourceMap[r]
+				l.s.em.RUnlock()
+
+				if !ok {
+					log.Errorf("Apparently, we are missing an evidence for a resource %s which we are supposed to have", r)
+					break
+				}
+
+				additional[r] = e.Resource
+			}
+
+			// Let's go
+			_, _ = l.s.handleEvidence(l.Evidence, l.resourceId, additional)
+
+			duration := time.Since(l.started)
+
+			log.Infof("Evidence %s was waiting for %s", l.Evidence.Id, duration)
+
+			atomic.AddInt64(&l.s.stats.waiting, -1)
+			// TODO: make concurrency safe
+			l.s.stats.avgWaiting = (l.s.stats.avgWaiting + duration) / 2
+			break
+		}
+	}
+
+	// Lock requests for writing
+	l.s.rm.Lock()
+	// Remove ourselves from the list of requests
+	delete(l.s.requests, l.Evidence.Id)
+	// Unlock writing
+	l.s.rm.Unlock()
+
+	// Inform our wait group, that we are done
+	l.s.wg.Done()
 }
 
 const (
@@ -174,6 +264,7 @@ func NewService(opts ...service.Option[Service]) *Service {
 	svc := &Service{
 		evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 		orchestratorStreams:  api.NewStreamsOf(api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest](log)),
+		requests:             make(map[string]leftOverRequest),
 		cachedConfigurations: make(map[string]cachedConfiguration),
 		evidenceStore:        api.NewRPCConnection(DefaultEvidenceStoreAddress, evidence.NewEvidenceStoreClient),
 		orchestrator:         api.NewRPCConnection(DefaultOrchestratorAddress, orchestrator.NewOrchestratorClient),
@@ -201,8 +292,8 @@ func NewService(opts ...service.Option[Service]) *Service {
 }
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
-func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEvidenceRequest) (resp *assessment.AssessEvidenceResponse, err error) {
-	resp = &assessment.AssessEvidenceResponse{}
+func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
+	res = &assessment.AssessEvidenceResponse{}
 
 	// Validate request
 	err = service.ValidateRequest(req)
@@ -223,17 +314,80 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 		return nil, service.ErrPermissionDenied
 	}
 
-	// Assess evidence
-	_, err = svc.handleEvidence(req.Evidence, resourceId)
-	if err != nil {
-		err = fmt.Errorf("error while handling evidence: %v", err)
-		log.Error(err)
-		return nil, status.Errorf(codes.Internal, "%v", err)
+	// Check, if we can immediately handle this evidence; we assume so at first
+	var canHandle = true
+
+	var waitingFor map[voc.ResourceID]bool = make(map[voc.ResourceID]bool)
+
+	svc.em.Lock()
+	// We need to check, if by any chance the related resource evidences
+	// have already arrived
+	//
+	// TODO(oxisto): We should also check if they are "recent" enough (which is probably determined by the metric)
+	for _, r := range req.Evidence.RelatedResourceIds {
+		// If any of the related resource is not available, we cannot handle them immediately,
+		// but we need to add it to our waitingFor slice
+		if _, ok := svc.evidenceResourceMap[r]; !ok {
+			canHandle = false
+			waitingFor[voc.ResourceID(r)] = true
+		}
 	}
 
-	logging.LogRequest(log, logrus.DebugLevel, logging.Assess, req)
+	// Update our evidence cache
+	svc.evidenceResourceMap[resourceId] = req.Evidence
+	svc.em.Unlock()
 
-	return resp, nil
+	// Inform any other left over evidences that might be waiting
+	//go svc.informLeftOverRequests(resourceId)
+
+	if canHandle {
+		// Assess evidence
+		_, err = svc.handleEvidence(req.Evidence, resourceId, nil)
+
+		if err != nil {
+			err = errors.New("error while handling evidence")
+			log.Error(err)
+
+			return nil, status.Errorf(codes.Internal, "%v", err)
+		}
+
+		res = &assessment.AssessEvidenceResponse{
+			Status: assessment.AssessmentStatus_ASSESSMENT_STATUS_ASSESSED,
+		}
+
+		logging.LogRequest(log, logrus.DebugLevel, logging.Assess, req)
+	} else {
+		log.Tracef("Evidence %s needs to wait for %d more resource(s) to assess evidence", req.Evidence.Id, len(waitingFor))
+
+		// Create a left-over request with all the necessary information
+		l := leftOverRequest{
+			started:      time.Now(),
+			waitingFor:   waitingFor,
+			resourceId:   resourceId,
+			Evidence:     req.Evidence,
+			s:            svc,
+			newResources: make(chan voc.ResourceID, 1000),
+		}
+
+		// Add it to our wait group
+		svc.wg.Add(1)
+		atomic.AddInt64(&svc.stats.waiting, 1)
+
+		// Wait for evidences in the background and handle them
+		go l.WaitAndHandle()
+
+		// Lock requests for writing
+		svc.rm.Lock()
+		svc.requests[req.Evidence.Id] = l
+		// Unlock writing
+		svc.rm.Unlock()
+
+		res = &assessment.AssessEvidenceResponse{
+			Status: assessment.AssessmentStatus_ASSESSMENT_STATUS_WAITING_FOR_RELATED,
+		}
+	}
+
+	return res, nil
 }
 
 // AssessEvidences is a method implementation of the assessment interface: It assesses multiple evidences (stream) and responds with a stream.
@@ -289,14 +443,40 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 	}
 }
 
+// ListStatistics is a method implementation of the assessment interface
+func (s *Service) ListStatistics(_ context.Context, _ *assessment.ListStatisticsRequest) (res *assessment.ListStatisticsResponse, err error) {
+	res = &assessment.ListStatisticsResponse{
+		NumberProcessedEvidences: atomic.LoadInt64(&s.stats.processed),
+		NumberEvidencesWaiting:   atomic.LoadInt64(&s.stats.waiting),
+	}
+
+	return
+}
+
+// informLeftOverRequests informs any waiting requests of the arrival of a new
+// resource ID, so that they might update their waiting decision.
+func (svc *Service) informLeftOverRequests(resourceId string) {
+	// Lock requests for reading
+	svc.rm.RLock()
+	// Defer unlock at the exit of the go-routine
+	defer svc.rm.RUnlock()
+	for _, l := range svc.requests {
+		if l.resourceId != resourceId {
+			l.newResources <- voc.ResourceID(resourceId)
+		}
+	}
+}
+
 // handleEvidence is the helper method for the actual assessment used by AssessEvidence and AssessEvidences
-func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (results []*assessment.AssessmentResult, err error) {
+func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string, related map[string]*structpb.Value) (results []*assessment.AssessmentResult, err error) {
 	var types []string
 
 	log.Debugf("Evaluating evidence %s (%s) collected by %s at %s", ev.Id, resourceId, ev.ToolId, ev.Timestamp.AsTime())
 	log.Tracef("Evidence: %+v", ev)
 
-	evaluations, err := svc.pe.Eval(ev, svc)
+	atomic.AddInt64(&svc.stats.processed, 1)
+
+	evaluations, err := svc.pe.Eval(ev, svc, related)
 	if err != nil {
 		newError := fmt.Errorf("could not evaluate evidence: %w", err)
 

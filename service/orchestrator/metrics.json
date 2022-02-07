@@ -9,10 +9,10 @@
     "id": "AnomalyDetectionEnabled"
   },
   {
-    "id": "AnomalyDetectionOutput"
+    "id": "IdentityPasswordPolicy"
   },
   {
-    "id": "AnonymousAuthentication"
+    "id": "IdentityRecentActivity"
   },
   {
     "id": "AtRestEncryptionAlgorithm",
@@ -42,6 +42,19 @@
     }
   },
   {
+    "id": "AtRestEncryptionAlgorithm",
+    "name": "Storage Encryption: Algorithm",
+    "description": "This metric describes the algorithm of a storage encryption block cipher",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        "AES-128",
+        "AES256",
+        ""
+      ]
+    }
+  },
+  {
     "id": "AutomaticUpdatesEnabled"
   },
   {
@@ -51,13 +64,22 @@
     "id": "AutomaticUpdatesSecurityOnly"
   },
   {
+    "id": "AnomalyDetectionEnabled"
+  },
+  {
+    "id": "AnonymousAuthentication"
+  },
+  {
     "id": "BootLoggingEnabled"
   },
   {
-    "id": "BootLoggingOutput"
+    "id": "BootLoggingSecureTransport"
   },
   {
     "id": "BootLoggingRetention"
+  },
+  {
+    "id": "RoleBroadAssignments"
   },
   {
     "id": "CustomerKeyEncryption"
@@ -68,7 +90,7 @@
   {
     "id": "IdentityRecentActivity"
   },
-    {
+  {
     "id": "L3FirewallEnabled"
   },
   {
@@ -78,7 +100,7 @@
     "id": "MalwareProtectionEnabled"
   },
   {
-    "id": "MalwareProtectionOutput"
+    "id": "MalwareProtectionSecureTransport"
   },
   {
     "id": "MutualAuthentication"
@@ -90,7 +112,7 @@
     "id": "OSLoggingEnabled"
   },
   {
-    "id": "OSLoggingOutput"
+    "id": "OSLoggingSecureTransport"
   },
   {
     "id": "OSLoggingRetention"
@@ -148,5 +170,17 @@
   },
   {
     "id": "WebApplicationFirewallEnabled"
+  },
+  {
+    "id": "VirtualMachineDiskEncryptionEnabled"
+  },
+  {
+    "id": "LoggingServiceEncryptedStorage"
+  },
+  {
+    "id": "LoggingServiceImmutableStorage"
+  },
+  {
+    "id": "ResourceInventory"
   }
 ]

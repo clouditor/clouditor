@@ -26,14 +26,62 @@
 package assessment
 
 import (
+	"bytes"
+	"context"
+	"os"
 	"testing"
 
+	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/cli"
+	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/service"
+	service_assessment "clouditor.io/clouditor/service/assessment"
+	"clouditor.io/clouditor/voc"
+
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
+
+func TestMain(m *testing.M) {
+	svc := service_assessment.NewService()
+
+	r, _ := voc.ToStruct(&voc.Resource{ID: "myID", Type: []string{"Resource"}})
+
+	// Add one evidence
+	_, _ = svc.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{
+		Evidence: &evidence.Evidence{
+			Id:        "00000000-0000-0000-0000-000000000000",
+			Resource:  r,
+			ToolId:    "clouditor",
+			Timestamp: timestamppb.Now(),
+		},
+	})
+
+	os.Exit(clitest.RunCLITest(m, service.WithAssessment(svc)))
+}
 
 func TestAddCommands(t *testing.T) {
 	cmd := NewAssessmentCommand()
 
 	// Check if sub commands were added
 	assert.False(t, cmd.HasSubCommands())
+}
+
+func TestNewListStatisticsCommand(t *testing.T) {
+	var b bytes.Buffer
+
+	cli.Output = &b
+
+	cmd := NewListStatisticsCommand()
+	err := cmd.RunE(nil, []string{})
+	assert.NoError(t, err)
+
+	var response = &assessment.ListStatisticsResponse{}
+	err = protojson.Unmarshal(b.Bytes(), response)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, response)
+	assert.Equal(t, int64(1), response.NumberProcessedEvidences)
 }

@@ -8,6 +8,11 @@
 		"workbench.colorCustomizations": {
 			"debugConsole.errorForeground": "#a8a8a8"
 		},
+		"opa.bundleMode": false,
+		"opa.path": "/opt/homebrew/bin/opa",
+		"opa.roots": [
+			"${workspaceFolder}/policies"
+		],
 		"protoc": {
 			"options": [
 				"--proto_path=${workspaceRoot}proto",

@@ -102,6 +102,7 @@ func WithReflection() StartGRPCServerOption {
 	}
 }
 
+<<<<<<< HEAD:server/grpc.go
 // WithAdditionalGRPCOpts is an option to add an additional gRPC dial options in the REST server communication to the
 // backend.
 func WithAdditionalGRPCOpts(opts []grpc.ServerOption) StartGRPCServerOption {
@@ -109,6 +110,16 @@ func WithAdditionalGRPCOpts(opts []grpc.ServerOption) StartGRPCServerOption {
 		c.grpcOpts = append(c.grpcOpts, opts...)
 	}
 }
+=======
+func WithAssessment(svc assessment.AssessmentServer) StartGRPCServerOption {
+	return func(srv *grpc.Server) {
+		assessment.RegisterAssessmentServer(srv, svc)
+	}
+}
+
+func StartGRPCServer(jwksURL string, opts ...StartGRPCServerOption) (sock net.Listener, srv *grpc.Server, err error) {
+	var addr = "127.0.0.1:0"
+>>>>>>> 178e6296 (Preparing asssement of related evidences):service/grpc.go
 
 // StartGRPCServer starts a gRPC server listening on the given address. The server can be configured using the supplied
 // opts, e.g., to register various Clouditor services. The server itself is started in a separate Go routine, therefore

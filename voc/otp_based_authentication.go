@@ -35,3 +35,5 @@ type OTPBasedAuthentication struct {
 func (*OTPBasedAuthentication) Type() string {
 	return "OTPBasedAuthentication"
 }
+
+func (*OTPBasedAuthentication) authenticity() {}

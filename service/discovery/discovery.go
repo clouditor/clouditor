@@ -374,12 +374,13 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 
 		// TODO(all): What is the raw type in our case?
 		e := &evidence.Evidence{
-			Id:             uuid.New().String(),
-			CloudServiceId: resource.GetServiceID(),
-			Timestamp:      timestamppb.Now(),
-			ToolId:         discovery.EvidenceCollectorToolId,
-			Raw:            nil,
-			Resource:       v,
+			Id:                 uuid.New().String(),
+			CloudServiceId:     resource.GetServiceID(),
+			Timestamp:          timestamppb.Now(),
+			ToolId:             discovery.EvidenceCollectorToolId,
+			Raw:                nil,
+			Resource:           v,
+			RelatedResourceIds: resource.Related(),
 		}
 
 		// Get Evidence Store stream

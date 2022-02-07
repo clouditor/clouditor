@@ -36,12 +36,40 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/assessment/statistics:
+        get:
+            tags:
+                - Assessment
+            description: |-
+                ListStatistics returns several statistics about this assessment service,
+                 such as processed evidences and evidences waiting for more resources.
+            operationId: Assessment_ListStatistics
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListStatisticsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
     schemas:
         AssessEvidenceResponse:
             type: object
-            properties: {}
-            description: AssessEvidenceResponse belongs to AssessEvidence, which uses a custom unary RPC and therefore requires a response message according to the style convention. Since no return values are required, this is empty.
+            properties:
+                status:
+                    enum:
+                        - ASSESSMENT_STATUS_UNSPECIFIED
+                        - ASSESSMENT_STATUS_WAITING_FOR_RELATED
+                        - ASSESSMENT_STATUS_ASSESSED
+                    type: string
+                    format: enum
+            description: AssessEvidenceResponse belongs to AssessEvidence, which uses a custom unary RPC and therefore requires a response message according to the style convention.
         Evidence:
             type: object
             properties:
@@ -63,6 +91,11 @@ components:
                     description: Optional. Contains the evidence in its original form without following a defined schema, e.g. the raw JSON
                 resource:
                     $ref: '#/components/schemas/GoogleProtobufValue'
+                relatedResourceIds:
+                    type: array
+                    items:
+                        type: string
+                    description: Related resource IDs. The assessment will wait until all evidences for related resource have arrived in the assessment and are recent enough
             description: An evidence resource
         GoogleProtobufAny:
             type: object
@@ -74,6 +107,18 @@ components:
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
         GoogleProtobufValue:
             description: Represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values.
+        ListStatisticsResponse:
+            type: object
+            properties:
+                numberProcessedEvidences:
+                    type: integer
+                    format: int64
+                numberEvidencesWaiting:
+                    type: integer
+                    format: int64
+                averageWaitingTime:
+                    type: number
+                    format: float
         Status:
             type: object
             properties:

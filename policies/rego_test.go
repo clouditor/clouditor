@@ -50,9 +50,14 @@ func Test_regoEval_Eval(t *testing.T) {
 		pkg     string
 	}
 	type args struct {
+<<<<<<< HEAD
 		resource   voc.IsCloudResource
 		evidenceID string
 		src        MetricsSource
+=======
+		src     MetricsSource
+		related map[string]*structpb.Value
+>>>>>>> 178e6296 (Preparing asssement of related evidences)
 	}
 	tests := []struct {
 		name       string
@@ -294,6 +299,48 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "VM: Related Evidence",
+			fields: fields{
+				resource: voc.VirtualMachine{
+					Compute: &voc.Compute{
+						Resource: &voc.Resource{
+							ID:   mockVM1ResourceID,
+							Type: []string{"VirtualMachine", "Compute", "Resource"},
+						}},
+					BlockStorage: []voc.ResourceID{testdata.MockResourceStorageID},
+				},
+				evidenceID: mockVM1EvidenceID,
+			},
+			args: args{
+				src: &mockMetricsSource{t: t},
+				related: map[string]*structpb.Value{
+					mockBlockStorage1ID: testutil.ToStruct(&voc.BlockStorage{
+						Storage: &voc.Storage{
+							Resource: &voc.Resource{
+								ID:   mockBlockStorage1ID,
+								Type: []string{"BlockStorage", "Storage", "Resource"},
+							},
+							AtRestEncryption: &voc.AtRestEncryption{
+								Enabled:   true,
+								Algorithm: "AES256",
+							},
+						},
+					}, t),
+				},
+			},
+			compliant: map[string]bool{
+				"BootLoggingEnabled":                  false,
+				"BootLoggingSecureTransport":          false,
+				"BootLoggingRetention":                false,
+				"MalwareProtectionEnabled":            false,
+				"OSLoggingEnabled":                    false,
+				"OSLoggingSecureTransport":            false,
+				"OSLoggingRetention":                  false,
+				"VirtualMachineDiskEncryptionEnabled": true,
+			},
+			wantErr: false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -308,7 +355,7 @@ func Test_regoEval_Eval(t *testing.T) {
 			results, err := pe.Eval(&evidence.Evidence{
 				Id:       tt.args.evidenceID,
 				Resource: resource,
-			}, tt.args.src)
+			}, tt.args.src, tt.args.related)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RunEvidence() error = %v, wantErr %v", err, tt.wantErr)

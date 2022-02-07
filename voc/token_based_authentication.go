@@ -36,3 +36,5 @@ type TokenBasedAuthentication struct {
 func (*TokenBasedAuthentication) Type() string {
 	return "TokenBasedAuthentication"
 }
+
+func (*TokenBasedAuthentication) authenticity() {}

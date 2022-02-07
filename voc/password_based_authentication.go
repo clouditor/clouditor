@@ -35,3 +35,5 @@ type PasswordBasedAuthentication struct {
 func (*PasswordBasedAuthentication) Type() string {
 	return "PasswordBasedAuthentication"
 }
+
+func (*PasswordBasedAuthentication) authenticity() {}

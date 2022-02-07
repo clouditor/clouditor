@@ -177,9 +177,10 @@ func TestNewService(t *testing.T) {
 // TestAssessEvidence tests AssessEvidence
 func TestService_AssessEvidence(t *testing.T) {
 	type fields struct {
-		authz         service.AuthorizationStrategy
-		evidenceStore *api.RPCConnection[evidence.EvidenceStoreClient]
-		orchestrator  *api.RPCConnection[orchestrator.OrchestratorClient]
+		authz               service.AuthorizationStrategy
+		evidenceStore       *api.RPCConnection[evidence.EvidenceStoreClient]
+		orchestrator        *api.RPCConnection[orchestrator.OrchestratorClient]
+		evidenceResourceMap map[string]*evidence.Evidence
 	}
 	type args struct {
 		in0      context.Context
@@ -353,6 +354,68 @@ func TestService_AssessEvidence(t *testing.T) {
 				return assert.ErrorContains(t, err, "connection refused")
 			},
 		},
+		{
+			name: "Assess resource and wait existing related resources is already there",
+			fields: fields{
+				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				evidenceResourceMap: map[string]*evidence.Evidence{
+					"my-other-resource-id": {
+						Id: "11111111-1111-1111-1111-111111111112",
+					},
+				},
+			},
+			args: args{
+				in0: context.TODO(),
+				evidence: &evidence.Evidence{
+					Id:        "11111111-1111-1111-1111-111111111111",
+					ToolId:    "mock",
+					Timestamp: timestamppb.Now(),
+					Resource: toStruct(voc.VirtualMachine{
+						Compute: &voc.Compute{
+							Resource: &voc.Resource{
+								ID:   "my-resource-id",
+								Type: []string{"VirtualMachine"},
+							},
+						},
+					}, t),
+					RelatedResourceIds: []string{"my-other-resource-id"},
+				},
+			},
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status: assessment.AssessmentStatus_ASSESSMENT_STATUS_ASSESSED,
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Assess resource and wait existing related resources is not there",
+			fields: fields{
+				evidenceStore:       api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:        api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				evidenceResourceMap: map[string]*evidence.Evidence{},
+			},
+			args: args{
+				in0: context.TODO(),
+				evidence: &evidence.Evidence{
+					Id:        "11111111-1111-1111-1111-111111111111",
+					ToolId:    "mock",
+					Timestamp: timestamppb.Now(),
+					Resource: toStruct(voc.VirtualMachine{
+						Compute: &voc.Compute{
+							Resource: &voc.Resource{
+								ID:   "my-resource-id",
+								Type: []string{"VirtualMachine"},
+							},
+						},
+					}, t),
+					RelatedResourceIds: []string{"my-other-resource-id"},
+				},
+			},
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status: assessment.AssessmentStatus_ASSESSMENT_STATUS_WAITING_FOR_RELATED,
+			},
+			wantErr: assert.NoError,
+		},
 	}
 
 	for _, tt := range tests {
@@ -366,6 +429,11 @@ func TestService_AssessEvidence(t *testing.T) {
 				pe:                   policies.NewRegoEval(policies.WithPackageName(policies.DefaultRegoPackage)),
 				authz:                tt.fields.authz,
 			}
+
+			if tt.fields.evidenceResourceMap != nil {
+				s.evidenceResourceMap = tt.fields.evidenceResourceMap
+			}
+
 			gotResp, err := s.AssessEvidence(tt.args.in0, &assessment.AssessEvidenceRequest{Evidence: tt.args.evidence})
 
 			tt.wantErr(t, err)
@@ -434,6 +502,7 @@ func TestService_AssessEvidences(t *testing.T) {
 		evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
 		orchestratorStreams  *api.StreamsOf[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest]
 		authz                service.AuthorizationStrategy
+		evidenceResourceMap  map[string]*evidence.Evidence
 	}
 	type args struct {
 		streamToServer            *mockAssessmentServerStream
@@ -534,6 +603,7 @@ func TestService_AssessEvidences(t *testing.T) {
 			wantErrMessage: "rpc error: code = Unknown desc = cannot receive stream request",
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var (
@@ -549,6 +619,7 @@ func TestService_AssessEvidences(t *testing.T) {
 				orchestratorStreams:  tt.fields.orchestratorStreams,
 				pe:                   policies.NewRegoEval(),
 				authz:                tt.fields.authz,
+				evidenceResourceMap:  tt.fields.evidenceResourceMap,
 			}
 
 			if tt.args.streamToServer != nil {
@@ -675,7 +746,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 			// To test the hooks we have to call a function that calls the hook function
 			gotResp, err := s.AssessEvidence(tt.args.in0, tt.args.evidence)
 
-			// wait for all hooks (2 metrics * 2 hooks)
+			// wait for all hooks
 			wg.Wait()
 
 			if (err != nil) != tt.wantErr {
@@ -846,6 +917,7 @@ func TestService_HandleEvidence(t *testing.T) {
 	type args struct {
 		evidence   *evidence.Evidence
 		resourceId string
+		related    map[string]*structpb.Value
 	}
 	tests := []struct {
 		name    string
@@ -960,8 +1032,8 @@ func TestService_HandleEvidence(t *testing.T) {
 			}
 
 			// Two tests: 1st) wantErr function. 2nd) if wantErr false then check if the results are valid
-			results, err := s.handleEvidence(tt.args.evidence, tt.args.resourceId)
-			if !tt.wantErr(t, err, fmt.Sprintf("handleEvidence(%v, %v)", tt.args.evidence, tt.args.resourceId)) {
+			results, err := s.handleEvidence(tt.args.evidence, tt.args.resourceId, tt.args.related)
+			if !tt.wantErr(t, err, fmt.Sprintf("handleEvidence(%v, %v, %v)", tt.args.evidence, tt.args.resourceId, tt.args.related)) {
 				assert.NotEmpty(t, results)
 				// Check the result by validation
 				for _, result := range results {
@@ -1092,7 +1164,7 @@ type eventRecorder struct {
 	done  bool
 }
 
-func (*eventRecorder) Eval(_ *evidence.Evidence, _ policies.MetricsSource) (data []*policies.Result, err error) {
+func (*eventRecorder) Eval(_ *evidence.Evidence, _ policies.MetricsSource, _ map[string]*structpb.Value) (data []*policies.Result, err error) {
 	return nil, nil
 }
 
@@ -1160,4 +1232,67 @@ func TestService_MetricImplementation(t *testing.T) {
 			assert.Equal(t, tt.wantImpl, gotImpl)
 		})
 	}
+}
+
+func TestService_AssessEvidenceWaitFor(t *testing.T) {
+	s := NewService()
+	s.evidenceStore = api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer))
+	s.orchestrator = api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer))
+
+	// Add our first evidence
+	resp, err := s.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{
+		Evidence: &evidence.Evidence{
+			Id: "11111111-1111-1111-1111-111111111111",
+			Resource: toStruct(&voc.Resource{
+				ID:   "my-resource",
+				Type: []string{"VirtualMachine", "Compute"},
+			}, t),
+			ToolId:             "my-tool",
+			Timestamp:          timestamppb.Now(),
+			RelatedResourceIds: []string{"my-third-resource"},
+		},
+	})
+
+	assert.ErrorIs(t, err, nil)
+	assert.Equal(t, assessment.AssessEvidencesResponse_WAITING_FOR_RELATED, resp.Status)
+
+	// For more fun, we add a second evidence also waiting for the same resource
+	resp, err = s.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{
+		Evidence: &evidence.Evidence{
+			Id: "22222222-2222-2222-2222-222222222222",
+			Resource: toStruct(&voc.Resource{
+				ID:   "my-other-resource",
+				Type: []string{"VirtualMachine", "Compute"},
+			}, t),
+			ToolId:             "my-tool",
+			Timestamp:          timestamppb.Now(),
+			RelatedResourceIds: []string{"my-third-resource"},
+		},
+	})
+
+	assert.ErrorIs(t, err, nil)
+	assert.Equal(t, assessment.AssessEvidencesResponse_WAITING_FOR_RELATED, resp.Status)
+
+	// Finally, an evidence for the resource we are waiting for. For even more fun, this evidence
+	// also depends on the first resource, creating a mutual dependency.
+	resp, err = s.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{
+		Evidence: &evidence.Evidence{
+			Id: "33333333-3333-3333-3333-333333333333",
+			Resource: toStruct(&voc.Resource{
+				ID:   "my-third-resource",
+				Type: []string{"Compute"},
+			}, t),
+			ToolId:             "my-tool",
+			Timestamp:          timestamppb.Now(),
+			RelatedResourceIds: []string{"my-resource"},
+		},
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, assessment.AssessEvidencesResponse_ASSESSED, resp.Status)
+
+	s.wg.Wait()
+
+	// No requests should be left over
+	assert.Empty(t, s.requests)
 }

@@ -62,4 +62,9 @@ message Evidence {
     (tagger.tags) = "gorm:\"serializer:valuepb;type:json\"",
     (validate.rules).message.required = true
   ];
+
+  // Related resource IDs. The assessment will wait until all evidences for
+  // related resource have arrived in the assessment and are recent enough
+  repeated string related_resource_ids = 7
+      [ (tagger.tags) = "gorm:\"serializer:valuepb;type:json\"" ];
 }
