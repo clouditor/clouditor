@@ -235,15 +235,6 @@ func TestService_UpdateCloudService(t *testing.T) {
 	assert.Equal(t, "NewName", cloudService.Name)
 	assert.Equal(t, "NewDescription", cloudService.Description)
 
-	cloudService, err = service.UpdateCloudService(context.Background(), &orchestrator.UpdateCloudServiceRequest{
-		ServiceId: DefaultTargetCloudServiceId,
-		Service: &orchestrator.CloudService{
-			Id:          "",
-			Name:        "",
-			Description: "",
-		},
-	})
-
 	// Reset DB
 	assert.Nil(t, gormX.Reset())
 }
