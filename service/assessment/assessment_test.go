@@ -370,7 +370,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 				resultHooks: []assessment.ResultHookFunc{firstHookFunction, secondHookFunction},
 			},
 			wantErr:  false,
-			wantResp: &assessment.AssessEvidenceResponse{Status: assessment.AssessEvidenceResponse_ASSESSED},
+			wantResp: &assessment.AssessEvidenceResponse{Status: true},
 		},
 	}
 
