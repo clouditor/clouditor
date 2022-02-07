@@ -4,6 +4,15 @@
             "--proto_path=third_party",
         ]
     },
+    "opa.bundleMode": false,
+    "opa.roots": [
+        "${workspaceFolder}/policies"
+    ],
+    "protoc": {
+        "options": [
+            "--proto_path=third_party",
+        ]
+    },
     "cSpell.words": [
         "AISEC",
         "bufnet",

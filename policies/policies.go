@@ -39,6 +39,7 @@ import (
 	"github.com/open-policy-agent/opa/storage"
 	"github.com/open-policy-agent/opa/storage/inmem"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 var (
@@ -110,11 +111,20 @@ func (qc *queryCache) Get(key string, orElse orElseFunc) (query *rego.PreparedEv
 	return
 }
 
-func RunEvidence(evidence *evidence.Evidence, holder MetricConfigurationSource) ([]*Result, error) {
+func RunEvidence(evidence *evidence.Evidence, holder MetricConfigurationSource, related map[string]*structpb.Value) ([]*Result, error) {
 	data := make([]*Result, 0)
 	var baseDir = "."
 
 	var m = evidence.Resource.GetStructValue().AsMap()
+
+	if related != nil {
+		am := make(map[string]interface{})
+		for key, value := range related {
+			am[key] = value.GetStructValue().AsMap()
+		}
+
+		m["related"] = am
+	}
 
 	var types []string
 
@@ -156,6 +166,10 @@ func RunEvidence(evidence *evidence.Evidence, holder MetricConfigurationSource) 
 		// start at the exactly same time.
 		metrics = []string{}
 		for _, fileInfo := range files {
+			if !fileInfo.Type().IsDir() {
+				continue
+			}
+
 			runMap, err := RunMap(baseDir, fileInfo.Name(), m, holder)
 			if err != nil {
 				return nil, err
@@ -283,15 +297,10 @@ func RunMap(baseDir string, metric string, m map[string]interface{}, holder Metr
 	}
 }
 
-func scanBundleDir(baseDir string) ([]os.FileInfo, error) {
+func scanBundleDir(baseDir string) ([]os.DirEntry, error) {
 	dirname := baseDir + "/policies/bundles"
 
-	f, err := os.Open(dirname)
-	if err != nil {
-		return nil, err
-	}
-	files, err := f.Readdir(-1)
-	_ = f.Close()
+	files, err := os.ReadDir(dirname)
 	if err != nil {
 		return nil, err
 	}

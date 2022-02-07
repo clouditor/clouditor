@@ -66,6 +66,14 @@ service Assessment {
       get : "/v1/assessment/results"
     };
   }
+
+  // ListStatistics returns several statistics about this assessment service,
+  // such as processed evidences and evidences waiting for more resources.
+  rpc ListStatistics(ListStatisticsRequest) returns (ListStatisticsResponse) {
+    option (google.api.http) = {
+      get : "/v1/assessment/statistics"
+    };
+  }
 };
 
 message ListAssessmentResultsRequest {}
@@ -87,6 +95,13 @@ message AssessEvidenceResponse {
   AssessmentStatus status = 1;
 
   string status_message = 2;
+}
+
+message ListStatisticsRequest {}
+message ListStatisticsResponse {
+  int64 number_processed_evidences = 1;
+  int64 number_evidences_waiting = 2;
+  float average_waiting_time = 3;
 }
 
 // A result resource, representing the result after assessing the cloud resource

@@ -29,6 +29,7 @@ import (
 	"fmt"
 	"net"
 
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
@@ -54,6 +55,12 @@ func WithEvidenceStore(svc evidence.EvidenceStoreServer) StartGRPCServerOption {
 func WithDiscovery(svc discovery.DiscoveryServer) StartGRPCServerOption {
 	return func(srv *grpc.Server) {
 		discovery.RegisterDiscoveryServer(srv, svc)
+	}
+}
+
+func WithAssessment(svc assessment.AssessmentServer) StartGRPCServerOption {
+	return func(srv *grpc.Server) {
+		assessment.RegisterAssessmentServer(srv, svc)
 	}
 }
 

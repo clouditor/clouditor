@@ -800,3 +800,7 @@ func (mockIsCloudResource) HasType(_ string) bool {
 func (mockIsCloudResource) GetCreationTime() *time.Time {
 	return nil
 }
+
+func (mockIsCloudResource) Related() []string {
+	return []string{}
+}

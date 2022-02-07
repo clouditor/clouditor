@@ -32,6 +32,7 @@ import (
 	"fmt"
 	"io"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"clouditor.io/clouditor/api"
@@ -40,10 +41,11 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/policies"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
-	"golang.org/x/oauth2/clientcredentials"
+	"clouditor.io/clouditor/voc"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -104,7 +106,83 @@ type Service struct {
 	// TODO(oxisto): combine with hookMutex and replace with a generic version of a mutex'd map
 	confMutex sync.Mutex
 
+	// evidenceResourceMap is a cache which maps a resource ID (key) to its latest available evidence
+	evidenceResourceMap map[string]*evidence.Evidence
+
+	wg sync.WaitGroup
+
 	authorizer api.Authorizer
+
+	// requests contains a map of our left-over requests
+	requests map[string]leftOverRequest
+
+	// rm is a RWMutex for the requests property
+	rm sync.RWMutex
+
+	stats struct {
+		processed int64
+		waiting   int64
+		avgTime   float32
+	}
+}
+
+// leftOverRequest contains all information of an evidence request that still waits for
+// more data
+type leftOverRequest struct {
+	*evidence.Evidence
+
+	started time.Time
+
+	// waitingFor should ideally be empty at some point
+	waitingFor map[voc.ResourceID]bool
+
+	resourceId string
+
+	s *Service
+
+	newResources chan voc.ResourceID
+}
+
+func (l *leftOverRequest) WaitAndHandle() {
+	for {
+		// Wait for an incoming resource
+		resource := <-l.newResources
+
+		// Check, if the incoming resource is of interest for us
+		delete(l.waitingFor, resource)
+
+		// Are we ready to assess?
+		if len(l.waitingFor) == 0 {
+			log.Infof("Evidence %s is now ready to assess", l.Evidence.Id)
+
+			// Gather our additional resources
+			additional := make(map[string]*structpb.Value)
+
+			for _, r := range l.Evidence.RelatedResourceIds {
+				additional[r] = l.s.evidenceResourceMap[r].Resource
+			}
+
+			// Let's go
+			_ = l.s.handleEvidence(l.Evidence, l.resourceId, additional)
+
+			duration := time.Since(l.started)
+
+			log.Infof("Evidence %s was waiting for %s", l.Evidence.Id, duration)
+
+			atomic.AddInt64(&l.s.stats.waiting, -1)
+			break
+		}
+	}
+
+	// Lock requests for writing
+	l.s.rm.Lock()
+	// Remove ourselves from the list of requests
+	delete(l.s.requests, l.Evidence.Id)
+	// Unlock writing
+	l.s.rm.Unlock()
+
+	// Inform our wait group, that we are done
+	l.s.wg.Done()
 }
 
 const (
@@ -143,6 +221,8 @@ func WithOAuth2Authorizer(config *clientcredentials.Config) ServiceOption {
 func NewService(opts ...ServiceOption) *Service {
 	s := &Service{
 		results:              make(map[string]*assessment.AssessmentResult),
+		requests:             make(map[string]leftOverRequest),
+		evidenceResourceMap:  make(map[string]*evidence.Evidence),
 		evidenceStoreAddress: DefaultEvidenceStoreAddress,
 		evidenceStoreChannel: make(chan *evidence.Evidence, 1000),
 		orchestratorAddress:  DefaultOrchestratorAddress,
@@ -198,23 +278,87 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 		return res, status.Errorf(codes.InvalidArgument, "%v", newError)
 	}
 
-	// Assess evidence
-	err = s.handleEvidence(req.Evidence, resourceId)
-	if err != nil {
-		res = &assessment.AssessEvidenceResponse{
-			Status:        assessment.AssessEvidenceResponse_FAILED,
-			StatusMessage: err.Error(),
+	go func() {
+		// Lock requests for reading
+		s.rm.RLock()
+		// Defer unlock at the exit of the go-routine
+		defer s.rm.RUnlock()
+		for _, l := range s.requests {
+			if l.resourceId != resourceId {
+				// Inform any other left over evidences that might be waiting
+				l.newResources <- voc.ResourceID(resourceId)
+			}
 		}
+	}()
 
-		newError := errors.New("error while handling evidence")
-		log.Error(newError)
+	// Check, if we can immediately handle this evidence; we assume so at first
+	var canHandle = true
 
-		return res, status.Errorf(codes.Internal, "%v", newError)
+	var waitingFor map[voc.ResourceID]bool = make(map[voc.ResourceID]bool)
+
+	// We need to check, if by any chance the related resource evidences
+	// have already arrived
+	//
+	// TODO(oxisto): We should also check if they are "recent" enough (which is probably determined by the metric)
+	for _, r := range req.Evidence.RelatedResourceIds {
+		// If any of the related resource is not available, we cannot handle them immediately,
+		// but we need to add it to our waitingFor slice
+		if _, ok := s.evidenceResourceMap[r]; !ok {
+			canHandle = false
+			waitingFor[voc.ResourceID(r)] = true
+		}
 	}
 
-	// Create response
-	res = &assessment.AssessEvidenceResponse{
-		Status: assessment.AssessEvidenceResponse_ASSESSED,
+	// Update our evidence cache
+
+	if canHandle {
+		// Assess evidence
+		err = s.handleEvidence(req.Evidence, resourceId, nil)
+
+		if err != nil {
+			res = &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: err.Error(),
+			}
+
+			newError := errors.New("error while handling evidence")
+			log.Error(newError)
+
+			return res, status.Errorf(codes.Internal, "%v", newError)
+		}
+
+		res = &assessment.AssessEvidenceResponse{
+			Status: assessment.AssessEvidenceResponse_ASSESSED,
+		}
+	} else {
+		log.Infof("Evidence %s needs to wait for %d more resource(s) to assess evidence", req.Evidence.Id, len(waitingFor))
+
+		// Create a left-over request with all the necessary information
+		l := leftOverRequest{
+			started:      time.Now(),
+			waitingFor:   waitingFor,
+			resourceId:   resourceId,
+			Evidence:     req.Evidence,
+			s:            s,
+			newResources: make(chan voc.ResourceID),
+		}
+
+		// Add it to our wait group
+		s.wg.Add(1)
+		atomic.AddInt64(&s.stats.waiting, 1)
+
+		// Wait for evidences in the background and handle them
+		go l.WaitAndHandle()
+
+		// Lock requests for writing
+		s.rm.Lock()
+		s.requests[req.Evidence.Id] = l
+		// Unlock writing
+		s.rm.Unlock()
+
+		res = &assessment.AssessEvidenceResponse{
+			Status: assessment.AssessEvidenceResponse_WAITING_FOR_RELATED,
+		}
 	}
 
 	return res, nil
@@ -266,11 +410,13 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 }
 
 // handleEvidence is the helper method for the actual assessment used by AssessEvidence and AssessEvidences
-func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string) (err error) {
+func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string, related map[string]*structpb.Value) (err error) {
 	log.Debugf("Evaluating evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, evidence.ToolId, evidence.Timestamp)
 	log.Tracef("Evidence: %+v", evidence)
 
-	evaluations, err := policies.RunEvidence(evidence, s)
+	atomic.AddInt64(&s.stats.processed, 1)
+
+	evaluations, err := policies.RunEvidence(evidence, s, related)
 	if err != nil {
 		newError := fmt.Errorf("could not evaluate evidence: %w", err)
 		log.Error(newError)
@@ -288,9 +434,7 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 
 		log.Debugf("Evaluated evidence %v with metric '%v' as %v", evidence.Id, metricId, data.Compliant)
 
-		targetValue := data.TargetValue
-
-		convertedTargetValue, err := convertTargetValue(targetValue)
+		convertedTargetValue, err := convertTargetValue(data.TargetValue)
 		if err != nil {
 			return fmt.Errorf("could not convert target value: %w", err)
 		}
@@ -361,6 +505,16 @@ func (s *Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAss
 
 	for _, result := range s.results {
 		res.Results = append(res.Results, result)
+	}
+
+	return
+}
+
+// ListStatistics is a method implementation of the assessment interface
+func (s *Service) ListStatistics(_ context.Context, _ *assessment.ListStatisticsRequest) (res *assessment.ListStatisticsResponse, err error) {
+	res = &assessment.ListStatisticsResponse{
+		NumberProcessedEvidences: atomic.LoadInt64(&s.stats.processed),
+		NumberEvidencesWaiting:   atomic.LoadInt64(&s.stats.waiting),
 	}
 
 	return

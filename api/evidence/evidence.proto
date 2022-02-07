@@ -54,4 +54,8 @@ message Evidence {
   // Semantic representation of the Cloud resource according to our defined
   // ontology
   google.protobuf.Value resource = 6;
+
+  // Related resource IDs. The assessment will wait until all evidences for
+  // related resource have arrived in the assessment and are recent enough
+  repeated string related_resource_ids = 7;
 }

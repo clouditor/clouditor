@@ -33,6 +33,9 @@ type AssessmentClient interface {
 	AssessEvidences(ctx context.Context, opts ...grpc.CallOption) (Assessment_AssessEvidencesClient, error)
 	// List all assessment results. Part of the public API, also exposed as REST.
 	ListAssessmentResults(ctx context.Context, in *ListAssessmentResultsRequest, opts ...grpc.CallOption) (*ListAssessmentResultsResponse, error)
+	// ListStatistics returns several statistics about this assessment service,
+	// such as processed evidences and evidences waiting for more resources.
+	ListStatistics(ctx context.Context, in *ListStatisticsRequest, opts ...grpc.CallOption) (*ListStatisticsResponse, error)
 }
 
 type assessmentClient struct {
@@ -101,6 +104,15 @@ func (c *assessmentClient) ListAssessmentResults(ctx context.Context, in *ListAs
 	return out, nil
 }
 
+func (c *assessmentClient) ListStatistics(ctx context.Context, in *ListStatisticsRequest, opts ...grpc.CallOption) (*ListStatisticsResponse, error) {
+	out := new(ListStatisticsResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.Assessment/ListStatistics", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AssessmentServer is the server API for Assessment service.
 // All implementations must embed UnimplementedAssessmentServer
 // for forward compatibility
@@ -115,6 +127,9 @@ type AssessmentServer interface {
 	AssessEvidences(Assessment_AssessEvidencesServer) error
 	// List all assessment results. Part of the public API, also exposed as REST.
 	ListAssessmentResults(context.Context, *ListAssessmentResultsRequest) (*ListAssessmentResultsResponse, error)
+	// ListStatistics returns several statistics about this assessment service,
+	// such as processed evidences and evidences waiting for more resources.
+	ListStatistics(context.Context, *ListStatisticsRequest) (*ListStatisticsResponse, error)
 	mustEmbedUnimplementedAssessmentServer()
 }
 
@@ -133,6 +148,9 @@ func (UnimplementedAssessmentServer) AssessEvidences(Assessment_AssessEvidencesS
 }
 func (UnimplementedAssessmentServer) ListAssessmentResults(context.Context, *ListAssessmentResultsRequest) (*ListAssessmentResultsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListAssessmentResults not implemented")
+}
+func (UnimplementedAssessmentServer) ListStatistics(context.Context, *ListStatisticsRequest) (*ListStatisticsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListStatistics not implemented")
 }
 func (UnimplementedAssessmentServer) mustEmbedUnimplementedAssessmentServer() {}
 
@@ -227,6 +245,24 @@ func _Assessment_ListAssessmentResults_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Assessment_ListStatistics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListStatisticsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AssessmentServer).ListStatistics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Assessment/ListStatistics",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AssessmentServer).ListStatistics(ctx, req.(*ListStatisticsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Assessment_ServiceDesc is the grpc.ServiceDesc for Assessment service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -245,6 +281,10 @@ var Assessment_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListAssessmentResults",
 			Handler:    _Assessment_ListAssessmentResults_Handler,
+		},
+		{
+			MethodName: "ListStatistics",
+			Handler:    _Assessment_ListStatistics_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
