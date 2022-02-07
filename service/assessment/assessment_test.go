@@ -39,13 +39,11 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -215,8 +213,8 @@ func TestAssessEvidence(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
 			if tt.hasRPCConnection {
-				assert.NoError(t, s.mockEvidenceStream())
-				assert.NoError(t, s.mockOrchestratorStream())
+				assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
+				assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
 			} else {
 				// clear the evidence URL, just to be sure
 				s.evidenceStoreAddress = ""
@@ -301,8 +299,8 @@ func TestAssessEvidences(t *testing.T) {
 				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
 			}
 			if tt.fields.hasRPCConnection {
-				assert.NoError(t, s.mockEvidenceStream())
-				assert.NoError(t, s.mockOrchestratorStream())
+				assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
+				assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
 			}
 
 			err := s.AssessEvidences(tt.args.stream)
@@ -375,8 +373,8 @@ func TestAssessmentResultHooks(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			hookCallCounter = 0
 			s := NewService()
-			assert.NoError(t, s.mockEvidenceStream())
-			assert.NoError(t, s.mockOrchestratorStream())
+			assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
+			assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
 
 			for i, hookFunction := range tt.args.resultHooks {
 				s.RegisterAssessmentResultHook(hookFunction)
@@ -407,8 +405,8 @@ func TestAssessmentResultHooks(t *testing.T) {
 
 func TestListAssessmentResults(t *testing.T) {
 	s := NewService()
-	assert.NoError(t, s.mockEvidenceStream())
-	assert.NoError(t, s.mockOrchestratorStream())
+	assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
+	assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
 	_, err := s.AssessEvidence(context.TODO(), &assessment.AssessEvidenceRequest{
 		Evidence: &evidence.Evidence{
 			Id:        "11111111-1111-1111-1111-111111111111",
@@ -595,65 +593,6 @@ func TestConvertTargetValue(t *testing.T) {
 	}
 }
 
-// TODO(oxisto): Use options of initEvidenceStream() instead
-func (s *Service) mockEvidenceStream() error {
-	opts := []grpc.DialOption{
-		grpc.WithContextDialer(bufConnDialer),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	}
-
-	if s.authorizer != nil {
-		opts = append(opts, grpc.WithPerRPCCredentials(s.authorizer))
-	}
-
-	ctx := context.Background()
-	conn, err := grpc.DialContext(
-		ctx,
-		"bufnet",
-		opts...,
-	)
-	if err != nil {
-		return err
-	}
-
-	client, err := evidence.NewEvidenceStoreClient(conn).StoreEvidences(ctx)
-	if err != nil {
-		return err
-	}
-
-	s.evidenceStoreStream = client
-	return nil
-}
-
-// TODO(oxisto): Use options of initOrchestratorStream() instead
-func (s *Service) mockOrchestratorStream() error {
-	opts := []grpc.DialOption{
-		grpc.WithContextDialer(bufConnDialer),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	}
-
-	if s.authorizer != nil {
-		opts = append(opts, grpc.WithPerRPCCredentials(s.authorizer))
-	}
-
-	ctx := context.Background()
-	conn, err := grpc.DialContext(
-		ctx,
-		"bufnet",
-		opts...,
-	)
-	if err != nil {
-		return err
-	}
-
-	client, err := orchestrator.NewOrchestratorClient(conn).StoreAssessmentResults(ctx)
-	if err != nil {
-		return err
-	}
-	s.orchestratorStream = client
-	return nil
-}
-
 func TestHandleEvidence(t *testing.T) {
 	type fields struct {
 		hasEvidenceStoreStream bool
@@ -764,10 +703,10 @@ func TestHandleEvidence(t *testing.T) {
 			s := NewService()
 			// Mock streams for target services if needed
 			if tt.fields.hasEvidenceStoreStream {
-				assert.NoError(t, s.mockEvidenceStream())
+				assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
 			}
 			if tt.fields.hasOrchestratorStream {
-				assert.NoError(t, s.mockOrchestratorStream())
+				assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
 			}
 			// Two tests: 1st) wantErr function. 2nd) if wantErr false then check if a result is added to map
 			if !tt.wantErr(t, s.handleEvidence(tt.args.evidence, tt.args.resourceId), fmt.Sprintf("handleEvidence(%v, %v)", tt.args.evidence, tt.args.resourceId)) {
@@ -835,7 +774,7 @@ func TestService_initEvidenceStoreStream(t *testing.T) {
 					WithEvidenceStoreAddress("bufnet"),
 					WithInternalAuthorizer(
 						"bufnet",
-						"notclouditor",
+						"not_clouditor",
 						"clouditor",
 						grpc.WithContextDialer(bufConnDialer),
 					),
@@ -919,7 +858,7 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 					WithOrchestratorAddress("bufnet"),
 					WithInternalAuthorizer(
 						"bufnet",
-						"notclouditor",
+						"not_clouditor",
 						"clouditor",
 						grpc.WithContextDialer(bufConnDialer),
 					),

@@ -42,7 +42,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -341,7 +340,7 @@ func TestStart(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
 			if tt.fields.hasRPCConnection {
-				assert.NoError(t, s.mockAssessmentStream())
+				assert.NoError(t, s.initAssessmentStream(grpc.WithContextDialer(bufConnDialer)))
 			}
 
 			for _, env := range tt.fields.envVariables {
@@ -439,36 +438,6 @@ func TestService_initAssessmentStream(t *testing.T) {
 			}
 		})
 	}
-}
-
-// Remove this and supply options directly and supply the necessary opt to gRPC
-// Deprecated use initAssessmentStream
-func (s *Service) mockAssessmentStream() error {
-	opts := []grpc.DialOption{
-		grpc.WithContextDialer(bufConnDialer),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	}
-
-	if s.authorizer != nil {
-		opts = append(opts, grpc.WithPerRPCCredentials(s.authorizer))
-	}
-
-	ctx := context.Background()
-	conn, err := grpc.DialContext(
-		ctx,
-		"bufnet",
-		opts...,
-	)
-	if err != nil {
-		return err
-	}
-
-	client, err := assessment.NewAssessmentClient(conn).AssessEvidences(ctx)
-	if err != nil {
-		return err
-	}
-	s.assessmentStream = client
-	return nil
 }
 
 func TestShutdown(t *testing.T) {
