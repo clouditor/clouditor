@@ -138,19 +138,13 @@ func TestGetCloudService(t *testing.T) {
 		err  error
 	}{
 		{
-			"missing request",
+			"invalid request",
 			nil,
 			nil,
-			status.Error(codes.InvalidArgument, "service id is empty"),
+			status.Error(codes.InvalidArgument, orchestrator.ErrRequestIsNil.Error()),
 		},
 		{
-			"missing service id",
-			&orchestrator.GetCloudServiceRequest{},
-			nil,
-			status.Error(codes.InvalidArgument, "service id is empty"),
-		},
-		{
-			"invalid service id",
+			"cloud service not found",
 			&orchestrator.GetCloudServiceRequest{ServiceId: "does-not-exist"},
 			nil,
 			status.Error(codes.NotFound, "service not found"),
@@ -216,7 +210,8 @@ func TestService_UpdateCloudService(t *testing.T) {
 	// 3rd case: Service not found since there are no services yet
 	_, err = service.UpdateCloudService(context.Background(), &orchestrator.UpdateCloudServiceRequest{
 		Service: &orchestrator.CloudService{
-			Id: DefaultTargetCloudServiceId,
+			Id:   DefaultTargetCloudServiceId,
+			Name: DefaultTargetCloudServiceName,
 		},
 		ServiceId: DefaultTargetCloudServiceId,
 	})

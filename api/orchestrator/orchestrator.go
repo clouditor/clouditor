@@ -68,6 +68,9 @@ func (s *UpdateCloudServiceRequest) Validate() (err error) {
 	if s == nil {
 		return ErrRequestIsNil
 	}
+	if s.Service == nil {
+		return ErrServiceIsNil
+	}
 	// TODO(all): See TODO in cloud_service.go -> Remove ServiceID from req?
 	// If not I will differentiate both Error messages
 	if s.Service.Id == "" {
