@@ -61,15 +61,17 @@ func init() {
 	log = logrus.WithField("component", "auth")
 }
 
-// DefaultApiKeySaveOnCreate specifies whether a created API key will be saved. This is useful to turn of in unit tests, where
-// we only want a temporary key.
-const DefaultApiKeySaveOnCreate = true
+const (
+	// DefaultApiKeySaveOnCreate specifies whether a created API key will be saved. This is useful to turn of in unit tests, where
+	// we only want a temporary key.
+	DefaultApiKeySaveOnCreate = true
 
-// DefaultApiKeyPassword is the default password to protect the API key
-const DefaultApiKeyPassword = "changeme"
+	// DefaultApiKeyPassword is the default password to protect the API key
+	DefaultApiKeyPassword = "changeme"
 
-// DefaultApiKeyPath is the default path for the API private key
-const DefaultApiKeyPath = "~/.clouditor/api.key"
+	// DefaultApiKeyPath is the default path for the API private key
+	DefaultApiKeyPath = "~/.clouditor/api.key"
+)
 
 // Service is an implementation of the gRPC Authentication service
 type Service struct {
@@ -91,27 +93,34 @@ type UserClaims struct {
 	EMail    string `json:"email"`
 }
 
+// ServiceOption is a functional option type to configure the authentication service.
 type ServiceOption func(s *Service)
 
+// WithApiKeyPath is an option to configure the path for the API key.
 func WithApiKeyPath(path string) ServiceOption {
 	return func(s *Service) {
 		s.config.keyPath = path
 	}
 }
 
+// WithApiKeyPassword is an option to configure the password that is used to protect the API key.
 func WithApiKeyPassword(password string) ServiceOption {
 	return func(s *Service) {
 		s.config.keyPassword = password
 	}
 }
 
+// WithApiKeySaveOnCreate is an option to configure whether a key should be saved when it is created.
 func WithApiKeySaveOnCreate(saveOnCreate bool) ServiceOption {
 	return func(s *Service) {
 		s.config.keySaveOnCreate = saveOnCreate
 	}
 }
 
+// NewService creates a new Service representing an authentication service.
 func NewService(opts ...ServiceOption) *Service {
+	var err error
+
 	s := &Service{
 		config: struct {
 			keySaveOnCreate bool
@@ -124,17 +133,15 @@ func NewService(opts ...ServiceOption) *Service {
 		},
 	}
 
-	var (
-		err error
-	)
-
 	// Apply options
 	for _, o := range opts {
 		o(s)
 	}
 
+	// Load the key
 	s.apiKey, err = loadApiKey(s.config.keyPath, []byte(s.config.keyPassword))
 
+	// Recover from an error, so that we have at least a temporary key
 	if err != nil {
 		s.recoverFromLoadApiKeyError(err, s.config.keyPath == DefaultApiKeyPath)
 	}
@@ -145,6 +152,8 @@ func NewService(opts ...ServiceOption) *Service {
 	return s
 }
 
+// loadApiKey loads an ecdsa.PrivateKey from a path. The key must in PEM format and protected by
+// a password using PKCS#8 with PBES2.
 func loadApiKey(path string, password []byte) (key *ecdsa.PrivateKey, err error) {
 	var (
 		keyFile string
@@ -179,6 +188,8 @@ func loadApiKey(path string, password []byte) (key *ecdsa.PrivateKey, err error)
 	return key, nil
 }
 
+// saveApiKey saves an ecdsa.PrivateKey to a path. The key will be saved in PEM format and protected by
+// a password using PKCS#8 with PBES2.
 func saveApiKey(apiKey *ecdsa.PrivateKey, keyPath string, password string) (err error) {
 	keyPath, err = expandPath(keyPath)
 	if err != nil {

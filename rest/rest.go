@@ -95,28 +95,28 @@ var (
 
 // WithAllowedOrigins is an option to supply allowed origins in CORS.
 func WithAllowedOrigins(origins []string) ServerConfigOption {
-	return func(cc *corsConfig, mux *runtime.ServeMux) {
+	return func(cc *corsConfig, _ *runtime.ServeMux) {
 		cc.allowedOrigins = origins
 	}
 }
 
 // WithAllowedHeaders is an option to supply allowed headers in CORS.
 func WithAllowedHeaders(headers []string) ServerConfigOption {
-	return func(cc *corsConfig, mux *runtime.ServeMux) {
+	return func(cc *corsConfig, _ *runtime.ServeMux) {
 		cc.allowedHeaders = headers
 	}
 }
 
 // WithAllowedMethods is an option to supply allowed methods in CORS.
 func WithAllowedMethods(methods []string) ServerConfigOption {
-	return func(cc *corsConfig, mux *runtime.ServeMux) {
+	return func(cc *corsConfig, _ *runtime.ServeMux) {
 		cc.allowedMethods = methods
 	}
 }
 
 // WithAdditionalHandler is an option to add an additional handler func in the REST server.
 func WithAdditionalHandler(method string, path string, h runtime.HandlerFunc) ServerConfigOption {
-	return func(cc *corsConfig, sm *runtime.ServeMux) {
+	return func(_ *corsConfig, sm *runtime.ServeMux) {
 		_ = sm.HandlePath(method, path, h)
 	}
 }
