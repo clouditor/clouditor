@@ -42,8 +42,7 @@ const DefaultTargetCloudServiceDescription = "The default target cloud service"
 
 // RegisterCloudService implements method for OrchestratorServer interface for registering a cloud service
 func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.RegisterCloudServiceRequest) (service *orchestrator.CloudService, err error) {
-	// TODO(lebogg for oxisto): Before req was checked to be not nil but it is necessary?
-	if err = req.Service.Validate(); err != nil {
+	if err = req.Validate(); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
@@ -78,8 +77,8 @@ func (s *Service) ListCloudServices(_ context.Context, _ *orchestrator.ListCloud
 
 // GetCloudService implements method for OrchestratorServer interface for getting a cloud service with provided id
 func (s *Service) GetCloudService(_ context.Context, req *orchestrator.GetCloudServiceRequest) (response *orchestrator.CloudService, err error) {
-	if req == nil || req.ServiceId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
+	if err = req.Validate(); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	response = new(orchestrator.CloudService)
@@ -96,17 +95,16 @@ func (s *Service) GetCloudService(_ context.Context, req *orchestrator.GetCloudS
 // UpdateCloudService implements method for OrchestratorServer interface for updating a cloud service
 // TODO(all): remove ServiceId from request since it is accessible in service already
 func (s *Service) UpdateCloudService(_ context.Context, req *orchestrator.UpdateCloudServiceRequest) (response *orchestrator.CloudService, err error) {
-	if req.Service == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "service is empty")
+	if err = req.Validate(); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if req.ServiceId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
-	}
-
-	req.Service.Id = req.ServiceId
 	// Check if cloud service is in the DB
 	_, err = s.GetCloudService(context.Background(), &orchestrator.GetCloudServiceRequest{ServiceId: req.ServiceId})
+
+	// Update cloud service
+	// TODO(lebogg): See questions above: Copying serviceId to the struct makes it unnecessary in the first place IMO
+	req.Service.Id = req.ServiceId
 	if err != nil {
 		return nil, err
 	}
@@ -120,8 +118,8 @@ func (s *Service) UpdateCloudService(_ context.Context, req *orchestrator.Update
 
 // RemoveCloudService implements method for OrchestratorServer interface for removing a cloud service
 func (s *Service) RemoveCloudService(_ context.Context, req *orchestrator.RemoveCloudServiceRequest) (response *emptypb.Empty, err error) {
-	if req.ServiceId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
+	if err = req.Validate(); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	err = s.db.Delete(&orchestrator.CloudService{}, req.ServiceId)

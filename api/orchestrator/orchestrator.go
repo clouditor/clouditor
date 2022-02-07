@@ -25,22 +25,71 @@
 
 package orchestrator
 
-import "errors"
-
-var (
-	ErrIsNil         = errors.New("service is empty")
-	ErrNameIsMissing = errors.New("service name is empty")
+import (
+	"errors"
 )
 
-// TODO(lebogg): Add validate functions for all calls?
+var (
+	ErrRequestIsNil  = errors.New("request is empty")
+	ErrServiceIsNil  = errors.New("service is empty")
+	ErrNameIsMissing = errors.New("service name is empty")
+	ErrIDIsMissing   = errors.New("service ID is empty")
+)
 
-// Validate validates the cloud service
-func (s *CloudService) Validate() (err error) {
+// TODO(lebogg for oxisto): I kept that req was checked to be not nil - but it is necessary?
+
+// Validate validates the request for RPC RegisterCloudService
+func (s *RegisterCloudServiceRequest) Validate() (err error) {
 	if s == nil {
-		return ErrIsNil
+		return ErrRequestIsNil
 	}
-	if s.Name == "" {
+	if s.Service == nil {
+		return ErrServiceIsNil
+	}
+	if s.Service.Name == "" {
 		return ErrNameIsMissing
+	}
+	return
+}
+
+// Validate validates the request for RPC GetCloudService
+func (s *GetCloudServiceRequest) Validate() (err error) {
+	if s == nil {
+		return ErrRequestIsNil
+	}
+	if s.ServiceId == "" {
+		return ErrIDIsMissing
+	}
+	return
+}
+
+// Validate validates the request for RPC UpdateCloudService
+func (s *UpdateCloudServiceRequest) Validate() (err error) {
+	if s == nil {
+		return ErrRequestIsNil
+	}
+	// TODO(all): See TODO in cloud_service.go -> Remove ServiceID from req?
+	// If not I will differentiate both Error messages
+	if s.Service.Id == "" {
+		return ErrIDIsMissing
+	}
+	// TODO(all): Otherwise, name will be overwritten with empty string -> See comment in Update in db.go: Save vs Update
+	if s.Service.Name == "" {
+		return ErrNameIsMissing
+	}
+	if s.ServiceId == "" {
+		return ErrIDIsMissing
+	}
+	return
+}
+
+// Validate validates the request for RPC GetCloudService
+func (s *RemoveCloudServiceRequest) Validate() (err error) {
+	if s == nil {
+		return ErrRequestIsNil
+	}
+	if s.ServiceId == "" {
+		return ErrIDIsMissing
 	}
 	return
 }
