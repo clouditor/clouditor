@@ -136,12 +136,12 @@ func (s *Service) RemoveCloudService(_ context.Context, req *orchestrator.Remove
 // target cloud services, if no target service exists in the database.
 // Returns new created target cloud service. Otherwise, returns nil (if a record exists) or error if sth went wrong
 func (s *Service) CreateDefaultTargetCloudService() (*orchestrator.CloudService, error) {
-	var currentServices []*orchestrator.CloudService
-	err := s.db.Read(&currentServices)
+	var storedServices []*orchestrator.CloudService
+	err := s.db.Read(&storedServices)
 	// Error while reading DB
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, status.Errorf(codes.Internal, "db error: %v", err)
-	} else if len(currentServices) == 0 {
+	} else if len(storedServices) == 0 {
 		// There are no cloud services yet -> Create a default target cloud service and return it
 		service :=
 			&orchestrator.CloudService{

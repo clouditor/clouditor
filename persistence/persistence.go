@@ -34,6 +34,7 @@ type IsDatabase interface {
 	// Create creates a new object and put it into the DB
 	Create(r interface{}) error
 	// Read gets the record with given conditions
+	// TODO(lebogg to oxisto): I have the feeling that conds is to implementation specific (e.g. for gorm). Suggestion: Only allow read via ID and replace conds with "id string" (for auth the id is the username)
 	Read(r interface{}, conds ...interface{}) error
 	// Update updates the record with given id of the DB
 	Update(r interface{}) error

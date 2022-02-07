@@ -146,13 +146,17 @@ func hashPassword(password string) (string, error) {
 }
 
 // CreateDefaultUser creates a default user in the database
+// TODO(all): return created user?
 func (s *Service) CreateDefaultUser(username string, password string) error {
+	var (
+		storedUsers []*auth.User
+		err         error
+	)
 
-	var count int64
-	// TODO(lebogg): Check model stuff
-	//db.Model(&auth.User{}).Count(&count)
-
-	if count == 0 {
+	err = s.db.Read(&storedUsers)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return status.Errorf(codes.Internal, "db error: %v", err)
+	} else if len(storedUsers) == 0 {
 		hash, _ := hashPassword(password)
 
 		user := auth.User{
@@ -163,7 +167,7 @@ func (s *Service) CreateDefaultUser(username string, password string) error {
 
 		log.Infof("Creating default user %s\n", user.Username)
 
-		err := s.db.Create(&user)
+		err = s.db.Create(&user)
 		if err != nil {
 			return err
 		}
