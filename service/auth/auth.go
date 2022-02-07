@@ -71,6 +71,9 @@ const (
 
 	// DefaultApiKeyPath is the default path for the API private key
 	DefaultApiKeyPath = "~/.clouditor/api.key"
+
+	// DefaultKeyID specifies the default Key ID used in the JWKS of the authentication service
+	DefaultKeyID = "1"
 )
 
 // Service is an implementation of the gRPC Authentication service
@@ -279,7 +282,7 @@ func (s Service) ListPublicKeys(_ context.Context, _ *auth.ListPublicKeysRequest
 	response = &auth.ListPublicResponse{
 		Keys: []*auth.JsonWebKey{
 			{
-				Kid: "1",
+				Kid: DefaultKeyID,
 				Kty: "EC",
 				Crv: s.apiKey.Params().Name,
 				X:   base64.RawURLEncoding.EncodeToString(s.apiKey.X.Bytes()),
@@ -371,7 +374,7 @@ func (s Service) issueToken(subject string, fullName string, email string, expir
 				Subject:   subject,
 			}},
 	)
-	claims.Header["kid"] = "1"
+	claims.Header["kid"] = DefaultKeyID
 
 	token, err = claims.SignedString(s.apiKey)
 	return

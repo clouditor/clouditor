@@ -74,7 +74,7 @@ const (
 	APICORSAllowedOriginsFlags = "api-cors-allowed-origins"
 	APICORSAllowedHeadersFlags = "api-cors-allowed-headers"
 	APICORSAllowedMethodsFlags = "api-cors-allowed-methods"
-	APIJwksUrlFlag             = "api-jwks-url"
+	APIJWKSURLFlag             = "api-jwks-url"
 	DBUserNameFlag             = "db-user-name"
 	DBPasswordFlag             = "db-password"
 	DBHostFlag                 = "db-host"
@@ -125,7 +125,7 @@ func init() {
 	engineCmd.Flags().Bool(APIKeySaveOnCreateFlag, service_auth.DefaultApiKeySaveOnCreate, "Specifies whether the API key should be saved on creation. It will only created if the default location is used.")
 	engineCmd.Flags().Int16(APIgRPCPortFlag, DefaultAPIgRPCPort, "Specifies the port used for the gRPC API")
 	engineCmd.Flags().Int16(APIHTTPPortFlag, rest.DefaultAPIHTTPPort, "Specifies the port used for the HTTP API")
-	engineCmd.Flags().String(APIJwksUrlFlag, service.DefaultJwksUrl, "Specifies the JWKS URL used to verify authentication tokens in the gRPC and HTTP API")
+	engineCmd.Flags().String(APIJWKSURLFlag, service.DefaultJWKSURL, "Specifies the JWKS URL used to verify authentication tokens in the gRPC and HTTP API")
 	engineCmd.Flags().StringArray(APICORSAllowedOriginsFlags, rest.DefaultAllowedOrigins, "Specifies the origins allowed in CORS")
 	engineCmd.Flags().StringArray(APICORSAllowedHeadersFlags, rest.DefaultAllowedHeaders, "Specifies the headers allowed in CORS")
 	engineCmd.Flags().StringArray(APICORSAllowedMethodsFlags, rest.DefaultAllowedMethods, "Specifies the methods allowed in CORS")
@@ -144,7 +144,7 @@ func init() {
 	_ = viper.BindPFlag(APIKeySaveOnCreateFlag, engineCmd.Flags().Lookup(APIKeySaveOnCreateFlag))
 	_ = viper.BindPFlag(APIgRPCPortFlag, engineCmd.Flags().Lookup(APIgRPCPortFlag))
 	_ = viper.BindPFlag(APIHTTPPortFlag, engineCmd.Flags().Lookup(APIHTTPPortFlag))
-	_ = viper.BindPFlag(APIJwksUrlFlag, engineCmd.Flags().Lookup(APIJwksUrlFlag))
+	_ = viper.BindPFlag(APIJWKSURLFlag, engineCmd.Flags().Lookup(APIJWKSURLFlag))
 	_ = viper.BindPFlag(APICORSAllowedOriginsFlags, engineCmd.Flags().Lookup(APICORSAllowedOriginsFlags))
 	_ = viper.BindPFlag(APICORSAllowedHeadersFlags, engineCmd.Flags().Lookup(APICORSAllowedHeadersFlags))
 	_ = viper.BindPFlag(APICORSAllowedMethodsFlags, engineCmd.Flags().Lookup(APICORSAllowedMethodsFlags))
@@ -245,7 +245,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		log.Errorf("could not listen: %v", err)
 	}
 
-	authConfig := service.ConfigureAuth(service.WithJwksUrl(viper.GetString(APIJwksUrlFlag)))
+	authConfig := service.ConfigureAuth(service.WithJWKSURL(viper.GetString(APIJWKSURLFlag)))
 	defer authConfig.Jwks.EndBackground()
 
 	server = grpc.NewServer(

@@ -36,7 +36,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-// NewListToolCommand returns a cobra command for the `list` subcommand
+// NewListToolsCommand returns a cobra command for the `list` subcommand
 func NewListToolsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
@@ -70,7 +70,7 @@ func NewListToolsCommand() *cobra.Command {
 	return cmd
 }
 
-// NewListToolCommand returns a cobra command for the `show` subcommand
+// NewShowToolCommand returns a cobra command for the `show` subcommand
 func NewShowToolCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "show [id]",

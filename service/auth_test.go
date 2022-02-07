@@ -89,7 +89,7 @@ func ValidClaimAssertion(tt assert.TestingT, i1 interface{}, _ ...interface{}) b
 		return false
 	}
 
-	claims, ok := ctx.Value(AuthContextKey("token")).(*jwt.RegisteredClaims)
+	claims, ok := ctx.Value(AuthContextKey).(*jwt.RegisteredClaims)
 	if !ok {
 		tt.Errorf("Token value in context not a JWT claims object")
 		return false
@@ -150,7 +150,7 @@ func TestAuthConfig_AuthFunc(t *testing.T) {
 		{
 			name: "Request with valid bearer token using JWKS",
 			configureArgs: configureArgs{
-				opts: []AuthOption{WithJwksUrl(fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", port))},
+				opts: []AuthOption{WithJWKSURL(fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", port))},
 			},
 			args: args{
 				ctx: metadata.NewIncomingContext(context.TODO(), metadata.MD{"Authorization": []string{fmt.Sprintf("bearer %s", loginResponse.AccessToken)}}),
@@ -160,7 +160,7 @@ func TestAuthConfig_AuthFunc(t *testing.T) {
 		{
 			name: "Request with invalid bearer token using JWKS",
 			configureArgs: configureArgs{
-				opts: []AuthOption{WithJwksUrl(fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", port))},
+				opts: []AuthOption{WithJWKSURL(fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", port))},
 			},
 			args: args{
 				ctx: metadata.NewIncomingContext(context.TODO(), metadata.MD{"Authorization": []string{"bearer not_really"}}),
@@ -172,7 +172,7 @@ func TestAuthConfig_AuthFunc(t *testing.T) {
 		{
 			name: "Request without bearer token using JWKS",
 			configureArgs: configureArgs{
-				opts: []AuthOption{WithJwksUrl(fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", port))},
+				opts: []AuthOption{WithJWKSURL(fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", port))},
 			},
 			args: args{
 				ctx: context.TODO(),

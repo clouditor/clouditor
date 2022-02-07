@@ -38,6 +38,9 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+// Authorizer represents an interface which provides a token used for authenticating a client in server-client communication.
+// More specifically, this interfaces requires credentials.PerRPCCredentials, which enables this to be used by a gRPC client
+// to communicate with a gRPC server that requires per-RPC credentials.
 type Authorizer interface {
 	credentials.PerRPCCredentials
 	oauth2.TokenSource
@@ -73,6 +76,7 @@ type InternalAuthorizer struct {
 	tokenMutex sync.RWMutex
 }
 
+// init initializes the authorizer. This is called when fetching a token, if this authorizer has not been initialized.
 func (i *InternalAuthorizer) init() (err error) {
 	// Note, that we do NOT want any credentials.PerRPCCredentials dial option on this connection because
 	// the API of the auth service is available without token authentication. Otherwise, a first login
