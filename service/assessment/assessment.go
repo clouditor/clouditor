@@ -132,7 +132,7 @@ func NewService(opts ...ServiceOption) *Service {
 	return s
 }
 
-// UsesAuthorizer implements UsesAuthorizer
+// SetAuthorizer implements UsesAuthorizer
 func (s *Service) SetAuthorizer(auth service.Authorizer) {
 	s.authorizer = auth
 }
