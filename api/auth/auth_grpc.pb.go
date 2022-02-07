@@ -23,6 +23,9 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthenticationClient interface {
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	// ListPublicKeys lists all available public keys of the authentication server
+	// in the JSON Web Key Set (JWKS) format.
+	ListPublicKeys(ctx context.Context, in *ListPublicKeysRequest, opts ...grpc.CallOption) (*ListPublicResponse, error)
 }
 
 type authenticationClient struct {
@@ -42,11 +45,23 @@ func (c *authenticationClient) Login(ctx context.Context, in *LoginRequest, opts
 	return out, nil
 }
 
+func (c *authenticationClient) ListPublicKeys(ctx context.Context, in *ListPublicKeysRequest, opts ...grpc.CallOption) (*ListPublicResponse, error) {
+	out := new(ListPublicResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.Authentication/ListPublicKeys", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthenticationServer is the server API for Authentication service.
 // All implementations must embed UnimplementedAuthenticationServer
 // for forward compatibility
 type AuthenticationServer interface {
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
+	// ListPublicKeys lists all available public keys of the authentication server
+	// in the JSON Web Key Set (JWKS) format.
+	ListPublicKeys(context.Context, *ListPublicKeysRequest) (*ListPublicResponse, error)
 	mustEmbedUnimplementedAuthenticationServer()
 }
 
@@ -56,6 +71,9 @@ type UnimplementedAuthenticationServer struct {
 
 func (UnimplementedAuthenticationServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedAuthenticationServer) ListPublicKeys(context.Context, *ListPublicKeysRequest) (*ListPublicResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListPublicKeys not implemented")
 }
 func (UnimplementedAuthenticationServer) mustEmbedUnimplementedAuthenticationServer() {}
 
@@ -88,6 +106,24 @@ func _Authentication_Login_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Authentication_ListPublicKeys_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPublicKeysRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthenticationServer).ListPublicKeys(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Authentication/ListPublicKeys",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthenticationServer).ListPublicKeys(ctx, req.(*ListPublicKeysRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Authentication_ServiceDesc is the grpc.ServiceDesc for Authentication service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -98,6 +134,10 @@ var Authentication_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Login",
 			Handler:    _Authentication_Login_Handler,
+		},
+		{
+			MethodName: "ListPublicKeys",
+			Handler:    _Authentication_ListPublicKeys_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

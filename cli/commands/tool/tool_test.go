@@ -35,8 +35,10 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/service"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -47,9 +49,9 @@ var server *grpc.Server
 
 func TestMain(m *testing.M) {
 	var (
-		err     error
-		dir     string
-		service *service_orchestrator.Service
+		err error
+		dir string
+		s   *service_orchestrator.Service
 	)
 
 	err = os.Chdir("../../../")
@@ -62,10 +64,10 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	service = service_orchestrator.NewService()
+	s = service_orchestrator.NewService()
 
-	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
-	orchestrator.RegisterOrchestratorServer(server, service)
+	sock, server, _, err = service.StartDedicatedAuthServer(":0", service_auth.WithApiKeySaveOnCreate(false))
+	orchestrator.RegisterOrchestratorServer(server, s)
 
 	if err != nil {
 		panic(err)
@@ -100,7 +102,7 @@ func TestListTool(t *testing.T) {
 
 	// unsupported for now
 	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "method ListAssessmentTools not implemented")
+	assert.Equal(t, "method ListAssessmentTools not implemented", err.Error())
 }
 
 func TestShowTool(t *testing.T) {
@@ -111,7 +113,7 @@ func TestShowTool(t *testing.T) {
 
 	// unsupported for now
 	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "method GetAssessmentTool not implemented")
+	assert.Equal(t, "method GetAssessmentTool not implemented", err.Error())
 }
 
 func TestUpdateTool(t *testing.T) {
@@ -122,7 +124,7 @@ func TestUpdateTool(t *testing.T) {
 
 	// unsupported for now
 	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "method UpdateAssessmentTool not implemented")
+	assert.Equal(t, "method UpdateAssessmentTool not implemented", err.Error())
 }
 
 func TestRegisterTool(t *testing.T) {
@@ -133,7 +135,7 @@ func TestRegisterTool(t *testing.T) {
 
 	// unsupported for now
 	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "method RegisterAssessmentTool not implemented")
+	assert.Equal(t, "method RegisterAssessmentTool not implemented", err.Error())
 }
 
 func TestDeregisterTool(t *testing.T) {

@@ -27,23 +27,26 @@ package discovery
 
 import (
 	"bytes"
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/cli/commands/login"
-	"clouditor.io/clouditor/persistence"
-	service_auth "clouditor.io/clouditor/service/auth"
-	service_discovery "clouditor.io/clouditor/service/discovery"
-	"clouditor.io/clouditor/voc"
 	"fmt"
-	"github.com/spf13/viper"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc"
-	"google.golang.org/protobuf/encoding/protojson"
 	"io/ioutil"
 	"net"
 	"os"
 	"testing"
 	"time"
+
+	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/cli"
+	"clouditor.io/clouditor/cli/commands/login"
+	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/service"
+	service_auth "clouditor.io/clouditor/service/auth"
+	service_discovery "clouditor.io/clouditor/service/discovery"
+
+	"clouditor.io/clouditor/voc"
+	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 var sock net.Listener
@@ -51,9 +54,9 @@ var server *grpc.Server
 
 func TestMain(m *testing.M) {
 	var (
-		err     error
-		dir     string
-		service *service_discovery.Service
+		err error
+		dir string
+		s   *service_discovery.Service
 	)
 
 	err = os.Chdir("../../../../")
@@ -66,14 +69,14 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	service = service_discovery.NewService()
-	service.StartDiscovery(mockDiscoverer{testCase: 2})
+	s = service_discovery.NewService()
+	s.StartDiscovery(mockDiscoverer{testCase: 2})
 
-	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
+	sock, server, _, err = service.StartDedicatedAuthServer(":0", service_auth.WithApiKeySaveOnCreate(false))
 	if err != nil {
 		panic(err)
 	}
-	discovery.RegisterDiscoveryServer(server, service)
+	discovery.RegisterDiscoveryServer(server, s)
 
 	defer func(sock net.Listener) {
 		err = sock.Close()

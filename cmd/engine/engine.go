@@ -35,6 +35,7 @@ import (
 	"strings"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 
@@ -48,6 +49,8 @@ import (
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/rest"
+	"clouditor.io/clouditor/service"
+
 	service_assessment "clouditor.io/clouditor/service/assessment"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_discovery "clouditor.io/clouditor/service/discovery"
@@ -63,12 +66,15 @@ import (
 const (
 	APIDefaultUserFlag         = "api-default-user"
 	APIDefaultPasswordFlag     = "api-default-password"
-	APISecretFlag              = "api-secret"
+	APIKeyPasswordFlag         = "api-key-password"
+	APIKeyPathFlag             = "api-key-path"
+	APIKeySaveOnCreateFlag     = "api-key-save-on-create"
 	APIgRPCPortFlag            = "api-grpc-port"
 	APIHTTPPortFlag            = "api-http-port"
 	APICORSAllowedOriginsFlags = "api-cors-allowed-origins"
 	APICORSAllowedHeadersFlags = "api-cors-allowed-headers"
 	APICORSAllowedMethodsFlags = "api-cors-allowed-methods"
+	APIJWKSURLFlag             = "api-jwks-url"
 	DBUserNameFlag             = "db-user-name"
 	DBPasswordFlag             = "db-password"
 	DBHostFlag                 = "db-host"
@@ -79,9 +85,7 @@ const (
 
 	DefaultAPIDefaultUser      = "clouditor"
 	DefaultAPIDefaultPassword  = "clouditor"
-	DefaultAPISecret           = "changeme"
 	DefaultAPIgRPCPort         = 9090
-	DefaultAPIHTTPPort         = 8080
 	DefaultDBUserName          = "postgres"
 	DefaultDBPassword          = "postgres"
 	DefaultDBHost              = "localhost"
@@ -116,9 +120,12 @@ func init() {
 
 	engineCmd.Flags().String(APIDefaultUserFlag, DefaultAPIDefaultUser, "Specifies the default API username")
 	engineCmd.Flags().String(APIDefaultPasswordFlag, DefaultAPIDefaultPassword, "Specifies the default API password")
-	engineCmd.Flags().String(APISecretFlag, DefaultAPISecret, "Specifies the secret used by API tokens")
+	engineCmd.Flags().String(APIKeyPasswordFlag, service_auth.DefaultApiKeyPassword, "Specifies the password used to proctect the API private key")
+	engineCmd.Flags().String(APIKeyPathFlag, service_auth.DefaultApiKeyPath, "Specifies the location of the API private key")
+	engineCmd.Flags().Bool(APIKeySaveOnCreateFlag, service_auth.DefaultApiKeySaveOnCreate, "Specifies whether the API key should be saved on creation. It will only created if the default location is used.")
 	engineCmd.Flags().Int16(APIgRPCPortFlag, DefaultAPIgRPCPort, "Specifies the port used for the gRPC API")
-	engineCmd.Flags().Int16(APIHTTPPortFlag, DefaultAPIHTTPPort, "Specifies the port used for the HTTP API")
+	engineCmd.Flags().Int16(APIHTTPPortFlag, rest.DefaultAPIHTTPPort, "Specifies the port used for the HTTP API")
+	engineCmd.Flags().String(APIJWKSURLFlag, service.DefaultJWKSURL, "Specifies the JWKS URL used to verify authentication tokens in the gRPC and HTTP API")
 	engineCmd.Flags().StringArray(APICORSAllowedOriginsFlags, rest.DefaultAllowedOrigins, "Specifies the origins allowed in CORS")
 	engineCmd.Flags().StringArray(APICORSAllowedHeadersFlags, rest.DefaultAllowedHeaders, "Specifies the headers allowed in CORS")
 	engineCmd.Flags().StringArray(APICORSAllowedMethodsFlags, rest.DefaultAllowedMethods, "Specifies the methods allowed in CORS")
@@ -132,9 +139,12 @@ func init() {
 
 	_ = viper.BindPFlag(APIDefaultUserFlag, engineCmd.Flags().Lookup(APIDefaultUserFlag))
 	_ = viper.BindPFlag(APIDefaultPasswordFlag, engineCmd.Flags().Lookup(APIDefaultPasswordFlag))
-	_ = viper.BindPFlag(APISecretFlag, engineCmd.Flags().Lookup(APISecretFlag))
+	_ = viper.BindPFlag(APIKeyPasswordFlag, engineCmd.Flags().Lookup(APIKeyPasswordFlag))
+	_ = viper.BindPFlag(APIKeyPathFlag, engineCmd.Flags().Lookup(APIKeyPathFlag))
+	_ = viper.BindPFlag(APIKeySaveOnCreateFlag, engineCmd.Flags().Lookup(APIKeySaveOnCreateFlag))
 	_ = viper.BindPFlag(APIgRPCPortFlag, engineCmd.Flags().Lookup(APIgRPCPortFlag))
 	_ = viper.BindPFlag(APIHTTPPortFlag, engineCmd.Flags().Lookup(APIHTTPPortFlag))
+	_ = viper.BindPFlag(APIJWKSURLFlag, engineCmd.Flags().Lookup(APIJWKSURLFlag))
 	_ = viper.BindPFlag(APICORSAllowedOriginsFlags, engineCmd.Flags().Lookup(APICORSAllowedOriginsFlags))
 	_ = viper.BindPFlag(APICORSAllowedHeadersFlags, engineCmd.Flags().Lookup(APICORSAllowedHeadersFlags))
 	_ = viper.BindPFlag(APICORSAllowedMethodsFlags, engineCmd.Flags().Lookup(APICORSAllowedMethodsFlags))
@@ -178,13 +188,26 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		return fmt.Errorf("could not initialize DB: %w", err)
 	}
 
-	authService = &service_auth.Service{
-		TokenSecret: viper.GetString(APISecretFlag),
-	}
-
-	discoveryService = service_discovery.NewService()
+	authService = service_auth.NewService(
+		service_auth.WithApiKeyPassword(viper.GetString(APIKeyPasswordFlag)),
+		service_auth.WithApiKeyPath(viper.GetString(APIKeyPathFlag)),
+		service_auth.WithApiKeySaveOnCreate(viper.GetBool(APIKeySaveOnCreateFlag)),
+	)
+	discoveryService = service_discovery.NewService(
+		service_discovery.WithInternalAuthorizer(
+			service.DefaultInternalAuthorizerAddress,
+			viper.GetString(APIDefaultUserFlag),
+			viper.GetString(APIDefaultPasswordFlag),
+		),
+	)
 	orchestratorService = service_orchestrator.NewService()
-	assessmentService = service_assessment.NewService()
+	assessmentService = service_assessment.NewService(
+		service_assessment.WithInternalAuthorizer(
+			service.DefaultInternalAuthorizerAddress,
+			viper.GetString(APIDefaultUserFlag),
+			viper.GetString(APIDefaultPasswordFlag),
+		),
+	)
 	evidenceStoreService = service_evidenceStore.NewService()
 
 	// It is possible to register hook functions for the orchestrator, evidenceStore and assessment service.
@@ -222,14 +245,19 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		log.Errorf("could not listen: %v", err)
 	}
 
+	authConfig := service.ConfigureAuth(service.WithJWKSURL(viper.GetString(APIJWKSURLFlag)))
+	defer authConfig.Jwks.EndBackground()
+
 	server = grpc.NewServer(
 		grpc_middleware.WithUnaryServerChain(
 			grpc_ctxtags.UnaryServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
 			grpc_logrus.UnaryServerInterceptor(grpcLoggerEntry),
+			grpc_auth.UnaryServerInterceptor(authConfig.AuthFunc),
 		),
 		grpc_middleware.WithStreamServerChain(
 			grpc_ctxtags.StreamServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
 			grpc_logrus.StreamServerInterceptor(grpcLoggerEntry),
+			grpc_auth.StreamServerInterceptor(authConfig.AuthFunc),
 		))
 	auth.RegisterAuthenticationServer(server, authService)
 	discovery.RegisterDiscoveryServer(server, discoveryService)

@@ -39,8 +39,10 @@ import (
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/service"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_evidenceStore "clouditor.io/clouditor/service/evidence"
+
 	"clouditor.io/clouditor/voc"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -55,9 +57,9 @@ var server *grpc.Server
 
 func TestMain(m *testing.M) {
 	var (
-		err     error
-		dir     string
-		service *service_evidenceStore.Service
+		err error
+		dir string
+		s   *service_evidenceStore.Service
 	)
 
 	err = os.Chdir("../../../")
@@ -70,14 +72,14 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	service = service_evidenceStore.NewService()
+	s = service_evidenceStore.NewService()
 
-	sock, server, err = service_auth.StartDedicatedAuthServer(":0")
+	sock, server, _, err = service.StartDedicatedAuthServer(":0", service_auth.WithApiKeySaveOnCreate(false))
 	if err != nil {
 		panic(err)
 	}
-	evidence.RegisterEvidenceStoreServer(server, service)
-	_, err = service.StoreEvidence(context.TODO(), &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
+	evidence.RegisterEvidenceStoreServer(server, s)
+	_, err = s.StoreEvidence(context.TODO(), &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
 		Id:        "11111111-1111-1111-1111-111111111111",
 		ToolId:    "mock",
 		Timestamp: timestamppb.Now(),

@@ -5,26 +5,6 @@
 		}
 	],
 	"settings": {
-		"cSpell.words": [
-			"AISEC",
-			"clouditor",
-			"Clouditor",
-			"Debugf",
-			"emptypb",
-			"garuppel",
-			"gocron",
-			"grpc",
-			"Infof",
-			"Kubernetes",
-			"lebogg",
-			"oxisto",
-			"protobuf",
-			"Rego",
-			"stretchr",
-			"structpb",
-			"timestamppb",
-			"Warnf"
-		],
 		"workbench.colorCustomizations": {
 			"debugConsole.errorForeground": "#a8a8a8"
 		},

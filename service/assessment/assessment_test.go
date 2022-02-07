@@ -28,9 +28,9 @@ package assessment
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
-	"net"
 	"os"
 	"reflect"
 	"runtime"
@@ -39,44 +39,38 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/api/orchestrator"
-	service_evidenceStore "clouditor.io/clouditor/service/evidence"
-	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-var lis *bufconn.Listener
-
 func TestMain(m *testing.M) {
-	// pre-configuration for mocking evidence store
-	const bufSize = 1024 * 1024 * 2
-	lis = bufconn.Listen(bufSize)
-	s := grpc.NewServer()
-	evidence.RegisterEvidenceStoreServer(s, service_evidenceStore.NewService())
-	orchestrator.RegisterOrchestratorServer(s, service_orchestrator.NewService())
-	go func() {
-		if err := s.Serve(lis); err != nil {
-			log.Fatalf("Server exited with error: %v", err)
-		}
-	}()
-
 	// make sure, that we are in the clouditor root folder to find the policies
 	err := os.Chdir("../../")
 	if err != nil {
 		panic(err)
 	}
 
-	os.Exit(m.Run())
+	// We need an embedded DB for the auth server
+	err = persistence.InitDB(true, "", 0)
+	if err != nil {
+		panic(err)
+	}
+
+	server, authService, _, _ := startBufConnServer()
+	authService.CreateDefaultUser("clouditor", "clouditor")
+
+	code := m.Run()
+
+	server.Stop()
+	os.Exit(code)
 }
 
 // TestNewService is a simply test for NewService
@@ -214,12 +208,17 @@ func TestAssessEvidence(t *testing.T) {
 			wantErr:          true,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
 			if tt.hasRPCConnection {
-				assert.NoError(t, s.mockEvidenceStream())
-				assert.NoError(t, s.mockOrchestratorStream())
+				assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
+				assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
+			} else {
+				// clear the evidence URL, just to be sure
+				s.evidenceStoreAddress = ""
+				s.orchestratorAddress = ""
 			}
 
 			gotResp, err := s.AssessEvidence(tt.args.in0, &assessment.AssessEvidenceRequest{Evidence: tt.args.evidence})
@@ -300,8 +299,8 @@ func TestAssessEvidences(t *testing.T) {
 				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
 			}
 			if tt.fields.hasRPCConnection {
-				assert.NoError(t, s.mockEvidenceStream())
-				assert.NoError(t, s.mockOrchestratorStream())
+				assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
+				assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
 			}
 
 			err := s.AssessEvidences(tt.args.stream)
@@ -374,8 +373,8 @@ func TestAssessmentResultHooks(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			hookCallCounter = 0
 			s := NewService()
-			assert.NoError(t, s.mockEvidenceStream())
-			assert.NoError(t, s.mockOrchestratorStream())
+			assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
+			assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
 
 			for i, hookFunction := range tt.args.resultHooks {
 				s.RegisterAssessmentResultHook(hookFunction)
@@ -406,8 +405,8 @@ func TestAssessmentResultHooks(t *testing.T) {
 
 func TestListAssessmentResults(t *testing.T) {
 	s := NewService()
-	assert.NoError(t, s.mockEvidenceStream())
-	assert.NoError(t, s.mockOrchestratorStream())
+	assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
+	assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
 	_, err := s.AssessEvidence(context.TODO(), &assessment.AssessEvidenceRequest{
 		Evidence: &evidence.Evidence{
 			Id:        "11111111-1111-1111-1111-111111111111",
@@ -594,40 +593,6 @@ func TestConvertTargetValue(t *testing.T) {
 	}
 }
 
-// Mocking evidence store service
-
-func bufDialer(context.Context, string) (net.Conn, error) {
-	return lis.Dial()
-}
-
-func (s *Service) mockEvidenceStream() error {
-	ctx := context.Background()
-	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		return err
-	}
-	client, err := evidence.NewEvidenceStoreClient(conn).StoreEvidences(ctx)
-	if err != nil {
-		return err
-	}
-	s.evidenceStoreStream = client
-	return nil
-}
-
-func (s *Service) mockOrchestratorStream() error {
-	ctx := context.Background()
-	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		return err
-	}
-	client, err := orchestrator.NewOrchestratorClient(conn).StoreAssessmentResults(ctx)
-	if err != nil {
-		return err
-	}
-	s.orchestratorStream = client
-	return nil
-}
-
 func TestHandleEvidence(t *testing.T) {
 	type fields struct {
 		hasEvidenceStoreStream bool
@@ -738,16 +703,184 @@ func TestHandleEvidence(t *testing.T) {
 			s := NewService()
 			// Mock streams for target services if needed
 			if tt.fields.hasEvidenceStoreStream {
-				assert.NoError(t, s.mockEvidenceStream())
+				assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
 			}
 			if tt.fields.hasOrchestratorStream {
-				assert.NoError(t, s.mockOrchestratorStream())
+				assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
 			}
 			// Two tests: 1st) wantErr function. 2nd) if wantErr false then check if a result is added to map
 			if !tt.wantErr(t, s.handleEvidence(tt.args.evidence, tt.args.resourceId), fmt.Sprintf("handleEvidence(%v, %v)", tt.args.evidence, tt.args.resourceId)) {
 				assert.NotEmpty(t, s.results)
 			}
 
+		})
+	}
+}
+
+func TestService_initEvidenceStoreStream(t *testing.T) {
+	type fields struct {
+		opts []ServiceOption
+	}
+	type args struct {
+		additionalOpts []grpc.DialOption
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Invalid RPC connection",
+			fields: fields{
+				opts: []ServiceOption{
+					WithEvidenceStoreAddress("localhost:1"),
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				// We are looking for a connection refused message
+				innerErr := errors.Unwrap(err)
+				s, _ := status.FromError(innerErr)
+
+				if s.Code() != codes.Unavailable {
+					tt.Errorf("Status should be codes.Unavailable: %v", s.Code())
+					return false
+				}
+
+				return true
+			},
+		},
+		{
+			name: "Authenticated RPC connection with valid user",
+			fields: fields{
+				opts: []ServiceOption{
+					WithEvidenceStoreAddress("bufnet"),
+					WithInternalAuthorizer(
+						"bufnet",
+						"clouditor",
+						"clouditor",
+						grpc.WithContextDialer(bufConnDialer),
+					),
+				},
+			},
+			args: args{
+				[]grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
+			},
+		},
+		{
+			name: "Authenticated RPC connection with invalid user",
+			fields: fields{
+				opts: []ServiceOption{
+					WithEvidenceStoreAddress("bufnet"),
+					WithInternalAuthorizer(
+						"bufnet",
+						"not_clouditor",
+						"clouditor",
+						grpc.WithContextDialer(bufConnDialer),
+					),
+				},
+			},
+			args: args{
+				[]grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Equal(tt, err.Error(), "could not set up stream for storing evidences: rpc error: code = Unauthenticated desc = transport: per-RPC creds failed due to error: error while logging in: rpc error: code = Unauthenticated desc = login failed")
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := NewService(tt.fields.opts...)
+			err := s.initEvidenceStoreStream(tt.args.additionalOpts...)
+
+			if tt.wantErr != nil {
+				tt.wantErr(t, err)
+			}
+		})
+	}
+}
+
+func TestService_initOrchestratorStoreStream(t *testing.T) {
+	type fields struct {
+		opts []ServiceOption
+	}
+	type args struct {
+		additionalOpts []grpc.DialOption
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Invalid RPC connection",
+			fields: fields{
+				opts: []ServiceOption{
+					WithOrchestratorAddress("localhost:1"),
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				// We are looking for a connection refused message
+				innerErr := errors.Unwrap(err)
+				s, _ := status.FromError(innerErr)
+
+				if s.Code() != codes.Unavailable {
+					tt.Errorf("Status should be codes.Unavailable: %v", s.Code())
+					return false
+				}
+
+				return true
+			},
+		},
+		{
+			name: "Authenticated RPC connection with valid user",
+			fields: fields{
+				opts: []ServiceOption{
+					WithOrchestratorAddress("bufnet"),
+					WithInternalAuthorizer(
+						"bufnet",
+						"clouditor",
+						"clouditor",
+						grpc.WithContextDialer(bufConnDialer),
+					),
+				},
+			},
+			args: args{
+				[]grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
+			},
+		},
+		{
+			name: "Authenticated RPC connection with invalid user",
+			fields: fields{
+				opts: []ServiceOption{
+					WithOrchestratorAddress("bufnet"),
+					WithInternalAuthorizer(
+						"bufnet",
+						"not_clouditor",
+						"clouditor",
+						grpc.WithContextDialer(bufConnDialer),
+					),
+				},
+			},
+			args: args{
+				[]grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Equal(tt, err.Error(), "could not set up stream for storing assessment results: rpc error: code = Unauthenticated desc = transport: per-RPC creds failed due to error: error while logging in: rpc error: code = Unauthenticated desc = login failed")
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := NewService(tt.fields.opts...)
+			err := s.initOrchestratorStream(tt.args.additionalOpts...)
+
+			if tt.wantErr != nil {
+				tt.wantErr(t, err)
+			}
 		})
 	}
 }
