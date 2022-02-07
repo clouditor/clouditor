@@ -81,23 +81,40 @@ func TestMain(m *testing.M) {
 
 // TestNewService is a simply test for NewService
 func TestNewService(t *testing.T) {
+	type args struct {
+		opts []ServiceOption
+	}
 	tests := []struct {
 		name string
-		want assessment.AssessmentServer
+		args args
+		want *Service
 	}{
 		{
 			name: "AssessmentServer created with empty results map",
 			want: &Service{
-				results:                       make(map[string]*assessment.AssessmentResult),
-				UnimplementedAssessmentServer: assessment.UnimplementedAssessmentServer{},
-				EvidenceStoreAddress:          "localhost:9090",
-				OrchestratorAddress:           "localhost:9090",
+				results:              make(map[string]*assessment.AssessmentResult),
+				evidenceStoreAddress: "localhost:9090",
+				orchestratorAddress:  "localhost:9090",
+			},
+		},
+		{
+			name: "AssessmentServer created with options",
+			args: args{
+				opts: []ServiceOption{
+					WithEvidenceStoreAddress("localhost:9091"),
+					WithOrchestratorAddress("localhost:9092"),
+				},
+			},
+			want: &Service{
+				results:              make(map[string]*assessment.AssessmentResult),
+				evidenceStoreAddress: "localhost:9091",
+				orchestratorAddress:  "localhost:9092",
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewService(); !reflect.DeepEqual(got, tt.want) {
+			if got := NewService(tt.args.opts...); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewService() = %v, want %v", got, tt.want)
 			}
 		})

@@ -27,6 +27,13 @@ package resource
 
 import (
 	"bytes"
+	"fmt"
+	"io/ioutil"
+	"net"
+	"os"
+	"testing"
+	"time"
+
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
@@ -34,16 +41,10 @@ import (
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_discovery "clouditor.io/clouditor/service/discovery"
 	"clouditor.io/clouditor/voc"
-	"fmt"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
-	"io/ioutil"
-	"net"
-	"os"
-	"testing"
-	"time"
 )
 
 var sock net.Listener

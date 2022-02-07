@@ -59,10 +59,10 @@ var log *logrus.Entry
 type Service struct {
 	discovery.UnimplementedDiscoveryServer
 
-	Configurations map[discovery.Discoverer]*Configuration
+	configurations map[discovery.Discoverer]*Configuration
 
 	assessmentStream  assessment.Assessment_AssessEvidencesClient
-	AssessmentAddress string
+	assessmentAddress string
 
 	resources map[string]voc.IsCloudResource
 	scheduler *gocron.Scheduler
@@ -72,32 +72,49 @@ type Configuration struct {
 	Interval time.Duration
 }
 
-type ResultOntology struct {
-	Result *structpb.ListValue `json:"result"`
-}
-
 func init() {
 	log = logrus.WithField("component", "discovery")
 }
 
-func NewService() *Service {
-	return &Service{
-		AssessmentAddress: "localhost:9090",
+const (
+	// DefaultEvidenceStoreAddress specifies the default gRPC address of the assessment service.
+	DefaultAssessmentAddress = "localhost:9090"
+)
+
+// ServiceOption is a functional option type to configure the discovery service.
+type ServiceOption func(*Service)
+
+// WithEvidenceStoreAddress is an option to configure the assessment service gRPC address.
+func WithAssessmentAddress(address string) ServiceOption {
+	return func(s *Service) {
+		s.assessmentAddress = address
+	}
+}
+
+func NewService(opts ...ServiceOption) *Service {
+	s := &Service{
+		assessmentAddress: DefaultAssessmentAddress,
 		resources:         make(map[string]voc.IsCloudResource),
 		scheduler:         gocron.NewScheduler(time.UTC),
-		Configurations:    make(map[discovery.Discoverer]*Configuration),
+		configurations:    make(map[discovery.Discoverer]*Configuration),
 	}
+
+	// Apply any options
+	for _, o := range opts {
+		o(s)
+	}
+
+	return s
 }
 
 func (s *Service) initAssessmentStream() error {
 	// Establish connection to assessment component
-	// TODO(oxisto): support assessment on Another tcp/port
-	target := s.AssessmentAddress
-	log.Infof("Establishing connection to Assessment (%v)", target)
+	target := s.assessmentAddress
+	log.Infof("Establishing connection to assessment (%v)", target)
 
-	conn, err := grpc.Dial(s.AssessmentAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(s.assessmentAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		return fmt.Errorf("could not connect to Assessment service: %v", err)
+		return fmt.Errorf("could not connect to assessment service: %v", err)
 	}
 
 	client := assessment.NewAssessmentClient(conn)
@@ -158,7 +175,7 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	)
 
 	for _, v := range discoverer {
-		s.Configurations[v] = &Configuration{
+		s.configurations[v] = &Configuration{
 			Interval: 5 * time.Minute,
 		}
 

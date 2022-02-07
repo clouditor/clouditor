@@ -38,7 +38,7 @@ var (
 	ErrEvidenceIdInvalidFormat               = errors.New("evidence id not in expected format (UUID) or missing")
 	ErrTimestampMissing                      = errors.New("timestamp in assessment result is missing")
 	ErrResourceIdMissing                     = errors.New("resource id in assessment result is missing")
-	ErrMetricIdMissing                       = errors.New("metric id in assessment result is missing")
+	ErrMetricIdMissing                       = errors.New("metric id is missing")
 	ErrMetricConfigurationMissing            = errors.New("metric configuration in assessment result is missing")
 	ErrMetricConfigurationOperatorMissing    = errors.New("operator in metric data is missing")
 	ErrMetricConfigurationTargetValueMissing = errors.New("target value in metric data is missing")
