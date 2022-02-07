@@ -68,7 +68,7 @@ func TestMain(m *testing.M) {
 	}
 
 	// Start at least an authentication server, so that we have something to forward
-	sock, server, authService, err = service.StartDedicatedAuthServer(":0")
+	sock, server, authService, err = service.StartDedicatedAuthServer(":0", service_auth.WithApiKeySaveOnCreate(false))
 	if err != nil {
 		panic(err)
 	}

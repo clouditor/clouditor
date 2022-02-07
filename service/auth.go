@@ -149,14 +149,14 @@ func parseToken(token string, authConfig *AuthConfig) (jwt.Claims, error) {
 }
 
 // StartDedicatedAuthServer starts a gRPC server containing just the auth service
-func StartDedicatedAuthServer(address string) (sock net.Listener, server *grpc.Server, authService *service_auth.Service, err error) {
+func StartDedicatedAuthServer(address string, opts ...service_auth.ServiceOption) (sock net.Listener, server *grpc.Server, authService *service_auth.Service, err error) {
 	// create a new socket for gRPC communication
 	sock, err = net.Listen("tcp", address)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("could not listen: %w", err)
 	}
 
-	authService = service_auth.NewService()
+	authService = service_auth.NewService(opts...)
 	authService.CreateDefaultUser("clouditor", "clouditor")
 
 	authConfig := ConfigureAuth(WithPublicKey(authService.GetPublicKey()))

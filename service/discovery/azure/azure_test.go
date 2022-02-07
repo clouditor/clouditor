@@ -29,13 +29,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/Azure/go-autorest/autorest"
-	"github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httputil"
 	"testing"
+
+	"github.com/Azure/go-autorest/autorest"
+	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 )
 
 func init() {

@@ -39,7 +39,9 @@ import (
 	"clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
+	service_auth "clouditor.io/clouditor/service/auth"
 	service_discovery "clouditor.io/clouditor/service/discovery"
+
 	"clouditor.io/clouditor/voc"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -70,7 +72,7 @@ func TestMain(m *testing.M) {
 	s = service_discovery.NewService()
 	s.StartDiscovery(mockDiscoverer{testCase: 2})
 
-	sock, server, _, err = service.StartDedicatedAuthServer(":0")
+	sock, server, _, err = service.StartDedicatedAuthServer(":0", service_auth.WithApiKeySaveOnCreate(false))
 	if err != nil {
 		panic(err)
 	}

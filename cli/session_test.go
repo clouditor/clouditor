@@ -38,6 +38,7 @@ import (
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
+	service_auth "clouditor.io/clouditor/service/auth"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -56,7 +57,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	sock, server, _, err = service.StartDedicatedAuthServer(":0")
+	sock, server, _, err = service.StartDedicatedAuthServer(":0", service_auth.WithApiKeySaveOnCreate(false))
 	if err != nil {
 		panic(err)
 	}

@@ -68,6 +68,7 @@ const (
 	APIDefaultPasswordFlag     = "api-default-password"
 	APIKeyPasswordFlag         = "api-key-password"
 	APIKeyPathFlag             = "api-key-path"
+	APIKeySaveOnCreateFlag     = "api-key-save-on-create"
 	APIgRPCPortFlag            = "api-grpc-port"
 	APIHTTPPortFlag            = "api-http-port"
 	APICORSAllowedOriginsFlags = "api-cors-allowed-origins"
@@ -121,6 +122,7 @@ func init() {
 	engineCmd.Flags().String(APIDefaultPasswordFlag, DefaultAPIDefaultPassword, "Specifies the default API password")
 	engineCmd.Flags().String(APIKeyPasswordFlag, service_auth.DefaultApiKeyPassword, "Specifies the password used to proctect the API private key")
 	engineCmd.Flags().String(APIKeyPathFlag, service_auth.DefaultApiKeyPath, "Specifies the location of the API private key")
+	engineCmd.Flags().Bool(APIKeySaveOnCreateFlag, service_auth.DefaultApiKeySaveOnCreate, "Specifies whether the API key should be saved on creation. It will only created if the default location is used.")
 	engineCmd.Flags().Int16(APIgRPCPortFlag, DefaultAPIgRPCPort, "Specifies the port used for the gRPC API")
 	engineCmd.Flags().Int16(APIHTTPPortFlag, rest.DefaultAPIHTTPPort, "Specifies the port used for the HTTP API")
 	engineCmd.Flags().String(APIJwksUrlFlag, service.DefaultJwksUrl, "Specifies the JWKS URL used to verify authentication tokens in the gRPC and HTTP API")
@@ -139,6 +141,7 @@ func init() {
 	_ = viper.BindPFlag(APIDefaultPasswordFlag, engineCmd.Flags().Lookup(APIDefaultPasswordFlag))
 	_ = viper.BindPFlag(APIKeyPasswordFlag, engineCmd.Flags().Lookup(APIKeyPasswordFlag))
 	_ = viper.BindPFlag(APIKeyPathFlag, engineCmd.Flags().Lookup(APIKeyPathFlag))
+	_ = viper.BindPFlag(APIKeySaveOnCreateFlag, engineCmd.Flags().Lookup(APIKeySaveOnCreateFlag))
 	_ = viper.BindPFlag(APIgRPCPortFlag, engineCmd.Flags().Lookup(APIgRPCPortFlag))
 	_ = viper.BindPFlag(APIHTTPPortFlag, engineCmd.Flags().Lookup(APIHTTPPortFlag))
 	_ = viper.BindPFlag(APIJwksUrlFlag, engineCmd.Flags().Lookup(APIJwksUrlFlag))
@@ -188,6 +191,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	authService = service_auth.NewService(
 		service_auth.WithApiKeyPassword(viper.GetString(APIKeyPasswordFlag)),
 		service_auth.WithApiKeyPath(viper.GetString(APIKeyPathFlag)),
+		service_auth.WithApiKeySaveOnCreate(viper.GetBool(APIKeySaveOnCreateFlag)),
 	)
 	discoveryService = service_discovery.NewService(
 		service_discovery.WithInternalAuthorizer(

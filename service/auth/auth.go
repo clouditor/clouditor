@@ -61,6 +61,10 @@ func init() {
 	log = logrus.WithField("component", "auth")
 }
 
+// DefaultApiKeySaveOnCreate specifies whether a created API key will be saved. This is useful to turn of in unit tests, where
+// we only want a temporary key.
+const DefaultApiKeySaveOnCreate = true
+
 // DefaultApiKeyPassword is the default password to protect the API key
 const DefaultApiKeyPassword = "changeme"
 
@@ -72,8 +76,9 @@ type Service struct {
 	auth.UnimplementedAuthenticationServer
 
 	config struct {
-		keyPath     string
-		keyPassword string
+		keySaveOnCreate bool
+		keyPath         string
+		keyPassword     string
 	}
 
 	apiKey *ecdsa.PrivateKey
@@ -100,14 +105,22 @@ func WithApiKeyPassword(password string) ServiceOption {
 	}
 }
 
+func WithApiKeySaveOnCreate(saveOnCreate bool) ServiceOption {
+	return func(s *Service) {
+		s.config.keySaveOnCreate = saveOnCreate
+	}
+}
+
 func NewService(opts ...ServiceOption) *Service {
 	s := &Service{
 		config: struct {
-			keyPath     string
-			keyPassword string
+			keySaveOnCreate bool
+			keyPath         string
+			keyPassword     string
 		}{
-			keyPath:     DefaultApiKeyPath,
-			keyPassword: DefaultApiKeyPassword,
+			keySaveOnCreate: DefaultApiKeySaveOnCreate,
+			keyPath:         DefaultApiKeyPath,
+			keyPassword:     DefaultApiKeyPassword,
 		},
 	}
 
@@ -120,30 +133,10 @@ func NewService(opts ...ServiceOption) *Service {
 		o(s)
 	}
 
-	s.apiKey, err = s.loadApiKey(s.config.keyPath, []byte(s.config.keyPassword))
+	s.apiKey, err = loadApiKey(s.config.keyPath, []byte(s.config.keyPassword))
 
-	// We treat different errors diffently. For example if the path is the default path
-	// and the error is os.ErrNotExist, this could be just the first start of Clouditor.
-	// So we only treat this as an information that we will create a new key.
-	//
-	// If the user specifies a custom path and this one does not exist, we will report an error
-	// here.
 	if err != nil {
-		s.apiKey, _ = ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-
-		if s.config.keyPath == DefaultApiKeyPath && errors.Is(err, os.ErrNotExist) {
-			log.Infof("API key does not exist at the default location yet. We will create a new one")
-
-			// Also save the key in this case, so we can load it next time
-			err = s.saveApiKey(s.config.keyPath, s.config.keyPassword)
-
-			// Error while error handling, meh
-			if err != nil {
-				log.Errorf("Error while saving the new API key: %v", err)
-			}
-		} else if err != nil {
-			log.Errorf("Could not load key from file, continuing with a temporary key: %v", err)
-		}
+		s.recoverFromLoadApiKeyError(err, s.config.keyPath == DefaultApiKeyPath)
 	}
 
 	// Lets clear out some sensitive things for slightly more security
@@ -152,7 +145,7 @@ func NewService(opts ...ServiceOption) *Service {
 	return s
 }
 
-func (s Service) loadApiKey(path string, password []byte) (key *ecdsa.PrivateKey, err error) {
+func loadApiKey(path string, password []byte) (key *ecdsa.PrivateKey, err error) {
 	var (
 		keyFile string
 	)
@@ -186,7 +179,7 @@ func (s Service) loadApiKey(path string, password []byte) (key *ecdsa.PrivateKey
 	return key, nil
 }
 
-func (s *Service) saveApiKey(keyPath string, password string) (err error) {
+func saveApiKey(apiKey *ecdsa.PrivateKey, keyPath string, password string) (err error) {
 	keyPath, err = expandPath(keyPath)
 	if err != nil {
 		return fmt.Errorf("error while expanding path: %w", err)
@@ -199,7 +192,7 @@ func (s *Service) saveApiKey(keyPath string, password string) (err error) {
 	}
 	defer f.Close()
 
-	data, err := MarshalECPrivateKeyWithPassword(s.apiKey, []byte(password))
+	data, err := MarshalECPrivateKeyWithPassword(apiKey, []byte(password))
 	if err != nil {
 		return fmt.Errorf("error while marshalling private key: %w", err)
 	}
@@ -210,6 +203,33 @@ func (s *Service) saveApiKey(keyPath string, password string) (err error) {
 	}
 
 	return nil
+}
+
+// recoverFromLoadApiKeyError tries to recover from an error during key loading. We treat different errors diffently.
+// For example if the path is the default path and the error is os.ErrNotExist, this could be just the first start of Clouditor.
+// So we only treat this as an information that we will create a new key, which we will save, based on the config.
+//
+// If the user specifies a custom path and this one does not exist, we will report an error
+// here.
+func (s *Service) recoverFromLoadApiKeyError(err error, defaultPath bool) {
+	// In any case, create a new temporary API key
+	s.apiKey, _ = ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+
+	if defaultPath && errors.Is(err, os.ErrNotExist) {
+		log.Infof("API key does not exist at the default location yet. We will create a new one")
+
+		if s.config.keySaveOnCreate {
+			// Also save the key in this case, so we can load it next time
+			err = saveApiKey(s.apiKey, s.config.keyPath, s.config.keyPassword)
+
+			// Error while error handling, meh
+			if err != nil {
+				log.Errorf("Error while saving the new API key: %v", err)
+			}
+		}
+	} else if err != nil {
+		log.Errorf("Could not load key from file, continuing with a temporary key: %v", err)
+	}
 }
 
 // Login handles a login request

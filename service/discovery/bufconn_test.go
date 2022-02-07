@@ -56,7 +56,8 @@ func startBufConnServer() (*grpc.Server, *service_auth.Service, *service_assessm
 	bufConnListener = bufconn.Listen(DefaultBufferSize)
 
 	server := grpc.NewServer()
-	authService := service_auth.NewService()
+	// We do not want a persistent key storage here
+	authService := service_auth.NewService(service_auth.WithApiKeySaveOnCreate(false))
 	auth.RegisterAuthenticationServer(server, authService)
 
 	assessmentService := service_assessment.NewService()
