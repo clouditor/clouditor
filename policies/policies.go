@@ -83,6 +83,10 @@ func RunEvidence(evidence *evidence.Evidence, related map[string]*structpb.Value
 		}
 
 		for _, fileInfo := range files {
+			if !fileInfo.Type().IsDir() {
+				continue
+			}
+
 			runMap, err := RunMap(baseDir, fileInfo.Name(), m)
 			if err != nil {
 				return nil, err
@@ -159,15 +163,10 @@ func RunMap(baseDir string, metric string, m map[string]interface{}) (data map[s
 	}
 }
 
-func scanBundleDir(baseDir string) ([]os.FileInfo, error) {
+func scanBundleDir(baseDir string) ([]os.DirEntry, error) {
 	dirname := baseDir + "/policies/bundles"
 
-	f, err := os.Open(dirname)
-	if err != nil {
-		return nil, err
-	}
-	files, err := f.Readdir(-1)
-	_ = f.Close()
+	files, err := os.ReadDir(dirname)
 	if err != nil {
 		return nil, err
 	}

@@ -304,7 +304,7 @@ func TestAssessEvidences(t *testing.T) {
 			}
 
 			err := s.AssessEvidences(tt.args.stream)
-			fmt.Println(err)
+			//fmt.Println(err)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Got AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -320,10 +320,11 @@ func TestAssessEvidences(t *testing.T) {
 func TestAssessmentResultHooks(t *testing.T) {
 	var (
 		hookCallCounter = 0
+		maxCounter      = 2
 		wg              sync.WaitGroup
 	)
 
-	wg.Add(12)
+	wg.Add(2)
 
 	firstHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
 		hookCallCounter++
@@ -392,7 +393,6 @@ func TestAssessmentResultHooks(t *testing.T) {
 
 			gotResp, err := s.AssessEvidence(tt.args.in0, tt.args.evidence)
 
-			// wait for all hooks (6 metrics * 2 hooks)
 			wg.Wait()
 
 			if (err != nil) != tt.wantErr {
@@ -403,7 +403,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 				t.Errorf("AssessEvidence() gotResp = %v, want %v", gotResp, tt.wantResp)
 			}
 			assert.NotEmpty(t, s.results)
-			assert.Equal(t, 12, hookCallCounter)
+			assert.Equal(t, maxCounter, hookCallCounter)
 		})
 	}
 }
@@ -412,6 +412,7 @@ func TestListAssessmentResults(t *testing.T) {
 	s := NewService()
 	assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
 	assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
+
 	_, err := s.AssessEvidence(context.TODO(), &assessment.AssessEvidenceRequest{
 		Evidence: &evidence.Evidence{
 			Id:        "11111111-1111-1111-1111-111111111111",
@@ -419,10 +420,13 @@ func TestListAssessmentResults(t *testing.T) {
 			Timestamp: timestamppb.Now(),
 			Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 		}})
-	assert.Nil(t, err)
+
+	assert.NoError(t, err)
+
 	var results *assessment.ListAssessmentResultsResponse
 	results, err = s.ListAssessmentResults(context.TODO(), &assessment.ListAssessmentResultsRequest{})
-	assert.Nil(t, err)
+
+	assert.NoError(t, err)
 	assert.NotNil(t, results)
 }
 
