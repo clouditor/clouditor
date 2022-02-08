@@ -34,8 +34,8 @@ import (
 	"os"
 	"reflect"
 	"runtime"
+	"sync"
 	"testing"
-	"time"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
@@ -320,16 +320,21 @@ func TestAssessEvidences(t *testing.T) {
 func TestAssessmentResultHooks(t *testing.T) {
 	var (
 		hookCallCounter = 0
+		wg sync.WaitGroup
 	)
+
+	wg.Add(12)
 
 	firstHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the firstHookFunction")
+		wg.Done()
 	}
 
 	secondHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the secondHookFunction")
+		wg.Done()
 	}
 
 	// Check GRPC call
@@ -387,8 +392,8 @@ func TestAssessmentResultHooks(t *testing.T) {
 
 			gotResp, err := s.AssessEvidence(tt.args.in0, tt.args.evidence)
 
-			// That isn´t nice, but we have somehow to wait for the hook functions
-			time.Sleep(3 * time.Second)
+			// wait for all hooks (6 metrics * 2 hooks)
+			wg.Wait()
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
