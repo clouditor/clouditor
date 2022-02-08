@@ -48,11 +48,13 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-var sock net.Listener
-var server *grpc.Server
-var authServices *service_auth.Service
-var discoveryService *service_discovery.Service
-var gormX = new(persistence.GormX)
+var (
+	sock             net.Listener
+	server           *grpc.Server
+	authServices     *service_auth.Service
+	discoveryService *service_discovery.Service
+	gormX            = new(persistence.GormX)
+)
 
 func TestMain(m *testing.M) {
 	var (
