@@ -37,7 +37,6 @@ import (
 
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/service"
 	service_auth "clouditor.io/clouditor/service/auth"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -47,10 +46,10 @@ import (
 )
 
 var (
-	 sock net.Listener
-	 server *grpc.Server
-	 authService *service_auth.Service
-	 gormX = new(persistence.GormX)
+	sock        net.Listener
+	server      *grpc.Server
+	authService *service_auth.Service
+	gormX       = new(persistence.GormX)
 )
 
 func TestMain(m *testing.M) {
@@ -60,9 +59,9 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err)
 	}
-	authService = service_auth.NewService(gormX)
+	authService = service_auth.NewService(gormX, service_auth.WithApiKeySaveOnCreate(false))
 
-	sock, server, _, err = authService.StartDedicatedAuthServer(":0", service_auth.WithApiKeySaveOnCreate(false))
+	sock, server, err = authService.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}

@@ -26,7 +26,6 @@
 package auth
 
 import (
-	"clouditor.io/clouditor/service"
 	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
@@ -46,6 +45,7 @@ import (
 
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/service"
 	argon2 "github.com/alexedwards/argon2id"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/sirupsen/logrus"

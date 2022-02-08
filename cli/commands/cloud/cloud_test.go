@@ -38,7 +38,6 @@ import (
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/service"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
@@ -75,9 +74,9 @@ func TestMain(m *testing.M) {
 	}
 
 	orchestratorService = service_orchestrator.NewService(gormX)
-	authService = service_auth.NewService(gormX)
+	authService = service_auth.NewService(gormX, service_auth.WithApiKeySaveOnCreate(false))
 
-	sock, server, _, err = authService.StartDedicatedAuthServer(":0", service_auth.WithApiKeySaveOnCreate(false))
+	sock, server, err = authService.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}

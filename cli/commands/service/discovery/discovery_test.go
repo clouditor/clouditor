@@ -38,7 +38,6 @@ import (
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/service"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_discovery "clouditor.io/clouditor/service/discovery"
 
@@ -70,11 +69,11 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err)
 	}
-	authServices = service_auth.NewService(gormX)
+	authServices = service_auth.NewService(gormX, service_auth.WithApiKeySaveOnCreate(false))
 	discoveryService = service_discovery.NewService()
 	discoveryService.StartDiscovery(mockDiscoverer{testCase: 2})
 
-	sock, server, _, err = authServices.StartDedicatedAuthServer(":0", service_auth.WithApiKeySaveOnCreate(false))
+	sock, server, err = authServices.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}

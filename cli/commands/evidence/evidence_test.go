@@ -39,7 +39,6 @@ import (
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/service"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_evidenceStore "clouditor.io/clouditor/service/evidence"
 
@@ -77,10 +76,10 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	authService = service_auth.NewService(gormX)
+	authService = service_auth.NewService(gormX, service_auth.WithApiKeySaveOnCreate(false))
 	evidenceStoreService = service_evidenceStore.NewService()
 
-	sock, server, err = authService.StartDedicatedAuthServer(":0", service_auth.WithApiKeySaveOnCreate(false))
+	sock, server, err = authService.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}
