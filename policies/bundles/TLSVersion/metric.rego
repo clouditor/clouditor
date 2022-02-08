@@ -1,4 +1,7 @@
-package clouditor
+package clouditor.tls.version
+
+import data.clouditor.compare
+import data.clouditor.isIn
 
 default compliant = false
 

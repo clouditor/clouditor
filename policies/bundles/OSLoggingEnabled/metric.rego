@@ -1,4 +1,6 @@
-package clouditor
+package clouditor.os.logging.enabled
+
+import data.clouditor.compare
 
 default applicable = false
 

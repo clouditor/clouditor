@@ -1,4 +1,6 @@
-package clouditor
+package clouditor.anonymous.authentication
+
+import data.clouditor.compare
 
 default applicable = false
 

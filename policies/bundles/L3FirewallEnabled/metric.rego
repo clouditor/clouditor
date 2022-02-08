@@ -1,4 +1,6 @@
-package clouditor
+package clouditor.l3.firewall.enabled
+
+import data.clouditor.compare
 
 default applicable = false
 

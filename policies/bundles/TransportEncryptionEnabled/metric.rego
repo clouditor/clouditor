@@ -1,4 +1,6 @@
-package clouditor
+package clouditor.transport.encryption.enabled
+
+import data.clouditor.compare
 
 default compliant = false
 

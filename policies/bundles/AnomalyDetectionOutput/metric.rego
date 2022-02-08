@@ -1,4 +1,6 @@
-package clouditor
+package clouditor.anomaly.detection.output
+
+import data.clouditor.isIn
 
 default applicable = false
 

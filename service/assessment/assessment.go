@@ -211,7 +211,7 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 	log.Infof("Running evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, evidence.ToolId, evidence.Timestamp)
 	log.Debugf("Evidence: %+v", evidence)
 
-	evaluations, err := policies.RunEvidence(evidence)
+	evaluations, err := policies.RunEvidence(evidence, nil)
 	if err != nil {
 		newError := fmt.Errorf("could not evaluate evidence: %w", err)
 		log.Errorf(newError.Error())

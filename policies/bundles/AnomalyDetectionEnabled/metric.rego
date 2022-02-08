@@ -1,4 +1,6 @@
-package clouditor
+package clouditor.anomaly.detection.enabled
+
+import data.clouditor.compare
 
 default applicable = false
 

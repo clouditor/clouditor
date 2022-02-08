@@ -1,4 +1,6 @@
-package clouditor
+package clouditor.single.sign.on.enabled
+
+import data.clouditor.compare
 
 default applicable = false
 

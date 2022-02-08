@@ -1,4 +1,6 @@
-package clouditor
+package clouditor.broad.assignments
+
+import data.clouditor.compare
 
 default applicable = false
 

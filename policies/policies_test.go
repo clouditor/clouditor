@@ -30,6 +30,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/voc"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	"clouditor.io/clouditor/api/evidence"
 	"github.com/stretchr/testify/assert"
@@ -61,9 +62,13 @@ func TestRunEvidence(t *testing.T) {
 		resource   voc.IsCloudResource
 		evidenceID string
 	}
+	type args struct {
+		related map[string]*structpb.Value
+	}
 	tests := []struct {
 		name       string
 		fields     fields
+		args       args
 		applicable bool
 		compliant  bool
 		wantErr    bool
@@ -256,7 +261,7 @@ func TestRunEvidence(t *testing.T) {
 			results, err := RunEvidence(&evidence.Evidence{
 				Id:       tt.fields.evidenceID,
 				Resource: resource,
-			})
+			}, tt.args.related)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RunEvidence() error = %v, wantErr %v", err, tt.wantErr)
 				return

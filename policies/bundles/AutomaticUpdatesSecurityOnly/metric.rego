@@ -1,4 +1,6 @@
-package clouditor
+package clouditor.automatic.updates.security.only
+
+import data.clouditor.compare
 
 default applicable = false
 

@@ -1,4 +1,6 @@
-package clouditor
+package clouditor.runtime.version
+
+import data.clouditor.compare
 
 default applicable = false
 

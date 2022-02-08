@@ -33,17 +33,28 @@ import (
 	"strings"
 
 	"clouditor.io/clouditor/api/evidence"
+	"github.com/fatih/camelcase"
 	"github.com/open-policy-agent/opa/rego"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 // applicableMetrics stores a list of applicable metrics per resourceType
 var applicableMetrics = make(map[string][]string)
 
-func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) {
+func RunEvidence(evidence *evidence.Evidence, related map[string]*structpb.Value) ([]map[string]interface{}, error) {
 	data := make([]map[string]interface{}, 0)
 	var baseDir string = "."
 
 	var m = evidence.Resource.GetStructValue().AsMap()
+
+	if related != nil {
+		am := make(map[string]interface{})
+		for key, value := range related {
+			am[key] = value.GetStructValue().AsMap()
+		}
+
+		m["related"] = am
+	}
 
 	var types []string
 
@@ -109,9 +120,15 @@ func RunMap(baseDir string, metric string, m map[string]interface{}) (data map[s
 	bundle := fmt.Sprintf("%s/policies/bundles/%s/", baseDir, metric)
 	operators := fmt.Sprintf("%s/policies/operators.rego", baseDir)
 
+	mm := camelcase.Split(metric)
+	pkg := strings.ToLower(strings.Join(mm, "."))
+
+	// some special cases
+	pkg = strings.Replace(pkg, "l.3", "l3", 1)
+
 	ctx := context.TODO()
 	r, err := rego.New(
-		rego.Query("data.clouditor"),
+		rego.Query(fmt.Sprintf("data.clouditor.%s", pkg)),
 		rego.Load(
 			[]string{
 				bundle + "metric.rego",
@@ -127,6 +144,10 @@ func RunMap(baseDir string, metric string, m map[string]interface{}) (data map[s
 	results, err := r.Eval(ctx, rego.EvalInput(m))
 	if err != nil {
 		return nil, fmt.Errorf("could not evaluate rego policy: %w", err)
+	}
+
+	if len(results) == 0 {
+		return nil, fmt.Errorf("no results. probably the package name of the metric is wrong")
 	}
 
 	if data, ok = results[0].Expressions[0].Value.(map[string]interface{}); !ok {

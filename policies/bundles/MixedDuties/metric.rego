@@ -1,4 +1,6 @@
-package clouditor
+package clouditor.mixed.duties
+
+import data.clouditor.compare
 
 default applicable = false
 
