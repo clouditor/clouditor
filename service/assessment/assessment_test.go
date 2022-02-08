@@ -57,9 +57,11 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-
 	server, authService, _, _ := startBufConnServer()
-	authService.CreateDefaultUser("clouditor", "clouditor")
+	err = authService.CreateDefaultUser("clouditor", "clouditor")
+	if err != nil {
+		panic(err)
+	}
 
 	code := m.Run()
 
@@ -314,7 +316,7 @@ func TestAssessEvidences(t *testing.T) {
 func TestAssessmentResultHooks(t *testing.T) {
 	var (
 		hookCallCounter = 0
-		wg sync.WaitGroup
+		wg              sync.WaitGroup
 	)
 
 	wg.Add(12)

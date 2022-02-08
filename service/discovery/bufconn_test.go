@@ -26,6 +26,7 @@
 package discovery
 
 import (
+	"clouditor.io/clouditor/persistence"
 	"context"
 	"net"
 
@@ -57,7 +58,12 @@ func startBufConnServer() (*grpc.Server, *service_auth.Service, *service_assessm
 
 	server := grpc.NewServer()
 	// We do not want a persistent key storage here
-	authService := service_auth.NewService(service_auth.WithApiKeySaveOnCreate(false))
+	var gormX = new(persistence.GormX)
+	err := gormX.Init(true, "", 0)
+	if err != nil {
+		panic(err)
+	}
+	authService := service_auth.NewService(gormX, service_auth.WithApiKeySaveOnCreate(false))
 	auth.RegisterAuthenticationServer(server, authService)
 
 	assessmentService := service_assessment.NewService()
