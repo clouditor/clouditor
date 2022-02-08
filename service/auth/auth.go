@@ -26,6 +26,7 @@
 package auth
 
 import (
+	"clouditor.io/clouditor/service"
 	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
@@ -33,8 +34,10 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"net"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"io/ioutil"
+	"net"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -254,9 +257,9 @@ func (s *Service) recoverFromLoadApiKeyError(err error, defaultPath bool) {
 // Login handles a login request
 func (s Service) Login(_ context.Context, request *auth.LoginRequest) (response *auth.LoginResponse, err error) {
 	var result bool
-	var user *auth.User
+	var u *auth.User
 
-	if result, user, err = s.verifyLogin(request); err != nil {
+	if result, u, err = s.verifyLogin(request); err != nil {
 		// a returned error means, something has gone wrong
 		return nil, status.Errorf(codes.Internal, "error during login: %v", err)
 	}
@@ -270,7 +273,7 @@ func (s Service) Login(_ context.Context, request *auth.LoginRequest) (response 
 
 	var expiry = time.Now().Add(time.Hour * 24)
 
-	if token, err = s.issueToken(user.Username, user.FullName, user.Email, expiry); err != nil {
+	if token, err = s.issueToken(u.Username, u.FullName, u.Email, expiry); err != nil {
 		return nil, status.Errorf(codes.Internal, "token issue failed: %v", err)
 	}
 
@@ -357,15 +360,15 @@ func (s *Service) CreateDefaultUser(username string, password string) error {
 	} else if len(storedUsers) == 0 {
 		hash, _ := hashPassword(password)
 
-		user := auth.User{
+		u := auth.User{
 			Username: username,
 			FullName: username,
 			Password: string(hash),
 		}
 
-		log.Infof("Creating default user %s\n", user.Username)
+		log.Infof("Creating default user %s\n", u.Username)
 
-		err = s.db.Create(&user)
+		err = s.db.Create(&u)
 		if err != nil {
 			return err
 		}
@@ -393,7 +396,6 @@ func (s Service) issueToken(subject string, fullName string, email string, expir
 
 // StartDedicatedAuthServer starts a gRPC server containing just the auth service
 func (s *Service) StartDedicatedAuthServer(address string) (sock net.Listener, server *grpc.Server, err error) {
-
 	// create a new socket for gRPC communication
 	sock, err = net.Listen("tcp", address)
 	if err != nil {
@@ -405,7 +407,13 @@ func (s *Service) StartDedicatedAuthServer(address string) (sock net.Listener, s
 		return nil, nil, fmt.Errorf("could not create default user: %v", err)
 	}
 
-	server = grpc.NewServer()
+	authConfig := service.ConfigureAuth(service.WithPublicKey(s.GetPublicKey()))
+
+	server = grpc.NewServer(
+		grpc_middleware.WithUnaryServerChain(
+			grpc_auth.UnaryServerInterceptor(authConfig.AuthFunc),
+		),
+	)
 	auth.RegisterAuthenticationServer(server, s)
 
 	go func() {
@@ -422,9 +430,9 @@ func (s Service) GetPublicKey() *ecdsa.PublicKey {
 
 // AuthFuncOverride implements the ServiceAuthFuncOverride interface to override the AuthFunc for this service.
 // The reason is to actually disable authentication checking in the auth service, because functions such as login
-// need to be publically available.
+// need to be publicly available.
 func (Service) AuthFuncOverride(ctx context.Context, _ string) (context.Context, error) {
-	// No authentication needed for login functions, otherwise we could not login
+	// No authentication needed for login functions, otherwise we could not log in
 	return ctx, nil
 }
 
@@ -432,20 +440,20 @@ func (Service) AuthFuncOverride(ctx context.Context, _ string) (context.Context,
 // of the user
 func expandPath(path string) (out string, err error) {
 	var (
-		usr *user.User
+		u *user.User
 	)
 
 	// Fetch the current user home directory
-	usr, err = user.Current()
+	u, err = user.Current()
 	if err != nil {
 		return path, fmt.Errorf("could not find retrieve current user: %w", err)
 	}
 
 	if path == "~" {
-		return usr.HomeDir, nil
+		return u.HomeDir, nil
 	} else if strings.HasPrefix(path, "~") {
 		// We only allow ~ at the beginning of the path
-		return filepath.Join(usr.HomeDir, path[2:]), nil
+		return filepath.Join(u.HomeDir, path[2:]), nil
 	}
 
 	return path, nil
