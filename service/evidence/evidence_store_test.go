@@ -27,15 +27,14 @@ package evidences
 
 import (
 	"context"
-	"io"
-	"reflect"
-	"runtime"
-	"testing"
-	"time"
-
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	"io"
+	"reflect"
+	"runtime"
+	"sync"
+	"testing"
 
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/voc"
@@ -198,22 +197,24 @@ func TestListEvidences(t *testing.T) {
 }
 
 func TestEvidenceHook(t *testing.T) {
-	var ready1 = make(chan bool)
-	var ready2 = make(chan bool)
-	hookCallCounter := 0
+	var (
+		hookCallCounter = 0
+		wg sync.WaitGroup
+	)
+	wg.Add(2)
 
 	firstHookFunction := func(evidence *evidence.Evidence, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the firstHookFunction")
 
-		ready1 <- true
+		wg.Done()
 	}
 
 	secondHookFunction := func(evidence *evidence.Evidence, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the secondHookFunction")
 
-		ready2 <- true
+		wg.Done()
 	}
 
 	service := NewService()
@@ -274,20 +275,8 @@ func TestEvidenceHook(t *testing.T) {
 			s := service
 			gotResp, err := s.StoreEvidence(tt.args.in0, tt.args.evidence)
 
-			//make the test wait
-			select {
-			case <-ready1:
-				break
-			case <-time.After(10 * time.Second):
-				log.Println("Timeout while waiting for first StoreEvidence to be ready")
-			}
-
-			select {
-			case <-ready2:
-				break
-			case <-time.After(10 * time.Second):
-				log.Println("Timeout while waiting for second StoreEvidence to be ready")
-			}
+			// wait for all hooks (2 hooks)
+			wg.Wait()
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("StoreEvidence() error = %v, wantErr %v", err, tt.wantErr)

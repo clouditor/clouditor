@@ -36,11 +36,11 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/policies"
+	"clouditor.io/clouditor/service"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -75,6 +75,8 @@ type Service struct {
 
 	// Currently, results are just stored as a map (=in-memory). In the future, we will use a DB.
 	results map[string]*assessment.AssessmentResult
+
+	authorizer service.Authorizer
 }
 
 const (
@@ -102,6 +104,18 @@ func WithOrchestratorAddress(address string) ServiceOption {
 	}
 }
 
+// WithInternalAuthorizer is an option to use an authorizer to the internal Clouditor auth service.
+func WithInternalAuthorizer(address string, username string, password string, opts ...grpc.DialOption) ServiceOption {
+	return func(s *Service) {
+		s.SetAuthorizer(&service.InternalAuthorizer{
+			Url:         address,
+			GrpcOptions: opts,
+			Username:    username,
+			Password:    password,
+		})
+	}
+}
+
 // NewService creates a new assessment service with default values.
 func NewService(opts ...ServiceOption) *Service {
 	s := &Service{
@@ -116,6 +130,16 @@ func NewService(opts ...ServiceOption) *Service {
 	}
 
 	return s
+}
+
+// SetAuthorizer implements UsesAuthorizer
+func (s *Service) SetAuthorizer(auth service.Authorizer) {
+	s.authorizer = auth
+}
+
+// Authorizer implements UsesAuthorizer
+func (s *Service) Authorizer() service.Authorizer {
+	return s.authorizer
 }
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
@@ -200,7 +224,7 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 	// We could also just log, but an AR could be sent without an accompanying evidence in the Evidence Store
 	err = s.sendToEvidenceStore(evidence)
 	if err != nil {
-		return fmt.Errorf("could not send evidence to the Evidence Store: %v", err)
+		return fmt.Errorf("could not send evidence to the evidence store: %v", err)
 	}
 
 	for i, data := range evaluations {
@@ -240,7 +264,7 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 		// Send assessment result to the Orchestrator
 		err = s.sendToOrchestrator(result)
 		if err != nil {
-			return fmt.Errorf("could not send assessment result to Orchestrator: %v", err)
+			return fmt.Errorf("could not send assessment result to orchestrator: %v", err)
 		}
 	}
 	return nil
@@ -292,20 +316,25 @@ func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result
 }
 
 // initEvidenceStoreStream initializes the stream to the Evidence Store
-func (s *Service) initEvidenceStoreStream() error {
-	// Establish connection to evidenceStore component
-	target := s.evidenceStoreAddress
-	log.Infof("Establishing connection to Evidence Store (%v)", target)
-	conn, err := grpc.Dial(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
+func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) error {
+	log.Infof("Trying to establish a connection to evidence store service @ %v", s.evidenceStoreAddress)
+
+	// Establish connection to evidence store gRPC service
+	conn, err := grpc.Dial(s.evidenceStoreAddress,
+		service.DefaultGrpcDialOptions(s, additionalOpts...)...,
+	)
 	if err != nil {
-		return fmt.Errorf("could not connect to the Evidence Store service: %v", err)
+		return fmt.Errorf("could not connect to evidence store service: %w", err)
 	}
+
 	evidenceStoreClient := evidence.NewEvidenceStoreClient(conn)
 	s.evidenceStoreStream, err = evidenceStoreClient.StoreEvidences(context.Background())
 	if err != nil {
-		return fmt.Errorf("could not set up stream for storing evidences: %v", err)
+		return fmt.Errorf("could not set up stream for storing evidences: %w", err)
 	}
+
 	log.Infof("Connected to Evidence Store")
+
 	return nil
 }
 
@@ -326,18 +355,21 @@ func (s *Service) sendToEvidenceStore(e *evidence.Evidence) error {
 }
 
 // initOrchestratorStream initializes the stream to the Orchestrator
-func (s *Service) initOrchestratorStream() error {
-	// Establish connection to orchestrator component
-	target := s.orchestratorAddress
-	log.Infof("Establishing connection to Orchestrator (%v)", target)
-	conn, err := grpc.Dial(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
+func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) error {
+	log.Infof("Trying to establish a connection to orchestrator service @ %v", s.orchestratorAddress)
+
+	// Establish connection to orchestrator gRPC service
+	conn, err := grpc.Dial(s.orchestratorAddress,
+		service.DefaultGrpcDialOptions(s, additionalOpts...)...,
+	)
 	if err != nil {
-		return fmt.Errorf("could not connect to the Orchestrator service: %v", err)
+		return fmt.Errorf("could not connect to orchestrator service: %w", err)
 	}
+
 	orchestratorClient := orchestrator.NewOrchestratorClient(conn)
 	s.orchestratorStream, err = orchestratorClient.StoreAssessmentResults(context.Background())
 	if err != nil {
-		return fmt.Errorf("could not set up stream for storing assessment results: %v", err)
+		return fmt.Errorf("could not set up stream for storing assessment results: %w", err)
 	}
 	log.Infof("Connected to Orchestrator")
 	return nil

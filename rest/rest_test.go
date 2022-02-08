@@ -26,10 +26,10 @@
 package rest
 
 import (
-	"clouditor.io/clouditor/persistence"
 	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -37,15 +37,18 @@ import (
 	"testing"
 	"time"
 
+	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/service"
 	service_auth "clouditor.io/clouditor/service/auth"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 )
 
 var (
-	origins     = []string{"clouditor.io", "localhost"}
-	methods     = []string{"GET", "POST"}
-	headers     = DefaultAllowedHeaders
+	origins = []string{"clouditor.io", "localhost"}
+	methods = []string{"GET", "POST"}
+	headers = DefaultAllowedHeaders
+
 	authService *service_auth.Service
 
 	grpcPort int = 0
@@ -67,7 +70,7 @@ func TestMain(m *testing.M) {
 	authService = service_auth.NewService(gormX)
 
 	// Start at least an authentication server, so that we have something to forward
-	sock, server, err = authService.StartDedicatedAuthServer(":0")
+	sock, server, _, err = authService.StartDedicatedAuthServer(":0", service_auth.WithApiKeySaveOnCreate(false))
 	if err != nil {
 		panic(err)
 	}
@@ -82,7 +85,7 @@ func TestMain(m *testing.M) {
 	os.Exit(exit)
 }
 
-func TestCORS(t *testing.T) {
+func TestREST(t *testing.T) {
 	go func() {
 		err := RunServer(
 			context.Background(),
@@ -91,6 +94,12 @@ func TestCORS(t *testing.T) {
 			WithAllowedOrigins(origins),
 			WithAllowedMethods(methods),
 			WithAllowedHeaders(headers),
+			WithAdditionalHandler("GET", "/test", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+				_, err := w.Write([]byte("just a test"))
+				if err != nil {
+					panic(err)
+				}
+			}),
 		)
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			panic(err)
@@ -98,7 +107,7 @@ func TestCORS(t *testing.T) {
 	}()
 	defer StopServer(context.Background())
 
-	// wait until server is ready to serve
+	// Wait until server is ready to serve
 	select {
 	case <-ready:
 		break
@@ -116,14 +125,15 @@ func TestCORS(t *testing.T) {
 	type args struct {
 		origin    string
 		method    string
+		url       string
 		preflight bool
 	}
-
 	tests := []struct {
-		name       string
-		args       args
-		statusCode int
-		headers    map[string]string
+		name         string
+		args         args
+		statusCode   int
+		headers      map[string]string
+		wantResponse assert.ValueAssertionFunc
 	}{
 		{
 			name: "Preflight request from valid origin",
@@ -144,6 +154,7 @@ func TestCORS(t *testing.T) {
 			args: args{
 				origin:    "clouditor.io",
 				method:    "POST",
+				url:       "v1/auth/login",
 				preflight: false,
 			},
 			statusCode: 401, // because we are not supplying an actual login request
@@ -158,6 +169,7 @@ func TestCORS(t *testing.T) {
 			args: args{
 				origin:    "clouditor.com",
 				method:    "POST",
+				url:       "v1/auth/login",
 				preflight: true,
 			},
 			statusCode: 501,
@@ -170,11 +182,34 @@ func TestCORS(t *testing.T) {
 			args: args{
 				origin:    "clouditor.com",
 				method:    "POST",
+				url:       "v1/auth/login",
 				preflight: false,
 			},
 			statusCode: 401, // because we are not supplying an actual login request
 			headers: map[string]string{
 				"Access-Control-Allow-Origin": "", // should not leak any origin
+			},
+		},
+		{
+			name: "Actual request to additional handler",
+			args: args{
+				method:    "GET",
+				url:       "test",
+				preflight: false,
+			},
+			statusCode: 200,
+			wantResponse: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				resp, ok := i1.(*http.Response)
+				if !ok {
+					return assert.True(tt, ok)
+				}
+
+				content, err := ioutil.ReadAll(resp.Body)
+				if assert.ErrorIs(tt, err, nil) {
+					return false
+				}
+
+				return assert.Equal(tt, content, []byte("just a test"))
 			},
 		},
 	}
@@ -190,7 +225,7 @@ func TestCORS(t *testing.T) {
 				method = tt.args.method
 			}
 
-			req, err := http.NewRequest(method, fmt.Sprintf("http://localhost:%d/v1/auth/login", port), nil)
+			req, err := http.NewRequest(method, fmt.Sprintf("http://localhost:%d/%s", port, tt.args.url), nil)
 			assert.Nil(t, err)
 			assert.NotNil(t, req)
 
@@ -210,7 +245,69 @@ func TestCORS(t *testing.T) {
 			for key, value := range tt.headers {
 				assert.Equal(t, value, resp.Header.Get(key))
 			}
+
+			if tt.wantResponse != nil {
+				tt.wantResponse(t, resp)
+			}
 		})
 	}
+}
 
+func Test_corsConfig_OriginAllowed(t *testing.T) {
+	type fields struct {
+		allowedOrigins []string
+		allowedHeaders []string
+		allowedMethods []string
+	}
+	type args struct {
+		origin string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   bool
+	}{
+		{
+			name:   "Allow non-browser origin",
+			fields: fields{},
+			args: args{
+				origin: "", // origin is only explicitly set by a browser
+			},
+			want: true,
+		},
+		{
+			name: "Allowed origin",
+			fields: fields{
+				allowedOrigins: []string{"clouditor.io", "localhost"},
+			},
+			args: args{
+				origin: "clouditor.io",
+			},
+			want: true,
+		},
+		{
+			name: "Disallowed origin",
+			fields: fields{
+				allowedOrigins: []string{"clouditor.io", "localhost"},
+			},
+			args: args{
+				origin: "clouditor.com",
+			},
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cors := &corsConfig{
+				allowedOrigins: tt.fields.allowedOrigins,
+				allowedHeaders: tt.fields.allowedHeaders,
+				allowedMethods: tt.fields.allowedMethods,
+			}
+			if got := cors.OriginAllowed(tt.args.origin); got != tt.want {
+				t.Errorf("corsConfig.OriginAllowed() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

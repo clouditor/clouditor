@@ -36,11 +36,10 @@ import (
 	"strings"
 	"time"
 
-	"clouditor.io/clouditor/api/evidence"
-
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/sirupsen/logrus"
@@ -75,8 +74,8 @@ type corsConfig struct {
 	allowedMethods []string
 }
 
-// CORSConfigOption represents functional-style options to modify the CORS configuration in RunServer.
-type CORSConfigOption func(*corsConfig)
+// ServerConfigOption represents functional-style options to modify the server configuration in RunServer.
+type ServerConfigOption func(*corsConfig, *runtime.ServeMux)
 
 var (
 	// DefaultAllowedOrigins contains a nil slice, as per default, no origins are allowed.
@@ -89,26 +88,36 @@ var (
 	// DefaultAllowedMethods contains sensible defaults for the Access-Control-Allow-Methods header.
 	// Please adjust accordingly in production using WithAllowedMethods.
 	DefaultAllowedMethods = []string{"GET", "POST", "PUT", "DELETE"}
+
+	// DefaultAPIHTTPPort specifies the default port for the REST API.
+	DefaultAPIHTTPPort int16 = 8080
 )
 
 // WithAllowedOrigins is an option to supply allowed origins in CORS.
-func WithAllowedOrigins(origins []string) CORSConfigOption {
-	return func(cc *corsConfig) {
+func WithAllowedOrigins(origins []string) ServerConfigOption {
+	return func(cc *corsConfig, _ *runtime.ServeMux) {
 		cc.allowedOrigins = origins
 	}
 }
 
 // WithAllowedHeaders is an option to supply allowed headers in CORS.
-func WithAllowedHeaders(headers []string) CORSConfigOption {
-	return func(cc *corsConfig) {
+func WithAllowedHeaders(headers []string) ServerConfigOption {
+	return func(cc *corsConfig, _ *runtime.ServeMux) {
 		cc.allowedHeaders = headers
 	}
 }
 
 // WithAllowedMethods is an option to supply allowed methods in CORS.
-func WithAllowedMethods(methods []string) CORSConfigOption {
-	return func(cc *corsConfig) {
+func WithAllowedMethods(methods []string) ServerConfigOption {
+	return func(cc *corsConfig, _ *runtime.ServeMux) {
 		cc.allowedMethods = methods
+	}
+}
+
+// WithAdditionalHandler is an option to add an additional handler func in the REST server.
+func WithAdditionalHandler(method string, path string, h runtime.HandlerFunc) ServerConfigOption {
+	return func(_ *corsConfig, sm *runtime.ServeMux) {
+		_ = sm.HandlePath(method, path, h)
 	}
 }
 
@@ -125,15 +134,15 @@ func init() {
 
 // RunServer starts our REST API. The REST API is a reverse proxy using grpc-gateway that
 // exposes certain gRPC calls as RESTful HTTP methods.
-func RunServer(ctx context.Context, grpcPort int, httpPort int, corsOpts ...CORSConfigOption) (err error) {
+func RunServer(ctx context.Context, grpcPort int, httpPort int, serverOpts ...ServerConfigOption) (err error) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	for _, o := range corsOpts {
-		o(cors)
-	}
-
 	mux := runtime.NewServeMux()
+
+	for _, o := range serverOpts {
+		o(cors, mux)
+	}
 
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
@@ -181,7 +190,9 @@ func RunServer(ctx context.Context, grpcPort int, httpPort int, corsOpts ...CORS
 		return err
 	}
 
-	ready <- true
+	go func() {
+		ready <- true
+	}()
 
 	return srv.Serve(sock)
 }
@@ -200,6 +211,11 @@ func StopServer(ctx context.Context) {
 	}
 
 	_ = srv.Shutdown(ctx)
+}
+
+// GetReadyChannel returns a channel which will notify when the server is ready
+func GetReadyChannel() chan bool {
+	return ready
 }
 
 // GetServerPort returns the actual port used by the REST API
@@ -223,7 +239,7 @@ func handleCORS(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check, if we allow this specific origin
 		origin := r.Header.Get("Origin")
-		if originAllowed(origin) {
+		if cors.OriginAllowed(origin) {
 			// Set the appropriate access control header
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 			w.Header().Add("Vary", "Origin")
@@ -240,8 +256,14 @@ func handleCORS(h http.Handler) http.Handler {
 	})
 }
 
-// originAllowed checks if the supplied origin is allowed according to our global CORS configuration.
-func originAllowed(origin string) bool {
+// OriginAllowed checks if the supplied origin is allowed according to our global CORS configuration.
+func (cors *corsConfig) OriginAllowed(origin string) bool {
+	// If no origin is specified, we are running in a non-browser environment and
+	// this means, that all origins are allowed
+	if origin == "" {
+		return true
+	}
+
 	for _, v := range cors.allowedOrigins {
 		if origin == v {
 			return true

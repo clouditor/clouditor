@@ -28,6 +28,7 @@ syntax = "proto3";
 
 package clouditor;
 
+import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
 
 option go_package = "api/auth";
@@ -36,11 +37,21 @@ service Authentication {
   rpc Login(LoginRequest) returns (LoginResponse) {
     option (google.api.http) = {
       post : "/v1/auth/login"
-      // TODO: Here, "*" is good since username and password (fields of LoginRequest) will be the corresponding fields, right?
+      // TODO: Here, "*" is good since username and password (fields of
+      // LoginRequest) will be the corresponding fields, right?
       body : "*"
       response_body : "*"
     };
   };
+
+  // ListPublicKeys lists all available public keys of the authentication server
+  // in the JSON Web Key Set (JWKS) format.
+  rpc ListPublicKeys(ListPublicKeysRequest) returns (ListPublicResponse) {
+    option (google.api.http) = {
+      get : "/.well-known/jwks.json"
+      response_body : "*"
+    };
+  }
 }
 
 // A clouditor user
@@ -57,4 +68,40 @@ message LoginRequest {
   string password = 2;
 }
 
-message LoginResponse { string token = 1; }
+// LoginResponse is a response to a Login call, it is aligned to a OAuth 2.0
+// token response (see https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.4).
+message LoginResponse {
+  // access_token contains the token which can be used to authenticate further calls to a resource endpoint
+  string access_token = 1;
+
+  // token_type describes the access token type. The usual value in most scenarios is "bearer".
+  string token_type = 2;
+
+  // refresh_token is a token that can be used to refresh the access token if it
+  // expires. Reserved for future use, not currently used.
+  string refresh_token = 3;
+
+  // expiry is an optional expiration time of the access token.
+  google.protobuf.Timestamp expiry = 4;
+}
+
+message ListPublicKeysRequest {}
+message ListPublicResponse { repeated JsonWebKey keys = 1; }
+
+// JsonWebKey describes a JSON Web Key (JWK) according to RFC 7517 (see https://datatracker.ietf.org/doc/html/rfc7517) and RFC 7518 (https://datatracker.ietf.org/doc/html/rfc7518).
+message JsonWebKey {
+  // kid is the Key ID Parameter (see https://datatracker.ietf.org/doc/html/rfc7517#section-4.5).
+  string kid = 1;
+
+  // kty is the Key Type Parameter (see https://datatracker.ietf.org/doc/html/rfc7517#section-4.1).
+  string kty = 22;
+
+  // crv is the Curve Parameter when using an elliptic curve public key in a JWK (see https://datatracker.ietf.org/doc/html/rfc7518#section-6.2.1.1).
+  string crv = 10;
+
+  // x is the X Coordinate Parameter when using an elliptic curve public key in a JWK (see https://datatracker.ietf.org/doc/html/rfc7518#section-6.2.1.2).
+  string x = 11;
+
+  // y is the Y Coordinate Parameter when using an elliptic curve public key in a JWK (see https://datatracker.ietf.org/doc/html/rfc7518#section-6.2.1.3).
+  string y = 12;
+}

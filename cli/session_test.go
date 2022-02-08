@@ -28,14 +28,16 @@ package cli
 import (
 	"context"
 	"fmt"
-	"google.golang.org/protobuf/proto"
 	"io/ioutil"
 	"net"
 	"os"
 	"testing"
 
+	"google.golang.org/protobuf/proto"
+
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/service"
 	service_auth "clouditor.io/clouditor/service/auth"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -44,10 +46,12 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var sock net.Listener
-var server *grpc.Server
-var authService *service_auth.Service
-var gormX = new(persistence.GormX)
+var (
+	 sock net.Listener
+	 server *grpc.Server
+	 authService *service_auth.Service
+	 gormX = new(persistence.GormX)
+)
 
 func TestMain(m *testing.M) {
 	var err error
@@ -58,7 +62,7 @@ func TestMain(m *testing.M) {
 	}
 	authService = service_auth.NewService(gormX)
 
-	sock, server, err = authService.StartDedicatedAuthServer(":0")
+	sock, server, _, err = authService.StartDedicatedAuthServer(":0", service_auth.WithApiKeySaveOnCreate(false))
 	if err != nil {
 		panic(err)
 	}
@@ -100,10 +104,10 @@ func TestSession(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.NotNil(t, response)
-	assert.NotEmpty(t, response.Token)
+	assert.NotEmpty(t, response.AccessToken)
 
 	// update the session
-	session.Token = response.Token
+	session.Token = response.AccessToken
 
 	err = session.Save()
 

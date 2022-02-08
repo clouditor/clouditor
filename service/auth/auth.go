@@ -27,9 +27,18 @@ package auth
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"net"
+	"io/ioutil"
+	"os"
+	"os/user"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"clouditor.io/clouditor/api/auth"
@@ -40,6 +49,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
 )
 
@@ -49,11 +59,36 @@ const (
 
 var log *logrus.Entry
 
+func init() {
+	log = logrus.WithField("component", "auth")
+}
+
+const (
+	// DefaultApiKeySaveOnCreate specifies whether a created API key will be saved. This is useful to turn of in unit tests, where
+	// we only want a temporary key.
+	DefaultApiKeySaveOnCreate = true
+
+	// DefaultApiKeyPassword is the default password to protect the API key
+	DefaultApiKeyPassword = "changeme"
+
+	// DefaultApiKeyPath is the default path for the API private key
+	DefaultApiKeyPath = "~/.clouditor/api.key"
+
+	// DefaultKeyID specifies the default Key ID used in the JWKS of the authentication service
+	DefaultKeyID = "1"
+)
+
 // Service is an implementation of the gRPC Authentication service
 type Service struct {
 	auth.UnimplementedAuthenticationServer
 
-	TokenSecret string
+	config struct {
+		keySaveOnCreate bool
+		keyPath         string
+		keyPassword     string
+	}
+
+	apiKey *ecdsa.PrivateKey
 
 	db persistence.IsDatabase
 }
@@ -65,13 +100,154 @@ type UserClaims struct {
 	EMail    string `json:"email"`
 }
 
-func init() {
-	log = logrus.WithField("component", "auth")
+// ServiceOption is a functional option type to configure the authentication service.
+type ServiceOption func(s *Service)
+
+// WithApiKeyPath is an option to configure the path for the API key.
+func WithApiKeyPath(path string) ServiceOption {
+	return func(s *Service) {
+		s.config.keyPath = path
+	}
 }
 
-func NewService(db persistence.IsDatabase) *Service {
-	return &Service{
+// WithApiKeyPassword is an option to configure the password that is used to protect the API key.
+func WithApiKeyPassword(password string) ServiceOption {
+	return func(s *Service) {
+		s.config.keyPassword = password
+	}
+}
+
+// WithApiKeySaveOnCreate is an option to configure whether a key should be saved when it is created.
+func WithApiKeySaveOnCreate(saveOnCreate bool) ServiceOption {
+	return func(s *Service) {
+		s.config.keySaveOnCreate = saveOnCreate
+	}
+}
+
+// NewService creates a new Service representing an authentication service.
+func NewService(db persistence.IsDatabase, opts ...ServiceOption) *Service {
+	var err error
+
+	s := &Service{
+		config: struct {
+			keySaveOnCreate bool
+			keyPath         string
+			keyPassword     string
+		}{
+			keySaveOnCreate: DefaultApiKeySaveOnCreate,
+			keyPath:         DefaultApiKeyPath,
+			keyPassword:     DefaultApiKeyPassword,
+		},
 		db: db,
+	}
+
+	// Apply options
+	for _, o := range opts {
+		o(s)
+	}
+
+	// Load the key
+	s.apiKey, err = loadApiKey(s.config.keyPath, []byte(s.config.keyPassword))
+
+	// Recover from an error, so that we have at least a temporary key
+	if err != nil {
+		s.recoverFromLoadApiKeyError(err, s.config.keyPath == DefaultApiKeyPath)
+	}
+
+	// Lets clear out some sensitive things for slightly more security
+	s.config.keyPassword = ""
+
+	return s
+}
+
+// loadApiKey loads an ecdsa.PrivateKey from a path. The key must in PEM format and protected by
+// a password using PKCS#8 with PBES2.
+func loadApiKey(path string, password []byte) (key *ecdsa.PrivateKey, err error) {
+	var (
+		keyFile string
+	)
+
+	keyFile, err = expandPath(path)
+	if err != nil {
+		return nil, fmt.Errorf("error while expanding path: %w", err)
+	}
+
+	if _, err = os.Stat(keyFile); os.IsNotExist(err) {
+		return nil, fmt.Errorf("file does not exist (yet): %w", err)
+	}
+
+	// Check, if we already have a persisted API key
+	f, err := os.OpenFile(keyFile, os.O_RDONLY, 0600)
+	if err != nil {
+		return nil, fmt.Errorf("error while opening the file: %w", err)
+	}
+	defer f.Close()
+
+	data, err := ioutil.ReadAll(f)
+	if err != nil {
+		return nil, fmt.Errorf("error while reading file content: %w", err)
+	}
+
+	key, err = ParseECPrivateKeyFromPEMWithPassword(data, password)
+	if err != nil {
+		return nil, fmt.Errorf("error while parsing private key: %w", err)
+	}
+
+	return key, nil
+}
+
+// saveApiKey saves an ecdsa.PrivateKey to a path. The key will be saved in PEM format and protected by
+// a password using PKCS#8 with PBES2.
+func saveApiKey(apiKey *ecdsa.PrivateKey, keyPath string, password string) (err error) {
+	keyPath, err = expandPath(keyPath)
+	if err != nil {
+		return fmt.Errorf("error while expanding path: %w", err)
+	}
+
+	// Check, if we already have a persisted API key
+	f, err := os.OpenFile(keyPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0600)
+	if err != nil {
+		return fmt.Errorf("error while opening the file: %w", err)
+	}
+	defer f.Close()
+
+	data, err := MarshalECPrivateKeyWithPassword(apiKey, []byte(password))
+	if err != nil {
+		return fmt.Errorf("error while marshalling private key: %w", err)
+	}
+
+	_, err = f.Write(data)
+	if err != nil {
+		return fmt.Errorf("error while writing file content: %w", err)
+	}
+
+	return nil
+}
+
+// recoverFromLoadApiKeyError tries to recover from an error during key loading. We treat different errors diffently.
+// For example if the path is the default path and the error is os.ErrNotExist, this could be just the first start of Clouditor.
+// So we only treat this as an information that we will create a new key, which we will save, based on the config.
+//
+// If the user specifies a custom path and this one does not exist, we will report an error
+// here.
+func (s *Service) recoverFromLoadApiKeyError(err error, defaultPath bool) {
+	// In any case, create a new temporary API key
+	s.apiKey, _ = ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+
+	if defaultPath && errors.Is(err, os.ErrNotExist) {
+		log.Infof("API key does not exist at the default location yet. We will create a new one")
+
+		if s.config.keySaveOnCreate {
+			// Also save the key in this case, so we can load it next time
+			err = saveApiKey(s.apiKey, s.config.keyPath, s.config.keyPassword)
+
+			// Error while error handling, meh
+			if err != nil {
+				log.Errorf("Error while saving the new API key: %v", err)
+			}
+		}
+	} else if err != nil {
+		log.Errorf("Could not load key from file, continuing with a temporary key: %v", err)
 	}
 }
 
@@ -92,11 +268,33 @@ func (s Service) Login(_ context.Context, request *auth.LoginRequest) (response 
 
 	var token string
 
-	if token, err = s.issueToken(user.Username, user.FullName, user.Email, time.Now().Add(1*3600*24)); err != nil {
+	var expiry = time.Now().Add(time.Hour * 24)
+
+	if token, err = s.issueToken(user.Username, user.FullName, user.Email, expiry); err != nil {
 		return nil, status.Errorf(codes.Internal, "token issue failed: %v", err)
 	}
 
-	response = &auth.LoginResponse{Token: token}
+	response = &auth.LoginResponse{
+		AccessToken: token,
+		TokenType:   "Bearer",
+		Expiry:      timestamppb.New(expiry),
+	}
+
+	return response, nil
+}
+
+func (s Service) ListPublicKeys(_ context.Context, _ *auth.ListPublicKeysRequest) (response *auth.ListPublicResponse, err error) {
+	response = &auth.ListPublicResponse{
+		Keys: []*auth.JsonWebKey{
+			{
+				Kid: DefaultKeyID,
+				Kty: "EC",
+				Crv: s.apiKey.Params().Name,
+				X:   base64.RawURLEncoding.EncodeToString(s.apiKey.X.Bytes()),
+				Y:   base64.RawURLEncoding.EncodeToString(s.apiKey.Y.Bytes()),
+			},
+		},
+	}
 
 	return response, nil
 }
@@ -177,9 +375,7 @@ func (s *Service) CreateDefaultUser(username string, password string) error {
 
 // issueToken issues a JWT-based token
 func (s Service) issueToken(subject string, fullName string, email string, expiry time.Time) (token string, err error) {
-	key := []byte(s.TokenSecret)
-
-	claims := jwt.NewWithClaims(jwt.SigningMethodHS256,
+	claims := jwt.NewWithClaims(jwt.SigningMethodES256,
 		&UserClaims{
 			FullName: fullName,
 			EMail:    email,
@@ -189,8 +385,9 @@ func (s Service) issueToken(subject string, fullName string, email string, expir
 				Subject:   subject,
 			}},
 	)
+	claims.Header["kid"] = DefaultKeyID
 
-	token, err = claims.SignedString(key)
+	token, err = claims.SignedString(s.apiKey)
 	return
 }
 
@@ -217,4 +414,39 @@ func (s *Service) StartDedicatedAuthServer(address string) (sock net.Listener, s
 	}()
 
 	return sock, server, nil
+}
+
+func (s Service) GetPublicKey() *ecdsa.PublicKey {
+	return &s.apiKey.PublicKey
+}
+
+// AuthFuncOverride implements the ServiceAuthFuncOverride interface to override the AuthFunc for this service.
+// The reason is to actually disable authentication checking in the auth service, because functions such as login
+// need to be publically available.
+func (Service) AuthFuncOverride(ctx context.Context, _ string) (context.Context, error) {
+	// No authentication needed for login functions, otherwise we could not login
+	return ctx, nil
+}
+
+// expandPath expands a path that possible contains a tilde (~) character into the home directory
+// of the user
+func expandPath(path string) (out string, err error) {
+	var (
+		usr *user.User
+	)
+
+	// Fetch the current user home directory
+	usr, err = user.Current()
+	if err != nil {
+		return path, fmt.Errorf("could not find retrieve current user: %w", err)
+	}
+
+	if path == "~" {
+		return usr.HomeDir, nil
+	} else if strings.HasPrefix(path, "~") {
+		// We only allow ~ at the beginning of the path
+		return filepath.Join(usr.HomeDir, path[2:]), nil
+	}
+
+	return path, nil
 }

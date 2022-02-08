@@ -38,8 +38,10 @@ import (
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/service"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_discovery "clouditor.io/clouditor/service/discovery"
+
 	"clouditor.io/clouditor/voc"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -47,11 +49,13 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-var sock net.Listener
-var server *grpc.Server
-var authServices *service_auth.Service
-var discoveryService *service_discovery.Service
-var gormX = new(persistence.GormX)
+var (
+	 sock net.Listener
+	 server *grpc.Server
+	 authServices *service_auth.Service
+	 discoveryService *service_discovery.Service
+	 gormX = new(persistence.GormX)
+)
 
 func TestMain(m *testing.M) {
 	var (
@@ -72,7 +76,7 @@ func TestMain(m *testing.M) {
 	discoveryService = service_discovery.NewService()
 	discoveryService.StartDiscovery(mockDiscoverer{testCase: 2})
 
-	sock, server, err = authServices.StartDedicatedAuthServer(":0")
+	sock, server, _, err = authServices.StartDedicatedAuthServer(":0", service_auth.WithApiKeySaveOnCreate(false))
 	if err != nil {
 		panic(err)
 	}

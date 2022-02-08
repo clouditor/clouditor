@@ -27,9 +27,11 @@ package discovery
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
+	"clouditor.io/clouditor/service"
 	"clouditor.io/clouditor/service/discovery/azure"
 	"clouditor.io/clouditor/service/discovery/k8s"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -46,12 +48,15 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
 var log *logrus.Entry
+
+var (
+	ErrNoAuthorizerConfigured = errors.New("no authorizer configured")
+)
 
 // Service is an implementation of the Clouditor Discovery service.
 // It should not be used directly, but rather the NewService constructor
@@ -66,6 +71,8 @@ type Service struct {
 
 	resources map[string]voc.IsCloudResource
 	scheduler *gocron.Scheduler
+
+	authorizer service.Authorizer
 }
 
 type Configuration struct {
@@ -91,6 +98,18 @@ func WithAssessmentAddress(address string) ServiceOption {
 	}
 }
 
+// WithInternalAuthorizer is an option to use an authorizer to the internal Clouditor auth service.
+func WithInternalAuthorizer(address string, username string, password string, opts ...grpc.DialOption) ServiceOption {
+	return func(s *Service) {
+		s.SetAuthorizer(&service.InternalAuthorizer{
+			Url:         address,
+			GrpcOptions: opts,
+			Username:    username,
+			Password:    password,
+		})
+	}
+}
+
 func NewService(opts ...ServiceOption) *Service {
 	s := &Service{
 		assessmentAddress: DefaultAssessmentAddress,
@@ -107,20 +126,36 @@ func NewService(opts ...ServiceOption) *Service {
 	return s
 }
 
-func (s *Service) initAssessmentStream() error {
-	// Establish connection to assessment component
-	target := s.assessmentAddress
-	log.Infof("Establishing connection to assessment (%v)", target)
+// SetAuthorizer implements UsesAuthorizer.
+func (s *Service) SetAuthorizer(auth service.Authorizer) {
+	s.authorizer = auth
+}
 
-	conn, err := grpc.Dial(s.assessmentAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+// Authorizer implements UsesAuthorizer.
+func (s *Service) Authorizer() service.Authorizer {
+	return s.authorizer
+}
+
+// initAssessmentStream initializes the stream that is used to send evidences to the assessment service.
+// If configured, it uses the Authorizer of the discovery service to authenticate requests to the assessment.
+func (s *Service) initAssessmentStream(additionalOpts ...grpc.DialOption) error {
+	log.Infof("Trying to establish a connection to assessment service @ %v", s.assessmentAddress)
+
+	// Establish connection to assessment gRPC service
+	conn, err := grpc.Dial(s.assessmentAddress,
+		service.DefaultGrpcDialOptions(s, additionalOpts...)...,
+	)
 	if err != nil {
-		return fmt.Errorf("could not connect to assessment service: %v", err)
+		return fmt.Errorf("could not connect to assessment service: %w", err)
 	}
 
 	client := assessment.NewAssessmentClient(conn)
+
+	// Set up the stream and store it in our service struct, so we can access it later to actually
+	// send the evidence data
 	s.assessmentStream, err = client.AssessEvidences(context.Background())
 	if err != nil {
-		return fmt.Errorf("could not set up stream for assessing evidences: %v", err)
+		return fmt.Errorf("could not set up stream for assessing evidences: %w", err)
 	}
 
 	log.Infof("Connected to Assessment")
