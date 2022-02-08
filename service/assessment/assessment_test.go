@@ -34,8 +34,8 @@ import (
 	"os"
 	"reflect"
 	"runtime"
-	"testing"
 	"sync"
+	"testing"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
@@ -320,9 +320,9 @@ func TestAssessEvidences(t *testing.T) {
 func TestAssessmentResultHooks(t *testing.T) {
 	var (
 		hookCallCounter = 0
+		wg sync.WaitGroup
 	)
 
-	var wg sync.WaitGroup
 	wg.Add(12)
 
 	firstHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
