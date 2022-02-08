@@ -27,18 +27,17 @@ package orchestrator
 
 import (
 	"context"
-	"io"
-	"os"
-	"reflect"
-	"runtime"
-	"testing"
-	"time"
-
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	"io"
 	"k8s.io/apimachinery/pkg/util/json"
+	"os"
+	"reflect"
+	"runtime"
+	"sync"
+	"testing"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/persistence"
@@ -74,22 +73,24 @@ func TestMain(m *testing.M) {
 }
 
 func TestAssessmentResultHook(t *testing.T) {
-	var ready1 = make(chan bool)
-	var ready2 = make(chan bool)
-	hookCallCounter := 0
+	var (
+		hookCallCounter = 0
+		wg sync.WaitGroup
+	)
+	wg.Add(2)
 
 	firstHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the firstHookFunction")
 
-		ready1 <- true
+		wg.Done()
 	}
 
 	secondHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the secondHookFunction")
 
-		ready2 <- true
+		wg.Done()
 	}
 
 	service := NewService()
@@ -148,20 +149,9 @@ func TestAssessmentResultHook(t *testing.T) {
 			hookCallCounter = 0
 			s := service
 			gotResp, err := s.StoreAssessmentResult(tt.args.in0, tt.args.assessment)
-			//make the test wait
-			select {
-			case <-ready1:
-				break
-			case <-time.After(10 * time.Second):
-				log.Println("Timeout while waiting for first StoreAssessmentResult to be ready")
-			}
 
-			select {
-			case <-ready2:
-				break
-			case <-time.After(10 * time.Second):
-				log.Println("Timeout while waiting for second StoreAssessmentResult to be ready")
-			}
+			// wait for all hooks (2 hooks)
+			wg.Wait()
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("StoreAssessmentResult() error = %v, wantErr %v", err, tt.wantErr)
