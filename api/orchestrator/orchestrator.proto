@@ -30,10 +30,10 @@ package clouditor;
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
-import "metric.proto";
-import "assessment.proto";
+import "api/assessment/metric.proto";
+import "api/assessment/assessment.proto";
 
-option go_package = "api/orchestrator";
+option go_package = "clouditor.io/clouditor/api/orchestrator;orchestrator";
 
 // Manages the orchestration of components within the Clouditor architecture
 service Orchestrator {
