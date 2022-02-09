@@ -197,8 +197,6 @@ func NewUpdateCloudServiceCommand() *cobra.Command {
 			res, err = client.UpdateCloudService(context.Background(), &orchestrator.UpdateCloudServiceRequest{
 				ServiceId: viper.GetString("id"),
 				Service: &orchestrator.CloudService{
-					// TODO(lebogg): Remove again if we decide to keep service ID in separate field above
-					Id:          viper.GetString("id"),
 					Name:        viper.GetString("name"),
 					Description: viper.GetString("description"),
 				},

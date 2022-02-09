@@ -28,6 +28,7 @@ package persistence
 import (
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
+	"errors"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
@@ -75,42 +76,44 @@ func (g *GormX) Create(r interface{}) error {
 	return g.db.Create(r).Error
 }
 
-func (g *GormX) Read(r interface{}, conds ...interface{}) (err error) {
-	switch r.(type) {
-	case *[]*orchestrator.CloudService:
-		err = g.db.Find(r, conds).Error
-	case *orchestrator.CloudService:
-		err = g.db.First(r, conds).Error
-	case *[]*auth.User:
-		err = g.db.Find(r, conds).Error
-	case *auth.User:
-		err = g.db.First(r, conds).Error
-	default:
-		err = fmt.Errorf("unsupported type: %v (%T)", r, r)
+func (g *GormX) Get(r interface{}, conds ...interface{}) (err error) {
+	err = g.db.First(r, conds).Error
+	// if record is not found, use the error message defined in the persistence package
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		err = ErrRecordNotFound
 	}
 	return
 }
 
-func (g *GormX) Update(r interface{}) error {
-	// TODO(all): Save will update all fields. We could also use "Update" which only update non-empty fields
-	return g.db.Save(r).Error
+func (g *GormX) List(r interface{}, conds ...interface{}) error {
+	return g.db.Find(r, conds).Error
+}
+
+func (g *GormX) Count(r interface{}, conds ...interface{}) (count int64, err error) {
+	// TODO(lebogg): Test if this method chain works!
+	err = g.db.Model(r).Where(conds).Count(&count).Error
+	return
+}
+
+func (g *GormX) Update(r interface{}, conds ...interface{}) error {
+	// We use gorm.Update() since we want to change only non zero value fields
+	return g.db.Where(conds).Updates(r).Error
 }
 
 // Delete deletes record with given id. If no record was found, returns ErrRecordNotFound
-func (g *GormX) Delete(r interface{}, id string) error {
+func (g *GormX) Delete(r interface{}, conds ...interface{}) error {
 	// if id is empty remove all records -> currently used for testing.
-	// In implemented RPCs validate always remove functions to not have an empty ID
-	if id == "" {
+	if conds == nil || len(conds) == 0 {
 		return g.db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(r).Error
 	}
 	// Remove record r with given ID
-	tx := g.db.Delete(r, "Id = ?", id)
-	if err := tx.Error; err != nil {
+	tx := g.db.Delete(r, conds)
+	if err := tx.Error; err != nil { // db error
 		return err
 	}
 	// No record with given ID found
 	if tx.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
+		return ErrRecordNotFound
 	}
 
 	return nil
@@ -123,10 +126,10 @@ func (g *GormX) GetDatabase() *gorm.DB {
 
 // Reset resets entire the database
 func (g *GormX) Reset() (err error) {
-	if err = g.Delete(&orchestrator.CloudService{}, ""); err != nil {
+	if err = g.Delete(&orchestrator.CloudService{}); err != nil {
 		return
 	}
-	if err = g.Delete(&auth.User{}, ""); err != nil {
+	if err = g.Delete(&auth.User{}); err != nil {
 		return
 	}
 	return

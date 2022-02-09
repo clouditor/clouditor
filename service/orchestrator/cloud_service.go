@@ -26,24 +26,30 @@
 package orchestrator
 
 import (
-	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/persistence"
 	"context"
 	"errors"
+
+	"clouditor.io/clouditor/api/orchestrator"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"gorm.io/gorm"
 )
 
 const DefaultTargetCloudServiceId = "00000000-0000-0000-000000000000"
 const DefaultTargetCloudServiceName = "default"
 const DefaultTargetCloudServiceDescription = "The default target cloud service"
 
-// RegisterCloudService implements method for OrchestratorServer interface for registering a cloud service
 func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.RegisterCloudServiceRequest) (service *orchestrator.CloudService, err error) {
-	if err = req.Validate(); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, err.Error())
+	if req == nil {
+		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrRequestIsNil.Error())
+	}
+	if req.Service == nil {
+		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrServiceIsNil.Error())
+	}
+	if req.Service.Name == "" {
+		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrNameIsMissing.Error())
 	}
 
 	service = new(orchestrator.CloudService)
@@ -65,9 +71,9 @@ func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.Regi
 // ListCloudServices implements method for OrchestratorServer interface for listing all cloud services
 func (s *Service) ListCloudServices(_ context.Context, _ *orchestrator.ListCloudServicesRequest) (response *orchestrator.ListCloudServicesResponse, err error) {
 	response = new(orchestrator.ListCloudServicesResponse)
-	response.Services = make([]*orchestrator.CloudService, 0, 10)
+	response.Services = make([]*orchestrator.CloudService, 0)
 
-	err = s.db.Read(&response.Services)
+	err = s.db.List(&response.Services)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -77,13 +83,16 @@ func (s *Service) ListCloudServices(_ context.Context, _ *orchestrator.ListCloud
 
 // GetCloudService implements method for OrchestratorServer interface for getting a cloud service with provided id
 func (s *Service) GetCloudService(_ context.Context, req *orchestrator.GetCloudServiceRequest) (response *orchestrator.CloudService, err error) {
-	if err = req.Validate(); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, err.Error())
+	if req == nil {
+		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrRequestIsNil.Error())
+	}
+	if req.ServiceId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrIDIsMissing.Error())
 	}
 
 	response = new(orchestrator.CloudService)
-	err = s.db.Read(response, "Id = ?", req.ServiceId)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	err = s.db.Get(&response, "Id = ?", req.ServiceId)
+	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "service not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
@@ -95,20 +104,23 @@ func (s *Service) GetCloudService(_ context.Context, req *orchestrator.GetCloudS
 // UpdateCloudService implements method for OrchestratorServer interface for updating a cloud service
 // TODO(all): remove ServiceId from request since it is accessible in service already
 func (s *Service) UpdateCloudService(_ context.Context, req *orchestrator.UpdateCloudServiceRequest) (response *orchestrator.CloudService, err error) {
-	if err = req.Validate(); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, err.Error())
+	if req.Service == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "service is empty")
 	}
 
-	// Check if cloud service is in the DB
-	_, err = s.GetCloudService(context.Background(), &orchestrator.GetCloudServiceRequest{ServiceId: req.ServiceId})
+	if req.ServiceId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
+	}
 
-	// Update cloud service
-	// TODO(lebogg): See questions above: Copying serviceId to the struct makes it unnecessary in the first place IMO
-	req.Service.Id = req.ServiceId
+	count, err := s.db.Count(req.Service, "Id = ?", req.ServiceId)
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
-	err = s.db.Update(req.Service)
+	if count == 0 {
+		return nil, status.Error(codes.NotFound, "service not found")
+	}
+
+	err = s.db.Update(req.Service, req.ServiceId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
@@ -118,12 +130,12 @@ func (s *Service) UpdateCloudService(_ context.Context, req *orchestrator.Update
 
 // RemoveCloudService implements method for OrchestratorServer interface for removing a cloud service
 func (s *Service) RemoveCloudService(_ context.Context, req *orchestrator.RemoveCloudServiceRequest) (response *emptypb.Empty, err error) {
-	if err = req.Validate(); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, err.Error())
+	if req.ServiceId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
 	}
 
 	err = s.db.Delete(&orchestrator.CloudService{}, req.ServiceId)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "service not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
@@ -132,18 +144,19 @@ func (s *Service) RemoveCloudService(_ context.Context, req *orchestrator.Remove
 	return &emptypb.Empty{}, nil
 }
 
-// CreateDefaultTargetCloudService implements method for OrchestratorServer interface for creating a new "default"
-// target cloud services, if no target service exists in the database.
-// Returns new created target cloud service. Otherwise, returns nil (if a record exists) or error if sth went wrong
-func (s *Service) CreateDefaultTargetCloudService() (*orchestrator.CloudService, error) {
-	var storedServices []*orchestrator.CloudService
-	err := s.db.Read(&storedServices)
-	// Error while reading DB
-	if err != nil && err != gorm.ErrRecordNotFound {
-		return nil, status.Errorf(codes.Internal, "db error: %v", err)
-	} else if len(storedServices) == 0 {
-		// There are no cloud services yet -> Create a default target cloud service and return it
-		service :=
+// CreateDefaultTargetCloudService creates a new "default" target cloud services,
+// if no target service exists in the database.
+//
+// If a new target cloud service was created, it will be returned.
+func (s *Service) CreateDefaultTargetCloudService() (service *orchestrator.CloudService, err error) {
+	count, err := s.db.Count(service)
+	if err != nil {
+		return nil, err
+	}
+
+	if count == 0 {
+		// Create a default target cloud service
+		service =
 			&orchestrator.CloudService{
 				Id:          DefaultTargetCloudServiceId,
 				Name:        DefaultTargetCloudServiceName,
@@ -152,12 +165,9 @@ func (s *Service) CreateDefaultTargetCloudService() (*orchestrator.CloudService,
 		// Save it directly into the database, so that we can set the ID
 		err = s.db.Create(&service)
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, "error while writing new target cloud service to db: %v", err)
+			log.Infof("Created new default target cloud service %s", service.Id)
 		}
 
-		return service, nil
-	} else {
-		// There is at least one cloud service -> Return no new default target service and no error
-		return nil, nil
 	}
+	return
 }

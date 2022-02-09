@@ -47,13 +47,13 @@ func TestRegisterCloudService(t *testing.T) {
 			"missing service",
 			&orchestrator.RegisterCloudServiceRequest{},
 			nil,
-			status.Error(codes.InvalidArgument, "service is empty"),
+			status.Error(codes.InvalidArgument, orchestrator.ErrServiceIsNil.Error()),
 		},
 		{
 			"missing service name",
 			&orchestrator.RegisterCloudServiceRequest{Service: &orchestrator.CloudService{}},
 			nil,
-			status.Error(codes.InvalidArgument, "service name is empty"),
+			status.Error(codes.InvalidArgument, orchestrator.ErrNameIsMissing.Error()),
 		},
 		{
 			"valid",
@@ -122,10 +122,6 @@ func TestService_ListCloudServices(t *testing.T) {
 	assert.NotEmpty(t, listCloudServicesResponse.Services)
 	assert.Equal(t, len(listCloudServicesResponse.Services), 1)
 
-	// Reset DB so that other tests work correctly
-	err = service.db.Delete(&orchestrator.CloudService{}, "")
-	assert.Nil(t, err)
-
 	// Reset DB
 	assert.Nil(t, gormX.Reset())
 }
@@ -182,10 +178,6 @@ func TestGetCloudService(t *testing.T) {
 			assert.True(t, proto.Equal(res, tt.res), "%v != %v", res, tt.res)
 		})
 	}
-
-	// Reset DB so that other tests work correctly
-	err = service.db.Delete(&orchestrator.CloudService{}, "")
-	assert.Nil(t, err)
 
 	// Reset DB
 	assert.Nil(t, gormX.Reset())
@@ -277,10 +269,6 @@ func TestService_RemoveCloudService(t *testing.T) {
 	assert.NotNil(t, listCloudServicesResponse.Services)
 	assert.Empty(t, listCloudServicesResponse.Services)
 
-	// Reset DB so that other tests work correctly
-	err = service.db.Delete(&orchestrator.CloudService{}, "")
-	assert.Nil(t, err)
-
 	// Reset DB
 	assert.Nil(t, gormX.Reset())
 }
@@ -304,10 +292,6 @@ func TestService_CreateDefaultTargetCloudService(t *testing.T) {
 	cloudServiceResponse, err = service.CreateDefaultTargetCloudService()
 	assert.Nil(t, err)
 	assert.Nil(t, cloudServiceResponse)
-
-	// Reset DB so that other tests work correctly
-	err = service.db.Delete(&orchestrator.CloudService{}, "")
-	assert.Nil(t, err)
 
 	// Reset DB
 	assert.Nil(t, gormX.Reset())

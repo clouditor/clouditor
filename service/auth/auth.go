@@ -311,7 +311,7 @@ func (s *Service) verifyLogin(request *auth.LoginRequest) (result bool, user *au
 
 	user = new(auth.User)
 
-	err = s.db.Read(user, "username = ?", request.Username)
+	err = s.db.Get(user, "username = ?", request.Username)
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		// user not found, set result to false, but hide the error
@@ -354,8 +354,8 @@ func (s *Service) CreateDefaultUser(username string, password string) error {
 		err         error
 	)
 
-	err = s.db.Read(&storedUsers)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	err = s.db.List(&storedUsers)
+	if err != nil && err != persistence.ErrRecordNotFound {
 		return status.Errorf(codes.Internal, "db error: %v", err)
 	} else if len(storedUsers) == 0 {
 		hash, _ := hashPassword(password)
