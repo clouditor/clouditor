@@ -56,7 +56,7 @@ import (
 var (
 	grpcPort    int
 	authService *Service
-	gormX       persistence.GormX
+	gormX       persistence.IsDatabase
 )
 
 func TestMain(m *testing.M) {
@@ -67,7 +67,7 @@ func TestMain(m *testing.M) {
 	)
 
 	// A small embedded DB is needed for the server
-	var gormX = new(persistence.GormX)
+	gormX = new(persistence.GormX)
 	err = gormX.Init(true, "", 0)
 	if err != nil {
 		panic(err)
