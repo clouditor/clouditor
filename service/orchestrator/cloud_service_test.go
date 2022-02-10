@@ -299,6 +299,6 @@ func TestService_CreateDefaultTargetCloudService(t *testing.T) {
 }
 
 // resetDB clears all stored cloud services s.t. all tests can be run independently
-func resetDB(db persistence.IsDatabase) error {
+func resetDB(db persistence.Storage) error {
 	return db.Delete(&orchestrator.CloudService{})
 }

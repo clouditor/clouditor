@@ -26,6 +26,7 @@
 package main
 
 import (
+	"clouditor.io/clouditor/persistence/gorm"
 	"context"
 	"errors"
 	"fmt"
@@ -47,7 +48,6 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/rest"
 	"clouditor.io/clouditor/service"
 
@@ -182,7 +182,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
  `)
 
-	var db *persistence.GormX
+	var db *gorm.GormX
 	if err = db.Init(viper.GetBool(DBInMemoryFlag),
 		viper.GetString(DBHostFlag),
 		int16(viper.GetInt(DBPortFlag))); err != nil {

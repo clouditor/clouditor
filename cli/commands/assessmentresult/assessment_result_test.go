@@ -27,6 +27,7 @@ package assessmentresult
 
 import (
 	"bytes"
+	"clouditor.io/clouditor/persistence/gorm"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -54,7 +55,7 @@ import (
 var (
 	sock   net.Listener
 	server *grpc.Server
-	db     persistence.IsDatabase
+	db     persistence.Storage
 )
 
 func TestMain(m *testing.M) {
@@ -70,7 +71,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	db = new(persistence.GormX)
+	db = new(gorm.GormX)
 	err = db.Init(true, "", 0)
 	if err != nil {
 		panic(err)

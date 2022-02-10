@@ -26,6 +26,7 @@
 package orchestrator
 
 import (
+	"clouditor.io/clouditor/persistence/gorm"
 	"context"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -48,7 +49,7 @@ import (
 
 var (
 	service *Service
-	db      persistence.IsDatabase
+	db      persistence.Storage
 )
 
 const (
@@ -62,7 +63,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	db = new(persistence.GormX)
+	db = new(gorm.GormX)
 	err = db.Init(true, "", 0)
 	if err != nil {
 		panic(err)

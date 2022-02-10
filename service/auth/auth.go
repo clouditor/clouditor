@@ -92,7 +92,7 @@ type Service struct {
 
 	apiKey *ecdsa.PrivateKey
 
-	db persistence.IsDatabase
+	db persistence.Storage
 }
 
 // UserClaims extend jwt.StandardClaims with more detailed claims about a user
@@ -127,7 +127,7 @@ func WithApiKeySaveOnCreate(saveOnCreate bool) ServiceOption {
 }
 
 // NewService creates a new Service representing an authentication service.
-func NewService(db persistence.IsDatabase, opts ...ServiceOption) *Service {
+func NewService(db persistence.Storage, opts ...ServiceOption) *Service {
 	var err error
 
 	s := &Service{

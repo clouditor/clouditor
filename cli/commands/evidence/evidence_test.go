@@ -27,6 +27,7 @@ package evidence
 
 import (
 	"bytes"
+	"clouditor.io/clouditor/persistence/gorm"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -56,7 +57,7 @@ var (
 	server               *grpc.Server
 	evidenceStoreService *service_evidenceStore.Service
 	authService          *service_auth.Service
-	db                   persistence.IsDatabase
+	db                   persistence.Storage
 )
 
 func TestMain(m *testing.M) {
@@ -70,7 +71,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	db = new(persistence.GormX)
+	db = new(gorm.GormX)
 	err = db.Init(true, "", 0)
 	if err != nil {
 		panic(err)

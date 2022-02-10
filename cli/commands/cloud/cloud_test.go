@@ -27,6 +27,7 @@ package cloud
 
 import (
 	"bytes"
+	"clouditor.io/clouditor/persistence/gorm"
 	"context"
 	"fmt"
 	"io/ioutil"
@@ -54,7 +55,7 @@ var (
 	authService         *service_auth.Service
 	orchestratorService *service_orchestrator.Service
 	target              *orchestrator.CloudService
-	db                  persistence.IsDatabase
+	db                  persistence.Storage
 )
 
 func TestMain(m *testing.M) {
@@ -68,7 +69,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	db = new(persistence.GormX)
+	db = new(gorm.GormX)
 	err = db.Init(true, "", 0)
 	if err != nil {
 		panic(err)
@@ -274,6 +275,6 @@ func TestGetMetricConfiguration(t *testing.T) {
 }
 
 // resetDB clears all stored cloud services s.t. all tests can be run independently
-func resetDB(db persistence.IsDatabase) error {
+func resetDB(db persistence.Storage) error {
 	return db.Delete(&orchestrator.CloudService{})
 }

@@ -23,11 +23,12 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package persistence
+package gorm
 
 import (
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/persistence"
 	"errors"
 	"fmt"
 	"github.com/sirupsen/logrus"
@@ -80,7 +81,7 @@ func (g *GormX) Get(r interface{}, conds ...interface{}) (err error) {
 	err = g.db.First(r, conds).Error
 	// if record is not found, use the error message defined in the persistence package
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		err = ErrRecordNotFound
+		err = persistence.ErrRecordNotFound
 	}
 	return
 }
@@ -113,7 +114,7 @@ func (g *GormX) Delete(r interface{}, conds ...interface{}) error {
 	}
 	// No record with given ID found
 	if tx.RowsAffected == 0 {
-		return ErrRecordNotFound
+		return persistence.ErrRecordNotFound
 	}
 
 	return nil

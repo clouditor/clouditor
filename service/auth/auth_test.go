@@ -28,6 +28,7 @@ package auth
 import (
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/rest"
 	"clouditor.io/clouditor/service"
 	"context"
@@ -56,7 +57,7 @@ import (
 var (
 	grpcPort    int
 	authService *Service
-	db          persistence.IsDatabase
+	db          persistence.Storage
 )
 
 func TestMain(m *testing.M) {
@@ -67,7 +68,7 @@ func TestMain(m *testing.M) {
 	)
 
 	// A small embedded DB is needed for the server
-	db = new(persistence.GormX)
+	db = new(gorm.GormX)
 	err = db.Init(true, "", 0)
 	if err != nil {
 		panic(err)

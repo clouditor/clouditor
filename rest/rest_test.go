@@ -26,6 +26,7 @@
 package rest
 
 import (
+	"clouditor.io/clouditor/persistence/gorm"
 	"context"
 	"errors"
 	"fmt"
@@ -49,7 +50,7 @@ var (
 	headers = DefaultAllowedHeaders
 
 	authService *service_auth.Service
-	db          persistence.IsDatabase
+	db          persistence.Storage
 
 	grpcPort int = 0
 )
@@ -61,7 +62,7 @@ func TestMain(m *testing.M) {
 		sock   net.Listener
 	)
 
-	db = new(persistence.GormX)
+	db = new(gorm.GormX)
 	err = db.Init(true, "", 0)
 	if err != nil {
 		panic(err)

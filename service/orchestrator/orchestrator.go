@@ -69,7 +69,7 @@ type Service struct {
 	// mu is used for (un)locking result hook calls
 	mu sync.Mutex
 
-	db persistence.IsDatabase
+	db persistence.Storage
 
 	metricsFile string
 }
@@ -90,7 +90,7 @@ func WithMetricsFile(file string) ServiceOption {
 
 // NewService creates a new Orchestrator service
 // TODO(lebogg to oxisto): We could also provide dv via opts?
-func NewService(db persistence.IsDatabase, opts ...ServiceOption) *Service {
+func NewService(db persistence.Storage, opts ...ServiceOption) *Service {
 	s := Service{
 		results:              make(map[string]*assessment.AssessmentResult),
 		metricConfigurations: make(map[string]map[string]*assessment.MetricConfiguration),

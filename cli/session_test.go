@@ -26,6 +26,7 @@
 package cli
 
 import (
+	"clouditor.io/clouditor/persistence/gorm"
 	"context"
 	"fmt"
 	"io/ioutil"
@@ -49,13 +50,13 @@ var (
 	sock        net.Listener
 	server      *grpc.Server
 	authService *service_auth.Service
-	db          persistence.IsDatabase
+	db          persistence.Storage
 )
 
 func TestMain(m *testing.M) {
 	var err error
 
-	db = new(persistence.GormX)
+	db = new(gorm.GormX)
 	err = db.Init(true, "", 0)
 	if err != nil {
 		panic(err)
