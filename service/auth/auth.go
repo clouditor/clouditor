@@ -53,7 +53,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"gorm.io/gorm"
 )
 
 const (
@@ -313,7 +312,7 @@ func (s *Service) verifyLogin(request *auth.LoginRequest) (result bool, user *au
 
 	err = s.db.Get(user, "username = ?", request.Username)
 
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	if errors.Is(err, persistence.ErrRecordNotFound) {
 		// user not found, set result to false, but hide the error
 		return false, nil, nil
 	} else if err != nil {

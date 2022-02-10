@@ -120,12 +120,16 @@ func (s *Service) UpdateCloudService(_ context.Context, req *orchestrator.Update
 		return nil, status.Error(codes.NotFound, "service not found")
 	}
 
-	err = s.db.Update(req.Service, req.ServiceId)
+	// Add id to response because otherwise it will overwrite ID with empty string
+	response = req.Service
+	response.Id = req.ServiceId
+
+	err = s.db.Update(response, "Id = ?", req.ServiceId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	return req.Service, nil
+	return
 }
 
 // RemoveCloudService implements method for OrchestratorServer interface for removing a cloud service

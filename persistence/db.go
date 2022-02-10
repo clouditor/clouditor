@@ -95,9 +95,9 @@ func (g *GormX) Count(r interface{}, conds ...interface{}) (count int64, err err
 	return
 }
 
-func (g *GormX) Update(r interface{}, conds ...interface{}) error {
-	// We use gorm.Update() since we want to change only non zero value fields
-	return g.db.Where(conds).Updates(r).Error
+func (g *GormX) Update(r interface{}, _ ...interface{}) error {
+	// TODO(lebogg): Open discussion about update vs. save, i.e. only individual fields should be updates or not
+	return g.db.Save(r).Error
 }
 
 // Delete deletes record with given id. If no record was found, returns ErrRecordNotFound

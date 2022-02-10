@@ -218,6 +218,9 @@ func TestUpdateCloudServiceCommand(t *testing.T) {
 		b        bytes.Buffer
 		response orchestrator.CloudService
 	)
+	const (
+		notDefault = "not_default"
+	)
 
 	target, err = orchestratorService.CreateDefaultTargetCloudService()
 	assert.Nil(t, err)
@@ -225,7 +228,8 @@ func TestUpdateCloudServiceCommand(t *testing.T) {
 	cli.Output = &b
 
 	viper.Set("id", target.Id)
-	viper.Set("name", "not_default")
+	viper.Set("name", notDefault)
+	//viper.Set("description", "newD")
 
 	cmd := NewUpdateCloudServiceCommand()
 	err = cmd.RunE(nil, []string{})
@@ -236,7 +240,7 @@ func TestUpdateCloudServiceCommand(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, target.Id, response.Id)
-	assert.Equal(t, "not_default", response.Name)
+	assert.Equal(t, notDefault, response.Name)
 
 	// Reset DB
 	assert.Nil(t, gormX.Reset())
