@@ -258,7 +258,7 @@ func (s Service) Login(_ context.Context, request *auth.LoginRequest) (response 
 
 	if !result {
 		// authentication error
-		return nil, status.Errorf(codes.Unauthenticated, "login failed")
+		return nil, status.Error(codes.Unauthenticated, "login failed")
 	}
 
 	var token string
@@ -386,7 +386,7 @@ func (s Service) GetPublicKey() *ecdsa.PublicKey {
 
 // AuthFuncOverride implements the ServiceAuthFuncOverride interface to override the AuthFunc for this service.
 // The reason is to actually disable authentication checking in the auth service, because functions such as login
-// need to be publically available.
+// need to be publicly available.
 func (Service) AuthFuncOverride(ctx context.Context, _ string) (context.Context, error) {
 	// No authentication needed for login functions, otherwise we could not login
 	return ctx, nil

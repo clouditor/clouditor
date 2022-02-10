@@ -83,6 +83,7 @@ func init() {
 type ServiceOption func(*Service)
 
 // WithMetricsFile can be used to load a different metrics file
+// TODO(all): Function currently not used
 func WithMetricsFile(file string) ServiceOption {
 	return func(s *Service) {
 		s.metricsFile = file
@@ -189,7 +190,7 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 
 		go s.informHook(nil, newError)
 
-		return resp, status.Errorf(codes.InvalidArgument, "invalid req: %v", err)
+		return resp, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	// TODO(all): We do not check ID in Validate. Therefore, I assume that we have to set ID here?
@@ -223,7 +224,7 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 
 		_, err = s.StoreAssessmentResult(context.Background(), storeAssessmentResultReq)
 		if err != nil {
-			return err
+			log.Errorf("Error storing assessment result: %v", err)
 		}
 	}
 

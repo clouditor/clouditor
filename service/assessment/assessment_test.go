@@ -320,7 +320,7 @@ func TestAssessEvidences(t *testing.T) {
 func TestAssessmentResultHooks(t *testing.T) {
 	var (
 		hookCallCounter = 0
-		wg sync.WaitGroup
+		wg              sync.WaitGroup
 	)
 
 	wg.Add(12)

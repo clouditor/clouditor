@@ -155,7 +155,7 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 			Status: false,
 		}
 
-		return res, status.Errorf(codes.InvalidArgument, "invalid req: %v", newError)
+		return res, status.Errorf(codes.InvalidArgument, "%v", newError)
 	}
 
 	// Assess evidence
@@ -166,7 +166,8 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 			Status: false,
 		}
 
-		return res, status.Errorf(codes.Internal, "error while handling evidence: %v", err)
+		log.Errorf("Error while handling evidence: %v", err)
+		return res, status.Error(codes.Internal, "error while handling evidence")
 	}
 
 	res = &assessment.AssessEvidenceResponse{
@@ -201,7 +202,7 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 		}
 		_, err = s.AssessEvidence(context.Background(), assessEvidencesReq)
 		if err != nil {
-			return err
+			log.Errorf("Error assessing evidence: %v", err)
 		}
 	}
 }
@@ -214,7 +215,7 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 	evaluations, err := policies.RunEvidence(evidence)
 	if err != nil {
 		newError := fmt.Errorf("could not evaluate evidence: %w", err)
-		log.Errorf(newError.Error())
+		log.Error(newError.Error())
 
 		go s.informHooks(nil, newError)
 

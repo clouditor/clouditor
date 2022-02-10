@@ -60,12 +60,13 @@ func (*Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetricRe
 	// Validate the metric request
 	err = req.Metric.Validate(assessment.WithMetricRequiresId())
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "Validation of metric failed: %v", err)
+		log.Error("Validation of metric failed: %v", err)
+		return nil, status.Error(codes.InvalidArgument, "validation of metric failed")
 	}
 
 	// Check, if metric id already exists
 	if _, ok := metricIndex[req.Metric.Id]; ok {
-		return nil, status.Error(codes.AlreadyExists, "Metric with identifer already exists")
+		return nil, status.Error(codes.AlreadyExists, "metric with identifier already exists")
 	}
 
 	// Build a new metric out of the request
@@ -85,12 +86,14 @@ func (*Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetricRe
 	// Validate the metric request
 	err = req.Metric.Validate()
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "Validation of metric failed: %v", err)
+		log.Errorf("Validation of metric failed: %v", err)
+		return nil, status.Errorf(codes.InvalidArgument, "validation of metric failed: %v", err)
 	}
 
 	// Check, if metric exists according to req.MetricId
 	if metric, ok = metricIndex[req.MetricId]; !ok {
-		return nil, status.Error(codes.NotFound, "Metric with identifer does not exist")
+		log.Errorf("Metric with identifier %s does not exist", req.MetricId)
+		return nil, status.Errorf(codes.NotFound, "metric with identifier %s does not exist", req.MetricId)
 	}
 
 	// Update metric

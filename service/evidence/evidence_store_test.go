@@ -199,7 +199,7 @@ func TestListEvidences(t *testing.T) {
 func TestEvidenceHook(t *testing.T) {
 	var (
 		hookCallCounter = 0
-		wg sync.WaitGroup
+		wg              sync.WaitGroup
 	)
 	wg.Add(2)
 

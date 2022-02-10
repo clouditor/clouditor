@@ -84,14 +84,14 @@ func init() {
 }
 
 const (
-	// DefaultEvidenceStoreAddress specifies the default gRPC address of the assessment service.
+	// DefaultAssessmentAddress specifies the default gRPC address of the assessment service.
 	DefaultAssessmentAddress = "localhost:9090"
 )
 
 // ServiceOption is a functional option type to configure the discovery service.
 type ServiceOption func(*Service)
 
-// WithEvidenceStoreAddress is an option to configure the assessment service gRPC address.
+// WithAssessmentAddress is an option to configure the assessment service gRPC address.
 func WithAssessmentAddress(address string) ServiceOption {
 	return func(s *Service) {
 		s.assessmentAddress = address
@@ -174,7 +174,8 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	if s.assessmentStream == nil {
 		err = s.initAssessmentStream()
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, "could not initialize stream to Assessment: %v", err)
+			log.Errorf("Could not initialize stream to Assessment: %v", err)
+			return nil, status.Error(codes.Internal, "could not initialize stream to Assessment")
 		}
 	}
 
@@ -192,8 +193,8 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 
 	awsClient, err := aws.NewClient()
 	if err != nil {
-		log.Errorf("Could not load credentials: %v", err)
-		return nil, err
+		log.Errorf("Could not authenticate to AWS: %v", err)
+		return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to AWS: %v", err)
 	}
 
 	var discoverer []discovery.Discoverer
@@ -297,7 +298,8 @@ func (s Service) Query(_ context.Context, request *discovery.QueryRequest) (resp
 
 		resource, err = voc.ToStruct(v)
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, "error during JSON unmarshal: %v", err)
+			log.Errorf("Error during JSON unmarshal: %v", err)
+			return nil, status.Error(codes.Internal, "error during JSON unmarshal")
 		}
 
 		r = append(r, resource)
@@ -312,9 +314,9 @@ func (s Service) Query(_ context.Context, request *discovery.QueryRequest) (resp
 func handleError(err error, dest string) error {
 	prefix := "could not send evidence to " + dest
 	if status.Code(err) == codes.Internal {
-		return fmt.Errorf("%s. Internal error on the server side: %v", prefix, err)
+		return fmt.Errorf("%s. Internal error on the server side: %w", prefix, err)
 	} else if status.Code(err) == codes.InvalidArgument {
-		return fmt.Errorf("invalid evidence - provide evidence in the right format: %v", err)
+		return fmt.Errorf("invalid evidence - provide evidence in the right format: %w", err)
 	} else {
 		return err
 	}

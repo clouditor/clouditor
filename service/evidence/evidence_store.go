@@ -78,7 +78,7 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 			Status: false,
 		}
 
-		return resp, status.Errorf(codes.InvalidArgument, "invalid req: %v", err)
+		return resp, status.Errorf(codes.InvalidArgument, "%v", newError)
 	}
 
 	s.evidences[req.Evidence.Id] = req.Evidence
@@ -116,7 +116,7 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 		}
 		_, err = s.StoreEvidence(context.Background(), evidenceRequest)
 		if err != nil {
-			return err
+			log.Errorf("Error storing evidence: %v", err)
 		}
 	}
 }
