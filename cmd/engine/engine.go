@@ -223,7 +223,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 
 	err = authService.CreateDefaultUser(viper.GetString(APIDefaultUserFlag), viper.GetString(APIDefaultPasswordFlag))
 	if err != nil {
-		log.Errorf("could not create default user: %v", err)
+		log.Errorf("Could not create default user: %v", err)
 	}
 
 	if viper.GetBool(CreateDefaultTarget) {
