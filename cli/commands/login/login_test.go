@@ -60,7 +60,7 @@ func TestMain(m *testing.M) {
 
 	authService = service_auth.NewService(db, service_auth.WithApiKeySaveOnCreate(false))
 
-	sock, server, err = authService.StartDedicatedAuthServer(":0")
+	sock, server, err = authService.StartDedicatedServer(":0")
 	if err != nil {
 		panic(err)
 	}

@@ -393,8 +393,8 @@ func (s Service) issueToken(subject string, fullName string, email string, expir
 	return
 }
 
-// StartDedicatedAuthServer starts a gRPC server containing just the auth service
-func (s *Service) StartDedicatedAuthServer(address string) (sock net.Listener, server *grpc.Server, err error) {
+// StartDedicatedServer starts a gRPC server containing just the auth service
+func (s *Service) StartDedicatedServer(address string) (sock net.Listener, server *grpc.Server, err error) {
 	// create a new socket for gRPC communication
 	sock, err = net.Listen("tcp", address)
 	if err != nil {

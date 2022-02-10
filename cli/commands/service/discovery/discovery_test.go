@@ -76,7 +76,7 @@ func TestMain(m *testing.M) {
 	discoveryService = service_discovery.NewService()
 	discoveryService.StartDiscovery(mockDiscoverer{testCase: 2})
 
-	sock, server, err = authServices.StartDedicatedAuthServer(":0")
+	sock, server, err = authServices.StartDedicatedServer(":0")
 	if err != nil {
 		panic(err)
 	}
