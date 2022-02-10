@@ -19,4 +19,4 @@ __debug_bin
 engine
 cl
 coverage.cov
-
+*.log

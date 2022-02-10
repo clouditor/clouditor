@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2020 Fraunhofer AISEC
+ * Copyright 2016-2022 Fraunhofer AISEC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,13 +28,30 @@ syntax = "proto3";
 
 package clouditor;
 
-import "google/api/annotations.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
 
-option go_package = ".;clouditor";
+option go_package = "clouditor.io/clouditor/api/evidence";
 
-message CloudAccount {
-  string account_id = 1;
-  string user = 2;
-  string provider = 3;
-  string auto_discovered = 4;
+// An evidence resource
+message Evidence {
+  // the ID in a uuid format
+  string id = 1;
+
+  // time of evidence creation
+  google.protobuf.Timestamp timestamp = 2;
+
+  // Reference to a service this evidence was gathered from
+  string service_id = 3;
+
+  // Reference to the tool which provided the evidence
+  string tool_id = 4;
+
+  // Contains the evidence in its original form without following a defined
+  // schema, e.g. the raw JSON
+  string raw = 5;
+
+  // Semantic representation of the Cloud resource according to our defined
+  // ontology
+  google.protobuf.Value resource = 6;
 }

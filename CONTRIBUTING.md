@@ -1,6 +1,8 @@
-# Protobuf API
+# Contributing Guidelines
 
-## Style Conventions
+## Protobuf API
+
+### Style Conventions
 
 This folder contains all protobuf files that we have defined. We follow the Google Cloud's [API design
 guide](https://cloud.google.com/apis/design/), including the following conventions:
@@ -33,6 +35,6 @@ guide](https://cloud.google.com/apis/design/), including the following conventio
 
 * Even if we *transfer* a single resource (e.g. in the case of `StoreEvidence`) we create a corresponding `XxxRequest` message (`StoreEvidenceRequest`). `XxxRequest` allows adding new fields to the request (e.g. metadata) while not breaking the code.
 
-## Generate Go files
+### Generate Go files
 
 In order to generate all necessary Go files, the command `go generate ./...` can be used.

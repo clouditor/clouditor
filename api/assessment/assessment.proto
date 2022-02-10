@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Fraunhofer AISEC
+ * Copyright 2016-2022 Fraunhofer AISEC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,10 @@ package clouditor;
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
-import "evidence.proto";
-import "metric.proto";
+import "api/evidence/evidence.proto";
+import "api/assessment/metric.proto";
 
-option go_package = "api/assessment";
+option go_package = "clouditor.io/clouditor/api/assessment";
 
 // Representing the link between orchestrator and discovery: Assessing evidences
 // from discovery and sending results to orchestrator
@@ -44,17 +44,20 @@ service Assessment {
   rpc TriggerAssessment(TriggerAssessmentRequest)
       returns (google.protobuf.Empty) {}
 
-  // Assesses the evidence sent by the discovery. Part of the public API, also exposed as REST.
+  // Assesses the evidence sent by the discovery. Part of the public API, also
+  // exposed as REST.
   rpc AssessEvidence(AssessEvidenceRequest) returns (AssessEvidenceResponse) {
     option (google.api.http) = {
       post : "/v1/assessment/evidences"
-      body: "evidence"
+      body : "evidence"
       response_body : "status"
     };
   }
 
-  // Assesses stream of evidences sent by the discovery. Part of the public API. Not exposed as REST.
-  rpc AssessEvidences(stream AssessEvidenceRequest) returns (google.protobuf.Empty);
+  // Assesses stream of evidences sent by the discovery. Part of the public API.
+  // Not exposed as REST.
+  rpc AssessEvidences(stream AssessEvidenceRequest)
+      returns (google.protobuf.Empty);
 
   // List all assessment results. Part of the public API, also exposed as REST.
   rpc ListAssessmentResults(ListAssessmentResultsRequest)
@@ -69,7 +72,7 @@ message ListAssessmentResultsRequest {}
 message ListAssessmentResultsResponse { repeated AssessmentResult results = 1; }
 
 message ConfigureAssessmentRequest {}
-message ConfigureAssessmentResponse{}
+message ConfigureAssessmentResponse {}
 
 message TriggerAssessmentRequest { string someOption = 1; }
 
