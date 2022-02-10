@@ -33,24 +33,18 @@ import (
 	"os"
 	"testing"
 
-<<<<<<< HEAD
 	"clouditor.io/clouditor/service"
 
-=======
 	"golang.org/x/oauth2"
->>>>>>> 633e7ad (Implementing OAuth refresh_token flow in CLI)
 	"google.golang.org/protobuf/proto"
 
 	"clouditor.io/clouditor/api/auth"
-	"github.com/spf13/viper"
+	"clouditor.io/clouditor/api/orchestrator"
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-)
 
 var (
-	sock   net.Listener
 	server *grpc.Server
 )
 
@@ -62,7 +56,10 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err)
 	}
-	sock, server, _, err = service.StartDedicatedAuthServer(":0")
+
+	s := service_orchestrator.NewService()
+	sock, server, _, err = service.StartDedicatedAuthServer(":0", service_auth.WithApiKeySaveOnCreate(false))
+	orchestrator.RegisterOrchestratorServer(server, s)
 	if err != nil {
 		panic(err)
 	}
@@ -105,40 +102,29 @@ func TestSession(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response.AccessToken)
-	/*
-		// update the session
-		session.authorizer = &service.InternalAuthorizer{
-			Token: {
-				oauth2.Token{
-					AccessToken:  response.AccessToken,
-					TokenType:    response.TokenType,
-					RefreshToken: response.RefreshToken,
-					Expiry:       response.Expiry.AsTime(),
-				},
-			},
-		}
 
-		err = session.Save()
+	// update the session
+	session.authorizer = service.NewInternalAuthorizerFromToken(
+		&oauth2.Token{
+			AccessToken:  response.AccessToken,
+			TokenType:    response.TokenType,
+			RefreshToken: response.RefreshToken,
+			Expiry:       response.Expiry.AsTime(),
+		},
+	)
 
-		assert.NoError(t, err)
+	err = session.Save()
 
-		session, err = ContinueSession()
-		assert.NoError(t, err)
-		assert.NotNil(t, session)
+	assert.NoError(t, err)
 
-		client = auth.NewAuthenticationClient(session)
+	session, err = ContinueSession()
+	assert.NoError(t, err)
+	assert.NotNil(t, session)
 
-		// login with non-existing user
-		// TODO(oxisto): Should be moved to a service/auth test. here we should only test the session mechanism
-		response, err = client.Login(context.Background(), &auth.LoginRequest{Username: "some-other-user", Password: "password"})
-
-		assert.Error(t, err)
-
-		s, ok := status.FromError(err)
-
-		assert.True(t, ok)
-		assert.Equal(t, codes.Unauthenticated, s.Code())
-		assert.Nil(t, response)*/
+	// Do a simple authenticated call
+	oc := orchestrator.NewOrchestratorClient(session)
+	_, err = oc.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{})
+	assert.NoError(t, err)
 }
 
 func TestSession_HandleResponse(t *testing.T) {

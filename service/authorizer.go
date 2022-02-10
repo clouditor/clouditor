@@ -146,7 +146,7 @@ func (i *InternalAuthorizer) Token() (*oauth2.Token, error) {
 
 	// Otherwise, we need to re-authenticate
 	// TODO(oxisto): In the future we should split this into two authorizers
-	if i.token.RefreshToken != "" {
+	if i.token != nil && i.token.RefreshToken != "" {
 		resp, err = i.client.Token(context.TODO(), &auth.TokenRequest{
 			GrantType:    "refresh_token",
 			RefreshToken: i.token.RefreshToken,
