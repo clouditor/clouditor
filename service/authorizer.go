@@ -76,6 +76,12 @@ type InternalAuthorizer struct {
 	tokenMutex sync.RWMutex
 }
 
+func NewInternalAuthorizerFromToken(token *oauth2.Token) Authorizer {
+	return &InternalAuthorizer{
+		token: token,
+	}
+}
+
 // init initializes the authorizer. This is called when fetching a token, if this authorizer has not been initialized.
 func (i *InternalAuthorizer) init() (err error) {
 	// Note, that we do NOT want any credentials.PerRPCCredentials dial option on this connection because
@@ -106,7 +112,7 @@ func (i *InternalAuthorizer) init() (err error) {
 // using the stored username / password credentials and refresh the access token, if it is expired.
 func (i *InternalAuthorizer) Token() (*oauth2.Token, error) {
 	var (
-		resp *auth.LoginResponse
+		resp *auth.TokenResponse
 		err  error
 	)
 
@@ -139,10 +145,18 @@ func (i *InternalAuthorizer) Token() (*oauth2.Token, error) {
 	defer i.tokenMutex.Unlock()
 
 	// Otherwise, we need to re-authenticate
-	resp, err = i.client.Login(context.TODO(), &auth.LoginRequest{
-		Username: i.Username,
-		Password: i.Password,
-	})
+	// TODO(oxisto): In the future we should split this into two authorizers
+	if i.token.RefreshToken != "" {
+		resp, err = i.client.Token(context.TODO(), &auth.TokenRequest{
+			GrantType:    "refresh_token",
+			RefreshToken: i.token.RefreshToken,
+		})
+	} else {
+		resp, err = i.client.Login(context.TODO(), &auth.LoginRequest{
+			Username: i.Username,
+			Password: i.Password,
+		})
+	}
 	if err != nil {
 		// Return without refreshing the token. At this point, the token will still be invalid
 		// and the next call to Token() will try again. This way we can mitigate temporary errors.
@@ -151,8 +165,10 @@ func (i *InternalAuthorizer) Token() (*oauth2.Token, error) {
 
 	// Store the current token, if login was successful
 	i.token = &oauth2.Token{
-		AccessToken: resp.AccessToken,
-		Expiry:      resp.Expiry.AsTime(),
+		AccessToken:  resp.AccessToken,
+		Expiry:       resp.Expiry.AsTime(),
+		TokenType:    resp.TokenType,
+		RefreshToken: resp.RefreshToken,
 	}
 
 	return i.token, nil

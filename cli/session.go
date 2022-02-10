@@ -37,11 +37,12 @@ import (
 
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/service"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"golang.org/x/oauth2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -51,12 +52,27 @@ var DefaultSessionFolder string
 var Output io.Writer = os.Stdout
 
 type Session struct {
-	URL   string `json:"url"`
-	Token string `json:"token"`
+	*grpc.ClientConn
+	authorizer service.Authorizer
+
+	URL string `json:"url"`
 
 	Folder string `json:"-"`
+}
 
-	*grpc.ClientConn
+// storedSession is a little hack because we cannot directly access the token of the authorizer (its private)
+// This could probably be solved by implementing MarshalJSON in InternalAuthorizer
+type storedSession struct {
+	URL   string `json:"url"`
+	Token *oauth2.Token
+}
+
+func (s *Session) SetAuthorizer(authorizer service.Authorizer) {
+	s.authorizer = authorizer
+}
+
+func (s *Session) Authorizer() service.Authorizer {
+	return s.authorizer
 }
 
 func init() {
@@ -71,16 +87,16 @@ func init() {
 	DefaultSessionFolder = fmt.Sprintf("%s/.clouditor/", home)
 }
 
-func NewSession(url string, opts ...grpc.DialOption) (session *Session, err error) {
+func NewSession(url string) (session *Session, err error) {
 	session = &Session{
 		URL:    url,
 		Folder: viper.GetString("session-directory"),
+		authorizer: &service.InternalAuthorizer{
+			Url: url,
+		},
 	}
 
-	if len(opts) == 0 {
-		// TODO(oxisto): set flag depending on target url, insecure only for localhost
-		opts = []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-	}
+	var opts = []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 	if session.ClientConn, err = grpc.Dial(session.URL, opts...); err != nil {
 		return nil, fmt.Errorf("could not connect: %w", err)
@@ -109,11 +125,16 @@ func ContinueSession() (session *Session, err error) {
 	session = new(Session)
 	session.Folder = folder
 
-	if err = json.NewDecoder(file).Decode(&session); err != nil {
+	var hackySession storedSession
+
+	if err = json.NewDecoder(file).Decode(&hackySession); err != nil {
 		return
 	}
 
-	if session.ClientConn, err = grpc.Dial(session.URL, grpc.WithTransportCredentials(insecure.NewCredentials())); err != nil {
+	session.URL = hackySession.URL
+	session.authorizer = service.NewInternalAuthorizerFromToken(hackySession.Token)
+
+	if session.ClientConn, err = grpc.Dial(session.URL, service.DefaultGrpcDialOptions(session)...); err != nil {
 		return nil, fmt.Errorf("could not connect: %w", err)
 	}
 
@@ -139,7 +160,12 @@ func (s *Session) Save() (err error) {
 		err = file.Close()
 	}(file)
 
-	if err = json.NewEncoder(file).Encode(s); err != nil {
+	token, _ := s.Authorizer().Token()
+
+	if err = json.NewEncoder(file).Encode(storedSession{
+		URL:   s.URL,
+		Token: token,
+	}); err != nil {
 		return fmt.Errorf("could not serialize JSON: %w", err)
 	}
 
@@ -198,27 +224,6 @@ func PromptForLogin() (loginRequest *auth.LoginRequest, err error) {
 	}
 
 	return loginRequest, nil
-}
-
-// Invoke implements `grpc.ClientConnInterface` and automatically provides an authenticated
-// context of this session
-func (s *Session) Invoke(ctx context.Context, method string, args interface{}, reply interface{}, opts ...grpc.CallOption) error {
-	return s.ClientConn.Invoke(s.AuthenticatedContext(ctx), method, args, reply, opts...)
-}
-
-// NewStream implements `grpc.ClientConnInterface` and automatically provides an authenticated
-// context of this session
-func (s *Session) NewStream(ctx context.Context, desc *grpc.StreamDesc, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-	return s.ClientConn.NewStream(s.AuthenticatedContext(ctx), desc, method, opts...)
-}
-
-func (s *Session) AuthenticatedContext(ctx context.Context) context.Context {
-	return metadata.NewOutgoingContext(ctx,
-		metadata.Pairs(
-			"Authorization",
-			fmt.Sprintf("Bearer %s",
-				s.Token),
-		))
 }
 
 func DefaultArgsShellComp(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
