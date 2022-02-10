@@ -35,9 +35,6 @@ var (
 // TODO(all): I think with generics we could get sth. like `[T]Get(r T, id string) T` which is maybe more intuitive
 // then changing the parameter? Maybe its only my impression
 type Storage interface {
-	// Init initializes the database
-	// TODO(lebogg): Use NewService Pattern (maybe not here, though)
-	Init(inMemory bool, host string, port int16) error
 
 	// Create creates a new object and put it into the DB
 	Create(r interface{}) error

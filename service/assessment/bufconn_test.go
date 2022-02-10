@@ -58,13 +58,15 @@ func bufConnDialer(context.Context, string) (net.Conn, error) {
 // * Orchestrator
 // * Evidence Store
 func startBufConnServer() (*grpc.Server, *service_auth.Service, *service_orchestrator.Service, *service_evidence.Service) {
+	var (
+		err error
+	)
 	bufConnListener = bufconn.Listen(DefaultBufferSize)
 
 	server := grpc.NewServer()
 
 	// We do not want a persistent key storage here
-	db = new(gorm.GormX)
-	err := db.Init(true, "", 0)
+	db, err = gorm.NewStorage(true, "", 0)
 	if err != nil {
 		panic(err)
 	}

@@ -26,6 +26,7 @@
 package main
 
 import (
+	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"context"
 	"errors"
@@ -97,14 +98,17 @@ const (
 	EnvPrefix = "CLOUDITOR"
 )
 
-var server *grpc.Server
-var authService *service_auth.Service
-var discoveryService discovery.DiscoveryServer
-var orchestratorService *service_orchestrator.Service
-var assessmentService assessment.AssessmentServer
-var evidenceStoreService evidence.EvidenceStoreServer
+var (
+	server               *grpc.Server
+	authService          *service_auth.Service
+	discoveryService     discovery.DiscoveryServer
+	orchestratorService  *service_orchestrator.Service
+	assessmentService    assessment.AssessmentServer
+	evidenceStoreService evidence.EvidenceStoreServer
+	db                   persistence.Storage
 
-var log *logrus.Entry
+	log *logrus.Entry
+)
 
 var engineCmd = &cobra.Command{
 	Use:   "engine",
@@ -182,8 +186,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
  `)
 
-	var db *gorm.GormX
-	if err = db.Init(viper.GetBool(DBInMemoryFlag),
+	if db, err = gorm.NewStorage(viper.GetBool(DBInMemoryFlag),
 		viper.GetString(DBHostFlag),
 		int16(viper.GetInt(DBPortFlag))); err != nil {
 		return fmt.Errorf("could not initialize DB: %w", err)

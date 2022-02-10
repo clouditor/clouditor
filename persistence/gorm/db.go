@@ -39,46 +39,49 @@ import (
 
 var log *logrus.Entry
 
-// TODO(lebogg): Lack for better term
-type GormX struct {
+type Storage struct {
 	db *gorm.DB
 }
 
 func init() {
-	log = logrus.WithField("component", "db")
+	log = logrus.WithField("component", "storage")
 }
 
-func (g *GormX) Init(inMemory bool, host string, port int16) (err error) {
+// NewStorage creates a new storage using GORM
+// TODO(lebogg): Maybe rename 'Storage' part in name. Have to see in usage with package name ect.
+func NewStorage(inMemory bool, host string, port int16) (s *Storage, err error) {
+	s = &Storage{}
+
 	if inMemory {
-		if g.db, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{}); err != nil {
-			return err
+		if s.db, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{}); err != nil {
+			return nil, err
 		}
 		log.Println("Using in-memory DB")
 	} else {
-		if g.db, err = gorm.Open(postgres.Open(fmt.Sprintf("postgres://postgres@%s:%d/postgres?sslmode=disable", host, port)), &gorm.Config{}); err != nil {
-			return err
+		if s.db, err = gorm.Open(postgres.Open(fmt.Sprintf("postgres://postgres@%s:%d/postgres?sslmode=disable", host, port)), &gorm.Config{}); err != nil {
+			return nil, err
 		}
 
 		log.Printf("Using postgres DB @ %s", host)
 	}
 
-	if err = g.db.AutoMigrate(&auth.User{}); err != nil {
-		return fmt.Errorf("error during auto-migration: %w", err)
+	if err = s.db.AutoMigrate(&auth.User{}); err != nil {
+		err = fmt.Errorf("error during auto-migration: %w", err)
 	}
 
-	if err = g.db.AutoMigrate(&orchestrator.CloudService{}); err != nil {
-		return fmt.Errorf("error during auto-migration: %w", err)
+	if err = s.db.AutoMigrate(&orchestrator.CloudService{}); err != nil {
+		err = fmt.Errorf("error during auto-migration: %w", err)
 	}
 
-	return nil
+	return
 }
 
-func (g *GormX) Create(r interface{}) error {
-	return g.db.Create(r).Error
+func (s *Storage) Create(r interface{}) error {
+	return s.db.Create(r).Error
 }
 
-func (g *GormX) Get(r interface{}, conds ...interface{}) (err error) {
-	err = g.db.First(r, conds).Error
+func (s *Storage) Get(r interface{}, conds ...interface{}) (err error) {
+	err = s.db.First(r, conds).Error
 	// if record is not found, use the error message defined in the persistence package
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		err = persistence.ErrRecordNotFound
@@ -86,29 +89,29 @@ func (g *GormX) Get(r interface{}, conds ...interface{}) (err error) {
 	return
 }
 
-func (g *GormX) List(r interface{}, conds ...interface{}) error {
-	return g.db.Find(r, conds).Error
+func (s *Storage) List(r interface{}, conds ...interface{}) error {
+	return s.db.Find(r, conds).Error
 }
 
-func (g *GormX) Count(r interface{}, conds ...interface{}) (count int64, err error) {
+func (s *Storage) Count(r interface{}, conds ...interface{}) (count int64, err error) {
 	// TODO(lebogg): Test if this method chain works!
-	err = g.db.Model(r).Where(conds).Count(&count).Error
+	err = s.db.Model(r).Where(conds).Count(&count).Error
 	return
 }
 
-func (g *GormX) Update(r interface{}, _ ...interface{}) error {
+func (s *Storage) Update(r interface{}, _ ...interface{}) error {
 	// TODO(lebogg): Open discussion about update vs. save, i.e. only individual fields should be updates or not
-	return g.db.Save(r).Error
+	return s.db.Save(r).Error
 }
 
 // Delete deletes record with given id. If no record was found, returns ErrRecordNotFound
-func (g *GormX) Delete(r interface{}, conds ...interface{}) error {
+func (s *Storage) Delete(r interface{}, conds ...interface{}) error {
 	// if id is empty remove all records -> currently used for testing.
 	if len(conds) == 0 {
-		return g.db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(r).Error
+		return s.db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(r).Error
 	}
 	// Remove record r with given ID
-	tx := g.db.Delete(r, conds)
+	tx := s.db.Delete(r, conds)
 	if err := tx.Error; err != nil { // db error
 		return err
 	}
@@ -121,16 +124,16 @@ func (g *GormX) Delete(r interface{}, conds ...interface{}) error {
 }
 
 // GetDatabase returns the database
-func (g *GormX) GetDatabase() *gorm.DB {
-	return g.db
+func (s *Storage) GetDatabase() *gorm.DB {
+	return s.db
 }
 
 // Reset resets entire the database
-func (g *GormX) Reset() (err error) {
-	if err = g.Delete(&orchestrator.CloudService{}); err != nil {
+func (s *Storage) Reset() (err error) {
+	if err = s.Delete(&orchestrator.CloudService{}); err != nil {
 		return
 	}
-	if err = g.Delete(&auth.User{}); err != nil {
+	if err = s.Delete(&auth.User{}); err != nil {
 		return
 	}
 	return

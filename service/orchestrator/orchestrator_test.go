@@ -63,8 +63,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	db = new(gorm.GormX)
-	err = db.Init(true, "", 0)
+	db, err = gorm.NewStorage(true, "", 0)
 	if err != nil {
 		panic(err)
 	}
