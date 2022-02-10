@@ -26,6 +26,7 @@
 package orchestrator
 
 import (
+	"clouditor.io/clouditor/persistence"
 	"context"
 	"testing"
 
@@ -95,7 +96,7 @@ func TestRegisterCloudService(t *testing.T) {
 	}
 
 	// Reset DB
-	assert.Nil(t, gormX.Reset())
+	assert.Nil(t, resetDB(db))
 }
 
 func TestService_ListCloudServices(t *testing.T) {
@@ -123,7 +124,7 @@ func TestService_ListCloudServices(t *testing.T) {
 	assert.Equal(t, len(listCloudServicesResponse.Services), 1)
 
 	// Reset DB
-	assert.Nil(t, gormX.Reset())
+	assert.Nil(t, resetDB(db))
 }
 
 func TestGetCloudService(t *testing.T) {
@@ -180,7 +181,7 @@ func TestGetCloudService(t *testing.T) {
 	}
 
 	// Reset DB
-	assert.Nil(t, gormX.Reset())
+	assert.Nil(t, resetDB(db))
 }
 
 func TestService_UpdateCloudService(t *testing.T) {
@@ -228,7 +229,7 @@ func TestService_UpdateCloudService(t *testing.T) {
 	assert.Equal(t, "NewDescription", cloudService.Description)
 
 	// Reset DB
-	assert.Nil(t, gormX.Reset())
+	assert.Nil(t, resetDB(db))
 }
 
 func TestService_RemoveCloudService(t *testing.T) {
@@ -270,7 +271,7 @@ func TestService_RemoveCloudService(t *testing.T) {
 	assert.Empty(t, listCloudServicesResponse.Services)
 
 	// Reset DB
-	assert.Nil(t, gormX.Reset())
+	assert.Nil(t, resetDB(db))
 }
 
 func TestService_CreateDefaultTargetCloudService(t *testing.T) {
@@ -294,5 +295,10 @@ func TestService_CreateDefaultTargetCloudService(t *testing.T) {
 	assert.Nil(t, cloudServiceResponse)
 
 	// Reset DB
-	assert.Nil(t, gormX.Reset())
+	assert.Nil(t, resetDB(db))
+}
+
+// resetDB clears all stored cloud services s.t. all tests can be run independently
+func resetDB(db persistence.IsDatabase) error {
+	return db.Delete(&orchestrator.CloudService{})
 }

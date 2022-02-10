@@ -49,6 +49,7 @@ var (
 	headers = DefaultAllowedHeaders
 
 	authService *service_auth.Service
+	db          persistence.IsDatabase
 
 	grpcPort int = 0
 )
@@ -58,15 +59,14 @@ func TestMain(m *testing.M) {
 		err    error
 		server *grpc.Server
 		sock   net.Listener
-
-		gormX = new(persistence.GormX)
 	)
 
-	err = gormX.Init(true, "", 0)
+	db = new(persistence.GormX)
+	err = db.Init(true, "", 0)
 	if err != nil {
 		panic(err)
 	}
-	authService = service_auth.NewService(gormX, service_auth.WithApiKeySaveOnCreate(false))
+	authService = service_auth.NewService(db, service_auth.WithApiKeySaveOnCreate(false))
 
 	// Start at least an authentication server, so that we have something to forward
 	sock, server, err = authService.StartDedicatedAuthServer(":0")

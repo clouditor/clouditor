@@ -43,6 +43,7 @@ const DefaultBufferSize = 1024 * 1024
 
 var (
 	bufConnListener *bufconn.Listener
+	db              persistence.IsDatabase
 )
 
 func bufConnDialer(context.Context, string) (net.Conn, error) {
@@ -58,12 +59,12 @@ func startBufConnServer() (*grpc.Server, *service_auth.Service, *service_assessm
 
 	server := grpc.NewServer()
 	// We do not want a persistent key storage here
-	var gormX = new(persistence.GormX)
-	err := gormX.Init(true, "", 0)
+	db = new(persistence.GormX)
+	err := db.Init(true, "", 0)
 	if err != nil {
 		panic(err)
 	}
-	authService := service_auth.NewService(gormX, service_auth.WithApiKeySaveOnCreate(false))
+	authService := service_auth.NewService(db, service_auth.WithApiKeySaveOnCreate(false))
 	auth.RegisterAuthenticationServer(server, authService)
 
 	assessmentService := service_assessment.NewService()

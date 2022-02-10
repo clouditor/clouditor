@@ -54,7 +54,7 @@ var (
 	authService         *service_auth.Service
 	orchestratorService *service_orchestrator.Service
 	target              *orchestrator.CloudService
-	gormX               = new(persistence.GormX)
+	db                  persistence.IsDatabase
 )
 
 func TestMain(m *testing.M) {
@@ -68,13 +68,14 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	err = gormX.Init(true, "", 0)
+	db = new(persistence.GormX)
+	err = db.Init(true, "", 0)
 	if err != nil {
 		panic(err)
 	}
 
-	orchestratorService = service_orchestrator.NewService(gormX)
-	authService = service_auth.NewService(gormX, service_auth.WithApiKeySaveOnCreate(false))
+	orchestratorService = service_orchestrator.NewService(db)
+	authService = service_auth.NewService(db, service_auth.WithApiKeySaveOnCreate(false))
 
 	sock, server, err = authService.StartDedicatedAuthServer(":0")
 	if err != nil {
@@ -153,7 +154,7 @@ func TestListCloudServicesCommand(t *testing.T) {
 	assert.NotEmpty(t, response.Services)
 
 	// Reset DB
-	assert.Nil(t, gormX.Reset())
+	assert.Nil(t, resetDB(db))
 }
 
 func TestGetCloudServiceCommand(t *testing.T) {
@@ -179,7 +180,7 @@ func TestGetCloudServiceCommand(t *testing.T) {
 	assert.Equal(t, target.Id, response.Id)
 
 	// Reset DB
-	assert.Nil(t, gormX.Reset())
+	assert.Nil(t, resetDB(db))
 }
 
 func TestRemoveCloudServicesCommand(t *testing.T) {
@@ -209,7 +210,7 @@ func TestRemoveCloudServicesCommand(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Reset DB
-	assert.Nil(t, gormX.Reset())
+	assert.Nil(t, resetDB(db))
 }
 
 func TestUpdateCloudServiceCommand(t *testing.T) {
@@ -243,7 +244,7 @@ func TestUpdateCloudServiceCommand(t *testing.T) {
 	assert.Equal(t, notDefault, response.Name)
 
 	// Reset DB
-	assert.Nil(t, gormX.Reset())
+	assert.Nil(t, resetDB(db))
 }
 
 func TestGetMetricConfiguration(t *testing.T) {
@@ -269,5 +270,10 @@ func TestGetMetricConfiguration(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Reset DB
-	assert.Nil(t, gormX.Reset())
+	assert.Nil(t, resetDB(db))
+}
+
+// resetDB clears all stored cloud services s.t. all tests can be run independently
+func resetDB(db persistence.IsDatabase) error {
+	return db.Delete(&orchestrator.CloudService{})
 }

@@ -53,7 +53,7 @@ var (
 	server           *grpc.Server
 	authServices     *service_auth.Service
 	discoveryService *service_discovery.Service
-	gormX            = new(persistence.GormX)
+	db               persistence.IsDatabase
 )
 
 func TestMain(m *testing.M) {
@@ -67,11 +67,12 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	err = gormX.Init(true, "", 0)
+	db = new(persistence.GormX)
+	err = db.Init(true, "", 0)
 	if err != nil {
 		panic(err)
 	}
-	authServices = service_auth.NewService(gormX, service_auth.WithApiKeySaveOnCreate(false))
+	authServices = service_auth.NewService(db, service_auth.WithApiKeySaveOnCreate(false))
 	discoveryService = service_discovery.NewService()
 	discoveryService.StartDiscovery(mockDiscoverer{testCase: 2})
 

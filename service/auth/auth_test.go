@@ -56,7 +56,7 @@ import (
 var (
 	grpcPort    int
 	authService *Service
-	gormX       persistence.IsDatabase
+	db          persistence.IsDatabase
 )
 
 func TestMain(m *testing.M) {
@@ -67,12 +67,12 @@ func TestMain(m *testing.M) {
 	)
 
 	// A small embedded DB is needed for the server
-	gormX = new(persistence.GormX)
-	err = gormX.Init(true, "", 0)
+	db = new(persistence.GormX)
+	err = db.Init(true, "", 0)
 	if err != nil {
 		panic(err)
 	}
-	authService = NewService(gormX)
+	authService = NewService(db)
 
 	// Start at least an authentication server, so that we have something to forward
 	sock, server, err = authService.StartDedicatedAuthServer(":0")

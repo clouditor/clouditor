@@ -56,7 +56,7 @@ var (
 	server              *grpc.Server
 	authServices        *service_auth.Service
 	orchestratorService *service_orchestrator.Service
-	gormX               = new(persistence.GormX)
+	db                  persistence.IsDatabase
 )
 
 func TestMain(m *testing.M) {
@@ -70,12 +70,13 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	err = gormX.Init(true, "", 0)
+	db = new(persistence.GormX)
+	err = db.Init(true, "", 0)
 	if err != nil {
 		panic(err)
 	}
-	authServices = service_auth.NewService(gormX, service_auth.WithApiKeySaveOnCreate(false))
-	orchestratorService = service_orchestrator.NewService(gormX)
+	authServices = service_auth.NewService(db, service_auth.WithApiKeySaveOnCreate(false))
+	orchestratorService = service_orchestrator.NewService(db)
 
 	sock, server, err = authServices.StartDedicatedAuthServer(":0")
 	if err != nil {

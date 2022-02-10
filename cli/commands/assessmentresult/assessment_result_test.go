@@ -51,8 +51,11 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-var sock net.Listener
-var server *grpc.Server
+var (
+	sock   net.Listener
+	server *grpc.Server
+	db     persistence.IsDatabase
+)
 
 func TestMain(m *testing.M) {
 	var (
@@ -67,14 +70,14 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	var gormX = new(persistence.GormX)
-	err = gormX.Init(true, "", 0)
+	db = new(persistence.GormX)
+	err = db.Init(true, "", 0)
 	if err != nil {
 		panic(err)
 	}
 
-	orchestratorService = service_orchestrator.NewService(gormX)
-	authService = service_auth.NewService(gormX, service_auth.WithApiKeySaveOnCreate(false))
+	orchestratorService = service_orchestrator.NewService(db)
+	authService = service_auth.NewService(db, service_auth.WithApiKeySaveOnCreate(false))
 
 	sock, server, err = authService.StartDedicatedAuthServer(":0")
 	if err != nil {

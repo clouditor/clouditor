@@ -56,14 +56,13 @@ var (
 	server               *grpc.Server
 	evidenceStoreService *service_evidenceStore.Service
 	authService          *service_auth.Service
+	db                   persistence.IsDatabase
 )
 
 func TestMain(m *testing.M) {
 	var (
 		err error
 		dir string
-
-		gormX = new(persistence.GormX)
 	)
 
 	err = os.Chdir("../../../")
@@ -71,12 +70,13 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	err = gormX.Init(true, "", 0)
+	db = new(persistence.GormX)
+	err = db.Init(true, "", 0)
 	if err != nil {
 		panic(err)
 	}
 
-	authService = service_auth.NewService(gormX, service_auth.WithApiKeySaveOnCreate(false))
+	authService = service_auth.NewService(db, service_auth.WithApiKeySaveOnCreate(false))
 	evidenceStoreService = service_evidenceStore.NewService()
 
 	sock, server, err = authService.StartDedicatedAuthServer(":0")

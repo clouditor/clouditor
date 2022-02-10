@@ -48,7 +48,7 @@ import (
 
 var (
 	service *Service
-	gormX   *persistence.GormX
+	db      persistence.IsDatabase
 )
 
 const (
@@ -62,12 +62,12 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	gormX = new(persistence.GormX)
-	err = gormX.Init(true, "", 0)
+	db = new(persistence.GormX)
+	err = db.Init(true, "", 0)
 	if err != nil {
 		panic(err)
 	}
-	service = NewService(gormX)
+	service = NewService(db)
 
 	os.Exit(m.Run())
 }
@@ -75,7 +75,7 @@ func TestMain(m *testing.M) {
 func TestAssessmentResultHook(t *testing.T) {
 	var (
 		hookCallCounter = 0
-		wg sync.WaitGroup
+		wg              sync.WaitGroup
 	)
 	wg.Add(2)
 
