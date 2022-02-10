@@ -66,11 +66,11 @@ func NewStorage(inMemory bool, host string, port int16) (s *Storage, err error) 
 	}
 
 	if err = s.db.AutoMigrate(&auth.User{}); err != nil {
-		err = fmt.Errorf("error during auto-migration: %w", err)
+		return nil, fmt.Errorf("error during auto-migration: %w", err)
 	}
 
 	if err = s.db.AutoMigrate(&orchestrator.CloudService{}); err != nil {
-		err = fmt.Errorf("error during auto-migration: %w", err)
+		return nil, fmt.Errorf("error during auto-migration: %w", err)
 	}
 
 	return
