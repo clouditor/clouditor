@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Fraunhofer AISEC
+ * Copyright 2016-2022 Fraunhofer AISEC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import "api/evidence/evidence.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 
-option go_package = "clouditor.io/clouditor/api/evidence;evidence";
+option go_package = "clouditor.io/clouditor/api/evidence";
 
 // Manages the storage of evidences
 service EvidenceStore {

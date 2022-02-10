@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Fraunhofer AISEC
+ * Copyright 2016-2022 Fraunhofer AISEC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import "google/protobuf/timestamp.proto";
 import "api/evidence/evidence.proto";
 import "api/assessment/metric.proto";
 
-option go_package = "clouditor.io/clouditor/api/assessment;assessment";
+option go_package = "clouditor.io/clouditor/api/assessment";
 
 // Representing the link between orchestrator and discovery: Assessing evidences
 // from discovery and sending results to orchestrator
