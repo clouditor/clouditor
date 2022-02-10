@@ -103,7 +103,7 @@ func (g *GormX) Update(r interface{}, _ ...interface{}) error {
 // Delete deletes record with given id. If no record was found, returns ErrRecordNotFound
 func (g *GormX) Delete(r interface{}, conds ...interface{}) error {
 	// if id is empty remove all records -> currently used for testing.
-	if conds == nil || len(conds) == 0 {
+	if len(conds) == 0 {
 		return g.db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(r).Error
 	}
 	// Remove record r with given ID
