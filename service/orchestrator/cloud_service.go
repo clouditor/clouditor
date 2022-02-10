@@ -102,7 +102,6 @@ func (s *Service) GetCloudService(_ context.Context, req *orchestrator.GetCloudS
 }
 
 // UpdateCloudService implements method for OrchestratorServer interface for updating a cloud service
-// TODO(all): remove ServiceId from request since it is accessible in service already
 func (s *Service) UpdateCloudService(_ context.Context, req *orchestrator.UpdateCloudServiceRequest) (response *orchestrator.CloudService, err error) {
 	if req.Service == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "service is empty")
@@ -169,7 +168,7 @@ func (s *Service) CreateDefaultTargetCloudService() (service *orchestrator.Cloud
 		// Save it directly into the database, so that we can set the ID
 		err = s.db.Create(&service)
 		if err != nil {
-			log.Infof("Created new default target cloud service %s", service.Id)
+			log.Infof("Could not create default target cloud service %s", service.Id)
 		}
 
 	}
