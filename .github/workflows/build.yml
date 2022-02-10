@@ -65,7 +65,7 @@ jobs:
         run: |
           go install github.com/Bobgy/go-licenses/v2@v2.0.0-dev.0
           go-licenses csv ./... | tee licenses.txt
-          cat licenses.txt | grep "GPL"
+          ! cat licenses.txt | grep "GPL"
       - name: Check for Missing Copyright Header
         run: |
           go install github.com/google/addlicense
