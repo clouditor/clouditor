@@ -171,7 +171,10 @@ func StartDedicatedAuthServer(address string, opts ...service_auth.ServiceOption
 	}
 
 	authService = service_auth.NewService(opts...)
-	authService.CreateDefaultUser("clouditor", "clouditor")
+	err = authService.CreateDefaultUser("clouditor", "clouditor")
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("could not create default user: %w", err)
+	}
 
 	authConfig := ConfigureAuth(WithPublicKey(authService.GetPublicKey()))
 
