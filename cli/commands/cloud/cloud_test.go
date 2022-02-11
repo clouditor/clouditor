@@ -48,11 +48,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	var (
-		err error
-	)
-
-	err = os.Chdir("../../../")
+	err := os.Chdir("../../../")
 	if err != nil {
 		panic(err)
 	}
@@ -230,6 +226,8 @@ func TestGetMetricConfiguration(t *testing.T) {
 
 	target, err = orchestratorService.CreateDefaultTargetCloudService()
 	assert.Nil(t, err)
+	// target should be not nil since there are no stored cloud services yet
+	assert.NotNil(t, target)
 
 	cli.Output = &b
 
