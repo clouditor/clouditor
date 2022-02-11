@@ -106,7 +106,7 @@ func (s *storage) Create(r interface{}) error {
 }
 
 func (s *storage) Get(r interface{}, conds ...interface{}) (err error) {
-	err = s.db.First(r, conds).Error
+	err = s.db.First(r, conds...).Error
 	// if record is not found, use the error message defined in the persistence package
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		err = persistence.ErrRecordNotFound
@@ -115,7 +115,7 @@ func (s *storage) Get(r interface{}, conds ...interface{}) (err error) {
 }
 
 func (s *storage) List(r interface{}, conds ...interface{}) error {
-	return s.db.Find(r, conds).Error
+	return s.db.Find(r, conds...).Error
 }
 
 func (s *storage) Count(r interface{}, conds ...interface{}) (count int64, err error) {
@@ -123,9 +123,9 @@ func (s *storage) Count(r interface{}, conds ...interface{}) (count int64, err e
 	return
 }
 
-func (s *storage) Update(r interface{}, _ ...interface{}) error {
+func (s *storage) Update(r interface{}, conds ...interface{}) error {
 	// TODO(lebogg): Open discussion about update vs. save, i.e. only individual fields should be updates or not
-	return s.db.Save(r).Error
+	return s.db.Model(r).Where(conds).Save(r).Error
 }
 
 // Delete deletes record with given id. If no record was found, returns ErrRecordNotFound
@@ -135,7 +135,7 @@ func (s *storage) Delete(r interface{}, conds ...interface{}) error {
 		return s.db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(r).Error
 	}
 	// Remove record r with given ID
-	tx := s.db.Delete(r, conds)
+	tx := s.db.Delete(r, conds...)
 	if err := tx.Error; err != nil { // db error
 		return err
 	}
