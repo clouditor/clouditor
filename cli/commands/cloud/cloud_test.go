@@ -243,7 +243,7 @@ func TestGetMetricConfiguration(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-// startServer starts server with orchestrator and dedicated auth server. We don't do it in TestMain since you
+// startServer starts a gRPC server with an orchestrator and auth service. We don't do it in TestMain since you
 // can only register a service - once before server.serve(). And we do need to add new Orchestrator service because
 // the DB won't be reset otherwise.
 func startServer() (orchestratorService *service_orchestrator.Service, server *grpc.Server, sock net.Listener) {
