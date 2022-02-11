@@ -126,8 +126,6 @@ func TestSession(t *testing.T) {
 
 	s, ok := status.FromError(err)
 
-	// TODO(lebogg): Continue here
-	fmt.Println(err)
 	assert.True(t, ok)
 	assert.Equal(t, codes.Unauthenticated, s.Code())
 	assert.Nil(t, response)

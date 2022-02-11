@@ -263,9 +263,6 @@ func startServer() (orchestratorService *service_orchestrator.Service, server *g
 	}
 	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
 
-	//defer sock.Close()
-	//defer server.Stop()
-
 	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
 	if err != nil {
 		panic(err)

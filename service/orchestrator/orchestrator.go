@@ -90,9 +90,9 @@ func WithMetricsFile(file string) ServiceOption {
 }
 
 // WithStorage is an option to set the storage. If not set, NewService will use inmemory storage.
-func WithStorage(db persistence.Storage) ServiceOption {
+func WithStorage(storage persistence.Storage) ServiceOption {
 	return func(s *Service) {
-		s.storage = db
+		s.storage = storage
 	}
 }
 
