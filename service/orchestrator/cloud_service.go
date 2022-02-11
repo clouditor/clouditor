@@ -152,8 +152,11 @@ func (s *Service) RemoveCloudService(_ context.Context, req *orchestrator.Remove
 //
 // If a new target cloud service was created, it will be returned.
 func (s *Service) CreateDefaultTargetCloudService() (service *orchestrator.CloudService, err error) {
+	log.Infof("Creating new default target cloud service...")
+	const couldNotCreateService = "Could not create default target cloud service"
 	count, err := s.db.Count(service)
 	if err != nil {
+		log.Infof(couldNotCreateService)
 		return nil, err
 	}
 
@@ -168,9 +171,11 @@ func (s *Service) CreateDefaultTargetCloudService() (service *orchestrator.Cloud
 		// Save it directly into the database, so that we can set the ID
 		err = s.db.Create(&service)
 		if err != nil {
-			log.Infof("Could not create default target cloud service %s", service.Id)
+			log.Infof(couldNotCreateService)
+			return
 		}
 
 	}
+	log.Infof("Default target cloud service created")
 	return
 }
