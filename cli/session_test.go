@@ -105,6 +105,7 @@ func TestSession(t *testing.T) {
 
 	// update the session
 	session.authorizer = service.NewInternalAuthorizerFromToken(
+		session.authorizer.AuthURL(),
 		&oauth2.Token{
 			AccessToken:  response.AccessToken,
 			TokenType:    response.TokenType,

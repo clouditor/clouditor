@@ -513,7 +513,11 @@ func OAuthErrorHandler(c context.Context, sm *runtime.ServeMux, m runtime.Marsha
 		// gRPC wrapping
 		if status.Message() == "unsupported_grant_type" || status.Message() == "invalid_grant" {
 			w.WriteHeader(400)
-			w.Write([]byte(fmt.Sprintf(`{"error":"%s"}`, status.Message())))
+			_, err = w.Write([]byte(fmt.Sprintf(`{"error":"%s"}`, status.Message())))
+			if err != nil {
+				w.WriteHeader(500)
+			}
+
 			return
 		}
 	}

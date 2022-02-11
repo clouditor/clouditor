@@ -47,7 +47,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/protobuf/proto"
 )
 
 var (
@@ -276,26 +275,4 @@ func (cors *corsConfig) OriginAllowed(origin string) bool {
 	}
 
 	return false
-}
-
-func httpResponseModifier(ctx context.Context, w http.ResponseWriter, p proto.Message) error {
-	log.Infof("hello???")
-	md, ok := runtime.ServerMetadataFromContext(ctx)
-	if !ok {
-		return nil
-	}
-
-	// set http status code
-	if values := md.HeaderMD.Get("x-oauth-error"); len(values) > 0 {
-		errorType := values[0]
-
-		// Delete the headers to not expose any grpc-metadata in http response
-		delete(md.HeaderMD, "x-http-code")
-		delete(w.Header(), "Grpc-Metadata-X-Http-Code")
-
-		w.WriteHeader(400)
-		w.Write([]byte(fmt.Sprintf(`{"error":"%s"}`, errorType)))
-	}
-
-	return nil
 }

@@ -79,12 +79,14 @@ func NewLoginCommand() *cobra.Command {
 			}
 
 			// Update the session
-			session.SetAuthorizer(service.NewInternalAuthorizerFromToken(&oauth2.Token{
-				AccessToken:  res.AccessToken,
-				TokenType:    res.TokenType,
-				RefreshToken: res.RefreshToken,
-				Expiry:       res.Expiry.AsTime(),
-			}))
+			session.SetAuthorizer(service.NewInternalAuthorizerFromToken(
+				session.Authorizer().AuthURL(),
+				&oauth2.Token{
+					AccessToken:  res.AccessToken,
+					TokenType:    res.TokenType,
+					RefreshToken: res.RefreshToken,
+					Expiry:       res.Expiry.AsTime(),
+				}))
 
 			if err = session.Save(); err != nil {
 				return fmt.Errorf("could not save session: %w", err)

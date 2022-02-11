@@ -60,13 +60,6 @@ type Session struct {
 	Folder string `json:"-"`
 }
 
-// storedSession is a little hack because we cannot directly access the token of the authorizer (its private)
-// This could probably be solved by implementing MarshalJSON in InternalAuthorizer
-type storedSession struct {
-	URL   string `json:"url"`
-	Token *oauth2.Token
-}
-
 func (s *Session) SetAuthorizer(authorizer service.Authorizer) {
 	s.authorizer = authorizer
 }
@@ -91,9 +84,8 @@ func NewSession(url string) (session *Session, err error) {
 	session = &Session{
 		URL:    url,
 		Folder: viper.GetString("session-directory"),
-		authorizer: &service.InternalAuthorizer{
-			Url: url,
-		},
+		// We will supply the token later
+		authorizer: service.NewInternalAuthorizerFromToken(url, nil),
 	}
 
 	var opts = []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
@@ -125,14 +117,9 @@ func ContinueSession() (session *Session, err error) {
 	session = new(Session)
 	session.Folder = folder
 
-	var hackySession storedSession
-
-	if err = json.NewDecoder(file).Decode(&hackySession); err != nil {
+	if err = json.NewDecoder(file).Decode(&session); err != nil {
 		return
 	}
-
-	session.URL = hackySession.URL
-	session.authorizer = service.NewInternalAuthorizerFromToken(hackySession.Token)
 
 	if session.ClientConn, err = grpc.Dial(session.URL, service.DefaultGrpcDialOptions(session)...); err != nil {
 		return nil, fmt.Errorf("could not connect: %w", err)
@@ -160,16 +147,46 @@ func (s *Session) Save() (err error) {
 		err = file.Close()
 	}(file)
 
-	token, _ := s.Authorizer().Token()
-
-	if err = json.NewEncoder(file).Encode(storedSession{
-		URL:   s.URL,
-		Token: token,
-	}); err != nil {
+	if err = json.NewEncoder(file).Encode(&s); err != nil {
 		return fmt.Errorf("could not serialize JSON: %w", err)
 	}
 
 	return nil
+}
+
+// MarshalJSON is custom JSON marshalling implementation that gives us more control over
+// the fields we want to serialize. The core problem is that we want to serialize our token, e.g.
+// to store a session state for our clients, but we do not want to export the token field in our
+// struct. Exporting the field would create problems in multi-threaded environments. Therefore,
+// access is only allowed through the Token() function, which keeps the token synchronized using a mutex.
+func (s *Session) MarshalJSON() ([]byte, error) {
+	token, _ := s.authorizer.Token()
+
+	return json.Marshal(&struct {
+		URL   string        `json:"url"`
+		Token *oauth2.Token `json:"token"`
+	}{
+		URL:   s.URL,
+		Token: token,
+	})
+}
+
+// UnmarshalJSON is custom JSON marshalling implementation that gives us more control over
+// the fields we want to deserialize. See MarshalJSON for a detailed explanation, why this is
+// necessary.
+func (s *Session) UnmarshalJSON(data []byte) (err error) {
+	v := struct {
+		URL   string        `json:"url"`
+		Token *oauth2.Token `json:"token"`
+	}{}
+
+	if err = json.Unmarshal(data, &v); err != nil {
+		return
+	}
+
+	s.URL = v.URL
+	s.authorizer = service.NewInternalAuthorizerFromToken(s.URL, v.Token)
+	return
 }
 
 // HandleResponse handles the response and error message of an gRPC call
