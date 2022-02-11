@@ -309,7 +309,7 @@ func (s Service) Login(_ context.Context, request *auth.LoginRequest) (response 
 // Token aims to be a OAuth 2.0 compliant token endpoint. Currently, only the refresh_token grant type
 // is supported. This function only takes care of the application behavior, the actual implementation of
 // a HTTP endpoint around this functionality is provided by the gRPC gateway and is modified by the
-// OAuthErrorHandler function. This function needs to be registed using runtime.WithErrorHandler in the gRPC
+// OAuthErrorHandler function, which needs to be registed using runtime.WithErrorHandler in the gRPC
 // gateway.
 func (s *Service) Token(_ context.Context, req *auth.TokenRequest) (response *auth.TokenResponse, err error) {
 	var (
