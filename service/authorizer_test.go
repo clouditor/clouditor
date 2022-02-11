@@ -127,11 +127,11 @@ func TestInternalAuthorizer_Token(t *testing.T) {
 
 type mockAuthClient struct{}
 
-func (m mockAuthClient) Login(_ context.Context, req *auth.LoginRequest, opts ...grpc.CallOption) (*auth.TokenResponse, error) {
+func (mockAuthClient) Login(_ context.Context, _ *auth.LoginRequest, _ ...grpc.CallOption) (*auth.TokenResponse, error) {
 	return nil, nil
 }
 
-func (m mockAuthClient) Token(_ context.Context, req *auth.TokenRequest, opts ...grpc.CallOption) (*auth.TokenResponse, error) {
+func (mockAuthClient) Token(_ context.Context, _ *auth.TokenRequest, _ ...grpc.CallOption) (*auth.TokenResponse, error) {
 	return &auth.TokenResponse{
 		AccessToken: mockAccessToken,
 		TokenType:   "Bearer",
@@ -139,16 +139,16 @@ func (m mockAuthClient) Token(_ context.Context, req *auth.TokenRequest, opts ..
 	}, nil
 }
 
-func (m mockAuthClient) ListPublicKeys(_ context.Context, req *auth.ListPublicKeysRequest, opts ...grpc.CallOption) (*auth.ListPublicResponse, error) {
+func (mockAuthClient) ListPublicKeys(_ context.Context, _ *auth.ListPublicKeysRequest, _ ...grpc.CallOption) (*auth.ListPublicResponse, error) {
 	return nil, nil
 }
 
 type mockConn struct{}
 
-func (m mockConn) Invoke(ctx context.Context, method string, args interface{}, reply interface{}, opts ...grpc.CallOption) error {
+func (mockConn) Invoke(_ context.Context, _ string, _ interface{}, _ interface{}, _ ...grpc.CallOption) error {
 	return nil
 }
 
-func (m mockConn) NewStream(ctx context.Context, desc *grpc.StreamDesc, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+func (mockConn) NewStream(_ context.Context, _ *grpc.StreamDesc, _ string, _ ...grpc.CallOption) (grpc.ClientStream, error) {
 	return nil, nil
 }
