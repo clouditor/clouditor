@@ -27,6 +27,7 @@ package discovery
 
 import (
 	"bytes"
+	"clouditor.io/clouditor/service"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -37,7 +38,6 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
-	service_auth "clouditor.io/clouditor/service/auth"
 	service_discovery "clouditor.io/clouditor/service/discovery"
 
 	"clouditor.io/clouditor/voc"
@@ -50,7 +50,6 @@ import (
 var (
 	sock             net.Listener
 	server           *grpc.Server
-	authServices     *service_auth.Service
 	discoveryService *service_discovery.Service
 )
 
@@ -65,11 +64,10 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	authServices = service_auth.NewService(service_auth.WithApiKeySaveOnCreate(false))
 	discoveryService = service_discovery.NewService()
 	discoveryService.StartDiscovery(mockDiscoverer{testCase: 2})
 
-	sock, server, err = authServices.StartDedicatedServer(":0")
+	sock, server, _, err = service.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}

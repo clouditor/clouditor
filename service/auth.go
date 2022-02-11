@@ -29,12 +29,18 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"net"
 	"time"
+
+	"clouditor.io/clouditor/api/auth"
+	service_auth "clouditor.io/clouditor/service/auth"
 
 	"github.com/MicahParks/keyfunc"
 	"github.com/golang-jwt/jwt/v4"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -154,4 +160,33 @@ func parseToken(token string, authConfig *AuthConfig) (jwt.Claims, error) {
 	}
 
 	return parsedToken.Claims, nil
+}
+
+// StartDedicatedAuthServer starts a gRPC server containing just the auth service
+func StartDedicatedAuthServer(address string, opts ...service_auth.ServiceOption) (sock net.Listener, server *grpc.Server, authService *service_auth.Service, err error) {
+	// create a new socket for gRPC communication
+	sock, err = net.Listen("tcp", address)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("could not listen: %w", err)
+	}
+
+	authService = service_auth.NewService(opts...)
+	authService.CreateDefaultUser("clouditor", "clouditor")
+
+	authConfig := ConfigureAuth(WithPublicKey(authService.GetPublicKey()))
+
+	// We also add our authentication middleware, because we usually add additional service later
+	server = grpc.NewServer(
+		grpc_middleware.WithUnaryServerChain(
+			grpc_auth.UnaryServerInterceptor(authConfig.AuthFunc),
+		),
+	)
+	auth.RegisterAuthenticationServer(server, authService)
+
+	go func() {
+		// serve the gRPC socket
+		_ = server.Serve(sock)
+	}()
+
+	return sock, server, authService, nil
 }

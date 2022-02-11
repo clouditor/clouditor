@@ -26,6 +26,7 @@
 package rest
 
 import (
+	"clouditor.io/clouditor/service"
 	"context"
 	"errors"
 	"fmt"
@@ -37,7 +38,6 @@ import (
 	"testing"
 	"time"
 
-	service_auth "clouditor.io/clouditor/service/auth"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 )
@@ -47,9 +47,7 @@ var (
 	methods = []string{"GET", "POST"}
 	headers = DefaultAllowedHeaders
 
-	authService *service_auth.Service
-
-	grpcPort int = 0
+	grpcPort = 0
 )
 
 func TestMain(m *testing.M) {
@@ -59,10 +57,8 @@ func TestMain(m *testing.M) {
 		sock   net.Listener
 	)
 
-	authService = service_auth.NewService(service_auth.WithApiKeySaveOnCreate(false))
-
 	// Start at least an authentication server, so that we have something to forward
-	sock, server, err = authService.StartDedicatedServer(":0")
+	sock, server, _, err = service.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}

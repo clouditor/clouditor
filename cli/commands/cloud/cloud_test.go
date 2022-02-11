@@ -27,6 +27,7 @@ package cloud
 
 import (
 	"bytes"
+	"clouditor.io/clouditor/service"
 	"context"
 	"fmt"
 	"io/ioutil"
@@ -37,7 +38,6 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
-	service_auth "clouditor.io/clouditor/service/auth"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
 	"github.com/spf13/viper"
@@ -248,16 +248,13 @@ func TestGetMetricConfiguration(t *testing.T) {
 // the DB won't be reset otherwise.
 func startServer() (orchestratorService *service_orchestrator.Service, server *grpc.Server, sock net.Listener) {
 	var (
-		authService *service_auth.Service
-
 		err error
 		dir string
 	)
 
 	orchestratorService = service_orchestrator.NewService()
-	authService = service_auth.NewService(service_auth.WithApiKeySaveOnCreate(false))
 
-	sock, server, err = authService.StartDedicatedServer(":0")
+	sock, server, _, err = service.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}

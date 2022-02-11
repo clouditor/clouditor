@@ -26,6 +26,7 @@
 package tool
 
 import (
+	"clouditor.io/clouditor/service"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -34,7 +35,6 @@ import (
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli/commands/login"
-	service_auth "clouditor.io/clouditor/service/auth"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
 	"github.com/spf13/viper"
@@ -45,7 +45,6 @@ import (
 var (
 	sock                net.Listener
 	server              *grpc.Server
-	authServices        *service_auth.Service
 	orchestratorService *service_orchestrator.Service
 )
 
@@ -59,10 +58,9 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err)
 	}
-	authServices = service_auth.NewService(service_auth.WithApiKeySaveOnCreate(false))
 	orchestratorService = service_orchestrator.NewService()
 
-	sock, server, err = authServices.StartDedicatedServer(":0")
+	sock, server, _, err = service.StartDedicatedAuthServer(":0")
 	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
 
 	if err != nil {

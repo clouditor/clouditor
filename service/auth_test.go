@@ -25,186 +25,194 @@
 
 package service
 
-// TODO(lebogg): I just moved tests to service/auth/auth_test.go -> At the end of PR decide how to go on with this
-// Either seperate PR and just leave StartdedicatedServer here for now or re-write tests here to be more "stupid" and
-// have more meaningful tests in service/auth/auth_test.go (thats the way I would see it since middleware package
-//(tests) should not rely on specific implementations. They are just helpers after all.
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net"
+	"net/http"
+	"os"
+	"testing"
+	"time"
 
-//var (
-//	grpcPort    int
-//	authService *service_auth.Service
-//	gormX       persistence.GormX
-//)
-//
-//func TestMain(m *testing.M) {
-//	var (
-//		err    error
-//		server *grpc.Server
-//		sock   net.Listener
-//	)
-//
-//	// A small embedded DB is needed for the server
-//	var gormX = new(persistence.GormX)
-//	err = gormX.Init(gorm.WithInMemory())
-//	if err != nil {
-//		panic(err)
-//	}
-//	authService = service_auth.NewService(gormX)
-//
-//	// Start at least an authentication server, so that we have something to forward
-//	sock, server, err = authService.StartDedicatedAuthServer(":0")
-//	if err != nil {
-//		panic(err)
-//	}
-//
-//	grpcPort = sock.Addr().(*net.TCPAddr).Port
-//
-//	exit := m.Run()
-//
-//	sock.Close()
-//	server.Stop()
-//
-//	os.Exit(exit)
-//}
-//
-//func ValidClaimAssertion(tt assert.TestingT, i1 interface{}, _ ...interface{}) bool {
-//	ctx, ok := i1.(context.Context)
-//	if !ok {
-//		tt.Errorf("Return value is not a context")
-//		return false
-//	}
-//
-//	claims, ok := ctx.Value(AuthContextKey).(*jwt.RegisteredClaims)
-//	if !ok {
-//		tt.Errorf("Token value in context not a JWT claims object")
-//		return false
-//	}
-//
-//	if claims.Subject != "clouditor" {
-//		tt.Errorf("Subject is not correct")
-//		return true
-//	}
-//
-//	return true
-//}
-//
-//func TestAuthConfig_AuthFunc(t *testing.T) {
-//	// We need to start a REST server for JWKS (using our auth server)
-//	go func() {
-//		err := rest.RunServer(
-//			context.Background(),
-//			grpcPort,
-//			0,
-//		)
-//		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-//			panic(err)
-//		}
-//	}()
-//	defer rest.StopServer(context.Background())
-//
-//	// Wait until server is ready to serve
-//	select {
-//	case <-rest.GetReadyChannel():
-//		break
-//	case <-time.After(10 * time.Second):
-//		log.Println("Timeout while waiting for REST API")
-//	}
-//
-//	port, err := rest.GetServerPort()
-//	assert.ErrorIs(t, err, nil)
-//
-//	// Some pre-work to retrieve a valid token
-//	loginResponse, err := authService.Login(context.TODO(), &auth.LoginRequest{Username: "clouditor", Password: "clouditor"})
-//	assert.ErrorIs(t, err, nil)
-//	assert.NotNil(t, loginResponse)
-//
-//	type configureArgs struct {
-//		opts []AuthOption
-//	}
-//	type args struct {
-//		ctx context.Context
-//	}
-//	tests := []struct {
-//		name          string
-//		configureArgs configureArgs
-//		args          args
-//		wantJWKS      bool
-//		wantCtx       assert.ValueAssertionFunc
-//		wantErr       assert.ErrorAssertionFunc
-//	}{
-//		{
-//			name: "Request with valid bearer token using JWKS",
-//			configureArgs: configureArgs{
-//				opts: []AuthOption{WithJWKSURL(fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", port))},
-//			},
-//			args: args{
-//				ctx: metadata.NewIncomingContext(context.TODO(), metadata.MD{"Authorization": []string{fmt.Sprintf("bearer %s", loginResponse.AccessToken)}}),
-//			},
-//			wantCtx: ValidClaimAssertion,
-//		},
-//		{
-//			name: "Request with invalid bearer token using JWKS",
-//			configureArgs: configureArgs{
-//				opts: []AuthOption{WithJWKSURL(fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", port))},
-//			},
-//			args: args{
-//				ctx: metadata.NewIncomingContext(context.TODO(), metadata.MD{"Authorization": []string{"bearer not_really"}}),
-//			},
-//			wantErr: func(tt assert.TestingT, e error, i ...interface{}) bool {
-//				return assert.ErrorIs(tt, e, status.Error(codes.Unauthenticated, "invalid auth token"))
-//			},
-//		},
-//		{
-//			name: "Request without bearer token using JWKS",
-//			configureArgs: configureArgs{
-//				opts: []AuthOption{WithJWKSURL(fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", port))},
-//			},
-//			args: args{
-//				ctx: context.TODO(),
-//			},
-//			wantErr: func(tt assert.TestingT, e error, i ...interface{}) bool {
-//				return assert.ErrorIs(tt, e, status.Error(codes.Unauthenticated, "invalid auth token"))
-//			},
-//		},
-//		{
-//			name: "Request with valid bearer token using a public key",
-//			configureArgs: configureArgs{
-//				opts: []AuthOption{WithPublicKey(authService.GetPublicKey())},
-//			},
-//			args: args{
-//				ctx: metadata.NewIncomingContext(context.TODO(), metadata.MD{"Authorization": []string{fmt.Sprintf("bearer %s", loginResponse.AccessToken)}}),
-//			},
-//			wantCtx: ValidClaimAssertion,
-//		},
-//		{
-//			name: "Request without bearer token using a public key",
-//			configureArgs: configureArgs{
-//				opts: []AuthOption{WithPublicKey(authService.GetPublicKey())},
-//			},
-//			args: args{
-//				ctx: context.TODO(),
-//			},
-//			wantErr: func(tt assert.TestingT, e error, i ...interface{}) bool {
-//				return assert.ErrorIs(tt, e, status.Error(codes.Unauthenticated, "invalid auth token"))
-//			},
-//		},
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			config := ConfigureAuth(tt.configureArgs.opts...)
-//			got, err := config.AuthFunc(tt.args.ctx)
-//
-//			if tt.wantJWKS {
-//				assert.NotNil(t, config.Jwks)
-//			}
-//
-//			if tt.wantErr != nil {
-//				tt.wantErr(t, err, tt.args.ctx)
-//			}
-//
-//			if tt.wantCtx != nil {
-//				tt.wantCtx(t, got, tt.args.ctx)
-//			}
-//		})
-//	}
-//}
+	"clouditor.io/clouditor/api/auth"
+	"clouditor.io/clouditor/rest"
+	service_auth "clouditor.io/clouditor/service/auth"
+
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
+)
+
+var (
+	grpcPort    int
+	authService *service_auth.Service
+)
+
+func TestMain(m *testing.M) {
+	var (
+		err    error
+		server *grpc.Server
+		sock   net.Listener
+	)
+
+	// Start at least an authentication server, so that we have something to forward
+	sock, server, authService, err = StartDedicatedAuthServer(":0")
+	if err != nil {
+		panic(err)
+	}
+
+	grpcPort = sock.Addr().(*net.TCPAddr).Port
+
+	exit := m.Run()
+
+	sock.Close()
+	server.Stop()
+
+	os.Exit(exit)
+}
+
+func ValidClaimAssertion(tt assert.TestingT, i1 interface{}, _ ...interface{}) bool {
+	ctx, ok := i1.(context.Context)
+	if !ok {
+		tt.Errorf("Return value is not a context")
+		return false
+	}
+
+	claims, ok := ctx.Value(AuthContextKey).(*jwt.RegisteredClaims)
+	if !ok {
+		tt.Errorf("Token value in context not a JWT claims object")
+		return false
+	}
+
+	if claims.Subject != "clouditor" {
+		tt.Errorf("Subject is not correct")
+		return true
+	}
+
+	return true
+}
+
+func TestAuthConfig_AuthFunc(t *testing.T) {
+	// We need to start a REST server for JWKS (using our auth server)
+	go func() {
+		err := rest.RunServer(
+			context.Background(),
+			grpcPort,
+			0,
+		)
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			panic(err)
+		}
+	}()
+	defer rest.StopServer(context.Background())
+
+	// Wait until server is ready to serve
+	select {
+	case <-rest.GetReadyChannel():
+		break
+	case <-time.After(10 * time.Second):
+		log.Println("Timeout while waiting for REST API")
+	}
+
+	port, err := rest.GetServerPort()
+	assert.ErrorIs(t, err, nil)
+
+	// Some pre-work to retrieve a valid token
+	loginResponse, err := authService.Login(context.TODO(), &auth.LoginRequest{Username: "clouditor", Password: "clouditor"})
+	assert.ErrorIs(t, err, nil)
+	assert.NotNil(t, loginResponse)
+
+	type configureArgs struct {
+		opts []AuthOption
+	}
+	type args struct {
+		ctx context.Context
+	}
+	tests := []struct {
+		name          string
+		configureArgs configureArgs
+		args          args
+		wantJWKS      bool
+		wantCtx       assert.ValueAssertionFunc
+		wantErr       assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Request with valid bearer token using JWKS",
+			configureArgs: configureArgs{
+				opts: []AuthOption{WithJWKSURL(fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", port))},
+			},
+			args: args{
+				ctx: metadata.NewIncomingContext(context.TODO(), metadata.MD{"Authorization": []string{fmt.Sprintf("bearer %s", loginResponse.AccessToken)}}),
+			},
+			wantCtx: ValidClaimAssertion,
+		},
+		{
+			name: "Request with invalid bearer token using JWKS",
+			configureArgs: configureArgs{
+				opts: []AuthOption{WithJWKSURL(fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", port))},
+			},
+			args: args{
+				ctx: metadata.NewIncomingContext(context.TODO(), metadata.MD{"Authorization": []string{"bearer not_really"}}),
+			},
+			wantErr: func(tt assert.TestingT, e error, i ...interface{}) bool {
+				return assert.ErrorIs(tt, e, status.Error(codes.Unauthenticated, "invalid auth token"))
+			},
+		},
+		{
+			name: "Request without bearer token using JWKS",
+			configureArgs: configureArgs{
+				opts: []AuthOption{WithJWKSURL(fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", port))},
+			},
+			args: args{
+				ctx: context.TODO(),
+			},
+			wantErr: func(tt assert.TestingT, e error, i ...interface{}) bool {
+				return assert.ErrorIs(tt, e, status.Error(codes.Unauthenticated, "invalid auth token"))
+			},
+		},
+		{
+			name: "Request with valid bearer token using a public key",
+			configureArgs: configureArgs{
+				opts: []AuthOption{WithPublicKey(authService.GetPublicKey())},
+			},
+			args: args{
+				ctx: metadata.NewIncomingContext(context.TODO(), metadata.MD{"Authorization": []string{fmt.Sprintf("bearer %s", loginResponse.AccessToken)}}),
+			},
+			wantCtx: ValidClaimAssertion,
+		},
+		{
+			name: "Request without bearer token using a public key",
+			configureArgs: configureArgs{
+				opts: []AuthOption{WithPublicKey(authService.GetPublicKey())},
+			},
+			args: args{
+				ctx: context.TODO(),
+			},
+			wantErr: func(tt assert.TestingT, e error, i ...interface{}) bool {
+				return assert.ErrorIs(tt, e, status.Error(codes.Unauthenticated, "invalid auth token"))
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config := ConfigureAuth(tt.configureArgs.opts...)
+			got, err := config.AuthFunc(tt.args.ctx)
+
+			if tt.wantJWKS {
+				assert.NotNil(t, config.Jwks)
+			}
+
+			if tt.wantErr != nil {
+				tt.wantErr(t, err, tt.args.ctx)
+			}
+
+			if tt.wantCtx != nil {
+				tt.wantCtx(t, got, tt.args.ctx)
+			}
+		})
+	}
+}

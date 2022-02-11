@@ -26,60 +26,20 @@
 package auth
 
 import (
-	"clouditor.io/clouditor/api/auth"
-	"clouditor.io/clouditor/rest"
-	"clouditor.io/clouditor/service"
 	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
-	"errors"
-	"fmt"
-	"github.com/golang-jwt/jwt/v4"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/proto"
 	"io/ioutil"
 	"math/big"
-	"net"
-	"net/http"
 	"os"
 	"reflect"
 	"testing"
-	"time"
+
+	"clouditor.io/clouditor/api/auth"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/proto"
 )
-
-var (
-	grpcPort    int
-	authService *Service
-)
-
-func TestMain(m *testing.M) {
-	var (
-		err    error
-		server *grpc.Server
-		sock   net.Listener
-	)
-	authService = NewService()
-
-	// Start at least an authentication server, so that we have something to forward
-	sock, server, err = authService.StartDedicatedServer(":0")
-	if err != nil {
-		panic(err)
-	}
-
-	grpcPort = sock.Addr().(*net.TCPAddr).Port
-
-	exit := m.Run()
-
-	sock.Close()
-	server.Stop()
-
-	os.Exit(exit)
-}
 
 func TestService_ListPublicKeys(t *testing.T) {
 	type fields struct {
@@ -310,146 +270,4 @@ func TestService_loadApiKey(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestAuthConfig_AuthFunc(t *testing.T) {
-	// We need to start a REST server for JWKS (using our auth server)
-	go func() {
-		err := rest.RunServer(
-			context.Background(),
-			grpcPort,
-			0,
-		)
-		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			panic(err)
-		}
-	}()
-	defer rest.StopServer(context.Background())
-
-	// Wait until server is ready to serve
-	select {
-	case <-rest.GetReadyChannel():
-		break
-	case <-time.After(10 * time.Second):
-		log.Println("Timeout while waiting for REST API")
-	}
-
-	port, err := rest.GetServerPort()
-	assert.ErrorIs(t, err, nil)
-
-	// Some pre-work to retrieve a valid token
-	loginResponse, err := authService.Login(context.TODO(), &auth.LoginRequest{Username: "clouditor", Password: "clouditor"})
-	assert.ErrorIs(t, err, nil)
-	assert.NotNil(t, loginResponse)
-
-	type configureArgs struct {
-		opts []service.AuthOption
-	}
-	type args struct {
-		ctx context.Context
-	}
-	tests := []struct {
-		name          string
-		configureArgs configureArgs
-		args          args
-		wantJWKS      bool
-		wantCtx       assert.ValueAssertionFunc
-		wantErr       assert.ErrorAssertionFunc
-	}{
-		{
-			name: "Request with valid bearer token using JWKS",
-			configureArgs: configureArgs{
-				opts: []service.AuthOption{service.WithJWKSURL(fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", port))},
-			},
-			args: args{
-				ctx: metadata.NewIncomingContext(context.TODO(), metadata.MD{"Authorization": []string{fmt.Sprintf("bearer %s", loginResponse.AccessToken)}}),
-			},
-			wantCtx: ValidClaimAssertion,
-		},
-		{
-			name: "Request with invalid bearer token using JWKS",
-			configureArgs: configureArgs{
-				opts: []service.AuthOption{service.WithJWKSURL(fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", port))},
-			},
-			args: args{
-				ctx: metadata.NewIncomingContext(context.TODO(), metadata.MD{"Authorization": []string{"bearer not_really"}}),
-			},
-			wantErr: func(tt assert.TestingT, e error, i ...interface{}) bool {
-				return assert.ErrorIs(tt, e, status.Error(codes.Unauthenticated, "invalid auth token"))
-			},
-		},
-		{
-			name: "Request without bearer token using JWKS",
-			configureArgs: configureArgs{
-				opts: []service.AuthOption{service.WithJWKSURL(fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", port))},
-			},
-			args: args{
-				ctx: context.TODO(),
-			},
-			wantErr: func(tt assert.TestingT, e error, i ...interface{}) bool {
-				return assert.ErrorIs(tt, e, status.Error(codes.Unauthenticated, "invalid auth token"))
-			},
-		},
-		{
-			name: "Request with valid bearer token using a public key",
-			configureArgs: configureArgs{
-				opts: []service.AuthOption{service.WithPublicKey(authService.GetPublicKey())},
-			},
-			args: args{
-				ctx: metadata.NewIncomingContext(context.TODO(), metadata.MD{"Authorization": []string{fmt.Sprintf("bearer %s", loginResponse.AccessToken)}}),
-			},
-			wantCtx: ValidClaimAssertion,
-		},
-		{
-			name: "Request without bearer token using a public key",
-			configureArgs: configureArgs{
-				opts: []service.AuthOption{service.WithPublicKey(authService.GetPublicKey())},
-			},
-			args: args{
-				ctx: context.TODO(),
-			},
-			wantErr: func(tt assert.TestingT, e error, i ...interface{}) bool {
-				return assert.ErrorIs(tt, e, status.Error(codes.Unauthenticated, "invalid auth token"))
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			config := service.ConfigureAuth(tt.configureArgs.opts...)
-			got, err := config.AuthFunc(tt.args.ctx)
-
-			if tt.wantJWKS {
-				assert.NotNil(t, config.Jwks)
-			}
-
-			if tt.wantErr != nil {
-				tt.wantErr(t, err, tt.args.ctx)
-			}
-
-			if tt.wantCtx != nil {
-				tt.wantCtx(t, got, tt.args.ctx)
-			}
-		})
-	}
-}
-
-func ValidClaimAssertion(tt assert.TestingT, i1 interface{}, _ ...interface{}) bool {
-	ctx, ok := i1.(context.Context)
-	if !ok {
-		tt.Errorf("Return value is not a context")
-		return false
-	}
-
-	claims, ok := ctx.Value(service.AuthContextKey).(*jwt.RegisteredClaims)
-	if !ok {
-		tt.Errorf("Token value in context not a JWT claims object")
-		return false
-	}
-
-	if claims.Subject != "clouditor" {
-		tt.Errorf("Subject is not correct")
-		return true
-	}
-
-	return true
 }

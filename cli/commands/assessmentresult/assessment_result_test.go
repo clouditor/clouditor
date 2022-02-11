@@ -27,6 +27,7 @@ package assessmentresult
 
 import (
 	"bytes"
+	"clouditor.io/clouditor/service"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -39,7 +40,6 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
-	service_auth "clouditor.io/clouditor/service/auth"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
 	"github.com/spf13/viper"
@@ -55,7 +55,6 @@ func TestMain(m *testing.M) {
 		sock                net.Listener
 		server              *grpc.Server
 		orchestratorService *service_orchestrator.Service
-		authService         *service_auth.Service
 
 		err error
 		dir string
@@ -67,9 +66,8 @@ func TestMain(m *testing.M) {
 	}
 
 	orchestratorService = service_orchestrator.NewService()
-	authService = service_auth.NewService(service_auth.WithApiKeySaveOnCreate(false))
 
-	sock, server, err = authService.StartDedicatedServer(":0")
+	sock, server, _, err = service.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}

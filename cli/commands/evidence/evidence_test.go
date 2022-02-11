@@ -27,6 +27,7 @@ package evidence
 
 import (
 	"bytes"
+	"clouditor.io/clouditor/service"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -38,7 +39,6 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
-	service_auth "clouditor.io/clouditor/service/auth"
 	service_evidenceStore "clouditor.io/clouditor/service/evidence"
 
 	"clouditor.io/clouditor/voc"
@@ -55,7 +55,6 @@ func TestMain(m *testing.M) {
 		sock                 net.Listener
 		server               *grpc.Server
 		evidenceStoreService *service_evidenceStore.Service
-		authService          *service_auth.Service
 
 		err error
 		dir string
@@ -66,10 +65,9 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	authService = service_auth.NewService(service_auth.WithApiKeySaveOnCreate(false))
 	evidenceStoreService = service_evidenceStore.NewService()
 
-	sock, server, err = authService.StartDedicatedServer(":0")
+	sock, server, _, err = service.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}

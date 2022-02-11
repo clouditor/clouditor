@@ -26,13 +26,12 @@
 package login
 
 import (
+	"clouditor.io/clouditor/service"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"os"
 	"testing"
-
-	service_auth "clouditor.io/clouditor/service/auth"
 
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -40,19 +39,15 @@ import (
 )
 
 var (
-	sock        net.Listener
-	server      *grpc.Server
-	authService *service_auth.Service
+	sock   net.Listener
+	server *grpc.Server
 )
 
 func TestMain(m *testing.M) {
 	var (
 		err error
 	)
-
-	authService = service_auth.NewService(service_auth.WithApiKeySaveOnCreate(false))
-
-	sock, server, err = authService.StartDedicatedServer(":0")
+	sock, server, _, err = service.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}

@@ -34,10 +34,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"io/ioutil"
-	"net"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -46,11 +43,9 @@ import (
 
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/service"
 	argon2 "github.com/alexedwards/argon2id"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -403,36 +398,6 @@ func (s Service) issueToken(subject string, fullName string, email string, expir
 
 	token, err = claims.SignedString(s.apiKey)
 	return
-}
-
-// StartDedicatedServer starts a gRPC server containing just the auth service
-func (s *Service) StartDedicatedServer(address string) (sock net.Listener, server *grpc.Server, err error) {
-	// create a new socket for gRPC communication
-	sock, err = net.Listen("tcp", address)
-	if err != nil {
-		return nil, nil, fmt.Errorf("could not listen: %w", err)
-	}
-
-	err = s.CreateDefaultUser("clouditor", "clouditor")
-	if err != nil {
-		return nil, nil, fmt.Errorf("could not create default user: %v", err)
-	}
-
-	authConfig := service.ConfigureAuth(service.WithPublicKey(s.GetPublicKey()))
-
-	server = grpc.NewServer(
-		grpc_middleware.WithUnaryServerChain(
-			grpc_auth.UnaryServerInterceptor(authConfig.AuthFunc),
-		),
-	)
-	auth.RegisterAuthenticationServer(server, s)
-
-	go func() {
-		// serve the gRPC socket
-		_ = server.Serve(sock)
-	}()
-
-	return sock, server, nil
 }
 
 func (s Service) GetPublicKey() *ecdsa.PublicKey {

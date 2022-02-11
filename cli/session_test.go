@@ -26,6 +26,7 @@
 package cli
 
 import (
+	"clouditor.io/clouditor/service"
 	"context"
 	"fmt"
 	"io/ioutil"
@@ -36,7 +37,6 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"clouditor.io/clouditor/api/auth"
-	service_auth "clouditor.io/clouditor/service/auth"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -51,17 +51,13 @@ var (
 
 func TestMain(m *testing.M) {
 	var (
-		authService *service_auth.Service
-
 		err error
 	)
-
+	err = os.Chdir("../")
 	if err != nil {
 		panic(err)
 	}
-	authService = service_auth.NewService(service_auth.WithApiKeySaveOnCreate(false))
-
-	sock, server, err = authService.StartDedicatedServer(":0")
+	sock, server, _, err = service.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}
