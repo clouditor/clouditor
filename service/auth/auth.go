@@ -359,7 +359,6 @@ func hashPassword(password string) (string, error) {
 }
 
 // CreateDefaultUser creates a default user in the database
-// TODO(all): return created user?
 func (s *Service) CreateDefaultUser(username string, password string) error {
 	var (
 		storedUsers []*auth.User
