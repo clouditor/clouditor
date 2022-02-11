@@ -43,34 +43,55 @@ type Storage struct {
 	db *gorm.DB
 }
 
+// StorageOption is a functional option type to configure the GORM storage
+type StorageOption func(*Storage) error
+
+// WithInMemory is an option to configure Storage to use an in memory DB
+func WithInMemory() StorageOption {
+	return func(s *Storage) (err error) {
+		if s.db, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{}); err != nil {
+			return
+		}
+		log.Println("Using in-memory DB")
+		return
+	}
+}
+
+// WithPostgres is an option to configure Storage to use a Postgres DB
+func WithPostgres(host string, port int16) StorageOption {
+	return func(s *Storage) (err error) {
+		if s.db, err = gorm.Open(postgres.Open(fmt.Sprintf("postgres://postgres@%s:%d/postgres?sslmode=disable", host, port)), &gorm.Config{}); err != nil {
+			return
+		}
+		log.Printf("Using postgres DB @ %s", host)
+		return
+	}
+}
+
 func init() {
 	log = logrus.WithField("component", "storage")
 }
 
-// NewStorage creates a new storage using GORM
-// TODO(lebogg): Maybe rename 'Storage' part in name. Have to see in usage with package name ect.
-func NewStorage(inMemory bool, host string, port int16) (s *Storage, err error) {
+// NewStorage creates a new storage using GORM (which DB to use depends on the StorageOption)
+func NewStorage(opt StorageOption) (s *Storage, err error) {
 	s = &Storage{}
 
-	if inMemory {
-		if s.db, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{}); err != nil {
-			return nil, err
-		}
-		log.Println("Using in-memory DB")
-	} else {
-		if s.db, err = gorm.Open(postgres.Open(fmt.Sprintf("postgres://postgres@%s:%d/postgres?sslmode=disable", host, port)), &gorm.Config{}); err != nil {
-			return nil, err
-		}
-
-		log.Printf("Using postgres DB @ %s", host)
+	// Configure the storage, e.g. set it to be an in memory DB
+	err = opt(s)
+	if err != nil {
+		return nil, err
 	}
 
+	// After successful DB initialization, migrate the schema
+	// Migrate User
 	if err = s.db.AutoMigrate(&auth.User{}); err != nil {
-		return nil, fmt.Errorf("error during auto-migration: %w", err)
+		err = fmt.Errorf("error during auto-migration: %w", err)
+		return
 	}
-
+	// Migrate CloudService
 	if err = s.db.AutoMigrate(&orchestrator.CloudService{}); err != nil {
-		return nil, fmt.Errorf("error during auto-migration: %w", err)
+		err = fmt.Errorf("error during auto-migration: %w", err)
+		return
 	}
 
 	return

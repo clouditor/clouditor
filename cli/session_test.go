@@ -56,7 +56,7 @@ var (
 func TestMain(m *testing.M) {
 	var err error
 
-	db, err = gorm.NewStorage(true, "", 0)
+	db, err = gorm.NewStorage(gorm.WithInMemory())
 	if err != nil {
 		panic(err)
 	}

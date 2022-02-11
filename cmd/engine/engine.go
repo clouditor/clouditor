@@ -186,9 +186,13 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
  `)
 
-	if db, err = gorm.NewStorage(viper.GetBool(DBInMemoryFlag),
-		viper.GetString(DBHostFlag),
-		int16(viper.GetInt(DBPortFlag))); err != nil {
+	// Initialize DB: In memory (SQLite) or Postgres
+	if viper.GetBool(DBInMemoryFlag) {
+		db, err = gorm.NewStorage(gorm.WithInMemory())
+	} else {
+		db, err = gorm.NewStorage(gorm.WithPostgres(viper.GetString(DBHostFlag), int16(viper.GetInt(DBPortFlag))))
+	}
+	if err != nil {
 		return fmt.Errorf("could not initialize DB: %w", err)
 	}
 

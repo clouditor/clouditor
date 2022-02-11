@@ -68,7 +68,7 @@ func TestMain(m *testing.M) {
 	)
 
 	// A small embedded DB is needed for the server
-	db, err = gorm.NewStorage(true, "", 0)
+	db, err = gorm.NewStorage(gorm.WithInMemory())
 	if err != nil {
 		panic(err)
 	}

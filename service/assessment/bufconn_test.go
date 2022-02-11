@@ -66,7 +66,7 @@ func startBufConnServer() (*grpc.Server, *service_auth.Service, *service_orchest
 	server := grpc.NewServer()
 
 	// We do not want a persistent key storage here
-	db, err = gorm.NewStorage(true, "", 0)
+	db, err = gorm.NewStorage(gorm.WithInMemory())
 	if err != nil {
 		panic(err)
 	}
