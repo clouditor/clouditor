@@ -42,7 +42,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -83,7 +82,7 @@ const (
 	// DefaultEvidenceStoreAddress specifies the default gRPC address of the evidence store.
 	DefaultEvidenceStoreAddress = "localhost:9090"
 
-	// DefaultEvidenceStoreAddress specifies the default gRPC address of the orchestrator.
+	// DefaultOrchestratorAddress specifies the default gRPC address of the orchestrator.
 	DefaultOrchestratorAddress = "localhost:9090"
 )
 
@@ -97,7 +96,7 @@ func WithEvidenceStoreAddress(address string) ServiceOption {
 	}
 }
 
-// WithEvidenceStoreAddress is an option to configure the orchestrator gRPC address.
+// WithOrchestratorAddress is an option to configure the orchestrator gRPC address.
 func WithOrchestratorAddress(address string) ServiceOption {
 	return func(s *Service) {
 		s.orchestratorAddress = address
@@ -152,10 +151,11 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 		s.informHooks(nil, newError)
 
 		res = &assessment.AssessEvidenceResponse{
-			Status: false,
+			Status:        false,
+			StatusMessage: newError.Error(),
 		}
 
-		return res, status.Errorf(codes.InvalidArgument, "%v", newError)
+		return res, status.Error(codes.InvalidArgument, "invalid evidence")
 	}
 
 	// Assess evidence
@@ -163,10 +163,13 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 
 	if err != nil {
 		res = &assessment.AssessEvidenceResponse{
-			Status: false,
+			Status:        false,
+			StatusMessage: err.Error(),
 		}
 
 		log.Errorf("Error while handling evidence: %v", err)
+
+		//TODO (garuppel): If function is called from AssessEvidences() than return whole error? Or use error from res in AssessEvidences()
 		return res, status.Error(codes.Internal, "error while handling evidence")
 	}
 
@@ -177,32 +180,45 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 	return res, nil
 }
 
-// AssessEvidences is a method implementation of the assessment interface: It assesses multiple evidences (stream)
+// AssessEvidences is a method implementation of the assessment interface: It assesses multiple evidences (streamToServer) and responds with a streamToServer of status messages
 func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) (err error) {
 	var (
 		req *assessment.AssessEvidenceRequest
+		res *assessment.AssessEvidenceResponse
+		//sendResponse *assessment.AssessEvidenceResponse
 	)
 
 	for {
+
+		// TODO(all): Check context?
 		req, err = stream.Recv()
 
+		if err == io.EOF {
+			return nil
+		}
 		if err != nil {
-			// If no more input of the stream is available, return SendAndClose `error`
-			if err == io.EOF {
-				log.Infof("Stopped receiving streamed evidences")
-				return stream.SendAndClose(&emptypb.Empty{})
-			}
-
-			return err
+			log.Errorf("Assessment: Cannot receive streamToServer request: %v", err)
+			return status.Errorf(codes.Unknown, "cannot receive streamToServer request: %v", err)
 		}
 
 		// Call AssessEvidence for assessing a single evidence
 		assessEvidencesReq := &assessment.AssessEvidenceRequest{
 			Evidence: req.Evidence,
 		}
-		_, err = s.AssessEvidence(context.Background(), assessEvidencesReq)
+
+		res, err = s.AssessEvidence(context.Background(), assessEvidencesReq)
+		/*if err != nil {
+			sendResponse = &assessment.AssessEvidenceResponse{
+				Status: false,
+				StatusMessage: res.StatusMessage,
+			}
+		}*/
+
+		log.Infof("Send response for evidence (ID) %s from assessment service to the client: %v", req.Evidence.Id, res)
+		err = stream.Send(res)
 		if err != nil {
-			log.Errorf("Error assessing evidence: %v", err)
+			log.Fatalf("Error when response was sent to the client: %v", res)
+			return status.Errorf(codes.Unknown, "cannot send streamToServer response: %v", err)
 		}
 	}
 }
@@ -316,7 +332,7 @@ func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result
 	s.resultHooks = append(s.resultHooks, assessmentResultsHook)
 }
 
-// initEvidenceStoreStream initializes the stream to the Evidence Store
+// initEvidenceStoreStream initializes the streamToServer to the Evidence Store
 func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) error {
 	log.Infof("Trying to establish a connection to evidence store service @ %v", s.evidenceStoreAddress)
 
@@ -331,7 +347,7 @@ func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) err
 	evidenceStoreClient := evidence.NewEvidenceStoreClient(conn)
 	s.evidenceStoreStream, err = evidenceStoreClient.StoreEvidences(context.Background())
 	if err != nil {
-		return fmt.Errorf("could not set up stream for storing evidences: %w", err)
+		return fmt.Errorf("could not set up streamToServer for storing evidences: %w", err)
 	}
 
 	log.Infof("Connected to Evidence Store")
@@ -344,7 +360,7 @@ func (s *Service) sendToEvidenceStore(e *evidence.Evidence) error {
 	if s.evidenceStoreStream == nil {
 		err := s.initEvidenceStoreStream()
 		if err != nil {
-			return fmt.Errorf("could not initialize stream to Evidence Store: %v", err)
+			return fmt.Errorf("could not initialize streamToServer to Evidence Store: %v", err)
 		}
 	}
 	log.Infof("Sending evidence (%v) to Evidence Store", e.Id)
@@ -355,7 +371,7 @@ func (s *Service) sendToEvidenceStore(e *evidence.Evidence) error {
 	return nil
 }
 
-// initOrchestratorStream initializes the stream to the Orchestrator
+// initOrchestratorStream initializes the streamToServer to the Orchestrator
 func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) error {
 	log.Infof("Trying to establish a connection to orchestrator service @ %v", s.orchestratorAddress)
 
@@ -370,7 +386,7 @@ func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) erro
 	orchestratorClient := orchestrator.NewOrchestratorClient(conn)
 	s.orchestratorStream, err = orchestratorClient.StoreAssessmentResults(context.Background())
 	if err != nil {
-		return fmt.Errorf("could not set up stream for storing assessment results: %w", err)
+		return fmt.Errorf("could not set up streamToServer for storing assessment results: %w", err)
 	}
 	log.Infof("Connected to Orchestrator")
 	return nil
@@ -381,11 +397,15 @@ func (s *Service) sendToOrchestrator(result *assessment.AssessmentResult) error 
 	if s.orchestratorStream == nil {
 		err := s.initOrchestratorStream()
 		if err != nil {
-			return fmt.Errorf("could not initialize stream to Orchestrator: %v", err)
+			return fmt.Errorf("could not initialize streamToServer to Orchestrator: %v", err)
 		}
 	}
 	log.Infof("Sending assessment result (%v) to Orchestrator", result.Id)
-	err := s.orchestratorStream.Send(result)
+
+	req := &orchestrator.StoreAssessmentResultRequest{
+		Result: result,
+	}
+	err := s.orchestratorStream.Send(req)
 	if err != nil {
 		return err
 	}

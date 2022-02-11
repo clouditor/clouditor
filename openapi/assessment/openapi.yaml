@@ -1,19 +1,15 @@
 # Generated with protoc-gen-openapi
-# https://github.com/google/gnostic/tree/master/apps/protoc-gen-openapi
+# https://github.com/googleapis/gnostic/tree/master/apps/protoc-gen-openapi
 
 openapi: 3.0.3
 info:
-    title: Assessment API
-    description: |-
-        Representing the link between orchestrator and discovery: Assessing evidences
-         from discovery and sending results to orchestrator
+    title: Assessment
+    description: 'Representing the link between orchestrator and discovery: Assessing evidences from discovery and sending results to orchestrator'
     version: 0.0.1
 paths:
     /v1/assessment/evidences:
         post:
-            tags:
-                - Assessment
-            description: Assesses the evidence sent by the discovery. Part of the public API, also exposed as REST.
+            summary: Assesses the evidence sent by the discovery. Part of the public API, also exposed as REST.
             operationId: Assessment_AssessEvidence
             requestBody:
                 content:
@@ -30,9 +26,7 @@ paths:
                                 $ref: '#/components/schemas/AssessEvidenceResponse'
     /v1/assessment/results:
         get:
-            tags:
-                - Assessment
-            description: List all assessment results. Part of the public API, also exposed as REST.
+            summary: List all assessment results. Part of the public API, also exposed as REST.
             operationId: Assessment_ListAssessmentResults
             responses:
                 "200":
@@ -44,12 +38,12 @@ paths:
 components:
     schemas:
         AssessEvidenceResponse:
-            type: object
             properties:
                 status:
                     type: boolean
+                statusMessage:
+                    type: string
         AssessmentResult:
-            type: object
             properties:
                 id:
                     type: string
@@ -58,26 +52,25 @@ components:
                     type: string
                     description: Time of assessment
                     format: RFC3339
-                metricId:
+                metric_id:
                     type: string
                     description: Reference to the metric the assessment was based on
-                metricConfiguration:
+                metric_configuration:
                     $ref: '#/components/schemas/MetricConfiguration'
                 compliant:
                     type: boolean
                     description: 'Compliant case: true or false'
-                evidenceId:
+                evidence_id:
                     type: string
                     description: Reference to the assessed evidence
-                resourceId:
+                resource_id:
                     type: string
                     description: Reference to the resource of the assessed evidence
-                nonComplianceComments:
+                non_compliance_comments:
                     type: string
                     description: Some comments on the reason for non-compliance
             description: A result resource, representing the result after assessing the cloud resource with id resource_id.
         Evidence:
-            type: object
             properties:
                 id:
                     type: string
@@ -86,10 +79,10 @@ components:
                     type: string
                     description: time of evidence creation
                     format: RFC3339
-                serviceId:
+                service_id:
                     type: string
                     description: Reference to a service this evidence was gathered from
-                toolId:
+                tool_id:
                     type: string
                     description: Reference to the tool which provided the evidence
                 raw:
@@ -99,14 +92,12 @@ components:
                     $ref: '#/components/schemas/Value'
             description: An evidence resource
         ListAssessmentResultsResponse:
-            type: object
             properties:
                 results:
                     type: array
                     items:
                         $ref: '#/components/schemas/AssessmentResult'
         ListValue:
-            type: object
             properties:
                 values:
                     type: array
@@ -115,39 +106,39 @@ components:
                     description: Repeated field of dynamically typed values.
             description: '`ListValue` is a wrapper around a repeated field of values. The JSON representation for `ListValue` is JSON array.'
         MetricConfiguration:
-            type: object
             properties:
                 operator:
                     type: string
                     description: The operator to compare the metric, such as == or >
-                targetValue:
+                target_value:
                     $ref: '#/components/schemas/Value'
-                isDefault:
+                is_default:
                     type: boolean
                     description: Whether this configuration is a default configuration
             description: Defines the operator and a target value for an individual metric
-        Value:
-            type: object
+        Struct:
             properties:
-                nullValue:
+                fields:
+                    $ref: '#/components/schemas/FieldsEntry'
+            description: '`Struct` represents a structured data value, consisting of fields which map to dynamically typed values. In some languages, `Struct` might be supported by a native representation. For example, in scripting languages like JS a struct is represented as an object. The details of that representation are described together with the proto support for the language. The JSON representation for `Struct` is JSON object.'
+        Value:
+            properties:
+                null_value:
                     type: integer
                     description: Represents a null value.
                     format: enum
-                numberValue:
+                number_value:
                     type: number
                     description: Represents a double value.
                     format: double
-                stringValue:
+                string_value:
                     type: string
                     description: Represents a string value.
-                boolValue:
+                bool_value:
                     type: boolean
                     description: Represents a boolean value.
-                structValue:
-                    type: object
-                    description: Represents a structured value.
-                listValue:
+                struct_value:
+                    $ref: '#/components/schemas/Struct'
+                list_value:
                     $ref: '#/components/schemas/ListValue'
             description: '`Value` represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values. A producer of value is expected to set one of that variants, absence of any variant indicates an error. The JSON representation for `Value` is JSON value.'
-tags:
-    - name: Assessment
