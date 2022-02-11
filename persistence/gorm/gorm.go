@@ -119,7 +119,6 @@ func (s *storage) List(r interface{}, conds ...interface{}) error {
 }
 
 func (s *storage) Count(r interface{}, conds ...interface{}) (count int64, err error) {
-	// TODO(lebogg): Test if this method chain works!
 	err = s.db.Model(r).Where(conds).Count(&count).Error
 	return
 }
