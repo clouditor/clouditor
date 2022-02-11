@@ -28,6 +28,7 @@ package main
 import (
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
+	"clouditor.io/clouditor/persistence/inmemory"
 	"context"
 	"errors"
 	"fmt"
@@ -186,18 +187,19 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
  `)
 
-	// Initialize DB: In memory (SQLite) or Postgres
 	if viper.GetBool(DBInMemoryFlag) {
-		db, err = gorm.NewStorage(gorm.WithInMemory())
+		db, err = inmemory.NewStorage()
 	} else {
 		db, err = gorm.NewStorage(gorm.WithPostgres(viper.GetString(DBHostFlag), int16(viper.GetInt(DBPortFlag))))
 	}
 	if err != nil {
-		return fmt.Errorf("could not initialize DB: %w", err)
+		// We could also just log the error and forward db = nil which will result in inmemory storages
+		// for each service below
+		return fmt.Errorf("could not create storage: %w", err)
 	}
 
 	authService = service_auth.NewService(
-		db,
+		service_auth.WithStorage(db),
 		service_auth.WithApiKeyPassword(viper.GetString(APIKeyPasswordFlag)),
 		service_auth.WithApiKeyPath(viper.GetString(APIKeyPathFlag)),
 		service_auth.WithApiKeySaveOnCreate(viper.GetBool(APIKeySaveOnCreateFlag)),
@@ -209,7 +211,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			viper.GetString(APIDefaultPasswordFlag),
 		),
 	)
-	orchestratorService = service_orchestrator.NewService(db)
+	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db))
 	assessmentService = service_assessment.NewService(
 		service_assessment.WithInternalAuthorizer(
 			service.DefaultInternalAuthorizerAddress,

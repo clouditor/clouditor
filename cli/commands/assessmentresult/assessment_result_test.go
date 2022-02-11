@@ -27,7 +27,6 @@ package assessmentresult
 
 import (
 	"bytes"
-	"clouditor.io/clouditor/persistence/gorm"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -40,7 +39,6 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
-	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
@@ -52,18 +50,15 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-var (
-	sock   net.Listener
-	server *grpc.Server
-	db     persistence.Storage
-)
-
 func TestMain(m *testing.M) {
 	var (
-		err                 error
-		dir                 string
+		sock                net.Listener
+		server              *grpc.Server
 		orchestratorService *service_orchestrator.Service
 		authService         *service_auth.Service
+
+		err error
+		dir string
 	)
 
 	err = os.Chdir("../../../")
@@ -71,13 +66,8 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	db, err = gorm.NewStorage(gorm.WithInMemory())
-	if err != nil {
-		panic(err)
-	}
-
-	orchestratorService = service_orchestrator.NewService(db)
-	authService = service_auth.NewService(db, service_auth.WithApiKeySaveOnCreate(false))
+	orchestratorService = service_orchestrator.NewService()
+	authService = service_auth.NewService(service_auth.WithApiKeySaveOnCreate(false))
 
 	sock, server, err = authService.StartDedicatedServer(":0")
 	if err != nil {

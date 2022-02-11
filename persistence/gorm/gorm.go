@@ -39,32 +39,27 @@ import (
 
 var log *logrus.Entry
 
-type Storage struct {
+type storage struct {
 	db *gorm.DB
+	// for options: (set default when not in opts)
+	dialector gorm.Dialector
+	config    gorm.Config
 }
 
-// StorageOption is a functional option type to configure the GORM storage
-type StorageOption func(*Storage) error
+// StorageOption is a functional option type to configure the GORM storage. E.g. WithInMemory or WithPostgres
+type StorageOption func(*storage)
 
 // WithInMemory is an option to configure Storage to use an in memory DB
 func WithInMemory() StorageOption {
-	return func(s *Storage) (err error) {
-		if s.db, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{}); err != nil {
-			return
-		}
-		log.Println("Using in-memory DB")
-		return
+	return func(s *storage) {
+		s.dialector = sqlite.Open(":memory:")
 	}
 }
 
 // WithPostgres is an option to configure Storage to use a Postgres DB
 func WithPostgres(host string, port int16) StorageOption {
-	return func(s *Storage) (err error) {
-		if s.db, err = gorm.Open(postgres.Open(fmt.Sprintf("postgres://postgres@%s:%d/postgres?sslmode=disable", host, port)), &gorm.Config{}); err != nil {
-			return
-		}
-		log.Printf("Using postgres DB @ %s", host)
-		return
+	return func(s *storage) {
+		s.dialector = postgres.Open(fmt.Sprintf("postgres://postgres@%s:%d/postgres?sslmode=disable", host, port))
 	}
 }
 
@@ -73,35 +68,44 @@ func init() {
 }
 
 // NewStorage creates a new storage using GORM (which DB to use depends on the StorageOption)
-func NewStorage(opt StorageOption) (s *Storage, err error) {
-	s = &Storage{}
+func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
+	g := &storage{}
 
-	// Configure the storage, e.g. set it to be an in memory DB
-	err = opt(s)
+	// Init storage
+	log.Println("Creating storage")
+	for _, o := range opts {
+		o(g)
+	}
+	if g.dialector == nil {
+		WithInMemory()(g)
+	}
+
+	g.db, err = gorm.Open(g.dialector, &g.config)
 	if err != nil {
 		return nil, err
 	}
 
 	// After successful DB initialization, migrate the schema
 	// Migrate User
-	if err = s.db.AutoMigrate(&auth.User{}); err != nil {
+	if err = g.db.AutoMigrate(&auth.User{}); err != nil {
 		err = fmt.Errorf("error during auto-migration: %w", err)
 		return
 	}
 	// Migrate CloudService
-	if err = s.db.AutoMigrate(&orchestrator.CloudService{}); err != nil {
+	if err = g.db.AutoMigrate(&orchestrator.CloudService{}); err != nil {
 		err = fmt.Errorf("error during auto-migration: %w", err)
 		return
 	}
 
+	s = g
 	return
 }
 
-func (s *Storage) Create(r interface{}) error {
+func (s *storage) Create(r interface{}) error {
 	return s.db.Create(r).Error
 }
 
-func (s *Storage) Get(r interface{}, conds ...interface{}) (err error) {
+func (s *storage) Get(r interface{}, conds ...interface{}) (err error) {
 	err = s.db.First(r, conds).Error
 	// if record is not found, use the error message defined in the persistence package
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -110,23 +114,23 @@ func (s *Storage) Get(r interface{}, conds ...interface{}) (err error) {
 	return
 }
 
-func (s *Storage) List(r interface{}, conds ...interface{}) error {
+func (s *storage) List(r interface{}, conds ...interface{}) error {
 	return s.db.Find(r, conds).Error
 }
 
-func (s *Storage) Count(r interface{}, conds ...interface{}) (count int64, err error) {
+func (s *storage) Count(r interface{}, conds ...interface{}) (count int64, err error) {
 	// TODO(lebogg): Test if this method chain works!
 	err = s.db.Model(r).Where(conds).Count(&count).Error
 	return
 }
 
-func (s *Storage) Update(r interface{}, _ ...interface{}) error {
+func (s *storage) Update(r interface{}, _ ...interface{}) error {
 	// TODO(lebogg): Open discussion about update vs. save, i.e. only individual fields should be updates or not
 	return s.db.Save(r).Error
 }
 
 // Delete deletes record with given id. If no record was found, returns ErrRecordNotFound
-func (s *Storage) Delete(r interface{}, conds ...interface{}) error {
+func (s *storage) Delete(r interface{}, conds ...interface{}) error {
 	// if id is empty remove all records -> currently used for testing.
 	if len(conds) == 0 {
 		return s.db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(r).Error
@@ -145,12 +149,12 @@ func (s *Storage) Delete(r interface{}, conds ...interface{}) error {
 }
 
 // GetDatabase returns the database
-func (s *Storage) GetDatabase() *gorm.DB {
+func (s *storage) GetDatabase() *gorm.DB {
 	return s.db
 }
 
 // Reset resets entire the database
-func (s *Storage) Reset() (err error) {
+func (s *storage) Reset() (err error) {
 	if err = s.Delete(&orchestrator.CloudService{}); err != nil {
 		return
 	}

@@ -27,7 +27,6 @@ package orchestrator
 
 import (
 	"bytes"
-	"clouditor.io/clouditor/persistence/gorm"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -40,7 +39,6 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
-	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
@@ -57,7 +55,6 @@ var (
 	server              *grpc.Server
 	authServices        *service_auth.Service
 	orchestratorService *service_orchestrator.Service
-	db                  persistence.Storage
 )
 
 func TestMain(m *testing.M) {
@@ -71,12 +68,8 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	db, err = gorm.NewStorage(gorm.WithInMemory())
-	if err != nil {
-		panic(err)
-	}
-	authServices = service_auth.NewService(db, service_auth.WithApiKeySaveOnCreate(false))
-	orchestratorService = service_orchestrator.NewService(db)
+	authServices = service_auth.NewService(service_auth.WithApiKeySaveOnCreate(false))
+	orchestratorService = service_orchestrator.NewService()
 
 	sock, server, err = authServices.StartDedicatedServer(":0")
 	if err != nil {

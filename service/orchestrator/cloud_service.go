@@ -60,7 +60,7 @@ func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.Regi
 	service.Description = req.Service.Description
 
 	// Persist the service in our database
-	err = s.db.Create(&service)
+	err = s.storage.Create(&service)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not add cloud service to the database: %v", err)
 	}
@@ -73,7 +73,7 @@ func (s *Service) ListCloudServices(_ context.Context, _ *orchestrator.ListCloud
 	response = new(orchestrator.ListCloudServicesResponse)
 	response.Services = make([]*orchestrator.CloudService, 0)
 
-	err = s.db.List(&response.Services)
+	err = s.storage.List(&response.Services)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -91,7 +91,7 @@ func (s *Service) GetCloudService(_ context.Context, req *orchestrator.GetCloudS
 	}
 
 	response = new(orchestrator.CloudService)
-	err = s.db.Get(&response, "Id = ?", req.ServiceId)
+	err = s.storage.Get(&response, "Id = ?", req.ServiceId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "service not found")
 	} else if err != nil {
@@ -111,7 +111,7 @@ func (s *Service) UpdateCloudService(_ context.Context, req *orchestrator.Update
 		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
 	}
 
-	count, err := s.db.Count(req.Service, "Id = ?", req.ServiceId)
+	count, err := s.storage.Count(req.Service, "Id = ?", req.ServiceId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -123,7 +123,7 @@ func (s *Service) UpdateCloudService(_ context.Context, req *orchestrator.Update
 	response = req.Service
 	response.Id = req.ServiceId
 
-	err = s.db.Update(response, "Id = ?", req.ServiceId)
+	err = s.storage.Update(response, "Id = ?", req.ServiceId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
@@ -137,7 +137,7 @@ func (s *Service) RemoveCloudService(_ context.Context, req *orchestrator.Remove
 		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
 	}
 
-	err = s.db.Delete(&orchestrator.CloudService{}, req.ServiceId)
+	err = s.storage.Delete(&orchestrator.CloudService{}, req.ServiceId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "service not found")
 	} else if err != nil {
@@ -154,7 +154,7 @@ func (s *Service) RemoveCloudService(_ context.Context, req *orchestrator.Remove
 func (s *Service) CreateDefaultTargetCloudService() (service *orchestrator.CloudService, err error) {
 	log.Infof("Creating new default target cloud service...")
 	const couldNotCreateService = "Could not create default target cloud service"
-	count, err := s.db.Count(service)
+	count, err := s.storage.Count(service)
 	if err != nil {
 		log.Infof(couldNotCreateService)
 		return nil, err
@@ -169,7 +169,7 @@ func (s *Service) CreateDefaultTargetCloudService() (service *orchestrator.Cloud
 				Description: DefaultTargetCloudServiceDescription,
 			}
 		// Save it directly into the database, so that we can set the ID
-		err = s.db.Create(&service)
+		err = s.storage.Create(&service)
 		if err != nil {
 			log.Infof(couldNotCreateService)
 			return

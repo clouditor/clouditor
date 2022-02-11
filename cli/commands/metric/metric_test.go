@@ -27,7 +27,6 @@ package metric
 
 import (
 	"bytes"
-	"clouditor.io/clouditor/persistence/gorm"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -37,7 +36,6 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
-	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
@@ -47,16 +45,13 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-var (
-	sock                net.Listener
-	server              *grpc.Server
-	orchestratorService *service_orchestrator.Service
-	authService         *service_auth.Service
-	db                  persistence.Storage
-)
-
 func TestMain(m *testing.M) {
 	var (
+		sock                net.Listener
+		server              *grpc.Server
+		orchestratorService *service_orchestrator.Service
+		authService         *service_auth.Service
+
 		err error
 		dir string
 	)
@@ -66,13 +61,8 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	db, err = gorm.NewStorage(gorm.WithInMemory())
-	if err != nil {
-		panic(err)
-	}
-
-	orchestratorService = service_orchestrator.NewService(db)
-	authService = service_auth.NewService(db, service_auth.WithApiKeySaveOnCreate(false))
+	orchestratorService = service_orchestrator.NewService()
+	authService = service_auth.NewService(service_auth.WithApiKeySaveOnCreate(false))
 
 	sock, server, err = authService.StartDedicatedServer(":0")
 	orchestrator.RegisterOrchestratorServer(server, orchestratorService)

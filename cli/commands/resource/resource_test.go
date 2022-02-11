@@ -27,7 +27,6 @@ package resource
 
 import (
 	"bytes"
-	"clouditor.io/clouditor/persistence/gorm"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -38,7 +37,6 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
-	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_discovery "clouditor.io/clouditor/service/discovery"
 
@@ -54,7 +52,6 @@ var (
 	server           *grpc.Server
 	authServices     *service_auth.Service
 	discoveryService *service_discovery.Service
-	db               persistence.Storage
 )
 
 func TestMain(m *testing.M) {
@@ -68,11 +65,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	db, err = gorm.NewStorage(gorm.WithInMemory())
-	if err != nil {
-		panic(err)
-	}
-	authServices = service_auth.NewService(db, service_auth.WithApiKeySaveOnCreate(false))
+	authServices = service_auth.NewService(service_auth.WithApiKeySaveOnCreate(false))
 	discoveryService = service_discovery.NewService()
 	discoveryService.StartDiscovery(mockDiscoverer{testCase: 2})
 

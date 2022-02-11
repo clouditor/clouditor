@@ -26,14 +26,12 @@
 package login
 
 import (
-	"clouditor.io/clouditor/persistence/gorm"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"os"
 	"testing"
 
-	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
 
 	"github.com/spf13/viper"
@@ -45,7 +43,6 @@ var (
 	sock        net.Listener
 	server      *grpc.Server
 	authService *service_auth.Service
-	db          persistence.Storage
 )
 
 func TestMain(m *testing.M) {
@@ -53,12 +50,7 @@ func TestMain(m *testing.M) {
 		err error
 	)
 
-	db, err = gorm.NewStorage(gorm.WithInMemory())
-	if err != nil {
-		panic(err)
-	}
-
-	authService = service_auth.NewService(db, service_auth.WithApiKeySaveOnCreate(false))
+	authService = service_auth.NewService(service_auth.WithApiKeySaveOnCreate(false))
 
 	sock, server, err = authService.StartDedicatedServer(":0")
 	if err != nil {

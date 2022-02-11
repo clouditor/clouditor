@@ -26,6 +26,7 @@
 package auth
 
 import (
+	"clouditor.io/clouditor/persistence/inmemory"
 	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
@@ -92,7 +93,7 @@ type Service struct {
 
 	apiKey *ecdsa.PrivateKey
 
-	db persistence.Storage
+	storage persistence.Storage
 }
 
 // UserClaims extend jwt.StandardClaims with more detailed claims about a user
@@ -126,8 +127,15 @@ func WithApiKeySaveOnCreate(saveOnCreate bool) ServiceOption {
 	}
 }
 
+// WithStorage is an option to set the storage. If not set, NewService will use inmemory storage.
+func WithStorage(storage persistence.Storage) ServiceOption {
+	return func(s *Service) {
+		s.storage = storage
+	}
+}
+
 // NewService creates a new Service representing an authentication service.
-func NewService(db persistence.Storage, opts ...ServiceOption) *Service {
+func NewService(opts ...ServiceOption) *Service {
 	var err error
 
 	s := &Service{
@@ -140,12 +148,17 @@ func NewService(db persistence.Storage, opts ...ServiceOption) *Service {
 			keyPath:         DefaultApiKeyPath,
 			keyPassword:     DefaultApiKeyPassword,
 		},
-		db: db,
 	}
 
 	// Apply options
 	for _, o := range opts {
 		o(s)
+	}
+	if s.storage == nil {
+		s.storage, err = inmemory.NewStorage()
+	}
+	if err != nil {
+		log.Errorf("Could not initialize the storage: %v", err)
 	}
 
 	// Load the key
@@ -310,7 +323,7 @@ func (s *Service) verifyLogin(request *auth.LoginRequest) (result bool, user *au
 
 	user = new(auth.User)
 
-	err = s.db.Get(user, "username = ?", request.Username)
+	err = s.storage.Get(user, "username = ?", request.Username)
 
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		// user not found, set result to false, but hide the error
@@ -353,7 +366,7 @@ func (s *Service) CreateDefaultUser(username string, password string) error {
 		err         error
 	)
 
-	err = s.db.List(&storedUsers)
+	err = s.storage.List(&storedUsers)
 	if err != nil && err != persistence.ErrRecordNotFound {
 		return status.Errorf(codes.Internal, "db error: %v", err)
 	} else if len(storedUsers) == 0 {
@@ -367,7 +380,7 @@ func (s *Service) CreateDefaultUser(username string, password string) error {
 
 		log.Infof("Creating default user %s\n", u.Username)
 
-		err = s.db.Create(&u)
+		err = s.storage.Create(&u)
 		if err != nil {
 			return err
 		}

@@ -27,8 +27,6 @@ package auth
 
 import (
 	"clouditor.io/clouditor/api/auth"
-	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/rest"
 	"clouditor.io/clouditor/service"
 	"context"
@@ -57,7 +55,6 @@ import (
 var (
 	grpcPort    int
 	authService *Service
-	db          persistence.Storage
 )
 
 func TestMain(m *testing.M) {
@@ -66,13 +63,7 @@ func TestMain(m *testing.M) {
 		server *grpc.Server
 		sock   net.Listener
 	)
-
-	// A small embedded DB is needed for the server
-	db, err = gorm.NewStorage(gorm.WithInMemory())
-	if err != nil {
-		panic(err)
-	}
-	authService = NewService(db)
+	authService = NewService()
 
 	// Start at least an authentication server, so that we have something to forward
 	sock, server, err = authService.StartDedicatedServer(":0")

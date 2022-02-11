@@ -26,7 +26,6 @@
 package rest
 
 import (
-	"clouditor.io/clouditor/persistence/gorm"
 	"context"
 	"errors"
 	"fmt"
@@ -38,7 +37,6 @@ import (
 	"testing"
 	"time"
 
-	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -50,7 +48,6 @@ var (
 	headers = DefaultAllowedHeaders
 
 	authService *service_auth.Service
-	db          persistence.Storage
 
 	grpcPort int = 0
 )
@@ -62,11 +59,7 @@ func TestMain(m *testing.M) {
 		sock   net.Listener
 	)
 
-	db, err = gorm.NewStorage(gorm.WithInMemory())
-	if err != nil {
-		panic(err)
-	}
-	authService = service_auth.NewService(db, service_auth.WithApiKeySaveOnCreate(false))
+	authService = service_auth.NewService(service_auth.WithApiKeySaveOnCreate(false))
 
 	// Start at least an authentication server, so that we have something to forward
 	sock, server, err = authService.StartDedicatedServer(":0")

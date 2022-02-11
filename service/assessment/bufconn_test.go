@@ -26,8 +26,6 @@
 package assessment
 
 import (
-	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/persistence/gorm"
 	"context"
 	"net"
 
@@ -45,7 +43,6 @@ const DefaultBufferSize = 1024 * 1024
 
 var (
 	bufConnListener *bufconn.Listener
-	db              persistence.Storage
 )
 
 func bufConnDialer(context.Context, string) (net.Conn, error) {
@@ -58,22 +55,15 @@ func bufConnDialer(context.Context, string) (net.Conn, error) {
 // * Orchestrator
 // * Evidence Store
 func startBufConnServer() (*grpc.Server, *service_auth.Service, *service_orchestrator.Service, *service_evidence.Service) {
-	var (
-		err error
-	)
 	bufConnListener = bufconn.Listen(DefaultBufferSize)
 
 	server := grpc.NewServer()
 
 	// We do not want a persistent key storage here
-	db, err = gorm.NewStorage(gorm.WithInMemory())
-	if err != nil {
-		panic(err)
-	}
-	authService := service_auth.NewService(db, service_auth.WithApiKeySaveOnCreate(false))
+	authService := service_auth.NewService(service_auth.WithApiKeySaveOnCreate(false))
 	auth.RegisterAuthenticationServer(server, authService)
 
-	orchestratorService := service_orchestrator.NewService(nil)
+	orchestratorService := service_orchestrator.NewService()
 	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
 
 	evidenceService := service_evidence.NewService()

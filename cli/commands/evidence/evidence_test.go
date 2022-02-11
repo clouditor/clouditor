@@ -27,7 +27,6 @@ package evidence
 
 import (
 	"bytes"
-	"clouditor.io/clouditor/persistence/gorm"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -39,7 +38,6 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
-	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_evidenceStore "clouditor.io/clouditor/service/evidence"
 
@@ -52,16 +50,13 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-var (
-	sock                 net.Listener
-	server               *grpc.Server
-	evidenceStoreService *service_evidenceStore.Service
-	authService          *service_auth.Service
-	db                   persistence.Storage
-)
-
 func TestMain(m *testing.M) {
 	var (
+		sock                 net.Listener
+		server               *grpc.Server
+		evidenceStoreService *service_evidenceStore.Service
+		authService          *service_auth.Service
+
 		err error
 		dir string
 	)
@@ -71,12 +66,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	db, err = gorm.NewStorage(gorm.WithInMemory())
-	if err != nil {
-		panic(err)
-	}
-
-	authService = service_auth.NewService(db, service_auth.WithApiKeySaveOnCreate(false))
+	authService = service_auth.NewService(service_auth.WithApiKeySaveOnCreate(false))
 	evidenceStoreService = service_evidenceStore.NewService()
 
 	sock, server, err = authService.StartDedicatedServer(":0")

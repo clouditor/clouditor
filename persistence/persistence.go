@@ -25,7 +25,9 @@
 
 package persistence
 
-import "errors"
+import (
+	"errors"
+)
 
 var (
 	ErrRecordNotFound = errors.New("record not in the database")

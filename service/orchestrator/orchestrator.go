@@ -1,4 +1,4 @@
-// Copyright 2021 Fraunhofer AISEC
+// Copyright 2016-2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@
 package orchestrator
 
 import (
+	"clouditor.io/clouditor/persistence/inmemory"
 	"context"
 	"embed"
 	"encoding/json"
@@ -69,7 +70,7 @@ type Service struct {
 	// mu is used for (un)locking result hook calls
 	mu sync.Mutex
 
-	db persistence.Storage
+	storage persistence.Storage
 
 	metricsFile string
 }
@@ -88,22 +89,34 @@ func WithMetricsFile(file string) ServiceOption {
 	}
 }
 
+// WithStorage is an option to set the storage. If not set, NewService will use inmemory storage.
+func WithStorage(db persistence.Storage) ServiceOption {
+	return func(s *Service) {
+		s.storage = db
+	}
+}
+
 // NewService creates a new Orchestrator service
-// TODO(lebogg to oxisto): We could also provide dv via opts?
-func NewService(db persistence.Storage, opts ...ServiceOption) *Service {
+func NewService(opts ...ServiceOption) *Service {
+	var err error
 	s := Service{
 		results:              make(map[string]*assessment.AssessmentResult),
 		metricConfigurations: make(map[string]map[string]*assessment.MetricConfiguration),
 		metricsFile:          DefaultMetricsFile,
-		db:                   db,
 	}
 
 	// Apply service options
 	for _, o := range opts {
 		o(&s)
 	}
+	if s.storage == nil {
+		s.storage, err = inmemory.NewStorage()
+	}
+	if err != nil {
+		log.Errorf("Could not initialize the storage: %v", err)
+	}
 
-	if err := LoadMetrics(s.metricsFile); err != nil {
+	if err = LoadMetrics(s.metricsFile); err != nil {
 		log.Errorf("Could not load embedded metrics. Will continue with empty metric list: %v", err)
 	}
 

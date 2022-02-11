@@ -26,7 +26,6 @@
 package orchestrator
 
 import (
-	"clouditor.io/clouditor/persistence/gorm"
 	"context"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -41,15 +40,8 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/persistence"
-
 	"clouditor.io/clouditor/api/orchestrator"
 	"github.com/stretchr/testify/assert"
-)
-
-var (
-	service *Service
-	db      persistence.Storage
 )
 
 const (
@@ -62,12 +54,6 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err)
 	}
-
-	db, err = gorm.NewStorage(gorm.WithInMemory())
-	if err != nil {
-		panic(err)
-	}
-	service = NewService(db)
 
 	os.Exit(m.Run())
 }
@@ -93,7 +79,7 @@ func TestAssessmentResultHook(t *testing.T) {
 		wg.Done()
 	}
 
-	service := NewService(nil)
+	service := NewService()
 	service.RegisterAssessmentResultHook(firstHookFunction)
 	service.RegisterAssessmentResultHook(secondHookFunction)
 
@@ -166,13 +152,14 @@ func TestAssessmentResultHook(t *testing.T) {
 	}
 }
 
+// TODO(lebogg): Convert to table tests
 func TestListMetricConfigurations(t *testing.T) {
 	var (
 		response *orchestrator.ListMetricConfigurationResponse
 		err      error
 	)
-
-	response, err = service.ListMetricConfigurations(context.TODO(), &orchestrator.ListMetricConfigurationRequest{})
+	s := NewService()
+	response, err = s.ListMetricConfigurations(context.TODO(), &orchestrator.ListMetricConfigurationRequest{})
 
 	assert.Nil(t, err)
 	assert.NotEmpty(t, response.Configurations)
@@ -240,7 +227,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService(nil)
+			s := NewService()
 			gotResp, err := s.StoreAssessmentResult(tt.args.in0, tt.args.assessment)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("StoreAssessmentResult() error = %v, wantErr %v", err, tt.wantErr)
@@ -278,7 +265,7 @@ func TestStoreAssessmentResults(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService(nil)
+			s := NewService()
 			if err := s.StoreAssessmentResults(tt.args.stream); (err != nil) != tt.wantErr {
 				t.Errorf("StoreAssessmentResults() error = %v, wantErr %v", err, tt.wantErr)
 				assert.Equal(t, 2, len(s.results))

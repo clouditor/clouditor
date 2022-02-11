@@ -27,7 +27,6 @@ package cloud
 
 import (
 	"bytes"
-	"clouditor.io/clouditor/persistence/gorm"
 	"context"
 	"fmt"
 	"io/ioutil"
@@ -38,7 +37,6 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
-	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
@@ -49,54 +47,12 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-var (
-	sock                net.Listener
-	server              *grpc.Server
-	authService         *service_auth.Service
-	orchestratorService *service_orchestrator.Service
-	target              *orchestrator.CloudService
-	db                  persistence.Storage
-)
-
 func TestMain(m *testing.M) {
 	var (
 		err error
-		dir string
 	)
 
 	err = os.Chdir("../../../")
-	if err != nil {
-		panic(err)
-	}
-
-	db, err = gorm.NewStorage(gorm.WithInMemory())
-	if err != nil {
-		panic(err)
-	}
-
-	orchestratorService = service_orchestrator.NewService(db)
-	authService = service_auth.NewService(db, service_auth.WithApiKeySaveOnCreate(false))
-
-	sock, server, err = authService.StartDedicatedServer(":0")
-	if err != nil {
-		panic(err)
-	}
-	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
-
-	defer sock.Close()
-	defer server.Stop()
-
-	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
-	if err != nil {
-		panic(err)
-	}
-
-	viper.Set("username", "clouditor")
-	viper.Set("password", "clouditor")
-	viper.Set("session-directory", dir)
-
-	cmd := login.NewLoginCommand()
-	err = cmd.RunE(nil, []string{fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)})
 	if err != nil {
 		panic(err)
 	}
@@ -113,10 +69,14 @@ func TestNewCloudCommand(t *testing.T) {
 
 func TestRegisterCloudServiceCommand(t *testing.T) {
 	var (
-		err      error
-		b        bytes.Buffer
 		response orchestrator.CloudService
+
+		err error
+		b   bytes.Buffer
 	)
+	_, server, sock := startServer()
+	defer sock.Close()
+	defer server.Stop()
 
 	cli.Output = &b
 
@@ -133,10 +93,14 @@ func TestRegisterCloudServiceCommand(t *testing.T) {
 
 func TestListCloudServicesCommand(t *testing.T) {
 	var (
-		err      error
-		b        bytes.Buffer
 		response orchestrator.ListCloudServicesResponse
+
+		err error
+		b   bytes.Buffer
 	)
+	orchestratorService, server, sock := startServer()
+	defer sock.Close()
+	defer server.Stop()
 
 	_, err = orchestratorService.CreateDefaultTargetCloudService()
 	assert.Nil(t, err)
@@ -152,24 +116,29 @@ func TestListCloudServicesCommand(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.NotEmpty(t, response.Services)
-
-	// Reset DB
-	assert.Nil(t, resetDB(db))
 }
 
 func TestGetCloudServiceCommand(t *testing.T) {
 	var (
-		err      error
-		b        bytes.Buffer
 		response orchestrator.CloudService
+		target   *orchestrator.CloudService
+
+		err error
+		b   bytes.Buffer
 	)
+	orchestratorService, server, sock := startServer()
+	defer sock.Close()
+	defer server.Stop()
 
 	target, err = orchestratorService.CreateDefaultTargetCloudService()
+	fmt.Println("target:", target)
+	// target should be non-nil since it has been newly created
+	assert.NotNil(t, target)
 	assert.Nil(t, err)
 
 	cli.Output = &b
 
-	cmd := NewGetCloudServiceComand()
+	cmd := NewGetCloudServiceCommand()
 	err = cmd.RunE(nil, []string{target.Id})
 
 	assert.Nil(t, err)
@@ -178,17 +147,19 @@ func TestGetCloudServiceCommand(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, target.Id, response.Id)
-
-	// Reset DB
-	assert.Nil(t, resetDB(db))
 }
 
 func TestRemoveCloudServicesCommand(t *testing.T) {
 	var (
-		err      error
-		b        bytes.Buffer
 		response emptypb.Empty
+		target   *orchestrator.CloudService
+
+		err error
+		b   bytes.Buffer
 	)
+	orchestratorService, server, sock := startServer()
+	defer sock.Close()
+	defer server.Stop()
 
 	target, err = orchestratorService.CreateDefaultTargetCloudService()
 	assert.Nil(t, err)
@@ -208,20 +179,22 @@ func TestRemoveCloudServicesCommand(t *testing.T) {
 	_, err = orchestratorService.CreateDefaultTargetCloudService()
 
 	assert.Nil(t, err)
-
-	// Reset DB
-	assert.Nil(t, resetDB(db))
 }
 
 func TestUpdateCloudServiceCommand(t *testing.T) {
 	var (
-		err      error
-		b        bytes.Buffer
 		response orchestrator.CloudService
+		target   *orchestrator.CloudService
+
+		err error
+		b   bytes.Buffer
 	)
 	const (
 		notDefault = "not_default"
 	)
+	orchestratorService, server, sock := startServer()
+	defer sock.Close()
+	defer server.Stop()
 
 	target, err = orchestratorService.CreateDefaultTargetCloudService()
 	assert.Nil(t, err)
@@ -242,16 +215,18 @@ func TestUpdateCloudServiceCommand(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, target.Id, response.Id)
 	assert.Equal(t, notDefault, response.Name)
-
-	// Reset DB
-	assert.Nil(t, resetDB(db))
 }
 
 func TestGetMetricConfiguration(t *testing.T) {
 	var (
+		target *orchestrator.CloudService
+
 		err error
 		b   bytes.Buffer
 	)
+	orchestratorService, server, sock := startServer()
+	defer sock.Close()
+	defer server.Stop()
 
 	target, err = orchestratorService.CreateDefaultTargetCloudService()
 	assert.Nil(t, err)
@@ -268,12 +243,45 @@ func TestGetMetricConfiguration(t *testing.T) {
 	err = cmd.RunE(nil, []string{target.Id, "TransportEncryptionEnabled"})
 
 	assert.Nil(t, err)
-
-	// Reset DB
-	assert.Nil(t, resetDB(db))
 }
 
-// resetDB clears all stored cloud services s.t. all tests can be run independently
-func resetDB(db persistence.Storage) error {
-	return db.Delete(&orchestrator.CloudService{})
+// startServer starts server with orchestrator and dedicated auth server. We don't do it in TestMain since you
+// can only register a service - once before server.serve(). And we do need to add new Orchestrator service because
+// the DB won't be reset otherwise.
+func startServer() (orchestratorService *service_orchestrator.Service, server *grpc.Server, sock net.Listener) {
+	var (
+		authService *service_auth.Service
+
+		err error
+		dir string
+	)
+
+	orchestratorService = service_orchestrator.NewService()
+	authService = service_auth.NewService(service_auth.WithApiKeySaveOnCreate(false))
+
+	sock, server, err = authService.StartDedicatedServer(":0")
+	if err != nil {
+		panic(err)
+	}
+	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
+
+	//defer sock.Close()
+	//defer server.Stop()
+
+	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
+	if err != nil {
+		panic(err)
+	}
+
+	viper.Set("username", "clouditor")
+	viper.Set("password", "clouditor")
+	viper.Set("session-directory", dir)
+
+	cmd := login.NewLoginCommand()
+	err = cmd.RunE(nil, []string{fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)})
+	if err != nil {
+		panic(err)
+	}
+
+	return
 }

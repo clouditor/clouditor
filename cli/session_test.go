@@ -26,7 +26,6 @@
 package cli
 
 import (
-	"clouditor.io/clouditor/persistence/gorm"
 	"context"
 	"fmt"
 	"io/ioutil"
@@ -37,7 +36,6 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"clouditor.io/clouditor/api/auth"
-	"clouditor.io/clouditor/persistence"
 	service_auth "clouditor.io/clouditor/service/auth"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -47,20 +45,21 @@ import (
 )
 
 var (
-	sock        net.Listener
-	server      *grpc.Server
-	authService *service_auth.Service
-	db          persistence.Storage
+	sock   net.Listener
+	server *grpc.Server
 )
 
 func TestMain(m *testing.M) {
-	var err error
+	var (
+		authService *service_auth.Service
 
-	db, err = gorm.NewStorage(gorm.WithInMemory())
+		err error
+	)
+
 	if err != nil {
 		panic(err)
 	}
-	authService = service_auth.NewService(db, service_auth.WithApiKeySaveOnCreate(false))
+	authService = service_auth.NewService(service_auth.WithApiKeySaveOnCreate(false))
 
 	sock, server, err = authService.StartDedicatedServer(":0")
 	if err != nil {
