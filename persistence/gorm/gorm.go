@@ -147,19 +147,3 @@ func (s *storage) Delete(r interface{}, conds ...interface{}) error {
 
 	return nil
 }
-
-// GetDatabase returns the database
-func (s *storage) GetDatabase() *gorm.DB {
-	return s.db
-}
-
-// Reset resets entire the database
-func (s *storage) Reset() (err error) {
-	if err = s.Delete(&orchestrator.CloudService{}); err != nil {
-		return
-	}
-	if err = s.Delete(&auth.User{}); err != nil {
-		return
-	}
-	return
-}
