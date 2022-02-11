@@ -54,10 +54,6 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-const (
-	Issuer = "clouditor"
-)
-
 var log *logrus.Entry
 
 func init() {
@@ -77,6 +73,12 @@ const (
 
 	// DefaultKeyID specifies the default Key ID used in the JWKS of the authentication service
 	DefaultKeyID = "1"
+
+	// DefaultIssuer specifies the default issuer of the issued tokens.
+	DefaultIssuer = "clouditor"
+
+	// DefaultPeriodOfValidity specifies the default period of validity of a token
+	DefaultPeriodOfValidity = time.Hour * 24
 )
 
 // Service is an implementation of the gRPC Authentication service
@@ -273,7 +275,7 @@ func (s Service) Login(_ context.Context, request *auth.LoginRequest) (response 
 		user            *auth.User
 		token        string
 		refreshToken string
-		expiry       = time.Now().Add(time.Hour * 24)
+		expiry       = time.Now().Add(DefaultPeriodOfValidity)
 	)
 
 	if result, u, err = s.verifyLogin(request); err != nil {
@@ -304,12 +306,17 @@ func (s Service) Login(_ context.Context, request *auth.LoginRequest) (response 
 	return response, nil
 }
 
-func (s *Service) Token(ctx context.Context, req *auth.TokenRequest) (response *auth.TokenResponse, err error) {
+// Token aims to be a OAuth 2.0 compliant token endpoint. Currently, only the refresh_token grant type
+// is supported. This function only takes care of the application behavior, the actual implementation of
+// a HTTP endpoint around this functionality is provided by the gRPC gateway and is modified by the
+// OAuthErrorHandler function. This function needs to be registed using runtime.WithErrorHandler in the gRPC
+// gateway.
+func (s *Service) Token(_ context.Context, req *auth.TokenRequest) (response *auth.TokenResponse, err error) {
 	var (
 		token  string
 		user      *auth.User
 		claims jwt.RegisteredClaims
-		expiry = time.Now().Add(time.Hour * 24)
+		expiry = time.Now().Add(DefaultPeriodOfValidity)
 	)
 
 	if req == nil {
@@ -451,7 +458,7 @@ func issueToken(key *ecdsa.PrivateKey, subject string, fullName string, email st
 			EMail:    email,
 			RegisteredClaims: jwt.RegisteredClaims{
 				ExpiresAt: jwt.NewNumericDate(expiry),
-				Issuer:    Issuer,
+				Issuer:    DefaultIssuer,
 				Subject:   subject,
 			}},
 	)
@@ -464,6 +471,7 @@ func issueToken(key *ecdsa.PrivateKey, subject string, fullName string, email st
 func issueRefreshToken(key *ecdsa.PrivateKey, subject string) (token string, err error) {
 	claims := jwt.NewWithClaims(jwt.SigningMethodES256, &jwt.RegisteredClaims{
 		Subject: subject,
+		Issuer:  DefaultIssuer,
 	})
 
 	claims.Header["kid"] = DefaultKeyID
@@ -507,11 +515,14 @@ func expandPath(path string) (out string, err error) {
 	return path, nil
 }
 
+// OAuthErrorHandler is an implementation of a runtime.ErrorHandlerFunc that customizes the behavior of
+// the gRPC gateway to be compliant to the OAuth 2.0 standard for the appropriate endpoints.
 func OAuthErrorHandler(c context.Context, sm *runtime.ServeMux, m runtime.Marshaler, w http.ResponseWriter, r *http.Request, err error) {
 	if status, ok := status.FromError(err); ok {
 		// For OAuth compliant messages, we need to directly return a JSON with an error, without any
 		// gRPC wrapping
 		if status.Message() == "unsupported_grant_type" || status.Message() == "invalid_grant" {
+			// Make sure, that error code is 400
 			w.WriteHeader(400)
 			_, err = w.Write([]byte(fmt.Sprintf(`{"error":"%s"}`, status.Message())))
 			if err != nil {
