@@ -26,11 +26,12 @@
 package gorm
 
 import (
+	"errors"
+	"fmt"
+
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
-	"errors"
-	"fmt"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"

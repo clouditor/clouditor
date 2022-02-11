@@ -26,9 +26,10 @@
 package orchestrator
 
 import (
-	"clouditor.io/clouditor/persistence"
 	"context"
 	"errors"
+
+	"clouditor.io/clouditor/persistence"
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"github.com/google/uuid"
@@ -60,7 +61,7 @@ func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.Regi
 	service.Description = req.Service.Description
 
 	// Persist the service in our database
-	err = s.storage.Create(&service)
+	err = s.storage.Create(service)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not add cloud service to the database: %v", err)
 	}
@@ -91,7 +92,7 @@ func (s *Service) GetCloudService(_ context.Context, req *orchestrator.GetCloudS
 	}
 
 	response = new(orchestrator.CloudService)
-	err = s.storage.Get(&response, "Id = ?", req.ServiceId)
+	err = s.storage.Get(response, "Id = ?", req.ServiceId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "service not found")
 	} else if err != nil {
@@ -169,7 +170,7 @@ func (s *Service) CreateDefaultTargetCloudService() (service *orchestrator.Cloud
 				Description: DefaultTargetCloudServiceDescription,
 			}
 		// Save it directly into the database, so that we can set the ID
-		err = s.storage.Create(&service)
+		err = s.storage.Create(service)
 		if err != nil {
 			log.Infof(couldNotCreateService)
 			return
