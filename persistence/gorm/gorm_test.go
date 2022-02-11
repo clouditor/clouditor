@@ -91,9 +91,9 @@ func Test_storage_Get(t *testing.T) {
 	s, err = NewStorage()
 	assert.ErrorIs(t, err, nil)
 
-	//// Return error since no record in the DB yet
-	//err = s.Get(&auth.User{})
-	//assert.ErrorIs(t, err, persistence.ErrRecordNotFound)
+	// Return error since no record in the DB yet
+	err = s.Get(&auth.User{})
+	assert.ErrorIs(t, err, persistence.ErrRecordNotFound)
 
 	// Create user
 	err = s.Create(user)
@@ -105,13 +105,21 @@ func Test_storage_Get(t *testing.T) {
 	assert.ErrorIs(t, err, nil)
 	assert.Equal(t, user, gotUser)
 
-	// Get user via ID
+	// Get user via username
 	gotUser2 := &auth.User{}
-	err = s.Get(gotUser2, "Email = ?", user.Email)
+	err = s.Get(gotUser2, "username = ?", user.Username)
 	assert.ErrorIs(t, err, nil)
 	assert.Equal(t, user, gotUser2)
 
+	// Get user via mail
+	gotUser3 := &auth.User{}
+	err = s.Get(gotUser3, "Email = ?", user.Email)
+	assert.ErrorIs(t, err, nil)
+	assert.Equal(t, user, gotUser3)
+
 }
+
+// TODO(lebogg): Add tests for List
 
 func Test_storage_Count(t *testing.T) {
 	var (
@@ -169,6 +177,7 @@ func Test_storage_Count(t *testing.T) {
 	assert.Contains(t, err.Error(), "unsupported data type")
 }
 
+// TODO(lebogg): Fix after I fixed the missing variadic ellipsis
 func Test_storage_Update(t *testing.T) {
 	var (
 		err  error
@@ -204,3 +213,5 @@ func Test_storage_Update(t *testing.T) {
 	assert.Equal(t, user.Email, gotUser.Email)
 
 }
+
+// TODO(lebogg): Add tests for delete
