@@ -106,13 +106,13 @@ func TestListMetrics(t *testing.T) {
 	cmd := NewListMetricsCommand()
 	err = cmd.RunE(nil, []string{})
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	var response *orchestrator.ListMetricsResponse = &orchestrator.ListMetricsResponse{}
 
 	err = protojson.Unmarshal(b.Bytes(), response)
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response.Metrics)
 }
@@ -126,5 +126,5 @@ func TestGetMetric(t *testing.T) {
 	cmd := NewGetMetricCommand()
 	err = cmd.RunE(nil, []string{"TransportEncryptionEnabled"})
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }

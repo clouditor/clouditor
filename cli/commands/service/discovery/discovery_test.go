@@ -125,7 +125,7 @@ func TestNewStartDiscoveryCommand(t *testing.T) {
 
 	cmd := NewStartDiscoveryCommand()
 	err = cmd.RunE(nil, []string{})
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 
 	var response = &discovery.StartDiscoveryResponse{}
 	assert.NotNil(t, response)
@@ -141,12 +141,12 @@ func TestNewQueryDiscoveryCommand(t *testing.T) {
 
 	cmd := NewQueryDiscoveryCommand()
 	err = cmd.RunE(nil, []string{})
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	var response = &discovery.QueryResponse{}
 	err = protojson.Unmarshal(b.Bytes(), response)
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response.Results.Values)
 }

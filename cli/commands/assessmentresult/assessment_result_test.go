@@ -144,12 +144,12 @@ func TestNewListResultsCommand(t *testing.T) {
 
 	cmd := NewListAssessmentResultsCommand()
 	err := cmd.RunE(nil, []string{})
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	var response = &assessment.ListAssessmentResultsResponse{}
 	err = protojson.Unmarshal(b.Bytes(), response)
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response.Results)
 }
