@@ -3,13 +3,15 @@ package main
 import (
 	"testing"
 
+	"clouditor.io/clouditor/rest"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_doCmd(t *testing.T) {
 	viper.Set(DBInMemoryFlag, true)
-	viper.Set(APIgRPCPortFlag, 0)
+	viper.Set(APIHTTPPortFlag, 0)
 	viper.Set(APIgRPCPortFlag, 0)
 
 	type args struct {
@@ -32,6 +34,14 @@ func Test_doCmd(t *testing.T) {
 					t.Errorf("doCmd() error = %v, wantErr %v", err, tt.wantErr)
 				}
 			}()
+
+			<-rest.GetReadyChannel()
+
+			assert.NotNil(t, server)
+			assert.NotNil(t, authService)
+			assert.NotNil(t, discoveryService)
+			assert.NotNil(t, assessmentService)
+			assert.NotNil(t, evidenceStoreService)
 		})
 	}
 }
