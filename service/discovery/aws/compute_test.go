@@ -28,13 +28,9 @@
 package aws
 
 import (
-	"context"
-	"reflect"
-	"testing"
-	"time"
-
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
+	"context"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
@@ -43,6 +39,9 @@ import (
 	"github.com/aws/smithy-go"
 	"github.com/aws/smithy-go/middleware"
 	"github.com/stretchr/testify/assert"
+	"reflect"
+	"testing"
+	"time"
 )
 
 const (
@@ -206,14 +205,14 @@ func TestComputeDiscovery_List(t *testing.T) {
 		},
 	}
 	list, err := d.List()
-	assert.NoError(t, err)
+	assert.Nil(t, err)
 	assert.NotEmpty(t, list)
 
 	d = computeDiscovery{
 		virtualMachineAPI: mockEC2APIWithErrors{},
 	}
 	_, err = d.List()
-	assert.Error(t, err)
+	assert.NotNil(t, err)
 
 	d = computeDiscovery{
 		virtualMachineAPI: mockEC2API{},
@@ -227,7 +226,7 @@ func TestComputeDiscovery_List(t *testing.T) {
 		},
 	}
 	_, err = d.List()
-	assert.Error(t, err)
+	assert.NotNil(t, err)
 }
 
 func TestComputeDiscovery_discoverVirtualMachines(t *testing.T) {
@@ -242,7 +241,7 @@ func TestComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 		},
 	}
 	machines, err := d.discoverVirtualMachines()
-	assert.NoError(t, err)
+	assert.Nil(t, err)
 	testMachine := machines[0]
 	assert.Equal(t, mockVM1, testMachine.Name)
 	assert.Equal(t, voc.ResourceID("arn:aws:ec2:eu-central-1:MockAccountID1234:instance/mockVM1ID"), testMachine.ID)
@@ -256,7 +255,7 @@ func TestComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 		virtualMachineAPI: mockEC2APIWithErrors{},
 	}
 	_, err = d.discoverVirtualMachines()
-	assert.Error(t, err)
+	assert.NotNil(t, err)
 
 }
 
@@ -393,7 +392,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 		awsConfig:   mockClient,
 	}
 	functions, err := d.discoverFunctions()
-	assert.NoError(t, err)
+	assert.Nil(t, err)
 	assert.Less(t, 50, len(functions))
 
 }

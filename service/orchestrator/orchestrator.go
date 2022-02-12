@@ -26,7 +26,6 @@
 package orchestrator
 
 import (
-	"clouditor.io/clouditor/persistence/inmemory"
 	"context"
 	"embed"
 	"encoding/json"
@@ -34,6 +33,8 @@ import (
 	"io"
 	"io/ioutil"
 	"sync"
+
+	"clouditor.io/clouditor/persistence/inmemory"
 
 	"google.golang.org/protobuf/types/known/emptypb"
 
@@ -109,11 +110,13 @@ func NewService(opts ...ServiceOption) *Service {
 	for _, o := range opts {
 		o(&s)
 	}
+
+	// Default to an in-memory storage, if nothing was explicitly set
 	if s.storage == nil {
 		s.storage, err = inmemory.NewStorage()
-	}
-	if err != nil {
-		log.Errorf("Could not initialize the storage: %v", err)
+		if err != nil {
+			log.Errorf("Could not initialize the storage: %v", err)
+		}
 	}
 
 	if err = LoadMetrics(s.metricsFile); err != nil {

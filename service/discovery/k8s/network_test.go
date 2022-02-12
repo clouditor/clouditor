@@ -90,7 +90,7 @@ func TestListIngresses(t *testing.T) {
 
 	list, err := d.List()
 
-	assert.NoError(t, err)
+	assert.Nil(t, err)
 	assert.NotNil(t, list)
 
 	service, ok := list[0].(*voc.NetworkService)

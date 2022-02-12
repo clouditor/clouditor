@@ -37,6 +37,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api/auth"
+	"clouditor.io/clouditor/persistence/inmemory"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
 )
@@ -267,6 +268,45 @@ func TestService_loadApiKey(t *testing.T) {
 			}
 			if !reflect.DeepEqual(gotKey, tt.wantKey) {
 				t.Errorf("Service.loadApiKey() = %v, want %v", gotKey, tt.wantKey)
+			}
+		})
+	}
+}
+
+func TestNewService(t *testing.T) {
+	var myStorage, err = inmemory.NewStorage()
+	assert.NoError(t, err)
+
+	type args struct {
+		opts []ServiceOption
+	}
+	tests := []struct {
+		name string
+		args args
+		want assert.ValueAssertionFunc
+	}{
+		{
+			name: "New service with database",
+			args: args{
+				opts: []ServiceOption{WithStorage(myStorage)},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				service, ok := i1.(*Service)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				return assert.Equal(tt, myStorage, service.storage)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewService(tt.args.opts...)
+
+			if tt.want != nil {
+				tt.want(t, got, tt.args.opts)
 			}
 		})
 	}

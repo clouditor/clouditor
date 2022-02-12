@@ -27,6 +27,7 @@ package orchestrator
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"os"
 	"reflect"
@@ -34,15 +35,14 @@ import (
 	"sync"
 	"testing"
 
+	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/persistence/inmemory"
+	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"k8s.io/apimachinery/pkg/util/json"
-
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/orchestrator"
-	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -363,4 +363,43 @@ func toStruct(f float32) (s *structpb.Value) {
 	}
 
 	return
+}
+
+func TestNewService(t *testing.T) {
+	var myStorage, err = inmemory.NewStorage()
+	assert.NoError(t, err)
+
+	type args struct {
+		opts []ServiceOption
+	}
+	tests := []struct {
+		name string
+		args args
+		want assert.ValueAssertionFunc
+	}{
+		{
+			name: "New service with database",
+			args: args{
+				opts: []ServiceOption{WithStorage(myStorage)},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				service, ok := i1.(*Service)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				return assert.Equal(tt, myStorage, service.storage)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewService(tt.args.opts...)
+
+			if tt.want != nil {
+				tt.want(t, got, tt.args.opts)
+			}
+		})
+	}
 }

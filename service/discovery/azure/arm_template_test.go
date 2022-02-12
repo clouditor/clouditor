@@ -28,10 +28,9 @@ package azure
 import (
 	"fmt"
 	"io"
+	"k8s.io/apimachinery/pkg/util/json"
 	"net/http"
 	"testing"
-
-	"k8s.io/apimachinery/pkg/util/json"
 
 	"clouditor.io/clouditor/voc"
 	"github.com/jinzhu/copier"
@@ -310,7 +309,7 @@ func TestAzureARMTemplateAuthorizer(t *testing.T) {
 	d := NewAzureARMTemplateDiscovery()
 	list, err := d.List()
 
-	assert.Error(t, err)
+	assert.NotNil(t, err)
 	assert.Nil(t, list)
 	assert.Equal(t, "could not authorize Azure account: no authorized was available", err.Error())
 }
@@ -323,7 +322,7 @@ func TestARMTemplateDiscovery(t *testing.T) {
 
 	list, err := d.List()
 
-	assert.NoError(t, err)
+	assert.Nil(t, err)
 	assert.NotNil(t, list)
 	assert.Equal(t, 7, len(list))
 	assert.NotEmpty(t, d.Name())
@@ -337,7 +336,7 @@ func TestObjectStorageProperties(t *testing.T) {
 
 	list, err := d.List()
 
-	assert.NoError(t, err)
+	assert.Nil(t, err)
 	assert.NotNil(t, list)
 
 	objectStorage, ok := list[2].(*voc.ObjectStorage)
@@ -376,7 +375,7 @@ func TestFileStorageProperties(t *testing.T) {
 
 	list, err := d.List()
 
-	assert.NoError(t, err)
+	assert.Nil(t, err)
 	assert.NotNil(t, list)
 
 	fileStorage, ok := list[3].(*voc.FileStorage)
@@ -405,7 +404,7 @@ func TestVmProperties(t *testing.T) {
 
 	list, err := d.List()
 
-	assert.NoError(t, err)
+	assert.Nil(t, err)
 	assert.NotNil(t, list)
 
 	resourceVM, ok := list[0].(*voc.VirtualMachine)
@@ -427,7 +426,7 @@ func TestLoadBalancerProperties(t *testing.T) {
 
 	list, err := d.List()
 
-	assert.NoError(t, err)
+	assert.Nil(t, err)
 	assert.NotNil(t, list)
 
 	resourceLoadBalancer, ok := list[6].(*voc.LoadBalancer)
@@ -453,21 +452,21 @@ func TestARMTemplateHandleObjectStorageMethodWhenInputIsInvalid(t *testing.T) {
 	// check for dependsOn type assertion error
 	armTemplateHandleObjectStorageResponse, err := dependsOnTypeAssertionResponse("Object", armTemplateResources)
 
-	assert.Error(t, err)
+	assert.NotNil(t, err)
 	assert.Equal(t, "dependsOn type assertion failed", err.Error())
 	assert.Nil(t, armTemplateHandleObjectStorageResponse)
 
 	// check for storageAccountResourceFromARMTemplate() response error
 	armTemplateHandleObjectStorageResponse, err = storageAccountResourceFromTemplateResponse("Object", armTemplateResources)
 
-	assert.Error(t, err)
+	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "cannot get storage account resource from Azure ARM template:")
 	assert.Nil(t, armTemplateHandleObjectStorageResponse)
 
 	// check for storageAccountAtRestEncryptionFromARMtemplate() response error
 	armTemplateHandleObjectStorageResponse, err = storageAccountAtRestEncryptionFromARMResponse("Object", armTemplateResources)
 
-	assert.Error(t, err)
+	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "cannot get atRestEncryption for storage account resource from Azure ARM template")
 	assert.Nil(t, armTemplateHandleObjectStorageResponse)
 }
@@ -486,21 +485,21 @@ func TestARMTemplateHandleFileStorageMethodWhenInputIsInvalid(t *testing.T) {
 	// check for dependsOn type assertion error
 	armTemplateHandleFileStorageResponse, err := dependsOnTypeAssertionResponse("File", armTemplateResources)
 
-	assert.Error(t, err)
+	assert.NotNil(t, err)
 	assert.Equal(t, "dependsOn type assertion failed", err.Error())
 	assert.Nil(t, armTemplateHandleFileStorageResponse)
 
 	// check for storageAccountResourceFromARMTemplate() response error
 	armTemplateHandleFileStorageResponse, err = storageAccountResourceFromTemplateResponse("File", armTemplateResources)
 
-	assert.Error(t, err)
+	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "cannot get storage account resource from Azure ARM template:")
 	assert.Nil(t, armTemplateHandleFileStorageResponse)
 
 	// check for storageAccountAtRestEncryptionFromARMtemplate() response error
 	armTemplateHandleFileStorageResponse, err = storageAccountAtRestEncryptionFromARMResponse("File", armTemplateResources)
 
-	assert.Error(t, err)
+	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "cannot get atRestEncryption for storage account resource from Azure ARM template")
 	assert.Nil(t, armTemplateHandleFileStorageResponse)
 }
@@ -618,7 +617,7 @@ func TestMethodGetDefaultResourceNameFromParameter(t *testing.T) {
 	delete(modifiedARMTemplate["template"].(map[string]interface{})["parameters"].(map[string]interface{})["storageAccounts_storage1_name"].(map[string]interface{}), "defaultValue")
 	getDefaultResourceNameFromParameterResponse, err = defaultResourceNameFromParameter(modifiedARMTemplate["template"].(map[string]interface{}), "[parameters('storageAccounts_storage1_name')]")
 
-	assert.NoError(t, err)
+	assert.Nil(t, err)
 	assert.Equal(t, "storageAccounts_storage1_name", getDefaultResourceNameFromParameterResponse)
 }
 

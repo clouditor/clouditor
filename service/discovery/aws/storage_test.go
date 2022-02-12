@@ -296,7 +296,7 @@ func TestAwsS3Discovery_getBuckets(t *testing.T) {
 		},
 	}
 	buckets, err := d.getBuckets()
-	assert.NoError(t, err)
+	assert.Nil(t, err)
 
 	log.Print("Testing number of buckets")
 	// We fetch buckets currently only of users region
@@ -329,7 +329,7 @@ func TestAwsS3Discovery_getBuckets(t *testing.T) {
 	}
 
 	_, err = d.getBuckets()
-	assert.Error(t, err)
+	assert.NotNil(t, err)
 }
 
 // TestGetEncryptionAtRest tests the getEncryptionAtRest method
@@ -355,7 +355,7 @@ func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 
 	// First case: SSE-S3 encryption
 	encryptionAtRest, err = d.getEncryptionAtRest(bucket{name: mockBucket1})
-	assert.NoError(t, err)
+	assert.Nil(t, err)
 	managedEncryption, ok = encryptionAtRest.(voc.ManagedKeyEncryption)
 	assert.True(t, ok)
 	assert.True(t, managedEncryption.Enabled)
@@ -365,14 +365,14 @@ func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 	encryptionAtRest, err = d.getEncryptionAtRest(bucket{name: mockBucket2, region: mockBucket2Region})
 	customerEncryption, ok = encryptionAtRest.(voc.CustomerKeyEncryption)
 	assert.True(t, ok)
-	assert.NoError(t, err)
+	assert.Nil(t, err)
 	assert.True(t, customerEncryption.Enabled)
 	assert.Equal(t, "", customerEncryption.Algorithm)
 	assert.Equal(t, "arn:aws:kms:"+mockBucket2Region+":"+mockAccountID+":key/"+mockBucket2KeyId, customerEncryption.KeyUrl)
 
 	// Third case: No encryption
 	encryptionAtRest, err = d.getEncryptionAtRest(bucket{name: "mockbucket3"})
-	assert.NoError(t, err)
+	assert.Nil(t, err)
 	assert.False(t, encryptionAtRest.GetAtRestEncryption().Enabled)
 
 	// 4th case: Connection error
@@ -381,7 +381,7 @@ func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 		isDiscovering: false,
 	}
 	_, err = d.getEncryptionAtRest(bucket{name: "mockbucket4"})
-	assert.Error(t, err)
+	assert.NotNil(t, err)
 }
 
 // TestGetTransportEncryption tests the getTransportEncryption method
@@ -392,7 +392,7 @@ func TestAwsS3Discovery_getTransportEncryption(t *testing.T) {
 		isDiscovering: false,
 	}
 	_, err := d.getTransportEncryption("")
-	assert.Error(t, err)
+	assert.NotNil(t, err)
 
 	d = awsS3Discovery{
 		storageAPI:    mockS3APINew{},
@@ -401,26 +401,26 @@ func TestAwsS3Discovery_getTransportEncryption(t *testing.T) {
 
 	// Case 2: Enforced
 	encryptionAtTransit, err := d.getTransportEncryption(mockBucket1)
-	assert.NoError(t, err)
+	assert.Nil(t, err)
 	assert.True(t, encryptionAtTransit.Enabled)
 	assert.Equal(t, "TLS1.2", encryptionAtTransit.TlsVersion)
 	assert.True(t, encryptionAtTransit.Enforced)
 
 	// Case 3: JSON failure
 	encryptionAtTransit, err = d.getTransportEncryption(mockBucket2)
-	assert.Error(t, err)
+	assert.NotNil(t, err)
 	assert.Nil(t, encryptionAtTransit)
 
 	// Case 4: Not enforced
 	encryptionAtTransit, err = d.getTransportEncryption(mockBucket3)
-	assert.NoError(t, err)
+	assert.Nil(t, err)
 	assert.True(t, encryptionAtTransit.Enabled)
 	assert.Equal(t, "TLS1.2", encryptionAtTransit.TlsVersion)
 	assert.False(t, encryptionAtTransit.Enforced)
 
 	// Case 5: No bucket policy == not enforced
 	encryptionAtTransit, err = d.getTransportEncryption("")
-	assert.NoError(t, err)
+	assert.Nil(t, err)
 	assert.True(t, encryptionAtTransit.Enabled)
 	assert.Equal(t, "TLS1.2", encryptionAtTransit.TlsVersion)
 	assert.False(t, encryptionAtTransit.Enforced)
@@ -434,16 +434,16 @@ func TestAwsS3Discovery_getRegion(t *testing.T) {
 		isDiscovering: false,
 	}
 	actualRegion, err := d.getRegion(mockBucket1)
-	assert.NoError(t, err)
+	assert.Nil(t, err)
 	assert.Equal(t, mockBucket1Region, actualRegion)
 
 	actualRegion, err = d.getRegion(mockBucket2)
-	assert.NoError(t, err)
+	assert.Nil(t, err)
 	assert.Equal(t, mockBucket2Region, actualRegion)
 
 	// Error case
 	_, err = d.getRegion("mockbucketNotAvailable")
-	assert.Error(t, err)
+	assert.NotNil(t, err)
 
 }
 

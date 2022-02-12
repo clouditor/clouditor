@@ -49,7 +49,7 @@ func TestListPods(t *testing.T) {
 
 	list, err := d.List()
 
-	assert.NoError(t, err)
+	assert.Nil(t, err)
 	assert.NotNil(t, list)
 
 	container, ok := list[0].(*voc.Container)

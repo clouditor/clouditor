@@ -121,7 +121,7 @@ func TestAzureNetworkAuthorizer(t *testing.T) {
 	d := NewAzureNetworkDiscovery()
 	list, err := d.List()
 
-	assert.Error(t, err)
+	assert.NotNil(t, err)
 	assert.Nil(t, list)
 	assert.Equal(t, "could not authorize Azure account: no authorized was available", err.Error())
 }
@@ -134,7 +134,7 @@ func TestNetwork(t *testing.T) {
 
 	list, err := d.List()
 
-	assert.NoError(t, err)
+	assert.Nil(t, err)
 	assert.NotNil(t, list)
 	assert.Equal(t, 2, len(list))
 	assert.NotEmpty(t, d.Name())
@@ -159,14 +159,14 @@ func TestComputeDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
 	// Test method discoverNetworkInterfaces
 	discoverNetworkInterfacesResponse, err := d.discoverNetworkInterfaces()
 
-	assert.Error(t, err)
+	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "could not list network interfaces")
 	assert.Nil(t, discoverNetworkInterfacesResponse)
 
 	// Test method discoverLoadBalancer
 	discoverLoadBalancerResponse, err := d.discoverLoadBalancer()
 
-	assert.Error(t, err)
+	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "could not list load balancer")
 	assert.Nil(t, discoverLoadBalancerResponse)
 

@@ -26,7 +26,6 @@
 package auth
 
 import (
-	"clouditor.io/clouditor/persistence/inmemory"
 	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
@@ -40,6 +39,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"clouditor.io/clouditor/persistence/inmemory"
 
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/persistence"
@@ -149,11 +150,13 @@ func NewService(opts ...ServiceOption) *Service {
 	for _, o := range opts {
 		o(s)
 	}
+
+	// Default to an in-memory storage, if nothing was explicitly set
 	if s.storage == nil {
 		s.storage, err = inmemory.NewStorage()
-	}
-	if err != nil {
-		log.Errorf("Could not initialize the storage: %v", err)
+		if err != nil {
+			log.Errorf("Could not initialize in-memory storage: %v", err)
+		}
 	}
 
 	// Load the key
