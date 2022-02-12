@@ -26,15 +26,16 @@
 package azure
 
 import (
-	"clouditor.io/clouditor/voc"
 	"errors"
 	"fmt"
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
 	"io"
-	"k8s.io/apimachinery/pkg/util/json"
 	"net/http"
 	"testing"
+
+	"clouditor.io/clouditor/voc"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
+	"k8s.io/apimachinery/pkg/util/json"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -263,7 +264,7 @@ func TestAzureStorageAuthorizer(t *testing.T) {
 	d := NewAzureStorageDiscovery()
 	list, err := d.List()
 
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 	assert.Nil(t, list)
 	assert.Equal(t, "could not authorize Azure account: no authorized was available", err.Error())
 }
@@ -276,7 +277,7 @@ func TestStorage(t *testing.T) {
 
 	list, err := d.List()
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, list)
 	assert.Equal(t, 8, len(list))
 	assert.NotEmpty(t, d.Name())
@@ -289,7 +290,7 @@ func TestListObjectStorage(t *testing.T) {
 	)
 
 	list, err := d.List()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, list)
 
 	var counter int
@@ -308,7 +309,7 @@ func TestObjectStorage(t *testing.T) {
 	)
 
 	list, err := d.List()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, list)
 
 	objectStorage, ok := list[0].(*voc.ObjectStorage)
@@ -350,7 +351,7 @@ func TestListFileStorage(t *testing.T) {
 	)
 
 	list, err := d.List()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, list)
 
 	var counter int
@@ -369,7 +370,7 @@ func TestFileStorage(t *testing.T) {
 	)
 
 	list, err := d.List()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, list)
 
 	fileStorage, ok := list[2].(*voc.FileStorage)
@@ -395,7 +396,7 @@ func TestListBlockStorage(t *testing.T) {
 	)
 
 	list, err := d.List()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, list)
 
 	var counter int
@@ -414,7 +415,7 @@ func TestBlockStorage(t *testing.T) {
 	)
 
 	list, err := d.List()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, list)
 
 	blockStorage, ok := list[6].(*voc.BlockStorage)
@@ -444,7 +445,7 @@ func TestStorageHandleMethodsWhenInputIsInvalid(t *testing.T) {
 	mockedStorageAccountObject.Encryption.KeySource = ""
 
 	handleObjectStorageRespone, err := handleObjectStorage(&mockedStorageAccountObject, containerItem)
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 	assert.Nil(t, handleObjectStorageRespone)
 
 	// Test method handleFileStorage
@@ -454,7 +455,7 @@ func TestStorageHandleMethodsWhenInputIsInvalid(t *testing.T) {
 	mockedStorageAccountObject.Encryption.KeySource = ""
 
 	handleFileStorageRespone, err := handleFileStorage(&mockedStorageAccountObject, fileShare)
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 	assert.Nil(t, handleFileStorageRespone)
 
 	// Test method handleBlockStorage
@@ -467,7 +468,7 @@ func TestStorageHandleMethodsWhenInputIsInvalid(t *testing.T) {
 	disk.Encryption.Type = ""
 
 	handleBlockStorageResponse, err := d.handleBlockStorage(disk)
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 	assert.Nil(t, handleBlockStorageResponse)
 }
 
@@ -485,7 +486,7 @@ func TestStorageMethodsWhenInputIsInvalid(t *testing.T) {
 
 	// Test method storageAtRestEncryption
 	atRestEncryption, err := storageAtRestEncryption(&mockedStorageAccountObject)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	managedKeyEncryption := voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{Algorithm: "AES256", Enabled: true}}
 	assert.Equal(t, managedKeyEncryption, atRestEncryption)
@@ -505,23 +506,23 @@ func TestStorageDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
 	}
 	// Test method discoverStorageAccounts
 	discoverStorageAccountsResponse, err := d.discoverStorageAccounts()
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "could not list storage accounts")
 	assert.Nil(t, discoverStorageAccountsResponse)
 
 	// Test method discoverObjectStorages
 	discoverObjectStoragesResponse, err := d.discoverObjectStorages(&mockedStorageAccountObject)
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 	assert.Nil(t, discoverObjectStoragesResponse)
 
 	// Test method discoverFileStorages
 	discoverFileStoragesResponse, err := d.discoverFileStorages(&mockedStorageAccountObject)
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 	assert.Nil(t, discoverFileStoragesResponse)
 
 	// Test method discoverBlockStorages
 	discoverBlockStoragesResponse, err := d.discoverBlockStorages()
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 	assert.Nil(t, discoverBlockStoragesResponse)
 }
 

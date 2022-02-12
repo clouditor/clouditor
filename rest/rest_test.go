@@ -26,7 +26,6 @@
 package rest
 
 import (
-	"clouditor.io/clouditor/service"
 	"context"
 	"errors"
 	"fmt"
@@ -37,6 +36,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"clouditor.io/clouditor/service"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -107,7 +108,7 @@ func TestREST(t *testing.T) {
 
 	port, err := GetServerPort()
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotEqual(t, 0, port)
 
 	type args struct {
@@ -214,7 +215,7 @@ func TestREST(t *testing.T) {
 			}
 
 			req, err := http.NewRequest(method, fmt.Sprintf("http://localhost:%d/%s", port, tt.args.url), nil)
-			assert.Nil(t, err)
+			assert.NoError(t, err)
 			assert.NotNil(t, req)
 
 			req.Header.Add("Origin", tt.args.origin)
@@ -227,7 +228,7 @@ func TestREST(t *testing.T) {
 
 			assert.Equal(t, tt.statusCode, resp.StatusCode)
 
-			assert.Nil(t, err)
+			assert.NoError(t, err)
 			assert.NotNil(t, resp)
 
 			for key, value := range tt.headers {

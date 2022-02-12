@@ -26,12 +26,13 @@
 package login
 
 import (
-	"clouditor.io/clouditor/service"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"os"
 	"testing"
+
+	"clouditor.io/clouditor/service"
 
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -65,7 +66,7 @@ func TestLogin(t *testing.T) {
 	defer server.Stop()
 
 	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotEmpty(t, dir)
 
 	viper.Set("username", "clouditor")
@@ -74,5 +75,5 @@ func TestLogin(t *testing.T) {
 
 	cmd := NewLoginCommand()
 	err = cmd.RunE(nil, []string{fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)})
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }

@@ -26,11 +26,12 @@
 package gorm
 
 import (
+	"errors"
+	"fmt"
+
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
-	"errors"
-	"fmt"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
@@ -123,17 +124,16 @@ func (s *storage) Count(r interface{}, conds ...interface{}) (count int64, err e
 	return
 }
 
-func (s *storage) Update(r interface{}, conds ...interface{}) error {
-	// TODO(lebogg): Open discussion about update vs. save, i.e. only individual fields should be updates or not
-	return s.db.Model(r).Where(conds).Save(r).Error
+func (s *storage) Save(r interface{}) error {
+	return s.db.Save(r).Error
+}
+
+func (s *storage) Update(r interface{}, query interface{}, args ...interface{}) error {
+	return s.db.Model(r).Where(query, args).Updates(r).Error
 }
 
 // Delete deletes record with given id. If no record was found, returns ErrRecordNotFound
 func (s *storage) Delete(r interface{}, conds ...interface{}) error {
-	// if id is empty remove all records -> currently used for testing.
-	if len(conds) == 0 {
-		return s.db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(r).Error
-	}
 	// Remove record r with given ID
 	tx := s.db.Delete(r, conds...)
 	if err := tx.Error; err != nil { // db error

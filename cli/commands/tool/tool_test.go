@@ -26,12 +26,13 @@
 package tool
 
 import (
-	"clouditor.io/clouditor/service"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"os"
 	"testing"
+
+	"clouditor.io/clouditor/service"
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli/commands/login"
@@ -95,7 +96,7 @@ func TestListTool(t *testing.T) {
 	err = cmd.RunE(nil, []string{})
 
 	// unsupported for now
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 	assert.Equal(t, "method ListAssessmentTools not implemented", err.Error())
 }
 
@@ -106,7 +107,7 @@ func TestShowTool(t *testing.T) {
 	err = cmd.RunE(nil, []string{"1"})
 
 	// unsupported for now
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 	assert.Equal(t, "method GetAssessmentTool not implemented", err.Error())
 }
 
@@ -117,7 +118,7 @@ func TestUpdateTool(t *testing.T) {
 	err = cmd.RunE(nil, []string{"1"})
 
 	// unsupported for now
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 	assert.Equal(t, "method UpdateAssessmentTool not implemented", err.Error())
 }
 
@@ -128,7 +129,7 @@ func TestRegisterTool(t *testing.T) {
 	err = cmd.RunE(nil, []string{})
 
 	// unsupported for now
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 	assert.Equal(t, "method RegisterAssessmentTool not implemented", err.Error())
 }
 
@@ -139,6 +140,6 @@ func TestDeregisterTool(t *testing.T) {
 	err = cmd.RunE(nil, []string{"1"})
 
 	// unsupported for now
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 	assert.Equal(t, err.Error(), "method DeregisterAssessmentTool not implemented")
 }

@@ -30,12 +30,13 @@ package aws
 import (
 	"context"
 	"errors"
+	"testing"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/aws/smithy-go"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 const mockRegion = "mockRegion"
@@ -63,7 +64,7 @@ func TestNewClient(t *testing.T) {
 	}
 
 	client, err := NewClient()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, mockRegion, client.cfg.Region)
 
 	// Case 2: Get error while loading credentials
@@ -74,7 +75,7 @@ func TestNewClient(t *testing.T) {
 		return
 	}
 	client, err = NewClient()
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 	assert.Nil(t, client)
 
 	// Case 3: Get error while calling GetCallerIdentity
@@ -90,7 +91,7 @@ func TestNewClient(t *testing.T) {
 		return
 	}
 	client, err = NewClient()
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 	assert.Nil(t, client)
 
 }

@@ -2,8 +2,9 @@ package assessment
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMetric_Validate(t *testing.T) {
@@ -67,7 +68,7 @@ func TestMetric_Validate(t *testing.T) {
 				WithMetricRequiresId(),
 			}},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.Nil(t, err)
+				return assert.NoError(t, err)
 			},
 		},
 	}
