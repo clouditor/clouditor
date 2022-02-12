@@ -27,13 +27,14 @@ package cloud
 
 import (
 	"bytes"
-	"clouditor.io/clouditor/service"
 	"context"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"os"
 	"testing"
+
+	"clouditor.io/clouditor/service"
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
@@ -79,11 +80,11 @@ func TestRegisterCloudServiceCommand(t *testing.T) {
 	cmd := NewRegisterCloudServiceCommand()
 	err = cmd.RunE(nil, []string{"not_default"})
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	err = protojson.Unmarshal(b.Bytes(), &response)
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, "not_default", response.Name)
 }
 
@@ -99,18 +100,18 @@ func TestListCloudServicesCommand(t *testing.T) {
 	defer server.Stop()
 
 	_, err = orchestratorService.CreateDefaultTargetCloudService()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	cli.Output = &b
 
 	cmd := NewListCloudServicesCommand()
 	err = cmd.RunE(nil, []string{})
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	err = protojson.Unmarshal(b.Bytes(), &response)
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotEmpty(t, response.Services)
 }
 
@@ -130,18 +131,18 @@ func TestGetCloudServiceCommand(t *testing.T) {
 	fmt.Println("target:", target)
 	// target should be non-nil since it has been newly created
 	assert.NotNil(t, target)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	cli.Output = &b
 
 	cmd := NewGetCloudServiceCommand()
 	err = cmd.RunE(nil, []string{target.Id})
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	err = protojson.Unmarshal(b.Bytes(), &response)
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, target.Id, response.Id)
 }
 
@@ -158,23 +159,23 @@ func TestRemoveCloudServicesCommand(t *testing.T) {
 	defer server.Stop()
 
 	target, err = orchestratorService.CreateDefaultTargetCloudService()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	cli.Output = &b
 
 	cmd := NewRemoveCloudServiceComand()
 	err = cmd.RunE(nil, []string{target.Id})
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	err = protojson.Unmarshal(b.Bytes(), &response)
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	// Re-create default service
 	_, err = orchestratorService.CreateDefaultTargetCloudService()
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }
 
 func TestUpdateCloudServiceCommand(t *testing.T) {
@@ -193,7 +194,7 @@ func TestUpdateCloudServiceCommand(t *testing.T) {
 	defer server.Stop()
 
 	target, err = orchestratorService.CreateDefaultTargetCloudService()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	cli.Output = &b
 
@@ -204,11 +205,11 @@ func TestUpdateCloudServiceCommand(t *testing.T) {
 	cmd := NewUpdateCloudServiceCommand()
 	err = cmd.RunE(nil, []string{})
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	err = protojson.Unmarshal(b.Bytes(), &response)
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, target.Id, response.Id)
 	assert.Equal(t, notDefault, response.Name)
 }
@@ -225,7 +226,7 @@ func TestGetMetricConfiguration(t *testing.T) {
 	defer server.Stop()
 
 	target, err = orchestratorService.CreateDefaultTargetCloudService()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	// target should be not nil since there are no stored cloud services yet
 	assert.NotNil(t, target)
 
@@ -235,12 +236,12 @@ func TestGetMetricConfiguration(t *testing.T) {
 	target, err = orchestratorService.RegisterCloudService(context.TODO(), &orchestrator.RegisterCloudServiceRequest{Service: &orchestrator.CloudService{Name: "myservice"}})
 
 	assert.NotNil(t, target)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	cmd := NewGetMetricConfigurationCommand()
 	err = cmd.RunE(nil, []string{target.Id, "TransportEncryptionEnabled"})
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }
 
 // startServer starts a gRPC server with an orchestrator and auth service. We don't do it in TestMain since you

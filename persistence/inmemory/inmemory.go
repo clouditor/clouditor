@@ -22,8 +22,7 @@ var ErrNoPrimaryKey = errors.New("could not find primary key")
 var ErrNoPointerType = errors.New("argument must be pointer type")
 var ErrConditionNotSupported = errors.New("condition not supported ")
 
-// NewStorage creates a new in memory storage
-// For now with GORM. Use own implementation in the future
+// NewStorage creates a new in memory storage.
 func NewStorage() (persistence.Storage, error) {
 	return &inMemory{tables: make(map[string]*table)}, nil
 }

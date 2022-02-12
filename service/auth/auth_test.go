@@ -218,7 +218,7 @@ func TestService_loadApiKey(t *testing.T) {
 
 	// Save a key to it
 	err := saveApiKey(tmpKey, tmpFile.Name(), "tmp")
-	assert.ErrorIs(t, err, nil)
+	assert.NoError(t, err)
 
 	type args struct {
 		path     string

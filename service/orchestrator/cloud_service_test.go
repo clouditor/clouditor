@@ -64,7 +64,7 @@ func TestRegisterCloudService(t *testing.T) {
 	}
 	orchestratorService := NewService()
 	cloudService, err := orchestratorService.CreateDefaultTargetCloudService()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, cloudService)
 
 	for _, tt := range tests {
@@ -105,17 +105,17 @@ func TestService_ListCloudServices(t *testing.T) {
 	orchestratorService := NewService()
 	// 1st case: No services stored
 	listCloudServicesResponse, err = orchestratorService.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{})
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, listCloudServicesResponse.Services)
 	assert.Empty(t, listCloudServicesResponse.Services)
 
 	// 2nd case: One service stored
 	cloudService, err = orchestratorService.CreateDefaultTargetCloudService()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, cloudService)
 
 	listCloudServicesResponse, err = orchestratorService.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{})
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, listCloudServicesResponse.Services)
 	assert.NotEmpty(t, listCloudServicesResponse.Services)
 	assert.Equal(t, len(listCloudServicesResponse.Services), 1)
@@ -154,7 +154,7 @@ func TestGetCloudService(t *testing.T) {
 	orchestratorService := NewService()
 
 	cloudService, err := orchestratorService.CreateDefaultTargetCloudService()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, cloudService)
 
 	for _, tt := range tests {
@@ -204,7 +204,7 @@ func TestService_UpdateCloudService(t *testing.T) {
 	assert.Equal(t, codes.NotFound, status.Code(err))
 	// 4th case: Service updated successfully
 	_, err = orchestratorService.CreateDefaultTargetCloudService()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	if err != nil {
 		return
 	}
@@ -216,7 +216,7 @@ func TestService_UpdateCloudService(t *testing.T) {
 		},
 		ServiceId: DefaultTargetCloudServiceId,
 	})
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, cloudService)
 	assert.Equal(t, "NewName", cloudService.Name)
 	assert.Equal(t, "NewDescription", cloudService.Description)
@@ -232,32 +232,32 @@ func TestService_RemoveCloudService(t *testing.T) {
 
 	// 1st case: Empty service ID error
 	_, err = orchestratorService.RemoveCloudService(context.Background(), &orchestrator.RemoveCloudServiceRequest{ServiceId: ""})
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 	assert.Equal(t, status.Code(err), codes.InvalidArgument)
 
 	// 2nd case: ErrRecordNotFound
 	_, err = orchestratorService.RemoveCloudService(context.Background(), &orchestrator.RemoveCloudServiceRequest{ServiceId: DefaultTargetCloudServiceId})
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 	assert.Equal(t, status.Code(err), codes.NotFound)
 
 	// 3rd case: Record removed successfully
 	cloudServiceResponse, err = orchestratorService.CreateDefaultTargetCloudService()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, cloudServiceResponse)
 
 	// There is a record for cloud services in the DB (default one)
 	listCloudServicesResponse, err = orchestratorService.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{})
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, listCloudServicesResponse.Services)
 	assert.NotEmpty(t, listCloudServicesResponse.Services)
 
 	// Remove record
 	_, err = orchestratorService.RemoveCloudService(context.Background(), &orchestrator.RemoveCloudServiceRequest{ServiceId: DefaultTargetCloudServiceId})
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	// There is a record for cloud services in the DB (default one)
 	listCloudServicesResponse, err = orchestratorService.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{})
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, listCloudServicesResponse.Services)
 	assert.Empty(t, listCloudServicesResponse.Services)
 }
@@ -271,7 +271,7 @@ func TestService_CreateDefaultTargetCloudService(t *testing.T) {
 
 	// 1st case: No records for cloud services -> Default target service is created
 	cloudServiceResponse, err = orchestratorService.CreateDefaultTargetCloudService()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, &orchestrator.CloudService{
 		Id:          DefaultTargetCloudServiceId,
 		Name:        DefaultTargetCloudServiceName,
@@ -280,6 +280,6 @@ func TestService_CreateDefaultTargetCloudService(t *testing.T) {
 
 	// 2nd case: There is already a record for service (the default target service) -> Nothing added and no error
 	cloudServiceResponse, err = orchestratorService.CreateDefaultTargetCloudService()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Nil(t, cloudServiceResponse)
 }

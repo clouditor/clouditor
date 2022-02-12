@@ -26,13 +26,14 @@
 package cli
 
 import (
-	"clouditor.io/clouditor/service"
 	"context"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"os"
 	"testing"
+
+	"clouditor.io/clouditor/service"
 
 	"google.golang.org/protobuf/proto"
 
@@ -75,7 +76,7 @@ func TestSession(t *testing.T) {
 	defer server.Stop()
 
 	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotEmpty(t, dir)
 
 	viper.Set("session-directory", dir)
@@ -86,7 +87,7 @@ func TestSession(t *testing.T) {
 	}
 	defer session.Close()
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, session)
 	assert.Equal(t, dir, session.Folder)
 
@@ -97,7 +98,7 @@ func TestSession(t *testing.T) {
 	// login with real user
 	response, err = client.Login(context.Background(), &auth.LoginRequest{Username: "clouditor", Password: "clouditor"})
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response.AccessToken)
 
@@ -106,10 +107,10 @@ func TestSession(t *testing.T) {
 
 	err = session.Save()
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	session, err = ContinueSession()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, session)
 
 	client = auth.NewAuthenticationClient(session)
@@ -118,7 +119,7 @@ func TestSession(t *testing.T) {
 	// TODO(oxisto): Should be moved to a service/auth test. here we should only test the session mechanism
 	response, err = client.Login(context.Background(), &auth.LoginRequest{Username: "some-other-user", Password: "password"})
 
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 
 	s, ok := status.FromError(err)
 
@@ -191,5 +192,5 @@ func TestSession_HandleResponse(t *testing.T) {
 // Test will fail due to no user input
 func TestPromptForLogin(t *testing.T) {
 	_, err := PromptForLogin()
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 }

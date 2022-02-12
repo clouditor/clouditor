@@ -41,6 +41,12 @@ type Storage interface {
 	// Create creates a new object and put it into the DB
 	Create(r interface{}) error
 
+	// Save updates the record with given id of the DB
+	Save(r interface{}) error
+
+	// Update updates the record with given id of the DB with non-zero values in r
+	Update(r interface{}, query interface{}, args ...interface{}) error
+
 	// Get gets the record which meet the given conditions
 	Get(r interface{}, conds ...interface{}) error
 
@@ -49,9 +55,6 @@ type Storage interface {
 
 	// Count counts the number of records which meet the (optionally) given conditions
 	Count(r interface{}, conds ...interface{}) (int64, error)
-
-	// Update updates the record with given id of the DB (only change non-zero values of r)
-	Update(r interface{}, conds ...interface{}) error
 
 	// Delete deletes the record with given id of the DB
 	Delete(r interface{}, conds ...interface{}) error

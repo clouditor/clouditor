@@ -138,7 +138,7 @@ func (s *Service) RemoveCloudService(_ context.Context, req *orchestrator.Remove
 		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
 	}
 
-	err = s.storage.Delete(&orchestrator.CloudService{}, req.ServiceId)
+	err = s.storage.Delete(&orchestrator.CloudService{Id: req.ServiceId})
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "service not found")
 	} else if err != nil {

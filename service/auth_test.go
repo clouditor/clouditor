@@ -119,11 +119,11 @@ func TestAuthConfig_AuthFunc(t *testing.T) {
 	}
 
 	port, err := rest.GetServerPort()
-	assert.ErrorIs(t, err, nil)
+	assert.NoError(t, err)
 
 	// Some pre-work to retrieve a valid token
 	loginResponse, err := authService.Login(context.TODO(), &auth.LoginRequest{Username: "clouditor", Password: "clouditor"})
-	assert.ErrorIs(t, err, nil)
+	assert.NoError(t, err)
 	assert.NotNil(t, loginResponse)
 
 	type configureArgs struct {

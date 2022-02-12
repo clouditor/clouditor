@@ -27,13 +27,14 @@ package resource
 
 import (
 	"bytes"
-	"clouditor.io/clouditor/service"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"os"
 	"testing"
 	"time"
+
+	"clouditor.io/clouditor/service"
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/cli"
@@ -121,12 +122,12 @@ func TestNewListCommand(t *testing.T) {
 
 	cmd := NewListResourcesCommand()
 	err = cmd.RunE(nil, []string{})
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	var response = &discovery.QueryResponse{}
 	err = protojson.Unmarshal(b.Bytes(), response)
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response.Results.Values)
 
