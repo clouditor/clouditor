@@ -44,7 +44,7 @@ func TestLoadMetrics(t *testing.T) {
 
 	err = LoadMetrics("metrics.json")
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }
 
 func TestService_CreateMetric(t *testing.T) {
@@ -230,6 +230,6 @@ func TestService_ListMetrics(t *testing.T) {
 
 	response, err = service.ListMetrics(context.TODO(), &orchestrator.ListMetricsRequest{})
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotEmpty(t, response.Metrics)
 }

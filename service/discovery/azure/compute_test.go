@@ -27,12 +27,13 @@ package azure
 
 import (
 	"fmt"
-	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/compute/mgmt/compute"
 	"io"
-	"k8s.io/apimachinery/pkg/util/json"
 	"net/http"
 	"testing"
 	"time"
+
+	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/compute/mgmt/compute"
+	"k8s.io/apimachinery/pkg/util/json"
 
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
@@ -184,7 +185,7 @@ func TestAzureComputeAuthorizer(t *testing.T) {
 	d := NewAzureComputeDiscovery()
 	list, err := d.List()
 
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 	assert.Nil(t, list)
 	assert.Equal(t, "could not authorize Azure account: no authorized was available", err.Error())
 }
@@ -197,7 +198,7 @@ func TestCompute(t *testing.T) {
 
 	list, err := d.List()
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, list)
 	assert.Equal(t, 3, len(list))
 	assert.NotEmpty(t, d.Name())
@@ -210,7 +211,7 @@ func TestVirtualMachine(t *testing.T) {
 	)
 
 	list, err := d.List()
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	virtualMachine, ok := list[0].(*voc.VirtualMachine)
 
@@ -240,7 +241,7 @@ func TestFunction(t *testing.T) {
 
 	list, err := d.List()
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, list)
 	assert.Equal(t, 3, len(list))
 
@@ -255,7 +256,7 @@ func TestComputeDiscoverFunctionWhenInputIsInvalid(t *testing.T) {
 
 	discoverFunctionResponse, err := d.discoverFunction()
 
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "could not list functions")
 	assert.Nil(t, discoverFunctionResponse)
 }
@@ -265,7 +266,7 @@ func TestComputeDiscoverVirtualMachines(t *testing.T) {
 
 	discoverVirtualMachineResponse, err := d.discoverVirtualMachines()
 
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "could not list virtual machines")
 	assert.Nil(t, discoverVirtualMachineResponse)
 }

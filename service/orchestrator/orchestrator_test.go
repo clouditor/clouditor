@@ -27,17 +27,18 @@ package orchestrator
 
 import (
 	"context"
-	"google.golang.org/grpc/metadata"
-	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/structpb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"io"
-	"k8s.io/apimachinery/pkg/util/json"
 	"os"
 	"reflect"
 	"runtime"
 	"sync"
 	"testing"
+
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
+	"k8s.io/apimachinery/pkg/util/json"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/persistence"
@@ -75,7 +76,7 @@ func TestMain(m *testing.M) {
 func TestAssessmentResultHook(t *testing.T) {
 	var (
 		hookCallCounter = 0
-		wg sync.WaitGroup
+		wg              sync.WaitGroup
 	)
 	wg.Add(2)
 
@@ -174,7 +175,7 @@ func TestListMetricConfigurations(t *testing.T) {
 
 	response, err = service.ListMetricConfigurations(context.TODO(), &orchestrator.ListMetricConfigurationRequest{})
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotEmpty(t, response.Configurations)
 }
 

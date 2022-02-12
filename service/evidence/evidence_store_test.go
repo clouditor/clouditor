@@ -27,14 +27,15 @@ package evidences
 
 import (
 	"context"
-	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/structpb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"io"
 	"reflect"
 	"runtime"
 	"sync"
 	"testing"
+
+	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/voc"
@@ -192,14 +193,14 @@ func TestListEvidences(t *testing.T) {
 	}
 
 	resp, err := s.ListEvidences(context.TODO(), &evidence.ListEvidencesRequest{})
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, 2, len(resp.Evidences))
 }
 
 func TestEvidenceHook(t *testing.T) {
 	var (
 		hookCallCounter = 0
-		wg sync.WaitGroup
+		wg              sync.WaitGroup
 	)
 	wg.Add(2)
 
@@ -365,7 +366,7 @@ func (mockStreamer) RecvMsg(_ interface{}) error {
 func toStruct(r voc.IsCloudResource, t *testing.T) (s *structpb.Value) {
 	s, err := voc.ToStruct(r)
 	if err != nil {
-		assert.NotNil(t, err)
+		assert.Error(t, err)
 	}
 
 	return
