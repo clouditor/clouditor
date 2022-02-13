@@ -359,14 +359,14 @@ func hashPassword(password string) (string, error) {
 // CreateDefaultUser creates a default user in the database
 func (s *Service) CreateDefaultUser(username string, password string) error {
 	var (
-		storedUsers []*auth.User
-		err         error
+		err   error
+		count int64
 	)
 
-	err = s.storage.List(&storedUsers)
-	if err != nil && err != persistence.ErrRecordNotFound {
+	count, err = s.storage.Count(&auth.User{})
+	if err != nil {
 		return status.Errorf(codes.Internal, "db error: %v", err)
-	} else if len(storedUsers) == 0 {
+	} else if count == 0 {
 		hash, _ := hashPassword(password)
 
 		u := auth.User{
@@ -382,6 +382,7 @@ func (s *Service) CreateDefaultUser(username string, password string) error {
 			return err
 		}
 	}
+
 	return nil
 }
 
