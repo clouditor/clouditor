@@ -1,4 +1,4 @@
-// Copyright 2021 Fraunhofer AISEC
+// Copyright 2021-2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -58,14 +57,11 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	// We need an embedded DB for the auth server
-	err = persistence.InitDB(true, "", 0)
+	server, authService, _, _ := startBufConnServer()
+	err = authService.CreateDefaultUser("clouditor", "clouditor")
 	if err != nil {
 		panic(err)
 	}
-
-	server, authService, _, _ := startBufConnServer()
-	authService.CreateDefaultUser("clouditor", "clouditor")
 
 	code := m.Run()
 

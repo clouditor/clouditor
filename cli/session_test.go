@@ -33,12 +33,11 @@ import (
 	"os"
 	"testing"
 
+	"clouditor.io/clouditor/service"
+
 	"google.golang.org/protobuf/proto"
 
 	"clouditor.io/clouditor/api/auth"
-	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/service"
-	service_auth "clouditor.io/clouditor/service/auth"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -46,18 +45,20 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var sock net.Listener
-var server *grpc.Server
+var (
+	sock   net.Listener
+	server *grpc.Server
+)
 
 func TestMain(m *testing.M) {
-	var err error
-
-	err = persistence.InitDB(true, "", 0)
+	var (
+		err error
+	)
+	err = os.Chdir("../")
 	if err != nil {
 		panic(err)
 	}
-
-	sock, server, _, err = service.StartDedicatedAuthServer(":0", service_auth.WithApiKeySaveOnCreate(false))
+	sock, server, _, err = service.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}

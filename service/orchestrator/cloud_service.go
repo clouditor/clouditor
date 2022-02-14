@@ -1,4 +1,4 @@
-// Copyright 2021 Fraunhofer AISEC
+// Copyright 2021-2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,26 +28,32 @@ package orchestrator
 import (
 	"context"
 	"errors"
+	"fmt"
+
+	"clouditor.io/clouditor/persistence"
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"gorm.io/gorm"
 )
 
-const DefaultTargetCloudServiceId = "00000000-0000-0000-000000000000"
-const DefaultTargetCloudServiceName = "default"
-const DefaultTargetCloudServiceDescription = "The default target cloud service"
+const (
+	DefaultTargetCloudServiceId          = "00000000-0000-0000-000000000000"
+	DefaultTargetCloudServiceName        = "default"
+	DefaultTargetCloudServiceDescription = "The default target cloud service"
+)
 
 func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.RegisterCloudServiceRequest) (service *orchestrator.CloudService, err error) {
-	if req == nil || req.Service == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "service is empty")
+	if req == nil {
+		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrRequestIsNil.Error())
 	}
-
+	if req.Service == nil {
+		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrServiceIsNil.Error())
+	}
 	if req.Service.Name == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "service name is empty")
+		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrNameIsMissing.Error())
 	}
 
 	service = new(orchestrator.CloudService)
@@ -58,16 +64,20 @@ func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.Regi
 	service.Description = req.Service.Description
 
 	// Persist the service in our database
-	s.db.Create(&service)
+	err = s.storage.Create(service)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not add cloud service to the database: %v", err)
+	}
 
 	return
 }
 
+// ListCloudServices implements method for OrchestratorServer interface for listing all cloud services
 func (s *Service) ListCloudServices(_ context.Context, _ *orchestrator.ListCloudServicesRequest) (response *orchestrator.ListCloudServicesResponse, err error) {
 	response = new(orchestrator.ListCloudServicesResponse)
 	response.Services = make([]*orchestrator.CloudService, 0)
 
-	err = s.db.Find(&response.Services).Error
+	err = s.storage.List(&response.Services)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -75,14 +85,18 @@ func (s *Service) ListCloudServices(_ context.Context, _ *orchestrator.ListCloud
 	return response, nil
 }
 
+// GetCloudService implements method for OrchestratorServer interface for getting a cloud service with provided id
 func (s *Service) GetCloudService(_ context.Context, req *orchestrator.GetCloudServiceRequest) (response *orchestrator.CloudService, err error) {
-	if req == nil || req.ServiceId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
+	if req == nil {
+		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrRequestIsNil.Error())
+	}
+	if req.ServiceId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrIDIsMissing.Error())
 	}
 
 	response = new(orchestrator.CloudService)
-	err = s.db.First(&response, "Id = ?", req.ServiceId).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	err = s.storage.Get(response, "Id = ?", req.ServiceId)
+	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "service not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
@@ -91,6 +105,7 @@ func (s *Service) GetCloudService(_ context.Context, req *orchestrator.GetCloudS
 	return response, nil
 }
 
+// UpdateCloudService implements method for OrchestratorServer interface for updating a cloud service
 func (s *Service) UpdateCloudService(_ context.Context, req *orchestrator.UpdateCloudServiceRequest) (response *orchestrator.CloudService, err error) {
 	if req.Service == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "service is empty")
@@ -100,32 +115,34 @@ func (s *Service) UpdateCloudService(_ context.Context, req *orchestrator.Update
 		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
 	}
 
-	var count int64
-	err = s.db.Model(&orchestrator.CloudService{}).Count(&count).Error
+	count, err := s.storage.Count(req.Service, "Id = ?", req.ServiceId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
-
 	if count == 0 {
 		return nil, status.Error(codes.NotFound, "service not found")
 	}
 
-	req.Service.Id = req.ServiceId
-	err = s.db.Save(&req.Service).Error
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %s", err)
-	}
+	// Add id to response because otherwise it will overwrite ID with empty string
+	response = req.Service
+	response.Id = req.ServiceId
 
-	return req.Service, nil
+	// Since UpdateCloudService is a PUT method, we use storage.Save
+	err = s.storage.Save(response, "Id = ?", req.ServiceId)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+	}
+	return
 }
 
+// RemoveCloudService implements method for OrchestratorServer interface for removing a cloud service
 func (s *Service) RemoveCloudService(_ context.Context, req *orchestrator.RemoveCloudServiceRequest) (response *emptypb.Empty, err error) {
 	if req.ServiceId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
 	}
 
-	err = s.db.Delete(&orchestrator.CloudService{Id: req.ServiceId}).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	err = s.storage.Delete(&orchestrator.CloudService{Id: req.ServiceId})
+	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "service not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
@@ -139,8 +156,12 @@ func (s *Service) RemoveCloudService(_ context.Context, req *orchestrator.Remove
 //
 // If a new target cloud service was created, it will be returned.
 func (s *Service) CreateDefaultTargetCloudService() (service *orchestrator.CloudService, err error) {
-	var count int64
-	s.db.Model(&orchestrator.CloudService{}).Count(&count)
+	log.Infof("Trying to create new default target cloud service...")
+
+	count, err := s.storage.Count(service)
+	if err != nil {
+		return nil, fmt.Errorf("storage error: %w", err)
+	}
 
 	if count == 0 {
 		// Create a default target cloud service
@@ -151,14 +172,13 @@ func (s *Service) CreateDefaultTargetCloudService() (service *orchestrator.Cloud
 				Description: DefaultTargetCloudServiceDescription,
 			}
 
-		// Save it directly into the database, so that we can set the ID
-		err = s.db.Create(&service).Error
-
+		// Save it in the database
+		err = s.storage.Create(service)
 		if err != nil {
-			log.Infof("Created new default target cloud service %s", service.Id)
+			return nil, fmt.Errorf("storage error: %w", err)
+		} else {
+			log.Infof("Created new default target cloud service: %s", service.Id)
 		}
-
-		return service, err
 	}
 
 	return

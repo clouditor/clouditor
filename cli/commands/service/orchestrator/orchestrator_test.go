@@ -35,13 +35,12 @@ import (
 	"os"
 	"testing"
 
+	"clouditor.io/clouditor/service"
+
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
-	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/service"
-	service_auth "clouditor.io/clouditor/service/auth"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
 	"github.com/spf13/viper"
@@ -52,14 +51,16 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-var sock net.Listener
-var server *grpc.Server
+var (
+	sock                net.Listener
+	server              *grpc.Server
+	orchestratorService *service_orchestrator.Service
+)
 
 func TestMain(m *testing.M) {
 	var (
 		err error
 		dir string
-		s   *service_orchestrator.Service
 	)
 
 	err = os.Chdir("../../../../")
@@ -67,20 +68,15 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	err = persistence.InitDB(true, "", 0)
+	orchestratorService = service_orchestrator.NewService()
+
+	sock, server, _, err = service.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}
-
-	s = service_orchestrator.NewService()
-
-	sock, server, _, err = service.StartDedicatedAuthServer(":0", service_auth.WithApiKeySaveOnCreate(false))
-	if err != nil {
-		panic(err)
-	}
-	orchestrator.RegisterOrchestratorServer(server, s)
+	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
 	// Store an assessment result that output of CMD 'list_results' is not empty
-	_, err = s.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
+	_, err = orchestratorService.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
 		Result: &assessment.AssessmentResult{
 			Id:         "11111111-1111-1111-1111-111111111111",
 			MetricId:   "assessmentResultMetricID",

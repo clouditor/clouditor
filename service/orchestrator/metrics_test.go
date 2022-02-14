@@ -90,6 +90,7 @@ func TestService_CreateMetric(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			service := NewService()
 			gotMetric, err := service.CreateMetric(tt.args.in0, tt.args.req)
 
 			if (err != nil) != tt.wantErr {
@@ -146,7 +147,7 @@ func TestService_UpdateMetric(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			service = NewService()
+			service := NewService()
 			gotMetric, err := service.UpdateMetric(tt.args.in0, tt.args.req)
 
 			if (err != nil) != tt.wantErr {
@@ -208,7 +209,7 @@ func TestService_GetMetric(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			service = NewService()
+			service := NewService()
 			gotMetric, err := service.GetMetric(tt.args.in0, tt.args.req)
 
 			if (err != nil) != tt.wantErr {
@@ -227,6 +228,7 @@ func TestService_ListMetrics(t *testing.T) {
 		response *orchestrator.ListMetricsResponse
 		err      error
 	)
+	service := NewService()
 
 	response, err = service.ListMetrics(context.TODO(), &orchestrator.ListMetricsRequest{})
 

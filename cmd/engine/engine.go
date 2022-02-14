@@ -26,6 +26,9 @@
 package main
 
 import (
+	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/persistence/gorm"
+	"clouditor.io/clouditor/persistence/inmemory"
 	"context"
 	"errors"
 	"fmt"
@@ -47,7 +50,6 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/rest"
 	"clouditor.io/clouditor/service"
 
@@ -97,14 +99,17 @@ const (
 	EnvPrefix = "CLOUDITOR"
 )
 
-var server *grpc.Server
-var authService *service_auth.Service
-var discoveryService discovery.DiscoveryServer
-var orchestratorService *service_orchestrator.Service
-var assessmentService assessment.AssessmentServer
-var evidenceStoreService evidence.EvidenceStoreServer
+var (
+	server               *grpc.Server
+	authService          *service_auth.Service
+	discoveryService     discovery.DiscoveryServer
+	orchestratorService  *service_orchestrator.Service
+	assessmentService    assessment.AssessmentServer
+	evidenceStoreService evidence.EvidenceStoreServer
+	db                   persistence.Storage
 
-var log *logrus.Entry
+	log *logrus.Entry
+)
 
 var engineCmd = &cobra.Command{
 	Use:   "engine",
@@ -182,13 +187,19 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
  `)
 
-	if err = persistence.InitDB(viper.GetBool(DBInMemoryFlag),
-		viper.GetString(DBHostFlag),
-		int16(viper.GetInt(DBPortFlag))); err != nil {
-		return fmt.Errorf("could not initialize DB: %w", err)
+	if viper.GetBool(DBInMemoryFlag) {
+		db, err = inmemory.NewStorage()
+	} else {
+		db, err = gorm.NewStorage(gorm.WithPostgres(viper.GetString(DBHostFlag), int16(viper.GetInt(DBPortFlag))))
+	}
+	if err != nil {
+		// We could also just log the error and forward db = nil which will result in inmemory storages
+		// for each service below
+		return fmt.Errorf("could not create storage: %w", err)
 	}
 
 	authService = service_auth.NewService(
+		service_auth.WithStorage(db),
 		service_auth.WithApiKeyPassword(viper.GetString(APIKeyPasswordFlag)),
 		service_auth.WithApiKeyPath(viper.GetString(APIKeyPathFlag)),
 		service_auth.WithApiKeySaveOnCreate(viper.GetBool(APIKeySaveOnCreateFlag)),
@@ -200,7 +211,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			viper.GetString(APIDefaultPasswordFlag),
 		),
 	)
-	orchestratorService = service_orchestrator.NewService()
+	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db))
 	assessmentService = service_assessment.NewService(
 		service_assessment.WithInternalAuthorizer(
 			service.DefaultInternalAuthorizerAddress,
@@ -219,7 +230,10 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	// evidenceStoreService.RegisterEvidenceHook(func(result *evidence.Evidence, err error) {})
 	// assessmentService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {}
 
-	authService.CreateDefaultUser(viper.GetString(APIDefaultUserFlag), viper.GetString(APIDefaultPasswordFlag))
+	err = authService.CreateDefaultUser(viper.GetString(APIDefaultUserFlag), viper.GetString(APIDefaultPasswordFlag))
+	if err != nil {
+		log.Errorf("Could not create default user: %v", err)
+	}
 
 	if viper.GetBool(CreateDefaultTarget) {
 		_, err := orchestratorService.CreateDefaultTargetCloudService()

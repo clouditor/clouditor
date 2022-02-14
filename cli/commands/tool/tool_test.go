@@ -32,11 +32,10 @@ import (
 	"os"
 	"testing"
 
+	"clouditor.io/clouditor/service"
+
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli/commands/login"
-	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/service"
-	service_auth "clouditor.io/clouditor/service/auth"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
 	"github.com/spf13/viper"
@@ -44,30 +43,26 @@ import (
 	"google.golang.org/grpc"
 )
 
-var sock net.Listener
-var server *grpc.Server
+var (
+	sock                net.Listener
+	server              *grpc.Server
+	orchestratorService *service_orchestrator.Service
+)
 
 func TestMain(m *testing.M) {
 	var (
 		err error
 		dir string
-		s   *service_orchestrator.Service
 	)
 
 	err = os.Chdir("../../../")
 	if err != nil {
 		panic(err)
 	}
+	orchestratorService = service_orchestrator.NewService()
 
-	err = persistence.InitDB(true, "", 0)
-	if err != nil {
-		panic(err)
-	}
-
-	s = service_orchestrator.NewService()
-
-	sock, server, _, err = service.StartDedicatedAuthServer(":0", service_auth.WithApiKeySaveOnCreate(false))
-	orchestrator.RegisterOrchestratorServer(server, s)
+	sock, server, _, err = service.StartDedicatedAuthServer(":0")
+	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
 
 	if err != nil {
 		panic(err)

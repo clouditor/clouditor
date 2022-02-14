@@ -37,7 +37,6 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -54,14 +53,11 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	// We need an embedded DB for the auth server
-	err = persistence.InitDB(true, "", 0)
+	server, authService, _ := startBufConnServer()
+	err = authService.CreateDefaultUser("clouditor", "clouditor")
 	if err != nil {
 		panic(err)
 	}
-
-	server, authService, _ := startBufConnServer()
-	authService.CreateDefaultUser("clouditor", "clouditor")
 
 	code := m.Run()
 

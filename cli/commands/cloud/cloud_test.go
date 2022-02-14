@@ -34,12 +34,11 @@ import (
 	"os"
 	"testing"
 
+	"clouditor.io/clouditor/service"
+
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
-	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/service"
-	service_auth "clouditor.io/clouditor/service/auth"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
 	"github.com/spf13/viper"
@@ -49,42 +48,218 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-var sock net.Listener
-var server *grpc.Server
-var s *service_orchestrator.Service
-var target *orchestrator.CloudService
-
 func TestMain(m *testing.M) {
+	err := os.Chdir("../../../")
+	if err != nil {
+		panic(err)
+	}
+
+	defer os.Exit(m.Run())
+}
+
+func TestNewCloudCommand(t *testing.T) {
+	cmd := NewCloudCommand()
+
+	assert.NotNil(t, cmd)
+	assert.True(t, cmd.HasSubCommands())
+}
+
+func TestRegisterCloudServiceCommand(t *testing.T) {
+	var (
+		response orchestrator.CloudService
+
+		err error
+		b   bytes.Buffer
+	)
+	_, server, sock := startServer()
+	defer sock.Close()
+	defer server.Stop()
+
+	cli.Output = &b
+
+	cmd := NewRegisterCloudServiceCommand()
+	err = cmd.RunE(nil, []string{"not_default"})
+
+	assert.NoError(t, err)
+
+	err = protojson.Unmarshal(b.Bytes(), &response)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "not_default", response.Name)
+}
+
+func TestListCloudServicesCommand(t *testing.T) {
+	var (
+		response orchestrator.ListCloudServicesResponse
+
+		err error
+		b   bytes.Buffer
+	)
+	orchestratorService, server, sock := startServer()
+	defer sock.Close()
+	defer server.Stop()
+
+	_, err = orchestratorService.CreateDefaultTargetCloudService()
+	assert.NoError(t, err)
+
+	cli.Output = &b
+
+	cmd := NewListCloudServicesCommand()
+	err = cmd.RunE(nil, []string{})
+
+	assert.NoError(t, err)
+
+	err = protojson.Unmarshal(b.Bytes(), &response)
+
+	assert.NoError(t, err)
+	assert.NotEmpty(t, response.Services)
+}
+
+func TestGetCloudServiceCommand(t *testing.T) {
+	var (
+		response orchestrator.CloudService
+		target   *orchestrator.CloudService
+
+		err error
+		b   bytes.Buffer
+	)
+	orchestratorService, server, sock := startServer()
+	defer sock.Close()
+	defer server.Stop()
+
+	target, err = orchestratorService.CreateDefaultTargetCloudService()
+	fmt.Println("target:", target)
+	// target should be non-nil since it has been newly created
+	assert.NotNil(t, target)
+	assert.NoError(t, err)
+
+	cli.Output = &b
+
+	cmd := NewGetCloudServiceCommand()
+	err = cmd.RunE(nil, []string{target.Id})
+
+	assert.NoError(t, err)
+
+	err = protojson.Unmarshal(b.Bytes(), &response)
+
+	assert.NoError(t, err)
+	assert.Equal(t, target.Id, response.Id)
+}
+
+func TestRemoveCloudServicesCommand(t *testing.T) {
+	var (
+		response emptypb.Empty
+		target   *orchestrator.CloudService
+
+		err error
+		b   bytes.Buffer
+	)
+	orchestratorService, server, sock := startServer()
+	defer sock.Close()
+	defer server.Stop()
+
+	target, err = orchestratorService.CreateDefaultTargetCloudService()
+	assert.NoError(t, err)
+
+	cli.Output = &b
+
+	cmd := NewRemoveCloudServiceComand()
+	err = cmd.RunE(nil, []string{target.Id})
+
+	assert.NoError(t, err)
+
+	err = protojson.Unmarshal(b.Bytes(), &response)
+
+	assert.NoError(t, err)
+
+	// Re-create default service
+	_, err = orchestratorService.CreateDefaultTargetCloudService()
+
+	assert.NoError(t, err)
+}
+
+func TestUpdateCloudServiceCommand(t *testing.T) {
+	var (
+		response orchestrator.CloudService
+		target   *orchestrator.CloudService
+
+		err error
+		b   bytes.Buffer
+	)
+	const (
+		notDefault = "not_default"
+	)
+	orchestratorService, server, sock := startServer()
+	defer sock.Close()
+	defer server.Stop()
+
+	target, err = orchestratorService.CreateDefaultTargetCloudService()
+	assert.NoError(t, err)
+
+	cli.Output = &b
+
+	viper.Set("id", target.Id)
+	viper.Set("name", notDefault)
+	//viper.Set("description", "newD")
+
+	cmd := NewUpdateCloudServiceCommand()
+	err = cmd.RunE(nil, []string{})
+
+	assert.NoError(t, err)
+
+	err = protojson.Unmarshal(b.Bytes(), &response)
+
+	assert.NoError(t, err)
+	assert.Equal(t, target.Id, response.Id)
+	assert.Equal(t, notDefault, response.Name)
+}
+
+func TestGetMetricConfiguration(t *testing.T) {
+	var (
+		target *orchestrator.CloudService
+
+		err error
+		b   bytes.Buffer
+	)
+	orchestratorService, server, sock := startServer()
+	defer sock.Close()
+	defer server.Stop()
+
+	target, err = orchestratorService.CreateDefaultTargetCloudService()
+	assert.NoError(t, err)
+	// target should be not nil since there are no stored cloud services yet
+	assert.NotNil(t, target)
+
+	cli.Output = &b
+
+	// create a new target service
+	target, err = orchestratorService.RegisterCloudService(context.TODO(), &orchestrator.RegisterCloudServiceRequest{Service: &orchestrator.CloudService{Name: "myservice"}})
+
+	assert.NotNil(t, target)
+	assert.NoError(t, err)
+
+	cmd := NewGetMetricConfigurationCommand()
+	err = cmd.RunE(nil, []string{target.Id, "TransportEncryptionEnabled"})
+
+	assert.NoError(t, err)
+}
+
+// startServer starts a gRPC server with an orchestrator and auth service. We don't do it in TestMain since you
+// can only register a service - once before server.serve(). And we do need to add new Orchestrator service because
+// the DB won't be reset otherwise.
+func startServer() (orchestratorService *service_orchestrator.Service, server *grpc.Server, sock net.Listener) {
 	var (
 		err error
 		dir string
 	)
 
-	err = os.Chdir("../../../")
+	orchestratorService = service_orchestrator.NewService()
+
+	sock, server, _, err = service.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}
-
-	err = persistence.InitDB(true, "", 0)
-	if err != nil {
-		panic(err)
-	}
-
-	s = service_orchestrator.NewService()
-
-	sock, server, _, err = service.StartDedicatedAuthServer(":0", service_auth.WithApiKeySaveOnCreate(false))
-	if err != nil {
-		panic(err)
-	}
-	orchestrator.RegisterOrchestratorServer(server, s)
-
-	target, err = s.CreateDefaultTargetCloudService()
-	if err != nil {
-		panic(err)
-	}
-
-	defer sock.Close()
-	defer server.Stop()
+	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
 
 	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
 	if err != nil {
@@ -101,131 +276,5 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	defer os.Exit(m.Run())
-}
-
-func TestNewCloudCommand(t *testing.T) {
-	cmd := NewCloudCommand()
-
-	assert.NotNil(t, cmd)
-	assert.True(t, cmd.HasSubCommands())
-}
-
-func TestRegisterCloudServiceCommand(t *testing.T) {
-	var err error
-	var b bytes.Buffer
-	var response orchestrator.CloudService
-
-	cli.Output = &b
-
-	cmd := NewRegisterCloudServiceCommand()
-	err = cmd.RunE(nil, []string{"not_default"})
-
-	assert.NoError(t, err)
-
-	err = protojson.Unmarshal(b.Bytes(), &response)
-
-	assert.NoError(t, err)
-	assert.Equal(t, "not_default", response.Name)
-}
-
-func TestListCloudServicesCommand(t *testing.T) {
-	var err error
-	var b bytes.Buffer
-	var response orchestrator.ListCloudServicesResponse
-
-	cli.Output = &b
-
-	cmd := NewListCloudServicesCommand()
-	err = cmd.RunE(nil, []string{})
-
-	assert.NoError(t, err)
-
-	err = protojson.Unmarshal(b.Bytes(), &response)
-
-	assert.NoError(t, err)
-	assert.NotEmpty(t, response.Services)
-}
-
-func TestGetCloudServiceCommand(t *testing.T) {
-	var err error
-	var b bytes.Buffer
-	var response orchestrator.CloudService
-
-	cli.Output = &b
-
-	cmd := NewGetCloudServiceComand()
-	err = cmd.RunE(nil, []string{target.Id})
-
-	assert.NoError(t, err)
-
-	err = protojson.Unmarshal(b.Bytes(), &response)
-
-	assert.NoError(t, err)
-	assert.Equal(t, target.Id, response.Id)
-}
-
-func TestRemoveCloudServicesCommand(t *testing.T) {
-	var err error
-	var b bytes.Buffer
-	var response emptypb.Empty
-
-	cli.Output = &b
-
-	cmd := NewRemoveCloudServiceComand()
-	err = cmd.RunE(nil, []string{target.Id})
-
-	assert.NoError(t, err)
-
-	err = protojson.Unmarshal(b.Bytes(), &response)
-
-	assert.NoError(t, err)
-
-	// Re-create default service
-	_, err = s.CreateDefaultTargetCloudService()
-
-	assert.NoError(t, err)
-}
-
-func TestUpdateCloudServiceCommand(t *testing.T) {
-	var err error
-	var b bytes.Buffer
-	var response orchestrator.CloudService
-
-	cli.Output = &b
-
-	viper.Set("id", target.Id)
-	viper.Set("name", "not_default")
-
-	cmd := NewUpdateCloudServiceCommand()
-	err = cmd.RunE(nil, []string{})
-
-	assert.NoError(t, err)
-
-	err = protojson.Unmarshal(b.Bytes(), &response)
-
-	assert.NoError(t, err)
-	assert.Equal(t, target.Id, response.Id)
-	assert.Equal(t, "not_default", response.Name)
-}
-
-func TestGetMetricConfiguration(t *testing.T) {
-	var (
-		err    error
-		b      bytes.Buffer
-		target *orchestrator.CloudService
-	)
-
-	cli.Output = &b
-
-	// create a new target service
-	target, err = s.RegisterCloudService(context.TODO(), &orchestrator.RegisterCloudServiceRequest{Service: &orchestrator.CloudService{Name: "myservice"}})
-
-	assert.NotNil(t, target)
-	assert.NoError(t, err)
-
-	cmd := NewGetMetricConfigurationCommand()
-	err = cmd.RunE(nil, []string{target.Id, "TransportEncryptionEnabled"})
-
-	assert.NoError(t, err)
+	return
 }

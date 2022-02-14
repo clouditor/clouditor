@@ -40,6 +40,8 @@ import (
 	"strings"
 	"time"
 
+	"clouditor.io/clouditor/persistence/inmemory"
+
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/persistence"
 	argon2 "github.com/alexedwards/argon2id"
@@ -48,7 +50,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"gorm.io/gorm"
 )
 
 const (
@@ -87,6 +88,8 @@ type Service struct {
 	}
 
 	apiKey *ecdsa.PrivateKey
+
+	storage persistence.Storage
 }
 
 // UserClaims extend jwt.StandardClaims with more detailed claims about a user
@@ -120,6 +123,13 @@ func WithApiKeySaveOnCreate(saveOnCreate bool) ServiceOption {
 	}
 }
 
+// WithStorage is an option to set the storage. If not set, NewService will use inmemory storage.
+func WithStorage(storage persistence.Storage) ServiceOption {
+	return func(s *Service) {
+		s.storage = storage
+	}
+}
+
 // NewService creates a new Service representing an authentication service.
 func NewService(opts ...ServiceOption) *Service {
 	var err error
@@ -139,6 +149,14 @@ func NewService(opts ...ServiceOption) *Service {
 	// Apply options
 	for _, o := range opts {
 		o(s)
+	}
+
+	// Default to an in-memory storage, if nothing was explicitly set
+	if s.storage == nil {
+		s.storage, err = inmemory.NewStorage()
+		if err != nil {
+			log.Errorf("Could not initialize in-memory storage: %v", err)
+		}
 	}
 
 	// Load the key
@@ -249,9 +267,9 @@ func (s *Service) recoverFromLoadApiKeyError(err error, defaultPath bool) {
 // Login handles a login request
 func (s Service) Login(_ context.Context, request *auth.LoginRequest) (response *auth.LoginResponse, err error) {
 	var result bool
-	var user *auth.User
+	var u *auth.User
 
-	if result, user, err = verifyLogin(request); err != nil {
+	if result, u, err = s.verifyLogin(request); err != nil {
 		// a returned error means, something has gone wrong
 		return nil, status.Errorf(codes.Internal, "error during login: %v", err)
 	}
@@ -265,7 +283,7 @@ func (s Service) Login(_ context.Context, request *auth.LoginRequest) (response 
 
 	var expiry = time.Now().Add(time.Hour * 24)
 
-	if token, err = s.issueToken(user.Username, user.FullName, user.Email, expiry); err != nil {
+	if token, err = s.issueToken(u.Username, u.FullName, u.Email, expiry); err != nil {
 		return nil, status.Errorf(codes.Internal, "token issue failed: %v", err)
 	}
 
@@ -298,16 +316,14 @@ func (s Service) ListPublicKeys(_ context.Context, _ *auth.ListPublicKeysRequest
 // It will return an error in err only if a database error or something else is occurred, this should be
 // returned to the user as an internal server error. For security reasons, if authentication failed, only
 // the result will be set to false, but no detailed error will be returned to the user.
-func verifyLogin(request *auth.LoginRequest) (result bool, user *auth.User, err error) {
+func (s *Service) verifyLogin(request *auth.LoginRequest) (result bool, user *auth.User, err error) {
 	var match bool
-
-	db := persistence.GetDatabase()
 
 	user = new(auth.User)
 
-	err = db.Where("username = ?", request.Username).First(user).Error
+	err = s.storage.Get(user, "username = ?", request.Username)
 
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	if errors.Is(err, persistence.ErrRecordNotFound) {
 		// user not found, set result to false, but hide the error
 		return false, nil, nil
 	} else if err != nil {
@@ -341,25 +357,33 @@ func hashPassword(password string) (string, error) {
 }
 
 // CreateDefaultUser creates a default user in the database
-func (Service) CreateDefaultUser(username string, password string) {
-	db := persistence.GetDatabase()
+func (s *Service) CreateDefaultUser(username string, password string) error {
+	var (
+		err   error
+		count int64
+	)
 
-	var count int64
-	db.Model(&auth.User{}).Count(&count)
-
-	if count == 0 {
+	count, err = s.storage.Count(&auth.User{})
+	if err != nil {
+		return fmt.Errorf("db error: %w", err)
+	} else if count == 0 {
 		hash, _ := hashPassword(password)
 
-		user := auth.User{
+		u := auth.User{
 			Username: username,
 			FullName: username,
 			Password: string(hash),
 		}
 
-		log.Infof("Creating default user %s\n", user.Username)
+		log.Infof("Creating default user %s\n", u.Username)
 
-		db.Create(&user)
+		err = s.storage.Create(&u)
+		if err != nil {
+			return fmt.Errorf("db error: %w", err)
+		}
 	}
+
+	return nil
 }
 
 // issueToken issues a JWT-based token
@@ -386,9 +410,9 @@ func (s Service) GetPublicKey() *ecdsa.PublicKey {
 
 // AuthFuncOverride implements the ServiceAuthFuncOverride interface to override the AuthFunc for this service.
 // The reason is to actually disable authentication checking in the auth service, because functions such as login
-// need to be publically available.
+// need to be publicly available.
 func (Service) AuthFuncOverride(ctx context.Context, _ string) (context.Context, error) {
-	// No authentication needed for login functions, otherwise we could not login
+	// No authentication needed for login functions, otherwise we could not log in
 	return ctx, nil
 }
 
@@ -396,20 +420,20 @@ func (Service) AuthFuncOverride(ctx context.Context, _ string) (context.Context,
 // of the user
 func expandPath(path string) (out string, err error) {
 	var (
-		usr *user.User
+		u *user.User
 	)
 
 	// Fetch the current user home directory
-	usr, err = user.Current()
+	u, err = user.Current()
 	if err != nil {
 		return path, fmt.Errorf("could not find retrieve current user: %w", err)
 	}
 
 	if path == "~" {
-		return usr.HomeDir, nil
+		return u.HomeDir, nil
 	} else if strings.HasPrefix(path, "~") {
 		// We only allow ~ at the beginning of the path
-		return filepath.Join(usr.HomeDir, path[2:]), nil
+		return filepath.Join(u.HomeDir, path[2:]), nil
 	}
 
 	return path, nil
