@@ -196,8 +196,8 @@ func TestService_UpdateCloudService(t *testing.T) {
 	// 3rd case: Service not found since there are no services yet
 	_, err = orchestratorService.UpdateCloudService(context.Background(), &orchestrator.UpdateCloudServiceRequest{
 		Service: &orchestrator.CloudService{
-			Id:   DefaultTargetCloudServiceId,
-			Name: DefaultTargetCloudServiceName,
+			Name:        DefaultTargetCloudServiceName,
+			Description: DefaultTargetCloudServiceDescription,
 		},
 		ServiceId: DefaultTargetCloudServiceId,
 	})
@@ -210,16 +210,16 @@ func TestService_UpdateCloudService(t *testing.T) {
 	}
 	cloudService, err = orchestratorService.UpdateCloudService(context.Background(), &orchestrator.UpdateCloudServiceRequest{
 		Service: &orchestrator.CloudService{
-			Id:          DefaultTargetCloudServiceId,
 			Name:        "NewName",
-			Description: "NewDescription",
+			Description: "",
 		},
 		ServiceId: DefaultTargetCloudServiceId,
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, cloudService)
 	assert.Equal(t, "NewName", cloudService.Name)
-	assert.Equal(t, "NewDescription", cloudService.Description)
+	// Description should be overwritten with empty string
+	assert.Equal(t, "", cloudService.Description)
 }
 
 func TestService_RemoveCloudService(t *testing.T) {

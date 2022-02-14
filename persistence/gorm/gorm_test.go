@@ -1,6 +1,7 @@
 package gorm
 
 import (
+	"clouditor.io/clouditor/api/orchestrator"
 	"fmt"
 	"testing"
 
@@ -323,6 +324,33 @@ func Test_storage_Update(t *testing.T) {
 	assert.Equal(t, user.Username, gotUser.Username)
 	assert.Equal(t, user.Password, gotUser.Password)
 	assert.Equal(t, user.Email, gotUser.Email)
+
+	// Testing cloud service (A table test now would be better, probably)
+
+	// Create user
+	cloudService := orchestrator.CloudService{
+		Id:          "SomeId",
+		Name:        "SomeName",
+		Description: "SomeDescription",
+	}
+	err = s.Create(&cloudService)
+	assert.NoError(t, err)
+
+	err = s.Get(&orchestrator.CloudService{}, "Id = ?", cloudService.Id)
+	assert.NoError(t, err)
+
+	err = s.Update(&orchestrator.CloudService{Name: "SomeNewName", Description: ""}, "Id = ?", cloudService.Id)
+	assert.NoError(t, err)
+
+	gotCloudService := &orchestrator.CloudService{}
+	err = s.Get(gotCloudService, "Id = ?", cloudService.Id)
+	assert.NoError(t, err)
+
+	// Name should be changed
+	assert.Equal(t, "SomeNewName", gotCloudService.Name)
+	// Other properties should stay the same
+	assert.Equal(t, cloudService.Id, gotCloudService.Id)
+	assert.Equal(t, cloudService.Description, gotCloudService.Description)
 }
 
 func Test_storage_Delete(t *testing.T) {

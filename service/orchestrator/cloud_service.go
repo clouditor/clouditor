@@ -127,11 +127,11 @@ func (s *Service) UpdateCloudService(_ context.Context, req *orchestrator.Update
 	response = req.Service
 	response.Id = req.ServiceId
 
-	err = s.storage.Update(response, "Id = ?", req.ServiceId)
+	// Since UpdateCloudService is a PUT method, we use storage.Save
+	err = s.storage.Save(response, "Id = ?", req.ServiceId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
-
 	return
 }
 
