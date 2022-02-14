@@ -315,7 +315,7 @@ func TestNewService(t *testing.T) {
 			},
 		},
 		{
-			name: "New service with Api Key Sve on Create",
+			name: "New service with Api Key Save on Create",
 			args: args{
 				opts: []ServiceOption{WithApiKeySaveOnCreate(true)},
 			},
@@ -329,7 +329,7 @@ func TestNewService(t *testing.T) {
 			},
 		},
 		{
-			name: "New service with Api Key Sve on Create",
+			name: "New service with Api Key Save on Create",
 			args: args{
 				opts: []ServiceOption{WithApiKeySaveOnCreate(false)},
 			},
