@@ -272,13 +272,13 @@ func (s *Service) recoverFromLoadApiKeyError(err error, defaultPath bool) {
 func (s Service) Login(_ context.Context, request *auth.LoginRequest) (response *auth.TokenResponse, err error) {
 	var (
 		result       bool
-		user            *auth.User
+		user         *auth.User
 		token        string
 		refreshToken string
 		expiry       = time.Now().Add(DefaultPeriodOfValidity)
 	)
 
-	if result, u, err = s.verifyLogin(request); err != nil {
+	if result, user, err = s.verifyLogin(request); err != nil {
 		// a returned error means, something has gone wrong
 		return nil, status.Errorf(codes.Internal, "error during login: %v", err)
 	}
@@ -314,7 +314,7 @@ func (s Service) Login(_ context.Context, request *auth.LoginRequest) (response 
 func (s *Service) Token(_ context.Context, req *auth.TokenRequest) (response *auth.TokenResponse, err error) {
 	var (
 		token  string
-		user      *auth.User
+		user   *auth.User
 		claims jwt.RegisteredClaims
 		expiry = time.Now().Add(DefaultPeriodOfValidity)
 	)
@@ -336,7 +336,7 @@ func (s *Service) Token(_ context.Context, req *auth.TokenRequest) (response *au
 		return nil, status.Error(codes.InvalidArgument, "invalid_grant")
 	}
 
-	err = s.storage.Where("username = ?", claims.Subject).First(&user).Error
+	err = s.storage.Get(&user, "username = ?", claims.Subject)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		// User not found, we cannot successfully authenticate this refresh token
 		return nil, status.Error(codes.InvalidArgument, "invalid_grant")
@@ -346,7 +346,7 @@ func (s *Service) Token(_ context.Context, req *auth.TokenRequest) (response *au
 	}
 
 	// Issue a new token
-	if token, err = issueToken(s.apiKey, u.Username, u.FullName, u.Email, expiry); err != nil {
+	if token, err = issueToken(s.apiKey, user.Username, user.FullName, user.Email, expiry); err != nil {
 		// An internal error occurred while creating the token, return an an internal error but without any details
 		return nil, status.Errorf(codes.Internal, "token issue failed")
 	}

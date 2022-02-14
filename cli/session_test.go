@@ -34,17 +34,23 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/service"
+	service_auth "clouditor.io/clouditor/service/auth"
+	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
 	"golang.org/x/oauth2"
+	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+)
 
 var (
+	sock   net.Listener
 	server *grpc.Server
 )
 

@@ -39,20 +39,9 @@ import (
 
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/persistence/inmemory"
-	"clouditor.io/clouditor/persistence"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
 )
-
-func TestMain(m *testing.M) {
-	// A small embedded DB is needed for the server
-	err := persistence.InitDB(true, "", 0)
-	if err != nil {
-		panic(err)
-	}
-
-	os.Exit(m.Run())
-}
 
 func TestService_ListPublicKeys(t *testing.T) {
 	type fields struct {
@@ -110,6 +99,71 @@ func TestService_ListPublicKeys(t *testing.T) {
 			}
 			if !proto.Equal(gotResponse, tt.wantResponse) {
 				t.Errorf("Service.ListPublicKeys() = %v, want %v", gotResponse, tt.wantResponse)
+			}
+		})
+	}
+}
+
+func TestService_Token(t *testing.T) {
+	// Create a new temporary key
+	tmpKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+
+	// Create a refresh token
+	refreshToken, _ := issueRefreshToken(tmpKey, "clouditor")
+
+	type fields struct {
+		apiKey *ecdsa.PrivateKey
+	}
+	type args struct {
+		ctx context.Context
+		req *auth.TokenRequest
+	}
+	tests := []struct {
+		name         string
+		fields       fields
+		args         args
+		wantResponse assert.ValueAssertionFunc
+		wantErr      bool
+	}{
+		{
+			name:    "Missing requirement parameter",
+			wantErr: true,
+		},
+		{
+			name: "Valid refresh_token",
+			fields: fields{
+				apiKey: tmpKey,
+			},
+			args: args{
+				req: &auth.TokenRequest{GrantType: "refresh_token", RefreshToken: refreshToken},
+			},
+			wantResponse: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				resp, ok := i1.(*auth.TokenResponse)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				return assert.NotNil(tt, resp.AccessToken)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{
+				apiKey: tt.fields.apiKey,
+			}
+
+			s.storage, _ = inmemory.NewStorage()
+			s.CreateDefaultUser("clouditor", "clouditor")
+
+			gotResponse, err := s.Token(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.Token() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantResponse != nil {
+				tt.wantResponse(t, gotResponse, tt.args.ctx, tt.args.req)
 			}
 		})
 	}
@@ -285,7 +339,6 @@ func TestService_loadApiKey(t *testing.T) {
 	}
 }
 
-<<<<<<< HEAD
 func TestNewService(t *testing.T) {
 	var myStorage, err = inmemory.NewStorage()
 	assert.NoError(t, err)
@@ -384,27 +437,11 @@ func TestService_CreateDefaultUser(t *testing.T) {
 	type args struct {
 		username string
 		password string
-=======
-func TestService_Token(t *testing.T) {
-	// Create a new temporary key
-	tmpKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-
-	// Create a refresh token
-	refreshToken, _ := issueRefreshToken(tmpKey, "clouditor")
-
-	type fields struct {
-		apiKey *ecdsa.PrivateKey
-	}
-	type args struct {
-		ctx context.Context
-		req *auth.TokenRequest
->>>>>>> 633e7ad (Implementing OAuth refresh_token flow in CLI)
 	}
 	tests := []struct {
 		name         string
 		fields       fields
 		args         args
-<<<<<<< HEAD
 		preFunctions []func(s *Service)
 		wantErr      assert.ErrorAssertionFunc
 	}{
@@ -467,37 +504,12 @@ func TestService_Token(t *testing.T) {
 				var gotUser auth.User
 				err = i[0].(*Service).storage.Get(&gotUser, "username = ?", "SomeName")
 				return assert.ErrorIs(t, err, nil)
-=======
-		wantResponse assert.ValueAssertionFunc
-		wantErr      bool
-	}{
-		{
-			name:    "Missing requirement parameter",
-			wantErr: true,
-		},
-		{
-			name: "Valid refresh_token",
-			fields: fields{
-				apiKey: tmpKey,
-			},
-			args: args{
-				req: &auth.TokenRequest{GrantType: "refresh_token", RefreshToken: refreshToken},
-			},
-			wantResponse: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				resp, ok := i1.(*auth.TokenResponse)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				return assert.NotNil(tt, resp.AccessToken)
->>>>>>> 633e7ad (Implementing OAuth refresh_token flow in CLI)
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
-<<<<<<< HEAD
 				config: tt.fields.config,
 				apiKey: tt.fields.apiKey,
 			}
@@ -545,22 +557,3 @@ func (m mockStorage) Count(interface{}, ...interface{}) (int64, error) {
 }
 
 func (m mockStorage) Delete(interface{}, ...interface{}) error { return m.deleteError }
-=======
-				apiKey: tt.fields.apiKey,
-			}
-
-			s.CreateDefaultUser("clouditor", "clouditor")
-
-			gotResponse, err := s.Token(tt.args.ctx, tt.args.req)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.Token() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-
-			if tt.wantResponse != nil {
-				tt.wantResponse(t, gotResponse, tt.args.ctx, tt.args.req)
-			}
-		})
-	}
-}
->>>>>>> 633e7ad (Implementing OAuth refresh_token flow in CLI)
