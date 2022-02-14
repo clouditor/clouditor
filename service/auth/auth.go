@@ -365,7 +365,7 @@ func (s *Service) CreateDefaultUser(username string, password string) error {
 
 	count, err = s.storage.Count(&auth.User{})
 	if err != nil {
-		return status.Errorf(codes.Internal, "db error: %v", err)
+		return fmt.Errorf("db error: %w", err)
 	} else if count == 0 {
 		hash, _ := hashPassword(password)
 
@@ -379,7 +379,7 @@ func (s *Service) CreateDefaultUser(username string, password string) error {
 
 		err = s.storage.Create(&u)
 		if err != nil {
-			return err
+			return fmt.Errorf("db error: %w", err)
 		}
 	}
 

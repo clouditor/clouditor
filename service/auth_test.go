@@ -261,7 +261,7 @@ func TestStartDedicatedAuthServer(t *testing.T) {
 	}
 }
 
-// mockStorage is a mocked persistance.Storage implementation that returns errors at the specified
+// mockStorage is a mocked persistence.Storage implementation that returns errors at the specified
 // operations.
 //
 // TODO(oxisto): Extract this struct into our new internal/testutils package
