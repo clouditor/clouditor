@@ -277,7 +277,7 @@ type mockStorage struct {
 
 func (m mockStorage) Create(interface{}) error { return m.createError }
 
-func (m mockStorage) Save(interface{}) error { return m.saveError }
+func (m mockStorage) Save(interface{}, ...interface{}) error { return m.saveError }
 
 func (m mockStorage) Update(interface{}, interface{}, ...interface{}) error {
 	return m.updateError
