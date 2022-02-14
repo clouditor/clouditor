@@ -54,6 +54,10 @@ func (i *inMemory) Delete(r interface{}, conds ...interface{}) error {
 	return nil
 }
 
+func (i *inMemory) Save(r interface{}, conds ...interface{}) error {
+	return nil
+}
+
 func (i *inMemory) Get(r interface{}, conds ...interface{}) error {
 	var s = reflect.ValueOf(r)
 	if s.Kind() != reflect.Ptr {
@@ -117,7 +121,7 @@ func (i *inMemory) List(r interface{}, conds ...interface{}) error {
 	return nil
 }
 
-func (i *inMemory) Update(r interface{}, conds ...interface{}) error {
+func (i *inMemory) Update(r interface{}, query interface{}, args ...interface{}) error {
 	return nil
 }
 

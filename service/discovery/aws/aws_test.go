@@ -98,7 +98,7 @@ func TestNewClient(t *testing.T) {
 
 type mockSTSClient struct{}
 
-func (m mockSTSClient) GetCallerIdentity(_ context.Context,
+func (mockSTSClient) GetCallerIdentity(_ context.Context,
 	_ *sts.GetCallerIdentityInput, _ ...func(*sts.Options)) (*sts.GetCallerIdentityOutput, error) {
 	return &sts.GetCallerIdentityOutput{
 		Account: aws.String("12345"),
@@ -107,7 +107,7 @@ func (m mockSTSClient) GetCallerIdentity(_ context.Context,
 
 type mockSTSClientWithAPIError struct{}
 
-func (m mockSTSClientWithAPIError) GetCallerIdentity(_ context.Context,
+func (mockSTSClientWithAPIError) GetCallerIdentity(_ context.Context,
 	_ *sts.GetCallerIdentityInput, _ ...func(*sts.Options)) (*sts.GetCallerIdentityOutput, error) {
 	return nil, &smithy.OperationError{
 		ServiceID:     "STS",

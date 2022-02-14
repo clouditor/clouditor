@@ -28,19 +28,22 @@ package orchestrator
 import (
 	"context"
 	"errors"
-
-	"clouditor.io/clouditor/persistence"
+	"fmt"
 
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/persistence"
+
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-const DefaultTargetCloudServiceId = "00000000-0000-0000-000000000000"
-const DefaultTargetCloudServiceName = "default"
-const DefaultTargetCloudServiceDescription = "The default target cloud service"
+const (
+	DefaultTargetCloudServiceId          = "00000000-0000-0000-000000000000"
+	DefaultTargetCloudServiceName        = "default"
+	DefaultTargetCloudServiceDescription = "The default target cloud service"
+)
 
 func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.RegisterCloudServiceRequest) (service *orchestrator.CloudService, err error) {
 	if req == nil {
@@ -124,11 +127,11 @@ func (s *Service) UpdateCloudService(_ context.Context, req *orchestrator.Update
 	response = req.Service
 	response.Id = req.ServiceId
 
-	err = s.storage.Update(response, "Id = ?", req.ServiceId)
+	// Since UpdateCloudService is a PUT method, we use storage.Save
+	err = s.storage.Save(response, "Id = ?", req.ServiceId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
-
 	return
 }
 
@@ -153,12 +156,11 @@ func (s *Service) RemoveCloudService(_ context.Context, req *orchestrator.Remove
 //
 // If a new target cloud service was created, it will be returned.
 func (s *Service) CreateDefaultTargetCloudService() (service *orchestrator.CloudService, err error) {
-	log.Infof("Creating new default target cloud service...")
-	const couldNotCreateService = "Could not create default target cloud service"
+	log.Infof("Trying to create new default target cloud service...")
+
 	count, err := s.storage.Count(service)
 	if err != nil {
-		log.Infof(couldNotCreateService)
-		return nil, err
+		return nil, fmt.Errorf("storage error: %w", err)
 	}
 
 	if count == 0 {
@@ -169,13 +171,14 @@ func (s *Service) CreateDefaultTargetCloudService() (service *orchestrator.Cloud
 				Name:        DefaultTargetCloudServiceName,
 				Description: DefaultTargetCloudServiceDescription,
 			}
-		// Save it directly into the database, so that we can set the ID
+
+		// Save it in the database
 		err = s.storage.Create(service)
 		if err != nil {
-			log.Infof(couldNotCreateService)
-			return
+			return nil, fmt.Errorf("storage error: %w", err)
+		} else {
+			log.Infof("Created new default target cloud service: %s", service.Id)
 		}
-
 	}
 	log.Infof("Default target cloud service created")
 	return

@@ -124,10 +124,11 @@ func (s *storage) Count(r interface{}, conds ...interface{}) (count int64, err e
 	return
 }
 
-func (s *storage) Save(r interface{}) error {
-	return s.db.Save(r).Error
+func (s *storage) Save(r interface{}, conds ...interface{}) error {
+	return s.db.Where(conds).Save(r).Error
 }
 
+// Update will update the record with non-zero fields. Note that to get the entire updated record you have to call Get
 func (s *storage) Update(r interface{}, query interface{}, args ...interface{}) error {
 	return s.db.Model(r).Where(query, args).Updates(r).Error
 }

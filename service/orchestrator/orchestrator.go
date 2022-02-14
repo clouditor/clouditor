@@ -26,7 +26,6 @@
 package orchestrator
 
 import (
-	"clouditor.io/clouditor/persistence/inmemory"
 	"context"
 	"embed"
 	"encoding/json"
@@ -35,14 +34,15 @@ import (
 	"io/ioutil"
 	"sync"
 
-	"google.golang.org/protobuf/types/known/emptypb"
-
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/persistence/inmemory"
+
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 //go:embed metrics.json
@@ -109,11 +109,13 @@ func NewService(opts ...ServiceOption) *Service {
 	for _, o := range opts {
 		o(&s)
 	}
+
+	// Default to an in-memory storage, if nothing was explicitly set
 	if s.storage == nil {
 		s.storage, err = inmemory.NewStorage()
-	}
-	if err != nil {
-		log.Errorf("Could not initialize the storage: %v", err)
+		if err != nil {
+			log.Errorf("Could not initialize the storage: %v", err)
+		}
 	}
 
 	if err = LoadMetrics(s.metricsFile); err != nil {

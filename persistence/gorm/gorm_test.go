@@ -1,6 +1,7 @@
 package gorm
 
 import (
+	"clouditor.io/clouditor/api/orchestrator"
 	"fmt"
 	"testing"
 
@@ -127,7 +128,57 @@ func Test_storage_Get(t *testing.T) {
 
 }
 
-// TODO(lebogg): Add tests for List
+func Test_storage_List(t *testing.T) {
+	var (
+		err   error
+		s     persistence.Storage
+		user1 *auth.User
+		user2 *auth.User
+		users []auth.User
+	)
+
+	user1 = &auth.User{
+		Username: "SomeName",
+		Password: "SomePassword",
+		Email:    "SomeMail",
+		FullName: "SomeFullName",
+	}
+
+	user2 = &auth.User{
+		Username: "SomeName2",
+		Password: "SomePassword2",
+		Email:    "SomeMail2",
+		FullName: "SomeFullName2",
+	}
+
+	// Create storage
+	s, err = NewStorage()
+	assert.NoError(t, err)
+
+	// List should return empty list since no users are in DB yet
+	err = s.List(&users)
+	assert.ErrorIs(t, err, nil)
+	assert.Empty(t, users)
+
+	// List should return list of 2 users (user1 and user2)
+	err = s.Create(user1)
+	assert.NoError(t, err)
+	err = s.Create(user2)
+	assert.NoError(t, err)
+	err = s.List(&users)
+	assert.ErrorIs(t, err, nil)
+	assert.Equal(t, len(users), 2)
+
+	// Check if user with name "SomeName" (user1) is in the list
+	for i := range users {
+		if users[i].Username == user1.Username {
+			return
+		}
+	}
+	// If not, let the test fail
+	assert.FailNow(t, "user1 is not listed but should be.")
+
+}
 
 func Test_storage_Count(t *testing.T) {
 	var (
@@ -185,6 +236,56 @@ func Test_storage_Count(t *testing.T) {
 	assert.Contains(t, err.Error(), "unsupported data type")
 }
 
+func Test_storage_Save(t *testing.T) {
+	var (
+		err     error
+		s       persistence.Storage
+		user    *auth.User
+		newUser *auth.User
+		gotUser *auth.User
+	)
+	user = &auth.User{
+		Username: "SomeName",
+		Password: "SomePassword",
+		Email:    "SomeMail",
+		FullName: "SomeFullName",
+	}
+
+	// Create storage
+	s, err = NewStorage()
+	assert.NoError(t, err)
+
+	// Create user
+	err = s.Create(user)
+	assert.NoError(t, err)
+
+	err = s.Get(&auth.User{}, "username = ?", user.Username)
+	assert.NoError(t, err)
+
+	// Save new User: Change PW and delete email. Username and FullName remain unchanged
+	newUser = &auth.User{
+		Username: user.Username,
+		Password: "SomeNewPassword",
+		Email:    "",
+		FullName: user.FullName,
+	}
+	err = s.Save(newUser, "username = ?", user.Username)
+	assert.NoError(t, err)
+
+	gotUser = &auth.User{}
+	err = s.Get(gotUser, "username = ?", user.Username)
+	assert.NoError(t, err)
+
+	// UserName and FullName should be the same
+	assert.Equal(t, user.Username, gotUser.Username)
+	assert.Equal(t, user.Username, gotUser.Username)
+	// PW should be changed
+	assert.Equal(t, newUser.Password, gotUser.Password)
+	// Email should be zero
+	assert.Equal(t, "", gotUser.Email)
+
+}
+
 func Test_storage_Update(t *testing.T) {
 	var (
 		err  error
@@ -223,6 +324,66 @@ func Test_storage_Update(t *testing.T) {
 	assert.Equal(t, user.Username, gotUser.Username)
 	assert.Equal(t, user.Password, gotUser.Password)
 	assert.Equal(t, user.Email, gotUser.Email)
+
+	// Testing cloud service (A table test now would be better, probably)
+
+	// Create user
+	cloudService := orchestrator.CloudService{
+		Id:          "SomeId",
+		Name:        "SomeName",
+		Description: "SomeDescription",
+	}
+	err = s.Create(&cloudService)
+	assert.NoError(t, err)
+
+	err = s.Get(&orchestrator.CloudService{}, "Id = ?", cloudService.Id)
+	assert.NoError(t, err)
+
+	err = s.Update(&orchestrator.CloudService{Name: "SomeNewName", Description: ""}, "Id = ?", cloudService.Id)
+	assert.NoError(t, err)
+
+	gotCloudService := &orchestrator.CloudService{}
+	err = s.Get(gotCloudService, "Id = ?", cloudService.Id)
+	assert.NoError(t, err)
+
+	// Name should be changed
+	assert.Equal(t, "SomeNewName", gotCloudService.Name)
+	// Other properties should stay the same
+	assert.Equal(t, cloudService.Id, gotCloudService.Id)
+	assert.Equal(t, cloudService.Description, gotCloudService.Description)
 }
 
-// TODO(lebogg): Add tests for delete
+func Test_storage_Delete(t *testing.T) {
+	var (
+		err  error
+		s    persistence.Storage
+		user *auth.User
+		//gotUser *auth.User
+	)
+	user = &auth.User{
+		Username: "SomeName",
+		Password: "SomePassword",
+		Email:    "SomeMail",
+		FullName: "SomeFullName",
+	}
+
+	// Create storage
+	s, err = NewStorage()
+	assert.NoError(t, err)
+
+	// Create user
+	err = s.Create(user)
+	assert.NoError(t, err)
+
+	// Should return ErrRecordNotFound since there is no user "FakeUserName" in DB
+	assert.ErrorIs(t, s.Delete(&auth.User{}, "username = ?", "FakeUserName"), persistence.ErrRecordNotFound)
+
+	// Successful deletion
+	assert.Nil(t, s.Delete(&auth.User{}, "username = ?", user.Username))
+	// Check with s.Get that user is not in DB anymore
+	assert.ErrorIs(t, s.Get(&auth.User{}, "username = ?", user.Username), persistence.ErrRecordNotFound)
+
+	// Should return DB error since a non-supported type is passed (just a string instead of, e.g., &auth.User{})
+	assert.Contains(t, s.Delete("Unsupported Type").Error(), "unsupported data type")
+
+}

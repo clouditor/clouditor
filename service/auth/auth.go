@@ -26,7 +26,6 @@
 package auth
 
 import (
-	"clouditor.io/clouditor/persistence/inmemory"
 	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
@@ -40,6 +39,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"clouditor.io/clouditor/persistence/inmemory"
 
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/persistence"
@@ -154,6 +155,14 @@ func NewService(opts ...ServiceOption) *Service {
 	}
 	if err != nil {
 		log.Errorf("Could not initialize the storage: %v", err)
+	}
+
+	// Default to an in-memory storage, if nothing was explicitly set
+	if s.storage == nil {
+		s.storage, err = inmemory.NewStorage()
+		if err != nil {
+			log.Errorf("Could not initialize in-memory storage: %v", err)
+		}
 	}
 
 	// Load the key
@@ -356,14 +365,14 @@ func hashPassword(password string) (string, error) {
 // CreateDefaultUser creates a default user in the database
 func (s *Service) CreateDefaultUser(username string, password string) error {
 	var (
-		storedUsers []*auth.User
-		err         error
+		err   error
+		count int64
 	)
 
-	err = s.storage.List(&storedUsers)
-	if err != nil && err != persistence.ErrRecordNotFound {
-		return status.Errorf(codes.Internal, "db error: %v", err)
-	} else if len(storedUsers) == 0 {
+	count, err = s.storage.Count(&auth.User{})
+	if err != nil {
+		return fmt.Errorf("db error: %w", err)
+	} else if count == 0 {
 		hash, _ := hashPassword(password)
 
 		u := auth.User{
@@ -376,9 +385,10 @@ func (s *Service) CreateDefaultUser(username string, password string) error {
 
 		err = s.storage.Create(&u)
 		if err != nil {
-			return err
+			return fmt.Errorf("db error: %w", err)
 		}
 	}
+
 	return nil
 }
 
