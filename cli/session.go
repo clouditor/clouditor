@@ -35,9 +35,9 @@ import (
 	"os"
 	"strings"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/service"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"golang.org/x/oauth2"
@@ -53,18 +53,18 @@ var Output io.Writer = os.Stdout
 
 type Session struct {
 	*grpc.ClientConn
-	authorizer service.Authorizer
+	authorizer api.Authorizer
 
 	URL string `json:"url"`
 
 	Folder string `json:"-"`
 }
 
-func (s *Session) SetAuthorizer(authorizer service.Authorizer) {
+func (s *Session) SetAuthorizer(authorizer api.Authorizer) {
 	s.authorizer = authorizer
 }
 
-func (s *Session) Authorizer() service.Authorizer {
+func (s *Session) Authorizer() api.Authorizer {
 	return s.authorizer
 }
 
@@ -85,7 +85,7 @@ func NewSession(url string) (session *Session, err error) {
 		URL:    url,
 		Folder: viper.GetString("session-directory"),
 		// We will supply the token later
-		authorizer: service.NewInternalAuthorizerFromToken(url, nil),
+		authorizer: api.NewInternalAuthorizerFromToken(url, nil),
 	}
 
 	var opts = []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
@@ -121,7 +121,7 @@ func ContinueSession() (session *Session, err error) {
 		return
 	}
 
-	if session.ClientConn, err = grpc.Dial(session.URL, service.DefaultGrpcDialOptions(session)...); err != nil {
+	if session.ClientConn, err = grpc.Dial(session.URL, api.DefaultGrpcDialOptions(session)...); err != nil {
 		return nil, fmt.Errorf("could not connect: %w", err)
 	}
 
@@ -185,7 +185,7 @@ func (s *Session) UnmarshalJSON(data []byte) (err error) {
 	}
 
 	s.URL = v.URL
-	s.authorizer = service.NewInternalAuthorizerFromToken(s.URL, v.Token)
+	s.authorizer = api.NewInternalAuthorizerFromToken(s.URL, v.Token)
 	return
 }
 

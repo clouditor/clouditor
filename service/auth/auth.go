@@ -198,7 +198,12 @@ func loadApiKey(path string, password []byte) (key *ecdsa.PrivateKey, err error)
 	if err != nil {
 		return nil, fmt.Errorf("error while opening the file: %w", err)
 	}
-	defer f.Close()
+	defer func() {
+		err := f.Close()
+		if err != nil {
+			log.Errorf("Error while closing file: %v", err)
+		}
+	}()
 
 	data, err := ioutil.ReadAll(f)
 	if err != nil {
@@ -360,6 +365,8 @@ func (s *Service) Token(_ context.Context, req *auth.TokenRequest) (response *au
 	}, nil
 }
 
+// ListPublicKeys lists public keys in a JSON Web Key Set (JWKS). In our case we only return
+// a single key, which is our API key.
 func (s Service) ListPublicKeys(_ context.Context, _ *auth.ListPublicKeysRequest) (response *auth.ListPublicResponse, err error) {
 	response = &auth.ListPublicResponse{
 		Keys: []*auth.JsonWebKey{

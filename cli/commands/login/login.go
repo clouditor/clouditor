@@ -29,9 +29,9 @@ import (
 	"context"
 	"fmt"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/service"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"golang.org/x/oauth2"
@@ -79,7 +79,7 @@ func NewLoginCommand() *cobra.Command {
 			}
 
 			// Update the session
-			session.SetAuthorizer(service.NewInternalAuthorizerFromToken(
+			session.SetAuthorizer(api.NewInternalAuthorizerFromToken(
 				session.Authorizer().AuthURL(),
 				&oauth2.Token{
 					AccessToken:  res.AccessToken,

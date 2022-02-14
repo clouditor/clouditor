@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package service
+package api
 
 import (
 	"context"
