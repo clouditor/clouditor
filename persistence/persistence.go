@@ -41,8 +41,9 @@ type Storage interface {
 	// Create creates a new object and put it into the DB
 	Create(r interface{}) error
 
-	// Save updates the record with given id of the DB
-	Save(r interface{}) error
+	// Save updates the record r (workaround with conds needed that e.g. user has no specific ID, and we can not touch
+	// the generated (gRPC) code s.t. user.username has primary key annotation)
+	Save(r interface{}, conds ...interface{}) error
 
 	// Update updates the record with given id of the DB with non-zero values in r
 	Update(r interface{}, query interface{}, args ...interface{}) error

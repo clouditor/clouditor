@@ -124,8 +124,8 @@ func (s *storage) Count(r interface{}, conds ...interface{}) (count int64, err e
 	return
 }
 
-func (s *storage) Save(r interface{}) error {
-	return s.db.Save(r).Error
+func (s *storage) Save(r interface{}, conds ...interface{}) error {
+	return s.db.Where(conds).Save(r).Error
 }
 
 func (s *storage) Update(r interface{}, query interface{}, args ...interface{}) error {
