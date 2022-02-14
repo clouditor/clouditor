@@ -95,7 +95,7 @@ func RegisterAuthenticationHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Authentication/Login", runtime.WithHTTPPathPattern("/v1/auth/login"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Authentication/Login")
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -118,7 +118,7 @@ func RegisterAuthenticationHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Authentication/ListPublicKeys", runtime.WithHTTPPathPattern("/.well-known/jwks.json"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Authentication/ListPublicKeys")
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -165,7 +165,7 @@ func RegisterAuthenticationHandlerFromEndpoint(ctx context.Context, mux *runtime
 
 // RegisterAuthenticationHandler registers the http handlers for service Authentication to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterAuthenticationHandler(ctx context.Context, mux *runtime.ServeMux, conn grpc.ClientConnInterface) error {
+func RegisterAuthenticationHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
 	return RegisterAuthenticationHandlerClient(ctx, mux, NewAuthenticationClient(conn))
 }
 
@@ -180,7 +180,7 @@ func RegisterAuthenticationHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.Authentication/Login", runtime.WithHTTPPathPattern("/v1/auth/login"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.Authentication/Login")
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -200,7 +200,7 @@ func RegisterAuthenticationHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.Authentication/ListPublicKeys", runtime.WithHTTPPathPattern("/.well-known/jwks.json"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.Authentication/ListPublicKeys")
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return

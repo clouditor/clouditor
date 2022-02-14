@@ -1,17 +1,15 @@
 # Generated with protoc-gen-openapi
-# https://github.com/google/gnostic/tree/master/apps/protoc-gen-openapi
+# https://github.com/googleapis/gnostic/tree/master/apps/protoc-gen-openapi
 
 openapi: 3.0.3
 info:
-    title: EvidenceStore API
+    title: EvidenceStore
     description: Manages the storage of evidences
     version: 0.0.1
 paths:
     /v1/evidence_store/evidence:
         post:
-            tags:
-                - EvidenceStore
-            description: Stores an evidence to the evidence storage. Part of the public API, also exposed as REST.
+            summary: Stores an evidence to the evidence storage. Part of the public API, also exposed as REST.
             operationId: EvidenceStore_StoreEvidence
             requestBody:
                 content:
@@ -28,9 +26,7 @@ paths:
                                 $ref: '#/components/schemas/StoreEvidenceResponse'
     /v1/evidence_store/evidences:
         get:
-            tags:
-                - EvidenceStore
-            description: Returns all stored evidences. Part of the public API, also exposed as REST.
+            summary: Returns all stored evidences. Part of the public API, also exposed as REST.
             operationId: EvidenceStore_ListEvidences
             responses:
                 "200":
@@ -42,7 +38,6 @@ paths:
 components:
     schemas:
         Evidence:
-            type: object
             properties:
                 id:
                     type: string
@@ -51,10 +46,10 @@ components:
                     type: string
                     description: time of evidence creation
                     format: RFC3339
-                serviceId:
+                service_id:
                     type: string
                     description: Reference to a service this evidence was gathered from
-                toolId:
+                tool_id:
                     type: string
                     description: Reference to the tool which provided the evidence
                 raw:
@@ -64,14 +59,12 @@ components:
                     $ref: '#/components/schemas/Value'
             description: An evidence resource
         ListEvidencesResponse:
-            type: object
             properties:
                 evidences:
                     type: array
                     items:
                         $ref: '#/components/schemas/Evidence'
         ListValue:
-            type: object
             properties:
                 values:
                     type: array
@@ -80,32 +73,34 @@ components:
                     description: Repeated field of dynamically typed values.
             description: '`ListValue` is a wrapper around a repeated field of values. The JSON representation for `ListValue` is JSON array.'
         StoreEvidenceResponse:
-            type: object
             properties:
                 status:
                     type: boolean
-        Value:
-            type: object
+                statusMessage:
+                    type: string
+        Struct:
             properties:
-                nullValue:
+                fields:
+                    $ref: '#/components/schemas/FieldsEntry'
+            description: '`Struct` represents a structured data value, consisting of fields which map to dynamically typed values. In some languages, `Struct` might be supported by a native representation. For example, in scripting languages like JS a struct is represented as an object. The details of that representation are described together with the proto support for the language. The JSON representation for `Struct` is JSON object.'
+        Value:
+            properties:
+                null_value:
                     type: integer
                     description: Represents a null value.
                     format: enum
-                numberValue:
+                number_value:
                     type: number
                     description: Represents a double value.
                     format: double
-                stringValue:
+                string_value:
                     type: string
                     description: Represents a string value.
-                boolValue:
+                bool_value:
                     type: boolean
                     description: Represents a boolean value.
-                structValue:
-                    type: object
-                    description: Represents a structured value.
-                listValue:
+                struct_value:
+                    $ref: '#/components/schemas/Struct'
+                list_value:
                     $ref: '#/components/schemas/ListValue'
             description: '`Value` represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values. A producer of value is expected to set one of that variants, absence of any variant indicates an error. The JSON representation for `Value` is JSON value.'
-tags:
-    - name: EvidenceStore

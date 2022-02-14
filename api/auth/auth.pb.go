@@ -184,14 +184,16 @@ func (x *LoginRequest) GetPassword() string {
 }
 
 // LoginResponse is a response to a Login call, it is aligned to a OAuth 2.0
-// token response.
+// token response (see https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.4).
 type LoginResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// access_token contains the token which can be used to authenticate further calls to a resource endpoint
 	AccessToken string `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
-	TokenType   string `protobuf:"bytes,2,opt,name=token_type,json=tokenType,proto3" json:"token_type,omitempty"`
+	// token_type describes the access token type. The usual value in most scenarios is "bearer".
+	TokenType string `protobuf:"bytes,2,opt,name=token_type,json=tokenType,proto3" json:"token_type,omitempty"`
 	// refresh_token is a token that can be used to refresh the access token if it
 	// expires. Reserved for future use, not currently used.
 	RefreshToken string `protobuf:"bytes,3,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
@@ -344,16 +346,22 @@ func (x *ListPublicResponse) GetKeys() []*JsonWebKey {
 	return nil
 }
 
+// JsonWebKey describes a JSON Web Key (JWK) according to RFC 7517 (see https://datatracker.ietf.org/doc/html/rfc7517) and RFC 7518 (https://datatracker.ietf.org/doc/html/rfc7518).
 type JsonWebKey struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// kid is the Key ID Parameter (see https://datatracker.ietf.org/doc/html/rfc7517#section-4.5).
 	Kid string `protobuf:"bytes,1,opt,name=kid,proto3" json:"kid,omitempty"`
+	// kty is the Key Type Parameter (see https://datatracker.ietf.org/doc/html/rfc7517#section-4.1).
 	Kty string `protobuf:"bytes,22,opt,name=kty,proto3" json:"kty,omitempty"`
+	// crv is the Curve Parameter when using an elliptic curve public key in a JWK (see https://datatracker.ietf.org/doc/html/rfc7518#section-6.2.1.1).
 	Crv string `protobuf:"bytes,10,opt,name=crv,proto3" json:"crv,omitempty"`
-	X   string `protobuf:"bytes,11,opt,name=x,proto3" json:"x,omitempty"`
-	Y   string `protobuf:"bytes,12,opt,name=y,proto3" json:"y,omitempty"`
+	// x is the X Coordinate Parameter when using an elliptic curve public key in a JWK (see https://datatracker.ietf.org/doc/html/rfc7518#section-6.2.1.2).
+	X string `protobuf:"bytes,11,opt,name=x,proto3" json:"x,omitempty"`
+	// y is the Y Coordinate Parameter when using an elliptic curve public key in a JWK (see https://datatracker.ietf.org/doc/html/rfc7518#section-6.2.1.3).
+	Y string `protobuf:"bytes,12,opt,name=y,proto3" json:"y,omitempty"`
 }
 
 func (x *JsonWebKey) Reset() {

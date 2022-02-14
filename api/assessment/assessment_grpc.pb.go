@@ -27,7 +27,7 @@ type AssessmentClient interface {
 	TriggerAssessment(ctx context.Context, in *TriggerAssessmentRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Assesses the evidence sent by the discovery. Part of the public API, also exposed as REST.
 	AssessEvidence(ctx context.Context, in *AssessEvidenceRequest, opts ...grpc.CallOption) (*AssessEvidenceResponse, error)
-	// Assesses stream of evidences sent by the discovery. Part of the public API. Not exposed as REST.
+	// Assesses stream of evidences sent by the discovery and returns stream of status and status messages. Part of the public API. Not exposed as REST.
 	AssessEvidences(ctx context.Context, opts ...grpc.CallOption) (Assessment_AssessEvidencesClient, error)
 	// List all assessment results. Part of the public API, also exposed as REST.
 	ListAssessmentResults(ctx context.Context, in *ListAssessmentResultsRequest, opts ...grpc.CallOption) (*ListAssessmentResultsResponse, error)
@@ -70,7 +70,7 @@ func (c *assessmentClient) AssessEvidences(ctx context.Context, opts ...grpc.Cal
 
 type Assessment_AssessEvidencesClient interface {
 	Send(*AssessEvidenceRequest) error
-	CloseAndRecv() (*emptypb.Empty, error)
+	Recv() (*AssessEvidenceResponse, error)
 	grpc.ClientStream
 }
 
@@ -82,11 +82,8 @@ func (x *assessmentAssessEvidencesClient) Send(m *AssessEvidenceRequest) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *assessmentAssessEvidencesClient) CloseAndRecv() (*emptypb.Empty, error) {
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	m := new(emptypb.Empty)
+func (x *assessmentAssessEvidencesClient) Recv() (*AssessEvidenceResponse, error) {
+	m := new(AssessEvidenceResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -110,7 +107,7 @@ type AssessmentServer interface {
 	TriggerAssessment(context.Context, *TriggerAssessmentRequest) (*emptypb.Empty, error)
 	// Assesses the evidence sent by the discovery. Part of the public API, also exposed as REST.
 	AssessEvidence(context.Context, *AssessEvidenceRequest) (*AssessEvidenceResponse, error)
-	// Assesses stream of evidences sent by the discovery. Part of the public API. Not exposed as REST.
+	// Assesses stream of evidences sent by the discovery and returns stream of status and status messages. Part of the public API. Not exposed as REST.
 	AssessEvidences(Assessment_AssessEvidencesServer) error
 	// List all assessment results. Part of the public API, also exposed as REST.
 	ListAssessmentResults(context.Context, *ListAssessmentResultsRequest) (*ListAssessmentResultsResponse, error)
@@ -187,7 +184,7 @@ func _Assessment_AssessEvidences_Handler(srv interface{}, stream grpc.ServerStre
 }
 
 type Assessment_AssessEvidencesServer interface {
-	SendAndClose(*emptypb.Empty) error
+	Send(*AssessEvidenceResponse) error
 	Recv() (*AssessEvidenceRequest, error)
 	grpc.ServerStream
 }
@@ -196,7 +193,7 @@ type assessmentAssessEvidencesServer struct {
 	grpc.ServerStream
 }
 
-func (x *assessmentAssessEvidencesServer) SendAndClose(m *emptypb.Empty) error {
+func (x *assessmentAssessEvidencesServer) Send(m *AssessEvidenceResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -250,6 +247,7 @@ var Assessment_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "AssessEvidences",
 			Handler:       _Assessment_AssessEvidences_Handler,
+			ServerStreams: true,
 			ClientStreams: true,
 		},
 	},
