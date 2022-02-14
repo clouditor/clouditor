@@ -153,8 +153,13 @@ func TestService_Token(t *testing.T) {
 				apiKey: tt.fields.apiKey,
 			}
 
-			s.storage, _ = inmemory.NewStorage()
-			s.CreateDefaultUser("clouditor", "clouditor")
+			var err error
+
+			s.storage, err = inmemory.NewStorage()
+			assert.NoError(t, err)
+
+			err = s.CreateDefaultUser("clouditor", "clouditor")
+			assert.NoError(t, err)
 
 			gotResponse, err := s.Token(tt.args.ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
