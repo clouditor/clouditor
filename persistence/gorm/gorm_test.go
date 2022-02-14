@@ -170,8 +170,8 @@ func Test_storage_List(t *testing.T) {
 	assert.Equal(t, len(users), 2)
 
 	// Check if user with name "SomeName" (user1) is in the list
-	for _, u := range users {
-		if u.Username == user1.Username {
+	for i := range users {
+		if users[i].Username == user1.Username {
 			return
 		}
 	}
