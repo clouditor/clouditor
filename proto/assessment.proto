@@ -53,8 +53,8 @@ service Assessment {
     };
   }
 
-  // Assesses stream of evidences sent by the discovery. Part of the public API. Not exposed as REST.
-  rpc AssessEvidences(stream AssessEvidenceRequest) returns (google.protobuf.Empty);
+  // Assesses stream of evidences sent by the discovery and returns stream of status and status messages. Part of the public API. Not exposed as REST.
+  rpc AssessEvidences(stream AssessEvidenceRequest) returns (stream AssessEvidenceResponse){};
 
   // List all assessment results. Part of the public API, also exposed as REST.
   rpc ListAssessmentResults(ListAssessmentResultsRequest)
@@ -74,7 +74,10 @@ message ConfigureAssessmentResponse{}
 message TriggerAssessmentRequest { string someOption = 1; }
 
 message AssessEvidenceRequest { Evidence evidence = 1; }
-message AssessEvidenceResponse { bool status = 1; }
+message AssessEvidenceResponse {
+  bool status = 1;
+  string statusMessage = 2;
+}
 
 // A result resource, representing the result after assessing the cloud resource
 // with id resource_id.
