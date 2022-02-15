@@ -27,6 +27,10 @@ package evidences
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"github.com/google/uuid"
+	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -120,7 +124,8 @@ func TestStoreEvidence(t *testing.T) {
 			},
 			wantErr: true,
 			wantResp: &evidence.StoreEvidenceResponse{
-				Status: false,
+				Status:        false,
+				StatusMessage: "invalid evidence: tool id in evidence is missing",
 			},
 		},
 	}
@@ -148,26 +153,56 @@ func TestStoreEvidence(t *testing.T) {
 
 // TestStoreEvidences tests StoreEvidences
 func TestStoreEvidences(t *testing.T) {
-	type args struct {
-		stream evidence.EvidenceStore_StoreEvidencesServer
+	type fields struct {
+		count int
 	}
+
+	type args struct {
+		stream *mockStreamer
+	}
+
 	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
+		name           string
+		fields         fields
+		args           args
+		wantErr        bool
+		wantErrMessage *evidence.StoreEvidenceResponse
 	}{
 		{
-			name:    "Store 2 evidences to the map",
-			args:    args{stream: &mockStreamer{counter: 0}},
+			name:   "Store 1 evidence to the map",
+			fields: fields{count: 1},
+			args: args{
+				stream: CreateMockStream(createStoreEvidenceRequestMocks(1))},
 			wantErr: false,
+			wantErrMessage: &evidence.StoreEvidenceResponse{
+				Status: true,
+			},
+		},
+		{
+			name:   "Store 2 evidences to the map",
+			fields: fields{count: 2},
+			args: args{
+				stream: CreateMockStream(createStoreEvidenceRequestMocks(2))},
+			wantErr: false,
+			wantErrMessage: &evidence.StoreEvidenceResponse{
+				Status: true,
+			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
+
 			if err := s.StoreEvidences(tt.args.stream); (err != nil) != tt.wantErr {
 				t.Errorf("StoreEvidences() error = %v, wantErr %v", err, tt.wantErr)
-				assert.Equal(t, 2, len(s.evidences))
+			} else {
+				close(tt.args.stream.SentFromServer)
+				assert.Equal(t, tt.fields.count, len(tt.args.stream.SentFromServer))
+				assert.Nil(t, err)
+
+				for elem := range tt.args.stream.SentFromServer {
+					assert.Contains(t, elem.StatusMessage, tt.wantErrMessage.StatusMessage)
+				}
 			}
 		})
 	}
@@ -292,8 +327,55 @@ func TestEvidenceHook(t *testing.T) {
 
 }
 
+// createStoreEvidenceRequestMocks creates store evidence requests with random evidence IDs
+func createStoreEvidenceRequestMocks(count int) []*evidence.StoreEvidenceRequest {
+	var mockRequests []*evidence.StoreEvidenceRequest
+
+	for i := 0; i < count; i++ {
+		evidenceRequest := &evidence.StoreEvidenceRequest{
+			Evidence: &evidence.Evidence{
+				Id:        uuid.NewString(),
+				ToolId:    fmt.Sprintf("MockToolId-%d", i),
+				ServiceId: fmt.Sprintf("MockServiceId-%d", i),
+				Timestamp: timestamppb.Now(),
+				Raw:       "",
+				Resource: toStructWithoutTest(voc.VirtualMachine{
+					Compute: &voc.Compute{
+						CloudResource: &voc.CloudResource{
+							ID: "mock-id-1",
+						},
+					},
+				}),
+			},
+		}
+		mockRequests = append(mockRequests, evidenceRequest)
+	}
+
+	return mockRequests
+}
+
 type mockStreamer struct {
-	counter int
+	grpc.ServerStream
+	counter        int
+	RecvToServer   chan *evidence.StoreEvidenceRequest
+	SentFromServer chan *evidence.StoreEvidenceResponse
+}
+
+func CreateMockStream(requests []*evidence.StoreEvidenceRequest) *mockStreamer {
+	m := &mockStreamer{
+		RecvToServer: make(chan *evidence.StoreEvidenceRequest, len(requests)),
+	}
+	for _, req := range requests {
+		m.RecvToServer <- req
+	}
+
+	m.SentFromServer = make(chan *evidence.StoreEvidenceResponse, len(requests))
+	return m
+}
+
+func (m mockStreamer) Send(response *evidence.StoreEvidenceResponse) error {
+	m.SentFromServer <- response
+	return nil
 }
 
 func (mockStreamer) SendAndClose(_ *emptypb.Empty) error {
@@ -301,41 +383,15 @@ func (mockStreamer) SendAndClose(_ *emptypb.Empty) error {
 }
 
 func (m *mockStreamer) Recv() (req *evidence.StoreEvidenceRequest, err error) {
-	if m.counter == 0 {
-		m.counter++
-		return &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
-			Id:        "MockEvidenceId-1",
-			ToolId:    "MockToolId-1",
-			ServiceId: "MockServiceId-1",
-			Timestamp: timestamppb.Now(),
-			Raw:       "",
-			Resource: toStructWithoutTest(voc.VirtualMachine{
-				Compute: &voc.Compute{
-					CloudResource: &voc.CloudResource{
-						ID: "mock-id-1",
-					},
-				},
-			}),
-		}}, nil
-	} else if m.counter == 1 {
-		m.counter++
-		return &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
-			Id:        "MockEvidenceId-2",
-			ToolId:    "MockToolId-2",
-			ServiceId: "MockServiceId-2",
-			Timestamp: timestamppb.Now(),
-			Raw:       "",
-			Resource: toStructWithoutTest(voc.VirtualMachine{
-				Compute: &voc.Compute{
-					CloudResource: &voc.CloudResource{
-						ID: "mock-id-1",
-					},
-				},
-			}),
-		}}, nil
-	} else {
+	if len(m.RecvToServer) == 0 {
 		return nil, io.EOF
 	}
+	req, more := <-m.RecvToServer
+	if !more {
+		return nil, errors.New("empty")
+	}
+
+	return req, nil
 }
 
 func (mockStreamer) SetHeader(_ metadata.MD) error {
