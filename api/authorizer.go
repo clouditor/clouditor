@@ -61,12 +61,12 @@ type UsesAuthorizer interface {
 // DefaultInternalAuthorizerAddress specifies the default gRPC address of the internal Clouditor auth service.
 const DefaultInternalAuthorizerAddress = "localhost:9090"
 
-// InternalAuthorizer is an authorizer that uses the Clouditor internal auth server (using gRPC) and
+// internalAuthorizer is an authorizer that uses the Clouditor internal auth server (using gRPC) and
 // does a login flow using username and password
 type internalAuthorizer struct {
 	authURL string
 
-	// GrpcOptions contains additional grpc dial options
+	// grpcOptions contains additional grpc dial options
 	grpcOptions []grpc.DialOption
 
 	username string
@@ -82,7 +82,7 @@ type internalAuthorizer struct {
 	tokenMutex sync.RWMutex
 }
 
-// NewInternalAuthorizerFromPassword creates a new authorizedbased on a (gRPC) URL of the
+// NewInternalAuthorizerFromPassword creates a new authorizer based on a (gRPC) URL of the
 // authentication server and a username / password combination
 func NewInternalAuthorizerFromPassword(url string, username string, password string, grpcOptions ...grpc.DialOption) Authorizer {
 	return &internalAuthorizer{
