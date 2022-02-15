@@ -100,6 +100,37 @@ func TestInternalAuthorizer_Token(t *testing.T) {
 				TokenType:   "Bearer",
 			},
 		},
+		{
+			name: "Fetch access token with username",
+			fields: fields{
+				client:   &mockAuthClient{},
+				conn:     &mockConn{},
+				username: "mock",
+				password: "mock",
+			},
+			want: &oauth2.Token{
+				AccessToken: mockAccessToken,
+				Expiry:      mockExpiry,
+				TokenType:   "Bearer",
+			},
+		},
+		{
+			name: "Token still valid",
+			fields: fields{
+				client: &mockAuthClient{},
+				conn:   &mockConn{},
+				token: &oauth2.Token{
+					AccessToken: mockAccessToken,
+					TokenType:   "Bearer",
+					Expiry:      mockExpiry,
+				},
+			},
+			want: &oauth2.Token{
+				AccessToken: mockAccessToken,
+				Expiry:      mockExpiry,
+				TokenType:   "Bearer",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -128,7 +159,11 @@ func TestInternalAuthorizer_Token(t *testing.T) {
 type mockAuthClient struct{}
 
 func (mockAuthClient) Login(_ context.Context, _ *auth.LoginRequest, _ ...grpc.CallOption) (*auth.TokenResponse, error) {
-	return nil, nil
+	return &auth.TokenResponse{
+		AccessToken: mockAccessToken,
+		TokenType:   "Bearer",
+		Expiry:      timestamppb.New(mockExpiry),
+	}, nil
 }
 
 func (mockAuthClient) Token(_ context.Context, _ *auth.TokenRequest, _ ...grpc.CallOption) (*auth.TokenResponse, error) {

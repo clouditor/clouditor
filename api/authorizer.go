@@ -133,7 +133,10 @@ func (i *internalAuthorizer) init() (err error) {
 
 // Token is an implementation for the interface oauth2.TokenSource so we can use this authorizer
 // in (almost) the same way as any other OAuth 2.0 token endpoint. It will fetch an access token
-// using the stored username / password credentials and refresh the access token, if it is expired.
+// (and possibly a refresh token), if no token is stored yet in the authorizer or if the token is expired.
+//
+// The "refresh" of a token will either be done by a refresh token (if it exists) or by the stored combination
+// of username / password.
 func (i *internalAuthorizer) Token() (*oauth2.Token, error) {
 	var (
 		resp *auth.TokenResponse
@@ -153,7 +156,7 @@ func (i *internalAuthorizer) Token() (*oauth2.Token, error) {
 	// if another call is currently fetching a new one and thus modifying it.
 	i.tokenMutex.RLock()
 
-	// Check if we already have a token or if it is still ok
+	// Check if we already have a token and if it is still ok
 	if i.token != nil && i.token.Expiry.After(time.Now()) {
 		// Defer the unlock, if we return here
 		defer i.tokenMutex.RUnlock()
