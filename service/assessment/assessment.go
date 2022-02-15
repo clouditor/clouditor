@@ -169,7 +169,6 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 
 		log.Errorf("Error while handling evidence: %v", err)
 
-		//TODO (garuppel): If function is called from AssessEvidences() than return whole error? Or use error from res in AssessEvidences()
 		return res, status.Error(codes.Internal, "error while handling evidence")
 	}
 
@@ -185,7 +184,6 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 	var (
 		req *assessment.AssessEvidenceRequest
 		res *assessment.AssessEvidenceResponse
-		//sendResponse *assessment.AssessEvidenceResponse
 	)
 
 	for {
@@ -207,18 +205,12 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 		}
 
 		res, err = s.AssessEvidence(context.Background(), assessEvidencesReq)
-		/*if err != nil {
-			sendResponse = &assessment.AssessEvidenceResponse{
-				Status: false,
-				StatusMessage: res.StatusMessage,
-			}
-		}*/
 
-		log.Infof("Send response for evidence (ID) %s from assessment service to the client: %v", req.Evidence.Id, res)
+		// Send response back to the client
 		err = stream.Send(res)
 		if err != nil {
 			log.Fatalf("Error when response was sent to the client: %v", res)
-			return status.Errorf(codes.Unknown, "cannot send streamToServer response: %v", err)
+			return status.Errorf(codes.Unknown, "cannot send response to the client: %v", err)
 		}
 	}
 }
@@ -278,6 +270,7 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 
 		// Inform hooks about new assessment result
 		go s.informHooks(result, nil)
+
 		// Send assessment result to the Orchestrator
 		err = s.sendToOrchestrator(result)
 		if err != nil {

@@ -249,7 +249,6 @@ func TestAssessEvidences(t *testing.T) {
 		UnimplementedAssessmentServer assessment.UnimplementedAssessmentServer
 	}
 	type args struct {
-//		streamToServer assessment.Assessment_AssessEvidencesServer
 		streamToServer *mockAssessmentServerStream
 	}
 	tests := []struct {
@@ -270,9 +269,9 @@ func TestAssessEvidences(t *testing.T) {
 						Timestamp: timestamppb.Now(),
 						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
-			wantErr:        false,
+			wantErr: false,
 			wantErrMessage: &assessment.AssessEvidenceResponse{
-				Status: false,
+				Status:        false,
 				StatusMessage: "invalid evidence: " + evidence.ErrToolIdMissing.Error(),
 			},
 		},
@@ -285,12 +284,12 @@ func TestAssessEvidences(t *testing.T) {
 				streamToServer: CreateMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
 						Timestamp: timestamppb.Now(),
-						ToolId: "2134",
+						ToolId:    "2134",
 						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
-			wantErr:        false,
+			wantErr: false,
 			wantErrMessage: &assessment.AssessEvidenceResponse{
-				Status:        true,
+				Status: true,
 			},
 		},
 		{
@@ -302,10 +301,10 @@ func TestAssessEvidences(t *testing.T) {
 				streamToServer: CreateMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
 						Timestamp: timestamppb.Now(),
-						ToolId: "2134",
+						ToolId:    "2134",
 						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
-			wantErr:        false,
+			wantErr: false,
 			wantErrMessage: &assessment.AssessEvidenceResponse{
 				Status:        false,
 				StatusMessage: "could not send evidence to the evidence store: could not initialize streamToServer to Evidence Store",
@@ -327,7 +326,7 @@ func TestAssessEvidences(t *testing.T) {
 
 			err := s.AssessEvidences(tt.args.streamToServer)
 
-			responseFromServer :=<- tt.args.streamToServer.SentFromServer
+			responseFromServer := <-tt.args.streamToServer.SentFromServer
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Got AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
@@ -464,11 +463,8 @@ func toStruct(r voc.IsCloudResource, t *testing.T) (s *structpb.Value) {
 // mockAssessmentServerStream implements Assessment_AssessEvidencesServer which is used to mock incoming evidences as a streamToServer
 type mockAssessmentServerStream struct {
 	grpc.ServerStream
-	// TODO(garuppel): Delete evidence! And receivedEvidence??
-	//evidence         *evidence.Evidence
-	//receivedEvidence bool
-	RecvToServer     chan *assessment.AssessEvidenceRequest
-	SentFromServer   chan *assessment.AssessEvidenceResponse
+	RecvToServer   chan *assessment.AssessEvidenceRequest
+	SentFromServer chan *assessment.AssessEvidenceResponse
 }
 
 func (m mockAssessmentServerStream) CloseSend() error {
@@ -498,7 +494,7 @@ func (mockAssessmentServerStream) SendAndClose() error {
 // For now, just receive one evidence and directly stop the streamToServer (EOF)
 func (m *mockAssessmentServerStream) Recv() (req *assessment.AssessEvidenceRequest, err error) {
 	if len(m.RecvToServer) == 0 {
-		return nil,  io.EOF
+		return nil, io.EOF
 	}
 	req, more := <-m.RecvToServer
 	if !more {
