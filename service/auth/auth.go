@@ -314,7 +314,7 @@ func (s Service) Login(_ context.Context, request *auth.LoginRequest) (response 
 // Token aims to be a OAuth 2.0 compliant token endpoint. Currently, only the refresh_token grant type
 // is supported. This function only takes care of the application behavior, the actual implementation of
 // a HTTP endpoint around this functionality is provided by the gRPC gateway and is modified by the
-// OAuthErrorHandler function, which needs to be registed using runtime.WithErrorHandler in the gRPC
+// OAuthErrorHandler function, which needs to be registered using runtime.WithErrorHandler in the gRPC
 // gateway.
 func (s *Service) Token(_ context.Context, req *auth.TokenRequest) (response *auth.TokenResponse, err error) {
 	var (
@@ -347,7 +347,7 @@ func (s *Service) Token(_ context.Context, req *auth.TokenRequest) (response *au
 		return nil, status.Error(codes.InvalidArgument, "invalid_grant")
 	} else if err != nil {
 		// A database connection error has occurred, return an an internal error but without any details
-		return nil, status.Errorf(codes.Internal, "internal database error occurred: %v", err)
+		return nil, status.Errorf(codes.Internal, "internal database error")
 	}
 
 	// Issue a new token
