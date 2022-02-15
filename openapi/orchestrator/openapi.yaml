@@ -269,6 +269,61 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/MetricConfiguration'
+        put:
+            tags:
+                - Orchestrator
+            description: Retrieves a metric configuration for a specific service and metric ID
+            operationId: Orchestrator_UpdateMetricConfiguration
+            parameters:
+                - name: serviceId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: metricId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: configuration.operator
+                  in: query
+                  description: The operator to compare the metric, such as == or >
+                  schema:
+                    type: string
+                - name: configuration.targetValue.nullValue
+                  in: query
+                  description: Represents a null value.
+                  schema:
+                    type: integer
+                    format: enum
+                - name: configuration.targetValue.numberValue
+                  in: query
+                  description: Represents a double value.
+                  schema:
+                    type: number
+                    format: double
+                - name: configuration.targetValue.stringValue
+                  in: query
+                  description: Represents a string value.
+                  schema:
+                    type: string
+                - name: configuration.targetValue.boolValue
+                  in: query
+                  description: Represents a boolean value.
+                  schema:
+                    type: boolean
+                - name: configuration.isDefault
+                  in: query
+                  description: Whether this configuration is a default configuration
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MetricConfiguration'
     /v1/orchestrator/metrics:
         get:
             tags:
