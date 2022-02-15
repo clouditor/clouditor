@@ -253,7 +253,7 @@ message UpdateMetricConfigurationRequest {
 
   string metric_id = 2;
 
-  Metric metric = 3;
+  MetricConfiguration configuration = 3;
 }
 
 message GetMetricConfigurationRequest {

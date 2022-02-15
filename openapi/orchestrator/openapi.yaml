@@ -285,44 +285,38 @@ paths:
                   required: true
                   schema:
                     type: string
-                - name: metric.id
+                - name: configuration.operator
                   in: query
-                  description: Required. The unique identifier of the metric.
+                  description: The operator to compare the metric, such as == or >
                   schema:
                     type: string
-                - name: metric.name
+                - name: configuration.targetValue.nullValue
                   in: query
-                  description: Required. The human readable name of the metric.
-                  schema:
-                    type: string
-                - name: metric.description
-                  in: query
-                  description: The description of the metric
-                  schema:
-                    type: string
-                - name: metric.category
-                  in: query
-                  description: The reference to control catalog category or domain
-                  schema:
-                    type: string
-                - name: metric.scale
-                  in: query
-                  description: The scale of this metric, e.g. categories, ranked data or metric values.
+                  description: Represents a null value.
                   schema:
                     type: integer
                     format: enum
-                - name: metric.range.minMax.min
+                - name: configuration.targetValue.numberValue
                   in: query
-                  description: Required.
+                  description: Represents a double value.
                   schema:
-                    type: integer
-                    format: int64
-                - name: metric.range.minMax.max
+                    type: number
+                    format: double
+                - name: configuration.targetValue.stringValue
                   in: query
-                  description: Required.
+                  description: Represents a string value.
                   schema:
-                    type: integer
-                    format: int64
+                    type: string
+                - name: configuration.targetValue.boolValue
+                  in: query
+                  description: Represents a boolean value.
+                  schema:
+                    type: boolean
+                - name: configuration.isDefault
+                  in: query
+                  description: Whether this configuration is a default configuration
+                  schema:
+                    type: boolean
             responses:
                 "200":
                     description: OK
