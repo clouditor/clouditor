@@ -269,6 +269,67 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/MetricConfiguration'
+        put:
+            tags:
+                - Orchestrator
+            description: Retrieves a metric configuration for a specific service and metric ID
+            operationId: Orchestrator_UpdateMetricConfiguration
+            parameters:
+                - name: serviceId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: metricId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: metric.id
+                  in: query
+                  description: Required. The unique identifier of the metric.
+                  schema:
+                    type: string
+                - name: metric.name
+                  in: query
+                  description: Required. The human readable name of the metric.
+                  schema:
+                    type: string
+                - name: metric.description
+                  in: query
+                  description: The description of the metric
+                  schema:
+                    type: string
+                - name: metric.category
+                  in: query
+                  description: The reference to control catalog category or domain
+                  schema:
+                    type: string
+                - name: metric.scale
+                  in: query
+                  description: The scale of this metric, e.g. categories, ranked data or metric values.
+                  schema:
+                    type: integer
+                    format: enum
+                - name: metric.range.minMax.min
+                  in: query
+                  description: Required.
+                  schema:
+                    type: integer
+                    format: int64
+                - name: metric.range.minMax.max
+                  in: query
+                  description: Required.
+                  schema:
+                    type: integer
+                    format: int64
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MetricConfiguration'
     /v1/orchestrator/metrics:
         get:
             tags:
