@@ -1,10 +1,11 @@
-package clouditor
+package clouditor.metrics.transport_encryption_algorithm
+
+import data.clouditor.compare
+import input.httpEndpoint as endpoint
 
 default compliant = false
 
 default applicable = false
-
-endpoint := input.httpEndpoint
 
 applicable {
 	endpoint

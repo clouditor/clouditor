@@ -223,14 +223,12 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 	}
 
 	for i, data := range evaluations {
-		metricId := data["metricId"].(string)
+		metricId := data.MetricId
 
-		log.Infof("Evaluated evidence with metric '%v' as %v", metricId, data["compliant"])
+		log.Infof("Evaluated evidence with metric '%v' as %v", metricId, data.Compliant)
 
 		// Get output values of Rego evaluation. If they are not given, the zero value is used
-		operator, _ := data["operator"].(string)
-		targetValue := data["target_value"]
-		compliant, _ := data["compliant"].(bool)
+		targetValue := data.TargetValue
 
 		convertedTargetValue, err := convertTargetValue(targetValue)
 		if err != nil {
@@ -243,9 +241,9 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 			MetricId:  metricId,
 			MetricConfiguration: &assessment.MetricConfiguration{
 				TargetValue: convertedTargetValue,
-				Operator:    operator,
+				Operator:    data.Operator,
 			},
-			Compliant:             compliant,
+			Compliant:             data.Compliant,
 			EvidenceId:            evidence.Id,
 			ResourceId:            resourceId,
 			NonComplianceComments: "No comments so far",

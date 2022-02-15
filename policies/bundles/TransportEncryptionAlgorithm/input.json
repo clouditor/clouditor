@@ -1,0 +1,14 @@
+{
+    "name": "/object",
+    "id": "someObject",
+    "type": [
+        "ObjectStorage"
+    ],
+    "httpEndpoint": {
+        "url": "clouditor.io",
+        "transportEncryption": {
+            "enabled": true,
+            "algorithm": "TLS"
+        }
+    }
+}

@@ -263,8 +263,8 @@ func TestRunEvidence(t *testing.T) {
 			}
 			assert.NotEmpty(t, results)
 			for _, result := range results {
-				assert.Equal(t, tt.applicable, result["applicable"].(bool))
-				assert.Equal(t, tt.compliant, result["compliant"].(bool))
+				assert.Equal(t, tt.applicable, result.Applicable)
+				assert.Equal(t, tt.compliant, result.Compliant)
 			}
 		})
 	}

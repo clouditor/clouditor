@@ -1,4 +1,6 @@
-package clouditor
+package clouditor.metrics.web_application_firewall_enabled
+
+import data.clouditor.compare
 
 default applicable = false
 

@@ -1,4 +1,6 @@
-package clouditor
+package clouditor.metrics.boot_logging_retention
+
+import data.clouditor.compare
 
 default applicable = false
 

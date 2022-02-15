@@ -1,4 +1,4 @@
-package clouditor
+package clouditor.metrics.customer_key_encryption
 
 default applicable = false
 
