@@ -69,7 +69,7 @@ func (s *Service) ListCloudServices(_ context.Context, _ *orchestrator.ListCloud
 
 	err = s.db.Find(&response.Services).Error
 	if err != nil {
-		log.Error("Database error: %v", err)
+		log.Errorf("Database error: %v", err)
 		return nil, status.Error(codes.Internal, "database error")
 	}
 

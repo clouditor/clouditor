@@ -60,7 +60,7 @@ func (*Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetricRe
 	// Validate the metric request
 	err = req.Metric.Validate(assessment.WithMetricRequiresId())
 	if err != nil {
-		log.Error("Validation of metric failed: %v", err)
+		log.Errorf("Validation of metric failed: %v", err)
 		return nil, status.Error(codes.InvalidArgument, "validation of metric failed")
 	}
 
