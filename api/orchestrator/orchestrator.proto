@@ -173,7 +173,17 @@ service Orchestrator {
     };
   }
 
-  // Retrieves a metric configuration for a specific service and metric ID
+  // Updates a metric configuration (target value and operator) for a specific service and metric ID
+  rpc UpdateMetricConfiguration(UpdateMetricConfigurationRequest)
+      returns (MetricConfiguration) {
+    option (google.api.http) = {
+      put : "/v1/orchestrator/cloud_services/{service_id}/"
+            "metric_configurations/"
+            "{metric_id}"
+    };
+  }
+
+  // Retrieves a metric configuration (target value and operator) for a specific service and metric ID
   rpc GetMetricConfiguration(GetMetricConfigurationRequest)
       returns (MetricConfiguration) {
     option (google.api.http) = {
@@ -183,7 +193,7 @@ service Orchestrator {
     };
   }
 
-  // Lists all a metric configurations for a specific service and metric ID
+  // Lists all a metric configurations (target value and operator) for a specific service and metric ID
   rpc ListMetricConfigurations(ListMetricConfigurationRequest)
       returns (ListMetricConfigurationResponse) {
     option (google.api.http) = {
@@ -237,6 +247,14 @@ message RemoveCloudServiceRequest { string service_id = 1; }
 
 message ListCloudServicesRequest {}
 message ListCloudServicesResponse { repeated CloudService services = 1; }
+
+message UpdateMetricConfigurationRequest {
+  string service_id = 1;
+
+  string metric_id = 2;
+
+  MetricConfiguration configuration = 3;
+}
 
 message GetMetricConfigurationRequest {
   string service_id = 1;

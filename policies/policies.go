@@ -34,6 +34,8 @@ import (
 
 	"clouditor.io/clouditor/api/evidence"
 	"github.com/open-policy-agent/opa/rego"
+	"github.com/open-policy-agent/opa/storage"
+	"github.com/open-policy-agent/opa/storage/inmem"
 )
 
 // applicableMetrics stores a list of applicable metrics per resourceType
@@ -102,20 +104,37 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 
 func RunMap(baseDir string, metric string, m map[string]interface{}) (data map[string]interface{}, err error) {
 	var (
-		ok bool
+		ok   bool
+		tx   storage.Transaction
+		file *os.File
 	)
 
 	// Create paths for bundle directory and utility functions file
 	bundle := fmt.Sprintf("%s/policies/bundles/%s/", baseDir, metric)
 	operators := fmt.Sprintf("%s/policies/operators.rego", baseDir)
 
-	ctx := context.TODO()
+	// Load from data
+	file, err = os.Open(bundle + "data.json")
+	if err != nil {
+		return nil, fmt.Errorf("could not open: %w", err)
+	}
+
+	store := inmem.NewFromReader(file)
+	ctx := context.Background()
+
+	tx, err = store.NewTransaction(ctx, storage.WriteParams)
+	if err != nil {
+		return nil, fmt.Errorf("could not create transaction: %w", err)
+	}
+
 	r, err := rego.New(
 		rego.Query("data.clouditor"),
+		rego.Store(store),
+		rego.Transaction(tx),
+		rego.Input(m),
 		rego.Load(
 			[]string{
 				bundle + "metric.rego",
-				bundle + "data.json",
 				operators,
 			},
 			nil),
@@ -124,7 +143,12 @@ func RunMap(baseDir string, metric string, m map[string]interface{}) (data map[s
 		return nil, fmt.Errorf("could not prepare rego evaluation: %w", err)
 	}
 
-	results, err := r.Eval(ctx, rego.EvalInput(m))
+	err = store.Commit(ctx, tx)
+	if err != nil {
+		return nil, fmt.Errorf("could not commit transaction: %w", err)
+	}
+
+	results, err := r.Eval(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("could not evaluate rego policy: %w", err)
 	}
