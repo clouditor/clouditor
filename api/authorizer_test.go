@@ -71,13 +71,13 @@ func init() {
 
 func TestInternalAuthorizer_Token(t *testing.T) {
 	type fields struct {
-		authURL     string
-		grpcOptions []grpc.DialOption
-		username    string
-		password    string
-		client      auth.AuthenticationClient
-		conn        grpc.ClientConnInterface
-		token       *oauth2.Token
+		authURL        string
+		grpcOptions    []grpc.DialOption
+		username       string
+		password       string
+		client         auth.AuthenticationClient
+		conn           grpc.ClientConnInterface
+		protectedToken *protectedToken
 	}
 	tests := []struct {
 		name    string
@@ -90,8 +90,10 @@ func TestInternalAuthorizer_Token(t *testing.T) {
 			fields: fields{
 				client: &mockAuthClient{},
 				conn:   &mockConn{},
-				token: &oauth2.Token{
-					RefreshToken: mockRefreshToken,
+				protectedToken: &protectedToken{
+					token: &oauth2.Token{
+						RefreshToken: mockRefreshToken,
+					},
 				},
 			},
 			want: &oauth2.Token{
@@ -103,10 +105,11 @@ func TestInternalAuthorizer_Token(t *testing.T) {
 		{
 			name: "Fetch access token with username",
 			fields: fields{
-				client:   &mockAuthClient{},
-				conn:     &mockConn{},
-				username: "mock",
-				password: "mock",
+				client:         &mockAuthClient{},
+				conn:           &mockConn{},
+				username:       "mock",
+				password:       "mock",
+				protectedToken: &protectedToken{},
 			},
 			want: &oauth2.Token{
 				AccessToken: mockAccessToken,
@@ -119,10 +122,12 @@ func TestInternalAuthorizer_Token(t *testing.T) {
 			fields: fields{
 				client: &mockAuthClient{},
 				conn:   &mockConn{},
-				token: &oauth2.Token{
-					AccessToken: mockAccessToken,
-					TokenType:   "Bearer",
-					Expiry:      mockExpiry,
+				protectedToken: &protectedToken{
+					token: &oauth2.Token{
+						AccessToken: mockAccessToken,
+						TokenType:   "Bearer",
+						Expiry:      mockExpiry,
+					},
 				},
 			},
 			want: &oauth2.Token{
@@ -136,13 +141,13 @@ func TestInternalAuthorizer_Token(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			i := &internalAuthorizer{
-				authURL:     tt.fields.authURL,
-				grpcOptions: tt.fields.grpcOptions,
-				username:    tt.fields.username,
-				password:    tt.fields.password,
-				client:      tt.fields.client,
-				conn:        tt.fields.conn,
-				token:       tt.fields.token,
+				authURL:        tt.fields.authURL,
+				grpcOptions:    tt.fields.grpcOptions,
+				username:       tt.fields.username,
+				password:       tt.fields.password,
+				client:         tt.fields.client,
+				conn:           tt.fields.conn,
+				protectedToken: tt.fields.protectedToken,
 			}
 			got, err := i.Token()
 			if (err != nil) != tt.wantErr {
