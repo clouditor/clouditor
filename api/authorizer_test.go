@@ -149,6 +149,9 @@ func TestInternalAuthorizer_Token(t *testing.T) {
 				conn:           tt.fields.conn,
 				protectedToken: tt.fields.protectedToken,
 			}
+
+			i.fetchFunc = i.fetchToken
+
 			got, err := i.Token()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("InternalAuthorizer.Token() error = %v, wantErr %v", err, tt.wantErr)

@@ -27,6 +27,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -89,8 +90,13 @@ type internalAuthorizer struct {
 	*protectedToken
 }
 
+type fetchFunc func(refreshToken string) (*auth.TokenResponse, error)
+
 // baseAuthorizer contains fields that are shared by all authorizers
 type protectedToken struct {
+	// fetchFunc is a function that fetches a token, if it needs to be refreshed (or initially retrieved)
+	fetchFunc fetchFunc
+
 	// token contains the current token. It will be checked for expiry in the Token() method.
 	token *oauth2.Token
 
@@ -101,12 +107,17 @@ type protectedToken struct {
 // NewInternalAuthorizerFromPassword creates a new authorizer based on a (gRPC) URL of the
 // authentication server and a username / password combination
 func NewInternalAuthorizerFromPassword(url string, username string, password string, grpcOptions ...grpc.DialOption) Authorizer {
-	return &internalAuthorizer{
-		authURL:     url,
-		username:    username,
-		password:    password,
-		grpcOptions: grpcOptions,
+	var authorizer = &internalAuthorizer{
+		authURL:        url,
+		username:       username,
+		password:       password,
+		grpcOptions:    grpcOptions,
+		protectedToken: &protectedToken{},
 	}
+
+	authorizer.fetchFunc = authorizer.fetchToken
+
+	return authorizer
 }
 
 // NewInternalAuthorizerFromToken creates a new authorizer based on a (gRPC) URL of the
@@ -115,36 +126,44 @@ func NewInternalAuthorizerFromPassword(url string, username string, password str
 // our internal direct gRPC connection to the authentication server, whereas OAuth 2.0 would use
 // a POST request with application/x-www-form-urlencoded data.
 func NewInternalAuthorizerFromToken(url string, token *oauth2.Token, grpcOptions ...grpc.DialOption) Authorizer {
-	return &internalAuthorizer{
+	var authorizer = &internalAuthorizer{
 		authURL:        url,
 		grpcOptions:    grpcOptions,
 		protectedToken: &protectedToken{token: token},
 	}
+
+	authorizer.fetchFunc = authorizer.fetchToken
+
+	return authorizer
 }
 
-// NewOAuthAuthorizerFromClientCredentials creates a new authorizer based on an OAuth 2.0 client credentials flow. It will attempt to refresh an expired access token,
+// NewOAuthAuthorizerFromClientCredentials creates a new authorizer based on an OAuth 2.0 client credentials. It will attempt to refresh an expired access token,
 // if a refresh token is supplied. Note, that this does a similar flow as OAuth 2.0, but it uses
 // our internal direct gRPC connection to the authentication server, whereas OAuth 2.0 would use
 // a POST request with application/x-www-form-urlencoded data.
 func NewOAuthAuthorizerFromClientCredentials(tokenURL string, clientID string, clientSecret string) Authorizer {
-	return &oauthAuthorizer{
+	var authorizer = &oauthAuthorizer{
 		tokenURL:       tokenURL,
 		clientID:       clientID,
 		clientSecret:   clientSecret,
 		protectedToken: &protectedToken{},
 	}
+
+	authorizer.fetchFunc = authorizer.fetchToken
+
+	return authorizer
 }
 
 // GetRequestMetadata is an implementation for credentials.PerRPCCredentials. It is called before
 // each RPC request and is used to inject our client credentials into the context of the RPC call.
-func (i *internalAuthorizer) GetRequestMetadata(ctx context.Context, _ ...string) (map[string]string, error) {
+func (p *protectedToken) GetRequestMetadata(ctx context.Context, _ ...string) (map[string]string, error) {
 	// Fetch a token from our token source. This will also refresh an access token, if it has expired
-	token, err := i.Token()
+	token, err := p.Token()
 	if err != nil {
 		return nil, err
 	}
 
-	if i.RequireTransportSecurity() {
+	if p.RequireTransportSecurity() {
 		ri, _ := credentials.RequestInfoFromContext(ctx)
 		if err = credentials.CheckSecurityLevel(ri.AuthInfo, credentials.PrivacyAndIntegrity); err != nil {
 			return nil, fmt.Errorf("unable to transfer InternalAuthorizer PerRPCCredentials: %v", err)
@@ -156,35 +175,67 @@ func (i *internalAuthorizer) GetRequestMetadata(ctx context.Context, _ ...string
 	}, nil
 }
 
-// GetRequestMetadata is an implementation for credentials.PerRPCCredentials. It is called before
-// each RPC request and is used to inject our client credentials into the context of the RPC call.
-func (o *oauthAuthorizer) GetRequestMetadata(ctx context.Context, _ ...string) (map[string]string, error) {
-	// Fetch a token from our token source. This will also refresh an access token, if it has expired
-	token, err := o.Token()
+func (*protectedToken) RequireTransportSecurity() bool {
+	// TODO(oxisto): This should be set to true because we transmit credentials (except localhost)
+	return false
+}
+
+// Token is an implementation for the interface oauth2.TokenSource so we can use this authorizer
+// in (almost) the same way as any other OAuth 2.0 token endpoint. It will fetch an access token
+// (and possibly a refresh token), if no token is stored yet in the authorizer or if the token is expired.
+//
+// The "refresh" of a token will either be done by a refresh token (if it exists) or by the stored combination
+// of username / password.
+func (p *protectedToken) Token() (*oauth2.Token, error) {
+	var (
+		resp *auth.TokenResponse
+		err  error
+	)
+
+	// Lock the token for reading, so that we are sure to get the recent token,
+	// if another call is currently fetching a new one and thus modifying it.
+	p.tokenMutex.RLock()
+
+	// Check if we already have a token and if it is still ok
+	if p.token != nil && p.token.Expiry.After(time.Now()) {
+		// Defer the unlock, if we return here
+		defer p.tokenMutex.RUnlock()
+		return p.token, nil
+	}
+
+	// Unlock a previous read, if we did not return. Otherwise we will block ourselves.
+	p.tokenMutex.RUnlock()
+
+	// Lock the token for modification
+	p.tokenMutex.Lock()
+	// Defer the Unlock so we definitely unlock once we exit this function
+	defer p.tokenMutex.Unlock()
+
+	// Fetch the token
+	if p.fetchFunc == nil {
+		return nil, errors.New("no token fetch function was specified")
+	}
+
+	var refreshToken = ""
+	if p.token != nil {
+		refreshToken = p.token.RefreshToken
+	}
+	resp, err = p.fetchFunc(refreshToken)
 	if err != nil {
-		return nil, err
+		// Return without refreshing the token. At this point, the token will still be invalid
+		// and the next call to Token() will try again. This way we can mitigate temporary errors.
+		return nil, fmt.Errorf("error while logging in: %w", err)
 	}
 
-	if o.RequireTransportSecurity() {
-		ri, _ := credentials.RequestInfoFromContext(ctx)
-		if err = credentials.CheckSecurityLevel(ri.AuthInfo, credentials.PrivacyAndIntegrity); err != nil {
-			return nil, fmt.Errorf("unable to transfer InternalAuthorizer PerRPCCredentials: %v", err)
-		}
+	// Store the current token, if login was successful
+	p.token = &oauth2.Token{
+		AccessToken:  resp.AccessToken,
+		Expiry:       resp.Expiry.AsTime(),
+		TokenType:    resp.TokenType,
+		RefreshToken: resp.RefreshToken,
 	}
 
-	return map[string]string{
-		"authorization": token.Type() + " " + token.AccessToken,
-	}, nil
-}
-
-func (*internalAuthorizer) RequireTransportSecurity() bool {
-	// TODO(oxisto): This should be set to true because we transmit credentials (except localhost)
-	return false
-}
-
-func (*oauthAuthorizer) RequireTransportSecurity() bool {
-	// TODO(oxisto): This should be set to true because we transmit credentials (except localhost)
-	return false
+	return p.token, nil
 }
 
 // AuthURL is an implementation needed for Authorizer. It returns the gRPC address of the authorization server.
@@ -217,38 +268,7 @@ func (i *internalAuthorizer) init() (err error) {
 	return nil
 }
 
-// Token is an implementation for the interface oauth2.TokenSource so we can use this authorizer
-// in (almost) the same way as any other OAuth 2.0 token endpoint. It will fetch an access token
-// (and possibly a refresh token), if no token is stored yet in the authorizer or if the token is expired.
-//
-// The "refresh" of a token will either be done by a refresh token (if it exists) or by the stored combination
-// of username / password.
-func (i *internalAuthorizer) Token() (*oauth2.Token, error) {
-	var (
-		resp *auth.TokenResponse
-		err  error
-	)
-
-	// Lock the token for reading, so that we are sure to get the recent token,
-	// if another call is currently fetching a new one and thus modifying it.
-	i.tokenMutex.RLock()
-
-	// Check if we already have a token and if it is still ok
-	if i.token != nil && i.token.Expiry.After(time.Now()) {
-		// Defer the unlock, if we return here
-		defer i.tokenMutex.RUnlock()
-		return i.token, nil
-	}
-
-	// Unlock a previous read, if we did not return. Otherwise we will block ourselves.
-	i.tokenMutex.RUnlock()
-
-	// Lock the token for modification
-	i.tokenMutex.Lock()
-	// Defer the Unlock so we definitely unlock once we exit this function
-	defer i.tokenMutex.Unlock()
-	// Fetch the token
-
+func (i *internalAuthorizer) fetchToken(refreshToken string) (resp *auth.TokenResponse, err error) {
 	// We do a lazy initialization here, so the first request might take a little bit longer.
 	// This might not be entirely thread-safe.
 	if i.conn == nil {
@@ -259,10 +279,10 @@ func (i *internalAuthorizer) Token() (*oauth2.Token, error) {
 	}
 
 	// Otherwise, we need to re-authenticate
-	if i.token != nil && i.token.RefreshToken != "" {
+	if refreshToken != "" {
 		resp, err = i.client.Token(context.TODO(), &auth.TokenRequest{
 			GrantType:    "refresh_token",
-			RefreshToken: i.token.RefreshToken,
+			RefreshToken: refreshToken,
 		})
 	} else {
 		resp, err = i.client.Login(context.TODO(), &auth.LoginRequest{
@@ -270,83 +290,12 @@ func (i *internalAuthorizer) Token() (*oauth2.Token, error) {
 			Password: i.password,
 		})
 	}
-	if err != nil {
-		// Return without refreshing the token. At this point, the token will still be invalid
-		// and the next call to Token() will try again. This way we can mitigate temporary errors.
-		return nil, fmt.Errorf("error while logging in: %w", err)
-	}
 
-	// Store the current token, if login was successful
-	i.token = &oauth2.Token{
-		AccessToken:  resp.AccessToken,
-		Expiry:       resp.Expiry.AsTime(),
-		TokenType:    resp.TokenType,
-		RefreshToken: resp.RefreshToken,
-	}
-
-	return i.token, nil
+	return
 }
 
-// Token is an implementation for the interface oauth2.TokenSource so we can use this authorizer
-// in (almost) the same way as any other OAuth 2.0 token endpoint. It will fetch an access token
-// (and possibly a refresh token), if no token is stored yet in the authorizer or if the token is expired.
-//
-// The "refresh" of a token will either be done by a refresh token (if it exists) or by the stored combination
-// of username / password.
-func (o *oauthAuthorizer) Token() (*oauth2.Token, error) {
-	var (
-		resp *auth.TokenResponse
-		err  error
-	)
-
-	// Lock the token for reading, so that we are sure to get the recent token,
-	// if another call is currently fetching a new one and thus modifying it.
-	o.tokenMutex.RLock()
-
-	// Check if we already have a token and if it is still ok
-	if o.token != nil && o.token.Expiry.After(time.Now()) {
-		// Defer the unlock, if we return here
-		defer o.tokenMutex.RUnlock()
-		return o.token, nil
-	}
-
-	// Unlock a previous read, if we did not return. Otherwise we will block ourselves.
-	o.tokenMutex.RUnlock()
-
-	// Lock the token for modification
-	o.tokenMutex.Lock()
-	// Defer the Unlock so we definitely unlock once we exit this function
-	defer o.tokenMutex.Unlock()
-	// Fetch the token
-
-	// Otherwise, we need to re-authenticate
-	/*if o.token != nil && o.token.RefreshToken != "" {
-		resp, err = o.client.Token(context.TODO(), &auth.TokenRequest{
-			GrantType:    "refresh_token",
-			RefreshToken: o.token.RefreshToken,
-		})
-	} else {
-		resp, err = o.client.Login(context.TODO(), &auth.LoginRequest{
-			Username: o.username,
-			Password: o.password,
-		})
-	}*/
-	resp = &auth.TokenResponse{}
-	if err != nil {
-		// Return without refreshing the token. At this point, the token will still be invalid
-		// and the next call to Token() will try again. This way we can mitigate temporary errors.
-		return nil, fmt.Errorf("error while logging in: %w", err)
-	}
-
-	// Store the current token, if login was successful
-	o.token = &oauth2.Token{
-		AccessToken:  resp.AccessToken,
-		Expiry:       resp.Expiry.AsTime(),
-		TokenType:    resp.TokenType,
-		RefreshToken: resp.RefreshToken,
-	}
-
-	return o.token, nil
+func (o *oauthAuthorizer) fetchToken(refreshToken string) (resp *auth.TokenResponse, err error) {
+	return
 }
 
 // AuthURL is an implementation needed for Authorizer. It returns the OAuth 2.0 token endpoint.
