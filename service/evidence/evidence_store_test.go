@@ -172,7 +172,7 @@ func TestStoreEvidences(t *testing.T) {
 			name:   "Store 1 evidence to the map",
 			fields: fields{count: 1},
 			args: args{
-				stream: CreateMockStream(createStoreEvidenceRequestMocks(1))},
+				stream: createMockStream(createStoreEvidenceRequestMocks(1))},
 			wantErr: false,
 			wantErrMessage: &evidence.StoreEvidenceResponse{
 				Status: true,
@@ -182,7 +182,7 @@ func TestStoreEvidences(t *testing.T) {
 			name:   "Store 2 evidences to the map",
 			fields: fields{count: 2},
 			args: args{
-				stream: CreateMockStream(createStoreEvidenceRequestMocks(2))},
+				stream: createMockStream(createStoreEvidenceRequestMocks(2))},
 			wantErr: false,
 			wantErrMessage: &evidence.StoreEvidenceResponse{
 				Status: true,
@@ -360,7 +360,7 @@ type mockStreamer struct {
 	SentFromServer chan *evidence.StoreEvidenceResponse
 }
 
-func CreateMockStream(requests []*evidence.StoreEvidenceRequest) *mockStreamer {
+func createMockStream(requests []*evidence.StoreEvidenceRequest) *mockStreamer {
 	m := &mockStreamer{
 		RecvToServer: make(chan *evidence.StoreEvidenceRequest, len(requests)),
 	}

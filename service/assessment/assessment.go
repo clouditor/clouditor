@@ -212,7 +212,7 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 		// Send response back to the client
 		err = stream.Send(res)
 		if err != nil {
-			log.Fatalf("Error when response was sent to the client: %v", res)
+			log.Errorf("Error when response was sent to the client: %v", res)
 			return status.Errorf(codes.Unknown, "cannot send response to the client: %v", err)
 		}
 	}

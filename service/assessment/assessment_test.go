@@ -260,7 +260,7 @@ func TestAssessEvidences(t *testing.T) {
 				hasRPCConnection: true,
 				results:          make(map[string]*assessment.AssessmentResult)},
 			args: args{
-				streamToServer: CreateMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
+				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
 						Timestamp: timestamppb.Now(),
 						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
@@ -277,7 +277,7 @@ func TestAssessEvidences(t *testing.T) {
 				hasRPCConnection: true,
 				results:          make(map[string]*assessment.AssessmentResult)},
 			args: args{
-				streamToServer: CreateMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
+				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
 						Timestamp: timestamppb.Now(),
 						ToolId:    "2134",
@@ -294,7 +294,7 @@ func TestAssessEvidences(t *testing.T) {
 				hasRPCConnection: false,
 			},
 			args: args{
-				streamToServer: CreateMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
+				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
 						Timestamp: timestamppb.Now(),
 						ToolId:    "2134",
@@ -463,11 +463,11 @@ type mockAssessmentServerStream struct {
 	SentFromServer chan *assessment.AssessEvidenceResponse
 }
 
-func (m mockAssessmentServerStream) CloseSend() error {
+func (mockAssessmentServerStream) CloseSend() error {
 	panic("implement me")
 }
 
-func CreateMockAssessmentServerStream(r *assessment.AssessEvidenceRequest) *mockAssessmentServerStream {
+func createMockAssessmentServerStream(r *assessment.AssessEvidenceRequest) *mockAssessmentServerStream {
 	m := &mockAssessmentServerStream{
 		RecvToServer: make(chan *assessment.AssessEvidenceRequest, 1),
 	}
@@ -519,7 +519,7 @@ func (mockAssessmentServerStream) SendMsg(interface{}) error {
 	return nil
 }
 
-func (m mockAssessmentServerStream) RecvMsg(interface{}) error {
+func (mockAssessmentServerStream) RecvMsg(interface{}) error {
 	return nil
 }
 
@@ -527,7 +527,7 @@ func (m mockAssessmentServerStream) RecvMsg(interface{}) error {
 type mockAssessmentStreamWithRecvErr struct {
 }
 
-func (e mockAssessmentStreamWithRecvErr) Send(_ *assessment.AssessEvidenceResponse) error {
+func (mockAssessmentStreamWithRecvErr) Send(_ *assessment.AssessEvidenceResponse) error {
 	return nil
 }
 
