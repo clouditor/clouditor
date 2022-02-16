@@ -523,45 +523,6 @@ func (mockAssessmentServerStream) RecvMsg(interface{}) error {
 	return nil
 }
 
-// mockAssessmentServerStream implements Assessment_AssessEvidencesServer which directly throws error on Recv
-type mockAssessmentStreamWithRecvErr struct {
-}
-
-func (mockAssessmentStreamWithRecvErr) Send(_ *assessment.AssessEvidenceResponse) error {
-	return nil
-}
-
-func (mockAssessmentStreamWithRecvErr) SendAndClose() error {
-	return nil
-}
-
-func (mockAssessmentStreamWithRecvErr) Recv() (*assessment.AssessEvidenceRequest, error) {
-	return nil, status.Errorf(codes.Internal, "receiving internal error")
-}
-
-func (mockAssessmentStreamWithRecvErr) SetHeader(metadata.MD) error {
-	return nil
-}
-
-func (mockAssessmentStreamWithRecvErr) SendHeader(metadata.MD) error {
-	return nil
-}
-
-func (mockAssessmentStreamWithRecvErr) SetTrailer(metadata.MD) {
-}
-
-func (mockAssessmentStreamWithRecvErr) Context() context.Context {
-	return nil
-}
-
-func (mockAssessmentStreamWithRecvErr) SendMsg(interface{}) error {
-	return nil
-}
-
-func (mockAssessmentStreamWithRecvErr) RecvMsg(interface{}) error {
-	return nil
-}
-
 func TestConvertTargetValue(t *testing.T) {
 	type args struct {
 		value interface{}
