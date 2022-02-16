@@ -41,6 +41,8 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
+	service_auth "clouditor.io/clouditor/service/auth"
+
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -138,7 +140,9 @@ func RunServer(ctx context.Context, grpcPort int, httpPort int, serverOpts ...Se
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	mux := runtime.NewServeMux()
+	mux := runtime.NewServeMux(
+		runtime.WithErrorHandler(service_auth.OAuthErrorHandler),
+	)
 
 	for _, o := range serverOpts {
 		o(cors, mux)

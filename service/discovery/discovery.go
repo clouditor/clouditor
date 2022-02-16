@@ -27,11 +27,10 @@ package discovery
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
-	"clouditor.io/clouditor/service"
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/service/discovery/azure"
 	"clouditor.io/clouditor/service/discovery/k8s"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -54,10 +53,6 @@ import (
 
 var log *logrus.Entry
 
-var (
-	ErrNoAuthorizerConfigured = errors.New("no authorizer configured")
-)
-
 // Service is an implementation of the Clouditor Discovery service.
 // It should not be used directly, but rather the NewService constructor
 // should be used.
@@ -72,7 +67,7 @@ type Service struct {
 	resources map[string]voc.IsCloudResource
 	scheduler *gocron.Scheduler
 
-	authorizer service.Authorizer
+	authorizer api.Authorizer
 }
 
 type Configuration struct {
@@ -101,12 +96,7 @@ func WithAssessmentAddress(address string) ServiceOption {
 // WithInternalAuthorizer is an option to use an authorizer to the internal Clouditor auth service.
 func WithInternalAuthorizer(address string, username string, password string, opts ...grpc.DialOption) ServiceOption {
 	return func(s *Service) {
-		s.SetAuthorizer(&service.InternalAuthorizer{
-			Url:         address,
-			GrpcOptions: opts,
-			Username:    username,
-			Password:    password,
-		})
+		s.SetAuthorizer(api.NewInternalAuthorizerFromPassword(address, username, password, opts...))
 	}
 }
 
@@ -127,12 +117,12 @@ func NewService(opts ...ServiceOption) *Service {
 }
 
 // SetAuthorizer implements UsesAuthorizer.
-func (s *Service) SetAuthorizer(auth service.Authorizer) {
+func (s *Service) SetAuthorizer(auth api.Authorizer) {
 	s.authorizer = auth
 }
 
 // Authorizer implements UsesAuthorizer.
-func (s *Service) Authorizer() service.Authorizer {
+func (s *Service) Authorizer() api.Authorizer {
 	return s.authorizer
 }
 
@@ -143,7 +133,7 @@ func (s *Service) initAssessmentStream(additionalOpts ...grpc.DialOption) error 
 
 	// Establish connection to assessment gRPC service
 	conn, err := grpc.Dial(s.assessmentAddress,
-		service.DefaultGrpcDialOptions(s, additionalOpts...)...,
+		api.DefaultGrpcDialOptions(s, additionalOpts...)...,
 	)
 	if err != nil {
 		return fmt.Errorf("could not connect to assessment service: %w", err)

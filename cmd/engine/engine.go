@@ -26,9 +26,6 @@
 package main
 
 import (
-	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/persistence/gorm"
-	"clouditor.io/clouditor/persistence/inmemory"
 	"context"
 	"errors"
 	"fmt"
@@ -36,6 +33,12 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
+	"clouditor.io/clouditor/api"
+	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/persistence/gorm"
+	"clouditor.io/clouditor/persistence/inmemory"
+	"clouditor.io/clouditor/service"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
@@ -51,7 +54,6 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/rest"
-	"clouditor.io/clouditor/service"
 
 	service_assessment "clouditor.io/clouditor/service/assessment"
 	service_auth "clouditor.io/clouditor/service/auth"
@@ -206,7 +208,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	)
 	discoveryService = service_discovery.NewService(
 		service_discovery.WithInternalAuthorizer(
-			service.DefaultInternalAuthorizerAddress,
+			api.DefaultInternalAuthorizerAddress,
 			viper.GetString(APIDefaultUserFlag),
 			viper.GetString(APIDefaultPasswordFlag),
 		),
@@ -214,7 +216,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db))
 	assessmentService = service_assessment.NewService(
 		service_assessment.WithInternalAuthorizer(
-			service.DefaultInternalAuthorizerAddress,
+			api.DefaultInternalAuthorizerAddress,
 			viper.GetString(APIDefaultUserFlag),
 			viper.GetString(APIDefaultPasswordFlag),
 		),
