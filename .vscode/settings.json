@@ -1,15 +1,22 @@
 {
+    "protoc": {
+        "options": [
+            "--proto_path=third_party",
+        ]
+    },
     "cSpell.words": [
         "AISEC",
         "bufnet",
         "Clouditor",
         "Debugf",
+        "dialector",
         "emptypb",
         "Equalf",
         "gocron",
         "GOPATH",
         "gorm",
         "Infof",
+        "inmemory",
         "Kube",
         "Kubernetes",
         "oxisto",

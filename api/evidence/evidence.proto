@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Fraunhofer AISEC
+ * Copyright 2016-2022 Fraunhofer AISEC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,39 +28,30 @@ syntax = "proto3";
 
 package clouditor;
 
-import "evidence.proto";
-import "google/api/annotations.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
 
-option go_package = "api/evidence";
+option go_package = "clouditor.io/clouditor/api/evidence";
 
-// Manages the storage of evidences
-service EvidenceStore {
-  // Stores an evidence to the evidence storage. Part of the public API, also exposed as REST.
-  rpc StoreEvidence(StoreEvidenceRequest) returns (StoreEvidenceResponse) {
-    option (google.api.http) = {
-      post : "/v1/evidence_store/evidence"
-      body : "evidence"
-      response_body : "status"
-    };
-  }
+// An evidence resource
+message Evidence {
+  // the ID in a uuid format
+  string id = 1;
 
-  // Stores a stream of evidences to the evidence storage and returns a response stream. Part of the public API, not exposed as REST.
-  rpc StoreEvidences(stream StoreEvidenceRequest) returns (stream StoreEvidenceResponse) {};
+  // time of evidence creation
+  google.protobuf.Timestamp timestamp = 2;
 
-  // Returns all stored evidences. Part of the public API, also exposed as REST.
-  rpc ListEvidences(ListEvidencesRequest) returns (ListEvidencesResponse) {
-    option (google.api.http) = {
-      get : "/v1/evidence_store/evidences"
-      response_body : "*"
-    };
-  }
+  // Reference to a service this evidence was gathered from
+  string service_id = 3;
+
+  // Reference to the tool which provided the evidence
+  string tool_id = 4;
+
+  // Contains the evidence in its original form without following a defined
+  // schema, e.g. the raw JSON
+  string raw = 5;
+
+  // Semantic representation of the Cloud resource according to our defined
+  // ontology
+  google.protobuf.Value resource = 6;
 }
-
-message StoreEvidenceRequest { Evidence evidence = 1; }
-message StoreEvidenceResponse {
-  bool status = 1;
-  string statusMessage = 2;
-}
-
-message ListEvidencesRequest {}
-message ListEvidencesResponse { repeated Evidence evidences = 1; }

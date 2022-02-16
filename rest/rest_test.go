@@ -37,9 +37,8 @@ import (
 	"testing"
 	"time"
 
-	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
-	service_auth "clouditor.io/clouditor/service/auth"
+
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 )
@@ -49,9 +48,7 @@ var (
 	methods = []string{"GET", "POST"}
 	headers = DefaultAllowedHeaders
 
-	authService *service_auth.Service
-
-	grpcPort int = 0
+	grpcPort = 0
 )
 
 func TestMain(m *testing.M) {
@@ -61,14 +58,8 @@ func TestMain(m *testing.M) {
 		sock   net.Listener
 	)
 
-	// A small embedded DB is needed for the server
-	err = persistence.InitDB(true, "", 0)
-	if err != nil {
-		panic(err)
-	}
-
 	// Start at least an authentication server, so that we have something to forward
-	sock, server, authService, err = service.StartDedicatedAuthServer(":0", service_auth.WithApiKeySaveOnCreate(false))
+	sock, server, _, err = service.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}
@@ -117,7 +108,7 @@ func TestREST(t *testing.T) {
 
 	port, err := GetServerPort()
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotEqual(t, 0, port)
 
 	type args struct {
@@ -224,7 +215,7 @@ func TestREST(t *testing.T) {
 			}
 
 			req, err := http.NewRequest(method, fmt.Sprintf("http://localhost:%d/%s", port, tt.args.url), nil)
-			assert.Nil(t, err)
+			assert.NoError(t, err)
 			assert.NotNil(t, req)
 
 			req.Header.Add("Origin", tt.args.origin)
@@ -237,7 +228,7 @@ func TestREST(t *testing.T) {
 
 			assert.Equal(t, tt.statusCode, resp.StatusCode)
 
-			assert.Nil(t, err)
+			assert.NoError(t, err)
 			assert.NotNil(t, resp)
 
 			for key, value := range tt.headers {

@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.19.4
-// source: evidence_store.proto
+// source: api/evidence/evidence_store.proto
 
 package evidence
 
@@ -22,7 +22,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type EvidenceStoreClient interface {
-	// Stores an evidence to the evidence storage. Part of the public API, also exposed as REST.
+	// Stores an evidence to the evidence storage. Part of the public API, also
+	// exposed as REST.
 	StoreEvidence(ctx context.Context, in *StoreEvidenceRequest, opts ...grpc.CallOption) (*StoreEvidenceResponse, error)
 	// Stores a stream of evidences to the evidence storage and returns a response stream. Part of the public API, not exposed as REST.
 	StoreEvidences(ctx context.Context, opts ...grpc.CallOption) (EvidenceStore_StoreEvidencesClient, error)
@@ -91,7 +92,8 @@ func (c *evidenceStoreClient) ListEvidences(ctx context.Context, in *ListEvidenc
 // All implementations must embed UnimplementedEvidenceStoreServer
 // for forward compatibility
 type EvidenceStoreServer interface {
-	// Stores an evidence to the evidence storage. Part of the public API, also exposed as REST.
+	// Stores an evidence to the evidence storage. Part of the public API, also
+	// exposed as REST.
 	StoreEvidence(context.Context, *StoreEvidenceRequest) (*StoreEvidenceResponse, error)
 	// Stores a stream of evidences to the evidence storage and returns a response stream. Part of the public API, not exposed as REST.
 	StoreEvidences(EvidenceStore_StoreEvidencesServer) error
@@ -212,5 +214,5 @@ var EvidenceStore_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 	},
-	Metadata: "evidence_store.proto",
+	Metadata: "api/evidence/evidence_store.proto",
 }

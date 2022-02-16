@@ -35,13 +35,12 @@ import (
 	"os"
 	"testing"
 
+	"clouditor.io/clouditor/service"
+
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
-	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/service"
-	service_auth "clouditor.io/clouditor/service/auth"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
 	"github.com/spf13/viper"
@@ -52,14 +51,14 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-var sock net.Listener
-var server *grpc.Server
-
 func TestMain(m *testing.M) {
 	var (
+		sock                net.Listener
+		server              *grpc.Server
+		orchestratorService *service_orchestrator.Service
+
 		err error
 		dir string
-		s   *service_orchestrator.Service
 	)
 
 	err = os.Chdir("../../../")
@@ -67,20 +66,15 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	err = persistence.InitDB(true, "", 0)
-	if err != nil {
-		panic(err)
-	}
+	orchestratorService = service_orchestrator.NewService()
 
-	s = service_orchestrator.NewService()
-
-	sock, server, _, err = service.StartDedicatedAuthServer(":0", service_auth.WithApiKeySaveOnCreate(false))
+	sock, server, _, err = service.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}
 	// Store an assessment result that output of CMD 'list' is not empty
-	orchestrator.RegisterOrchestratorServer(server, s)
-	_, err = s.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
+	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
+	_, err = orchestratorService.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
 		Result: &assessment.AssessmentResult{
 			Id:         "11111111-1111-1111-1111-111111111111",
 			MetricId:   "assessmentResultMetricID",
@@ -144,12 +138,12 @@ func TestNewListResultsCommand(t *testing.T) {
 
 	cmd := NewListAssessmentResultsCommand()
 	err := cmd.RunE(nil, []string{})
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	var response = &assessment.ListAssessmentResultsResponse{}
 	err = protojson.Unmarshal(b.Bytes(), response)
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response.Results)
 }

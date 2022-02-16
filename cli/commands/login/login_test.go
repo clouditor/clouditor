@@ -32,27 +32,23 @@ import (
 	"os"
 	"testing"
 
-	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
-	service_auth "clouditor.io/clouditor/service/auth"
 
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 )
 
-var sock net.Listener
-var server *grpc.Server
+var (
+	sock   net.Listener
+	server *grpc.Server
+)
 
 func TestMain(m *testing.M) {
-	var err error
-
-	err = persistence.InitDB(true, "", 0)
-	if err != nil {
-		panic(err)
-	}
-
-	sock, server, _, err = service.StartDedicatedAuthServer(":0", service_auth.WithApiKeySaveOnCreate(false))
+	var (
+		err error
+	)
+	sock, server, _, err = service.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}
@@ -70,7 +66,7 @@ func TestLogin(t *testing.T) {
 	defer server.Stop()
 
 	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotEmpty(t, dir)
 
 	viper.Set("username", "clouditor")
@@ -79,5 +75,5 @@ func TestLogin(t *testing.T) {
 
 	cmd := NewLoginCommand()
 	err = cmd.RunE(nil, []string{fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)})
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }

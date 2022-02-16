@@ -154,7 +154,7 @@ func Test_ValidateEvidence(t *testing.T) {
 func toStruct(r voc.IsCloudResource, t *testing.T) (s *structpb.Value) {
 	s, err := voc.ToStruct(r)
 	if err != nil {
-		assert.NotNil(t, err)
+		assert.Error(t, err)
 	}
 
 	return

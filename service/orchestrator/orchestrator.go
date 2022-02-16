@@ -34,13 +34,14 @@ import (
 	"io/ioutil"
 	"sync"
 
+	"clouditor.io/clouditor/persistence/inmemory"
+
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"gorm.io/gorm"
 )
 
 //go:embed metrics.json
@@ -68,7 +69,7 @@ type Service struct {
 	// mu is used for (un)locking result hook calls
 	mu sync.Mutex
 
-	db *gorm.DB
+	storage persistence.Storage
 
 	metricsFile string
 }
@@ -80,15 +81,24 @@ func init() {
 // ServiceOption is a function-style option to configure the Orchestrator Service
 type ServiceOption func(*Service)
 
-// WithMetricsFile can be used to load a different metrics file
 // TODO(all): Function currently not used
+// WithMetricsFile can be used to load a different metrics file
 func WithMetricsFile(file string) ServiceOption {
 	return func(s *Service) {
 		s.metricsFile = file
 	}
 }
 
+// WithStorage is an option to set the storage. If not set, NewService will use inmemory storage.
+func WithStorage(storage persistence.Storage) ServiceOption {
+	return func(s *Service) {
+		s.storage = storage
+	}
+}
+
+// NewService creates a new Orchestrator service
 func NewService(opts ...ServiceOption) *Service {
+	var err error
 	s := Service{
 		results:              make(map[string]*assessment.AssessmentResult),
 		metricConfigurations: make(map[string]map[string]*assessment.MetricConfiguration),
@@ -100,7 +110,15 @@ func NewService(opts ...ServiceOption) *Service {
 		o(&s)
 	}
 
-	if err := LoadMetrics(s.metricsFile); err != nil {
+	// Default to an in-memory storage, if nothing was explicitly set
+	if s.storage == nil {
+		s.storage, err = inmemory.NewStorage()
+		if err != nil {
+			log.Errorf("Could not initialize the storage: %v", err)
+		}
+	}
+
+	if err = LoadMetrics(s.metricsFile); err != nil {
 		log.Errorf("Could not load embedded metrics. Will continue with empty metric list: %v", err)
 	}
 
@@ -130,8 +148,6 @@ func NewService(opts ...ServiceOption) *Service {
 		metricIndex[m.Id] = m
 		defaultMetricConfigurations[m.Id] = &config
 	}
-
-	s.db = persistence.GetDatabase()
 
 	return &s
 }
@@ -196,7 +212,6 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 		return resp, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	// TODO(all): We do not check ID in Validate. Therefore, I assume that we have to set ID here?
 	s.results[req.Result.Id] = req.Result
 
 	go s.informHook(req.Result, nil)

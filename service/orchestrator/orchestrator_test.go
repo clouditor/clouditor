@@ -31,10 +31,6 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/metadata"
-	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/structpb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"io"
 	"k8s.io/apimachinery/pkg/util/json"
 	"os"
@@ -43,31 +39,25 @@ import (
 	"sync"
 	"testing"
 
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/persistence"
 
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/persistence/inmemory"
 	"github.com/stretchr/testify/assert"
 )
 
-var service *Service
-var defaultTarget *orchestrator.CloudService
-
-const assessmentResultID1 = "11111111-1111-1111-1111-111111111111"
+const (
+	assessmentResultID1 = "11111111-1111-1111-1111-111111111111"
+	//assessmentResultID2 = "11111111-1111-1111-1111-111111111112"
+)
 
 func TestMain(m *testing.M) {
 	err := os.Chdir("../../")
-	if err != nil {
-		panic(err)
-	}
-
-	err = persistence.InitDB(true, "", 0)
-	if err != nil {
-		panic(err)
-	}
-
-	service = NewService()
-	defaultTarget, err = service.CreateDefaultTargetCloudService()
 	if err != nil {
 		panic(err)
 	}
@@ -171,15 +161,16 @@ func TestAssessmentResultHook(t *testing.T) {
 	}
 }
 
+// TODO(lebogg): Convert to table tests
 func TestListMetricConfigurations(t *testing.T) {
 	var (
 		response *orchestrator.ListMetricConfigurationResponse
 		err      error
 	)
+	s := NewService()
+	response, err = s.ListMetricConfigurations(context.TODO(), &orchestrator.ListMetricConfigurationRequest{})
 
-	response, err = service.ListMetricConfigurations(context.TODO(), &orchestrator.ListMetricConfigurationRequest{})
-
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotEmpty(t, response.Configurations)
 }
 
@@ -467,4 +458,43 @@ func toStruct(f float32) (s *structpb.Value) {
 	}
 
 	return
+}
+
+func TestNewService(t *testing.T) {
+	var myStorage, err = inmemory.NewStorage()
+	assert.NoError(t, err)
+
+	type args struct {
+		opts []ServiceOption
+	}
+	tests := []struct {
+		name string
+		args args
+		want assert.ValueAssertionFunc
+	}{
+		{
+			name: "New service with database",
+			args: args{
+				opts: []ServiceOption{WithStorage(myStorage)},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				service, ok := i1.(*Service)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				return assert.Equal(tt, myStorage, service.storage)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewService(tt.args.opts...)
+
+			if tt.want != nil {
+				tt.want(t, got, tt.args.opts)
+			}
+		})
+	}
 }

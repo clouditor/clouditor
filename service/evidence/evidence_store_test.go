@@ -227,7 +227,7 @@ func TestListEvidences(t *testing.T) {
 	}
 
 	resp, err := s.ListEvidences(context.TODO(), &evidence.ListEvidencesRequest{})
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, 2, len(resp.Evidences))
 }
 
@@ -420,7 +420,7 @@ func (mockStreamer) RecvMsg(_ interface{}) error {
 func toStruct(r voc.IsCloudResource, t *testing.T) (s *structpb.Value) {
 	s, err := voc.ToStruct(r)
 	if err != nil {
-		assert.NotNil(t, err)
+		assert.Error(t, err)
 	}
 
 	return

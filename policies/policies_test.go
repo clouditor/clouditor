@@ -251,7 +251,7 @@ func TestRunEvidence(t *testing.T) {
 	}
 	for _, tt := range tests {
 		resource, err := voc.ToStruct(tt.fields.resource)
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		t.Run(tt.name, func(t *testing.T) {
 			results, err := RunEvidence(&evidence.Evidence{
 				Id:       tt.fields.evidenceID,

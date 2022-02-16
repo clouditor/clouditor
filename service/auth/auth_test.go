@@ -30,6 +30,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
+	"errors"
 	"io/ioutil"
 	"math/big"
 	"os"
@@ -37,6 +38,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api/auth"
+	"clouditor.io/clouditor/persistence/inmemory"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
 )
@@ -218,7 +220,7 @@ func TestService_loadApiKey(t *testing.T) {
 
 	// Save a key to it
 	err := saveApiKey(tmpKey, tmpFile.Name(), "tmp")
-	assert.ErrorIs(t, err, nil)
+	assert.NoError(t, err)
 
 	type args struct {
 		path     string
@@ -271,3 +273,222 @@ func TestService_loadApiKey(t *testing.T) {
 		})
 	}
 }
+
+func TestNewService(t *testing.T) {
+	var myStorage, err = inmemory.NewStorage()
+	assert.NoError(t, err)
+
+	type args struct {
+		opts []ServiceOption
+	}
+	tests := []struct {
+		name string
+		args args
+		want assert.ValueAssertionFunc
+	}{
+		{
+			name: "New service with database",
+			args: args{
+				opts: []ServiceOption{WithStorage(myStorage)},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				service, ok := i1.(*Service)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				return assert.Equal(tt, myStorage, service.storage)
+			},
+		},
+		{
+			name: "New service with Api Key Path",
+			args: args{
+				opts: []ServiceOption{WithApiKeyPath("SomePath")},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				service, ok := i1.(*Service)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				return assert.Equal(tt, "SomePath", service.config.keyPath)
+			},
+		},
+		{
+			name: "New service with Api Key Save on Create",
+			args: args{
+				opts: []ServiceOption{WithApiKeySaveOnCreate(true)},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				service, ok := i1.(*Service)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				return assert.Equal(tt, true, service.config.keySaveOnCreate)
+			},
+		},
+		{
+			name: "New service with Api Key Save on Create",
+			args: args{
+				opts: []ServiceOption{WithApiKeySaveOnCreate(false)},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				service, ok := i1.(*Service)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				return assert.Equal(tt, false, service.config.keySaveOnCreate)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewService(tt.args.opts...)
+
+			if tt.want != nil {
+				tt.want(t, got, tt.args.opts)
+			}
+		})
+	}
+}
+
+func TestService_CreateDefaultUser(t *testing.T) {
+	// Instantiate a mock storage per error
+	var mStorageCount = mockStorage{countError: errors.New("mock storage db error: count")}
+	var mStorageCreate = mockStorage{createError: errors.New("mock storage db error: create")}
+
+	type fields struct {
+		config struct {
+			keySaveOnCreate bool
+			keyPath         string
+			keyPassword     string
+		}
+		apiKey      *ecdsa.PrivateKey
+		mockStorage *mockStorage
+	}
+	type args struct {
+		username string
+		password string
+	}
+	tests := []struct {
+		name         string
+		fields       fields
+		args         args
+		preFunctions []func(s *Service)
+		wantErr      assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Storage count error",
+			args: args{
+				username: "",
+				password: "",
+			},
+			fields: fields{
+				mockStorage: &mStorageCount,
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, mStorageCount.countError)
+			},
+		},
+		{
+			name: "Storage not empty - dont create default user",
+			args: args{
+				username: "",
+				password: "",
+			},
+			preFunctions: []func(s *Service){
+				func(s *Service) {
+					err := s.storage.Create(&auth.User{Username: "SomeName", Password: "SomePassword"})
+					assert.NoError(t, err)
+				},
+			},
+			fields: fields{
+				mockStorage: nil,
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, nil)
+			},
+		},
+		{
+			name: "Storage not empty but storage create error",
+			args: args{
+				username: "SomeName",
+				password: "SomePassword",
+			},
+			fields: fields{
+				mockStorage: &mStorageCreate,
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, mStorageCreate.createError)
+			},
+		},
+		{
+			name: "Storage empty - create default user",
+			args: args{
+				username: "SomeName",
+				password: "SomePassword",
+			},
+			fields: fields{
+				mockStorage: nil,
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.ErrorIs(t, err, nil)
+				var gotUser auth.User
+				err = i[0].(*Service).storage.Get(&gotUser, "username = ?", "SomeName")
+				return assert.ErrorIs(t, err, nil)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{
+				config: tt.fields.config,
+				apiKey: tt.fields.apiKey,
+			}
+			if tt.fields.mockStorage != nil {
+				s.storage = tt.fields.mockStorage
+			} else {
+				s.storage, _ = inmemory.NewStorage()
+			}
+			for _, f := range tt.preFunctions {
+				f(s)
+			}
+			tt.wantErr(t, s.CreateDefaultUser(tt.args.username, tt.args.password), s)
+		})
+	}
+}
+
+// mockStorage is a mocked persistence.Storage implementation that returns errors at the specified
+// operations.
+//
+// TODO(lebogg): Extract this struct into our new internal/testutils package
+type mockStorage struct {
+	createError error
+	saveError   error
+	updateError error
+	getError    error
+	listError   error
+	countError  error
+	deleteError error
+}
+
+func (m mockStorage) Create(interface{}) error { return m.createError }
+
+func (m mockStorage) Save(interface{}, ...interface{}) error { return m.saveError }
+
+func (m mockStorage) Update(interface{}, interface{}, ...interface{}) error {
+	return m.updateError
+}
+
+func (m mockStorage) Get(interface{}, ...interface{}) error { return m.getError }
+
+func (m mockStorage) List(interface{}, ...interface{}) error { return m.listError }
+
+func (m mockStorage) Count(interface{}, ...interface{}) (int64, error) {
+	return 0, m.countError
+}
+
+func (m mockStorage) Delete(interface{}, ...interface{}) error { return m.deleteError }

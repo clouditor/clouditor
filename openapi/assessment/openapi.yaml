@@ -13,7 +13,9 @@ paths:
         post:
             tags:
                 - Assessment
-            description: Assesses the evidence sent by the discovery. Part of the public API, also exposed as REST.
+            description: |-
+                Assesses the evidence sent by the discovery. Part of the public API, also
+                 exposed as REST.
             operationId: Assessment_AssessEvidence
             requestBody:
                 content:

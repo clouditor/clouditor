@@ -32,14 +32,13 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"reflect"
 	"testing"
 	"time"
 
 	"clouditor.io/clouditor/api/auth"
-	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/rest"
 	service_auth "clouditor.io/clouditor/service/auth"
-
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -59,12 +58,6 @@ func TestMain(m *testing.M) {
 		server *grpc.Server
 		sock   net.Listener
 	)
-
-	// A small embedded DB is needed for the server
-	err = persistence.InitDB(true, "", 0)
-	if err != nil {
-		panic(err)
-	}
 
 	// Start at least an authentication server, so that we have something to forward
 	sock, server, authService, err = StartDedicatedAuthServer(":0")
@@ -126,11 +119,11 @@ func TestAuthConfig_AuthFunc(t *testing.T) {
 	}
 
 	port, err := rest.GetServerPort()
-	assert.ErrorIs(t, err, nil)
+	assert.NoError(t, err)
 
 	// Some pre-work to retrieve a valid token
 	loginResponse, err := authService.Login(context.TODO(), &auth.LoginRequest{Username: "clouditor", Password: "clouditor"})
-	assert.ErrorIs(t, err, nil)
+	assert.NoError(t, err)
 	assert.NotNil(t, loginResponse)
 
 	type configureArgs struct {
@@ -223,3 +216,79 @@ func TestAuthConfig_AuthFunc(t *testing.T) {
 		})
 	}
 }
+
+func TestStartDedicatedAuthServer(t *testing.T) {
+	type args struct {
+		address string
+		opts    []service_auth.ServiceOption
+	}
+	tests := []struct {
+		name            string
+		args            args
+		wantSock        net.Listener
+		wantServer      *grpc.Server
+		wantAuthService *service_auth.Service
+		wantErr         bool
+	}{
+		{
+			name: "Could not create default user",
+			args: args{
+				opts: []service_auth.ServiceOption{service_auth.WithStorage(mockStorage{
+					createError: errors.New("could not create"),
+				})},
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotSock, gotServer, gotAuthService, err := StartDedicatedAuthServer(tt.args.address, tt.args.opts...)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("StartDedicatedAuthServer() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotSock, tt.wantSock) {
+				t.Errorf("StartDedicatedAuthServer() gotSock = %v, want %v", gotSock, tt.wantSock)
+			}
+			if !reflect.DeepEqual(gotServer, tt.wantServer) {
+				t.Errorf("StartDedicatedAuthServer() gotServer = %v, want %v", gotServer, tt.wantServer)
+			}
+			if !reflect.DeepEqual(gotAuthService, tt.wantAuthService) {
+				t.Errorf("StartDedicatedAuthServer() gotAuthService = %v, want %v", gotAuthService, tt.wantAuthService)
+			}
+		})
+	}
+}
+
+// mockStorage is a mocked persistence.Storage implementation that returns errors at the specified
+// operations.
+//
+// TODO(oxisto): Extract this struct into our new internal/testutils package
+type mockStorage struct {
+	createError error
+	saveError   error
+	updateError error
+	getError    error
+	listError   error
+	countError  error
+	deleteError error
+}
+
+func (m mockStorage) Create(interface{}) error { return m.createError }
+
+func (m mockStorage) Save(interface{}, ...interface{}) error { return m.saveError }
+
+func (m mockStorage) Update(interface{}, interface{}, ...interface{}) error {
+	return m.updateError
+}
+
+func (m mockStorage) Get(interface{}, ...interface{}) error { return m.getError }
+
+func (m mockStorage) List(interface{}, ...interface{}) error { return m.listError }
+
+func (m mockStorage) Count(interface{}, ...interface{}) (int64, error) {
+	return 0, m.countError
+}
+
+func (m mockStorage) Delete(interface{}, ...interface{}) error { return m.deleteError }

@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.19.4
-// source: assessment.proto
+// source: api/assessment/assessment.proto
 
 package assessment
 
@@ -25,7 +25,8 @@ const _ = grpc.SupportPackageIsVersion7
 type AssessmentClient interface {
 	// Triggers the assessment. Part of the private API. Not exposed as REST.
 	TriggerAssessment(ctx context.Context, in *TriggerAssessmentRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// Assesses the evidence sent by the discovery. Part of the public API, also exposed as REST.
+	// Assesses the evidence sent by the discovery. Part of the public API, also
+	// exposed as REST.
 	AssessEvidence(ctx context.Context, in *AssessEvidenceRequest, opts ...grpc.CallOption) (*AssessEvidenceResponse, error)
 	// Assesses stream of evidences sent by the discovery and returns a response stream. Part of the public API. Not exposed as REST.
 	AssessEvidences(ctx context.Context, opts ...grpc.CallOption) (Assessment_AssessEvidencesClient, error)
@@ -105,7 +106,8 @@ func (c *assessmentClient) ListAssessmentResults(ctx context.Context, in *ListAs
 type AssessmentServer interface {
 	// Triggers the assessment. Part of the private API. Not exposed as REST.
 	TriggerAssessment(context.Context, *TriggerAssessmentRequest) (*emptypb.Empty, error)
-	// Assesses the evidence sent by the discovery. Part of the public API, also exposed as REST.
+	// Assesses the evidence sent by the discovery. Part of the public API, also
+	// exposed as REST.
 	AssessEvidence(context.Context, *AssessEvidenceRequest) (*AssessEvidenceResponse, error)
 	// Assesses stream of evidences sent by the discovery and returns a response stream. Part of the public API. Not exposed as REST.
 	AssessEvidences(Assessment_AssessEvidencesServer) error
@@ -251,5 +253,5 @@ var Assessment_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 	},
-	Metadata: "assessment.proto",
+	Metadata: "api/assessment/assessment.proto",
 }

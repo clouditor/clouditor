@@ -31,10 +31,10 @@ package clouditor;
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
-import "evidence.proto";
-import "metric.proto";
+import "api/evidence/evidence.proto";
+import "api/assessment/metric.proto";
 
-option go_package = "api/assessment";
+option go_package = "clouditor.io/clouditor/api/assessment";
 
 // Representing the link between orchestrator and discovery: Assessing evidences
 // from discovery and sending results to orchestrator
@@ -44,11 +44,12 @@ service Assessment {
   rpc TriggerAssessment(TriggerAssessmentRequest)
       returns (google.protobuf.Empty) {}
 
-  // Assesses the evidence sent by the discovery. Part of the public API, also exposed as REST.
+  // Assesses the evidence sent by the discovery. Part of the public API, also
+  // exposed as REST.
   rpc AssessEvidence(AssessEvidenceRequest) returns (AssessEvidenceResponse) {
     option (google.api.http) = {
       post : "/v1/assessment/evidences"
-      body: "evidence"
+      body : "evidence"
       response_body : "status"
     };
   }

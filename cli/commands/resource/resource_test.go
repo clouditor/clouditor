@@ -34,12 +34,11 @@ import (
 	"testing"
 	"time"
 
+	"clouditor.io/clouditor/service"
+
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/login"
-	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/service"
-	service_auth "clouditor.io/clouditor/service/auth"
 	service_discovery "clouditor.io/clouditor/service/discovery"
 
 	"clouditor.io/clouditor/voc"
@@ -49,14 +48,16 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-var sock net.Listener
-var server *grpc.Server
+var (
+	sock             net.Listener
+	server           *grpc.Server
+	discoveryService *service_discovery.Service
+)
 
 func TestMain(m *testing.M) {
 	var (
 		err error
 		dir string
-		s   *service_discovery.Service
 	)
 
 	err = os.Chdir("../../../../")
@@ -64,19 +65,14 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	err = persistence.InitDB(true, "", 0)
+	discoveryService = service_discovery.NewService()
+	discoveryService.StartDiscovery(mockDiscoverer{testCase: 2})
+
+	sock, server, _, err = service.StartDedicatedAuthServer(":0")
 	if err != nil {
 		panic(err)
 	}
-
-	s = service_discovery.NewService()
-	s.StartDiscovery(mockDiscoverer{testCase: 2})
-
-	sock, server, _, err = service.StartDedicatedAuthServer(":0", service_auth.WithApiKeySaveOnCreate(false))
-	if err != nil {
-		panic(err)
-	}
-	discovery.RegisterDiscoveryServer(server, s)
+	discovery.RegisterDiscoveryServer(server, discoveryService)
 
 	defer func(sock net.Listener) {
 		err = sock.Close()
@@ -126,12 +122,12 @@ func TestNewListCommand(t *testing.T) {
 
 	cmd := NewListResourcesCommand()
 	err = cmd.RunE(nil, []string{})
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	var response = &discovery.QueryResponse{}
 	err = protojson.Unmarshal(b.Bytes(), response)
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response.Results.Values)
 

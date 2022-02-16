@@ -1,8 +1,8 @@
 ignore:
   - "**/*.pb.go" # ignore protoc generated files
   - "**/*.pb.gw.go" # ignore protoc-gen-grpc-gateway generated files
-  - "ccl/parser/*.go" #ignore generated antlr parser files
 coverage:
+  range: "70...85"
   status:
     project:
       default:

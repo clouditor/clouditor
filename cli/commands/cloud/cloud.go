@@ -108,8 +108,8 @@ func NewListCloudServicesCommand() *cobra.Command {
 	return cmd
 }
 
-// NewGetCloudServiceComand returns a cobra command for the `get` subcommand
-func NewGetCloudServiceComand() *cobra.Command {
+// NewGetCloudServiceCommand returns a cobra command for the `get` subcommand
+func NewGetCloudServiceCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get [id]",
 		Short: "Retrieves a target cloud service by its ID",
@@ -277,7 +277,7 @@ func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewRegisterCloudServiceCommand(),
 		NewListCloudServicesCommand(),
-		NewGetCloudServiceComand(),
+		NewGetCloudServiceCommand(),
 		NewUpdateCloudServiceCommand(),
 		NewRemoveCloudServiceComand(),
 		NewGetMetricConfigurationCommand(),
