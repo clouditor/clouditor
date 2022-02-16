@@ -189,7 +189,7 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 		go s.informHook(nil, newError)
 
 		resp = &orchestrator.StoreAssessmentResultResponse{
-			Status: false,
+			Status:        false,
 			StatusMessage: newError.Error(),
 		}
 
@@ -226,7 +226,6 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 			log.Errorf("Orchestrator: Cannot receive stream request: %v", err)
 			return status.Errorf(codes.Unknown, "cannot receive stream request: %v", err)
 		}
-
 
 		// Call StoreAssessmentResult() for storing a single assessment
 		storeAssessmentResultReq := &orchestrator.StoreAssessmentResultRequest{

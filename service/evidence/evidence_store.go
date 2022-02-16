@@ -116,6 +116,9 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 			Evidence: req.Evidence,
 		}
 		res, err = s.StoreEvidence(context.Background(), evidenceRequest)
+		if err != nil {
+			log.Errorf("Error storing evidence: %v", err)
+		}
 
 		// Send response back to the client
 		err = stream.Send(res)

@@ -191,6 +191,7 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 		// TODO(all): Check context?
 		req, err = stream.Recv()
 
+		// If no more input of the stream is available, return
 		if err == io.EOF {
 			return nil
 		}
@@ -203,8 +204,10 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 		assessEvidencesReq := &assessment.AssessEvidenceRequest{
 			Evidence: req.Evidence,
 		}
-
 		res, err = s.AssessEvidence(context.Background(), assessEvidencesReq)
+		if err != nil {
+			log.Errorf("Error assessing evidence: %v", err)
+		}
 
 		// Send response back to the client
 		err = stream.Send(res)

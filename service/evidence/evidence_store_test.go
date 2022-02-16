@@ -356,7 +356,6 @@ func createStoreEvidenceRequestMocks(count int) []*evidence.StoreEvidenceRequest
 
 type mockStreamer struct {
 	grpc.ServerStream
-	counter        int
 	RecvToServer   chan *evidence.StoreEvidenceRequest
 	SentFromServer chan *evidence.StoreEvidenceResponse
 }

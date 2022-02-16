@@ -142,7 +142,7 @@ func TestAssessmentResultHook(t *testing.T) {
 					},
 				},
 			},
-			wantErr:  false,
+			wantErr: false,
 			wantResp: &orchestrator.StoreAssessmentResultResponse{
 				Status: true,
 			},
@@ -215,7 +215,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 					},
 				},
 			},
-			wantErr:  false,
+			wantErr: false,
 			wantResp: &orchestrator.StoreAssessmentResultResponse{
 				Status: true,
 			},
@@ -240,9 +240,9 @@ func TestStoreAssessmentResult(t *testing.T) {
 					},
 				},
 			},
-			wantErr:  true,
+			wantErr: true,
 			wantResp: &orchestrator.StoreAssessmentResultResponse{
-				Status: false,
+				Status:        false,
 				StatusMessage: "invalid assessment result: metric id is missing",
 			},
 		},
@@ -271,14 +271,13 @@ func TestStoreAssessmentResult(t *testing.T) {
 
 func TestStoreAssessmentResults(t *testing.T) {
 
-	const(
+	const (
 		count1 = 1
 		count2 = 2
 	)
 
-
 	type fields struct {
-		countElementsInMock int
+		countElementsInMock    int
 		countElementsInResults int
 	}
 
@@ -287,16 +286,16 @@ func TestStoreAssessmentResults(t *testing.T) {
 	}
 
 	tests := []struct {
-		name    string
-		fields 	fields
-		args    args
-		wantErr bool
+		name           string
+		fields         fields
+		args           args
+		wantErr        bool
 		wantErrMessage []orchestrator.StoreAssessmentResultResponse
 	}{
 		{
-			name:    "Store 2 assessment results to the map",
+			name: "Store 2 assessment results to the map",
 			fields: fields{
-				countElementsInMock: count2,
+				countElementsInMock:    count2,
 				countElementsInResults: 2,
 			},
 			args:    args{stream: createMockStream(createStoreAssessmentResultRequestsMock(count2))},
@@ -313,14 +312,14 @@ func TestStoreAssessmentResults(t *testing.T) {
 		{
 			name: "Missing MetricID",
 			fields: fields{
-				countElementsInMock: count1,
+				countElementsInMock:    count1,
 				countElementsInResults: 0,
 			},
-			args: args{stream: createMockStream(createStoreAssessmentResultRequestMockWithMissingMetricID(count1))},
+			args:    args{stream: createMockStream(createStoreAssessmentResultRequestMockWithMissingMetricID(count1))},
 			wantErr: false,
 			wantErrMessage: []orchestrator.StoreAssessmentResultResponse{
 				{
-					Status: false,
+					Status:        false,
 					StatusMessage: "invalid assessment result: " + assessment.ErrMetricIdMissing.Error(),
 				},
 			},
@@ -352,7 +351,7 @@ func TestStoreAssessmentResults(t *testing.T) {
 }
 
 // createStoreAssessmentResultRequestMockWithMissingMetricID create one StoreAssessmentResultRequest without ToolID
-func createStoreAssessmentResultRequestMockWithMissingMetricID(count int)  []*orchestrator.StoreAssessmentResultRequest {
+func createStoreAssessmentResultRequestMockWithMissingMetricID(count int) []*orchestrator.StoreAssessmentResultRequest {
 	req := createStoreAssessmentResultRequestsMock(count)
 
 	req[0].Result.MetricId = ""
@@ -387,7 +386,6 @@ func createStoreAssessmentResultRequestsMock(count int) []*orchestrator.StoreAss
 
 	return mockRequests
 }
-
 
 type mockStreamer struct {
 	grpc.ServerStream

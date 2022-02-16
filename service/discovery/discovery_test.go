@@ -29,6 +29,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"reflect"
 	"testing"
@@ -543,6 +544,24 @@ type mockAssessmentStream struct {
 	sentEvidence *evidence.Evidence
 	// We add connectionEstablished to differentiate between the case where evidences can be sent and not
 	connectionEstablished bool
+	counter               int
+}
+
+func (m *mockAssessmentStream) Recv() (*assessment.AssessEvidenceResponse, error) {
+	if m.counter == 0 {
+		m.counter++
+		return &assessment.AssessEvidenceResponse{
+			Status:        false,
+			StatusMessage: "mockError1",
+		}, nil
+	} else if m.counter == 1 {
+		m.counter++
+		return &assessment.AssessEvidenceResponse{
+			Status: true,
+		}, nil
+	} else {
+		return nil, io.EOF
+	}
 }
 
 func (m *mockAssessmentStream) Send(req *assessment.AssessEvidenceRequest) (err error) {
@@ -585,6 +604,24 @@ func (*mockAssessmentStream) RecvMsg(_ interface{}) error {
 
 // mockEvidenceStoreStream implements EvidenceStore_StoreEvidencesClient interface
 type mockEvidenceStoreStream struct {
+	counter int
+}
+
+func (s mockEvidenceStoreStream) Recv() (*evidence.StoreEvidenceResponse, error) {
+	if s.counter == 0 {
+		s.counter++
+		return &evidence.StoreEvidenceResponse{
+			Status:        false,
+			StatusMessage: "MockError1",
+		}, nil
+	} else if s.counter == 1 {
+		s.counter++
+		return &evidence.StoreEvidenceResponse{
+			Status: true,
+		}, nil
+	} else {
+		return nil, io.EOF
+	}
 }
 
 func (mockEvidenceStoreStream) Send(_ *evidence.StoreEvidenceRequest) error {

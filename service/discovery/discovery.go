@@ -27,7 +27,6 @@ package discovery
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -53,10 +52,6 @@ import (
 )
 
 var log *logrus.Entry
-
-var (
-	ErrNoAuthorizerConfigured = errors.New("no authorizer configured")
-)
 
 // Service is an implementation of the Clouditor Discovery service.
 // It should not be used directly, but rather the NewService constructor
