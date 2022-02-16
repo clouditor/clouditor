@@ -1,15 +1,19 @@
 # Generated with protoc-gen-openapi
-# https://github.com/googleapis/gnostic/tree/master/apps/protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/apps/protoc-gen-openapi
 
 openapi: 3.0.3
 info:
-    title: Discovery
-    description: Discovers cloud resources and maps these properties to the format of the ontology
+    title: Discovery API
+    description: |-
+        Discovers cloud resources and maps these properties to the format of the
+         ontology
     version: 0.0.1
 paths:
     /v1/discovery/query:
         post:
-            summary: Lists all evidences collected in the last run, exposed as REST.
+            tags:
+                - Discovery
+            description: Lists all evidences collected in the last run, exposed as REST.
             operationId: Discovery_Query
             requestBody:
                 content:
@@ -26,7 +30,9 @@ paths:
                                 $ref: '#/components/schemas/QueryResponse'
     /v1/discovery/start:
         post:
-            summary: Starts discovering the cloud resources, exposed as REST.
+            tags:
+                - Discovery
+            description: Starts discovering the cloud resources, exposed as REST.
             operationId: Discovery_Start
             requestBody:
                 content:
@@ -44,6 +50,7 @@ paths:
 components:
     schemas:
         ListValue:
+            type: object
             properties:
                 values:
                     type: array
@@ -52,43 +59,46 @@ components:
                     description: Repeated field of dynamically typed values.
             description: '`ListValue` is a wrapper around a repeated field of values. The JSON representation for `ListValue` is JSON array.'
         QueryRequest:
+            type: object
             properties:
-                filtered_type:
+                filteredType:
                     type: string
         QueryResponse:
+            type: object
             properties:
                 results:
                     $ref: '#/components/schemas/ListValue'
         StartDiscoveryRequest:
+            type: object
             properties: {}
             description: 'TODO(lebogg): Add destinations (url+port) for assessment and evidence store'
         StartDiscoveryResponse:
+            type: object
             properties:
                 successful:
                     type: boolean
-        Struct:
-            properties:
-                fields:
-                    $ref: '#/components/schemas/FieldsEntry'
-            description: '`Struct` represents a structured data value, consisting of fields which map to dynamically typed values. In some languages, `Struct` might be supported by a native representation. For example, in scripting languages like JS a struct is represented as an object. The details of that representation are described together with the proto support for the language. The JSON representation for `Struct` is JSON object.'
         Value:
+            type: object
             properties:
-                null_value:
+                nullValue:
                     type: integer
                     description: Represents a null value.
                     format: enum
-                number_value:
+                numberValue:
                     type: number
                     description: Represents a double value.
                     format: double
-                string_value:
+                stringValue:
                     type: string
                     description: Represents a string value.
-                bool_value:
+                boolValue:
                     type: boolean
                     description: Represents a boolean value.
-                struct_value:
-                    $ref: '#/components/schemas/Struct'
-                list_value:
+                structValue:
+                    type: object
+                    description: Represents a structured value.
+                listValue:
                     $ref: '#/components/schemas/ListValue'
             description: '`Value` represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values. A producer of value is expected to set one of that variants, absence of any variant indicates an error. The JSON representation for `Value` is JSON value.'
+tags:
+    - name: Discovery

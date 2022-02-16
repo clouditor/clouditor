@@ -44,7 +44,7 @@ service EvidenceStore {
     };
   }
 
-  // Stores a stream of evidences to the evidence storage and returns a stream of status and status messages. Part of the public API, not exposed as REST.
+  // Stores a stream of evidences to the evidence storage and returns a response stream. Part of the public API, not exposed as REST.
   rpc StoreEvidences(stream StoreEvidenceRequest) returns (stream StoreEvidenceResponse) {};
 
   // Returns all stored evidences. Part of the public API, also exposed as REST.

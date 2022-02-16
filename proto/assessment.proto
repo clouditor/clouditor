@@ -53,7 +53,7 @@ service Assessment {
     };
   }
 
-  // Assesses stream of evidences sent by the discovery and returns stream of status and status messages. Part of the public API. Not exposed as REST.
+  // Assesses stream of evidences sent by the discovery and returns a response stream. Part of the public API. Not exposed as REST.
   rpc AssessEvidences(stream AssessEvidenceRequest) returns (stream AssessEvidenceResponse){};
 
   // List all assessment results. Part of the public API, also exposed as REST.

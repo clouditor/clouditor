@@ -92,7 +92,7 @@ service Orchestrator {
     };
   }
 
-  // Stores stream of assessment results provided by an assessment tool
+  // Stores stream of assessment results provided by an assessment tool and returns a response stream. Part of the public API, not exposed as REST.
   rpc StoreAssessmentResults(stream StoreAssessmentResultRequest)
       returns (stream StoreAssessmentResultResponse);
 
