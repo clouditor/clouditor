@@ -34,8 +34,6 @@ import (
 	"io/ioutil"
 	"sync"
 
-	"google.golang.org/protobuf/types/known/emptypb"
-
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
@@ -190,6 +188,11 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 
 		go s.informHook(nil, newError)
 
+		resp = &orchestrator.StoreAssessmentResultResponse{
+			Status: false,
+			StatusMessage: newError.Error(),
+		}
+
 		return resp, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -198,33 +201,46 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 
 	go s.informHook(req.Result, nil)
 
-	return
+	resp = &orchestrator.StoreAssessmentResultResponse{
+		Status: true,
+	}
+
+	return resp, nil
 }
 
 func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreAssessmentResultsServer) (err error) {
-	var result *assessment.AssessmentResult
+	var (
+		result *orchestrator.StoreAssessmentResultRequest
+		res    *orchestrator.StoreAssessmentResultResponse
+	)
 
 	for {
 		result, err = stream.Recv()
 
-		if err != nil {
-			// If no more input of the stream is available, return SendAndClose `error`
-			if err == io.EOF {
-				log.Infof("Stopped receiving streamed assessment results")
-				return stream.SendAndClose(&emptypb.Empty{})
-			}
-
-			return err
+		// If no more input of the stream is available, return
+		if err == io.EOF {
+			return nil
 		}
+
+		if err != nil {
+			log.Errorf("Orchestrator: Cannot receive stream request: %v", err)
+			return status.Errorf(codes.Unknown, "cannot receive stream request: %v", err)
+		}
+
 
 		// Call StoreAssessmentResult() for storing a single assessment
 		storeAssessmentResultReq := &orchestrator.StoreAssessmentResultRequest{
-			Result: result,
+			Result: result.Result,
 		}
-
-		_, err = s.StoreAssessmentResult(context.Background(), storeAssessmentResultReq)
+		res, err = s.StoreAssessmentResult(context.Background(), storeAssessmentResultReq)
 		if err != nil {
 			log.Errorf("Error storing assessment result: %v", err)
+		}
+
+		err = stream.Send(res)
+		if err != nil {
+			log.Fatalf("Error when response was sent to the client: %v", res)
+			return status.Errorf(codes.Unknown, "cannot send stream response: %v", err)
 		}
 	}
 
