@@ -31,6 +31,7 @@ import (
 	"fmt"
 	"io"
 	"sync"
+	"time"
 
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
@@ -53,6 +54,16 @@ var log *logrus.Entry
 
 func init() {
 	log = logrus.WithField("component", "assessment")
+}
+
+const (
+	// EvictionTime is the time after which an entry in the metric configuration is invalid
+	EvictionTime = time.Minute * 5
+)
+
+type cachedConfiguration struct {
+	cachedAt time.Time
+	*assessment.MetricConfiguration
 }
 
 // Service is an implementation of the Clouditor Assessment service. It should not be used directly,
@@ -79,7 +90,7 @@ type Service struct {
 	// Currently, results are just stored as a map (=in-memory). In the future, we will use a DB.
 	results map[string]*assessment.AssessmentResult
 
-	cachedConfigurations map[string]*assessment.MetricConfiguration
+	cachedConfigurations map[string]cachedConfiguration
 
 	authorizer api.Authorizer
 }
@@ -122,7 +133,7 @@ func NewService(opts ...ServiceOption) *Service {
 		results:              make(map[string]*assessment.AssessmentResult),
 		evidenceStoreAddress: DefaultEvidenceStoreAddress,
 		orchestratorAddress:  DefaultOrchestratorAddress,
-		cachedConfigurations: make(map[string]*assessment.MetricConfiguration),
+		cachedConfigurations: make(map[string]cachedConfiguration),
 	}
 
 	// Apply any options
@@ -345,7 +356,9 @@ func (s *Service) sendToEvidenceStore(e *evidence.Evidence) error {
 			return fmt.Errorf("could not initialize stream to Evidence Store: %v", err)
 		}
 	}
+
 	log.Infof("Sending evidence (%v) to Evidence Store", e.Id)
+
 	err := s.evidenceStoreStream.Send(&evidence.StoreEvidenceRequest{Evidence: e})
 	if err != nil {
 		return err
@@ -386,6 +399,7 @@ func (s *Service) sendToOrchestrator(result *assessment.AssessmentResult) error 
 	}
 
 	log.Infof("Sending assessment result (%v) to Orchestrator", result.Id)
+
 	err := s.orchestratorStream.Send(result)
 	if err != nil {
 		return err
@@ -395,7 +409,10 @@ func (s *Service) sendToOrchestrator(result *assessment.AssessmentResult) error 
 }
 
 func (s *Service) MetricConfiguration(metric string) (config *assessment.MetricConfiguration, err error) {
-	var ok bool
+	var (
+		ok    bool
+		cache cachedConfiguration
+	)
 
 	// Lazy init of connection
 	if s.orchestratorStream == nil || s.orchestratorClient == nil {
@@ -405,9 +422,11 @@ func (s *Service) MetricConfiguration(metric string) (config *assessment.MetricC
 		}
 	}
 
-	// Check if cached
-	// TODO(oxisto): Evict cache
-	if config, ok = s.cachedConfigurations[metric]; !ok {
+	// Retrive our cached entry
+	cache, ok = s.cachedConfigurations[metric]
+
+	// Check if entry is not there or is expired
+	if !ok || cache.cachedAt.After(time.Now().Add(EvictionTime)) {
 		config, err = s.orchestratorClient.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{
 			ServiceId: service_orchestrator.DefaultTargetCloudServiceId,
 			MetricId:  metric,
@@ -417,9 +436,14 @@ func (s *Service) MetricConfiguration(metric string) (config *assessment.MetricC
 			return nil, fmt.Errorf("could not retrieve metric configuration for %s: %w", metric, err)
 		}
 
-		// Update the metric configuraition
-		s.cachedConfigurations[metric] = config
+		cache = cachedConfiguration{
+			cachedAt:            time.Now(),
+			MetricConfiguration: config,
+		}
+
+		// Update the metric configuration
+		s.cachedConfigurations[metric] = cache
 	}
 
-	return config, nil
+	return cache.MetricConfiguration, nil
 }
