@@ -76,6 +76,8 @@ type Service struct {
 	// Currently, results are just stored as a map (=in-memory). In the future, we will use a DB.
 	results map[string]*assessment.AssessmentResult
 
+	cachedConfigurations map[string]*assessment.MetricConfiguration
+
 	authorizer api.Authorizer
 }
 
@@ -203,10 +205,10 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 
 // handleEvidence is the helper method for the actual assessment used by AssessEvidence and AssessEvidences
 func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string) (err error) {
-	log.Infof("Running evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, evidence.ToolId, evidence.Timestamp)
+	log.Infof("Evaluating evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, evidence.ToolId, evidence.Timestamp)
 	log.Debugf("Evidence: %+v", evidence)
 
-	evaluations, err := policies.RunEvidence(evidence)
+	evaluations, err := policies.RunEvidence(evidence, s)
 	if err != nil {
 		newError := fmt.Errorf("could not evaluate evidence: %w", err)
 		log.Errorf(newError.Error())
@@ -381,5 +383,9 @@ func (s *Service) sendToOrchestrator(result *assessment.AssessmentResult) error 
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (s *Service) FetchMetricConfiguration(metric string) *assessment.MetricConfiguration {
 	return nil
 }

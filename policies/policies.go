@@ -31,6 +31,7 @@ import (
 	"os"
 	"strings"
 
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"github.com/fatih/camelcase"
 	"github.com/mitchellh/mapstructure"
@@ -50,7 +51,11 @@ type Result struct {
 	MetricId    string
 }
 
-func RunEvidence(evidence *evidence.Evidence) ([]*Result, error) {
+type MetricConfigurationHolder interface {
+	FetchMetricConfiguration(metric string) *assessment.MetricConfiguration
+}
+
+func RunEvidence(evidence *evidence.Evidence, holder MetricConfigurationHolder) ([]*Result, error) {
 	data := make([]*Result, 0)
 	var baseDir string = "."
 
@@ -83,7 +88,7 @@ func RunEvidence(evidence *evidence.Evidence) ([]*Result, error) {
 		}
 
 		for _, fileInfo := range files {
-			runMap, err := RunMap(baseDir, fileInfo.Name(), m)
+			runMap, err := RunMap(baseDir, fileInfo.Name(), m, holder)
 			if err != nil {
 				return nil, err
 			}
@@ -98,7 +103,7 @@ func RunEvidence(evidence *evidence.Evidence) ([]*Result, error) {
 		}
 	} else {
 		for _, metric := range applicableMetrics[key] {
-			runMap, err := RunMap(baseDir, metric, m)
+			runMap, err := RunMap(baseDir, metric, m, holder)
 			if err != nil {
 				return nil, err
 			}
@@ -111,10 +116,9 @@ func RunEvidence(evidence *evidence.Evidence) ([]*Result, error) {
 	return data, nil
 }
 
-func RunMap(baseDir string, metric string, m map[string]interface{}) (result *Result, err error) {
+func RunMap(baseDir string, metric string, m map[string]interface{}, holder MetricConfigurationHolder) (result *Result, err error) {
 	var (
-		tx   storage.Transaction
-		file *os.File
+		tx storage.Transaction
 	)
 
 	// Create paths for bundle directory and utility functions file
@@ -124,13 +128,14 @@ func RunMap(baseDir string, metric string, m map[string]interface{}) (result *Re
 	// Convert camelCase metric in under_score_style for package name
 	metric = strings.ToLower(strings.Join(camelcase.Split(metric), "_"))
 
-	// Load from data
-	file, err = os.Open(bundle + "data.json")
-	if err != nil {
-		return nil, fmt.Errorf("could not open: %w", err)
+	config := holder.FetchMetricConfiguration(metric)
+
+	c := map[string]interface{}{
+		"target_value": config.TargetValue.AsInterface(),
+		"operator":     config.Operator,
 	}
 
-	store := inmem.NewFromReader(file)
+	store := inmem.NewFromObject(c)
 	ctx := context.Background()
 
 	tx, err = store.NewTransaction(ctx, storage.WriteParams)
