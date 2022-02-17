@@ -51,11 +51,11 @@ type Result struct {
 	MetricId    string
 }
 
-type MetricConfigurationHolder interface {
-	FetchMetricConfiguration(metric string) *assessment.MetricConfiguration
+type MetricConfigurationSource interface {
+	MetricConfiguration(metric string) (*assessment.MetricConfiguration, error)
 }
 
-func RunEvidence(evidence *evidence.Evidence, holder MetricConfigurationHolder) ([]*Result, error) {
+func RunEvidence(evidence *evidence.Evidence, holder MetricConfigurationSource) ([]*Result, error) {
 	data := make([]*Result, 0)
 	var baseDir string = "."
 
@@ -116,7 +116,7 @@ func RunEvidence(evidence *evidence.Evidence, holder MetricConfigurationHolder) 
 	return data, nil
 }
 
-func RunMap(baseDir string, metric string, m map[string]interface{}, holder MetricConfigurationHolder) (result *Result, err error) {
+func RunMap(baseDir string, metric string, m map[string]interface{}, holder MetricConfigurationSource) (result *Result, err error) {
 	var (
 		tx storage.Transaction
 	)
@@ -125,15 +125,18 @@ func RunMap(baseDir string, metric string, m map[string]interface{}, holder Metr
 	bundle := fmt.Sprintf("%s/policies/bundles/%s/", baseDir, metric)
 	operators := fmt.Sprintf("%s/policies/operators.rego", baseDir)
 
-	// Convert camelCase metric in under_score_style for package name
-	metric = strings.ToLower(strings.Join(camelcase.Split(metric), "_"))
-
-	config := holder.FetchMetricConfiguration(metric)
+	config, err := holder.MetricConfiguration(metric)
+	if err != nil {
+		return nil, fmt.Errorf("could not fetch metric configuration: %w", err)
+	}
 
 	c := map[string]interface{}{
 		"target_value": config.TargetValue.AsInterface(),
 		"operator":     config.Operator,
 	}
+
+	// Convert camelCase metric in under_score_style for package name
+	metric = strings.ToLower(strings.Join(camelcase.Split(metric), "_"))
 
 	store := inmem.NewFromObject(c)
 	ctx := context.Background()

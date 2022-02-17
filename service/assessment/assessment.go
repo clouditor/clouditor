@@ -37,6 +37,8 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/policies"
+	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -65,6 +67,7 @@ type Service struct {
 
 	// orchestratorStream sends ARs to the Orchestrator
 	orchestratorStream  orchestrator.Orchestrator_StoreAssessmentResultsClient
+	orchestratorClient  orchestrator.OrchestratorClient
 	orchestratorAddress string
 
 	// resultHooks is a list of hook functions that can be used if one wants to be
@@ -119,6 +122,7 @@ func NewService(opts ...ServiceOption) *Service {
 		results:              make(map[string]*assessment.AssessmentResult),
 		evidenceStoreAddress: DefaultEvidenceStoreAddress,
 		orchestratorAddress:  DefaultOrchestratorAddress,
+		cachedConfigurations: make(map[string]*assessment.MetricConfiguration),
 	}
 
 	// Apply any options
@@ -361,31 +365,61 @@ func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) erro
 		return fmt.Errorf("could not connect to orchestrator service: %w", err)
 	}
 
-	orchestratorClient := orchestrator.NewOrchestratorClient(conn)
-	s.orchestratorStream, err = orchestratorClient.StoreAssessmentResults(context.Background())
+	s.orchestratorClient = orchestrator.NewOrchestratorClient(conn)
+	s.orchestratorStream, err = s.orchestratorClient.StoreAssessmentResults(context.Background())
 	if err != nil {
 		return fmt.Errorf("could not set up stream for storing assessment results: %w", err)
 	}
+
 	log.Infof("Connected to Orchestrator")
+
 	return nil
 }
 
 // sendToOrchestrator sends the assessment result to the Orchestrator
 func (s *Service) sendToOrchestrator(result *assessment.AssessmentResult) error {
-	if s.orchestratorStream == nil {
+	if s.orchestratorStream == nil || s.orchestratorClient == nil {
 		err := s.initOrchestratorStream()
 		if err != nil {
 			return fmt.Errorf("could not initialize stream to Orchestrator: %v", err)
 		}
 	}
+
 	log.Infof("Sending assessment result (%v) to Orchestrator", result.Id)
 	err := s.orchestratorStream.Send(result)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
-func (s *Service) FetchMetricConfiguration(metric string) *assessment.MetricConfiguration {
-	return nil
+func (s *Service) MetricConfiguration(metric string) (config *assessment.MetricConfiguration, err error) {
+	var ok bool
+
+	// Lazy init of connection
+	if s.orchestratorStream == nil || s.orchestratorClient == nil {
+		err := s.initOrchestratorStream()
+		if err != nil {
+			return nil, fmt.Errorf("could not initialize connection to orchestrator: %v", err)
+		}
+	}
+
+	// Check if cached
+	// TODO(oxisto): Evict cache
+	if config, ok = s.cachedConfigurations[metric]; !ok {
+		config, err = s.orchestratorClient.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{
+			ServiceId: service_orchestrator.DefaultTargetCloudServiceId,
+			MetricId:  metric,
+		})
+
+		if err != nil {
+			return nil, fmt.Errorf("could not retrieve metric configuration for %s: %w", metric, err)
+		}
+
+		// Update the metric configuraition
+		s.cachedConfigurations[metric] = config
+	}
+
+	return config, nil
 }
