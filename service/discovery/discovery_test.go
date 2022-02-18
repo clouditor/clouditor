@@ -602,7 +602,7 @@ func (*mockAssessmentStream) RecvMsg(_ interface{}) error {
 type mockEvidenceStoreStream struct {
 }
 
-func (s mockEvidenceStoreStream) Recv() (*evidence.StoreEvidenceResponse, error) {
+func (mockEvidenceStoreStream) Recv() (*evidence.StoreEvidenceResponse, error) {
 	return nil, nil
 }
 
