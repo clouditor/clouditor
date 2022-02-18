@@ -328,7 +328,7 @@ func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result
 	s.resultHooks = append(s.resultHooks, assessmentResultsHook)
 }
 
-// initEvidenceStoreStream initializes the streamToServer to the Evidence Store
+// initEvidenceStoreStream initializes the stream to the Evidence Store
 func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) error {
 	log.Infof("Trying to establish a connection to evidence store service @ %v", s.evidenceStoreAddress)
 
