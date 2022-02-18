@@ -173,6 +173,10 @@ func (s *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.Ge
 // configuration for a particular metric within the service, the default metric configuration is
 // inserted into the list.
 func (s *Service) ListMetricConfigurations(ctx context.Context, req *orchestrator.ListMetricConfigurationRequest) (response *orchestrator.ListMetricConfigurationResponse, err error) {
+	response = &orchestrator.ListMetricConfigurationResponse{
+		Configurations: make(map[string]*assessment.MetricConfiguration),
+	}
+
 	// TODO(oxisto): This is not very efficient, we should do this once at startup so that we can just return the map
 	for metricId := range metricIndex {
 		config, err := s.GetMetricConfiguration(ctx, &orchestrator.GetMetricConfigurationRequest{ServiceId: req.ServiceId, MetricId: metricId})
@@ -189,8 +193,6 @@ func (s *Service) ListMetricConfigurations(ctx context.Context, req *orchestrato
 
 // StoreAssessmentResult is a method implementation of the orchestrator interface: It receives an assessment result and stores it
 func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.StoreAssessmentResultRequest) (resp *orchestrator.StoreAssessmentResultResponse, err error) {
-
-	resp = &orchestrator.StoreAssessmentResultResponse{}
 
 	_, err = req.Result.Validate()
 
