@@ -50,48 +50,56 @@ var (
 
 var ErrNotECPrivateKey = errors.New("key is not a valid EC private key")
 
-// See https://datatracker.ietf.org/doc/html/rfc8018#appendix-A.2
+// PBKDF2Params are parameters for PBKDF2. See https://datatracker.ietf.org/doc/html/rfc8018#appendix-A.2.
 type PBKDF2Params struct {
 	Salt           []byte
 	IterationCount int
 	PRF            asn1.ObjectIdentifier `asn1:"optional"`
 }
 
-// Part of PBES2. See https://datatracker.ietf.org/doc/html/rfc8018#appendix-A.4
+// KeyDerivationFunc is part of PBES2 and specify the key derivation function.
+// See https://datatracker.ietf.org/doc/html/rfc8018#appendix-A.4.
 type KeyDerivationFunc struct {
 	Algorithm    asn1.ObjectIdentifier
 	PBKDF2Params PBKDF2Params
 }
 
-// Part of PBES2. See https://datatracker.ietf.org/doc/html/rfc8018#appendix-A.4
+// EncryptionScheme is part of PBES2 and specifies the encryption algorithm.
+// See https://datatracker.ietf.org/doc/html/rfc8018#appendix-A.4.
 type EncryptionScheme struct {
 	EncryptionAlgorithm asn1.ObjectIdentifier
 	IV                  []byte
 }
 
-// See https://datatracker.ietf.org/doc/html/rfc8018#appendix-A.4
+// PBES2Params are parameters for PBES2. See https://datatracker.ietf.org/doc/html/rfc8018#appendix-A.4.
 type PBES2Params struct {
 	KeyDerivationFunc KeyDerivationFunc
 	EncryptionScheme  EncryptionScheme
 }
 
-// See https://datatracker.ietf.org/doc/html/rfc5958#section-3
+// EncryptionAlgorithmIdentifier is the identifier for the encryption algorithm.
+// See https://datatracker.ietf.org/doc/html/rfc5958#section-3.
 type EncryptionAlgorithmIdentifier struct {
 	Algorithm asn1.ObjectIdentifier
 	Params    PBES2Params
 }
 
-// See https://datatracker.ietf.org/doc/html/rfc5958#section-3
+// EncryptedPrivateKeyInfo contains meta-info about the encrypted private key.
+// See https://datatracker.ietf.org/doc/html/rfc5958#section-3.
 type EncryptedPrivateKeyInfo struct {
 	EncryptionAlgorithm EncryptionAlgorithmIdentifier
 	EncryptedData       []byte
 }
 
+// MarshalECPrivateKeyWithPassword marshals an ECDSA private key protected with a password
+// according to PKCS#8 into a byte array
 func MarshalECPrivateKeyWithPassword(key *ecdsa.PrivateKey, password []byte) (data []byte, err error) {
 	var decrypted []byte
 	decrypted, err = x509.MarshalPKCS8PrivateKey(key)
 	if err != nil {
-		return nil, err // directly return error here
+		// Directly return error here, because we are basically a wrapper around
+		// x509.MarshalPKCS8PrivateKey and we want our errors to be similar
+		return nil, err
 	}
 
 	block, err := EncryptPEMBlock(rand.Reader, decrypted, password)
@@ -102,6 +110,8 @@ func MarshalECPrivateKeyWithPassword(key *ecdsa.PrivateKey, password []byte) (da
 	return pem.EncodeToMemory(block), nil
 }
 
+// ParseECPrivateKeyFromPEMWithPassword ready an ECDSA private key protected with a password according
+// to PKCS#8 from a byte array.
 func ParseECPrivateKeyFromPEMWithPassword(data []byte, password []byte) (key *ecdsa.PrivateKey, err error) {
 	// Parse PEM block
 	var block *pem.Block
@@ -110,13 +120,15 @@ func ParseECPrivateKeyFromPEMWithPassword(data []byte, password []byte) (key *ec
 	}
 
 	var decrypted []byte
-	if decrypted, err = DecryptPEMBlock(block, []byte(password)); err != nil {
+	if decrypted, err = DecryptPEMBlock(block, password); err != nil {
 		return nil, fmt.Errorf("could not decrypt PEM block: %w", err)
 	}
 
 	parsedKey, err := x509.ParsePKCS8PrivateKey(decrypted)
 	if err != nil {
-		return nil, err // directly return error here
+		// Directly return error here, because we are basically a wrapper around
+		// x509.ParsePKCS8PrivateKey and we want our errors to be similar
+		return nil, err
 	}
 
 	var ok bool
@@ -127,6 +139,7 @@ func ParseECPrivateKeyFromPEMWithPassword(data []byte, password []byte) (key *ec
 	return
 }
 
+// EncryptPEMBlock encrypts a private key contain in data into a PEM block according to PKCS#8.
 func EncryptPEMBlock(rand io.Reader, data, password []byte) (block *pem.Block, err error) {
 	var salt = make([]byte, 8)
 	if _, err = rand.Read(salt); err != nil {

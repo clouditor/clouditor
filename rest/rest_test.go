@@ -26,9 +26,11 @@
 package rest
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -112,10 +114,12 @@ func TestREST(t *testing.T) {
 	assert.NotEqual(t, 0, port)
 
 	type args struct {
-		origin    string
-		method    string
-		url       string
-		preflight bool
+		origin      string
+		contentType string
+		method      string
+		url         string
+		body        io.Reader
+		preflight   bool
 	}
 	tests := []struct {
 		name         string
@@ -194,11 +198,36 @@ func TestREST(t *testing.T) {
 				}
 
 				content, err := ioutil.ReadAll(resp.Body)
-				if assert.ErrorIs(tt, err, nil) {
+				if !assert.ErrorIs(tt, err, nil) {
 					return false
 				}
 
-				return assert.Equal(tt, content, []byte("just a test"))
+				return assert.Equal(tt, []byte("just a test"), content)
+			},
+		},
+		{
+			// Successful token responses are tested in auth_test.go
+			name: "Form request with invalid grant type",
+			args: args{
+				method:      "POST",
+				url:         "v1/auth/token",
+				body:        bytes.NewReader([]byte(`grant_type=authorization_code`)),
+				contentType: "application/x-www-form-urlencoded",
+				preflight:   false,
+			},
+			statusCode: 400,
+			wantResponse: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				resp, ok := i1.(*http.Response)
+				if !ok {
+					return assert.True(tt, ok)
+				}
+
+				content, err := ioutil.ReadAll(resp.Body)
+				if !assert.ErrorIs(tt, err, nil) {
+					return false
+				}
+
+				return assert.Equal(tt, []byte(`{"error":"unsupported_grant_type"}`), content)
 			},
 		},
 	}
@@ -214,11 +243,12 @@ func TestREST(t *testing.T) {
 				method = tt.args.method
 			}
 
-			req, err := http.NewRequest(method, fmt.Sprintf("http://localhost:%d/%s", port, tt.args.url), nil)
+			req, err := http.NewRequest(method, fmt.Sprintf("http://localhost:%d/%s", port, tt.args.url), tt.args.body)
 			assert.NoError(t, err)
 			assert.NotNil(t, req)
 
 			req.Header.Add("Origin", tt.args.origin)
+			req.Header.Add("Content-Type", tt.args.contentType)
 
 			if tt.args.preflight {
 				req.Header.Add("Access-Control-Request-Method", tt.args.method)

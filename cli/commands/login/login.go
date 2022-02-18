@@ -29,10 +29,12 @@ import (
 	"context"
 	"fmt"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"golang.org/x/oauth2"
 )
 
 const (
@@ -50,7 +52,7 @@ func NewLoginCommand() *cobra.Command {
 			var (
 				err     error
 				client  auth.AuthenticationClient
-				res     *auth.LoginResponse
+				res     *auth.TokenResponse
 				req     *auth.LoginRequest
 				session *cli.Session
 			)
@@ -76,8 +78,15 @@ func NewLoginCommand() *cobra.Command {
 				return fmt.Errorf("could not login: %w", err)
 			}
 
-			// update the session
-			session.Token = res.AccessToken
+			// Update the session
+			session.SetAuthorizer(api.NewInternalAuthorizerFromToken(
+				session.Authorizer().AuthURL(),
+				&oauth2.Token{
+					AccessToken:  res.AccessToken,
+					TokenType:    res.TokenType,
+					RefreshToken: res.RefreshToken,
+					Expiry:       res.Expiry.AsTime(),
+				}))
 
 			if err = session.Save(); err != nil {
 				return fmt.Errorf("could not save session: %w", err)

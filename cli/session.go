@@ -35,13 +35,14 @@ import (
 	"os"
 	"strings"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"golang.org/x/oauth2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -51,12 +52,20 @@ var DefaultSessionFolder string
 var Output io.Writer = os.Stdout
 
 type Session struct {
-	URL   string `json:"url"`
-	Token string `json:"token"`
+	*grpc.ClientConn
+	authorizer api.Authorizer
+
+	URL string `json:"url"`
 
 	Folder string `json:"-"`
+}
 
-	*grpc.ClientConn
+func (s *Session) SetAuthorizer(authorizer api.Authorizer) {
+	s.authorizer = authorizer
+}
+
+func (s *Session) Authorizer() api.Authorizer {
+	return s.authorizer
 }
 
 func init() {
@@ -71,16 +80,15 @@ func init() {
 	DefaultSessionFolder = fmt.Sprintf("%s/.clouditor/", home)
 }
 
-func NewSession(url string, opts ...grpc.DialOption) (session *Session, err error) {
+func NewSession(url string) (session *Session, err error) {
 	session = &Session{
 		URL:    url,
 		Folder: viper.GetString("session-directory"),
+		// We will supply the token later
+		authorizer: api.NewInternalAuthorizerFromToken(url, nil),
 	}
 
-	if len(opts) == 0 {
-		// TODO(oxisto): set flag depending on target url, insecure only for localhost
-		opts = []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-	}
+	var opts = []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 	if session.ClientConn, err = grpc.Dial(session.URL, opts...); err != nil {
 		return nil, fmt.Errorf("could not connect: %w", err)
@@ -113,7 +121,7 @@ func ContinueSession() (session *Session, err error) {
 		return
 	}
 
-	if session.ClientConn, err = grpc.Dial(session.URL, grpc.WithTransportCredentials(insecure.NewCredentials())); err != nil {
+	if session.ClientConn, err = grpc.Dial(session.URL, api.DefaultGrpcDialOptions(session)...); err != nil {
 		return nil, fmt.Errorf("could not connect: %w", err)
 	}
 
@@ -139,11 +147,46 @@ func (s *Session) Save() (err error) {
 		err = file.Close()
 	}(file)
 
-	if err = json.NewEncoder(file).Encode(s); err != nil {
+	if err = json.NewEncoder(file).Encode(&s); err != nil {
 		return fmt.Errorf("could not serialize JSON: %w", err)
 	}
 
 	return nil
+}
+
+// MarshalJSON is custom JSON marshalling implementation that gives us more control over
+// the fields we want to serialize. The core problem is that we want to serialize our token, e.g.
+// to store a session state for our clients, but we do not want to export the token field in our
+// struct. Exporting the field would create problems in multi-threaded environments. Therefore,
+// access is only allowed through the Token() function, which keeps the token synchronized using a mutex.
+func (s *Session) MarshalJSON() ([]byte, error) {
+	token, _ := s.authorizer.Token()
+
+	return json.Marshal(&struct {
+		URL   string        `json:"url"`
+		Token *oauth2.Token `json:"token"`
+	}{
+		URL:   s.URL,
+		Token: token,
+	})
+}
+
+// UnmarshalJSON is custom JSON marshalling implementation that gives us more control over
+// the fields we want to deserialize. See MarshalJSON for a detailed explanation, why this is
+// necessary.
+func (s *Session) UnmarshalJSON(data []byte) (err error) {
+	v := struct {
+		URL   string        `json:"url"`
+		Token *oauth2.Token `json:"token"`
+	}{}
+
+	if err = json.Unmarshal(data, &v); err != nil {
+		return
+	}
+
+	s.URL = v.URL
+	s.authorizer = api.NewInternalAuthorizerFromToken(s.URL, v.Token)
+	return
 }
 
 // HandleResponse handles the response and error message of an gRPC call
@@ -198,27 +241,6 @@ func PromptForLogin() (loginRequest *auth.LoginRequest, err error) {
 	}
 
 	return loginRequest, nil
-}
-
-// Invoke implements `grpc.ClientConnInterface` and automatically provides an authenticated
-// context of this session
-func (s *Session) Invoke(ctx context.Context, method string, args interface{}, reply interface{}, opts ...grpc.CallOption) error {
-	return s.ClientConn.Invoke(s.AuthenticatedContext(ctx), method, args, reply, opts...)
-}
-
-// NewStream implements `grpc.ClientConnInterface` and automatically provides an authenticated
-// context of this session
-func (s *Session) NewStream(ctx context.Context, desc *grpc.StreamDesc, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-	return s.ClientConn.NewStream(s.AuthenticatedContext(ctx), desc, method, opts...)
-}
-
-func (s *Session) AuthenticatedContext(ctx context.Context) context.Context {
-	return metadata.NewOutgoingContext(ctx,
-		metadata.Pairs(
-			"Authorization",
-			fmt.Sprintf("Bearer %s",
-				s.Token),
-		))
 }
 
 func DefaultArgsShellComp(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {

@@ -34,6 +34,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -46,14 +47,11 @@ import (
 	"clouditor.io/clouditor/persistence"
 	argon2 "github.com/alexedwards/argon2id"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
-)
-
-const (
-	Issuer = "clouditor"
 )
 
 var log *logrus.Entry
@@ -75,6 +73,12 @@ const (
 
 	// DefaultKeyID specifies the default Key ID used in the JWKS of the authentication service
 	DefaultKeyID = "1"
+
+	// DefaultIssuer specifies the default issuer of the issued tokens.
+	DefaultIssuer = "clouditor"
+
+	// DefaultPeriodOfValidity specifies the default period of validity of a token
+	DefaultPeriodOfValidity = time.Hour * 24
 )
 
 // Service is an implementation of the gRPC Authentication service
@@ -194,7 +198,12 @@ func loadApiKey(path string, password []byte) (key *ecdsa.PrivateKey, err error)
 	if err != nil {
 		return nil, fmt.Errorf("error while opening the file: %w", err)
 	}
-	defer f.Close()
+	defer func() {
+		err := f.Close()
+		if err != nil {
+			log.Errorf("Error while closing file: %v", err)
+		}
+	}()
 
 	data, err := ioutil.ReadAll(f)
 	if err != nil {
@@ -265,11 +274,16 @@ func (s *Service) recoverFromLoadApiKeyError(err error, defaultPath bool) {
 }
 
 // Login handles a login request
-func (s Service) Login(_ context.Context, request *auth.LoginRequest) (response *auth.LoginResponse, err error) {
-	var result bool
-	var u *auth.User
+func (s Service) Login(_ context.Context, request *auth.LoginRequest) (response *auth.TokenResponse, err error) {
+	var (
+		result       bool
+		user         *auth.User
+		token        string
+		refreshToken string
+		expiry       = time.Now().Add(DefaultPeriodOfValidity)
+	)
 
-	if result, u, err = s.verifyLogin(request); err != nil {
+	if result, user, err = s.verifyLogin(request); err != nil {
 		// a returned error means, something has gone wrong
 		return nil, status.Errorf(codes.Internal, "error during login: %v", err)
 	}
@@ -279,23 +293,80 @@ func (s Service) Login(_ context.Context, request *auth.LoginRequest) (response 
 		return nil, status.Error(codes.Unauthenticated, "login failed")
 	}
 
-	var token string
-
-	var expiry = time.Now().Add(time.Hour * 24)
-
-	if token, err = s.issueToken(u.Username, u.FullName, u.Email, expiry); err != nil {
+	if token, err = issueToken(s.apiKey, user.Username, user.FullName, user.Email, expiry); err != nil {
 		return nil, status.Errorf(codes.Internal, "token issue failed: %v", err)
 	}
 
-	response = &auth.LoginResponse{
-		AccessToken: token,
-		TokenType:   "Bearer",
-		Expiry:      timestamppb.New(expiry),
+	if refreshToken, err = issueRefreshToken(s.apiKey, user.Username); err != nil {
+		return nil, status.Errorf(codes.Internal, "refresh token issue failed: %v", err)
+	}
+
+	response = &auth.TokenResponse{
+		AccessToken:  token,
+		RefreshToken: refreshToken,
+		TokenType:    "Bearer",
+		Expiry:       timestamppb.New(expiry),
 	}
 
 	return response, nil
 }
 
+// Token aims to be a OAuth 2.0 compliant token endpoint. Currently, only the refresh_token grant type
+// is supported. This function only takes care of the application behavior, the actual implementation of
+// a HTTP endpoint around this functionality is provided by the gRPC gateway and is modified by the
+// OAuthErrorHandler function, which needs to be registered using runtime.WithErrorHandler in the gRPC
+// gateway.
+func (s *Service) Token(_ context.Context, req *auth.TokenRequest) (response *auth.TokenResponse, err error) {
+	var (
+		token  string
+		user   *auth.User
+		claims jwt.RegisteredClaims
+		expiry = time.Now().Add(DefaultPeriodOfValidity)
+	)
+
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid_request")
+	}
+
+	// We are only supporting the refresh_token grant
+	if req.GrantType != "refresh_token" {
+		return nil, status.Error(codes.InvalidArgument, "unsupported_grant_type")
+	}
+
+	// Parse the refresh token
+	_, err = jwt.ParseWithClaims(req.RefreshToken, &claims, func(t *jwt.Token) (interface{}, error) {
+		return &s.apiKey.PublicKey, nil
+	})
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid_grant")
+	}
+
+	err = s.storage.Get(&user, "username = ?", claims.Subject)
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		// User not found, we cannot successfully authenticate this refresh token
+		return nil, status.Error(codes.InvalidArgument, "invalid_grant")
+	} else if err != nil {
+		// A database connection error has occurred, return an an internal error but without any details
+		return nil, status.Errorf(codes.Internal, "internal database error")
+	}
+
+	// Issue a new token
+	if token, err = issueToken(s.apiKey, user.Username, user.FullName, user.Email, expiry); err != nil {
+		// An internal error occurred while creating the token, return an an internal error but without any details
+		return nil, status.Errorf(codes.Internal, "token issue failed")
+	}
+
+	// We do NOT return a refresh token, because we keep the old one. We only need to
+	// return one, if we change it
+	return &auth.TokenResponse{
+		AccessToken: token,
+		TokenType:   "Bearer",
+		Expiry:      timestamppb.New(expiry),
+	}, nil
+}
+
+// ListPublicKeys lists public keys in a JSON Web Key Set (JWKS). In our case we only return
+// a single key, which is our API key.
 func (s Service) ListPublicKeys(_ context.Context, _ *auth.ListPublicKeysRequest) (response *auth.ListPublicResponse, err error) {
 	response = &auth.ListPublicResponse{
 		Keys: []*auth.JsonWebKey{
@@ -387,20 +458,32 @@ func (s *Service) CreateDefaultUser(username string, password string) error {
 }
 
 // issueToken issues a JWT-based token
-func (s Service) issueToken(subject string, fullName string, email string, expiry time.Time) (token string, err error) {
+func issueToken(key *ecdsa.PrivateKey, subject string, fullName string, email string, expiry time.Time) (token string, err error) {
 	claims := jwt.NewWithClaims(jwt.SigningMethodES256,
 		&UserClaims{
 			FullName: fullName,
 			EMail:    email,
 			RegisteredClaims: jwt.RegisteredClaims{
 				ExpiresAt: jwt.NewNumericDate(expiry),
-				Issuer:    Issuer,
+				Issuer:    DefaultIssuer,
 				Subject:   subject,
 			}},
 	)
 	claims.Header["kid"] = DefaultKeyID
 
-	token, err = claims.SignedString(s.apiKey)
+	token, err = claims.SignedString(key)
+	return
+}
+
+func issueRefreshToken(key *ecdsa.PrivateKey, subject string) (token string, err error) {
+	claims := jwt.NewWithClaims(jwt.SigningMethodES256, &jwt.RegisteredClaims{
+		Subject: subject,
+		Issuer:  DefaultIssuer,
+	})
+
+	claims.Header["kid"] = DefaultKeyID
+
+	token, err = claims.SignedString(key)
 	return
 }
 
@@ -437,4 +520,25 @@ func expandPath(path string) (out string, err error) {
 	}
 
 	return path, nil
+}
+
+// OAuthErrorHandler is an implementation of a runtime.ErrorHandlerFunc that customizes the behavior of
+// the gRPC gateway to be compliant to the OAuth 2.0 standard for the appropriate endpoints.
+func OAuthErrorHandler(c context.Context, sm *runtime.ServeMux, m runtime.Marshaler, w http.ResponseWriter, r *http.Request, err error) {
+	if status, ok := status.FromError(err); ok {
+		// For OAuth compliant messages, we need to directly return a JSON with an error, without any
+		// gRPC wrapping
+		if status.Message() == "unsupported_grant_type" || status.Message() == "invalid_grant" {
+			// Make sure, that error code is 400
+			w.WriteHeader(400)
+			_, err = w.Write([]byte(fmt.Sprintf(`{"error":"%s"}`, status.Message())))
+			if err != nil {
+				w.WriteHeader(500)
+			}
+
+			return
+		}
+	}
+
+	runtime.DefaultHTTPErrorHandler(c, sm, m, w, r, err)
 }

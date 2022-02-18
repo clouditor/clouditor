@@ -104,6 +104,76 @@ func TestService_ListPublicKeys(t *testing.T) {
 	}
 }
 
+func TestService_Token(t *testing.T) {
+	// Create a new temporary key
+	tmpKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+
+	// Create a refresh token
+	refreshToken, _ := issueRefreshToken(tmpKey, "clouditor")
+
+	type fields struct {
+		apiKey *ecdsa.PrivateKey
+	}
+	type args struct {
+		ctx context.Context
+		req *auth.TokenRequest
+	}
+	tests := []struct {
+		name         string
+		fields       fields
+		args         args
+		wantResponse assert.ValueAssertionFunc
+		wantErr      bool
+	}{
+		{
+			name:    "Missing requirement parameter",
+			wantErr: true,
+		},
+		{
+			name: "Valid refresh_token",
+			fields: fields{
+				apiKey: tmpKey,
+			},
+			args: args{
+				req: &auth.TokenRequest{GrantType: "refresh_token", RefreshToken: refreshToken},
+			},
+			wantResponse: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				resp, ok := i1.(*auth.TokenResponse)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				return assert.NotNil(tt, resp.AccessToken)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{
+				apiKey: tt.fields.apiKey,
+			}
+
+			var err error
+
+			s.storage, err = inmemory.NewStorage()
+			assert.NoError(t, err)
+
+			err = s.CreateDefaultUser("clouditor", "clouditor")
+			assert.NoError(t, err)
+
+			gotResponse, err := s.Token(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.Token() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantResponse != nil {
+				tt.wantResponse(t, gotResponse, tt.args.ctx, tt.args.req)
+			}
+		})
+	}
+}
+
 func TestService_recoverFromLoadApiKeyError(t *testing.T) {
 	var tmpFile, _ = ioutil.TempFile("", "api.key")
 	// Close it immediately , since we want to write to it
