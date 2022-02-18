@@ -205,7 +205,7 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 			StatusMessage: newError.Error(),
 		}
 
-		return resp, status.Errorf(codes.InvalidArgument, "%v", err)
+		return resp, status.Errorf(codes.InvalidArgument, "invalid assessment result")
 	}
 
 	s.results[req.Result.Id] = req.Result
