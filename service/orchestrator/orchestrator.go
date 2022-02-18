@@ -81,7 +81,6 @@ func init() {
 // ServiceOption is a function-style option to configure the Orchestrator Service
 type ServiceOption func(*Service)
 
-// TODO(all): Function currently not used
 // WithMetricsFile can be used to load a different metrics file
 func WithMetricsFile(file string) ServiceOption {
 	return func(s *Service) {
