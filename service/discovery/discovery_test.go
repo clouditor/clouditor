@@ -600,24 +600,10 @@ func (*mockAssessmentStream) RecvMsg(_ interface{}) error {
 
 // mockEvidenceStoreStream implements EvidenceStore_StoreEvidencesClient interface
 type mockEvidenceStoreStream struct {
-	counter int
 }
 
 func (s mockEvidenceStoreStream) Recv() (*evidence.StoreEvidenceResponse, error) {
-	if s.counter == 0 {
-		s.counter++
-		return &evidence.StoreEvidenceResponse{
-			Status:        false,
-			StatusMessage: "MockError1",
-		}, nil
-	} else if s.counter == 1 {
-		s.counter++
-		return &evidence.StoreEvidenceResponse{
-			Status: true,
-		}, nil
-	} else {
-		return nil, io.EOF
-	}
+	return nil, nil
 }
 
 func (mockEvidenceStoreStream) Send(_ *evidence.StoreEvidenceRequest) error {
