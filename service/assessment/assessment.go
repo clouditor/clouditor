@@ -356,7 +356,7 @@ func (s *Service) sendToEvidenceStore(e *evidence.Evidence) error {
 	if s.evidenceStoreStream == nil {
 		err := s.initEvidenceStoreStream()
 		if err != nil {
-			return fmt.Errorf("could not initialize streamToServer to Evidence Store: %v", err)
+			return fmt.Errorf("could not initialize stream to Evidence Store: %v", err)
 		}
 	}
 	log.Infof("Sending evidence (%v) to Evidence Store", e.Id)
