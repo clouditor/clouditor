@@ -241,7 +241,6 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 			return err
 		}
 	}
-
 }
 
 // ListAssessmentResults is a method implementation of the orchestrator interface

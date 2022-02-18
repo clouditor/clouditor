@@ -31,12 +31,15 @@ import (
 	"fmt"
 	"io"
 	"sync"
+	"time"
 
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/policies"
+	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -53,6 +56,16 @@ func init() {
 	log = logrus.WithField("component", "assessment")
 }
 
+const (
+	// EvictionTime is the time after which an entry in the metric configuration is invalid
+	EvictionTime = time.Hour * 1
+)
+
+type cachedConfiguration struct {
+	cachedAt time.Time
+	*assessment.MetricConfiguration
+}
+
 // Service is an implementation of the Clouditor Assessment service. It should not be used directly,
 // but rather the NewService constructor should be used. It implements the AssessmentServer interface.
 type Service struct {
@@ -65,6 +78,7 @@ type Service struct {
 
 	// orchestratorStream sends ARs to the Orchestrator
 	orchestratorStream  orchestrator.Orchestrator_StoreAssessmentResultsClient
+	orchestratorClient  orchestrator.OrchestratorClient
 	orchestratorAddress string
 
 	// resultHooks is a list of hook functions that can be used if one wants to be
@@ -75,6 +89,10 @@ type Service struct {
 
 	// Currently, results are just stored as a map (=in-memory). In the future, we will use a DB.
 	results map[string]*assessment.AssessmentResult
+
+	// cachedConfigurations holds cached metric configurations for faster access with key being the corresponding
+	// metric name
+	cachedConfigurations map[string]cachedConfiguration
 
 	authorizer api.Authorizer
 }
@@ -117,6 +135,7 @@ func NewService(opts ...ServiceOption) *Service {
 		results:              make(map[string]*assessment.AssessmentResult),
 		evidenceStoreAddress: DefaultEvidenceStoreAddress,
 		orchestratorAddress:  DefaultOrchestratorAddress,
+		cachedConfigurations: make(map[string]cachedConfiguration),
 	}
 
 	// Apply any options
@@ -203,10 +222,10 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 
 // handleEvidence is the helper method for the actual assessment used by AssessEvidence and AssessEvidences
 func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string) (err error) {
-	log.Infof("Running evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, evidence.ToolId, evidence.Timestamp)
+	log.Infof("Evaluating evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, evidence.ToolId, evidence.Timestamp)
 	log.Debugf("Evidence: %+v", evidence)
 
-	evaluations, err := policies.RunEvidence(evidence)
+	evaluations, err := policies.RunEvidence(evidence, s)
 	if err != nil {
 		newError := fmt.Errorf("could not evaluate evidence: %w", err)
 		log.Errorf(newError.Error())
@@ -223,14 +242,11 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 	}
 
 	for i, data := range evaluations {
-		metricId := data["metricId"].(string)
+		metricId := data.MetricId
 
-		log.Infof("Evaluated evidence with metric '%v' as %v", metricId, data["compliant"])
+		log.Infof("Evaluated evidence with metric '%v' as %v", metricId, data.Compliant)
 
-		// Get output values of Rego evaluation. If they are not given, the zero value is used
-		operator, _ := data["operator"].(string)
-		targetValue := data["target_value"]
-		compliant, _ := data["compliant"].(bool)
+		targetValue := data.TargetValue
 
 		convertedTargetValue, err := convertTargetValue(targetValue)
 		if err != nil {
@@ -243,9 +259,9 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 			MetricId:  metricId,
 			MetricConfiguration: &assessment.MetricConfiguration{
 				TargetValue: convertedTargetValue,
-				Operator:    operator,
+				Operator:    data.Operator,
 			},
-			Compliant:             compliant,
+			Compliant:             data.Compliant,
 			EvidenceId:            evidence.Id,
 			ResourceId:            resourceId,
 			NonComplianceComments: "No comments so far",
@@ -341,7 +357,9 @@ func (s *Service) sendToEvidenceStore(e *evidence.Evidence) error {
 			return fmt.Errorf("could not initialize stream to Evidence Store: %v", err)
 		}
 	}
+
 	log.Infof("Sending evidence (%v) to Evidence Store", e.Id)
+
 	err := s.evidenceStoreStream.Send(&evidence.StoreEvidenceRequest{Evidence: e})
 	if err != nil {
 		return err
@@ -361,27 +379,74 @@ func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) erro
 		return fmt.Errorf("could not connect to orchestrator service: %w", err)
 	}
 
-	orchestratorClient := orchestrator.NewOrchestratorClient(conn)
-	s.orchestratorStream, err = orchestratorClient.StoreAssessmentResults(context.Background())
+	s.orchestratorClient = orchestrator.NewOrchestratorClient(conn)
+	s.orchestratorStream, err = s.orchestratorClient.StoreAssessmentResults(context.Background())
 	if err != nil {
 		return fmt.Errorf("could not set up stream for storing assessment results: %w", err)
 	}
+
 	log.Infof("Connected to Orchestrator")
+
 	return nil
 }
 
 // sendToOrchestrator sends the assessment result to the Orchestrator
 func (s *Service) sendToOrchestrator(result *assessment.AssessmentResult) error {
-	if s.orchestratorStream == nil {
+	if s.orchestratorStream == nil || s.orchestratorClient == nil {
 		err := s.initOrchestratorStream()
 		if err != nil {
 			return fmt.Errorf("could not initialize stream to Orchestrator: %v", err)
 		}
 	}
+
 	log.Infof("Sending assessment result (%v) to Orchestrator", result.Id)
+
 	err := s.orchestratorStream.Send(result)
 	if err != nil {
 		return err
 	}
+
 	return nil
+}
+
+// MetricConfiguration implements MetricConfigurationSource by getting the corresponding metric configuration for the
+// default target cloud service
+func (s *Service) MetricConfiguration(metric string) (config *assessment.MetricConfiguration, err error) {
+	var (
+		ok    bool
+		cache cachedConfiguration
+	)
+
+	// Lazy init of connection
+	if s.orchestratorStream == nil || s.orchestratorClient == nil {
+		err = s.initOrchestratorStream()
+		if err != nil {
+			return nil, fmt.Errorf("could not initialize connection to orchestrator: %v", err)
+		}
+	}
+
+	// Retrieve our cached entry
+	cache, ok = s.cachedConfigurations[metric]
+
+	// Check if entry is not there or is expired
+	if !ok || cache.cachedAt.After(time.Now().Add(EvictionTime)) {
+		config, err = s.orchestratorClient.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{
+			ServiceId: service_orchestrator.DefaultTargetCloudServiceId,
+			MetricId:  metric,
+		})
+
+		if err != nil {
+			return nil, fmt.Errorf("could not retrieve metric configuration for %s: %w", metric, err)
+		}
+
+		cache = cachedConfiguration{
+			cachedAt:            time.Now(),
+			MetricConfiguration: config,
+		}
+
+		// Update the metric configuration
+		s.cachedConfigurations[metric] = cache
+	}
+
+	return cache.MetricConfiguration, nil
 }
