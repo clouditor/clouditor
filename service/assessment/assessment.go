@@ -58,7 +58,7 @@ func init() {
 
 const (
 	// EvictionTime is the time after which an entry in the metric configuration is invalid
-	EvictionTime = time.Minute * 5
+	EvictionTime = time.Hour * 1
 )
 
 type cachedConfiguration struct {
@@ -90,8 +90,8 @@ type Service struct {
 	// Currently, results are just stored as a map (=in-memory). In the future, we will use a DB.
 	results map[string]*assessment.AssessmentResult
 
-    // cachedConfigurations holds cached metric configurations for faster access with key being the corresponding
-    // metric name
+	// cachedConfigurations holds cached metric configurations for faster access with key being the corresponding
+	// metric name
 	cachedConfigurations map[string]cachedConfiguration
 
 	authorizer api.Authorizer
