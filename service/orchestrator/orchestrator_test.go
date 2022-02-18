@@ -53,7 +53,6 @@ import (
 
 const (
 	assessmentResultID1 = "11111111-1111-1111-1111-111111111111"
-	//assessmentResultID2 = "11111111-1111-1111-1111-111111111112"
 )
 
 func TestMain(m *testing.M) {

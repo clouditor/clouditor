@@ -53,10 +53,10 @@ func TestService_CreateMetric(t *testing.T) {
 		req *orchestrator.CreateMetricRequest
 	}
 	tests := []struct {
-		name       string
-		args       args
-		wantMetric *assessment.Metric
-		wantErr    bool
+		name           string
+		args           args
+		wantMetric     *assessment.Metric
+		wantErr        bool
 		wantErrMessage string
 	}{
 		{
@@ -84,8 +84,8 @@ func TestService_CreateMetric(t *testing.T) {
 					Metric: &assessment.Metric{},
 				},
 			},
-			wantMetric: nil,
-			wantErr:    true,
+			wantMetric:     nil,
+			wantErr:        true,
 			wantErrMessage: "rpc error: code = InvalidArgument desc = validation of metric failed",
 		},
 		{
@@ -94,15 +94,15 @@ func TestService_CreateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.CreateMetricRequest{
 					Metric: &assessment.Metric{
-						Id: "TLSVersion",
-						Name: "TLSMetricMockName",
+						Id:       "TLSVersion",
+						Name:     "TLSMetricMockName",
 						Category: "",
-						Scale: assessment.Metric_NOMINAL,
+						Scale:    assessment.Metric_NOMINAL,
 					},
 				},
 			},
-			wantMetric: nil,
-			wantErr:    true,
+			wantMetric:     nil,
+			wantErr:        true,
 			wantErrMessage: "rpc error: code = AlreadyExists desc = metric with identifier already exists",
 		},
 	}
@@ -117,7 +117,7 @@ func TestService_CreateMetric(t *testing.T) {
 				return
 			}
 
-			if tt.wantErr{
+			if tt.wantErr {
 				assert.Equal(t, tt.wantErrMessage, err.Error())
 			}
 
@@ -135,11 +135,11 @@ func TestService_UpdateMetric(t *testing.T) {
 		req *orchestrator.UpdateMetricRequest
 	}
 	tests := []struct {
-		name       string
-		args       args
-		wantMetric *assessment.Metric
-		wantErr    bool
-		wantErrMessage	string
+		name           string
+		args           args
+		wantMetric     *assessment.Metric
+		wantErr        bool
+		wantErrMessage string
 	}{
 		{
 			name: "Update existing metric",
@@ -165,13 +165,13 @@ func TestService_UpdateMetric(t *testing.T) {
 				&orchestrator.UpdateMetricRequest{
 					MetricId: "DoesProbablyNotExist",
 					Metric: &assessment.Metric{
-						Id: "UpdateMetricID",
+						Id:   "UpdateMetricID",
 						Name: "UpdateMetricName",
 					},
 				},
 			},
-			wantMetric: nil,
-			wantErr:    true,
+			wantMetric:     nil,
+			wantErr:        true,
 			wantErrMessage: "rpc error: code = NotFound desc = metric with identifier DoesProbablyNotExist does not exist",
 		},
 		{
@@ -180,11 +180,11 @@ func TestService_UpdateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.UpdateMetricRequest{
 					MetricId: "DoesProbablyNotExist",
-					Metric: &assessment.Metric{},
+					Metric:   &assessment.Metric{},
 				},
 			},
-			wantMetric: nil,
-			wantErr:    true,
+			wantMetric:     nil,
+			wantErr:        true,
 			wantErrMessage: "rpc error: code = InvalidArgument desc = validation of metric failed",
 		},
 	}
@@ -199,7 +199,7 @@ func TestService_UpdateMetric(t *testing.T) {
 				return
 			}
 
-			if tt.wantErr{
+			if tt.wantErr {
 				assert.Contains(t, err.Error(), tt.wantErrMessage)
 			}
 

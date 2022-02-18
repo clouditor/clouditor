@@ -188,6 +188,34 @@ func TestStoreEvidences(t *testing.T) {
 				Status: true,
 			},
 		},
+		{
+			name:   "Store invalid evidence to the map",
+			fields: fields{count: 1},
+			args: args{
+				stream: createMockStream([]*evidence.StoreEvidenceRequest{
+					{
+						Evidence: &evidence.Evidence{
+							Id: uuid.NewString(),
+							//ToolId:    "MockToolId",
+							ServiceId: "MockServiceId",
+							Timestamp: timestamppb.Now(),
+							Raw:       "",
+							Resource: toStructWithoutTest(voc.VirtualMachine{
+								Compute: &voc.Compute{
+									CloudResource: &voc.CloudResource{
+										ID: "mock-id-1",
+									},
+								},
+							}),
+						},
+					},
+				})},
+			wantErr: false,
+			wantErrMessage: &evidence.StoreEvidenceResponse{
+				Status:        false,
+				StatusMessage: "invalid evidence:",
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
