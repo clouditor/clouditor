@@ -569,7 +569,7 @@ type mockAssessmentServerStreamWithErr struct {
 	SentFromServer chan *assessment.AssessEvidenceResponse
 }
 
-func (m *mockAssessmentServerStreamWithErr) Send(response *assessment.AssessEvidenceResponse) error {
+func (*mockAssessmentServerStreamWithErr) Send(*assessment.AssessEvidenceResponse) error {
 	return errors.New("error sending response to client")
 }
 
