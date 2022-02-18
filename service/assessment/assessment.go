@@ -398,6 +398,7 @@ func (s *Service) sendToOrchestrator(result *assessment.AssessmentResult) error 
 	}
 	err := s.orchestratorStream.Send(req)
 	if err != nil {
+                log.Errorf("Error when sending assessment result to Orchestrator: %v", err)
 		return err
 	}
 	return nil
