@@ -343,7 +343,7 @@ func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) err
 	evidenceStoreClient := evidence.NewEvidenceStoreClient(conn)
 	s.evidenceStoreStream, err = evidenceStoreClient.StoreEvidences(context.Background())
 	if err != nil {
-		return fmt.Errorf("could not set up streamToServer for storing evidences: %w", err)
+		return fmt.Errorf("could not set up stream for storing evidences: %w", err)
 	}
 
 	log.Infof("Connected to Evidence Store")
