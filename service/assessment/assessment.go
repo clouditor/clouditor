@@ -32,11 +32,11 @@ import (
 	"io"
 	"sync"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/policies"
-	"clouditor.io/clouditor/service"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -75,7 +75,7 @@ type Service struct {
 	// Currently, results are just stored as a map (=in-memory). In the future, we will use a DB.
 	results map[string]*assessment.AssessmentResult
 
-	authorizer service.Authorizer
+	authorizer api.Authorizer
 }
 
 const (
@@ -106,12 +106,7 @@ func WithOrchestratorAddress(address string) ServiceOption {
 // WithInternalAuthorizer is an option to use an authorizer to the internal Clouditor auth service.
 func WithInternalAuthorizer(address string, username string, password string, opts ...grpc.DialOption) ServiceOption {
 	return func(s *Service) {
-		s.SetAuthorizer(&service.InternalAuthorizer{
-			Url:         address,
-			GrpcOptions: opts,
-			Username:    username,
-			Password:    password,
-		})
+		s.SetAuthorizer(api.NewInternalAuthorizerFromPassword(address, username, password, opts...))
 	}
 }
 
@@ -132,12 +127,12 @@ func NewService(opts ...ServiceOption) *Service {
 }
 
 // SetAuthorizer implements UsesAuthorizer
-func (s *Service) SetAuthorizer(auth service.Authorizer) {
+func (s *Service) SetAuthorizer(auth api.Authorizer) {
 	s.authorizer = auth
 }
 
 // Authorizer implements UsesAuthorizer
-func (s *Service) Authorizer() service.Authorizer {
+func (s *Service) Authorizer() api.Authorizer {
 	return s.authorizer
 }
 
@@ -334,7 +329,7 @@ func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) err
 
 	// Establish connection to evidence store gRPC service
 	conn, err := grpc.Dial(s.evidenceStoreAddress,
-		service.DefaultGrpcDialOptions(s, additionalOpts...)...,
+		api.DefaultGrpcDialOptions(s, additionalOpts...)...,
 	)
 	if err != nil {
 		return fmt.Errorf("could not connect to evidence store service: %w", err)
@@ -373,7 +368,7 @@ func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) erro
 
 	// Establish connection to orchestrator gRPC service
 	conn, err := grpc.Dial(s.orchestratorAddress,
-		service.DefaultGrpcDialOptions(s, additionalOpts...)...,
+		api.DefaultGrpcDialOptions(s, additionalOpts...)...,
 	)
 	if err != nil {
 		return fmt.Errorf("could not connect to orchestrator service: %w", err)

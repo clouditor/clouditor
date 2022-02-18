@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package service
+package api
 
 import (
 	"context"
@@ -44,6 +44,11 @@ import (
 type Authorizer interface {
 	credentials.PerRPCCredentials
 	oauth2.TokenSource
+
+	// AuthURL contains the base URL of the authentication server this authorizer uses. This
+	// can be a gRPC address (for example if the Clouditor internal authentication service is used) or
+	// a regular HTTP(S) URL.
+	AuthURL() string
 }
 
 // UsesAuthorizer is an interface to denote that a struct is willing to accept and use
@@ -56,15 +61,16 @@ type UsesAuthorizer interface {
 // DefaultInternalAuthorizerAddress specifies the default gRPC address of the internal Clouditor auth service.
 const DefaultInternalAuthorizerAddress = "localhost:9090"
 
-// InternalAuthorizer is an authorizer that uses the Clouditor internal auth server (using gRPC) and
+// internalAuthorizer is an authorizer that uses the Clouditor internal auth server (using gRPC) and
 // does a login flow using username and password
-type InternalAuthorizer struct {
-	Url string
+type internalAuthorizer struct {
+	authURL string
 
-	// GrpcOptions contains additional grpc dial options
-	GrpcOptions []grpc.DialOption
-	Username    string
-	Password    string
+	// grpcOptions contains additional grpc dial options
+	grpcOptions []grpc.DialOption
+
+	username string
+	password string
 
 	client auth.AuthenticationClient
 	conn   grpc.ClientConnInterface
@@ -76,8 +82,32 @@ type InternalAuthorizer struct {
 	tokenMutex sync.RWMutex
 }
 
+// NewInternalAuthorizerFromPassword creates a new authorizer based on a (gRPC) URL of the
+// authentication server and a username / password combination
+func NewInternalAuthorizerFromPassword(url string, username string, password string, grpcOptions ...grpc.DialOption) Authorizer {
+	return &internalAuthorizer{
+		authURL:     url,
+		username:    username,
+		password:    password,
+		grpcOptions: grpcOptions,
+	}
+}
+
+// NewInternalAuthorizerFromToken creates a new authorizer based on a (gRPC) URL of the
+// authentication server and an oauth2.Token. It will attempt to refresh an expired access token,
+// if a refresh token is supplied. Note, that this does a similar flow as OAuth 2.0, but it uses
+// our internal direct gRPC connection to the authentication server, whereas OAuth 2.0 would use
+// a POST request with application/x-www-form-urlencoded data.
+func NewInternalAuthorizerFromToken(url string, token *oauth2.Token, grpcOptions ...grpc.DialOption) Authorizer {
+	return &internalAuthorizer{
+		authURL:     url,
+		token:       token,
+		grpcOptions: grpcOptions,
+	}
+}
+
 // init initializes the authorizer. This is called when fetching a token, if this authorizer has not been initialized.
-func (i *InternalAuthorizer) init() (err error) {
+func (i *internalAuthorizer) init() (err error) {
 	// Note, that we do NOT want any credentials.PerRPCCredentials dial option on this connection because
 	// the API of the auth service is available without token authentication. Otherwise, a first login
 	// would be impossible.
@@ -89,9 +119,9 @@ func (i *InternalAuthorizer) init() (err error) {
 
 	// Apply any extra gRPC options that we might have configured. The main use case for this is a unit test,
 	// but clients might want to use this to tweak some values as well.
-	opts = append(opts, i.GrpcOptions...)
+	opts = append(opts, i.grpcOptions...)
 
-	if i.conn, err = grpc.Dial(i.Url, opts...); err != nil {
+	if i.conn, err = grpc.Dial(i.authURL, opts...); err != nil {
 		return fmt.Errorf("could not connect: %w", err)
 	}
 
@@ -103,10 +133,13 @@ func (i *InternalAuthorizer) init() (err error) {
 
 // Token is an implementation for the interface oauth2.TokenSource so we can use this authorizer
 // in (almost) the same way as any other OAuth 2.0 token endpoint. It will fetch an access token
-// using the stored username / password credentials and refresh the access token, if it is expired.
-func (i *InternalAuthorizer) Token() (*oauth2.Token, error) {
+// (and possibly a refresh token), if no token is stored yet in the authorizer or if the token is expired.
+//
+// The "refresh" of a token will either be done by a refresh token (if it exists) or by the stored combination
+// of username / password.
+func (i *internalAuthorizer) Token() (*oauth2.Token, error) {
 	var (
-		resp *auth.LoginResponse
+		resp *auth.TokenResponse
 		err  error
 	)
 
@@ -123,7 +156,7 @@ func (i *InternalAuthorizer) Token() (*oauth2.Token, error) {
 	// if another call is currently fetching a new one and thus modifying it.
 	i.tokenMutex.RLock()
 
-	// Check if we already have a token or if it is still ok
+	// Check if we already have a token and if it is still ok
 	if i.token != nil && i.token.Expiry.After(time.Now()) {
 		// Defer the unlock, if we return here
 		defer i.tokenMutex.RUnlock()
@@ -139,10 +172,18 @@ func (i *InternalAuthorizer) Token() (*oauth2.Token, error) {
 	defer i.tokenMutex.Unlock()
 
 	// Otherwise, we need to re-authenticate
-	resp, err = i.client.Login(context.TODO(), &auth.LoginRequest{
-		Username: i.Username,
-		Password: i.Password,
-	})
+	// TODO(oxisto): In the future we should split this into two authorizers
+	if i.token != nil && i.token.RefreshToken != "" {
+		resp, err = i.client.Token(context.TODO(), &auth.TokenRequest{
+			GrantType:    "refresh_token",
+			RefreshToken: i.token.RefreshToken,
+		})
+	} else {
+		resp, err = i.client.Login(context.TODO(), &auth.LoginRequest{
+			Username: i.username,
+			Password: i.password,
+		})
+	}
 	if err != nil {
 		// Return without refreshing the token. At this point, the token will still be invalid
 		// and the next call to Token() will try again. This way we can mitigate temporary errors.
@@ -151,16 +192,23 @@ func (i *InternalAuthorizer) Token() (*oauth2.Token, error) {
 
 	// Store the current token, if login was successful
 	i.token = &oauth2.Token{
-		AccessToken: resp.AccessToken,
-		Expiry:      resp.Expiry.AsTime(),
+		AccessToken:  resp.AccessToken,
+		Expiry:       resp.Expiry.AsTime(),
+		TokenType:    resp.TokenType,
+		RefreshToken: resp.RefreshToken,
 	}
 
 	return i.token, nil
 }
 
+// AuthURL is an implementation needed for Authorizer.
+func (i *internalAuthorizer) AuthURL() string {
+	return i.authURL
+}
+
 // GetRequestMetadata is an implementation for credentials.PerRPCCredentials. It is called before
 // each RPC request and is used to inject our client credentials into the context of the RPC call.
-func (i *InternalAuthorizer) GetRequestMetadata(ctx context.Context, _ ...string) (map[string]string, error) {
+func (i *internalAuthorizer) GetRequestMetadata(ctx context.Context, _ ...string) (map[string]string, error) {
 	// Fetch a token from our token source. This will also refresh an access token, if it has expired
 	token, err := i.Token()
 	if err != nil {
@@ -179,7 +227,7 @@ func (i *InternalAuthorizer) GetRequestMetadata(ctx context.Context, _ ...string
 	}, nil
 }
 
-func (*InternalAuthorizer) RequireTransportSecurity() bool {
+func (*internalAuthorizer) RequireTransportSecurity() bool {
 	// TODO(oxisto): This should be set to true because we transmit credentials (except localhost)
 	return false
 }

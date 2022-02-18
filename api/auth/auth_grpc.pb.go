@@ -22,9 +22,11 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthenticationClient interface {
-	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
-	// ListPublicKeys lists all available public keys of the authentication server
-	// in the JSON Web Key Set (JWKS) format.
+	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*TokenResponse, error)
+	// GetToken is an OAuth 2.0 compliant token endpoint
+	Token(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*TokenResponse, error)
+	// ListPublicKeys lists all available public keys of the authentication
+	// server in the JSON Web Key Set (JWKS) format.
 	ListPublicKeys(ctx context.Context, in *ListPublicKeysRequest, opts ...grpc.CallOption) (*ListPublicResponse, error)
 }
 
@@ -36,9 +38,18 @@ func NewAuthenticationClient(cc grpc.ClientConnInterface) AuthenticationClient {
 	return &authenticationClient{cc}
 }
 
-func (c *authenticationClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
-	out := new(LoginResponse)
+func (c *authenticationClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*TokenResponse, error) {
+	out := new(TokenResponse)
 	err := c.cc.Invoke(ctx, "/clouditor.Authentication/Login", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authenticationClient) Token(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*TokenResponse, error) {
+	out := new(TokenResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.Authentication/Token", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -58,9 +69,11 @@ func (c *authenticationClient) ListPublicKeys(ctx context.Context, in *ListPubli
 // All implementations must embed UnimplementedAuthenticationServer
 // for forward compatibility
 type AuthenticationServer interface {
-	Login(context.Context, *LoginRequest) (*LoginResponse, error)
-	// ListPublicKeys lists all available public keys of the authentication server
-	// in the JSON Web Key Set (JWKS) format.
+	Login(context.Context, *LoginRequest) (*TokenResponse, error)
+	// GetToken is an OAuth 2.0 compliant token endpoint
+	Token(context.Context, *TokenRequest) (*TokenResponse, error)
+	// ListPublicKeys lists all available public keys of the authentication
+	// server in the JSON Web Key Set (JWKS) format.
 	ListPublicKeys(context.Context, *ListPublicKeysRequest) (*ListPublicResponse, error)
 	mustEmbedUnimplementedAuthenticationServer()
 }
@@ -69,8 +82,11 @@ type AuthenticationServer interface {
 type UnimplementedAuthenticationServer struct {
 }
 
-func (UnimplementedAuthenticationServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
+func (UnimplementedAuthenticationServer) Login(context.Context, *LoginRequest) (*TokenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedAuthenticationServer) Token(context.Context, *TokenRequest) (*TokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Token not implemented")
 }
 func (UnimplementedAuthenticationServer) ListPublicKeys(context.Context, *ListPublicKeysRequest) (*ListPublicResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListPublicKeys not implemented")
@@ -106,6 +122,24 @@ func _Authentication_Login_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Authentication_Token_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthenticationServer).Token(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Authentication/Token",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthenticationServer).Token(ctx, req.(*TokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Authentication_ListPublicKeys_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListPublicKeysRequest)
 	if err := dec(in); err != nil {
@@ -134,6 +168,10 @@ var Authentication_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Login",
 			Handler:    _Authentication_Login_Handler,
+		},
+		{
+			MethodName: "Token",
+			Handler:    _Authentication_Token_Handler,
 		},
 		{
 			MethodName: "ListPublicKeys",
