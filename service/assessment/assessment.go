@@ -90,6 +90,8 @@ type Service struct {
 	// Currently, results are just stored as a map (=in-memory). In the future, we will use a DB.
 	results map[string]*assessment.AssessmentResult
 
+    // cachedConfigurations holds cached metric configurations for faster access with key being the corresponding
+    // metric name
 	cachedConfigurations map[string]cachedConfiguration
 
 	authorizer api.Authorizer
@@ -244,7 +246,6 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 
 		log.Infof("Evaluated evidence with metric '%v' as %v", metricId, data.Compliant)
 
-		// Get output values of Rego evaluation. If they are not given, the zero value is used
 		targetValue := data.TargetValue
 
 		convertedTargetValue, err := convertTargetValue(targetValue)
@@ -408,6 +409,8 @@ func (s *Service) sendToOrchestrator(result *assessment.AssessmentResult) error 
 	return nil
 }
 
+// MetricConfiguration implements MetricConfigurationSource by getting the corresponding metric configuration for the
+// default target cloud service
 func (s *Service) MetricConfiguration(metric string) (config *assessment.MetricConfiguration, err error) {
 	var (
 		ok    bool
@@ -416,13 +419,13 @@ func (s *Service) MetricConfiguration(metric string) (config *assessment.MetricC
 
 	// Lazy init of connection
 	if s.orchestratorStream == nil || s.orchestratorClient == nil {
-		err := s.initOrchestratorStream()
+		err = s.initOrchestratorStream()
 		if err != nil {
 			return nil, fmt.Errorf("could not initialize connection to orchestrator: %v", err)
 		}
 	}
 
-	// Retrive our cached entry
+	// Retrieve our cached entry
 	cache, ok = s.cachedConfigurations[metric]
 
 	// Check if entry is not there or is expired

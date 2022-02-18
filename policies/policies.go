@@ -51,6 +51,7 @@ type Result struct {
 	MetricId    string
 }
 
+// MetricConfigurationSource can be used to retrieve a metric configuration for a particular metric (and target service)
 type MetricConfigurationSource interface {
 	MetricConfiguration(metric string) (*assessment.MetricConfiguration, error)
 }
