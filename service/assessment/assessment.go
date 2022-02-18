@@ -179,7 +179,7 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 	return res, nil
 }
 
-// AssessEvidences is a method implementation of the assessment interface: It assesses multiple evidences (streamToServer) and responds with a streamToServer of status messages
+// AssessEvidences is a method implementation of the assessment interface: It assesses multiple evidences (stream) and responds with a stream.
 func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) (err error) {
 	var (
 		req *assessment.AssessEvidenceRequest
@@ -328,7 +328,7 @@ func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result
 	s.resultHooks = append(s.resultHooks, assessmentResultsHook)
 }
 
-// initEvidenceStoreStream initializes the streamToServer to the Evidence Store
+// initEvidenceStoreStream initializes the stream to the Evidence Store
 func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) error {
 	log.Infof("Trying to establish a connection to evidence store service @ %v", s.evidenceStoreAddress)
 
@@ -343,7 +343,7 @@ func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) err
 	evidenceStoreClient := evidence.NewEvidenceStoreClient(conn)
 	s.evidenceStoreStream, err = evidenceStoreClient.StoreEvidences(context.Background())
 	if err != nil {
-		return fmt.Errorf("could not set up streamToServer for storing evidences: %w", err)
+		return fmt.Errorf("could not set up stream for storing evidences: %w", err)
 	}
 
 	log.Infof("Connected to Evidence Store")
@@ -356,7 +356,7 @@ func (s *Service) sendToEvidenceStore(e *evidence.Evidence) error {
 	if s.evidenceStoreStream == nil {
 		err := s.initEvidenceStoreStream()
 		if err != nil {
-			return fmt.Errorf("could not initialize streamToServer to Evidence Store: %v", err)
+			return fmt.Errorf("could not initialize stream to Evidence Store: %v", err)
 		}
 	}
 	log.Infof("Sending evidence (%v) to Evidence Store", e.Id)

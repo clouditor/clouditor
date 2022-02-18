@@ -207,7 +207,7 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 			StatusMessage: newError.Error(),
 		}
 
-		return resp, status.Errorf(codes.InvalidArgument, "%v", err)
+		return resp, status.Errorf(codes.InvalidArgument, "invalid assessment result")
 	}
 
 	s.results[req.Result.Id] = req.Result
@@ -252,7 +252,7 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 		err = stream.Send(res)
 		if err != nil {
 			log.Errorf("Error when response was sent to the client: %v", res)
-			return status.Errorf(codes.Unknown, "cannot send stream response: %v", err)
+			return status.Errorf(codes.Unknown, "cannot stream response to the client: %v", err)
 		}
 	}
 
