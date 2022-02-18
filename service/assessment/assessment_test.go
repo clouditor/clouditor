@@ -205,7 +205,7 @@ func TestAssessEvidence(t *testing.T) {
 			hasRPCConnection: false,
 			wantResp: &assessment.AssessEvidenceResponse{
 				Status:        false,
-				StatusMessage: "could not send evidence to the evidence store: could not initialize streamToServer to Evidence Store: could not set up streamToServer for storing evidences: rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing dial tcp: missing address\"",
+				StatusMessage: "could not send evidence to the evidence store: could not initialize stream to Evidence Store: could not set up stream for storing evidences: rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing dial tcp: missing address\"",
 			},
 			wantErr: true,
 		},
@@ -303,7 +303,7 @@ func TestAssessEvidences(t *testing.T) {
 			wantErr: false,
 			wantErrMessage: &assessment.AssessEvidenceResponse{
 				Status:        false,
-				StatusMessage: "could not send evidence to the evidence store: could not initialize streamToServer to Evidence Store",
+				StatusMessage: "could not send evidence to the evidence store: could not initialize stream to Evidence Store",
 			},
 		},
 	}
@@ -456,7 +456,7 @@ func toStruct(r voc.IsCloudResource, t *testing.T) (s *structpb.Value) {
 	return
 }
 
-// mockAssessmentServerStream implements Assessment_AssessEvidencesServer which is used to mock incoming evidences as a streamToServer
+// mockAssessmentServerStream implements Assessment_AssessEvidencesServer which is used to mock incoming evidences as a stream
 type mockAssessmentServerStream struct {
 	grpc.ServerStream
 	RecvToServer   chan *assessment.AssessEvidenceRequest
@@ -487,7 +487,7 @@ func (mockAssessmentServerStream) SendAndClose() error {
 }
 
 // Stop, if no more evidences exist
-// For now, just receive one evidence and directly stop the streamToServer (EOF)
+// For now, just receive one evidence and directly stop the stream (EOF)
 func (m *mockAssessmentServerStream) Recv() (req *assessment.AssessEvidenceRequest, err error) {
 	if len(m.RecvToServer) == 0 {
 		return nil, io.EOF
@@ -796,7 +796,7 @@ func TestService_initEvidenceStoreStream(t *testing.T) {
 				[]grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.Equal(tt, err.Error(), "could not set up streamToServer for storing evidences: rpc error: code = Unauthenticated desc = transport: per-RPC creds failed due to error: error while logging in: rpc error: code = Unauthenticated desc = login failed")
+				return assert.Equal(tt, err.Error(), "could not set up stream for storing evidences: rpc error: code = Unauthenticated desc = transport: per-RPC creds failed due to error: error while logging in: rpc error: code = Unauthenticated desc = login failed")
 			},
 		},
 	}
@@ -880,7 +880,7 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 				[]grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.Equal(tt, err.Error(), "could not set up streamToServer for storing assessment results: rpc error: code = Unauthenticated desc = transport: per-RPC creds failed due to error: error while logging in: rpc error: code = Unauthenticated desc = login failed")
+				return assert.Equal(tt, err.Error(), "could not set up stream for storing assessment results: rpc error: code = Unauthenticated desc = transport: per-RPC creds failed due to error: error while logging in: rpc error: code = Unauthenticated desc = login failed")
 			},
 		},
 	}

@@ -196,8 +196,8 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 			return nil
 		}
 		if err != nil {
-			log.Errorf("Assessment: Cannot receive streamToServer request: %v", err)
-			return status.Errorf(codes.Unknown, "cannot receive streamToServer request: %v", err)
+			log.Errorf("Assessment: Cannot receive stream request: %v", err)
+			return status.Errorf(codes.Unknown, "cannot receive stream request: %v", err)
 		}
 
 		// Call AssessEvidence for assessing a single evidence
@@ -367,7 +367,7 @@ func (s *Service) sendToEvidenceStore(e *evidence.Evidence) error {
 	return nil
 }
 
-// initOrchestratorStream initializes the streamToServer to the Orchestrator
+// initOrchestratorStream initializes the stream to the Orchestrator
 func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) error {
 	log.Infof("Trying to establish a connection to orchestrator service @ %v", s.orchestratorAddress)
 
@@ -382,7 +382,7 @@ func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) erro
 	orchestratorClient := orchestrator.NewOrchestratorClient(conn)
 	s.orchestratorStream, err = orchestratorClient.StoreAssessmentResults(context.Background())
 	if err != nil {
-		return fmt.Errorf("could not set up streamToServer for storing assessment results: %w", err)
+		return fmt.Errorf("could not set up stream for storing assessment results: %w", err)
 	}
 	log.Infof("Connected to Orchestrator")
 	return nil
@@ -393,7 +393,7 @@ func (s *Service) sendToOrchestrator(result *assessment.AssessmentResult) error 
 	if s.orchestratorStream == nil {
 		err := s.initOrchestratorStream()
 		if err != nil {
-			return fmt.Errorf("could not initialize streamToServer to Orchestrator: %v", err)
+			return fmt.Errorf("could not initialize stream to Orchestrator: %v", err)
 		}
 	}
 	log.Infof("Sending assessment result (%v) to Orchestrator", result.Id)
