@@ -180,6 +180,7 @@ service Orchestrator {
       put : "/v1/orchestrator/cloud_services/{service_id}/"
             "metric_configurations/"
             "{metric_id}"
+      body: "*"
     };
   }
 

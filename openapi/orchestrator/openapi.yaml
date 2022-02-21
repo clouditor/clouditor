@@ -230,7 +230,7 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Lists all a metric configurations for a specific service and metric ID
+            description: Lists all a metric configurations (target value and operator) for a specific service ID
             operationId: Orchestrator_ListMetricConfigurations
             parameters:
                 - name: serviceId
@@ -249,7 +249,7 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Retrieves a metric configuration for a specific service and metric ID
+            description: Retrieves a metric configuration (target value and operator) for a specific service and metric ID
             operationId: Orchestrator_GetMetricConfiguration
             parameters:
                 - name: serviceId
@@ -272,7 +272,7 @@ paths:
         put:
             tags:
                 - Orchestrator
-            description: Retrieves a metric configuration for a specific service and metric ID
+            description: Updates a metric configuration (target value and operator) for a specific service and metric ID
             operationId: Orchestrator_UpdateMetricConfiguration
             parameters:
                 - name: serviceId
@@ -285,38 +285,12 @@ paths:
                   required: true
                   schema:
                     type: string
-                - name: configuration.operator
-                  in: query
-                  description: The operator to compare the metric, such as == or >
-                  schema:
-                    type: string
-                - name: configuration.targetValue.nullValue
-                  in: query
-                  description: Represents a null value.
-                  schema:
-                    type: integer
-                    format: enum
-                - name: configuration.targetValue.numberValue
-                  in: query
-                  description: Represents a double value.
-                  schema:
-                    type: number
-                    format: double
-                - name: configuration.targetValue.stringValue
-                  in: query
-                  description: Represents a string value.
-                  schema:
-                    type: string
-                - name: configuration.targetValue.boolValue
-                  in: query
-                  description: Represents a boolean value.
-                  schema:
-                    type: boolean
-                - name: configuration.isDefault
-                  in: query
-                  description: Whether this configuration is a default configuration
-                  schema:
-                    type: boolean
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateMetricConfigurationRequest'
+                required: true
             responses:
                 "200":
                     description: OK
@@ -571,6 +545,15 @@ components:
         StoreAssessmentResultResponse:
             type: object
             properties: {}
+        UpdateMetricConfigurationRequest:
+            type: object
+            properties:
+                serviceId:
+                    type: string
+                metricId:
+                    type: string
+                configuration:
+                    $ref: '#/components/schemas/MetricConfiguration'
         Value:
             type: object
             properties:

@@ -60,11 +60,11 @@ type OrchestratorClient interface {
 	ListCloudServices(ctx context.Context, in *ListCloudServicesRequest, opts ...grpc.CallOption) (*ListCloudServicesResponse, error)
 	// Removes a target cloud service
 	RemoveCloudService(ctx context.Context, in *RemoveCloudServiceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// Retrieves a metric configuration for a specific service and metric ID
+	// Updates a metric configuration (target value and operator) for a specific service and metric ID
 	UpdateMetricConfiguration(ctx context.Context, in *UpdateMetricConfigurationRequest, opts ...grpc.CallOption) (*assessment.MetricConfiguration, error)
-	// Retrieves a metric configuration for a specific service and metric ID
+	// Retrieves a metric configuration (target value and operator) for a specific service and metric ID
 	GetMetricConfiguration(ctx context.Context, in *GetMetricConfigurationRequest, opts ...grpc.CallOption) (*assessment.MetricConfiguration, error)
-	// Lists all a metric configurations for a specific service and metric ID
+	// Lists all a metric configurations (target value and operator) for a specific service ID
 	ListMetricConfigurations(ctx context.Context, in *ListMetricConfigurationRequest, opts ...grpc.CallOption) (*ListMetricConfigurationResponse, error)
 }
 
@@ -321,11 +321,11 @@ type OrchestratorServer interface {
 	ListCloudServices(context.Context, *ListCloudServicesRequest) (*ListCloudServicesResponse, error)
 	// Removes a target cloud service
 	RemoveCloudService(context.Context, *RemoveCloudServiceRequest) (*emptypb.Empty, error)
-	// Retrieves a metric configuration for a specific service and metric ID
+	// Updates a metric configuration (target value and operator) for a specific service and metric ID
 	UpdateMetricConfiguration(context.Context, *UpdateMetricConfigurationRequest) (*assessment.MetricConfiguration, error)
-	// Retrieves a metric configuration for a specific service and metric ID
+	// Retrieves a metric configuration (target value and operator) for a specific service and metric ID
 	GetMetricConfiguration(context.Context, *GetMetricConfigurationRequest) (*assessment.MetricConfiguration, error)
-	// Lists all a metric configurations for a specific service and metric ID
+	// Lists all a metric configurations (target value and operator) for a specific service ID
 	ListMetricConfigurations(context.Context, *ListMetricConfigurationRequest) (*ListMetricConfigurationResponse, error)
 	mustEmbedUnimplementedOrchestratorServer()
 }
