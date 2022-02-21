@@ -37,7 +37,7 @@ require (
 	google.golang.org/grpc v1.44.0
 	google.golang.org/protobuf v1.27.1
 	gorm.io/driver/postgres v1.3.1
-	gorm.io/driver/sqlite v1.2.3
+	gorm.io/driver/sqlite v1.3.1
 	gorm.io/gorm v1.23.1
 	k8s.io/api v0.23.0
 	k8s.io/apimachinery v0.23.0
