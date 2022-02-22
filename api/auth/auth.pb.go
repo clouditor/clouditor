@@ -264,6 +264,9 @@ func (x *TokenResponse) GetExpiry() *timestamppb.Timestamp {
 	return nil
 }
 
+// TokenRequest is a data structure that contains all necessary request
+// parameters for an OAuth 2.0 access token request (see
+// https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.3).
 type TokenRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
