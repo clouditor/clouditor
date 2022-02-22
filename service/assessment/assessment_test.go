@@ -208,7 +208,7 @@ func TestAssessEvidence(t *testing.T) {
 			hasRPCConnection: false,
 			wantResp: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "could not initialize connection",
+				StatusMessage: "could not evaluate evidence: could not fetch metric configuration: could not initialize connection to orchestrator: could not set up stream for storing assessment results: rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing dial tcp: missing address\"",
 			},
 			wantErr: true,
 		},
