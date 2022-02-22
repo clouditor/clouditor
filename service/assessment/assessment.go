@@ -146,7 +146,7 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 		s.informHooks(nil, newError)
 
 		res = &assessment.AssessEvidenceResponse{
-			Status:        false,
+			Status:        assessment.AssessEvidenceResponse_FAILED,
 			StatusMessage: newError.Error(),
 		}
 
@@ -158,7 +158,7 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 
 	if err != nil {
 		res = &assessment.AssessEvidenceResponse{
-			Status:        false,
+			Status:        assessment.AssessEvidenceResponse_FAILED,
 			StatusMessage: err.Error(),
 		}
 
@@ -168,7 +168,7 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 	}
 
 	res = &assessment.AssessEvidenceResponse{
-		Status: true,
+		Status: assessment.AssessEvidenceResponse_ASSESSED,
 	}
 
 	return res, nil

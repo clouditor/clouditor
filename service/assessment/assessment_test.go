@@ -136,7 +136,7 @@ func TestAssessEvidence(t *testing.T) {
 			},
 			hasRPCConnection: true,
 			wantResp: &assessment.AssessEvidenceResponse{
-				Status:        false,
+				Status:        assessment.AssessEvidenceResponse_FAILED,
 				StatusMessage: "invalid evidence: " + evidence.ErrResourceIdFieldMissing.Error(),
 			},
 			wantErr: true,
@@ -152,7 +152,7 @@ func TestAssessEvidence(t *testing.T) {
 			},
 			hasRPCConnection: true,
 			wantResp: &assessment.AssessEvidenceResponse{
-				Status:        false,
+				Status:        assessment.AssessEvidenceResponse_FAILED,
 				StatusMessage: "invalid evidence: " + evidence.ErrResourceIdFieldMissing.Error(),
 			},
 			wantErr: true,
@@ -169,7 +169,7 @@ func TestAssessEvidence(t *testing.T) {
 			},
 			hasRPCConnection: true,
 			wantResp: &assessment.AssessEvidenceResponse{
-				Status:        false,
+				Status:        assessment.AssessEvidenceResponse_FAILED,
 				StatusMessage: "invalid evidence: " + evidence.ErrTimestampMissing.Error(),
 			},
 			wantErr: true,
@@ -187,7 +187,7 @@ func TestAssessEvidence(t *testing.T) {
 			},
 			hasRPCConnection: true,
 			wantResp: &assessment.AssessEvidenceResponse{
-				Status: true,
+				Status: assessment.AssessEvidenceResponse_ASSESSED,
 			},
 			wantErr: false,
 		},
@@ -204,7 +204,7 @@ func TestAssessEvidence(t *testing.T) {
 			},
 			hasRPCConnection: false,
 			wantResp: &assessment.AssessEvidenceResponse{
-				Status:        false,
+				Status:        assessment.AssessEvidenceResponse_FAILED,
 				StatusMessage: "could not send evidence to the evidence store: could not initialize stream to Evidence Store: could not set up stream for storing evidences: rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing dial tcp: missing address\"",
 			},
 			wantErr: true,
@@ -245,15 +245,15 @@ func TestAssessEvidences(t *testing.T) {
 		UnimplementedAssessmentServer assessment.UnimplementedAssessmentServer
 	}
 	type args struct {
-		streamToServer *mockAssessmentServerStream
+		streamToServer    *mockAssessmentServerStream
 		errStreamToServer *mockAssessmentServerStreamWithErr
 	}
 	tests := []struct {
-		name           string
-		fields         fields
-		args           args
+		name               string
+		fields             fields
+		args               args
 		wantErr            bool
-		wantErrMessage string
+		wantErrMessage     string
 		wantRespErrMessage *assessment.AssessEvidenceResponse
 	}{
 		{
@@ -269,7 +269,7 @@ func TestAssessEvidences(t *testing.T) {
 			},
 			wantErr: false,
 			wantRespErrMessage: &assessment.AssessEvidenceResponse{
-				Status:        false,
+				Status:        assessment.AssessEvidenceResponse_FAILED,
 				StatusMessage: "invalid evidence: " + evidence.ErrToolIdMissing.Error(),
 			},
 		},
@@ -287,7 +287,7 @@ func TestAssessEvidences(t *testing.T) {
 			},
 			wantErr: false,
 			wantRespErrMessage: &assessment.AssessEvidenceResponse{
-				Status: true,
+				Status: assessment.AssessEvidenceResponse_ASSESSED,
 			},
 		},
 		{
@@ -304,7 +304,7 @@ func TestAssessEvidences(t *testing.T) {
 			},
 			wantErr: false,
 			wantRespErrMessage: &assessment.AssessEvidenceResponse{
-				Status:        false,
+				Status:        assessment.AssessEvidenceResponse_FAILED,
 				StatusMessage: "could not send evidence to the evidence store: could not initialize stream to Evidence Store",
 			},
 		},
@@ -320,14 +320,14 @@ func TestAssessEvidences(t *testing.T) {
 						ToolId:    "2134",
 						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
-			wantErr: true,
+			wantErr:        true,
 			wantErrMessage: "rpc error: code = Unknown desc = cannot send response to the client",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var (
-				err error
+				err                error
 				responseFromServer *assessment.AssessEvidenceResponse
 			)
 			s := Service{
@@ -347,7 +347,6 @@ func TestAssessEvidences(t *testing.T) {
 			} else if tt.args.errStreamToServer != nil {
 				err = s.AssessEvidences(tt.args.errStreamToServer)
 			}
-
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Got AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
@@ -416,7 +415,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 				resultHooks: []assessment.ResultHookFunc{firstHookFunction, secondHookFunction},
 			},
 			wantErr:  false,
-			wantResp: &assessment.AssessEvidenceResponse{Status: true},
+			wantResp: &assessment.AssessEvidenceResponse{Status: assessment.AssessEvidenceResponse_ASSESSED},
 		},
 	}
 
@@ -586,7 +585,6 @@ func (m *mockAssessmentServerStreamWithErr) Recv() (req *assessment.AssessEviden
 
 	return req, nil
 }
-
 
 func TestConvertTargetValue(t *testing.T) {
 	type args struct {

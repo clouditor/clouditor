@@ -54,8 +54,10 @@ service Assessment {
     };
   }
 
-  // Assesses stream of evidences sent by the discovery and returns a response stream. Part of the public API. Not exposed as REST.
-  rpc AssessEvidences(stream AssessEvidenceRequest) returns (stream AssessEvidenceResponse){};
+  // Assesses stream of evidences sent by the discovery and returns a response
+  // stream. Part of the public API. Not exposed as REST.
+  rpc AssessEvidences(stream AssessEvidenceRequest)
+      returns (stream AssessEvidenceResponse) {};
 
   // List all assessment results. Part of the public API, also exposed as REST.
   rpc ListAssessmentResults(ListAssessmentResultsRequest)
@@ -70,13 +72,20 @@ message ListAssessmentResultsRequest {}
 message ListAssessmentResultsResponse { repeated AssessmentResult results = 1; }
 
 message ConfigureAssessmentRequest {}
-message ConfigureAssessmentResponse{}
+message ConfigureAssessmentResponse {}
 
 message TriggerAssessmentRequest { string someOption = 1; }
 
 message AssessEvidenceRequest { Evidence evidence = 1; }
 message AssessEvidenceResponse {
-  bool status = 1;
+  enum AssessmentStatus {
+    UNKNOWN = 0;
+    WAITING_FOR_RELATED = 1;
+    ASSESSED = 2;
+    FAILED = 3;
+  }
+  AssessmentStatus status = 1;
+
   string statusMessage = 2;
 }
 

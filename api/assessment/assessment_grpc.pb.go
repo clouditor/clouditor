@@ -28,7 +28,8 @@ type AssessmentClient interface {
 	// Assesses the evidence sent by the discovery. Part of the public API, also
 	// exposed as REST.
 	AssessEvidence(ctx context.Context, in *AssessEvidenceRequest, opts ...grpc.CallOption) (*AssessEvidenceResponse, error)
-	// Assesses stream of evidences sent by the discovery and returns a response stream. Part of the public API. Not exposed as REST.
+	// Assesses stream of evidences sent by the discovery and returns a response
+	// stream. Part of the public API. Not exposed as REST.
 	AssessEvidences(ctx context.Context, opts ...grpc.CallOption) (Assessment_AssessEvidencesClient, error)
 	// List all assessment results. Part of the public API, also exposed as REST.
 	ListAssessmentResults(ctx context.Context, in *ListAssessmentResultsRequest, opts ...grpc.CallOption) (*ListAssessmentResultsResponse, error)
@@ -109,7 +110,8 @@ type AssessmentServer interface {
 	// Assesses the evidence sent by the discovery. Part of the public API, also
 	// exposed as REST.
 	AssessEvidence(context.Context, *AssessEvidenceRequest) (*AssessEvidenceResponse, error)
-	// Assesses stream of evidences sent by the discovery and returns a response stream. Part of the public API. Not exposed as REST.
+	// Assesses stream of evidences sent by the discovery and returns a response
+	// stream. Part of the public API. Not exposed as REST.
 	AssessEvidences(Assessment_AssessEvidencesServer) error
 	// List all assessment results. Part of the public API, also exposed as REST.
 	ListAssessmentResults(context.Context, *ListAssessmentResultsRequest) (*ListAssessmentResultsResponse, error)

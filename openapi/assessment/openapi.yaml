@@ -49,7 +49,8 @@ components:
             type: object
             properties:
                 status:
-                    type: boolean
+                    type: integer
+                    format: enum
                 statusMessage:
                     type: string
         AssessmentResult:
