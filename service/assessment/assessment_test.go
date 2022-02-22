@@ -308,7 +308,7 @@ func TestAssessEvidences(t *testing.T) {
 			wantErr: false,
 			wantRespErrMessage: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "could not send evidence to the evidence store: could not initialize stream to Evidence Store",
+				StatusMessage: "could not initialize connection",
 			},
 		},
 		{
