@@ -230,7 +230,9 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Lists all a metric configurations (target value and operator) for a specific service and metric ID
+            description: |-
+                Lists all a metric configurations (target value and operator) for a
+                 specific service ID
             operationId: Orchestrator_ListMetricConfigurations
             parameters:
                 - name: serviceId
@@ -249,7 +251,9 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Retrieves a metric configuration (target value and operator) for a specific service and metric ID
+            description: |-
+                Retrieves a metric configuration (target value and operator) for a specific
+                 service and metric ID
             operationId: Orchestrator_GetMetricConfiguration
             parameters:
                 - name: serviceId
@@ -272,7 +276,9 @@ paths:
         put:
             tags:
                 - Orchestrator
-            description: Updates a metric configuration (target value and operator) for a specific service and metric ID
+            description: |-
+                Updates a metric configuration (target value and operator) for a specific
+                 service and metric ID
             operationId: Orchestrator_UpdateMetricConfiguration
             parameters:
                 - name: serviceId
@@ -337,29 +343,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListMetricsResponse'
-        put:
-            tags:
-                - Orchestrator
-            description: Updates an existing metric
-            operationId: Orchestrator_UpdateMetric
-            parameters:
-                - name: metricId
-                  in: query
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/Metric'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Metric'
         post:
             tags:
                 - Orchestrator
@@ -397,6 +380,73 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Metric'
+        put:
+            tags:
+                - Orchestrator
+            description: Updates an existing metric
+            operationId: Orchestrator_UpdateMetric
+            parameters:
+                - name: metricId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Metric'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Metric'
+    /v1/orchestrator/metrics/{metricId}/implementation:
+        get:
+            tags:
+                - Orchestrator
+            description: Returns the metric implementation of the passed metric id
+            operationId: Orchestrator_GetMetricImplementation
+            parameters:
+                - name: metricId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MetricImplementation'
+        put:
+            tags:
+                - Orchestrator
+            description: Updates an existing metric implementation
+            operationId: Orchestrator_UpddateMetricImplementation
+            parameters:
+                - name: metricId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/MetricImplementation'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MetricImplementation'
 components:
     schemas:
         AllowedValues:
@@ -538,6 +588,17 @@ components:
                     type: boolean
                     description: Whether this configuration is a default configuration
             description: Defines the operator and a target value for an individual metric
+        MetricImplementation:
+            type: object
+            properties:
+                language:
+                    type: integer
+                    description: The language this metric is implemented in
+                    format: enum
+                code:
+                    type: string
+                    description: The actual implementation
+            description: MetricImplementation defines the implementation of an individual metric.
         MinMax:
             type: object
             properties:
