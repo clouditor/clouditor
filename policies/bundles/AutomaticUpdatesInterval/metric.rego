@@ -1,4 +1,6 @@
-package clouditor
+package clouditor.metrics.automatic_updates_interval
+
+import data.clouditor.compare
 
 default applicable = false
 

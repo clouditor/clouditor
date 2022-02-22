@@ -254,7 +254,6 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 			return status.Errorf(codes.Unknown, "cannot stream response to the client: %v", err)
 		}
 	}
-
 }
 
 // ListAssessmentResults is a method implementation of the orchestrator interface

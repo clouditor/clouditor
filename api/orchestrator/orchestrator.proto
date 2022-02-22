@@ -193,7 +193,7 @@ service Orchestrator {
     };
   }
 
-  // Lists all a metric configurations (target value and operator) for a specific service and metric ID
+  // Lists all a metric configurations (target value and operator) for a specific service ID
   rpc ListMetricConfigurations(ListMetricConfigurationRequest)
       returns (ListMetricConfigurationResponse) {
     option (google.api.http) = {

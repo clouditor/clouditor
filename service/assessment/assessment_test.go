@@ -40,6 +40,7 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/voc"
+
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -84,6 +85,7 @@ func TestNewService(t *testing.T) {
 				results:              make(map[string]*assessment.AssessmentResult),
 				evidenceStoreAddress: "localhost:9090",
 				orchestratorAddress:  "localhost:9090",
+				cachedConfigurations: make(map[string]cachedConfiguration),
 			},
 		},
 		{
@@ -98,6 +100,7 @@ func TestNewService(t *testing.T) {
 				results:              make(map[string]*assessment.AssessmentResult),
 				evidenceStoreAddress: "localhost:9091",
 				orchestratorAddress:  "localhost:9092",
+				cachedConfigurations: make(map[string]cachedConfiguration),
 			},
 		},
 	}
@@ -333,6 +336,7 @@ func TestAssessEvidences(t *testing.T) {
 			s := Service{
 				resultHooks:                   tt.fields.ResultHooks,
 				results:                       tt.fields.results,
+				cachedConfigurations:          make(map[string]cachedConfiguration),
 				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
 			}
 
@@ -767,7 +771,6 @@ func TestHandleEvidence(t *testing.T) {
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Error(t, err)
 				// Check if error message contains "empty" (list of types)
-				assert.Contains(t, err.Error(), "Orchestrator")
 				assert.Contains(t, err.Error(), "Unavailable desc")
 				return true
 			},

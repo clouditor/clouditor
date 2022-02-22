@@ -1,4 +1,6 @@
-package clouditor
+package clouditor.metrics.single_sign_on_enabled
+
+import data.clouditor.compare
 
 default applicable = false
 

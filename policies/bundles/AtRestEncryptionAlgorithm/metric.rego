@@ -1,4 +1,6 @@
-package clouditor
+package clouditor.metrics.at_rest_encryption_algorithm
+
+import data.clouditor.compare
 
 default applicable = false
 
