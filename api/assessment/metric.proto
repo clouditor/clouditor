@@ -105,7 +105,7 @@ message MetricConfiguration {
 // MetricImplementation defines the implementation of an individual metric.
 message MetricImplementation {
   enum Language {
-    UNKNOWN = 0;
+    LANGUAGE_UNSPECIFIED = 0;
     REGO = 1;
   };
 
