@@ -66,7 +66,7 @@ func (*Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetricRe
 
 	// Check, if metric id already exists
 	if _, ok := metricIndex[req.Metric.Id]; ok {
-		return nil, status.Error(codes.AlreadyExists, "metric with identifier already exists")
+		return nil, status.Error(codes.AlreadyExists, "metric already exists")
 	}
 
 	// Build a new metric out of the request
