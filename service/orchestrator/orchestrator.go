@@ -192,7 +192,6 @@ func (s *Service) ListMetricConfigurations(ctx context.Context, req *orchestrato
 
 // StoreAssessmentResult is a method implementation of the orchestrator interface: It receives an assessment result and stores it
 func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.StoreAssessmentResultRequest) (resp *orchestrator.StoreAssessmentResultResponse, err error) {
-
 	_, err = req.Result.Validate()
 
 	if err != nil {
