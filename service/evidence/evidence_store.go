@@ -29,6 +29,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 	"sync"
 
 	"clouditor.io/clouditor/api/evidence"
@@ -68,8 +69,8 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 
 	_, err = req.Evidence.Validate()
 	if err != nil {
-		log.Errorf("Invalid evidence: %v", err)
 		newError := fmt.Errorf("invalid evidence: %w", err)
+		log.Errorf(strings.Title(newError.Error()))
 
 		go s.informHooks(nil, newError)
 
@@ -108,8 +109,9 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 			return nil
 		}
 		if err != nil {
-			log.Errorf("EvidenceStore: Cannot receive stream request: %v", err)
-			return status.Errorf(codes.Unknown, "cannot receive stream request: %v", err)
+			newError := fmt.Errorf("cannot receive stream request: %w", err)
+			log.Errorf(strings.Title(newError.Error()))
+			return status.Errorf(codes.Unknown, "%v", newError)
 		}
 		// Call StoreEvidence() for storing a single evidence
 		evidenceRequest := &evidence.StoreEvidenceRequest{
@@ -123,8 +125,9 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 		// Send response back to the client
 		err = stream.Send(res)
 		if err != nil {
-			log.Errorf("Error when response was sent to the client: %v", res)
-			return status.Errorf(codes.Unknown, "cannot send response to the client: %v", err)
+			newError := fmt.Errorf("cannot send response to the client: %w", err)
+			log.Errorf(strings.Title(newError.Error()))
+			return status.Errorf(codes.Unknown, "%v", newError)
 		}
 	}
 }

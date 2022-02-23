@@ -32,6 +32,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"strings"
 	"sync"
 
 	"clouditor.io/clouditor/persistence/inmemory"
@@ -162,7 +163,10 @@ func (s *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.Ge
 		return config, nil
 	}
 
-	return nil, status.Errorf(codes.NotFound, "could not find metric configuration for metric %s in service %s", req.MetricId, req.ServiceId)
+	newError := fmt.Errorf("could not find metric configuration for metric %s in service %s", req.MetricId, req.ServiceId)
+	log.Errorf(newError.Error())
+
+	return nil, status.Errorf(codes.NotFound, "%v", newError)
 }
 
 // ListMetricConfigurations retrieves a list of MetricConfiguration objects for a particular target
@@ -181,6 +185,7 @@ func (s *Service) ListMetricConfigurations(ctx context.Context, req *orchestrato
 		config, err := s.GetMetricConfiguration(ctx, &orchestrator.GetMetricConfigurationRequest{ServiceId: req.ServiceId, MetricId: metricId})
 
 		if err != nil {
+			log.Errorf("Error getting metric configuration: %v", err)
 			return nil, err
 		}
 
@@ -196,8 +201,8 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 	_, err = req.Result.Validate()
 
 	if err != nil {
-		log.Errorf("Invalid assessment result: %v", err)
 		newError := fmt.Errorf("invalid assessment result: %w", err)
+		log.Errorf(strings.Title(newError.Error()))
 
 		go s.informHook(nil, newError)
 
@@ -206,7 +211,7 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 			StatusMessage: newError.Error(),
 		}
 
-		return resp, status.Errorf(codes.InvalidArgument, "invalid assessment result")
+		return resp, status.Errorf(codes.InvalidArgument, "%v", newError)
 	}
 
 	s.results[req.Result.Id] = req.Result
@@ -235,8 +240,9 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 		}
 
 		if err != nil {
-			log.Errorf("Orchestrator: Cannot receive stream request: %v", err)
-			return status.Errorf(codes.Unknown, "cannot receive stream request: %v", err)
+			newError := fmt.Errorf("cannot receive stream request: %w", err)
+			log.Errorf(strings.Title(newError.Error()))
+			return status.Errorf(codes.Unknown, "%v", newError)
 		}
 
 		// Call StoreAssessmentResult() for storing a single assessment
@@ -250,8 +256,9 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 
 		err = stream.Send(res)
 		if err != nil {
-			log.Errorf("Error when response was sent to the client: %v", res)
-			return status.Errorf(codes.Unknown, "cannot stream response to the client: %v", err)
+			newError := fmt.Errorf("cannot stream response to the client: %w", err)
+			log.Errorf(strings.Title(newError.Error()))
+			return status.Errorf(codes.Unknown, "%v", newError.Error())
 		}
 	}
 }

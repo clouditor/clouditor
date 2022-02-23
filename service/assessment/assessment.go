@@ -28,8 +28,10 @@ package assessment
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"strings"
 	"sync"
 	"time"
 
@@ -159,9 +161,8 @@ func (s *Service) Authorizer() api.Authorizer {
 func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
 	resourceId, err := req.Evidence.Validate()
 	if err != nil {
-		log.Errorf("Invalid evidence: %v", err)
 		newError := fmt.Errorf("invalid evidence: %w", err)
-
+		log.Errorf(strings.Title(newError.Error()))
 		s.informHooks(nil, newError)
 
 		res = &assessment.AssessEvidenceResponse{
@@ -169,7 +170,7 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 			StatusMessage: newError.Error(),
 		}
 
-		return res, status.Error(codes.InvalidArgument, "invalid evidence")
+		return res, status.Errorf(codes.InvalidArgument, "%v", newError)
 	}
 
 	// Assess evidence
@@ -181,9 +182,10 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 			StatusMessage: err.Error(),
 		}
 
-		log.Errorf("Error while handling evidence: %v", err)
+		newError := errors.New("error while handling evidence")
+		log.Errorf("%s: %v", strings.Title(newError.Error()), err)
 
-		return res, status.Error(codes.Internal, "error while handling evidence")
+		return res, status.Errorf(codes.Internal, "%v", newError)
 	}
 
 	res = &assessment.AssessEvidenceResponse{
@@ -210,8 +212,9 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 			return nil
 		}
 		if err != nil {
-			log.Errorf("Assessment: Cannot receive stream request: %v", err)
-			return status.Errorf(codes.Unknown, "cannot receive stream request: %v", err)
+			newError := fmt.Errorf("cannot receive stream request: %w", err)
+			log.Errorf(strings.Title(newError.Error()))
+			return status.Errorf(codes.Unknown, "%v", newError)
 		}
 
 		// Call AssessEvidence for assessing a single evidence
@@ -226,8 +229,9 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 		// Send response back to the client
 		err = stream.Send(res)
 		if err != nil {
-			log.Errorf("Error when response was sent to the client: %v", res)
-			return status.Errorf(codes.Unknown, "cannot send response to the client: %v", err)
+			newError := fmt.Errorf("cannot send response to the client: %w", err)
+			log.Errorf(strings.Title(newError.Error()))
+			return status.Errorf(codes.Unknown, "%v", newError)
 		}
 	}
 }

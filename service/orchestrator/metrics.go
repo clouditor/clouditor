@@ -28,7 +28,9 @@ package orchestrator
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"strings"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
@@ -60,8 +62,9 @@ func (*Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetricRe
 	// Validate the metric request
 	err = req.Metric.Validate(assessment.WithMetricRequiresId())
 	if err != nil {
-		log.Errorf("Validation of metric failed: %v", err)
-		return nil, status.Error(codes.InvalidArgument, "validation of metric failed")
+		newError := errors.New("validation of metric failed")
+		log.Errorf("%s: %v", strings.Title(newError.Error()), err)
+		return nil, status.Errorf(codes.InvalidArgument, "%v", newError)
 	}
 
 	// Check, if metric id already exists
@@ -86,14 +89,16 @@ func (*Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetricRe
 	// Validate the metric request
 	err = req.Metric.Validate()
 	if err != nil {
-		log.Errorf("Validation of metric failed: %v", err)
-		return nil, status.Errorf(codes.InvalidArgument, "validation of metric failed: %v", err)
+		newError := fmt.Errorf("validation of metric failed: %w", err)
+		log.Errorf(strings.Title(newError.Error()))
+		return nil, status.Errorf(codes.InvalidArgument, "%v", newError)
 	}
 
 	// Check, if metric exists according to req.MetricId
 	if metric, ok = metricIndex[req.MetricId]; !ok {
-		log.Errorf("Metric with identifier %s does not exist", req.MetricId)
-		return nil, status.Errorf(codes.NotFound, "metric with identifier %s does not exist", req.MetricId)
+		newError := fmt.Errorf("metric with identifier %s does not exist", req.MetricId)
+		log.Errorf(strings.Title(newError.Error()))
+		return nil, status.Errorf(codes.NotFound, "%v", newError)
 	}
 
 	// Update metric
