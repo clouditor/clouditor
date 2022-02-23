@@ -175,8 +175,7 @@ func initConfig() {
 }
 
 func doCmd(_ *cobra.Command, _ []string) (err error) {
-	//log.Logger.Formatter = &logrus.TextFormatter{ForceColors: true}
-	log.Logger.Formatter = ourFormatter{&logrus.TextFormatter{ForceColors: true}}
+	log.Logger.Formatter = CapitalizeFormatter{&logrus.TextFormatter{ForceColors: true}}
 
 	log.Info("Welcome to new Clouditor 2.0")
 
@@ -318,16 +317,16 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	return nil
 }
 
-type ourFormatter struct {
+type CapitalizeFormatter struct {
 	logrus.Formatter
 }
 
-func (o ourFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+func (f CapitalizeFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	msg := entry.Message
 	msgAsRune := []rune(msg)
 	msgAsRune[0] = unicode.ToUpper(msgAsRune[0])
 	entry.Message = string(msgAsRune)
-	return o.Formatter.Format(entry)
+	return f.Formatter.Format(entry)
 }
 
 func main() {
