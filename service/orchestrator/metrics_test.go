@@ -103,7 +103,7 @@ func TestService_CreateMetric(t *testing.T) {
 			},
 			wantMetric:     nil,
 			wantErr:        true,
-			wantErrMessage: "rpc error: code = AlreadyExists desc = metric with identifier already exists",
+			wantErrMessage: "rpc error: code = AlreadyExists desc = metric already exists",
 		},
 	}
 
