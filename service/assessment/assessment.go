@@ -26,21 +26,19 @@
 package assessment
 
 import (
-	"context"
-	"encoding/json"
-	"errors"
-	"fmt"
-	"io"
-	"strings"
-	"sync"
-	"time"
-
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/policies"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"sync"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
@@ -161,8 +159,9 @@ func (s *Service) Authorizer() api.Authorizer {
 func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
 	resourceId, err := req.Evidence.Validate()
 	if err != nil {
+		log.Errorf("Invalid evidence: %v", err)
 		newError := fmt.Errorf("invalid evidence: %w", err)
-		log.Errorf(strings.Title(newError.Error()))
+		log.Error(newError.Error())
 		s.informHooks(nil, newError)
 
 		res = &assessment.AssessEvidenceResponse{
@@ -183,7 +182,7 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 		}
 
 		newError := errors.New("error while handling evidence")
-		log.Errorf("%s: %v", strings.Title(newError.Error()), err)
+		log.Error(newError.Error())
 
 		return res, status.Errorf(codes.Internal, "%v", newError)
 	}
@@ -213,7 +212,7 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 		}
 		if err != nil {
 			newError := fmt.Errorf("cannot receive stream request: %w", err)
-			log.Errorf(strings.Title(newError.Error()))
+			log.Error(newError.Error())
 			return status.Errorf(codes.Unknown, "%v", newError)
 		}
 
@@ -230,7 +229,7 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 		err = stream.Send(res)
 		if err != nil {
 			newError := fmt.Errorf("cannot send response to the client: %w", err)
-			log.Errorf(strings.Title(newError.Error()))
+			log.Error(newError.Error())
 			return status.Errorf(codes.Unknown, "%v", newError)
 		}
 	}

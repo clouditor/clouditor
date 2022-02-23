@@ -29,7 +29,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"strings"
 	"sync"
 
 	"clouditor.io/clouditor/api/evidence"
@@ -70,7 +69,7 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 	_, err = req.Evidence.Validate()
 	if err != nil {
 		newError := fmt.Errorf("invalid evidence: %w", err)
-		log.Errorf(strings.Title(newError.Error()))
+		log.Error(newError.Error())
 
 		go s.informHooks(nil, newError)
 
@@ -110,7 +109,7 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 		}
 		if err != nil {
 			newError := fmt.Errorf("cannot receive stream request: %w", err)
-			log.Errorf(strings.Title(newError.Error()))
+			log.Error(newError.Error())
 			return status.Errorf(codes.Unknown, "%v", newError)
 		}
 		// Call StoreEvidence() for storing a single evidence
@@ -126,7 +125,7 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 		err = stream.Send(res)
 		if err != nil {
 			newError := fmt.Errorf("cannot send response to the client: %w", err)
-			log.Errorf(strings.Title(newError.Error()))
+			log.Error(newError.Error())
 			return status.Errorf(codes.Unknown, "%v", newError)
 		}
 	}
