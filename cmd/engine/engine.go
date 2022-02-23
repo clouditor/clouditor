@@ -33,9 +33,9 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"unicode"
 
 	"clouditor.io/clouditor/api"
+	"clouditor.io/clouditor/logging"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/persistence/inmemory"
@@ -175,7 +175,7 @@ func initConfig() {
 }
 
 func doCmd(_ *cobra.Command, _ []string) (err error) {
-	log.Logger.Formatter = CapitalizeFormatter{&logrus.TextFormatter{ForceColors: true}}
+	log.Logger.Formatter = logging.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true}}
 
 	log.Info("Welcome to new Clouditor 2.0")
 
@@ -315,18 +315,6 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	}
 
 	return nil
-}
-
-type CapitalizeFormatter struct {
-	logrus.Formatter
-}
-
-func (f CapitalizeFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	msg := entry.Message
-	msgAsRune := []rune(msg)
-	msgAsRune[0] = unicode.ToUpper(msgAsRune[0])
-	entry.Message = string(msgAsRune)
-	return f.Formatter.Format(entry)
 }
 
 func main() {

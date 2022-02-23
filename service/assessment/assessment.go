@@ -30,6 +30,7 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/logging"
 	"clouditor.io/clouditor/policies"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"context"
@@ -53,6 +54,10 @@ var log *logrus.Entry
 
 func init() {
 	log = logrus.WithField("component", "assessment")
+	log.Logger.Formatter = logging.CapitalizeFormatter{Formatter: &logrus.TextFormatter{
+		ForceColors:   true,
+		FullTimestamp: true,
+	}}
 }
 
 const (
