@@ -159,9 +159,8 @@ func (s *Service) Authorizer() api.Authorizer {
 func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
 	resourceId, err := req.Evidence.Validate()
 	if err != nil {
-		log.Errorf("Invalid evidence: %v", err)
 		newError := fmt.Errorf("invalid evidence: %w", err)
-		log.Error(newError.Error())
+		log.Error(newError)
 		s.informHooks(nil, newError)
 
 		res = &assessment.AssessEvidenceResponse{
@@ -182,7 +181,7 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 		}
 
 		newError := errors.New("error while handling evidence")
-		log.Error(newError.Error())
+		log.Error(newError)
 
 		return res, status.Errorf(codes.Internal, "%v", newError)
 	}
@@ -212,7 +211,7 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 		}
 		if err != nil {
 			newError := fmt.Errorf("cannot receive stream request: %w", err)
-			log.Error(newError.Error())
+			log.Error(newError)
 			return status.Errorf(codes.Unknown, "%v", newError)
 		}
 
@@ -229,7 +228,7 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 		err = stream.Send(res)
 		if err != nil {
 			newError := fmt.Errorf("cannot send response to the client: %w", err)
-			log.Error(newError.Error())
+			log.Error(newError)
 			return status.Errorf(codes.Unknown, "%v", newError)
 		}
 	}
@@ -243,7 +242,7 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 	evaluations, err := policies.RunEvidence(evidence, s)
 	if err != nil {
 		newError := fmt.Errorf("could not evaluate evidence: %w", err)
-		log.Error(newError.Error())
+		log.Error(newError)
 
 		go s.informHooks(nil, newError)
 

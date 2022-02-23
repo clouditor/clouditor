@@ -61,7 +61,7 @@ func (*Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetricRe
 	err = req.Metric.Validate(assessment.WithMetricRequiresId())
 	if err != nil {
 		newError := errors.New("validation of metric failed")
-		log.Error(newError.Error())
+		log.Error(newError)
 		return nil, status.Errorf(codes.InvalidArgument, "%v", newError)
 	}
 
@@ -88,14 +88,14 @@ func (*Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetricRe
 	err = req.Metric.Validate()
 	if err != nil {
 		newError := fmt.Errorf("validation of metric failed: %w", err)
-		log.Error(newError.Error())
+		log.Error(newError)
 		return nil, status.Errorf(codes.InvalidArgument, "%v", newError)
 	}
 
 	// Check, if metric exists according to req.MetricId
 	if metric, ok = metricIndex[req.MetricId]; !ok {
 		newError := fmt.Errorf("metric with identifier %s does not exist", req.MetricId)
-		log.Error(newError.Error())
+		log.Error(newError)
 		return nil, status.Errorf(codes.NotFound, "%v", newError)
 	}
 

@@ -163,7 +163,7 @@ func (s *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.Ge
 	}
 
 	newError := fmt.Errorf("could not find metric configuration for metric %s in service %s", req.MetricId, req.ServiceId)
-	log.Error(newError.Error())
+	log.Error(newError)
 
 	return nil, status.Errorf(codes.NotFound, "%v", newError)
 }
@@ -200,7 +200,7 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 
 	if err != nil {
 		newError := fmt.Errorf("invalid assessment result: %w", err)
-		log.Error(newError.Error())
+		log.Error(newError)
 
 		go s.informHook(nil, newError)
 
@@ -239,7 +239,7 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 
 		if err != nil {
 			newError := fmt.Errorf("cannot receive stream request: %w", err)
-			log.Error(newError.Error())
+			log.Error(newError)
 			return status.Errorf(codes.Unknown, "%v", newError)
 		}
 
@@ -255,7 +255,7 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 		err = stream.Send(res)
 		if err != nil {
 			newError := fmt.Errorf("cannot stream response to the client: %w", err)
-			log.Error(newError.Error())
+			log.Error(newError)
 			return status.Errorf(codes.Unknown, "%v", newError.Error())
 		}
 	}
