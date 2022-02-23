@@ -240,7 +240,7 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 	evaluations, err := policies.RunEvidence(evidence, s)
 	if err != nil {
 		newError := fmt.Errorf("could not evaluate evidence: %w", err)
-		log.Error(newError.Error())
+		log.Error(newError)
 
 		go s.informHooks(nil, newError)
 
