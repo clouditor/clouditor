@@ -210,7 +210,7 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 			return nil
 		}
 		if err != nil {
-			log.Errorf("Assessment: Cannot receive stream request: %v", err)
+			log.Errorf("Cannot receive stream request: %v", err)
 			return status.Errorf(codes.Unknown, "cannot receive stream request: %v", err)
 		}
 
