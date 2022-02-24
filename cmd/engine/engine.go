@@ -26,6 +26,7 @@
 package main
 
 import (
+	"clouditor.io/clouditor/logging"
 	"context"
 	"errors"
 	"fmt"
@@ -174,7 +175,7 @@ func initConfig() {
 }
 
 func doCmd(_ *cobra.Command, _ []string) (err error) {
-	log.Logger.Formatter = &logrus.TextFormatter{ForceColors: true}
+	log.Logger.Formatter = logging.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true}}
 
 	log.Info("Welcome to new Clouditor 2.0")
 
