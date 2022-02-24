@@ -520,11 +520,11 @@ type mockStreamerWithRecvErr struct {
 	SentFromServer chan *evidence.StoreEvidenceResponse
 }
 
-func (m mockStreamerWithRecvErr) Send(response *evidence.StoreEvidenceResponse) error {
+func (mockStreamerWithRecvErr) Send(*evidence.StoreEvidenceResponse) error {
 	panic("implement me")
 }
 
-func (m mockStreamerWithRecvErr) Recv() (*evidence.StoreEvidenceRequest, error) {
+func (mockStreamerWithRecvErr) Recv() (*evidence.StoreEvidenceRequest, error) {
 
 	err := errors.New("Recv()-error")
 
@@ -549,7 +549,7 @@ type mockStreamerWithSendErr struct {
 	SentFromServer chan *evidence.StoreEvidenceResponse
 }
 
-func (m *mockStreamerWithSendErr) Send(response *evidence.StoreEvidenceResponse) error {
+func (*mockStreamerWithSendErr) Send(*evidence.StoreEvidenceResponse) error {
 	return errors.New("Send()-err")
 }
 
