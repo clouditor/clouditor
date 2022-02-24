@@ -159,23 +159,26 @@ func TestStoreEvidences(t *testing.T) {
 	}
 
 	type args struct {
-		stream *mockStreamer
+		streamToServer            *mockStreamer
+		streamToClientWithSendErr *mockStreamerWithSendErr
+		streamToServerWithRecvErr *mockStreamerWithRecvErr
 	}
 
 	tests := []struct {
-		name           string
-		fields         fields
-		args           args
-		wantErr        bool
-		wantErrMessage *evidence.StoreEvidenceResponse
+		name            string
+		fields          fields
+		args            args
+		wantErr         bool
+		wantErrMessage  string
+		wantRespMessage *evidence.StoreEvidenceResponse
 	}{
 		{
 			name:   "Store 1 evidence to the map",
 			fields: fields{count: 1},
 			args: args{
-				stream: createMockStream(createStoreEvidenceRequestMocks(1))},
+				streamToServer: createMockStream(createStoreEvidenceRequestMocks(1))},
 			wantErr: false,
-			wantErrMessage: &evidence.StoreEvidenceResponse{
+			wantRespMessage: &evidence.StoreEvidenceResponse{
 				Status: true,
 			},
 		},
@@ -183,9 +186,9 @@ func TestStoreEvidences(t *testing.T) {
 			name:   "Store 2 evidences to the map",
 			fields: fields{count: 2},
 			args: args{
-				stream: createMockStream(createStoreEvidenceRequestMocks(2))},
+				streamToServer: createMockStream(createStoreEvidenceRequestMocks(2))},
 			wantErr: false,
-			wantErrMessage: &evidence.StoreEvidenceResponse{
+			wantRespMessage: &evidence.StoreEvidenceResponse{
 				Status: true,
 			},
 		},
@@ -193,7 +196,7 @@ func TestStoreEvidences(t *testing.T) {
 			name:   "Store invalid evidence to the map",
 			fields: fields{count: 1},
 			args: args{
-				stream: createMockStream([]*evidence.StoreEvidenceRequest{
+				streamToServer: createMockStream([]*evidence.StoreEvidenceRequest{
 					{
 						Evidence: &evidence.Evidence{
 							Id: uuid.NewString(),
@@ -212,94 +215,53 @@ func TestStoreEvidences(t *testing.T) {
 					},
 				})},
 			wantErr: false,
-			wantErrMessage: &evidence.StoreEvidenceResponse{
+			wantRespMessage: &evidence.StoreEvidenceResponse{
 				Status:        false,
 				StatusMessage: "invalid evidence:",
 			},
 		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := NewService()
-
-			if err := s.StoreEvidences(tt.args.stream); (err != nil) != tt.wantErr {
-				t.Errorf("StoreEvidences() error = %v, wantErr %v", err, tt.wantErr)
-			} else {
-				close(tt.args.stream.SentFromServer)
-				assert.Equal(t, tt.fields.count, len(tt.args.stream.SentFromServer))
-				assert.Nil(t, err)
-
-				for elem := range tt.args.stream.SentFromServer {
-					assert.Contains(t, elem.StatusMessage, tt.wantErrMessage.StatusMessage)
-				}
-			}
-		})
-	}
-}
-
-func TestStoreEvidencesWithMockStreamerWithRecvErr(t *testing.T) {
-	type args struct {
-		stream *mockStreamerWithRecvErr
-	}
-
-	tests := []struct {
-		name           string
-		args           args
-		wantErr        bool
-		wantErrMessage string
-	}{
 		{
-			name: "Stream recv error",
+			name: "Error in streamToServer to server - Recv()-err",
 			args: args{
-				stream: createMockStreamWithRecvErr(createStoreEvidenceRequestMocks(1))},
+				streamToServerWithRecvErr: createMockStreamWithRecvErr(createStoreEvidenceRequestMocks(1))},
 			wantErr:        true,
-			wantErrMessage: "cannot receive stream request:",
+			wantErrMessage: "rpc error: code = Unknown desc = cannot receive stream request",
 		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := NewService()
-
-			if err := s.StoreEvidences(tt.args.stream); (err != nil) != tt.wantErr {
-				t.Errorf("StoreEvidences() error = %v, wantErr %v", err, tt.wantErr)
-			} else {
-				close(tt.args.stream.SentFromServer)
-				assert.Contains(t, err.Error(), tt.wantErrMessage)
-
-			}
-		})
-	}
-}
-
-func TestStoreEvidencesWithMockStreamerWithSendErr(t *testing.T) {
-	type args struct {
-		stream *mockStreamerWithSendErr
-	}
-
-	tests := []struct {
-		name           string
-		args           args
-		wantErr        bool
-		wantErrMessage string
-	}{
 		{
 			name: "Stream send error",
 			args: args{
-				stream: createMockStreamWithSendErr(createStoreEvidenceRequestMocks(1))},
+				streamToClientWithSendErr: createMockStreamWithSendErr(createStoreEvidenceRequestMocks(1))},
 			wantErr:        true,
-			wantErrMessage: "cannot send response to the client:",
+			wantErrMessage: "rpc error: code = Unknown desc = cannot send response to the client:",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			var (
+				err                error
+				responseFromServer *evidence.StoreEvidenceResponse
+			)
 			s := NewService()
 
-			if err := s.StoreEvidences(tt.args.stream); (err != nil) != tt.wantErr {
-				t.Errorf("StoreEvidences() error = %v, wantErr %v", err, tt.wantErr)
-			} else {
-				close(tt.args.stream.SentFromServer)
-				assert.Contains(t, err.Error(), tt.wantErrMessage)
+			if tt.args.streamToServer != nil {
+				err = s.StoreEvidences(tt.args.streamToServer)
+				responseFromServer = <-tt.args.streamToServer.SentFromServer
+			} else if tt.args.streamToClientWithSendErr != nil {
+				err = s.StoreEvidences(tt.args.streamToClientWithSendErr)
+			} else if tt.args.streamToServerWithRecvErr != nil {
+				err = s.StoreEvidences(tt.args.streamToServerWithRecvErr)
+			}
 
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Got AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if !tt.wantErr {
+				assert.Nil(t, err)
+				assert.Contains(t, responseFromServer.StatusMessage, tt.wantRespMessage.StatusMessage)
+			} else {
+				assert.Contains(t, err.Error(), tt.wantErrMessage)
 			}
 		})
 	}

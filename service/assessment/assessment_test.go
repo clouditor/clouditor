@@ -253,12 +253,12 @@ func TestAssessEvidences(t *testing.T) {
 		streamToServerWithRecvErr *mockAssessmentServerStreamWithRecvErr
 	}
 	tests := []struct {
-		name               string
-		fields             fields
-		args               args
-		wantErr            bool
-		wantErrMessage     string
-		wantRespErrMessage *assessment.AssessEvidenceResponse
+		name            string
+		fields          fields
+		args            args
+		wantErr         bool
+		wantErrMessage  string
+		wantRespMessage *assessment.AssessEvidenceResponse
 	}{
 		{
 			name: "Missing toolId",
@@ -272,7 +272,7 @@ func TestAssessEvidences(t *testing.T) {
 						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
 			wantErr: false,
-			wantRespErrMessage: &assessment.AssessEvidenceResponse{
+			wantRespMessage: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
 				StatusMessage: "invalid evidence: " + evidence.ErrToolIdMissing.Error(),
 			},
@@ -290,7 +290,7 @@ func TestAssessEvidences(t *testing.T) {
 						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
 			wantErr: false,
-			wantRespErrMessage: &assessment.AssessEvidenceResponse{
+			wantRespMessage: &assessment.AssessEvidenceResponse{
 				Status: assessment.AssessEvidenceResponse_ASSESSED,
 			},
 		},
@@ -307,7 +307,7 @@ func TestAssessEvidences(t *testing.T) {
 						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
 			wantErr: false,
-			wantRespErrMessage: &assessment.AssessEvidenceResponse{
+			wantRespMessage: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
 				StatusMessage: "could not initialize connection",
 			},
@@ -377,7 +377,7 @@ func TestAssessEvidences(t *testing.T) {
 
 			if !tt.wantErr {
 				assert.Nil(t, err)
-				assert.Contains(t, responseFromServer.StatusMessage, tt.wantRespErrMessage.StatusMessage)
+				assert.Contains(t, responseFromServer.StatusMessage, tt.wantRespMessage.StatusMessage)
 			} else {
 				assert.Contains(t, err.Error(), tt.wantErrMessage)
 			}
