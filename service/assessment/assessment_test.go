@@ -248,8 +248,9 @@ func TestAssessEvidences(t *testing.T) {
 		UnimplementedAssessmentServer assessment.UnimplementedAssessmentServer
 	}
 	type args struct {
-		streamToServer    *mockAssessmentServerStream
-		errStreamToServer *mockAssessmentServerStreamWithErr
+		streamToServer            *mockAssessmentServerStream
+		streamToClientWithSendErr *mockAssessmentServerStreamWithSendErr
+		streamToServerWithRecvErr *mockAssessmentServerStreamWithRecvErr
 	}
 	tests := []struct {
 		name               string
@@ -312,12 +313,12 @@ func TestAssessEvidences(t *testing.T) {
 			},
 		},
 		{
-			name: "Error in stream to client",
+			name: "Error in stream to client - Send()-err",
 			fields: fields{
 				hasRPCConnection: false,
 			},
 			args: args{
-				errStreamToServer: createMockAssessmentServerErrStream(&assessment.AssessEvidenceRequest{
+				streamToClientWithSendErr: createMockAssessmentServerStreamWithSendErr(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
 						Timestamp: timestamppb.Now(),
 						ToolId:    "2134",
@@ -325,6 +326,21 @@ func TestAssessEvidences(t *testing.T) {
 			},
 			wantErr:        true,
 			wantErrMessage: "rpc error: code = Unknown desc = cannot send response to the client",
+		},
+		{
+			name: "Error in stream to server - Recv()-err",
+			fields: fields{
+				hasRPCConnection: false,
+			},
+			args: args{
+				streamToServerWithRecvErr: createMockAssessmentServerStreamWithRecvErr(&assessment.AssessEvidenceRequest{
+					Evidence: &evidence.Evidence{
+						Timestamp: timestamppb.Now(),
+						ToolId:    "2134",
+						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
+			},
+			wantErr:        true,
+			wantErrMessage: "rpc error: code = Unknown desc = cannot receive stream request",
 		},
 	}
 	for _, tt := range tests {
@@ -348,8 +364,10 @@ func TestAssessEvidences(t *testing.T) {
 			if tt.args.streamToServer != nil {
 				err = s.AssessEvidences(tt.args.streamToServer)
 				responseFromServer = <-tt.args.streamToServer.SentFromServer
-			} else if tt.args.errStreamToServer != nil {
-				err = s.AssessEvidences(tt.args.errStreamToServer)
+			} else if tt.args.streamToClientWithSendErr != nil {
+				err = s.AssessEvidences(tt.args.streamToClientWithSendErr)
+			} else if tt.args.streamToServerWithRecvErr != nil {
+				err = s.AssessEvidences(tt.args.streamToServerWithRecvErr)
 			}
 
 			if (err != nil) != tt.wantErr {
@@ -555,8 +573,8 @@ func (mockAssessmentServerStream) RecvMsg(interface{}) error {
 	return nil
 }
 
-func createMockAssessmentServerErrStream(r *assessment.AssessEvidenceRequest) *mockAssessmentServerStreamWithErr {
-	m := &mockAssessmentServerStreamWithErr{
+func createMockAssessmentServerStreamWithSendErr(r *assessment.AssessEvidenceRequest) *mockAssessmentServerStreamWithSendErr {
+	m := &mockAssessmentServerStreamWithSendErr{
 		RecvToServer: make(chan *assessment.AssessEvidenceRequest, 1),
 	}
 	m.RecvToServer <- r
@@ -565,20 +583,20 @@ func createMockAssessmentServerErrStream(r *assessment.AssessEvidenceRequest) *m
 	return m
 }
 
-// mockAssessmentServerStreamWithErr implements Assessment_AssessEvidencesServer with error
-type mockAssessmentServerStreamWithErr struct {
+// mockAssessmentServerStreamWithSendErr implements Assessment_AssessEvidencesServer with error
+type mockAssessmentServerStreamWithSendErr struct {
 	grpc.ServerStream
 	RecvToServer   chan *assessment.AssessEvidenceRequest
 	SentFromServer chan *assessment.AssessEvidenceResponse
 }
 
-func (*mockAssessmentServerStreamWithErr) Send(*assessment.AssessEvidenceResponse) error {
+func (*mockAssessmentServerStreamWithSendErr) Send(*assessment.AssessEvidenceResponse) error {
 	return errors.New("error sending response to client")
 }
 
 // Stop, if no more evidences exist
 // For now, just receive one evidence and directly stop the stream (EOF)
-func (m *mockAssessmentServerStreamWithErr) Recv() (req *assessment.AssessEvidenceRequest, err error) {
+func (m *mockAssessmentServerStreamWithSendErr) Recv() (req *assessment.AssessEvidenceRequest, err error) {
 	if len(m.RecvToServer) == 0 {
 		return nil, io.EOF
 	}
@@ -588,6 +606,32 @@ func (m *mockAssessmentServerStreamWithErr) Recv() (req *assessment.AssessEviden
 	}
 
 	return req, nil
+}
+
+type mockAssessmentServerStreamWithRecvErr struct {
+	grpc.ServerStream
+	RecvToServer   chan *assessment.AssessEvidenceRequest
+	SentFromServer chan *assessment.AssessEvidenceResponse
+}
+
+func (mockAssessmentServerStreamWithRecvErr) Send(*assessment.AssessEvidenceResponse) error {
+	panic("implement me")
+}
+
+func (m mockAssessmentServerStreamWithRecvErr) Recv() (*assessment.AssessEvidenceRequest, error) {
+	err := errors.New("Recv()-error")
+
+	return nil, err
+}
+
+func createMockAssessmentServerStreamWithRecvErr(r *assessment.AssessEvidenceRequest) *mockAssessmentServerStreamWithRecvErr {
+	m := &mockAssessmentServerStreamWithRecvErr{
+		RecvToServer: make(chan *assessment.AssessEvidenceRequest, 1),
+	}
+	m.RecvToServer <- r
+
+	m.SentFromServer = make(chan *assessment.AssessEvidenceResponse, 1)
+	return m
 }
 
 func TestConvertTargetValue(t *testing.T) {
