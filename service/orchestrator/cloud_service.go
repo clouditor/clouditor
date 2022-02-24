@@ -119,6 +119,7 @@ func (s *Service) UpdateCloudService(_ context.Context, req *orchestrator.Update
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
+
 	if count == 0 {
 		return nil, status.Error(codes.NotFound, "service not found")
 	}

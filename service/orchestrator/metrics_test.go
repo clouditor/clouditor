@@ -53,10 +53,11 @@ func TestService_CreateMetric(t *testing.T) {
 		req *orchestrator.CreateMetricRequest
 	}
 	tests := []struct {
-		name       string
-		args       args
-		wantMetric *assessment.Metric
-		wantErr    bool
+		name           string
+		args           args
+		wantMetric     *assessment.Metric
+		wantErr        bool
+		wantErrMessage string
 	}{
 		{
 			name: "Create valid metric",
@@ -83,8 +84,26 @@ func TestService_CreateMetric(t *testing.T) {
 					Metric: &assessment.Metric{},
 				},
 			},
-			wantMetric: nil,
-			wantErr:    true,
+			wantMetric:     nil,
+			wantErr:        true,
+			wantErrMessage: "rpc error: code = InvalidArgument desc = validation of metric failed",
+		},
+		{
+			name: "Create metric which already exists",
+			args: args{
+				context.TODO(),
+				&orchestrator.CreateMetricRequest{
+					Metric: &assessment.Metric{
+						Id:       "TLSVersion",
+						Name:     "TLSMetricMockName",
+						Category: "",
+						Scale:    assessment.Metric_NOMINAL,
+					},
+				},
+			},
+			wantMetric:     nil,
+			wantErr:        true,
+			wantErrMessage: "rpc error: code = AlreadyExists desc = metric already exists",
 		},
 	}
 
@@ -97,9 +116,15 @@ func TestService_CreateMetric(t *testing.T) {
 				t.Errorf("Service.CreateMetric() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
+			if tt.wantErr {
+				assert.Equal(t, tt.wantErrMessage, err.Error())
+			}
+
 			if !proto.Equal(gotMetric, tt.wantMetric) {
 				t.Errorf("Service.CreateMetric() = %v, want %v", gotMetric, tt.wantMetric)
 			}
+
 		})
 	}
 }
@@ -110,10 +135,11 @@ func TestService_UpdateMetric(t *testing.T) {
 		req *orchestrator.UpdateMetricRequest
 	}
 	tests := []struct {
-		name       string
-		args       args
-		wantMetric *assessment.Metric
-		wantErr    bool
+		name           string
+		args           args
+		wantMetric     *assessment.Metric
+		wantErr        bool
+		wantErrMessage string
 	}{
 		{
 			name: "Update existing metric",
@@ -138,10 +164,28 @@ func TestService_UpdateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.UpdateMetricRequest{
 					MetricId: "DoesProbablyNotExist",
+					Metric: &assessment.Metric{
+						Id:   "UpdateMetricID",
+						Name: "UpdateMetricName",
+					},
 				},
 			},
-			wantMetric: nil,
-			wantErr:    true,
+			wantMetric:     nil,
+			wantErr:        true,
+			wantErrMessage: "rpc error: code = NotFound desc = metric with identifier DoesProbablyNotExist does not exist",
+		},
+		{
+			name: "Updating invalid metric",
+			args: args{
+				context.TODO(),
+				&orchestrator.UpdateMetricRequest{
+					MetricId: "DoesProbablyNotExist",
+					Metric:   &assessment.Metric{},
+				},
+			},
+			wantMetric:     nil,
+			wantErr:        true,
+			wantErrMessage: "rpc error: code = InvalidArgument desc = validation of metric failed",
 		},
 	}
 
@@ -154,6 +198,11 @@ func TestService_UpdateMetric(t *testing.T) {
 				t.Errorf("Service.UpdateMetric() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
+			if tt.wantErr {
+				assert.Contains(t, err.Error(), tt.wantErrMessage)
+			}
+
 			if !proto.Equal(gotMetric, tt.wantMetric) {
 				t.Errorf("Service.UpdateMetric() = %v, want %v", gotMetric, tt.wantMetric)
 			}

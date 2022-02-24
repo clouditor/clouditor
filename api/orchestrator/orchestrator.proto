@@ -92,9 +92,9 @@ service Orchestrator {
     };
   }
 
-  // Stores stream of assessment results provided by an assessment tool
-  rpc StoreAssessmentResults(stream AssessmentResult)
-      returns (google.protobuf.Empty);
+  // Stores stream of assessment results provided by an assessment tool and returns a response stream. Part of the public API, not exposed as REST.
+  rpc StoreAssessmentResults(stream StoreAssessmentResultRequest)
+      returns (stream StoreAssessmentResultResponse);
 
   // List all assessment results. Part of the public API, also exposed as REST.
   rpc ListAssessmentResults(ListAssessmentResultsRequest)
@@ -239,7 +239,10 @@ message UpdateAssessmentToolRequest {
 message DeregisterAssessmentToolRequest { string tool_id = 1; }
 
 message StoreAssessmentResultRequest { AssessmentResult result = 1; }
-message StoreAssessmentResultResponse {}
+message StoreAssessmentResultResponse {
+  bool status = 1;
+  string status_message = 2;
+}
 
 message CreateMetricRequest { Metric metric = 1; }
 

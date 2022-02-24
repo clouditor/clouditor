@@ -46,7 +46,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -140,7 +139,8 @@ func TestAssessEvidence(t *testing.T) {
 			},
 			hasRPCConnection: true,
 			wantResp: &assessment.AssessEvidenceResponse{
-				Status: false,
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: "invalid evidence: " + evidence.ErrResourceIdFieldMissing.Error(),
 			},
 			wantErr: true,
 		},
@@ -155,7 +155,8 @@ func TestAssessEvidence(t *testing.T) {
 			},
 			hasRPCConnection: true,
 			wantResp: &assessment.AssessEvidenceResponse{
-				Status: false,
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: "invalid evidence: " + evidence.ErrResourceIdFieldMissing.Error(),
 			},
 			wantErr: true,
 		},
@@ -164,13 +165,15 @@ func TestAssessEvidence(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
+					Id:       "11111111-1111-1111-1111-111111111111",
 					ToolId:   "mock",
-					Resource: toStruct(voc.VirtualMachine{}, t),
+					Resource: toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 				},
 			},
 			hasRPCConnection: true,
 			wantResp: &assessment.AssessEvidenceResponse{
-				Status: false,
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: "invalid evidence: " + evidence.ErrTimestampMissing.Error(),
 			},
 			wantErr: true,
 		},
@@ -187,7 +190,7 @@ func TestAssessEvidence(t *testing.T) {
 			},
 			hasRPCConnection: true,
 			wantResp: &assessment.AssessEvidenceResponse{
-				Status: true,
+				Status: assessment.AssessEvidenceResponse_ASSESSED,
 			},
 			wantErr: false,
 		},
@@ -203,8 +206,11 @@ func TestAssessEvidence(t *testing.T) {
 				},
 			},
 			hasRPCConnection: false,
-			wantResp:         &assessment.AssessEvidenceResponse{Status: false},
-			wantErr:          true,
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: "could not evaluate evidence: could not fetch metric configuration: could not initialize connection to orchestrator: could not set up stream for storing assessment results: rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing dial tcp: missing address\"",
+			},
+			wantErr: true,
 		},
 	}
 
@@ -233,6 +239,7 @@ func TestAssessEvidence(t *testing.T) {
 	}
 }
 
+// TestAssessEvidences tests AssessEvidences
 func TestAssessEvidences(t *testing.T) {
 	type fields struct {
 		hasRPCConnection              bool
@@ -241,76 +248,137 @@ func TestAssessEvidences(t *testing.T) {
 		UnimplementedAssessmentServer assessment.UnimplementedAssessmentServer
 	}
 	type args struct {
-		stream assessment.Assessment_AssessEvidencesServer
+		streamToServer            *mockAssessmentServerStream
+		streamToClientWithSendErr *mockAssessmentServerStreamWithSendErr
+		streamToServerWithRecvErr *mockAssessmentServerStreamWithRecvErr
 	}
 	tests := []struct {
-		name           string
-		fields         fields
-		args           args
-		wantErr        bool
-		wantErrMessage string
+		name            string
+		fields          fields
+		args            args
+		wantErr         bool
+		wantErrMessage  string
+		wantRespMessage *assessment.AssessEvidenceResponse
 	}{
 		{
 			name: "Missing toolId",
 			fields: fields{
 				hasRPCConnection: true,
 				results:          make(map[string]*assessment.AssessmentResult)},
-			args: args{stream: &mockAssessmentStream{
-				evidence: &evidence.Evidence{
-					Timestamp: timestamppb.Now(),
-					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
-				},
-			}},
-			wantErr:        true,
-			wantErrMessage: "invalid evidence",
+			args: args{
+				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
+					Evidence: &evidence.Evidence{
+						Timestamp: timestamppb.Now(),
+						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
+			},
+			wantErr: false,
+			wantRespMessage: &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: "invalid evidence: " + evidence.ErrToolIdMissing.Error(),
+			},
 		},
 		{
 			name: "Assess evidences",
 			fields: fields{
 				hasRPCConnection: true,
 				results:          make(map[string]*assessment.AssessmentResult)},
-			args: args{stream: &mockAssessmentStream{
-				evidence: &evidence.Evidence{
-					Id:        "11111111-1111-1111-1111-111111111111",
-					ToolId:    "mock",
-					Timestamp: timestamppb.Now(),
-					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
-				},
-			}},
-			wantErr:        false,
-			wantErrMessage: "",
+			args: args{
+				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
+					Evidence: &evidence.Evidence{
+						Timestamp: timestamppb.Now(),
+						ToolId:    "2134",
+						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
+			},
+			wantErr: false,
+			wantRespMessage: &assessment.AssessEvidenceResponse{
+				Status: assessment.AssessEvidenceResponse_ASSESSED,
+			},
 		},
 		{
-			name: "No RPC connections",
+			name: "No RPC connections to evidence store and orchestrator",
 			fields: fields{
 				hasRPCConnection: false,
 			},
-			args:           args{stream: &mockAssessmentStreamWithRecvErr{}},
+			args: args{
+				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
+					Evidence: &evidence.Evidence{
+						Timestamp: timestamppb.Now(),
+						ToolId:    "2134",
+						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
+			},
+			wantErr: false,
+			wantRespMessage: &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: "could not initialize connection",
+			},
+		},
+		{
+			name: "Error in stream to client - Send()-err",
+			fields: fields{
+				hasRPCConnection: false,
+			},
+			args: args{
+				streamToClientWithSendErr: createMockAssessmentServerStreamWithSendErr(&assessment.AssessEvidenceRequest{
+					Evidence: &evidence.Evidence{
+						Timestamp: timestamppb.Now(),
+						ToolId:    "2134",
+						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
+			},
 			wantErr:        true,
-			wantErrMessage: codes.Internal.String(),
+			wantErrMessage: "rpc error: code = Unknown desc = cannot send response to the client",
+		},
+		{
+			name: "Error in stream to server - Recv()-err",
+			fields: fields{
+				hasRPCConnection: false,
+			},
+			args: args{
+				streamToServerWithRecvErr: createMockAssessmentServerStreamWithRecvErr(&assessment.AssessEvidenceRequest{
+					Evidence: &evidence.Evidence{
+						Timestamp: timestamppb.Now(),
+						ToolId:    "2134",
+						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
+			},
+			wantErr:        true,
+			wantErrMessage: "rpc error: code = Unknown desc = cannot receive stream request",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			var (
+				err                error
+				responseFromServer *assessment.AssessEvidenceResponse
+			)
 			s := Service{
 				resultHooks:                   tt.fields.ResultHooks,
 				results:                       tt.fields.results,
 				cachedConfigurations:          make(map[string]cachedConfiguration),
 				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
 			}
+
 			if tt.fields.hasRPCConnection {
 				assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
 				assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
 			}
 
-			err := s.AssessEvidences(tt.args.stream)
-			fmt.Println(err)
+			if tt.args.streamToServer != nil {
+				err = s.AssessEvidences(tt.args.streamToServer)
+				responseFromServer = <-tt.args.streamToServer.SentFromServer
+			} else if tt.args.streamToClientWithSendErr != nil {
+				err = s.AssessEvidences(tt.args.streamToClientWithSendErr)
+			} else if tt.args.streamToServerWithRecvErr != nil {
+				err = s.AssessEvidences(tt.args.streamToServerWithRecvErr)
+			}
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Got AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
-			if err != nil {
+			if !tt.wantErr {
+				assert.Nil(t, err)
+				assert.Contains(t, responseFromServer.StatusMessage, tt.wantRespMessage.StatusMessage)
+			} else {
 				assert.Contains(t, err.Error(), tt.wantErrMessage)
 			}
 		})
@@ -337,7 +405,6 @@ func TestAssessmentResultHooks(t *testing.T) {
 		wg.Done()
 	}
 
-	// Check GRPC call
 	type args struct {
 		in0         context.Context
 		evidence    *assessment.AssessEvidenceRequest
@@ -370,7 +437,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 				resultHooks: []assessment.ResultHookFunc{firstHookFunction, secondHookFunction},
 			},
 			wantErr:  false,
-			wantResp: &assessment.AssessEvidenceResponse{Status: true},
+			wantResp: &assessment.AssessEvidenceResponse{Status: assessment.AssessEvidenceResponse_ASSESSED},
 		},
 	}
 
@@ -390,6 +457,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 				assert.Equal(t, funcName1, funcName2)
 			}
 
+			// To test the hooks we have to call a function that calls the hook function
 			gotResp, err := s.AssessEvidence(tt.args.in0, tt.args.evidence)
 
 			// wait for all hooks (6 metrics * 2 hooks)
@@ -402,6 +470,8 @@ func TestAssessmentResultHooks(t *testing.T) {
 			if !reflect.DeepEqual(gotResp, tt.wantResp) {
 				t.Errorf("AssessEvidence() gotResp = %v, want %v", gotResp, tt.wantResp)
 			}
+
+			assert.Equal(t, tt.wantResp, gotResp)
 			assert.NotEmpty(t, s.results)
 			assert.Equal(t, 12, hookCallCounter)
 		})
@@ -436,84 +506,132 @@ func toStruct(r voc.IsCloudResource, t *testing.T) (s *structpb.Value) {
 	return
 }
 
-// mockAssessmentStream implements Assessment_AssessEvidencesServer which is used to mock incoming evidences as a stream
-type mockAssessmentStream struct {
-	evidence         *evidence.Evidence
-	receivedEvidence bool
+// mockAssessmentServerStream implements Assessment_AssessEvidencesServer which is used to mock incoming evidences as a stream
+type mockAssessmentServerStream struct {
+	grpc.ServerStream
+	RecvToServer   chan *assessment.AssessEvidenceRequest
+	SentFromServer chan *assessment.AssessEvidenceResponse
 }
 
-func (mockAssessmentStream) SendAndClose(*emptypb.Empty) error {
-	return nil
+func (mockAssessmentServerStream) CloseSend() error {
+	panic("implement me")
 }
 
-// For now, just receive one evidence and directly stop the stream (EOF)
-func (m *mockAssessmentStream) Recv() (req *assessment.AssessEvidenceRequest, err error) {
-	if !m.receivedEvidence {
-		req = new(assessment.AssessEvidenceRequest)
-		req.Evidence = m.evidence
-		m.receivedEvidence = true
-	} else {
-		err = io.EOF
+func createMockAssessmentServerStream(r *assessment.AssessEvidenceRequest) *mockAssessmentServerStream {
+	m := &mockAssessmentServerStream{
+		RecvToServer: make(chan *assessment.AssessEvidenceRequest, 1),
 	}
-	return
+	m.RecvToServer <- r
+
+	m.SentFromServer = make(chan *assessment.AssessEvidenceResponse, 1)
+	return m
 }
 
-func (mockAssessmentStream) SetHeader(metadata.MD) error {
+func (m mockAssessmentServerStream) Send(response *assessment.AssessEvidenceResponse) error {
+	m.SentFromServer <- response
 	return nil
 }
 
-func (mockAssessmentStream) SendHeader(metadata.MD) error {
+func (mockAssessmentServerStream) SendAndClose() error {
 	return nil
 }
 
-func (mockAssessmentStream) SetTrailer(metadata.MD) {
+// Stop, if no more evidences exist
+// For now, just receive one evidence and directly stop the stream (EOF)
+func (m *mockAssessmentServerStream) Recv() (req *assessment.AssessEvidenceRequest, err error) {
+	if len(m.RecvToServer) == 0 {
+		return nil, io.EOF
+	}
+	req, more := <-m.RecvToServer
+	if !more {
+		return nil, errors.New("empty")
+	}
+
+	return req, nil
 }
 
-func (mockAssessmentStream) Context() context.Context {
+func (mockAssessmentServerStream) SetHeader(metadata.MD) error {
 	return nil
 }
 
-func (mockAssessmentStream) SendMsg(interface{}) error {
+func (mockAssessmentServerStream) SendHeader(metadata.MD) error {
 	return nil
 }
 
-func (mockAssessmentStream) RecvMsg(interface{}) error {
+func (mockAssessmentServerStream) SetTrailer(metadata.MD) {
+}
+
+func (mockAssessmentServerStream) Context() context.Context {
 	return nil
 }
 
-// mockAssessmentStream implements Assessment_AssessEvidencesServer which directly throws error on Recv
-type mockAssessmentStreamWithRecvErr struct {
-}
-
-func (mockAssessmentStreamWithRecvErr) SendAndClose(*emptypb.Empty) error {
+func (mockAssessmentServerStream) SendMsg(interface{}) error {
 	return nil
 }
 
-func (mockAssessmentStreamWithRecvErr) Recv() (*assessment.AssessEvidenceRequest, error) {
-	return nil, status.Errorf(codes.Internal, "receiving internal error")
-}
-
-func (mockAssessmentStreamWithRecvErr) SetHeader(metadata.MD) error {
+func (mockAssessmentServerStream) RecvMsg(interface{}) error {
 	return nil
 }
 
-func (mockAssessmentStreamWithRecvErr) SendHeader(metadata.MD) error {
-	return nil
+func createMockAssessmentServerStreamWithSendErr(r *assessment.AssessEvidenceRequest) *mockAssessmentServerStreamWithSendErr {
+	m := &mockAssessmentServerStreamWithSendErr{
+		RecvToServer: make(chan *assessment.AssessEvidenceRequest, 1),
+	}
+	m.RecvToServer <- r
+
+	m.SentFromServer = make(chan *assessment.AssessEvidenceResponse, 1)
+	return m
 }
 
-func (mockAssessmentStreamWithRecvErr) SetTrailer(metadata.MD) {
+// mockAssessmentServerStreamWithSendErr implements Assessment_AssessEvidencesServer with error
+type mockAssessmentServerStreamWithSendErr struct {
+	grpc.ServerStream
+	RecvToServer   chan *assessment.AssessEvidenceRequest
+	SentFromServer chan *assessment.AssessEvidenceResponse
 }
 
-func (mockAssessmentStreamWithRecvErr) Context() context.Context {
-	return nil
+func (*mockAssessmentServerStreamWithSendErr) Send(*assessment.AssessEvidenceResponse) error {
+	return errors.New("error sending response to client")
 }
 
-func (mockAssessmentStreamWithRecvErr) SendMsg(interface{}) error {
-	return nil
+// Stop, if no more evidences exist
+// For now, just receive one evidence and directly stop the stream (EOF)
+func (m *mockAssessmentServerStreamWithSendErr) Recv() (req *assessment.AssessEvidenceRequest, err error) {
+	if len(m.RecvToServer) == 0 {
+		return nil, io.EOF
+	}
+	req, more := <-m.RecvToServer
+	if !more {
+		return nil, errors.New("empty")
+	}
+
+	return req, nil
 }
 
-func (mockAssessmentStreamWithRecvErr) RecvMsg(interface{}) error {
-	return nil
+type mockAssessmentServerStreamWithRecvErr struct {
+	grpc.ServerStream
+	RecvToServer   chan *assessment.AssessEvidenceRequest
+	SentFromServer chan *assessment.AssessEvidenceResponse
+}
+
+func (mockAssessmentServerStreamWithRecvErr) Send(*assessment.AssessEvidenceResponse) error {
+	panic("implement me")
+}
+
+func (mockAssessmentServerStreamWithRecvErr) Recv() (*assessment.AssessEvidenceRequest, error) {
+	err := errors.New("Recv()-error")
+
+	return nil, err
+}
+
+func createMockAssessmentServerStreamWithRecvErr(r *assessment.AssessEvidenceRequest) *mockAssessmentServerStreamWithRecvErr {
+	m := &mockAssessmentServerStreamWithRecvErr{
+		RecvToServer: make(chan *assessment.AssessEvidenceRequest, 1),
+	}
+	m.RecvToServer <- r
+
+	m.SentFromServer = make(chan *assessment.AssessEvidenceResponse, 1)
+	return m
 }
 
 func TestConvertTargetValue(t *testing.T) {

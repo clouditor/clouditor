@@ -30,7 +30,6 @@ package clouditor;
 
 import "api/evidence/evidence.proto";
 import "google/api/annotations.proto";
-import "google/protobuf/empty.proto";
 
 option go_package = "clouditor.io/clouditor/api/evidence";
 
@@ -46,10 +45,8 @@ service EvidenceStore {
     };
   }
 
-  // Stores a stream of evidences to the evidence storage. Part of the public
-  // API, not exposed as REST.
-  rpc StoreEvidences(stream StoreEvidenceRequest)
-      returns (google.protobuf.Empty) {};
+  // Stores a stream of evidences to the evidence storage and returns a response stream. Part of the public API, not exposed as REST.
+  rpc StoreEvidences(stream StoreEvidenceRequest) returns (stream StoreEvidenceResponse) {};
 
   // Returns all stored evidences. Part of the public API, also exposed as REST.
   rpc ListEvidences(ListEvidencesRequest) returns (ListEvidencesResponse) {
@@ -61,7 +58,10 @@ service EvidenceStore {
 }
 
 message StoreEvidenceRequest { Evidence evidence = 1; }
-message StoreEvidenceResponse { bool status = 1; }
+message StoreEvidenceResponse {
+  bool status = 1;
+  string status_message = 2;
+}
 
 message ListEvidencesRequest {}
 message ListEvidencesResponse { repeated Evidence evidences = 1; }

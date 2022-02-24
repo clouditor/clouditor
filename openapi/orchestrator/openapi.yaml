@@ -631,7 +631,11 @@ components:
             description: A range resource representing the range of values
         StoreAssessmentResultResponse:
             type: object
-            properties: {}
+            properties:
+                status:
+                    type: boolean
+                statusMessage:
+                    type: string
         Value:
             type: object
             properties:
