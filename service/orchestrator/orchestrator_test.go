@@ -272,25 +272,28 @@ func TestStoreAssessmentResults(t *testing.T) {
 	}
 
 	type args struct {
-		stream *mockStreamer
+		streamToServer *mockStreamer
+		streamToClientWithSendErr *mockStreamerWithSendErr
+		streamToServerWithRecvErr *mockStreamerWithRecvErr
 	}
 
 	tests := []struct {
 		name           string
 		fields         fields
 		args           args
-		wantErr        bool
-		wantErrMessage []orchestrator.StoreAssessmentResultResponse
+		wantErr         bool
+		wantRespMessage []orchestrator.StoreAssessmentResultResponse
+		wantErrMessage string
 	}{
 		{
 			name: "Store 2 assessment results to the map",
 			fields: fields{
 				countElementsInMock:    count2,
-				countElementsInResults: 2,
+				countElementsInResults: count2,
 			},
-			args:    args{stream: createMockStream(createStoreAssessmentResultRequestsMock(count2))},
+			args:    args{streamToServer: createMockStream(createStoreAssessmentResultRequestsMock(count2))},
 			wantErr: false,
-			wantErrMessage: []orchestrator.StoreAssessmentResultResponse{
+			wantRespMessage: []orchestrator.StoreAssessmentResultResponse{
 				{
 					Status: true,
 				},
@@ -305,37 +308,72 @@ func TestStoreAssessmentResults(t *testing.T) {
 				countElementsInMock:    count1,
 				countElementsInResults: 0,
 			},
-			args:    args{stream: createMockStream(createStoreAssessmentResultRequestMockWithMissingMetricID(count1))},
+			args:    args{streamToServer: createMockStream(createStoreAssessmentResultRequestMockWithMissingMetricID(count1))},
 			wantErr: false,
-			wantErrMessage: []orchestrator.StoreAssessmentResultResponse{
+			wantRespMessage: []orchestrator.StoreAssessmentResultResponse{
 				{
 					Status:        false,
 					StatusMessage: "invalid assessment result: " + assessment.ErrMetricIdMissing.Error(),
 				},
 			},
 		},
+		{
+			name: "Error in stream to server - Recv()-err",
+			fields: fields{
+				countElementsInMock:    count1,
+				countElementsInResults: 0,
+			},
+			args:    args{streamToServerWithRecvErr: createMockStreamWithRecvErr(createStoreAssessmentResultRequestsMock(count1))},
+			wantErr: true,
+			wantErrMessage: "rpc error: code = Unknown desc = cannot receive stream request",
+		},
+		{
+			name: "Error in stream to client - Send()-err",
+			fields: fields{
+				countElementsInMock:    count1,
+				countElementsInResults: 0,
+			},
+			args:    args{streamToClientWithSendErr: createMockStreamWithSendErr(createStoreAssessmentResultRequestsMock(count1))},
+			wantErr: true,
+			wantErrMessage: "rpc error: code = Unknown desc = cannot stream response to the client",
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
-			if err := s.StoreAssessmentResults(tt.args.stream); (err != nil) != tt.wantErr {
-				t.Errorf("StoreAssessmentResults() error = %v, wantErr %v", err, tt.wantErr)
+
+			var err error
+
+			if tt.args.streamToServer != nil {
+				err = s.StoreAssessmentResults(tt.args.streamToServer)
+			} else if tt.args.streamToClientWithSendErr != nil {
+				err = s.StoreAssessmentResults(tt.args.streamToClientWithSendErr)
+			} else if tt.args.streamToServerWithRecvErr != nil {
+				err = s.StoreAssessmentResults(tt.args.streamToServerWithRecvErr)
+			}
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Got StoreAssessmentResults() error = %v, wantErr %v", err, tt.wantErr)
 				assert.Equal(t, tt.fields.countElementsInResults, len(s.results))
+				return
+			} else if tt.wantErr {
+				assert.Contains(t, err.Error(), tt.wantErrMessage)
 			} else {
 				// Close stream for testing
-				close(tt.args.stream.SentFromServer)
+				close(tt.args.streamToServer.SentFromServer)
 				assert.Nil(t, err)
 				assert.Equal(t, tt.fields.countElementsInResults, len(s.results))
 
 				// Check all stream responses from server to client
 				i := 0
-				for elem := range tt.args.stream.SentFromServer {
-					assert.Contains(t, elem.StatusMessage, tt.wantErrMessage[i].StatusMessage)
-					assert.Equal(t, elem.Status, tt.wantErrMessage[i].Status)
+				for elem := range tt.args.streamToServer.SentFromServer {
+					assert.Contains(t, elem.StatusMessage, tt.wantRespMessage[i].StatusMessage)
+					assert.Equal(t, elem.Status, tt.wantRespMessage[i].Status)
 					i++
 				}
 			}
+
 		})
 	}
 }
@@ -438,6 +476,68 @@ func (mockStreamer) SendMsg(_ interface{}) error {
 
 func (mockStreamer) RecvMsg(_ interface{}) error {
 	panic("implement me")
+}
+
+type mockStreamerWithSendErr struct {
+	grpc.ServerStream
+	RecvToServer   chan *orchestrator.StoreAssessmentResultRequest
+	SentFromServer chan *orchestrator.StoreAssessmentResultResponse
+}
+
+func (mockStreamerWithSendErr) Send(*orchestrator.StoreAssessmentResultResponse) error {
+	return errors.New("Send()-err")
+}
+
+func (m mockStreamerWithSendErr) Recv() (*orchestrator.StoreAssessmentResultRequest, error) {
+	if len(m.RecvToServer) == 0 {
+		return nil, io.EOF
+	}
+	req, more := <-m.RecvToServer
+	if !more {
+		return nil, errors.New("empty")
+	}
+
+	return req, nil
+}
+
+func createMockStreamWithSendErr(requests []*orchestrator.StoreAssessmentResultRequest) *mockStreamerWithSendErr {
+	m := &mockStreamerWithSendErr{
+		RecvToServer: make(chan *orchestrator.StoreAssessmentResultRequest, len(requests)),
+	}
+	for _, req := range requests {
+		m.RecvToServer <- req
+	}
+
+	m.SentFromServer = make(chan *orchestrator.StoreAssessmentResultResponse, len(requests))
+	return m
+}
+
+type mockStreamerWithRecvErr struct {
+	grpc.ServerStream
+	RecvToServer   chan *orchestrator.StoreAssessmentResultRequest
+	SentFromServer chan *orchestrator.StoreAssessmentResultResponse
+}
+
+func (mockStreamerWithRecvErr) Send(*orchestrator.StoreAssessmentResultResponse) error {
+	panic("implement me")
+}
+
+func (mockStreamerWithRecvErr) Recv() (*orchestrator.StoreAssessmentResultRequest, error) {
+	err := errors.New("Recv()-error")
+
+	return nil, err
+}
+
+func createMockStreamWithRecvErr(requests []*orchestrator.StoreAssessmentResultRequest) *mockStreamerWithRecvErr {
+	m := &mockStreamerWithRecvErr{
+		RecvToServer: make(chan *orchestrator.StoreAssessmentResultRequest, len(requests)),
+	}
+	for _, req := range requests {
+		m.RecvToServer <- req
+	}
+
+	m.SentFromServer = make(chan *orchestrator.StoreAssessmentResultResponse, len(requests))
+	return m
 }
 
 func toStruct(f float32) (s *structpb.Value) {

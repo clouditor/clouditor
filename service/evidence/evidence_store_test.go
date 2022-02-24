@@ -200,7 +200,6 @@ func TestStoreEvidences(t *testing.T) {
 					{
 						Evidence: &evidence.Evidence{
 							Id: uuid.NewString(),
-							//ToolId:    "MockToolId",
 							ServiceId: "MockServiceId",
 							Timestamp: timestamppb.Now(),
 							Raw:       "",
@@ -221,14 +220,14 @@ func TestStoreEvidences(t *testing.T) {
 			},
 		},
 		{
-			name: "Error in streamToServer to server - Recv()-err",
+			name: "Error in stream to server - Recv()-err",
 			args: args{
 				streamToServerWithRecvErr: createMockStreamWithRecvErr(createStoreEvidenceRequestMocks(1))},
 			wantErr:        true,
 			wantErrMessage: "rpc error: code = Unknown desc = cannot receive stream request",
 		},
 		{
-			name: "Stream send error",
+			name: "Error in stream to client - Send()-err",
 			args: args{
 				streamToClientWithSendErr: createMockStreamWithSendErr(createStoreEvidenceRequestMocks(1))},
 			wantErr:        true,

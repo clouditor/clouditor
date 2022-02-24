@@ -618,7 +618,7 @@ func (mockAssessmentServerStreamWithRecvErr) Send(*assessment.AssessEvidenceResp
 	panic("implement me")
 }
 
-func (m mockAssessmentServerStreamWithRecvErr) Recv() (*assessment.AssessEvidenceRequest, error) {
+func (mockAssessmentServerStreamWithRecvErr) Recv() (*assessment.AssessEvidenceRequest, error) {
 	err := errors.New("Recv()-error")
 
 	return nil, err
