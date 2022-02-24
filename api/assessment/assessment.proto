@@ -74,7 +74,7 @@ message ListAssessmentResultsResponse { repeated AssessmentResult results = 1; }
 message ConfigureAssessmentRequest {}
 message ConfigureAssessmentResponse {}
 
-message TriggerAssessmentRequest { string someOption = 1; }
+message TriggerAssessmentRequest { string some_option = 1; }
 
 message AssessEvidenceRequest { Evidence evidence = 1; }
 message AssessEvidenceResponse {
@@ -86,7 +86,7 @@ message AssessEvidenceResponse {
   }
   AssessmentStatus status = 1;
 
-  string statusMessage = 2;
+  string status_message = 2;
 }
 
 // A result resource, representing the result after assessing the cloud resource

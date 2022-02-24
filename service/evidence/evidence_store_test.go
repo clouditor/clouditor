@@ -199,7 +199,7 @@ func TestStoreEvidences(t *testing.T) {
 				streamToServer: createMockStream([]*evidence.StoreEvidenceRequest{
 					{
 						Evidence: &evidence.Evidence{
-							Id: uuid.NewString(),
+							Id:        uuid.NewString(),
 							ServiceId: "MockServiceId",
 							Timestamp: timestamppb.Now(),
 							Raw:       "",

@@ -272,18 +272,18 @@ func TestStoreAssessmentResults(t *testing.T) {
 	}
 
 	type args struct {
-		streamToServer *mockStreamer
+		streamToServer            *mockStreamer
 		streamToClientWithSendErr *mockStreamerWithSendErr
 		streamToServerWithRecvErr *mockStreamerWithRecvErr
 	}
 
 	tests := []struct {
-		name           string
-		fields         fields
-		args           args
+		name            string
+		fields          fields
+		args            args
 		wantErr         bool
 		wantRespMessage []orchestrator.StoreAssessmentResultResponse
-		wantErrMessage string
+		wantErrMessage  string
 	}{
 		{
 			name: "Store 2 assessment results to the map",
@@ -323,8 +323,8 @@ func TestStoreAssessmentResults(t *testing.T) {
 				countElementsInMock:    count1,
 				countElementsInResults: 0,
 			},
-			args:    args{streamToServerWithRecvErr: createMockStreamWithRecvErr(createStoreAssessmentResultRequestsMock(count1))},
-			wantErr: true,
+			args:           args{streamToServerWithRecvErr: createMockStreamWithRecvErr(createStoreAssessmentResultRequestsMock(count1))},
+			wantErr:        true,
 			wantErrMessage: "rpc error: code = Unknown desc = cannot receive stream request",
 		},
 		{
@@ -333,8 +333,8 @@ func TestStoreAssessmentResults(t *testing.T) {
 				countElementsInMock:    count1,
 				countElementsInResults: 0,
 			},
-			args:    args{streamToClientWithSendErr: createMockStreamWithSendErr(createStoreAssessmentResultRequestsMock(count1))},
-			wantErr: true,
+			args:           args{streamToClientWithSendErr: createMockStreamWithSendErr(createStoreAssessmentResultRequestsMock(count1))},
+			wantErr:        true,
 			wantErrMessage: "rpc error: code = Unknown desc = cannot stream response to the client",
 		},
 	}

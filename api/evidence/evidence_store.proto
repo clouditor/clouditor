@@ -60,7 +60,7 @@ service EvidenceStore {
 message StoreEvidenceRequest { Evidence evidence = 1; }
 message StoreEvidenceResponse {
   bool status = 1;
-  string statusMessage = 2;
+  string status_message = 2;
 }
 
 message ListEvidencesRequest {}
