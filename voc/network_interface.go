@@ -27,6 +27,6 @@ package voc
 
 type NetworkInterface struct {
 	*Networking
-	NetworkService    []ResourceID       `json:"networkService"`
+	NetworkService    *NetworkService    `json:"networkService"`
 	AccessRestriction *AccessRestriction `json:"accessRestriction"`
 }

@@ -25,6 +25,7 @@
 
 package voc
 
-type BootLog struct {
-	*Log
+type LoggingService struct {
+	*NetworkService
+	Storage *Storage `json:"storage"`
 }

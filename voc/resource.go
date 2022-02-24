@@ -25,9 +25,7 @@
 
 package voc
 
-type Application struct {
-	Functionalities     *[]Functionality `json:"functionalities"`
-	Compute             *Compute         `json:"compute"`
-	ProgrammingLanguage string           `json:"programmingLanguage"`
-	TranslationUnits    []string         `json:"translationUnits"`
+type Resource struct {
+	GeoLocation *GeoLocation      `json:"geoLocation"`
+	Labels      map[string]string `json:"labels"`
 }

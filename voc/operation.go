@@ -25,6 +25,6 @@
 
 package voc
 
-type KeyValueDB struct {
-	*KeyValueDatabaseService
+type Operation struct {
+	*Functionality
 }

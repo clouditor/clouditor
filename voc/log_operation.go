@@ -25,6 +25,9 @@
 
 package voc
 
-type ResourceLogging struct {
-	*Logging
+type LogOperation struct {
+	*Operation
+	Logging *Logging `json:"logging"`
+	Call    string   `json:"call"`
+	Value   string   `json:"value"`
 }

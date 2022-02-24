@@ -25,8 +25,11 @@
 
 package voc
 
+import "time"
+
 type Backup struct {
 	*Availability
-	Activated bool   `json:"activated"`
-	Policy    string `json:"policy"`
+	RetentionPeriod time.Duration `json:"retentionPeriod"`
+	Enabled         bool          `json:"enabled"`
+	Policy          string        `json:"policy"`
 }

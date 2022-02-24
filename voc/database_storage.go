@@ -27,5 +27,5 @@ package voc
 
 type DatabaseStorage struct {
 	*Storage
-	Parent []ResourceID `json:"parent"`
+	Parent *Storage `json:"parent"`
 }

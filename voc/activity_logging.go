@@ -25,6 +25,6 @@
 
 package voc
 
-type RelationalDB struct {
-	*RelationalDatabaseService
+type ActivityLogging struct {
+	*Logging
 }

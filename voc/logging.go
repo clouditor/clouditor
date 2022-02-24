@@ -25,6 +25,11 @@
 
 package voc
 
+import "time"
+
 type Logging struct {
-	*CloudResource
+	*Auditing
+	LoggingService  *LoggingService `json:"loggingService"`
+	Enabled         bool            `json:"enabled"`
+	RetentionPeriod time.Duration   `json:"retentionPeriod"`
 }

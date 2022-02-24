@@ -25,6 +25,8 @@
 
 package voc
 
-type InfrastructureLogging struct {
-	*Logging
+type StorageService struct {
+	*NetworkService
+	Storages     *[]Storage    `json:"storages"`
+	HttpEndpoint *HttpEndpoint `json:"httpEndpoint"`
 }
