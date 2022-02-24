@@ -35,7 +35,6 @@ import (
 	"strings"
 
 	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/logging"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/persistence/inmemory"
@@ -175,7 +174,7 @@ func initConfig() {
 }
 
 func doCmd(_ *cobra.Command, _ []string) (err error) {
-	log.Logger.Formatter = logging.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true}}
+	log.Logger.Formatter = &logrus.TextFormatter{ForceColors: true}
 
 	log.Info("Welcome to new Clouditor 2.0")
 
