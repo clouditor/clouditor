@@ -26,11 +26,13 @@
 package auth
 
 import (
+	"clouditor.io/clouditor/logging/formatter"
 	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"math/big"
 	"os"
@@ -42,6 +44,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
 )
+
+func TestMain(m *testing.M) {
+	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{
+		ForceColors:   true,
+		FullTimestamp: true,
+	}}
+}
 
 func TestService_ListPublicKeys(t *testing.T) {
 	type fields struct {
