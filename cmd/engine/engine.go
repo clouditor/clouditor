@@ -26,7 +26,7 @@
 package main
 
 import (
-	"clouditor.io/clouditor/logging"
+	"clouditor.io/clouditor/logging/formatter"
 	"context"
 	"errors"
 	"fmt"
@@ -53,7 +53,6 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/rest"
 
 	service_assessment "clouditor.io/clouditor/service/assessment"
@@ -175,7 +174,7 @@ func initConfig() {
 }
 
 func doCmd(_ *cobra.Command, _ []string) (err error) {
-	log.Logger.Formatter = logging.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true}}
+	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true}}
 
 	log.Info("Welcome to new Clouditor 2.0")
 
@@ -249,7 +248,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	httpPort := viper.GetInt(APIHTTPPortFlag)
 
 	grpcLogger := logrus.New()
-	grpcLogger.Formatter = &cli.GRPCFormatter{TextFormatter: logrus.TextFormatter{ForceColors: true}}
+	grpcLogger.Formatter = &formatter.GRPCFormatter{TextFormatter: logrus.TextFormatter{ForceColors: true}}
 	grpcLoggerEntry := grpcLogger.WithField("component", "grpc")
 
 	// disabling the grpc log itself, because it will log everything on INFO, whereas DEBUG would be more

@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package logging
+package formatter
 
 import (
 	"github.com/sirupsen/logrus"
