@@ -295,7 +295,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/UpdateMetricConfigurationRequest'
+                            $ref: '#/components/schemas/MetricConfiguration'
                 required: true
             responses:
                 "200":
@@ -401,7 +401,7 @@ paths:
             tags:
                 - Orchestrator
             description: Updates an existing metric implementation
-            operationId: Orchestrator_UpddateMetricImplementation
+            operationId: Orchestrator_UpdateMetricImplementation
             parameters:
                 - name: metricId
                   in: path
@@ -610,15 +610,6 @@ components:
                     type: boolean
                 statusMessage:
                     type: string
-        UpdateMetricConfigurationRequest:
-            type: object
-            properties:
-                serviceId:
-                    type: string
-                metricId:
-                    type: string
-                configuration:
-                    $ref: '#/components/schemas/MetricConfiguration'
         Value:
             type: object
             properties:

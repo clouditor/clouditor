@@ -70,7 +70,7 @@ type OrchestratorClient interface {
 	// specific service ID
 	ListMetricConfigurations(ctx context.Context, in *ListMetricConfigurationRequest, opts ...grpc.CallOption) (*ListMetricConfigurationResponse, error)
 	// Updates an existing metric implementation
-	UpddateMetricImplementation(ctx context.Context, in *UpdateMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error)
+	UpdateMetricImplementation(ctx context.Context, in *UpdateMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error)
 	// Returns the metric implementation of the passed metric id
 	GetMetricImplementation(ctx context.Context, in *GetMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error)
 }
@@ -285,9 +285,9 @@ func (c *orchestratorClient) ListMetricConfigurations(ctx context.Context, in *L
 	return out, nil
 }
 
-func (c *orchestratorClient) UpddateMetricImplementation(ctx context.Context, in *UpdateMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error) {
+func (c *orchestratorClient) UpdateMetricImplementation(ctx context.Context, in *UpdateMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error) {
 	out := new(assessment.MetricImplementation)
-	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/UpddateMetricImplementation", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/UpdateMetricImplementation", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -353,7 +353,7 @@ type OrchestratorServer interface {
 	// specific service ID
 	ListMetricConfigurations(context.Context, *ListMetricConfigurationRequest) (*ListMetricConfigurationResponse, error)
 	// Updates an existing metric implementation
-	UpddateMetricImplementation(context.Context, *UpdateMetricImplementationRequest) (*assessment.MetricImplementation, error)
+	UpdateMetricImplementation(context.Context, *UpdateMetricImplementationRequest) (*assessment.MetricImplementation, error)
 	// Returns the metric implementation of the passed metric id
 	GetMetricImplementation(context.Context, *GetMetricImplementationRequest) (*assessment.MetricImplementation, error)
 	mustEmbedUnimplementedOrchestratorServer()
@@ -423,8 +423,8 @@ func (UnimplementedOrchestratorServer) GetMetricConfiguration(context.Context, *
 func (UnimplementedOrchestratorServer) ListMetricConfigurations(context.Context, *ListMetricConfigurationRequest) (*ListMetricConfigurationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListMetricConfigurations not implemented")
 }
-func (UnimplementedOrchestratorServer) UpddateMetricImplementation(context.Context, *UpdateMetricImplementationRequest) (*assessment.MetricImplementation, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpddateMetricImplementation not implemented")
+func (UnimplementedOrchestratorServer) UpdateMetricImplementation(context.Context, *UpdateMetricImplementationRequest) (*assessment.MetricImplementation, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateMetricImplementation not implemented")
 }
 func (UnimplementedOrchestratorServer) GetMetricImplementation(context.Context, *GetMetricImplementationRequest) (*assessment.MetricImplementation, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMetricImplementation not implemented")
@@ -810,20 +810,20 @@ func _Orchestrator_ListMetricConfigurations_Handler(srv interface{}, ctx context
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Orchestrator_UpddateMetricImplementation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Orchestrator_UpdateMetricImplementation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateMetricImplementationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrchestratorServer).UpddateMetricImplementation(ctx, in)
+		return srv.(OrchestratorServer).UpdateMetricImplementation(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.Orchestrator/UpddateMetricImplementation",
+		FullMethod: "/clouditor.Orchestrator/UpdateMetricImplementation",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).UpddateMetricImplementation(ctx, req.(*UpdateMetricImplementationRequest))
+		return srv.(OrchestratorServer).UpdateMetricImplementation(ctx, req.(*UpdateMetricImplementationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -930,8 +930,8 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Orchestrator_ListMetricConfigurations_Handler,
 		},
 		{
-			MethodName: "UpddateMetricImplementation",
-			Handler:    _Orchestrator_UpddateMetricImplementation_Handler,
+			MethodName: "UpdateMetricImplementation",
+			Handler:    _Orchestrator_UpdateMetricImplementation_Handler,
 		},
 		{
 			MethodName: "GetMetricImplementation",
