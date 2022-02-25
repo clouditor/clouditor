@@ -129,14 +129,12 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachine, erro
 						Region: d.awsConfig.cfg.Region,
 					},
 				},
-				// TODO(lebogg): Update NetworkInterface
-				//NetworkInterface: d.getNetworkInterfacesOfVM(vm),
+				NetworkInterface: d.getNetworkInterfacesOfVM(vm),
 			}
 
 			resources = append(resources, voc.VirtualMachine{
 				Compute: computeResource,
-				// TODO(lebogg): Update BlockStorage
-				//BlockStorage:     d.mapBlockStorageIDsOfVM(vm),
+				BlockStorage:     d.mapBlockStorageIDsOfVM(vm),
 				BootLogging: d.getBootLog(vm),
 				OSLogging:   d.getOSLog(vm),
 			})
@@ -197,7 +195,7 @@ func (*computeDiscovery) getBootLog(_ *typesEC2.Instance) (l *voc.BootLogging) {
 	l = &voc.BootLogging{
 		Logging: &voc.Logging{
 			Auditing: nil,
-			// TODO(lebogg): LoggingService needed?
+			LoggingService: nil,
 			Enabled:         false,
 			RetentionPeriod: 0,
 		},
@@ -211,7 +209,7 @@ func (*computeDiscovery) getOSLog(_ *typesEC2.Instance) (l *voc.OSLogging) {
 	l = &voc.OSLogging{
 		Logging: &voc.Logging{
 			Auditing: nil,
-			// TODO(lebogg): LoggingService needed?
+			LoggingService: nil,
 			Enabled:         false,
 			RetentionPeriod: 0,
 		},
