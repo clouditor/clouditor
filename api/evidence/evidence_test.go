@@ -85,7 +85,7 @@ func Test_ValidateEvidence(t *testing.T) {
 					Timestamp: timestamppb.Now(),
 					Resource: toStruct(voc.VirtualMachine{
 						Compute: &voc.Compute{
-							CloudResource: &voc.CloudResource{
+							Resource: &voc.Resource{
 								ID:   "my-resource-id",
 								Type: []string{"VirtualMachine"}},
 						},
@@ -103,7 +103,7 @@ func Test_ValidateEvidence(t *testing.T) {
 					ToolId: "mock",
 					Resource: toStruct(voc.VirtualMachine{
 						Compute: &voc.Compute{
-							CloudResource: &voc.CloudResource{
+							Resource: &voc.Resource{
 								ID:   "my-resource-id",
 								Type: []string{"VirtualMachine"}},
 						},
@@ -122,7 +122,7 @@ func Test_ValidateEvidence(t *testing.T) {
 					ToolId:    "mock",
 					Resource: toStruct(voc.VirtualMachine{
 						Compute: &voc.Compute{
-							CloudResource: &voc.CloudResource{
+							Resource: &voc.Resource{
 								ID:   "my-resource-id",
 								Type: []string{"VirtualMachine"}},
 						},
