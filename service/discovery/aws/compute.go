@@ -120,7 +120,7 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachine, erro
 		for i := range reservation.Instances {
 			vm := &reservation.Instances[i]
 			computeResource := &voc.Compute{
-				CloudResource: &voc.CloudResource{
+				Resource: &voc.Resource{
 					ID:           d.addARNToVM(vm),
 					Name:         d.getNameOfVM(vm),
 					CreationTime: 0,
@@ -129,14 +129,16 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachine, erro
 						Region: d.awsConfig.cfg.Region,
 					},
 				},
+				// TODO(lebogg): Update NetworkInterface
+				//NetworkInterface: d.getNetworkInterfacesOfVM(vm),
 			}
 
 			resources = append(resources, voc.VirtualMachine{
-				Compute:          computeResource,
-				BlockStorage:     d.mapBlockStorageIDsOfVM(vm),
-				NetworkInterface: d.getNetworkInterfacesOfVM(vm),
-				BootLog:          d.getBootLog(vm),
-				OSLog:            d.getOSLog(vm),
+				Compute: computeResource,
+				// TODO(lebogg): Update BlockStorage
+				//BlockStorage:     d.mapBlockStorageIDsOfVM(vm),
+				BootLogging: d.getBootLog(vm),
+				OSLogging:   d.getOSLog(vm),
 			})
 		}
 	}
@@ -175,7 +177,7 @@ func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.Function
 		function := &functions[i]
 		resources = append(resources, voc.Function{
 			Compute: &voc.Compute{
-				CloudResource: &voc.CloudResource{
+				Resource: &voc.Resource{
 					ID:           voc.ResourceID(aws.ToString(function.FunctionArn)),
 					Name:         aws.ToString(function.FunctionName),
 					CreationTime: 0,
@@ -191,11 +193,11 @@ func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.Function
 
 // getBootLog checks if boot logging is enabled
 // Currently there is no option to find out if any logs are enabled -> Assign default zero values
-func (*computeDiscovery) getBootLog(_ *typesEC2.Instance) (l *voc.BootLog) {
-	l = &voc.BootLog{
-		Log: &voc.Log{
-			Auditing:        nil,
-			Output:          nil,
+func (*computeDiscovery) getBootLog(_ *typesEC2.Instance) (l *voc.BootLogging) {
+	l = &voc.BootLogging{
+		Logging: &voc.Logging{
+			Auditing: nil,
+			// TODO(lebogg): LoggingService needed?
 			Enabled:         false,
 			RetentionPeriod: 0,
 		},
@@ -205,11 +207,11 @@ func (*computeDiscovery) getBootLog(_ *typesEC2.Instance) (l *voc.BootLog) {
 
 // getOSLog checks if OS logging is enabled
 // Currently there is no option to find out if any logs are enabled -> Assign default zero values
-func (*computeDiscovery) getOSLog(_ *typesEC2.Instance) (l *voc.OSLog) {
-	l = &voc.OSLog{
-		Log: &voc.Log{
-			Auditing:        nil,
-			Output:          nil,
+func (*computeDiscovery) getOSLog(_ *typesEC2.Instance) (l *voc.OSLogging) {
+	l = &voc.OSLogging{
+		Logging: &voc.Logging{
+			Auditing: nil,
+			// TODO(lebogg): LoggingService needed?
 			Enabled:         false,
 			RetentionPeriod: 0,
 		},

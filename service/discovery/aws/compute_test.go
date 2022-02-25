@@ -247,8 +247,8 @@ func TestComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 	assert.Equal(t, mockVM1, testMachine.Name)
 	assert.Equal(t, voc.ResourceID("arn:aws:ec2:eu-central-1:MockAccountID1234:instance/mockVM1ID"), testMachine.ID)
 	assert.NotEmpty(t, testMachine.BlockStorage)
-	assert.False(t, testMachine.BootLog.Enabled)
-	assert.False(t, testMachine.OSLog.Enabled)
+	assert.False(t, testMachine.BootLogging.Enabled)
+	assert.False(t, testMachine.OSLogging.Enabled)
 	assert.Equal(t, int64(0), testMachine.CreationTime)
 	assert.Equal(t, mockFunction1Region, testMachine.GeoLocation.Region)
 
@@ -346,7 +346,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 			//args: args{client: mockClient},
 			[]voc.Function{
 				{Compute: &voc.Compute{
-					CloudResource: &voc.CloudResource{
+					Resource: &voc.Resource{
 						ID:           mockFunction1ID,
 						Name:         mockFunction1,
 						CreationTime: int64(0),
