@@ -109,7 +109,7 @@ func (d *azureComputeDiscovery) discoverFunction() ([]voc.IsCloudResource, error
 func (*azureComputeDiscovery) handleFunction(function *web.Site) voc.IsCompute {
 	return &voc.Function{
 		Compute: &voc.Compute{
-			CloudResource: &voc.CloudResource{
+			Resource: &voc.Resource{
 				ID:           voc.ResourceID(to.String(function.ID)),
 				Name:         to.String(function.Name),
 				CreationTime: 0, // No creation time available
@@ -120,7 +120,6 @@ func (*azureComputeDiscovery) handleFunction(function *web.Site) voc.IsCompute {
 			},
 		},
 	}
-
 }
 
 // Discover virtual machines
@@ -154,7 +153,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 
 	r := &voc.VirtualMachine{
 		Compute: &voc.Compute{
-			CloudResource: &voc.CloudResource{
+			Resource: &voc.Resource{
 				ID:           voc.ResourceID(to.String(vm.ID)),
 				Name:         to.String(vm.Name),
 				CreationTime: 0, // No creation time available
@@ -163,13 +162,12 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 					Region: *vm.Location,
 				},
 			}},
-		BootLog: &voc.BootLog{Log: &voc.Log{
+		BootLogging: &voc.BootLogging{Logging: &voc.Logging{
 			Enabled:         isBootDiagnosticEnabled(vm),
-			Output:          []voc.ResourceID{voc.ResourceID(bootLogOutput(vm))},
+			LoggingService:  []voc.ResourceID{voc.ResourceID(bootLogOutput(vm))},
 			RetentionPeriod: 0, // Currently, configuring the retention period for Managed Boot Diagnostics is not available. The logs will be overwritten after 1gb of space according to https://github.com/MicrosoftDocs/azure-docs/issues/69953
 		}},
-		OSLog: &voc.OSLog{}, // TODO(garuppel): Add OSLog
-		// TODO(garuppel) Add block storage resourceID
+		OSLogging: &voc.OSLogging{}, // TODO(garuppel): Add OSLog
 		BlockStorage: []voc.ResourceID{},
 	}
 

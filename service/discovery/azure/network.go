@@ -137,7 +137,7 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc
 	return &voc.LoadBalancer{
 		NetworkService: &voc.NetworkService{
 			Networking: &voc.Networking{
-				CloudResource: &voc.CloudResource{
+				Resource: &voc.Resource{
 					ID:           voc.ResourceID(to.String(lb.ID)),
 					Name:         to.String(lb.Name),
 					CreationTime: 0, // No creation time available
@@ -160,7 +160,7 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc
 func (*azureNetworkDiscovery) handleNetworkInterfaces(ni *network.Interface) voc.IsNetwork {
 	return &voc.NetworkInterface{
 		Networking: &voc.Networking{
-			CloudResource: &voc.CloudResource{
+			Resource: &voc.Resource{
 				ID:           voc.ResourceID(to.String(ni.ID)),
 				Name:         to.String(ni.Name),
 				CreationTime: 0, // No creation time available
