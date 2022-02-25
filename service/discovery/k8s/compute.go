@@ -50,16 +50,16 @@ func (d *k8sComputeDiscovery) Description() string {
 	return "Discover Kubernetes compute resources."
 }
 
-func (k k8sComputeDiscovery) List() ([]voc.IsCloudResource, error) {
+func (d k8sComputeDiscovery) List() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
-	pods, err := k.intf.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
+	pods, err := d.intf.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("could not list ingresses: %v", err)
 	}
 
 	for i := range pods.Items {
-		c := k.handlePod(&pods.Items[i])
+		c := d.handlePod(&pods.Items[i])
 
 		log.Infof("Adding container %+v", c)
 
@@ -69,10 +69,10 @@ func (k k8sComputeDiscovery) List() ([]voc.IsCloudResource, error) {
 	return list, nil
 }
 
-func (k k8sComputeDiscovery) handlePod(pod *v1.Pod) voc.IsCompute {
+func (d k8sComputeDiscovery) handlePod(pod *v1.Pod) voc.IsCompute {
 	r := &voc.Container{
 		Compute: &voc.Compute{
-			CloudResource: &voc.CloudResource{
+			Resource: &voc.Resource{
 				ID:           voc.ResourceID(getContainerResourceID(pod)),
 				Name:         pod.Name,
 				CreationTime: pod.CreationTimestamp.Unix(),
