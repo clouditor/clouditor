@@ -77,7 +77,7 @@ func TestMain(m *testing.M) {
 		Id:        "11111111-1111-1111-1111-111111111111",
 		ToolId:    "mock",
 		Timestamp: timestamppb.Now(),
-		Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}),
+		Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}),
 	}})
 
 	if err != nil {
