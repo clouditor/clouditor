@@ -27,5 +27,6 @@ package voc
 
 type Image struct {
 	*Resource
-	Application *Application `json:"application"`
+	Application	*Application `json:"application"`
 }
+

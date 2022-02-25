@@ -27,6 +27,7 @@ package voc
 
 type AnomalyDetection struct {
 	*Auditing
-	ApplicationLogging *ApplicationLogging `json:"applicationLogging"`
-	Enabled            bool                `json:"enabled"`
+	ApplicationLogging	*ApplicationLogging `json:"applicationLogging"`
+	Enabled	bool `json:"enabled"`
 }
+

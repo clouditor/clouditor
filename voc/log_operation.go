@@ -27,7 +27,8 @@ package voc
 
 type LogOperation struct {
 	*Operation
-	Logging *Logging `json:"logging"`
-	Call    string   `json:"call"`
-	Value   string   `json:"value"`
+	Logging	*Logging `json:"logging"`
+	Call	string `json:"call"`
+	Value	string `json:"value"`
 }
+

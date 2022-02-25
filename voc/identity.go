@@ -27,6 +27,7 @@ package voc
 
 type Identity struct {
 	*IdentityManagement
-	OTPBasedAuthentication      *OTPBasedAuthentication      `json:"oTPBasedAuthentication"`
-	PasswordBasedAuthentication *PasswordBasedAuthentication `json:"passwordBasedAuthentication"`
+	OTPBasedAuthentication	*OTPBasedAuthentication `json:"oTPBasedAuthentication"`
+	PasswordBasedAuthentication	*PasswordBasedAuthentication `json:"passwordBasedAuthentication"`
 }
+

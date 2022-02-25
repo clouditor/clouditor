@@ -27,6 +27,7 @@ package voc
 
 type L3Firewall struct {
 	*AccessRestriction
-	Inbound         bool   `json:"inbound"`
-	RestrictedPorts string `json:"restrictedPorts"`
+	Inbound	bool `json:"inbound"`
+	RestrictedPorts	string `json:"restrictedPorts"`
 }
+

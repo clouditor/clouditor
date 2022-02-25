@@ -27,5 +27,6 @@ package voc
 
 type PasswordBasedAuthentication struct {
 	*Authenticity
-	Activated bool `json:"activated"`
+	Activated	bool `json:"activated"`
 }
+

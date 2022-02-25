@@ -27,5 +27,6 @@ package voc
 
 type Container struct {
 	*Compute
-	Image *Image `json:"image"`
+	Image	[]ResourceID `json:"image"`
 }
+

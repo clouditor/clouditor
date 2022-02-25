@@ -29,6 +29,6 @@ type ManagedKeyEncryption struct {
 	*AtRestEncryption
 }
 
-func (m ManagedKeyEncryption) GetAtRestEncryption() *AtRestEncryption {
+func (m ManagedKeyEncryption) GetAtRestEncryption() *AtRestEncryption{ 
 	return m.AtRestEncryption
 }

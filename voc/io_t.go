@@ -28,3 +28,4 @@ package voc
 type IoT struct {
 	*Resource
 }
+

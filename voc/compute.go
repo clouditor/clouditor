@@ -27,5 +27,6 @@ package voc
 
 type Compute struct {
 	*Resource
-	NetworkInterface *NetworkInterface `json:"networkInterface"`
+	NetworkInterface	[]ResourceID `json:"networkInterface"`
 }
+

@@ -25,8 +25,9 @@
 
 package voc
 
-type HttpServer struct {
-	*Framework
-	HttpRequestHandler	*HttpRequestHandler `json:"httpRequestHandler"`
+type CloudResource struct {
+
+	GeoLocation	*GeoLocation `json:"geoLocation"`
+	Labels	map[string]string `json:"labels"`
 }
 

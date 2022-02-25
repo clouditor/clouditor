@@ -27,5 +27,6 @@ package voc
 
 type LoggingService struct {
 	*NetworkService
-	Storage *Storage `json:"storage"`
+	Storage	[]ResourceID `json:"storage"`
 }
+

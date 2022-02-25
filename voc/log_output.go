@@ -25,8 +25,10 @@
 
 package voc
 
-type HttpServer struct {
-	*Framework
-	HttpRequestHandler	*HttpRequestHandler `json:"httpRequestHandler"`
+type LogOutput struct {
+	*Functionality
+	Logging	[]ResourceID `json:"logging"`
+	Call	string `json:"call"`
+	Value	string `json:"value"`
 }
 

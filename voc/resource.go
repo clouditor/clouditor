@@ -26,6 +26,8 @@
 package voc
 
 type Resource struct {
-	GeoLocation *GeoLocation      `json:"geoLocation"`
-	Labels      map[string]string `json:"labels"`
+
+	GeoLocation	*GeoLocation `json:"geoLocation"`
+	Labels	map[string]string `json:"labels"`
 }
+

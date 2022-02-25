@@ -28,3 +28,4 @@ package voc
 type Operation struct {
 	*Functionality
 }
+

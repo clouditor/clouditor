@@ -28,3 +28,4 @@ package voc
 type ActivityLogging struct {
 	*Logging
 }
+

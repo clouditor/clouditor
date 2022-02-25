@@ -28,3 +28,4 @@ package voc
 type Account struct {
 	*Resource
 }
+
