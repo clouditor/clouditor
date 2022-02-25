@@ -181,6 +181,7 @@ service Orchestrator {
       put : "/v1/orchestrator/cloud_services/{service_id}/"
             "metric_configurations/"
             "{metric_id}"
+      body: "configuration"
     };
   }
 
@@ -205,7 +206,7 @@ service Orchestrator {
   }
 
   // Updates an existing metric implementation
-  rpc UpddateMetricImplementation(UpdateMetricImplementationRequest)
+  rpc UpdateMetricImplementation(UpdateMetricImplementationRequest)
       returns (MetricImplementation) {
     option (google.api.http) = {
       put : "/v1/orchestrator/metrics/{metric_id}/implementation"
