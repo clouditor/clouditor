@@ -236,7 +236,7 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 
 // handleEvidence is the helper method for the actual assessment used by AssessEvidence and AssessEvidences
 func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string) (err error) {
-	log.Infof("Evaluating evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, evidence.ToolId, evidence.Timestamp)
+	log.Infof("Assessing evidence with ID: %s | Resource ID: %s | Tool ID: %s | Time: %v", evidence.Id, resourceId, evidence.ToolId, evidence.Timestamp.AsTime())
 	log.Debugf("Evidence: %+v", evidence)
 
 	evaluations, err := policies.RunEvidence(evidence, s)
