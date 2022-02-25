@@ -28,4 +28,3 @@ package voc
 type BootLogging struct {
 	*Logging
 }
-

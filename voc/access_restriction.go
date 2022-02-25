@@ -28,4 +28,3 @@ package voc
 type AccessRestriction struct {
 	*Authorization
 }
-

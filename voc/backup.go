@@ -29,8 +29,7 @@ import "time"
 
 type Backup struct {
 	*Availability
-	RetentionPeriod	time.Duration `json:"retentionPeriod"`
-	Enabled	bool `json:"enabled"`
-	Policy	string `json:"policy"`
+	RetentionPeriod time.Duration `json:"retentionPeriod"`
+	Enabled         bool          `json:"enabled"`
+	Policy          string        `json:"policy"`
 }
-

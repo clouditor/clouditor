@@ -27,8 +27,8 @@ package voc
 
 type AtRestEncryption struct {
 	*Confidentiality
-	Algorithm	string `json:"algorithm"`
-	Enabled	bool `json:"enabled"`
+	Algorithm string `json:"algorithm"`
+	Enabled   bool   `json:"enabled"`
 }
 
 func (a AtRestEncryption) GetAtRestEncryption() *AtRestEncryption {

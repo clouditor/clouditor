@@ -27,7 +27,7 @@ package voc
 
 type StorageService struct {
 	*NetworkService
-	Storages	[]ResourceID `json:"storages"`
-	HttpEndpoint	*HttpEndpoint `json:"httpEndpoint"`
+	Storages *Storage `json:"storages"`
+	//Storages	[]ResourceID `json:"storages"`
+	HttpEndpoint *HttpEndpoint `json:"httpEndpoint"`
 }
-

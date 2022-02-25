@@ -28,4 +28,3 @@ package voc
 type CICDService struct {
 	*Resource
 }
-
