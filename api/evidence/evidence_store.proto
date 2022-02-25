@@ -52,7 +52,6 @@ service EvidenceStore {
   rpc ListEvidences(ListEvidencesRequest) returns (ListEvidencesResponse) {
     option (google.api.http) = {
       get : "/v1/evidence_store/evidences"
-      response_body : "*"
     };
   }
 }
