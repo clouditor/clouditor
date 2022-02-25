@@ -133,10 +133,10 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachine, erro
 			}
 
 			resources = append(resources, voc.VirtualMachine{
-				Compute: computeResource,
-				BlockStorage:     d.mapBlockStorageIDsOfVM(vm),
-				BootLogging: d.getBootLog(vm),
-				OSLogging:   d.getOSLog(vm),
+				Compute:      computeResource,
+				BlockStorage: d.mapBlockStorageIDsOfVM(vm),
+				BootLogging:  d.getBootLog(vm),
+				OSLogging:    d.getOSLog(vm),
 			})
 		}
 	}
@@ -194,8 +194,8 @@ func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.Function
 func (*computeDiscovery) getBootLog(_ *typesEC2.Instance) (l *voc.BootLogging) {
 	l = &voc.BootLogging{
 		Logging: &voc.Logging{
-			Auditing: nil,
-			LoggingService: nil,
+			Auditing:        nil,
+			LoggingService:  nil,
 			Enabled:         false,
 			RetentionPeriod: 0,
 		},
@@ -208,8 +208,8 @@ func (*computeDiscovery) getBootLog(_ *typesEC2.Instance) (l *voc.BootLogging) {
 func (*computeDiscovery) getOSLog(_ *typesEC2.Instance) (l *voc.OSLogging) {
 	l = &voc.OSLogging{
 		Logging: &voc.Logging{
-			Auditing: nil,
-			LoggingService: nil,
+			Auditing:        nil,
+			LoggingService:  nil,
 			Enabled:         false,
 			RetentionPeriod: 0,
 		},

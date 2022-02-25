@@ -312,7 +312,8 @@ func TestObjectStorage(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
 
-	objectStorage, ok := list[0].(*voc.ObjectStorage)
+	//objectStorage, ok := list[0].(*voc.ObjectStorage)
+	objectStorage, ok := list[0].(*voc.StorageService)
 
 	assert.True(t, ok)
 	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1", string(objectStorage.ID))
@@ -320,7 +321,7 @@ func TestObjectStorage(t *testing.T) {
 	assert.NotNil(t, objectStorage.CreationTime)
 	assert.Equal(t, "ObjectStorage", objectStorage.Type[0])
 	assert.Equal(t, "eastus", objectStorage.GeoLocation.Region)
-	assert.Equal(t, true, objectStorage.AtRestEncryption.GetAtRestEncryption().Enabled)
+	assert.Equal(t, true, objectStorage.Storages.AtRestEncryption.GetAtRestEncryption().Enabled)
 	assert.Equal(t, "https://account1.blob.core.windows.net/container1", objectStorage.HttpEndpoint.Url)
 	assert.Equal(t, true, objectStorage.HttpEndpoint.TransportEncryption.Enabled)
 	assert.Equal(t, true, objectStorage.HttpEndpoint.TransportEncryption.Enforced)
@@ -328,16 +329,16 @@ func TestObjectStorage(t *testing.T) {
 	assert.Equal(t, "TLS", objectStorage.HttpEndpoint.TransportEncryption.Algorithm)
 
 	// Check ManagedKeyEncryption
-	atRestEncryption := *objectStorage.GetAtRestEncryption()
+	atRestEncryption := *objectStorage.Storages.GetAtRestEncryption()
 	managedKeyEncryption, ok := atRestEncryption.(voc.ManagedKeyEncryption)
 	assert.True(t, ok)
 	assert.Equal(t, true, managedKeyEncryption.Enabled)
 	assert.Equal(t, "AES256", managedKeyEncryption.Algorithm)
 
 	// Check CustomerKeyEncryption
-	objectStorage, ok = list[4].(*voc.ObjectStorage)
+	objectStorage, ok = list[4].(*voc.StorageService)
 	assert.True(t, ok)
-	atRestEncryption = *objectStorage.GetAtRestEncryption()
+	atRestEncryption = *objectStorage.Storages.GetAtRestEncryption()
 	customerKeyEncryption, ok := atRestEncryption.(voc.CustomerKeyEncryption)
 	assert.True(t, ok)
 	assert.Equal(t, true, customerKeyEncryption.Enabled)
@@ -373,7 +374,7 @@ func TestFileStorage(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
 
-	fileStorage, ok := list[2].(*voc.FileStorage)
+	fileStorage, ok := list[2].(*voc.StorageService)
 
 	assert.True(t, ok)
 	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1", string(fileStorage.ID))
@@ -381,7 +382,7 @@ func TestFileStorage(t *testing.T) {
 	assert.NotNil(t, fileStorage.CreationTime)
 	assert.Equal(t, "FileStorage", fileStorage.Type[0])
 	assert.Equal(t, "eastus", fileStorage.GeoLocation.Region)
-	assert.Equal(t, true, fileStorage.AtRestEncryption.GetAtRestEncryption().Enabled)
+	assert.Equal(t, true, fileStorage.Storages.AtRestEncryption.GetAtRestEncryption().Enabled)
 	assert.Equal(t, "https://account1.file.core.windows.net/fileshare1", fileStorage.HttpEndpoint.Url)
 	assert.Equal(t, true, fileStorage.HttpEndpoint.TransportEncryption.Enabled)
 	assert.Equal(t, true, fileStorage.HttpEndpoint.TransportEncryption.Enforced)

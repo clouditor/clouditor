@@ -468,7 +468,7 @@ func (d *azureARMTemplateDiscovery) handleVirtualMachine(template map[string]int
 		BootLogging: &voc.BootLogging{
 			Logging: &voc.Logging{
 				Enabled:         bootDiagnosticsEnabled,
-				LoggingService: []voc.ResourceID{voc.ResourceID(storageUri)},
+				LoggingService:  []voc.ResourceID{voc.ResourceID(storageUri)},
 				RetentionPeriod: 0, // Currently, configuring the retention period for Managed Boot Diagnostics is not available. The logs will be overwritten after 1gb of space according to https://github.com/MicrosoftDocs/azure-docs/issues/69953
 			},
 		},

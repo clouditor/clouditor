@@ -204,17 +204,17 @@ func TestRunEvidence(t *testing.T) {
 							ID:   mockVM1ResourceID,
 							Type: []string{"Compute", "Virtual Machine", "Resource"},
 						}},
-					BlockStorage:     nil,
+					BlockStorage: nil,
 					BootLogging: &voc.BootLogging{
 						Logging: &voc.Logging{
-							LoggingService:          []voc.ResourceID{"SomeResourceId1", "SomeResourceId2"},
+							LoggingService:  []voc.ResourceID{"SomeResourceId1", "SomeResourceId2"},
 							Enabled:         true,
 							RetentionPeriod: 36,
 						},
 					},
 					OSLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
-							LoggingService:          []voc.ResourceID{"SomeResourceId2"},
+							LoggingService:  []voc.ResourceID{"SomeResourceId2"},
 							Enabled:         true,
 							RetentionPeriod: 36,
 						},
@@ -236,17 +236,17 @@ func TestRunEvidence(t *testing.T) {
 							ID:   mockVM2ResourceID,
 							Type: []string{"Compute", "Virtual Machine", "Resource"},
 						}},
-					BlockStorage:     nil,
+					BlockStorage: nil,
 					BootLogging: &voc.BootLogging{
 						Logging: &voc.Logging{
-							LoggingService:          []voc.ResourceID{},
+							LoggingService:  []voc.ResourceID{},
 							Enabled:         false,
 							RetentionPeriod: 1,
 						},
 					},
 					OSLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
-							LoggingService:          []voc.ResourceID{"SomeResourceId3"},
+							LoggingService:  []voc.ResourceID{"SomeResourceId3"},
 							Enabled:         false,
 							RetentionPeriod: 1,
 						},
