@@ -130,7 +130,7 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 		}
 		resources = append(resources, &voc.ObjectStorage{
 			Storage: &voc.Storage{
-				CloudResource: &voc.CloudResource{
+				Resource: &voc.Resource{
 					ID:           voc.ResourceID(b.arn),
 					Name:         b.name,
 					CreationTime: b.creationTime.Unix(),
@@ -141,6 +141,7 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 				},
 				AtRestEncryption: encryptionAtRest,
 			},
+			// TODO(garuppel): Update HttpEndpoint
 			HttpEndpoint: &voc.HttpEndpoint{
 				Url:                 b.endpoint,
 				TransportEncryption: encryptionAtTransmit,

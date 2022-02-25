@@ -204,7 +204,7 @@ func (d *azureStorageDiscovery) handleBlockStorage(disk compute.Disk) (*voc.Bloc
 
 	return &voc.BlockStorage{
 		Storage: &voc.Storage{
-			CloudResource: &voc.CloudResource{
+			Resource: &voc.Resource{
 				ID:           voc.ResourceID(to.String(disk.ID)),
 				Name:         to.String(disk.Name),
 				CreationTime: disk.TimeCreated.Unix(),
@@ -226,7 +226,7 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 
 	return &voc.ObjectStorage{
 		Storage: &voc.Storage{
-			CloudResource: &voc.CloudResource{
+			Resource: &voc.Resource{
 				ID:           voc.ResourceID(to.String(container.ID)),
 				Name:         to.String(container.Name),
 				CreationTime: account.CreationTime.Unix(),
@@ -237,6 +237,7 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 			},
 			AtRestEncryption: enc,
 		},
+		// TODO(garuppel): Update HTTPEndpoint
 		HttpEndpoint: &voc.HttpEndpoint{
 			Url: to.String(account.PrimaryEndpoints.Blob) + to.String(container.Name),
 			TransportEncryption: &voc.TransportEncryption{
@@ -256,7 +257,7 @@ func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem
 	}
 	return &voc.FileStorage{
 		Storage: &voc.Storage{
-			CloudResource: &voc.CloudResource{
+			Resource: &voc.Resource{
 				ID:           voc.ResourceID(to.String(fileshare.ID)),
 				Name:         to.String(fileshare.Name),
 				CreationTime: account.CreationTime.Unix(),
@@ -267,6 +268,7 @@ func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem
 			},
 			AtRestEncryption: enc,
 		},
+		// TODO(garuppel): Update HTTPEndpoint
 		HttpEndpoint: &voc.HttpEndpoint{
 			Url: to.String(account.PrimaryEndpoints.File) + to.String(fileshare.Name),
 			TransportEncryption: &voc.TransportEncryption{
