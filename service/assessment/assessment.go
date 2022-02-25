@@ -26,26 +26,25 @@
 package assessment
 
 import (
-	"context"
-	"encoding/json"
-	"fmt"
-	"io"
-	"sync"
-	"time"
-
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/policies"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"sync"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -160,16 +159,16 @@ func (s *Service) Authorizer() api.Authorizer {
 func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
 	resourceId, err := req.Evidence.Validate()
 	if err != nil {
-		log.Errorf("Invalid evidence: %v", err)
 		newError := fmt.Errorf("invalid evidence: %w", err)
-
+		log.Error(newError)
 		s.informHooks(nil, newError)
 
 		res = &assessment.AssessEvidenceResponse{
-			Status: false,
+			Status:        assessment.AssessEvidenceResponse_FAILED,
+			StatusMessage: newError.Error(),
 		}
 
-		return res, status.Errorf(codes.InvalidArgument, "invalid req: %v", newError)
+		return res, status.Errorf(codes.InvalidArgument, "%v", newError)
 	}
 
 	// Assess evidence
@@ -177,45 +176,60 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 
 	if err != nil {
 		res = &assessment.AssessEvidenceResponse{
-			Status: false,
+			Status:        assessment.AssessEvidenceResponse_FAILED,
+			StatusMessage: err.Error(),
 		}
 
-		return res, status.Errorf(codes.Internal, "error while handling evidence: %v", err)
+		newError := errors.New("error while handling evidence")
+		log.Error(newError)
+
+		return res, status.Errorf(codes.Internal, "%v", newError)
 	}
 
 	res = &assessment.AssessEvidenceResponse{
-		Status: true,
+		Status: assessment.AssessEvidenceResponse_ASSESSED,
 	}
 
 	return res, nil
 }
 
-// AssessEvidences is a method implementation of the assessment interface: It assesses multiple evidences (stream)
+// AssessEvidences is a method implementation of the assessment interface: It assesses multiple evidences (stream) and responds with a stream.
 func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) (err error) {
 	var (
 		req *assessment.AssessEvidenceRequest
+		res *assessment.AssessEvidenceResponse
 	)
 
 	for {
+
+		// TODO(all): Check context?
 		req, err = stream.Recv()
 
+		// If no more input of the stream is available, return
+		if err == io.EOF {
+			return nil
+		}
 		if err != nil {
-			// If no more input of the stream is available, return SendAndClose `error`
-			if err == io.EOF {
-				log.Infof("Stopped receiving streamed evidences")
-				return stream.SendAndClose(&emptypb.Empty{})
-			}
-
-			return err
+			newError := fmt.Errorf("cannot receive stream request: %w", err)
+			log.Error(newError)
+			return status.Errorf(codes.Unknown, "%v", newError)
 		}
 
 		// Call AssessEvidence for assessing a single evidence
 		assessEvidencesReq := &assessment.AssessEvidenceRequest{
 			Evidence: req.Evidence,
 		}
-		_, err = s.AssessEvidence(context.Background(), assessEvidencesReq)
+		res, err = s.AssessEvidence(context.Background(), assessEvidencesReq)
 		if err != nil {
-			return err
+			log.Errorf("Error assessing evidence: %v", err)
+		}
+
+		// Send response back to the client
+		err = stream.Send(res)
+		if err != nil {
+			newError := fmt.Errorf("cannot send response to the client: %w", err)
+			log.Error(newError)
+			return status.Errorf(codes.Unknown, "%v", newError)
 		}
 	}
 }
@@ -228,7 +242,7 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 	evaluations, err := policies.RunEvidence(evidence, s)
 	if err != nil {
 		newError := fmt.Errorf("could not evaluate evidence: %w", err)
-		log.Errorf(newError.Error())
+		log.Error(newError)
 
 		go s.informHooks(nil, newError)
 
@@ -272,6 +286,7 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 
 		// Inform hooks about new assessment result
 		go s.informHooks(result, nil)
+
 		// Send assessment result to the Orchestrator
 		err = s.sendToOrchestrator(result)
 		if err != nil {
@@ -401,8 +416,12 @@ func (s *Service) sendToOrchestrator(result *assessment.AssessmentResult) error 
 
 	log.Infof("Sending assessment result (%v) to Orchestrator", result.Id)
 
-	err := s.orchestratorStream.Send(result)
+	req := &orchestrator.StoreAssessmentResultRequest{
+		Result: result,
+	}
+	err := s.orchestratorStream.Send(req)
 	if err != nil {
+		log.Errorf("Error when sending assessment result to Orchestrator: %v", err)
 		return err
 	}
 

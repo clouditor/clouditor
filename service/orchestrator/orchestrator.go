@@ -36,8 +36,6 @@ import (
 
 	"clouditor.io/clouditor/persistence/inmemory"
 
-	"google.golang.org/protobuf/types/known/emptypb"
-
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
@@ -164,7 +162,10 @@ func (s *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.Ge
 		return config, nil
 	}
 
-	return nil, status.Errorf(codes.NotFound, "could not find metric configuration for metric %s in service %s", req.MetricId, req.ServiceId)
+	newError := fmt.Errorf("could not find metric configuration for metric %s in service %s", req.MetricId, req.ServiceId)
+	log.Error(newError)
+
+	return nil, status.Errorf(codes.NotFound, "%v", newError)
 }
 
 // ListMetricConfigurations retrieves a list of MetricConfiguration objects for a particular target
@@ -183,6 +184,7 @@ func (s *Service) ListMetricConfigurations(ctx context.Context, req *orchestrato
 		config, err := s.GetMetricConfiguration(ctx, &orchestrator.GetMetricConfigurationRequest{ServiceId: req.ServiceId, MetricId: metricId})
 
 		if err != nil {
+			log.Errorf("Error getting metric configuration: %v", err)
 			return nil, err
 		}
 
@@ -194,51 +196,67 @@ func (s *Service) ListMetricConfigurations(ctx context.Context, req *orchestrato
 
 // StoreAssessmentResult is a method implementation of the orchestrator interface: It receives an assessment result and stores it
 func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.StoreAssessmentResultRequest) (resp *orchestrator.StoreAssessmentResultResponse, err error) {
-
-	resp = &orchestrator.StoreAssessmentResultResponse{}
-
 	_, err = req.Result.Validate()
 
 	if err != nil {
-		log.Errorf("Invalid assessment result: %v", err)
 		newError := fmt.Errorf("invalid assessment result: %w", err)
+		log.Error(newError)
 
 		go s.informHook(nil, newError)
 
-		return resp, status.Errorf(codes.InvalidArgument, "invalid req: %v", err)
+		resp = &orchestrator.StoreAssessmentResultResponse{
+			Status:        false,
+			StatusMessage: newError.Error(),
+		}
+
+		return resp, status.Errorf(codes.InvalidArgument, "%v", newError)
 	}
 
 	s.results[req.Result.Id] = req.Result
 
 	go s.informHook(req.Result, nil)
 
-	return
+	resp = &orchestrator.StoreAssessmentResultResponse{
+		Status: true,
+	}
+
+	return resp, nil
 }
 
 func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreAssessmentResultsServer) (err error) {
-	var result *assessment.AssessmentResult
+	var (
+		result *orchestrator.StoreAssessmentResultRequest
+		res    *orchestrator.StoreAssessmentResultResponse
+	)
 
 	for {
 		result, err = stream.Recv()
 
-		if err != nil {
-			// If no more input of the stream is available, return SendAndClose `error`
-			if err == io.EOF {
-				log.Infof("Stopped receiving streamed assessment results")
-				return stream.SendAndClose(&emptypb.Empty{})
-			}
+		// If no more input of the stream is available, return
+		if err == io.EOF {
+			return nil
+		}
 
-			return err
+		if err != nil {
+			newError := fmt.Errorf("cannot receive stream request: %w", err)
+			log.Error(newError)
+			return status.Errorf(codes.Unknown, "%v", newError)
 		}
 
 		// Call StoreAssessmentResult() for storing a single assessment
 		storeAssessmentResultReq := &orchestrator.StoreAssessmentResultRequest{
-			Result: result,
+			Result: result.Result,
+		}
+		res, err = s.StoreAssessmentResult(context.Background(), storeAssessmentResultReq)
+		if err != nil {
+			log.Errorf("Error storing assessment result: %v", err)
 		}
 
-		_, err = s.StoreAssessmentResult(context.Background(), storeAssessmentResultReq)
+		err = stream.Send(res)
 		if err != nil {
-			return err
+			newError := fmt.Errorf("cannot stream response to the client: %w", err)
+			log.Error(newError)
+			return status.Errorf(codes.Unknown, "%v", newError.Error())
 		}
 	}
 }

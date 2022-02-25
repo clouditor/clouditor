@@ -290,7 +290,7 @@ func (s Service) Login(_ context.Context, request *auth.LoginRequest) (response 
 
 	if !result {
 		// authentication error
-		return nil, status.Errorf(codes.Unauthenticated, "login failed")
+		return nil, status.Error(codes.Unauthenticated, "login failed")
 	}
 
 	if token, err = issueToken(s.apiKey, user.Username, user.FullName, user.Email, expiry); err != nil {

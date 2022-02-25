@@ -92,9 +92,9 @@ service Orchestrator {
     };
   }
 
-  // Stores stream of assessment results provided by an assessment tool
-  rpc StoreAssessmentResults(stream AssessmentResult)
-      returns (google.protobuf.Empty);
+  // Stores stream of assessment results provided by an assessment tool and returns a response stream. Part of the public API, not exposed as REST.
+  rpc StoreAssessmentResults(stream StoreAssessmentResultRequest)
+      returns (stream StoreAssessmentResultResponse);
 
   // List all assessment results. Part of the public API, also exposed as REST.
   rpc ListAssessmentResults(ListAssessmentResultsRequest)
@@ -115,7 +115,7 @@ service Orchestrator {
   // Updates an existing metric
   rpc UpdateMetric(UpdateMetricRequest) returns (Metric) {
     option (google.api.http) = {
-      put : "/v1/orchestrator/metrics"
+      put : "/v1/orchestrator/metrics/{metric_id}"
       body : "metric"
     };
   }
@@ -173,7 +173,8 @@ service Orchestrator {
     };
   }
 
-  // Updates a metric configuration (target value and operator) for a specific service and metric ID
+  // Updates a metric configuration (target value and operator) for a specific
+  // service and metric ID
   rpc UpdateMetricConfiguration(UpdateMetricConfigurationRequest)
       returns (MetricConfiguration) {
     option (google.api.http) = {
@@ -184,7 +185,8 @@ service Orchestrator {
     };
   }
 
-  // Retrieves a metric configuration (target value and operator) for a specific service and metric ID
+  // Retrieves a metric configuration (target value and operator) for a specific
+  // service and metric ID
   rpc GetMetricConfiguration(GetMetricConfigurationRequest)
       returns (MetricConfiguration) {
     option (google.api.http) = {
@@ -194,11 +196,28 @@ service Orchestrator {
     };
   }
 
-  // Lists all a metric configurations (target value and operator) for a specific service ID
+  // Lists all a metric configurations (target value and operator) for a
+  // specific service ID
   rpc ListMetricConfigurations(ListMetricConfigurationRequest)
       returns (ListMetricConfigurationResponse) {
     option (google.api.http) = {
       get : "/v1/orchestrator/cloud_services/{service_id}/metric_configurations"
+    };
+  }
+
+  // Updates an existing metric implementation
+  rpc UpddateMetricImplementation(UpdateMetricImplementationRequest)
+      returns (MetricImplementation) {
+    option (google.api.http) = {
+      put : "/v1/orchestrator/metrics/{metric_id}/implementation"
+      body : "implementation"
+    };
+  }
+
+  // Returns the metric implementation of the passed metric id
+  rpc GetMetricImplementation(GetMetricImplementationRequest) returns (MetricImplementation) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/metrics/{metric_id}/implementation"
     };
   }
 }
@@ -221,7 +240,10 @@ message UpdateAssessmentToolRequest {
 message DeregisterAssessmentToolRequest { string tool_id = 1; }
 
 message StoreAssessmentResultRequest { AssessmentResult result = 1; }
-message StoreAssessmentResultResponse {}
+message StoreAssessmentResultResponse {
+  bool status = 1;
+  string status_message = 2;
+}
 
 message CreateMetricRequest { Metric metric = 1; }
 
@@ -268,6 +290,15 @@ message ListMetricConfigurationRequest { string service_id = 1; }
 message ListMetricConfigurationResponse {
   // A map of metric configurations associated by their metric ID
   map<string, MetricConfiguration> configurations = 1;
+}
+
+message UpdateMetricImplementationRequest {
+  string metric_id = 1;
+  MetricImplementation implementation = 2;
+}
+
+message GetMetricImplementationRequest {
+  string metric_id = 1;
 }
 
 // Represents an external tool or service that offers assessments according to

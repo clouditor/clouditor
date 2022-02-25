@@ -27,12 +27,16 @@ package evidences
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"io"
 	"reflect"
 	"runtime"
 	"sync"
 	"testing"
 
+	"github.com/google/uuid"
+	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -121,7 +125,8 @@ func TestStoreEvidence(t *testing.T) {
 			},
 			wantErr: true,
 			wantResp: &evidence.StoreEvidenceResponse{
-				Status: false,
+				Status:        false,
+				StatusMessage: "invalid evidence: tool id in evidence is missing",
 			},
 		},
 	}
@@ -149,26 +154,113 @@ func TestStoreEvidence(t *testing.T) {
 
 // TestStoreEvidences tests StoreEvidences
 func TestStoreEvidences(t *testing.T) {
-	type args struct {
-		stream evidence.EvidenceStore_StoreEvidencesServer
+	type fields struct {
+		count int
 	}
+
+	type args struct {
+		streamToServer            *mockStreamer
+		streamToClientWithSendErr *mockStreamerWithSendErr
+		streamToServerWithRecvErr *mockStreamerWithRecvErr
+	}
+
 	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
+		name            string
+		fields          fields
+		args            args
+		wantErr         bool
+		wantErrMessage  string
+		wantRespMessage *evidence.StoreEvidenceResponse
 	}{
 		{
-			name:    "Store 2 evidences to the map",
-			args:    args{stream: &mockStreamer{counter: 0}},
+			name:   "Store 1 evidence to the map",
+			fields: fields{count: 1},
+			args: args{
+				streamToServer: createMockStream(createStoreEvidenceRequestMocks(1))},
 			wantErr: false,
+			wantRespMessage: &evidence.StoreEvidenceResponse{
+				Status: true,
+			},
+		},
+		{
+			name:   "Store 2 evidences to the map",
+			fields: fields{count: 2},
+			args: args{
+				streamToServer: createMockStream(createStoreEvidenceRequestMocks(2))},
+			wantErr: false,
+			wantRespMessage: &evidence.StoreEvidenceResponse{
+				Status: true,
+			},
+		},
+		{
+			name:   "Store invalid evidence to the map",
+			fields: fields{count: 1},
+			args: args{
+				streamToServer: createMockStream([]*evidence.StoreEvidenceRequest{
+					{
+						Evidence: &evidence.Evidence{
+							Id:        uuid.NewString(),
+							ServiceId: "MockServiceId",
+							Timestamp: timestamppb.Now(),
+							Raw:       "",
+							Resource: toStructWithoutTest(voc.VirtualMachine{
+								Compute: &voc.Compute{
+									CloudResource: &voc.CloudResource{
+										ID: "mock-id-1",
+									},
+								},
+							}),
+						},
+					},
+				})},
+			wantErr: false,
+			wantRespMessage: &evidence.StoreEvidenceResponse{
+				Status:        false,
+				StatusMessage: "invalid evidence:",
+			},
+		},
+		{
+			name: "Error in stream to server - Recv()-err",
+			args: args{
+				streamToServerWithRecvErr: createMockStreamWithRecvErr(createStoreEvidenceRequestMocks(1))},
+			wantErr:        true,
+			wantErrMessage: "rpc error: code = Unknown desc = cannot receive stream request",
+		},
+		{
+			name: "Error in stream to client - Send()-err",
+			args: args{
+				streamToClientWithSendErr: createMockStreamWithSendErr(createStoreEvidenceRequestMocks(1))},
+			wantErr:        true,
+			wantErrMessage: "rpc error: code = Unknown desc = cannot send response to the client:",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			var (
+				err                error
+				responseFromServer *evidence.StoreEvidenceResponse
+			)
 			s := NewService()
-			if err := s.StoreEvidences(tt.args.stream); (err != nil) != tt.wantErr {
-				t.Errorf("StoreEvidences() error = %v, wantErr %v", err, tt.wantErr)
-				assert.Equal(t, 2, len(s.evidences))
+
+			if tt.args.streamToServer != nil {
+				err = s.StoreEvidences(tt.args.streamToServer)
+				responseFromServer = <-tt.args.streamToServer.SentFromServer
+			} else if tt.args.streamToClientWithSendErr != nil {
+				err = s.StoreEvidences(tt.args.streamToClientWithSendErr)
+			} else if tt.args.streamToServerWithRecvErr != nil {
+				err = s.StoreEvidences(tt.args.streamToServerWithRecvErr)
+			}
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Got AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if !tt.wantErr {
+				assert.Nil(t, err)
+				assert.Contains(t, responseFromServer.StatusMessage, tt.wantRespMessage.StatusMessage)
+			} else {
+				assert.Contains(t, err.Error(), tt.wantErrMessage)
 			}
 		})
 	}
@@ -293,8 +385,54 @@ func TestEvidenceHook(t *testing.T) {
 
 }
 
+// createStoreEvidenceRequestMocks creates store evidence requests with random evidence IDs
+func createStoreEvidenceRequestMocks(count int) []*evidence.StoreEvidenceRequest {
+	var mockRequests []*evidence.StoreEvidenceRequest
+
+	for i := 0; i < count; i++ {
+		evidenceRequest := &evidence.StoreEvidenceRequest{
+			Evidence: &evidence.Evidence{
+				Id:        uuid.NewString(),
+				ToolId:    fmt.Sprintf("MockToolId-%d", i),
+				ServiceId: fmt.Sprintf("MockServiceId-%d", i),
+				Timestamp: timestamppb.Now(),
+				Raw:       "",
+				Resource: toStructWithoutTest(voc.VirtualMachine{
+					Compute: &voc.Compute{
+						CloudResource: &voc.CloudResource{
+							ID: "mock-id-1",
+						},
+					},
+				}),
+			},
+		}
+		mockRequests = append(mockRequests, evidenceRequest)
+	}
+
+	return mockRequests
+}
+
 type mockStreamer struct {
-	counter int
+	grpc.ServerStream
+	RecvToServer   chan *evidence.StoreEvidenceRequest
+	SentFromServer chan *evidence.StoreEvidenceResponse
+}
+
+func createMockStream(requests []*evidence.StoreEvidenceRequest) *mockStreamer {
+	m := &mockStreamer{
+		RecvToServer: make(chan *evidence.StoreEvidenceRequest, len(requests)),
+	}
+	for _, req := range requests {
+		m.RecvToServer <- req
+	}
+
+	m.SentFromServer = make(chan *evidence.StoreEvidenceResponse, len(requests))
+	return m
+}
+
+func (m mockStreamer) Send(response *evidence.StoreEvidenceResponse) error {
+	m.SentFromServer <- response
+	return nil
 }
 
 func (mockStreamer) SendAndClose(_ *emptypb.Empty) error {
@@ -302,41 +440,15 @@ func (mockStreamer) SendAndClose(_ *emptypb.Empty) error {
 }
 
 func (m *mockStreamer) Recv() (req *evidence.StoreEvidenceRequest, err error) {
-	if m.counter == 0 {
-		m.counter++
-		return &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
-			Id:        "MockEvidenceId-1",
-			ToolId:    "MockToolId-1",
-			ServiceId: "MockServiceId-1",
-			Timestamp: timestamppb.Now(),
-			Raw:       "",
-			Resource: toStructWithoutTest(voc.VirtualMachine{
-				Compute: &voc.Compute{
-					CloudResource: &voc.CloudResource{
-						ID: "mock-id-1",
-					},
-				},
-			}),
-		}}, nil
-	} else if m.counter == 1 {
-		m.counter++
-		return &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
-			Id:        "MockEvidenceId-2",
-			ToolId:    "MockToolId-2",
-			ServiceId: "MockServiceId-2",
-			Timestamp: timestamppb.Now(),
-			Raw:       "",
-			Resource: toStructWithoutTest(voc.VirtualMachine{
-				Compute: &voc.Compute{
-					CloudResource: &voc.CloudResource{
-						ID: "mock-id-1",
-					},
-				},
-			}),
-		}}, nil
-	} else {
+	if len(m.RecvToServer) == 0 {
 		return nil, io.EOF
 	}
+	req, more := <-m.RecvToServer
+	if !more {
+		return nil, errors.New("empty")
+	}
+
+	return req, nil
 }
 
 func (mockStreamer) SetHeader(_ metadata.MD) error {
@@ -361,6 +473,69 @@ func (mockStreamer) SendMsg(_ interface{}) error {
 
 func (mockStreamer) RecvMsg(_ interface{}) error {
 	panic("implement me")
+}
+
+type mockStreamerWithRecvErr struct {
+	grpc.ServerStream
+	RecvToServer   chan *evidence.StoreEvidenceRequest
+	SentFromServer chan *evidence.StoreEvidenceResponse
+}
+
+func (mockStreamerWithRecvErr) Send(*evidence.StoreEvidenceResponse) error {
+	panic("implement me")
+}
+
+func (mockStreamerWithRecvErr) Recv() (*evidence.StoreEvidenceRequest, error) {
+
+	err := errors.New("Recv()-error")
+
+	return nil, err
+}
+
+func createMockStreamWithRecvErr(requests []*evidence.StoreEvidenceRequest) *mockStreamerWithRecvErr {
+	m := &mockStreamerWithRecvErr{
+		RecvToServer: make(chan *evidence.StoreEvidenceRequest, len(requests)),
+	}
+	for _, req := range requests {
+		m.RecvToServer <- req
+	}
+
+	m.SentFromServer = make(chan *evidence.StoreEvidenceResponse, len(requests))
+	return m
+}
+
+type mockStreamerWithSendErr struct {
+	grpc.ServerStream
+	RecvToServer   chan *evidence.StoreEvidenceRequest
+	SentFromServer chan *evidence.StoreEvidenceResponse
+}
+
+func (*mockStreamerWithSendErr) Send(*evidence.StoreEvidenceResponse) error {
+	return errors.New("Send()-err")
+}
+
+func createMockStreamWithSendErr(requests []*evidence.StoreEvidenceRequest) *mockStreamerWithSendErr {
+	m := &mockStreamerWithSendErr{
+		RecvToServer: make(chan *evidence.StoreEvidenceRequest, len(requests)),
+	}
+	for _, req := range requests {
+		m.RecvToServer <- req
+	}
+
+	m.SentFromServer = make(chan *evidence.StoreEvidenceResponse, len(requests))
+	return m
+}
+
+func (m *mockStreamerWithSendErr) Recv() (req *evidence.StoreEvidenceRequest, err error) {
+	if len(m.RecvToServer) == 0 {
+		return nil, io.EOF
+	}
+	req, more := <-m.RecvToServer
+	if !more {
+		return nil, errors.New("empty")
+	}
+
+	return req, nil
 }
 
 func toStruct(r voc.IsCloudResource, t *testing.T) (s *structpb.Value) {
