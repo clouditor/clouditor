@@ -4,7 +4,7 @@ go 1.17
 
 // runtime dependencies
 require (
-	github.com/Azure/azure-sdk-for-go v61.6.0+incompatible
+	github.com/Azure/azure-sdk-for-go v62.0.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.11.22
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.9
 	github.com/Azure/go-autorest/autorest/to v0.4.0
