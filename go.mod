@@ -15,10 +15,10 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.30.0
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.17.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.24.0
-	github.com/aws/aws-sdk-go-v2/service/sts v1.14.0
+	github.com/aws/aws-sdk-go-v2/service/sts v1.15.0
 	github.com/aws/smithy-go v1.11.0
 	github.com/fatih/camelcase v1.0.0
-	github.com/go-co-op/gocron v1.12.0
+	github.com/go-co-op/gocron v1.13.0
 	github.com/golang-jwt/jwt/v4 v4.3.0
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
