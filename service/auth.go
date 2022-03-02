@@ -28,10 +28,8 @@ package service
 import (
 	"context"
 	"crypto/ecdsa"
-	"crypto/tls"
 	"fmt"
 	"net"
-	"net/http"
 	"time"
 
 	"clouditor.io/clouditor/api/auth"
@@ -90,7 +88,7 @@ func WithPublicKey(publicKey *ecdsa.PublicKey) AuthOption {
 }
 
 // authContextKeyType is a key type that is used in context.WithValue to store the token info in the RPC context.
-// It should exlusivly be used with the value of AuthContextKey.
+// It should exclusively be used with the value of AuthContextKey.
 //
 // Why is this needed? To avoid conflicts, the string type should not be used directly but they should be type-aliased.
 type authContextKeyType string
@@ -114,24 +112,6 @@ func ConfigureAuth(opts ...AuthOption) *AuthConfig {
 		if config.Jwks == nil && config.useJWKS {
 			config.Jwks, err = keyfunc.Get(config.jwksURL, keyfunc.Options{
 				RefreshInterval: time.Hour,
-				Client: &http.Client{
-					Transport: &http.Transport{
-						TLSClientConfig: &tls.Config{
-							// Don't do this at home
-							InsecureSkipVerify: true,
-						},
-						Proxy: http.ProxyFromEnvironment,
-						DialContext: (&net.Dialer{
-							Timeout:   30 * time.Second,
-							KeepAlive: 30 * time.Second,
-						}).DialContext,
-						ForceAttemptHTTP2:     true,
-						MaxIdleConns:          100,
-						IdleConnTimeout:       90 * time.Second,
-						TLSHandshakeTimeout:   10 * time.Second,
-						ExpectContinueTimeout: 1 * time.Second,
-					},
-				},
 			})
 			if err != nil {
 				log.Debugf("Could not retrieve JWKS. API authentication will fail: %v", err)

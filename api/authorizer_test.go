@@ -30,13 +30,18 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
+	"fmt"
+	"net"
+	"net/http"
 	"reflect"
 	"testing"
 	"time"
 
 	"clouditor.io/clouditor/api/auth"
+
 	"github.com/golang-jwt/jwt/v4"
-	"golang.org/x/oauth2"
+	oauth2 "github.com/oxisto/oauth2go"
+	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -159,6 +164,79 @@ func TestInternalAuthorizer_Token(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("InternalAuthorizer.Token() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_oauthAuthorizer_fetchToken(t *testing.T) {
+	// start an embedded oauth server
+	srv := oauth2.NewServer(":0", oauth2.WithClient("client", "secret", ""))
+
+	ln, err := net.Listen("tcp", srv.Addr)
+	assert.NoError(t, err)
+
+	port := ln.Addr().(*net.TCPAddr).Port
+
+	go srv.Serve(ln)
+	defer func() {
+		err = srv.Close()
+		if err != http.ErrServerClosed {
+			assert.NoError(t, err)
+		}
+	}()
+
+	type fields struct {
+		tokenURL       string
+		clientID       string
+		clientSecret   string
+		protectedToken *protectedToken
+	}
+	type args struct {
+		refreshToken string
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		args     args
+		wantResp assert.ValueAssertionFunc
+		wantErr  bool
+	}{
+		{
+			name: "fetch token without refresh token",
+			fields: fields{
+				tokenURL:       fmt.Sprintf("http://localhost:%d/token", port),
+				clientID:       "client",
+				clientSecret:   "secret",
+				protectedToken: &protectedToken{},
+			},
+			wantResp: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				token, ok := i1.(*auth.TokenResponse)
+				assert.True(t, ok)
+				assert.NotNil(tt, token)
+
+				return assert.NotEmpty(tt, token.AccessToken)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			o := &oauthAuthorizer{
+				tokenURL:       tt.fields.tokenURL,
+				clientID:       tt.fields.clientID,
+				clientSecret:   tt.fields.clientSecret,
+				protectedToken: tt.fields.protectedToken,
+			}
+
+			gotResp, err := o.fetchToken(tt.args.refreshToken)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("oauthAuthorizer.fetchToken() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantResp != nil {
+				tt.wantResp(t, gotResp, tt.args.refreshToken)
 			}
 		})
 	}

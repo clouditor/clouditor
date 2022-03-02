@@ -34,9 +34,11 @@ import (
 
 	"clouditor.io/clouditor/api/auth"
 	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // Authorizer represents an interface which provides a token used for authenticating a client in server-client communication.
@@ -291,7 +293,24 @@ func (i *internalAuthorizer) fetchToken(refreshToken string) (resp *auth.TokenRe
 }
 
 func (o *oauthAuthorizer) fetchToken(refreshToken string) (resp *auth.TokenResponse, err error) {
-	return
+	config := &clientcredentials.Config{
+		ClientID:     o.clientID,
+		ClientSecret: o.clientSecret,
+		TokenURL:     o.tokenURL,
+	}
+
+	// TODO(oxisto): Avoid the unnecessary wrapping and return the token directly
+	token, err := config.Token(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	return &auth.TokenResponse{
+		AccessToken:  token.AccessToken,
+		TokenType:    token.TokenType,
+		RefreshToken: token.RefreshToken,
+		Expiry:       timestamppb.New(token.Expiry),
+	}, nil
 }
 
 // AuthURL is an implementation needed for Authorizer. It returns the OAuth 2.0 token endpoint.
