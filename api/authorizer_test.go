@@ -171,7 +171,11 @@ func Test_oauthAuthorizer_Token(t *testing.T) {
 
 	port := ln.Addr().(*net.TCPAddr).Port
 
-	go srv.Serve(ln)
+	go func() {
+		err = srv.Serve(ln)
+		assert.NoError(t, err)
+	}()
+
 	defer func() {
 		err = srv.Close()
 		if err != http.ErrServerClosed {
