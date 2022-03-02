@@ -26,7 +26,9 @@
 package k8s
 
 import (
+	"clouditor.io/clouditor/logging/formatter"
 	"context"
+	"github.com/sirupsen/logrus"
 	"testing"
 
 	"clouditor.io/clouditor/voc"
@@ -36,6 +38,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 )
+
+func init() {
+	log = logrus.WithField("component", "k8s-tests")
+	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true, FullTimestamp: true}}
+}
 
 func TestListIngresses(t *testing.T) {
 	client := fake.NewSimpleClientset()

@@ -46,6 +46,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
+	log = logrus.WithField("component", "auth-tests")
 	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{
 		ForceColors:   true,
 		FullTimestamp: true,

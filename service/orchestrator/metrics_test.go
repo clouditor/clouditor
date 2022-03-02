@@ -26,7 +26,9 @@
 package orchestrator
 
 import (
+	"clouditor.io/clouditor/logging/formatter"
 	"context"
+	"github.com/sirupsen/logrus"
 	"io/fs"
 	"testing"
 
@@ -36,6 +38,11 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 )
+
+func init() {
+	log = logrus.WithField("component", "orchestrator-tests")
+	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true, FullTimestamp: true}}
+}
 
 func TestLoadMetrics(t *testing.T) {
 	var err = LoadMetrics("notfound.json")

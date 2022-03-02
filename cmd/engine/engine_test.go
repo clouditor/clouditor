@@ -1,6 +1,8 @@
 package main
 
 import (
+	"clouditor.io/clouditor/logging/formatter"
+	"github.com/sirupsen/logrus"
 	"testing"
 
 	"clouditor.io/clouditor/rest"
@@ -8,6 +10,11 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
+
+func init() {
+	log = logrus.WithField("component", "engine-tests")
+	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true, FullTimestamp: true}}
+}
 
 func Test_doCmd(t *testing.T) {
 	type args struct {

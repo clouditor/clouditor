@@ -28,9 +28,11 @@
 package aws
 
 import (
+	"clouditor.io/clouditor/logging/formatter"
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/sirupsen/logrus"
 	"testing"
 	"time"
 
@@ -55,6 +57,11 @@ const (
 	mockBucket2KeyId        = "1234abcd-12ab-34cd-56ed-1234567890ab"
 	mockBucket3             = "mockbucket3"
 )
+
+func init() {
+	log = logrus.WithField("component", "aws-tests")
+	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true, FullTimestamp: true}}
+}
 
 type mockS3APINew struct{}
 

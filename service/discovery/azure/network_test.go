@@ -26,12 +26,19 @@
 package azure
 
 import (
+	"clouditor.io/clouditor/logging/formatter"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"testing"
 
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 )
+
+func init() {
+	log = logrus.WithField("component", "azure-tests")
+	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true, FullTimestamp: true}}
+}
 
 type mockNetworkSender struct {
 	mockSender
