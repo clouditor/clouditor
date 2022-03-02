@@ -218,15 +218,15 @@ func (d *azureStorageDiscovery) handleBlockStorage(disk compute.Disk) (*voc.Bloc
 	}, nil
 }
 
-func handleObjectStorage(account *storage.Account, container storage.ListContainerItem) (*voc.StorageService, error) {
+func handleObjectStorage(account *storage.Account, container storage.ListContainerItem) (*voc.ObjectStorage, error) {
 	//func handleObjectStorage(account *storage.Account, container storage.ListContainerItem) (*voc.ObjectStorage, error) {
 	enc, err := storageAtRestEncryption(account)
 	if err != nil {
 		return nil, fmt.Errorf("could not get object storage properties for the atRestEncryption: %w", err)
 	}
 
-	return &voc.StorageService{
-		Storages: &voc.Storage{
+	return &voc.ObjectStorage{
+		Storage: &voc.Storage{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(to.String(container.ID)),
 				Name:         to.String(container.Name),
@@ -238,6 +238,7 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 			},
 			AtRestEncryption: enc,
 		},
+		// TODO(garuppel): Update HttpEndpoint
 		HttpEndpoint: &voc.HttpEndpoint{
 			Url: to.String(account.PrimaryEndpoints.Blob) + to.String(container.Name),
 			TransportEncryption: &voc.TransportEncryption{
@@ -248,31 +249,6 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 			},
 		},
 	}, nil
-
-	//return &voc.ObjectStorage{
-	//	Storage: &voc.Storage{
-	//		Resource: &voc.Resource{
-	//			ID:           voc.ResourceID(to.String(container.ID)),
-	//			Name:         to.String(container.Name),
-	//			CreationTime: account.CreationTime.Unix(),
-	//			Type:         []string{"ObjectStorage", "Storage", "Resource"},
-	//			GeoLocation: voc.GeoLocation{
-	//				Region: *account.Location,
-	//			},
-	//		},
-	//		AtRestEncryption: enc,
-	//	},
-	//	// TODO(garuppel): Update HTTPEndpoint
-	//	HttpEndpoint: &voc.HttpEndpoint{
-	//		Url: to.String(account.PrimaryEndpoints.Blob) + to.String(container.Name),
-	//		TransportEncryption: &voc.TransportEncryption{
-	//			Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
-	//			Enabled:    true, // cannot be disabled
-	//			TlsVersion: string(account.MinimumTLSVersion),
-	//			Algorithm:  "TLS",
-	//		},
-	//	},
-	//}, nil
 }
 
 func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem) (*voc.FileStorage, error) {
