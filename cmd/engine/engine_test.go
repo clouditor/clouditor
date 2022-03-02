@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/rest"
+	service_discovery "clouditor.io/clouditor/service/discovery"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -18,6 +20,7 @@ func Test_doCmd(t *testing.T) {
 		name      string
 		prepViper func()
 		args      args
+		want      assert.ValueAssertionFunc
 		wantErr   bool
 	}{
 		{
@@ -26,6 +29,22 @@ func Test_doCmd(t *testing.T) {
 				viper.Set(DBInMemoryFlag, true)
 				viper.Set(APIHTTPPortFlag, 0)
 				viper.Set(APIgRPCPortFlag, 0)
+			},
+		},
+		{
+			name: "Launch with --oauth2-enabled",
+			prepViper: func() {
+				viper.Set(DBInMemoryFlag, true)
+				viper.Set(OAuth2EnabledFlag, true)
+				viper.Set(OAuth2EndpointFlag, "http://localhost:8000/token")
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				discoveryService := i1.(*service_discovery.Service)
+				if !assert.NotNil(t, discoveryService) {
+					return false
+				}
+
+				return assert.Equal(t, "http://localhost:8000/token", discoveryService.Authorizer().AuthURL())
 			},
 		},
 		{
@@ -61,6 +80,10 @@ func Test_doCmd(t *testing.T) {
 				assert.NotNil(t, discoveryService)
 				assert.NotNil(t, assessmentService)
 				assert.NotNil(t, evidenceStoreService)
+			}
+
+			if tt.want != nil {
+				tt.want(t, discoveryService)
 			}
 		})
 	}

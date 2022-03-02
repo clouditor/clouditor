@@ -38,11 +38,10 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/api/auth"
-	"golang.org/x/oauth2/clientcredentials"
-
 	"github.com/golang-jwt/jwt/v4"
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -271,4 +270,42 @@ func (mockConn) Invoke(_ context.Context, _ string, _ interface{}, _ interface{}
 
 func (mockConn) NewStream(_ context.Context, _ *grpc.StreamDesc, _ string, _ ...grpc.CallOption) (grpc.ClientStream, error) {
 	return nil, nil
+}
+
+func TestNewOAuthAuthorizerFromClientCredentials(t *testing.T) {
+	var config = clientcredentials.Config{
+		ClientID:     "client",
+		ClientSecret: "secret",
+		TokenURL:     "/token",
+	}
+
+	type args struct {
+		config *clientcredentials.Config
+	}
+	tests := []struct {
+		name string
+		args args
+		want Authorizer
+	}{
+		{
+			name: "new",
+			args: args{
+				&config,
+			},
+			want: &oauthAuthorizer{
+				authURL: "/token",
+				protectedToken: &protectedToken{
+					TokenSource: oauth2.ReuseTokenSource(nil, config.TokenSource(context.Background())),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewOAuthAuthorizerFromClientCredentials(tt.args.config); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewOAuthAuthorizerFromClientCredentials() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
