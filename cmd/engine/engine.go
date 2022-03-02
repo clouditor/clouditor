@@ -39,6 +39,7 @@ import (
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/persistence/inmemory"
 	"clouditor.io/clouditor/service"
+	"golang.org/x/oauth2/clientcredentials"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
@@ -79,6 +80,10 @@ const (
 	APICORSAllowedHeadersFlags = "api-cors-allowed-headers"
 	APICORSAllowedMethodsFlags = "api-cors-allowed-methods"
 	APIJWKSURLFlag             = "api-jwks-url"
+	OAuth2EndpointFlag         = "oauth2-token-endpoint"
+	OAuth2ClientIDFlag         = "oauth2-client-id"
+	OAuth2ClientSecretFlag     = "oauth2-client-secret"
+	OAuth2EnabledFlag          = "oauth2-enabled"
 	DBUserNameFlag             = "db-user-name"
 	DBPasswordFlag             = "db-password"
 	DBHostFlag                 = "db-host"
@@ -86,10 +91,15 @@ const (
 	DBPortFlag                 = "db-port"
 	DBInMemoryFlag             = "db-in-memory"
 	CreateDefaultTarget        = "target-default-create"
+	DiscoveryAutoStartFlag     = "discovery-auto-start"
 
 	DefaultAPIDefaultUser      = "clouditor"
 	DefaultAPIDefaultPassword  = "clouditor"
 	DefaultAPIgRPCPort         = 9090
+	DefaultOAuth2Endpoint      = "http://localhost:8080/token"
+	DefaultOAuth2ClientID      = ""
+	DefaultOAuth2ClientSecret  = ""
+	DefaultOAuth2Enabled       = false
 	DefaultDBUserName          = "postgres"
 	DefaultDBPassword          = "postgres"
 	DefaultDBHost              = "localhost"
@@ -97,6 +107,7 @@ const (
 	DefaultDBPort              = 5432
 	DefaultDBInMemory          = false
 	DefaultCreateDefaultTarget = true
+	DefaultDiscoveryAutoStart  = false
 
 	EnvPrefix = "CLOUDITOR"
 )
@@ -133,6 +144,10 @@ func init() {
 	engineCmd.Flags().Int16(APIgRPCPortFlag, DefaultAPIgRPCPort, "Specifies the port used for the gRPC API")
 	engineCmd.Flags().Int16(APIHTTPPortFlag, rest.DefaultAPIHTTPPort, "Specifies the port used for the HTTP API")
 	engineCmd.Flags().String(APIJWKSURLFlag, service.DefaultJWKSURL, "Specifies the JWKS URL used to verify authentication tokens in the gRPC and HTTP API")
+	engineCmd.Flags().String(OAuth2EndpointFlag, DefaultOAuth2Endpoint, "Specifies the OAuth 2.0 token endpoint")
+	engineCmd.Flags().String(OAuth2ClientIDFlag, DefaultOAuth2ClientID, "Specifies the OAuth 2.0 client ID")
+	engineCmd.Flags().String(OAuth2ClientSecretFlag, DefaultOAuth2ClientSecret, "Specifies the OAuth 2.0 client secret")
+	engineCmd.Flags().Bool(OAuth2EnabledFlag, DefaultOAuth2Enabled, "Specifies whether OAuth 2.0 authorization is enabled for API requests between services")
 	engineCmd.Flags().StringArray(APICORSAllowedOriginsFlags, rest.DefaultAllowedOrigins, "Specifies the origins allowed in CORS")
 	engineCmd.Flags().StringArray(APICORSAllowedHeadersFlags, rest.DefaultAllowedHeaders, "Specifies the headers allowed in CORS")
 	engineCmd.Flags().StringArray(APICORSAllowedMethodsFlags, rest.DefaultAllowedMethods, "Specifies the methods allowed in CORS")
@@ -143,6 +158,7 @@ func init() {
 	engineCmd.Flags().Int16(DBPortFlag, DefaultDBPort, "Provides port for database")
 	engineCmd.Flags().Bool(DBInMemoryFlag, DefaultDBInMemory, "Uses an in-memory database which is not persisted at all")
 	engineCmd.Flags().Bool(CreateDefaultTarget, DefaultCreateDefaultTarget, "Creates a default target cloud service if it does not exist")
+	engineCmd.Flags().Bool(DiscoveryAutoStartFlag, DefaultDiscoveryAutoStart, "Automatically start the discovery when engine starts")
 
 	_ = viper.BindPFlag(APIDefaultUserFlag, engineCmd.Flags().Lookup(APIDefaultUserFlag))
 	_ = viper.BindPFlag(APIDefaultPasswordFlag, engineCmd.Flags().Lookup(APIDefaultPasswordFlag))
@@ -152,6 +168,10 @@ func init() {
 	_ = viper.BindPFlag(APIgRPCPortFlag, engineCmd.Flags().Lookup(APIgRPCPortFlag))
 	_ = viper.BindPFlag(APIHTTPPortFlag, engineCmd.Flags().Lookup(APIHTTPPortFlag))
 	_ = viper.BindPFlag(APIJWKSURLFlag, engineCmd.Flags().Lookup(APIJWKSURLFlag))
+	_ = viper.BindPFlag(OAuth2EndpointFlag, engineCmd.Flags().Lookup(OAuth2EndpointFlag))
+	_ = viper.BindPFlag(OAuth2ClientIDFlag, engineCmd.Flags().Lookup(OAuth2ClientIDFlag))
+	_ = viper.BindPFlag(OAuth2ClientSecretFlag, engineCmd.Flags().Lookup(OAuth2ClientSecretFlag))
+	_ = viper.BindPFlag(OAuth2EnabledFlag, engineCmd.Flags().Lookup(OAuth2EnabledFlag))
 	_ = viper.BindPFlag(APICORSAllowedOriginsFlags, engineCmd.Flags().Lookup(APICORSAllowedOriginsFlags))
 	_ = viper.BindPFlag(APICORSAllowedHeadersFlags, engineCmd.Flags().Lookup(APICORSAllowedHeadersFlags))
 	_ = viper.BindPFlag(APICORSAllowedMethodsFlags, engineCmd.Flags().Lookup(APICORSAllowedMethodsFlags))
@@ -162,6 +182,7 @@ func init() {
 	_ = viper.BindPFlag(DBPortFlag, engineCmd.Flags().Lookup(DBPortFlag))
 	_ = viper.BindPFlag(DBInMemoryFlag, engineCmd.Flags().Lookup(DBInMemoryFlag))
 	_ = viper.BindPFlag(CreateDefaultTarget, engineCmd.Flags().Lookup(CreateDefaultTarget))
+	_ = viper.BindPFlag(DiscoveryAutoStartFlag, engineCmd.Flags().Lookup(DiscoveryAutoStartFlag))
 }
 
 func initConfig() {
@@ -206,20 +227,47 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		service_auth.WithApiKeyPath(viper.GetString(APIKeyPathFlag)),
 		service_auth.WithApiKeySaveOnCreate(viper.GetBool(APIKeySaveOnCreateFlag)),
 	)
-	discoveryService = service_discovery.NewService(
-		service_discovery.WithInternalAuthorizer(
+
+	var discoveryOpts service_discovery.ServiceOption
+	if viper.GetBool(OAuth2EnabledFlag) {
+		discoveryOpts = service_discovery.WithOAuth2Authorizer(
+			&clientcredentials.Config{
+				ClientID:     viper.GetString(OAuth2ClientIDFlag),
+				ClientSecret: viper.GetString(OAuth2ClientSecretFlag),
+				TokenURL:     viper.GetString(OAuth2EndpointFlag),
+			},
+		)
+	} else {
+		discoveryOpts = service_discovery.WithInternalAuthorizer(
 			api.DefaultInternalAuthorizerAddress,
 			viper.GetString(APIDefaultUserFlag),
 			viper.GetString(APIDefaultPasswordFlag),
-		),
+		)
+	}
+
+	discoveryService = service_discovery.NewService(
+		discoveryOpts,
 	)
 	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db))
-	assessmentService = service_assessment.NewService(
-		service_assessment.WithInternalAuthorizer(
+
+	var assessmentOpts service_assessment.ServiceOption
+	if viper.GetBool(OAuth2EnabledFlag) {
+		assessmentOpts = service_assessment.WithOAuth2Authorizer(
+			&clientcredentials.Config{
+				ClientID:     viper.GetString(OAuth2ClientIDFlag),
+				ClientSecret: viper.GetString(OAuth2ClientSecretFlag),
+				TokenURL:     viper.GetString(OAuth2EndpointFlag),
+			},
+		)
+	} else {
+		assessmentOpts = service_assessment.WithInternalAuthorizer(
 			api.DefaultInternalAuthorizerAddress,
 			viper.GetString(APIDefaultUserFlag),
 			viper.GetString(APIDefaultPasswordFlag),
-		),
+		)
+	}
+	assessmentService = service_assessment.NewService(
+		assessmentOpts,
 	)
 	evidenceStoreService = service_evidenceStore.NewService()
 
@@ -306,6 +354,11 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	}()
 
 	log.Infof("Starting gRPC endpoint on :%d", grpcPort)
+
+	// Automatically start the discovery, if we have this flag enabled
+	if viper.GetBool(DiscoveryAutoStartFlag) {
+		go discoveryService.Start(context.Background(), &discovery.StartDiscoveryRequest{})
+	}
 
 	// serve the gRPC socket
 	if err := server.Serve(sock); err != nil {

@@ -66,12 +66,9 @@ const DefaultInternalAuthorizerAddress = "localhost:9090"
 
 // internalAuthorizer is an authorizer that uses OAuth 2.0 client credentials and does a OAuth client
 // credentials flow
+// TODO(oxisto): We should use oauth2.ReuseTokenSource() instead, this basically takes care of the whole flow
 type oauthAuthorizer struct {
-	tokenURL string
-
-	clientID     string
-	clientSecret string
-
+	Config *clientcredentials.Config
 	*protectedToken
 }
 
@@ -128,22 +125,24 @@ func NewInternalAuthorizerFromPassword(url string, username string, password str
 // our internal direct gRPC connection to the authentication server, whereas OAuth 2.0 would use
 // a POST request with application/x-www-form-urlencoded data.
 func NewInternalAuthorizerFromToken(url string, token *oauth2.Token, grpcOptions ...grpc.DialOption) Authorizer {
-	return &internalAuthorizer{
+	var authorizer = &internalAuthorizer{
 		authURL:        url,
 		protectedToken: &protectedToken{token: token},
 		grpcOptions:    grpcOptions,
 	}
+
+	authorizer.fetchFunc = authorizer.fetchToken
+
+	return authorizer
 }
 
 // NewOAuthAuthorizerFromClientCredentials creates a new authorizer based on an OAuth 2.0 client credentials. It will attempt to refresh an expired access token,
 // if a refresh token is supplied. Note, that this does a similar flow as OAuth 2.0, but it uses
 // our internal direct gRPC connection to the authentication server, whereas OAuth 2.0 would use
 // a POST request with application/x-www-form-urlencoded data.
-func NewOAuthAuthorizerFromClientCredentials(tokenURL string, clientID string, clientSecret string) Authorizer {
+func NewOAuthAuthorizerFromClientCredentials(config *clientcredentials.Config) Authorizer {
 	var authorizer = &oauthAuthorizer{
-		tokenURL:       tokenURL,
-		clientID:       clientID,
-		clientSecret:   clientSecret,
+		Config:         config,
 		protectedToken: &protectedToken{},
 	}
 
@@ -293,14 +292,8 @@ func (i *internalAuthorizer) fetchToken(refreshToken string) (resp *auth.TokenRe
 }
 
 func (o *oauthAuthorizer) fetchToken(refreshToken string) (resp *auth.TokenResponse, err error) {
-	config := &clientcredentials.Config{
-		ClientID:     o.clientID,
-		ClientSecret: o.clientSecret,
-		TokenURL:     o.tokenURL,
-	}
-
 	// TODO(oxisto): Avoid the unnecessary wrapping and return the token directly
-	token, err := config.Token(context.Background())
+	token, err := o.Config.Token(context.Background())
 	if err != nil {
 		return nil, err
 	}
@@ -315,7 +308,7 @@ func (o *oauthAuthorizer) fetchToken(refreshToken string) (resp *auth.TokenRespo
 
 // AuthURL is an implementation needed for Authorizer. It returns the OAuth 2.0 token endpoint.
 func (o *oauthAuthorizer) AuthURL() string {
-	return o.tokenURL
+	return o.Config.TokenURL
 }
 
 // DefaultGrpcDialOptions returns a set of sensible default list of grpc.DialOption values. It includes

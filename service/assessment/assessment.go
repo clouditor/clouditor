@@ -40,6 +40,7 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/policies"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+	"golang.org/x/oauth2/clientcredentials"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
@@ -126,6 +127,13 @@ func WithOrchestratorAddress(address string) ServiceOption {
 func WithInternalAuthorizer(address string, username string, password string, opts ...grpc.DialOption) ServiceOption {
 	return func(s *Service) {
 		s.SetAuthorizer(api.NewInternalAuthorizerFromPassword(address, username, password, opts...))
+	}
+}
+
+// WithInternalAuthorizer is an option to use an OAuth 2.0 authorizer
+func WithOAuth2Authorizer(config *clientcredentials.Config) ServiceOption {
+	return func(s *Service) {
+		s.SetAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(config))
 	}
 }
 

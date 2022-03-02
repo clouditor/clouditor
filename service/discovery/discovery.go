@@ -33,6 +33,7 @@ import (
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/service/discovery/azure"
 	"clouditor.io/clouditor/service/discovery/k8s"
+	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/google/uuid"
@@ -97,6 +98,13 @@ func WithAssessmentAddress(address string) ServiceOption {
 func WithInternalAuthorizer(address string, username string, password string, opts ...grpc.DialOption) ServiceOption {
 	return func(s *Service) {
 		s.SetAuthorizer(api.NewInternalAuthorizerFromPassword(address, username, password, opts...))
+	}
+}
+
+// WithInternalAuthorizer is an option to use an OAuth 2.0 authorizer
+func WithOAuth2Authorizer(config *clientcredentials.Config) ServiceOption {
+	return func(s *Service) {
+		s.SetAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(config))
 	}
 }
 

@@ -21,7 +21,28 @@
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/engine/engine.go",
             "cwd": "${workspaceFolder}",
-            "args": ["--db-in-memory"],
+            "args": [
+                "--db-in-memory"
+            ],
+            "env": {},
+            "preLaunchTask": "go: generate"
+        },
+        {
+            "name": "Launch engine with local external OAuth 2.0 server",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/engine/engine.go",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "--db-in-memory",
+                "--oauth2-enabled",
+                "--oauth2-client-id=client",
+                "--oauth2-client-secret=secret",
+                "--oauth2-token-endpoint=http://localhost:8000/token",
+                "--api-jwks-url=http://localhost:8000/.well-known/jwks.json",
+                "--discovery-auto-start=true"
+            ],
             "env": {},
             "preLaunchTask": "go: generate"
         }

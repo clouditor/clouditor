@@ -38,6 +38,7 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/api/auth"
+	"golang.org/x/oauth2/clientcredentials"
 
 	"github.com/golang-jwt/jwt/v4"
 	oauth2 "github.com/oxisto/oauth2go"
@@ -187,9 +188,7 @@ func Test_oauthAuthorizer_fetchToken(t *testing.T) {
 	}()
 
 	type fields struct {
-		tokenURL       string
-		clientID       string
-		clientSecret   string
+		Config         *clientcredentials.Config
 		protectedToken *protectedToken
 	}
 	type args struct {
@@ -205,9 +204,11 @@ func Test_oauthAuthorizer_fetchToken(t *testing.T) {
 		{
 			name: "fetch token without refresh token",
 			fields: fields{
-				tokenURL:       fmt.Sprintf("http://localhost:%d/token", port),
-				clientID:       "client",
-				clientSecret:   "secret",
+				Config: &clientcredentials.Config{
+					ClientID:     "client",
+					ClientSecret: "secret",
+					TokenURL:     fmt.Sprintf("http://localhost:%d/token", port),
+				},
 				protectedToken: &protectedToken{},
 			},
 			wantResp: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
@@ -223,9 +224,7 @@ func Test_oauthAuthorizer_fetchToken(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			o := &oauthAuthorizer{
-				tokenURL:       tt.fields.tokenURL,
-				clientID:       tt.fields.clientID,
-				clientSecret:   tt.fields.clientSecret,
+				Config:         tt.fields.Config,
 				protectedToken: tt.fields.protectedToken,
 			}
 
