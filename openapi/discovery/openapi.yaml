@@ -71,7 +71,6 @@ components:
         StartDiscoveryRequest:
             type: object
             properties: {}
-            description: 'TODO(lebogg): Add destinations (url+port) for assessment and evidence store'
         StartDiscoveryResponse:
             type: object
             properties:
