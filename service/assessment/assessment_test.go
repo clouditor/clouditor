@@ -906,7 +906,8 @@ func TestService_initEvidenceStoreStream(t *testing.T) {
 				[]grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.Equal(tt, err.Error(), "could not set up stream for storing evidences: rpc error: code = Unauthenticated desc = transport: per-RPC creds failed due to error: error while logging in: rpc error: code = Unauthenticated desc = login failed")
+				status, _ := status.FromError(errors.Unwrap(err))
+				return assert.Equal(t, codes.Unauthenticated, status.Code())
 			},
 		},
 	}
@@ -944,16 +945,8 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				// We are looking for a connection refused message
-				innerErr := errors.Unwrap(err)
-				s, _ := status.FromError(innerErr)
-
-				if s.Code() != codes.Unavailable {
-					tt.Errorf("Status should be codes.Unavailable: %v", s.Code())
-					return false
-				}
-
-				return true
+				status, _ := status.FromError(errors.Unwrap(err))
+				return assert.Equal(t, codes.Unavailable, status.Code())
 			},
 		},
 		{
@@ -990,7 +983,8 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 				[]grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.Equal(tt, err.Error(), "could not set up stream for storing assessment results: rpc error: code = Unauthenticated desc = transport: per-RPC creds failed due to error: error while logging in: rpc error: code = Unauthenticated desc = login failed")
+				status, _ := status.FromError(errors.Unwrap(err))
+				return assert.Equal(t, codes.Unauthenticated, status.Code())
 			},
 		},
 	}

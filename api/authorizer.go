@@ -27,10 +27,7 @@ package api
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"sync"
-	"time"
 
 	"clouditor.io/clouditor/api/auth"
 	"golang.org/x/oauth2"
@@ -65,55 +62,43 @@ const DefaultInternalAuthorizerAddress = "localhost:9090"
 
 // internalAuthorizer is an authorizer that uses OAuth 2.0 client credentials and does a OAuth client
 // credentials flow
-// TODO(oxisto): We should use oauth2.ReuseTokenSource() instead, this basically takes care of the whole flow
 type oauthAuthorizer struct {
-	Config *clientcredentials.Config
+	// TODO(oxisto): check, if this is really needed
+	authURL string
+
 	*protectedToken
 }
 
 // internalAuthorizer is an authorizer that uses the Clouditor internal auth server (using gRPC) and
 // does a login flow using username and password
 type internalAuthorizer struct {
+	// TODO(oxisto): check, if this is really needed
 	authURL string
-
-	username string
-	password string
-
-	// grpcOptions contains additional grpc dial options
-	grpcOptions []grpc.DialOption
-
-	client auth.AuthenticationClient
-	conn   grpc.ClientConnInterface
 
 	*protectedToken
 }
 
-type fetchFunc func(refreshToken string) (*oauth2.Token, error)
-
 // baseAuthorizer contains fields that are shared by all authorizers
+//
+// TODO(oxisto): Rename to something that is more tied to the grpc per-request interface
 type protectedToken struct {
-	// fetchFunc is a function that fetches a token, if it needs to be refreshed (or initially retrieved)
-	fetchFunc fetchFunc
-
-	// token contains the current token. It will be checked for expiry in the Token() method.
-	token *oauth2.Token
-
-	// tokenMutex is a Mutex that allowes concurrent access to our token
-	tokenMutex sync.RWMutex
+	oauth2.TokenSource
 }
 
 // NewInternalAuthorizerFromPassword creates a new authorizer based on a (gRPC) URL of the
 // authentication server and a username / password combination
 func NewInternalAuthorizerFromPassword(url string, username string, password string, grpcOptions ...grpc.DialOption) Authorizer {
 	var authorizer = &internalAuthorizer{
-		authURL:        url,
-		username:       username,
-		password:       password,
-		grpcOptions:    grpcOptions,
-		protectedToken: &protectedToken{},
+		authURL: url,
+		protectedToken: &protectedToken{
+			TokenSource: oauth2.ReuseTokenSource(nil, &internalTokenSource{
+				authURL:     url,
+				username:    username,
+				password:    password,
+				grpcOptions: grpcOptions,
+			}),
+		},
 	}
-
-	authorizer.fetchFunc = authorizer.fetchToken
 
 	return authorizer
 }
@@ -124,13 +109,22 @@ func NewInternalAuthorizerFromPassword(url string, username string, password str
 // our internal direct gRPC connection to the authentication server, whereas OAuth 2.0 would use
 // a POST request with application/x-www-form-urlencoded data.
 func NewInternalAuthorizerFromToken(url string, token *oauth2.Token, grpcOptions ...grpc.DialOption) Authorizer {
-	var authorizer = &internalAuthorizer{
-		authURL:        url,
-		protectedToken: &protectedToken{token: token},
-		grpcOptions:    grpcOptions,
+	var refreshToken string
+
+	if token != nil {
+		refreshToken = token.RefreshToken
 	}
 
-	authorizer.fetchFunc = authorizer.fetchToken
+	var authorizer = &internalAuthorizer{
+		authURL: url,
+		protectedToken: &protectedToken{
+			TokenSource: oauth2.ReuseTokenSource(token, &internalTokenSource{
+				authURL:      url,
+				refreshToken: refreshToken,
+				grpcOptions:  grpcOptions,
+			}),
+		},
+	}
 
 	return authorizer
 }
@@ -141,11 +135,11 @@ func NewInternalAuthorizerFromToken(url string, token *oauth2.Token, grpcOptions
 // a POST request with application/x-www-form-urlencoded data.
 func NewOAuthAuthorizerFromClientCredentials(config *clientcredentials.Config) Authorizer {
 	var authorizer = &oauthAuthorizer{
-		Config:         config,
-		protectedToken: &protectedToken{},
+		authURL: config.TokenURL,
+		protectedToken: &protectedToken{
+			TokenSource: oauth2.ReuseTokenSource(nil, config.TokenSource(context.Background())),
+		},
 	}
-
-	authorizer.fetchFunc = authorizer.fetchToken
 
 	return authorizer
 }
@@ -176,67 +170,27 @@ func (*protectedToken) RequireTransportSecurity() bool {
 	return false
 }
 
-// Token is an implementation for the interface oauth2.TokenSource so we can use this authorizer
-// in (almost) the same way as any other OAuth 2.0 token endpoint. It will fetch an access token
-// (and possibly a refresh token), if no token is stored yet in the authorizer or if the token is expired.
-//
-// The "refresh" of a token will either be done by a refresh token (if it exists) or by the stored combination
-// of username / password.
-func (p *protectedToken) Token() (*oauth2.Token, error) {
-	var (
-		token *oauth2.Token
-		err   error
-	)
-
-	// Lock the token for reading, so that we are sure to get the recent token,
-	// if another call is currently fetching a new one and thus modifying it.
-	p.tokenMutex.RLock()
-
-	// Check if we already have a token and if it is still ok
-	if p.token != nil && p.token.Expiry.After(time.Now()) {
-		// Defer the unlock, if we return here
-		defer p.tokenMutex.RUnlock()
-		return p.token, nil
-	}
-
-	// Unlock a previous read, if we did not return. Otherwise we will block ourselves.
-	p.tokenMutex.RUnlock()
-
-	// Lock the token for modification
-	p.tokenMutex.Lock()
-	// Defer the Unlock so we definitely unlock once we exit this function
-	defer p.tokenMutex.Unlock()
-
-	// Fetch the token
-	if p.fetchFunc == nil {
-		return nil, errors.New("no token fetch function was specified")
-	}
-
-	var refreshToken = ""
-	if p.token != nil {
-		refreshToken = p.token.RefreshToken
-	}
-
-	token, err = p.fetchFunc(refreshToken)
-	if err != nil {
-		// Return without refreshing the token. At this point, the token will still be invalid
-		// and the next call to Token() will try again. This way we can mitigate temporary errors.
-		return nil, fmt.Errorf("error while logging in: %w", err)
-	}
-
-	// Store the current token, if login was successful
-	p.token = token
-
-	return p.token, nil
-}
-
 // AuthURL is an implementation needed for Authorizer. It returns the gRPC address of the authorization server.
 func (i *internalAuthorizer) AuthURL() string {
 	return i.authURL
 }
 
+type internalTokenSource struct {
+	authURL string
+
+	refreshToken string
+	username     string
+	password     string
+
+	// grpcOptions contains additional grpc dial options
+	grpcOptions []grpc.DialOption
+
+	client auth.AuthenticationClient
+	conn   grpc.ClientConnInterface
+}
+
 // init initializes the authorizer. This is called when fetching a token, if this authorizer has not been initialized.
-func (i *internalAuthorizer) init() (err error) {
+func (i *internalTokenSource) init() (err error) {
 	// Note, that we do NOT want any credentials.PerRPCCredentials dial option on this connection because
 	// the API of the auth service is available without token authentication. Otherwise, a first login
 	// would be impossible.
@@ -260,7 +214,7 @@ func (i *internalAuthorizer) init() (err error) {
 	return nil
 }
 
-func (i *internalAuthorizer) fetchToken(refreshToken string) (token *oauth2.Token, err error) {
+func (i *internalTokenSource) Token() (token *oauth2.Token, err error) {
 	var resp *auth.TokenResponse
 
 	// We do a lazy initialization here, so the first request might take a little bit longer.
@@ -273,10 +227,10 @@ func (i *internalAuthorizer) fetchToken(refreshToken string) (token *oauth2.Toke
 	}
 
 	// Otherwise, we need to re-authenticate
-	if refreshToken != "" {
+	if i.refreshToken != "" {
 		resp, err = i.client.Token(context.TODO(), &auth.TokenRequest{
 			GrantType:    "refresh_token",
-			RefreshToken: refreshToken,
+			RefreshToken: i.refreshToken,
 		})
 	} else {
 		resp, err = i.client.Login(context.TODO(), &auth.LoginRequest{
@@ -292,18 +246,15 @@ func (i *internalAuthorizer) fetchToken(refreshToken string) (token *oauth2.Toke
 			Expiry:       resp.GetExpiry().AsTime(),
 			TokenType:    resp.TokenType,
 		}
+		i.refreshToken = resp.RefreshToken
 	}
 
 	return
 }
 
-func (o *oauthAuthorizer) fetchToken(refreshToken string) (token *oauth2.Token, err error) {
-	return o.Config.Token(context.Background())
-}
-
 // AuthURL is an implementation needed for Authorizer. It returns the OAuth 2.0 token endpoint.
 func (o *oauthAuthorizer) AuthURL() string {
-	return o.Config.TokenURL
+	return o.authURL
 }
 
 // DefaultGrpcDialOptions returns a set of sensible default list of grpc.DialOption values. It includes

@@ -75,14 +75,9 @@ func init() {
 	mockAccessToken, _ = claims.SignedString(tmpKey)
 }
 
-func TestInternalAuthorizer_Token(t *testing.T) {
+func Test_internalAuthorizer_Token(t *testing.T) {
 	type fields struct {
 		authURL        string
-		grpcOptions    []grpc.DialOption
-		username       string
-		password       string
-		client         auth.AuthenticationClient
-		conn           grpc.ClientConnInterface
 		protectedToken *protectedToken
 	}
 	tests := []struct {
@@ -94,12 +89,12 @@ func TestInternalAuthorizer_Token(t *testing.T) {
 		{
 			name: "Fetch access token with refresh token",
 			fields: fields{
-				client: &mockAuthClient{},
-				conn:   &mockConn{},
 				protectedToken: &protectedToken{
-					token: &oauth2.Token{
-						RefreshToken: mockRefreshToken,
-					},
+					TokenSource: oauth2.ReuseTokenSource(nil, &internalTokenSource{
+						refreshToken: mockRefreshToken,
+						client:       &mockAuthClient{},
+						conn:         &mockConn{},
+					}),
 				},
 			},
 			want: &oauth2.Token{
@@ -111,11 +106,14 @@ func TestInternalAuthorizer_Token(t *testing.T) {
 		{
 			name: "Fetch access token with username",
 			fields: fields{
-				client:         &mockAuthClient{},
-				conn:           &mockConn{},
-				username:       "mock",
-				password:       "mock",
-				protectedToken: &protectedToken{},
+				protectedToken: &protectedToken{
+					TokenSource: oauth2.ReuseTokenSource(nil, &internalTokenSource{
+						client:   &mockAuthClient{},
+						conn:     &mockConn{},
+						username: "mock",
+						password: "mock",
+					}),
+				},
 			},
 			want: &oauth2.Token{
 				AccessToken: mockAccessToken,
@@ -126,14 +124,15 @@ func TestInternalAuthorizer_Token(t *testing.T) {
 		{
 			name: "Token still valid",
 			fields: fields{
-				client: &mockAuthClient{},
-				conn:   &mockConn{},
 				protectedToken: &protectedToken{
-					token: &oauth2.Token{
+					TokenSource: oauth2.ReuseTokenSource(&oauth2.Token{
 						AccessToken: mockAccessToken,
 						TokenType:   "Bearer",
 						Expiry:      mockExpiry,
-					},
+					}, &internalTokenSource{
+						client: &mockAuthClient{},
+						conn:   &mockConn{},
+					}),
 				},
 			},
 			want: &oauth2.Token{
@@ -148,15 +147,8 @@ func TestInternalAuthorizer_Token(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			i := &internalAuthorizer{
 				authURL:        tt.fields.authURL,
-				grpcOptions:    tt.fields.grpcOptions,
-				username:       tt.fields.username,
-				password:       tt.fields.password,
-				client:         tt.fields.client,
-				conn:           tt.fields.conn,
 				protectedToken: tt.fields.protectedToken,
 			}
-
-			i.fetchFunc = i.fetchToken
 
 			got, err := i.Token()
 			if (err != nil) != tt.wantErr {
@@ -170,7 +162,7 @@ func TestInternalAuthorizer_Token(t *testing.T) {
 	}
 }
 
-func Test_oauthAuthorizer_fetchToken(t *testing.T) {
+func Test_oauthAuthorizer_Token(t *testing.T) {
 	// start an embedded oauth server
 	srv := oauth2.NewServer(":0", oauth2.WithClient("client", "secret", ""))
 
@@ -204,12 +196,15 @@ func Test_oauthAuthorizer_fetchToken(t *testing.T) {
 		{
 			name: "fetch token without refresh token",
 			fields: fields{
-				Config: &clientcredentials.Config{
-					ClientID:     "client",
-					ClientSecret: "secret",
-					TokenURL:     fmt.Sprintf("http://localhost:%d/token", port),
+				protectedToken: &protectedToken{
+					oauth2.ReuseTokenSource(nil,
+						(&clientcredentials.Config{
+							ClientID:     "client",
+							ClientSecret: "secret",
+							TokenURL:     fmt.Sprintf("http://localhost:%d/token", port),
+						}).TokenSource(context.Background()),
+					),
 				},
-				protectedToken: &protectedToken{},
 			},
 			wantResp: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				token, ok := i1.(*oauth2.Token)
@@ -224,11 +219,10 @@ func Test_oauthAuthorizer_fetchToken(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			o := &oauthAuthorizer{
-				Config:         tt.fields.Config,
 				protectedToken: tt.fields.protectedToken,
 			}
 
-			gotResp, err := o.fetchToken(tt.args.refreshToken)
+			gotResp, err := o.Token()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("oauthAuthorizer.fetchToken() error = %v, wantErr %v", err, tt.wantErr)
 				return

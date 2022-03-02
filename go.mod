@@ -51,7 +51,7 @@ require (
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0
 )
 
-require github.com/oxisto/oauth2go v0.5.1
+require github.com/oxisto/oauth2go v0.5.2
 
 require (
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
