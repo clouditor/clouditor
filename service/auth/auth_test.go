@@ -45,7 +45,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func TestMain(m *testing.M) {
+func init() {
 	log = logrus.WithField("component", "auth-tests")
 	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{
 		ForceColors:   true,
