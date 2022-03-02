@@ -26,7 +26,6 @@
 package main
 
 import (
-	"clouditor.io/clouditor/logging/formatter"
 	"context"
 	"errors"
 	"fmt"
@@ -35,34 +34,32 @@ import (
 	"os"
 	"strings"
 
-	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/persistence/gorm"
-	"clouditor.io/clouditor/persistence/inmemory"
-	"clouditor.io/clouditor/service"
-
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
-
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/logging/formatter"
+	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/persistence/gorm"
+	"clouditor.io/clouditor/persistence/inmemory"
 	"clouditor.io/clouditor/rest"
-
+	"clouditor.io/clouditor/service"
 	service_assessment "clouditor.io/clouditor/service/assessment"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_discovery "clouditor.io/clouditor/service/discovery"
 	service_evidenceStore "clouditor.io/clouditor/service/evidence"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
