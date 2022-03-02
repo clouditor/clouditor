@@ -173,7 +173,9 @@ func Test_oauthAuthorizer_Token(t *testing.T) {
 
 	go func() {
 		err = srv.Serve(ln)
-		assert.NoError(t, err)
+		if err != http.ErrServerClosed {
+			assert.NoError(t, err)
+		}
 	}()
 
 	defer func() {
