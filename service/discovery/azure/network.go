@@ -249,7 +249,6 @@ func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *network.Load
 
 			publicIpAddressName := getResourceGroupName(*publicIpProperties.ID)
 			if publicIpAddressName == "" {
-				log.Infof("Public IP address ressource ID is empty.")
 				continue
 			}
 			publicIPAddress, err := client.Get(context.Background(), getResourceGroupName(*publicIpProperties.ID), publicIpAddressName, "")
