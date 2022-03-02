@@ -35,7 +35,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 var log *logrus.Entry
@@ -69,16 +68,17 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 
 	_, err = req.Evidence.Validate()
 	if err != nil {
-		log.Errorf("Invalid evidence: %v", err)
 		newError := fmt.Errorf("invalid evidence: %w", err)
+		log.Error(newError)
 
 		go s.informHooks(nil, newError)
 
 		resp = &evidence.StoreEvidenceResponse{
-			Status: false,
+			Status:        false,
+			StatusMessage: newError.Error(),
 		}
 
-		return resp, status.Errorf(codes.InvalidArgument, "invalid req: %v", err)
+		return resp, status.Errorf(codes.InvalidArgument, "%v", newError)
 	}
 
 	s.evidences[req.Evidence.Id] = req.Evidence
@@ -95,28 +95,38 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 
 // StoreEvidences is a method implementation of the evidenceServer interface: It receives evidences and stores them
 func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesServer) (err error) {
-	var req *evidence.StoreEvidenceRequest
+	var (
+		req *evidence.StoreEvidenceRequest
+		res *evidence.StoreEvidenceResponse
+	)
 
 	for {
 		req, err = stream.Recv()
 
-		if err != nil {
-			// If no more input of the stream is available, return SendAndClose `error`
-			if err == io.EOF {
-				log.Infof("Stopped receiving streamed evidences")
-				return stream.SendAndClose(&emptypb.Empty{})
-			}
-
-			return err
+		// If no more input of the stream is available, return
+		if err == io.EOF {
+			return nil
 		}
-
+		if err != nil {
+			newError := fmt.Errorf("cannot receive stream request: %w", err)
+			log.Error(newError)
+			return status.Errorf(codes.Unknown, "%v", newError)
+		}
 		// Call StoreEvidence() for storing a single evidence
 		evidenceRequest := &evidence.StoreEvidenceRequest{
 			Evidence: req.Evidence,
 		}
-		_, err = s.StoreEvidence(context.Background(), evidenceRequest)
+		res, err = s.StoreEvidence(context.Background(), evidenceRequest)
 		if err != nil {
-			return err
+			log.Errorf("Error storing evidence: %v", err)
+		}
+
+		// Send response back to the client
+		err = stream.Send(res)
+		if err != nil {
+			newError := fmt.Errorf("cannot send response to the client: %w", err)
+			log.Error(newError)
+			return status.Errorf(codes.Unknown, "%v", newError)
 		}
 	}
 }

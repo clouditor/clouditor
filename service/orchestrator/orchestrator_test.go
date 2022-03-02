@@ -27,8 +27,12 @@ package orchestrator
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/google/uuid"
+	"google.golang.org/grpc"
 	"io"
+	"k8s.io/apimachinery/pkg/util/json"
 	"os"
 	"reflect"
 	"runtime"
@@ -41,6 +45,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"clouditor.io/clouditor/api/assessment"
+
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence/inmemory"
 	"github.com/stretchr/testify/assert"
@@ -48,7 +53,6 @@ import (
 
 const (
 	assessmentResultID1 = "11111111-1111-1111-1111-111111111111"
-	assessmentResultID2 = "11111111-1111-1111-1111-111111111112"
 )
 
 func TestMain(m *testing.M) {
@@ -127,8 +131,10 @@ func TestAssessmentResultHook(t *testing.T) {
 					},
 				},
 			},
-			wantErr:  false,
-			wantResp: &orchestrator.StoreAssessmentResultResponse{},
+			wantErr: false,
+			wantResp: &orchestrator.StoreAssessmentResultResponse{
+				Status: true,
+			},
 		},
 	}
 
@@ -199,8 +205,10 @@ func TestStoreAssessmentResult(t *testing.T) {
 					},
 				},
 			},
-			wantErr:  false,
-			wantResp: &orchestrator.StoreAssessmentResultResponse{},
+			wantErr: false,
+			wantResp: &orchestrator.StoreAssessmentResultResponse{
+				Status: true,
+			},
 		},
 		{
 			name: "Store assessment without metricId to the map",
@@ -222,8 +230,11 @@ func TestStoreAssessmentResult(t *testing.T) {
 					},
 				},
 			},
-			wantErr:  true,
-			wantResp: &orchestrator.StoreAssessmentResultResponse{},
+			wantErr: true,
+			wantResp: &orchestrator.StoreAssessmentResultResponse{
+				Status:        false,
+				StatusMessage: "invalid assessment result: metric id is missing",
+			},
 		},
 	}
 
@@ -249,78 +260,198 @@ func TestStoreAssessmentResult(t *testing.T) {
 }
 
 func TestStoreAssessmentResults(t *testing.T) {
+
+	const (
+		count1 = 1
+		count2 = 2
+	)
+
+	type fields struct {
+		countElementsInMock    int
+		countElementsInResults int
+	}
+
 	type args struct {
-		stream orchestrator.Orchestrator_StoreAssessmentResultsServer
+		streamToServer            *mockStreamer
+		streamToClientWithSendErr *mockStreamerWithSendErr
+		streamToServerWithRecvErr *mockStreamerWithRecvErr
 	}
 
 	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
+		name            string
+		fields          fields
+		args            args
+		wantErr         bool
+		wantRespMessage []orchestrator.StoreAssessmentResultResponse
+		wantErrMessage  string
 	}{
 		{
-			name:    "Store 2 assessment results to the map",
-			args:    args{stream: &mockStreamer{counter: 0}},
+			name: "Store 2 assessment results to the map",
+			fields: fields{
+				countElementsInMock:    count2,
+				countElementsInResults: count2,
+			},
+			args:    args{streamToServer: createMockStream(createStoreAssessmentResultRequestsMock(count2))},
 			wantErr: false,
+			wantRespMessage: []orchestrator.StoreAssessmentResultResponse{
+				{
+					Status: true,
+				},
+				{
+					Status: true,
+				},
+			},
+		},
+		{
+			name: "Missing MetricID",
+			fields: fields{
+				countElementsInMock:    count1,
+				countElementsInResults: 0,
+			},
+			args:    args{streamToServer: createMockStream(createStoreAssessmentResultRequestMockWithMissingMetricID(count1))},
+			wantErr: false,
+			wantRespMessage: []orchestrator.StoreAssessmentResultResponse{
+				{
+					Status:        false,
+					StatusMessage: "invalid assessment result: " + assessment.ErrMetricIdMissing.Error(),
+				},
+			},
+		},
+		{
+			name: "Error in stream to server - Recv()-err",
+			fields: fields{
+				countElementsInMock:    count1,
+				countElementsInResults: 0,
+			},
+			args:           args{streamToServerWithRecvErr: createMockStreamWithRecvErr(createStoreAssessmentResultRequestsMock(count1))},
+			wantErr:        true,
+			wantErrMessage: "rpc error: code = Unknown desc = cannot receive stream request",
+		},
+		{
+			name: "Error in stream to client - Send()-err",
+			fields: fields{
+				countElementsInMock:    count1,
+				countElementsInResults: 0,
+			},
+			args:           args{streamToClientWithSendErr: createMockStreamWithSendErr(createStoreAssessmentResultRequestsMock(count1))},
+			wantErr:        true,
+			wantErrMessage: "rpc error: code = Unknown desc = cannot stream response to the client",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
-			if err := s.StoreAssessmentResults(tt.args.stream); (err != nil) != tt.wantErr {
-				t.Errorf("StoreAssessmentResults() error = %v, wantErr %v", err, tt.wantErr)
-				assert.Equal(t, 2, len(s.results))
+
+			var err error
+
+			if tt.args.streamToServer != nil {
+				err = s.StoreAssessmentResults(tt.args.streamToServer)
+			} else if tt.args.streamToClientWithSendErr != nil {
+				err = s.StoreAssessmentResults(tt.args.streamToClientWithSendErr)
+			} else if tt.args.streamToServerWithRecvErr != nil {
+				err = s.StoreAssessmentResults(tt.args.streamToServerWithRecvErr)
 			}
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Got StoreAssessmentResults() error = %v, wantErr %v", err, tt.wantErr)
+				assert.Equal(t, tt.fields.countElementsInResults, len(s.results))
+				return
+			} else if tt.wantErr {
+				assert.Contains(t, err.Error(), tt.wantErrMessage)
+			} else {
+				// Close stream for testing
+				close(tt.args.streamToServer.SentFromServer)
+				assert.Nil(t, err)
+				assert.Equal(t, tt.fields.countElementsInResults, len(s.results))
+
+				// Check all stream responses from server to client
+				i := 0
+				for elem := range tt.args.streamToServer.SentFromServer {
+					assert.Contains(t, elem.StatusMessage, tt.wantRespMessage[i].StatusMessage)
+					assert.Equal(t, elem.Status, tt.wantRespMessage[i].Status)
+					i++
+				}
+			}
+
 		})
 	}
 }
 
+// createStoreAssessmentResultRequestMockWithMissingMetricID create one StoreAssessmentResultRequest without ToolID
+func createStoreAssessmentResultRequestMockWithMissingMetricID(count int) []*orchestrator.StoreAssessmentResultRequest {
+	req := createStoreAssessmentResultRequestsMock(count)
+
+	req[0].Result.MetricId = ""
+
+	return req
+}
+
+// createStoreAssessmentResultrequestMocks creates store assessment result requests with random assessment result IDs
+func createStoreAssessmentResultRequestsMock(count int) []*orchestrator.StoreAssessmentResultRequest {
+	var mockRequests []*orchestrator.StoreAssessmentResultRequest
+
+	for i := 0; i < count; i++ {
+		storeAssessmentResultRequest := &orchestrator.StoreAssessmentResultRequest{
+			Result: &assessment.AssessmentResult{
+				Id:         uuid.NewString(),
+				MetricId:   fmt.Sprintf("assessmentResultMetricID-%d", i),
+				EvidenceId: "11111111-1111-1111-1111-111111111111",
+				Timestamp:  timestamppb.Now(),
+				MetricConfiguration: &assessment.MetricConfiguration{
+					TargetValue: toStruct(1.0),
+					Operator:    fmt.Sprintf("operator%d", i),
+					IsDefault:   true,
+				},
+				NonComplianceComments: "non_compliance_comment",
+				Compliant:             true,
+				ResourceId:            "resourceID",
+			},
+		}
+
+		mockRequests = append(mockRequests, storeAssessmentResultRequest)
+	}
+
+	return mockRequests
+}
+
 type mockStreamer struct {
-	counter int
+	grpc.ServerStream
+	RecvToServer   chan *orchestrator.StoreAssessmentResultRequest
+	SentFromServer chan *orchestrator.StoreAssessmentResultResponse
+}
+
+func createMockStream(requests []*orchestrator.StoreAssessmentResultRequest) *mockStreamer {
+	m := &mockStreamer{
+		RecvToServer: make(chan *orchestrator.StoreAssessmentResultRequest, len(requests)),
+	}
+	for _, req := range requests {
+		m.RecvToServer <- req
+	}
+
+	m.SentFromServer = make(chan *orchestrator.StoreAssessmentResultResponse, len(requests))
+	return m
+}
+
+func (m mockStreamer) Send(response *orchestrator.StoreAssessmentResultResponse) error {
+	m.SentFromServer <- response
+	return nil
+}
+
+func (m mockStreamer) Recv() (*orchestrator.StoreAssessmentResultRequest, error) {
+	if len(m.RecvToServer) == 0 {
+		return nil, io.EOF
+	}
+	req, more := <-m.RecvToServer
+	if !more {
+		return nil, errors.New("empty")
+	}
+
+	return req, nil
 }
 
 func (mockStreamer) SendAndClose(_ *emptypb.Empty) error {
 	return nil
-}
-
-func (m *mockStreamer) Recv() (*assessment.AssessmentResult, error) {
-
-	if m.counter == 0 {
-		m.counter++
-		return &assessment.AssessmentResult{
-			Id:         assessmentResultID1,
-			MetricId:   "assessmentResultMetricID",
-			EvidenceId: "11111111-1111-1111-1111-111111111111",
-			Timestamp:  timestamppb.Now(),
-			MetricConfiguration: &assessment.MetricConfiguration{
-				TargetValue: toStruct(1.0),
-				Operator:    "operator",
-				IsDefault:   true,
-			},
-			NonComplianceComments: "non_compliance_comment",
-			Compliant:             true,
-			ResourceId:            "resourceID",
-		}, nil
-	} else if m.counter == 1 {
-		m.counter++
-		return &assessment.AssessmentResult{
-			Id:         assessmentResultID2,
-			MetricId:   "assessmentResultMetricID2",
-			EvidenceId: "11111111-1111-1111-1111-111111111112",
-			Timestamp:  timestamppb.Now(),
-			MetricConfiguration: &assessment.MetricConfiguration{
-				TargetValue: toStruct(1.0),
-				Operator:    "operator2",
-				IsDefault:   false,
-			},
-			NonComplianceComments: "non_compliance_comment",
-			Compliant:             true,
-			ResourceId:            "resourceID",
-		}, nil
-	} else {
-		return nil, io.EOF
-	}
 }
 
 func (mockStreamer) SetHeader(_ metadata.MD) error {
@@ -345,6 +476,68 @@ func (mockStreamer) SendMsg(_ interface{}) error {
 
 func (mockStreamer) RecvMsg(_ interface{}) error {
 	panic("implement me")
+}
+
+type mockStreamerWithSendErr struct {
+	grpc.ServerStream
+	RecvToServer   chan *orchestrator.StoreAssessmentResultRequest
+	SentFromServer chan *orchestrator.StoreAssessmentResultResponse
+}
+
+func (mockStreamerWithSendErr) Send(*orchestrator.StoreAssessmentResultResponse) error {
+	return errors.New("Send()-err")
+}
+
+func (m mockStreamerWithSendErr) Recv() (*orchestrator.StoreAssessmentResultRequest, error) {
+	if len(m.RecvToServer) == 0 {
+		return nil, io.EOF
+	}
+	req, more := <-m.RecvToServer
+	if !more {
+		return nil, errors.New("empty")
+	}
+
+	return req, nil
+}
+
+func createMockStreamWithSendErr(requests []*orchestrator.StoreAssessmentResultRequest) *mockStreamerWithSendErr {
+	m := &mockStreamerWithSendErr{
+		RecvToServer: make(chan *orchestrator.StoreAssessmentResultRequest, len(requests)),
+	}
+	for _, req := range requests {
+		m.RecvToServer <- req
+	}
+
+	m.SentFromServer = make(chan *orchestrator.StoreAssessmentResultResponse, len(requests))
+	return m
+}
+
+type mockStreamerWithRecvErr struct {
+	grpc.ServerStream
+	RecvToServer   chan *orchestrator.StoreAssessmentResultRequest
+	SentFromServer chan *orchestrator.StoreAssessmentResultResponse
+}
+
+func (mockStreamerWithRecvErr) Send(*orchestrator.StoreAssessmentResultResponse) error {
+	panic("implement me")
+}
+
+func (mockStreamerWithRecvErr) Recv() (*orchestrator.StoreAssessmentResultRequest, error) {
+	err := errors.New("Recv()-error")
+
+	return nil, err
+}
+
+func createMockStreamWithRecvErr(requests []*orchestrator.StoreAssessmentResultRequest) *mockStreamerWithRecvErr {
+	m := &mockStreamerWithRecvErr{
+		RecvToServer: make(chan *orchestrator.StoreAssessmentResultRequest, len(requests)),
+	}
+	for _, req := range requests {
+		m.RecvToServer <- req
+	}
+
+	m.SentFromServer = make(chan *orchestrator.StoreAssessmentResultResponse, len(requests))
+	return m
 }
 
 func toStruct(f float32) (s *structpb.Value) {

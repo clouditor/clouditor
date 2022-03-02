@@ -126,15 +126,11 @@ func NewInternalAuthorizerFromPassword(url string, username string, password str
 // our internal direct gRPC connection to the authentication server, whereas OAuth 2.0 would use
 // a POST request with application/x-www-form-urlencoded data.
 func NewInternalAuthorizerFromToken(url string, token *oauth2.Token, grpcOptions ...grpc.DialOption) Authorizer {
-	var authorizer = &internalAuthorizer{
+	return &internalAuthorizer{
 		authURL:        url,
-		grpcOptions:    grpcOptions,
 		protectedToken: &protectedToken{token: token},
+		grpcOptions:    grpcOptions,
 	}
-
-	authorizer.fetchFunc = authorizer.fetchToken
-
-	return authorizer
 }
 
 // NewOAuthAuthorizerFromClientCredentials creates a new authorizer based on an OAuth 2.0 client credentials. It will attempt to refresh an expired access token,

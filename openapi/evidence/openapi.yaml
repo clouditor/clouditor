@@ -86,6 +86,8 @@ components:
             properties:
                 status:
                     type: boolean
+                statusMessage:
+                    type: string
         Value:
             type: object
             properties:

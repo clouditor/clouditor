@@ -101,3 +101,17 @@ message MetricConfiguration {
   // Whether this configuration is a default configuration
   bool is_default = 3;
 }
+
+// MetricImplementation defines the implementation of an individual metric.
+message MetricImplementation {
+  enum Language {
+    LANGUAGE_UNSPECIFIED = 0;
+    REGO = 1;
+  };
+
+  // The language this metric is implemented in
+  Language language = 1;
+
+  // The actual implementation
+  string code = 2;
+}

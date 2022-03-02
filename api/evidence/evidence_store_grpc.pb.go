@@ -11,7 +11,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -26,8 +25,7 @@ type EvidenceStoreClient interface {
 	// Stores an evidence to the evidence storage. Part of the public API, also
 	// exposed as REST.
 	StoreEvidence(ctx context.Context, in *StoreEvidenceRequest, opts ...grpc.CallOption) (*StoreEvidenceResponse, error)
-	// Stores a stream of evidences to the evidence storage. Part of the public
-	// API, not exposed as REST.
+	// Stores a stream of evidences to the evidence storage and returns a response stream. Part of the public API, not exposed as REST.
 	StoreEvidences(ctx context.Context, opts ...grpc.CallOption) (EvidenceStore_StoreEvidencesClient, error)
 	// Returns all stored evidences. Part of the public API, also exposed as REST.
 	ListEvidences(ctx context.Context, in *ListEvidencesRequest, opts ...grpc.CallOption) (*ListEvidencesResponse, error)
@@ -61,7 +59,7 @@ func (c *evidenceStoreClient) StoreEvidences(ctx context.Context, opts ...grpc.C
 
 type EvidenceStore_StoreEvidencesClient interface {
 	Send(*StoreEvidenceRequest) error
-	CloseAndRecv() (*emptypb.Empty, error)
+	Recv() (*StoreEvidenceResponse, error)
 	grpc.ClientStream
 }
 
@@ -73,11 +71,8 @@ func (x *evidenceStoreStoreEvidencesClient) Send(m *StoreEvidenceRequest) error 
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *evidenceStoreStoreEvidencesClient) CloseAndRecv() (*emptypb.Empty, error) {
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	m := new(emptypb.Empty)
+func (x *evidenceStoreStoreEvidencesClient) Recv() (*StoreEvidenceResponse, error) {
+	m := new(StoreEvidenceResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -100,8 +95,7 @@ type EvidenceStoreServer interface {
 	// Stores an evidence to the evidence storage. Part of the public API, also
 	// exposed as REST.
 	StoreEvidence(context.Context, *StoreEvidenceRequest) (*StoreEvidenceResponse, error)
-	// Stores a stream of evidences to the evidence storage. Part of the public
-	// API, not exposed as REST.
+	// Stores a stream of evidences to the evidence storage and returns a response stream. Part of the public API, not exposed as REST.
 	StoreEvidences(EvidenceStore_StoreEvidencesServer) error
 	// Returns all stored evidences. Part of the public API, also exposed as REST.
 	ListEvidences(context.Context, *ListEvidencesRequest) (*ListEvidencesResponse, error)
@@ -157,7 +151,7 @@ func _EvidenceStore_StoreEvidences_Handler(srv interface{}, stream grpc.ServerSt
 }
 
 type EvidenceStore_StoreEvidencesServer interface {
-	SendAndClose(*emptypb.Empty) error
+	Send(*StoreEvidenceResponse) error
 	Recv() (*StoreEvidenceRequest, error)
 	grpc.ServerStream
 }
@@ -166,7 +160,7 @@ type evidenceStoreStoreEvidencesServer struct {
 	grpc.ServerStream
 }
 
-func (x *evidenceStoreStoreEvidencesServer) SendAndClose(m *emptypb.Empty) error {
+func (x *evidenceStoreStoreEvidencesServer) Send(m *StoreEvidenceResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -216,6 +210,7 @@ var EvidenceStore_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "StoreEvidences",
 			Handler:       _EvidenceStore_StoreEvidences_Handler,
+			ServerStreams: true,
 			ClientStreams: true,
 		},
 	},

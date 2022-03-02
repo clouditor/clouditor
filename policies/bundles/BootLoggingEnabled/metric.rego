@@ -1,4 +1,6 @@
-package clouditor
+package clouditor.metrics.boot_logging_enabled
+
+import data.clouditor.compare
 
 default applicable = false
 

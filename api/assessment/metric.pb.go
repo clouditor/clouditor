@@ -97,6 +97,52 @@ func (Metric_Scale) EnumDescriptor() ([]byte, []int) {
 	return file_api_assessment_metric_proto_rawDescGZIP(), []int{0, 0}
 }
 
+type MetricImplementation_Language int32
+
+const (
+	MetricImplementation_LANGUAGE_UNSPECIFIED MetricImplementation_Language = 0
+	MetricImplementation_REGO                 MetricImplementation_Language = 1
+)
+
+// Enum value maps for MetricImplementation_Language.
+var (
+	MetricImplementation_Language_name = map[int32]string{
+		0: "LANGUAGE_UNSPECIFIED",
+		1: "REGO",
+	}
+	MetricImplementation_Language_value = map[string]int32{
+		"LANGUAGE_UNSPECIFIED": 0,
+		"REGO":                 1,
+	}
+)
+
+func (x MetricImplementation_Language) Enum() *MetricImplementation_Language {
+	p := new(MetricImplementation_Language)
+	*p = x
+	return p
+}
+
+func (x MetricImplementation_Language) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (MetricImplementation_Language) Descriptor() protoreflect.EnumDescriptor {
+	return file_api_assessment_metric_proto_enumTypes[1].Descriptor()
+}
+
+func (MetricImplementation_Language) Type() protoreflect.EnumType {
+	return &file_api_assessment_metric_proto_enumTypes[1]
+}
+
+func (x MetricImplementation_Language) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use MetricImplementation_Language.Descriptor instead.
+func (MetricImplementation_Language) EnumDescriptor() ([]byte, []int) {
+	return file_api_assessment_metric_proto_rawDescGZIP(), []int{6, 0}
+}
+
 // A metric resource
 type Metric struct {
 	state         protoimpl.MessageState
@@ -513,6 +559,64 @@ func (x *MetricConfiguration) GetIsDefault() bool {
 	return false
 }
 
+// MetricImplementation defines the implementation of an individual metric.
+type MetricImplementation struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// The language this metric is implemented in
+	Language MetricImplementation_Language `protobuf:"varint,1,opt,name=language,proto3,enum=clouditor.MetricImplementation_Language" json:"language,omitempty"`
+	// The actual implementation
+	Code string `protobuf:"bytes,2,opt,name=code,proto3" json:"code,omitempty"`
+}
+
+func (x *MetricImplementation) Reset() {
+	*x = MetricImplementation{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_assessment_metric_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *MetricImplementation) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MetricImplementation) ProtoMessage() {}
+
+func (x *MetricImplementation) ProtoReflect() protoreflect.Message {
+	mi := &file_api_assessment_metric_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MetricImplementation.ProtoReflect.Descriptor instead.
+func (*MetricImplementation) Descriptor() ([]byte, []int) {
+	return file_api_assessment_metric_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *MetricImplementation) GetLanguage() MetricImplementation_Language {
+	if x != nil {
+		return x.Language
+	}
+	return MetricImplementation_LANGUAGE_UNSPECIFIED
+}
+
+func (x *MetricImplementation) GetCode() string {
+	if x != nil {
+		return x.Code
+	}
+	return ""
+}
+
 var File_api_assessment_metric_proto protoreflect.FileDescriptor
 
 var file_api_assessment_metric_proto_rawDesc = []byte{
@@ -565,11 +669,21 @@ var file_api_assessment_metric_proto_rawDesc = []byte{
 	0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x56, 0x61, 0x6c, 0x75,
 	0x65, 0x52, 0x0b, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x1d,
 	0x0a, 0x0a, 0x69, 0x73, 0x5f, 0x64, 0x65, 0x66, 0x61, 0x75, 0x6c, 0x74, 0x18, 0x03, 0x20, 0x01,
-	0x28, 0x08, 0x52, 0x09, 0x69, 0x73, 0x44, 0x65, 0x66, 0x61, 0x75, 0x6c, 0x74, 0x42, 0x32, 0x5a,
-	0x30, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x69, 0x6f, 0x2f, 0x63, 0x6c,
-	0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x61, 0x73, 0x73, 0x65,
-	0x73, 0x73, 0x6d, 0x65, 0x6e, 0x74, 0x3b, 0x61, 0x73, 0x73, 0x65, 0x73, 0x73, 0x6d, 0x65, 0x6e,
-	0x74, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x28, 0x08, 0x52, 0x09, 0x69, 0x73, 0x44, 0x65, 0x66, 0x61, 0x75, 0x6c, 0x74, 0x22, 0xa0, 0x01,
+	0x0a, 0x14, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x49, 0x6d, 0x70, 0x6c, 0x65, 0x6d, 0x65, 0x6e,
+	0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x44, 0x0a, 0x08, 0x6c, 0x61, 0x6e, 0x67, 0x75, 0x61,
+	0x67, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x28, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64,
+	0x69, 0x74, 0x6f, 0x72, 0x2e, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x49, 0x6d, 0x70, 0x6c, 0x65,
+	0x6d, 0x65, 0x6e, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2e, 0x4c, 0x61, 0x6e, 0x67, 0x75, 0x61,
+	0x67, 0x65, 0x52, 0x08, 0x6c, 0x61, 0x6e, 0x67, 0x75, 0x61, 0x67, 0x65, 0x12, 0x12, 0x0a, 0x04,
+	0x63, 0x6f, 0x64, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x63, 0x6f, 0x64, 0x65,
+	0x22, 0x2e, 0x0a, 0x08, 0x4c, 0x61, 0x6e, 0x67, 0x75, 0x61, 0x67, 0x65, 0x12, 0x18, 0x0a, 0x14,
+	0x4c, 0x41, 0x4e, 0x47, 0x55, 0x41, 0x47, 0x45, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49,
+	0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x08, 0x0a, 0x04, 0x52, 0x45, 0x47, 0x4f, 0x10, 0x01,
+	0x42, 0x32, 0x5a, 0x30, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x69, 0x6f,
+	0x2f, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x61,
+	0x73, 0x73, 0x65, 0x73, 0x73, 0x6d, 0x65, 0x6e, 0x74, 0x3b, 0x61, 0x73, 0x73, 0x65, 0x73, 0x73,
+	0x6d, 0x65, 0x6e, 0x74, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -584,32 +698,35 @@ func file_api_assessment_metric_proto_rawDescGZIP() []byte {
 	return file_api_assessment_metric_proto_rawDescData
 }
 
-var file_api_assessment_metric_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_api_assessment_metric_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_api_assessment_metric_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_api_assessment_metric_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_api_assessment_metric_proto_goTypes = []interface{}{
-	(Metric_Scale)(0),           // 0: clouditor.Metric.Scale
-	(*Metric)(nil),              // 1: clouditor.Metric
-	(*Range)(nil),               // 2: clouditor.Range
-	(*MinMax)(nil),              // 3: clouditor.MinMax
-	(*AllowedValues)(nil),       // 4: clouditor.AllowedValues
-	(*Order)(nil),               // 5: clouditor.Order
-	(*MetricConfiguration)(nil), // 6: clouditor.MetricConfiguration
-	(*structpb.Value)(nil),      // 7: google.protobuf.Value
+	(Metric_Scale)(0),                  // 0: clouditor.Metric.Scale
+	(MetricImplementation_Language)(0), // 1: clouditor.MetricImplementation.Language
+	(*Metric)(nil),                     // 2: clouditor.Metric
+	(*Range)(nil),                      // 3: clouditor.Range
+	(*MinMax)(nil),                     // 4: clouditor.MinMax
+	(*AllowedValues)(nil),              // 5: clouditor.AllowedValues
+	(*Order)(nil),                      // 6: clouditor.Order
+	(*MetricConfiguration)(nil),        // 7: clouditor.MetricConfiguration
+	(*MetricImplementation)(nil),       // 8: clouditor.MetricImplementation
+	(*structpb.Value)(nil),             // 9: google.protobuf.Value
 }
 var file_api_assessment_metric_proto_depIdxs = []int32{
 	0, // 0: clouditor.Metric.scale:type_name -> clouditor.Metric.Scale
-	2, // 1: clouditor.Metric.range:type_name -> clouditor.Range
-	4, // 2: clouditor.Range.allowed_values:type_name -> clouditor.AllowedValues
-	5, // 3: clouditor.Range.order:type_name -> clouditor.Order
-	3, // 4: clouditor.Range.min_max:type_name -> clouditor.MinMax
-	7, // 5: clouditor.AllowedValues.values:type_name -> google.protobuf.Value
-	7, // 6: clouditor.Order.values:type_name -> google.protobuf.Value
-	7, // 7: clouditor.MetricConfiguration.target_value:type_name -> google.protobuf.Value
-	8, // [8:8] is the sub-list for method output_type
-	8, // [8:8] is the sub-list for method input_type
-	8, // [8:8] is the sub-list for extension type_name
-	8, // [8:8] is the sub-list for extension extendee
-	0, // [0:8] is the sub-list for field type_name
+	3, // 1: clouditor.Metric.range:type_name -> clouditor.Range
+	5, // 2: clouditor.Range.allowed_values:type_name -> clouditor.AllowedValues
+	6, // 3: clouditor.Range.order:type_name -> clouditor.Order
+	4, // 4: clouditor.Range.min_max:type_name -> clouditor.MinMax
+	9, // 5: clouditor.AllowedValues.values:type_name -> google.protobuf.Value
+	9, // 6: clouditor.Order.values:type_name -> google.protobuf.Value
+	9, // 7: clouditor.MetricConfiguration.target_value:type_name -> google.protobuf.Value
+	1, // 8: clouditor.MetricImplementation.language:type_name -> clouditor.MetricImplementation.Language
+	9, // [9:9] is the sub-list for method output_type
+	9, // [9:9] is the sub-list for method input_type
+	9, // [9:9] is the sub-list for extension type_name
+	9, // [9:9] is the sub-list for extension extendee
+	0, // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_api_assessment_metric_proto_init() }
@@ -690,6 +807,18 @@ func file_api_assessment_metric_proto_init() {
 				return nil
 			}
 		}
+		file_api_assessment_metric_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*MetricImplementation); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	file_api_assessment_metric_proto_msgTypes[1].OneofWrappers = []interface{}{
 		(*Range_AllowedValues)(nil),
@@ -701,8 +830,8 @@ func file_api_assessment_metric_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_api_assessment_metric_proto_rawDesc,
-			NumEnums:      1,
-			NumMessages:   6,
+			NumEnums:      2,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

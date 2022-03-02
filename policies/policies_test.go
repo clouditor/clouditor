@@ -26,11 +26,15 @@
 package policies
 
 import (
+	"fmt"
+	"io/ioutil"
 	"os"
 	"testing"
 
 	"clouditor.io/clouditor/voc"
+	"google.golang.org/protobuf/encoding/protojson"
 
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"github.com/stretchr/testify/assert"
 )
@@ -61,9 +65,13 @@ func TestRunEvidence(t *testing.T) {
 		resource   voc.IsCloudResource
 		evidenceID string
 	}
+	type args struct {
+		source MetricConfigurationSource
+	}
 	tests := []struct {
 		name       string
 		fields     fields
+		args       args
 		applicable bool
 		compliant  bool
 		wantErr    bool
@@ -104,6 +112,7 @@ func TestRunEvidence(t *testing.T) {
 				},
 				evidenceID: mockObjStorage1EvidenceID,
 			},
+			args:       args{source: &mockMetricConfigurationSource{t: t}},
 			applicable: true,
 			compliant:  true,
 			wantErr:    false,
@@ -140,6 +149,7 @@ func TestRunEvidence(t *testing.T) {
 				},
 				evidenceID: mockObjStorage2EvidenceID,
 			},
+			args:       args{source: &mockMetricConfigurationSource{t: t}},
 			applicable: true,
 			compliant:  false,
 			wantErr:    false,
@@ -180,6 +190,7 @@ func TestRunEvidence(t *testing.T) {
 				},
 				evidenceID: mockObjStorage2EvidenceID,
 			},
+			args:       args{source: &mockMetricConfigurationSource{t: t}},
 			applicable: true,
 			compliant:  false,
 			wantErr:    false,
@@ -212,6 +223,7 @@ func TestRunEvidence(t *testing.T) {
 				},
 				evidenceID: mockVM1EvidenceID,
 			},
+			args:       args{source: &mockMetricConfigurationSource{t: t}},
 			applicable: true,
 			compliant:  true,
 			wantErr:    false,
@@ -244,6 +256,7 @@ func TestRunEvidence(t *testing.T) {
 				},
 				evidenceID: mockVM2EvidenceID,
 			},
+			args:       args{source: &mockMetricConfigurationSource{t: t}},
 			applicable: true,
 			compliant:  false,
 			wantErr:    false,
@@ -256,16 +269,37 @@ func TestRunEvidence(t *testing.T) {
 			results, err := RunEvidence(&evidence.Evidence{
 				Id:       tt.fields.evidenceID,
 				Resource: resource,
-			})
+			}, tt.args.source)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RunEvidence() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			assert.NotEmpty(t, results)
 			for _, result := range results {
-				assert.Equal(t, tt.applicable, result["applicable"].(bool))
-				assert.Equal(t, tt.compliant, result["compliant"].(bool))
+				assert.Equal(t, tt.applicable, result.Applicable)
+				assert.Equal(t, tt.compliant, result.Compliant)
 			}
 		})
 	}
+}
+
+type mockMetricConfigurationSource struct {
+	t *testing.T
+}
+
+func (m *mockMetricConfigurationSource) MetricConfiguration(metric string) (*assessment.MetricConfiguration, error) {
+	// Fetch the metric configuration directly from our file
+
+	bundle := fmt.Sprintf("policies/bundles/%s/data.json", metric)
+	file, err := os.OpenFile(bundle, os.O_RDONLY, 0600)
+	assert.NoError(m.t, err)
+
+	b, err := ioutil.ReadAll(file)
+	assert.NoError(m.t, err)
+
+	var config assessment.MetricConfiguration
+	err = protojson.Unmarshal(b, &config)
+	assert.NoError(m.t, err)
+
+	return &config, nil
 }

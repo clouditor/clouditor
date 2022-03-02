@@ -38,7 +38,8 @@ type OrchestratorClient interface {
 	DeregisterAssessmentTool(ctx context.Context, in *DeregisterAssessmentToolRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Stores the assessment result provided by an assessment tool
 	StoreAssessmentResult(ctx context.Context, in *StoreAssessmentResultRequest, opts ...grpc.CallOption) (*StoreAssessmentResultResponse, error)
-	// Stores stream of assessment results provided by an assessment tool
+	// Stores stream of assessment results provided by an assessment tool and
+	// returns a response stream. Part of the public API, not exposed as REST.
 	StoreAssessmentResults(ctx context.Context, opts ...grpc.CallOption) (Orchestrator_StoreAssessmentResultsClient, error)
 	// List all assessment results. Part of the public API, also exposed as REST.
 	ListAssessmentResults(ctx context.Context, in *assessment.ListAssessmentResultsRequest, opts ...grpc.CallOption) (*assessment.ListAssessmentResultsResponse, error)
@@ -60,12 +61,19 @@ type OrchestratorClient interface {
 	ListCloudServices(ctx context.Context, in *ListCloudServicesRequest, opts ...grpc.CallOption) (*ListCloudServicesResponse, error)
 	// Removes a target cloud service
 	RemoveCloudService(ctx context.Context, in *RemoveCloudServiceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// Retrieves a metric configuration for a specific service and metric ID
+	// Updates a metric configuration (target value and operator) for a specific
+	// service and metric ID
 	UpdateMetricConfiguration(ctx context.Context, in *UpdateMetricConfigurationRequest, opts ...grpc.CallOption) (*assessment.MetricConfiguration, error)
-	// Retrieves a metric configuration for a specific service and metric ID
+	// Retrieves a metric configuration (target value and operator) for a specific
+	// service and metric ID
 	GetMetricConfiguration(ctx context.Context, in *GetMetricConfigurationRequest, opts ...grpc.CallOption) (*assessment.MetricConfiguration, error)
-	// Lists all a metric configurations for a specific service and metric ID
+	// Lists all a metric configurations (target value and operator) for a
+	// specific service ID
 	ListMetricConfigurations(ctx context.Context, in *ListMetricConfigurationRequest, opts ...grpc.CallOption) (*ListMetricConfigurationResponse, error)
+	// Updates an existing metric implementation
+	UpdateMetricImplementation(ctx context.Context, in *UpdateMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error)
+	// Returns the metric implementation of the passed metric id
+	GetMetricImplementation(ctx context.Context, in *GetMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error)
 }
 
 type orchestratorClient struct {
@@ -140,8 +148,8 @@ func (c *orchestratorClient) StoreAssessmentResults(ctx context.Context, opts ..
 }
 
 type Orchestrator_StoreAssessmentResultsClient interface {
-	Send(*assessment.AssessmentResult) error
-	CloseAndRecv() (*emptypb.Empty, error)
+	Send(*StoreAssessmentResultRequest) error
+	Recv() (*StoreAssessmentResultResponse, error)
 	grpc.ClientStream
 }
 
@@ -149,15 +157,12 @@ type orchestratorStoreAssessmentResultsClient struct {
 	grpc.ClientStream
 }
 
-func (x *orchestratorStoreAssessmentResultsClient) Send(m *assessment.AssessmentResult) error {
+func (x *orchestratorStoreAssessmentResultsClient) Send(m *StoreAssessmentResultRequest) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *orchestratorStoreAssessmentResultsClient) CloseAndRecv() (*emptypb.Empty, error) {
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	m := new(emptypb.Empty)
+func (x *orchestratorStoreAssessmentResultsClient) Recv() (*StoreAssessmentResultResponse, error) {
+	m := new(StoreAssessmentResultResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -281,6 +286,24 @@ func (c *orchestratorClient) ListMetricConfigurations(ctx context.Context, in *L
 	return out, nil
 }
 
+func (c *orchestratorClient) UpdateMetricImplementation(ctx context.Context, in *UpdateMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error) {
+	out := new(assessment.MetricImplementation)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/UpdateMetricImplementation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orchestratorClient) GetMetricImplementation(ctx context.Context, in *GetMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error) {
+	out := new(assessment.MetricImplementation)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/GetMetricImplementation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OrchestratorServer is the server API for Orchestrator service.
 // All implementations must embed UnimplementedOrchestratorServer
 // for forward compatibility
@@ -299,7 +322,8 @@ type OrchestratorServer interface {
 	DeregisterAssessmentTool(context.Context, *DeregisterAssessmentToolRequest) (*emptypb.Empty, error)
 	// Stores the assessment result provided by an assessment tool
 	StoreAssessmentResult(context.Context, *StoreAssessmentResultRequest) (*StoreAssessmentResultResponse, error)
-	// Stores stream of assessment results provided by an assessment tool
+	// Stores stream of assessment results provided by an assessment tool and
+	// returns a response stream. Part of the public API, not exposed as REST.
 	StoreAssessmentResults(Orchestrator_StoreAssessmentResultsServer) error
 	// List all assessment results. Part of the public API, also exposed as REST.
 	ListAssessmentResults(context.Context, *assessment.ListAssessmentResultsRequest) (*assessment.ListAssessmentResultsResponse, error)
@@ -321,12 +345,19 @@ type OrchestratorServer interface {
 	ListCloudServices(context.Context, *ListCloudServicesRequest) (*ListCloudServicesResponse, error)
 	// Removes a target cloud service
 	RemoveCloudService(context.Context, *RemoveCloudServiceRequest) (*emptypb.Empty, error)
-	// Retrieves a metric configuration for a specific service and metric ID
+	// Updates a metric configuration (target value and operator) for a specific
+	// service and metric ID
 	UpdateMetricConfiguration(context.Context, *UpdateMetricConfigurationRequest) (*assessment.MetricConfiguration, error)
-	// Retrieves a metric configuration for a specific service and metric ID
+	// Retrieves a metric configuration (target value and operator) for a specific
+	// service and metric ID
 	GetMetricConfiguration(context.Context, *GetMetricConfigurationRequest) (*assessment.MetricConfiguration, error)
-	// Lists all a metric configurations for a specific service and metric ID
+	// Lists all a metric configurations (target value and operator) for a
+	// specific service ID
 	ListMetricConfigurations(context.Context, *ListMetricConfigurationRequest) (*ListMetricConfigurationResponse, error)
+	// Updates an existing metric implementation
+	UpdateMetricImplementation(context.Context, *UpdateMetricImplementationRequest) (*assessment.MetricImplementation, error)
+	// Returns the metric implementation of the passed metric id
+	GetMetricImplementation(context.Context, *GetMetricImplementationRequest) (*assessment.MetricImplementation, error)
 	mustEmbedUnimplementedOrchestratorServer()
 }
 
@@ -393,6 +424,12 @@ func (UnimplementedOrchestratorServer) GetMetricConfiguration(context.Context, *
 }
 func (UnimplementedOrchestratorServer) ListMetricConfigurations(context.Context, *ListMetricConfigurationRequest) (*ListMetricConfigurationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListMetricConfigurations not implemented")
+}
+func (UnimplementedOrchestratorServer) UpdateMetricImplementation(context.Context, *UpdateMetricImplementationRequest) (*assessment.MetricImplementation, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateMetricImplementation not implemented")
+}
+func (UnimplementedOrchestratorServer) GetMetricImplementation(context.Context, *GetMetricImplementationRequest) (*assessment.MetricImplementation, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMetricImplementation not implemented")
 }
 func (UnimplementedOrchestratorServer) mustEmbedUnimplementedOrchestratorServer() {}
 
@@ -520,8 +557,8 @@ func _Orchestrator_StoreAssessmentResults_Handler(srv interface{}, stream grpc.S
 }
 
 type Orchestrator_StoreAssessmentResultsServer interface {
-	SendAndClose(*emptypb.Empty) error
-	Recv() (*assessment.AssessmentResult, error)
+	Send(*StoreAssessmentResultResponse) error
+	Recv() (*StoreAssessmentResultRequest, error)
 	grpc.ServerStream
 }
 
@@ -529,12 +566,12 @@ type orchestratorStoreAssessmentResultsServer struct {
 	grpc.ServerStream
 }
 
-func (x *orchestratorStoreAssessmentResultsServer) SendAndClose(m *emptypb.Empty) error {
+func (x *orchestratorStoreAssessmentResultsServer) Send(m *StoreAssessmentResultResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *orchestratorStoreAssessmentResultsServer) Recv() (*assessment.AssessmentResult, error) {
-	m := new(assessment.AssessmentResult)
+func (x *orchestratorStoreAssessmentResultsServer) Recv() (*StoreAssessmentResultRequest, error) {
+	m := new(StoreAssessmentResultRequest)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -775,6 +812,42 @@ func _Orchestrator_ListMetricConfigurations_Handler(srv interface{}, ctx context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Orchestrator_UpdateMetricImplementation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateMetricImplementationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).UpdateMetricImplementation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/UpdateMetricImplementation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).UpdateMetricImplementation(ctx, req.(*UpdateMetricImplementationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Orchestrator_GetMetricImplementation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMetricImplementationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).GetMetricImplementation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/GetMetricImplementation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).GetMetricImplementation(ctx, req.(*GetMetricImplementationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Orchestrator_ServiceDesc is the grpc.ServiceDesc for Orchestrator service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -858,11 +931,20 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "ListMetricConfigurations",
 			Handler:    _Orchestrator_ListMetricConfigurations_Handler,
 		},
+		{
+			MethodName: "UpdateMetricImplementation",
+			Handler:    _Orchestrator_UpdateMetricImplementation_Handler,
+		},
+		{
+			MethodName: "GetMetricImplementation",
+			Handler:    _Orchestrator_GetMetricImplementation_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "StoreAssessmentResults",
 			Handler:       _Orchestrator_StoreAssessmentResults_Handler,
+			ServerStreams: true,
 			ClientStreams: true,
 		},
 	},

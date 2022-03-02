@@ -55,7 +55,6 @@ service Discovery {
   }
 }
 
-// TODO(lebogg): Add destinations (url+port) for assessment and evidence store
 message StartDiscoveryRequest {}
 
 message StartDiscoveryResponse { bool successful = 1; }

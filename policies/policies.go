@@ -27,12 +27,14 @@ package policies
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"strings"
 
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
+	"github.com/fatih/camelcase"
+	"github.com/mitchellh/mapstructure"
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/open-policy-agent/opa/storage"
 	"github.com/open-policy-agent/opa/storage/inmem"
@@ -41,8 +43,21 @@ import (
 // applicableMetrics stores a list of applicable metrics per resourceType
 var applicableMetrics = make(map[string][]string)
 
-func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) {
-	data := make([]map[string]interface{}, 0)
+type Result struct {
+	Applicable  bool
+	Compliant   bool
+	TargetValue interface{} `mapstructure:"target_value"`
+	Operator    string
+	MetricId    string
+}
+
+// MetricConfigurationSource can be used to retrieve a metric configuration for a particular metric (and target service)
+type MetricConfigurationSource interface {
+	MetricConfiguration(metric string) (*assessment.MetricConfiguration, error)
+}
+
+func RunEvidence(evidence *evidence.Evidence, holder MetricConfigurationSource) ([]*Result, error) {
+	data := make([]*Result, 0)
 	var baseDir string = "."
 
 	var m = evidence.Resource.GetStructValue().AsMap()
@@ -74,7 +89,7 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 		}
 
 		for _, fileInfo := range files {
-			runMap, err := RunMap(baseDir, fileInfo.Name(), m)
+			runMap, err := RunMap(baseDir, fileInfo.Name(), m, holder)
 			if err != nil {
 				return nil, err
 			}
@@ -82,19 +97,19 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 			if runMap != nil {
 				metricId := fileInfo.Name()
 				applicableMetrics[key] = append(applicableMetrics[key], metricId)
-				runMap["metricId"] = metricId
+				runMap.MetricId = metricId
 
 				data = append(data, runMap)
 			}
 		}
 	} else {
 		for _, metric := range applicableMetrics[key] {
-			runMap, err := RunMap(baseDir, metric, m)
+			runMap, err := RunMap(baseDir, metric, m, holder)
 			if err != nil {
 				return nil, err
 			}
 
-			runMap["metricId"] = metric
+			runMap.MetricId = metric
 			data = append(data, runMap)
 		}
 	}
@@ -102,24 +117,29 @@ func RunEvidence(evidence *evidence.Evidence) ([]map[string]interface{}, error) 
 	return data, nil
 }
 
-func RunMap(baseDir string, metric string, m map[string]interface{}) (data map[string]interface{}, err error) {
+func RunMap(baseDir string, metric string, m map[string]interface{}, holder MetricConfigurationSource) (result *Result, err error) {
 	var (
-		ok   bool
-		tx   storage.Transaction
-		file *os.File
+		tx storage.Transaction
 	)
 
 	// Create paths for bundle directory and utility functions file
 	bundle := fmt.Sprintf("%s/policies/bundles/%s/", baseDir, metric)
 	operators := fmt.Sprintf("%s/policies/operators.rego", baseDir)
 
-	// Load from data
-	file, err = os.Open(bundle + "data.json")
+	config, err := holder.MetricConfiguration(metric)
 	if err != nil {
-		return nil, fmt.Errorf("could not open: %w", err)
+		return nil, fmt.Errorf("could not fetch metric configuration: %w", err)
 	}
 
-	store := inmem.NewFromReader(file)
+	c := map[string]interface{}{
+		"target_value": config.TargetValue.AsInterface(),
+		"operator":     config.Operator,
+	}
+
+	// Convert camelCase metric in under_score_style for package name
+	metric = strings.ToLower(strings.Join(camelcase.Split(metric), "_"))
+
+	store := inmem.NewFromObject(c)
 	ctx := context.Background()
 
 	tx, err = store.NewTransaction(ctx, storage.WriteParams)
@@ -128,7 +148,13 @@ func RunMap(baseDir string, metric string, m map[string]interface{}) (data map[s
 	}
 
 	r, err := rego.New(
-		rego.Query("data.clouditor"),
+		rego.Query(fmt.Sprintf(`x = {
+			"applicable": data.clouditor.metrics.%s.applicable, 
+			"compliant": data.clouditor.metrics.%s.compliant, 
+			"operator": data.clouditor.operator,
+			"target_value": data.clouditor.target_value,
+		}`, metric, metric)),
+		rego.Package("clouditor.metrics"),
 		rego.Store(store),
 		rego.Transaction(tx),
 		rego.Input(m),
@@ -153,12 +179,21 @@ func RunMap(baseDir string, metric string, m map[string]interface{}) (data map[s
 		return nil, fmt.Errorf("could not evaluate rego policy: %w", err)
 	}
 
-	if data, ok = results[0].Expressions[0].Value.(map[string]interface{}); !ok {
-		return nil, errors.New("expected data is not a map[string]interface{}")
-	} else if data["applicable"] == false {
+	if len(results) == 0 {
+		return nil, fmt.Errorf("no results. probably the package name of the metric is wrong")
+	}
+
+	result = new(Result)
+	err = mapstructure.Decode(results[0].Bindings["x"], result)
+
+	if err != nil {
+		return nil, fmt.Errorf("expected data is not a map[string]interface{}: %w", err)
+	}
+
+	if !result.Applicable {
 		return nil, nil
 	} else {
-		return data, nil
+		return result, nil
 	}
 }
 
