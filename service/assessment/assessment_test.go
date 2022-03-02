@@ -54,7 +54,7 @@ import (
 
 func TestMain(m *testing.M) {
 	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{
-		ForceColors: true,
+		ForceColors:   true,
 		FullTimestamp: true,
 	}}
 
