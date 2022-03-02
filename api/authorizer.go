@@ -38,7 +38,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // Authorizer represents an interface which provides a token used for authenticating a client in server-client communication.
@@ -89,7 +88,7 @@ type internalAuthorizer struct {
 	*protectedToken
 }
 
-type fetchFunc func(refreshToken string) (*auth.TokenResponse, error)
+type fetchFunc func(refreshToken string) (*oauth2.Token, error)
 
 // baseAuthorizer contains fields that are shared by all authorizers
 type protectedToken struct {
@@ -185,8 +184,8 @@ func (*protectedToken) RequireTransportSecurity() bool {
 // of username / password.
 func (p *protectedToken) Token() (*oauth2.Token, error) {
 	var (
-		resp *auth.TokenResponse
-		err  error
+		token *oauth2.Token
+		err   error
 	)
 
 	// Lock the token for reading, so that we are sure to get the recent token,
@@ -217,7 +216,8 @@ func (p *protectedToken) Token() (*oauth2.Token, error) {
 	if p.token != nil {
 		refreshToken = p.token.RefreshToken
 	}
-	resp, err = p.fetchFunc(refreshToken)
+
+	token, err = p.fetchFunc(refreshToken)
 	if err != nil {
 		// Return without refreshing the token. At this point, the token will still be invalid
 		// and the next call to Token() will try again. This way we can mitigate temporary errors.
@@ -225,12 +225,7 @@ func (p *protectedToken) Token() (*oauth2.Token, error) {
 	}
 
 	// Store the current token, if login was successful
-	p.token = &oauth2.Token{
-		AccessToken:  resp.AccessToken,
-		Expiry:       resp.Expiry.AsTime(),
-		TokenType:    resp.TokenType,
-		RefreshToken: resp.RefreshToken,
-	}
+	p.token = token
 
 	return p.token, nil
 }
@@ -265,7 +260,9 @@ func (i *internalAuthorizer) init() (err error) {
 	return nil
 }
 
-func (i *internalAuthorizer) fetchToken(refreshToken string) (resp *auth.TokenResponse, err error) {
+func (i *internalAuthorizer) fetchToken(refreshToken string) (token *oauth2.Token, err error) {
+	var resp *auth.TokenResponse
+
 	// We do a lazy initialization here, so the first request might take a little bit longer.
 	// This might not be entirely thread-safe.
 	if i.conn == nil {
@@ -288,22 +285,20 @@ func (i *internalAuthorizer) fetchToken(refreshToken string) (resp *auth.TokenRe
 		})
 	}
 
+	if resp != nil {
+		token = &oauth2.Token{
+			AccessToken:  resp.AccessToken,
+			RefreshToken: resp.RefreshToken,
+			Expiry:       resp.GetExpiry().AsTime(),
+			TokenType:    resp.TokenType,
+		}
+	}
+
 	return
 }
 
-func (o *oauthAuthorizer) fetchToken(refreshToken string) (resp *auth.TokenResponse, err error) {
-	// TODO(oxisto): Avoid the unnecessary wrapping and return the token directly
-	token, err := o.Config.Token(context.Background())
-	if err != nil {
-		return nil, err
-	}
-
-	return &auth.TokenResponse{
-		AccessToken:  token.AccessToken,
-		TokenType:    token.TokenType,
-		RefreshToken: token.RefreshToken,
-		Expiry:       timestamppb.New(token.Expiry),
-	}, nil
+func (o *oauthAuthorizer) fetchToken(refreshToken string) (token *oauth2.Token, err error) {
+	return o.Config.Token(context.Background())
 }
 
 // AuthURL is an implementation needed for Authorizer. It returns the OAuth 2.0 token endpoint.

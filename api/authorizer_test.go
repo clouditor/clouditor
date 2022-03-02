@@ -212,7 +212,7 @@ func Test_oauthAuthorizer_fetchToken(t *testing.T) {
 				protectedToken: &protectedToken{},
 			},
 			wantResp: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				token, ok := i1.(*auth.TokenResponse)
+				token, ok := i1.(*oauth2.Token)
 				assert.True(t, ok)
 				assert.NotNil(tt, token)
 
