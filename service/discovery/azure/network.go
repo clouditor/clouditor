@@ -247,7 +247,7 @@ func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *network.Load
 	if lb.LoadBalancerPropertiesFormat != nil && lb.LoadBalancerPropertiesFormat.FrontendIPConfigurations != nil {
 		for _, publicIpProperties := range *lb.FrontendIPConfigurations {
 
-			publicIPAddress, err := client.Get(context.Background(), getResourceGroupName(*publicIpProperties.ID), *publicIpProperties.Name, "")
+			publicIPAddress, err := client.Get(context.Background(), getResourceGroupName(*publicIpProperties.ID), getFrontendPublicIPAddressName(*publicIpProperties.PublicIPAddress.ID), "")
 
 			if err != nil {
 				log.Infof("Error getting public IP address: %v", err)
@@ -259,4 +259,8 @@ func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *network.Load
 	}
 
 	return strings.Join(publicIPAddresses, ",")
+}
+
+func getFrontendPublicIPAddressName(frontendPublicIPAddressID string) string {
+	return strings.Split(frontendPublicIPAddressID, "/")[8]
 }

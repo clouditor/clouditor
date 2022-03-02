@@ -97,15 +97,20 @@ func (m mockNetworkSender) Do(req *http.Request) (res *http.Response, err error)
 						},
 						"frontendIPConfigurations": []map[string]interface{}{
 							{
-								"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
+								"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c",
 								"name": "b9cb3645-25d0-4288-910a-020563f63b1c",
+								"properties": map[string]interface{}{
+									"publicIPAddress": map[string]interface{}{
+										"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c",
+									},
+								},
 							},
 						},
 					},
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/b9cb3645-25d0-4288-910a-020563f63b1c" {
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c" {
 		return createResponse(map[string]interface{}{
 			"properties": map[string]interface{}{
 				"ipAddress": "111.222.333.444",
