@@ -247,7 +247,12 @@ func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *network.Load
 	if lb.LoadBalancerPropertiesFormat != nil && lb.LoadBalancerPropertiesFormat.FrontendIPConfigurations != nil {
 		for _, publicIpProperties := range *lb.FrontendIPConfigurations {
 
-			publicIPAddress, err := client.Get(context.Background(), getResourceGroupName(*publicIpProperties.ID), getFrontendPublicIPAddressName(*publicIpProperties.PublicIPAddress.ID), "")
+			publicIpAddressName := getResourceGroupName(*publicIpProperties.ID)
+			if publicIpAddressName == "" {
+				log.Infof("Public IP address ressource ID is empty.")
+				continue
+			}
+			publicIPAddress, err := client.Get(context.Background(), getResourceGroupName(*publicIpProperties.ID), publicIpAddressName, "")
 
 			if err != nil {
 				log.Infof("Error getting public IP address: %v", err)
@@ -262,5 +267,16 @@ func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *network.Load
 }
 
 func getFrontendPublicIPAddressName(frontendPublicIPAddressID string) string {
-	return strings.Split(frontendPublicIPAddressID, "/")[8]
+	if frontendPublicIPAddressID == "" {
+		log.Infof("Public IP address ID of frontend is empty.")
+        return ""
+    }
+
+	split := strings.Split(frontendPublicIPAddressID, "/")
+	if len(split) != 9 {
+		log.Infof("Public IP address ID of frontend is not correct.")
+		return ""
+	}
+
+	return split[8]
 }
