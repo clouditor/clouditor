@@ -1,4 +1,4 @@
-// Copyright 2021 Fraunhofer AISEC
+// Copyright 2016-2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,11 +37,13 @@ type CapitalizeFormatter struct {
 
 // Format capitalizes the first letter of entry's message
 func (f CapitalizeFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-
-	// Convert message to runes, capitalize first rune and convert back to string again
-	msgAsRune := []rune(entry.Message)
-	msgAsRune[0] = unicode.ToUpper(msgAsRune[0])
-	entry.Message = string(msgAsRune)
+	// If message is empty, nothing to format. Prevents `out of range` error
+	if entry.Message != "" {
+		// Convert message to runes, capitalize first rune and convert back to string again
+		msgAsRune := []rune(entry.Message)
+		msgAsRune[0] = unicode.ToUpper(msgAsRune[0])
+		entry.Message = string(msgAsRune)
+	}
 
 	return f.Formatter.Format(entry)
 }
