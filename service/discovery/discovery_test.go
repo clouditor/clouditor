@@ -269,19 +269,16 @@ func TestStart(t *testing.T) {
 						envVariableKey:   "AZURE_AUTH_LOCATION",
 						envVariableValue: "service/discovery/testdata/credentials_test_file",
 					},
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "HOME",
-						envVariableValue: "",
-					},
 				},
 			},
-			wantResp:       nil,
-			wantErr:        true,
-			wantErrMessage: "could not authenticate to Kubernetes",
+			req: &discovery.StartDiscoveryRequest{Csp: []string{CSPAzure}},
+			csp: []string{CSPAzure},
+			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
+			wantErr:        false,
+			wantErrMessage: "",
 		},
 		{
-			name: "No Azure authorizer from file nor CLI",
+			name: "No Azure authorizer",
 			fields: fields{
 				hasRPCConnection: true,
 				envVariables: []envVariable{
@@ -309,12 +306,7 @@ func TestStart(t *testing.T) {
 			fields: fields{
 				hasRPCConnection: true,
 				envVariables: []envVariable{
-					// We must set AZURE_AUTH_LOCATION to the Azure credentials test file and the set HOME to a wrong path so that the Azure authorizer passes and the K8S authorizer fails
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "AZURE_AUTH_LOCATION",
-						envVariableValue: "service/discovery/testdata/credentials_test_file",
-					},
+					// We must set HOME to a wrong path so that the K8S authorizer fails
 					{
 						hasEnvVariable:   true,
 						envVariableKey:   "HOME",
@@ -322,6 +314,8 @@ func TestStart(t *testing.T) {
 					},
 				},
 			},
+			req: &discovery.StartDiscoveryRequest{Csp: []string{CSPK8S}},
+			csp: []string{CSPK8S},
 			wantResp:       nil,
 			wantErr:        true,
 			wantErrMessage: "could not authenticate to Kubernetes",
@@ -338,24 +332,35 @@ func TestStart(t *testing.T) {
 		{
 			name: "Request with 2 CSPs",
 			fields: fields{
-				hasRPCConnection: false,
+				hasRPCConnection: true,
 			},
 			req:            &discovery.StartDiscoveryRequest{Csp: []string{"aws", "k8s"}},
 			csp:            []string{"aws", "k8s"},
-			wantResp:       nil,
-			wantErr:        true,
-			wantErrMessage: "could not initialize stream to Assessment",
+			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
+			wantErr:        false,
+			wantErrMessage: "",
 		},
 		{
 			name: "Empty request",
 			fields: fields{
-				hasRPCConnection: false,
+				hasRPCConnection: true,
 			},
 			req:            &discovery.StartDiscoveryRequest{Csp: []string{}},
 			csp:            []string{CSPAWS, CSPAzure, CSPK8S},
+			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
+			wantErr:        false,
+			wantErrMessage: "",
+		},
+		{
+			name: "Request with wrong CSP name",
+			fields: fields{
+				hasRPCConnection: true,
+			},
+			req:            &discovery.StartDiscoveryRequest{Csp: []string{"falseCSP"}},
+			csp:            []string{"falseCSP"},
 			wantResp:       nil,
 			wantErr:        true,
-			wantErrMessage: "could not initialize stream to Assessment",
+			wantErrMessage: "CSP not known",
 		},
 	}
 

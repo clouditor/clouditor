@@ -226,6 +226,10 @@ func (s *Service) Start(_ context.Context, req *discovery.StartDiscoveryRequest)
 			discoverer = append(discoverer,
 				aws.NewAwsStorageDiscovery(awsClient),
 				aws.NewAwsComputeDiscovery(awsClient))
+		default:
+			newError := fmt.Errorf("CSP %s not known", csp)
+			log.Error(newError)
+			return nil, newError
 		}
 	}
 
