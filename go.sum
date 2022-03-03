@@ -573,8 +573,8 @@ github.com/onsi/gomega v1.10.1/go.mod h1:iN09h71vgCQne3DLsj+A5owkum+a2tYe+TOCB1y
 github.com/open-policy-agent/opa v0.37.1 h1:xOCmEnQAO7MZMHAQr6TWEG87YDWaeWiODrJx5tPgarI=
 github.com/open-policy-agent/opa v0.37.1/go.mod h1:9YlKCh5WIk1Pu0bpIPozaJKQWpUDTVCMVpe55FVUfik=
 github.com/opentracing/opentracing-go v1.1.0/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFStlNbqXla1AfSYxPUl2o=
-github.com/oxisto/oauth2go v0.5.2 h1:5X532ywguYeg7DGSbZDMEa1u1GcXhqgcETVgH6p/Pgc=
-github.com/oxisto/oauth2go v0.5.2/go.mod h1:fwpFZP2oyIbpuVr3I2fYzYqOMdVK06rdR9rLl4S41Pk=
+github.com/oxisto/oauth2go v0.5.3 h1:ooZyZi3nCq1M9dwlkmeVSUZ5CTzq2cwEEBhMheJgfdg=
+github.com/oxisto/oauth2go v0.5.3/go.mod h1:fwpFZP2oyIbpuVr3I2fYzYqOMdVK06rdR9rLl4S41Pk=
 github.com/pascaldekloe/goe v0.0.0-20180627143212-57f6aae5913c/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=
 github.com/pascaldekloe/goe v0.1.0/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=
 github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/94hg7ilaic=

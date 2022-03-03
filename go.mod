@@ -27,6 +27,7 @@ require (
 	github.com/logrusorgru/aurora/v3 v3.0.0
 	github.com/mitchellh/mapstructure v1.4.3
 	github.com/open-policy-agent/opa v0.37.1
+	github.com/oxisto/oauth2go v0.5.3
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.3.0
 	github.com/spf13/viper v1.10.0
@@ -50,8 +51,6 @@ require (
 	github.com/google/gnostic v0.6.6
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0
 )
-
-require github.com/oxisto/oauth2go v0.5.2
 
 require (
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect

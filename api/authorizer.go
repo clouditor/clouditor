@@ -144,6 +144,18 @@ func NewOAuthAuthorizerFromClientCredentials(config *clientcredentials.Config) A
 	return authorizer
 }
 
+// NewOAuthAuthorizerFromConfig creates a new authorizer based on an OAuth 2.0 config
+func NewOAuthAuthorizerFromConfig(config *oauth2.Config, token *oauth2.Token) Authorizer {
+	var authorizer = &oauthAuthorizer{
+		authURL: config.Endpoint.AuthURL,
+		protectedToken: &protectedToken{
+			TokenSource: config.TokenSource(context.Background(), token),
+		},
+	}
+
+	return authorizer
+}
+
 // GetRequestMetadata is an implementation for credentials.PerRPCCredentials. It is called before
 // each RPC request and is used to inject our client credentials into the context of the RPC call.
 func (p *protectedToken) GetRequestMetadata(ctx context.Context, _ ...string) (map[string]string, error) {

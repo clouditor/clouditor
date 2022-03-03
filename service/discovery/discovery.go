@@ -32,14 +32,13 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/api"
+	"clouditor.io/clouditor/service/discovery/aws"
 	"clouditor.io/clouditor/service/discovery/azure"
 	"clouditor.io/clouditor/service/discovery/k8s"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/google/uuid"
-
-	"clouditor.io/clouditor/service/discovery/aws"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"

@@ -185,7 +185,15 @@ func (s *Session) UnmarshalJSON(data []byte) (err error) {
 	}
 
 	s.URL = v.URL
-	s.authorizer = api.NewInternalAuthorizerFromToken(s.URL, v.Token)
+
+	s.authorizer = api.NewOAuthAuthorizerFromConfig(&oauth2.Config{
+		// TODO(oxisto): We need to store the client ID
+		ClientID: "public",
+		// TODO(oxisto): Probably we should just marshal the whole token config
+		Endpoint: oauth2.Endpoint{
+			TokenURL: s.URL,
+		},
+	}, v.Token)
 	return
 }
 

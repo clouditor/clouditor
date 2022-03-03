@@ -36,7 +36,6 @@ import (
 
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
@@ -329,7 +328,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			grpc_logrus.StreamServerInterceptor(grpcLoggerEntry),
 			grpc_auth.StreamServerInterceptor(authConfig.AuthFunc),
 		))
-	auth.RegisterAuthenticationServer(server, authService)
+	//auth.RegisterAuthenticationServer(server, authService)
 	discovery.RegisterDiscoveryServer(server, discoveryService)
 	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
 	assessment.RegisterAssessmentServer(server, assessmentService)
