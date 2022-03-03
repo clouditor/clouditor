@@ -252,6 +252,8 @@ func TestStart(t *testing.T) {
 	tests := []struct {
 		name           string
 		fields         fields
+		req            *discovery.StartDiscoveryRequest
+		csp            []string
 		wantResp       *discovery.StartDiscoveryResponse
 		wantErr        bool
 		wantErrMessage string
@@ -331,6 +333,28 @@ func TestStart(t *testing.T) {
 			wantErr:        true,
 			wantErrMessage: "could not initialize stream to Assessment",
 		},
+		{
+			name: "Request with 2 CSPs",
+			fields: fields{
+				hasRPCConnection: false,
+			},
+			req:            &discovery.StartDiscoveryRequest{Csp: []string{"aws", "k8s"}},
+			csp:            []string{"aws", "k8s"},
+			wantResp:       nil,
+			wantErr:        true,
+			wantErrMessage: "could not initialize stream to Assessment",
+		},
+		{
+			name: "Empty request",
+			fields: fields{
+				hasRPCConnection: false,
+			},
+			req:            &discovery.StartDiscoveryRequest{Csp: []string{}},
+			csp:            []string{"aws", "azure", "k8s"},
+			wantResp:       nil,
+			wantErr:        true,
+			wantErrMessage: "could not initialize stream to Assessment",
+		},
 	}
 
 	for _, tt := range tests {
@@ -346,7 +370,7 @@ func TestStart(t *testing.T) {
 				}
 			}
 
-			resp, err := s.Start(context.TODO(), nil)
+			resp, err := s.Start(context.TODO(), tt.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Got Start() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -354,6 +378,9 @@ func TestStart(t *testing.T) {
 				assert.Equal(t, tt.wantResp, resp)
 			}
 
+			if tt.req != nil {
+				assert.Equal(t, tt.csp, s.csp)
+			}
 			if err != nil {
 				assert.Contains(t, err.Error(), tt.wantErrMessage)
 			}

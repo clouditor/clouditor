@@ -28,14 +28,20 @@ package discovery
 import (
 	"context"
 	"fmt"
+	"github.com/spf13/viper"
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
 )
 
+const (
+	DISCOVERER = "discoverer"
+)
+
 // NewStartDiscoveryCommand returns a cobra command for the `start` subcommand
 func NewStartDiscoveryCommand() *cobra.Command {
+	var discoverer []string
 	cmd := &cobra.Command{
 		Use:   "start",
 		Short: "Starts the discovery",
@@ -54,11 +60,14 @@ func NewStartDiscoveryCommand() *cobra.Command {
 
 			client = discovery.NewDiscoveryClient(session)
 
-			res, err = client.Start(context.Background(), &discovery.StartDiscoveryRequest{})
+			res, err = client.Start(context.Background(), &discovery.StartDiscoveryRequest{Csp: discoverer})
 
 			return session.HandleResponse(res, err)
 		},
 	}
+
+	cmd.Flags().StringSliceVarP(&discoverer, DISCOVERER, "d", []string{}, "CSPs to discover, separated by comma")
+	_ = viper.BindPFlag(DISCOVERER, cmd.Flags().Lookup(DISCOVERER))
 
 	return cmd
 }

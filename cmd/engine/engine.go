@@ -53,6 +53,7 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
+	cli_discovery "clouditor.io/clouditor/cli/commands/service/discovery"
 	"clouditor.io/clouditor/rest"
 
 	service_assessment "clouditor.io/clouditor/service/assessment"
@@ -212,6 +213,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			viper.GetString(APIDefaultUserFlag),
 			viper.GetString(APIDefaultPasswordFlag),
 		),
+		service_discovery.WithDiscoverers([]string{viper.GetString(cli_discovery.DISCOVERER)}),
 	)
 	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db))
 	assessmentService = service_assessment.NewService(

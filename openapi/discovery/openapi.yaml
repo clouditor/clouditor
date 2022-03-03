@@ -70,7 +70,11 @@ components:
                     $ref: '#/components/schemas/ListValue'
         StartDiscoveryRequest:
             type: object
-            properties: {}
+            properties:
+                csp:
+                    type: array
+                    items:
+                        type: string
         StartDiscoveryResponse:
             type: object
             properties:
