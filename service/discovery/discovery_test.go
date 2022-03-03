@@ -285,7 +285,7 @@ func TestStart(t *testing.T) {
 			fields: fields{
 				hasRPCConnection: true,
 				envVariables: []envVariable{
-					// We must set AZURE_AUTH_LOCATION and HOME to a wrong pahth so that both Azure authorizer fail
+					// We must set AZURE_AUTH_LOCATION and HOME to a wrong path so that both Azure authorizer fail
 					{
 						hasEnvVariable:   true,
 						envVariableKey:   "AZURE_AUTH_LOCATION",
@@ -298,6 +298,8 @@ func TestStart(t *testing.T) {
 					},
 				},
 			},
+			req: &discovery.StartDiscoveryRequest{Csp: []string{CSPAzure}},
+			csp: []string{CSPAzure},
 			wantResp:       nil,
 			wantErr:        true,
 			wantErrMessage: "could not authenticate to Azure",
@@ -350,7 +352,7 @@ func TestStart(t *testing.T) {
 				hasRPCConnection: false,
 			},
 			req:            &discovery.StartDiscoveryRequest{Csp: []string{}},
-			csp:            []string{"aws", "azure", "k8s"},
+			csp:            []string{CSPAWS, CSPAzure, CSPK8S},
 			wantResp:       nil,
 			wantErr:        true,
 			wantErrMessage: "could not initialize stream to Assessment",
