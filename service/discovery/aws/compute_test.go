@@ -28,9 +28,7 @@
 package aws
 
 import (
-	"clouditor.io/clouditor/logging/formatter"
 	"context"
-	"github.com/sirupsen/logrus"
 	"reflect"
 	"testing"
 	"time"
