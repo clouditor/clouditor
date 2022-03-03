@@ -43,11 +43,11 @@ func NewKubernetesNetworkDiscovery(intf kubernetes.Interface) discovery.Discover
 	return &k8sNetworkDiscovery{k8sDiscovery{intf}}
 }
 
-func (d *k8sNetworkDiscovery) Name() string {
+func (*k8sNetworkDiscovery) Name() string {
 	return "Kubernetes Network"
 }
 
-func (d *k8sNetworkDiscovery) Description() string {
+func (*k8sNetworkDiscovery) Description() string {
 	return "Discover Kubernetes network resources."
 }
 
@@ -84,7 +84,7 @@ func (k k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
 	return list, nil
 }
 
-func (k k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwork {
+func (k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwork {
 	var ports []int16
 
 	for _, v := range service.Spec.Ports {
@@ -112,7 +112,7 @@ func getNetworkServiceResourceID(service *corev1.Service) string {
 	return fmt.Sprintf("/namespaces/%s/services/%s", service.Namespace, service.Name)
 }
 
-func (k k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
+func (k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 	lb := &voc.LoadBalancer{
 		NetworkService: &voc.NetworkService{
 			Networking: &voc.Networking{
