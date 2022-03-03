@@ -36,6 +36,7 @@ import (
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/service"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
 	oauth2 "github.com/oxisto/oauth2go"
@@ -55,9 +56,9 @@ var (
 
 func TestMain(m *testing.M) {
 	var (
-		err     error
-		jwksURL string
-		code    int
+		err  error
+		port int
+		code int
 	)
 
 	err = os.Chdir("../")
@@ -65,13 +66,13 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	authSrv, jwksURL, err = testutil.StartAuthenticationServer()
+	authSrv, port, err = testutil.StartAuthenticationServer()
 	if err != nil {
 		panic(err)
 	}
 
 	s := service_orchestrator.NewService()
-	sock, srv, err = testutil.StartGRPCServer(jwksURL, testutil.WithOrchestrator(s))
+	sock, srv, err = service.StartGRPCServer(testutil.JWKSURL(port), service.WithOrchestrator(s))
 	if err != nil {
 		panic(err)
 	}
@@ -117,7 +118,7 @@ func TestSession(t *testing.T) {
 	// update the session
 	session.authorizer = api.NewOAuthAuthorizerFromConfig(
 		&oauth2.Config{
-			ClientID: "clouditor",
+			ClientID: testutil.TestAuthClientID,
 		},
 		token,
 	)
@@ -160,12 +161,7 @@ func TestSession_HandleResponse(t *testing.T) {
 				err: status.Errorf(codes.Internal, "internal error occurred!"),
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				if err != nil {
-					return true
-				} else {
-					t.Errorf("Expected error.")
-					return false
-				}
+				return assert.Error(t, err)
 			},
 		},
 		{
@@ -175,12 +171,7 @@ func TestSession_HandleResponse(t *testing.T) {
 				err: fmt.Errorf("random error"),
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				if err != nil {
-					return true
-				} else {
-					t.Errorf("Expected error.")
-					return false
-				}
+				return assert.Error(t, err)
 			},
 		},
 	}

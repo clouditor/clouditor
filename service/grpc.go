@@ -1,11 +1,10 @@
-package testutil
+package service
 
 import (
 	"fmt"
 	"net"
 
 	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/service"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"google.golang.org/grpc"
@@ -28,7 +27,7 @@ func StartGRPCServer(jwksURL string, opts ...serverOption) (sock net.Listener, s
 		return nil, nil, fmt.Errorf("could not listen: %w", err)
 	}
 
-	authConfig := service.ConfigureAuth(service.WithJWKSURL(jwksURL))
+	authConfig := ConfigureAuth(WithJWKSURL(jwksURL))
 
 	// We also add our authentication middleware, because we usually add additional service later
 	srv = grpc.NewServer(

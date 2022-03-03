@@ -16,7 +16,7 @@ const (
 	TestAuthClientSecret = "clouditor"
 )
 
-func StartAuthenticationServer() (srv *oauth2.AuthorizationServer, jwksURL string, err error) {
+func StartAuthenticationServer() (srv *oauth2.AuthorizationServer, port int, err error) {
 	var nl net.Listener
 
 	srv = oauth2.NewServer(":0",
@@ -26,16 +26,22 @@ func StartAuthenticationServer() (srv *oauth2.AuthorizationServer, jwksURL strin
 	// create a new socket for gRPC communication
 	nl, err = net.Listen("tcp", srv.Addr)
 	if err != nil {
-		return nil, "", fmt.Errorf("could not listen: %w", err)
+		return nil, 0, fmt.Errorf("could not listen: %w", err)
 	}
 
 	go func() {
 		_ = srv.Serve(nl)
 	}()
 
-	port := nl.Addr().(*net.TCPAddr).Port
+	port = nl.Addr().(*net.TCPAddr).Port
 
-	jwksURL = fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", port)
+	return srv, port, nil
+}
 
-	return srv, jwksURL, nil
+func JWKSURL(port int) string {
+	return fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", port)
+}
+
+func TokenURL(port int) string {
+	return fmt.Sprintf("http://localhost:%d/token", port)
 }

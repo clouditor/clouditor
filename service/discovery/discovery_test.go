@@ -38,8 +38,11 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/voc"
+	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -54,8 +57,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	server, authService, _ := startBufConnServer()
-	err = authService.CreateDefaultUser("clouditor", "clouditor")
+	server, _ := startBufConnServer()
 	if err != nil {
 		panic(err)
 	}
@@ -406,6 +408,16 @@ func TestStart(t *testing.T) {
 }
 
 func TestService_initAssessmentStream(t *testing.T) {
+	var (
+		authSrv *oauth2.AuthorizationServer
+		port    int
+		err     error
+	)
+
+	authSrv, port, err = testutil.StartAuthenticationServer()
+	defer authSrv.Close()
+	assert.NoError(t, err)
+
 	type fields struct {
 		hasRPCConnection bool
 		username         string
@@ -460,12 +472,11 @@ func TestService_initAssessmentStream(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService(WithInternalAuthorizer(
-				"bufnet",
-				tt.fields.username,
-				tt.fields.password,
-				grpc.WithContextDialer(bufConnDialer),
-			))
+			s := NewService(WithOAuth2Authorizer(&clientcredentials.Config{
+				ClientID:     testutil.TestAuthClientID,
+				ClientSecret: testutil.TestAuthClientSecret,
+				TokenURL:     testutil.TokenURL(port),
+			}))
 
 			var opts []grpc.DialOption
 			if tt.fields.hasRPCConnection {
