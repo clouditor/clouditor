@@ -123,13 +123,6 @@ func WithOrchestratorAddress(address string) ServiceOption {
 	}
 }
 
-// WithInternalAuthorizer is an option to use an authorizer to the internal Clouditor auth service.
-func WithInternalAuthorizer(address string, username string, password string, opts ...grpc.DialOption) ServiceOption {
-	return func(s *Service) {
-		s.SetAuthorizer(api.NewInternalAuthorizerFromPassword(address, username, password, opts...))
-	}
-}
-
 // WithOAuth2Authorizer is an option to use an OAuth 2.0 authorizer
 func WithOAuth2Authorizer(config *clientcredentials.Config) ServiceOption {
 	return func(s *Service) {

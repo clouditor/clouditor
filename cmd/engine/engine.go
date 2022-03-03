@@ -34,7 +34,6 @@ import (
 	"os"
 	"strings"
 
-	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
@@ -231,48 +230,26 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		service_auth.WithApiKeySaveOnCreate(viper.GetBool(APIKeySaveOnCreateFlag)),
 	)
 
-	var discoveryOpts []service_discovery.ServiceOption
-	if viper.GetBool(OAuth2EnabledFlag) {
-		discoveryOpts = []service_discovery.ServiceOption{service_discovery.WithOAuth2Authorizer(
+	discoveryService = service_discovery.NewService(
+		service_discovery.WithProviders(providers),
+		service_discovery.WithOAuth2Authorizer(
 			&clientcredentials.Config{
 				ClientID:     viper.GetString(OAuth2ClientIDFlag),
 				ClientSecret: viper.GetString(OAuth2ClientSecretFlag),
 				TokenURL:     viper.GetString(OAuth2EndpointFlag),
-			},
-		)}
-	} else {
-		discoveryOpts = []service_discovery.ServiceOption{service_discovery.WithInternalAuthorizer(
-			api.DefaultInternalAuthorizerAddress,
-			viper.GetString(APIDefaultUserFlag),
-			viper.GetString(APIDefaultPasswordFlag),
-		)}
-	}
-
-	discoveryOpts = append(discoveryOpts, service_discovery.WithProviders(providers))
-
-	discoveryService = service_discovery.NewService(
-		discoveryOpts...,
+			}),
 	)
+
 	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db))
 
-	var assessmentOpts service_assessment.ServiceOption
-	if viper.GetBool(OAuth2EnabledFlag) {
-		assessmentOpts = service_assessment.WithOAuth2Authorizer(
+	assessmentService = service_assessment.NewService(
+		service_assessment.WithOAuth2Authorizer(
 			&clientcredentials.Config{
 				ClientID:     viper.GetString(OAuth2ClientIDFlag),
 				ClientSecret: viper.GetString(OAuth2ClientSecretFlag),
 				TokenURL:     viper.GetString(OAuth2EndpointFlag),
 			},
-		)
-	} else {
-		assessmentOpts = service_assessment.WithInternalAuthorizer(
-			api.DefaultInternalAuthorizerAddress,
-			viper.GetString(APIDefaultUserFlag),
-			viper.GetString(APIDefaultPasswordFlag),
-		)
-	}
-	assessmentService = service_assessment.NewService(
-		assessmentOpts,
+		),
 	)
 	evidenceStoreService = service_evidenceStore.NewService()
 

@@ -85,7 +85,7 @@ func NewSession(url string) (session *Session, err error) {
 		URL:    url,
 		Folder: viper.GetString("session-directory"),
 		// We will supply the token later
-		authorizer: api.NewInternalAuthorizerFromToken(url, nil),
+		authorizer: nil,
 	}
 
 	var opts = []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
