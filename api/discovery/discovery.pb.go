@@ -53,6 +53,7 @@ type StartDiscoveryRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// A list of CSPs to be discovered
 	Csp []string `protobuf:"bytes,1,rep,name=csp,proto3" json:"csp,omitempty"`
 }
 

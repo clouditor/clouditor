@@ -75,6 +75,7 @@ components:
                     type: array
                     items:
                         type: string
+                    description: A list of CSPs to be discovered
         StartDiscoveryResponse:
             type: object
             properties:

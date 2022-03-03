@@ -55,7 +55,10 @@ service Discovery {
   }
 }
 
-message StartDiscoveryRequest { repeated string csp = 1; }
+message StartDiscoveryRequest {
+  // A list of CSPs to be discovered
+  repeated string csp = 1;
+}
 
 message StartDiscoveryResponse { bool successful = 1; }
 
