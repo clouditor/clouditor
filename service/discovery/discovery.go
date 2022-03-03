@@ -52,9 +52,9 @@ import (
 )
 
 const (
-	CSP_AWS   = "aws"
-	CSP_K8S   = "k8s"
-	CSP_AZURE = "azure"
+	CSPAWS   = "aws"
+	CSPK8S   = "k8s"
+	CSPAzure = "azure"
 )
 
 var log *logrus.Entry
@@ -179,8 +179,8 @@ func (s *Service) Start(_ context.Context, req *discovery.StartDiscoveryRequest)
 		s.csp = req.Csp
 	} else {
 		// If no CSP is given take all
-		log.Infof("Use all CSPs: %s, %s, %s", CSP_AWS, CSP_AZURE, CSP_K8S)
-		s.csp = append(s.csp, CSP_AWS, CSP_AZURE, CSP_K8S)
+		log.Infof("Use all CSPs: %s, %s, %s", CSPAWS, CSPAzure, CSPK8S)
+		s.csp = append(s.csp, CSPAWS, CSPAzure, CSPK8S)
 	}
 
 	// Establish connection to assessment component
@@ -197,7 +197,7 @@ func (s *Service) Start(_ context.Context, req *discovery.StartDiscoveryRequest)
 	// Configure discoverers for given CSPs
 	for _, csp := range s.csp {
 		switch {
-		case csp == CSP_AZURE:
+		case csp == CSPAzure:
 			authorizer, err := azure.NewAuthorizer()
 			if err != nil {
 				log.Errorf("Could not authenticate to Azure: %v", err)
@@ -208,7 +208,7 @@ func (s *Service) Start(_ context.Context, req *discovery.StartDiscoveryRequest)
 				azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
 				azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
 				azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)))
-		case csp == CSP_K8S:
+		case csp == CSPK8S:
 			k8sClient, err := k8s.AuthFromKubeConfig()
 			if err != nil {
 				log.Errorf("Could not authenticate to Kubernetes: %v", err)
@@ -217,7 +217,7 @@ func (s *Service) Start(_ context.Context, req *discovery.StartDiscoveryRequest)
 			discoverer = append(discoverer,
 				k8s.NewKubernetesComputeDiscovery(k8sClient),
 				k8s.NewKubernetesNetworkDiscovery(k8sClient))
-		case csp == CSP_AWS:
+		case csp == CSPAWS:
 			awsClient, err := aws.NewClient()
 			if err != nil {
 				log.Errorf("Could not authenticate to AWS: %v", err)
@@ -339,13 +339,4 @@ func handleError(err error, dest string) error {
 	} else {
 		return err
 	}
-}
-
-func contains(v string, a []string) bool {
-	for _, i := range a {
-		if i == v {
-			return true
-		}
-	}
-	return false
 }

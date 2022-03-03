@@ -48,7 +48,6 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/cli"
 	cli_discovery "clouditor.io/clouditor/cli/commands/service/discovery"
 	"clouditor.io/clouditor/logging/formatter"
 	"clouditor.io/clouditor/persistence"
