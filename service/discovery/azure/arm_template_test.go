@@ -26,9 +26,7 @@
 package azure
 
 import (
-	"clouditor.io/clouditor/logging/formatter"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 	"testing"
@@ -42,11 +40,6 @@ import (
 
 type mockARMTemplateSender struct {
 	mockSender
-}
-
-func init() {
-	log = logrus.WithField("component", "azure-tests")
-	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true, FullTimestamp: true}}
 }
 
 func newMockARMTemplateSender() *mockARMTemplateSender {

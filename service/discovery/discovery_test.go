@@ -26,11 +26,9 @@
 package discovery
 
 import (
-	"clouditor.io/clouditor/logging/formatter"
 	"context"
 	"errors"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"io"
 	"os"
 	"reflect"
@@ -50,9 +48,6 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	log = logrus.WithField("component", "discovery-tests")
-	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true, FullTimestamp: true}}
-
 	// make sure, that we are in the clouditor root folder to find the policies
 	err := os.Chdir("../../")
 	if err != nil {

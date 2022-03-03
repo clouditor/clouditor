@@ -27,7 +27,6 @@ package azure
 
 import (
 	"bytes"
-	"clouditor.io/clouditor/logging/formatter"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -36,14 +35,8 @@ import (
 	"testing"
 
 	"github.com/Azure/go-autorest/autorest"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
-
-func init() {
-	log = logrus.WithField("component", "azure-tests")
-	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true, FullTimestamp: true}}
-}
 
 type mockSender struct {
 }

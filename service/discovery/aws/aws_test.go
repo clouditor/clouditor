@@ -28,10 +28,8 @@
 package aws
 
 import (
-	"clouditor.io/clouditor/logging/formatter"
 	"context"
 	"errors"
-	"github.com/sirupsen/logrus"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -42,11 +40,6 @@ import (
 )
 
 const mockRegion = "mockRegion"
-
-func init() {
-	log = logrus.WithField("component", "aws-tests")
-	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true, FullTimestamp: true}}
-}
 
 // TestNewClient tests the NewClient function
 func TestNewClient(t *testing.T) {

@@ -26,9 +26,7 @@
 package orchestrator
 
 import (
-	"clouditor.io/clouditor/logging/formatter"
 	"context"
-	"github.com/sirupsen/logrus"
 	"testing"
 
 	"clouditor.io/clouditor/api/orchestrator"
@@ -37,11 +35,6 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 )
-
-func init() {
-	log = logrus.WithField("component", "orchestrator-tests")
-	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true, FullTimestamp: true}}
-}
 
 func TestRegisterCloudService(t *testing.T) {
 	tests := []struct {

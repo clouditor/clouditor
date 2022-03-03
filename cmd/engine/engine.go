@@ -119,6 +119,7 @@ var engineCmd = &cobra.Command{
 
 func init() {
 	log = logrus.WithField("component", "grpc")
+	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true}}
 
 	cobra.OnInitialize(initConfig)
 
@@ -171,8 +172,6 @@ func initConfig() {
 }
 
 func doCmd(_ *cobra.Command, _ []string) (err error) {
-	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true}}
-
 	log.Info("Welcome to new Clouditor 2.0")
 
 	fmt.Println(`

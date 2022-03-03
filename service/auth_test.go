@@ -26,11 +26,9 @@
 package service
 
 import (
-	"clouditor.io/clouditor/logging/formatter"
 	"context"
 	"errors"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"net"
 	"net/http"
 	"os"
@@ -55,9 +53,6 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	log = logrus.WithField("component", "auth-tests")
-	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true, FullTimestamp: true}}
-
 	var (
 		err    error
 		server *grpc.Server

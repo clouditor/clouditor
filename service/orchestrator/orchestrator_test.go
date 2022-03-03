@@ -26,12 +26,10 @@
 package orchestrator
 
 import (
-	"clouditor.io/clouditor/logging/formatter"
 	"context"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"io"
 	"k8s.io/apimachinery/pkg/util/json"
@@ -56,11 +54,6 @@ import (
 const (
 	assessmentResultID1 = "11111111-1111-1111-1111-111111111111"
 )
-
-func init() {
-	log = logrus.WithField("component", "orchestrator-tests")
-	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true, FullTimestamp: true}}
-}
 
 func TestMain(m *testing.M) {
 	err := os.Chdir("../../")

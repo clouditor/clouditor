@@ -60,11 +60,6 @@ const (
 	mockFunction1CreationTime = "2012-11-01T22:08:41.0+00:00"
 )
 
-func init() {
-	log = logrus.WithField("component", "aws-tests")
-	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true, FullTimestamp: true}}
-}
-
 // mockEC2API implements the EC2API interface for mock testing
 type mockEC2API struct {
 }

@@ -2,20 +2,13 @@ package gorm
 
 import (
 	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/logging/formatter"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"testing"
 
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/persistence"
 	"github.com/stretchr/testify/assert"
 )
-
-func init() {
-	log = logrus.WithField("component", "gorm-tests")
-	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true, FullTimestamp: true}}
-}
 
 func TestStorageOptions(t *testing.T) {
 	type args struct {

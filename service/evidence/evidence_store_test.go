@@ -26,11 +26,9 @@
 package evidences
 
 import (
-	"clouditor.io/clouditor/logging/formatter"
 	"context"
 	"errors"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"io"
 	"reflect"
 	"runtime"
@@ -48,11 +46,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
 )
-
-func init() {
-	log = logrus.WithField("component", "evidence-tests")
-	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true, FullTimestamp: true}}
-}
 
 // TestNewService is a simply test for NewService
 func TestNewService(t *testing.T) {
