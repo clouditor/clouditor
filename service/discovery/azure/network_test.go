@@ -101,7 +101,7 @@ func (m mockNetworkSender) Do(req *http.Request) (res *http.Response, err error)
 								"name": "b9cb3645-25d0-4288-910a-020563f63b1c",
 								"properties": map[string]interface{}{
 									"publicIPAddress": map[string]interface{}{
-										"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c",
+										"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c",
 									},
 								},
 							},
