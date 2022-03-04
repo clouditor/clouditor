@@ -32,6 +32,7 @@ import (
 	"net/http"
 	"os"
 	"testing"
+	"time"
 
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/service"
@@ -88,9 +89,26 @@ func TestLogin(t *testing.T) {
 
 	// Simulate a callback
 	go func() {
-		http.Get(fmt.Sprintf("http://localhost:10000/callback?code=%s", code))
+		_, err = http.Get(fmt.Sprintf("http://localhost:10000/callback?code=%s", code))
+		if err != nil {
+			assert.NoError(t, err)
+		}
 	}()
 
-	err = cmd.RunE(nil, []string{fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)})
-	assert.NoError(t, err)
+	// Because this potentially blocks, we need to wrap all of this in a timeout
+	// TODO(oxisto): This can be removed once https://github.com/golang/go/issues/48157 is fixed
+	timeout := time.After(30 * time.Second)
+	done := make(chan bool)
+
+	go func() {
+		err = cmd.RunE(nil, []string{fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)})
+		assert.NoError(t, err)
+		done <- true
+	}()
+
+	select {
+	case <-timeout:
+		assert.Fail(t, "Did not finish in time")
+	case <-done:
+	}
 }
