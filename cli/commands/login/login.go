@@ -71,6 +71,9 @@ func NewLoginCommand() *cobra.Command {
 
 			go func() {
 				sock, err = net.Listen("tcp", srv.Addr)
+				if err != nil {
+					fmt.Printf("Could not start web server for OAuth 2.0 authorization code flow: %v", err)
+				}
 				go func() {
 					callbackServerReady <- true
 				}()
