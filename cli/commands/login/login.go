@@ -28,6 +28,7 @@ package login
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 
 	"clouditor.io/clouditor/api"
@@ -42,6 +43,8 @@ const (
 	URLFlag = "url"
 )
 
+var callbackServerReady chan bool = make(chan bool)
+
 // NewLoginCommand returns a cobra command for `login` subcommands
 func NewLoginCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -52,6 +55,7 @@ func NewLoginCommand() *cobra.Command {
 			var (
 				err     error
 				session *cli.Session
+				sock    net.Listener
 				code    string
 			)
 
@@ -66,7 +70,12 @@ func NewLoginCommand() *cobra.Command {
 			//}()
 
 			go func() {
-				err = srv.ListenAndServe()
+				sock, err = net.Listen("tcp", srv.Addr)
+				go func() {
+					callbackServerReady <- true
+				}()
+
+				err = srv.Serve(sock)
 				if err != http.ErrServerClosed {
 					fmt.Printf("Could not start web server for OAuth 2.0 authorization code flow: %v", err)
 					return

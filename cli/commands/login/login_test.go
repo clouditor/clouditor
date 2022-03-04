@@ -88,20 +88,22 @@ func TestLogin(t *testing.T) {
 
 	cmd := NewLoginCommand()
 
-	// Simulate a callback
-	go func() {
-		_, err = http.Get(fmt.Sprintf("http://localhost:10000/callback?code=%s", code))
-		if err != nil {
-			assert.NoError(t, err)
-		}
-	}()
-
 	// Because this potentially blocks, we need to wrap all of this in a timeout
 	// TODO(oxisto): This can be removed once https://github.com/golang/go/issues/48157 is fixed
-	timeout := time.After(30 * time.Second)
+	timeout := time.After(5 * time.Second)
 	done := make(chan bool)
 
 	go func() {
+		// Simulate a callback
+		go func() {
+			// Wait for the callback server to be ready
+			<-callbackServerReady
+			_, err = http.Get(fmt.Sprintf("http://localhost:10000/callback?code=%s", code))
+			if err != nil {
+				assert.NoError(t, err)
+			}
+		}()
+
 		err = cmd.RunE(nil, []string{fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)})
 		assert.NoError(t, err)
 		done <- true
