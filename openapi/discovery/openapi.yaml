@@ -70,7 +70,12 @@ components:
                     $ref: '#/components/schemas/ListValue'
         StartDiscoveryRequest:
             type: object
-            properties: {}
+            properties:
+                providers:
+                    type: array
+                    items:
+                        type: string
+                    description: A list of providers to be discovered
         StartDiscoveryResponse:
             type: object
             properties:
