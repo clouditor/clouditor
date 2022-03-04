@@ -76,7 +76,6 @@ func Test_doCmd(t *testing.T) {
 
 			if success {
 				assert.NotNil(t, server)
-				assert.NotNil(t, authService)
 				assert.NotNil(t, discoveryService)
 				assert.NotNil(t, assessmentService)
 				assert.NotNil(t, evidenceStoreService)

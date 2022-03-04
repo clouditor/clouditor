@@ -27,6 +27,7 @@ package rest
 
 import (
 	"context"
+	"crypto/ecdsa"
 	"errors"
 	"fmt"
 	"net"
@@ -40,11 +41,10 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
-	service_auth "clouditor.io/clouditor/service/auth"
+	"clouditor.io/clouditor/internal/auth"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	oauth2 "github.com/oxisto/oauth2go"
-	"github.com/oxisto/oauth2go/login"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -124,6 +124,32 @@ func WithAdditionalHandler(method string, path string, h runtime.HandlerFunc) Se
 	}
 }
 
+func WithEmbeddedOAuthServer(keyPath string, keyPassword string, saveOnCreate bool, opts ...oauth2.AuthorizationServerOption) ServerConfigOption {
+	return func(cc *corsConfig, sm *runtime.ServeMux) {
+		opts = append(opts, oauth2.WithSigningKeysFunc(func() map[int]*ecdsa.PrivateKey {
+			return auth.LoadSigningKeys(keyPath, keyPassword, saveOnCreate)
+		}))
+
+		authSrv := oauth2.NewServer("", opts...)
+
+		WithAdditionalHandler("GET", "/.well-known/jwks.json", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+			authSrv.Handler.(*http.ServeMux).ServeHTTP(w, r)
+		})(cc, sm)
+		WithAdditionalHandler("GET", "/login", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+			authSrv.Handler.(*http.ServeMux).ServeHTTP(w, r)
+		})(cc, sm)
+		WithAdditionalHandler("GET", "/authorize", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+			authSrv.Handler.(*http.ServeMux).ServeHTTP(w, r)
+		})(cc, sm)
+		WithAdditionalHandler("POST", "/login", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+			authSrv.Handler.(*http.ServeMux).ServeHTTP(w, r)
+		})(cc, sm)
+		WithAdditionalHandler("POST", "/token", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+			authSrv.Handler.(*http.ServeMux).ServeHTTP(w, r)
+		})(cc, sm)
+	}
+}
+
 func init() {
 	log = logrus.WithField("component", "rest")
 
@@ -141,41 +167,13 @@ func RunServer(ctx context.Context, grpcPort int, httpPort int, serverOpts ...Se
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	mux := runtime.NewServeMux(
-		runtime.WithErrorHandler(service_auth.OAuthErrorHandler),
-	)
-
-	oauthServer := oauth2.NewServer("",
-		oauth2.WithClient("cli", "", "http://localhost:10000/callback"),
-		login.WithLoginPage(login.WithUser("clouditor", "clouditor")),
-	)
-
-	serverOpts = append(serverOpts,
-		WithAdditionalHandler("GET", "/.well-known/jwks.json", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
-			oauthServer.Handler.(*http.ServeMux).ServeHTTP(w, r)
-		}),
-		WithAdditionalHandler("GET", "/login", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
-			oauthServer.Handler.(*http.ServeMux).ServeHTTP(w, r)
-		}),
-		WithAdditionalHandler("GET", "/authorize", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
-			oauthServer.Handler.(*http.ServeMux).ServeHTTP(w, r)
-		}),
-		WithAdditionalHandler("POST", "/login", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
-			oauthServer.Handler.(*http.ServeMux).ServeHTTP(w, r)
-		}),
-		WithAdditionalHandler("POST", "/token", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
-			oauthServer.Handler.(*http.ServeMux).ServeHTTP(w, r)
-		}))
+	mux := runtime.NewServeMux()
 
 	for _, o := range serverOpts {
 		o(cors, mux)
 	}
 
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-
-	/*if err := auth.RegisterAuthenticationHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), opts); err != nil {
-		return fmt.Errorf("failed to connect to authentication gRPC service %w", err)
-	}*/
 
 	if err := discovery.RegisterDiscoveryHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), opts); err != nil {
 		return fmt.Errorf("failed to connect to discovery gRPC service %w", err)

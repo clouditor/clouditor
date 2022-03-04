@@ -9,7 +9,6 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.9
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/MicahParks/keyfunc v1.0.1
-	github.com/alexedwards/argon2id v0.0.0-20210511081203-7d35d68092b8
 	github.com/aws/aws-sdk-go-v2 v1.14.0
 	github.com/aws/aws-sdk-go-v2/config v1.14.0
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.30.0
@@ -27,7 +26,7 @@ require (
 	github.com/logrusorgru/aurora/v3 v3.0.0
 	github.com/mitchellh/mapstructure v1.4.3
 	github.com/open-policy-agent/opa v0.37.1
-	github.com/oxisto/oauth2go v0.5.4
+	github.com/oxisto/oauth2go v0.5.5
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.3.0
 	github.com/spf13/viper v1.10.0

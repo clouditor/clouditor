@@ -39,6 +39,7 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	cli_discovery "clouditor.io/clouditor/cli/commands/service/discovery"
+	"clouditor.io/clouditor/internal/auth"
 	"clouditor.io/clouditor/logging/formatter"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
@@ -46,7 +47,6 @@ import (
 	"clouditor.io/clouditor/rest"
 	"clouditor.io/clouditor/service"
 	service_assessment "clouditor.io/clouditor/service/assessment"
-	service_auth "clouditor.io/clouditor/service/auth"
 	service_discovery "clouditor.io/clouditor/service/discovery"
 	service_evidenceStore "clouditor.io/clouditor/service/evidence"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
@@ -55,6 +55,8 @@ import (
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
+	oauth2 "github.com/oxisto/oauth2go"
+	"github.com/oxisto/oauth2go/login"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -92,8 +94,8 @@ const (
 	DefaultAPIDefaultPassword  = "clouditor"
 	DefaultAPIgRPCPort         = 9090
 	DefaultOAuth2Endpoint      = "http://localhost:8080/token"
-	DefaultOAuth2ClientID      = ""
-	DefaultOAuth2ClientSecret  = ""
+	DefaultOAuth2ClientID      = "clouditor"
+	DefaultOAuth2ClientSecret  = "clouditor"
 	DefaultOAuth2Enabled       = false
 	DefaultDBUserName          = "postgres"
 	DefaultDBPassword          = "postgres"
@@ -109,7 +111,6 @@ const (
 
 var (
 	server               *grpc.Server
-	authService          *service_auth.Service
 	discoveryService     discovery.DiscoveryServer
 	orchestratorService  *service_orchestrator.Service
 	assessmentService    assessment.AssessmentServer
@@ -135,9 +136,9 @@ func init() {
 
 	engineCmd.Flags().String(APIDefaultUserFlag, DefaultAPIDefaultUser, "Specifies the default API username")
 	engineCmd.Flags().String(APIDefaultPasswordFlag, DefaultAPIDefaultPassword, "Specifies the default API password")
-	engineCmd.Flags().String(APIKeyPasswordFlag, service_auth.DefaultApiKeyPassword, "Specifies the password used to proctect the API private key")
-	engineCmd.Flags().String(APIKeyPathFlag, service_auth.DefaultApiKeyPath, "Specifies the location of the API private key")
-	engineCmd.Flags().Bool(APIKeySaveOnCreateFlag, service_auth.DefaultApiKeySaveOnCreate, "Specifies whether the API key should be saved on creation. It will only created if the default location is used.")
+	engineCmd.Flags().String(APIKeyPasswordFlag, auth.DefaultApiKeyPassword, "Specifies the password used to proctect the API private key")
+	engineCmd.Flags().String(APIKeyPathFlag, auth.DefaultApiKeyPath, "Specifies the location of the API private key")
+	engineCmd.Flags().Bool(APIKeySaveOnCreateFlag, auth.DefaultApiKeySaveOnCreate, "Specifies whether the API key should be saved on creation. It will only created if the default location is used.")
 	engineCmd.Flags().Int16(APIgRPCPortFlag, DefaultAPIgRPCPort, "Specifies the port used for the gRPC API")
 	engineCmd.Flags().Int16(APIHTTPPortFlag, rest.DefaultAPIHTTPPort, "Specifies the port used for the HTTP API")
 	engineCmd.Flags().String(APIJWKSURLFlag, service.DefaultJWKSURL, "Specifies the JWKS URL used to verify authentication tokens in the gRPC and HTTP API")
@@ -223,13 +224,6 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		providers = []string{viper.GetString(cli_discovery.DiscovererFlag)}
 	}
 
-	authService = service_auth.NewService(
-		service_auth.WithStorage(db),
-		service_auth.WithApiKeyPassword(viper.GetString(APIKeyPasswordFlag)),
-		service_auth.WithApiKeyPath(viper.GetString(APIKeyPathFlag)),
-		service_auth.WithApiKeySaveOnCreate(viper.GetBool(APIKeySaveOnCreateFlag)),
-	)
-
 	discoveryService = service_discovery.NewService(
 		service_discovery.WithProviders(providers),
 		service_discovery.WithOAuth2Authorizer(
@@ -262,10 +256,10 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	// evidenceStoreService.RegisterEvidenceHook(func(result *evidence.Evidence, err error) {})
 	// assessmentService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {}
 
-	err = authService.CreateDefaultUser(viper.GetString(APIDefaultUserFlag), viper.GetString(APIDefaultPasswordFlag))
+	/*err = authService.CreateDefaultUser(viper.GetString(APIDefaultUserFlag), viper.GetString(APIDefaultPasswordFlag))
 	if err != nil {
 		log.Errorf("Could not create default user: %v", err)
-	}
+	}*/
 
 	if viper.GetBool(CreateDefaultTarget) {
 		_, err := orchestratorService.CreateDefaultTargetCloudService()
@@ -322,6 +316,30 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			rest.WithAllowedOrigins(viper.GetStringSlice(APICORSAllowedOriginsFlags)),
 			rest.WithAllowedHeaders(viper.GetStringSlice(APICORSAllowedHeadersFlags)),
 			rest.WithAllowedMethods(viper.GetStringSlice(APICORSAllowedMethodsFlags)),
+			rest.WithEmbeddedOAuthServer(
+				viper.GetString(APIKeyPasswordFlag),
+				viper.GetString(APIKeyPathFlag),
+				viper.GetBool(APIKeySaveOnCreateFlag),
+				// Public client for our CLI
+				oauth2.WithClient(
+					"cli",
+					"",
+					"http://localhost:10000/callback",
+				),
+				// Confidential client with default credentials
+				oauth2.WithClient(
+					viper.GetString(DefaultOAuth2ClientID),
+					viper.GetString(DefaultOAuth2ClientSecret),
+					"",
+				),
+				// Default user for logging in
+				login.WithLoginPage(
+					login.WithUser(
+						viper.GetString(APIDefaultUserFlag),
+						viper.GetString(APIDefaultPasswordFlag),
+					),
+				),
+			),
 		)
 		if errors.Is(err, http.ErrServerClosed) {
 			// ToDo(oxisto): deepsource anti-pattern: calls to os.Exit only in main() or init() functions

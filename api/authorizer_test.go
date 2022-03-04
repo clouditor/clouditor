@@ -37,13 +37,10 @@ import (
 	"testing"
 	"time"
 
-	"clouditor.io/clouditor/api/auth"
 	"github.com/golang-jwt/jwt/v4"
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/oauth2/clientcredentials"
-	"google.golang.org/grpc"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var (
@@ -151,38 +148,6 @@ func Test_oauthAuthorizer_Token(t *testing.T) {
 			}
 		})
 	}
-}
-
-type mockAuthClient struct{}
-
-func (mockAuthClient) Login(_ context.Context, _ *auth.LoginRequest, _ ...grpc.CallOption) (*auth.TokenResponse, error) {
-	return &auth.TokenResponse{
-		AccessToken: mockAccessToken,
-		TokenType:   "Bearer",
-		Expiry:      timestamppb.New(mockExpiry),
-	}, nil
-}
-
-func (mockAuthClient) Token(_ context.Context, _ *auth.TokenRequest, _ ...grpc.CallOption) (*auth.TokenResponse, error) {
-	return &auth.TokenResponse{
-		AccessToken: mockAccessToken,
-		TokenType:   "Bearer",
-		Expiry:      timestamppb.New(mockExpiry),
-	}, nil
-}
-
-func (mockAuthClient) ListPublicKeys(_ context.Context, _ *auth.ListPublicKeysRequest, _ ...grpc.CallOption) (*auth.ListPublicResponse, error) {
-	return nil, nil
-}
-
-type mockConn struct{}
-
-func (mockConn) Invoke(_ context.Context, _ string, _ interface{}, _ interface{}, _ ...grpc.CallOption) error {
-	return nil
-}
-
-func (mockConn) NewStream(_ context.Context, _ *grpc.StreamDesc, _ string, _ ...grpc.CallOption) (grpc.ClientStream, error) {
-	return nil, nil
 }
 
 func TestNewOAuthAuthorizerFromClientCredentials(t *testing.T) {
