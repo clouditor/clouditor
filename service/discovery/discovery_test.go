@@ -252,9 +252,9 @@ func TestStart(t *testing.T) {
 	tests := []struct {
 		name           string
 		fields         fields
-		req       *discovery.StartDiscoveryRequest
-		providers []string
-		wantResp  *discovery.StartDiscoveryResponse
+		req            *discovery.StartDiscoveryRequest
+		providers      []string
+		wantResp       *discovery.StartDiscoveryResponse
 		wantErr        bool
 		wantErrMessage string
 	}{
@@ -452,8 +452,8 @@ func TestService_initAssessmentStream(t *testing.T) {
 				password:         "password",
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				status, _ := status.FromError(errors.Unwrap(err))
-				return assert.Equal(t, codes.Unauthenticated, status.Code())
+				s, _ := status.FromError(errors.Unwrap(err))
+				return assert.Equal(t, codes.Unauthenticated, s.Code())
 			},
 		},
 	}

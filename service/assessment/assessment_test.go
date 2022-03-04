@@ -906,8 +906,8 @@ func TestService_initEvidenceStoreStream(t *testing.T) {
 				[]grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				status, _ := status.FromError(errors.Unwrap(err))
-				return assert.Equal(t, codes.Unauthenticated, status.Code())
+				s, _ := status.FromError(errors.Unwrap(err))
+				return assert.Equal(t, codes.Unauthenticated, s.Code())
 			},
 		},
 	}

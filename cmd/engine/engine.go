@@ -363,7 +363,12 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 
 	// Automatically start the discovery, if we have this flag enabled
 	if viper.GetBool(DiscoveryAutoStartFlag) {
-		go func() { _, _ = discoveryService.Start(context.Background(), &discovery.StartDiscoveryRequest{}) }()
+		go func() {
+			_, err = discoveryService.Start(context.Background(), &discovery.StartDiscoveryRequest{Providers: providers})
+			if err != nil {
+				log.Errorf("Could not automatically start discovery: %s")
+			}
+		}()
 	}
 
 	// serve the gRPC socket

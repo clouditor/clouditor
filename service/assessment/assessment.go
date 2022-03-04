@@ -130,7 +130,7 @@ func WithInternalAuthorizer(address string, username string, password string, op
 	}
 }
 
-// WithInternalAuthorizer is an option to use an OAuth 2.0 authorizer
+// WithOAuth2Authorizer is an option to use an OAuth 2.0 authorizer
 func WithOAuth2Authorizer(config *clientcredentials.Config) ServiceOption {
 	return func(s *Service) {
 		s.SetAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(config))

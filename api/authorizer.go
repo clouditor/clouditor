@@ -129,10 +129,10 @@ func NewInternalAuthorizerFromToken(url string, token *oauth2.Token, grpcOptions
 	return authorizer
 }
 
-// NewOAuthAuthorizerFromClientCredentials creates a new authorizer based on an OAuth 2.0 client credentials. It will attempt to refresh an expired access token,
-// if a refresh token is supplied. Note, that this does a similar flow as OAuth 2.0, but it uses
-// our internal direct gRPC connection to the authentication server, whereas OAuth 2.0 would use
-// a POST request with application/x-www-form-urlencoded data.
+// NewOAuthAuthorizerFromClientCredentials creates a new authorizer based on an OAuth 2.0 client credentials.
+// It will attempt to refresh an expired access token, if a refresh token is supplied. Note, that this does a
+// similar flow as OAuth 2.0, but it uses our internal direct gRPC connection to the authentication server,
+// whereas OAuth 2.0 would use a POST request with application/x-www-form-urlencoded data.
 func NewOAuthAuthorizerFromClientCredentials(config *clientcredentials.Config) Authorizer {
 	var authorizer = &oauthAuthorizer{
 		authURL: config.TokenURL,
