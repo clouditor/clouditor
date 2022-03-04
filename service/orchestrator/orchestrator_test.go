@@ -27,6 +27,7 @@ package orchestrator
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -36,20 +37,17 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/google/uuid"
-	"google.golang.org/grpc"
-	"k8s.io/apimachinery/pkg/util/json"
+	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/persistence/inmemory"
 
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-
-	"clouditor.io/clouditor/api/assessment"
-
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/persistence/inmemory"
-	"github.com/stretchr/testify/assert"
 )
 
 const (
