@@ -53,7 +53,7 @@ func NewRegisterCloudServiceCommand() *cobra.Command {
 
 			if session, err = cli.ContinueSession(); err != nil {
 				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
-				return err
+				return nil
 			}
 
 			client = orchestrator.NewOrchestratorClient(session)
