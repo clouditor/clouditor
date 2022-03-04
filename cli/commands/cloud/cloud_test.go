@@ -68,15 +68,18 @@ func TestNewCloudCommand(t *testing.T) {
 func TestRegisterCloudServiceCommand(t *testing.T) {
 	var (
 		response orchestrator.CloudService
-		svc      orchestrator.OrchestratorServer
+		svc      *service_orchestrator.Service
+		tmpDir   string
+		auth     *oauth2.AuthorizationServer
+		srv      *grpc.Server
 
 		err error
 		b   bytes.Buffer
 	)
 
 	svc = service_orchestrator.NewService()
-	_, srv := startServer(service.WithOrchestrator(svc))
-	defer srv.Stop()
+	tmpDir, auth, srv = startServer(service.WithOrchestrator(svc))
+	defer cleanup(tmpDir, srv, auth)
 
 	cli.Output = &b
 
@@ -95,14 +98,17 @@ func TestListCloudServicesCommand(t *testing.T) {
 	var (
 		response orchestrator.ListCloudServicesResponse
 		svc      *service_orchestrator.Service
+		tmpDir   string
+		auth     *oauth2.AuthorizationServer
+		srv      *grpc.Server
 
 		err error
 		b   bytes.Buffer
 	)
 
 	svc = service_orchestrator.NewService()
-	_, srv := startServer(service.WithOrchestrator(svc))
-	defer srv.Stop()
+	tmpDir, auth, srv = startServer(service.WithOrchestrator(svc))
+	defer cleanup(tmpDir, srv, auth)
 
 	_, err = svc.CreateDefaultTargetCloudService()
 	assert.NoError(t, err)
@@ -125,14 +131,17 @@ func TestGetCloudServiceCommand(t *testing.T) {
 		response orchestrator.CloudService
 		target   *orchestrator.CloudService
 		svc      *service_orchestrator.Service
+		tmpDir   string
+		auth     *oauth2.AuthorizationServer
+		srv      *grpc.Server
 
 		err error
 		b   bytes.Buffer
 	)
 
 	svc = service_orchestrator.NewService()
-	_, srv := startServer(service.WithOrchestrator(svc))
-	defer srv.Stop()
+	tmpDir, auth, srv = startServer(service.WithOrchestrator(svc))
+	defer cleanup(tmpDir, srv, auth)
 
 	target, err = svc.CreateDefaultTargetCloudService()
 
@@ -159,14 +168,17 @@ func TestRemoveCloudServicesCommand(t *testing.T) {
 		response emptypb.Empty
 		target   *orchestrator.CloudService
 		svc      *service_orchestrator.Service
+		tmpDir   string
+		auth     *oauth2.AuthorizationServer
+		srv      *grpc.Server
 
 		err error
 		b   bytes.Buffer
 	)
 
 	svc = service_orchestrator.NewService()
-	_, srv := startServer(service.WithOrchestrator(svc))
-	defer srv.Stop()
+	tmpDir, auth, srv = startServer(service.WithOrchestrator(svc))
+	defer cleanup(tmpDir, srv, auth)
 
 	target, err = svc.CreateDefaultTargetCloudService()
 	assert.NoError(t, err)
@@ -193,6 +205,9 @@ func TestUpdateCloudServiceCommand(t *testing.T) {
 		response orchestrator.CloudService
 		target   *orchestrator.CloudService
 		svc      *service_orchestrator.Service
+		tmpDir   string
+		auth     *oauth2.AuthorizationServer
+		srv      *grpc.Server
 
 		err error
 		b   bytes.Buffer
@@ -203,8 +218,8 @@ func TestUpdateCloudServiceCommand(t *testing.T) {
 	)
 
 	svc = service_orchestrator.NewService()
-	_, srv := startServer(service.WithOrchestrator(svc))
-	defer srv.Stop()
+	tmpDir, auth, srv = startServer(service.WithOrchestrator(svc))
+	defer cleanup(tmpDir, srv, auth)
 
 	target, err = svc.CreateDefaultTargetCloudService()
 	assert.NoError(t, err)
@@ -231,14 +246,17 @@ func TestGetMetricConfiguration(t *testing.T) {
 	var (
 		target *orchestrator.CloudService
 		svc    *service_orchestrator.Service
+		tmpDir string
+		auth   *oauth2.AuthorizationServer
+		srv    *grpc.Server
 
 		err error
 		b   bytes.Buffer
 	)
 
 	svc = service_orchestrator.NewService()
-	_, srv := startServer(service.WithOrchestrator(svc))
-	defer srv.Stop()
+	tmpDir, auth, srv = startServer(service.WithOrchestrator(svc))
+	defer cleanup(tmpDir, srv, auth)
 
 	target, err = svc.CreateDefaultTargetCloudService()
 	assert.NoError(t, err)
@@ -262,10 +280,9 @@ func TestGetMetricConfiguration(t *testing.T) {
 // startServer starts a gRPC server with an orchestrator and auth service. We don't do it in TestMain since you
 // can only register a service - once before server.serve(). And we do need to add new Orchestrator service because
 // the DB won't be reset otherwise.
-func startServer(opts ...service.StartGRPCServerOption) (auth *oauth2.AuthorizationServer, srv *grpc.Server) {
+func startServer(opts ...service.StartGRPCServerOption) (tmpDir string, auth *oauth2.AuthorizationServer, srv *grpc.Server) {
 	var (
 		err      error
-		tmpDir   string
 		grpcPort int
 		authPort int
 		sock     net.Listener
@@ -288,8 +305,14 @@ func startServer(opts ...service.StartGRPCServerOption) (auth *oauth2.Authorizat
 		panic(err)
 	}
 
+	return
+}
+
+func cleanup(tmpDir string, srv *grpc.Server, auth *oauth2.AuthorizationServer) {
 	// Remove temporary session directory
 	os.RemoveAll(tmpDir)
 
-	return
+	srv.Stop()
+
+	auth.Close()
 }

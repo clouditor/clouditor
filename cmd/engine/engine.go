@@ -316,7 +316,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			rest.WithAllowedOrigins(viper.GetStringSlice(APICORSAllowedOriginsFlags)),
 			rest.WithAllowedHeaders(viper.GetStringSlice(APICORSAllowedHeadersFlags)),
 			rest.WithAllowedMethods(viper.GetStringSlice(APICORSAllowedMethodsFlags)),
-			rest.WithEmbeddedOAuthServer(
+			rest.WithEmbeddedOAuth2Server(
 				viper.GetString(APIKeyPasswordFlag),
 				viper.GetString(APIKeyPathFlag),
 				viper.GetBool(APIKeySaveOnCreateFlag),

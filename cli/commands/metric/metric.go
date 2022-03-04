@@ -50,7 +50,7 @@ func NewListMetricsCommand() *cobra.Command {
 
 			if session, err = cli.ContinueSession(); err != nil {
 				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
-				return nil
+				return err
 			}
 
 			client = orchestrator.NewOrchestratorClient(session)

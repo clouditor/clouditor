@@ -96,6 +96,17 @@ var (
 	DefaultAPIHTTPPort int16 = 8080
 )
 
+func init() {
+	log = logrus.WithField("component", "rest")
+
+	// initialize the CORS config with restrictive default values, e.g. no origin allowed
+	cors = &corsConfig{
+		allowedOrigins: DefaultAllowedOrigins,
+		allowedHeaders: DefaultAllowedHeaders,
+		allowedMethods: DefaultAllowedMethods,
+	}
+}
+
 // WithAllowedOrigins is an option to supply allowed origins in CORS.
 func WithAllowedOrigins(origins []string) ServerConfigOption {
 	return func(cc *corsConfig, _ *runtime.ServeMux) {
@@ -124,7 +135,17 @@ func WithAdditionalHandler(method string, path string, h runtime.HandlerFunc) Se
 	}
 }
 
-func WithEmbeddedOAuthServer(keyPath string, keyPassword string, saveOnCreate bool, opts ...oauth2.AuthorizationServerOption) ServerConfigOption {
+// WithEmbeddedOAuth2Server configures our REST gateway to include an embedded OAuth 2.0
+// authorization server with the given parameters. This server can be used to authenticate
+// and authorize API clients, such as our own micro-services as well as users logging in
+// through the UI.
+//
+// For the various options to configure the OAuth 2.0 server, please refer to
+// https://pkg.go.dev/github.com/oxisto/oauth2go#AuthorizationServerOption.
+//
+// In production scenarios, the usage of a dedicated authentication and authorization server is
+// recommended.
+func WithEmbeddedOAuth2Server(keyPath string, keyPassword string, saveOnCreate bool, opts ...oauth2.AuthorizationServerOption) ServerConfigOption {
 	return func(cc *corsConfig, sm *runtime.ServeMux) {
 		opts = append(opts, oauth2.WithSigningKeysFunc(func() map[int]*ecdsa.PrivateKey {
 			return auth.LoadSigningKeys(keyPath, keyPassword, saveOnCreate)
@@ -147,17 +168,6 @@ func WithEmbeddedOAuthServer(keyPath string, keyPassword string, saveOnCreate bo
 		WithAdditionalHandler("POST", "/token", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 			authSrv.Handler.(*http.ServeMux).ServeHTTP(w, r)
 		})(cc, sm)
-	}
-}
-
-func init() {
-	log = logrus.WithField("component", "rest")
-
-	// initialize the CORS config with restrictive default values, e.g. no origin allowed
-	cors = &corsConfig{
-		allowedOrigins: DefaultAllowedOrigins,
-		allowedHeaders: DefaultAllowedHeaders,
-		allowedMethods: DefaultAllowedMethods,
 	}
 }
 

@@ -28,6 +28,7 @@ package discovery
 import (
 	"context"
 	"fmt"
+
 	"github.com/spf13/viper"
 
 	"clouditor.io/clouditor/api/discovery"
@@ -88,7 +89,7 @@ func NewQueryDiscoveryCommand() *cobra.Command {
 
 			if session, err = cli.ContinueSession(); err != nil {
 				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
-				return nil
+				return err
 			}
 
 			client = discovery.NewDiscoveryClient(session)

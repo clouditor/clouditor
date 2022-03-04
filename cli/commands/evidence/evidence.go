@@ -26,10 +26,11 @@
 package evidence
 
 import (
-	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/cli"
 	"context"
 	"fmt"
+
+	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
 )
 
@@ -48,7 +49,7 @@ func NewListEvidencesCommand() *cobra.Command {
 
 			if session, err = cli.ContinueSession(); err != nil {
 				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
-				return nil
+				return err
 			}
 
 			client = evidence.NewEvidenceStoreClient(session)
