@@ -37,6 +37,8 @@ import (
 )
 
 func TestMain(m *testing.M) {
+	clitest.AutoChdir()
+
 	os.Exit(clitest.RunCLITest(m, service.WithOrchestrator(service_orchestrator.NewService())))
 }
 

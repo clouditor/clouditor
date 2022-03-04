@@ -39,6 +39,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/persistence/inmemory"
 
 	"github.com/google/uuid"
@@ -55,10 +56,7 @@ const (
 )
 
 func TestMain(m *testing.M) {
-	err := os.Chdir("../../")
-	if err != nil {
-		panic(err)
-	}
+	clitest.AutoChdir()
 
 	os.Exit(m.Run())
 }

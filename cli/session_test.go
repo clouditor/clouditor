@@ -61,6 +61,7 @@ func TestMain(m *testing.M) {
 		code int
 	)
 
+	// Because of a cyclic dependency, we cannot use clitest here
 	err = os.Chdir("../")
 	if err != nil {
 		panic(err)

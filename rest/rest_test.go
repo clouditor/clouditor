@@ -39,6 +39,7 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/service"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
@@ -62,11 +63,7 @@ func TestMain(m *testing.M) {
 		authPort int
 	)
 
-	// make sure, that we are in the clouditor root folder to find the metrics
-	err = os.Chdir("../")
-	if err != nil {
-		panic(err)
-	}
+	clitest.AutoChdir()
 
 	_, authPort, err = testutil.StartAuthenticationServer()
 	if err != nil {

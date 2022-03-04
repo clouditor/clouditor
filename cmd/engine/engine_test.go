@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"testing"
 
 	"clouditor.io/clouditor/rest"
@@ -10,6 +11,15 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestMain(m *testing.M) {
+	err := os.Chdir("../../")
+	if err != nil {
+		panic(err)
+	}
+
+	os.Exit(m.Run())
+}
 
 func Test_doCmd(t *testing.T) {
 	type args struct {
