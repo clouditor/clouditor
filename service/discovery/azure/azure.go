@@ -140,8 +140,8 @@ func NewAuthorizer() (authorizer autorest.Authorizer, err error) {
 		log.Infof("Using authorizer from environment")
 		return
 	}
-	log.Infof("Could not authenticate to Azure from environment: %v", err)
-	log.Infof("Fallback to authentication from file")
+	log.Infof("Could not authenticate to Azure with authorizer from environment: %v", err)
+	log.Infof("Fallback to authorizer from file")
 
 	// Create authorizer from file
 	authorizer, err = auth.NewAuthorizerFromFile(autorest_azure.PublicCloud.ResourceManagerEndpoint)
@@ -150,7 +150,7 @@ func NewAuthorizer() (authorizer autorest.Authorizer, err error) {
 		return
 	}
 	log.Infof("Could not authenticate to Azure with authorizer from file: %v", err)
-	log.Infof("Fallback to Azure with authorizer from CLI.")
+	log.Infof("Fallback to authorizer from CLI.")
 
 	// Create authorizer from CLI
 	authorizer, err = auth.NewAuthorizerFromCLI()

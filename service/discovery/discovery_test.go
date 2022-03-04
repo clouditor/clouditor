@@ -26,6 +26,7 @@
 package discovery
 
 import (
+	"clouditor.io/clouditor/service/discovery/azure"
 	"context"
 	"errors"
 	"fmt"
@@ -279,11 +280,28 @@ func TestStart(t *testing.T) {
 			wantErrMessage: "could not authenticate to Kubernetes",
 		},
 		{
-			name: "No Azure authorizer from file nor CLI",
+			name: "No Azure authorizer from ENV nor from file nor CLI",
 			fields: fields{
 				hasRPCConnection: true,
+				// We must set env variables accordingly s.t. all authorizer will fail
 				envVariables: []envVariable{
-					// We must set AZURE_AUTH_LOCATION and HOME to a wrong pahth so that both Azure authorizer fail
+					// Set AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, AZURE_TENANT_ID to empty string for `from ENV` to fail
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_CLIENT_ID",
+						envVariableValue: "",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_CLIENT_SECRET",
+						envVariableValue: "",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_TENANT_ID",
+						envVariableValue: "",
+					},
+					// Set AZURE_AUTH_LOCATION and HOME to a wrong path so that authorizer `from file and CLI` fails
 					{
 						hasEnvVariable:   true,
 						envVariableKey:   "AZURE_AUTH_LOCATION",
@@ -298,7 +316,7 @@ func TestStart(t *testing.T) {
 			},
 			wantResp:       nil,
 			wantErr:        true,
-			wantErrMessage: "could not authenticate to Azure",
+			wantErrMessage: azure.ErrCouldNotAuthenticate.Error(),
 		},
 		{
 			name: "No K8s authorizer",
