@@ -34,35 +34,32 @@ import (
 	"os"
 	"strings"
 
-	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/persistence/gorm"
-	"clouditor.io/clouditor/persistence/inmemory"
-	"clouditor.io/clouditor/service"
-
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
-
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/cli"
+	"clouditor.io/clouditor/logging/formatter"
+	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/persistence/gorm"
+	"clouditor.io/clouditor/persistence/inmemory"
 	"clouditor.io/clouditor/rest"
-
+	"clouditor.io/clouditor/service"
 	service_assessment "clouditor.io/clouditor/service/assessment"
 	service_auth "clouditor.io/clouditor/service/auth"
 	service_discovery "clouditor.io/clouditor/service/discovery"
 	service_evidenceStore "clouditor.io/clouditor/service/evidence"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -122,6 +119,7 @@ var engineCmd = &cobra.Command{
 
 func init() {
 	log = logrus.WithField("component", "grpc")
+	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true}}
 
 	cobra.OnInitialize(initConfig)
 
@@ -174,8 +172,6 @@ func initConfig() {
 }
 
 func doCmd(_ *cobra.Command, _ []string) (err error) {
-	log.Logger.Formatter = &logrus.TextFormatter{ForceColors: true}
-
 	log.Info("Welcome to new Clouditor 2.0")
 
 	fmt.Println(`
@@ -248,7 +244,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	httpPort := viper.GetInt(APIHTTPPortFlag)
 
 	grpcLogger := logrus.New()
-	grpcLogger.Formatter = &cli.GRPCFormatter{TextFormatter: logrus.TextFormatter{ForceColors: true}}
+	grpcLogger.Formatter = &formatter.GRPCFormatter{TextFormatter: logrus.TextFormatter{ForceColors: true}}
 	grpcLoggerEntry := grpcLogger.WithField("component", "grpc")
 
 	// disabling the grpc log itself, because it will log everything on INFO, whereas DEBUG would be more

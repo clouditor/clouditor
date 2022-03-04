@@ -35,13 +35,8 @@ import (
 	"testing"
 
 	"github.com/Azure/go-autorest/autorest"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
-
-func init() {
-	log = logrus.WithField("component", "azure-tests")
-}
 
 type mockSender struct {
 }
