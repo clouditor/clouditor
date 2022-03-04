@@ -255,7 +255,7 @@ func startServer() (orchestratorService *service_orchestrator.Service, server *g
 
 	orchestratorService = service_orchestrator.NewService()
 
-	sock, server, _, err = service.StartDedicatedAuthServer(":0")
+	sock, server, err = service.StartGRPCServer("", service.WithOrchestrator(orchestratorService))
 	if err != nil {
 		panic(err)
 	}

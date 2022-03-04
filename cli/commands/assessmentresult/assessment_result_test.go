@@ -29,23 +29,17 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"net"
 	"os"
 	"testing"
-
-	"clouditor.io/clouditor/service"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/cli/commands/login"
+	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/service"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -53,28 +47,14 @@ import (
 
 func TestMain(m *testing.M) {
 	var (
-		sock                net.Listener
-		server              *grpc.Server
-		orchestratorService *service_orchestrator.Service
-
+		svc *service_orchestrator.Service
 		err error
-		dir string
 	)
 
-	err = os.Chdir("../../../")
-	if err != nil {
-		panic(err)
-	}
+	svc = service_orchestrator.NewService()
 
-	orchestratorService = service_orchestrator.NewService()
-
-	sock, server, _, err = service.StartDedicatedAuthServer(":0")
-	if err != nil {
-		panic(err)
-	}
-	// Store an assessment result that output of CMD 'list' is not empty
-	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
-	_, err = orchestratorService.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
+	// Store an assessment result so that output of CMD 'list' is not empty
+	_, err = svc.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
 		Result: &assessment.AssessmentResult{
 			Id:         "11111111-1111-1111-1111-111111111111",
 			MetricId:   "assessmentResultMetricID",
@@ -86,34 +66,11 @@ func TestMain(m *testing.M) {
 				Operator:    "operator",
 				IsDefault:   true,
 			}}})
-
 	if err != nil {
 		panic(err)
 	}
 
-	defer func(sock net.Listener) {
-		err = sock.Close()
-		if err != nil {
-			panic(err)
-		}
-	}(sock)
-	defer server.Stop()
-
-	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
-	if err != nil {
-		panic(err)
-	}
-
-	viper.Set("username", "clouditor")
-	viper.Set("password", "clouditor")
-	viper.Set("session-directory", dir)
-
-	cmd := login.NewLoginCommand()
-	err = cmd.RunE(nil, []string{fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)})
-	if err != nil {
-		panic(err)
-	}
-	defer os.Exit(m.Run())
+	os.Exit(clitest.RunCLITest(m, service.WithOrchestrator(svc)))
 }
 
 func TestAddCommands(t *testing.T) {

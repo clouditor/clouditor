@@ -39,6 +39,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/voc"
 
 	"github.com/stretchr/testify/assert"
@@ -50,6 +51,10 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+var (
+	authPort int
+)
+
 func TestMain(m *testing.M) {
 	// make sure, that we are in the clouditor root folder to find the policies
 	err := os.Chdir("../../")
@@ -57,15 +62,12 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	server, authService, _, _ := startBufConnServer()
-	err = authService.CreateDefaultUser("clouditor", "clouditor")
-	if err != nil {
-		panic(err)
-	}
+	server, _, _ := startBufConnServer()
 
 	code := m.Run()
 
 	server.Stop()
+
 	os.Exit(code)
 }
 
@@ -877,12 +879,7 @@ func TestService_initEvidenceStoreStream(t *testing.T) {
 			fields: fields{
 				opts: []ServiceOption{
 					WithEvidenceStoreAddress("bufnet"),
-					WithInternalAuthorizer(
-						"bufnet",
-						"clouditor",
-						"clouditor",
-						grpc.WithContextDialer(bufConnDialer),
-					),
+					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
 				},
 			},
 			args: args{
@@ -894,12 +891,7 @@ func TestService_initEvidenceStoreStream(t *testing.T) {
 			fields: fields{
 				opts: []ServiceOption{
 					WithEvidenceStoreAddress("bufnet"),
-					WithInternalAuthorizer(
-						"bufnet",
-						"not_clouditor",
-						"clouditor",
-						grpc.WithContextDialer(bufConnDialer),
-					),
+					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
 				},
 			},
 			args: args{
@@ -954,12 +946,7 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 			fields: fields{
 				opts: []ServiceOption{
 					WithOrchestratorAddress("bufnet"),
-					WithInternalAuthorizer(
-						"bufnet",
-						"clouditor",
-						"clouditor",
-						grpc.WithContextDialer(bufConnDialer),
-					),
+					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
 				},
 			},
 			args: args{
@@ -971,12 +958,7 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 			fields: fields{
 				opts: []ServiceOption{
 					WithOrchestratorAddress("bufnet"),
-					WithInternalAuthorizer(
-						"bufnet",
-						"not_clouditor",
-						"clouditor",
-						grpc.WithContextDialer(bufConnDialer),
-					),
+					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
 				},
 			},
 			args: args{

@@ -6,6 +6,7 @@ import (
 
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/oxisto/oauth2go/login"
+	"golang.org/x/oauth2/clientcredentials"
 )
 
 const (
@@ -51,4 +52,12 @@ func TokenURL(port int) string {
 
 func AuthURL(port int) string {
 	return fmt.Sprintf("http://localhost:%d/authorize", port)
+}
+
+func AuthClientConfig(port int) *clientcredentials.Config {
+	return &clientcredentials.Config{
+		ClientID:     TestAuthClientID,
+		ClientSecret: TestAuthClientSecret,
+		TokenURL:     TokenURL(port),
+	}
 }

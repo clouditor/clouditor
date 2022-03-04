@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net"
 
+	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
@@ -12,9 +14,21 @@ import (
 
 type StartGRPCServerOption func(srv *grpc.Server)
 
-func WithOrchestrator(service orchestrator.OrchestratorServer) StartGRPCServerOption {
+func WithOrchestrator(svc orchestrator.OrchestratorServer) StartGRPCServerOption {
 	return func(srv *grpc.Server) {
-		orchestrator.RegisterOrchestratorServer(srv, service)
+		orchestrator.RegisterOrchestratorServer(srv, svc)
+	}
+}
+
+func WithEvidenceStore(svc evidence.EvidenceStoreServer) StartGRPCServerOption {
+	return func(srv *grpc.Server) {
+		evidence.RegisterEvidenceStoreServer(srv, svc)
+	}
+}
+
+func WithDiscovery(svc discovery.DiscoveryServer) StartGRPCServerOption {
+	return func(srv *grpc.Server) {
+		discovery.RegisterDiscoveryServer(srv, svc)
 	}
 }
 
