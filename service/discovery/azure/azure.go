@@ -130,31 +130,37 @@ func (a azureDiscovery) apply(client *autorest.Client) {
 	}
 }
 
+// NewAuthorizer creates authorizer for connecting to Azure using a custom credential chain (ENV, from file and from CLI)
 func NewAuthorizer() (authorizer autorest.Authorizer, err error) {
+	// First, try to create authorizer via credentials from the environment
 	authorizer, err = auth.NewAuthorizerFromEnvironment()
 	if err == nil {
+		log.Infof("Using authorizer from environment")
 		return
 	}
-	log.Errorf("Could not authenticate to Azure from environment: %v", err)
+	log.Infof("Could not authenticate to Azure from environment: %v", err)
 	log.Infof("Fallback to authentication from file")
 
-	// create an authorizer from file or as fallback from the CLI
-	// if authorizer is from CLI, the access token expires after 75 minutes
+	// Create authorizer from file
 	authorizer, err = auth.NewAuthorizerFromFile(autorest_azure.PublicCloud.ResourceManagerEndpoint)
-	if err != nil {
-		log.Errorf("Could not authenticate to Azure with authorizer from file: %v", err)
-		log.Infof("Fallback to Azure with authorizer from CLI.")
-		authorizer, err = auth.NewAuthorizerFromCLI()
-		if err != nil {
-			log.Errorf("Could not authenticate to Azure with authorizer from CLI: %v", err)
-			return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
-		}
-		log.Info("Using Azure authorizer from CLI. The discovery times out after 1 hour.")
-	} else {
-		log.Info("Using Azure authorizer from file.")
+	if err == nil {
+		log.Infof("Using authorizer from file")
+		return
 	}
+	log.Infof("Could not authenticate to Azure with authorizer from file: %v", err)
+	log.Infof("Fallback to Azure with authorizer from CLI.")
 
-	return authorizer, nil
+	// Create authorizer from CLI
+	authorizer, err = auth.NewAuthorizerFromCLI()
+	if err == nil {
+		// if authorizer is from CLI, the access token expires after 75 minutes
+		log.Info("Using authorizer from CLI. The discovery times out after 1 hour.")
+		return
+	}
+	log.Errorf("Could not authenticate to Azure with authorizer from CLI: %v", err)
+
+	// Authorizer couldn't be created
+	return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
 }
 
 func getResourceGroupName(id string) string {
