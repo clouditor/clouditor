@@ -325,7 +325,7 @@ func TestStart(t *testing.T) {
 			fields: fields{
 				hasRPCConnection: false,
 			},
-			req: &discovery.StartDiscoveryRequest{Csp: []string{"aws", "azure", "k8s"}},
+			req:            &discovery.StartDiscoveryRequest{Csp: []string{"aws", "azure", "k8s"}},
 			csp:            []string{"aws", "azure", "k8s"},
 			wantResp:       nil,
 			wantErr:        true,
@@ -336,7 +336,7 @@ func TestStart(t *testing.T) {
 			fields: fields{
 				hasRPCConnection: true,
 				envVariables: []envVariable{
-					// We must set HOME to a wrong path so that the AWS and k8s authorizer fails in all systems, regardless if AWS paths are set or not
+					// We must set HOME to a wrong path so that the AWS and k8s authorizer fails in all systems, regardless if AWS and k8s paths are set or not
 					{
 						hasEnvVariable:   true,
 						envVariableKey:   "HOME",
@@ -354,14 +354,6 @@ func TestStart(t *testing.T) {
 			name: "Empty request",
 			fields: fields{
 				hasRPCConnection: true,
-				envVariables: []envVariable{
-					// We must set HOME to a wrong path so that the AWS authorizer fails in all systems, regardless if AWS paths are set or not
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "HOME",
-						envVariableValue: "",
-					},
-				},
 			},
 			req:            &discovery.StartDiscoveryRequest{Csp: []string{}},
 			csp:            nil,

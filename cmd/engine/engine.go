@@ -107,7 +107,7 @@ var (
 	assessmentService    assessment.AssessmentServer
 	evidenceStoreService evidence.EvidenceStoreServer
 	db                   persistence.Storage
-	csps					[]string
+	csps                 []string
 
 	log *logrus.Entry
 )
