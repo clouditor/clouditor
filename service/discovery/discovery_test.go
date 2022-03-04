@@ -252,9 +252,9 @@ func TestStart(t *testing.T) {
 	tests := []struct {
 		name           string
 		fields         fields
-		req            *discovery.StartDiscoveryRequest
-		csp            []string
-		wantResp       *discovery.StartDiscoveryResponse
+		req       *discovery.StartDiscoveryRequest
+		providers []string
+		wantResp  *discovery.StartDiscoveryResponse
 		wantErr        bool
 		wantErrMessage string
 	}{
@@ -271,8 +271,8 @@ func TestStart(t *testing.T) {
 					},
 				},
 			},
-			req:            &discovery.StartDiscoveryRequest{Csp: []string{CSPAzure}},
-			csp:            []string{CSPAzure},
+			req:            &discovery.StartDiscoveryRequest{Providers: []string{ProviderAzure}},
+			providers:      []string{ProviderAzure},
 			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
 			wantErr:        false,
 			wantErrMessage: "",
@@ -295,8 +295,8 @@ func TestStart(t *testing.T) {
 					},
 				},
 			},
-			req:            &discovery.StartDiscoveryRequest{Csp: []string{CSPAzure}},
-			csp:            []string{CSPAzure},
+			req:            &discovery.StartDiscoveryRequest{Providers: []string{ProviderAzure}},
+			providers:      []string{ProviderAzure},
 			wantResp:       nil,
 			wantErr:        true,
 			wantErrMessage: "could not authenticate to Azure",
@@ -314,8 +314,8 @@ func TestStart(t *testing.T) {
 					},
 				},
 			},
-			req:            &discovery.StartDiscoveryRequest{Csp: []string{CSPK8S}},
-			csp:            []string{CSPK8S},
+			req:            &discovery.StartDiscoveryRequest{Providers: []string{ProviderK8S}},
+			providers:      []string{ProviderK8S},
 			wantResp:       nil,
 			wantErr:        true,
 			wantErrMessage: "could not authenticate to Kubernetes",
@@ -325,14 +325,14 @@ func TestStart(t *testing.T) {
 			fields: fields{
 				hasRPCConnection: false,
 			},
-			req:            &discovery.StartDiscoveryRequest{Csp: []string{"aws", "azure", "k8s"}},
-			csp:            []string{"aws", "azure", "k8s"},
+			req:            &discovery.StartDiscoveryRequest{Providers: []string{"aws", "azure", "k8s"}},
+			providers:      []string{"aws", "azure", "k8s"},
 			wantResp:       nil,
 			wantErr:        true,
 			wantErrMessage: "could not initialize stream to Assessment",
 		},
 		{
-			name: "Request with 2 CSPs",
+			name: "Request with 2 providers",
 			fields: fields{
 				hasRPCConnection: true,
 				envVariables: []envVariable{
@@ -344,8 +344,8 @@ func TestStart(t *testing.T) {
 					},
 				},
 			},
-			req:            &discovery.StartDiscoveryRequest{Csp: []string{"aws", "k8s"}},
-			csp:            []string{"aws", "k8s"},
+			req:            &discovery.StartDiscoveryRequest{Providers: []string{"aws", "k8s"}},
+			providers:      []string{"aws", "k8s"},
 			wantResp:       nil,
 			wantErr:        true,
 			wantErrMessage: "could not authenticate to",
@@ -355,22 +355,22 @@ func TestStart(t *testing.T) {
 			fields: fields{
 				hasRPCConnection: true,
 			},
-			req:            &discovery.StartDiscoveryRequest{Csp: []string{}},
-			csp:            nil,
+			req:            &discovery.StartDiscoveryRequest{Providers: []string{}},
+			providers:      nil,
 			wantResp:       nil,
 			wantErr:        true,
-			wantErrMessage: "no CSPs for discovering given",
+			wantErrMessage: "no providers for discovering given",
 		},
 		{
-			name: "Request with wrong CSP name",
+			name: "Request with wrong provider name",
 			fields: fields{
 				hasRPCConnection: true,
 			},
-			req:            &discovery.StartDiscoveryRequest{Csp: []string{"falseCSP"}},
-			csp:            []string{"falseCSP"},
+			req:            &discovery.StartDiscoveryRequest{Providers: []string{"falseProvider"}},
+			providers:      []string{"falseProvider"},
 			wantResp:       nil,
 			wantErr:        true,
-			wantErrMessage: "CSP not known",
+			wantErrMessage: "provider not known",
 		},
 	}
 
@@ -396,7 +396,7 @@ func TestStart(t *testing.T) {
 			}
 
 			if tt.req != nil {
-				assert.Equal(t, tt.csp, s.csp)
+				assert.Equal(t, tt.providers, s.providers)
 			}
 			if err != nil {
 				assert.Contains(t, err.Error(), tt.wantErrMessage)

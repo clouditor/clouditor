@@ -71,11 +71,11 @@ components:
         StartDiscoveryRequest:
             type: object
             properties:
-                csp:
+                providers:
                     type: array
                     items:
                         type: string
-                    description: A list of CSPs to be discovered
+                    description: A list of providers to be discovered
         StartDiscoveryResponse:
             type: object
             properties:

@@ -53,9 +53,9 @@ import (
 )
 
 const (
-	CSPAWS   = "aws"
-	CSPK8S   = "k8s"
-	CSPAzure = "azure"
+	ProviderAWS   = "aws"
+	ProviderK8S   = "k8s"
+	ProviderAzure = "azure"
 )
 
 var log *logrus.Entry
@@ -76,7 +76,7 @@ type Service struct {
 
 	authorizer api.Authorizer
 
-	csp []string
+	providers []string
 }
 
 type Configuration struct {
@@ -109,10 +109,10 @@ func WithInternalAuthorizer(address string, username string, password string, op
 	}
 }
 
-// WithDiscoverers is an option to set CSPs for discovering
-func WithDiscoverers(cspList []string) ServiceOption {
+// WithProviders is an option to set providers for discovering
+func WithProviders(providersList []string) ServiceOption {
 	return func(s *Service) {
-		s.csp = cspList
+		s.providers = providersList
 	}
 }
 
@@ -176,13 +176,13 @@ func (s *Service) Start(_ context.Context, req *discovery.StartDiscoveryRequest)
 	log.Infof("Starting discovery...")
 	s.scheduler.TagsUnique()
 
-	// Set CSPs
-	if req == nil || req.Csp == nil || len(req.Csp) == 0 {
-		newError := errors.New("no CSPs for discovering given")
+	// Set providers
+	if req == nil || req.Providers == nil || len(req.Providers) == 0 {
+		newError := errors.New("no providers for discovering given")
 		log.Errorf("%s", newError)
 		return nil, status.Errorf(codes.InvalidArgument, "%s", newError)
 	} else {
-		s.csp = req.Csp
+		s.providers = req.Providers
 	}
 
 	// Establish connection to assessment component
@@ -196,10 +196,10 @@ func (s *Service) Start(_ context.Context, req *discovery.StartDiscoveryRequest)
 
 	var discoverer []discovery.Discoverer
 
-	// Configure discoverers for given CSPs
-	for _, csp := range s.csp {
+	// Configure discoverers for given providers
+	for _, provider := range s.providers {
 		switch {
-		case csp == CSPAzure:
+		case provider == ProviderAzure:
 			authorizer, err := azure.NewAuthorizer()
 			if err != nil {
 				log.Errorf("Could not authenticate to Azure: %v", err)
@@ -210,7 +210,7 @@ func (s *Service) Start(_ context.Context, req *discovery.StartDiscoveryRequest)
 				azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
 				azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
 				azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)))
-		case csp == CSPK8S:
+		case provider == ProviderK8S:
 			k8sClient, err := k8s.AuthFromKubeConfig()
 			if err != nil {
 				log.Errorf("Could not authenticate to Kubernetes: %v", err)
@@ -219,7 +219,7 @@ func (s *Service) Start(_ context.Context, req *discovery.StartDiscoveryRequest)
 			discoverer = append(discoverer,
 				k8s.NewKubernetesComputeDiscovery(k8sClient),
 				k8s.NewKubernetesNetworkDiscovery(k8sClient))
-		case csp == CSPAWS:
+		case provider == ProviderAWS:
 			awsClient, err := aws.NewClient()
 			if err != nil {
 				log.Errorf("Could not authenticate to AWS: %v", err)
@@ -229,7 +229,7 @@ func (s *Service) Start(_ context.Context, req *discovery.StartDiscoveryRequest)
 				aws.NewAwsStorageDiscovery(awsClient),
 				aws.NewAwsComputeDiscovery(awsClient))
 		default:
-			newError := fmt.Errorf("CSP %s not known", csp)
+			newError := fmt.Errorf("provider %s not known", provider)
 			log.Error(newError)
 			return nil, status.Errorf(codes.InvalidArgument, "%s", newError)
 		}
