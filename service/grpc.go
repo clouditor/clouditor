@@ -58,7 +58,7 @@ func WithDiscovery(svc discovery.DiscoveryServer) StartGRPCServerOption {
 }
 
 func StartGRPCServer(jwksURL string, opts ...StartGRPCServerOption) (sock net.Listener, srv *grpc.Server, err error) {
-	var addr = ":0"
+	var addr = "127.0.0.1:0"
 
 	// create a new socket for gRPC communication
 	sock, err = net.Listen("tcp", addr)

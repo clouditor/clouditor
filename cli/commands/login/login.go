@@ -59,7 +59,7 @@ func NewLoginCommand() *cobra.Command {
 				return fmt.Errorf("could not connect: %w", err)
 			}
 
-			srv := NewCallbackServer(viper.GetString("auth-server"))
+			srv := newCallbackServer(viper.GetString("auth-server"))
 
 			//go func() {
 			//	exec.Command("open", authURL).Run()
@@ -111,7 +111,7 @@ type callbackServer struct {
 	code     chan string
 }
 
-func NewCallbackServer(url string) *callbackServer {
+func newCallbackServer(url string) *callbackServer {
 	var mux = http.NewServeMux()
 
 	var srv = &callbackServer{
