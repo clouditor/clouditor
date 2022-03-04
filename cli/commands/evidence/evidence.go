@@ -26,10 +26,11 @@
 package evidence
 
 import (
-	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/cli"
 	"context"
 	"fmt"
+
+	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
 )
 

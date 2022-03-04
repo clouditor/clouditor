@@ -28,19 +28,22 @@ package login
 import (
 	"context"
 	"fmt"
+	"net"
+	"net/http"
 
 	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/cli"
+	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"golang.org/x/oauth2"
 )
 
 const (
 	// URLFlag is the viper flag for the server url
 	URLFlag = "url"
 )
+
+var callbackServerReady chan bool = make(chan bool)
 
 // NewLoginCommand returns a cobra command for `login` subcommands
 func NewLoginCommand() *cobra.Command {
@@ -51,42 +54,50 @@ func NewLoginCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err     error
-				client  auth.AuthenticationClient
-				res     *auth.TokenResponse
-				req     *auth.LoginRequest
 				session *cli.Session
+				sock    net.Listener
+				code    string
 			)
 
 			if session, err = cli.NewSession(args[0]); err != nil {
 				return fmt.Errorf("could not connect: %w", err)
 			}
 
-			if viper.GetString("username") == "" || viper.GetString("password") == "" {
-				if req, err = cli.PromptForLogin(); err != nil {
-					return fmt.Errorf("could not prompt for password: %w", err)
-				}
-			} else {
-				req = &auth.LoginRequest{
-					Username: viper.GetString("username"),
-					Password: viper.GetString("password"),
-				}
-			}
+			srv := newCallbackServer(viper.GetString("auth-server"))
 
-			client = auth.NewAuthenticationClient(session)
+			//go func() {
+			//	exec.Command("open", authURL).Run()
+			//}()
 
-			if res, err = client.Login(context.Background(), req); err != nil {
-				return fmt.Errorf("could not login: %w", err)
+			go func() {
+				sock, err = net.Listen("tcp", srv.Addr)
+				if err != nil {
+					fmt.Printf("Could not start web server for OAuth 2.0 authorization code flow: %v", err)
+				}
+				go func() {
+					callbackServerReady <- true
+				}()
+
+				err = srv.Serve(sock)
+				if err != http.ErrServerClosed {
+					fmt.Printf("Could not start web server for OAuth 2.0 authorization code flow: %v", err)
+					return
+				}
+			}()
+			defer srv.Close()
+
+			// waiting for our code
+			code = <-srv.code
+			token, err := srv.config.Exchange(context.Background(), code,
+				oauth2.SetAuthURLParam("code_verifier", srv.verifier),
+			)
+
+			if err != nil {
+				return err
 			}
 
 			// Update the session
-			session.SetAuthorizer(api.NewInternalAuthorizerFromToken(
-				session.Authorizer().AuthURL(),
-				&oauth2.Token{
-					AccessToken:  res.AccessToken,
-					TokenType:    res.TokenType,
-					RefreshToken: res.RefreshToken,
-					Expiry:       res.Expiry.AsTime(),
-				}))
+			session.SetAuthorizer(api.NewOAuthAuthorizerFromConfig(srv.config, token))
 
 			if err = session.Save(); err != nil {
 				return fmt.Errorf("could not save session: %w", err)
@@ -98,11 +109,61 @@ func NewLoginCommand() *cobra.Command {
 		},
 	}
 
-	cmd.PersistentFlags().StringP("username", "u", "", "the username. if not specified, a prompt will be displayed")
-	_ = viper.BindPFlag("username", cmd.PersistentFlags().Lookup("username"))
-
-	cmd.PersistentFlags().StringP("password", "p", "", "the password. if not specified, a prompt will be displayed")
-	_ = viper.BindPFlag("password", cmd.PersistentFlags().Lookup("password"))
+	cmd.PersistentFlags().StringP("auth-server", "", "http://localhost:8080", "the URL to the auth server")
+	_ = viper.BindPFlag("auth-server", cmd.PersistentFlags().Lookup("auth-server"))
 
 	return cmd
+}
+
+type callbackServer struct {
+	http.Server
+
+	verifier string
+	config   *oauth2.Config
+	code     chan string
+}
+
+func newCallbackServer(url string) *callbackServer {
+	var mux = http.NewServeMux()
+
+	var srv = &callbackServer{
+		Server: http.Server{
+			Handler: mux,
+			Addr:    "localhost:10000",
+		},
+		// TODO(oxisto): random verifier
+		verifier: "012345678901234567890123456789",
+		config: &oauth2.Config{
+			ClientID: "cli",
+			Endpoint: oauth2.Endpoint{
+				AuthURL:  fmt.Sprintf("%s/authorize", url),
+				TokenURL: fmt.Sprintf("%s/token", url),
+			},
+			RedirectURL: "http://localhost:10000/callback",
+		},
+		code: make(chan string),
+	}
+
+	mux.HandleFunc("/callback", srv.handleCallback)
+
+	challenge := oauth2.GenerateCodeChallenge(srv.verifier)
+	authURL := srv.config.AuthCodeURL("",
+		oauth2.SetAuthURLParam("code_challenge", challenge),
+		oauth2.SetAuthURLParam("code_challenge_method", "S256"),
+	)
+
+	fmt.Printf("Please open %s in your browser 🚀 to continue\n", authURL)
+
+	return srv
+}
+
+func (srv *callbackServer) handleCallback(w http.ResponseWriter, r *http.Request) {
+	var err error
+
+	_, err = w.Write([]byte("Success. You can close this browser tab now"))
+	if err != nil {
+		w.WriteHeader(500)
+	}
+
+	srv.code <- r.URL.Query().Get("code")
 }

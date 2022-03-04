@@ -34,15 +34,14 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/service"
-	service_auth "clouditor.io/clouditor/service/auth"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
+	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/oauth2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -50,27 +49,41 @@ import (
 )
 
 var (
-	sock   net.Listener
-	server *grpc.Server
+	sock    net.Listener
+	srv     *grpc.Server
+	authSrv *oauth2.AuthorizationServer
 )
 
 func TestMain(m *testing.M) {
 	var (
-		err error
+		err  error
+		port int
+		code int
 	)
+
+	// Because of a cyclic dependency, we cannot use clitest here
 	err = os.Chdir("../")
 	if err != nil {
 		panic(err)
 	}
 
-	s := service_orchestrator.NewService()
-	sock, server, _, err = service.StartDedicatedAuthServer(":0", service_auth.WithApiKeySaveOnCreate(false))
-	orchestrator.RegisterOrchestratorServer(server, s)
+	authSrv, port, err = testutil.StartAuthenticationServer()
 	if err != nil {
 		panic(err)
 	}
 
-	os.Exit(m.Run())
+	s := service_orchestrator.NewService()
+	sock, srv, err = service.StartGRPCServer(testutil.JWKSURL(port), service.WithOrchestrator(s))
+	if err != nil {
+		panic(err)
+	}
+
+	code = m.Run()
+
+	authSrv.Close()
+	srv.Stop()
+
+	os.Exit(code)
 }
 
 func TestSession(t *testing.T) {
@@ -78,9 +91,8 @@ func TestSession(t *testing.T) {
 		err     error
 		session *Session
 		dir     string
+		token   *oauth2.Token
 	)
-	defer sock.Close()
-	defer server.Stop()
 
 	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
 	assert.NoError(t, err)
@@ -98,26 +110,18 @@ func TestSession(t *testing.T) {
 	assert.NotNil(t, session)
 	assert.Equal(t, dir, session.Folder)
 
-	client := auth.NewAuthenticationClient(session)
-
-	var response *auth.TokenResponse
-
-	// login with real user
-	response, err = client.Login(context.Background(), &auth.LoginRequest{Username: "clouditor", Password: "clouditor"})
+	token, err = authSrv.GenerateToken(testutil.TestAuthClientID, 0, 0)
 
 	assert.NoError(t, err)
-	assert.NotNil(t, response)
-	assert.NotEmpty(t, response.AccessToken)
+	assert.NotNil(t, token)
+	assert.NotEmpty(t, token.AccessToken)
 
 	// update the session
-	session.authorizer = api.NewInternalAuthorizerFromToken(
-		session.authorizer.AuthURL(),
-		&oauth2.Token{
-			AccessToken:  response.AccessToken,
-			TokenType:    response.TokenType,
-			RefreshToken: response.RefreshToken,
-			Expiry:       response.Expiry.AsTime(),
+	session.authorizer = api.NewOAuthAuthorizerFromConfig(
+		&oauth2.Config{
+			ClientID: testutil.TestAuthClientID,
 		},
+		token,
 	)
 
 	err = session.Save()
@@ -158,12 +162,7 @@ func TestSession_HandleResponse(t *testing.T) {
 				err: status.Errorf(codes.Internal, "internal error occurred!"),
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				if err != nil {
-					return true
-				} else {
-					t.Errorf("Expected error.")
-					return false
-				}
+				return assert.Error(t, err)
 			},
 		},
 		{
@@ -173,12 +172,7 @@ func TestSession_HandleResponse(t *testing.T) {
 				err: fmt.Errorf("random error"),
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				if err != nil {
-					return true
-				} else {
-					t.Errorf("Expected error.")
-					return false
-				}
+				return assert.Error(t, err)
 			},
 		},
 	}
@@ -193,10 +187,4 @@ func TestSession_HandleResponse(t *testing.T) {
 			tt.wantErr(t, s.HandleResponse(tt.args.msg, tt.args.err), fmt.Sprintf("HandleResponse(%v, %v)", tt.args.msg, tt.args.err))
 		})
 	}
-}
-
-// Test will fail due to no user input
-func TestPromptForLogin(t *testing.T) {
-	_, err := PromptForLogin()
-	assert.Error(t, err)
 }

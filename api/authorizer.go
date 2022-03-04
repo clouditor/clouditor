@@ -29,7 +29,6 @@ import (
 	"context"
 	"fmt"
 
-	"clouditor.io/clouditor/api/auth"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
@@ -57,21 +56,9 @@ type UsesAuthorizer interface {
 	Authorizer() Authorizer
 }
 
-// DefaultInternalAuthorizerAddress specifies the default gRPC address of the internal Clouditor auth service.
-const DefaultInternalAuthorizerAddress = "localhost:9090"
-
 // internalAuthorizer is an authorizer that uses OAuth 2.0 client credentials and does a OAuth client
 // credentials flow
 type oauthAuthorizer struct {
-	// TODO(oxisto): check, if this is really needed
-	authURL string
-
-	*protectedToken
-}
-
-// internalAuthorizer is an authorizer that uses the Clouditor internal auth server (using gRPC) and
-// does a login flow using username and password
-type internalAuthorizer struct {
 	// TODO(oxisto): check, if this is really needed
 	authURL string
 
@@ -85,59 +72,27 @@ type protectedToken struct {
 	oauth2.TokenSource
 }
 
-// NewInternalAuthorizerFromPassword creates a new authorizer based on a (gRPC) URL of the
-// authentication server and a username / password combination
-func NewInternalAuthorizerFromPassword(url string, username string, password string, grpcOptions ...grpc.DialOption) Authorizer {
-	var authorizer = &internalAuthorizer{
-		authURL: url,
-		protectedToken: &protectedToken{
-			TokenSource: oauth2.ReuseTokenSource(nil, &internalTokenSource{
-				authURL:     url,
-				username:    username,
-				password:    password,
-				grpcOptions: grpcOptions,
-			}),
-		},
-	}
-
-	return authorizer
-}
-
-// NewInternalAuthorizerFromToken creates a new authorizer based on a (gRPC) URL of the
-// authentication server and an oauth2.Token. It will attempt to refresh an expired access token,
+// NewOAuthAuthorizerFromClientCredentials creates a new authorizer based on an OAuth 2.0 client credentials. It will attempt to refresh an expired access token,
 // if a refresh token is supplied. Note, that this does a similar flow as OAuth 2.0, but it uses
 // our internal direct gRPC connection to the authentication server, whereas OAuth 2.0 would use
 // a POST request with application/x-www-form-urlencoded data.
-func NewInternalAuthorizerFromToken(url string, token *oauth2.Token, grpcOptions ...grpc.DialOption) Authorizer {
-	var refreshToken string
-
-	if token != nil {
-		refreshToken = token.RefreshToken
-	}
-
-	var authorizer = &internalAuthorizer{
-		authURL: url,
-		protectedToken: &protectedToken{
-			TokenSource: oauth2.ReuseTokenSource(token, &internalTokenSource{
-				authURL:      url,
-				refreshToken: refreshToken,
-				grpcOptions:  grpcOptions,
-			}),
-		},
-	}
-
-	return authorizer
-}
-
-// NewOAuthAuthorizerFromClientCredentials creates a new authorizer based on an OAuth 2.0 client credentials.
-// It will attempt to refresh an expired access token, if a refresh token is supplied. Note, that this does a
-// similar flow as OAuth 2.0, but it uses our internal direct gRPC connection to the authentication server,
-// whereas OAuth 2.0 would use a POST request with application/x-www-form-urlencoded data.
 func NewOAuthAuthorizerFromClientCredentials(config *clientcredentials.Config) Authorizer {
 	var authorizer = &oauthAuthorizer{
 		authURL: config.TokenURL,
 		protectedToken: &protectedToken{
 			TokenSource: oauth2.ReuseTokenSource(nil, config.TokenSource(context.Background())),
+		},
+	}
+
+	return authorizer
+}
+
+// NewOAuthAuthorizerFromConfig creates a new authorizer based on an OAuth 2.0 config
+func NewOAuthAuthorizerFromConfig(config *oauth2.Config, token *oauth2.Token) Authorizer {
+	var authorizer = &oauthAuthorizer{
+		authURL: config.Endpoint.AuthURL,
+		protectedToken: &protectedToken{
+			TokenSource: config.TokenSource(context.Background(), token),
 		},
 	}
 
@@ -168,96 +123,6 @@ func (p *protectedToken) GetRequestMetadata(ctx context.Context, _ ...string) (m
 func (*protectedToken) RequireTransportSecurity() bool {
 	// TODO(oxisto): This should be set to true because we transmit credentials (except localhost)
 	return false
-}
-
-// AuthURL is an implementation needed for Authorizer. It returns the gRPC address of the authorization server.
-func (i *internalAuthorizer) AuthURL() string {
-	return i.authURL
-}
-
-type internalTokenSource struct {
-	authURL string
-
-	refreshToken string
-	username     string
-	password     string
-
-	// grpcOptions contains additional grpc dial options
-	grpcOptions []grpc.DialOption
-
-	client auth.AuthenticationClient
-	conn   grpc.ClientConnInterface
-}
-
-// init initializes the authorizer. This is called when fetching a token, if this authorizer has not been initialized.
-func (i *internalTokenSource) init() (err error) {
-	// Note, that we do NOT want any credentials.PerRPCCredentials dial option on this connection because
-	// the API of the auth service is available without token authentication. Otherwise, a first login
-	// would be impossible.
-	//
-	// TODO(oxisto): set transport credentials depending on target url, insecure only for localhost
-	opts := []grpc.DialOption{
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	}
-
-	// Apply any extra gRPC options that we might have configured. The main use case for this is a unit test,
-	// but clients might want to use this to tweak some values as well.
-	opts = append(opts, i.grpcOptions...)
-
-	if i.conn, err = grpc.Dial(i.authURL, opts...); err != nil {
-		return fmt.Errorf("could not connect: %w", err)
-	}
-
-	// Store the client
-	i.client = auth.NewAuthenticationClient(i.conn)
-
-	return nil
-}
-
-// Token is an implementation for the interface oauth2.TokenSource so we can use this authorizer
-// in (almost) the same way as any other OAuth 2.0 token endpoint. It will fetch an access token
-// (and possibly a refresh token), if no token is stored yet in the authorizer or if the token is expired.
-//
-// The "refresh" of a token will either be done by a refresh token (if it exists) or by the stored combination
-// of username / password.
-func (i *internalTokenSource) Token() (token *oauth2.Token, err error) {
-	var resp *auth.TokenResponse
-
-	// We do a lazy initialization here, so the first request might take a little bit longer.
-	// This might not be entirely thread-safe.
-	if i.conn == nil {
-		err = i.init()
-		if err != nil {
-			return nil, fmt.Errorf("could not initialize connection to auth service: %w", err)
-		}
-	}
-
-	// Otherwise, we need to re-authenticate
-	if i.refreshToken != "" {
-		resp, err = i.client.Token(context.TODO(), &auth.TokenRequest{
-			GrantType:    "refresh_token",
-			RefreshToken: i.refreshToken,
-		})
-	} else {
-		resp, err = i.client.Login(context.TODO(), &auth.LoginRequest{
-			Username: i.username,
-			Password: i.password,
-		})
-	}
-
-	if err != nil {
-		return nil, fmt.Errorf("could not fetch token via authentication client: %w", err)
-	}
-
-	token = &oauth2.Token{
-		AccessToken:  resp.AccessToken,
-		RefreshToken: resp.RefreshToken,
-		Expiry:       resp.GetExpiry().AsTime(),
-		TokenType:    resp.TokenType,
-	}
-	i.refreshToken = resp.RefreshToken
-
-	return
 }
 
 // AuthURL is an implementation needed for Authorizer. It returns the OAuth 2.0 token endpoint.

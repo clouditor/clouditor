@@ -37,13 +37,10 @@ import (
 	"testing"
 	"time"
 
-	"clouditor.io/clouditor/api/auth"
 	"github.com/golang-jwt/jwt/v4"
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/oauth2/clientcredentials"
-	"google.golang.org/grpc"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var (
@@ -72,93 +69,6 @@ func init() {
 	})
 
 	mockAccessToken, _ = claims.SignedString(tmpKey)
-}
-
-func Test_internalAuthorizer_Token(t *testing.T) {
-	type fields struct {
-		authURL        string
-		protectedToken *protectedToken
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		want    *oauth2.Token
-		wantErr bool
-	}{
-		{
-			name: "Fetch access token with refresh token",
-			fields: fields{
-				protectedToken: &protectedToken{
-					TokenSource: oauth2.ReuseTokenSource(nil, &internalTokenSource{
-						refreshToken: mockRefreshToken,
-						client:       &mockAuthClient{},
-						conn:         &mockConn{},
-					}),
-				},
-			},
-			want: &oauth2.Token{
-				AccessToken: mockAccessToken,
-				Expiry:      mockExpiry,
-				TokenType:   "Bearer",
-			},
-		},
-		{
-			name: "Fetch access token with username",
-			fields: fields{
-				protectedToken: &protectedToken{
-					TokenSource: oauth2.ReuseTokenSource(nil, &internalTokenSource{
-						client:   &mockAuthClient{},
-						conn:     &mockConn{},
-						username: "mock",
-						password: "mock",
-					}),
-				},
-			},
-			want: &oauth2.Token{
-				AccessToken: mockAccessToken,
-				Expiry:      mockExpiry,
-				TokenType:   "Bearer",
-			},
-		},
-		{
-			name: "Token still valid",
-			fields: fields{
-				protectedToken: &protectedToken{
-					TokenSource: oauth2.ReuseTokenSource(&oauth2.Token{
-						AccessToken: mockAccessToken,
-						TokenType:   "Bearer",
-						Expiry:      mockExpiry,
-					}, &internalTokenSource{
-						client: &mockAuthClient{},
-						conn:   &mockConn{},
-					}),
-				},
-			},
-			want: &oauth2.Token{
-				AccessToken: mockAccessToken,
-				Expiry:      mockExpiry,
-				TokenType:   "Bearer",
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			i := &internalAuthorizer{
-				authURL:        tt.fields.authURL,
-				protectedToken: tt.fields.protectedToken,
-			}
-
-			got, err := i.Token()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("InternalAuthorizer.Token() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("InternalAuthorizer.Token() = %v, want %v", got, tt.want)
-			}
-		})
-	}
 }
 
 func Test_oauthAuthorizer_Token(t *testing.T) {
@@ -238,38 +148,6 @@ func Test_oauthAuthorizer_Token(t *testing.T) {
 			}
 		})
 	}
-}
-
-type mockAuthClient struct{}
-
-func (mockAuthClient) Login(_ context.Context, _ *auth.LoginRequest, _ ...grpc.CallOption) (*auth.TokenResponse, error) {
-	return &auth.TokenResponse{
-		AccessToken: mockAccessToken,
-		TokenType:   "Bearer",
-		Expiry:      timestamppb.New(mockExpiry),
-	}, nil
-}
-
-func (mockAuthClient) Token(_ context.Context, _ *auth.TokenRequest, _ ...grpc.CallOption) (*auth.TokenResponse, error) {
-	return &auth.TokenResponse{
-		AccessToken: mockAccessToken,
-		TokenType:   "Bearer",
-		Expiry:      timestamppb.New(mockExpiry),
-	}, nil
-}
-
-func (mockAuthClient) ListPublicKeys(_ context.Context, _ *auth.ListPublicKeysRequest, _ ...grpc.CallOption) (*auth.ListPublicResponse, error) {
-	return nil, nil
-}
-
-type mockConn struct{}
-
-func (mockConn) Invoke(_ context.Context, _ string, _ interface{}, _ interface{}, _ ...grpc.CallOption) error {
-	return nil
-}
-
-func (mockConn) NewStream(_ context.Context, _ *grpc.StreamDesc, _ string, _ ...grpc.CallOption) (grpc.ClientStream, error) {
-	return nil, nil
 }
 
 func TestNewOAuthAuthorizerFromClientCredentials(t *testing.T) {

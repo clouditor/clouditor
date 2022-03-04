@@ -26,67 +26,20 @@
 package tool
 
 import (
-	"fmt"
-	"io/ioutil"
-	"net"
 	"os"
 	"testing"
 
+	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/service"
-
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/cli/commands/login"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc"
-)
-
-var (
-	sock                net.Listener
-	server              *grpc.Server
-	orchestratorService *service_orchestrator.Service
 )
 
 func TestMain(m *testing.M) {
-	var (
-		err error
-		dir string
-	)
+	clitest.AutoChdir()
 
-	err = os.Chdir("../../../")
-	if err != nil {
-		panic(err)
-	}
-	orchestratorService = service_orchestrator.NewService()
-
-	sock, server, _, err = service.StartDedicatedAuthServer(":0")
-	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
-
-	if err != nil {
-		panic(err)
-	}
-
-	defer sock.Close()
-	defer server.Stop()
-
-	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
-	if err != nil {
-		panic(err)
-	}
-
-	viper.Set("username", "clouditor")
-	viper.Set("password", "clouditor")
-	viper.Set("session-directory", dir)
-
-	cmd := login.NewLoginCommand()
-	err = cmd.RunE(nil, []string{fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)})
-	if err != nil {
-		panic(err)
-	}
-
-	os.Exit(m.Run())
+	os.Exit(clitest.RunCLITest(m, service.WithOrchestrator(service_orchestrator.NewService())))
 }
 
 func TestListTool(t *testing.T) {

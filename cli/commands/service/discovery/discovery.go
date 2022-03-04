@@ -28,6 +28,7 @@ package discovery
 import (
 	"context"
 	"fmt"
+
 	"github.com/spf13/viper"
 
 	"clouditor.io/clouditor/api/discovery"
