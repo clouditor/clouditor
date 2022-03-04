@@ -42,10 +42,10 @@ func Test_doCmd(t *testing.T) {
 			},
 		},
 		{
-			name: "Launch with --oauth2-enabled",
+			name: "Launch with --oauth2-use-embedded",
 			prepViper: func() {
 				viper.Set(DBInMemoryFlag, true)
-				viper.Set(OAuth2EnabledFlag, true)
+				viper.Set(OAuth2UseEmbeddedFlag, true)
 				viper.Set(OAuth2EndpointFlag, "http://localhost:8000/token")
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {

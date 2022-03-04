@@ -80,7 +80,7 @@ const (
 	OAuth2EndpointFlag         = "oauth2-token-endpoint"
 	OAuth2ClientIDFlag         = "oauth2-client-id"
 	OAuth2ClientSecretFlag     = "oauth2-client-secret"
-	OAuth2EnabledFlag          = "oauth2-enabled"
+	OAuth2UseEmbeddedFlag      = "oauth2-use-embedded"
 	DBUserNameFlag             = "db-user-name"
 	DBPasswordFlag             = "db-password"
 	DBHostFlag                 = "db-host"
@@ -96,7 +96,7 @@ const (
 	DefaultOAuth2Endpoint      = "http://localhost:8080/token"
 	DefaultOAuth2ClientID      = "clouditor"
 	DefaultOAuth2ClientSecret  = "clouditor"
-	DefaultOAuth2Enabled       = false
+	DefaultOAuth2UseEmbedded   = true
 	DefaultDBUserName          = "postgres"
 	DefaultDBPassword          = "postgres"
 	DefaultDBHost              = "localhost"
@@ -145,7 +145,7 @@ func init() {
 	engineCmd.Flags().String(OAuth2EndpointFlag, DefaultOAuth2Endpoint, "Specifies the OAuth 2.0 token endpoint")
 	engineCmd.Flags().String(OAuth2ClientIDFlag, DefaultOAuth2ClientID, "Specifies the OAuth 2.0 client ID")
 	engineCmd.Flags().String(OAuth2ClientSecretFlag, DefaultOAuth2ClientSecret, "Specifies the OAuth 2.0 client secret")
-	engineCmd.Flags().Bool(OAuth2EnabledFlag, DefaultOAuth2Enabled, "Specifies whether OAuth 2.0 authorization is enabled for API requests between services")
+	engineCmd.Flags().Bool(OAuth2UseEmbeddedFlag, DefaultOAuth2UseEmbedded, "Specifies whether the embedded OAuth 2.0 authorization is used. For production workloads, an external authorization server is recommended.")
 	engineCmd.Flags().StringArray(APICORSAllowedOriginsFlags, rest.DefaultAllowedOrigins, "Specifies the origins allowed in CORS")
 	engineCmd.Flags().StringArray(APICORSAllowedHeadersFlags, rest.DefaultAllowedHeaders, "Specifies the headers allowed in CORS")
 	engineCmd.Flags().StringArray(APICORSAllowedMethodsFlags, rest.DefaultAllowedMethods, "Specifies the methods allowed in CORS")
@@ -169,7 +169,7 @@ func init() {
 	_ = viper.BindPFlag(OAuth2EndpointFlag, engineCmd.Flags().Lookup(OAuth2EndpointFlag))
 	_ = viper.BindPFlag(OAuth2ClientIDFlag, engineCmd.Flags().Lookup(OAuth2ClientIDFlag))
 	_ = viper.BindPFlag(OAuth2ClientSecretFlag, engineCmd.Flags().Lookup(OAuth2ClientSecretFlag))
-	_ = viper.BindPFlag(OAuth2EnabledFlag, engineCmd.Flags().Lookup(OAuth2EnabledFlag))
+	_ = viper.BindPFlag(OAuth2UseEmbeddedFlag, engineCmd.Flags().Lookup(OAuth2UseEmbeddedFlag))
 	_ = viper.BindPFlag(APICORSAllowedOriginsFlags, engineCmd.Flags().Lookup(APICORSAllowedOriginsFlags))
 	_ = viper.BindPFlag(APICORSAllowedHeadersFlags, engineCmd.Flags().Lookup(APICORSAllowedHeadersFlags))
 	_ = viper.BindPFlag(APICORSAllowedMethodsFlags, engineCmd.Flags().Lookup(APICORSAllowedMethodsFlags))
@@ -256,11 +256,6 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	// evidenceStoreService.RegisterEvidenceHook(func(result *evidence.Evidence, err error) {})
 	// assessmentService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {}
 
-	/*err = authService.CreateDefaultUser(viper.GetString(APIDefaultUserFlag), viper.GetString(APIDefaultPasswordFlag))
-	if err != nil {
-		log.Errorf("Could not create default user: %v", err)
-	}*/
-
 	if viper.GetBool(CreateDefaultTarget) {
 		_, err := orchestratorService.CreateDefaultTargetCloudService()
 		if err != nil {
@@ -308,17 +303,17 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	// enable reflection, primary for testing in early stages
 	reflection.Register(server)
 
-	// start the gRPC-HTTP gateway
-	go func() {
-		err = rest.RunServer(context.Background(),
-			grpcPort,
-			httpPort,
-			rest.WithAllowedOrigins(viper.GetStringSlice(APICORSAllowedOriginsFlags)),
-			rest.WithAllowedHeaders(viper.GetStringSlice(APICORSAllowedHeadersFlags)),
-			rest.WithAllowedMethods(viper.GetStringSlice(APICORSAllowedMethodsFlags)),
+	var opts []rest.ServerConfigOption = []rest.ServerConfigOption{
+		rest.WithAllowedOrigins(viper.GetStringSlice(APICORSAllowedOriginsFlags)),
+		rest.WithAllowedHeaders(viper.GetStringSlice(APICORSAllowedHeadersFlags)),
+		rest.WithAllowedMethods(viper.GetStringSlice(APICORSAllowedMethodsFlags)),
+	}
+
+	if viper.GetBool(OAuth2UseEmbeddedFlag) {
+		opts = []rest.ServerConfigOption{
 			rest.WithEmbeddedOAuth2Server(
-				viper.GetString(APIKeyPasswordFlag),
 				viper.GetString(APIKeyPathFlag),
+				viper.GetString(APIKeyPasswordFlag),
 				viper.GetBool(APIKeySaveOnCreateFlag),
 				// Public client for our CLI
 				oauth2.WithClient(
@@ -328,8 +323,8 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 				),
 				// Confidential client with default credentials
 				oauth2.WithClient(
-					viper.GetString(DefaultOAuth2ClientID),
-					viper.GetString(DefaultOAuth2ClientSecret),
+					viper.GetString(OAuth2ClientIDFlag),
+					viper.GetString(OAuth2ClientSecretFlag),
 					"",
 				),
 				// Default user for logging in
@@ -340,6 +335,15 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 					),
 				),
 			),
+		}
+	}
+
+	// start the gRPC-HTTP gateway
+	go func() {
+		err = rest.RunServer(context.Background(),
+			grpcPort,
+			httpPort,
+			opts...,
 		)
 		if errors.Is(err, http.ErrServerClosed) {
 			// ToDo(oxisto): deepsource anti-pattern: calls to os.Exit only in main() or init() functions
