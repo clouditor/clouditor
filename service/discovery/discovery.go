@@ -109,6 +109,7 @@ func WithInternalAuthorizer(address string, username string, password string, op
 	}
 }
 
+// WithDiscoverers is an option to set CSPs for discovering
 func WithDiscoverers(cspList []string) ServiceOption {
 	return func(s *Service) {
 		s.csp = cspList
