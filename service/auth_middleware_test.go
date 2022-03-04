@@ -169,35 +169,3 @@ func TestAuthConfig_AuthFunc(t *testing.T) {
 		})
 	}
 }
-
-// mockStorage is a mocked persistence.Storage implementation that returns errors at the specified
-// operations.
-//
-// TODO(oxisto): Extract this struct into our new internal/testutils package
-type mockStorage struct {
-	createError error
-	saveError   error
-	updateError error
-	getError    error
-	listError   error
-	countError  error
-	deleteError error
-}
-
-func (m mockStorage) Create(interface{}) error { return m.createError }
-
-func (m mockStorage) Save(interface{}, ...interface{}) error { return m.saveError }
-
-func (m mockStorage) Update(interface{}, interface{}, ...interface{}) error {
-	return m.updateError
-}
-
-func (m mockStorage) Get(interface{}, ...interface{}) error { return m.getError }
-
-func (m mockStorage) List(interface{}, ...interface{}) error { return m.listError }
-
-func (m mockStorage) Count(interface{}, ...interface{}) (int64, error) {
-	return 0, m.countError
-}
-
-func (m mockStorage) Delete(interface{}, ...interface{}) error { return m.deleteError }

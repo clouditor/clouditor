@@ -66,7 +66,11 @@ func NewLoginCommand() *cobra.Command {
 			//}()
 
 			go func() {
-				srv.ListenAndServe()
+				err = srv.ListenAndServe()
+				if err != http.ErrServerClosed {
+					fmt.Printf("Could not start web server for OAuth 2.0 authorization code flow: %v", err)
+					return
+				}
 			}()
 			defer srv.Close()
 
@@ -142,8 +146,12 @@ func NewCallbackServer(url string) *callbackServer {
 }
 
 func (srv *callbackServer) handleCallback(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(200)
-	w.Write([]byte("Success. You can close this browser tab now"))
+	var err error
+
+	_, err = w.Write([]byte("Success. You can close this browser tab now"))
+	if err != nil {
+		w.WriteHeader(500)
+	}
 
 	srv.code <- r.URL.Query().Get("code")
 }

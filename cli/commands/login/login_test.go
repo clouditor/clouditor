@@ -70,6 +70,7 @@ func TestLogin(t *testing.T) {
 	)
 
 	authSrv, port, err = testutil.StartAuthenticationServer()
+	assert.NoError(t, err)
 
 	defer sock.Close()
 	defer server.Stop()

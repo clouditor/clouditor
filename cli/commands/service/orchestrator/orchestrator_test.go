@@ -29,7 +29,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"net"
 	"os"
 	"testing"
 
@@ -42,16 +41,9 @@ import (
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-)
-
-var (
-	sock                net.Listener
-	server              *grpc.Server
-	orchestratorService *service_orchestrator.Service
 )
 
 func TestMain(m *testing.M) {

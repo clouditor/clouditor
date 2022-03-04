@@ -44,11 +44,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	var (
-		svc *service_discovery.Service
-	)
-
-	svc = service_discovery.NewService()
+	svc := service_discovery.NewService()
 	svc.StartDiscovery(mockDiscoverer{testCase: 2})
 
 	os.Exit(clitest.RunCLITest(m, service.WithDiscovery(svc)))

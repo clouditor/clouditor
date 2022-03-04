@@ -55,9 +55,6 @@ func TestMain(m *testing.M) {
 	clitest.AutoChdir()
 
 	server, _ := startBufConnServer()
-	if err != nil {
-		panic(err)
-	}
 
 	code := m.Run()
 
@@ -412,7 +409,11 @@ func TestService_initAssessmentStream(t *testing.T) {
 	)
 
 	authSrv, port, err = testutil.StartAuthenticationServer()
-	defer authSrv.Close()
+	defer func() {
+		err = authSrv.Close()
+		assert.NoError(t, err)
+	}()
+
 	assert.NoError(t, err)
 
 	type fields struct {
