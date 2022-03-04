@@ -62,6 +62,12 @@ func TestMain(m *testing.M) {
 		authPort int
 	)
 
+	// make sure, that we are in the clouditor root folder to find the metrics
+	err = os.Chdir("../")
+	if err != nil {
+		panic(err)
+	}
+
 	_, authPort, err = testutil.StartAuthenticationServer()
 	if err != nil {
 		panic(err)

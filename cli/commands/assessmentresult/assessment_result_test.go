@@ -51,6 +51,13 @@ func TestMain(m *testing.M) {
 		err error
 	)
 
+	// CLI tests are always in cli/commands/xxx. We need to go to the root
+	// in order to find certain files, such as the metrics and Rego files.
+	err = os.Chdir("../../../")
+	if err != nil {
+		panic(err)
+	}
+
 	svc = service_orchestrator.NewService()
 
 	// Store an assessment result so that output of CMD 'list' is not empty
