@@ -370,7 +370,7 @@ func TestStart(t *testing.T) {
 			providers:      []string{"falseProvider"},
 			wantResp:       nil,
 			wantErr:        true,
-			wantErrMessage: "provider not known",
+			wantErrMessage: "provider falseProvider not known",
 		},
 	}
 
