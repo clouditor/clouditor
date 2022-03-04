@@ -285,7 +285,9 @@ func TestStart(t *testing.T) {
 				hasRPCConnection: true,
 				// We must set env variables accordingly s.t. all authorizer will fail
 				envVariables: []envVariable{
-					// Set AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, AZURE_TENANT_ID to empty string for `from ENV` to fail
+					// Set corresponding ENV variables for `from ENV` to fail
+					// It uses the order 1. Client credentials 2. Client certificate 3. Username password 4. MSI
+					// 1. Set client credentials
 					{
 						hasEnvVariable:   true,
 						envVariableKey:   "AZURE_CLIENT_ID",
@@ -301,6 +303,24 @@ func TestStart(t *testing.T) {
 						envVariableKey:   "AZURE_TENANT_ID",
 						envVariableValue: "",
 					},
+					// 2. set certificate path to empty string
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_CERTIFICATE_PATH",
+						envVariableValue: "",
+					},
+					// 3. Set username and password to empty string
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_USERNAME",
+						envVariableValue: "",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_PASSWORD",
+						envVariableValue: "",
+					},
+					// 4. Try to prevent getting authorizer from MSI - currently not done here
 					// Set AZURE_AUTH_LOCATION and HOME to a wrong path so that authorizer `from file and CLI` fails
 					{
 						hasEnvVariable:   true,
