@@ -31,8 +31,6 @@ import (
 	"fmt"
 	autorest_azure "github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/resources/mgmt/subscriptions"
@@ -40,7 +38,11 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var log *logrus.Entry
+var (
+	log *logrus.Entry
+
+	ErrCouldNotAuthenticate = errors.New("could not authenticate to Azure with any credentials of the chain")
+)
 
 type DiscoveryOption interface {
 	apply(*autorest.Client)
@@ -157,10 +159,11 @@ func NewAuthorizer() (authorizer autorest.Authorizer, err error) {
 		log.Info("Using authorizer from CLI. The discovery times out after 1 hour.")
 		return
 	}
-	log.Errorf("Could not authenticate to Azure with authorizer from CLI: %v", err)
+	log.Infof("Could not authenticate to Azure with authorizer from CLI: %v", err)
 
 	// Authorizer couldn't be created
-	return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
+	log.Error(ErrCouldNotAuthenticate)
+	return nil, ErrCouldNotAuthenticate
 }
 
 func getResourceGroupName(id string) string {
