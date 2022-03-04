@@ -177,7 +177,7 @@ func (s *Service) Start(_ context.Context, req *discovery.StartDiscoveryRequest)
 	s.scheduler.TagsUnique()
 
 	// Set CSPs
-	if req == nil || len(req.Csp) == 0 {
+	if req == nil || req.Csp == nil || len(req.Csp) == 0 {
 		newError := errors.New("no CSPs for discovering given")
 		log.Errorf("%s", newError)
 		return nil, status.Errorf(codes.InvalidArgument, "%s", newError)
