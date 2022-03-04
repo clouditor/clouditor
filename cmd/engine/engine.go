@@ -366,7 +366,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		go func() {
 			_, err = discoveryService.Start(context.Background(), &discovery.StartDiscoveryRequest{Providers: providers})
 			if err != nil {
-				log.Errorf("Could not automatically start discovery: %s")
+				log.Errorf("Could not automatically start discovery: %v", err)
 			}
 		}()
 	}
