@@ -214,6 +214,12 @@ func (i *internalTokenSource) init() (err error) {
 	return nil
 }
 
+// Token is an implementation for the interface oauth2.TokenSource so we can use this authorizer
+// in (almost) the same way as any other OAuth 2.0 token endpoint. It will fetch an access token
+// (and possibly a refresh token), if no token is stored yet in the authorizer or if the token is expired.
+//
+// The "refresh" of a token will either be done by a refresh token (if it exists) or by the stored combination
+// of username / password.
 func (i *internalTokenSource) Token() (token *oauth2.Token, err error) {
 	var resp *auth.TokenResponse
 
@@ -239,15 +245,17 @@ func (i *internalTokenSource) Token() (token *oauth2.Token, err error) {
 		})
 	}
 
-	if resp != nil {
-		token = &oauth2.Token{
-			AccessToken:  resp.AccessToken,
-			RefreshToken: resp.RefreshToken,
-			Expiry:       resp.GetExpiry().AsTime(),
-			TokenType:    resp.TokenType,
-		}
-		i.refreshToken = resp.RefreshToken
+	if err != nil {
+		return nil, fmt.Errorf("could not fetch token via authentication client: %w", err)
 	}
+
+	token = &oauth2.Token{
+		AccessToken:  resp.AccessToken,
+		RefreshToken: resp.RefreshToken,
+		Expiry:       resp.GetExpiry().AsTime(),
+		TokenType:    resp.TokenType,
+	}
+	i.refreshToken = resp.RefreshToken
 
 	return
 }
