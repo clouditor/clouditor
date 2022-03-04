@@ -346,7 +346,7 @@ func TestStart(t *testing.T) {
 			csp:            []string{"aws", "k8s"},
 			wantResp:       nil,
 			wantErr:        true,
-			wantErrMessage: "could not authenticate to Kubernetes",
+			wantErrMessage: "could not authenticate to",
 		},
 		{
 			name: "Empty request",
@@ -365,7 +365,7 @@ func TestStart(t *testing.T) {
 			csp:            []string{CSPAWS, CSPAzure, CSPK8S},
 			wantResp:       nil,
 			wantErr:        true,
-			wantErrMessage: "could not authenticate to Azure",
+			wantErrMessage: "could not authenticate to",
 		},
 		{
 			name: "Request with wrong CSP name",
