@@ -198,6 +198,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		return fmt.Errorf("could not create storage: %w", err)
 	}
 
+        // If no CSPs for discovering is given, take all implemented discoverers
 	if viper.GetString(cli_discovery.DISCOVERER) == "" {
 		csps = []string{service_discovery.CSPAWS, service_discovery.CSPAzure, service_discovery.CSPK8S}
 	} else {
