@@ -130,10 +130,17 @@ func (a azureDiscovery) apply(client *autorest.Client) {
 	}
 }
 
-func NewAuthorizer() (autorest.Authorizer, error) {
+func NewAuthorizer() (authorizer autorest.Authorizer, err error) {
+	authorizer, err = auth.NewAuthorizerFromEnvironment()
+	if err == nil {
+		return
+	}
+	log.Errorf("Could not authenticate to Azure from environment: %v", err)
+	log.Infof("Fallback to authentication from file")
+
 	// create an authorizer from file or as fallback from the CLI
 	// if authorizer is from CLI, the access token expires after 75 minutes
-	authorizer, err := auth.NewAuthorizerFromFile(autorest_azure.PublicCloud.ResourceManagerEndpoint)
+	authorizer, err = auth.NewAuthorizerFromFile(autorest_azure.PublicCloud.ResourceManagerEndpoint)
 	if err != nil {
 		log.Errorf("Could not authenticate to Azure with authorizer from file: %v", err)
 		log.Infof("Fallback to Azure with authorizer from CLI.")
