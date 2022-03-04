@@ -29,11 +29,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"net/http"
 	"os"
 	"testing"
 
+	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/service"
 
+	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -48,7 +51,7 @@ func TestMain(m *testing.M) {
 	var (
 		err error
 	)
-	sock, server, _, err = service.StartDedicatedAuthServer(":0")
+	sock, server, err = service.StartGRPCServer("")
 	if err != nil {
 		panic(err)
 	}
@@ -58,9 +61,14 @@ func TestMain(m *testing.M) {
 
 func TestLogin(t *testing.T) {
 	var (
-		err error
-		dir string
+		err      error
+		dir      string
+		verifier string
+		authSrv  *oauth2.AuthorizationServer
+		port     int
 	)
+
+	authSrv, port, err = testutil.StartAuthenticationServer()
 
 	defer sock.Close()
 	defer server.Stop()
@@ -69,11 +77,20 @@ func TestLogin(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEmpty(t, dir)
 
-	viper.Set("username", "clouditor")
-	viper.Set("password", "clouditor")
+	viper.Set("auth-server", fmt.Sprintf("http://localhost:%d", port))
 	viper.Set("session-directory", dir)
 
+	// Issue a code that we can use in the callback
+	verifier = "012345678901234567890123456789" // TODO(oxisto): random verifier
+	code := authSrv.IssueCode(oauth2.GenerateCodeChallenge(verifier))
+
 	cmd := NewLoginCommand()
+
+	// Simulate a callback
+	go func() {
+		http.Get(fmt.Sprintf("http://localhost:10000/callback?code=%s", code))
+	}()
+
 	err = cmd.RunE(nil, []string{fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)})
 	assert.NoError(t, err)
 }

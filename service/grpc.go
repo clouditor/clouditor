@@ -10,15 +10,15 @@ import (
 	"google.golang.org/grpc"
 )
 
-type serverOption func(srv *grpc.Server)
+type StartGRPCServerOption func(srv *grpc.Server)
 
-func WithOrchestrator(service orchestrator.OrchestratorServer) serverOption {
+func WithOrchestrator(service orchestrator.OrchestratorServer) StartGRPCServerOption {
 	return func(srv *grpc.Server) {
 		orchestrator.RegisterOrchestratorServer(srv, service)
 	}
 }
 
-func StartGRPCServer(jwksURL string, opts ...serverOption) (sock net.Listener, srv *grpc.Server, err error) {
+func StartGRPCServer(jwksURL string, opts ...StartGRPCServerOption) (sock net.Listener, srv *grpc.Server, err error) {
 	var addr = ":0"
 
 	// create a new socket for gRPC communication

@@ -52,25 +52,27 @@ func NewLoginCommand() *cobra.Command {
 			var (
 				err     error
 				session *cli.Session
+				code    string
 			)
 
 			if session, err = cli.NewSession(args[0]); err != nil {
 				return fmt.Errorf("could not connect: %w", err)
 			}
 
-			srv := NewCallbackServer()
+			srv := NewCallbackServer(viper.GetString("auth-server"))
 
 			//go func() {
 			//	exec.Command("open", authURL).Run()
 			//}()
 
-			err = srv.ListenAndServe()
-			if err != http.ErrServerClosed {
-				return err
-			}
+			go func() {
+				srv.ListenAndServe()
+			}()
 			defer srv.Close()
 
-			token, err := srv.config.Exchange(context.Background(), srv.code,
+			// waiting for our code
+			code = <-srv.code
+			token, err := srv.config.Exchange(context.Background(), code,
 				oauth2.SetAuthURLParam("code_verifier", srv.verifier),
 			)
 
@@ -91,11 +93,8 @@ func NewLoginCommand() *cobra.Command {
 		},
 	}
 
-	cmd.PersistentFlags().StringP("username", "u", "", "the username. if not specified, a prompt will be displayed")
-	_ = viper.BindPFlag("username", cmd.PersistentFlags().Lookup("username"))
-
-	cmd.PersistentFlags().StringP("password", "p", "", "the password. if not specified, a prompt will be displayed")
-	_ = viper.BindPFlag("password", cmd.PersistentFlags().Lookup("password"))
+	cmd.PersistentFlags().StringP("auth-server", "", "http://localhost:8080", "the URL to the auth server")
+	_ = viper.BindPFlag("auth-server", cmd.PersistentFlags().Lookup("auth-server"))
 
 	return cmd
 }
@@ -105,10 +104,10 @@ type callbackServer struct {
 
 	verifier string
 	config   *oauth2.Config
-	code     string
+	code     chan string
 }
 
-func NewCallbackServer() *callbackServer {
+func NewCallbackServer(url string) *callbackServer {
 	var mux = http.NewServeMux()
 
 	var srv = &callbackServer{
@@ -116,15 +115,17 @@ func NewCallbackServer() *callbackServer {
 			Handler: mux,
 			Addr:    "localhost:10000",
 		},
+		// TODO(oxisto): random verifier
 		verifier: "012345678901234567890123456789",
 		config: &oauth2.Config{
-			ClientID: "public",
+			ClientID: "cli",
 			Endpoint: oauth2.Endpoint{
-				AuthURL:  "http://localhost:8080/authorize",
-				TokenURL: "http://localhost:8080/token",
+				AuthURL:  fmt.Sprintf("%s/authorize", url),
+				TokenURL: fmt.Sprintf("%s/token", url),
 			},
 			RedirectURL: "http://localhost:10000/callback",
 		},
+		code: make(chan string),
 	}
 
 	mux.HandleFunc("/callback", srv.handleCallback)
@@ -144,7 +145,5 @@ func (srv *callbackServer) handleCallback(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(200)
 	w.Write([]byte("Success. You can close this browser tab now"))
 
-	srv.code = r.URL.Query().Get("code")
-
-	defer srv.Shutdown(context.Background())
+	srv.code <- r.URL.Query().Get("code")
 }

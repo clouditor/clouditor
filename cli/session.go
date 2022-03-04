@@ -26,17 +26,14 @@
 package cli
 
 import (
-	"bufio"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"os"
-	"strings"
 
 	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -223,32 +220,6 @@ func (*Session) HandleResponse(msg proto.Message, err error) error {
 	_, err = fmt.Fprintf(Output, "%s\n", string(b))
 
 	return err
-}
-
-func PromptForLogin() (loginRequest *auth.LoginRequest, err error) {
-	reader := bufio.NewReader(os.Stdin)
-
-	fmt.Print("Enter username: ")
-	username, err := reader.ReadString('\n')
-	fmt.Println()
-
-	if err != nil {
-		return
-	}
-
-	fmt.Print("Enter password: ")
-	password, err := reader.ReadString('\n')
-
-	if err != nil {
-		return
-	}
-
-	loginRequest = &auth.LoginRequest{
-		Username: strings.Trim(username, "\n"),
-		Password: strings.Trim(password, "\n"),
-	}
-
-	return loginRequest, nil
 }
 
 func DefaultArgsShellComp(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {

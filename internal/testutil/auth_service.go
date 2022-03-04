@@ -16,10 +16,13 @@ const (
 	TestAuthClientSecret = "clouditor"
 )
 
+// StartAuthenticationServer starts an authentication server on a random port with
+// users and clients specified in the TestAuthUser and TestAuthClientID constants.
 func StartAuthenticationServer() (srv *oauth2.AuthorizationServer, port int, err error) {
 	var nl net.Listener
 
 	srv = oauth2.NewServer(":0",
+		oauth2.WithClient("cli", "", "http://localhost:10000/callback"),
 		login.WithLoginPage(login.WithUser(TestAuthUser, TestAuthPassword)),
 	)
 
@@ -44,4 +47,8 @@ func JWKSURL(port int) string {
 
 func TokenURL(port int) string {
 	return fmt.Sprintf("http://localhost:%d/token", port)
+}
+
+func AuthURL(port int) string {
+	return fmt.Sprintf("http://localhost:%d/authorize", port)
 }

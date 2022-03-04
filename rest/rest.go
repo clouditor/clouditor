@@ -146,7 +146,7 @@ func RunServer(ctx context.Context, grpcPort int, httpPort int, serverOpts ...Se
 	)
 
 	oauthServer := oauth2.NewServer("",
-		oauth2.WithClient("public", "", "http://localhost:10000/callback"),
+		oauth2.WithClient("cli", "", "http://localhost:10000/callback"),
 		login.WithLoginPage(login.WithUser("clouditor", "clouditor")),
 	)
 
