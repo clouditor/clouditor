@@ -325,6 +325,8 @@ func TestStart(t *testing.T) {
 			fields: fields{
 				hasRPCConnection: false,
 			},
+			req: &discovery.StartDiscoveryRequest{Csp: []string{"aws", "azure", "k8s"}},
+			csp:            []string{"aws", "azure", "k8s"},
 			wantResp:       nil,
 			wantErr:        true,
 			wantErrMessage: "could not initialize stream to Assessment",
@@ -362,10 +364,10 @@ func TestStart(t *testing.T) {
 				},
 			},
 			req:            &discovery.StartDiscoveryRequest{Csp: []string{}},
-			csp:            []string{CSPAWS, CSPAzure, CSPK8S},
+			csp:            nil,
 			wantResp:       nil,
 			wantErr:        true,
-			wantErrMessage: "could not authenticate to",
+			wantErrMessage: "no CSPs for discovering given",
 		},
 		{
 			name: "Request with wrong CSP name",

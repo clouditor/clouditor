@@ -27,6 +27,7 @@ package discovery
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -175,12 +176,12 @@ func (s *Service) Start(_ context.Context, req *discovery.StartDiscoveryRequest)
 	s.scheduler.TagsUnique()
 
 	// Set CSPs
-	if req != nil && len(req.Csp) != 0 {
-		s.csp = req.Csp
+	if req == nil || len(req.Csp) == 0 {
+		newError := errors.New("no CSPs for discovering given")
+		log.Errorf("%s", newError)
+		return nil, status.Errorf(codes.InvalidArgument, "%s", newError)
 	} else {
-		// If no CSP is given take all
-		log.Infof("Use all CSPs: %s, %s, %s", CSPAWS, CSPAzure, CSPK8S)
-		s.csp = append(s.csp, CSPAWS, CSPAzure, CSPK8S)
+		s.csp = req.Csp
 	}
 
 	// Establish connection to assessment component

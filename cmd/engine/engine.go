@@ -107,6 +107,7 @@ var (
 	assessmentService    assessment.AssessmentServer
 	evidenceStoreService evidence.EvidenceStoreServer
 	db                   persistence.Storage
+	csps					[]string
 
 	log *logrus.Entry
 )
@@ -197,6 +198,12 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		return fmt.Errorf("could not create storage: %w", err)
 	}
 
+	if viper.GetString(cli_discovery.DISCOVERER) == "" {
+		csps = []string{service_discovery.CSPAWS, service_discovery.CSPAzure, service_discovery.CSPK8S}
+	} else {
+		csps = []string{viper.GetString(cli_discovery.DISCOVERER)}
+	}
+
 	authService = service_auth.NewService(
 		service_auth.WithStorage(db),
 		service_auth.WithApiKeyPassword(viper.GetString(APIKeyPasswordFlag)),
@@ -209,7 +216,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			viper.GetString(APIDefaultUserFlag),
 			viper.GetString(APIDefaultPasswordFlag),
 		),
-		service_discovery.WithDiscoverers([]string{viper.GetString(cli_discovery.DISCOVERER)}),
+		service_discovery.WithDiscoverers(csps),
 	)
 	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db))
 	assessmentService = service_assessment.NewService(
