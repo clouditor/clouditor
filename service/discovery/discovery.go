@@ -230,7 +230,7 @@ func (s *Service) Start(_ context.Context, req *discovery.StartDiscoveryRequest)
 		default:
 			newError := fmt.Errorf("CSP %s not known", csp)
 			log.Error(newError)
-			return nil, newError
+			return nil, status.Errorf(codes.InvalidArgument, "%s", newError)
 		}
 	}
 
