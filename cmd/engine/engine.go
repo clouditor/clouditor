@@ -89,6 +89,7 @@ const (
 	DBInMemoryFlag             = "db-in-memory"
 	CreateDefaultTarget        = "target-default-create"
 	DiscoveryAutoStartFlag     = "discovery-auto-start"
+	DashboardURLFlag           = "dashboard-url"
 
 	DefaultAPIDefaultUser      = "clouditor"
 	DefaultAPIDefaultPassword  = "clouditor"
@@ -105,6 +106,7 @@ const (
 	DefaultDBInMemory          = false
 	DefaultCreateDefaultTarget = true
 	DefaultDiscoveryAutoStart  = false
+	DefaultDashboardURL        = "http://localhost:8080"
 
 	EnvPrefix = "CLOUDITOR"
 )
@@ -157,6 +159,7 @@ func init() {
 	engineCmd.Flags().Bool(DBInMemoryFlag, DefaultDBInMemory, "Uses an in-memory database which is not persisted at all")
 	engineCmd.Flags().Bool(CreateDefaultTarget, DefaultCreateDefaultTarget, "Creates a default target cloud service if it does not exist")
 	engineCmd.Flags().Bool(DiscoveryAutoStartFlag, DefaultDiscoveryAutoStart, "Automatically start the discovery when engine starts")
+	engineCmd.Flags().String(DashboardURLFlag, DefaultDashboardURL, "The URL of the Clouditor Dashboard. If the embedded server is used, a public OAuth 2.0 client based on this URL will be added")
 
 	_ = viper.BindPFlag(APIDefaultUserFlag, engineCmd.Flags().Lookup(APIDefaultUserFlag))
 	_ = viper.BindPFlag(APIDefaultPasswordFlag, engineCmd.Flags().Lookup(APIDefaultPasswordFlag))
@@ -181,6 +184,7 @@ func init() {
 	_ = viper.BindPFlag(DBInMemoryFlag, engineCmd.Flags().Lookup(DBInMemoryFlag))
 	_ = viper.BindPFlag(CreateDefaultTarget, engineCmd.Flags().Lookup(CreateDefaultTarget))
 	_ = viper.BindPFlag(DiscoveryAutoStartFlag, engineCmd.Flags().Lookup(DiscoveryAutoStartFlag))
+	_ = viper.BindPFlag(DashboardURLFlag, engineCmd.Flags().Lookup(DashboardURLFlag))
 }
 
 func initConfig() {
@@ -320,6 +324,12 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 					"cli",
 					"",
 					"http://localhost:10000/callback",
+				),
+				// Public client for our dashboard
+				oauth2.WithClient(
+					"dashboard",
+					"",
+					fmt.Sprintf("%s/callback", viper.GetString(DashboardURLFlag)),
 				),
 				// Confidential client with default credentials
 				oauth2.WithClient(

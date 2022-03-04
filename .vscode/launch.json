@@ -28,7 +28,7 @@
             "preLaunchTask": "go: generate"
         },
         {
-            "name": "Launch engine with local external OAuth 2.0 server",
+            "name": "Launch engine (dashboard development redirect)",
             "type": "go",
             "request": "launch",
             "mode": "auto",
@@ -36,12 +36,7 @@
             "cwd": "${workspaceFolder}",
             "args": [
                 "--db-in-memory",
-                "--oauth2-enabled",
-                "--oauth2-client-id=client",
-                "--oauth2-client-secret=secret",
-                "--oauth2-token-endpoint=http://localhost:8000/token",
-                "--api-jwks-url=http://localhost:8000/.well-known/jwks.json",
-                "--discovery-auto-start=true"
+                "--dashboard-url=http://localhost:3000"
             ],
             "env": {},
             "preLaunchTask": "go: generate"
