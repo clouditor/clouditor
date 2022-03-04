@@ -40,6 +40,7 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
+	cli_discovery "clouditor.io/clouditor/cli/commands/service/discovery"
 	"clouditor.io/clouditor/logging/formatter"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
@@ -116,6 +117,7 @@ var (
 	assessmentService    assessment.AssessmentServer
 	evidenceStoreService evidence.EvidenceStoreServer
 	db                   persistence.Storage
+	providers            []string
 
 	log *logrus.Entry
 )
@@ -216,6 +218,13 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		return fmt.Errorf("could not create storage: %w", err)
 	}
 
+	// If no CSPs for discovering is given, take all implemented discoverers
+	if viper.GetString(cli_discovery.DiscovererFlag) == "" {
+		providers = []string{service_discovery.ProviderAWS, service_discovery.ProviderAzure, service_discovery.ProviderK8S}
+	} else {
+		providers = []string{viper.GetString(cli_discovery.DiscovererFlag)}
+	}
+
 	authService = service_auth.NewService(
 		service_auth.WithStorage(db),
 		service_auth.WithApiKeyPassword(viper.GetString(APIKeyPasswordFlag)),
@@ -223,25 +232,27 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		service_auth.WithApiKeySaveOnCreate(viper.GetBool(APIKeySaveOnCreateFlag)),
 	)
 
-	var discoveryOpts service_discovery.ServiceOption
+	var discoveryOpts []service_discovery.ServiceOption
 	if viper.GetBool(OAuth2EnabledFlag) {
-		discoveryOpts = service_discovery.WithOAuth2Authorizer(
+		discoveryOpts = []service_discovery.ServiceOption{service_discovery.WithOAuth2Authorizer(
 			&clientcredentials.Config{
 				ClientID:     viper.GetString(OAuth2ClientIDFlag),
 				ClientSecret: viper.GetString(OAuth2ClientSecretFlag),
 				TokenURL:     viper.GetString(OAuth2EndpointFlag),
 			},
-		)
+		)}
 	} else {
-		discoveryOpts = service_discovery.WithInternalAuthorizer(
+		discoveryOpts = []service_discovery.ServiceOption{service_discovery.WithInternalAuthorizer(
 			api.DefaultInternalAuthorizerAddress,
 			viper.GetString(APIDefaultUserFlag),
 			viper.GetString(APIDefaultPasswordFlag),
-		)
+		)}
 	}
 
+	discoveryOpts = append(discoveryOpts, service_discovery.WithProviders(providers))
+
 	discoveryService = service_discovery.NewService(
-		discoveryOpts,
+		discoveryOpts...,
 	)
 	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db))
 

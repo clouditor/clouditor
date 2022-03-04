@@ -55,7 +55,10 @@ service Discovery {
   }
 }
 
-message StartDiscoveryRequest {}
+message StartDiscoveryRequest {
+  // A list of providers to be discovered
+  repeated string providers = 1;
+}
 
 message StartDiscoveryResponse { bool successful = 1; }
 
