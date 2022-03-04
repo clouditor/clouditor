@@ -29,7 +29,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 	"testing"
@@ -38,9 +37,11 @@ import (
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/cli/commands/login"
+	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/internal/testutil/clitest"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
+	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -67,13 +68,15 @@ func TestNewCloudCommand(t *testing.T) {
 func TestRegisterCloudServiceCommand(t *testing.T) {
 	var (
 		response orchestrator.CloudService
+		svc      orchestrator.OrchestratorServer
 
 		err error
 		b   bytes.Buffer
 	)
-	_, server, sock := startServer()
-	defer sock.Close()
-	defer server.Stop()
+
+	svc = service_orchestrator.NewService()
+	_, srv := startServer(service.WithOrchestrator(svc))
+	defer srv.Stop()
 
 	cli.Output = &b
 
@@ -91,15 +94,17 @@ func TestRegisterCloudServiceCommand(t *testing.T) {
 func TestListCloudServicesCommand(t *testing.T) {
 	var (
 		response orchestrator.ListCloudServicesResponse
+		svc      *service_orchestrator.Service
 
 		err error
 		b   bytes.Buffer
 	)
-	orchestratorService, server, sock := startServer()
-	defer sock.Close()
-	defer server.Stop()
 
-	_, err = orchestratorService.CreateDefaultTargetCloudService()
+	svc = service_orchestrator.NewService()
+	_, srv := startServer(service.WithOrchestrator(svc))
+	defer srv.Stop()
+
+	_, err = svc.CreateDefaultTargetCloudService()
 	assert.NoError(t, err)
 
 	cli.Output = &b
@@ -119,15 +124,18 @@ func TestGetCloudServiceCommand(t *testing.T) {
 	var (
 		response orchestrator.CloudService
 		target   *orchestrator.CloudService
+		svc      *service_orchestrator.Service
 
 		err error
 		b   bytes.Buffer
 	)
-	orchestratorService, server, sock := startServer()
-	defer sock.Close()
-	defer server.Stop()
 
-	target, err = orchestratorService.CreateDefaultTargetCloudService()
+	svc = service_orchestrator.NewService()
+	_, srv := startServer(service.WithOrchestrator(svc))
+	defer srv.Stop()
+
+	target, err = svc.CreateDefaultTargetCloudService()
+
 	fmt.Println("target:", target)
 	// target should be non-nil since it has been newly created
 	assert.NotNil(t, target)
@@ -150,15 +158,17 @@ func TestRemoveCloudServicesCommand(t *testing.T) {
 	var (
 		response emptypb.Empty
 		target   *orchestrator.CloudService
+		svc      *service_orchestrator.Service
 
 		err error
 		b   bytes.Buffer
 	)
-	orchestratorService, server, sock := startServer()
-	defer sock.Close()
-	defer server.Stop()
 
-	target, err = orchestratorService.CreateDefaultTargetCloudService()
+	svc = service_orchestrator.NewService()
+	_, srv := startServer(service.WithOrchestrator(svc))
+	defer srv.Stop()
+
+	target, err = svc.CreateDefaultTargetCloudService()
 	assert.NoError(t, err)
 
 	cli.Output = &b
@@ -173,7 +183,7 @@ func TestRemoveCloudServicesCommand(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Re-create default service
-	_, err = orchestratorService.CreateDefaultTargetCloudService()
+	_, err = svc.CreateDefaultTargetCloudService()
 
 	assert.NoError(t, err)
 }
@@ -182,18 +192,21 @@ func TestUpdateCloudServiceCommand(t *testing.T) {
 	var (
 		response orchestrator.CloudService
 		target   *orchestrator.CloudService
+		svc      *service_orchestrator.Service
 
 		err error
 		b   bytes.Buffer
 	)
+
 	const (
 		notDefault = "not_default"
 	)
-	orchestratorService, server, sock := startServer()
-	defer sock.Close()
-	defer server.Stop()
 
-	target, err = orchestratorService.CreateDefaultTargetCloudService()
+	svc = service_orchestrator.NewService()
+	_, srv := startServer(service.WithOrchestrator(svc))
+	defer srv.Stop()
+
+	target, err = svc.CreateDefaultTargetCloudService()
 	assert.NoError(t, err)
 
 	cli.Output = &b
@@ -217,15 +230,17 @@ func TestUpdateCloudServiceCommand(t *testing.T) {
 func TestGetMetricConfiguration(t *testing.T) {
 	var (
 		target *orchestrator.CloudService
+		svc    *service_orchestrator.Service
 
 		err error
 		b   bytes.Buffer
 	)
-	orchestratorService, server, sock := startServer()
-	defer sock.Close()
-	defer server.Stop()
 
-	target, err = orchestratorService.CreateDefaultTargetCloudService()
+	svc = service_orchestrator.NewService()
+	_, srv := startServer(service.WithOrchestrator(svc))
+	defer srv.Stop()
+
+	target, err = svc.CreateDefaultTargetCloudService()
 	assert.NoError(t, err)
 	// target should be not nil since there are no stored cloud services yet
 	assert.NotNil(t, target)
@@ -233,7 +248,7 @@ func TestGetMetricConfiguration(t *testing.T) {
 	cli.Output = &b
 
 	// create a new target service
-	target, err = orchestratorService.RegisterCloudService(context.TODO(), &orchestrator.RegisterCloudServiceRequest{Service: &orchestrator.CloudService{Name: "myservice"}})
+	target, err = svc.RegisterCloudService(context.TODO(), &orchestrator.RegisterCloudServiceRequest{Service: &orchestrator.CloudService{Name: "myservice"}})
 
 	assert.NotNil(t, target)
 	assert.NoError(t, err)
@@ -247,34 +262,34 @@ func TestGetMetricConfiguration(t *testing.T) {
 // startServer starts a gRPC server with an orchestrator and auth service. We don't do it in TestMain since you
 // can only register a service - once before server.serve(). And we do need to add new Orchestrator service because
 // the DB won't be reset otherwise.
-func startServer() (orchestratorService *service_orchestrator.Service, server *grpc.Server, sock net.Listener) {
+func startServer(opts ...service.StartGRPCServerOption) (auth *oauth2.AuthorizationServer, srv *grpc.Server) {
 	var (
-		err error
-		dir string
+		err      error
+		tmpDir   string
+		grpcPort int
+		authPort int
+		sock     net.Listener
 	)
 
-	orchestratorService = service_orchestrator.NewService()
-
-	sock, server, err = service.StartGRPCServer("", service.WithOrchestrator(orchestratorService))
-	if err != nil {
-		panic(err)
-	}
-	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
-
-	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
+	auth, authPort, err = testutil.StartAuthenticationServer()
 	if err != nil {
 		panic(err)
 	}
 
-	viper.Set("username", "clouditor")
-	viper.Set("password", "clouditor")
-	viper.Set("session-directory", dir)
-
-	cmd := login.NewLoginCommand()
-	err = cmd.RunE(nil, []string{fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)})
+	sock, srv, err = service.StartGRPCServer(testutil.JWKSURL(authPort), opts...)
 	if err != nil {
 		panic(err)
 	}
+
+	grpcPort = sock.Addr().(*net.TCPAddr).Port
+
+	tmpDir, err = clitest.PrepareSession(authPort, auth, fmt.Sprintf("localhost:%d", grpcPort))
+	if err != nil {
+		panic(err)
+	}
+
+	// Remove temporary session directory
+	os.RemoveAll(tmpDir)
 
 	return
 }

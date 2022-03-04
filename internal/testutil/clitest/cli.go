@@ -104,6 +104,9 @@ func RunCLITest(m *testing.M, opts ...service.StartGRPCServerOption) (code int) 
 	grpcPort = sock.Addr().(*net.TCPAddr).Port
 
 	tmpDir, err = PrepareSession(authPort, auth, fmt.Sprintf("localhost:%d", grpcPort))
+	if err != nil {
+		panic(err)
+	}
 
 	code = m.Run()
 
