@@ -227,34 +227,18 @@ func DefaultArgsShellComp(*cobra.Command, []string, string) ([]string, cobra.She
 }
 
 func ValidArgsGetTools(_ *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	if len(args) != 0 {
-		return nil, cobra.ShellCompDirectiveNoFileComp
-	}
-
 	return getTools(toComplete), cobra.ShellCompDirectiveNoFileComp
 }
 
 func ValidArgsGetMetrics(_ *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	if len(args) != 0 {
-		return nil, cobra.ShellCompDirectiveNoFileComp
-	}
-
 	return getMetrics(toComplete), cobra.ShellCompDirectiveNoFileComp
 }
 
 func ValidArgsGetRequirements(_ *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	if len(args) != 0 {
-		return nil, cobra.ShellCompDirectiveNoFileComp
-	}
-
 	return getRequirements(toComplete), cobra.ShellCompDirectiveNoFileComp
 }
 
 func ValidArgsGetCloudServices(_ *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	if len(args) != 0 {
-		return nil, cobra.ShellCompDirectiveNoFileComp
-	}
-
 	return getCloudServices(toComplete), cobra.ShellCompDirectiveNoFileComp
 }
 
