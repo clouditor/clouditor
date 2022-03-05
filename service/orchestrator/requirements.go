@@ -34,22 +34,22 @@ import (
 )
 
 // LoadRequirements loads requirements definitions from a JSON file.
-func LoadRequirements(file string) (err error) {
+func LoadRequirements(file string) (requirements []*orchestrator.Requirement, err error) {
 	var (
 		b []byte
 	)
 
 	b, err = f.ReadFile(file)
 	if err != nil {
-		return fmt.Errorf("error while loading %s: %w", file, err)
+		return nil, fmt.Errorf("error while loading %s: %w", file, err)
 	}
 
 	err = json.Unmarshal(b, &requirements)
 	if err != nil {
-		return fmt.Errorf("error in JSON marshal: %w", err)
+		return nil, fmt.Errorf("error in JSON marshal: %w", err)
 	}
 
-	return nil
+	return requirements, nil
 }
 
 func (svc *Service) ListRequirements(_ context.Context, _ *orchestrator.ListRequirementsRequest) (response *orchestrator.ListRequirementsResponse, err error) {

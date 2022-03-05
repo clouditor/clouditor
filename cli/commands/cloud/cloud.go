@@ -207,7 +207,7 @@ func NewUpdateCloudServiceCommand() *cobra.Command {
 
 			return session.HandleResponse(res, err)
 		},
-		ValidArgsFunction: cli.ValidArgsGetCloudServices,
+		ValidArgsFunction: cli.DefaultArgsShellComp,
 	}
 
 	cmd.PersistentFlags().String("id", "", "the cloud service id to update")
@@ -220,12 +220,12 @@ func NewUpdateCloudServiceCommand() *cobra.Command {
 	_ = viper.BindPFlag("id", cmd.PersistentFlags().Lookup("id"))
 	_ = viper.BindPFlag("name", cmd.PersistentFlags().Lookup("name"))
 	_ = viper.BindPFlag("description", cmd.PersistentFlags().Lookup("description"))
-	_ = viper.BindPFlag("requirement-ids", cmd.PersistentFlags().Lookup("requirement"))
+	_ = viper.BindPFlag("requirement-ids", cmd.PersistentFlags().Lookup("requirement-ids"))
 
 	_ = cmd.RegisterFlagCompletionFunc("id", cli.ValidArgsGetCloudServices)
 	_ = cmd.RegisterFlagCompletionFunc("name", cli.DefaultArgsShellComp)
 	_ = cmd.RegisterFlagCompletionFunc("description", cli.DefaultArgsShellComp)
-	_ = cmd.RegisterFlagCompletionFunc("requirement-ids", cli.DefaultArgsShellComp)
+	_ = cmd.RegisterFlagCompletionFunc("requirement-ids", cli.ValidArgsGetRequirements)
 
 	return cmd
 }

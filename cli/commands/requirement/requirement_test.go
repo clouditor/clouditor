@@ -23,75 +23,31 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package metric
+package requirement
 
 import (
 	"bytes"
-	"fmt"
-	"io/ioutil"
-	"net"
 	"os"
 	"testing"
 
+	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/service"
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/cli/commands/login"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func TestMain(m *testing.M) {
-	var (
-		sock                net.Listener
-		server              *grpc.Server
-		orchestratorService *service_orchestrator.Service
+	clitest.AutoChdir()
 
-		err error
-		dir string
-	)
-
-	err = os.Chdir("../../../")
-	if err != nil {
-		panic(err)
-	}
-
-	orchestratorService = service_orchestrator.NewService()
-
-	sock, server, _, err = service.StartDedicatedAuthServer(":0")
-	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
-
-	if err != nil {
-		panic(err)
-	}
-
-	defer sock.Close()
-	defer server.Stop()
-
-	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
-	if err != nil {
-		panic(err)
-	}
-
-	viper.Set("username", "clouditor")
-	viper.Set("password", "clouditor")
-	viper.Set("session-directory", dir)
-
-	cmd := login.NewLoginCommand()
-	err = cmd.RunE(nil, []string{fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)})
-	if err != nil {
-		panic(err)
-	}
-
-	defer os.Exit(m.Run())
+	os.Exit(clitest.RunCLITest(m, service.WithOrchestrator(service_orchestrator.NewService())))
 }
 
-func TestListMetrics(t *testing.T) {
+func TestListRequirements(t *testing.T) {
 	var err error
 	var b bytes.Buffer
 

@@ -180,7 +180,7 @@ service Orchestrator {
       delete : "/v1/orchestrator/cloud_services/{service_id}"
     };
   }
-  
+
   // Updates a metric configuration (target value and operator) for a specific
   // service and metric ID
   rpc UpdateMetricConfiguration(UpdateMetricConfigurationRequest)
@@ -343,5 +343,7 @@ message Requirement {
 
   string name = 2;
 
-  repeated string metric_ids = 3;
+  string description = 3;
+
+  repeated string metric_ids = 4;
 }

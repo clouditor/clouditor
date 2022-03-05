@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package metric
+package requirement
 
 import (
 	"context"

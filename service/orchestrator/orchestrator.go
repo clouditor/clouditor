@@ -44,11 +44,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-//go:embed metrics.json
+//go:embed *.json
 var f embed.FS
 
 var metrics []*assessment.Metric
-var requirements []*orchestrator.Requirement
 var metricIndex map[string]*assessment.Metric
 var defaultMetricConfigurations map[string]*assessment.MetricConfiguration
 var log *logrus.Entry
@@ -129,7 +128,7 @@ func NewService(opts ...ServiceOption) *Service {
 
 	// Load requirements if nothing was specified
 	if s.requirements == nil {
-		if err = LoadRequirements(DefaultRequirementsFile); err != nil {
+		if s.requirements, err = LoadRequirements(DefaultRequirementsFile); err != nil {
 			log.Errorf("Could not load embedded requirements. Will continue with empty requirements list: %v", err)
 		}
 	}
