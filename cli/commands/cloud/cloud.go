@@ -199,6 +199,9 @@ func NewUpdateCloudServiceCommand() *cobra.Command {
 				Service: &orchestrator.CloudService{
 					Name:        viper.GetString("name"),
 					Description: viper.GetString("description"),
+					Requirements: &orchestrator.CloudService_Requirements{
+						RequirementIds: viper.GetStringSlice("requirement-ids"),
+					},
 				},
 			})
 
@@ -210,15 +213,19 @@ func NewUpdateCloudServiceCommand() *cobra.Command {
 	cmd.PersistentFlags().String("id", "", "the cloud service id to update")
 	cmd.PersistentFlags().StringP("name", "n", "", "the name of the service")
 	cmd.PersistentFlags().StringP("description", "d", "", "an optional description")
+	cmd.PersistentFlags().StringSliceP("requirement-ids", "r", nil, "a list of requirements this cloud service should satisfy")
+
 	_ = cmd.MarkPersistentFlagRequired("id")
 	_ = cmd.MarkPersistentFlagRequired("name")
 	_ = viper.BindPFlag("id", cmd.PersistentFlags().Lookup("id"))
 	_ = viper.BindPFlag("name", cmd.PersistentFlags().Lookup("name"))
 	_ = viper.BindPFlag("description", cmd.PersistentFlags().Lookup("description"))
+	_ = viper.BindPFlag("requirement-ids", cmd.PersistentFlags().Lookup("requirement"))
 
 	_ = cmd.RegisterFlagCompletionFunc("id", cli.ValidArgsGetCloudServices)
 	_ = cmd.RegisterFlagCompletionFunc("name", cli.DefaultArgsShellComp)
 	_ = cmd.RegisterFlagCompletionFunc("description", cli.DefaultArgsShellComp)
+	_ = cmd.RegisterFlagCompletionFunc("requirement-ids", cli.DefaultArgsShellComp)
 
 	return cmd
 }

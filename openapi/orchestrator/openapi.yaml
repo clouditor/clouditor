@@ -421,6 +421,18 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/MetricImplementation'
+    /v1/orchestrator/requirements:
+        get:
+            tags:
+                - Orchestrator
+            operationId: Orchestrator_ListRequirements
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListRequirementsResponse'
 components:
     schemas:
         AllowedValues:
@@ -483,6 +495,15 @@ components:
                     type: string
                 description:
                     type: string
+                requirements:
+                    $ref: '#/components/schemas/CloudService_Requirements'
+        CloudService_Requirements:
+            type: object
+            properties:
+                requirementIds:
+                    type: array
+                    items:
+                        type: string
         ListAssessmentResultsResponse:
             type: object
             properties:
@@ -519,6 +540,13 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Metric'
+        ListRequirementsResponse:
+            type: object
+            properties:
+                requirements:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Requirement'
         ListValue:
             type: object
             properties:
@@ -603,6 +631,18 @@ components:
                 minMax:
                     $ref: '#/components/schemas/MinMax'
             description: A range resource representing the range of values
+        Requirement:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                metricIds:
+                    type: array
+                    items:
+                        type: string
+            description: Requirement represents a certain requirement that needs to be fulfilled. It could be a control in a certification catalog.
         StoreAssessmentResultResponse:
             type: object
             properties:

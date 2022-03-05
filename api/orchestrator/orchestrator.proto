@@ -135,6 +135,13 @@ service Orchestrator {
     };
   }
 
+  rpc ListRequirements(ListRequirementsRequest)
+      returns (ListRequirementsResponse) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/requirements"
+    };
+  }
+
   // Registers a new target cloud service
   rpc RegisterCloudService(RegisterCloudServiceRequest) returns (CloudService) {
     option (google.api.http) = {
@@ -173,7 +180,7 @@ service Orchestrator {
       delete : "/v1/orchestrator/cloud_services/{service_id}"
     };
   }
-
+  
   // Updates a metric configuration (target value and operator) for a specific
   // service and metric ID
   rpc UpdateMetricConfiguration(UpdateMetricConfigurationRequest)
@@ -259,6 +266,9 @@ message GetMetricRequest { string metric_id = 1; }
 message ListMetricsRequest {}
 message ListMetricsResponse { repeated Metric metrics = 1; }
 
+message ListRequirementsRequest {}
+message ListRequirementsResponse { repeated Requirement requirements = 1; }
+
 message GetCloudServiceRequest { string service_id = 1; }
 
 message RegisterCloudServiceRequest { CloudService service = 1; }
@@ -320,4 +330,18 @@ message CloudService {
   string name = 2;
 
   string description = 3;
+
+  message Requirements { repeated string requirement_ids = 1; }
+
+  Requirements requirements = 4;
+}
+
+// Requirement represents a certain requirement that needs to be fulfilled. It
+// could be a control in a certification catalog.
+message Requirement {
+  string id = 1;
+
+  string name = 2;
+
+  repeated string metric_ids = 3;
 }

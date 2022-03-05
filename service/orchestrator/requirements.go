@@ -26,37 +26,34 @@
 package orchestrator
 
 import (
-	"database/sql/driver"
-	"errors"
-	"strings"
+	"context"
+	"encoding/json"
+	"fmt"
+
+	"clouditor.io/clouditor/api/orchestrator"
 )
 
-var (
-	ErrRequestIsNil  = errors.New("request is empty")
-	ErrServiceIsNil  = errors.New("service is empty")
-	ErrNameIsMissing = errors.New("service name is empty")
-	ErrIDIsMissing   = errors.New("service ID is empty")
-)
+// LoadRequirements loads requirements definitions from a JSON file.
+func LoadRequirements(file string) (err error) {
+	var (
+		b []byte
+	)
 
-func (c *CloudService_Requirements) Value() (driver.Value, error) {
-	if c == nil || c.RequirementIds == nil {
-		return nil, nil
-	} else {
-		return driver.Value(strings.Join(c.RequirementIds, ",")), nil
+	b, err = f.ReadFile(file)
+	if err != nil {
+		return fmt.Errorf("error while loading %s: %w", file, err)
 	}
-}
 
-func (c *CloudService_Requirements) Scan(value interface{}) error {
-	switch v := value.(type) {
-	case string:
-		*&c.RequirementIds = strings.Split(v, ",")
-	default:
-		return errors.New("unsupported type")
+	err = json.Unmarshal(b, &requirements)
+	if err != nil {
+		return fmt.Errorf("error in JSON marshal: %w", err)
 	}
 
 	return nil
 }
 
-func (c *CloudService_Requirements) GormDataType() string {
-	return "string"
+func (svc *Service) ListRequirements(_ context.Context, _ *orchestrator.ListRequirementsRequest) (response *orchestrator.ListRequirementsResponse, err error) {
+	return &orchestrator.ListRequirementsResponse{
+		Requirements: svc.requirements,
+	}, nil
 }
