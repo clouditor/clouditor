@@ -49,7 +49,7 @@ func (c *CloudService_Requirements) Value() (driver.Value, error) {
 func (c *CloudService_Requirements) Scan(value interface{}) error {
 	switch v := value.(type) {
 	case string:
-		*&c.RequirementIds = strings.Split(v, ",")
+		(*c).RequirementIds = strings.Split(v, ",")
 	default:
 		return errors.New("unsupported type")
 	}
