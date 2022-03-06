@@ -28,7 +28,6 @@ package cli_test
 import (
 	"context"
 	"fmt"
-	"net"
 	"os"
 	"reflect"
 	"testing"
@@ -48,15 +47,17 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-var (
-	sock    net.Listener
-	srv     *grpc.Server
-	authSrv *oauth2.AuthorizationServer
-)
-
 func TestMain(m *testing.M) {
-	svc := service_orchestrator.NewService()
-	svc.CreateDefaultTargetCloudService()
+	var (
+		svc *service_orchestrator.Service
+		err error
+	)
+
+	svc = service_orchestrator.NewService()
+	_, err = svc.CreateDefaultTargetCloudService()
+	if err != nil {
+		panic(err)
+	}
 
 	clitest.AutoChdir()
 
