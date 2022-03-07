@@ -40,6 +40,34 @@
             ],
             "env": {},
             "preLaunchTask": "go: generate"
+        },
+        {
+            "name": "Launch cli (cloud list)",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/cli/cl.go",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "cloud",
+                "list"
+            ],
+            "env": {},
+            "preLaunchTask": "go: generate"
+        },
+        {
+            "name": "Launch cli (login)",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/cli/cl.go",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "login",
+                "localhost:9090"
+            ],
+            "env": {},
+            "preLaunchTask": "go: generate"
         }
     ]
 }

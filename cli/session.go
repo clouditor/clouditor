@@ -55,6 +55,9 @@ type Session struct {
 	URL string `json:"url"`
 
 	Folder string `json:"-"`
+
+	// dirty flags that we need to fetch a new token and save the session again
+	dirty bool
 }
 
 func (s *Session) SetAuthorizer(authorizer api.Authorizer) {
@@ -118,6 +121,11 @@ func ContinueSession() (session *Session, err error) {
 		return
 	}
 
+	// If we detect that this session is "dirty", try to save it again
+	if session.dirty {
+		_ = session.Save()
+	}
+
 	if session.ClientConn, err = grpc.Dial(session.URL, api.DefaultGrpcDialOptions(session)...); err != nil {
 		return nil, fmt.Errorf("could not connect: %w", err)
 	}
@@ -147,6 +155,8 @@ func (s *Session) Save() (err error) {
 	if err = json.NewEncoder(file).Encode(&s); err != nil {
 		return fmt.Errorf("could not serialize JSON: %w", err)
 	}
+
+	s.dirty = false
 
 	return nil
 }
@@ -183,12 +193,15 @@ func (s *Session) UnmarshalJSON(data []byte) (err error) {
 
 	s.URL = v.URL
 
+	// Mark this session as dirty, if the token is not valid (anymore)
+	s.dirty = !v.Token.Valid()
+
 	s.authorizer = api.NewOAuthAuthorizerFromConfig(&oauth2.Config{
 		// TODO(oxisto): We need to store the client ID
 		ClientID: "public",
 		// TODO(oxisto): Probably we should just marshal the whole token config
 		Endpoint: oauth2.Endpoint{
-			TokenURL: s.URL,
+			TokenURL: "http://localhost:8080/token",
 		},
 	}, v.Token)
 	return
