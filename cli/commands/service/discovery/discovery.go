@@ -59,14 +59,10 @@ func NewStartDiscoveryCommand() *cobra.Command {
 			client = discovery.NewDiscoveryClient(session)
 
 			res, err = client.Start(context.Background(), &discovery.StartDiscoveryRequest{})
-			//res, err = client.Start(context.Background(), &discovery.StartDiscoveryRequest{Providers: discoverer})
 
 			return session.HandleResponse(res, err)
 		},
 	}
-
-	//cmd.Flags().StringSliceVarP(&discoverer, DiscovererFlag, "d", []string{}, "Providers to discover, separated by comma")
-	//_ = viper.BindPFlag(DiscovererFlag, cmd.Flags().Lookup(DiscovererFlag))
 
 	return cmd
 }

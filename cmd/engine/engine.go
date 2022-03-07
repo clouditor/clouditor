@@ -82,9 +82,8 @@ const (
 	DBNameFlag                 = "db-name"
 	DBPortFlag                 = "db-port"
 	DBInMemoryFlag             = "db-in-memory"
-	CreateDefaultTarget = "target-default-create"
-	ProviderFlag        = "provider"
-
+	CreateDefaultTarget        = "target-default-create"
+	ProviderFlag               = "provider"
 
 	DefaultAPIDefaultUser      = "clouditor"
 	DefaultAPIDefaultPassword  = "clouditor"

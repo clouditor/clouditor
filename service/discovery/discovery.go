@@ -27,6 +27,7 @@ package discovery
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -110,6 +111,11 @@ func WithInternalAuthorizer(address string, username string, password string, op
 
 // WithProviders is an option to set providers for discovering
 func WithProviders(providersList []string) ServiceOption {
+	if len(providersList) == 0 {
+		newError := errors.New("no providers given")
+		log.Error(newError)
+	}
+
 	return func(s *Service) {
 		s.providers = providersList
 	}
@@ -174,15 +180,6 @@ func (s *Service) Start(_ context.Context, req *discovery.StartDiscoveryRequest)
 
 	log.Infof("Starting discovery...")
 	s.scheduler.TagsUnique()
-
-	//// Set providers
-	//if req == nil || req.Providers == nil || len(req.Providers) == 0 {
-	//	newError := errors.New("no providers for discovering given")
-	//	log.Errorf("%s", newError)
-	//	return nil, status.Errorf(codes.InvalidArgument, "%s", newError)
-	//} else {
-	//	s.providers = req.Providers
-	//}
 
 	// Establish connection to assessment component
 	if s.assessmentStream == nil {
