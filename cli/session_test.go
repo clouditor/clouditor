@@ -33,7 +33,6 @@ import (
 	"os"
 	"testing"
 
-	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/service"
@@ -111,11 +110,7 @@ func TestSession(t *testing.T) {
 		Endpoint: oauth2.Endpoint{},
 	}, token)
 
-	// update the session
-	session.authorizer = api.NewOAuthAuthorizerFromConfig(
-		session.Config,
-		token,
-	)
+	assert.NoError(t, err)
 
 	err = session.Save()
 
