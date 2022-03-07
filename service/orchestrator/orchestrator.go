@@ -381,7 +381,7 @@ func (s *Service) RemoveCertificate(_ context.Context, req *orchestrator.RemoveC
 
 	err = s.storage.Delete(&orchestrator.Certificate{CertificateId: req.CertificateId})
 	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Errorf(codes.NotFound, "service not found")
+		return nil, status.Errorf(codes.NotFound, "certificate not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
