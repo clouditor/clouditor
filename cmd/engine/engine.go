@@ -48,6 +48,7 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
+	cli_discovery "clouditor.io/clouditor/cli/commands/service/discovery"
 	"clouditor.io/clouditor/logging/formatter"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
@@ -106,6 +107,7 @@ var (
 	assessmentService    assessment.AssessmentServer
 	evidenceStoreService evidence.EvidenceStoreServer
 	db                   persistence.Storage
+	providers            []string
 
 	log *logrus.Entry
 )
@@ -196,6 +198,13 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		return fmt.Errorf("could not create storage: %w", err)
 	}
 
+	// If no CSPs for discovering is given, take all implemented discoverers
+	if viper.GetString(cli_discovery.DiscovererFlag) == "" {
+		providers = []string{service_discovery.ProviderAWS, service_discovery.ProviderAzure, service_discovery.ProviderK8S}
+	} else {
+		providers = []string{viper.GetString(cli_discovery.DiscovererFlag)}
+	}
+
 	authService = service_auth.NewService(
 		service_auth.WithStorage(db),
 		service_auth.WithApiKeyPassword(viper.GetString(APIKeyPasswordFlag)),
@@ -208,6 +217,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			viper.GetString(APIDefaultUserFlag),
 			viper.GetString(APIDefaultPasswordFlag),
 		),
+		service_discovery.WithProviders(providers),
 	)
 	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db))
 	assessmentService = service_assessment.NewService(

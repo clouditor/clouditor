@@ -27,6 +27,7 @@ package discovery
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -51,6 +52,12 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
+const (
+	ProviderAWS   = "aws"
+	ProviderK8S   = "k8s"
+	ProviderAzure = "azure"
+)
+
 var log *logrus.Entry
 
 // Service is an implementation of the Clouditor Discovery service.
@@ -68,6 +75,8 @@ type Service struct {
 	scheduler *gocron.Scheduler
 
 	authorizer api.Authorizer
+
+	providers []string
 }
 
 type Configuration struct {
@@ -97,6 +106,13 @@ func WithAssessmentAddress(address string) ServiceOption {
 func WithInternalAuthorizer(address string, username string, password string, opts ...grpc.DialOption) ServiceOption {
 	return func(s *Service) {
 		s.SetAuthorizer(api.NewInternalAuthorizerFromPassword(address, username, password, opts...))
+	}
+}
+
+// WithProviders is an option to set providers for discovering
+func WithProviders(providersList []string) ServiceOption {
+	return func(s *Service) {
+		s.providers = providersList
 	}
 }
 
@@ -154,11 +170,20 @@ func (s *Service) initAssessmentStream(additionalOpts ...grpc.DialOption) error 
 }
 
 // Start starts discovery
-func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
+func (s *Service) Start(_ context.Context, req *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
 	resp = &discovery.StartDiscoveryResponse{Successful: true}
 
 	log.Infof("Starting discovery...")
 	s.scheduler.TagsUnique()
+
+	// Set providers
+	if req == nil || req.Providers == nil || len(req.Providers) == 0 {
+		newError := errors.New("no providers for discovering given")
+		log.Errorf("%s", newError)
+		return nil, status.Errorf(codes.InvalidArgument, "%s", newError)
+	} else {
+		s.providers = req.Providers
+	}
 
 	// Establish connection to assessment component
 	if s.assessmentStream == nil {
@@ -169,36 +194,46 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 		}
 	}
 
-	authorizer, err := azure.NewAuthorizer()
-	if err != nil {
-		log.Errorf("Could not authenticate to Azure: %v", err)
-		return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
-	}
-
-	k8sClient, err := k8s.AuthFromKubeConfig()
-	if err != nil {
-		log.Errorf("Could not authenticate to Kubernetes: %v", err)
-		return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Kubernetes: %v", err)
-	}
-
-	awsClient, err := aws.NewClient()
-	if err != nil {
-		log.Errorf("Could not authenticate to AWS: %v", err)
-		return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to AWS: %v", err)
-	}
-
 	var discoverer []discovery.Discoverer
 
-	discoverer = append(discoverer,
-		azure.NewAzureARMTemplateDiscovery(azure.WithAuthorizer(authorizer)),
-		azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
-		azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
-		azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)),
-		k8s.NewKubernetesComputeDiscovery(k8sClient),
-		k8s.NewKubernetesNetworkDiscovery(k8sClient),
-		aws.NewAwsStorageDiscovery(awsClient),
-		aws.NewAwsComputeDiscovery(awsClient),
-	)
+	// Configure discoverers for given providers
+	for _, provider := range s.providers {
+		switch {
+		case provider == ProviderAzure:
+			authorizer, err := azure.NewAuthorizer()
+			if err != nil {
+				log.Errorf("Could not authenticate to Azure: %v", err)
+				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
+			}
+			discoverer = append(discoverer,
+				azure.NewAzureARMTemplateDiscovery(azure.WithAuthorizer(authorizer)),
+				azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
+				azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
+				azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)))
+		case provider == ProviderK8S:
+			k8sClient, err := k8s.AuthFromKubeConfig()
+			if err != nil {
+				log.Errorf("Could not authenticate to Kubernetes: %v", err)
+				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Kubernetes: %v", err)
+			}
+			discoverer = append(discoverer,
+				k8s.NewKubernetesComputeDiscovery(k8sClient),
+				k8s.NewKubernetesNetworkDiscovery(k8sClient))
+		case provider == ProviderAWS:
+			awsClient, err := aws.NewClient()
+			if err != nil {
+				log.Errorf("Could not authenticate to AWS: %v", err)
+				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to AWS: %v", err)
+			}
+			discoverer = append(discoverer,
+				aws.NewAwsStorageDiscovery(awsClient),
+				aws.NewAwsComputeDiscovery(awsClient))
+		default:
+			newError := fmt.Errorf("provider %s not known", provider)
+			log.Error(newError)
+			return nil, status.Errorf(codes.InvalidArgument, "%s", newError)
+		}
+	}
 
 	for _, v := range discoverer {
 		s.configurations[v] = &Configuration{
