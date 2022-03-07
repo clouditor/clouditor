@@ -3,41 +3,15 @@
 
 openapi: 3.0.3
 info:
-    title: Orchestrator
+    title: Orchestrator API
     description: Manages the orchestration of components within the Clouditor architecture
     version: 0.0.1
 paths:
-    /v1/assessment/evidences:
-        post:
-            summary: Assesses the evidence sent by the discovery. Part of the public API, also exposed as REST.
-            operationId: Assessment_AssessEvidence
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/Evidence'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/AssessEvidenceResponse'
-    /v1/assessment/results:
-        get:
-            summary: List all assessment results. Part of the public API, also exposed as REST.
-            operationId: Assessment_ListAssessmentResults
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ListAssessmentResultsResponse'
     /v1/orchestrator/assessment_results:
         get:
-            summary: List all assessment results. Part of the public API, also exposed as REST.
+            tags:
+                - Orchestrator
+            description: List all assessment results. Part of the public API, also exposed as REST.
             operationId: Orchestrator_ListAssessmentResults
             responses:
                 "200":
@@ -47,7 +21,9 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/ListAssessmentResultsResponse'
         post:
-            summary: Stores the assessment result provided by an assessment tool
+            tags:
+                - Orchestrator
+            description: Stores the assessment result provided by an assessment tool
             operationId: Orchestrator_StoreAssessmentResult
             requestBody:
                 content:
@@ -64,10 +40,14 @@ paths:
                                 $ref: '#/components/schemas/StoreAssessmentResultResponse'
     /v1/orchestrator/assessment_tools:
         get:
-            summary: Lists all assessment tools assessing evidences for the metric given by the passed metric id
+            tags:
+                - Orchestrator
+            description: |-
+                Lists all assessment tools assessing evidences for the metric given by the
+                 passed metric id
             operationId: Orchestrator_ListAssessmentTools
             parameters:
-                - name: metric_id
+                - name: metricId
                   in: query
                   description: filter tools by metric id
                   schema:
@@ -80,7 +60,9 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/ListAssessmentToolsResponse'
         post:
-            summary: Registers the passed assessment tool
+            tags:
+                - Orchestrator
+            description: Registers the passed assessment tool
             operationId: Orchestrator_RegisterAssessmentTool
             requestBody:
                 content:
@@ -95,13 +77,16 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/AssessmentTool'
-    /v1/orchestrator/assessment_tools/{tool_id}:
+    /v1/orchestrator/assessment_tools/{toolId}:
         get:
-            summary: Returns assessment tool given by the passed tool id
+            tags:
+                - Orchestrator
+            description: Returns assessment tool given by the passed tool id
             operationId: Orchestrator_GetAssessmentTool
             parameters:
-                - name: tool_id
-                  in: query
+                - name: toolId
+                  in: path
+                  required: true
                   schema:
                     type: string
             responses:
@@ -112,11 +97,14 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/AssessmentTool'
         put:
-            summary: Updates the assessment tool given by the passed id
+            tags:
+                - Orchestrator
+            description: Updates the assessment tool given by the passed id
             operationId: Orchestrator_UpdateAssessmentTool
             parameters:
-                - name: tool_id
-                  in: query
+                - name: toolId
+                  in: path
+                  required: true
                   schema:
                     type: string
             requestBody:
@@ -133,23 +121,31 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/AssessmentTool'
         delete:
-            summary: Remove assessment tool with passed id from the list of active assessment tools
+            tags:
+                - Orchestrator
+            description: |-
+                Remove assessment tool with passed id from the list of active assessment
+                 tools
             operationId: Orchestrator_DeregisterAssessmentTool
             parameters:
-                - name: tool_id
-                  in: query
+                - name: toolId
+                  in: path
+                  required: true
                   schema:
                     type: string
             responses:
                 "200":
                     description: OK
                     content: {}
-    /v1/orchestrator/certificates/{certificate_id}:
+    /v1/orchestrator/certificates/{certificateId}:
         get:
+            tags:
+                - Orchestrator
             operationId: Orchestrator_GetCertificate
             parameters:
-                - name: certificate_id
-                  in: query
+                - name: certificateId
+                  in: path
+                  required: true
                   schema:
                     type: string
             responses:
@@ -160,7 +156,15 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/Certificate'
         put:
+            tags:
+                - Orchestrator
             operationId: Orchestrator_UpdateCertificate
+            parameters:
+                - name: certificateId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
             requestBody:
                 content:
                     application/json:
@@ -176,7 +180,9 @@ paths:
                                 $ref: '#/components/schemas/Certificate'
     /v1/orchestrator/cloud_services:
         get:
-            summary: Lists all target cloud services
+            tags:
+                - Orchestrator
+            description: Lists all target cloud services
             operationId: Orchestrator_ListCloudServices
             responses:
                 "200":
@@ -186,7 +192,9 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/ListCloudServicesResponse'
         post:
-            summary: Registers a new target cloud service
+            tags:
+                - Orchestrator
+            description: Registers a new target cloud service
             operationId: Orchestrator_RegisterCloudService
             requestBody:
                 content:
@@ -201,13 +209,16 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/CloudService'
-    /v1/orchestrator/cloud_services/{service_id}:
+    /v1/orchestrator/cloud_services/{serviceId}:
         get:
-            summary: Retrieves a target cloud service
+            tags:
+                - Orchestrator
+            description: Retrieves a target cloud service
             operationId: Orchestrator_GetCloudService
             parameters:
-                - name: service_id
-                  in: query
+                - name: serviceId
+                  in: path
+                  required: true
                   schema:
                     type: string
             responses:
@@ -218,11 +229,14 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/CloudService'
         put:
-            summary: Registers a new target cloud service
+            tags:
+                - Orchestrator
+            description: Registers a new target cloud service
             operationId: Orchestrator_UpdateCloudService
             parameters:
-                - name: service_id
-                  in: query
+                - name: serviceId
+                  in: path
+                  required: true
                   schema:
                     type: string
             requestBody:
@@ -239,24 +253,32 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/CloudService'
         delete:
-            summary: Removes a target cloud service
+            tags:
+                - Orchestrator
+            description: Removes a target cloud service
             operationId: Orchestrator_RemoveCloudService
             parameters:
-                - name: service_id
-                  in: query
+                - name: serviceId
+                  in: path
+                  required: true
                   schema:
                     type: string
             responses:
                 "200":
                     description: OK
                     content: {}
-    /v1/orchestrator/cloud_services/{service_id}/metric_configurations:
+    /v1/orchestrator/cloud_services/{serviceId}/metric_configurations:
         get:
-            summary: Lists all a metric configurations (target value and operator) for a specific service ID
+            tags:
+                - Orchestrator
+            description: |-
+                Lists all a metric configurations (target value and operator) for a
+                 specific service ID
             operationId: Orchestrator_ListMetricConfigurations
             parameters:
-                - name: service_id
-                  in: query
+                - name: serviceId
+                  in: path
+                  required: true
                   schema:
                     type: string
             responses:
@@ -266,17 +288,23 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListMetricConfigurationResponse'
-    /v1/orchestrator/cloud_services/{service_id}/metric_configurations/{metric_id}:
+    /v1/orchestrator/cloud_services/{serviceId}/metric_configurations/{metricId}:
         get:
-            summary: Retrieves a metric configuration (target value and operator) for a specific service and metric ID
+            tags:
+                - Orchestrator
+            description: |-
+                Retrieves a metric configuration (target value and operator) for a specific
+                 service and metric ID
             operationId: Orchestrator_GetMetricConfiguration
             parameters:
-                - name: service_id
-                  in: query
+                - name: serviceId
+                  in: path
+                  required: true
                   schema:
                     type: string
-                - name: metric_id
-                  in: query
+                - name: metricId
+                  in: path
+                  required: true
                   schema:
                     type: string
             responses:
@@ -287,15 +315,21 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/MetricConfiguration'
         put:
-            summary: Updates a metric configuration (target value and operator) for a specific service and metric ID
+            tags:
+                - Orchestrator
+            description: |-
+                Updates a metric configuration (target value and operator) for a specific
+                 service and metric ID
             operationId: Orchestrator_UpdateMetricConfiguration
             parameters:
-                - name: service_id
-                  in: query
+                - name: serviceId
+                  in: path
+                  required: true
                   schema:
                     type: string
-                - name: metric_id
-                  in: query
+                - name: metricId
+                  in: path
+                  required: true
                   schema:
                     type: string
             requestBody:
@@ -313,7 +347,9 @@ paths:
                                 $ref: '#/components/schemas/MetricConfiguration'
     /v1/orchestrator/metrics:
         get:
-            summary: List all metrics provided by the metric catalog
+            tags:
+                - Orchestrator
+            description: List all metrics provided by the metric catalog
             operationId: Orchestrator_ListMetrics
             responses:
                 "200":
@@ -323,7 +359,9 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/ListMetricsResponse'
         post:
-            summary: Creates a new metric
+            tags:
+                - Orchestrator
+            description: Creates a new metric
             operationId: Orchestrator_CreateMetric
             requestBody:
                 content:
@@ -338,13 +376,16 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Metric'
-    /v1/orchestrator/metrics/{metric_id}:
+    /v1/orchestrator/metrics/{metricId}:
         get:
-            summary: Returns the metric with the passed metric id
+            tags:
+                - Orchestrator
+            description: Returns the metric with the passed metric id
             operationId: Orchestrator_GetMetric
             parameters:
-                - name: metric_id
-                  in: query
+                - name: metricId
+                  in: path
+                  required: true
                   schema:
                     type: string
             responses:
@@ -355,11 +396,14 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/Metric'
         put:
-            summary: Updates an existing metric
+            tags:
+                - Orchestrator
+            description: Updates an existing metric
             operationId: Orchestrator_UpdateMetric
             parameters:
-                - name: metric_id
-                  in: query
+                - name: metricId
+                  in: path
+                  required: true
                   schema:
                     type: string
             requestBody:
@@ -375,13 +419,16 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Metric'
-    /v1/orchestrator/metrics/{metric_id}/implementation:
+    /v1/orchestrator/metrics/{metricId}/implementation:
         get:
-            summary: Returns the metric implementation of the passed metric id
+            tags:
+                - Orchestrator
+            description: Returns the metric implementation of the passed metric id
             operationId: Orchestrator_GetMetricImplementation
             parameters:
-                - name: metric_id
-                  in: query
+                - name: metricId
+                  in: path
+                  required: true
                   schema:
                     type: string
             responses:
@@ -392,11 +439,14 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/MetricImplementation'
         put:
-            summary: Updates an existing metric implementation
+            tags:
+                - Orchestrator
+            description: Updates an existing metric implementation
             operationId: Orchestrator_UpdateMetricImplementation
             parameters:
-                - name: metric_id
-                  in: query
+                - name: metricId
+                  in: path
+                  required: true
                   schema:
                     type: string
             requestBody:
@@ -415,20 +465,15 @@ paths:
 components:
     schemas:
         AllowedValues:
+            type: object
             properties:
                 values:
                     type: array
                     items:
                         $ref: '#/components/schemas/Value'
             description: Defines a range
-        AssessEvidenceResponse:
-            properties:
-                status:
-                    type: integer
-                    format: enum
-                status_message:
-                    type: string
         AssessmentResult:
+            type: object
             properties:
                 id:
                     type: string
@@ -437,25 +482,26 @@ components:
                     type: string
                     description: Time of assessment
                     format: RFC3339
-                metric_id:
+                metricId:
                     type: string
                     description: Reference to the metric the assessment was based on
-                metric_configuration:
+                metricConfiguration:
                     $ref: '#/components/schemas/MetricConfiguration'
                 compliant:
                     type: boolean
                     description: 'Compliant case: true or false'
-                evidence_id:
+                evidenceId:
                     type: string
                     description: Reference to the assessed evidence
-                resource_id:
+                resourceId:
                     type: string
                     description: Reference to the resource of the assessed evidence
-                non_compliance_comments:
+                nonComplianceComments:
                     type: string
                     description: Some comments on the reason for non-compliance
             description: A result resource, representing the result after assessing the cloud resource with id resource_id.
         AssessmentTool:
+            type: object
             properties:
                 id:
                     type: string
@@ -463,21 +509,22 @@ components:
                     type: string
                 description:
                     type: string
-                available_metrics:
+                availableMetrics:
                     type: array
                     items:
                         type: string
                     description: a list of metrics that this tool can assess, referred by their ids
             description: Represents an external tool or service that offers assessments according to certain metrics
         Certificate:
+            type: object
             properties:
-                certificate_id:
+                certificateId:
                     type: string
                 name:
                     type: string
                 state:
                     type: string
-                service_id:
+                serviceId:
                     type: string
                 issuedate:
                     type: string
@@ -490,6 +537,7 @@ components:
                 description:
                     type: string
         CloudService:
+            type: object
             properties:
                 id:
                     type: string
@@ -497,56 +545,44 @@ components:
                     type: string
                 description:
                     type: string
-        Evidence:
-            properties:
-                id:
-                    type: string
-                    description: the ID in a uuid format
-                timestamp:
-                    type: string
-                    description: time of evidence creation
-                    format: RFC3339
-                service_id:
-                    type: string
-                    description: Reference to a service this evidence was gathered from
-                tool_id:
-                    type: string
-                    description: Reference to the tool which provided the evidence
-                raw:
-                    type: string
-                    description: Contains the evidence in its original form without following a defined schema, e.g. the raw JSON
-                resource:
-                    $ref: '#/components/schemas/Value'
-            description: An evidence resource
         ListAssessmentResultsResponse:
+            type: object
             properties:
                 results:
                     type: array
                     items:
                         $ref: '#/components/schemas/AssessmentResult'
         ListAssessmentToolsResponse:
+            type: object
             properties:
                 tools:
                     type: array
                     items:
                         $ref: '#/components/schemas/AssessmentTool'
         ListCloudServicesResponse:
+            type: object
             properties:
                 services:
                     type: array
                     items:
                         $ref: '#/components/schemas/CloudService'
         ListMetricConfigurationResponse:
+            type: object
             properties:
                 configurations:
-                    $ref: '#/components/schemas/ConfigurationsEntry'
+                    type: object
+                    additionalProperties:
+                        $ref: '#/components/schemas/MetricConfiguration'
+                    description: A map of metric configurations associated by their metric ID
         ListMetricsResponse:
+            type: object
             properties:
                 metrics:
                     type: array
                     items:
                         $ref: '#/components/schemas/Metric'
         ListValue:
+            type: object
             properties:
                 values:
                     type: array
@@ -555,6 +591,7 @@ components:
                     description: Repeated field of dynamically typed values.
             description: '`ListValue` is a wrapper around a repeated field of values. The JSON representation for `ListValue` is JSON array.'
         Metric:
+            type: object
             properties:
                 id:
                     type: string
@@ -576,17 +613,19 @@ components:
                     $ref: '#/components/schemas/Range'
             description: A metric resource
         MetricConfiguration:
+            type: object
             properties:
                 operator:
                     type: string
                     description: The operator to compare the metric, such as == or >
-                target_value:
+                targetValue:
                     $ref: '#/components/schemas/Value'
-                is_default:
+                isDefault:
                     type: boolean
                     description: Whether this configuration is a default configuration
             description: Defines the operator and a target value for an individual metric
         MetricImplementation:
+            type: object
             properties:
                 language:
                     type: integer
@@ -597,6 +636,7 @@ components:
                     description: The actual implementation
             description: MetricImplementation defines the implementation of an individual metric.
         MinMax:
+            type: object
             properties:
                 min:
                     type: integer
@@ -608,6 +648,7 @@ components:
                     format: int64
             description: Defines a range of values through a (inclusive) minimum and a maximum
         Order:
+            type: object
             properties:
                 values:
                     type: array
@@ -615,49 +656,51 @@ components:
                         $ref: '#/components/schemas/Value'
             description: Defines a range of values in a pre-defined order from the lowest to the highest.
         Range:
+            type: object
             properties:
-                allowed_values:
+                allowedValues:
                     $ref: '#/components/schemas/AllowedValues'
                 order:
                     $ref: '#/components/schemas/Order'
-                min_max:
+                minMax:
                     $ref: '#/components/schemas/MinMax'
             description: A range resource representing the range of values
         StoreAssessmentResultResponse:
+            type: object
             properties:
                 status:
                     type: boolean
-                status_message:
+                statusMessage:
                     type: string
-        Struct:
-            properties:
-                fields:
-                    $ref: '#/components/schemas/FieldsEntry'
-            description: '`Struct` represents a structured data value, consisting of fields which map to dynamically typed values. In some languages, `Struct` might be supported by a native representation. For example, in scripting languages like JS a struct is represented as an object. The details of that representation are described together with the proto support for the language. The JSON representation for `Struct` is JSON object.'
         UpdateCertificateRequest:
+            type: object
             properties:
-                certificate_id:
+                certificateId:
                     type: string
                 certificate:
                     $ref: '#/components/schemas/Certificate'
         Value:
+            type: object
             properties:
-                null_value:
+                nullValue:
                     type: integer
                     description: Represents a null value.
                     format: enum
-                number_value:
+                numberValue:
                     type: number
                     description: Represents a double value.
                     format: double
-                string_value:
+                stringValue:
                     type: string
                     description: Represents a string value.
-                bool_value:
+                boolValue:
                     type: boolean
                     description: Represents a boolean value.
-                struct_value:
-                    $ref: '#/components/schemas/Struct'
-                list_value:
+                structValue:
+                    type: object
+                    description: Represents a structured value.
+                listValue:
                     $ref: '#/components/schemas/ListValue'
             description: '`Value` represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values. A producer of value is expected to set one of that variants, absence of any variant indicates an error. The JSON representation for `Value` is JSON value.'
+tags:
+    - name: Orchestrator
