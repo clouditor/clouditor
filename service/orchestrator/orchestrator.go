@@ -29,6 +29,7 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -42,6 +43,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 //go:embed *.json
@@ -303,4 +305,86 @@ func (s *Service) informHook(result *assessment.AssessmentResult, err error) {
 			hook(result, err)
 		}
 	}
+}
+
+// GetCertificate implements method for getting a certificate, e.g. to show its state in the UI
+func (s *Service) GetCertificate(_ context.Context, req *orchestrator.GetCertificateRequest) (response *orchestrator.Certificate, err error) {
+	if req == nil {
+		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrRequestIsNil.Error())
+	}
+	if req.CertificateId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrIDIsMissing.Error())
+	}
+
+	response = new(orchestrator.Certificate)
+	err = s.storage.Get(response, "Id = ?", req.CertificateId)
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Errorf(codes.NotFound, "certificate not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %s", err)
+	}
+	return response, nil
+}
+
+// CreateCertificate implements method for creating a new certificate
+func (s *Service) CreateCertificate(_ context.Context, req *orchestrator.CreateCertificateRequest) (certificate *orchestrator.Certificate, err error) {
+	if req == nil {
+		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrRequestIsNil.Error())
+	}
+	if req.Certificate == nil {
+		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrServiceIsNil.Error())
+	}
+
+	// Persist the certificate in our database
+	err = s.storage.Create(req.Certificate)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not add certificate to the database: %v", err)
+	}
+
+	return
+}
+
+// UpdateCertificate implements method for updating an existing certificate
+func (s *Service) UpdateCertificate(_ context.Context, req *orchestrator.UpdateCertificateRequest) (response *orchestrator.Certificate, err error) {
+	if req.CertificateId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "certificate id is empty")
+	}
+
+	if req.Certificate == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "certificate is empty")
+	}
+
+	count, err := s.storage.Count(req.Certificate, "Id = ?", req.CertificateId)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %s", err)
+	}
+
+	if count == 0 {
+		return nil, status.Error(codes.NotFound, "certificate not found")
+	}
+
+	response = req.Certificate
+	response.CertificateId = req.CertificateId
+
+	err = s.storage.Save(response, "Id = ?", response.CertificateId)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+	}
+	return
+}
+
+// RemoveCertificate implements method for removing a certificate
+func (s *Service) RemoveCertificate(_ context.Context, req *orchestrator.RemoveCertificateRequest) (response *emptypb.Empty, err error) {
+	if req.CertificateId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "certificate id is empty")
+	}
+
+	err = s.storage.Delete(&orchestrator.Certificate{CertificateId: req.CertificateId})
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Errorf(codes.NotFound, "service not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %s", err)
+	}
+
+	return &emptypb.Empty{}, nil
 }

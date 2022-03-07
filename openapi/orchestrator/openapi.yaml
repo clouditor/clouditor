@@ -137,6 +137,47 @@ paths:
                 "200":
                     description: OK
                     content: {}
+    /v1/orchestrator/certificates/{certificateId}:
+        get:
+            tags:
+                - Orchestrator
+            operationId: Orchestrator_GetCertificate
+            parameters:
+                - name: certificateId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Certificate'
+        put:
+            tags:
+                - Orchestrator
+            operationId: Orchestrator_UpdateCertificate
+            parameters:
+                - name: certificateId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateCertificateRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Certificate'
     /v1/orchestrator/cloud_services:
         get:
             tags:
@@ -486,6 +527,27 @@ components:
                         type: string
                     description: a list of metrics that this tool can assess, referred by their ids
             description: Represents an external tool or service that offers assessments according to certain metrics
+        Certificate:
+            type: object
+            properties:
+                certificateId:
+                    type: string
+                name:
+                    type: string
+                state:
+                    type: string
+                serviceId:
+                    type: string
+                issuedate:
+                    type: string
+                standard:
+                    type: string
+                scope:
+                    type: string
+                cab:
+                    type: string
+                description:
+                    type: string
         CloudService:
             type: object
             properties:
@@ -652,6 +714,13 @@ components:
                     type: boolean
                 statusMessage:
                     type: string
+        UpdateCertificateRequest:
+            type: object
+            properties:
+                certificateId:
+                    type: string
+                certificate:
+                    $ref: '#/components/schemas/Certificate'
         Value:
             type: object
             properties:

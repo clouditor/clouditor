@@ -98,6 +98,12 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 		return
 	}
 
+	// Migrate Certificate
+	if err = g.db.AutoMigrate(&orchestrator.Certificate{}); err != nil {
+		err = fmt.Errorf("error during auto-migration: %w", err)
+		return
+	}
+
 	s = g
 	return
 }

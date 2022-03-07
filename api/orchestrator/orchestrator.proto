@@ -229,6 +229,21 @@ service Orchestrator {
       get : "/v1/orchestrator/metrics/{metric_id}/implementation"
     };
   }
+
+  //
+  rpc GetCertificate(GetCertificateRequest) returns (Certificate) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/certificates/{certificate_id}"
+    };
+  }
+
+  //
+  rpc UpdateCertificate(UpdateCertificateRequest) returns (Certificate) {
+    option (google.api.http) = {
+      put : "/v1/orchestrator/certificates/{certificate_id}"
+      body : "*"
+    };
+  }
 }
 
 message RegisterAssessmentToolRequest { AssessmentTool tool = 1; }
@@ -346,4 +361,29 @@ message Requirement {
   string description = 3;
 
   repeated string metric_ids = 4;
+}
+
+message GetCertificateRequest {
+  string certificate_id = 1;
+}
+
+message UpdateCertificateRequest {
+  string certificate_id = 1;
+	Certificate certificate = 2;
+}
+
+message CreateCertificateRequest { Certificate certificate = 1; }
+
+message RemoveCertificateRequest { string certificate_id = 1; }
+
+message Certificate {
+  string certificate_id = 1;
+	string name = 2;
+  string state = 3;
+	string service_id = 4; 
+	string issuedate = 5;
+  string standard = 6;
+  string scope = 7;       
+  string cab = 8;
+  string description = 9;
 }
