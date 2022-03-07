@@ -320,7 +320,7 @@ func TestStart(t *testing.T) {
 						envVariableKey:   "AZURE_PASSWORD",
 						envVariableValue: "",
 					},
-					// 4. Try to prevent getting authorizer from MSI - currently not done here
+					// 4. Try to prevent getting authorizer from MSI
 					{
 						hasEnvVariable:   true,
 						envVariableKey:   "AZURE_ENVIRONMENT",
@@ -331,6 +331,11 @@ func TestStart(t *testing.T) {
 					{
 						hasEnvVariable:   true,
 						envVariableKey:   "AZURE_AUTH_LOCATION",
+						envVariableValue: "",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "MSI_ENDPOINT",
 						envVariableValue: "",
 					},
 					{
