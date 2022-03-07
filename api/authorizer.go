@@ -42,11 +42,6 @@ import (
 type Authorizer interface {
 	credentials.PerRPCCredentials
 	oauth2.TokenSource
-
-	// AuthURL contains the base URL of the authentication server this authorizer uses. This
-	// can be a gRPC address (for example if the Clouditor internal authentication service is used) or
-	// a regular HTTP(S) URL.
-	AuthURL() string
 }
 
 // UsesAuthorizer is an interface to denote that a struct is willing to accept and use
@@ -59,16 +54,6 @@ type UsesAuthorizer interface {
 // internalAuthorizer is an authorizer that uses OAuth 2.0 client credentials and does a OAuth client
 // credentials flow
 type oauthAuthorizer struct {
-	// TODO(oxisto): check, if this is really needed
-	authURL string
-
-	*protectedToken
-}
-
-// baseAuthorizer contains fields that are shared by all authorizers
-//
-// TODO(oxisto): Rename to something that is more tied to the grpc per-request interface
-type protectedToken struct {
 	oauth2.TokenSource
 }
 
@@ -78,10 +63,7 @@ type protectedToken struct {
 // a POST request with application/x-www-form-urlencoded data.
 func NewOAuthAuthorizerFromClientCredentials(config *clientcredentials.Config) Authorizer {
 	var authorizer = &oauthAuthorizer{
-		authURL: config.TokenURL,
-		protectedToken: &protectedToken{
-			TokenSource: oauth2.ReuseTokenSource(nil, config.TokenSource(context.Background())),
-		},
+		TokenSource: oauth2.ReuseTokenSource(nil, config.TokenSource(context.Background())),
 	}
 
 	return authorizer
@@ -90,10 +72,7 @@ func NewOAuthAuthorizerFromClientCredentials(config *clientcredentials.Config) A
 // NewOAuthAuthorizerFromConfig creates a new authorizer based on an OAuth 2.0 config
 func NewOAuthAuthorizerFromConfig(config *oauth2.Config, token *oauth2.Token) Authorizer {
 	var authorizer = &oauthAuthorizer{
-		authURL: config.Endpoint.AuthURL,
-		protectedToken: &protectedToken{
-			TokenSource: config.TokenSource(context.Background(), token),
-		},
+		TokenSource: config.TokenSource(context.Background(), token),
 	}
 
 	return authorizer
@@ -101,7 +80,7 @@ func NewOAuthAuthorizerFromConfig(config *oauth2.Config, token *oauth2.Token) Au
 
 // GetRequestMetadata is an implementation for credentials.PerRPCCredentials. It is called before
 // each RPC request and is used to inject our client credentials into the context of the RPC call.
-func (p *protectedToken) GetRequestMetadata(ctx context.Context, _ ...string) (map[string]string, error) {
+func (p *oauthAuthorizer) GetRequestMetadata(ctx context.Context, _ ...string) (map[string]string, error) {
 	// Fetch a token from our token source. This will also refresh an access token, if it has expired
 	token, err := p.Token()
 	if err != nil {
@@ -120,14 +99,9 @@ func (p *protectedToken) GetRequestMetadata(ctx context.Context, _ ...string) (m
 	}, nil
 }
 
-func (*protectedToken) RequireTransportSecurity() bool {
+func (*oauthAuthorizer) RequireTransportSecurity() bool {
 	// TODO(oxisto): This should be set to true because we transmit credentials (except localhost)
 	return false
-}
-
-// AuthURL is an implementation needed for Authorizer. It returns the OAuth 2.0 token endpoint.
-func (o *oauthAuthorizer) AuthURL() string {
-	return o.authURL
 }
 
 // DefaultGrpcDialOptions returns a set of sensible default list of grpc.DialOption values. It includes

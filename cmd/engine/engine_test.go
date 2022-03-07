@@ -54,7 +54,7 @@ func Test_doCmd(t *testing.T) {
 					return false
 				}
 
-				return assert.Equal(t, "http://localhost:8000/token", discoveryService.Authorizer().AuthURL())
+				return assert.NotNil(t, discoveryService.Authorizer())
 			},
 		},
 		{
