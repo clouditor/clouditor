@@ -175,7 +175,7 @@ func (s *Service) initAssessmentStream(additionalOpts ...grpc.DialOption) error 
 }
 
 // Start starts discovery
-func (s *Service) Start(_ context.Context, req *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
+func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
 	resp = &discovery.StartDiscoveryResponse{Successful: true}
 
 	log.Infof("Starting discovery...")

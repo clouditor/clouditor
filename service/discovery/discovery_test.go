@@ -349,7 +349,7 @@ func TestStart(t *testing.T) {
 			fields: fields{
 				hasRPCConnection: true,
 			},
-			providers:      []string{"aws", "k8s"},
+			providers:      []string{},
 			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
 			wantErr:        false,
 			wantErrMessage: "",
