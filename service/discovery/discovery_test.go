@@ -26,7 +26,6 @@
 package discovery
 
 import (
-	"clouditor.io/clouditor/service/discovery/azure"
 	"context"
 	"errors"
 	"fmt"
@@ -253,7 +252,9 @@ func TestStart(t *testing.T) {
 	tests := []struct {
 		name           string
 		fields         fields
-		wantResp       *discovery.StartDiscoveryResponse
+		req       *discovery.StartDiscoveryRequest
+		providers []string
+		wantResp  *discovery.StartDiscoveryResponse
 		wantErr        bool
 		wantErrMessage string
 	}{
@@ -268,23 +269,21 @@ func TestStart(t *testing.T) {
 						envVariableKey:   "AZURE_AUTH_LOCATION",
 						envVariableValue: "service/discovery/testdata/credentials_test_file",
 					},
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "HOME",
-						envVariableValue: "",
-					},
 				},
 			},
-			wantResp:       nil,
-			wantErr:        true,
-			wantErrMessage: "could not authenticate to Kubernetes",
+			req:            &discovery.StartDiscoveryRequest{Providers: []string{ProviderAzure}},
+			providers:      []string{ProviderAzure},
+			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
+			wantErr:        false,
+			wantErrMessage: "",
 		},
 		{
-			name: "No Azure authorizer from ENV nor from file nor CLI",
+			name: "No Azure authorizer",
 			fields: fields{
 				hasRPCConnection: true,
 				// We must set env variables accordingly s.t. all authorizer will fail
 				envVariables: []envVariable{
+					// We must set AZURE_AUTH_LOCATION and HOME to a wrong path so that both Azure authorizer fail
 					// Set corresponding ENV variables for `from ENV` to fail
 					// It uses the order 1. Client credentials 2. Client certificate 3. Username password 4. MSI
 					// 1. Set client credentials
@@ -334,6 +333,8 @@ func TestStart(t *testing.T) {
 					},
 				},
 			},
+			req:            &discovery.StartDiscoveryRequest{Providers: []string{ProviderAzure}},
+			providers:      []string{ProviderAzure},
 			wantResp:       nil,
 			wantErr:        true,
 			wantErrMessage: azure.ErrCouldNotAuthenticate.Error(),
@@ -343,12 +344,7 @@ func TestStart(t *testing.T) {
 			fields: fields{
 				hasRPCConnection: true,
 				envVariables: []envVariable{
-					// We must set AZURE_AUTH_LOCATION to the Azure credentials test file and the set HOME to a wrong path so that the Azure authorizer passes and the K8S authorizer fails
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "AZURE_AUTH_LOCATION",
-						envVariableValue: "service/discovery/testdata/credentials_test_file",
-					},
+					// We must set HOME to a wrong path so that the K8S authorizer fails
 					{
 						hasEnvVariable:   true,
 						envVariableKey:   "HOME",
@@ -356,6 +352,8 @@ func TestStart(t *testing.T) {
 					},
 				},
 			},
+			req:            &discovery.StartDiscoveryRequest{Providers: []string{ProviderK8S}},
+			providers:      []string{ProviderK8S},
 			wantResp:       nil,
 			wantErr:        true,
 			wantErrMessage: "could not authenticate to Kubernetes",
@@ -365,9 +363,52 @@ func TestStart(t *testing.T) {
 			fields: fields{
 				hasRPCConnection: false,
 			},
+			req:            &discovery.StartDiscoveryRequest{Providers: []string{"aws", "azure", "k8s"}},
+			providers:      []string{"aws", "azure", "k8s"},
 			wantResp:       nil,
 			wantErr:        true,
 			wantErrMessage: "could not initialize stream to Assessment",
+		},
+		{
+			name: "Request with 2 providers",
+			fields: fields{
+				hasRPCConnection: true,
+				envVariables: []envVariable{
+					// We must set HOME to a wrong path so that the AWS and k8s authorizer fails in all systems, regardless if AWS and k8s paths are set or not
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "HOME",
+						envVariableValue: "",
+					},
+				},
+			},
+			req:            &discovery.StartDiscoveryRequest{Providers: []string{"aws", "k8s"}},
+			providers:      []string{"aws", "k8s"},
+			wantResp:       nil,
+			wantErr:        true,
+			wantErrMessage: "could not authenticate to",
+		},
+		{
+			name: "Empty request",
+			fields: fields{
+				hasRPCConnection: true,
+			},
+			req:            &discovery.StartDiscoveryRequest{Providers: []string{}},
+			providers:      nil,
+			wantResp:       nil,
+			wantErr:        true,
+			wantErrMessage: "no providers for discovering given",
+		},
+		{
+			name: "Request with wrong provider name",
+			fields: fields{
+				hasRPCConnection: true,
+			},
+			req:            &discovery.StartDiscoveryRequest{Providers: []string{"falseProvider"}},
+			providers:      []string{"falseProvider"},
+			wantResp:       nil,
+			wantErr:        true,
+			wantErrMessage: "provider falseProvider not known",
 		},
 	}
 
@@ -384,7 +425,7 @@ func TestStart(t *testing.T) {
 				}
 			}
 
-			resp, err := s.Start(context.TODO(), nil)
+			resp, err := s.Start(context.TODO(), tt.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Got Start() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -392,6 +433,9 @@ func TestStart(t *testing.T) {
 				assert.Equal(t, tt.wantResp, resp)
 			}
 
+			if tt.req != nil {
+				assert.Equal(t, tt.providers, s.providers)
+			}
 			if err != nil {
 				assert.Contains(t, err.Error(), tt.wantErrMessage)
 			}

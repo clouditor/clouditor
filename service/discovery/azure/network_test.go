@@ -97,15 +97,20 @@ func (m mockNetworkSender) Do(req *http.Request) (res *http.Response, err error)
 						},
 						"frontendIPConfigurations": []map[string]interface{}{
 							{
-								"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
+								"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c",
 								"name": "b9cb3645-25d0-4288-910a-020563f63b1c",
+								"properties": map[string]interface{}{
+									"publicIPAddress": map[string]interface{}{
+										"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c",
+									},
+								},
 							},
 						},
 					},
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/b9cb3645-25d0-4288-910a-020563f63b1c" {
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c" {
 		return createResponse(map[string]interface{}{
 			"properties": map[string]interface{}{
 				"ipAddress": "111.222.333.444",
@@ -170,4 +175,44 @@ func TestComputeDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
 	assert.Contains(t, err.Error(), "could not list load balancer")
 	assert.Nil(t, discoverLoadBalancerResponse)
 
+}
+
+func Test_getFrontendPublicIPAddressName(t *testing.T) {
+	type args struct {
+		frontendPublicIPAddressID string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "Split correct ID",
+			args: args{
+				frontendPublicIPAddressID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c",
+			},
+			want: "test-b9cb3645-25d0-4288-910a-020563f63b1c",
+		},
+		{
+			name: "Split empty ID",
+			args: args{
+				frontendPublicIPAddressID: "",
+			},
+			want: "",
+		},
+		{
+			name: "Split false ID",
+			args: args{
+				frontendPublicIPAddressID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups",
+			},
+			want: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getFrontendPublicIPAddressName(tt.args.frontendPublicIPAddressID); got != tt.want {
+				t.Errorf("getFrontendPublicIPAddressName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
