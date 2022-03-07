@@ -26,6 +26,7 @@
 package discovery
 
 import (
+	"clouditor.io/clouditor/service/discovery/azure"
 	"context"
 	"errors"
 	"fmt"
@@ -252,9 +253,9 @@ func TestStart(t *testing.T) {
 	tests := []struct {
 		name           string
 		fields         fields
-		req       *discovery.StartDiscoveryRequest
-		providers []string
-		wantResp  *discovery.StartDiscoveryResponse
+		req            *discovery.StartDiscoveryRequest
+		providers      []string
+		wantResp       *discovery.StartDiscoveryResponse
 		wantErr        bool
 		wantErrMessage string
 	}{
