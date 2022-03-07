@@ -46,6 +46,9 @@ import (
 )
 
 var DefaultSessionFolder string
+
+const SessionFolderFlag = "session-directory"
+
 var Output io.Writer = os.Stdout
 
 type Session struct {
@@ -86,7 +89,7 @@ func init() {
 func NewSession(url string, config *oauth2.Config, token *oauth2.Token) (session *Session, err error) {
 	session = &Session{
 		URL:        url,
-		Folder:     viper.GetString("session-directory"),
+		Folder:     viper.GetString(SessionFolderFlag),
 		authorizer: api.NewOAuthAuthorizerFromConfig(config, token),
 		Config:     config,
 	}
@@ -106,7 +109,7 @@ func ContinueSession() (session *Session, err error) {
 		folder string
 	)
 
-	folder = viper.GetString("session-directory")
+	folder = viper.GetString(SessionFolderFlag)
 
 	// try to read from session.json
 	if file, err = os.OpenFile(fmt.Sprintf("%s/session.json", folder), os.O_RDONLY, 0600); err != nil {

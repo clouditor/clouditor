@@ -97,7 +97,7 @@ func TestSession(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEmpty(t, dir)
 
-	viper.Set("session-directory", dir)
+	viper.Set(SessionFolderFlag, dir)
 
 	token, err = authSrv.GenerateToken(testutil.TestAuthClientID, 0, 0)
 

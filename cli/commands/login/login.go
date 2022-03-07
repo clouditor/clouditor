@@ -38,9 +38,30 @@ import (
 )
 
 const (
-	// URLFlag is the viper flag for the server url
+	// URLFlag is the viper flag for the server url.
 	URLFlag = "url"
+
+	// OAuth2Server is the viper flag for the OAuth 2.0 authorization server.
+	OAuth2ServerFlag = "oauth2-server"
+
+	// OAuth2ClientIDFlag is the viper flag for the OAuth 2.0 client ID.
+	OAuth2ClientIDFlag = "oauth2-client-id"
+
+	// DefaultOAuth2Server is the default OAuth 2.0 authorization server.
+	DefaultOAuth2Server = "http://localhost:8080"
+
+	// DefaultClientID is the default OAuth 2.0 client ID for the CLI.
+	DefaultClientID = "cli"
+
+	// DefaultCallbackServerAddress is the default address for the callback server.
+	DefaultCallbackServerAddress = "localhost:10000"
 )
+
+// DefaultCallback is the default callback URL of the callback server.
+var DefaultCallback = fmt.Sprintf("http://%s/callback", DefaultCallbackServerAddress)
+
+// VerifierGenerator is a function that generates a new verifier.
+var VerifierGenerator = oauth2.GenerateSecret
 
 var callbackServerReady chan bool = make(chan bool)
 
@@ -61,18 +82,19 @@ func NewLoginCommand() *cobra.Command {
 			)
 
 			// Retrieve the URL of our authentication server
-			authURL = viper.GetString("auth-server")
+			authURL = viper.GetString(OAuth2ServerFlag)
 
+			// Create an OAuth 2 config
 			config = &oauth2.Config{
-				ClientID: "cli",
+				ClientID: DefaultClientID,
 				Endpoint: oauth2.Endpoint{
 					AuthURL:  fmt.Sprintf("%s/authorize", authURL),
 					TokenURL: fmt.Sprintf("%s/token", authURL),
 				},
-				RedirectURL: "http://localhost:10000/callback",
+				RedirectURL: fmt.Sprintf("%s/callback", DefaultCallbackServerAddress),
 			}
 
-			srv := newCallbackServer(session.Config)
+			srv := newCallbackServer(config)
 
 			//go func() {
 			//	exec.Command("open", authURL).Run()
@@ -119,8 +141,11 @@ func NewLoginCommand() *cobra.Command {
 		},
 	}
 
-	cmd.PersistentFlags().StringP("auth-server", "", "http://localhost:8080", "the URL to the auth server")
-	_ = viper.BindPFlag("auth-server", cmd.PersistentFlags().Lookup("auth-server"))
+	cmd.PersistentFlags().String(OAuth2ServerFlag, DefaultOAuth2Server, "the URL of the OAuth 2.0 server")
+	_ = viper.BindPFlag(OAuth2ServerFlag, cmd.PersistentFlags().Lookup(OAuth2ServerFlag))
+
+	cmd.PersistentFlags().String(OAuth2ClientIDFlag, DefaultClientID, "the OAuth 2.0 client ID")
+	_ = viper.BindPFlag(OAuth2ClientIDFlag, cmd.PersistentFlags().Lookup(OAuth2ClientIDFlag))
 
 	return cmd
 }
@@ -139,10 +164,9 @@ func newCallbackServer(config *oauth2.Config) *callbackServer {
 	var srv = &callbackServer{
 		Server: http.Server{
 			Handler: mux,
-			Addr:    "localhost:10000",
+			Addr:    DefaultCallbackServerAddress,
 		},
-		// TODO(oxisto): random verifier
-		verifier: "012345678901234567890123456789",
+		verifier: VerifierGenerator(),
 		config:   config,
 		code:     make(chan string),
 	}

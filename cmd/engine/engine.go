@@ -38,6 +38,7 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
+	commands_login "clouditor.io/clouditor/cli/commands/login"
 	cli_discovery "clouditor.io/clouditor/cli/commands/service/discovery"
 	"clouditor.io/clouditor/internal/auth"
 	"clouditor.io/clouditor/logging/formatter"
@@ -321,9 +322,9 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 				viper.GetBool(APIKeySaveOnCreateFlag),
 				// Public client for our CLI
 				oauth2.WithClient(
-					"cli",
+					commands_login.DefaultClientID,
 					"",
-					"http://localhost:10000/callback",
+					commands_login.DefaultCallback,
 				),
 				// Public client for our dashboard
 				oauth2.WithClient(

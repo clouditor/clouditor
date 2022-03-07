@@ -35,7 +35,7 @@ func PrepareSession(authPort int, authSrv *oauth2.AuthorizationServer, grpcURL s
 	}
 
 	viper.Set("auth-server", fmt.Sprintf("http://localhost:%d", authPort))
-	viper.Set("session-directory", dir)
+	viper.Set(cli.SessionFolderFlag, dir)
 
 	// Simulate a login by directly granting a token
 	token, err = authSrv.GenerateToken(testutil.TestAuthClientID, 0, 0)

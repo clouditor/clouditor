@@ -34,6 +34,7 @@ import (
 	"testing"
 	"time"
 
+	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/service"
 
@@ -79,11 +80,15 @@ func TestLogin(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEmpty(t, dir)
 
-	viper.Set("auth-server", fmt.Sprintf("http://localhost:%d", port))
-	viper.Set("session-directory", dir)
+	viper.Set(OAuth2ServerFlag, fmt.Sprintf("http://localhost:%d", port))
+	viper.Set(cli.SessionFolderFlag, dir)
+
+	verifier = "012345678901234567890123456789"
+	VerifierGenerator = func() string {
+		return verifier
+	}
 
 	// Issue a code that we can use in the callback
-	verifier = "012345678901234567890123456789" // TODO(oxisto): random verifier
 	code := authSrv.IssueCode(oauth2.GenerateCodeChallenge(verifier))
 
 	cmd := NewLoginCommand()
@@ -98,7 +103,7 @@ func TestLogin(t *testing.T) {
 		go func() {
 			// Wait for the callback server to be ready
 			<-callbackServerReady
-			_, err = http.Get(fmt.Sprintf("http://localhost:10000/callback?code=%s", code))
+			_, err = http.Get(fmt.Sprintf("%s?code=%s", DefaultCallback, code))
 			if err != nil {
 				assert.NoError(t, err)
 			}
