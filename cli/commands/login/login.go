@@ -31,7 +31,6 @@ import (
 	"net"
 	"net/http"
 
-	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/cli"
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/spf13/cobra"
@@ -57,13 +56,23 @@ func NewLoginCommand() *cobra.Command {
 				session *cli.Session
 				sock    net.Listener
 				code    string
+				config  *oauth2.Config
+				authURL string
 			)
 
-			if session, err = cli.NewSession(args[0]); err != nil {
-				return fmt.Errorf("could not connect: %w", err)
+			// Retrieve the URL of our authentication server
+			authURL = viper.GetString("auth-server")
+
+			config = &oauth2.Config{
+				ClientID: "cli",
+				Endpoint: oauth2.Endpoint{
+					AuthURL:  fmt.Sprintf("%s/authorize", authURL),
+					TokenURL: fmt.Sprintf("%s/token", authURL),
+				},
+				RedirectURL: "http://localhost:10000/callback",
 			}
 
-			srv := newCallbackServer(viper.GetString("auth-server"))
+			srv := newCallbackServer(session.Config)
 
 			//go func() {
 			//	exec.Command("open", authURL).Run()
@@ -96,8 +105,9 @@ func NewLoginCommand() *cobra.Command {
 				return err
 			}
 
-			// Update the session
-			session.SetAuthorizer(api.NewOAuthAuthorizerFromConfig(srv.config, token))
+			if session, err = cli.NewSession(args[0], config, token); err != nil {
+				return fmt.Errorf("could not connect: %w", err)
+			}
 
 			if err = session.Save(); err != nil {
 				return fmt.Errorf("could not save session: %w", err)
@@ -123,7 +133,7 @@ type callbackServer struct {
 	code     chan string
 }
 
-func newCallbackServer(url string) *callbackServer {
+func newCallbackServer(config *oauth2.Config) *callbackServer {
 	var mux = http.NewServeMux()
 
 	var srv = &callbackServer{
@@ -133,15 +143,8 @@ func newCallbackServer(url string) *callbackServer {
 		},
 		// TODO(oxisto): random verifier
 		verifier: "012345678901234567890123456789",
-		config: &oauth2.Config{
-			ClientID: "cli",
-			Endpoint: oauth2.Endpoint{
-				AuthURL:  fmt.Sprintf("%s/authorize", url),
-				TokenURL: fmt.Sprintf("%s/token", url),
-			},
-			RedirectURL: "http://localhost:10000/callback",
-		},
-		code: make(chan string),
+		config:   config,
+		code:     make(chan string),
 	}
 
 	mux.HandleFunc("/callback", srv.handleCallback)

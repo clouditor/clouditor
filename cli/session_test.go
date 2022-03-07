@@ -100,27 +100,20 @@ func TestSession(t *testing.T) {
 
 	viper.Set("session-directory", dir)
 
-	session, err = NewSession(fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port))
-	if err != nil {
-		t.Fatalf("Failed to dial bufnet: %v", err)
-	}
-	defer session.Close()
-
-	assert.NoError(t, err)
-	assert.NotNil(t, session)
-	assert.Equal(t, dir, session.Folder)
-
 	token, err = authSrv.GenerateToken(testutil.TestAuthClientID, 0, 0)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, token)
 	assert.NotEmpty(t, token.AccessToken)
 
+	session, err = NewSession(fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port), &oauth2.Config{
+		ClientID: testutil.TestAuthClientID,
+		Endpoint: oauth2.Endpoint{},
+	}, token)
+
 	// update the session
 	session.authorizer = api.NewOAuthAuthorizerFromConfig(
-		&oauth2.Config{
-			ClientID: testutil.TestAuthClientID,
-		},
+		session.Config,
 		token,
 	)
 

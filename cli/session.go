@@ -50,8 +50,11 @@ var Output io.Writer = os.Stdout
 
 type Session struct {
 	*grpc.ClientConn
+	*oauth2.Config
+
 	authorizer api.Authorizer
 
+	// URL is the URL of the gRPC server to connect to
 	URL string `json:"url"`
 
 	Folder string `json:"-"`
@@ -80,12 +83,12 @@ func init() {
 	DefaultSessionFolder = fmt.Sprintf("%s/.clouditor/", home)
 }
 
-func NewSession(url string) (session *Session, err error) {
+func NewSession(url string, config *oauth2.Config, token *oauth2.Token) (session *Session, err error) {
 	session = &Session{
-		URL:    url,
-		Folder: viper.GetString("session-directory"),
-		// We will supply the token later
-		authorizer: nil,
+		URL:        url,
+		Folder:     viper.GetString("session-directory"),
+		authorizer: api.NewOAuthAuthorizerFromConfig(config, token),
+		Config:     config,
 	}
 
 	var opts = []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
@@ -170,11 +173,13 @@ func (s *Session) MarshalJSON() ([]byte, error) {
 	token, _ := s.authorizer.Token()
 
 	return json.Marshal(&struct {
-		URL   string        `json:"url"`
-		Token *oauth2.Token `json:"token"`
+		URL    string         `json:"url"`
+		Token  *oauth2.Token  `json:"token"`
+		Config *oauth2.Config `json:"oauth2"`
 	}{
-		URL:   s.URL,
-		Token: token,
+		URL:    s.URL,
+		Token:  token,
+		Config: s.Config,
 	})
 }
 
@@ -183,8 +188,9 @@ func (s *Session) MarshalJSON() ([]byte, error) {
 // necessary.
 func (s *Session) UnmarshalJSON(data []byte) (err error) {
 	v := struct {
-		URL   string        `json:"url"`
-		Token *oauth2.Token `json:"token"`
+		URL    string         `json:"url"`
+		Token  *oauth2.Token  `json:"token"`
+		Config *oauth2.Config `json:"oauth2"`
 	}{}
 
 	if err = json.Unmarshal(data, &v); err != nil {
@@ -195,15 +201,9 @@ func (s *Session) UnmarshalJSON(data []byte) (err error) {
 
 	// Mark this session as dirty, if the token is not valid (anymore)
 	s.dirty = !v.Token.Valid()
+	s.Config = v.Config
 
-	s.authorizer = api.NewOAuthAuthorizerFromConfig(&oauth2.Config{
-		// TODO(oxisto): We need to store the client ID
-		ClientID: "public",
-		// TODO(oxisto): Probably we should just marshal the whole token config
-		Endpoint: oauth2.Endpoint{
-			TokenURL: "http://localhost:8080/token",
-		},
-	}, v.Token)
+	s.authorizer = api.NewOAuthAuthorizerFromConfig(s.Config, v.Token)
 	return
 }
 
