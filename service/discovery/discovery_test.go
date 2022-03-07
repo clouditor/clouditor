@@ -286,7 +286,7 @@ func TestStart(t *testing.T) {
 				envVariables: []envVariable{
 					// We must set AZURE_AUTH_LOCATION and HOME to a wrong path so that both Azure authorizer fail
 					// Set corresponding ENV variables for `from ENV` to fail
-					// It uses the order 1. Client credentials 2. Client certificate 3. Username password 4. MSI
+					// It uses the order: 1. Client credentials 2. Client certificate 3. Username password 4. MSI
 					// 1. Set client credentials
 					{
 						hasEnvVariable:   true,
@@ -321,6 +321,12 @@ func TestStart(t *testing.T) {
 						envVariableValue: "",
 					},
 					// 4. Try to prevent getting authorizer from MSI - currently not done here
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_ENVIRONMENT",
+						envVariableValue: "",
+					},
+
 					// Set AZURE_AUTH_LOCATION and HOME to a wrong path so that authorizer `from file and CLI` fails
 					{
 						hasEnvVariable:   true,
