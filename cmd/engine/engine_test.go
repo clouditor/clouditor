@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 
+	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/rest"
 	service_discovery "clouditor.io/clouditor/service/discovery"
 
@@ -13,10 +14,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	err := os.Chdir("../../")
-	if err != nil {
-		panic(err)
-	}
+	clitest.AutoChdir()
 
 	os.Exit(m.Run())
 }
@@ -37,16 +35,9 @@ func Test_doCmd(t *testing.T) {
 			name: "Launch with --db-in-memory",
 			prepViper: func() {
 				viper.Set(DBInMemoryFlag, true)
+				viper.Set(APIStartEmbeddedOAuth2ServerFlag, true)
 				viper.Set(APIHTTPPortFlag, 0)
 				viper.Set(APIgRPCPortFlag, 0)
-			},
-		},
-		{
-			name: "Launch with --oauth2-use-embedded",
-			prepViper: func() {
-				viper.Set(DBInMemoryFlag, true)
-				viper.Set(OAuth2UseEmbeddedFlag, true)
-				viper.Set(OAuth2EndpointFlag, "http://localhost:8000/token")
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				discoveryService := i1.(*service_discovery.Service)
@@ -54,7 +45,7 @@ func Test_doCmd(t *testing.T) {
 					return false
 				}
 
-				return assert.Equal(t, "http://localhost:8000/token", discoveryService.Authorizer().AuthURL())
+				return assert.NotNil(t, discoveryService.Authorizer())
 			},
 		},
 		{

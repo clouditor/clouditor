@@ -31,7 +31,6 @@ import (
 	"net"
 	"net/http"
 
-	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/cli"
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/spf13/cobra"
@@ -39,11 +38,32 @@ import (
 )
 
 const (
-	// URLFlag is the viper flag for the server url
-	URLFlag = "url"
+	// OAuth2ServerFlag is the viper flag for the OAuth 2.0 authorization server.
+	OAuth2ServerFlag = "oauth2-server"
+
+	// OAuth2ClientIDFlag is the viper flag for the OAuth 2.0 client ID.
+	OAuth2ClientIDFlag = "oauth2-client-id"
+
+	// DefaultOAuth2Server is the default OAuth 2.0 authorization server.
+	DefaultOAuth2Server = "http://localhost:8080"
+
+	// DefaultClientID is the default OAuth 2.0 client ID for the CLI.
+	DefaultClientID = "cli"
+
+	// DefaultCallbackServerAddress is the default address for the callback server.
+	DefaultCallbackServerAddress = "localhost:10000"
 )
 
-var callbackServerReady chan bool = make(chan bool)
+var (
+	// DefaultCallback is the default callback URL of the callback server.
+	DefaultCallback = fmt.Sprintf("http://%s/callback", DefaultCallbackServerAddress)
+
+	// VerifierGenerator is a function that generates a new verifier.
+	VerifierGenerator = oauth2.GenerateSecret
+
+	// callbackServerReady is an internally used channel to indicate that the callback server is ready.
+	callbackServerReady = make(chan bool)
+)
 
 // NewLoginCommand returns a cobra command for `login` subcommands
 func NewLoginCommand() *cobra.Command {
@@ -57,17 +77,24 @@ func NewLoginCommand() *cobra.Command {
 				session *cli.Session
 				sock    net.Listener
 				code    string
+				config  *oauth2.Config
+				authURL string
 			)
 
-			if session, err = cli.NewSession(args[0]); err != nil {
-				return fmt.Errorf("could not connect: %w", err)
+			// Retrieve the URL of our authentication server
+			authURL = viper.GetString(OAuth2ServerFlag)
+
+			// Create an OAuth 2 config
+			config = &oauth2.Config{
+				ClientID: DefaultClientID,
+				Endpoint: oauth2.Endpoint{
+					AuthURL:  fmt.Sprintf("%s/authorize", authURL),
+					TokenURL: fmt.Sprintf("%s/token", authURL),
+				},
+				RedirectURL: DefaultCallback,
 			}
 
-			srv := newCallbackServer(viper.GetString("auth-server"))
-
-			//go func() {
-			//	exec.Command("open", authURL).Run()
-			//}()
+			srv := newCallbackServer(config)
 
 			go func() {
 				sock, err = net.Listen("tcp", srv.Addr)
@@ -96,8 +123,9 @@ func NewLoginCommand() *cobra.Command {
 				return err
 			}
 
-			// Update the session
-			session.SetAuthorizer(api.NewOAuthAuthorizerFromConfig(srv.config, token))
+			if session, err = cli.NewSession(args[0], config, token); err != nil {
+				return fmt.Errorf("could not connect: %w", err)
+			}
 
 			if err = session.Save(); err != nil {
 				return fmt.Errorf("could not save session: %w", err)
@@ -109,8 +137,11 @@ func NewLoginCommand() *cobra.Command {
 		},
 	}
 
-	cmd.PersistentFlags().StringP("auth-server", "", "http://localhost:8080", "the URL to the auth server")
-	_ = viper.BindPFlag("auth-server", cmd.PersistentFlags().Lookup("auth-server"))
+	cmd.PersistentFlags().String(OAuth2ServerFlag, DefaultOAuth2Server, "the URL of the OAuth 2.0 server")
+	_ = viper.BindPFlag(OAuth2ServerFlag, cmd.PersistentFlags().Lookup(OAuth2ServerFlag))
+
+	cmd.PersistentFlags().String(OAuth2ClientIDFlag, DefaultClientID, "the OAuth 2.0 client ID")
+	_ = viper.BindPFlag(OAuth2ClientIDFlag, cmd.PersistentFlags().Lookup(OAuth2ClientIDFlag))
 
 	return cmd
 }
@@ -123,25 +154,17 @@ type callbackServer struct {
 	code     chan string
 }
 
-func newCallbackServer(url string) *callbackServer {
+func newCallbackServer(config *oauth2.Config) *callbackServer {
 	var mux = http.NewServeMux()
 
 	var srv = &callbackServer{
 		Server: http.Server{
 			Handler: mux,
-			Addr:    "localhost:10000",
+			Addr:    DefaultCallbackServerAddress,
 		},
-		// TODO(oxisto): random verifier
-		verifier: "012345678901234567890123456789",
-		config: &oauth2.Config{
-			ClientID: "cli",
-			Endpoint: oauth2.Endpoint{
-				AuthURL:  fmt.Sprintf("%s/authorize", url),
-				TokenURL: fmt.Sprintf("%s/token", url),
-			},
-			RedirectURL: "http://localhost:10000/callback",
-		},
-		code: make(chan string),
+		verifier: VerifierGenerator(),
+		config:   config,
+		code:     make(chan string),
 	}
 
 	mux.HandleFunc("/callback", srv.handleCallback)

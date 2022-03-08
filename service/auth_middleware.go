@@ -42,7 +42,7 @@ import (
 var log *logrus.Entry
 
 func init() {
-	log = logrus.WithField("component", "service-auth")
+	log = logrus.WithField("component", "auth-middleware")
 }
 
 type AuthConfig struct {

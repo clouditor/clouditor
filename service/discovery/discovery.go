@@ -102,7 +102,7 @@ func WithAssessmentAddress(address string) ServiceOption {
 	}
 }
 
-// WithInternalAuthorizer is an option to use an OAuth 2.0 authorizer
+// WithOAuth2Authorizer is an option to use an OAuth 2.0 authorizer
 func WithOAuth2Authorizer(config *clientcredentials.Config) ServiceOption {
 	return func(s *Service) {
 		s.SetAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(config))
@@ -111,6 +111,11 @@ func WithOAuth2Authorizer(config *clientcredentials.Config) ServiceOption {
 
 // WithProviders is an option to set providers for discovering
 func WithProviders(providersList []string) ServiceOption {
+	if len(providersList) == 0 {
+		newError := errors.New("no providers given")
+		log.Error(newError)
+	}
+
 	return func(s *Service) {
 		s.providers = providersList
 	}
@@ -170,20 +175,11 @@ func (s *Service) initAssessmentStream(additionalOpts ...grpc.DialOption) error 
 }
 
 // Start starts discovery
-func (s *Service) Start(_ context.Context, req *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
+func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
 	resp = &discovery.StartDiscoveryResponse{Successful: true}
 
 	log.Infof("Starting discovery...")
 	s.scheduler.TagsUnique()
-
-	// Set providers
-	if req == nil || req.Providers == nil || len(req.Providers) == 0 {
-		newError := errors.New("no providers for discovering given")
-		log.Errorf("%s", newError)
-		return nil, status.Errorf(codes.InvalidArgument, "%s", newError)
-	} else {
-		s.providers = req.Providers
-	}
 
 	// Establish connection to assessment component
 	if s.assessmentStream == nil {

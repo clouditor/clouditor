@@ -35,7 +35,7 @@ func PrepareSession(authPort int, authSrv *oauth2.AuthorizationServer, grpcURL s
 	}
 
 	viper.Set("auth-server", fmt.Sprintf("http://localhost:%d", authPort))
-	viper.Set("session-directory", dir)
+	viper.Set(cli.SessionFolderFlag, dir)
 
 	// Simulate a login by directly granting a token
 	token, err = authSrv.GenerateToken(testutil.TestAuthClientID, 0, 0)
@@ -44,19 +44,19 @@ func PrepareSession(authPort int, authSrv *oauth2.AuthorizationServer, grpcURL s
 	}
 
 	// TODO(oxisto): This is slightly duplicated code from the Login command. Extract it into the session struct
-	session, err = cli.NewSession(grpcURL)
+	session, err = cli.NewSession(grpcURL, &oauth2.Config{
+		ClientID: testutil.TestAuthClientID,
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  testutil.AuthURL(authPort),
+			TokenURL: testutil.TokenURL(authPort),
+		},
+	}, token)
 	if err != nil {
 		return "", err
 	}
 
 	session.SetAuthorizer(api.NewOAuthAuthorizerFromConfig(
-		&oauth2.Config{
-			ClientID: testutil.TestAuthClientID,
-			Endpoint: oauth2.Endpoint{
-				AuthURL:  testutil.AuthURL(authPort),
-				TokenURL: testutil.TokenURL(authPort),
-			},
-		},
+		session.Config,
 		token,
 	))
 

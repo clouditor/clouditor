@@ -27,49 +27,16 @@ package api
 
 import (
 	"context"
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rand"
 	"fmt"
 	"net"
 	"net/http"
 	"reflect"
 	"testing"
-	"time"
 
-	"github.com/golang-jwt/jwt/v4"
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/oauth2/clientcredentials"
 )
-
-var (
-	tmpKey           *ecdsa.PrivateKey
-	mockAccessToken  string
-	mockRefreshToken string
-	mockExpiry       time.Time
-)
-
-func init() {
-	// Create a new temporary key
-	tmpKey, _ = ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-
-	// Create a refresh token
-	claims := jwt.NewWithClaims(jwt.SigningMethodES256, &jwt.RegisteredClaims{
-		Subject: "clouditor",
-	})
-
-	mockRefreshToken, _ = claims.SignedString(tmpKey)
-
-	mockExpiry = time.Now().Add(time.Hour * 1).Truncate(time.Second).UTC()
-	// Create an access token
-	claims = jwt.NewWithClaims(jwt.SigningMethodES256, &jwt.RegisteredClaims{
-		Subject:   "clouditor",
-		ExpiresAt: jwt.NewNumericDate(mockExpiry),
-	})
-
-	mockAccessToken, _ = claims.SignedString(tmpKey)
-}
 
 func Test_oauthAuthorizer_Token(t *testing.T) {
 	// start an embedded oauth server
@@ -95,8 +62,7 @@ func Test_oauthAuthorizer_Token(t *testing.T) {
 	}()
 
 	type fields struct {
-		Config         *clientcredentials.Config
-		protectedToken *protectedToken
+		TokenSource oauth2.TokenSource
 	}
 	type args struct {
 		refreshToken string
@@ -111,15 +77,13 @@ func Test_oauthAuthorizer_Token(t *testing.T) {
 		{
 			name: "fetch token without refresh token",
 			fields: fields{
-				protectedToken: &protectedToken{
-					oauth2.ReuseTokenSource(nil,
-						(&clientcredentials.Config{
-							ClientID:     "client",
-							ClientSecret: "secret",
-							TokenURL:     fmt.Sprintf("http://localhost:%d/token", port),
-						}).TokenSource(context.Background()),
-					),
-				},
+				TokenSource: oauth2.ReuseTokenSource(nil,
+					(&clientcredentials.Config{
+						ClientID:     "client",
+						ClientSecret: "secret",
+						TokenURL:     fmt.Sprintf("http://localhost:%d/token", port),
+					}).TokenSource(context.Background()),
+				),
 			},
 			wantResp: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				token, ok := i1.(*oauth2.Token)
@@ -134,7 +98,7 @@ func Test_oauthAuthorizer_Token(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			o := &oauthAuthorizer{
-				protectedToken: tt.fields.protectedToken,
+				TokenSource: tt.fields.TokenSource,
 			}
 
 			gotResp, err := o.Token()
@@ -171,10 +135,7 @@ func TestNewOAuthAuthorizerFromClientCredentials(t *testing.T) {
 				&config,
 			},
 			want: &oauthAuthorizer{
-				authURL: "/token",
-				protectedToken: &protectedToken{
-					TokenSource: oauth2.ReuseTokenSource(nil, config.TokenSource(context.Background())),
-				},
+				TokenSource: oauth2.ReuseTokenSource(nil, config.TokenSource(context.Background())),
 			},
 		},
 	}

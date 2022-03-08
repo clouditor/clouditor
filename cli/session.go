@@ -46,15 +46,24 @@ import (
 )
 
 var DefaultSessionFolder string
+
+const SessionFolderFlag = "session-directory"
+
 var Output io.Writer = os.Stdout
 
 type Session struct {
 	*grpc.ClientConn
+	*oauth2.Config
+
 	authorizer api.Authorizer
 
+	// URL is the URL of the gRPC server to connect to
 	URL string `json:"url"`
 
 	Folder string `json:"-"`
+
+	// dirty flags that we need to fetch a new token and save the session again
+	dirty bool
 }
 
 func (s *Session) SetAuthorizer(authorizer api.Authorizer) {
@@ -77,12 +86,12 @@ func init() {
 	DefaultSessionFolder = fmt.Sprintf("%s/.clouditor/", home)
 }
 
-func NewSession(url string) (session *Session, err error) {
+func NewSession(url string, config *oauth2.Config, token *oauth2.Token) (session *Session, err error) {
 	session = &Session{
-		URL:    url,
-		Folder: viper.GetString("session-directory"),
-		// We will supply the token later
-		authorizer: nil,
+		URL:        url,
+		Folder:     viper.GetString(SessionFolderFlag),
+		authorizer: api.NewOAuthAuthorizerFromConfig(config, token),
+		Config:     config,
 	}
 
 	var opts = []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
@@ -100,7 +109,7 @@ func ContinueSession() (session *Session, err error) {
 		folder string
 	)
 
-	folder = viper.GetString("session-directory")
+	folder = viper.GetString(SessionFolderFlag)
 
 	// try to read from session.json
 	if file, err = os.OpenFile(fmt.Sprintf("%s/session.json", folder), os.O_RDONLY, 0600); err != nil {
@@ -108,14 +117,19 @@ func ContinueSession() (session *Session, err error) {
 	}
 
 	defer func(file *os.File) {
-		err = file.Close()
+		_ = file.Close()
 	}(file)
 
 	session = new(Session)
 	session.Folder = folder
 
 	if err = json.NewDecoder(file).Decode(&session); err != nil {
-		return
+		return nil, fmt.Errorf("could not parse session file: %w", err)
+	}
+
+	// If we detect that this session is "dirty", try to save it again
+	if session.dirty {
+		_ = session.Save()
 	}
 
 	if session.ClientConn, err = grpc.Dial(session.URL, api.DefaultGrpcDialOptions(session)...); err != nil {
@@ -148,6 +162,8 @@ func (s *Session) Save() (err error) {
 		return fmt.Errorf("could not serialize JSON: %w", err)
 	}
 
+	s.dirty = false
+
 	return nil
 }
 
@@ -160,11 +176,13 @@ func (s *Session) MarshalJSON() ([]byte, error) {
 	token, _ := s.authorizer.Token()
 
 	return json.Marshal(&struct {
-		URL   string        `json:"url"`
-		Token *oauth2.Token `json:"token"`
+		URL    string         `json:"url"`
+		Token  *oauth2.Token  `json:"token"`
+		Config *oauth2.Config `json:"oauth2"`
 	}{
-		URL:   s.URL,
-		Token: token,
+		URL:    s.URL,
+		Token:  token,
+		Config: s.Config,
 	})
 }
 
@@ -173,8 +191,9 @@ func (s *Session) MarshalJSON() ([]byte, error) {
 // necessary.
 func (s *Session) UnmarshalJSON(data []byte) (err error) {
 	v := struct {
-		URL   string        `json:"url"`
-		Token *oauth2.Token `json:"token"`
+		URL    string         `json:"url"`
+		Token  *oauth2.Token  `json:"token"`
+		Config *oauth2.Config `json:"oauth2"`
 	}{}
 
 	if err = json.Unmarshal(data, &v); err != nil {
@@ -183,14 +202,16 @@ func (s *Session) UnmarshalJSON(data []byte) (err error) {
 
 	s.URL = v.URL
 
-	s.authorizer = api.NewOAuthAuthorizerFromConfig(&oauth2.Config{
-		// TODO(oxisto): We need to store the client ID
-		ClientID: "public",
-		// TODO(oxisto): Probably we should just marshal the whole token config
-		Endpoint: oauth2.Endpoint{
-			TokenURL: s.URL,
-		},
-	}, v.Token)
+	// Mark this session as dirty, if the token is not valid (anymore)
+	s.dirty = !v.Token.Valid()
+	s.Config = v.Config
+
+	// Check, if oauth config is missing or invalid
+	if s.Config == nil {
+		return errors.New("missing oauth2 config")
+	}
+
+	s.authorizer = api.NewOAuthAuthorizerFromConfig(s.Config, v.Token)
 	return
 }
 
