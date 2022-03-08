@@ -38,14 +38,6 @@ func Test_doCmd(t *testing.T) {
 				viper.Set(APIHTTPPortFlag, 0)
 				viper.Set(APIgRPCPortFlag, 0)
 			},
-		},
-		{
-			name: "Launch with --oauth2-use-embedded",
-			prepViper: func() {
-				viper.Set(DBInMemoryFlag, true)
-				viper.Set(OAuth2UseEmbeddedFlag, true)
-				viper.Set(OAuth2EndpointFlag, "http://localhost:8000/token")
-			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				discoveryService := i1.(*service_discovery.Service)
 				if !assert.NotNil(t, discoveryService) {
