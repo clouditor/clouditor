@@ -51,7 +51,7 @@ type UsesAuthorizer interface {
 	Authorizer() Authorizer
 }
 
-// internalAuthorizer is an authorizer that uses OAuth 2.0 client credentials and does a OAuth client
+// oauthAuthorizer is an authorizer that uses OAuth 2.0 client credentials and does a OAuth client
 // credentials flow
 type oauthAuthorizer struct {
 	oauth2.TokenSource
@@ -90,7 +90,7 @@ func (p *oauthAuthorizer) GetRequestMetadata(ctx context.Context, _ ...string) (
 	if p.RequireTransportSecurity() {
 		ri, _ := credentials.RequestInfoFromContext(ctx)
 		if err = credentials.CheckSecurityLevel(ri.AuthInfo, credentials.PrivacyAndIntegrity); err != nil {
-			return nil, fmt.Errorf("unable to transfer InternalAuthorizer PerRPCCredentials: %v", err)
+			return nil, fmt.Errorf("unable to transfer OAuthAuthorizer PerRPCCredentials: %v", err)
 		}
 	}
 

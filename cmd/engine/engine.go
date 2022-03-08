@@ -299,7 +299,6 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			grpc_logrus.StreamServerInterceptor(grpcLoggerEntry),
 			grpc_auth.StreamServerInterceptor(authConfig.AuthFunc),
 		))
-	//auth.RegisterAuthenticationServer(server, authService)
 	discovery.RegisterDiscoveryServer(server, discoveryService)
 	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
 	assessment.RegisterAssessmentServer(server, assessmentService)

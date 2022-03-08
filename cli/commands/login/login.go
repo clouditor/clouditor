@@ -41,7 +41,7 @@ const (
 	// URLFlag is the viper flag for the server url.
 	URLFlag = "url"
 
-	// OAuth2Server is the viper flag for the OAuth 2.0 authorization server.
+	// OAuth2ServerFlag is the viper flag for the OAuth 2.0 authorization server.
 	OAuth2ServerFlag = "oauth2-server"
 
 	// OAuth2ClientIDFlag is the viper flag for the OAuth 2.0 client ID.
@@ -63,7 +63,7 @@ var DefaultCallback = fmt.Sprintf("http://%s/callback", DefaultCallbackServerAdd
 // VerifierGenerator is a function that generates a new verifier.
 var VerifierGenerator = oauth2.GenerateSecret
 
-var callbackServerReady chan bool = make(chan bool)
+var callbackServerReady = make(chan bool)
 
 // NewLoginCommand returns a cobra command for `login` subcommands
 func NewLoginCommand() *cobra.Command {
@@ -96,9 +96,6 @@ func NewLoginCommand() *cobra.Command {
 
 			srv := newCallbackServer(config)
 
-			//go func() {
-			//	exec.Command("open", authURL).Run()
-			//}()
 
 			go func() {
 				sock, err = net.Listen("tcp", srv.Addr)

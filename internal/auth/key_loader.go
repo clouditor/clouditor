@@ -59,14 +59,6 @@ const (
 	// DefaultApiKeyPath is the default path for the API private key
 	DefaultApiKeyPath = "~/.clouditor/api.key"
 
-	// DefaultKeyID specifies the default Key ID used in the JWKS of the authentication service
-	DefaultKeyID = "1"
-
-	// DefaultIssuer specifies the default issuer of the issued tokens.
-	DefaultIssuer = "clouditor"
-
-	// DefaultPeriodOfValidity specifies the default period of validity of a token
-	DefaultPeriodOfValidity = time.Hour * 24
 )
 
 // UserClaims extend jwt.StandardClaims with more detailed claims about a user
