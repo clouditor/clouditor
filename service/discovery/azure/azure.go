@@ -134,6 +134,7 @@ func (a azureDiscovery) apply(client *autorest.Client) {
 
 // NewAuthorizer creates authorizer for connecting to Azure using a custom credential chain (ENV, from file and from CLI)
 func NewAuthorizer() (authorizer autorest.Authorizer, err error) {
+	// TODO(lebogg): Check out Azure (Go SDK) Testing Environment for Github
 	// First, try to create authorizer via credentials from the environment
 	authorizer, err = auth.NewAuthorizerFromEnvironment()
 	if err == nil {
