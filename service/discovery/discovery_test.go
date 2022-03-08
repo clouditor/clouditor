@@ -299,6 +299,16 @@ func TestStart(t *testing.T) {
 			wantErrMessage: "could not authenticate to Azure",
 		},
 		{
+			name: "K8s authorizer",
+			fields: fields{
+				hasRPCConnection: true,
+			},
+			providers:      []string{ProviderK8S},
+			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
+			wantErr:        false,
+			wantErrMessage: "",
+		},
+		{
 			name: "No K8s authorizer",
 			fields: fields{
 				hasRPCConnection: true,
