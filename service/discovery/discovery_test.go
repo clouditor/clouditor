@@ -267,7 +267,6 @@ func TestStart(t *testing.T) {
 					},
 				},
 			},
-			req:            &discovery.StartDiscoveryRequest{Providers: []string{ProviderAzure}},
 			providers:      []string{ProviderAzure},
 			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
 			wantErr:        false,
@@ -291,7 +290,6 @@ func TestStart(t *testing.T) {
 					},
 				},
 			},
-			req:            &discovery.StartDiscoveryRequest{Providers: []string{ProviderAzure}},
 			providers:      []string{ProviderAzure},
 			wantResp:       nil,
 			wantErr:        true,
@@ -310,7 +308,6 @@ func TestStart(t *testing.T) {
 					},
 				},
 			},
-			req:            &discovery.StartDiscoveryRequest{Providers: []string{ProviderK8S}},
 			providers:      []string{ProviderK8S},
 			wantResp:       nil,
 			wantErr:        true,
@@ -321,7 +318,6 @@ func TestStart(t *testing.T) {
 			fields: fields{
 				hasRPCConnection: false,
 			},
-			req:            &discovery.StartDiscoveryRequest{Providers: []string{"aws", "azure", "k8s"}},
 			providers:      []string{"aws", "azure", "k8s"},
 			wantResp:       nil,
 			wantErr:        true,
@@ -340,7 +336,6 @@ func TestStart(t *testing.T) {
 					},
 				},
 			},
-			req:            &discovery.StartDiscoveryRequest{Providers: []string{"aws", "k8s"}},
 			providers:      []string{"aws", "k8s"},
 			wantResp:       nil,
 			wantErr:        true,
@@ -351,18 +346,16 @@ func TestStart(t *testing.T) {
 			fields: fields{
 				hasRPCConnection: true,
 			},
-			req:            &discovery.StartDiscoveryRequest{Providers: []string{}},
-			providers:      nil,
-			wantResp:       nil,
-			wantErr:        true,
-			wantErrMessage: "no providers for discovering given",
+			providers:      []string{},
+			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
+			wantErr:        false,
+			wantErrMessage: "",
 		},
 		{
 			name: "Request with wrong provider name",
 			fields: fields{
 				hasRPCConnection: true,
 			},
-			req:            &discovery.StartDiscoveryRequest{Providers: []string{"falseProvider"}},
 			providers:      []string{"falseProvider"},
 			wantResp:       nil,
 			wantErr:        true,
@@ -372,7 +365,7 @@ func TestStart(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService()
+			s := NewService(WithProviders(tt.providers))
 			if tt.fields.hasRPCConnection {
 				assert.NoError(t, s.initAssessmentStream(grpc.WithContextDialer(bufConnDialer)))
 			}
@@ -383,7 +376,7 @@ func TestStart(t *testing.T) {
 				}
 			}
 
-			resp, err := s.Start(context.TODO(), tt.req)
+			resp, err := s.Start(context.TODO(), nil)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Got Start() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -391,9 +384,6 @@ func TestStart(t *testing.T) {
 				assert.Equal(t, tt.wantResp, resp)
 			}
 
-			if tt.req != nil {
-				assert.Equal(t, tt.providers, s.providers)
-			}
 			if err != nil {
 				assert.Contains(t, err.Error(), tt.wantErrMessage)
 			}

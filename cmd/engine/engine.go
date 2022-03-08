@@ -39,7 +39,6 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	commands_login "clouditor.io/clouditor/cli/commands/login"
-	cli_discovery "clouditor.io/clouditor/cli/commands/service/discovery"
 	"clouditor.io/clouditor/internal/auth"
 	"clouditor.io/clouditor/logging/formatter"
 	"clouditor.io/clouditor/persistence"
@@ -90,6 +89,7 @@ const (
 	DBInMemoryFlag                   = "db-in-memory"
 	CreateDefaultTarget              = "target-default-create"
 	DiscoveryAutoStartFlag           = "discovery-auto-start"
+	DiscoveryProviderFlag            = "discovery-provider"
 	DashboardURLFlag                 = "dashboard-url"
 
 	DefaultAPIDefaultUser               = "clouditor"
@@ -160,8 +160,8 @@ func init() {
 	engineCmd.Flags().Bool(DBInMemoryFlag, DefaultDBInMemory, "Uses an in-memory database which is not persisted at all")
 	engineCmd.Flags().Bool(CreateDefaultTarget, DefaultCreateDefaultTarget, "Creates a default target cloud service if it does not exist")
 	engineCmd.Flags().Bool(DiscoveryAutoStartFlag, DefaultDiscoveryAutoStart, "Automatically start the discovery when engine starts")
+	engineCmd.Flags().StringSliceP(DiscoveryProviderFlag, "p", []string{}, "Providers to discover, separated by comma")
 	engineCmd.Flags().String(DashboardURLFlag, DefaultDashboardURL, "The URL of the Clouditor Dashboard. If the embedded server is used, a public OAuth 2.0 client based on this URL will be added")
-	engineCmd.Flags().String(cli_discovery.DiscovererFlag, "", "List of discoverer providers. If empty, all implemented providers will be used.")
 
 	_ = viper.BindPFlag(APIDefaultUserFlag, engineCmd.Flags().Lookup(APIDefaultUserFlag))
 	_ = viper.BindPFlag(APIDefaultPasswordFlag, engineCmd.Flags().Lookup(APIDefaultPasswordFlag))
@@ -186,8 +186,8 @@ func init() {
 	_ = viper.BindPFlag(DBInMemoryFlag, engineCmd.Flags().Lookup(DBInMemoryFlag))
 	_ = viper.BindPFlag(CreateDefaultTarget, engineCmd.Flags().Lookup(CreateDefaultTarget))
 	_ = viper.BindPFlag(DiscoveryAutoStartFlag, engineCmd.Flags().Lookup(DiscoveryAutoStartFlag))
+	_ = viper.BindPFlag(DiscoveryProviderFlag, engineCmd.Flags().Lookup(DiscoveryProviderFlag))
 	_ = viper.BindPFlag(DashboardURLFlag, engineCmd.Flags().Lookup(DashboardURLFlag))
-	_ = viper.BindPFlag(cli_discovery.DiscovererFlag, engineCmd.Flags().Lookup(cli_discovery.DiscovererFlag))
 }
 
 func initConfig() {
@@ -225,10 +225,10 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	}
 
 	// If no CSPs for discovering is given, take all implemented discoverers
-	if viper.GetString(cli_discovery.DiscovererFlag) == "" {
+	if viper.GetString(DiscoveryProviderFlag) == "" {
 		providers = []string{service_discovery.ProviderAWS, service_discovery.ProviderAzure, service_discovery.ProviderK8S}
 	} else {
-		providers = []string{viper.GetString(cli_discovery.DiscovererFlag)}
+		providers = []string{viper.GetString(DiscoveryProviderFlag)}
 	}
 
 	discoveryService = service_discovery.NewService(
@@ -382,7 +382,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	if viper.GetBool(DiscoveryAutoStartFlag) {
 		go func() {
 			<-rest.GetReadyChannel()
-			_, err = discoveryService.Start(context.Background(), &discovery.StartDiscoveryRequest{Providers: providers})
+			_, err = discoveryService.Start(context.Background(), &discovery.StartDiscoveryRequest{})
 			if err != nil {
 				log.Errorf("Could not automatically start discovery: %v", err)
 			}
