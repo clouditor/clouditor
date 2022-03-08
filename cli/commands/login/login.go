@@ -91,7 +91,7 @@ func NewLoginCommand() *cobra.Command {
 					AuthURL:  fmt.Sprintf("%s/authorize", authURL),
 					TokenURL: fmt.Sprintf("%s/token", authURL),
 				},
-				RedirectURL: fmt.Sprintf("%s/callback", DefaultCallbackServerAddress),
+				RedirectURL: DefaultCallback,
 			}
 
 			srv := newCallbackServer(config)

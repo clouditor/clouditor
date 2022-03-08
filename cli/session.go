@@ -117,14 +117,14 @@ func ContinueSession() (session *Session, err error) {
 	}
 
 	defer func(file *os.File) {
-		err = file.Close()
+		_ = file.Close()
 	}(file)
 
 	session = new(Session)
 	session.Folder = folder
 
 	if err = json.NewDecoder(file).Decode(&session); err != nil {
-		return
+		return nil, fmt.Errorf("could not parse session file: %w", err)
 	}
 
 	// If we detect that this session is "dirty", try to save it again
@@ -205,6 +205,11 @@ func (s *Session) UnmarshalJSON(data []byte) (err error) {
 	// Mark this session as dirty, if the token is not valid (anymore)
 	s.dirty = !v.Token.Valid()
 	s.Config = v.Config
+
+	// Check, if oauth config is missing or invalid
+	if s.Config == nil {
+		return errors.New("missing oauth2 config")
+	}
 
 	s.authorizer = api.NewOAuthAuthorizerFromConfig(s.Config, v.Token)
 	return
