@@ -313,6 +313,11 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		rest.WithAllowedMethods(viper.GetStringSlice(APICORSAllowedMethodsFlags)),
 	}
 
+	// Let's check, if we are using our embedded OAuth 2.0 server, which we need to start
+	// (using additional arguments to our existing REST gateway). In a production scenario
+	// the usage of a dedicated (external) OAuth 2.0 server is recommended. In order
+	// to configure the external server, the flags OAuth2EndpointFlag and APIJWKSURLFlag
+	// can be used.
 	if viper.GetBool(OAuth2UseEmbeddedFlag) {
 		opts = []rest.ServerConfigOption{
 			rest.WithEmbeddedOAuth2Server(

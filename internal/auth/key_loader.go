@@ -36,7 +36,6 @@ import (
 	"os/user"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/sirupsen/logrus"
@@ -58,7 +57,6 @@ const (
 
 	// DefaultApiKeyPath is the default path for the API private key
 	DefaultApiKeyPath = "~/.clouditor/api.key"
-
 )
 
 // UserClaims extend jwt.StandardClaims with more detailed claims about a user
@@ -185,7 +183,12 @@ func saveKeyToFile(apiKey *ecdsa.PrivateKey, keyPath string, password string) (e
 	if err != nil {
 		return fmt.Errorf("error while opening the file: %w", err)
 	}
-	defer f.Close()
+	defer func() {
+		err := f.Close()
+		if err != nil {
+			log.Errorf("Error while closing file: %v", err)
+		}
+	}()
 
 	data, err := MarshalECPrivateKeyWithPassword(apiKey, []byte(password))
 	if err != nil {

@@ -57,10 +57,7 @@ type oauthAuthorizer struct {
 	oauth2.TokenSource
 }
 
-// NewOAuthAuthorizerFromClientCredentials creates a new authorizer based on an OAuth 2.0 client credentials. It will attempt to refresh an expired access token,
-// if a refresh token is supplied. Note, that this does a similar flow as OAuth 2.0, but it uses
-// our internal direct gRPC connection to the authentication server, whereas OAuth 2.0 would use
-// a POST request with application/x-www-form-urlencoded data.
+// NewOAuthAuthorizerFromClientCredentials creates a new authorizer based on an OAuth 2.0 client credentials.
 func NewOAuthAuthorizerFromClientCredentials(config *clientcredentials.Config) Authorizer {
 	var authorizer = &oauthAuthorizer{
 		TokenSource: oauth2.ReuseTokenSource(nil, config.TokenSource(context.Background())),
@@ -69,7 +66,7 @@ func NewOAuthAuthorizerFromClientCredentials(config *clientcredentials.Config) A
 	return authorizer
 }
 
-// NewOAuthAuthorizerFromConfig creates a new authorizer based on an OAuth 2.0 config
+// NewOAuthAuthorizerFromConfig creates a new authorizer based on an OAuth 2.0 config.
 func NewOAuthAuthorizerFromConfig(config *oauth2.Config, token *oauth2.Token) Authorizer {
 	var authorizer = &oauthAuthorizer{
 		TokenSource: config.TokenSource(context.Background(), token),

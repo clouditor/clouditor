@@ -38,9 +38,6 @@ import (
 )
 
 const (
-	// URLFlag is the viper flag for the server url.
-	URLFlag = "url"
-
 	// OAuth2ServerFlag is the viper flag for the OAuth 2.0 authorization server.
 	OAuth2ServerFlag = "oauth2-server"
 
@@ -57,13 +54,16 @@ const (
 	DefaultCallbackServerAddress = "localhost:10000"
 )
 
-// DefaultCallback is the default callback URL of the callback server.
-var DefaultCallback = fmt.Sprintf("http://%s/callback", DefaultCallbackServerAddress)
+var (
+	// DefaultCallback is the default callback URL of the callback server.
+	DefaultCallback = fmt.Sprintf("http://%s/callback", DefaultCallbackServerAddress)
 
-// VerifierGenerator is a function that generates a new verifier.
-var VerifierGenerator = oauth2.GenerateSecret
+	// VerifierGenerator is a function that generates a new verifier.
+	VerifierGenerator = oauth2.GenerateSecret
 
-var callbackServerReady = make(chan bool)
+	// callbackServerReady is an internally used channel to indicate that the callback server is ready.
+	callbackServerReady = make(chan bool)
+)
 
 // NewLoginCommand returns a cobra command for `login` subcommands
 func NewLoginCommand() *cobra.Command {
@@ -95,7 +95,6 @@ func NewLoginCommand() *cobra.Command {
 			}
 
 			srv := newCallbackServer(config)
-
 
 			go func() {
 				sock, err = net.Listen("tcp", srv.Addr)

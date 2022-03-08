@@ -27,49 +27,16 @@ package api
 
 import (
 	"context"
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rand"
 	"fmt"
 	"net"
 	"net/http"
 	"reflect"
 	"testing"
-	"time"
 
-	"github.com/golang-jwt/jwt/v4"
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/oauth2/clientcredentials"
 )
-
-var (
-	tmpKey           *ecdsa.PrivateKey
-	mockAccessToken  string
-	mockRefreshToken string
-	mockExpiry       time.Time
-)
-
-func init() {
-	// Create a new temporary key
-	tmpKey, _ = ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-
-	// Create a refresh token
-	claims := jwt.NewWithClaims(jwt.SigningMethodES256, &jwt.RegisteredClaims{
-		Subject: "clouditor",
-	})
-
-	mockRefreshToken, _ = claims.SignedString(tmpKey)
-
-	mockExpiry = time.Now().Add(time.Hour * 1).Truncate(time.Second).UTC()
-	// Create an access token
-	claims = jwt.NewWithClaims(jwt.SigningMethodES256, &jwt.RegisteredClaims{
-		Subject:   "clouditor",
-		ExpiresAt: jwt.NewNumericDate(mockExpiry),
-	})
-
-	mockAccessToken, _ = claims.SignedString(tmpKey)
-}
 
 func Test_oauthAuthorizer_Token(t *testing.T) {
 	// start an embedded oauth server

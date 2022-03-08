@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 
+	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/rest"
 	service_discovery "clouditor.io/clouditor/service/discovery"
 
@@ -13,10 +14,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	err := os.Chdir("../../")
-	if err != nil {
-		panic(err)
-	}
+	clitest.AutoChdir()
 
 	os.Exit(m.Run())
 }
