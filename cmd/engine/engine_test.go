@@ -35,6 +35,7 @@ func Test_doCmd(t *testing.T) {
 			name: "Launch with --db-in-memory",
 			prepViper: func() {
 				viper.Set(DBInMemoryFlag, true)
+				viper.Set(APIStartEmbeddedOAuth2ServerFlag, true)
 				viper.Set(APIHTTPPortFlag, 0)
 				viper.Set(APIgRPCPortFlag, 0)
 			},
