@@ -33,13 +33,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-//const (
-//	DiscovererFlag = "discoverer"
-//)
-
 // NewStartDiscoveryCommand returns a cobra command for the `start` subcommand
 func NewStartDiscoveryCommand() *cobra.Command {
-	//var discoverer []string
 	cmd := &cobra.Command{
 		Use:   "start",
 		Short: "Starts the discovery",
