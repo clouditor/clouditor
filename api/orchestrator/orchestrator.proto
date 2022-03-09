@@ -221,17 +221,25 @@ service Orchestrator {
     };
   }
 
-  //
-  rpc GetCertificate(GetCertificateRequest) returns (Certificate) {
+  // Creates a new certificate
+  rpc CreateCertificate(CreateCertificateRequest) returns (Certificate) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/certificates/{certificate_id}"
+      post : "/v1/orchestrator/certificates"
+      body : "*"
     };
   }
 
-  //
+  // Retrieves a certificate
+  rpc GetCertificate(GetCertificateRequest) returns (Certificate) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/certificates/{certificateid}"
+    };
+  }
+
+  // Updates an existing certificate
   rpc UpdateCertificate(UpdateCertificateRequest) returns (Certificate) {
     option (google.api.http) = {
-      put : "/v1/orchestrator/certificates/{certificate_id}"
+      put : "/v1/orchestrator/certificates/{certificateid}"
       body : "*"
     };
   }
@@ -338,23 +346,23 @@ message CloudService {
 }
 
 message GetCertificateRequest {
-  string certificate_id = 1;
+  string certificateid = 1;
 }
 
 message UpdateCertificateRequest {
-  string certificate_id = 1;
+  string certificateid = 1;
 	Certificate certificate = 2;
 }
 
 message CreateCertificateRequest { Certificate certificate = 1; }
 
-message RemoveCertificateRequest { string certificate_id = 1; }
+message RemoveCertificateRequest { string certificateid = 1; }
 
 message Certificate {
-  string certificate_id = 1;
+  string certificateid = 1;
 	string name = 2;
   string state = 3;
-	string service_id = 4; 
+	string serviceid = 4;
 	string issuedate = 5;
   string standard = 6;
   string scope = 7;       

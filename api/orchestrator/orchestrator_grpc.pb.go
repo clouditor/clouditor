@@ -73,9 +73,11 @@ type OrchestratorClient interface {
 	UpdateMetricImplementation(ctx context.Context, in *UpdateMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error)
 	// Returns the metric implementation of the passed metric id
 	GetMetricImplementation(ctx context.Context, in *GetMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error)
-	//
+	// Creates a new certificate
+	CreateCertificate(ctx context.Context, in *CreateCertificateRequest, opts ...grpc.CallOption) (*Certificate, error)
+	// Retrieves a certificate
 	GetCertificate(ctx context.Context, in *GetCertificateRequest, opts ...grpc.CallOption) (*Certificate, error)
-	//
+	// Updates an existing certificate
 	UpdateCertificate(ctx context.Context, in *UpdateCertificateRequest, opts ...grpc.CallOption) (*Certificate, error)
 }
 
@@ -307,6 +309,15 @@ func (c *orchestratorClient) GetMetricImplementation(ctx context.Context, in *Ge
 	return out, nil
 }
 
+func (c *orchestratorClient) CreateCertificate(ctx context.Context, in *CreateCertificateRequest, opts ...grpc.CallOption) (*Certificate, error) {
+	out := new(Certificate)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/CreateCertificate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *orchestratorClient) GetCertificate(ctx context.Context, in *GetCertificateRequest, opts ...grpc.CallOption) (*Certificate, error) {
 	out := new(Certificate)
 	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/GetCertificate", in, out, opts...)
@@ -378,9 +389,11 @@ type OrchestratorServer interface {
 	UpdateMetricImplementation(context.Context, *UpdateMetricImplementationRequest) (*assessment.MetricImplementation, error)
 	// Returns the metric implementation of the passed metric id
 	GetMetricImplementation(context.Context, *GetMetricImplementationRequest) (*assessment.MetricImplementation, error)
-	//
+	// Creates a new certificate
+	CreateCertificate(context.Context, *CreateCertificateRequest) (*Certificate, error)
+	// Retrieves a certificate
 	GetCertificate(context.Context, *GetCertificateRequest) (*Certificate, error)
-	//
+	// Updates an existing certificate
 	UpdateCertificate(context.Context, *UpdateCertificateRequest) (*Certificate, error)
 	mustEmbedUnimplementedOrchestratorServer()
 }
@@ -454,6 +467,9 @@ func (UnimplementedOrchestratorServer) UpdateMetricImplementation(context.Contex
 }
 func (UnimplementedOrchestratorServer) GetMetricImplementation(context.Context, *GetMetricImplementationRequest) (*assessment.MetricImplementation, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMetricImplementation not implemented")
+}
+func (UnimplementedOrchestratorServer) CreateCertificate(context.Context, *CreateCertificateRequest) (*Certificate, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateCertificate not implemented")
 }
 func (UnimplementedOrchestratorServer) GetCertificate(context.Context, *GetCertificateRequest) (*Certificate, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCertificate not implemented")
@@ -878,6 +894,24 @@ func _Orchestrator_GetMetricImplementation_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Orchestrator_CreateCertificate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateCertificateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).CreateCertificate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/CreateCertificate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).CreateCertificate(ctx, req.(*CreateCertificateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Orchestrator_GetCertificate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetCertificateRequest)
 	if err := dec(in); err != nil {
@@ -1004,6 +1038,10 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetMetricImplementation",
 			Handler:    _Orchestrator_GetMetricImplementation_Handler,
+		},
+		{
+			MethodName: "CreateCertificate",
+			Handler:    _Orchestrator_CreateCertificate_Handler,
 		},
 		{
 			MethodName: "GetCertificate",
