@@ -464,15 +464,14 @@ func TestAwsS3Discovery_List(t *testing.T) {
 		isDiscovering: false,
 		awsConfig: &Client{
 			cfg: aws.Config{
-				Region:           mockBucket1Region,
-				Credentials:      nil,
-				HTTPClient:       nil,
-				EndpointResolver: nil,
-				Retryer:          nil,
-				ConfigSources:    nil,
-				APIOptions:       nil,
-				Logger:           nil,
-				ClientLogMode:    0,
+				Region:        mockBucket1Region,
+				Credentials:   nil,
+				HTTPClient:    nil,
+				Retryer:       nil,
+				ConfigSources: nil,
+				APIOptions:    nil,
+				Logger:        nil,
+				ClientLogMode: 0,
 			},
 			accountID: aws.String("123456789"),
 		},
@@ -481,15 +480,20 @@ func TestAwsS3Discovery_List(t *testing.T) {
 	assert.NotNil(t, err, "EXPECTED error because MockBucket2 should throw JSON error. But GOT no error")
 
 	log.Println("Testing number of resources (buckets)")
-	assert.Equal(t, 1, len(resources))
+	assert.Equal(t, 2, len(resources))
 
 	expectedResourceNames := []string{mockBucket1, "mockbucket2", "mockbucket3"}
 	//expectedResourceAtRestEncryptions := []bool{true, true, false}
 	//expectedResourceTransportEncryptions := []bool{true, false, false}
-	for i, r := range resources {
-		log.Println("Testing name for resource (bucket)", i+1)
-		assert.Equal(t, expectedResourceNames[i], r.GetName())
-		log.Println("Testing type of resource", i+1)
-		assert.True(t, r.HasType("ObjectStorage"))
-	}
+	// Check first element: voc.ObjectStorage
+	log.Println("Testing name for resource (bucket)", 1)
+	assert.Equal(t, expectedResourceNames[0], resources[0].GetName())
+	log.Println("Testing type of resource", 1)
+	assert.True(t, resources[0].HasType("ObjectStorage"))
+
+	// Check second element: voc.StorageService
+	log.Println("Testing name for resource (bucket)", 2)
+	assert.Equal(t, expectedResourceNames[0], resources[1].GetName())
+	log.Println("Testing type of resource", 2)
+	assert.True(t, resources[1].HasType("StorageService"))
 }
