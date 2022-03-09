@@ -57,6 +57,6 @@ func (c *CloudService_Requirements) Scan(value interface{}) error {
 	return nil
 }
 
-func (c *CloudService_Requirements) GormDataType() string {
+func (*CloudService_Requirements) GormDataType() string {
 	return "string"
 }

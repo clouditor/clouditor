@@ -247,19 +247,19 @@ func DefaultArgsShellComp(*cobra.Command, []string, string) ([]string, cobra.She
 	return []string{}, cobra.ShellCompDirectiveNoFileComp
 }
 
-func ValidArgsGetTools(_ *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func ValidArgsGetTools(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return getTools(toComplete), cobra.ShellCompDirectiveNoFileComp
 }
 
-func ValidArgsGetMetrics(_ *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func ValidArgsGetMetrics(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return getMetrics(toComplete), cobra.ShellCompDirectiveNoFileComp
 }
 
-func ValidArgsGetRequirements(_ *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func ValidArgsGetRequirements(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return getRequirements(toComplete), cobra.ShellCompDirectiveNoFileComp
 }
 
-func ValidArgsGetCloudServices(_ *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func ValidArgsGetCloudServices(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return getCloudServices(toComplete), cobra.ShellCompDirectiveNoFileComp
 }
 
