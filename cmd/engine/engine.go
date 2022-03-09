@@ -48,7 +48,6 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
-	cli_discovery "clouditor.io/clouditor/cli/commands/service/discovery"
 	"clouditor.io/clouditor/logging/formatter"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
@@ -84,6 +83,7 @@ const (
 	DBPortFlag                 = "db-port"
 	DBInMemoryFlag             = "db-in-memory"
 	CreateDefaultTarget        = "target-default-create"
+	ProviderFlag               = "provider"
 
 	DefaultAPIDefaultUser      = "clouditor"
 	DefaultAPIDefaultPassword  = "clouditor"
@@ -143,6 +143,7 @@ func init() {
 	engineCmd.Flags().Int16(DBPortFlag, DefaultDBPort, "Provides port for database")
 	engineCmd.Flags().Bool(DBInMemoryFlag, DefaultDBInMemory, "Uses an in-memory database which is not persisted at all")
 	engineCmd.Flags().Bool(CreateDefaultTarget, DefaultCreateDefaultTarget, "Creates a default target cloud service if it does not exist")
+	engineCmd.Flags().StringSliceVarP(&providers, ProviderFlag, "p", []string{}, "Providers to discover, separated by comma")
 
 	_ = viper.BindPFlag(APIDefaultUserFlag, engineCmd.Flags().Lookup(APIDefaultUserFlag))
 	_ = viper.BindPFlag(APIDefaultPasswordFlag, engineCmd.Flags().Lookup(APIDefaultPasswordFlag))
@@ -162,6 +163,7 @@ func init() {
 	_ = viper.BindPFlag(DBPortFlag, engineCmd.Flags().Lookup(DBPortFlag))
 	_ = viper.BindPFlag(DBInMemoryFlag, engineCmd.Flags().Lookup(DBInMemoryFlag))
 	_ = viper.BindPFlag(CreateDefaultTarget, engineCmd.Flags().Lookup(CreateDefaultTarget))
+	_ = viper.BindPFlag(ProviderFlag, engineCmd.Flags().Lookup(ProviderFlag))
 }
 
 func initConfig() {
@@ -199,10 +201,10 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	}
 
 	// If no CSPs for discovering is given, take all implemented discoverers
-	if viper.GetString(cli_discovery.DiscovererFlag) == "" {
+	if viper.GetString(ProviderFlag) == "" {
 		providers = []string{service_discovery.ProviderAWS, service_discovery.ProviderAzure, service_discovery.ProviderK8S}
 	} else {
-		providers = []string{viper.GetString(cli_discovery.DiscovererFlag)}
+		providers = []string{viper.GetString(ProviderFlag)}
 	}
 
 	authService = service_auth.NewService(
