@@ -152,7 +152,8 @@ func (d *azureARMTemplateDiscovery) discoverARMTemplate() ([]voc.IsCloudResource
 								}
 								list = append(list, storage)
 							}
-							// TODO(garuppel): Handle BlockStorage resources?
+							// TODO(garuppel): Handle Storage Accounts with HttpEndpoint
+							// TODO(garuppel): Handle BlockStorage resources
 						}
 					}
 				}
@@ -204,7 +205,7 @@ func (d *azureARMTemplateDiscovery) handleObjectStorage(resourceValue map[string
 			},
 			AtRestEncryption: enc,
 		},
-		// TODO(garuppel): Update HttpEndpoint
+		// TODO(garuppel): Delete if handleStorageAccount is implemented
 		//HttpEndpoint: &voc.HttpEndpoint{
 		//	Url: "", // not available
 		//	TransportEncryption: &voc.TransportEncryption{
@@ -259,7 +260,7 @@ func (d *azureARMTemplateDiscovery) handleFileStorage(resourceValue map[string]i
 			},
 			AtRestEncryption: enc,
 		},
-		// TODO(garuppel): Update HttpEndpoint
+		// TODO(garuppel): Delete if handleStorageAccount is implemented
 		//HttpEndpoint: &voc.HttpEndpoint{
 		//	Url: "", // not available
 		//	TransportEncryption: &voc.TransportEncryption{
