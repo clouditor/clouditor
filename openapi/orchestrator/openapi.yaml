@@ -137,13 +137,33 @@ paths:
                 "200":
                     description: OK
                     content: {}
-    /v1/orchestrator/certificates/{certificateId}:
+    /v1/orchestrator/certificates:
+        post:
+            tags:
+                - Orchestrator
+            description: Creates a new certificate
+            operationId: Orchestrator_CreateCertificate
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateCertificateRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Certificate'
+    /v1/orchestrator/certificates/{certificateid}:
         get:
             tags:
                 - Orchestrator
+            description: Retrieves a certificate
             operationId: Orchestrator_GetCertificate
             parameters:
-                - name: certificateId
+                - name: certificateid
                   in: path
                   required: true
                   schema:
@@ -158,9 +178,10 @@ paths:
         put:
             tags:
                 - Orchestrator
+            description: Updates an existing certificate
             operationId: Orchestrator_UpdateCertificate
             parameters:
-                - name: certificateId
+                - name: certificateid
                   in: path
                   required: true
                   schema:
@@ -530,13 +551,13 @@ components:
         Certificate:
             type: object
             properties:
-                certificateId:
+                certificateid:
                     type: string
                 name:
                     type: string
                 state:
                     type: string
-                serviceId:
+                serviceid:
                     type: string
                 issuedate:
                     type: string
@@ -566,6 +587,11 @@ components:
                     type: array
                     items:
                         type: string
+        CreateCertificateRequest:
+            type: object
+            properties:
+                certificate:
+                    $ref: '#/components/schemas/Certificate'
         ListAssessmentResultsResponse:
             type: object
             properties:
@@ -717,7 +743,7 @@ components:
         UpdateCertificateRequest:
             type: object
             properties:
-                certificateId:
+                certificateid:
                     type: string
                 certificate:
                     $ref: '#/components/schemas/Certificate'
