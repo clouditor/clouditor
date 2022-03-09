@@ -377,7 +377,7 @@ func TestFileStorage(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
 
-	fileStorage, ok := list[2].(*voc.StorageService)
+	fileStorage, ok := list[2].(*voc.FileStorage)
 
 	assert.True(t, ok)
 	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1", string(fileStorage.ID))
@@ -385,14 +385,15 @@ func TestFileStorage(t *testing.T) {
 	assert.NotNil(t, fileStorage.CreationTime)
 	assert.Equal(t, "FileStorage", fileStorage.Type[0])
 	assert.Equal(t, "eastus", fileStorage.GeoLocation.Region)
+	assert.Equal(t, true, fileStorage.Storage.AtRestEncryption.GetAtRestEncryption().Enabled)
 
-	//TODO(garuppel): Update
-	//assert.Equal(t, true, fileStorage.Storages.AtRestEncryption.GetAtRestEncryption().Enabled)
-	assert.Equal(t, "https://account1.file.core.windows.net/fileshare1", fileStorage.HttpEndpoint.Url)
-	assert.Equal(t, true, fileStorage.HttpEndpoint.TransportEncryption.Enabled)
-	assert.Equal(t, true, fileStorage.HttpEndpoint.TransportEncryption.Enforced)
-	assert.Equal(t, "TLS1_2", fileStorage.HttpEndpoint.TransportEncryption.TlsVersion)
-	assert.Equal(t, "TLS", fileStorage.HttpEndpoint.TransportEncryption.Algorithm)
+	storageService, ok := list[4].(*voc.StorageService)
+	//TODO(garuppel): Update: each account has both urls: https://account1.file.core.windows.net/ and https://account1.blob.core.windows.net/
+	//assert.Equal(t, "https://account1.file.core.windows.net/", storageService.HttpEndpoint.Url)
+	assert.Equal(t, true, storageService.HttpEndpoint.TransportEncryption.Enabled)
+	assert.Equal(t, true, storageService.HttpEndpoint.TransportEncryption.Enforced)
+	assert.Equal(t, "TLS1_2", storageService.HttpEndpoint.TransportEncryption.TlsVersion)
+	assert.Equal(t, "TLS", storageService.HttpEndpoint.TransportEncryption.Algorithm)
 }
 
 func TestListBlockStorage(t *testing.T) {
@@ -424,7 +425,7 @@ func TestBlockStorage(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
 
-	blockStorage, ok := list[6].(*voc.BlockStorage)
+	blockStorage, ok := list[8].(*voc.BlockStorage)
 
 	assert.True(t, ok)
 	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1", string(blockStorage.ID))
@@ -497,8 +498,6 @@ func TestStorageMethodsWhenInputIsInvalid(t *testing.T) {
 	managedKeyEncryption := voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{Algorithm: "AES256", Enabled: true}}
 	assert.Equal(t, managedKeyEncryption, atRestEncryption)
 
-	// Test method blockStorageAtRestEncryption
-	// Todo(garuppel): How to test? Problem: Azure call again
 }
 
 func TestStorageDiscoverMethodsWhenInputIsInvalid(t *testing.T) {

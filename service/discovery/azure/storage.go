@@ -273,6 +273,7 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *storage.Account, s
 			},
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
+			// TODO(garuppel): The URl can have both: https://account1.file.core.windows.net/ and https://account1.blob.core.windows.net/
 			Url: to.String(account.PrimaryEndpoints.Blob),
 			TransportEncryption: &voc.TransportEncryption{
 				Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
