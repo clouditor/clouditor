@@ -29,10 +29,8 @@ import (
 	"context"
 	"net"
 
-	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
-	service_auth "clouditor.io/clouditor/service/auth"
 	service_evidence "clouditor.io/clouditor/service/evidence"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"google.golang.org/grpc"
@@ -54,14 +52,10 @@ func bufConnDialer(context.Context, string) (net.Conn, error) {
 // * Auth
 // * Orchestrator
 // * Evidence Store
-func startBufConnServer() (*grpc.Server, *service_auth.Service, *service_orchestrator.Service, *service_evidence.Service) {
+func startBufConnServer() (*grpc.Server, *service_orchestrator.Service, *service_evidence.Service) {
 	bufConnListener = bufconn.Listen(DefaultBufferSize)
 
 	server := grpc.NewServer()
-
-	// We do not want a persistent key storage here
-	authService := service_auth.NewService(service_auth.WithApiKeySaveOnCreate(false))
-	auth.RegisterAuthenticationServer(server, authService)
 
 	orchestratorService := service_orchestrator.NewService()
 	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
@@ -75,5 +69,5 @@ func startBufConnServer() (*grpc.Server, *service_auth.Service, *service_orchest
 		}
 	}()
 
-	return server, authService, orchestratorService, evidenceService
+	return server, orchestratorService, evidenceService
 }

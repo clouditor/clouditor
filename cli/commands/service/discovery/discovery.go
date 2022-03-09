@@ -26,10 +26,12 @@
 package discovery
 
 import (
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/cli"
 	"context"
 	"fmt"
+
+	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/cli"
+
 	"github.com/spf13/cobra"
 )
 

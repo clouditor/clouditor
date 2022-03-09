@@ -1,13 +1,23 @@
 package main
 
 import (
+	"os"
 	"testing"
 
+	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/rest"
+	service_discovery "clouditor.io/clouditor/service/discovery"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestMain(m *testing.M) {
+	clitest.AutoChdir()
+
+	os.Exit(m.Run())
+}
 
 func Test_doCmd(t *testing.T) {
 	type args struct {
@@ -18,14 +28,24 @@ func Test_doCmd(t *testing.T) {
 		name      string
 		prepViper func()
 		args      args
+		want      assert.ValueAssertionFunc
 		wantErr   bool
 	}{
 		{
 			name: "Launch with --db-in-memory",
 			prepViper: func() {
 				viper.Set(DBInMemoryFlag, true)
+				viper.Set(APIStartEmbeddedOAuth2ServerFlag, true)
 				viper.Set(APIHTTPPortFlag, 0)
 				viper.Set(APIgRPCPortFlag, 0)
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				discoveryService := i1.(*service_discovery.Service)
+				if !assert.NotNil(t, discoveryService) {
+					return false
+				}
+
+				return assert.NotNil(t, discoveryService.Authorizer())
 			},
 		},
 		{
@@ -57,10 +77,13 @@ func Test_doCmd(t *testing.T) {
 
 			if success {
 				assert.NotNil(t, server)
-				assert.NotNil(t, authService)
 				assert.NotNil(t, discoveryService)
 				assert.NotNil(t, assessmentService)
 				assert.NotNil(t, evidenceStoreService)
+			}
+
+			if tt.want != nil {
+				tt.want(t, discoveryService)
 			}
 		})
 	}

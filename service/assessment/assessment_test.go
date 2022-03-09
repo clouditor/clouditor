@@ -39,6 +39,8 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/voc"
 
 	"github.com/stretchr/testify/assert"
@@ -50,22 +52,19 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func TestMain(m *testing.M) {
-	// make sure, that we are in the clouditor root folder to find the policies
-	err := os.Chdir("../../")
-	if err != nil {
-		panic(err)
-	}
+var (
+	authPort int
+)
 
-	server, authService, _, _ := startBufConnServer()
-	err = authService.CreateDefaultUser("clouditor", "clouditor")
-	if err != nil {
-		panic(err)
-	}
+func TestMain(m *testing.M) {
+	clitest.AutoChdir()
+
+	server, _, _ := startBufConnServer()
 
 	code := m.Run()
 
 	server.Stop()
+
 	os.Exit(code)
 }
 
@@ -877,12 +876,7 @@ func TestService_initEvidenceStoreStream(t *testing.T) {
 			fields: fields{
 				opts: []ServiceOption{
 					WithEvidenceStoreAddress("bufnet"),
-					WithInternalAuthorizer(
-						"bufnet",
-						"clouditor",
-						"clouditor",
-						grpc.WithContextDialer(bufConnDialer),
-					),
+					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
 				},
 			},
 			args: args{
@@ -894,19 +888,15 @@ func TestService_initEvidenceStoreStream(t *testing.T) {
 			fields: fields{
 				opts: []ServiceOption{
 					WithEvidenceStoreAddress("bufnet"),
-					WithInternalAuthorizer(
-						"bufnet",
-						"not_clouditor",
-						"clouditor",
-						grpc.WithContextDialer(bufConnDialer),
-					),
+					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
 				},
 			},
 			args: args{
 				[]grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.Equal(tt, err.Error(), "could not set up stream for storing evidences: rpc error: code = Unauthenticated desc = transport: per-RPC creds failed due to error: error while logging in: rpc error: code = Unauthenticated desc = login failed")
+				s, _ := status.FromError(errors.Unwrap(err))
+				return assert.Equal(t, codes.Unauthenticated, s.Code())
 			},
 		},
 	}
@@ -944,16 +934,8 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				// We are looking for a connection refused message
-				innerErr := errors.Unwrap(err)
-				s, _ := status.FromError(innerErr)
-
-				if s.Code() != codes.Unavailable {
-					tt.Errorf("Status should be codes.Unavailable: %v", s.Code())
-					return false
-				}
-
-				return true
+				s, _ := status.FromError(errors.Unwrap(err))
+				return assert.Equal(t, codes.Unavailable, s.Code())
 			},
 		},
 		{
@@ -961,12 +943,7 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 			fields: fields{
 				opts: []ServiceOption{
 					WithOrchestratorAddress("bufnet"),
-					WithInternalAuthorizer(
-						"bufnet",
-						"clouditor",
-						"clouditor",
-						grpc.WithContextDialer(bufConnDialer),
-					),
+					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
 				},
 			},
 			args: args{
@@ -978,19 +955,15 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 			fields: fields{
 				opts: []ServiceOption{
 					WithOrchestratorAddress("bufnet"),
-					WithInternalAuthorizer(
-						"bufnet",
-						"not_clouditor",
-						"clouditor",
-						grpc.WithContextDialer(bufConnDialer),
-					),
+					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
 				},
 			},
 			args: args{
 				[]grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.Equal(tt, err.Error(), "could not set up stream for storing assessment results: rpc error: code = Unauthenticated desc = transport: per-RPC creds failed due to error: error while logging in: rpc error: code = Unauthenticated desc = login failed")
+				s, _ := status.FromError(errors.Unwrap(err))
+				return assert.Equal(t, codes.Unauthenticated, s.Code())
 			},
 		},
 	}
