@@ -355,7 +355,6 @@ func TestObjectStorageProperties(t *testing.T) {
 	//assert.Equal(t, "TLS1_1", objectStorage.HttpEndpoint.TransportEncryption.TlsVersion)
 	//assert.Equal(t, true, objectStorage.HttpEndpoint.TransportEncryption.Enabled)
 
-
 	// Check ManagedKeyEncryption
 	atRestEncryption := *objectStorage.GetAtRestEncryption()
 	managedKeyEncryption, ok := atRestEncryption.(voc.ManagedKeyEncryption)
