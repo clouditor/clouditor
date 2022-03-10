@@ -352,6 +352,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 						viper.GetString(APIDefaultUserFlag),
 						viper.GetString(APIDefaultPasswordFlag),
 					),
+					login.WithBaseURL("/v1/auth"),
 				),
 			),
 		}

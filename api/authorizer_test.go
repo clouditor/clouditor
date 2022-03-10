@@ -28,31 +28,23 @@ package api
 import (
 	"context"
 	"fmt"
-	"net"
 	"net/http"
 	"reflect"
 	"testing"
 
+	"clouditor.io/clouditor/internal/testutil"
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/oauth2/clientcredentials"
 )
 
 func Test_oauthAuthorizer_Token(t *testing.T) {
-	// start an embedded oauth server
-	srv := oauth2.NewServer(":0", oauth2.WithClient("client", "secret", ""))
-
-	ln, err := net.Listen("tcp", srv.Addr)
-	assert.NoError(t, err)
-
-	port := ln.Addr().(*net.TCPAddr).Port
-
-	go func() {
-		err = srv.Serve(ln)
-		if err != http.ErrServerClosed {
-			assert.NoError(t, err)
-		}
-	}()
+	var (
+		srv  *oauth2.AuthorizationServer
+		port int
+		err  error
+	)
+	srv, port, err = testutil.StartAuthenticationServer()
 
 	defer func() {
 		err = srv.Close()
@@ -79,8 +71,8 @@ func Test_oauthAuthorizer_Token(t *testing.T) {
 			fields: fields{
 				TokenSource: oauth2.ReuseTokenSource(nil,
 					(&clientcredentials.Config{
-						ClientID:     "client",
-						ClientSecret: "secret",
+						ClientID:     testutil.TestAuthClientID,
+						ClientSecret: testutil.TestAuthClientSecret,
 						TokenURL:     fmt.Sprintf("http://localhost:%d/v1/auth/token", port),
 					}).TokenSource(context.Background()),
 				),
