@@ -563,7 +563,7 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 				NetworkService: &voc.NetworkService{
 					Networking: &voc.Networking{
 						Resource: &voc.Resource{
-							ID: "some-storage-account-id",
+							ID:   "some-storage-account-id",
 							Name: "some-storage-account-name",
 							Type: []string{"StorageService", "NetworkService", "Networking", "Resource"},
 						},
