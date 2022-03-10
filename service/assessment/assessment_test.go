@@ -388,9 +388,10 @@ func TestAssessmentResultHooks(t *testing.T) {
 	var (
 		hookCallCounter = 0
 		wg              sync.WaitGroup
+		hookCounts = 4
 	)
 
-	wg.Add(12)
+	wg.Add(hookCounts)
 
 	firstHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
 		hookCallCounter++
@@ -428,7 +429,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 							Compute: &voc.Compute{
 								Resource: &voc.Resource{
 									ID:   "my-resource-id",
-									Type: []string{"VirtualMachine"}},
+									Type: []string{"VirtualMachine", "Compute", "Resource"}},
 							},
 						}, t),
 					}},
@@ -459,7 +460,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 			// To test the hooks we have to call a function that calls the hook function
 			gotResp, err := s.AssessEvidence(tt.args.in0, tt.args.evidence)
 
-			// wait for all hooks (6 metrics * 2 hooks)
+			// wait for all hooks (2 metrics * 2 hooks)
 			wg.Wait()
 
 			if (err != nil) != tt.wantErr {
@@ -472,7 +473,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 
 			assert.Equal(t, tt.wantResp, gotResp)
 			assert.NotEmpty(t, s.results)
-			assert.Equal(t, 12, hookCallCounter)
+			assert.Equal(t, hookCounts, hookCallCounter)
 		})
 	}
 }
