@@ -388,6 +388,7 @@ func TestFileStorage(t *testing.T) {
 	assert.Equal(t, true, fileStorage.Storage.AtRestEncryption.GetAtRestEncryption().Enabled)
 
 	storageService, ok := list[4].(*voc.StorageService)
+	assert.True(t, ok)
 	assert.Equal(t, "https://account1.[file,blob].core.windows.net/", storageService.HttpEndpoint.Url)
 	assert.Equal(t, true, storageService.HttpEndpoint.TransportEncryption.Enabled)
 	assert.Equal(t, true, storageService.HttpEndpoint.TransportEncryption.Enforced)

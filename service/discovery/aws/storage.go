@@ -129,41 +129,41 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 			return
 		}
 
-		// Add ObjectStorage
-		resources = append(resources, &voc.ObjectStorage{
-			Storage: &voc.Storage{
-				Resource: &voc.Resource{
-					ID:           voc.ResourceID(b.arn),
-					Name:         b.name,
-					CreationTime: b.creationTime.Unix(),
-					Type:         []string{"ObjectStorage", "Storage", "Resource"},
-					GeoLocation: voc.GeoLocation{
-						Region: b.region,
-					},
-				},
-				AtRestEncryption: encryptionAtRest,
-			},
-		})
-
-		// Add StorageService
-		resources = append(resources, &voc.StorageService{
-			Storages: []voc.ResourceID{voc.ResourceID(b.arn)},
-			NetworkService: &voc.NetworkService{
-				Networking: &voc.Networking{
+		resources = append(resources,
+			// Add ObjectStorage
+			&voc.ObjectStorage{
+				Storage: &voc.Storage{
 					Resource: &voc.Resource{
 						ID:           voc.ResourceID(b.arn),
-						CreationTime: b.creationTime.Unix(),
 						Name:         b.name,
-						GeoLocation:  voc.GeoLocation{Region: b.region},
-						Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
+						CreationTime: b.creationTime.Unix(),
+						Type:         []string{"ObjectStorage", "Storage", "Resource"},
+						GeoLocation: voc.GeoLocation{
+							Region: b.region,
+						},
 					},
+					AtRestEncryption: encryptionAtRest,
 				},
 			},
-			HttpEndpoint: &voc.HttpEndpoint{
-				Url:                 b.endpoint,
-				TransportEncryption: encryptionAtTransmit,
-			},
-		})
+			// Add StorageService
+			&voc.StorageService{
+				Storages: []voc.ResourceID{voc.ResourceID(b.arn)},
+				NetworkService: &voc.NetworkService{
+					Networking: &voc.Networking{
+						Resource: &voc.Resource{
+							ID:           voc.ResourceID(b.arn),
+							CreationTime: b.creationTime.Unix(),
+							Name:         b.name,
+							GeoLocation:  voc.GeoLocation{Region: b.region},
+							Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
+						},
+					},
+				},
+				HttpEndpoint: &voc.HttpEndpoint{
+					Url:                 b.endpoint,
+					TransportEncryption: encryptionAtTransmit,
+				},
+			})
 	}
 	return
 }

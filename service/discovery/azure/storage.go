@@ -249,7 +249,7 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 	}, nil
 }
 
-func (d *azureStorageDiscovery) handleStorageAccount(account *storage.Account, storagesList []voc.IsCloudResource) (*voc.StorageService, error) {
+func (*azureStorageDiscovery) handleStorageAccount(account *storage.Account, storagesList []voc.IsCloudResource) (*voc.StorageService, error) {
 	var storageResourceIDs []voc.ResourceID
 
 	// Get all object storage IDs
@@ -291,7 +291,7 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *storage.Account, s
 func generalizeURL(url string) string {
 	urlSplit := strings.Split(url, ".")
 	urlSplit[1] = "[file,blob]"
-	newURL := strings.Join(urlSplit[:], ".")
+	newURL := strings.Join(urlSplit, ".")
 
 	return newURL
 }
