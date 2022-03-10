@@ -96,7 +96,7 @@ const (
 	DefaultAPIDefaultPassword           = "clouditor"
 	DefaultAPIgRPCPort                  = 9090
 	DefaultAPIStartEmbeddedOAuth2Server = true
-	DefaultServiceOAuth2Endpoint        = "http://localhost:8080/token"
+	DefaultServiceOAuth2Endpoint        = "http://localhost:8080/v1/auth/token"
 	DefaultServiceOAuth2ClientID        = "clouditor"
 	DefaultServiceOAuth2ClientSecret    = "clouditor"
 	DefaultDBUserName                   = "postgres"

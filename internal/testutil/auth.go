@@ -47,11 +47,11 @@ func JWKSURL(port int) string {
 }
 
 func TokenURL(port int) string {
-	return fmt.Sprintf("http://localhost:%d/token", port)
+	return fmt.Sprintf("http://localhost:%d/v1/auth/token", port)
 }
 
 func AuthURL(port int) string {
-	return fmt.Sprintf("http://localhost:%d/authorize", port)
+	return fmt.Sprintf("http://localhost:%d/v1/auth/authorize", port)
 }
 
 func AuthClientConfig(port int) *clientcredentials.Config {

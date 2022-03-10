@@ -81,7 +81,7 @@ func Test_oauthAuthorizer_Token(t *testing.T) {
 					(&clientcredentials.Config{
 						ClientID:     "client",
 						ClientSecret: "secret",
-						TokenURL:     fmt.Sprintf("http://localhost:%d/token", port),
+						TokenURL:     fmt.Sprintf("http://localhost:%d/v1/auth/token", port),
 					}).TokenSource(context.Background()),
 				),
 			},
@@ -118,7 +118,7 @@ func TestNewOAuthAuthorizerFromClientCredentials(t *testing.T) {
 	var config = clientcredentials.Config{
 		ClientID:     "client",
 		ClientSecret: "secret",
-		TokenURL:     "/token",
+		TokenURL:     "/v1/auth/token",
 	}
 
 	type args struct {
