@@ -26,10 +26,11 @@
 package orchestrator
 
 import (
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/orchestrator"
 	"context"
 	"fmt"
+
+	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/orchestrator"
 
 	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"

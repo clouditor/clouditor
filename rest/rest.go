@@ -27,6 +27,7 @@ package rest
 
 import (
 	"context"
+	"crypto/ecdsa"
 	"errors"
 	"fmt"
 	"net"
@@ -37,13 +38,13 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
-	service_auth "clouditor.io/clouditor/service/auth"
+	"clouditor.io/clouditor/internal/auth"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -95,6 +96,17 @@ var (
 	DefaultAPIHTTPPort int16 = 8080
 )
 
+func init() {
+	log = logrus.WithField("component", "rest")
+
+	// initialize the CORS config with restrictive default values, e.g. no origin allowed
+	cors = &corsConfig{
+		allowedOrigins: DefaultAllowedOrigins,
+		allowedHeaders: DefaultAllowedHeaders,
+		allowedMethods: DefaultAllowedMethods,
+	}
+}
+
 // WithAllowedOrigins is an option to supply allowed origins in CORS.
 func WithAllowedOrigins(origins []string) ServerConfigOption {
 	return func(cc *corsConfig, _ *runtime.ServeMux) {
@@ -123,14 +135,39 @@ func WithAdditionalHandler(method string, path string, h runtime.HandlerFunc) Se
 	}
 }
 
-func init() {
-	log = logrus.WithField("component", "rest")
+// WithEmbeddedOAuth2Server configures our REST gateway to include an embedded OAuth 2.0
+// authorization server with the given parameters. This server can be used to authenticate
+// and authorize API clients, such as our own micro-services as well as users logging in
+// through the UI.
+//
+// For the various options to configure the OAuth 2.0 server, please refer to
+// https://pkg.go.dev/github.com/oxisto/oauth2go#AuthorizationServerOption.
+//
+// In production scenarios, the usage of a dedicated authentication and authorization server is
+// recommended.
+func WithEmbeddedOAuth2Server(keyPath string, keyPassword string, saveOnCreate bool, opts ...oauth2.AuthorizationServerOption) ServerConfigOption {
+	return func(cc *corsConfig, sm *runtime.ServeMux) {
+		opts = append(opts, oauth2.WithSigningKeysFunc(func() map[int]*ecdsa.PrivateKey {
+			return auth.LoadSigningKeys(keyPath, keyPassword, saveOnCreate)
+		}))
 
-	// initialize the CORS config with restrictive default values, e.g. no origin allowed
-	cors = &corsConfig{
-		allowedOrigins: DefaultAllowedOrigins,
-		allowedHeaders: DefaultAllowedHeaders,
-		allowedMethods: DefaultAllowedMethods,
+		authSrv := oauth2.NewServer("", opts...)
+
+		WithAdditionalHandler("GET", "/.well-known/jwks.json", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+			authSrv.Handler.(*http.ServeMux).ServeHTTP(w, r)
+		})(cc, sm)
+		WithAdditionalHandler("GET", "/login", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+			authSrv.Handler.(*http.ServeMux).ServeHTTP(w, r)
+		})(cc, sm)
+		WithAdditionalHandler("GET", "/authorize", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+			authSrv.Handler.(*http.ServeMux).ServeHTTP(w, r)
+		})(cc, sm)
+		WithAdditionalHandler("POST", "/login", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+			authSrv.Handler.(*http.ServeMux).ServeHTTP(w, r)
+		})(cc, sm)
+		WithAdditionalHandler("POST", "/token", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+			authSrv.Handler.(*http.ServeMux).ServeHTTP(w, r)
+		})(cc, sm)
 	}
 }
 
@@ -140,19 +177,13 @@ func RunServer(ctx context.Context, grpcPort int, httpPort int, serverOpts ...Se
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	mux := runtime.NewServeMux(
-		runtime.WithErrorHandler(service_auth.OAuthErrorHandler),
-	)
+	mux := runtime.NewServeMux()
 
 	for _, o := range serverOpts {
 		o(cors, mux)
 	}
 
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-
-	if err := auth.RegisterAuthenticationHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), opts); err != nil {
-		return fmt.Errorf("failed to connect to authentication gRPC service %w", err)
-	}
 
 	if err := discovery.RegisterDiscoveryHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), opts); err != nil {
 		return fmt.Errorf("failed to connect to discovery gRPC service %w", err)

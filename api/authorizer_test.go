@@ -27,163 +27,124 @@ package api
 
 import (
 	"context"
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rand"
+	"fmt"
+	"net"
+	"net/http"
 	"reflect"
 	"testing"
-	"time"
 
-	"clouditor.io/clouditor/api/auth"
-	"github.com/golang-jwt/jwt/v4"
-	"golang.org/x/oauth2"
-	"google.golang.org/grpc"
-	"google.golang.org/protobuf/types/known/timestamppb"
+	oauth2 "github.com/oxisto/oauth2go"
+	"github.com/stretchr/testify/assert"
+	"golang.org/x/oauth2/clientcredentials"
 )
 
-var (
-	tmpKey           *ecdsa.PrivateKey
-	mockAccessToken  string
-	mockRefreshToken string
-	mockExpiry       time.Time
-)
+func Test_oauthAuthorizer_Token(t *testing.T) {
+	// start an embedded oauth server
+	srv := oauth2.NewServer(":0", oauth2.WithClient("client", "secret", ""))
 
-func init() {
-	// Create a new temporary key
-	tmpKey, _ = ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	ln, err := net.Listen("tcp", srv.Addr)
+	assert.NoError(t, err)
 
-	// Create a refresh token
-	claims := jwt.NewWithClaims(jwt.SigningMethodES256, &jwt.RegisteredClaims{
-		Subject: "clouditor",
-	})
+	port := ln.Addr().(*net.TCPAddr).Port
 
-	mockRefreshToken, _ = claims.SignedString(tmpKey)
+	go func() {
+		err = srv.Serve(ln)
+		if err != http.ErrServerClosed {
+			assert.NoError(t, err)
+		}
+	}()
 
-	mockExpiry = time.Now().Add(time.Hour * 1).Truncate(time.Second).UTC()
-	// Create an access token
-	claims = jwt.NewWithClaims(jwt.SigningMethodES256, &jwt.RegisteredClaims{
-		Subject:   "clouditor",
-		ExpiresAt: jwt.NewNumericDate(mockExpiry),
-	})
+	defer func() {
+		err = srv.Close()
+		if err != http.ErrServerClosed {
+			assert.NoError(t, err)
+		}
+	}()
 
-	mockAccessToken, _ = claims.SignedString(tmpKey)
-}
-
-func TestInternalAuthorizer_Token(t *testing.T) {
 	type fields struct {
-		authURL     string
-		grpcOptions []grpc.DialOption
-		username    string
-		password    string
-		client      auth.AuthenticationClient
-		conn        grpc.ClientConnInterface
-		token       *oauth2.Token
+		TokenSource oauth2.TokenSource
+	}
+	type args struct {
+		refreshToken string
 	}
 	tests := []struct {
-		name    string
-		fields  fields
-		want    *oauth2.Token
-		wantErr bool
+		name     string
+		fields   fields
+		args     args
+		wantResp assert.ValueAssertionFunc
+		wantErr  bool
 	}{
 		{
-			name: "Fetch access token with refresh token",
+			name: "fetch token without refresh token",
 			fields: fields{
-				client: &mockAuthClient{},
-				conn:   &mockConn{},
-				token: &oauth2.Token{
-					RefreshToken: mockRefreshToken,
-				},
+				TokenSource: oauth2.ReuseTokenSource(nil,
+					(&clientcredentials.Config{
+						ClientID:     "client",
+						ClientSecret: "secret",
+						TokenURL:     fmt.Sprintf("http://localhost:%d/token", port),
+					}).TokenSource(context.Background()),
+				),
 			},
-			want: &oauth2.Token{
-				AccessToken: mockAccessToken,
-				Expiry:      mockExpiry,
-				TokenType:   "Bearer",
-			},
-		},
-		{
-			name: "Fetch access token with username",
-			fields: fields{
-				client:   &mockAuthClient{},
-				conn:     &mockConn{},
-				username: "mock",
-				password: "mock",
-			},
-			want: &oauth2.Token{
-				AccessToken: mockAccessToken,
-				Expiry:      mockExpiry,
-				TokenType:   "Bearer",
-			},
-		},
-		{
-			name: "Token still valid",
-			fields: fields{
-				client: &mockAuthClient{},
-				conn:   &mockConn{},
-				token: &oauth2.Token{
-					AccessToken: mockAccessToken,
-					TokenType:   "Bearer",
-					Expiry:      mockExpiry,
-				},
-			},
-			want: &oauth2.Token{
-				AccessToken: mockAccessToken,
-				Expiry:      mockExpiry,
-				TokenType:   "Bearer",
+			wantResp: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				token, ok := i1.(*oauth2.Token)
+				assert.True(t, ok)
+				assert.NotNil(tt, token)
+
+				return assert.NotEmpty(tt, token.AccessToken)
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			i := &internalAuthorizer{
-				authURL:     tt.fields.authURL,
-				grpcOptions: tt.fields.grpcOptions,
-				username:    tt.fields.username,
-				password:    tt.fields.password,
-				client:      tt.fields.client,
-				conn:        tt.fields.conn,
-				token:       tt.fields.token,
+			o := &oauthAuthorizer{
+				TokenSource: tt.fields.TokenSource,
 			}
-			got, err := i.Token()
+
+			gotResp, err := o.Token()
 			if (err != nil) != tt.wantErr {
-				t.Errorf("InternalAuthorizer.Token() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("oauthAuthorizer.fetchToken() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("InternalAuthorizer.Token() = %v, want %v", got, tt.want)
+
+			if tt.wantResp != nil {
+				tt.wantResp(t, gotResp, tt.args.refreshToken)
 			}
 		})
 	}
 }
 
-type mockAuthClient struct{}
+func TestNewOAuthAuthorizerFromClientCredentials(t *testing.T) {
+	var config = clientcredentials.Config{
+		ClientID:     "client",
+		ClientSecret: "secret",
+		TokenURL:     "/token",
+	}
 
-func (mockAuthClient) Login(_ context.Context, _ *auth.LoginRequest, _ ...grpc.CallOption) (*auth.TokenResponse, error) {
-	return &auth.TokenResponse{
-		AccessToken: mockAccessToken,
-		TokenType:   "Bearer",
-		Expiry:      timestamppb.New(mockExpiry),
-	}, nil
-}
+	type args struct {
+		config *clientcredentials.Config
+	}
+	tests := []struct {
+		name string
+		args args
+		want Authorizer
+	}{
+		{
+			name: "new",
+			args: args{
+				&config,
+			},
+			want: &oauthAuthorizer{
+				TokenSource: oauth2.ReuseTokenSource(nil, config.TokenSource(context.Background())),
+			},
+		},
+	}
 
-func (mockAuthClient) Token(_ context.Context, _ *auth.TokenRequest, _ ...grpc.CallOption) (*auth.TokenResponse, error) {
-	return &auth.TokenResponse{
-		AccessToken: mockAccessToken,
-		TokenType:   "Bearer",
-		Expiry:      timestamppb.New(mockExpiry),
-	}, nil
-}
-
-func (mockAuthClient) ListPublicKeys(_ context.Context, _ *auth.ListPublicKeysRequest, _ ...grpc.CallOption) (*auth.ListPublicResponse, error) {
-	return nil, nil
-}
-
-type mockConn struct{}
-
-func (mockConn) Invoke(_ context.Context, _ string, _ interface{}, _ interface{}, _ ...grpc.CallOption) error {
-	return nil
-}
-
-func (mockConn) NewStream(_ context.Context, _ *grpc.StreamDesc, _ string, _ ...grpc.CallOption) (grpc.ClientStream, error) {
-	return nil, nil
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewOAuthAuthorizerFromClientCredentials(tt.args.config); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewOAuthAuthorizerFromClientCredentials() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

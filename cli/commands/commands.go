@@ -56,6 +56,6 @@ func AddCommands(cmd *cobra.Command) {
 		service.NewServiceCommand(),
 	)
 
-	cmd.PersistentFlags().StringP("session-directory", "s", cli.DefaultSessionFolder, "the directory where the session will be saved and loaded from")
-	_ = viper.BindPFlag("session-directory", cmd.PersistentFlags().Lookup("session-directory"))
+	cmd.PersistentFlags().StringP(cli.SessionFolderFlag, "s", cli.DefaultSessionFolder, "the directory where the session will be saved and loaded from")
+	_ = viper.BindPFlag(cli.SessionFolderFlag, cmd.PersistentFlags().Lookup(cli.SessionFolderFlag))
 }

@@ -31,6 +31,7 @@ import (
 	"os"
 	"testing"
 
+	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/voc"
 	"google.golang.org/protobuf/encoding/protojson"
 
@@ -51,11 +52,7 @@ const (
 )
 
 func TestMain(m *testing.M) {
-	// make sure, that we are in the clouditor root folder to find the policies
-	err := os.Chdir("../")
-	if err != nil {
-		panic(err)
-	}
+	clitest.AutoChdir()
 
 	os.Exit(m.Run())
 }

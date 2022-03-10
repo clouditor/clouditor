@@ -92,7 +92,8 @@ service Orchestrator {
     };
   }
 
-  // Stores stream of assessment results provided by an assessment tool and returns a response stream. Part of the public API, not exposed as REST.
+  // Stores stream of assessment results provided by an assessment tool and
+  // returns a response stream. Part of the public API, not exposed as REST.
   rpc StoreAssessmentResults(stream StoreAssessmentResultRequest)
       returns (stream StoreAssessmentResultResponse);
 
@@ -181,7 +182,7 @@ service Orchestrator {
       put : "/v1/orchestrator/cloud_services/{service_id}/"
             "metric_configurations/"
             "{metric_id}"
-      body: "configuration"
+      body : "configuration"
     };
   }
 
@@ -215,7 +216,8 @@ service Orchestrator {
   }
 
   // Returns the metric implementation of the passed metric id
-  rpc GetMetricImplementation(GetMetricImplementationRequest) returns (MetricImplementation) {
+  rpc GetMetricImplementation(GetMetricImplementationRequest)
+      returns (MetricImplementation) {
     option (google.api.http) = {
       get : "/v1/orchestrator/metrics/{metric_id}/implementation"
     };
@@ -297,9 +299,7 @@ message UpdateMetricImplementationRequest {
   MetricImplementation implementation = 2;
 }
 
-message GetMetricImplementationRequest {
-  string metric_id = 1;
-}
+message GetMetricImplementationRequest { string metric_id = 1; }
 
 // Represents an external tool or service that offers assessments according to
 // certain metrics
