@@ -53,7 +53,7 @@ func ValidClaimAssertion(tt assert.TestingT, i1 interface{}, _ ...interface{}) b
 		return false
 	}
 
-	if claims.Subject != "clouditor" {
+	if claims.Subject != testutil.TestAuthClientID {
 		tt.Errorf("Subject is not correct")
 		return true
 	}

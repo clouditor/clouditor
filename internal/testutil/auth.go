@@ -14,8 +14,8 @@ const (
 	TestAuthUser     = "clouditor"
 	TestAuthPassword = "clouditor"
 
-	TestAuthClientID     = "clouditor"
-	TestAuthClientSecret = "clouditor"
+	TestAuthClientID     = "client"
+	TestAuthClientSecret = "secret"
 )
 
 // StartAuthenticationServer starts an authentication server on a random port with
