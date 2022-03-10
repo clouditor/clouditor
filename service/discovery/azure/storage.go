@@ -274,7 +274,7 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *storage.Account, s
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
 			// TODO(garuppel): The URl can have both: https://account1.file.core.windows.net/ and https://account1.blob.core.windows.net/
-			Url: to.String(account.PrimaryEndpoints.Blob),
+			Url: generalizeURL(*account.PrimaryEndpoints.Blob),
 			TransportEncryption: &voc.TransportEncryption{
 				Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
 				Enabled:    true, // cannot be disabled
@@ -285,6 +285,15 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *storage.Account, s
 	}
 
 	return storageService, nil
+}
+
+//generalizeURL generalizes the URL, because the URL depends on the storage type
+func generalizeURL(url string) string {
+	urlSplit := strings.Split(url, ".")
+	urlSplit[1] = "[file,blob]"
+	newURL := strings.Join(urlSplit[:], ".")
+
+	return newURL
 }
 
 func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem) (*voc.FileStorage, error) {
