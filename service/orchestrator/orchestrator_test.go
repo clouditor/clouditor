@@ -27,28 +27,28 @@ package orchestrator
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
-	"google.golang.org/grpc"
 	"io"
-	"k8s.io/apimachinery/pkg/util/json"
 	"os"
 	"reflect"
 	"runtime"
 	"sync"
 	"testing"
 
+	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/persistence/inmemory"
+
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-
-	"clouditor.io/clouditor/api/assessment"
-
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/persistence/inmemory"
-	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -56,10 +56,7 @@ const (
 )
 
 func TestMain(m *testing.M) {
-	err := os.Chdir("../../")
-	if err != nil {
-		panic(err)
-	}
+	clitest.AutoChdir()
 
 	os.Exit(m.Run())
 }

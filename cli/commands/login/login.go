@@ -28,18 +28,41 @@ package login
 import (
 	"context"
 	"fmt"
+	"net"
+	"net/http"
 
-	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/cli"
+	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"golang.org/x/oauth2"
 )
 
 const (
-	// URLFlag is the viper flag for the server url
-	URLFlag = "url"
+	// OAuth2ServerFlag is the viper flag for the OAuth 2.0 authorization server.
+	OAuth2ServerFlag = "oauth2-server"
+
+	// OAuth2ClientIDFlag is the viper flag for the OAuth 2.0 client ID.
+	OAuth2ClientIDFlag = "oauth2-client-id"
+
+	// DefaultOAuth2Server is the default OAuth 2.0 authorization server.
+	DefaultOAuth2Server = "http://localhost:8080"
+
+	// DefaultClientID is the default OAuth 2.0 client ID for the CLI.
+	DefaultClientID = "cli"
+
+	// DefaultCallbackServerAddress is the default address for the callback server.
+	DefaultCallbackServerAddress = "localhost:10000"
+)
+
+var (
+	// DefaultCallback is the default callback URL of the callback server.
+	DefaultCallback = fmt.Sprintf("http://%s/callback", DefaultCallbackServerAddress)
+
+	// VerifierGenerator is a function that generates a new verifier.
+	VerifierGenerator = oauth2.GenerateSecret
+
+	// callbackServerReady is an internally used channel to indicate that the callback server is ready.
+	callbackServerReady = make(chan bool)
 )
 
 // NewLoginCommand returns a cobra command for `login` subcommands
@@ -51,42 +74,58 @@ func NewLoginCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err     error
-				client  auth.AuthenticationClient
-				res     *auth.TokenResponse
-				req     *auth.LoginRequest
 				session *cli.Session
+				sock    net.Listener
+				code    string
+				config  *oauth2.Config
+				authURL string
 			)
 
-			if session, err = cli.NewSession(args[0]); err != nil {
+			// Retrieve the URL of our authentication server
+			authURL = viper.GetString(OAuth2ServerFlag)
+
+			// Create an OAuth 2 config
+			config = &oauth2.Config{
+				ClientID: DefaultClientID,
+				Endpoint: oauth2.Endpoint{
+					AuthURL:  fmt.Sprintf("%s/authorize", authURL),
+					TokenURL: fmt.Sprintf("%s/token", authURL),
+				},
+				RedirectURL: DefaultCallback,
+			}
+
+			srv := newCallbackServer(config)
+
+			go func() {
+				sock, err = net.Listen("tcp", srv.Addr)
+				if err != nil {
+					fmt.Printf("Could not start web server for OAuth 2.0 authorization code flow: %v", err)
+				}
+				go func() {
+					callbackServerReady <- true
+				}()
+
+				err = srv.Serve(sock)
+				if err != http.ErrServerClosed {
+					fmt.Printf("Could not start web server for OAuth 2.0 authorization code flow: %v", err)
+					return
+				}
+			}()
+			defer srv.Close()
+
+			// waiting for our code
+			code = <-srv.code
+			token, err := srv.config.Exchange(context.Background(), code,
+				oauth2.SetAuthURLParam("code_verifier", srv.verifier),
+			)
+
+			if err != nil {
+				return err
+			}
+
+			if session, err = cli.NewSession(args[0], config, token); err != nil {
 				return fmt.Errorf("could not connect: %w", err)
 			}
-
-			if viper.GetString("username") == "" || viper.GetString("password") == "" {
-				if req, err = cli.PromptForLogin(); err != nil {
-					return fmt.Errorf("could not prompt for password: %w", err)
-				}
-			} else {
-				req = &auth.LoginRequest{
-					Username: viper.GetString("username"),
-					Password: viper.GetString("password"),
-				}
-			}
-
-			client = auth.NewAuthenticationClient(session)
-
-			if res, err = client.Login(context.Background(), req); err != nil {
-				return fmt.Errorf("could not login: %w", err)
-			}
-
-			// Update the session
-			session.SetAuthorizer(api.NewInternalAuthorizerFromToken(
-				session.Authorizer().AuthURL(),
-				&oauth2.Token{
-					AccessToken:  res.AccessToken,
-					TokenType:    res.TokenType,
-					RefreshToken: res.RefreshToken,
-					Expiry:       res.Expiry.AsTime(),
-				}))
 
 			if err = session.Save(); err != nil {
 				return fmt.Errorf("could not save session: %w", err)
@@ -98,11 +137,56 @@ func NewLoginCommand() *cobra.Command {
 		},
 	}
 
-	cmd.PersistentFlags().StringP("username", "u", "", "the username. if not specified, a prompt will be displayed")
-	_ = viper.BindPFlag("username", cmd.PersistentFlags().Lookup("username"))
+	cmd.PersistentFlags().String(OAuth2ServerFlag, DefaultOAuth2Server, "the URL of the OAuth 2.0 server")
+	_ = viper.BindPFlag(OAuth2ServerFlag, cmd.PersistentFlags().Lookup(OAuth2ServerFlag))
 
-	cmd.PersistentFlags().StringP("password", "p", "", "the password. if not specified, a prompt will be displayed")
-	_ = viper.BindPFlag("password", cmd.PersistentFlags().Lookup("password"))
+	cmd.PersistentFlags().String(OAuth2ClientIDFlag, DefaultClientID, "the OAuth 2.0 client ID")
+	_ = viper.BindPFlag(OAuth2ClientIDFlag, cmd.PersistentFlags().Lookup(OAuth2ClientIDFlag))
 
 	return cmd
+}
+
+type callbackServer struct {
+	http.Server
+
+	verifier string
+	config   *oauth2.Config
+	code     chan string
+}
+
+func newCallbackServer(config *oauth2.Config) *callbackServer {
+	var mux = http.NewServeMux()
+
+	var srv = &callbackServer{
+		Server: http.Server{
+			Handler: mux,
+			Addr:    DefaultCallbackServerAddress,
+		},
+		verifier: VerifierGenerator(),
+		config:   config,
+		code:     make(chan string),
+	}
+
+	mux.HandleFunc("/callback", srv.handleCallback)
+
+	challenge := oauth2.GenerateCodeChallenge(srv.verifier)
+	authURL := srv.config.AuthCodeURL("",
+		oauth2.SetAuthURLParam("code_challenge", challenge),
+		oauth2.SetAuthURLParam("code_challenge_method", "S256"),
+	)
+
+	fmt.Printf("Please open %s in your browser 🚀 to continue\n", authURL)
+
+	return srv
+}
+
+func (srv *callbackServer) handleCallback(w http.ResponseWriter, r *http.Request) {
+	var err error
+
+	_, err = w.Write([]byte("Success. You can close this browser tab now"))
+	if err != nil {
+		w.WriteHeader(500)
+	}
+
+	srv.code <- r.URL.Query().Get("code")
 }

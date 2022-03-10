@@ -9,7 +9,6 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.9
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/MicahParks/keyfunc v1.0.1
-	github.com/alexedwards/argon2id v0.0.0-20210511081203-7d35d68092b8
 	github.com/aws/aws-sdk-go-v2 v1.14.0
 	github.com/aws/aws-sdk-go-v2/config v1.14.0
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.30.0
@@ -27,11 +26,12 @@ require (
 	github.com/logrusorgru/aurora/v3 v3.0.0
 	github.com/mitchellh/mapstructure v1.4.3
 	github.com/open-policy-agent/opa v0.38.0
+	github.com/oxisto/oauth2go v0.5.9
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.3.0
 	github.com/spf13/viper v1.10.0
 	github.com/stretchr/testify v1.7.0
-	golang.org/x/crypto v0.0.0-20211108221036-ceb1ce70b4fa
+	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
 	golang.org/x/oauth2 v0.0.0-20220223155221-ee480838109b
 	google.golang.org/genproto v0.0.0-20220302033224-9aa15565e42a
 	google.golang.org/grpc v1.44.0
@@ -120,7 +120,7 @@ require (
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/yashtewari/glob-intersection v0.0.0-20180916065949-5c77d914dd0b // indirect
-	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
+	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect

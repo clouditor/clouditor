@@ -28,75 +28,26 @@ package resource
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
-	"net"
 	"os"
 	"testing"
 	"time"
 
-	"clouditor.io/clouditor/service"
-
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/cli/commands/login"
+	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/service"
 	service_discovery "clouditor.io/clouditor/service/discovery"
-
 	"clouditor.io/clouditor/voc"
-	"github.com/spf13/viper"
+
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-var (
-	sock             net.Listener
-	server           *grpc.Server
-	discoveryService *service_discovery.Service
-)
-
 func TestMain(m *testing.M) {
-	var (
-		err error
-		dir string
-	)
+	svc := service_discovery.NewService()
+	svc.StartDiscovery(mockDiscoverer{testCase: 2})
 
-	err = os.Chdir("../../../../")
-	if err != nil {
-		panic(err)
-	}
-
-	discoveryService = service_discovery.NewService()
-	discoveryService.StartDiscovery(mockDiscoverer{testCase: 2})
-
-	sock, server, _, err = service.StartDedicatedAuthServer(":0")
-	if err != nil {
-		panic(err)
-	}
-	discovery.RegisterDiscoveryServer(server, discoveryService)
-
-	defer func(sock net.Listener) {
-		err = sock.Close()
-		if err != nil {
-			panic(err)
-		}
-	}(sock)
-	defer server.Stop()
-
-	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
-	if err != nil {
-		panic(err)
-	}
-
-	viper.Set("username", "clouditor")
-	viper.Set("password", "clouditor")
-	viper.Set("session-directory", dir)
-
-	cmd := login.NewLoginCommand()
-	err = cmd.RunE(nil, []string{fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)})
-	if err != nil {
-		panic(err)
-	}
-	defer os.Exit(m.Run())
+	os.Exit(clitest.RunCLITest(m, service.WithDiscovery(svc)))
 }
 
 func TestAddCommands(t *testing.T) {
@@ -130,7 +81,6 @@ func TestNewListCommand(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response.Results.Values)
-
 }
 
 // Mocking code below is copied from clouditor.io/service/discovery
