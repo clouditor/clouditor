@@ -58,7 +58,7 @@ type MetricConfigurationSource interface {
 
 func RunEvidence(evidence *evidence.Evidence, holder MetricConfigurationSource) ([]*Result, error) {
 	data := make([]*Result, 0)
-	var baseDir string = "."
+	var baseDir = "."
 
 	var m = evidence.Resource.GetStructValue().AsMap()
 
