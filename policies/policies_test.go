@@ -174,6 +174,18 @@ func TestRunEvidence(t *testing.T) {
 							RetentionPeriod: 36,
 						},
 					},
+					MalwareProtection: &voc.MalwareProtection{
+						Enabled:              true,
+						DaysSinceActive:      5,
+						NumberOfThreatsFound: 5,
+						ApplicationLogging: &voc.ApplicationLogging{
+							Logging: &voc.Logging{
+								Enabled:         true,
+								RetentionPeriod: 0,
+								LoggingService:  []voc.ResourceID{"SomeResourceId1"},
+							},
+						},
+					},
 				},
 				evidenceID: mockVM1EvidenceID,
 			},
