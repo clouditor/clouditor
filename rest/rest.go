@@ -152,22 +152,17 @@ func WithEmbeddedOAuth2Server(keyPath string, keyPassword string, saveOnCreate b
 		}))
 
 		authSrv := oauth2.NewServer("", opts...)
+		authHandler := func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+			http.StripPrefix("/v1/auth", authSrv.Handler).ServeHTTP(w, r)
+		}
 
 		WithAdditionalHandler("GET", "/.well-known/jwks.json", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 			authSrv.Handler.(*http.ServeMux).ServeHTTP(w, r)
 		})(cc, sm)
-		WithAdditionalHandler("GET", "/login", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
-			authSrv.Handler.(*http.ServeMux).ServeHTTP(w, r)
-		})(cc, sm)
-		WithAdditionalHandler("GET", "/authorize", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
-			authSrv.Handler.(*http.ServeMux).ServeHTTP(w, r)
-		})(cc, sm)
-		WithAdditionalHandler("POST", "/login", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
-			authSrv.Handler.(*http.ServeMux).ServeHTTP(w, r)
-		})(cc, sm)
-		WithAdditionalHandler("POST", "/token", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
-			authSrv.Handler.(*http.ServeMux).ServeHTTP(w, r)
-		})(cc, sm)
+		WithAdditionalHandler("GET", "/v1/auth/login", authHandler)(cc, sm)
+		WithAdditionalHandler("GET", "/v1/auth/authorize", authHandler)(cc, sm)
+		WithAdditionalHandler("POST", "/v1/auth/login", authHandler)(cc, sm)
+		WithAdditionalHandler("POST", "/v1/auth/token", authHandler)(cc, sm)
 	}
 }
 

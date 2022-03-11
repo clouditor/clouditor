@@ -88,8 +88,8 @@ func NewLoginCommand() *cobra.Command {
 			config = &oauth2.Config{
 				ClientID: DefaultClientID,
 				Endpoint: oauth2.Endpoint{
-					AuthURL:  fmt.Sprintf("%s/authorize", authURL),
-					TokenURL: fmt.Sprintf("%s/token", authURL),
+					AuthURL:  fmt.Sprintf("%s/v1/auth/authorize", authURL),
+					TokenURL: fmt.Sprintf("%s/v1/auth/token", authURL),
 				},
 				RedirectURL: DefaultCallback,
 			}
