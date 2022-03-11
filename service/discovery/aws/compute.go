@@ -28,11 +28,12 @@
 package aws
 
 import (
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/voc"
 	"context"
 	"errors"
 	"fmt"
+
+	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/voc"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	typesEC2 "github.com/aws/aws-sdk-go-v2/service/ec2/types"
@@ -219,7 +220,10 @@ func (*computeDiscovery) getOSLog(_ *typesEC2.Instance) (l *voc.OSLogging) {
 
 // mapBlockStorageIDsOfVM returns block storages IDs by iterating the VMs block storages
 func (*computeDiscovery) mapBlockStorageIDsOfVM(vm *typesEC2.Instance) (blockStorageIDs []voc.ResourceID) {
-	for _, mapping := range vm.BlockDeviceMappings {
+	// Loop through mappings using an index, since BlockDeviceMappings is an array of a struct
+	// and not of a pointer; otherwise we would copy a lot of data
+	for i := range vm.BlockDeviceMappings {
+		mapping := &vm.BlockDeviceMappings[i]
 		blockStorageIDs = append(blockStorageIDs, voc.ResourceID(aws.ToString(mapping.Ebs.VolumeId)))
 	}
 	return
@@ -227,8 +231,11 @@ func (*computeDiscovery) mapBlockStorageIDsOfVM(vm *typesEC2.Instance) (blockSto
 
 // getNetworkInterfacesOfVM returns the network interface IDs by iterating the VMs network interfaces
 func (*computeDiscovery) getNetworkInterfacesOfVM(vm *typesEC2.Instance) (networkInterfaceIDs []voc.ResourceID) {
-	for _, networkInterface := range vm.NetworkInterfaces {
-		networkInterfaceIDs = append(networkInterfaceIDs, voc.ResourceID(aws.ToString(networkInterface.NetworkInterfaceId)))
+	// Loop through mappings using an index, since is NetworkInterfaces an array of a struct
+	// and not of a pointer; otherwise we would copy a lot of data
+	for i := range vm.NetworkInterfaces {
+		ifc := &vm.NetworkInterfaces[i]
+		networkInterfaceIDs = append(networkInterfaceIDs, voc.ResourceID(aws.ToString(ifc.NetworkInterfaceId)))
 	}
 	return
 }
