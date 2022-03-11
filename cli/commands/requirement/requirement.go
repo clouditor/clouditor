@@ -40,7 +40,7 @@ func NewListRequirementsCommand() *cobra.Command {
 	return cmd
 }
 
-// NewRequirementCommand returns a cobra command for `metric` subcommands
+// NewRequirementCommand returns a cobra command for `requirement` subcommands
 func NewRequirementCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "requirement",
