@@ -425,7 +425,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 						Id:        "11111111-1111-1111-1111-111111111111",
 						ToolId:    "mock",
 						Timestamp: timestamppb.Now(),
-						Resource: toStruct(voc.VirtualMachine{
+						Resource: toStruct(&voc.VirtualMachine{
 							Compute: &voc.Compute{
 								Resource: &voc.Resource{
 									ID:   "my-resource-id",
@@ -433,16 +433,16 @@ func TestAssessmentResultHooks(t *testing.T) {
 							},
 							BootLogging: &voc.BootLogging{
 								Logging: &voc.Logging{
-									LoggingService: []voc.ResourceID{"mock-bootLoggingServiceResourceID"},
+									LoggingService: []voc.ResourceID{"SomeResourceId2"},
 									Enabled: true,
-									RetentionPeriod: 0,
+									RetentionPeriod: 36,
 								},
 							},
 							OSLogging: &voc.OSLogging{
 								Logging: &voc.Logging{
-									LoggingService: []voc.ResourceID{"mock-osLoggingServiceResourceID"},
+									LoggingService: []voc.ResourceID{"SomeResourceId2"},
 									Enabled: true,
-									RetentionPeriod: 0,
+									RetentionPeriod: 36,
 								},
 							},
 							MalwareProtection: &voc.MalwareProtection{
@@ -452,7 +452,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 								ApplicationLogging: &voc.ApplicationLogging{
 									Logging: &voc.Logging{
 										Enabled: true,
-										LoggingService: []voc.ResourceID{"mock-malwareProtectionServiceResourceID"},
+										LoggingService: []voc.ResourceID{"SomeAnalyticsService?"},
 									},
 								},
 							},

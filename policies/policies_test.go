@@ -157,7 +157,7 @@ func TestRunEvidence(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:   mockVM1ResourceID,
-							Type: []string{"Compute", "Virtual Machine", "Resource"},
+							Type: []string{"Virtual Machine", "Compute", "Resource"},
 						}},
 					BlockStorage: nil,
 					BootLogging: &voc.BootLogging{
@@ -181,8 +181,10 @@ func TestRunEvidence(t *testing.T) {
 						ApplicationLogging: &voc.ApplicationLogging{
 							Logging: &voc.Logging{
 								Enabled:         true,
-								RetentionPeriod: 0,
-								LoggingService:  []voc.ResourceID{"SomeResourceId1"},
+								RetentionPeriod: 36,
+								//TODO(lebogg): Sollte der Test hier nicht eigentlich fehlschlagen, weil die falsche ID gsetzt
+								//ist? ID sollte doch eigetnlich SomeAnalyticsService? sein.
+								LoggingService:  []voc.ResourceID{"SomeResourceId2"},
 							},
 						},
 					},
