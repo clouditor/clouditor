@@ -133,7 +133,7 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachine, erro
 			}
 
 			resources = append(resources, voc.VirtualMachine{
-				Compute: computeResource,
+				Compute:      computeResource,
 				BlockStorage: d.mapBlockStorageIDsOfVM(vm),
 				BootLogging:  d.getBootLog(vm),
 				OSLogging:    d.getOSLog(vm),

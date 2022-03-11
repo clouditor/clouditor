@@ -433,25 +433,25 @@ func TestAssessmentResultHooks(t *testing.T) {
 							},
 							BootLogging: &voc.BootLogging{
 								Logging: &voc.Logging{
-									LoggingService: []voc.ResourceID{"SomeResourceId2"},
-									Enabled: true,
+									LoggingService:  []voc.ResourceID{"SomeResourceId2"},
+									Enabled:         true,
 									RetentionPeriod: 36,
 								},
 							},
 							OSLogging: &voc.OSLogging{
 								Logging: &voc.Logging{
-									LoggingService: []voc.ResourceID{"SomeResourceId2"},
-									Enabled: true,
+									LoggingService:  []voc.ResourceID{"SomeResourceId2"},
+									Enabled:         true,
 									RetentionPeriod: 36,
 								},
 							},
 							MalwareProtection: &voc.MalwareProtection{
-								Enabled: true,
+								Enabled:              true,
 								NumberOfThreatsFound: 5,
-								DaysSinceActive: 20,
+								DaysSinceActive:      20,
 								ApplicationLogging: &voc.ApplicationLogging{
 									Logging: &voc.Logging{
-										Enabled: true,
+										Enabled:        true,
 										LoggingService: []voc.ResourceID{"SomeAnalyticsService?"},
 									},
 								},

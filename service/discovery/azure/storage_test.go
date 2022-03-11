@@ -475,7 +475,7 @@ func TestStorageHandleMethodsWhenInputIsInvalid(t *testing.T) {
 	// Clear KeySource
 	disk.Encryption.Type = ""
 
-	handleBlockStorageResponse, err := d.handleBlockStorage(disk)
+	handleBlockStorageResponse, err := d.handleBlockStorage(&disk)
 	assert.Error(t, err)
 	assert.Nil(t, handleBlockStorageResponse)
 }

@@ -144,7 +144,7 @@ func (d *azureStorageDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, 
 	}
 
 	for _, disk := range *result.Response().Value {
-		blockStorages, err := d.handleBlockStorage(disk)
+		blockStorages, err := d.handleBlockStorage(&disk)
 		if err != nil {
 			return nil, fmt.Errorf("could not handle block storage: %w", err)
 		}
@@ -205,7 +205,7 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *storage.Account)
 	return list, nil
 }
 
-func (d *azureStorageDiscovery) handleBlockStorage(disk compute.Disk) (*voc.BlockStorage, error) {
+func (d *azureStorageDiscovery) handleBlockStorage(disk *compute.Disk) (*voc.BlockStorage, error) {
 	enc, err := d.blockStorageAtRestEncryption(disk)
 	if err != nil {
 		return nil, fmt.Errorf("could not get block storage properties for the atRestEncryption: %w", err)
@@ -317,7 +317,7 @@ func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem
 	}, nil
 }
 
-func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk compute.Disk) (voc.HasAtRestEncryption, error) {
+func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk *compute.Disk) (voc.HasAtRestEncryption, error) {
 
 	var enc voc.HasAtRestEncryption
 
