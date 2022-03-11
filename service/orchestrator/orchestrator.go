@@ -44,7 +44,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-//go:embed metrics.json
+//go:embed *.json
 var f embed.FS
 
 var metrics []*assessment.Metric
@@ -53,6 +53,7 @@ var defaultMetricConfigurations map[string]*assessment.MetricConfiguration
 var log *logrus.Entry
 
 var DefaultMetricsFile = "metrics.json"
+var DefaultRequirementsFile = "requirements.json"
 
 // Service is an implementation of the Clouditor Orchestrator service
 type Service struct {
@@ -72,6 +73,8 @@ type Service struct {
 	storage persistence.Storage
 
 	metricsFile string
+
+	requirements []*orchestrator.Requirement
 }
 
 func init() {
@@ -85,6 +88,12 @@ type ServiceOption func(*Service)
 func WithMetricsFile(file string) ServiceOption {
 	return func(s *Service) {
 		s.metricsFile = file
+	}
+}
+
+func WithRequirements(r []*orchestrator.Requirement) ServiceOption {
+	return func(s *Service) {
+		s.requirements = r
 	}
 }
 
@@ -114,6 +123,13 @@ func NewService(opts ...ServiceOption) *Service {
 		s.storage, err = inmemory.NewStorage()
 		if err != nil {
 			log.Errorf("Could not initialize the storage: %v", err)
+		}
+	}
+
+	// Load requirements if nothing was specified
+	if s.requirements == nil {
+		if s.requirements, err = LoadRequirements(DefaultRequirementsFile); err != nil {
+			log.Errorf("Could not load embedded requirements. Will continue with empty requirements list: %v", err)
 		}
 	}
 

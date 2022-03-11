@@ -23,46 +23,46 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package orchestrator
+package requirement
 
 import (
-	"database/sql/driver"
-	"errors"
-	"strings"
+	"bytes"
+	"os"
+	"testing"
+
+	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/service"
+
+	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/cli"
+	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
-var (
-	ErrRequestIsNil  = errors.New("request is empty")
-	ErrServiceIsNil  = errors.New("service is empty")
-	ErrNameIsMissing = errors.New("service name is empty")
-	ErrIDIsMissing   = errors.New("service ID is empty")
-)
+func TestMain(m *testing.M) {
+	clitest.AutoChdir()
 
-// Value implements https://pkg.go.dev/database/sql/driver#Valuer to indicate
-// how this struct will be saved into an SQL database field.
-func (c *CloudService_Requirements) Value() (driver.Value, error) {
-	if c == nil || c.RequirementIds == nil {
-		return nil, nil
-	} else {
-		return driver.Value(strings.Join(c.RequirementIds, ",")), nil
-	}
+	os.Exit(clitest.RunCLITest(m, service.WithOrchestrator(service_orchestrator.NewService())))
 }
 
-// Scan implements https://pkg.go.dev/database/sql#Scanner to indicate how
-// this struct can be loaded from an SQL database field.
-func (c *CloudService_Requirements) Scan(value interface{}) error {
-	switch v := value.(type) {
-	case string:
-		(*c).RequirementIds = strings.Split(v, ",")
-	default:
-		return errors.New("unsupported type")
-	}
+func TestListRequirements(t *testing.T) {
+	var err error
+	var b bytes.Buffer
 
-	return nil
-}
+	cli.Output = &b
 
-// GormDataType implements GormDataTypeInterface to give an indication how
-// this struct will be serialized into a database using GORM.
-func (*CloudService_Requirements) GormDataType() string {
-	return "string"
+	cmd := NewListRequirementsCommand()
+	err = cmd.RunE(nil, []string{})
+
+	assert.NoError(t, err)
+
+	var response *orchestrator.ListRequirementsResponse = &orchestrator.ListRequirementsResponse{}
+
+	err = protojson.Unmarshal(b.Bytes(), response)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, response)
+	assert.NotEmpty(t, response.Requirements)
 }

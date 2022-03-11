@@ -26,43 +26,38 @@
 package orchestrator
 
 import (
-	"database/sql/driver"
-	"errors"
-	"strings"
+	"context"
+	"encoding/json"
+	"fmt"
+
+	"clouditor.io/clouditor/api/orchestrator"
 )
 
-var (
-	ErrRequestIsNil  = errors.New("request is empty")
-	ErrServiceIsNil  = errors.New("service is empty")
-	ErrNameIsMissing = errors.New("service name is empty")
-	ErrIDIsMissing   = errors.New("service ID is empty")
-)
+// LoadRequirements loads requirements definitions from a JSON file.
+func LoadRequirements(file string) (requirements []*orchestrator.Requirement, err error) {
+	var (
+		b []byte
+	)
 
-// Value implements https://pkg.go.dev/database/sql/driver#Valuer to indicate
-// how this struct will be saved into an SQL database field.
-func (c *CloudService_Requirements) Value() (driver.Value, error) {
-	if c == nil || c.RequirementIds == nil {
-		return nil, nil
-	} else {
-		return driver.Value(strings.Join(c.RequirementIds, ",")), nil
-	}
-}
+	log.Infof("Loading requirements from %s", file)
 
-// Scan implements https://pkg.go.dev/database/sql#Scanner to indicate how
-// this struct can be loaded from an SQL database field.
-func (c *CloudService_Requirements) Scan(value interface{}) error {
-	switch v := value.(type) {
-	case string:
-		(*c).RequirementIds = strings.Split(v, ",")
-	default:
-		return errors.New("unsupported type")
+	b, err = f.ReadFile(file)
+	if err != nil {
+		return nil, fmt.Errorf("error while loading %s: %w", file, err)
 	}
 
-	return nil
+	err = json.Unmarshal(b, &requirements)
+	if err != nil {
+		return nil, fmt.Errorf("error in JSON marshal: %w", err)
+	}
+
+	return requirements, nil
 }
 
-// GormDataType implements GormDataTypeInterface to give an indication how
-// this struct will be serialized into a database using GORM.
-func (*CloudService_Requirements) GormDataType() string {
-	return "string"
+// ListRequirements is a method implementation of the OrchestratorServer interface,
+// returning a list of requirements
+func (svc *Service) ListRequirements(_ context.Context, _ *orchestrator.ListRequirementsRequest) (response *orchestrator.ListRequirementsResponse, err error) {
+	return &orchestrator.ListRequirementsResponse{
+		Requirements: svc.requirements,
+	}, nil
 }
