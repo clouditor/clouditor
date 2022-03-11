@@ -32,7 +32,7 @@ import (
 
 // NewListRequirementsCommand returns a cobra command for the `list` subcommand
 func NewListRequirementsCommand() *cobra.Command {
-	// Use Orchestrator's function for listing assessment results
+	// Use Orchestrator's function for listing requirements
 	cmd := orchestrator.NewListRequirementsCommand()
 
 	// Change use for better readability

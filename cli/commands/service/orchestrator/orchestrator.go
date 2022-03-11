@@ -100,7 +100,7 @@ func NewListRequirementsCommand() *cobra.Command {
 	return cmd
 }
 
-// NewOrchestratorCommand returns a cobra command for `assessment` subcommands
+// NewOrchestratorCommand returns a cobra command for `orchestrator` subcommands
 func NewOrchestratorCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "orchestrator",
