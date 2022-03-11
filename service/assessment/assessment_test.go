@@ -33,8 +33,6 @@ import (
 	"io"
 	"os"
 	"reflect"
-	"runtime"
-	"sync"
 	"testing"
 
 	"clouditor.io/clouditor/api/assessment"
