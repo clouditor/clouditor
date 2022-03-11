@@ -45,7 +45,6 @@ func Test_ValidateEvidence(t *testing.T) {
 		args          args
 		wantResp      string
 		wantRespError error
-		wantErr       bool
 	}{
 		{
 			name: "Missing resource",
@@ -58,7 +57,6 @@ func Test_ValidateEvidence(t *testing.T) {
 			},
 			wantResp:      "",
 			wantRespError: ErrNotValidResource,
-			wantErr:       true,
 		},
 		{
 			name: "Resource is not a struct",
@@ -75,7 +73,76 @@ func Test_ValidateEvidence(t *testing.T) {
 				}},
 			wantResp:      "",
 			wantRespError: ErrResourceNotStruct,
-			wantErr:       true,
+		},
+		{
+			name: "Resource is missing the id field",
+			args: args{
+				Evidence: &Evidence{
+					Id:        "11111111-1111-1111-1111-111111111111",
+					Timestamp: timestamppb.Now(),
+					ToolId:    "mock",
+					Resource: toStruct(voc.VirtualMachine{
+						Compute: &voc.Compute{
+							CloudResource: &voc.CloudResource{
+								Type: []string{"VirtualMachine"}},
+						},
+					}, t),
+				}},
+			wantRespError: ErrResourceIdMissing,
+		},
+		{
+			name: "Id of resource is empty",
+			args: args{
+				Evidence: &Evidence{
+					Id:        "11111111-1111-1111-1111-111111111111",
+					Timestamp: timestamppb.Now(),
+					ToolId:    "mock",
+					Resource: toStruct(voc.VirtualMachine{
+						Compute: &voc.Compute{
+							CloudResource: &voc.CloudResource{
+								ID:   "",
+								Type: []string{"VirtualMachine"}},
+						},
+					}, t),
+				}},
+			wantRespError: ErrResourceIdMissing,
+		},
+		{
+			name: "Type of resource is nil",
+			args: args{
+				Evidence: &Evidence{
+					Id:        "11111111-1111-1111-1111-111111111111",
+					Timestamp: timestamppb.Now(),
+					ToolId:    "mock",
+					Resource: toStruct(voc.VirtualMachine{
+						Compute: &voc.Compute{
+							CloudResource: &voc.CloudResource{
+								ID:   "my-resource-id",
+								Type: nil,
+							},
+						},
+					}, t),
+				}},
+			// Since type is nil, the field exists, but it is not of array type
+			wantRespError: ErrResourceTypeNotArrayOfStrings,
+		},
+		{
+			name: "Array of resource types is empty",
+			args: args{
+				Evidence: &Evidence{
+					Id:        "11111111-1111-1111-1111-111111111111",
+					Timestamp: timestamppb.Now(),
+					ToolId:    "mock",
+					Resource: toStruct(voc.VirtualMachine{
+						Compute: &voc.Compute{
+							CloudResource: &voc.CloudResource{
+								ID:   "my-resource-id",
+								Type: []string{},
+							},
+						},
+					}, t),
+				}},
+			wantRespError: ErrResourceTypeEmpty,
 		},
 		{
 			name: "Missing toolId",
@@ -91,9 +158,7 @@ func Test_ValidateEvidence(t *testing.T) {
 						},
 					}, t),
 				}},
-			wantResp:      "",
 			wantRespError: ErrToolIdMissing,
-			wantErr:       true,
 		},
 		{
 			name: "Missing timestamp",
@@ -111,7 +176,6 @@ func Test_ValidateEvidence(t *testing.T) {
 				}},
 			wantResp:      "",
 			wantRespError: ErrTimestampMissing,
-			wantErr:       true,
 		},
 		{
 			name: "Valid evidence",
@@ -130,7 +194,6 @@ func Test_ValidateEvidence(t *testing.T) {
 				}},
 			wantResp:      "my-resource-id",
 			wantRespError: nil,
-			wantErr:       false,
 		},
 	}
 
@@ -138,10 +201,12 @@ func Test_ValidateEvidence(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			resourceId, err := tt.args.Evidence.Validate()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
+
+			if isError := assert.ErrorIs(t, err, tt.wantRespError); isError {
+				// If we have an error, we do not need to check other parts of the response (resourceId)
 				return
 			}
+
 			if !reflect.DeepEqual(resourceId, tt.wantResp) {
 				t.Errorf("Validate() gotResp = %v, want %v", resourceId, tt.wantResp)
 			}
