@@ -182,9 +182,7 @@ func TestRunEvidence(t *testing.T) {
 							Logging: &voc.Logging{
 								Enabled:         true,
 								RetentionPeriod: 36,
-								//TODO(lebogg): Sollte der Test hier nicht eigentlich fehlschlagen, weil die falsche ID gsetzt
-								//ist? ID sollte doch eigetnlich SomeAnalyticsService? sein.
-								LoggingService:  []voc.ResourceID{"SomeResourceId2"},
+								LoggingService:  []voc.ResourceID{"SomeAnalyticsService?"},
 							},
 						},
 					},

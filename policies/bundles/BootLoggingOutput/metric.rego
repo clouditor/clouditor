@@ -8,12 +8,12 @@ default compliant = false
 
 metricConfiguration := data.target_value
 
-bootLogging := input.bootLogging.logging
+bootLogging := input.bootLogging
 
 applicable {
 	bootLogging
 }
 
 compliant {
-	isIn(data.target_value, bootLogging.LoggingService)
+	isIn(data.target_value, bootLogging.loggingService)
 }
