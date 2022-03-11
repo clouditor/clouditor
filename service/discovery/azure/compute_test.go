@@ -224,13 +224,13 @@ func TestVirtualMachine(t *testing.T) {
 	assert.Equal(t, "data_disk_1", string(virtualMachine.BlockStorage[1]))
 	assert.Equal(t, "123", string(virtualMachine.NetworkInterface[0]))
 	assert.Equal(t, "eastus", virtualMachine.GeoLocation.Region)
-	assert.Equal(t, true, virtualMachine.BootLog.Enabled)
-	assert.Equal(t, voc.ResourceID("https://logstoragevm1.blob.core.windows.net/"), virtualMachine.BootLog.Output[0])
-	assert.Equal(t, time.Duration(0), virtualMachine.BootLog.RetentionPeriod)
+	assert.Equal(t, true, virtualMachine.BootLogging.Enabled)
+	assert.Equal(t, voc.ResourceID("https://logstoragevm1.blob.core.windows.net/"), virtualMachine.BootLogging.LoggingService[0])
+	assert.Equal(t, time.Duration(0), virtualMachine.BootLogging.RetentionPeriod)
 
 	virtualMachine2, ok := list[1].(*voc.VirtualMachine)
 	assert.True(t, ok)
-	assert.Equal(t, voc.ResourceID(""), virtualMachine2.BootLog.Output[0])
+	assert.Equal(t, voc.ResourceID(""), virtualMachine2.BootLogging.LoggingService[0])
 }
 
 func TestFunction(t *testing.T) {

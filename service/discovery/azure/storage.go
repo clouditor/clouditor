@@ -82,7 +82,7 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 }
 
 func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource, error) {
-	var list []voc.IsCloudResource
+	var storageResourcesList []voc.IsCloudResource
 
 	client := storage.NewAccountsClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
@@ -94,23 +94,32 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 
 	// Discover object and file storages
 	accounts := result.Values()
-	for i := range accounts {
+	for _, account := range accounts {
 		// Discover object storages
-		objectStorages, err := d.discoverObjectStorages(&accounts[i])
+		objectStorages, err := d.discoverObjectStorages(&account)
 		if err != nil {
 			return nil, fmt.Errorf("could not handle object storages: %w", err)
 		}
+		log.Infof("Adding object storages %+v", objectStorages)
 
 		// Discover file storages
-		fileStorages, err := d.discoverFileStorages(&accounts[i])
+		fileStorages, err := d.discoverFileStorages(&account)
 		if err != nil {
 			return nil, fmt.Errorf("could not handle file storages: %w", err)
 		}
+		log.Infof("Adding file storages %+v", fileStorages)
 
+		storageResourcesList = append(storageResourcesList, objectStorages...)
+		storageResourcesList = append(storageResourcesList, fileStorages...)
+
+		// Create storage service for all storage account resources
+		storageService, err := d.handleStorageAccount(&account, storageResourcesList)
+		if err != nil {
+			return nil, fmt.Errorf("could not create storage service: %w", err)
+		}
 		log.Infof("Adding storage account %+v", objectStorages)
 
-		list = append(list, objectStorages...)
-		list = append(list, fileStorages...)
+		storageResourcesList = append(storageResourcesList, storageService)
 	}
 
 	// Discover block storages
@@ -118,9 +127,9 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 	if err != nil {
 		return nil, fmt.Errorf("could not handle block storages: %w", err)
 	}
-	list = append(list, blockStorages...)
+	storageResourcesList = append(storageResourcesList, blockStorages...)
 
-	return list, err
+	return storageResourcesList, err
 }
 
 func (d *azureStorageDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, error) {
@@ -135,7 +144,7 @@ func (d *azureStorageDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, 
 	}
 
 	for _, disk := range *result.Response().Value {
-		blockStorages, err := d.handleBlockStorage(disk)
+		blockStorages, err := d.handleBlockStorage(&disk)
 		if err != nil {
 			return nil, fmt.Errorf("could not handle block storage: %w", err)
 		}
@@ -196,7 +205,7 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *storage.Account)
 	return list, nil
 }
 
-func (d *azureStorageDiscovery) handleBlockStorage(disk compute.Disk) (*voc.BlockStorage, error) {
+func (d *azureStorageDiscovery) handleBlockStorage(disk *compute.Disk) (*voc.BlockStorage, error) {
 	enc, err := d.blockStorageAtRestEncryption(disk)
 	if err != nil {
 		return nil, fmt.Errorf("could not get block storage properties for the atRestEncryption: %w", err)
@@ -204,7 +213,7 @@ func (d *azureStorageDiscovery) handleBlockStorage(disk compute.Disk) (*voc.Bloc
 
 	return &voc.BlockStorage{
 		Storage: &voc.Storage{
-			CloudResource: &voc.CloudResource{
+			Resource: &voc.Resource{
 				ID:           voc.ResourceID(to.String(disk.ID)),
 				Name:         to.String(disk.Name),
 				CreationTime: disk.TimeCreated.Unix(),
@@ -226,7 +235,7 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 
 	return &voc.ObjectStorage{
 		Storage: &voc.Storage{
-			CloudResource: &voc.CloudResource{
+			Resource: &voc.Resource{
 				ID:           voc.ResourceID(to.String(container.ID)),
 				Name:         to.String(container.Name),
 				CreationTime: account.CreationTime.Unix(),
@@ -237,8 +246,34 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 			},
 			AtRestEncryption: enc,
 		},
+	}, nil
+}
+
+func (*azureStorageDiscovery) handleStorageAccount(account *storage.Account, storagesList []voc.IsCloudResource) (*voc.StorageService, error) {
+	var storageResourceIDs []voc.ResourceID
+
+	// Get all object storage IDs
+	for _, storage := range storagesList {
+		storageResourceIDs = append(storageResourceIDs, storage.GetID())
+	}
+
+	storageService := &voc.StorageService{
+		Storages: storageResourceIDs,
+		NetworkService: &voc.NetworkService{
+			Networking: &voc.Networking{
+				Resource: &voc.Resource{
+					ID:           voc.ResourceID(to.String(account.ID)),
+					Name:         *account.Name,
+					CreationTime: account.CreationTime.Unix(),
+					Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
+					GeoLocation: voc.GeoLocation{
+						Region: *account.Location,
+					},
+				},
+			},
+		},
 		HttpEndpoint: &voc.HttpEndpoint{
-			Url: to.String(account.PrimaryEndpoints.Blob) + to.String(container.Name),
+			Url: generalizeURL(*account.PrimaryEndpoints.Blob),
 			TransportEncryption: &voc.TransportEncryption{
 				Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
 				Enabled:    true, // cannot be disabled
@@ -246,7 +281,18 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 				Algorithm:  "TLS",
 			},
 		},
-	}, nil
+	}
+
+	return storageService, nil
+}
+
+//generalizeURL generalizes the URL, because the URL depends on the storage type
+func generalizeURL(url string) string {
+	urlSplit := strings.Split(url, ".")
+	urlSplit[1] = "[file,blob]"
+	newURL := strings.Join(urlSplit, ".")
+
+	return newURL
 }
 
 func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem) (*voc.FileStorage, error) {
@@ -254,9 +300,10 @@ func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem
 	if err != nil {
 		return nil, fmt.Errorf("could not get file storage properties for the atRestEncryption: %w", err)
 	}
+
 	return &voc.FileStorage{
 		Storage: &voc.Storage{
-			CloudResource: &voc.CloudResource{
+			Resource: &voc.Resource{
 				ID:           voc.ResourceID(to.String(fileshare.ID)),
 				Name:         to.String(fileshare.Name),
 				CreationTime: account.CreationTime.Unix(),
@@ -267,19 +314,10 @@ func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem
 			},
 			AtRestEncryption: enc,
 		},
-		HttpEndpoint: &voc.HttpEndpoint{
-			Url: to.String(account.PrimaryEndpoints.File) + to.String(fileshare.Name),
-			TransportEncryption: &voc.TransportEncryption{
-				Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
-				Enabled:    true, // cannot be disabled
-				TlsVersion: string(account.MinimumTLSVersion),
-				Algorithm:  "TLS",
-			},
-		},
 	}, nil
 }
 
-func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk compute.Disk) (voc.HasAtRestEncryption, error) {
+func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk *compute.Disk) (voc.HasAtRestEncryption, error) {
 
 	var enc voc.HasAtRestEncryption
 

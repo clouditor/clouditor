@@ -51,16 +51,16 @@ func (*k8sNetworkDiscovery) Description() string {
 	return "Discover Kubernetes network resources."
 }
 
-func (k k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
+func (d k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
-	services, err := k.intf.CoreV1().Services("").List(context.TODO(), metav1.ListOptions{})
+	services, err := d.intf.CoreV1().Services("").List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("could not list services: %w", err)
 	}
 
 	for i := range services.Items {
-		c := k.handleService(&services.Items[i])
+		c := d.handleService(&services.Items[i])
 
 		log.Infof("Adding service %+v", c)
 
@@ -68,13 +68,13 @@ func (k k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
 	}
 
 	// TODO Does not get ingresses
-	ingresses, err := k.intf.NetworkingV1().Ingresses("").List(context.TODO(), metav1.ListOptions{})
+	ingresses, err := d.intf.NetworkingV1().Ingresses("").List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return list, fmt.Errorf("could not list ingresses: %w", err)
 	}
 
 	for i := range ingresses.Items {
-		c := k.handleIngress(&ingresses.Items[i])
+		c := d.handleIngress(&ingresses.Items[i])
 
 		log.Infof("Adding ingress %+v", c)
 
@@ -93,7 +93,7 @@ func (k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwork 
 
 	return &voc.NetworkService{
 		Networking: &voc.Networking{
-			CloudResource: &voc.CloudResource{
+			Resource: &voc.Resource{
 				ID:           voc.ResourceID(getNetworkServiceResourceID(service)),
 				Name:         service.Name,
 				CreationTime: service.CreationTimestamp.Unix(),
@@ -116,7 +116,7 @@ func (k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 	lb := &voc.LoadBalancer{
 		NetworkService: &voc.NetworkService{
 			Networking: &voc.Networking{
-				CloudResource: &voc.CloudResource{
+				Resource: &voc.Resource{
 					ID:           voc.ResourceID(getLoadBalancerResourceID(ingress)),
 					Name:         ingress.Name,
 					CreationTime: ingress.CreationTimestamp.Unix(),

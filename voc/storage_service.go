@@ -25,8 +25,8 @@
 
 package voc
 
-type ContainerOrchestration struct {
-	*Resource
-	Containers    []ResourceID `json:"containers"`
-	ManagementUrl string       `json:"managementUrl"`
+type StorageService struct {
+	*NetworkService
+	Storages     []ResourceID  `json:"storages"`
+	HttpEndpoint *HttpEndpoint `json:"httpEndpoint"`
 }

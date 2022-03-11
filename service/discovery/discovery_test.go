@@ -168,11 +168,11 @@ func TestStartDiscovery(t *testing.T) {
 				assert.NotEmpty(t, e.Resource)
 				// Check if ID of mockDiscovery's resource is mapped to resource id of the evidence
 				list, _ := tt.fields.discoverer.List()
-				assert.Equal(t, string(list[0].GetID()), e.Resource.GetStructValue().AsMap()["id"].(string))
+				// Only the last element sent can be checked
+				assert.Equal(t, string(list[len(list)-1].GetID()), e.Resource.GetStructValue().AsMap()["id"].(string))
 			}
 		})
 	}
-
 }
 
 func TestQuery(t *testing.T) {
@@ -208,7 +208,7 @@ func TestQuery(t *testing.T) {
 		{
 			name:                     "No filtering",
 			fields:                   fields{queryRequest: &discovery.QueryRequest{}},
-			numberOfQueriedResources: 1,
+			numberOfQueriedResources: 2,
 		},
 	}
 
@@ -551,10 +551,22 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 		return []voc.IsCloudResource{
 			&voc.ObjectStorage{
 				Storage: &voc.Storage{
-					CloudResource: &voc.CloudResource{
+					Resource: &voc.Resource{
 						ID:   "some-id",
 						Name: "some-name",
 						Type: []string{"ObjectStorage", "Storage", "Resource"},
+					},
+				},
+			},
+			&voc.StorageService{
+				Storages: []voc.ResourceID{("some-id")},
+				NetworkService: &voc.NetworkService{
+					Networking: &voc.Networking{
+						Resource: &voc.Resource{
+							ID:   "some-storage-account-id",
+							Name: "some-storage-account-name",
+							Type: []string{"StorageService", "NetworkService", "Networking", "Resource"},
+						},
 					},
 				},
 				HttpEndpoint: &voc.HttpEndpoint{

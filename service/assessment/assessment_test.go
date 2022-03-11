@@ -166,7 +166,7 @@ func TestAssessEvidence(t *testing.T) {
 				evidence: &evidence.Evidence{
 					Id:       "11111111-1111-1111-1111-111111111111",
 					ToolId:   "mock",
-					Resource: toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+					Resource: toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 				},
 			},
 			hasRPCConnection: true,
@@ -184,7 +184,7 @@ func TestAssessEvidence(t *testing.T) {
 					Id:        "11111111-1111-1111-1111-111111111111",
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
-					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 				},
 			},
 			hasRPCConnection: true,
@@ -201,7 +201,7 @@ func TestAssessEvidence(t *testing.T) {
 					Id:        "11111111-1111-1111-1111-111111111111",
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
-					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 				},
 			},
 			hasRPCConnection: false,
@@ -268,7 +268,7 @@ func TestAssessEvidences(t *testing.T) {
 				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
 						Timestamp: timestamppb.Now(),
-						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
+						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidenceResponse{
@@ -286,7 +286,7 @@ func TestAssessEvidences(t *testing.T) {
 					Evidence: &evidence.Evidence{
 						Timestamp: timestamppb.Now(),
 						ToolId:    "2134",
-						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
+						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidenceResponse{
@@ -303,7 +303,7 @@ func TestAssessEvidences(t *testing.T) {
 					Evidence: &evidence.Evidence{
 						Timestamp: timestamppb.Now(),
 						ToolId:    "2134",
-						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
+						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidenceResponse{
@@ -321,7 +321,7 @@ func TestAssessEvidences(t *testing.T) {
 					Evidence: &evidence.Evidence{
 						Timestamp: timestamppb.Now(),
 						ToolId:    "2134",
-						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
+						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
 			wantErr:        true,
 			wantErrMessage: "rpc error: code = Unknown desc = cannot send response to the client",
@@ -336,7 +336,7 @@ func TestAssessEvidences(t *testing.T) {
 					Evidence: &evidence.Evidence{
 						Timestamp: timestamppb.Now(),
 						ToolId:    "2134",
-						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
+						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
 			wantErr:        true,
 			wantErrMessage: "rpc error: code = Unknown desc = cannot receive stream request",
@@ -388,9 +388,10 @@ func TestAssessmentResultHooks(t *testing.T) {
 	var (
 		hookCallCounter = 0
 		wg              sync.WaitGroup
+		hookCounts      = 16
 	)
 
-	wg.Add(12)
+	wg.Add(hookCounts)
 
 	firstHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
 		hookCallCounter++
@@ -424,11 +425,36 @@ func TestAssessmentResultHooks(t *testing.T) {
 						Id:        "11111111-1111-1111-1111-111111111111",
 						ToolId:    "mock",
 						Timestamp: timestamppb.Now(),
-						Resource: toStruct(voc.VirtualMachine{
+						Resource: toStruct(&voc.VirtualMachine{
 							Compute: &voc.Compute{
-								CloudResource: &voc.CloudResource{
+								Resource: &voc.Resource{
 									ID:   "my-resource-id",
-									Type: []string{"VirtualMachine"}},
+									Type: []string{"VirtualMachine", "Compute", "Resource"}},
+							},
+							BootLogging: &voc.BootLogging{
+								Logging: &voc.Logging{
+									LoggingService:  []voc.ResourceID{"SomeResourceId2"},
+									Enabled:         true,
+									RetentionPeriod: 36,
+								},
+							},
+							OSLogging: &voc.OSLogging{
+								Logging: &voc.Logging{
+									LoggingService:  []voc.ResourceID{"SomeResourceId2"},
+									Enabled:         true,
+									RetentionPeriod: 36,
+								},
+							},
+							MalwareProtection: &voc.MalwareProtection{
+								Enabled:              true,
+								NumberOfThreatsFound: 5,
+								DaysSinceActive:      20,
+								ApplicationLogging: &voc.ApplicationLogging{
+									Logging: &voc.Logging{
+										Enabled:        true,
+										LoggingService: []voc.ResourceID{"SomeAnalyticsService?"},
+									},
+								},
 							},
 						}, t),
 					}},
@@ -459,7 +485,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 			// To test the hooks we have to call a function that calls the hook function
 			gotResp, err := s.AssessEvidence(tt.args.in0, tt.args.evidence)
 
-			// wait for all hooks (6 metrics * 2 hooks)
+			// wait for all hooks (2 metrics * 2 hooks)
 			wg.Wait()
 
 			if (err != nil) != tt.wantErr {
@@ -472,7 +498,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 
 			assert.Equal(t, tt.wantResp, gotResp)
 			assert.NotEmpty(t, s.results)
-			assert.Equal(t, 12, hookCallCounter)
+			assert.Equal(t, hookCounts, hookCallCounter)
 		})
 	}
 }
@@ -486,7 +512,7 @@ func TestListAssessmentResults(t *testing.T) {
 			Id:        "11111111-1111-1111-1111-111111111111",
 			ToolId:    "mock",
 			Timestamp: timestamppb.Now(),
-			Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+			Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 		}})
 	assert.NoError(t, err)
 	var results *assessment.ListAssessmentResultsResponse
@@ -742,7 +768,7 @@ func TestHandleEvidence(t *testing.T) {
 					Id:        "11111111-1111-1111-1111-111111111111",
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
-					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 				},
 				resourceId: "my-resource-id",
 			},
@@ -762,7 +788,7 @@ func TestHandleEvidence(t *testing.T) {
 					Id:        "11111111-1111-1111-1111-111111111111",
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
-					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{}}}}, t),
+					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{}}}}, t),
 				},
 				resourceId: "my-resource-id",
 			},
@@ -784,7 +810,7 @@ func TestHandleEvidence(t *testing.T) {
 					Id:        "11111111-1111-1111-1111-111111111111",
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
-					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 				},
 				resourceId: "my-resource-id",
 			},
@@ -807,7 +833,7 @@ func TestHandleEvidence(t *testing.T) {
 					Id:        "11111111-1111-1111-1111-111111111111",
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
-					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 				},
 				resourceId: "my-resource-id",
 			},
