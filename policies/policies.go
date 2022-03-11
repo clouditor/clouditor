@@ -56,13 +56,19 @@ type MetricConfigurationSource interface {
 	MetricConfiguration(metric string) (*assessment.MetricConfiguration, error)
 }
 
-func RunEvidence(evidence *evidence.Evidence, holder MetricConfigurationSource) ([]*Result, error) {
+func RunEvidence(e *evidence.Evidence, holder MetricConfigurationSource) ([]*Result, error) {
 	data := make([]*Result, 0)
 	var baseDir string = "."
 
-	var m = evidence.Resource.GetStructValue().AsMap()
+	var m = e.Resource.GetStructValue().AsMap()
 
 	var types []string
+
+	// Actually, this check is redundant since we validate evidence before in AssessEvidence(s)
+	_, ok := m["type"]
+	if !ok {
+		return nil, evidence.ErrResourceTypeFieldMissing
+	}
 
 	if rawTypes, ok := m["type"].([]interface{}); ok {
 		if len(rawTypes) != 0 {
@@ -71,7 +77,7 @@ func RunEvidence(evidence *evidence.Evidence, holder MetricConfigurationSource) 
 			return nil, fmt.Errorf("list of types is empty")
 		}
 	} else {
-		return nil, fmt.Errorf("got type '%T' but wanted '[]interface {}'. Check if resource types are specified ", rawTypes)
+		return nil, fmt.Errorf("check if field resource type is set and if it has the right type (got '%T', wanted '[]interface {}')", rawTypes)
 	}
 	for i, v := range m["type"].([]interface{}) {
 		if t, ok := v.(string); !ok {

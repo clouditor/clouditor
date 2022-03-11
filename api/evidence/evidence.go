@@ -30,14 +30,17 @@ import "errors"
 type EvidenceHookFunc func(result *Evidence, err error)
 
 var (
-	ErrNotValidResource       = errors.New("resource in evidence is missing")
-	ErrResourceNotStruct      = errors.New("resource in evidence is not struct value")
-	ErrResourceNotMap         = errors.New("resource in evidence is not a map")
-	ErrResourceIdMissing      = errors.New("resource in evidence is missing the id field")
-	ErrResourceIdNotString    = errors.New("resource id in evidence is not a string")
-	ErrToolIdMissing          = errors.New("tool id in evidence is missing")
-	ErrTimestampMissing       = errors.New("timestamp in evidence is missing")
-	ErrResourceIdFieldMissing = errors.New("field id is missing")
+	ErrNotValidResource         = errors.New("resource in evidence is missing")
+	ErrResourceNotStruct        = errors.New("resource in evidence is not struct value")
+	ErrResourceNotMap           = errors.New("resource in evidence is not a map")
+	ErrResourceIdMissing        = errors.New("resource in evidence is missing the id field")
+	ErrResourceIdNotString      = errors.New("resource id in evidence is not a string")
+	ErrToolIdMissing            = errors.New("tool id in evidence is missing")
+	ErrTimestampMissing         = errors.New("timestamp in evidence is missing")
+	ErrResourceIdFieldMissing   = errors.New("field id is missing")
+	ErrResourceTypeFieldMissing = errors.New("field type in evidence is missing")
+	ErrResourceTypeNotArray     = errors.New("resource type in evidence is not an array of strings")
+	ErrResourceTypeEmpty        = errors.New("resource type (array) in evidence is empty")
 )
 
 // Validate validates the evidence according to several required fields
@@ -66,6 +69,18 @@ func (evidence *Evidence) Validate() (resourceId string, err error) {
 	resourceId, ok = field.(string)
 	if !ok {
 		return "", ErrResourceIdNotString
+	}
+
+	_, ok = m["type"]
+	if !ok {
+		return "", ErrResourceTypeFieldMissing
+	}
+
+	fieldType, ok := m["type"].([]string)
+	if !ok {
+		return "", ErrResourceTypeNotArray
+	} else if len(fieldType) == 0 {
+		return "", ErrResourceTypeEmpty
 	}
 
 	if evidence.ToolId == "" {
