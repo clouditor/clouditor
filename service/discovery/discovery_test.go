@@ -408,8 +408,8 @@ func TestService_initAssessmentStream(t *testing.T) {
 
 	type fields struct {
 		hasRPCConnection bool
-		username         string
-		password         string
+		clientID         string
+		clientSecret     string
 	}
 
 	tests := []struct {
@@ -436,20 +436,20 @@ func TestService_initAssessmentStream(t *testing.T) {
 			},
 		},
 		{
-			name: "Authenticated RPC connection with valid user",
+			name: "Authenticated RPC connection with valid client credentials",
 			fields: fields{
 				hasRPCConnection: true,
-				username:         "clouditor",
-				password:         "clouditor",
+				clientID:         testutil.TestAuthClientID,
+				clientSecret:     testutil.TestAuthClientSecret,
 			},
 			wantErr: nil,
 		},
 		{
-			name: "Authenticated RPC connection with invalid user",
+			name: "Authenticated RPC connection with invalid client credentials",
 			fields: fields{
 				hasRPCConnection: true,
-				username:         "notclouditor",
-				password:         "password",
+				clientID:         "not" + testutil.TestAuthClientID,
+				clientSecret:     testutil.TestAuthClientSecret,
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				s, _ := status.FromError(errors.Unwrap(err))
@@ -461,8 +461,8 @@ func TestService_initAssessmentStream(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService(WithOAuth2Authorizer(&clientcredentials.Config{
-				ClientID:     testutil.TestAuthClientID,
-				ClientSecret: testutil.TestAuthClientSecret,
+				ClientID:     tt.fields.clientID,
+				ClientSecret: tt.fields.clientSecret,
 				TokenURL:     testutil.TokenURL(port),
 			}))
 
