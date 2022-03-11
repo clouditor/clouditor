@@ -8,12 +8,12 @@ default compliant = false
 
 metricConfiguration := data.target_value
 
-OSLogging := input.oSLogging
+OSLogging := input.oSLogging.logging
 
 applicable {
 	OSLogging
 }
 
 compliant {
-	isIn(data.target_value, OSLogging.output)
+	isIn(data.target_value, OSLogging.LoggingService)
 }

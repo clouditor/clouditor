@@ -433,14 +433,14 @@ func TestAssessmentResultHooks(t *testing.T) {
 							},
 							BootLogging: &voc.BootLogging{
 								Logging: &voc.Logging{
-									LoggingService: []voc.ResourceID{voc.ResourceID("mock-bootLoggingServiceResourceID")},
+									LoggingService: []voc.ResourceID{"mock-bootLoggingServiceResourceID"},
 									Enabled: true,
 									RetentionPeriod: 0,
 								},
 							},
 							OSLogging: &voc.OSLogging{
 								Logging: &voc.Logging{
-									LoggingService: []voc.ResourceID{voc.ResourceID("mock-osLoggingServiceResourceID")},
+									LoggingService: []voc.ResourceID{"mock-osLoggingServiceResourceID"},
 									Enabled: true,
 									RetentionPeriod: 0,
 								},
