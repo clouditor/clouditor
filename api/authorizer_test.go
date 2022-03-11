@@ -108,8 +108,8 @@ func Test_oauthAuthorizer_Token(t *testing.T) {
 
 func TestNewOAuthAuthorizerFromClientCredentials(t *testing.T) {
 	var config = clientcredentials.Config{
-		ClientID:     "client",
-		ClientSecret: "secret",
+		ClientID:     testutil.TestAuthClientID,
+		ClientSecret: testutil.TestAuthClientSecret,
 		TokenURL:     "/v1/auth/token",
 	}
 
