@@ -6,12 +6,12 @@ default applicable = false
 
 default compliant = false
 
-bootLog := input.bootLog
+bootLogging := input.bootLogging
 
 applicable {
-	bootLog
+	bootLogging
 }
 
 compliant {
-	compare(data.operator, data.target_value, bootLog.enabled)
+	compare(data.operator, data.target_value, bootLogging.enabled)
 }

@@ -94,7 +94,7 @@ func TestStoreEvidence(t *testing.T) {
 						Timestamp: timestamppb.Now(),
 						Raw:       "",
 						Resource: toStruct(voc.VirtualMachine{
-							Compute: &voc.Compute{CloudResource: &voc.CloudResource{
+							Compute: &voc.Compute{Resource: &voc.Resource{
 								ID: "mock-id",
 							}},
 						}, t),
@@ -115,7 +115,7 @@ func TestStoreEvidence(t *testing.T) {
 						Raw:       "",
 						Resource: toStruct(voc.VirtualMachine{
 							Compute: &voc.Compute{
-								CloudResource: &voc.CloudResource{
+								Resource: &voc.Resource{
 									ID: "mock-id-1",
 								},
 							},
@@ -205,7 +205,7 @@ func TestStoreEvidences(t *testing.T) {
 							Raw:       "",
 							Resource: toStructWithoutTest(voc.VirtualMachine{
 								Compute: &voc.Compute{
-									CloudResource: &voc.CloudResource{
+									Resource: &voc.Resource{
 										ID: "mock-id-1",
 									},
 								},
@@ -347,7 +347,7 @@ func TestEvidenceHook(t *testing.T) {
 					ToolId:    "mockToolId-1",
 					Resource: toStruct(voc.VirtualMachine{
 						Compute: &voc.Compute{
-							CloudResource: &voc.CloudResource{
+							Resource: &voc.Resource{
 								ID: "mock-id-1",
 							},
 						},
@@ -399,7 +399,7 @@ func createStoreEvidenceRequestMocks(count int) []*evidence.StoreEvidenceRequest
 				Raw:       "",
 				Resource: toStructWithoutTest(voc.VirtualMachine{
 					Compute: &voc.Compute{
-						CloudResource: &voc.CloudResource{
+						Resource: &voc.Resource{
 							ID: "mock-id-1",
 						},
 					},

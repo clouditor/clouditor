@@ -152,7 +152,8 @@ func (d *azureARMTemplateDiscovery) discoverARMTemplate() ([]voc.IsCloudResource
 								}
 								list = append(list, storage)
 							}
-							// TODO(garuppel): Handle BlockStorage resources?
+							// TODO(garuppel): Handle Storage Accounts with HttpEndpoint
+							// TODO(garuppel): Handle BlockStorage resources
 						}
 					}
 				}
@@ -193,7 +194,7 @@ func (d *azureARMTemplateDiscovery) handleObjectStorage(resourceValue map[string
 
 	storage = &voc.ObjectStorage{
 		Storage: &voc.Storage{
-			CloudResource: &voc.CloudResource{
+			Resource: &voc.Resource{
 				ID:           voc.ResourceID(d.createID(resourceGroup, "blobServices", azureResourceName)),
 				Name:         azureResourceName,
 				CreationTime: 0, // No creation time available
@@ -204,15 +205,16 @@ func (d *azureARMTemplateDiscovery) handleObjectStorage(resourceValue map[string
 			},
 			AtRestEncryption: enc,
 		},
-		HttpEndpoint: &voc.HttpEndpoint{
-			Url: "", // not available
-			TransportEncryption: &voc.TransportEncryption{
-				Enabled:    isServiceEncryptionEnabled("blob", storageAccountResource),
-				Enforced:   isHttpsTrafficOnlyEnabled(storageAccountResource),
-				TlsVersion: minTlsVersionOfStorageAccount(storageAccountResource),
-				Algorithm:  "TLS",
-			},
-		},
+		// TODO(garuppel): Delete if handleStorageAccount is implemented
+		//HttpEndpoint: &voc.HttpEndpoint{
+		//	Url: "", // not available
+		//	TransportEncryption: &voc.TransportEncryption{
+		//		Enabled:    isServiceEncryptionEnabled("blob", storageAccountResource),
+		//		Enforced:   isHttpsTrafficOnlyEnabled(storageAccountResource),
+		//		TlsVersion: minTlsVersionOfStorageAccount(storageAccountResource),
+		//		Algorithm:  "TLS",
+		//	},
+		//},
 	}
 
 	return storage, nil
@@ -247,7 +249,7 @@ func (d *azureARMTemplateDiscovery) handleFileStorage(resourceValue map[string]i
 
 	storage = &voc.FileStorage{
 		Storage: &voc.Storage{
-			CloudResource: &voc.CloudResource{
+			Resource: &voc.Resource{
 				ID:           voc.ResourceID(d.createID(resourceGroup, "fileServices", azureResourceName)),
 				Name:         azureResourceName,
 				CreationTime: 0, // No creation time available
@@ -258,15 +260,16 @@ func (d *azureARMTemplateDiscovery) handleFileStorage(resourceValue map[string]i
 			},
 			AtRestEncryption: enc,
 		},
-		HttpEndpoint: &voc.HttpEndpoint{
-			Url: "", // not available
-			TransportEncryption: &voc.TransportEncryption{
-				Enabled:    isServiceEncryptionEnabled("file", storageAccountResource),
-				Enforced:   isHttpsTrafficOnlyEnabled(storageAccountResource),
-				TlsVersion: minTlsVersionOfStorageAccount(storageAccountResource),
-				Algorithm:  "TLS",
-			},
-		},
+		// TODO(garuppel): Delete if handleStorageAccount is implemented
+		//HttpEndpoint: &voc.HttpEndpoint{
+		//	Url: "", // not available
+		//	TransportEncryption: &voc.TransportEncryption{
+		//		Enabled:    isServiceEncryptionEnabled("file", storageAccountResource),
+		//		Enforced:   isHttpsTrafficOnlyEnabled(storageAccountResource),
+		//		TlsVersion: minTlsVersionOfStorageAccount(storageAccountResource),
+		//		Algorithm:  "TLS",
+		//	},
+		//},
 	}
 
 	return storage, nil
@@ -383,7 +386,7 @@ func (d *azureARMTemplateDiscovery) handleLoadBalancer(template map[string]inter
 	lb := &voc.LoadBalancer{
 		NetworkService: &voc.NetworkService{
 			Networking: &voc.Networking{
-				CloudResource: &voc.CloudResource{
+				Resource: &voc.Resource{
 					ID:           voc.ResourceID(d.createID(resourceGroup, resourceType, name)),
 					Name:         name,
 					CreationTime: 0, // No creation time available
@@ -453,7 +456,7 @@ func (d *azureARMTemplateDiscovery) handleVirtualMachine(template map[string]int
 
 	vm := &voc.VirtualMachine{
 		Compute: &voc.Compute{
-			CloudResource: &voc.CloudResource{
+			Resource: &voc.Resource{
 				ID:           voc.ResourceID(id),
 				Name:         name,
 				CreationTime: 0, // No creation time available
@@ -463,15 +466,15 @@ func (d *azureARMTemplateDiscovery) handleVirtualMachine(template map[string]int
 				},
 			},
 		},
-		BootLog: &voc.BootLog{
-			Log: &voc.Log{
+		BootLogging: &voc.BootLogging{
+			Logging: &voc.Logging{
 				Enabled:         bootDiagnosticsEnabled,
-				Output:          []voc.ResourceID{voc.ResourceID(storageUri)},
+				LoggingService:  []voc.ResourceID{voc.ResourceID(storageUri)},
 				RetentionPeriod: 0, // Currently, configuring the retention period for Managed Boot Diagnostics is not available. The logs will be overwritten after 1gb of space according to https://github.com/MicrosoftDocs/azure-docs/issues/69953
 			},
 		},
-		OSLog: &voc.OSLog{
-			Log: &voc.Log{
+		OSLogging: &voc.OSLogging{
+			Logging: &voc.Logging{
 				Enabled: false,
 			}, // TODO(all): available in ARM template/Azure?
 		},
