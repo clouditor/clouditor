@@ -272,29 +272,29 @@ func TestStart(t *testing.T) {
 			wantErr:        false,
 			wantErrMessage: "",
 		},
-		//{
-		//	name: "No Azure authorizer",
-		//	fields: fields{
-		//		hasRPCConnection: true,
-		//		envVariables: []envVariable{
-		//			// We must set AZURE_AUTH_LOCATION and HOME to a wrong path so that both Azure authorizer fail
-		//			{
-		//				hasEnvVariable:   true,
-		//				envVariableKey:   "AZURE_AUTH_LOCATION",
-		//				envVariableValue: "",
-		//			},
-		//			{
-		//				hasEnvVariable:   true,
-		//				envVariableKey:   "HOME",
-		//				envVariableValue: "",
-		//			},
-		//		},
-		//	},
-		//	providers:      []string{ProviderAzure},
-		//	wantResp:       nil,
-		//	wantErr:        true,
-		//	wantErrMessage: "could not authenticate to Azure",
-		//},
+		{
+			name: "No Azure authorizer",
+			fields: fields{
+				hasRPCConnection: true,
+				envVariables: []envVariable{
+					// We must set AZURE_AUTH_LOCATION and HOME to a wrong path so that both Azure authorizer fail
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_AUTH_LOCATION",
+						envVariableValue: "",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "HOME",
+						envVariableValue: "",
+					},
+				},
+			},
+			providers:      []string{ProviderAzure},
+			wantResp:       nil,
+			wantErr:        true,
+			wantErrMessage: "could not authenticate to Azure",
+		},
 		{
 			name: "No K8s authorizer",
 			fields: fields{
