@@ -26,47 +26,21 @@
 package requirement
 
 import (
-	"context"
-	"fmt"
-
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/cli"
+	"clouditor.io/clouditor/cli/commands/service/orchestrator"
 	"github.com/spf13/cobra"
 )
 
 // NewListRequirementsCommand returns a cobra command for the `list` subcommand
 func NewListRequirementsCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "Lists all requirements",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			var (
-				err     error
-				session *cli.Session
-				client  orchestrator.OrchestratorClient
-				res     *orchestrator.ListRequirementsResponse
-			)
+	// Use Orchestrator's function for listing assessment results
+	cmd := orchestrator.NewListRequirementsCommand()
 
-			if session, err = cli.ContinueSession(); err != nil {
-				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
-				return nil
-			}
-
-			client = orchestrator.NewOrchestratorClient(session)
-
-			res, err = client.ListRequirements(context.Background(), &orchestrator.ListRequirementsRequest{})
-
-			return session.HandleResponse(res, err)
-		},
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return []string{}, cobra.ShellCompDirectiveNoFileComp
-		},
-	}
-
+	// Change use for better readability
+	cmd.Use = "list"
 	return cmd
 }
 
-// NewMetricCommand returns a cobra command for `metric` subcommands
+// NewRequirementCommand returns a cobra command for `metric` subcommands
 func NewRequirementCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "requirement",

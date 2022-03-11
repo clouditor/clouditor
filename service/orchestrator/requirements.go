@@ -39,6 +39,8 @@ func LoadRequirements(file string) (requirements []*orchestrator.Requirement, er
 		b []byte
 	)
 
+	log.Infof("Loading requirements from %s", file)
+
 	b, err = f.ReadFile(file)
 	if err != nil {
 		return nil, fmt.Errorf("error while loading %s: %w", file, err)
@@ -52,6 +54,8 @@ func LoadRequirements(file string) (requirements []*orchestrator.Requirement, er
 	return requirements, nil
 }
 
+// ListRequirements is a method implementation of the OrchestratorServer interface,
+// returning a list of requirements
 func (svc *Service) ListRequirements(_ context.Context, _ *orchestrator.ListRequirementsRequest) (response *orchestrator.ListRequirementsResponse, err error) {
 	return &orchestrator.ListRequirementsResponse{
 		Requirements: svc.requirements,
