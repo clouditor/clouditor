@@ -26,16 +26,16 @@
 package azure
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"testing"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/compute/mgmt/compute"
-	"k8s.io/apimachinery/pkg/util/json"
-
 	"clouditor.io/clouditor/voc"
+
+	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/compute/mgmt/compute"
 	"github.com/stretchr/testify/assert"
 )
 

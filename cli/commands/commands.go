@@ -37,6 +37,7 @@ import (
 	"clouditor.io/clouditor/cli/commands/resource"
 	"clouditor.io/clouditor/cli/commands/service"
 	"clouditor.io/clouditor/cli/commands/tool"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

@@ -26,14 +26,14 @@
 package azure
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"testing"
 
-	"k8s.io/apimachinery/pkg/util/json"
-
 	"clouditor.io/clouditor/voc"
+
 	"github.com/jinzhu/copier"
 	"github.com/stretchr/testify/assert"
 )
