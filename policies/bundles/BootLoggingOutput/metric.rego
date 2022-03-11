@@ -8,7 +8,7 @@ default compliant = false
 
 metricConfiguration := data.target_value
 
-bootLogging := input.bootLogging.logging.loggingService
+bootLogging := input.bootLogging
 
 applicable {
 	bootLogging

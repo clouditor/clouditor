@@ -33,6 +33,8 @@ import (
 	"io"
 	"os"
 	"reflect"
+	"runtime"
+	"sync"
 	"testing"
 
 	"clouditor.io/clouditor/api/assessment"
@@ -382,99 +384,124 @@ func TestAssessEvidences(t *testing.T) {
 	}
 }
 
-//func TestAssessmentResultHooks(t *testing.T) {
-//	var (
-//		hookCallCounter = 0
-//		wg              sync.WaitGroup
-//		hookCounts      = 16
-//	)
-//
-//	wg.Add(hookCounts)
-//
-//	firstHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
-//		hookCallCounter++
-//		log.Println("Hello from inside the firstHookFunction")
-//		wg.Done()
-//	}
-//
-//	secondHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
-//		hookCallCounter++
-//		log.Println("Hello from inside the secondHookFunction")
-//		wg.Done()
-//	}
-//
-//	type args struct {
-//		in0         context.Context
-//		evidence    *assessment.AssessEvidenceRequest
-//		resultHooks []assessment.ResultHookFunc
-//	}
-//	tests := []struct {
-//		name     string
-//		args     args
-//		wantResp *assessment.AssessEvidenceResponse
-//		wantErr  bool
-//	}{
-//		{
-//			name: "Store evidence to the map",
-//			args: args{
-//				in0: context.TODO(),
-//				evidence: &assessment.AssessEvidenceRequest{
-//					Evidence: &evidence.Evidence{
-//						Id:        "11111111-1111-1111-1111-111111111111",
-//						ToolId:    "mock",
-//						Timestamp: timestamppb.Now(),
-//						Resource: toStruct(voc.VirtualMachine{
-//							Compute: &voc.Compute{
-//								Resource: &voc.Resource{
-//									ID:   "my-resource-id",
-//									Type: []string{"VirtualMachine", "Compute", "Resource"}},
-//							},
-//						}, t),
-//					}},
-//
-//				resultHooks: []assessment.ResultHookFunc{firstHookFunction, secondHookFunction},
-//			},
-//			wantErr:  false,
-//			wantResp: &assessment.AssessEvidenceResponse{Status: assessment.AssessEvidenceResponse_ASSESSED},
-//		},
-//	}
-//
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			hookCallCounter = 0
-//			s := NewService()
-//			assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
-//			assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
-//
-//			for i, hookFunction := range tt.args.resultHooks {
-//				s.RegisterAssessmentResultHook(hookFunction)
-//
-//				// Check if hook is registered
-//				funcName1 := runtime.FuncForPC(reflect.ValueOf(s.resultHooks[i]).Pointer()).Name()
-//				funcName2 := runtime.FuncForPC(reflect.ValueOf(hookFunction).Pointer()).Name()
-//				assert.Equal(t, funcName1, funcName2)
-//			}
-//
-//			// To test the hooks we have to call a function that calls the hook function
-//			gotResp, err := s.AssessEvidence(tt.args.in0, tt.args.evidence)
-//
-//			// wait for all hooks (2 metrics * 2 hooks)
-//			wg.Wait()
-//
-//			if (err != nil) != tt.wantErr {
-//				t.Errorf("AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
-//				return
-//			}
-//			if !reflect.DeepEqual(gotResp, tt.wantResp) {
-//				t.Errorf("AssessEvidence() gotResp = %v, want %v", gotResp, tt.wantResp)
-//			}
-//
-//			assert.Equal(t, tt.wantResp, gotResp)
-//			assert.NotEmpty(t, s.results)
-//			assert.Equal(t, hookCounts, hookCallCounter)
-//		})
-//	}
-//}
+func TestAssessmentResultHooks(t *testing.T) {
+	var (
+		hookCallCounter = 0
+		wg              sync.WaitGroup
+		hookCounts      = 16
+	)
+
+	wg.Add(hookCounts)
+
+	firstHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
+		hookCallCounter++
+		log.Println("Hello from inside the firstHookFunction")
+		wg.Done()
+	}
+
+	secondHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
+		hookCallCounter++
+		log.Println("Hello from inside the secondHookFunction")
+		wg.Done()
+	}
+
+	type args struct {
+		in0         context.Context
+		evidence    *assessment.AssessEvidenceRequest
+		resultHooks []assessment.ResultHookFunc
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantResp *assessment.AssessEvidenceResponse
+		wantErr  bool
+	}{
+		{
+			name: "Store evidence to the map",
+			args: args{
+				in0: context.TODO(),
+				evidence: &assessment.AssessEvidenceRequest{
+					Evidence: &evidence.Evidence{
+						Id:        "11111111-1111-1111-1111-111111111111",
+						ToolId:    "mock",
+						Timestamp: timestamppb.Now(),
+						Resource: toStruct(voc.VirtualMachine{
+							Compute: &voc.Compute{
+								Resource: &voc.Resource{
+									ID:   "my-resource-id",
+									Type: []string{"VirtualMachine", "Compute", "Resource"}},
+							},
+							BootLogging: &voc.BootLogging{
+								Logging: &voc.Logging{
+									LoggingService: []voc.ResourceID{voc.ResourceID("mock-bootLoggingServiceResourceID")},
+									Enabled: true,
+									RetentionPeriod: 0,
+								},
+							},
+							OSLogging: &voc.OSLogging{
+								Logging: &voc.Logging{
+									LoggingService: []voc.ResourceID{voc.ResourceID("mock-osLoggingServiceResourceID")},
+									Enabled: true,
+									RetentionPeriod: 0,
+								},
+							},
+							MalwareProtection: &voc.MalwareProtection{
+								Enabled: true,
+								NumberOfThreatsFound: 5,
+								DaysSinceActive: 20,
+								ApplicationLogging: &voc.ApplicationLogging{
+									Logging: &voc.Logging{
+										Enabled: true,
+										LoggingService: []voc.ResourceID{"mock-malwareProtectionServiceResourceID"},
+									},
+								},
+							},
+						}, t),
+					}},
+
+				resultHooks: []assessment.ResultHookFunc{firstHookFunction, secondHookFunction},
+			},
+			wantErr:  false,
+			wantResp: &assessment.AssessEvidenceResponse{Status: assessment.AssessEvidenceResponse_ASSESSED},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			hookCallCounter = 0
+			s := NewService()
+			assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
+			assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
+
+			for i, hookFunction := range tt.args.resultHooks {
+				s.RegisterAssessmentResultHook(hookFunction)
+
+				// Check if hook is registered
+				funcName1 := runtime.FuncForPC(reflect.ValueOf(s.resultHooks[i]).Pointer()).Name()
+				funcName2 := runtime.FuncForPC(reflect.ValueOf(hookFunction).Pointer()).Name()
+				assert.Equal(t, funcName1, funcName2)
+			}
+
+			// To test the hooks we have to call a function that calls the hook function
+			gotResp, err := s.AssessEvidence(tt.args.in0, tt.args.evidence)
+
+			// wait for all hooks (2 metrics * 2 hooks)
+			wg.Wait()
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotResp, tt.wantResp) {
+				t.Errorf("AssessEvidence() gotResp = %v, want %v", gotResp, tt.wantResp)
+			}
+
+			assert.Equal(t, tt.wantResp, gotResp)
+			assert.NotEmpty(t, s.results)
+			assert.Equal(t, hookCounts, hookCallCounter)
+		})
+	}
+}
 
 func TestListAssessmentResults(t *testing.T) {
 	s := NewService()

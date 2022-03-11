@@ -8,7 +8,7 @@ default compliant = false
 
 metricConfiguration := data.target_value
 
-OSLogging := input.oSLogging.logging.loggingService
+OSLogging := input.oSLogging
 
 applicable {
 	OSLogging
