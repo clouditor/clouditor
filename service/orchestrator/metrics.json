@@ -34,6 +34,15 @@
     "id": "AutomaticUpdatesSecurityOnly"
   },
   {
+    "id": "AnomalyDetectionEnabled"
+  },
+  {
+    "id": "AnonymousAuthentication"
+  },
+  {
+    "id": "AnomalyDetectionOutput"
+  },
+  {
     "id": "BootLoggingEnabled"
   },
   {
@@ -125,5 +134,8 @@
   },
   {
     "id": "WebApplicationFirewallEnabled"
+  },
+  {
+    "id": "VirtualMachineDiskEncryptionEnabled"
   }
 ]
