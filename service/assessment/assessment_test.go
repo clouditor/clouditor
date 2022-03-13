@@ -1119,7 +1119,7 @@ func TestService_AssessEvidenceWaitFor(t *testing.T) {
 		},
 	})
 
-	assert.ErrorIs(t, err, nil)
+	assert.NoError(t, err)
 	assert.Equal(t, assessment.AssessEvidenceResponse_ASSESSED, resp.Status)
 
 	s.wg.Wait()
