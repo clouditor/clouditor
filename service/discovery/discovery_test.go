@@ -278,11 +278,6 @@ func TestStart(t *testing.T) {
 						envVariableKey:   "AZURE_CLIENT_SECRET",
 						envVariableValue: "client-secret-456",
 					},
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "AZURE_ENVIRONMENT",
-						envVariableValue: "!?NoEnvironment!?",
-					},
 				},
 			},
 			providers:      []string{ProviderAzure},
