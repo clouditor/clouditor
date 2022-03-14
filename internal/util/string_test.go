@@ -43,8 +43,23 @@ func TestCamelCaseToSnakeCase(t *testing.T) {
 		},
 		{
 			name: "Input with digit 2",
+			args: args{input: "3testCamelCaseString"},
+			want: "3test_camel_case_string",
+		},
+		{
+			name: "Input with digit 3",
 			args: args{input: "test3CamelCaseString"},
 			want: "test3_camel_case_string",
+		},
+		{
+			name: "Input with digit 4",
+			args: args{input: "t3CamelCaseString"},
+			want: "t3_camel_case_string",
+		},
+		{
+			name: "Input with digit 5",
+			args: args{input: "T3CamelCaseString"},
+			want: "t_3_camel_case_string",
 		},
 	}
 	for _, tt := range tests {

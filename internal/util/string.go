@@ -39,7 +39,12 @@ func CamelCaseToSnakeCase(input string) string {
 	for i := range runeArray {
 		if i > 0 && marksNewWord(i, runeArray) {
 			snakeCase = append(snakeCase, '_', unicode.ToLower(runeArray[i]))
-		} else {
+		} else //if i == 0 && unicode.IsDigit(runeArray[i]) && {
+		//"T3CamelCaseString"
+		//want: "t_3_camel_case_string"
+		//	t3_camel_case_string
+		//}
+		{
 			snakeCase = append(snakeCase, unicode.ToLower(runeArray[i]))
 		}
 	}
@@ -54,10 +59,14 @@ func marksNewWord(i int, input []rune) bool {
 		return false
 	}
 
-	// If previous or following rune/character is lowercase or rune is a number than it is a new word
+	// If previous or following rune/character is lowercase or a number than it is a new word
 	if i < len(input)-1 && unicode.IsUpper(input[i]) && unicode.IsLower(input[i+1]) {
 		return true
 	} else if i > 0 && unicode.IsLower(input[i-1]) && unicode.IsUpper(input[i]) {
+		return true
+	} else if i < len(input)-1 && unicode.IsDigit(input[i]) && unicode.IsLower(input[i+1]) {
+		return true
+	} else if i > 0 && unicode.IsUpper(input[i-1]) && unicode.IsDigit(input[i]) {
 		return true
 	}
 
