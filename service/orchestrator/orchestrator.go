@@ -38,6 +38,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
+
 	"clouditor.io/clouditor/persistence"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -75,6 +76,20 @@ type Service struct {
 	metricsFile string
 
 	requirements []*orchestrator.Requirement
+
+	// evaluations is a map of requirements and their assessment results
+	evaluations map[string][]*assessment.AssessmentResult
+
+	// evalMetrics is a map of requirements and some evaluation metrics
+	EvalMetrics map[string]*EvalMetric
+}
+
+type EvalMetric struct {
+	requirementID string
+
+	fullfilled bool
+
+	op float64
 }
 
 func init() {
@@ -111,6 +126,7 @@ func NewService(opts ...ServiceOption) *Service {
 		results:              make(map[string]*assessment.AssessmentResult),
 		metricConfigurations: make(map[string]map[string]*assessment.MetricConfiguration),
 		metricsFile:          DefaultMetricsFile,
+		evaluations:          make(map[string][]*assessment.AssessmentResult),
 	}
 
 	// Apply service options
@@ -163,6 +179,12 @@ func NewService(opts ...ServiceOption) *Service {
 		metricIndex[m.Id] = m
 		defaultMetricConfigurations[m.Id] = &config
 	}
+
+	s.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
+		if err == nil {
+			s.Evaluate(result)
+		}
+	})
 
 	return &s
 }

@@ -24,6 +24,7 @@
     "id": "AtRestEncryptionAlgorithm",
     "name": "Storage Encryption: Algorithm",
     "description": "This metric describes the algorithm of a storage encryption block cipher",
+    "category": "OPS-18",
     "scale": 1,
     "allowedValues": {
       "values": [

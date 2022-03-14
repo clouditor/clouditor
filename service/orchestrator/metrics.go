@@ -121,12 +121,17 @@ func (*Service) ListMetrics(_ context.Context, _ *orchestrator.ListMetricsReques
 }
 
 // GetMetric retrieves a metric specified by req.MetridId
-func (*Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequest) (metric *assessment.Metric, err error) {
+func (svc *Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequest) (metric *assessment.Metric, err error) {
 	var ok bool
 
-	if metric, ok = metricIndex[req.MetricId]; !ok {
+	if metric, ok = svc.metric(req.MetricId); !ok {
 		return nil, status.Errorf(codes.NotFound, "could not find metric with id %s", req.MetricId)
 	}
 
+	return
+}
+
+func (svc *Service) metric(id string) (metric *assessment.Metric, ok bool) {
+	metric, ok = metricIndex[id]
 	return
 }

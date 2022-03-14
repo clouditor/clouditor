@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package clouditor;
+
+import "google/api/annotations.proto";
+import "google/protobuf/struct.proto";
+
+option go_package = "api/discovery";
+
+message EvaluateRequest {
+    message AssessmentResult
+}
+message EvaluateResponse {}
+
+
+// Evaluation aggregates assessment results and evaluates them according to a specific requirement
+service Evaluation {
+    // Evaluate evaluates something.
+  rpc Evaluate(stream EvaluateRequest)
+  returns (stream EvaluateResponse) {};
+
+}
