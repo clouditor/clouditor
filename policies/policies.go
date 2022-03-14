@@ -196,7 +196,7 @@ func RunMap(baseDir string, metric string, m map[string]interface{}, holder Metr
 	}
 }
 
-//camelCaseToSnakeCase convert a camelCase string to snake_case
+// camelCaseToSnakeCase converts a `camelCase` string to `snake_case`
 func camelCaseToSnakeCase(input string) string {
 	if input == "" {
 		return ""
