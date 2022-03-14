@@ -43,7 +43,7 @@ Also make sure that `$HOME/go/bin` is on your `$PATH` and build:
 
 ```
 go generate ./...
-go build ./...
+go build -o ./engine cmd/engine/engine.go
 ```
 
 ## Usage
