@@ -26,17 +26,18 @@
 package policies
 
 import (
+	"context"
+	"fmt"
+	"os"
+	"strings"
+
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/internal/util"
-	"context"
-	"fmt"
 	"github.com/mitchellh/mapstructure"
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/open-policy-agent/opa/storage"
 	"github.com/open-policy-agent/opa/storage/inmem"
-	"os"
-	"strings"
 )
 
 // applicableMetrics stores a list of applicable metrics per resourceType
