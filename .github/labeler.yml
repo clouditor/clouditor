@@ -1,11 +1,14 @@
 "cmd/engine":
-- cmd/engine/**
+- cmd/engine/*
 
 "policies":
-- policies/**
+- policies/**/*
 
-"api"
-- api/**/*
+"api/evaluation":
+- api/evaluation/*
 
-"internal"
+"api":
+- any: ['api/**/*', '!api/evaluation/*']
+
+"internal":
 - internal/**/*
