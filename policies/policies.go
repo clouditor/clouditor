@@ -26,18 +26,17 @@
 package policies
 
 import (
-	"context"
-	"fmt"
-	"os"
-	"strings"
-
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
-	"github.com/fatih/camelcase"
+	"context"
+	"fmt"
 	"github.com/mitchellh/mapstructure"
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/open-policy-agent/opa/storage"
 	"github.com/open-policy-agent/opa/storage/inmem"
+	"os"
+	"strings"
+	"unicode"
 )
 
 // applicableMetrics stores a list of applicable metrics per resourceType
@@ -137,7 +136,7 @@ func RunMap(baseDir string, metric string, m map[string]interface{}, holder Metr
 	}
 
 	// Convert camelCase metric in under_score_style for package name
-	metric = strings.ToLower(strings.Join(camelcase.Split(metric), "_"))
+	metric = camelCaseToSnakeCase(metric)
 
 	store := inmem.NewFromObject(c)
 	ctx := context.Background()
@@ -195,6 +194,34 @@ func RunMap(baseDir string, metric string, m map[string]interface{}, holder Metr
 	} else {
 		return result, nil
 	}
+}
+
+//camelCaseToSnakeCase convert a camelCase string to snake_case
+func camelCaseToSnakeCase(input string) string {
+	if input == "" {
+		return ""
+	}
+
+	snakeCase := make([]rune, 0, len(input))
+	runeArray := []rune(input)
+
+	for i, _ := range runeArray {
+		// Check if two consecutive runes are uppercase, if one uppercase rune followed by a lowercase rune separate by an underscore
+		if unicode.IsUpper(runeArray[i]) && unicode.IsUpper(runeArray[i+1]) {
+			snakeCase = append(snakeCase, unicode.ToLower(runeArray[i]))
+		} else if unicode.IsUpper(runeArray[i]) {
+			snakeCase = append(snakeCase, '_', unicode.ToLower(runeArray[i]))
+		} else {
+			snakeCase = append(snakeCase, runeArray[i])
+		}
+	}
+
+	// Delete first underscore
+	if snakeCase[0] == '_' {
+		snakeCase = snakeCase[1:]
+	}
+
+	return string(snakeCase)
 }
 
 func scanBundleDir(baseDir string) ([]os.FileInfo, error) {
