@@ -238,8 +238,8 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 
 // handleEvidence is the helper method for the actual assessment used by AssessEvidence and AssessEvidences
 func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string) (err error) {
-	log.Infof("Evaluating evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, evidence.ToolId, evidence.Timestamp)
-	log.Debugf("Evidence: %+v", evidence)
+	log.Debugf("Evaluating evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, evidence.ToolId, evidence.Timestamp)
+	log.Tracef("Evidence: %+v", evidence)
 
 	evaluations, err := policies.RunEvidence(evidence, s)
 	if err != nil {
@@ -260,7 +260,7 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 	for i, data := range evaluations {
 		metricId := data.MetricId
 
-		log.Infof("Evaluated evidence with metric '%v' as %v", metricId, data.Compliant)
+		log.Debugf("Evaluated evidence with metric '%v' as %v", metricId, data.Compliant)
 
 		targetValue := data.TargetValue
 
@@ -391,7 +391,7 @@ func (s *Service) sendToEvidenceStore(e *evidence.Evidence) error {
 		}
 	}
 
-	log.Infof("Sending evidence (%v) to Evidence Store", e.Id)
+	log.Debugf("Sending evidence (%v) to Evidence Store", e.Id)
 
 	err := s.evidenceStoreStream.Send(&evidence.StoreEvidenceRequest{Evidence: e})
 	if err != nil {
@@ -448,7 +448,7 @@ func (s *Service) sendToOrchestrator(result *assessment.AssessmentResult) error 
 		}
 	}
 
-	log.Infof("Sending assessment result (%v) to Orchestrator", result.Id)
+	log.Debugf("Sending assessment result (%v) to Orchestrator", result.Id)
 
 	req := &orchestrator.StoreAssessmentResultRequest{
 		Result: result,

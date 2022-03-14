@@ -30,6 +30,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
@@ -117,64 +118,117 @@ func RunEvidence(evidence *evidence.Evidence, holder MetricConfigurationSource) 
 	return data, nil
 }
 
-func RunMap(baseDir string, metric string, m map[string]interface{}, holder MetricConfigurationSource) (result *Result, err error) {
+type queryCache struct {
+	sync.Mutex
+	cache map[string]*rego.PreparedEvalQuery
+}
+
+func newQueryCache() *queryCache {
+	return &queryCache{
+		cache: make(map[string]*rego.PreparedEvalQuery),
+	}
+}
+
+type orElseFunc func(key string) (query *rego.PreparedEvalQuery, err error)
+
+// Get returns the prepared query for the given key. If the key was not found in the cache,
+// the orElse function is executed to populate the cache.
+func (qc *queryCache) Get(key string, orElse orElseFunc) (query *rego.PreparedEvalQuery, err error) {
 	var (
-		tx storage.Transaction
+		ok bool
 	)
 
-	// Create paths for bundle directory and utility functions file
-	bundle := fmt.Sprintf("%s/policies/bundles/%s/", baseDir, metric)
-	operators := fmt.Sprintf("%s/policies/operators.rego", baseDir)
+	// Lock the cache
+	qc.Lock()
+	// And defer the unlock
+	defer qc.Unlock()
 
-	config, err := holder.MetricConfiguration(metric)
+	// Check, if query is contained in the cache
+	query, ok = qc.cache[key]
+	if ok {
+		return
+	}
+
+	// Otherwise, the orElse function is executed to fetch the query
+	query, err = orElse(key)
 	if err != nil {
-		return nil, fmt.Errorf("could not fetch metric configuration: %w", err)
+		return nil, err
 	}
 
-	c := map[string]interface{}{
-		"target_value": config.TargetValue.AsInterface(),
-		"operator":     config.Operator,
-	}
+	// Update the cache
+	qc.cache[key] = query
+	return
+}
 
-	// Convert camelCase metric in under_score_style for package name
-	metric = util.CamelCaseToSnakeCase(metric)
+var cache queryCache = *newQueryCache()
 
-	store := inmem.NewFromObject(c)
-	ctx := context.Background()
+func RunMap(baseDir string, metric string, m map[string]interface{}, holder MetricConfigurationSource) (result *Result, err error) {
+	var query *rego.PreparedEvalQuery
 
-	tx, err = store.NewTransaction(ctx, storage.WriteParams)
+	// TODO(oxisto): This will only fetch the metric configuration once :(
+	query, err = cache.Get(metric, func(key string) (*rego.PreparedEvalQuery, error) {
+		var (
+			tx storage.Transaction
+		)
+
+		// Create paths for bundle directory and utility functions file
+		bundle := fmt.Sprintf("%s/policies/bundles/%s/", baseDir, metric)
+		operators := fmt.Sprintf("%s/policies/operators.rego", baseDir)
+
+		config, err := holder.MetricConfiguration(metric)
+		if err != nil {
+			return nil, fmt.Errorf("could not fetch metric configuration: %w", err)
+		}
+
+		c := map[string]interface{}{
+			"target_value": config.TargetValue.AsInterface(),
+			"operator":     config.Operator,
+		}
+
+		// Convert camelCase metric in under_score_style for package name
+		metric = util.CamelCaseToSnakeCase(metric)
+
+		store := inmem.NewFromObject(c)
+		ctx := context.Background()
+
+		tx, err = store.NewTransaction(ctx, storage.WriteParams)
+		if err != nil {
+			return nil, fmt.Errorf("could not create transaction: %w", err)
+		}
+
+		query, err := rego.New(
+			rego.Query(fmt.Sprintf(`x = {
+				"applicable": data.clouditor.metrics.%s.applicable, 
+				"compliant": data.clouditor.metrics.%s.compliant, 
+				"operator": data.clouditor.operator,
+				"target_value": data.clouditor.target_value,
+			}`, metric, metric)),
+			rego.Package("clouditor.metrics"),
+			rego.Store(store),
+			rego.Transaction(tx),
+			rego.Load(
+				[]string{
+					bundle + "metric.rego",
+					operators,
+				},
+				nil),
+		).PrepareForEval(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("could not prepare rego evaluation: %w", err)
+		}
+
+		err = store.Commit(ctx, tx)
+		if err != nil {
+			return nil, fmt.Errorf("could not commit transaction: %w", err)
+		}
+
+		return &query, nil
+	})
 	if err != nil {
-		return nil, fmt.Errorf("could not create transaction: %w", err)
+		return nil, fmt.Errorf("could not fetch cached query: %w", err)
 	}
 
-	r, err := rego.New(
-		rego.Query(fmt.Sprintf(`x = {
-			"applicable": data.clouditor.metrics.%s.applicable, 
-			"compliant": data.clouditor.metrics.%s.compliant, 
-			"operator": data.clouditor.operator,
-			"target_value": data.clouditor.target_value,
-		}`, metric, metric)),
-		rego.Package("clouditor.metrics"),
-		rego.Store(store),
-		rego.Transaction(tx),
-		rego.Input(m),
-		rego.Load(
-			[]string{
-				bundle + "metric.rego",
-				operators,
-			},
-			nil),
-	).PrepareForEval(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("could not prepare rego evaluation: %w", err)
-	}
-
-	err = store.Commit(ctx, tx)
-	if err != nil {
-		return nil, fmt.Errorf("could not commit transaction: %w", err)
-	}
-
-	results, err := r.Eval(ctx)
+	results, err := query.Eval(context.Background(), rego.EvalInput(m))
 	if err != nil {
 		return nil, fmt.Errorf("could not evaluate rego policy: %w", err)
 	}

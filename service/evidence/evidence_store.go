@@ -88,7 +88,7 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 		Status: true,
 	}
 
-	log.Infof("Evidence stored with id: %v", req.Evidence.Id)
+	log.Debugf("Evidence stored with id: %v", req.Evidence.Id)
 
 	return resp, nil
 }
