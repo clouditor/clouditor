@@ -122,7 +122,7 @@ func (a *azureDiscovery) authorize() (err error) {
 	return nil
 }
 
-func (a azureDiscovery) apply(client *autorest.Client) {
+func (a *azureDiscovery) apply(client *autorest.Client) {
 	if a.authOption != nil {
 		a.authOption.apply(client)
 	}

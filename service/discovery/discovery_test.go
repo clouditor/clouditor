@@ -329,7 +329,7 @@ func TestStart(t *testing.T) {
 					{
 						hasEnvVariable:   true,
 						envVariableKey:   "AZURE_ENVIRONMENT",
-						envVariableValue: "",
+						envVariableValue: "!?NoEnvironment!?",
 					},
 					{
 						hasEnvVariable:   true,
