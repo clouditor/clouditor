@@ -28,6 +28,7 @@ package policies
 import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/internal/util"
 	"context"
 	"fmt"
 	"github.com/mitchellh/mapstructure"
@@ -36,7 +37,6 @@ import (
 	"github.com/open-policy-agent/opa/storage/inmem"
 	"os"
 	"strings"
-	"unicode"
 )
 
 // applicableMetrics stores a list of applicable metrics per resourceType
@@ -136,7 +136,7 @@ func RunMap(baseDir string, metric string, m map[string]interface{}, holder Metr
 	}
 
 	// Convert camelCase metric in under_score_style for package name
-	metric = camelCaseToSnakeCase(metric)
+	metric = util.CamelCaseToSnakeCase(metric)
 
 	store := inmem.NewFromObject(c)
 	ctx := context.Background()
@@ -195,46 +195,6 @@ func RunMap(baseDir string, metric string, m map[string]interface{}, holder Metr
 		return result, nil
 	}
 }
-
-// camelCaseToSnakeCase converts a `camelCase` string to `snake_case`
-func camelCaseToSnakeCase(input string) string {
-	if input == "" {
-		return ""
-	}
-
-	snakeCase := make([]rune, 0, len(input))
-	runeArray := []rune(input)
-
-	for i := range runeArray {
-		if i > 0 && marksNewWord(i, runeArray) {
-			snakeCase = append(snakeCase, '_', unicode.ToLower(runeArray[i]))
-		} else {
-			snakeCase = append(snakeCase, unicode.ToLower(runeArray[i]))
-		}
-	}
-
-	return string(snakeCase)
-}
-
-// marksNewWord checks if the current character starts a new word excluding the first word
-func marksNewWord(i int, input []rune) bool {
-
-	if i >= len(input) {
-		return false
-	}
-
-	// If previous or following rune/character is lowercase or rune is a number than it is a new word
-	if i < len(input)-1 && unicode.IsUpper(input[i]) && unicode.IsLower(input[i+1]) {
-		return true
-	} else if i > 0 && unicode.IsLower(input[i-1]) && unicode.IsUpper(input[i]) {
-		return true
-	} else if unicode.IsDigit(input[i]) {
-		return true
-	}
-
-	return false
-}
-
 
 func scanBundleDir(baseDir string) ([]os.FileInfo, error) {
 	dirname := baseDir + "/policies/bundles"
