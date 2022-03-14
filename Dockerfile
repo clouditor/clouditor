@@ -15,7 +15,8 @@ RUN go install google.golang.org/protobuf/cmd/protoc-gen-go \
 ADD . .
 
 RUN go generate ./...
-RUN go build ./...
+RUN go build -o /build/engine cmd/engine/engine.go
+RUN go build -o /build/cl cmd/cli/cl.go
 
 FROM debian:stable-slim
 
