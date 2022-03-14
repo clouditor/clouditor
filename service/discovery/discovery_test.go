@@ -257,6 +257,40 @@ func TestStart(t *testing.T) {
 		wantErrMessage string
 	}{
 		{
+			name: "Azure authorizer from ENV",
+			fields: fields{
+				hasRPCConnection: true,
+				envVariables: []envVariable{
+					// We must set AZURE_AUTH_LOCATION to the Azure credentials test file and the set HOME to a
+					// wrong path so that the Azure authorizer passes and the K8S authorizer fails
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_TENANT_ID",
+						envVariableValue: "tenant-id-123",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_CLIENT_ID",
+						envVariableValue: "client-id-123",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_CLIENT_SECRET",
+						envVariableValue: "client-secret-456",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_ENVIRONMENT",
+						envVariableValue: "!?NoEnvironment!?",
+					},
+				},
+			},
+			providers:      []string{ProviderAzure},
+			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
+			wantErr:        false,
+			wantErrMessage: "",
+		},
+		{
 			name: "Azure authorizer from file",
 			fields: fields{
 				hasRPCConnection: true,
@@ -267,6 +301,12 @@ func TestStart(t *testing.T) {
 						hasEnvVariable:   true,
 						envVariableKey:   "AZURE_AUTH_LOCATION",
 						envVariableValue: "service/discovery/testdata/credentials_test_file",
+					},
+					// Set $AZURE_ENVIRONMENT to sth. invalid s.t. Authorizer from file (2nd option is used)
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_ENVIRONMENT",
+						envVariableValue: "!?NoEnvironment!?",
 					},
 				},
 			},
