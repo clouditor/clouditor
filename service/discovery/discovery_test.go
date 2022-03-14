@@ -305,11 +305,6 @@ func TestStart(t *testing.T) {
 						envVariableKey:   "AZURE_CERTIFICATE_PATH",
 						envVariableValue: "",
 					},
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "AZURE_CERTIFICATE_PASSWORD",
-						envVariableValue: "",
-					},
 					// 3. Set username and password to empty string (client and tenant ID already empty)
 					{
 						hasEnvVariable:   true,
@@ -321,16 +316,11 @@ func TestStart(t *testing.T) {
 						envVariableKey:   "AZURE_PASSWORD",
 						envVariableValue: "",
 					},
-					// 4. Try to prevent getting authorizer from MSI
+					// 4. Try to prevent getting authorizer from MSI: Set AZ ENV to sth. wrong (but not empty!)
 					{
 						hasEnvVariable:   true,
 						envVariableKey:   "AZURE_ENVIRONMENT",
 						envVariableValue: "!?NoEnvironment!?",
-					},
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "MSI_ENDPOINT",
-						envVariableValue: "",
 					},
 
 					// Set AZURE_AUTH_LOCATION and HOME to a wrong path so that authorizer `from file and CLI` fails
@@ -342,52 +332,6 @@ func TestStart(t *testing.T) {
 					{
 						hasEnvVariable:   true,
 						envVariableKey:   "HOME",
-						envVariableValue: "",
-					},
-					// TODO(lebogg): For debugging...Just set all ENVs to empty string
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "AZURE_SUBSCRIPTION_ID",
-						envVariableValue: "",
-					},
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "AZURE_AUXILIARY_TENANT_IDS",
-						envVariableValue: "",
-					},
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "AZURE_AD_RESOURCE",
-						envVariableValue: "",
-					},
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "ActiveDirectoryEndpoint",
-						envVariableValue: "",
-					},
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "ResourceManagerEndpoint",
-						envVariableValue: "",
-					},
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "GraphResourceID",
-						envVariableValue: "",
-					},
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "SQLManagementEndpoint",
-						envVariableValue: "",
-					},
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "GalleryEndpoint",
-						envVariableValue: "",
-					},
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "ManagementEndpoint",
 						envVariableValue: "",
 					},
 				},
