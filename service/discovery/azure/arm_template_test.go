@@ -34,7 +34,6 @@ import (
 
 	"clouditor.io/clouditor/voc"
 
-	"github.com/jinzhu/copier"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -423,7 +422,7 @@ func TestVmProperties(t *testing.T) {
 	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/blockStorage3", (string)(resourceVM.BlockStorage[0]))
 	assert.Equal(t, "eastus", resourceVM.GeoLocation.Region)
 	assert.True(t, resourceVM.BootLogging.Enabled)
-	assert.Equal(t, []voc.ResourceID{voc.ResourceID("https://storage1.blob.core.windows.net/")}, resourceVM.BootLogging.LoggingService)
+	assert.Equal(t, []voc.ResourceID{"https://storage1.blob.core.windows.net/"}, resourceVM.BootLogging.LoggingService)
 	assert.False(t, resourceVM.OSLogging.Enabled)
 }
 
@@ -663,19 +662,13 @@ func dependsOnTypeAssertionResponse(storageType string, armTemplateResources []i
 	case "File":
 		resource = armTemplateResources[5].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/share1')]
 		// Copy ARM template resource and delete dependsOn from resource for test
-		err = copier.Copy(&modifiedResource, &resource)
-		if err != nil {
-			fmt.Println("error deep copy")
-		}
+		modifiedResource = deepCopyOfMap(resource)
 		delete(modifiedResource, "dependsOn")
 		dependsOnTypeAssertionResponse, err = d.handleObjectStorage(modifiedResource, armTemplateResources, "res1")
 	case "Object":
 		resource = armTemplateResources[4].(map[string]interface{}) // resource: [concat(parameters('storageAccounts_storage1_name'), 'default/container1')]
 		// Copy ARM template resource and delete dependsOn from resource for test
-		err = copier.Copy(&modifiedResource, &resource)
-		if err != nil {
-			fmt.Println("error deep copy")
-		}
+		modifiedResource = deepCopyOfMap(resource)
 		delete(modifiedResource, "dependsOn")
 		dependsOnTypeAssertionResponse, err = d.handleFileStorage(modifiedResource, armTemplateResources, "res1")
 	case "Block":
@@ -683,6 +676,29 @@ func dependsOnTypeAssertionResponse(storageType string, armTemplateResources []i
 	}
 
 	return dependsOnTypeAssertionResponse, err
+}
+
+
+func deepCopy(original  []interface{}) []interface{} {
+
+	var target []interface{}
+
+	for i := range original {
+		target = append(target, original[i])
+	}
+
+	return target
+}
+
+// deepCopyOfMap copies a given map
+func deepCopyOfMap(originalMap map[string]interface{}) map[string]interface{} {
+	targetMap := make(map[string]interface{})
+
+	for key, value := range originalMap {
+		targetMap[key] = value
+	}
+
+	return targetMap
 }
 
 // storageAccountResourceFromTemplateResponse returns the response from method handleXStorage (X is object or file). Input is invalid and method storageAccountResourceFromARMTemplate() returns an error
@@ -697,10 +713,11 @@ func storageAccountResourceFromTemplateResponse(storageType string, armTemplateR
 	)
 
 	// Copy Azure ARM template resources and delete resource "storageAccounts_storage1_name"
-	err = copier.Copy(&modifiedARMTemplateResources, &armTemplateResources)
+	//err = copier.Copy(&modifiedARMTemplateResources, &armTemplateResources)
 	if err != nil {
 		fmt.Println("error deep copy")
 	}
+	modifiedARMTemplateResources = deepCopy(armTemplateResources)
 	modifiedARMTemplateResources[3] = map[string]interface{}{}
 
 	switch storageType {
@@ -729,10 +746,7 @@ func storageAccountAtRestEncryptionFromARMResponse(storageType string, armTempla
 	)
 
 	// Copy ARM template resources and delete 'keySource' from storage account resource for test
-	err = copier.Copy(&modifiedARMTemplateResources, &armTemplateResources)
-	if err != nil {
-		fmt.Println("error deep copy")
-	}
+	modifiedARMTemplateResources = deepCopy(armTemplateResources)
 	delete(modifiedARMTemplateResources[3].(map[string]interface{})["properties"].(map[string]interface{})["encryption"].(map[string]interface{}), "keySource")
 
 	switch storageType {
