@@ -33,7 +33,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
-	"github.com/fatih/camelcase"
+	"clouditor.io/clouditor/internal/util"
 	"github.com/mitchellh/mapstructure"
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/open-policy-agent/opa/storage"
@@ -137,7 +137,7 @@ func RunMap(baseDir string, metric string, m map[string]interface{}, holder Metr
 	}
 
 	// Convert camelCase metric in under_score_style for package name
-	metric = strings.ToLower(strings.Join(camelcase.Split(metric), "_"))
+	metric = util.CamelCaseToSnakeCase(metric)
 
 	store := inmem.NewFromObject(c)
 	ctx := context.Background()

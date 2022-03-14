@@ -225,10 +225,10 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	}
 
 	// If no CSPs for discovering is given, take all implemented discoverers
-	if viper.GetString(DiscoveryProviderFlag) == "" {
+	if len(viper.GetStringSlice(DiscoveryProviderFlag)) == 0 {
 		providers = []string{service_discovery.ProviderAWS, service_discovery.ProviderAzure, service_discovery.ProviderK8S}
 	} else {
-		providers = []string{viper.GetString(DiscoveryProviderFlag)}
+		providers = viper.GetStringSlice(DiscoveryProviderFlag)
 	}
 
 	discoveryService = service_discovery.NewService(
