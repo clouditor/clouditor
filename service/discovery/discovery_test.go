@@ -26,7 +26,6 @@
 package discovery
 
 import (
-	"clouditor.io/clouditor/service/discovery/azure"
 	"context"
 	"errors"
 	"fmt"
@@ -41,6 +40,7 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/service/discovery/azure"
 	"clouditor.io/clouditor/voc"
 
 	oauth2 "github.com/oxisto/oauth2go"
@@ -261,7 +261,8 @@ func TestStart(t *testing.T) {
 			fields: fields{
 				hasRPCConnection: true,
 				envVariables: []envVariable{
-					// We must set AZURE_AUTH_LOCATION to the Azure credentials test file and the set HOME to a wrong path so that the Azure authorizer passes and the K8S authorizer fails
+					// We must set AZURE_AUTH_LOCATION to the Azure credentials test file and the set HOME to a
+					// wrong path so that the Azure authorizer passes and the K8S authorizer fails
 					{
 						hasEnvVariable:   true,
 						envVariableKey:   "AZURE_AUTH_LOCATION",
@@ -280,8 +281,7 @@ func TestStart(t *testing.T) {
 				hasRPCConnection: true,
 				// We must set env variables accordingly s.t. all authorizer will fail
 				envVariables: []envVariable{
-					// We must set AZURE_AUTH_LOCATION and HOME to a wrong path so that both Azure authorizer fail
-					// Set corresponding ENV variables for `from ENV` to fail
+					// Let `authorizer from ENV` fail
 					// It uses the order: 1. Client credentials 2. Client certificate 3. Username password 4. MSI
 					// 1. Set client credentials
 					{
@@ -323,7 +323,7 @@ func TestStart(t *testing.T) {
 						envVariableValue: "!?NoEnvironment!?",
 					},
 
-					// Set AZURE_AUTH_LOCATION and HOME to a wrong path so that authorizer `from file and CLI` fails
+					// Let `authorizer file and CLI` fail: Set $AZURE_AUTH_LOCATION and $HOME to a wrong path
 					{
 						hasEnvVariable:   true,
 						envVariableKey:   "AZURE_AUTH_LOCATION",

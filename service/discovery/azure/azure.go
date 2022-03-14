@@ -41,7 +41,8 @@ import (
 var (
 	log *logrus.Entry
 
-	ErrCouldNotAuthenticate = errors.New("could not authenticate to Azure with any credentials of the chain")
+	ErrCouldNotAuthenticate = errors.New("could not authenticate to Azure with any authorizer " +
+		"(from environment, file, or CLI)")
 )
 
 type DiscoveryOption interface {
@@ -132,9 +133,8 @@ func (a *azureDiscovery) apply(client *autorest.Client) {
 	}
 }
 
-// NewAuthorizer creates authorizer for connecting to Azure using a custom credential chain (ENV, from file and from CLI)
+// NewAuthorizer creates an authorizer for connecting to Azure using a custom credential chain (from ENV, file and CLI)
 func NewAuthorizer() (authorizer autorest.Authorizer, err error) {
-	// TODO(lebogg): Check out Azure (Go SDK) Testing Environment for Github
 	// First, try to create authorizer via credentials from the environment
 	authorizer, err = auth.NewAuthorizerFromEnvironment()
 	if err == nil {
