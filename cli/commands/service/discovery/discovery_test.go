@@ -28,75 +28,26 @@ package discovery
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
-	"net"
 	"os"
 	"testing"
 	"time"
 
-	"clouditor.io/clouditor/service"
-
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/cli/commands/login"
+	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/service"
 	service_discovery "clouditor.io/clouditor/service/discovery"
-
 	"clouditor.io/clouditor/voc"
-	"github.com/spf13/viper"
+
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-var (
-	sock             net.Listener
-	server           *grpc.Server
-	discoveryService *service_discovery.Service
-)
-
 func TestMain(m *testing.M) {
-	var (
-		err error
-		dir string
-	)
+	svc := service_discovery.NewService()
+	svc.StartDiscovery(mockDiscoverer{testCase: 2})
 
-	err = os.Chdir("../../../../")
-	if err != nil {
-		panic(err)
-	}
-
-	discoveryService = service_discovery.NewService()
-	discoveryService.StartDiscovery(mockDiscoverer{testCase: 2})
-
-	sock, server, _, err = service.StartDedicatedAuthServer(":0")
-	if err != nil {
-		panic(err)
-	}
-	discovery.RegisterDiscoveryServer(server, discoveryService)
-
-	defer func(sock net.Listener) {
-		err = sock.Close()
-		if err != nil {
-			panic(err)
-		}
-	}(sock)
-	defer server.Stop()
-
-	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
-	if err != nil {
-		panic(err)
-	}
-
-	viper.Set("username", "clouditor")
-	viper.Set("password", "clouditor")
-	viper.Set("session-directory", dir)
-
-	cmd := login.NewLoginCommand()
-	err = cmd.RunE(nil, []string{fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)})
-	if err != nil {
-		panic(err)
-	}
-	defer os.Exit(m.Run())
+	os.Exit(clitest.RunCLITest(m, service.WithDiscovery(svc)))
 }
 
 func TestAddCommands(t *testing.T) {
@@ -167,10 +118,22 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 		return []voc.IsCloudResource{
 			&voc.ObjectStorage{
 				Storage: &voc.Storage{
-					CloudResource: &voc.CloudResource{
+					Resource: &voc.Resource{
 						ID:   "some-id",
 						Name: "some-name",
 						Type: []string{"ObjectStorage", "Storage", "Resource"},
+					},
+				},
+			},
+			&voc.StorageService{
+				Storages: []voc.ResourceID{"some-id"},
+				NetworkService: &voc.NetworkService{
+					Networking: &voc.Networking{
+						Resource: &voc.Resource{
+							ID:   "some-storage-service-id",
+							Name: "some-storage-service-name",
+							Type: []string{"StorageService", "NetworkService", "Networking", "Resource"},
+						},
 					},
 				},
 				HttpEndpoint: &voc.HttpEndpoint{

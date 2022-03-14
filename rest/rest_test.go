@@ -26,7 +26,6 @@
 package rest
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -39,7 +38,10 @@ import (
 	"testing"
 	"time"
 
+	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/service"
+	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -55,13 +57,21 @@ var (
 
 func TestMain(m *testing.M) {
 	var (
-		err    error
-		server *grpc.Server
-		sock   net.Listener
+		err      error
+		server   *grpc.Server
+		sock     net.Listener
+		authPort int
 	)
 
-	// Start at least an authentication server, so that we have something to forward
-	sock, server, _, err = service.StartDedicatedAuthServer(":0")
+	clitest.AutoChdir()
+
+	_, authPort, err = testutil.StartAuthenticationServer()
+	if err != nil {
+		panic(err)
+	}
+
+	// Start at least an orchestrator service, so that we have something to forward
+	sock, server, err = service.StartGRPCServer(testutil.JWKSURL(authPort), service.WithOrchestrator(service_orchestrator.NewService()))
 	if err != nil {
 		panic(err)
 	}
@@ -147,7 +157,7 @@ func TestREST(t *testing.T) {
 			args: args{
 				origin:    "clouditor.io",
 				method:    "POST",
-				url:       "v1/auth/login",
+				url:       "v1/orchestrator/cloud_services",
 				preflight: false,
 			},
 			statusCode: 401, // because we are not supplying an actual login request
@@ -162,7 +172,7 @@ func TestREST(t *testing.T) {
 			args: args{
 				origin:    "clouditor.com",
 				method:    "POST",
-				url:       "v1/auth/login",
+				url:       "v1/orchestrator/cloud_services",
 				preflight: true,
 			},
 			statusCode: 501,
@@ -175,7 +185,7 @@ func TestREST(t *testing.T) {
 			args: args{
 				origin:    "clouditor.com",
 				method:    "POST",
-				url:       "v1/auth/login",
+				url:       "v1/orchestrator/cloud_services",
 				preflight: false,
 			},
 			statusCode: 401, // because we are not supplying an actual login request
@@ -203,31 +213,6 @@ func TestREST(t *testing.T) {
 				}
 
 				return assert.Equal(tt, []byte("just a test"), content)
-			},
-		},
-		{
-			// Successful token responses are tested in auth_test.go
-			name: "Form request with invalid grant type",
-			args: args{
-				method:      "POST",
-				url:         "v1/auth/token",
-				body:        bytes.NewReader([]byte(`grant_type=authorization_code`)),
-				contentType: "application/x-www-form-urlencoded",
-				preflight:   false,
-			},
-			statusCode: 400,
-			wantResponse: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				resp, ok := i1.(*http.Response)
-				if !ok {
-					return assert.True(tt, ok)
-				}
-
-				content, err := ioutil.ReadAll(resp.Body)
-				if !assert.ErrorIs(tt, err, nil) {
-					return false
-				}
-
-				return assert.Equal(tt, []byte(`{"error":"unsupported_grant_type"}`), content)
 			},
 		},
 	}

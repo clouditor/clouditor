@@ -26,14 +26,14 @@
 package azure
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"testing"
 
-	"k8s.io/apimachinery/pkg/util/json"
-
 	"clouditor.io/clouditor/voc"
+
 	"github.com/jinzhu/copier"
 	"github.com/stretchr/testify/assert"
 )
@@ -343,13 +343,17 @@ func TestObjectStorageProperties(t *testing.T) {
 	objectStorage, ok := list[2].(*voc.ObjectStorage)
 	assert.True(t, ok)
 
+	// Check ObjectStorage properties
 	assert.Equal(t, "container1", objectStorage.Name)
-	assert.Equal(t, "TLS1_1", objectStorage.HttpEndpoint.TransportEncryption.TlsVersion)
 	assert.Equal(t, "ObjectStorage", objectStorage.Type[0])
 	assert.Equal(t, "eastus", objectStorage.GeoLocation.Region)
-	assert.Equal(t, true, objectStorage.HttpEndpoint.TransportEncryption.Enabled)
-	assert.Equal(t, true, objectStorage.HttpEndpoint.TransportEncryption.Enforced)
-	assert.Equal(t, "TLS", objectStorage.HttpEndpoint.TransportEncryption.Algorithm)
+
+	//TODO(garuppel): Update when implemented
+	//Check StorageService properties
+	//assert.Equal(t, true, objectStorage.HttpEndpoint.TransportEncryption.Enforced)
+	//assert.Equal(t, "TLS", objectStorage.HttpEndpoint.TransportEncryption.Algorithm)
+	//assert.Equal(t, "TLS1_1", objectStorage.HttpEndpoint.TransportEncryption.TlsVersion)
+	//assert.Equal(t, true, objectStorage.HttpEndpoint.TransportEncryption.Enabled)
 
 	// Check ManagedKeyEncryption
 	atRestEncryption := *objectStorage.GetAtRestEncryption()
@@ -382,13 +386,17 @@ func TestFileStorageProperties(t *testing.T) {
 	fileStorage, ok := list[3].(*voc.FileStorage)
 	assert.True(t, ok)
 
+	// Check FileStorage properties
 	assert.Equal(t, "share1", fileStorage.Name)
-	assert.Equal(t, "TLS1_1", fileStorage.HttpEndpoint.TransportEncryption.TlsVersion)
 	assert.Equal(t, "FileStorage", fileStorage.Type[0])
 	assert.Equal(t, "eastus", fileStorage.GeoLocation.Region)
-	assert.Equal(t, true, fileStorage.HttpEndpoint.TransportEncryption.Enabled)
-	assert.Equal(t, true, fileStorage.HttpEndpoint.TransportEncryption.Enforced)
-	assert.Equal(t, "TLS", fileStorage.HttpEndpoint.TransportEncryption.Algorithm)
+
+	//TODO(garuppel): Update when implemented
+	//Check StorageService properties
+	//assert.Equal(t, true, fileStorage.HttpEndpoint.TransportEncryption.Enabled)
+	//assert.Equal(t, true, fileStorage.HttpEndpoint.TransportEncryption.Enforced)
+	//assert.Equal(t, "TLS", fileStorage.HttpEndpoint.TransportEncryption.Algorithm)
+	//assert.Equal(t, "TLS1_1", fileStorage.HttpEndpoint.TransportEncryption.TlsVersion)
 
 	// Check ManagedKeyEncryption
 	atRestEncryption := *fileStorage.GetAtRestEncryption()
@@ -414,9 +422,9 @@ func TestVmProperties(t *testing.T) {
 	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1-2", (string)(resourceVM.GetID()))
 	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/blockStorage3", (string)(resourceVM.BlockStorage[0]))
 	assert.Equal(t, "eastus", resourceVM.GeoLocation.Region)
-	assert.True(t, resourceVM.BootLog.Enabled)
-	assert.Equal(t, voc.ResourceID("https://storage1.blob.core.windows.net/"), resourceVM.BootLog.Output[0])
-	assert.False(t, resourceVM.OSLog.Enabled)
+	assert.True(t, resourceVM.BootLogging.Enabled)
+	assert.Equal(t, []voc.ResourceID{voc.ResourceID("https://storage1.blob.core.windows.net/")}, resourceVM.BootLogging.LoggingService)
+	assert.False(t, resourceVM.OSLogging.Enabled)
 }
 
 func TestLoadBalancerProperties(t *testing.T) {

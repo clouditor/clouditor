@@ -39,8 +39,13 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/voc"
+
+	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -49,17 +54,9 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	// make sure, that we are in the clouditor root folder to find the policies
-	err := os.Chdir("../../")
-	if err != nil {
-		panic(err)
-	}
+	clitest.AutoChdir()
 
-	server, authService, _ := startBufConnServer()
-	err = authService.CreateDefaultUser("clouditor", "clouditor")
-	if err != nil {
-		panic(err)
-	}
+	server, _ := startBufConnServer()
 
 	code := m.Run()
 
@@ -173,11 +170,11 @@ func TestStartDiscovery(t *testing.T) {
 				assert.NotEmpty(t, e.Resource)
 				// Check if ID of mockDiscovery's resource is mapped to resource id of the evidence
 				list, _ := tt.fields.discoverer.List()
-				assert.Equal(t, string(list[0].GetID()), e.Resource.GetStructValue().AsMap()["id"].(string))
+				// Only the last element sent can be checked
+				assert.Equal(t, string(list[len(list)-1].GetID()), e.Resource.GetStructValue().AsMap()["id"].(string))
 			}
 		})
 	}
-
 }
 
 func TestQuery(t *testing.T) {
@@ -213,7 +210,7 @@ func TestQuery(t *testing.T) {
 		{
 			name:                     "No filtering",
 			fields:                   fields{queryRequest: &discovery.QueryRequest{}},
-			numberOfQueriedResources: 1,
+			numberOfQueriedResources: 2,
 		},
 	}
 
@@ -272,7 +269,6 @@ func TestStart(t *testing.T) {
 					},
 				},
 			},
-			req:            &discovery.StartDiscoveryRequest{Providers: []string{ProviderAzure}},
 			providers:      []string{ProviderAzure},
 			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
 			wantErr:        false,
@@ -396,7 +392,6 @@ func TestStart(t *testing.T) {
 					},
 				},
 			},
-			req:            &discovery.StartDiscoveryRequest{Providers: []string{ProviderAzure}},
 			providers:      []string{ProviderAzure},
 			wantResp:       nil,
 			wantErr:        true,
@@ -415,7 +410,6 @@ func TestStart(t *testing.T) {
 					},
 				},
 			},
-			req:            &discovery.StartDiscoveryRequest{Providers: []string{ProviderK8S}},
 			providers:      []string{ProviderK8S},
 			wantResp:       nil,
 			wantErr:        true,
@@ -426,7 +420,6 @@ func TestStart(t *testing.T) {
 			fields: fields{
 				hasRPCConnection: false,
 			},
-			req:            &discovery.StartDiscoveryRequest{Providers: []string{"aws", "azure", "k8s"}},
 			providers:      []string{"aws", "azure", "k8s"},
 			wantResp:       nil,
 			wantErr:        true,
@@ -445,7 +438,6 @@ func TestStart(t *testing.T) {
 					},
 				},
 			},
-			req:            &discovery.StartDiscoveryRequest{Providers: []string{"aws", "k8s"}},
 			providers:      []string{"aws", "k8s"},
 			wantResp:       nil,
 			wantErr:        true,
@@ -456,18 +448,16 @@ func TestStart(t *testing.T) {
 			fields: fields{
 				hasRPCConnection: true,
 			},
-			req:            &discovery.StartDiscoveryRequest{Providers: []string{}},
-			providers:      nil,
-			wantResp:       nil,
-			wantErr:        true,
-			wantErrMessage: "no providers for discovering given",
+			providers:      []string{},
+			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
+			wantErr:        false,
+			wantErrMessage: "",
 		},
 		{
 			name: "Request with wrong provider name",
 			fields: fields{
 				hasRPCConnection: true,
 			},
-			req:            &discovery.StartDiscoveryRequest{Providers: []string{"falseProvider"}},
 			providers:      []string{"falseProvider"},
 			wantResp:       nil,
 			wantErr:        true,
@@ -477,7 +467,7 @@ func TestStart(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService()
+			s := NewService(WithProviders(tt.providers))
 			if tt.fields.hasRPCConnection {
 				assert.NoError(t, s.initAssessmentStream(grpc.WithContextDialer(bufConnDialer)))
 			}
@@ -488,7 +478,7 @@ func TestStart(t *testing.T) {
 				}
 			}
 
-			resp, err := s.Start(context.TODO(), tt.req)
+			resp, err := s.Start(context.TODO(), nil)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Got Start() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -496,9 +486,6 @@ func TestStart(t *testing.T) {
 				assert.Equal(t, tt.wantResp, resp)
 			}
 
-			if tt.req != nil {
-				assert.Equal(t, tt.providers, s.providers)
-			}
 			if err != nil {
 				assert.Contains(t, err.Error(), tt.wantErrMessage)
 			}
@@ -507,10 +494,24 @@ func TestStart(t *testing.T) {
 }
 
 func TestService_initAssessmentStream(t *testing.T) {
+	var (
+		authSrv *oauth2.AuthorizationServer
+		port    int
+		err     error
+	)
+
+	authSrv, port, err = testutil.StartAuthenticationServer()
+	defer func() {
+		err = authSrv.Close()
+		assert.NoError(t, err)
+	}()
+
+	assert.NoError(t, err)
+
 	type fields struct {
 		hasRPCConnection bool
-		username         string
-		password         string
+		clientID         string
+		clientSecret     string
 	}
 
 	tests := []struct {
@@ -537,35 +538,35 @@ func TestService_initAssessmentStream(t *testing.T) {
 			},
 		},
 		{
-			name: "Authenticated RPC connection with valid user",
+			name: "Authenticated RPC connection with valid client credentials",
 			fields: fields{
 				hasRPCConnection: true,
-				username:         "clouditor",
-				password:         "clouditor",
+				clientID:         testutil.TestAuthClientID,
+				clientSecret:     testutil.TestAuthClientSecret,
 			},
 			wantErr: nil,
 		},
 		{
-			name: "Authenticated RPC connection with invalid user",
+			name: "Authenticated RPC connection with invalid client credentials",
 			fields: fields{
 				hasRPCConnection: true,
-				username:         "notclouditor",
-				password:         "password",
+				clientID:         "not" + testutil.TestAuthClientID,
+				clientSecret:     testutil.TestAuthClientSecret,
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.Equal(tt, err.Error(), "could not set up stream for assessing evidences: rpc error: code = Unauthenticated desc = transport: per-RPC creds failed due to error: error while logging in: rpc error: code = Unauthenticated desc = login failed")
+				s, _ := status.FromError(errors.Unwrap(err))
+				return assert.Equal(t, codes.Unauthenticated, s.Code())
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService(WithInternalAuthorizer(
-				"bufnet",
-				tt.fields.username,
-				tt.fields.password,
-				grpc.WithContextDialer(bufConnDialer),
-			))
+			s := NewService(WithOAuth2Authorizer(&clientcredentials.Config{
+				ClientID:     tt.fields.clientID,
+				ClientSecret: tt.fields.clientSecret,
+				TokenURL:     testutil.TokenURL(port),
+			}))
 
 			var opts []grpc.DialOption
 			if tt.fields.hasRPCConnection {
@@ -652,10 +653,22 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 		return []voc.IsCloudResource{
 			&voc.ObjectStorage{
 				Storage: &voc.Storage{
-					CloudResource: &voc.CloudResource{
+					Resource: &voc.Resource{
 						ID:   "some-id",
 						Name: "some-name",
 						Type: []string{"ObjectStorage", "Storage", "Resource"},
+					},
+				},
+			},
+			&voc.StorageService{
+				Storages: []voc.ResourceID{("some-id")},
+				NetworkService: &voc.NetworkService{
+					Networking: &voc.Networking{
+						Resource: &voc.Resource{
+							ID:   "some-storage-account-id",
+							Name: "some-storage-account-name",
+							Type: []string{"StorageService", "NetworkService", "Networking", "Resource"},
+						},
 					},
 				},
 				HttpEndpoint: &voc.HttpEndpoint{

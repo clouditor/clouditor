@@ -26,12 +26,6 @@
 package assessment
 
 import (
-	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/policies"
-	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"context"
 	"encoding/json"
 	"errors"
@@ -39,6 +33,14 @@ import (
 	"io"
 	"sync"
 	"time"
+
+	"clouditor.io/clouditor/api"
+	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/policies"
+	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+	"golang.org/x/oauth2/clientcredentials"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
@@ -121,10 +123,10 @@ func WithOrchestratorAddress(address string) ServiceOption {
 	}
 }
 
-// WithInternalAuthorizer is an option to use an authorizer to the internal Clouditor auth service.
-func WithInternalAuthorizer(address string, username string, password string, opts ...grpc.DialOption) ServiceOption {
+// WithOAuth2Authorizer is an option to use an OAuth 2.0 authorizer
+func WithOAuth2Authorizer(config *clientcredentials.Config) ServiceOption {
 	return func(s *Service) {
-		s.SetAuthorizer(api.NewInternalAuthorizerFromPassword(address, username, password, opts...))
+		s.SetAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(config))
 	}
 }
 

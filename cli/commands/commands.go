@@ -33,9 +33,11 @@ import (
 	"clouditor.io/clouditor/cli/commands/evidence"
 	"clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/cli/commands/metric"
+	"clouditor.io/clouditor/cli/commands/requirement"
 	"clouditor.io/clouditor/cli/commands/resource"
 	"clouditor.io/clouditor/cli/commands/service"
 	"clouditor.io/clouditor/cli/commands/tool"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -46,6 +48,7 @@ func AddCommands(cmd *cobra.Command) {
 		// commands for resources
 		login.NewLoginCommand(),
 		metric.NewMetricCommand(),
+		requirement.NewRequirementCommand(),
 		tool.NewToolCommand(),
 		resource.NewResourceCommand(),
 		evidence.NewEvidenceCommand(),
@@ -56,6 +59,6 @@ func AddCommands(cmd *cobra.Command) {
 		service.NewServiceCommand(),
 	)
 
-	cmd.PersistentFlags().StringP("session-directory", "s", cli.DefaultSessionFolder, "the directory where the session will be saved and loaded from")
-	_ = viper.BindPFlag("session-directory", cmd.PersistentFlags().Lookup("session-directory"))
+	cmd.PersistentFlags().StringP(cli.SessionFolderFlag, "s", cli.DefaultSessionFolder, "the directory where the session will be saved and loaded from")
+	_ = viper.BindPFlag(cli.SessionFolderFlag, cmd.PersistentFlags().Lookup(cli.SessionFolderFlag))
 }

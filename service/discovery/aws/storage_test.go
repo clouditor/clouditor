@@ -354,7 +354,7 @@ func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 	}
 
 	// First case: SSE-S3 encryption
-	encryptionAtRest, err = d.getEncryptionAtRest(bucket{name: mockBucket1})
+	encryptionAtRest, err = d.getEncryptionAtRest(&bucket{name: mockBucket1})
 	assert.NoError(t, err)
 	managedEncryption, ok = encryptionAtRest.(voc.ManagedKeyEncryption)
 	assert.True(t, ok)
@@ -362,7 +362,7 @@ func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 	assert.Equal(t, "AES256", managedEncryption.Algorithm)
 
 	// Second case: SSE-KMS encryption
-	encryptionAtRest, err = d.getEncryptionAtRest(bucket{name: mockBucket2, region: mockBucket2Region})
+	encryptionAtRest, err = d.getEncryptionAtRest(&bucket{name: mockBucket2, region: mockBucket2Region})
 	customerEncryption, ok = encryptionAtRest.(voc.CustomerKeyEncryption)
 	assert.True(t, ok)
 	assert.NoError(t, err)
@@ -371,7 +371,7 @@ func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 	assert.Equal(t, "arn:aws:kms:"+mockBucket2Region+":"+mockAccountID+":key/"+mockBucket2KeyId, customerEncryption.KeyUrl)
 
 	// Third case: No encryption
-	encryptionAtRest, err = d.getEncryptionAtRest(bucket{name: "mockbucket3"})
+	encryptionAtRest, err = d.getEncryptionAtRest(&bucket{name: "mockbucket3"})
 	assert.NoError(t, err)
 	assert.False(t, encryptionAtRest.GetAtRestEncryption().Enabled)
 
@@ -380,7 +380,7 @@ func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 		storageAPI:    mockS3APIWitHErrors{},
 		isDiscovering: false,
 	}
-	_, err = d.getEncryptionAtRest(bucket{name: "mockbucket4"})
+	_, err = d.getEncryptionAtRest(&bucket{name: "mockbucket4"})
 	assert.Error(t, err)
 }
 
@@ -464,15 +464,14 @@ func TestAwsS3Discovery_List(t *testing.T) {
 		isDiscovering: false,
 		awsConfig: &Client{
 			cfg: aws.Config{
-				Region:           mockBucket1Region,
-				Credentials:      nil,
-				HTTPClient:       nil,
-				EndpointResolver: nil,
-				Retryer:          nil,
-				ConfigSources:    nil,
-				APIOptions:       nil,
-				Logger:           nil,
-				ClientLogMode:    0,
+				Region:        mockBucket1Region,
+				Credentials:   nil,
+				HTTPClient:    nil,
+				Retryer:       nil,
+				ConfigSources: nil,
+				APIOptions:    nil,
+				Logger:        nil,
+				ClientLogMode: 0,
 			},
 			accountID: aws.String("123456789"),
 		},
@@ -481,15 +480,20 @@ func TestAwsS3Discovery_List(t *testing.T) {
 	assert.NotNil(t, err, "EXPECTED error because MockBucket2 should throw JSON error. But GOT no error")
 
 	log.Println("Testing number of resources (buckets)")
-	assert.Equal(t, 1, len(resources))
+	assert.Equal(t, 2, len(resources))
 
 	expectedResourceNames := []string{mockBucket1, "mockbucket2", "mockbucket3"}
 	//expectedResourceAtRestEncryptions := []bool{true, true, false}
 	//expectedResourceTransportEncryptions := []bool{true, false, false}
-	for i, r := range resources {
-		log.Println("Testing name for resource (bucket)", i+1)
-		assert.Equal(t, expectedResourceNames[i], r.GetName())
-		log.Println("Testing type of resource", i+1)
-		assert.True(t, r.HasType("ObjectStorage"))
-	}
+	// Check first element: voc.ObjectStorage
+	log.Println("Testing name for resource (bucket)", 1)
+	assert.Equal(t, expectedResourceNames[0], resources[0].GetName())
+	log.Println("Testing type of resource", 1)
+	assert.True(t, resources[0].HasType("ObjectStorage"))
+
+	// Check second element: voc.StorageService
+	log.Println("Testing name for resource (bucket)", 2)
+	assert.Equal(t, expectedResourceNames[0], resources[1].GetName())
+	log.Println("Testing type of resource", 2)
+	assert.True(t, resources[1].HasType("StorageService"))
 }

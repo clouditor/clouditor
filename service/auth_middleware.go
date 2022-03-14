@@ -29,18 +29,12 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
-	"net"
 	"time"
-
-	"clouditor.io/clouditor/api/auth"
-	service_auth "clouditor.io/clouditor/service/auth"
 
 	"github.com/MicahParks/keyfunc"
 	"github.com/golang-jwt/jwt/v4"
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -48,7 +42,7 @@ import (
 var log *logrus.Entry
 
 func init() {
-	log = logrus.WithField("component", "service-auth")
+	log = logrus.WithField("component", "auth-middleware")
 }
 
 type AuthConfig struct {
@@ -88,7 +82,7 @@ func WithPublicKey(publicKey *ecdsa.PublicKey) AuthOption {
 }
 
 // authContextKeyType is a key type that is used in context.WithValue to store the token info in the RPC context.
-// It should exlusivly be used with the value of AuthContextKey.
+// It should exclusively be used with the value of AuthContextKey.
 //
 // Why is this needed? To avoid conflicts, the string type should not be used directly but they should be type-aliased.
 type authContextKeyType string
@@ -160,36 +154,4 @@ func parseToken(token string, authConfig *AuthConfig) (jwt.Claims, error) {
 	}
 
 	return parsedToken.Claims, nil
-}
-
-// StartDedicatedAuthServer starts a gRPC server containing just the auth service
-func StartDedicatedAuthServer(address string, opts ...service_auth.ServiceOption) (sock net.Listener, server *grpc.Server, authService *service_auth.Service, err error) {
-	// create a new socket for gRPC communication
-	sock, err = net.Listen("tcp", address)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("could not listen: %w", err)
-	}
-
-	authService = service_auth.NewService(opts...)
-	err = authService.CreateDefaultUser("clouditor", "clouditor")
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("could not create default user: %w", err)
-	}
-
-	authConfig := ConfigureAuth(WithPublicKey(authService.GetPublicKey()))
-
-	// We also add our authentication middleware, because we usually add additional service later
-	server = grpc.NewServer(
-		grpc_middleware.WithUnaryServerChain(
-			grpc_auth.UnaryServerInterceptor(authConfig.AuthFunc),
-		),
-	)
-	auth.RegisterAuthenticationServer(server, authService)
-
-	go func() {
-		// serve the gRPC socket
-		_ = server.Serve(sock)
-	}()
-
-	return sock, server, authService, nil
 }

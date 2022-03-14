@@ -6,12 +6,12 @@ default applicable = false
 
 default compliant = false
 
-OSLog := input.oSLog
+OSLogging := input.oSLogging
 
 applicable {
-	OSLog
+	OSLogging
 }
 
 compliant {
-	compare(data.operator, data.target_value, OSLog.retentionPeriod)
+	compare(data.operator, data.target_value, OSLogging.retentionPeriod)
 }

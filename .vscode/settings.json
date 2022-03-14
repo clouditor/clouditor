@@ -17,6 +17,8 @@
         "gorm",
         "Infof",
         "inmemory",
+        "jwks",
+        "JWKSURL",
         "Kube",
         "Kubernetes",
         "oxisto",

@@ -31,6 +31,7 @@ import (
 	"os"
 	"testing"
 
+	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/voc"
 	"google.golang.org/protobuf/encoding/protojson"
 
@@ -51,11 +52,7 @@ const (
 )
 
 func TestMain(m *testing.M) {
-	// make sure, that we are in the clouditor root folder to find the policies
-	err := os.Chdir("../")
-	if err != nil {
-		panic(err)
-	}
+	clitest.AutoChdir()
 
 	os.Exit(m.Run())
 }
@@ -81,7 +78,7 @@ func TestRunEvidence(t *testing.T) {
 			fields: fields{
 				resource: voc.ObjectStorage{
 					Storage: &voc.Storage{
-						CloudResource: &voc.CloudResource{
+						Resource: &voc.Resource{
 							ID:           mockObjStorage1ResourceID,
 							CreationTime: 1621086669,
 							Type:         []string{"ObjectStorage", "Storage", "Resource"},
@@ -95,20 +92,6 @@ func TestRunEvidence(t *testing.T) {
 							KeyUrl: "SomeUrl",
 						},
 					},
-					HttpEndpoint: &voc.HttpEndpoint{
-						Functionality: nil,
-						Authenticity:  nil,
-						TransportEncryption: &voc.TransportEncryption{
-							Enforced:   true,
-							Enabled:    true,
-							TlsVersion: "TLS1.3",
-							Algorithm:  "TLS",
-						},
-						Url:     "https://aybazestorage.blob.core.windows.net/",
-						Method:  "",
-						Handler: "",
-						Path:    "",
-					},
 				},
 				evidenceID: mockObjStorage1EvidenceID,
 			},
@@ -121,7 +104,7 @@ func TestRunEvidence(t *testing.T) {
 			fields: fields{
 				resource: voc.ObjectStorage{
 					Storage: &voc.Storage{
-						CloudResource: &voc.CloudResource{
+						Resource: &voc.Resource{
 							ID:           mockObjStorage2ResourceID,
 							CreationTime: 1621086669,
 							Type:         []string{"ObjectStorage", "Storage", "Resource"},
@@ -131,20 +114,6 @@ func TestRunEvidence(t *testing.T) {
 							Algorithm: "NoGoodAlg",
 							Enabled:   false,
 						},
-					},
-					HttpEndpoint: &voc.HttpEndpoint{
-						Functionality: nil,
-						Authenticity:  nil,
-						TransportEncryption: &voc.TransportEncryption{
-							Enforced:   false,
-							Enabled:    false,
-							TlsVersion: "1.0",
-							Algorithm:  "NoTLS",
-						},
-						Url:     "https://aybazestorage.blob.core.windows.net/",
-						Method:  "",
-						Handler: "",
-						Path:    "",
 					},
 				},
 				evidenceID: mockObjStorage2EvidenceID,
@@ -159,7 +128,7 @@ func TestRunEvidence(t *testing.T) {
 			fields: fields{
 				resource: voc.ObjectStorage{
 					Storage: &voc.Storage{
-						CloudResource: &voc.CloudResource{
+						Resource: &voc.Resource{
 							ID:           mockObjStorage2ResourceID,
 							CreationTime: 1621086669,
 							Type:         []string{"ObjectStorage", "Storage", "Resource"},
@@ -172,20 +141,6 @@ func TestRunEvidence(t *testing.T) {
 								Enabled:   false,
 							},
 						},
-					},
-					HttpEndpoint: &voc.HttpEndpoint{
-						Functionality: nil,
-						Authenticity:  nil,
-						TransportEncryption: &voc.TransportEncryption{
-							Enforced:   false,
-							Enabled:    false,
-							TlsVersion: "1.0",
-							Algorithm:  "NoTLS",
-						},
-						Url:     "https://aybazestorage.blob.core.windows.net/",
-						Method:  "",
-						Handler: "",
-						Path:    "",
 					},
 				},
 				evidenceID: mockObjStorage2EvidenceID,
@@ -200,24 +155,35 @@ func TestRunEvidence(t *testing.T) {
 			fields: fields{
 				resource: voc.VirtualMachine{
 					Compute: &voc.Compute{
-						CloudResource: &voc.CloudResource{
+						Resource: &voc.Resource{
 							ID:   mockVM1ResourceID,
-							Type: []string{"Compute", "Virtual Machine", "Resource"},
+							Type: []string{"Virtual Machine", "Compute", "Resource"},
 						}},
-					NetworkInterface: nil,
-					BlockStorage:     nil,
-					BootLog: &voc.BootLog{
-						Log: &voc.Log{
-							Output:          []voc.ResourceID{"SomeResourceId1", "SomeResourceId2"},
+					BlockStorage: nil,
+					BootLogging: &voc.BootLogging{
+						Logging: &voc.Logging{
+							LoggingService:  []voc.ResourceID{"SomeResourceId1", "SomeResourceId2"},
 							Enabled:         true,
 							RetentionPeriod: 36,
 						},
 					},
-					OSLog: &voc.OSLog{
-						Log: &voc.Log{
-							Output:          []voc.ResourceID{"SomeResourceId2"},
+					OSLogging: &voc.OSLogging{
+						Logging: &voc.Logging{
+							LoggingService:  []voc.ResourceID{"SomeResourceId2"},
 							Enabled:         true,
 							RetentionPeriod: 36,
+						},
+					},
+					MalwareProtection: &voc.MalwareProtection{
+						Enabled:              true,
+						DaysSinceActive:      5,
+						NumberOfThreatsFound: 5,
+						ApplicationLogging: &voc.ApplicationLogging{
+							Logging: &voc.Logging{
+								Enabled:         true,
+								RetentionPeriod: 36,
+								LoggingService:  []voc.ResourceID{"SomeAnalyticsService?"},
+							},
 						},
 					},
 				},
@@ -233,22 +199,21 @@ func TestRunEvidence(t *testing.T) {
 			fields: fields{
 				resource: voc.VirtualMachine{
 					Compute: &voc.Compute{
-						CloudResource: &voc.CloudResource{
+						Resource: &voc.Resource{
 							ID:   mockVM2ResourceID,
 							Type: []string{"Compute", "Virtual Machine", "Resource"},
 						}},
-					NetworkInterface: nil,
-					BlockStorage:     nil,
-					BootLog: &voc.BootLog{
-						Log: &voc.Log{
-							Output:          []voc.ResourceID{},
+					BlockStorage: nil,
+					BootLogging: &voc.BootLogging{
+						Logging: &voc.Logging{
+							LoggingService:  []voc.ResourceID{},
 							Enabled:         false,
 							RetentionPeriod: 1,
 						},
 					},
-					OSLog: &voc.OSLog{
-						Log: &voc.Log{
-							Output:          []voc.ResourceID{"SomeResourceId3"},
+					OSLogging: &voc.OSLogging{
+						Logging: &voc.Logging{
+							LoggingService:  []voc.ResourceID{"SomeResourceId3"},
 							Enabled:         false,
 							RetentionPeriod: 1,
 						},

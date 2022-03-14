@@ -29,23 +29,17 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"net"
 	"os"
 	"testing"
 
-	"clouditor.io/clouditor/service"
-
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/cli/commands/login"
-	service_evidenceStore "clouditor.io/clouditor/service/evidence"
-
+	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/service"
+	service_evidence "clouditor.io/clouditor/service/evidence"
 	"clouditor.io/clouditor/voc"
-	"github.com/spf13/viper"
+
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -53,60 +47,23 @@ import (
 
 func TestMain(m *testing.M) {
 	var (
-		sock                 net.Listener
-		server               *grpc.Server
-		evidenceStoreService *service_evidenceStore.Service
-
+		svc *service_evidence.Service
 		err error
-		dir string
 	)
 
-	err = os.Chdir("../../../")
-	if err != nil {
-		panic(err)
-	}
+	svc = service_evidence.NewService()
 
-	evidenceStoreService = service_evidenceStore.NewService()
-
-	sock, server, _, err = service.StartDedicatedAuthServer(":0")
-	if err != nil {
-		panic(err)
-	}
-	evidence.RegisterEvidenceStoreServer(server, evidenceStoreService)
-	_, err = evidenceStoreService.StoreEvidence(context.TODO(), &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
+	_, err = svc.StoreEvidence(context.TODO(), &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
 		Id:        "11111111-1111-1111-1111-111111111111",
 		ToolId:    "mock",
 		Timestamp: timestamppb.Now(),
-		Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}),
+		Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}),
 	}})
-
 	if err != nil {
 		panic(err)
 	}
 
-	defer func(sock net.Listener) {
-		err = sock.Close()
-		if err != nil {
-			panic(err)
-		}
-	}(sock)
-	defer server.Stop()
-
-	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
-	if err != nil {
-		panic(err)
-	}
-
-	viper.Set("username", "clouditor")
-	viper.Set("password", "clouditor")
-	viper.Set("session-directory", dir)
-
-	cmd := login.NewLoginCommand()
-	err = cmd.RunE(nil, []string{fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)})
-	if err != nil {
-		panic(err)
-	}
-	defer os.Exit(m.Run())
+	os.Exit(clitest.RunCLITest(m, service.WithEvidenceStore(svc)))
 }
 
 func TestAddCommands(t *testing.T) {

@@ -23,108 +23,54 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package cli
+package cli_test
 
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
-	"net"
 	"os"
+	"reflect"
 	"testing"
 
-	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/cli"
+	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/service"
-	service_auth "clouditor.io/clouditor/service/auth"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
-	"github.com/spf13/viper"
+	oauth2 "github.com/oxisto/oauth2go"
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/oauth2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 )
 
-var (
-	sock   net.Listener
-	server *grpc.Server
-)
-
 func TestMain(m *testing.M) {
 	var (
+		svc *service_orchestrator.Service
 		err error
 	)
-	err = os.Chdir("../")
+
+	svc = service_orchestrator.NewService()
+	_, err = svc.CreateDefaultTargetCloudService()
 	if err != nil {
 		panic(err)
 	}
 
-	s := service_orchestrator.NewService()
-	sock, server, _, err = service.StartDedicatedAuthServer(":0", service_auth.WithApiKeySaveOnCreate(false))
-	orchestrator.RegisterOrchestratorServer(server, s)
-	if err != nil {
-		panic(err)
-	}
+	clitest.AutoChdir()
 
-	os.Exit(m.Run())
+	os.Exit(clitest.RunCLITest(m, service.WithOrchestrator(svc)))
 }
 
 func TestSession(t *testing.T) {
 	var (
 		err     error
-		session *Session
-		dir     string
-	)
-	defer sock.Close()
-	defer server.Stop()
-
-	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
-	assert.NoError(t, err)
-	assert.NotEmpty(t, dir)
-
-	viper.Set("session-directory", dir)
-
-	session, err = NewSession(fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port))
-	if err != nil {
-		t.Fatalf("Failed to dial bufnet: %v", err)
-	}
-	defer session.Close()
-
-	assert.NoError(t, err)
-	assert.NotNil(t, session)
-	assert.Equal(t, dir, session.Folder)
-
-	client := auth.NewAuthenticationClient(session)
-
-	var response *auth.TokenResponse
-
-	// login with real user
-	response, err = client.Login(context.Background(), &auth.LoginRequest{Username: "clouditor", Password: "clouditor"})
-
-	assert.NoError(t, err)
-	assert.NotNil(t, response)
-	assert.NotEmpty(t, response.AccessToken)
-
-	// update the session
-	session.authorizer = api.NewInternalAuthorizerFromToken(
-		session.authorizer.AuthURL(),
-		&oauth2.Token{
-			AccessToken:  response.AccessToken,
-			TokenType:    response.TokenType,
-			RefreshToken: response.RefreshToken,
-			Expiry:       response.Expiry.AsTime(),
-		},
+		session *cli.Session
 	)
 
-	err = session.Save()
-
-	assert.NoError(t, err)
-
-	session, err = ContinueSession()
+	session, err = cli.ContinueSession()
 	assert.NoError(t, err)
 	assert.NotNil(t, session)
 
@@ -158,12 +104,7 @@ func TestSession_HandleResponse(t *testing.T) {
 				err: status.Errorf(codes.Internal, "internal error occurred!"),
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				if err != nil {
-					return true
-				} else {
-					t.Errorf("Expected error.")
-					return false
-				}
+				return assert.Error(t, err)
 			},
 		},
 		{
@@ -173,20 +114,14 @@ func TestSession_HandleResponse(t *testing.T) {
 				err: fmt.Errorf("random error"),
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				if err != nil {
-					return true
-				} else {
-					t.Errorf("Expected error.")
-					return false
-				}
+				return assert.Error(t, err)
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &Session{
-				URL: tt.fields.URL,
-				//Token:      tt.fields.Token,
+			s := &cli.Session{
+				URL:        tt.fields.URL,
 				Folder:     tt.fields.Folder,
 				ClientConn: tt.fields.ClientConn,
 			}
@@ -195,8 +130,119 @@ func TestSession_HandleResponse(t *testing.T) {
 	}
 }
 
-// Test will fail due to no user input
-func TestPromptForLogin(t *testing.T) {
-	_, err := PromptForLogin()
-	assert.Error(t, err)
+func TestValidArgsGetMetrics(t *testing.T) {
+	type args struct {
+		in0        *cobra.Command
+		args       []string
+		toComplete string
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  assert.ValueAssertionFunc
+		want1 cobra.ShellCompDirective
+	}{
+		{
+			name: "some metrics",
+			args: args{
+				toComplete: "",
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				return assert.NotNil(tt, i1)
+			},
+			want1: cobra.ShellCompDirectiveNoFileComp,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := cli.ValidArgsGetMetrics(tt.args.in0, tt.args.args, tt.args.toComplete)
+
+			if tt.want != nil {
+				tt.want(t, got)
+			}
+
+			if !reflect.DeepEqual(got1, tt.want1) {
+				t.Errorf("ValidArgsGetMetrics() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func TestValidArgsGetRequirements(t *testing.T) {
+	type args struct {
+		in0        *cobra.Command
+		args       []string
+		toComplete string
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  assert.ValueAssertionFunc
+		want1 cobra.ShellCompDirective
+	}{
+		{
+			name: "some requirements",
+			args: args{
+				toComplete: "",
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				return assert.NotNil(tt, i1)
+			},
+			want1: cobra.ShellCompDirectiveNoFileComp,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := cli.ValidArgsGetRequirements(tt.args.in0, tt.args.args, tt.args.toComplete)
+
+			if tt.want != nil {
+				tt.want(t, got)
+			}
+
+			if !reflect.DeepEqual(got1, tt.want1) {
+				t.Errorf("ValidArgsGetRequirements() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func TestValidArgsGetCloudServices(t *testing.T) {
+	type args struct {
+		in0        *cobra.Command
+		args       []string
+		toComplete string
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  assert.ValueAssertionFunc
+		want1 cobra.ShellCompDirective
+	}{
+		{
+			name: "some cloud services",
+			args: args{
+				toComplete: "",
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				return assert.NotNil(tt, i1)
+			},
+			want1: cobra.ShellCompDirectiveNoFileComp,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := cli.ValidArgsGetCloudServices(tt.args.in0, tt.args.args, tt.args.toComplete)
+
+			if tt.want != nil {
+				tt.want(t, got)
+			}
+
+			if !reflect.DeepEqual(got1, tt.want1) {
+				t.Errorf("TestValidArgsGetCloudServices() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
 }

@@ -92,7 +92,8 @@ service Orchestrator {
     };
   }
 
-  // Stores stream of assessment results provided by an assessment tool and returns a response stream. Part of the public API, not exposed as REST.
+  // Stores stream of assessment results provided by an assessment tool and
+  // returns a response stream. Part of the public API, not exposed as REST.
   rpc StoreAssessmentResults(stream StoreAssessmentResultRequest)
       returns (stream StoreAssessmentResultResponse);
 
@@ -131,6 +132,13 @@ service Orchestrator {
   rpc ListMetrics(ListMetricsRequest) returns (ListMetricsResponse) {
     option (google.api.http) = {
       get : "/v1/orchestrator/metrics"
+    };
+  }
+
+  rpc ListRequirements(ListRequirementsRequest)
+      returns (ListRequirementsResponse) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/requirements"
     };
   }
 
@@ -181,7 +189,7 @@ service Orchestrator {
       put : "/v1/orchestrator/cloud_services/{service_id}/"
             "metric_configurations/"
             "{metric_id}"
-      body: "configuration"
+      body : "configuration"
     };
   }
 
@@ -215,7 +223,8 @@ service Orchestrator {
   }
 
   // Returns the metric implementation of the passed metric id
-  rpc GetMetricImplementation(GetMetricImplementationRequest) returns (MetricImplementation) {
+  rpc GetMetricImplementation(GetMetricImplementationRequest)
+      returns (MetricImplementation) {
     option (google.api.http) = {
       get : "/v1/orchestrator/metrics/{metric_id}/implementation"
     };
@@ -257,6 +266,9 @@ message GetMetricRequest { string metric_id = 1; }
 message ListMetricsRequest {}
 message ListMetricsResponse { repeated Metric metrics = 1; }
 
+message ListRequirementsRequest {}
+message ListRequirementsResponse { repeated Requirement requirements = 1; }
+
 message GetCloudServiceRequest { string service_id = 1; }
 
 message RegisterCloudServiceRequest { CloudService service = 1; }
@@ -297,9 +309,7 @@ message UpdateMetricImplementationRequest {
   MetricImplementation implementation = 2;
 }
 
-message GetMetricImplementationRequest {
-  string metric_id = 1;
-}
+message GetMetricImplementationRequest { string metric_id = 1; }
 
 // Represents an external tool or service that offers assessments according to
 // certain metrics
@@ -320,4 +330,20 @@ message CloudService {
   string name = 2;
 
   string description = 3;
+
+  message Requirements { repeated string requirement_ids = 1; }
+
+  Requirements requirements = 4;
+}
+
+// Requirement represents a certain requirement that needs to be fulfilled. It
+// could be a control in a certification catalog.
+message Requirement {
+  string id = 1;
+
+  string name = 2;
+
+  string description = 3;
+
+  repeated string metric_ids = 4;
 }

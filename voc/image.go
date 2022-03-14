@@ -26,6 +26,6 @@
 package voc
 
 type Image struct {
-	*CloudResource
+	*Resource
 	Application *Application `json:"application"`
 }

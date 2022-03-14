@@ -32,13 +32,13 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/api"
+	"clouditor.io/clouditor/service/discovery/aws"
 	"clouditor.io/clouditor/service/discovery/azure"
 	"clouditor.io/clouditor/service/discovery/k8s"
+	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/google/uuid"
-
-	"clouditor.io/clouditor/service/discovery/aws"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
@@ -102,15 +102,20 @@ func WithAssessmentAddress(address string) ServiceOption {
 	}
 }
 
-// WithInternalAuthorizer is an option to use an authorizer to the internal Clouditor auth service.
-func WithInternalAuthorizer(address string, username string, password string, opts ...grpc.DialOption) ServiceOption {
+// WithOAuth2Authorizer is an option to use an OAuth 2.0 authorizer
+func WithOAuth2Authorizer(config *clientcredentials.Config) ServiceOption {
 	return func(s *Service) {
-		s.SetAuthorizer(api.NewInternalAuthorizerFromPassword(address, username, password, opts...))
+		s.SetAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(config))
 	}
 }
 
 // WithProviders is an option to set providers for discovering
 func WithProviders(providersList []string) ServiceOption {
+	if len(providersList) == 0 {
+		newError := errors.New("no providers given")
+		log.Error(newError)
+	}
+
 	return func(s *Service) {
 		s.providers = providersList
 	}
@@ -170,20 +175,11 @@ func (s *Service) initAssessmentStream(additionalOpts ...grpc.DialOption) error 
 }
 
 // Start starts discovery
-func (s *Service) Start(_ context.Context, req *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
+func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
 	resp = &discovery.StartDiscoveryResponse{Successful: true}
 
 	log.Infof("Starting discovery...")
 	s.scheduler.TagsUnique()
-
-	// Set providers
-	if req == nil || req.Providers == nil || len(req.Providers) == 0 {
-		newError := errors.New("no providers for discovering given")
-		log.Errorf("%s", newError)
-		return nil, status.Errorf(codes.InvalidArgument, "%s", newError)
-	} else {
-		s.providers = req.Providers
-	}
 
 	// Establish connection to assessment component
 	if s.assessmentStream == nil {

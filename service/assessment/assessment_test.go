@@ -39,6 +39,8 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/voc"
 
 	"github.com/stretchr/testify/assert"
@@ -50,22 +52,19 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func TestMain(m *testing.M) {
-	// make sure, that we are in the clouditor root folder to find the policies
-	err := os.Chdir("../../")
-	if err != nil {
-		panic(err)
-	}
+var (
+	authPort int
+)
 
-	server, authService, _, _ := startBufConnServer()
-	err = authService.CreateDefaultUser("clouditor", "clouditor")
-	if err != nil {
-		panic(err)
-	}
+func TestMain(m *testing.M) {
+	clitest.AutoChdir()
+
+	server, _, _ := startBufConnServer()
 
 	code := m.Run()
 
 	server.Stop()
+
 	os.Exit(code)
 }
 
@@ -167,7 +166,7 @@ func TestAssessEvidence(t *testing.T) {
 				evidence: &evidence.Evidence{
 					Id:       "11111111-1111-1111-1111-111111111111",
 					ToolId:   "mock",
-					Resource: toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+					Resource: toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 				},
 			},
 			hasRPCConnection: true,
@@ -185,7 +184,7 @@ func TestAssessEvidence(t *testing.T) {
 					Id:        "11111111-1111-1111-1111-111111111111",
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
-					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 				},
 			},
 			hasRPCConnection: true,
@@ -202,7 +201,7 @@ func TestAssessEvidence(t *testing.T) {
 					Id:        "11111111-1111-1111-1111-111111111111",
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
-					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 				},
 			},
 			hasRPCConnection: false,
@@ -269,7 +268,7 @@ func TestAssessEvidences(t *testing.T) {
 				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
 						Timestamp: timestamppb.Now(),
-						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
+						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidenceResponse{
@@ -287,7 +286,7 @@ func TestAssessEvidences(t *testing.T) {
 					Evidence: &evidence.Evidence{
 						Timestamp: timestamppb.Now(),
 						ToolId:    "2134",
-						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
+						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidenceResponse{
@@ -304,7 +303,7 @@ func TestAssessEvidences(t *testing.T) {
 					Evidence: &evidence.Evidence{
 						Timestamp: timestamppb.Now(),
 						ToolId:    "2134",
-						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
+						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidenceResponse{
@@ -322,7 +321,7 @@ func TestAssessEvidences(t *testing.T) {
 					Evidence: &evidence.Evidence{
 						Timestamp: timestamppb.Now(),
 						ToolId:    "2134",
-						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
+						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
 			wantErr:        true,
 			wantErrMessage: "rpc error: code = Unknown desc = cannot send response to the client",
@@ -337,7 +336,7 @@ func TestAssessEvidences(t *testing.T) {
 					Evidence: &evidence.Evidence{
 						Timestamp: timestamppb.Now(),
 						ToolId:    "2134",
-						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
+						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
 			wantErr:        true,
 			wantErrMessage: "rpc error: code = Unknown desc = cannot receive stream request",
@@ -389,9 +388,10 @@ func TestAssessmentResultHooks(t *testing.T) {
 	var (
 		hookCallCounter = 0
 		wg              sync.WaitGroup
+		hookCounts      = 16
 	)
 
-	wg.Add(12)
+	wg.Add(hookCounts)
 
 	firstHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
 		hookCallCounter++
@@ -425,11 +425,36 @@ func TestAssessmentResultHooks(t *testing.T) {
 						Id:        "11111111-1111-1111-1111-111111111111",
 						ToolId:    "mock",
 						Timestamp: timestamppb.Now(),
-						Resource: toStruct(voc.VirtualMachine{
+						Resource: toStruct(&voc.VirtualMachine{
 							Compute: &voc.Compute{
-								CloudResource: &voc.CloudResource{
+								Resource: &voc.Resource{
 									ID:   "my-resource-id",
-									Type: []string{"VirtualMachine"}},
+									Type: []string{"VirtualMachine", "Compute", "Resource"}},
+							},
+							BootLogging: &voc.BootLogging{
+								Logging: &voc.Logging{
+									LoggingService:  []voc.ResourceID{"SomeResourceId2"},
+									Enabled:         true,
+									RetentionPeriod: 36,
+								},
+							},
+							OSLogging: &voc.OSLogging{
+								Logging: &voc.Logging{
+									LoggingService:  []voc.ResourceID{"SomeResourceId2"},
+									Enabled:         true,
+									RetentionPeriod: 36,
+								},
+							},
+							MalwareProtection: &voc.MalwareProtection{
+								Enabled:              true,
+								NumberOfThreatsFound: 5,
+								DaysSinceActive:      20,
+								ApplicationLogging: &voc.ApplicationLogging{
+									Logging: &voc.Logging{
+										Enabled:        true,
+										LoggingService: []voc.ResourceID{"SomeAnalyticsService?"},
+									},
+								},
 							},
 						}, t),
 					}},
@@ -460,7 +485,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 			// To test the hooks we have to call a function that calls the hook function
 			gotResp, err := s.AssessEvidence(tt.args.in0, tt.args.evidence)
 
-			// wait for all hooks (6 metrics * 2 hooks)
+			// wait for all hooks (2 metrics * 2 hooks)
 			wg.Wait()
 
 			if (err != nil) != tt.wantErr {
@@ -473,7 +498,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 
 			assert.Equal(t, tt.wantResp, gotResp)
 			assert.NotEmpty(t, s.results)
-			assert.Equal(t, 12, hookCallCounter)
+			assert.Equal(t, hookCounts, hookCallCounter)
 		})
 	}
 }
@@ -487,7 +512,7 @@ func TestListAssessmentResults(t *testing.T) {
 			Id:        "11111111-1111-1111-1111-111111111111",
 			ToolId:    "mock",
 			Timestamp: timestamppb.Now(),
-			Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+			Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 		}})
 	assert.NoError(t, err)
 	var results *assessment.ListAssessmentResultsResponse
@@ -743,7 +768,7 @@ func TestHandleEvidence(t *testing.T) {
 					Id:        "11111111-1111-1111-1111-111111111111",
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
-					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 				},
 				resourceId: "my-resource-id",
 			},
@@ -763,7 +788,7 @@ func TestHandleEvidence(t *testing.T) {
 					Id:        "11111111-1111-1111-1111-111111111111",
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
-					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{}}}}, t),
+					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{}}}}, t),
 				},
 				resourceId: "my-resource-id",
 			},
@@ -785,7 +810,7 @@ func TestHandleEvidence(t *testing.T) {
 					Id:        "11111111-1111-1111-1111-111111111111",
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
-					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 				},
 				resourceId: "my-resource-id",
 			},
@@ -808,7 +833,7 @@ func TestHandleEvidence(t *testing.T) {
 					Id:        "11111111-1111-1111-1111-111111111111",
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
-					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{CloudResource: &voc.CloudResource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
 				},
 				resourceId: "my-resource-id",
 			},
@@ -877,12 +902,7 @@ func TestService_initEvidenceStoreStream(t *testing.T) {
 			fields: fields{
 				opts: []ServiceOption{
 					WithEvidenceStoreAddress("bufnet"),
-					WithInternalAuthorizer(
-						"bufnet",
-						"clouditor",
-						"clouditor",
-						grpc.WithContextDialer(bufConnDialer),
-					),
+					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
 				},
 			},
 			args: args{
@@ -894,19 +914,15 @@ func TestService_initEvidenceStoreStream(t *testing.T) {
 			fields: fields{
 				opts: []ServiceOption{
 					WithEvidenceStoreAddress("bufnet"),
-					WithInternalAuthorizer(
-						"bufnet",
-						"not_clouditor",
-						"clouditor",
-						grpc.WithContextDialer(bufConnDialer),
-					),
+					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
 				},
 			},
 			args: args{
 				[]grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.Equal(tt, err.Error(), "could not set up stream for storing evidences: rpc error: code = Unauthenticated desc = transport: per-RPC creds failed due to error: error while logging in: rpc error: code = Unauthenticated desc = login failed")
+				s, _ := status.FromError(errors.Unwrap(err))
+				return assert.Equal(t, codes.Unauthenticated, s.Code())
 			},
 		},
 	}
@@ -944,16 +960,8 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				// We are looking for a connection refused message
-				innerErr := errors.Unwrap(err)
-				s, _ := status.FromError(innerErr)
-
-				if s.Code() != codes.Unavailable {
-					tt.Errorf("Status should be codes.Unavailable: %v", s.Code())
-					return false
-				}
-
-				return true
+				s, _ := status.FromError(errors.Unwrap(err))
+				return assert.Equal(t, codes.Unavailable, s.Code())
 			},
 		},
 		{
@@ -961,12 +969,7 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 			fields: fields{
 				opts: []ServiceOption{
 					WithOrchestratorAddress("bufnet"),
-					WithInternalAuthorizer(
-						"bufnet",
-						"clouditor",
-						"clouditor",
-						grpc.WithContextDialer(bufConnDialer),
-					),
+					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
 				},
 			},
 			args: args{
@@ -978,19 +981,15 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 			fields: fields{
 				opts: []ServiceOption{
 					WithOrchestratorAddress("bufnet"),
-					WithInternalAuthorizer(
-						"bufnet",
-						"not_clouditor",
-						"clouditor",
-						grpc.WithContextDialer(bufConnDialer),
-					),
+					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
 				},
 			},
 			args: args{
 				[]grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.Equal(tt, err.Error(), "could not set up stream for storing assessment results: rpc error: code = Unauthenticated desc = transport: per-RPC creds failed due to error: error while logging in: rpc error: code = Unauthenticated desc = login failed")
+				s, _ := status.FromError(errors.Unwrap(err))
+				return assert.Equal(t, codes.Unauthenticated, s.Code())
 			},
 		},
 	}
