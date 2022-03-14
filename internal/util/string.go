@@ -27,7 +27,7 @@ package util
 
 import "unicode"
 
-// camelCaseToSnakeCase converts a `camelCase` string to `snake_case`
+// CamelCaseToSnakeCase converts a `camelCase` string to `snake_case`
 func CamelCaseToSnakeCase(input string) string {
 	if input == "" {
 		return ""

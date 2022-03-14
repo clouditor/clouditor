@@ -66,7 +66,30 @@ func Test_marksNewWord(t *testing.T) {
 		args args
 		want bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Correct values",
+			args: args{
+				i:     4,
+				input: []rune("testCamelCaseString"),
+			},
+			want: true,
+		},
+		{
+			name: "Index higher than length of string",
+			args: args{
+				i:     20,
+				input: []rune("testCamelCaseString"),
+			},
+			want: false,
+		},
+		{
+			name: "Index equals 0",
+			args: args{
+				i:     0,
+				input: []rune("testCamelCaseString"),
+			},
+			want: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
