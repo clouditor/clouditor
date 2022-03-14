@@ -26,7 +26,7 @@
 package util
 
 // DeepCopy copies an interface[] array
-func DeepCopy(original  []interface{}) []interface{} {
+func DeepCopy(original []interface{}) []interface{} {
 
 	var target []interface{}
 
