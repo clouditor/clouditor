@@ -42,7 +42,11 @@ func DeepCopyOfMap(originalMap map[string]interface{}) map[string]interface{} {
 	targetMap := make(map[string]interface{})
 
 	for key, value := range originalMap {
-		targetMap[key] = value
+		if mapValue, ok := value.(map[string]interface{}); ok{
+			targetMap[key] = DeepCopyOfMap(mapValue)
+		} else {
+			targetMap[key] = value
+		}
 	}
 
 	return targetMap
