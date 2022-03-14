@@ -358,7 +358,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		}
 	}
 
-	// start the gRPC-HTTP gateway
+	// Start the gRPC-HTTP gateway
 	go func() {
 		err = rest.RunServer(context.Background(),
 			grpcPort,
