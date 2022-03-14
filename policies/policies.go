@@ -205,24 +205,36 @@ func camelCaseToSnakeCase(input string) string {
 	snakeCase := make([]rune, 0, len(input))
 	runeArray := []rune(input)
 
-	for i, _ := range runeArray {
-		// Check if two consecutive runes are uppercase, if one uppercase rune followed by a lowercase rune separate by an underscore
-		if unicode.IsUpper(runeArray[i]) && unicode.IsUpper(runeArray[i+1]) {
-			snakeCase = append(snakeCase, unicode.ToLower(runeArray[i]))
-		} else if unicode.IsUpper(runeArray[i]) {
+	for i := range runeArray {
+		if i > 0 && marksNewWord(i, runeArray) {
 			snakeCase = append(snakeCase, '_', unicode.ToLower(runeArray[i]))
 		} else {
-			snakeCase = append(snakeCase, runeArray[i])
+			snakeCase = append(snakeCase, unicode.ToLower(runeArray[i]))
 		}
-	}
-
-	// Delete first underscore
-	if snakeCase[0] == '_' {
-		snakeCase = snakeCase[1:]
 	}
 
 	return string(snakeCase)
 }
+
+// marksNewWord checks if the current character starts a new word excluding the first word
+func marksNewWord(i int, input []rune) bool {
+
+	if i >= len(input) {
+		return false
+	}
+
+	// If previous or following rune/character is lowercase or rune is a number than it is a new word
+	if i < len(input)-1 && unicode.IsUpper(input[i]) && unicode.IsLower(input[i+1]) {
+		return true
+	} else if i > 0 && unicode.IsLower(input[i-1]) && unicode.IsUpper(input[i]) {
+		return true
+	} else if unicode.IsDigit(input[i]) {
+		return true
+	}
+
+	return false
+}
+
 
 func scanBundleDir(baseDir string) ([]os.FileInfo, error) {
 	dirname := baseDir + "/policies/bundles"
