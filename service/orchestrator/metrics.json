@@ -11,6 +11,7 @@
   {
     "id": "AtRestEncryptionEnabled",
     "name": "Storage Encryption: Enabled",
+    "category": "CKM-03",
     "description": "This metric describes whether storage encryption is enabled",
     "scale": 1,
     "allowedValues": {
@@ -24,7 +25,7 @@
     "id": "AtRestEncryptionAlgorithm",
     "name": "Storage Encryption: Algorithm",
     "description": "This metric describes the algorithm of a storage encryption block cipher",
-    "category": "OPS-18",
+    "category": "CKM-03",
     "scale": 1,
     "allowedValues": {
       "values": [
@@ -97,6 +98,7 @@
   {
     "id": "TransportEncryptionEnabled",
     "name": "Transport Encryption: Enabled",
+    "category": "CKM-02",
     "description": "This metric describes, whether transport encryption is turned on or not",
     "scale": 1,
     "range": {
@@ -114,6 +116,7 @@
   {
     "id": "TransportEncryptionAlgorithm",
     "name": "Transport Encryption: Protocol Version",
+    "category": "CKM-02",
     "description": "This metric describes, whether a up-to-date transport encryption protocol version is used",
     "scale": 1,
     "range": {
@@ -131,7 +134,8 @@
     ]
   },
   {
-    "id": "TransportEncryptionEnforced"
+    "id": "TransportEncryptionEnforced",
+    "category": "CKM-02"
   },
   {
     "id": "WebApplicationFirewallEnabled"
