@@ -290,6 +290,11 @@ func TestStart(t *testing.T) {
 					// 1. Set client credentials
 					{
 						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_TENANT_ID",
+						envVariableValue: "",
+					},
+					{
+						hasEnvVariable:   true,
 						envVariableKey:   "AZURE_CLIENT_ID",
 						envVariableValue: "",
 					},
@@ -298,18 +303,18 @@ func TestStart(t *testing.T) {
 						envVariableKey:   "AZURE_CLIENT_SECRET",
 						envVariableValue: "",
 					},
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "AZURE_TENANT_ID",
-						envVariableValue: "",
-					},
-					// 2. set certificate path to empty string
+					// 2. set certificate path and certificate pw to empty string (client and tenant ID already empty)
 					{
 						hasEnvVariable:   true,
 						envVariableKey:   "AZURE_CERTIFICATE_PATH",
 						envVariableValue: "",
 					},
-					// 3. Set username and password to empty string
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_CERTIFICATE_PASSWORD",
+						envVariableValue: "",
+					},
+					// 3. Set username and password to empty string (client and tenant ID already empty)
 					{
 						hasEnvVariable:   true,
 						envVariableKey:   "AZURE_USERNAME",
@@ -326,6 +331,11 @@ func TestStart(t *testing.T) {
 						envVariableKey:   "AZURE_ENVIRONMENT",
 						envVariableValue: "",
 					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "MSI_ENDPOINT",
+						envVariableValue: "",
+					},
 
 					// Set AZURE_AUTH_LOCATION and HOME to a wrong path so that authorizer `from file and CLI` fails
 					{
@@ -335,12 +345,53 @@ func TestStart(t *testing.T) {
 					},
 					{
 						hasEnvVariable:   true,
-						envVariableKey:   "MSI_ENDPOINT",
+						envVariableKey:   "HOME",
+						envVariableValue: "",
+					},
+					// TODO(lebogg): For debugging...Just set all ENVs to empty string
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_SUBSCRIPTION_ID",
 						envVariableValue: "",
 					},
 					{
 						hasEnvVariable:   true,
-						envVariableKey:   "HOME",
+						envVariableKey:   "AZURE_AUXILIARY_TENANT_IDS",
+						envVariableValue: "",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_AD_RESOURCE",
+						envVariableValue: "",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "ActiveDirectoryEndpoint",
+						envVariableValue: "",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "ResourceManagerEndpoint",
+						envVariableValue: "",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "GraphResourceID",
+						envVariableValue: "",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "SQLManagementEndpoint",
+						envVariableValue: "",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "GalleryEndpoint",
+						envVariableValue: "",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "ManagementEndpoint",
 						envVariableValue: "",
 					},
 				},
