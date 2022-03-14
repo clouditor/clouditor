@@ -31,8 +31,6 @@ import (
 	"fmt"
 	autorest_azure "github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/resources/mgmt/subscriptions"
@@ -40,7 +38,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var log *logrus.Entry
+var (
+	log *logrus.Entry
+
+	ErrCouldNotAuthenticate = errors.New("could not authenticate to Azure with any authorizer " +
+		"(from environment, file, or CLI)")
+)
 
 type DiscoveryOption interface {
 	apply(*autorest.Client)
@@ -120,7 +123,7 @@ func (a *azureDiscovery) authorize() (err error) {
 	return nil
 }
 
-func (a azureDiscovery) apply(client *autorest.Client) {
+func (a *azureDiscovery) apply(client *autorest.Client) {
 	if a.authOption != nil {
 		a.authOption.apply(client)
 	}
@@ -130,24 +133,38 @@ func (a azureDiscovery) apply(client *autorest.Client) {
 	}
 }
 
-func NewAuthorizer() (autorest.Authorizer, error) {
-	// create an authorizer from file or as fallback from the CLI
-	// if authorizer is from CLI, the access token expires after 75 minutes
-	authorizer, err := auth.NewAuthorizerFromFile(autorest_azure.PublicCloud.ResourceManagerEndpoint)
-	if err != nil {
-		log.Errorf("Could not authenticate to Azure with authorizer from file: %v", err)
-		log.Infof("Fallback to Azure with authorizer from CLI.")
-		authorizer, err = auth.NewAuthorizerFromCLI()
-		if err != nil {
-			log.Errorf("Could not authenticate to Azure with authorizer from CLI: %v", err)
-			return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
-		}
-		log.Info("Using Azure authorizer from CLI. The discovery times out after 1 hour.")
-	} else {
-		log.Info("Using Azure authorizer from file.")
+// NewAuthorizer creates an authorizer for connecting to Azure using a custom credential chain (from ENV, file and CLI)
+func NewAuthorizer() (authorizer autorest.Authorizer, err error) {
+	// First, try to create authorizer via credentials from the environment
+	authorizer, err = auth.NewAuthorizerFromEnvironment()
+	if err == nil {
+		log.Infof("Using authorizer from environment")
+		return
 	}
+	log.Infof("Could not authenticate to Azure with authorizer from environment: %v", err)
+	log.Infof("Fallback to authorizer from file")
 
-	return authorizer, nil
+	// Create authorizer from file
+	authorizer, err = auth.NewAuthorizerFromFile(autorest_azure.PublicCloud.ResourceManagerEndpoint)
+	if err == nil {
+		log.Infof("Using authorizer from file")
+		return
+	}
+	log.Infof("Could not authenticate to Azure with authorizer from file: %v", err)
+	log.Infof("Fallback to authorizer from CLI.")
+
+	// Create authorizer from CLI
+	authorizer, err = auth.NewAuthorizerFromCLI()
+	if err == nil {
+		// if authorizer is from CLI, the access token expires after 75 minutes
+		log.Info("Using authorizer from CLI. The discovery times out after 1 hour.")
+		return
+	}
+	log.Infof("Could not authenticate to Azure with authorizer from CLI: %v", err)
+
+	// Authorizer couldn't be created
+	log.Error(ErrCouldNotAuthenticate)
+	return nil, ErrCouldNotAuthenticate
 }
 
 func getResourceGroupName(id string) string {
