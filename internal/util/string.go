@@ -59,8 +59,6 @@ func marksNewWord(i int, input []rune) bool {
 		return true
 	} else if i > 0 && unicode.IsLower(input[i-1]) && unicode.IsUpper(input[i]) {
 		return true
-	} else if unicode.IsDigit(input[i]) {
-		return true
 	}
 
 	return false
