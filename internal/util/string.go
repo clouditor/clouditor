@@ -59,7 +59,7 @@ func marksNewWord(i int, input []rune) bool {
 		return false
 	}
 
-	// If previous or following rune/character is lowercase or a number than it is a new word
+	// If previous or following rune/character is lowercase or a number then it is a new word
 	if i < len(input)-1 && unicode.IsUpper(input[i]) && unicode.IsLower(input[i+1]) {
 		return true
 	} else if i > 0 && unicode.IsLower(input[i-1]) && unicode.IsUpper(input[i]) {
