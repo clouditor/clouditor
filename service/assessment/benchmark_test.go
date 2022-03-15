@@ -21,14 +21,14 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func createSome(n int, m int, b *testing.B) int {
+func createEvidences(n int, m int, b *testing.B) int {
 	var (
 		wg   sync.WaitGroup
 		err  error
 		sock net.Listener
 	)
 
-	logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetLevel(logrus.InfoLevel)
 
 	srv := grpc.NewServer()
 
@@ -113,7 +113,7 @@ func createSome(n int, m int, b *testing.B) int {
 
 func benchmarkAssessEvidence(i int, m int, b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		createSome(i, m, b)
+		createEvidences(i, m, b)
 	}
 }
 

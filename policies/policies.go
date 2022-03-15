@@ -44,15 +44,24 @@ import (
 
 var (
 	log = logrus.WithField("component", "policies")
-)
 
-// applicableMetrics stores a list of applicable metrics per resourceType
-var applicableMetrics = metricsResourceTypeCache{m: make(map[string][]string)}
+	// applicableMetrics stores a list of applicable metrics per resourceType
+	applicableMetrics = metricsResourceTypeCache{m: make(map[string][]string)}
+
+	cache = newQueryCache()
+)
 
 type metricsResourceTypeCache struct {
 	sync.RWMutex
 	m map[string][]string
 }
+
+type queryCache struct {
+	sync.Mutex
+	cache map[string]*rego.PreparedEvalQuery
+}
+
+type orElseFunc func(key string) (query *rego.PreparedEvalQuery, err error)
 
 type Result struct {
 	Applicable  bool
@@ -65,6 +74,41 @@ type Result struct {
 // MetricConfigurationSource can be used to retrieve a metric configuration for a particular metric (and target service)
 type MetricConfigurationSource interface {
 	MetricConfiguration(metric string) (*assessment.MetricConfiguration, error)
+}
+
+func newQueryCache() *queryCache {
+	return &queryCache{
+		cache: make(map[string]*rego.PreparedEvalQuery),
+	}
+}
+
+// Get returns the prepared query for the given key. If the key was not found in the cache,
+// the orElse function is executed to populate the cache.
+func (qc *queryCache) Get(key string, orElse orElseFunc) (query *rego.PreparedEvalQuery, err error) {
+	var (
+		ok bool
+	)
+
+	// Lock the cache
+	qc.Lock()
+	// And defer the unlock
+	defer qc.Unlock()
+
+	// Check, if query is contained in the cache
+	query, ok = qc.cache[key]
+	if ok {
+		return
+	}
+
+	// Otherwise, the orElse function is executed to fetch the query
+	query, err = orElse(key)
+	if err != nil {
+		return nil, err
+	}
+
+	// Update the cache
+	qc.cache[key] = query
+	return
 }
 
 func RunEvidence(evidence *evidence.Evidence, holder MetricConfigurationSource) ([]*Result, error) {
@@ -111,7 +155,7 @@ func RunEvidence(evidence *evidence.Evidence, holder MetricConfigurationSource) 
 		// Start with an empty list, otherwise we might copy metrics into the list
 		// that are added by a parallel execution - which might occur if both goroutines
 		// start at the exactly same time.
-		metrics := []string{}
+		metrics = []string{}
 		for _, fileInfo := range files {
 			runMap, err := RunMap(baseDir, fileInfo.Name(), m, holder)
 			if err != nil {
@@ -146,50 +190,6 @@ func RunEvidence(evidence *evidence.Evidence, holder MetricConfigurationSource) 
 
 	return data, nil
 }
-
-type queryCache struct {
-	sync.Mutex
-	cache map[string]*rego.PreparedEvalQuery
-}
-
-func newQueryCache() *queryCache {
-	return &queryCache{
-		cache: make(map[string]*rego.PreparedEvalQuery),
-	}
-}
-
-type orElseFunc func(key string) (query *rego.PreparedEvalQuery, err error)
-
-// Get returns the prepared query for the given key. If the key was not found in the cache,
-// the orElse function is executed to populate the cache.
-func (qc *queryCache) Get(key string, orElse orElseFunc) (query *rego.PreparedEvalQuery, err error) {
-	var (
-		ok bool
-	)
-
-	// Lock the cache
-	qc.Lock()
-	// And defer the unlock
-	defer qc.Unlock()
-
-	// Check, if query is contained in the cache
-	query, ok = qc.cache[key]
-	if ok {
-		return
-	}
-
-	// Otherwise, the orElse function is executed to fetch the query
-	query, err = orElse(key)
-	if err != nil {
-		return nil, err
-	}
-
-	// Update the cache
-	qc.cache[key] = query
-	return
-}
-
-var cache queryCache = *newQueryCache()
 
 func RunMap(baseDir string, metric string, m map[string]interface{}, holder MetricConfigurationSource) (result *Result, err error) {
 	var query *rego.PreparedEvalQuery
