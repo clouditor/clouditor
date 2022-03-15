@@ -3,11 +3,15 @@ package assessment
 import (
 	"context"
 	"fmt"
+	"net"
 	"sync"
 	"testing"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/orchestrator"
+	service_evidence "clouditor.io/clouditor/service/evidence"
+	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"clouditor.io/clouditor/voc"
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
@@ -15,13 +19,35 @@ import (
 )
 
 func createSome(n int, b *testing.B) int {
-	var wg sync.WaitGroup
+	var (
+		wg   sync.WaitGroup
+		err  error
+		sock net.Listener
+	)
+
+	srv := grpc.NewServer()
+
+	orchestratorService := service_orchestrator.NewService()
+	orchestrator.RegisterOrchestratorServer(srv, orchestratorService)
+
+	evidenceService := service_evidence.NewService()
+	evidence.RegisterEvidenceStoreServer(srv, evidenceService)
+
+	sock, err = net.Listen("tcp", ":0")
+	if err != nil {
+		b.Errorf("could not listen: %v", err)
+	}
+
+	go srv.Serve(sock)
+	defer srv.Stop()
 
 	wg.Add(n * 7)
 
-	svc := NewService(WithOrchestratorAddress("bufcon"))
-	svc.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer))
-	svc.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer))
+	addr := fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)
+
+	svc := NewService(WithOrchestratorAddress(addr), WithEvidenceStoreAddress(addr))
+	svc.initOrchestratorStream()
+	svc.initEvidenceStoreStream()
 	svc.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
 		wg.Done()
 	})

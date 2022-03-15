@@ -37,7 +37,7 @@ import (
 	"google.golang.org/grpc/test/bufconn"
 )
 
-const DefaultBufferSize = 1024 * 1024
+const DefaultBufferSize = 1024 * 1024 * 10
 
 var (
 	bufConnListener *bufconn.Listener
