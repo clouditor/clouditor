@@ -361,20 +361,6 @@ func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) err
 		return fmt.Errorf("could not set up stream for storing evidences: %w", err)
 	}
 
-	log.Infof("Connected to Evidence Store")
-
-	return nil
-}
-
-// sendToEvidenceStore sends evidence e to the Evidence Store
-func (s *Service) sendToEvidenceStore(e *evidence.Evidence) error {
-	if s.evidenceStoreStream == nil {
-		err := s.initEvidenceStoreStream()
-		if err != nil {
-			return fmt.Errorf("could not initialize stream to Evidence Store: %v", err)
-		}
-	}
-
 	// Receive responses from Evidence Store
 	// Currently we do not process the responses
 	go func() {
@@ -390,6 +376,20 @@ func (s *Service) sendToEvidenceStore(e *evidence.Evidence) error {
 			}
 		}
 	}()
+
+	log.Infof("Connected to Evidence Store")
+
+	return nil
+}
+
+// sendToEvidenceStore sends evidence e to the Evidence Store
+func (s *Service) sendToEvidenceStore(e *evidence.Evidence) error {
+	if s.evidenceStoreStream == nil {
+		err := s.initEvidenceStoreStream()
+		if err != nil {
+			return fmt.Errorf("could not initialize stream to Evidence Store: %v", err)
+		}
+	}
 
 	log.Infof("Sending evidence (%v) to Evidence Store", e.Id)
 
@@ -418,20 +418,6 @@ func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) erro
 		return fmt.Errorf("could not set up stream for storing assessment results: %w", err)
 	}
 
-	log.Infof("Connected to Orchestrator")
-
-	return nil
-}
-
-// sendToOrchestrator sends the assessment result to the Orchestrator
-func (s *Service) sendToOrchestrator(result *assessment.AssessmentResult) error {
-	if s.orchestratorStream == nil || s.orchestratorClient == nil {
-		err := s.initOrchestratorStream()
-		if err != nil {
-			return fmt.Errorf("could not initialize stream to Orchestrator: %v", err)
-		}
-	}
-
 	// Receive responses from Orchestrator
 	// Currently we do not process the responses
 	go func() {
@@ -447,6 +433,20 @@ func (s *Service) sendToOrchestrator(result *assessment.AssessmentResult) error 
 			}
 		}
 	}()
+
+	log.Infof("Connected to Orchestrator")
+
+	return nil
+}
+
+// sendToOrchestrator sends the assessment result to the Orchestrator
+func (s *Service) sendToOrchestrator(result *assessment.AssessmentResult) error {
+	if s.orchestratorStream == nil || s.orchestratorClient == nil {
+		err := s.initOrchestratorStream()
+		if err != nil {
+			return fmt.Errorf("could not initialize stream to Orchestrator: %v", err)
+		}
+	}
 
 	log.Infof("Sending assessment result (%v) to Orchestrator", result.Id)
 
