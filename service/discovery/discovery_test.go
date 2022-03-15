@@ -179,6 +179,7 @@ func TestStartDiscovery(t *testing.T) {
 
 func TestQuery(t *testing.T) {
 	s := NewService()
+	s.assessmentStream = &mockAssessmentStream{}
 	s.StartDiscovery(mockDiscoverer{testCase: 2})
 
 	type fields struct {
