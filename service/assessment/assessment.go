@@ -361,6 +361,22 @@ func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) err
 		return fmt.Errorf("could not set up stream for storing evidences: %w", err)
 	}
 
+	// Receive responses from Evidence Store
+	// Currently we do not process the responses
+	go func() {
+		for {
+			_, err := s.evidenceStoreStream.Recv()
+			if err == io.EOF {
+				break
+			}
+
+			if err != nil {
+				log.Errorf("error receiving response from evidence store stream: %+v", err)
+				break
+			}
+		}
+	}()
+
 	log.Infof("Connected to Evidence Store")
 
 	return nil
@@ -401,6 +417,22 @@ func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) erro
 	if err != nil {
 		return fmt.Errorf("could not set up stream for storing assessment results: %w", err)
 	}
+
+	// Receive responses from Orchestrator
+	// Currently we do not process the responses
+	go func() {
+		for {
+			_, err := s.orchestratorStream.Recv()
+			if err == io.EOF {
+				break
+			}
+
+			if err != nil {
+				log.Errorf("error receiving response from orchestrator stream: %+v", err)
+				break
+			}
+		}
+	}()
 
 	log.Infof("Connected to Orchestrator")
 

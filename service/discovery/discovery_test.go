@@ -134,7 +134,7 @@ func TestStartDiscovery(t *testing.T) {
 			},
 		},
 		{
-			name: "No err in discoverer but no evidence stream to evidence store available",
+			name: "No err in discoverer but no evidence stream to assessment available",
 			fields: fields{
 				assessmentStream: &mockAssessmentStream{},
 				discoverer:       mockDiscoverer{testCase: 2}},

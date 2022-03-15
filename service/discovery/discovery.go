@@ -29,6 +29,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"time"
 
 	"clouditor.io/clouditor/api"
@@ -169,6 +170,22 @@ func (s *Service) initAssessmentStream(additionalOpts ...grpc.DialOption) error 
 		return fmt.Errorf("could not set up stream for assessing evidences: %w", err)
 	}
 
+	// Receive responses from Assessment
+	// Currently we do not process the responses
+	go func() {
+		for {
+			_, err := s.assessmentStream.Recv()
+			if err == io.EOF {
+				break
+			}
+
+			if err != nil {
+				log.Errorf("error receiving response from assessment stream: %+v", err)
+				break
+			}
+		}
+	}()
+
 	log.Infof("Connected to Assessment")
 
 	return nil
@@ -253,11 +270,11 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	return resp, nil
 }
 
-func (s Service) Shutdown() {
+func (s *Service) Shutdown() {
 	s.scheduler.Stop()
 }
 
-func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
+func (s *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	var (
 		err  error
 		list []voc.IsCloudResource
@@ -302,7 +319,7 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}
 }
 
-func (s Service) Query(_ context.Context, request *discovery.QueryRequest) (response *discovery.QueryResponse, err error) {
+func (s *Service) Query(_ context.Context, request *discovery.QueryRequest) (response *discovery.QueryResponse, err error) {
 	var r []*structpb.Value
 
 	var filteredType = ""
