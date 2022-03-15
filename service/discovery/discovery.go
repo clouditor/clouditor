@@ -254,11 +254,11 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	return resp, nil
 }
 
-func (s Service) Shutdown() {
+func (s *Service) Shutdown() {
 	s.scheduler.Stop()
 }
 
-func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
+func (s *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	var (
 		err  error
 		list []voc.IsCloudResource
@@ -319,7 +319,7 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}
 }
 
-func (s Service) Query(_ context.Context, request *discovery.QueryRequest) (response *discovery.QueryResponse, err error) {
+func (s *Service) Query(_ context.Context, request *discovery.QueryRequest) (response *discovery.QueryResponse, err error) {
 	var r []*structpb.Value
 
 	var filteredType = ""
