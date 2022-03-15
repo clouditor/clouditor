@@ -375,6 +375,22 @@ func (s *Service) sendToEvidenceStore(e *evidence.Evidence) error {
 		}
 	}
 
+	// Receive responses from Evidence Store
+	// Currently we do not process the responses
+	go func() {
+		for {
+			_, err := s.evidenceStoreStream.Recv()
+			if err == io.EOF {
+				break
+			}
+
+			if err != nil {
+				log.Errorf("error receiving response from evidence store stream: %+v", err)
+				break
+			}
+		}
+	}()
+
 	log.Infof("Sending evidence (%v) to Evidence Store", e.Id)
 
 	err := s.evidenceStoreStream.Send(&evidence.StoreEvidenceRequest{Evidence: e})
@@ -415,6 +431,22 @@ func (s *Service) sendToOrchestrator(result *assessment.AssessmentResult) error 
 			return fmt.Errorf("could not initialize stream to Orchestrator: %v", err)
 		}
 	}
+
+	// Receive responses from Orchestrator
+	// Currently we do not process the responses
+	go func() {
+		for {
+			_, err := s.orchestratorStream.Recv()
+			if err == io.EOF {
+				break
+			}
+
+			if err != nil {
+				log.Errorf("error receiving response from orchestrator stream: %+v", err)
+				break
+			}
+		}
+	}()
 
 	log.Infof("Sending assessment result (%v) to Orchestrator", result.Id)
 
