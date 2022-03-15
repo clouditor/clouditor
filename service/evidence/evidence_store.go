@@ -112,6 +112,7 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 			log.Error(newError)
 			return status.Errorf(codes.Unknown, "%v", newError)
 		}
+
 		// Call StoreEvidence() for storing a single evidence
 		evidenceRequest := &evidence.StoreEvidenceRequest{
 			Evidence: req.Evidence,
@@ -123,6 +124,11 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 
 		// Send response back to the client
 		err = stream.Send(res)
+
+		// Check for send errors
+		if err == io.EOF {
+			return nil
+		}
 		if err != nil {
 			newError := fmt.Errorf("cannot send response to the client: %w", err)
 			log.Error(newError)

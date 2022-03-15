@@ -252,7 +252,6 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 		if err == io.EOF {
 			return nil
 		}
-
 		if err != nil {
 			newError := fmt.Errorf("cannot receive stream request: %w", err)
 			log.Error(newError)
@@ -269,6 +268,11 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 		}
 
 		err = stream.Send(res)
+
+		// Check for send errors
+		if err == io.EOF {
+			return nil
+		}
 		if err != nil {
 			newError := fmt.Errorf("cannot stream response to the client: %w", err)
 			log.Error(newError)
