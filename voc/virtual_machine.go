@@ -27,8 +27,8 @@ package voc
 
 type VirtualMachine struct {
 	*Compute
-	BlockStorage     []ResourceID `json:"blockStorage"`
-	NetworkInterface []ResourceID `json:"networkInterface"`
-	BootLog          *BootLog     `json:"bootLog"`
-	OSLog            *OSLog       `json:"oSLog"`
+	BlockStorage      []ResourceID       `json:"blockStorage"`
+	BootLogging       *BootLogging       `json:"bootLogging"`
+	MalwareProtection *MalwareProtection `json:"malwareProtection"`
+	OSLogging         *OSLogging         `json:"oSLogging"`
 }

@@ -28,11 +28,12 @@
 package aws
 
 import (
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/voc"
 	"context"
 	"errors"
 	"fmt"
+
+	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/voc"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	typesEC2 "github.com/aws/aws-sdk-go-v2/service/ec2/types"
@@ -120,7 +121,7 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachine, erro
 		for i := range reservation.Instances {
 			vm := &reservation.Instances[i]
 			computeResource := &voc.Compute{
-				CloudResource: &voc.CloudResource{
+				Resource: &voc.Resource{
 					ID:           d.addARNToVM(vm),
 					Name:         d.getNameOfVM(vm),
 					CreationTime: 0,
@@ -129,14 +130,14 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachine, erro
 						Region: d.awsConfig.cfg.Region,
 					},
 				},
+				NetworkInterface: d.getNetworkInterfacesOfVM(vm),
 			}
 
 			resources = append(resources, voc.VirtualMachine{
-				Compute:          computeResource,
-				BlockStorage:     d.mapBlockStorageIDsOfVM(vm),
-				NetworkInterface: d.getNetworkInterfacesOfVM(vm),
-				BootLog:          d.getBootLog(vm),
-				OSLog:            d.getOSLog(vm),
+				Compute:      computeResource,
+				BlockStorage: d.mapBlockStorageIDsOfVM(vm),
+				BootLogging:  d.getBootLog(vm),
+				OSLogging:    d.getOSLog(vm),
 			})
 		}
 	}
@@ -175,7 +176,7 @@ func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.Function
 		function := &functions[i]
 		resources = append(resources, voc.Function{
 			Compute: &voc.Compute{
-				CloudResource: &voc.CloudResource{
+				Resource: &voc.Resource{
 					ID:           voc.ResourceID(aws.ToString(function.FunctionArn)),
 					Name:         aws.ToString(function.FunctionName),
 					CreationTime: 0,
@@ -191,11 +192,11 @@ func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.Function
 
 // getBootLog checks if boot logging is enabled
 // Currently there is no option to find out if any logs are enabled -> Assign default zero values
-func (*computeDiscovery) getBootLog(_ *typesEC2.Instance) (l *voc.BootLog) {
-	l = &voc.BootLog{
-		Log: &voc.Log{
+func (*computeDiscovery) getBootLog(_ *typesEC2.Instance) (l *voc.BootLogging) {
+	l = &voc.BootLogging{
+		Logging: &voc.Logging{
 			Auditing:        nil,
-			Output:          nil,
+			LoggingService:  nil,
 			Enabled:         false,
 			RetentionPeriod: 0,
 		},
@@ -205,11 +206,11 @@ func (*computeDiscovery) getBootLog(_ *typesEC2.Instance) (l *voc.BootLog) {
 
 // getOSLog checks if OS logging is enabled
 // Currently there is no option to find out if any logs are enabled -> Assign default zero values
-func (*computeDiscovery) getOSLog(_ *typesEC2.Instance) (l *voc.OSLog) {
-	l = &voc.OSLog{
-		Log: &voc.Log{
+func (*computeDiscovery) getOSLog(_ *typesEC2.Instance) (l *voc.OSLogging) {
+	l = &voc.OSLogging{
+		Logging: &voc.Logging{
 			Auditing:        nil,
-			Output:          nil,
+			LoggingService:  nil,
 			Enabled:         false,
 			RetentionPeriod: 0,
 		},
@@ -219,7 +220,10 @@ func (*computeDiscovery) getOSLog(_ *typesEC2.Instance) (l *voc.OSLog) {
 
 // mapBlockStorageIDsOfVM returns block storages IDs by iterating the VMs block storages
 func (*computeDiscovery) mapBlockStorageIDsOfVM(vm *typesEC2.Instance) (blockStorageIDs []voc.ResourceID) {
-	for _, mapping := range vm.BlockDeviceMappings {
+	// Loop through mappings using an index, since BlockDeviceMappings is an array of a struct
+	// and not of a pointer; otherwise we would copy a lot of data
+	for i := range vm.BlockDeviceMappings {
+		mapping := &vm.BlockDeviceMappings[i]
 		blockStorageIDs = append(blockStorageIDs, voc.ResourceID(aws.ToString(mapping.Ebs.VolumeId)))
 	}
 	return
@@ -227,8 +231,11 @@ func (*computeDiscovery) mapBlockStorageIDsOfVM(vm *typesEC2.Instance) (blockSto
 
 // getNetworkInterfacesOfVM returns the network interface IDs by iterating the VMs network interfaces
 func (*computeDiscovery) getNetworkInterfacesOfVM(vm *typesEC2.Instance) (networkInterfaceIDs []voc.ResourceID) {
-	for _, networkInterface := range vm.NetworkInterfaces {
-		networkInterfaceIDs = append(networkInterfaceIDs, voc.ResourceID(aws.ToString(networkInterface.NetworkInterfaceId)))
+	// Loop through mappings using an index, since is NetworkInterfaces an array of a struct
+	// and not of a pointer; otherwise we would copy a lot of data
+	for i := range vm.NetworkInterfaces {
+		ifc := &vm.NetworkInterfaces[i]
+		networkInterfaceIDs = append(networkInterfaceIDs, voc.ResourceID(aws.ToString(ifc.NetworkInterfaceId)))
 	}
 	return
 }

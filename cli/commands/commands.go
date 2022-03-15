@@ -33,9 +33,11 @@ import (
 	"clouditor.io/clouditor/cli/commands/evidence"
 	"clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/cli/commands/metric"
+	"clouditor.io/clouditor/cli/commands/requirement"
 	"clouditor.io/clouditor/cli/commands/resource"
 	"clouditor.io/clouditor/cli/commands/service"
 	"clouditor.io/clouditor/cli/commands/tool"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -46,6 +48,7 @@ func AddCommands(cmd *cobra.Command) {
 		// commands for resources
 		login.NewLoginCommand(),
 		metric.NewMetricCommand(),
+		requirement.NewRequirementCommand(),
 		tool.NewToolCommand(),
 		resource.NewResourceCommand(),
 		evidence.NewEvidenceCommand(),

@@ -30,6 +30,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api/orchestrator"
+
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

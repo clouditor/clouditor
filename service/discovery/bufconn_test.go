@@ -30,8 +30,8 @@ import (
 	"net"
 
 	"clouditor.io/clouditor/api/assessment"
-
 	service_assessment "clouditor.io/clouditor/service/assessment"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 )

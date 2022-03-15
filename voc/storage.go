@@ -26,7 +26,6 @@
 package voc
 
 type Storage struct {
-	*CloudResource
-
+	*Resource
 	AtRestEncryption HasAtRestEncryption `json:"atRestEncryption"`
 }

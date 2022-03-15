@@ -36,7 +36,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewListAssessmentResultsCommand returns a cobra command for the `list` subcommand
+// NewListAssessmentResultsCommand returns a cobra command for the `list-assessment-results` subcommand
 func NewListAssessmentResultsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list-assessment-results",
@@ -68,7 +68,39 @@ func NewListAssessmentResultsCommand() *cobra.Command {
 	return cmd
 }
 
-// NewOrchestratorCommand returns a cobra command for `assessment` subcommands
+// NewListRequirementsCommand returns a cobra command for the `list-requirements` subcommand
+func NewListRequirementsCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "list-requirements",
+		Short: "Lists all requirements",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var (
+				err     error
+				session *cli.Session
+				client  orchestrator.OrchestratorClient
+				res     *orchestrator.ListRequirementsResponse
+			)
+
+			if session, err = cli.ContinueSession(); err != nil {
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+				return nil
+			}
+
+			client = orchestrator.NewOrchestratorClient(session)
+
+			res, err = client.ListRequirements(context.Background(), &orchestrator.ListRequirementsRequest{})
+
+			return session.HandleResponse(res, err)
+		},
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return []string{}, cobra.ShellCompDirectiveNoFileComp
+		},
+	}
+
+	return cmd
+}
+
+// NewOrchestratorCommand returns a cobra command for `orchestrator` subcommands
 func NewOrchestratorCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "orchestrator",
@@ -84,5 +116,6 @@ func NewOrchestratorCommand() *cobra.Command {
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewListAssessmentResultsCommand(),
+		NewListRequirementsCommand(),
 	)
 }

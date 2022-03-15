@@ -45,8 +45,8 @@ type IsCloudResource interface {
 
 type ResourceID string
 
-// CloudResource file from Ontology currently not used. How do we merge this file with the 'CloudResource Ontology file'
-type CloudResource struct {
+// Resource file from Ontology currently not used. How do we merge this file with the 'Resource Ontology file'
+type Resource struct {
 	ID           ResourceID `json:"id"`
 	Name         string     `json:"name"`
 	CreationTime int64      `json:"creationTime"` // is set to 0 if no creation time is available
@@ -56,20 +56,20 @@ type CloudResource struct {
 	Labels      map[string]string `json:"labels"`
 }
 
-func (r *CloudResource) GetID() ResourceID {
+func (r *Resource) GetID() ResourceID {
 	return r.ID
 }
 
-func (r *CloudResource) GetName() string {
+func (r *Resource) GetName() string {
 	return r.Name
 }
 
-func (r *CloudResource) GetType() []string {
+func (r *Resource) GetType() []string {
 	return r.Type
 }
 
 // HasType checks whether the resource has the particular resourceType
-func (r *CloudResource) HasType(resourceType string) (ok bool) {
+func (r *Resource) HasType(resourceType string) (ok bool) {
 	for _, value := range r.Type {
 		if value == resourceType {
 			ok = true
@@ -80,7 +80,7 @@ func (r *CloudResource) HasType(resourceType string) (ok bool) {
 	return
 }
 
-func (r *CloudResource) GetCreationTime() *time.Time {
+func (r *Resource) GetCreationTime() *time.Time {
 	t := time.Unix(r.CreationTime, 0)
 	return &t
 }

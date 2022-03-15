@@ -26,12 +26,14 @@
 package orchestrator
 
 import (
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/orchestrator"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+
+	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/orchestrator"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

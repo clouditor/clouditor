@@ -120,7 +120,7 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 		return
 	}
 	for _, b := range buckets {
-		encryptionAtRest, err = d.getEncryptionAtRest(b)
+		encryptionAtRest, err = d.getEncryptionAtRest(&b)
 		if err != nil {
 			return
 		}
@@ -128,28 +128,46 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 		if err != nil {
 			return
 		}
-		resources = append(resources, &voc.ObjectStorage{
-			Storage: &voc.Storage{
-				CloudResource: &voc.CloudResource{
-					ID:           voc.ResourceID(b.arn),
-					Name:         b.name,
-					CreationTime: b.creationTime.Unix(),
-					Type:         []string{"ObjectStorage", "Storage", "Resource"},
-					GeoLocation: voc.GeoLocation{
-						Region: b.region,
+
+		resources = append(resources,
+			// Add ObjectStorage
+			&voc.ObjectStorage{
+				Storage: &voc.Storage{
+					Resource: &voc.Resource{
+						ID:           voc.ResourceID(b.arn),
+						Name:         b.name,
+						CreationTime: b.creationTime.Unix(),
+						Type:         []string{"ObjectStorage", "Storage", "Resource"},
+						GeoLocation: voc.GeoLocation{
+							Region: b.region,
+						},
+					},
+					AtRestEncryption: encryptionAtRest,
+				},
+			},
+			// Add StorageService
+			&voc.StorageService{
+				Storages: []voc.ResourceID{voc.ResourceID(b.arn)},
+				NetworkService: &voc.NetworkService{
+					Networking: &voc.Networking{
+						Resource: &voc.Resource{
+							ID:           voc.ResourceID(b.arn),
+							CreationTime: b.creationTime.Unix(),
+							Name:         b.name,
+							GeoLocation:  voc.GeoLocation{Region: b.region},
+							Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
+						},
 					},
 				},
-				AtRestEncryption: encryptionAtRest,
-			},
-			HttpEndpoint: &voc.HttpEndpoint{
-				Url:                 b.endpoint,
-				TransportEncryption: encryptionAtTransmit,
-			},
-		})
+				HttpEndpoint: &voc.HttpEndpoint{
+					Url:                 b.endpoint,
+					TransportEncryption: encryptionAtTransmit,
+				},
+			})
 	}
 	return
 }
-func (b bucket) String() string {
+func (b *bucket) String() string {
 	return fmt.Sprintf("[ARN: %v, Name: %v, Creation Time: %v]", b.arn, b.name, b.creationTime)
 }
 
@@ -195,7 +213,7 @@ func (d *awsS3Discovery) getBuckets() (buckets []bucket, err error) {
 }
 
 // getEncryptionAtRest gets the bucket's encryption configuration
-func (d *awsS3Discovery) getEncryptionAtRest(bucket bucket) (e voc.HasAtRestEncryption, err error) {
+func (d *awsS3Discovery) getEncryptionAtRest(bucket *bucket) (e voc.HasAtRestEncryption, err error) {
 
 	input := s3.GetBucketEncryptionInput{
 		Bucket:              aws.String(bucket.name),

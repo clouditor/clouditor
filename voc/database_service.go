@@ -26,6 +26,5 @@
 package voc
 
 type DatabaseService struct {
-	*NetworkService
-	DatabaseStorages []ResourceID `json:"databaseStorages"`
+	*StorageService
 }
