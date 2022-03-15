@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"sync"
+	"sync/atomic"
 	"testing"
 
 	"clouditor.io/clouditor/api/assessment"
@@ -15,16 +16,19 @@ import (
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"clouditor.io/clouditor/voc"
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func createSome(n int, b *testing.B) int {
+func createSome(n int, m int, b *testing.B) int {
 	var (
 		wg   sync.WaitGroup
 		err  error
 		sock net.Listener
 	)
+
+	logrus.SetLevel(logrus.DebugLevel)
 
 	srv := grpc.NewServer()
 
@@ -47,39 +51,59 @@ func createSome(n int, b *testing.B) int {
 	}()
 	defer srv.Stop()
 
-	wg.Add(n * 7)
+	wg.Add(n * m * 7)
+
+	var count int64 = 0
 
 	addr := fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)
 
 	svc := NewService(WithOrchestratorAddress(addr), WithEvidenceStoreAddress(addr))
+	// init our streams, otherwise we will have even more concurrency mess
+	err = svc.initEvidenceStoreStream()
+	if err != nil {
+		b.Fatalf("Error while initializing evidence store stream: %v", err)
+	}
+
+	err = svc.initOrchestratorStream()
+	if err != nil {
+		b.Fatalf("Error while initializing orchestrator stream: %v", err)
+	}
+
 	svc.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
 		wg.Done()
+		current := atomic.AddInt64(&count, 1)
+		log.Debugf("Current count: %v", current)
 	})
 
-	// Create evidences for n resources (1 per resource)
-	for i := 0; i < n; i++ {
-		r, _ := voc.ToStruct(&voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{
-			ID:   voc.ResourceID(fmt.Sprintf("%d", i)),
-			Type: []string{"VirtualMachine", "Compute", "Resource"},
-		}}})
+	// Create m parallel exeuctions of our evidence creation
+	for j := 0; j < m; j++ {
+		go func() {
+			// Create evidences for n resources (1 per resource)
+			for i := 0; i < n; i++ {
+				r, _ := voc.ToStruct(&voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{
+					ID:   voc.ResourceID(fmt.Sprintf("%d", i)),
+					Type: []string{"VirtualMachine", "Compute", "Resource"},
+				}}})
 
-		e := evidence.Evidence{
-			Id:        uuid.NewString(),
-			Timestamp: timestamppb.Now(),
-			ToolId:    "mytool",
-			Resource:  r,
-		}
+				e := evidence.Evidence{
+					Id:        uuid.NewString(),
+					Timestamp: timestamppb.Now(),
+					ToolId:    "mytool",
+					Resource:  r,
+				}
 
-		if i%100 == 0 {
-			log.Infof("Currently @ %v", i)
-		}
+				if i%100 == 0 {
+					log.Infof("Currently @ %v", i)
+				}
 
-		_, err := svc.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{
-			Evidence: &e,
-		})
-		if err != nil {
-			b.Errorf("Error while calling AssessEvidence: %v", err)
-		}
+				_, err := svc.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{
+					Evidence: &e,
+				})
+				if err != nil {
+					b.Errorf("Error while calling AssessEvidence: %v", err)
+				}
+			}
+		}()
 	}
 
 	wg.Wait()
@@ -87,36 +111,48 @@ func createSome(n int, b *testing.B) int {
 	return 0
 }
 
-func benchmarkAssessEvidence(i int, b *testing.B) {
+func benchmarkAssessEvidence(i int, m int, b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		createSome(i, b)
+		createSome(i, m, b)
 	}
 }
 
 func BenchmarkAssessEvidence1(b *testing.B) {
-	benchmarkAssessEvidence(1, b)
+	benchmarkAssessEvidence(1, 1, b)
 }
 
 func BenchmarkAssessEvidence2(b *testing.B) {
-	benchmarkAssessEvidence(2, b)
+	benchmarkAssessEvidence(2, 1, b)
 }
 
 func BenchmarkAssessEvidence10(b *testing.B) {
-	benchmarkAssessEvidence(10, b)
+	benchmarkAssessEvidence(10, 1, b)
+}
+
+func BenchmarkAssessEvidence10x2(b *testing.B) {
+	benchmarkAssessEvidence(10, 2, b)
 }
 
 func BenchmarkAssessEvidence100(b *testing.B) {
-	benchmarkAssessEvidence(100, b)
+	benchmarkAssessEvidence(100, 1, b)
 }
 
 func BenchmarkAssessEvidence1000(b *testing.B) {
-	benchmarkAssessEvidence(1000, b)
+	benchmarkAssessEvidence(1000, 1, b)
+}
+
+func BenchmarkAssessEvidence1000x2(b *testing.B) {
+	benchmarkAssessEvidence(1000, 2, b)
+}
+
+func BenchmarkAssessEvidence1000x10(b *testing.B) {
+	benchmarkAssessEvidence(1000, 10, b)
 }
 
 func BenchmarkAssessEvidence3000(b *testing.B) {
-	benchmarkAssessEvidence(3000, b)
+	benchmarkAssessEvidence(3000, 1, b)
 }
 
 func BenchmarkAssessEvidence10000(b *testing.B) {
-	benchmarkAssessEvidence(10000, b)
+	benchmarkAssessEvidence(10000, 1, b)
 }

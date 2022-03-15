@@ -86,14 +86,17 @@ type Service struct {
 	// informed about each assessment result
 	resultHooks []assessment.ResultHookFunc
 	// hookMutex is used for (un)locking result hook calls
-	hookMutex sync.Mutex
+	hookMutex sync.RWMutex
 
 	// Currently, results are just stored as a map (=in-memory). In the future, we will use a DB.
-	results map[string]*assessment.AssessmentResult
+	results     map[string]*assessment.AssessmentResult
+	resultMutex sync.Mutex
 
 	// cachedConfigurations holds cached metric configurations for faster access with key being the corresponding
 	// metric name
 	cachedConfigurations map[string]cachedConfiguration
+	// TODO(oxisto): combine with hookMutex and replace with a generic version of a mutex'd map
+	confMutex sync.Mutex
 
 	authorizer api.Authorizer
 }
@@ -255,6 +258,7 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 
 		return newError
 	}
+
 	// The evidence is sent to the evidence store since it has been successfully evaluated
 	// We could also just log, but an AR could be sent without an accompanying evidence in the Evidence Store
 	err = s.sendToEvidenceStore(evidence)
@@ -265,7 +269,7 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 	for i, data := range evaluations {
 		metricId := data.MetricId
 
-		log.Debugf("Evaluated evidence with metric '%v' as %v", metricId, data.Compliant)
+		log.Debugf("Evaluated evidence %v with metric '%v' as %v", evidence.Id, metricId, data.Compliant)
 
 		targetValue := data.TargetValue
 
@@ -288,8 +292,10 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 			NonComplianceComments: "No comments so far",
 		}
 
+		s.resultMutex.Lock()
 		// Just a little hack to quickly enable multiple results per resource
 		s.results[fmt.Sprintf("%s-%d", resourceId, i)] = result
+		s.resultMutex.Unlock()
 
 		// Inform hooks about new assessment result
 		go s.informHooks(result, nil)
@@ -320,12 +326,13 @@ func convertTargetValue(v interface{}) (s *structpb.Value, err error) {
 
 // informHooks informs the registered hook functions
 func (s *Service) informHooks(result *assessment.AssessmentResult, err error) {
-	s.hookMutex.Lock()
-	defer s.hookMutex.Unlock()
+	s.hookMutex.RLock()
+	hooks := s.resultHooks
+	defer s.hookMutex.RUnlock()
 
 	// Inform our hook, if we have any
-	if s.resultHooks != nil {
-		for _, hook := range s.resultHooks {
+	if len(hooks) > 0 {
+		for _, hook := range hooks {
 			// We could do hook concurrent again (assuming different hooks don't interfere with each other)
 			hook(result, err)
 		}
@@ -345,6 +352,8 @@ func (s *Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAss
 }
 
 func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result *assessment.AssessmentResult, err error)) {
+	s.hookMutex.Lock()
+	defer s.hookMutex.Unlock()
 	s.resultHooks = append(s.resultHooks, assessmentResultsHook)
 }
 
@@ -484,7 +493,9 @@ func (s *Service) MetricConfiguration(metric string) (config *assessment.MetricC
 	}
 
 	// Retrieve our cached entry
+	s.confMutex.Lock()
 	cache, ok = s.cachedConfigurations[metric]
+	s.confMutex.Unlock()
 
 	// Check if entry is not there or is expired
 	if !ok || cache.cachedAt.After(time.Now().Add(EvictionTime)) {
@@ -502,8 +513,10 @@ func (s *Service) MetricConfiguration(metric string) (config *assessment.MetricC
 			MetricConfiguration: config,
 		}
 
+		s.confMutex.Lock()
 		// Update the metric configuration
 		s.cachedConfigurations[metric] = cache
+		defer s.confMutex.Unlock()
 	}
 
 	return cache.MetricConfiguration, nil

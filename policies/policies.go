@@ -39,10 +39,20 @@ import (
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/open-policy-agent/opa/storage"
 	"github.com/open-policy-agent/opa/storage/inmem"
+	"github.com/sirupsen/logrus"
+)
+
+var (
+	log = logrus.WithField("component", "policies")
 )
 
 // applicableMetrics stores a list of applicable metrics per resourceType
-var applicableMetrics = make(map[string][]string)
+var applicableMetrics = metricsResourceTypeCache{m: make(map[string][]string)}
+
+type metricsResourceTypeCache struct {
+	sync.RWMutex
+	m map[string][]string
+}
 
 type Result struct {
 	Applicable  bool
@@ -82,13 +92,26 @@ func RunEvidence(evidence *evidence.Evidence, holder MetricConfigurationSource) 
 		}
 	}
 
+	key := createKey(types)
+
+	applicableMetrics.RLock()
+	metrics := applicableMetrics.m[key]
+	applicableMetrics.RUnlock()
+
 	// TODO(lebogg): Try to optimize duplicated code
-	if key := createKey(types); applicableMetrics[key] == nil {
+	if metrics == nil {
 		files, err := scanBundleDir(baseDir)
 		if err != nil {
 			return nil, fmt.Errorf("could not load metric bundles: %w", err)
 		}
 
+		// Lock until we looped through all files
+		applicableMetrics.Lock()
+
+		// Start with an empty list, otherwise we might copy metrics into the list
+		// that are added by a parallel execution - which might occur if both goroutines
+		// start at the exactly same time.
+		metrics := []string{}
 		for _, fileInfo := range files {
 			runMap, err := RunMap(baseDir, fileInfo.Name(), m, holder)
 			if err != nil {
@@ -97,14 +120,20 @@ func RunEvidence(evidence *evidence.Evidence, holder MetricConfigurationSource) 
 
 			if runMap != nil {
 				metricId := fileInfo.Name()
-				applicableMetrics[key] = append(applicableMetrics[key], metricId)
+				metrics = append(metrics, metricId)
 				runMap.MetricId = metricId
 
 				data = append(data, runMap)
 			}
 		}
+
+		// Set it and unlock
+		applicableMetrics.m[key] = metrics
+		applicableMetrics.Unlock()
+
+		log.Infof("Resource type %v has the following %v applicable metric(s): %v", key, len(applicableMetrics.m[key]), applicableMetrics.m[key])
 	} else {
-		for _, metric := range applicableMetrics[key] {
+		for _, metric := range metrics {
 			runMap, err := RunMap(baseDir, metric, m, holder)
 			if err != nil {
 				return nil, err
