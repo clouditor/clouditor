@@ -208,7 +208,7 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 		req, err = stream.Recv()
 
 		// If no more input of the stream is available, return
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			return nil
 		}
 		if err != nil {
@@ -228,6 +228,11 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 
 		// Send response back to the client
 		err = stream.Send(res)
+
+		// Check for send errors
+		if errors.Is(err, io.EOF) {
+			return nil
+		}
 		if err != nil {
 			newError := fmt.Errorf("cannot send response to the client: %w", err)
 			log.Error(newError)
@@ -366,7 +371,7 @@ func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) err
 	go func() {
 		for {
 			_, err := s.evidenceStoreStream.Recv()
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				break
 			}
 
@@ -423,7 +428,7 @@ func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) erro
 	go func() {
 		for {
 			_, err := s.orchestratorStream.Recv()
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				break
 			}
 

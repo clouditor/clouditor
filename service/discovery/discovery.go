@@ -175,7 +175,7 @@ func (s *Service) initAssessmentStream(additionalOpts ...grpc.DialOption) error 
 	go func() {
 		for {
 			_, err := s.assessmentStream.Recv()
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				break
 			}
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/http"
 	"sync"
 	"testing"
 
@@ -33,12 +34,17 @@ func createSome(n int, b *testing.B) int {
 	evidenceService := service_evidence.NewService()
 	evidence.RegisterEvidenceStoreServer(srv, evidenceService)
 
-	sock, err = net.Listen("tcp", ":0")
+	sock, err = net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		b.Errorf("could not listen: %v", err)
 	}
 
-	go srv.Serve(sock)
+	go func() {
+		err := srv.Serve(sock)
+		if err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Error while creating gRPC server: %v", err)
+		}
+	}()
 	defer srv.Stop()
 
 	wg.Add(n * 7)
@@ -46,8 +52,6 @@ func createSome(n int, b *testing.B) int {
 	addr := fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)
 
 	svc := NewService(WithOrchestratorAddress(addr), WithEvidenceStoreAddress(addr))
-	svc.initOrchestratorStream()
-	svc.initEvidenceStoreStream()
 	svc.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
 		wg.Done()
 	})
@@ -66,11 +70,8 @@ func createSome(n int, b *testing.B) int {
 			Resource:  r,
 		}
 
-		if i%100 == 0 || i > 2700 {
+		if i%100 == 0 {
 			log.Infof("Currently @ %v", i)
-		}
-		if i == 2782 {
-			fmt.Printf("last call")
 		}
 
 		_, err := svc.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{
@@ -82,8 +83,6 @@ func createSome(n int, b *testing.B) int {
 	}
 
 	wg.Wait()
-	svc.orchestratorStream.CloseSend()
-	svc.evidenceStoreStream.CloseSend()
 
 	return 0
 }
