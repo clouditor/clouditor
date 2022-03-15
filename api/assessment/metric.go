@@ -1,8 +1,10 @@
 package assessment
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 )
 
 var (
@@ -68,4 +70,10 @@ func (m *Metric) Validate(opts ...MetricValidationOption) (err error) {
 	}
 
 	return nil
+}
+
+// Hash provides a simple string based hash for this metric configuration. It can be used
+// to provide a key for a map or a cache.
+func (x *MetricConfiguration) Hash() string {
+	return base64.RawURLEncoding.EncodeToString([]byte(fmt.Sprintf("%v-%v", x.Operator, x.TargetValue)))
 }

@@ -165,8 +165,18 @@ var cache queryCache = *newQueryCache()
 func RunMap(baseDir string, metric string, m map[string]interface{}, holder MetricConfigurationSource) (result *Result, err error) {
 	var query *rego.PreparedEvalQuery
 
-	// TODO(oxisto): This will only fetch the metric configuration once :(
-	query, err = cache.Get(metric, func(key string) (*rego.PreparedEvalQuery, error) {
+	// We need to check, if the metric configuration has been changed. Any caching of this
+	// configuration will be done by the MetricConfigurationSource.
+	config, err := holder.MetricConfiguration(metric)
+	if err != nil {
+		return nil, fmt.Errorf("could not fetch metric configuration: %w", err)
+	}
+
+	// We build a key out of the metric and its configuration, so we are creating a new Rego implementation
+	// if the metric configuration (i.e. its hash) has changed.
+	var key = fmt.Sprintf("%s-%s", metric, config.Hash())
+
+	query, err = cache.Get(key, func(key string) (*rego.PreparedEvalQuery, error) {
 		var (
 			tx storage.Transaction
 		)
@@ -174,11 +184,6 @@ func RunMap(baseDir string, metric string, m map[string]interface{}, holder Metr
 		// Create paths for bundle directory and utility functions file
 		bundle := fmt.Sprintf("%s/policies/bundles/%s/", baseDir, metric)
 		operators := fmt.Sprintf("%s/policies/operators.rego", baseDir)
-
-		config, err := holder.MetricConfiguration(metric)
-		if err != nil {
-			return nil, fmt.Errorf("could not fetch metric configuration: %w", err)
-		}
 
 		c := map[string]interface{}{
 			"target_value": config.TargetValue.AsInterface(),
