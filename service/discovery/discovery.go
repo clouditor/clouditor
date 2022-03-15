@@ -29,6 +29,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"time"
 
 	"clouditor.io/clouditor/api"
@@ -270,6 +271,27 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 		return
 	}
 
+	if s.assessmentStream == nil {
+		log.Error("no evidence stream to Assessment component available")
+		return
+	}
+
+	// Receive responses from Assessment
+	// Currently we do not process the responses
+	go func() {
+		for {
+			_, err := s.assessmentStream.Recv()
+			if err == io.EOF {
+				break
+			}
+
+			if err != nil {
+				log.Errorf("error receiving response from assessment stream: %+v", err)
+				break
+			}
+		}
+	}()
+
 	for _, resource := range list {
 		s.resources[string(resource.GetID())] = resource
 
@@ -289,11 +311,6 @@ func (s Service) StartDiscovery(discoverer discovery.Discoverer) {
 			ToolId:    "Clouditor Evidences Collection",
 			Raw:       "",
 			Resource:  v,
-		}
-
-		if s.assessmentStream == nil {
-			log.Warnf("Evidence stream to Assessment component not available")
-			continue
 		}
 
 		if err = s.assessmentStream.Send(&assessment.AssessEvidenceRequest{Evidence: e}); err != nil {
