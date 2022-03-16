@@ -27,6 +27,7 @@ package evidences
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"sync"
@@ -88,7 +89,7 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 		Status: true,
 	}
 
-	log.Infof("Evidence stored with id: %v", req.Evidence.Id)
+	log.Debugf("Evidence stored with id: %v", req.Evidence.Id)
 
 	return resp, nil
 }
@@ -104,7 +105,7 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 		req, err = stream.Recv()
 
 		// If no more input of the stream is available, return
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			return nil
 		}
 		if err != nil {
@@ -112,6 +113,7 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 			log.Error(newError)
 			return status.Errorf(codes.Unknown, "%v", newError)
 		}
+
 		// Call StoreEvidence() for storing a single evidence
 		evidenceRequest := &evidence.StoreEvidenceRequest{
 			Evidence: req.Evidence,
@@ -123,6 +125,11 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 
 		// Send response back to the client
 		err = stream.Send(res)
+
+		// Check for send errors
+		if errors.Is(err, io.EOF) {
+			return nil
+		}
 		if err != nil {
 			newError := fmt.Errorf("cannot send response to the client: %w", err)
 			log.Error(newError)
