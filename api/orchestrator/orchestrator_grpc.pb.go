@@ -76,7 +76,7 @@ type OrchestratorClient interface {
 	// Returns the metric implementation of the passed metric id
 	GetMetricImplementation(ctx context.Context, in *GetMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error)
 	// Creates a new certificate
-	CreateCertificate(ctx context.Context, in *CreateCertificateRequest, opts ...grpc.CallOption) (*Certificate, error)
+	CreateCertificate(ctx context.Context, in *CreateCertificateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Retrieves a certificate
 	GetCertificate(ctx context.Context, in *GetCertificateRequest, opts ...grpc.CallOption) (*Certificate, error)
 	// Updates an existing certificate
@@ -320,8 +320,8 @@ func (c *orchestratorClient) GetMetricImplementation(ctx context.Context, in *Ge
 	return out, nil
 }
 
-func (c *orchestratorClient) CreateCertificate(ctx context.Context, in *CreateCertificateRequest, opts ...grpc.CallOption) (*Certificate, error) {
-	out := new(Certificate)
+func (c *orchestratorClient) CreateCertificate(ctx context.Context, in *CreateCertificateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/CreateCertificate", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -403,7 +403,7 @@ type OrchestratorServer interface {
 	// Returns the metric implementation of the passed metric id
 	GetMetricImplementation(context.Context, *GetMetricImplementationRequest) (*assessment.MetricImplementation, error)
 	// Creates a new certificate
-	CreateCertificate(context.Context, *CreateCertificateRequest) (*Certificate, error)
+	CreateCertificate(context.Context, *CreateCertificateRequest) (*emptypb.Empty, error)
 	// Retrieves a certificate
 	GetCertificate(context.Context, *GetCertificateRequest) (*Certificate, error)
 	// Updates an existing certificate
@@ -484,7 +484,7 @@ func (UnimplementedOrchestratorServer) UpdateMetricImplementation(context.Contex
 func (UnimplementedOrchestratorServer) GetMetricImplementation(context.Context, *GetMetricImplementationRequest) (*assessment.MetricImplementation, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMetricImplementation not implemented")
 }
-func (UnimplementedOrchestratorServer) CreateCertificate(context.Context, *CreateCertificateRequest) (*Certificate, error) {
+func (UnimplementedOrchestratorServer) CreateCertificate(context.Context, *CreateCertificateRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateCertificate not implemented")
 }
 func (UnimplementedOrchestratorServer) GetCertificate(context.Context, *GetCertificateRequest) (*Certificate, error) {

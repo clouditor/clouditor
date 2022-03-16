@@ -231,10 +231,10 @@ service Orchestrator {
   }
 
   // Creates a new certificate
-  rpc CreateCertificate(CreateCertificateRequest) returns (Certificate) {
+  rpc CreateCertificate(CreateCertificateRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       post : "/v1/orchestrator/certificates"
-      body : "*"
+      body : "certificate"
     };
   }
 

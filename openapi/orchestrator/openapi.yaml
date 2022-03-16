@@ -147,15 +147,12 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/CreateCertificateRequest'
+                            $ref: '#/components/schemas/Certificate'
                 required: true
             responses:
                 "200":
                     description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Certificate'
+                    content: {}
     /v1/orchestrator/certificates/{certificateid}:
         get:
             tags:
@@ -587,11 +584,6 @@ components:
                     type: array
                     items:
                         type: string
-        CreateCertificateRequest:
-            type: object
-            properties:
-                certificate:
-                    $ref: '#/components/schemas/Certificate'
         ListAssessmentResultsResponse:
             type: object
             properties:
