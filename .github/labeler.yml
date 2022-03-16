@@ -10,5 +10,11 @@
 "api":
 - any: ['api/**/*', '!api/evaluation/*']
 
+"service/assessment":
+- service/assessment/*
+
+"service":
+- any: ['service/**/*', '!service/assessment/*']
+
 "internal":
 - internal/**/*
