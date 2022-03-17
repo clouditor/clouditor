@@ -53,8 +53,6 @@ import (
 
 var (
 	log                    *logrus.Entry
-	goRoutineEvidenceStore sync.WaitGroup
-	goRoutineOrchestrator  sync.WaitGroup
 )
 
 func init() {
@@ -64,8 +62,6 @@ func init() {
 const (
 	// EvictionTime is the time after which an entry in the metric configuration is invalid
 	EvictionTime                = time.Hour * 1
-	NumberEvidenceStoreRoutines = 1
-	NumberOrchestratorRoutines  = 1
 )
 
 type cachedConfiguration struct {
@@ -192,18 +188,6 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 	// Assess evidence
 	err = s.handleEvidence(req.Evidence, resourceId)
 
-	// Send evidences to EvidenceStore
-	goRoutineEvidenceStore.Add(NumberEvidenceStoreRoutines)
-	for i := 0; i < NumberEvidenceStoreRoutines; i++ {
-		go s.sendToEvidenceStore()
-	}
-
-	// Send assessment results to Orchestrator
-	goRoutineOrchestrator.Add(NumberOrchestratorRoutines)
-	for i := 0; i < NumberOrchestratorRoutines; i++ {
-		go s.sendToOrchestrator()
-	}
-
 	// Check for assess evidence errors
 	if err != nil {
 		res = &assessment.AssessEvidenceResponse{
@@ -217,15 +201,19 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 		return res, status.Errorf(codes.Internal, "%v", newError)
 	}
 
+	// Start goRoutine to send evidences to EvidenceStore
+	go s.sendToEvidenceStore()
+
+	// Start goRoutine to send assessment results to Orchestrator
+	// TODO(garuppel): Comment in if evidenceStore is ok
+	//go s.sendToOrchestrator()
+
+
 	// Return response
 	res = &assessment.AssessEvidenceResponse{
 		Status: assessment.AssessEvidenceResponse_ASSESSED,
 	}
 
-	close(s.evidenceStoreChannel)
-	goRoutineEvidenceStore.Wait()
-	close(s.orchestratorChannel)
-	goRoutineOrchestrator.Wait()
 	return res, nil
 }
 
@@ -291,15 +279,6 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 		return newError
 	}
 
-	// TODO(garuppel): The sendToEvidenceStore must be separated -> Move to another location, only store values in a channel
-	//// The evidence is sent to the evidence store since it has been successfully evaluated
-	//err = s.sendToEvidenceStore(evidence)
-	//
-	//// TODO(all): Should we store an assessment result if the corresponding evidence can not be stored in the EvidenceStore component (e.g., connection errors)? -> We could also just log, but an assessment result could be sent without an accompanying evidence in the Evidence Store.
-	//if err != nil {
-	//	return fmt.Errorf("could not send evidence to the evidence store: %v", err)
-	//}
-
 	// Store evidence in evidenceStoreChannel
 	s.evidenceStoreChannel <- evidence
 
@@ -337,20 +316,10 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 		// Inform hooks about new assessment result
 		go s.informHooks(result, nil)
 
-		// TODO(garuppel): The sendToEvidenceStore must be separated -> Move to another location, only store values in a channel
-		//// Send assessment result to the Orchestrator
-		//err = s.sendToOrchestrator(result)
-		//if err != nil {
-		//	return fmt.Errorf("could not send assessment result to orchestrator: %v", err)
-		//}
-
 		// Store evidence in evidenceStoreChannel
-		s.orchestratorChannel <- result
+		// TODO(garuppel): Comment in if evidence store is running
+		//s.orchestratorChannel <- result
 	}
-
-	// Close channels
-	//close(s.evidenceStoreChannel)
-	//close(s.orchestratorChannel)
 
 	return nil
 }
@@ -427,12 +396,15 @@ func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) err
 		for {
 			_, err := s.evidenceStoreStream.Recv()
 			if errors.Is(err, io.EOF) {
-				break
+				//break
+				return
 			}
 
 			if err != nil {
-				log.Errorf("error receiving response from evidence store stream: %+v", err)
-				break
+				newError := fmt.Errorf("error receiving response from evidence store stream: %w", err)
+				log.Error(newError)
+				//break
+				return
 			}
 		}
 	}()
@@ -444,32 +416,46 @@ func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) err
 
 // sendToEvidenceStore sends evidence e to the Evidence Store
 func (s *Service) sendToEvidenceStore( /*e *evidence.Evidence*/ ) /*error*/ {
-	defer goRoutineEvidenceStore.Done()
-
 	if s.evidenceStoreStream == nil {
 		err := s.initEvidenceStoreStream()
 		if err != nil {
 			// TODO(garuppel): What do we do if the Evidence Store is not available?
 			log.Errorf("could not initialize stream to Evidence Store: %v", err)
 			return
-			//return fmt.Errorf("could not initialize stream to Evidence Store: %v", err)
 		}
 	}
 
-	for {
-		if len(s.evidenceStoreChannel) > 0 {
-			e := <-s.evidenceStoreChannel
+	//for {
+		//if len(s.evidenceStoreChannel) > 0 {
+
+		// For non-blocking the read operation we have to read from the channel inside a select block
+		select {
+		case e, ok := <-s.evidenceStoreChannel:
+			if !ok {
+				log.Error("channel closed")
+			}
 			log.Debugf("Sending evidence (%v) to Evidence Store", e.Id)
 
 			err := s.evidenceStoreStream.Send(&evidence.StoreEvidenceRequest{Evidence: e})
 			if err != nil {
-				log.Errorf("error when sending evidence to Evidence Store: %v", err)
+				log.Errorf("error when sending evidence to Evidence Store: %v - %v", err, s.evidenceStoreStream.RecvMsg(nil))
+				return
 			}
-		} else {
-			break
+		default:
+			log.Debug("No evidence to read in evidenceStoreChannel")
+
+			//TODO(garuppel): timeout
+			// TODO(garuppel): Do we need the CloseSend()? If yes, do we need it here or somewhere else?
+			//err := s.evidenceStoreStream.CloseSend()
+			//if err != nil {
+			//	log.Errorf("cannot close send: %v", err)
+			//}
+			return
 		}
-	}
-	//return nil
+		//} //else {
+		//	break
+		//}
+	//}
 }
 
 // initOrchestratorStream initializes the stream to the Orchestrator
@@ -513,18 +499,21 @@ func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) erro
 
 // sendToOrchestrator sends the assessment result to the Orchestrator
 func (s *Service) sendToOrchestrator( /*result *assessment.AssessmentResult*/ ) /*error*/ {
-	defer goRoutineOrchestrator.Done()
 	if s.orchestratorStream == nil || s.orchestratorClient == nil {
 		err := s.initOrchestratorStream()
 		if err != nil {
 			log.Errorf("could not initialize stream to Orchestrator: %v", err)
-			//return fmt.Errorf("could not initialize stream to Orchestrator: %v", err)
+			return
 		}
 	}
 
 	for {
-		if len(s.orchestratorChannel) > 0 {
-			result := <-s.orchestratorChannel
+		select {
+		case result, ok := <-s.orchestratorChannel:
+			if !ok {
+				log.Error("channel closed")
+			}
+			//result := <-s.orchestratorChannel
 			log.Debugf("Sending assessment result (%v) to Orchestrator", result.Id)
 
 			req := &orchestrator.StoreAssessmentResultRequest{
@@ -533,14 +522,14 @@ func (s *Service) sendToOrchestrator( /*result *assessment.AssessmentResult*/ ) 
 			err := s.orchestratorStream.Send(req)
 			if err != nil {
 				log.Errorf("Error when sending assessment result to Orchestrator: %v", err)
-				//return err
 			}
-		} else {
-			break
+		default:
+			log.Debug("No assessment result to read in orchestratorChannel")
 		}
+		//else {
+		//	break
+		//}
 	}
-
-	//return nil
 }
 
 // MetricConfiguration implements MetricConfigurationSource by getting the corresponding metric configuration for the

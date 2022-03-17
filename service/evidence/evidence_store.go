@@ -127,6 +127,7 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 		err = stream.Send(res)
 
 		// Check for send errors
+		// TODO(garuppel): Do we really have to check the io.EOF?
 		if errors.Is(err, io.EOF) {
 			return nil
 		}
@@ -136,6 +137,8 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 			return status.Errorf(codes.Unknown, "%v", newError)
 		}
 	}
+
+	return nil
 }
 
 // ListEvidences is a method implementation of the evidenceServer interface: It returns the evidences lying in the req storage

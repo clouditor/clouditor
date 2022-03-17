@@ -86,7 +86,7 @@ func TestNewService(t *testing.T) {
 				orchestratorAddress:  "localhost:9090",
 				cachedConfigurations: make(map[string]cachedConfiguration),
 				evidenceStoreChannel: nil,
-				orchestratorChannel: nil,
+				orchestratorChannel:  nil,
 			},
 		},
 		{
