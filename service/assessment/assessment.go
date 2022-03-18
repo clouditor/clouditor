@@ -436,6 +436,7 @@ func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) err
 				i++
 			default:
 				//log.Tracef("No evidence in evidenceStoreChannel")
+				continue
 			}
 		}
 	}()
@@ -526,6 +527,7 @@ func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) erro
 				i++
 			default:
 				//log.Tracef("No assessment result in orchestratorChannel")
+				continue
 			}
 		}
 	}()
