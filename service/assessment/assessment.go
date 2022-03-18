@@ -188,8 +188,6 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 
 	// Assess evidence
 	err = s.handleEvidence(req.Evidence, resourceId)
-
-	// Check for assess evidence errors
 	if err != nil {
 		res = &assessment.AssessEvidenceResponse{
 			Status:        assessment.AssessEvidenceResponse_FAILED,
@@ -218,8 +216,6 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 	)
 
 	for {
-
-		// TODO(all): Check context?
 		// Receive requests from client
 		req, err = stream.Recv()
 

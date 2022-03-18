@@ -205,25 +205,6 @@ func TestAssessEvidence(t *testing.T) {
 			},
 			wantErr: false,
 		},
-		//{
-		//	// TODO(garuppel): Moved to own test -> initXXX
-		//	name: "No RPC connections",
-		//	args: args{
-		//		in0: context.TODO(),
-		//		evidence: &evidence.Evidence{
-		//			Id:        "11111111-1111-1111-1111-111111111111",
-		//			ToolId:    "mock",
-		//			Timestamp: timestamppb.Now(),
-		//			Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
-		//		},
-		//	},
-		//	hasRPCConnection: false,
-		//	wantResp: &assessment.AssessEvidenceResponse{
-		//		Status:        assessment.AssessEvidenceResponse_FAILED,
-		//		StatusMessage: "could not evaluate evidence: could not fetch metric configuration: could not initialize connection to orchestrator: could not set up stream for storing assessment results: rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing dial tcp: missing address\"",
-		//	},
-		//	wantErr: true,
-		//},
 	}
 
 	for _, tt := range tests {
@@ -366,8 +347,8 @@ func TestAssessEvidences(t *testing.T) {
 				results:                       tt.fields.results,
 				cachedConfigurations:          make(map[string]cachedConfiguration),
 				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
-				evidenceStoreChannel:          make(chan *evidence.Evidence, 100),
-				orchestratorChannel:           make(chan *assessment.AssessmentResult, 100),
+				evidenceStoreChannel:          make(chan *evidence.Evidence, 1000),
+				orchestratorChannel:           make(chan *assessment.AssessmentResult, 1000),
 			}
 
 			if tt.fields.hasRPCConnection {
@@ -813,53 +794,6 @@ func TestHandleEvidence(t *testing.T) {
 				return true
 			},
 		},
-		//{
-		//	// TODO(garuppel): New Test!
-		//	name: "no connection to Evidence Store",
-		//	fields: fields{
-		//		hasOrchestratorStream:  true,
-		//		hasEvidenceStoreStream: false,
-		//	},
-		//	args: args{
-		//		evidence: &evidence.Evidence{
-		//			Id:        "11111111-1111-1111-1111-111111111111",
-		//			ToolId:    "mock",
-		//			Timestamp: timestamppb.Now(),
-		//			Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
-		//		},
-		//		resourceId: "my-resource-id",
-		//	},
-		//	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-		//		assert.Error(t, err)
-		//		// Check if error message contains "empty" (list of types)
-		//		assert.Contains(t, err.Error(), "Evidence Store")
-		//		assert.Contains(t, err.Error(), "Unavailable desc")
-		//		return true
-		//	},
-		//},
-		//{
-		//	// TODO(garuppel): New Test!
-		//	name: "no connection to Orchestrator",
-		//	fields: fields{
-		//		hasOrchestratorStream:  false,
-		//		hasEvidenceStoreStream: true,
-		//	},
-		//	args: args{
-		//		evidence: &evidence.Evidence{
-		//			Id:        "11111111-1111-1111-1111-111111111111",
-		//			ToolId:    "mock",
-		//			Timestamp: timestamppb.Now(),
-		//			Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
-		//		},
-		//		resourceId: "my-resource-id",
-		//	},
-		//	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-		//		assert.Error(t, err)
-		//		// Check if error message contains "empty" (list of types)
-		//		assert.Contains(t, err.Error(), "Unavailable desc")
-		//		return true
-		//	},
-		//},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
