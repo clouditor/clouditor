@@ -169,12 +169,7 @@ func (s *Service) Authorizer() api.Authorizer {
 }
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
-func (s *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
-
-	//// Check context
-	//if ctx.Err() != nil {
-	//	log.Errorf("Context error: %v", ctx.Err())
-	//}
+func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
 
 	// Validate evidence
 	resourceId, err := req.Evidence.Validate()
