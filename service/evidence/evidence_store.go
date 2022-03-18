@@ -106,16 +106,13 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 
 		// If no more input of the stream is available, return
 		if errors.Is(err, io.EOF) {
-			log.Debugf("no more responses in stream: EOF")
-			return
+			return nil
 		}
 		if err != nil {
 			newError := fmt.Errorf("cannot receive stream request: %w", err)
 			log.Error(newError)
 			return status.Errorf(codes.Unknown, "%v", newError)
 		}
-
-		log.Debugf("Received evidence: %s", req.Evidence.Id)
 
 		// Call StoreEvidence() for storing a single evidence
 		evidenceRequest := &evidence.StoreEvidenceRequest{
@@ -131,7 +128,6 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 
 		// Check for send errors
 		if errors.Is(err, io.EOF) {
-			log.Debugf("EOF")
 			return nil
 		}
 		if err != nil {
@@ -139,8 +135,6 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 			log.Error(newError)
 			return status.Errorf(codes.Unknown, "%v", newError)
 		}
-
-		log.Debugf("Response (%v) sent", req.Evidence.Id)
 	}
 }
 
