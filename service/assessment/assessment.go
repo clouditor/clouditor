@@ -81,7 +81,7 @@ type Service struct {
 	// evidenceStoreChannel stores evidences for the Evidence Store
 	evidenceStoreChannel chan *evidence.Evidence
 
-	// orchestratorStream sends ARs to the Orchestrator
+	// orchestratorStream sends assessment results to the Orchestrator
 	orchestratorStream  orchestrator.Orchestrator_StoreAssessmentResultsClient
 	orchestratorClient  orchestrator.OrchestratorClient
 	orchestratorAddress string
@@ -153,6 +153,18 @@ func NewService(opts ...ServiceOption) *Service {
 	// Apply any options
 	for _, o := range opts {
 		o(s)
+	}
+
+	// Initialise Evidence Store Streams
+	err := s.initEvidenceStoreStream()
+	if err != nil {
+		log.Errorf("Error while initializing evidence store stream: %v", err)
+	}
+
+	// Initialise Orchestrator Streams
+	err = s.initOrchestratorStream()
+	if err != nil {
+		log.Errorf("Error while initializing orchestrator stream: %v", err)
 	}
 
 	return s
@@ -397,7 +409,7 @@ func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) err
 				log.Error(newError)
 				break
 			}
-			log.Tracef("received response from Evidence Store")
+			log.Debugf("received response from Evidence Store")
 
 			if i%100 == 0 {
 				log.Tracef("evidenceStoreStream recv responses currently @ %v", i)
@@ -410,35 +422,25 @@ func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) err
 	// Send evidences from evidenceStoreChannel to the Evidence Store
 	go func() {
 		i := 1
-		for {
-			// For non-blocking the read operation we have to read from the channel inside a select block
-			select {
-			case e, ok := <-s.evidenceStoreChannel:
-				if !ok {
-					log.Error("channel closed")
-				}
-				err := s.evidenceStoreStream.Send(&evidence.StoreEvidenceRequest{Evidence: e})
-				if errors.Is(err, io.EOF) {
-					log.Debugf("EOF")
-					break
-				}
-				if err != nil {
-					log.Errorf("Error when sending evidence to Evidence Store:- %v", err)
-					break
-				}
-
-				log.Debugf("Evidence (%v) sent to Evidence Store", e.Id)
-
-				if i%100 == 0 {
-					log.Tracef("evidenceStoreStream send evidences currently @ %v", i)
-				}
-
-				i++
-			default:
-				//log.Tracef("No evidence in evidenceStoreChannel")
-				continue
+		for e := range s.evidenceStoreChannel {
+			err := s.evidenceStoreStream.Send(&evidence.StoreEvidenceRequest{Evidence: e})
+			if errors.Is(err, io.EOF) {
+				log.Debugf("EOF")
+				break
 			}
+			if err != nil {
+				log.Errorf("Error when sending evidence to Evidence Store:- %v", err)
+				break
+			}
+
+			log.Debugf("Evidence (%v) sent to Evidence Store", e.Id)
+
+			if i%100 == 0 {
+				log.Debugf("evidenceStoreStream send evidences currently @ %v", i)
+			}
+			i++
 		}
+		log.Error("channel closed")
 	}()
 
 	return nil
@@ -484,7 +486,7 @@ func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) erro
 			log.Tracef("received response from Orchestrator")
 
 			if i%100 == 0 {
-				log.Tracef("orchestratorStream recv responses currently @ %v", i)
+				log.Debugf("orchestratorStream recv responses currently @ %v", i)
 			}
 
 			i++
@@ -494,42 +496,32 @@ func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) erro
 	// Send assessment results in orchestratorChannel to the Orchestrator
 	go func() {
 		i := 1
-		for {
-			// For non-blocking the read operation we have to read from the channel inside a select block
-			select {
-			case result, ok := <-s.orchestratorChannel:
-				if !ok {
-					log.Error("channel closed")
-				}
+		for result := range s.orchestratorChannel {
+			log.Debugf("Sending assessment result (%v) to Orchestrator", result.Id)
 
-				log.Debugf("Sending assessment result (%v) to Orchestrator", result.Id)
-
-				req := &orchestrator.StoreAssessmentResultRequest{
-					Result: result,
-				}
-
-				err := s.orchestratorStream.Send(req)
-				if errors.Is(err, io.EOF) {
-					log.Debugf("EOF")
-					break
-				}
-				if err != nil {
-					log.Errorf("Error when sending assessment result to Orchestrator: %v", err)
-					break
-				}
-
-				log.Debugf("Assessment result (%v) sent to Orchestrator", result.Id)
-
-				if i%100 == 0 {
-					log.Tracef("orchestratorStream send assessment results currently @ %v", i)
-				}
-
-				i++
-			default:
-				//log.Tracef("No assessment result in orchestratorChannel")
-				continue
+			req := &orchestrator.StoreAssessmentResultRequest{
+				Result: result,
 			}
+
+			err := s.orchestratorStream.Send(req)
+			if errors.Is(err, io.EOF) {
+				log.Debugf("EOF")
+				break
+			}
+			if err != nil {
+				log.Errorf("Error when sending assessment result to Orchestrator: %v", err)
+				break
+			}
+
+			log.Debugf("Assessment result (%v) sent to Orchestrator", result.Id)
+
+			if i%100 == 0 {
+				log.Debugf("orchestratorStream send assessment results currently @ %v", i)
+			}
+			i++
 		}
+
+		log.Error("channel closed")
 	}()
 
 	return nil
