@@ -59,7 +59,7 @@ var (
 func TestMain(m *testing.M) {
 	clitest.AutoChdir()
 
-	server, _, _ := startBufConnServer()
+	server, _, _ := StartBufConnServer()
 
 	code := m.Run()
 
@@ -112,10 +112,13 @@ func TestNewService(t *testing.T) {
 			// Check channels have been created
 			assert.NotNil(t, s.evidenceStoreChannel)
 			assert.NotNil(t, s.orchestratorChannel)
+			assert.NotNil(t, s.orchestratorClient)
 
 			// Ignore pointers to channel in subsequent DeepEqual check
 			s.evidenceStoreChannel = nil
 			s.orchestratorChannel = nil
+			// Ignore pointer to orchestrator client in subsequent DeepEqual check
+			s.orchestratorClient = nil
 
 			if got := s; !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewService() = %v, want %v", got, tt.want)
