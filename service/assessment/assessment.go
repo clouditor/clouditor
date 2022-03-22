@@ -39,6 +39,7 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/policies"
+	"clouditor.io/clouditor/service"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"golang.org/x/oauth2/clientcredentials"
 
@@ -414,52 +415,9 @@ func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) err
 	}()
 
 	// Send evidences from evidenceStoreChannel to the Evidence Store
-	/*go func() {
-		i := 1
-		for e := range s.evidenceStoreChannel {
-			err := s.evidenceStoreStream.Send(&evidence.StoreEvidenceRequest{Evidence: e})
-			if errors.Is(err, io.EOF) {
-				log.Debugf("EOF")
-				break
-			}
-			if err != nil {
-				log.Errorf("Error when sending evidence to Evidence Store:- %v", err)
-				break
-			}
-
-			log.Debugf("Evidence (%v) sent to Evidence Store", e.Id)
-
-			if i%100 == 0 {
-				log.Debugf("evidenceStoreStream send evidences currently @ %v", i)
-			}
-			i++
-		}
-	}()*/
-	go sendLoop[*evidence.Evidence, evidence.StoreEvidenceRequest](s.evidenceStoreChannel, s.evidenceStoreStream, "evidence", "evidence store")
+	go service.StreamSendLoop[*evidence.Evidence, evidence.StoreEvidenceRequest](s.evidenceStoreChannel, s.evidenceStoreStream, "evidence", "evidence store")
 
 	return nil
-}
-
-type StreamRequester[T any] interface {
-	StreamRequest() *T
-	GetId() string
-}
-
-func sendLoop[T StreamRequester[S], S any](channel chan T, stream grpc.ClientStream, typ string, target string) {
-	for msg := range channel {
-		err := stream.SendMsg(msg.StreamRequest())
-		if errors.Is(err, io.EOF) {
-			log.Infof("Stream to %s was closed", target)
-			break
-		}
-
-		if err != nil {
-			log.Errorf("Error when sending %s to %s: %v", err, typ, target)
-			break
-		}
-
-		log.Debugf("%s (%v) sent to %s", typ, msg.GetId(), target)
-	}
 }
 
 // initOrchestratorStream initializes the stream to the Orchestrator
@@ -510,34 +468,7 @@ func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) erro
 	}()
 
 	// Send assessment results in orchestratorChannel to the Orchestrator
-	/*go func() {
-		i := 1
-		for result := range s.orchestratorChannel {
-			log.Debugf("Sending assessment result (%v) to Orchestrator", result.Id)
-
-			req := &orchestrator.StoreAssessmentResultRequest{
-				Result: result,
-			}
-
-			err := s.orchestratorStream.Send(req)
-			if errors.Is(err, io.EOF) {
-				log.Debugf("EOF")
-				break
-			}
-			if err != nil {
-				log.Errorf("Error when sending assessment result to Orchestrator: %v", err)
-				break
-			}
-
-			log.Debugf("Assessment result (%v) sent to Orchestrator", result.Id)
-
-			if i%100 == 0 {
-				log.Debugf("orchestratorStream send assessment results currently @ %v", i)
-			}
-			i++
-		}
-	}()*/
-	go sendLoop[*assessment.AssessmentResult, assessment.StoreAssessmentResultRequest](s.orchestratorChannel, s.orchestratorStream, "assessment result", "orchestrator")
+	go service.StreamSendLoop[*assessment.AssessmentResult, assessment.StoreAssessmentResultRequest](s.orchestratorChannel, s.orchestratorStream, "assessment result", "orchestrator")
 
 	return nil
 }

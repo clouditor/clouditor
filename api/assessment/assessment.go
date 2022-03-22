@@ -81,6 +81,7 @@ func (result *AssessmentResult) Validate() (resourceId string, err error) {
 	return
 }
 
+// StreamRequest implements StreamRequester to send assessment results to an orchestrator
 func (result *AssessmentResult) StreamRequest() *StoreAssessmentResultRequest {
 	return &StoreAssessmentResultRequest{
 		Result: result,

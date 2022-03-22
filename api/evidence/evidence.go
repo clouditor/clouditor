@@ -88,6 +88,7 @@ func (evidence *Evidence) Validate() (resourceId string, err error) {
 	return
 }
 
+// StreamRequest implements StreamRequester to send assessment results to the evidence store
 func (e *Evidence) StreamRequest() *StoreEvidenceRequest {
 	return &StoreEvidenceRequest{Evidence: e}
 }
