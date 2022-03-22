@@ -327,7 +327,7 @@ func local_request_Orchestrator_DeregisterAssessmentTool_0(ctx context.Context, 
 }
 
 func request_Orchestrator_StoreAssessmentResult_0(ctx context.Context, marshaler runtime.Marshaler, client OrchestratorClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq StoreAssessmentResultRequest
+	var protoReq assessment.StoreAssessmentResultRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -344,7 +344,7 @@ func request_Orchestrator_StoreAssessmentResult_0(ctx context.Context, marshaler
 }
 
 func local_request_Orchestrator_StoreAssessmentResult_0(ctx context.Context, marshaler runtime.Marshaler, server OrchestratorServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq StoreAssessmentResultRequest
+	var protoReq assessment.StoreAssessmentResultRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)

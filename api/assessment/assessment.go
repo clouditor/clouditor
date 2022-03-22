@@ -80,3 +80,9 @@ func (result *AssessmentResult) Validate() (resourceId string, err error) {
 
 	return
 }
+
+func (result *AssessmentResult) StreamRequest() *StoreAssessmentResultRequest {
+	return &StoreAssessmentResultRequest{
+		Result: result,
+	}
+}

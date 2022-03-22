@@ -76,6 +76,12 @@ message ConfigureAssessmentResponse {}
 
 message TriggerAssessmentRequest { string some_option = 1; }
 
+message StoreAssessmentResultRequest { AssessmentResult result = 1; }
+message StoreAssessmentResultResponse {
+  bool status = 1;
+  string status_message = 2;
+}
+
 message AssessEvidenceRequest { Evidence evidence = 1; }
 message AssessEvidenceResponse {
   enum AssessmentStatus {

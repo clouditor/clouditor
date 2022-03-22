@@ -212,7 +212,7 @@ func (s *Service) ListMetricConfigurations(ctx context.Context, req *orchestrato
 }
 
 // StoreAssessmentResult is a method implementation of the orchestrator interface: It receives an assessment result and stores it
-func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.StoreAssessmentResultRequest) (resp *orchestrator.StoreAssessmentResultResponse, err error) {
+func (s *Service) StoreAssessmentResult(_ context.Context, req *assessment.StoreAssessmentResultRequest) (resp *assessment.StoreAssessmentResultResponse, err error) {
 	_, err = req.Result.Validate()
 
 	if err != nil {
@@ -221,7 +221,7 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 
 		go s.informHook(nil, newError)
 
-		resp = &orchestrator.StoreAssessmentResultResponse{
+		resp = &assessment.StoreAssessmentResultResponse{
 			Status:        false,
 			StatusMessage: newError.Error(),
 		}
@@ -233,7 +233,7 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 
 	go s.informHook(req.Result, nil)
 
-	resp = &orchestrator.StoreAssessmentResultResponse{
+	resp = &assessment.StoreAssessmentResultResponse{
 		Status: true,
 	}
 
@@ -242,8 +242,8 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 
 func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreAssessmentResultsServer) (err error) {
 	var (
-		result *orchestrator.StoreAssessmentResultRequest
-		res    *orchestrator.StoreAssessmentResultResponse
+		result *assessment.StoreAssessmentResultRequest
+		res    *assessment.StoreAssessmentResultResponse
 	)
 
 	for {
@@ -260,7 +260,7 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 		}
 
 		// Call StoreAssessmentResult() for storing a single assessment
-		storeAssessmentResultReq := &orchestrator.StoreAssessmentResultRequest{
+		storeAssessmentResultReq := &assessment.StoreAssessmentResultRequest{
 			Result: result.Result,
 		}
 		res, err = s.StoreAssessmentResult(context.Background(), storeAssessmentResultReq)

@@ -33,7 +33,6 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/service"
@@ -56,7 +55,7 @@ func TestMain(m *testing.M) {
 	svc = service_orchestrator.NewService()
 
 	// Store an assessment result so that output of CMD 'list' is not empty
-	_, err = svc.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
+	_, err = svc.StoreAssessmentResult(context.TODO(), &assessment.StoreAssessmentResultRequest{
 		Result: &assessment.AssessmentResult{
 			Id:         "11111111-1111-1111-1111-111111111111",
 			MetricId:   "assessmentResultMetricID",

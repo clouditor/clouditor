@@ -37,7 +37,7 @@ type OrchestratorClient interface {
 	// tools
 	DeregisterAssessmentTool(ctx context.Context, in *DeregisterAssessmentToolRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Stores the assessment result provided by an assessment tool
-	StoreAssessmentResult(ctx context.Context, in *StoreAssessmentResultRequest, opts ...grpc.CallOption) (*StoreAssessmentResultResponse, error)
+	StoreAssessmentResult(ctx context.Context, in *assessment.StoreAssessmentResultRequest, opts ...grpc.CallOption) (*assessment.StoreAssessmentResultResponse, error)
 	// Stores stream of assessment results provided by an assessment tool and
 	// returns a response stream. Part of the public API, not exposed as REST.
 	StoreAssessmentResults(ctx context.Context, opts ...grpc.CallOption) (Orchestrator_StoreAssessmentResultsClient, error)
@@ -130,8 +130,8 @@ func (c *orchestratorClient) DeregisterAssessmentTool(ctx context.Context, in *D
 	return out, nil
 }
 
-func (c *orchestratorClient) StoreAssessmentResult(ctx context.Context, in *StoreAssessmentResultRequest, opts ...grpc.CallOption) (*StoreAssessmentResultResponse, error) {
-	out := new(StoreAssessmentResultResponse)
+func (c *orchestratorClient) StoreAssessmentResult(ctx context.Context, in *assessment.StoreAssessmentResultRequest, opts ...grpc.CallOption) (*assessment.StoreAssessmentResultResponse, error) {
+	out := new(assessment.StoreAssessmentResultResponse)
 	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/StoreAssessmentResult", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -149,8 +149,8 @@ func (c *orchestratorClient) StoreAssessmentResults(ctx context.Context, opts ..
 }
 
 type Orchestrator_StoreAssessmentResultsClient interface {
-	Send(*StoreAssessmentResultRequest) error
-	Recv() (*StoreAssessmentResultResponse, error)
+	Send(*assessment.StoreAssessmentResultRequest) error
+	Recv() (*assessment.StoreAssessmentResultResponse, error)
 	grpc.ClientStream
 }
 
@@ -158,12 +158,12 @@ type orchestratorStoreAssessmentResultsClient struct {
 	grpc.ClientStream
 }
 
-func (x *orchestratorStoreAssessmentResultsClient) Send(m *StoreAssessmentResultRequest) error {
+func (x *orchestratorStoreAssessmentResultsClient) Send(m *assessment.StoreAssessmentResultRequest) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *orchestratorStoreAssessmentResultsClient) Recv() (*StoreAssessmentResultResponse, error) {
-	m := new(StoreAssessmentResultResponse)
+func (x *orchestratorStoreAssessmentResultsClient) Recv() (*assessment.StoreAssessmentResultResponse, error) {
+	m := new(assessment.StoreAssessmentResultResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -331,7 +331,7 @@ type OrchestratorServer interface {
 	// tools
 	DeregisterAssessmentTool(context.Context, *DeregisterAssessmentToolRequest) (*emptypb.Empty, error)
 	// Stores the assessment result provided by an assessment tool
-	StoreAssessmentResult(context.Context, *StoreAssessmentResultRequest) (*StoreAssessmentResultResponse, error)
+	StoreAssessmentResult(context.Context, *assessment.StoreAssessmentResultRequest) (*assessment.StoreAssessmentResultResponse, error)
 	// Stores stream of assessment results provided by an assessment tool and
 	// returns a response stream. Part of the public API, not exposed as REST.
 	StoreAssessmentResults(Orchestrator_StoreAssessmentResultsServer) error
@@ -391,7 +391,7 @@ func (UnimplementedOrchestratorServer) UpdateAssessmentTool(context.Context, *Up
 func (UnimplementedOrchestratorServer) DeregisterAssessmentTool(context.Context, *DeregisterAssessmentToolRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeregisterAssessmentTool not implemented")
 }
-func (UnimplementedOrchestratorServer) StoreAssessmentResult(context.Context, *StoreAssessmentResultRequest) (*StoreAssessmentResultResponse, error) {
+func (UnimplementedOrchestratorServer) StoreAssessmentResult(context.Context, *assessment.StoreAssessmentResultRequest) (*assessment.StoreAssessmentResultResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreAssessmentResult not implemented")
 }
 func (UnimplementedOrchestratorServer) StoreAssessmentResults(Orchestrator_StoreAssessmentResultsServer) error {
@@ -549,7 +549,7 @@ func _Orchestrator_DeregisterAssessmentTool_Handler(srv interface{}, ctx context
 }
 
 func _Orchestrator_StoreAssessmentResult_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StoreAssessmentResultRequest)
+	in := new(assessment.StoreAssessmentResultRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -561,7 +561,7 @@ func _Orchestrator_StoreAssessmentResult_Handler(srv interface{}, ctx context.Co
 		FullMethod: "/clouditor.Orchestrator/StoreAssessmentResult",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).StoreAssessmentResult(ctx, req.(*StoreAssessmentResultRequest))
+		return srv.(OrchestratorServer).StoreAssessmentResult(ctx, req.(*assessment.StoreAssessmentResultRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -571,8 +571,8 @@ func _Orchestrator_StoreAssessmentResults_Handler(srv interface{}, stream grpc.S
 }
 
 type Orchestrator_StoreAssessmentResultsServer interface {
-	Send(*StoreAssessmentResultResponse) error
-	Recv() (*StoreAssessmentResultRequest, error)
+	Send(*assessment.StoreAssessmentResultResponse) error
+	Recv() (*assessment.StoreAssessmentResultRequest, error)
 	grpc.ServerStream
 }
 
@@ -580,12 +580,12 @@ type orchestratorStoreAssessmentResultsServer struct {
 	grpc.ServerStream
 }
 
-func (x *orchestratorStoreAssessmentResultsServer) Send(m *StoreAssessmentResultResponse) error {
+func (x *orchestratorStoreAssessmentResultsServer) Send(m *assessment.StoreAssessmentResultResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *orchestratorStoreAssessmentResultsServer) Recv() (*StoreAssessmentResultRequest, error) {
-	m := new(StoreAssessmentResultRequest)
+func (x *orchestratorStoreAssessmentResultsServer) Recv() (*assessment.StoreAssessmentResultRequest, error) {
+	m := new(assessment.StoreAssessmentResultRequest)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}

@@ -510,7 +510,7 @@ func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) erro
 	}()
 
 	// Send assessment results in orchestratorChannel to the Orchestrator
-	go func() {
+	/*go func() {
 		i := 1
 		for result := range s.orchestratorChannel {
 			log.Debugf("Sending assessment result (%v) to Orchestrator", result.Id)
@@ -536,7 +536,8 @@ func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) erro
 			}
 			i++
 		}
-	}()
+	}()*/
+	go sendLoop[*assessment.AssessmentResult, assessment.StoreAssessmentResultRequest](s.orchestratorChannel, s.orchestratorStream, "assessment result", "orchestrator")
 
 	return nil
 }
