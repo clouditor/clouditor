@@ -59,7 +59,7 @@ var (
 func TestMain(m *testing.M) {
 	clitest.AutoChdir()
 
-	server, _, _ := StartBufConnServer()
+	server, _, _ := startBufConnServer()
 
 	code := m.Run()
 
