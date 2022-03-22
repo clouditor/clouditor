@@ -155,13 +155,13 @@ func NewService(opts ...ServiceOption) *Service {
 		o(s)
 	}
 
-	// Initialise Evidence Store Streams
+	// Initialise Evidence Store stream
 	err := s.initEvidenceStoreStream()
 	if err != nil {
 		log.Errorf("Error while initializing evidence store stream: %v", err)
 	}
 
-	// Initialise Orchestrator Streams
+	// Initialise Orchestrator stream
 	err = s.initOrchestratorStream()
 	if err != nil {
 		log.Errorf("Error while initializing orchestrator stream: %v", err)
@@ -212,7 +212,7 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 		return res, status.Errorf(codes.Internal, "%v", newError)
 	}
 
-	// Return response
+	// Create response
 	res = &assessment.AssessEvidenceResponse{
 		Status: assessment.AssessEvidenceResponse_ASSESSED,
 	}
@@ -328,7 +328,7 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 func convertTargetValue(v interface{}) (s *structpb.Value, err error) {
 	var b []byte
 
-	// json.Marshal and json.Unmarshaling is used instead of structpb.NewValue() which cannot handle json numbers
+	// json.Marshal and json.Unmarshalling is used instead of structpb.NewValue() which cannot handle json numbers
 	if b, err = json.Marshal(v); err != nil {
 		return nil, fmt.Errorf("JSON marshal failed: %w", err)
 	}
@@ -440,7 +440,6 @@ func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) err
 			}
 			i++
 		}
-		log.Error("channel closed")
 	}()
 
 	return nil
@@ -520,8 +519,6 @@ func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) erro
 			}
 			i++
 		}
-
-		log.Error("channel closed")
 	}()
 
 	return nil
