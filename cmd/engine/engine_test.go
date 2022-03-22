@@ -16,10 +16,17 @@ import (
 func TestMain(m *testing.M) {
 	clitest.AutoChdir()
 
-	os.Exit(m.Run())
+	server, _ := startBufConnServer()
+
+	code := m.Run()
+
+	server.Stop()
+
+	os.Exit(code)
 }
 
 func Test_doCmd(t *testing.T) {
+
 	type args struct {
 		in0 *cobra.Command
 		in1 []string
@@ -38,6 +45,8 @@ func Test_doCmd(t *testing.T) {
 				viper.Set(APIStartEmbeddedOAuth2ServerFlag, true)
 				viper.Set(APIHTTPPortFlag, 0)
 				viper.Set(APIgRPCPortFlag, 0)
+				viper.Set(DefaultOrchestratorURL, "bufnet")
+				viper.Set(DefaultEvidenceStoreURLFlag, "bufnet")
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				discoveryService := i1.(*service_discovery.Service)
