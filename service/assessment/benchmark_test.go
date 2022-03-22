@@ -20,7 +20,6 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
-	"time"
 )
 
 func createEvidences(n int, m int, b *testing.B) int {
@@ -60,16 +59,6 @@ func createEvidences(n int, m int, b *testing.B) int {
 	addr := fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)
 
 	svc := NewService(WithOrchestratorAddress(addr), WithEvidenceStoreAddress(addr))
-	// init our streams, otherwise we will have even more concurrency mess
-	err = svc.initEvidenceStoreStream()
-	if err != nil {
-		b.Fatalf("Error while initializing evidence store stream: %v", err)
-	}
-
-	err = svc.initOrchestratorStream()
-	if err != nil {
-		b.Fatalf("Error while initializing orchestrator stream: %v", err)
-	}
 
 	svc.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
 		wg.Done()
@@ -108,7 +97,6 @@ func createEvidences(n int, m int, b *testing.B) int {
 		}()
 	}
 
-	//time.Sleep(1 * time.Second)
 	wg.Wait()
 
 	return 0
@@ -122,7 +110,7 @@ func createEvidencesForTest(n int, m int, t *testing.T) int {
 	)
 
 	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true}}
-	logrus.SetLevel(logrus.TraceLevel)
+	logrus.SetLevel(logrus.DebugLevel)
 
 	srv := grpc.NewServer()
 
@@ -152,14 +140,8 @@ func createEvidencesForTest(n int, m int, t *testing.T) int {
 	addr := fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)
 
 	svc := NewService(WithOrchestratorAddress(addr), WithEvidenceStoreAddress(addr))
-	//init our streams, otherwise we will have even more concurrency mess
-	err = svc.initEvidenceStoreStream()
-	assert.Nil(t, err)
 
-	err = svc.initOrchestratorStream()
-	assert.Nil(t, err)
-
-	svc.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
+	orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
 		wg.Done()
 		current := atomic.AddInt64(&count, 1)
 		log.Debugf("Current count: %v", current)
@@ -199,7 +181,6 @@ func createEvidencesForTest(n int, m int, t *testing.T) int {
 		}()
 	}
 
-	time.Sleep(2 * time.Second)
 	wg.Wait()
 
 	return 0
@@ -211,11 +192,11 @@ func benchmarkAssessEvidence(i int, m int, b *testing.B) {
 	}
 }
 
-func Test_benchmarkAssessEvidence(t *testing.T) {
-	for n := 0; n < 2; n++ {
-		createEvidencesForTest(100, 2, t)
-	}
-}
+//func Test_benchmarkAssessEvidence(t *testing.T) {
+//	for n := 0; n < 1; n++ {
+//		createEvidencesForTest(100, 2, t)
+//	}
+//}
 
 func BenchmarkAssessEvidence1(b *testing.B) {
 	benchmarkAssessEvidence(1, 1, b)
@@ -250,10 +231,9 @@ func BenchmarkAssessEvidence1000x10(b *testing.B) {
 }
 
 func BenchmarkAssessEvidence3000(b *testing.B) {
-	benchmarkAssessEvidence(3000, 1, b)
+	benchmarkAssessEvidence(3000, 2, b)
 }
 
 func BenchmarkAssessEvidence10000(b *testing.B) {
 	benchmarkAssessEvidence(10000, 1, b)
 }
-
