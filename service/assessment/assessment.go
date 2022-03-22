@@ -409,7 +409,6 @@ func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) err
 				log.Error(newError)
 				break
 			}
-			log.Debugf("received response from Evidence Store")
 
 			if i%100 == 0 {
 				log.Tracef("evidenceStoreStream recv responses currently @ %v", i)
@@ -482,7 +481,6 @@ func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) erro
 				log.Errorf("error receiving response from orchestrator stream: %+v", err)
 				break
 			}
-			log.Tracef("received response from Orchestrator")
 
 			if i%100 == 0 {
 				log.Debugf("orchestratorStream recv responses currently @ %v", i)
