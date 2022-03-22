@@ -340,7 +340,7 @@ func TestEvidenceHook(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
-					Id:        "MockEvidenceId-1",
+					Id:        "11111111-1111-1111-1111-111111111111",
 					ServiceId: "MockServiceId-1",
 					Timestamp: timestamppb.Now(),
 					Raw:       "",

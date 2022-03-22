@@ -277,6 +277,24 @@ func TestAssessEvidences(t *testing.T) {
 			},
 		},
 		{
+			name: "Missing evidenceID",
+			fields: fields{
+				hasRPCConnection: true,
+				results:          make(map[string]*assessment.AssessmentResult)},
+			args: args{
+				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
+					Evidence: &evidence.Evidence{
+						Timestamp: timestamppb.Now(),
+						ToolId:    "2134",
+						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
+			},
+			wantErr: false,
+			wantRespMessage: &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: "invalid evidence: " + evidence.ErrEvidenceIdInvalidFormat.Error(),
+			},
+		},
+		{
 			name: "Assess evidences",
 			fields: fields{
 				hasRPCConnection: true,
@@ -301,6 +319,7 @@ func TestAssessEvidences(t *testing.T) {
 			args: args{
 				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
+						Id:        "11111111-1111-1111-1111-111111111111",
 						Timestamp: timestamppb.Now(),
 						ToolId:    "2134",
 						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),

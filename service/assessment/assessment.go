@@ -313,7 +313,7 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 func convertTargetValue(v interface{}) (s *structpb.Value, err error) {
 	var b []byte
 
-	// json.Marshal and json.Unmarshaling is used instead of structpb.NewValue() which cannot handle json numbers
+	// json.Marshal and json.Unmarshalling is used instead of structpb.NewValue() which cannot handle json numbers
 	if b, err = json.Marshal(v); err != nil {
 		return nil, fmt.Errorf("JSON marshal failed: %w", err)
 	}
