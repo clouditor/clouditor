@@ -1,24 +1,23 @@
 package assessment
 
 import (
-	"context"
-	"fmt"
-	"net"
-	"net/http"
-	"sync"
-	"sync/atomic"
-	"testing"
-
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	service_evidence "clouditor.io/clouditor/service/evidence"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"clouditor.io/clouditor/voc"
+	"context"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	"net"
+	"net/http"
+	"sync"
+	"sync/atomic"
+	"testing"
 )
 
 func createEvidences(n int, m int, b *testing.B) int {
@@ -58,16 +57,6 @@ func createEvidences(n int, m int, b *testing.B) int {
 	addr := fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)
 
 	svc := NewService(WithOrchestratorAddress(addr), WithEvidenceStoreAddress(addr))
-	// init our streams, otherwise we will have even more concurrency mess
-	err = svc.initEvidenceStoreStream()
-	if err != nil {
-		b.Fatalf("Error while initializing evidence store stream: %v", err)
-	}
-
-	err = svc.initOrchestratorStream()
-	if err != nil {
-		b.Fatalf("Error while initializing orchestrator stream: %v", err)
-	}
 
 	svc.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
 		wg.Done()
@@ -75,7 +64,7 @@ func createEvidences(n int, m int, b *testing.B) int {
 		log.Debugf("Current count: %v", current)
 	})
 
-	// Create m parallel exeuctions of our evidence creation
+	// Create m parallel executions of our evidence creation
 	for j := 0; j < m; j++ {
 		go func() {
 			// Create evidences for n resources (1 per resource)
