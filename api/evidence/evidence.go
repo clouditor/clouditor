@@ -27,6 +27,7 @@ package evidence
 
 import (
 	"errors"
+
 	"github.com/google/uuid"
 )
 
@@ -85,4 +86,8 @@ func (evidence *Evidence) Validate() (resourceId string, err error) {
 	}
 
 	return
+}
+
+func (e *Evidence) StreamRequest() *StoreEvidenceRequest {
+	return &StoreEvidenceRequest{Evidence: e}
 }

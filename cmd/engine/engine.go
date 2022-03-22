@@ -91,8 +91,6 @@ const (
 	DiscoveryAutoStartFlag           = "discovery-auto-start"
 	DiscoveryProviderFlag            = "discovery-provider"
 	DashboardURLFlag                 = "dashboard-url"
-	DefaultEvidenceStoreURLFlag      = "evidence-store-url"
-	DefaultOrchestratorURLFlag       = "orchestrator-url"
 
 	DefaultAPIDefaultUser               = "clouditor"
 	DefaultAPIDefaultPassword           = "clouditor"
@@ -110,8 +108,6 @@ const (
 	DefaultCreateDefaultTarget          = true
 	DefaultDiscoveryAutoStart           = false
 	DefaultDashboardURL                 = "http://localhost:8080"
-	DefaultOrchestratorURL              = "localhost:9090"
-	DefaultEvidenceStoreURL             = "localhost:9090"
 
 	EnvPrefix = "CLOUDITOR"
 )
@@ -138,6 +134,7 @@ var engineCmd = &cobra.Command{
 func init() {
 	log = logrus.WithField("component", "grpc")
 	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true}}
+
 	cobra.OnInitialize(initConfig)
 
 	engineCmd.Flags().String(APIDefaultUserFlag, DefaultAPIDefaultUser, "Specifies the default API username")
@@ -165,8 +162,6 @@ func init() {
 	engineCmd.Flags().Bool(DiscoveryAutoStartFlag, DefaultDiscoveryAutoStart, "Automatically start the discovery when engine starts")
 	engineCmd.Flags().StringSliceP(DiscoveryProviderFlag, "p", []string{}, "Providers to discover, separated by comma")
 	engineCmd.Flags().String(DashboardURLFlag, DefaultDashboardURL, "The URL of the Clouditor Dashboard. If the embedded server is used, a public OAuth 2.0 client based on this URL will be added")
-	engineCmd.Flags().String(DefaultEvidenceStoreURLFlag, DefaultEvidenceStoreURL, "The URL of the Clouditor Evidence Store.")
-	engineCmd.Flags().String(DefaultOrchestratorURLFlag, DefaultOrchestratorURL, "The URL of the Clouditor Orchestrator.")
 
 	_ = viper.BindPFlag(APIDefaultUserFlag, engineCmd.Flags().Lookup(APIDefaultUserFlag))
 	_ = viper.BindPFlag(APIDefaultPasswordFlag, engineCmd.Flags().Lookup(APIDefaultPasswordFlag))
@@ -193,8 +188,6 @@ func init() {
 	_ = viper.BindPFlag(DiscoveryAutoStartFlag, engineCmd.Flags().Lookup(DiscoveryAutoStartFlag))
 	_ = viper.BindPFlag(DiscoveryProviderFlag, engineCmd.Flags().Lookup(DiscoveryProviderFlag))
 	_ = viper.BindPFlag(DashboardURLFlag, engineCmd.Flags().Lookup(DashboardURLFlag))
-	_ = viper.BindPFlag(DefaultEvidenceStoreURLFlag, engineCmd.Flags().Lookup(DefaultEvidenceStoreURLFlag))
-	_ = viper.BindPFlag(DefaultOrchestratorURLFlag, engineCmd.Flags().Lookup(DefaultOrchestratorURLFlag))
 }
 
 func initConfig() {
@@ -249,8 +242,8 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			}),
 	)
 
-	evidenceStoreService = service_evidenceStore.NewService()
 	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db))
+
 	assessmentService = service_assessment.NewService(
 		service_assessment.WithOAuth2Authorizer(
 			// Configure the OAuth 2.0 client credentials for this service
@@ -260,9 +253,8 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 				TokenURL:     viper.GetString(ServiceOAuth2EndpointFlag),
 			},
 		),
-		service_assessment.WithEvidenceStoreAddress(viper.GetString(DefaultEvidenceStoreURLFlag)),
-		service_assessment.WithOrchestratorAddress(viper.GetString(DefaultOrchestratorURLFlag)),
 	)
+	evidenceStoreService = service_evidenceStore.NewService()
 
 	// It is possible to register hook functions for the orchestrator, evidenceStore and assessment service.
 	// The hook functions in orchestrator are implemented in StoreAssessmentResult(s)
@@ -312,9 +304,9 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			grpc_auth.StreamServerInterceptor(authConfig.AuthFunc),
 		))
 	discovery.RegisterDiscoveryServer(server, discoveryService)
-	evidence.RegisterEvidenceStoreServer(server, evidenceStoreService)
 	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
 	assessment.RegisterAssessmentServer(server, assessmentService)
+	evidence.RegisterEvidenceStoreServer(server, evidenceStoreService)
 
 	// enable reflection, primary for testing in early stages
 	reflection.Register(server)
@@ -348,13 +340,13 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 					"",
 					fmt.Sprintf("%s/callback", viper.GetString(DashboardURLFlag)),
 				),
-				// Create a confidential client with default credentials for our services
+				// Createa a confidential client with default credentials for our services
 				oauth2.WithClient(
 					viper.GetString(ServiceOAuth2ClientIDFlag),
 					viper.GetString(ServiceOAuth2ClientIDFlag),
 					"",
 				),
-				// Create a default user for logging in
+				// Createa a default user for logging in
 				login.WithLoginPage(
 					login.WithUser(
 						viper.GetString(APIDefaultUserFlag),

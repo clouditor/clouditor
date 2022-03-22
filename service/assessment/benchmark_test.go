@@ -1,23 +1,25 @@
 package assessment
 
 import (
+	"context"
+	"fmt"
+	"math"
+	"net"
+	"net/http"
+	"sync"
+	"sync/atomic"
+	"testing"
+
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	service_evidence "clouditor.io/clouditor/service/evidence"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"clouditor.io/clouditor/voc"
-	"context"
-	"fmt"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"net"
-	"net/http"
-	"sync"
-	"sync/atomic"
-	"testing"
 )
 
 func createEvidences(n int, m int, b *testing.B) int {
@@ -58,7 +60,7 @@ func createEvidences(n int, m int, b *testing.B) int {
 
 	svc := NewService(WithOrchestratorAddress(addr), WithEvidenceStoreAddress(addr))
 
-	svc.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
+	orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
 		wg.Done()
 		current := atomic.AddInt64(&count, 1)
 		log.Debugf("Current count: %v", current)
@@ -103,6 +105,21 @@ func createEvidences(n int, m int, b *testing.B) int {
 func benchmarkAssessEvidence(i int, m int, b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		createEvidences(i, m, b)
+	}
+}
+
+var numEvidences = []int{1, 10, 100, 1000, 5000, 10000, 20000, 30000, 40000, 50000}
+
+func BenchmarkAssessEvidence(b *testing.B) {
+	for _, k := range numEvidences {
+		for l := 0.; l <= 2; l++ {
+			parallel := int(math.Pow(2, l))
+			b.Run(fmt.Sprintf("%d/%d", k, parallel), func(b *testing.B) {
+				for n := 0; n < b.N; n++ {
+					createEvidences(k, parallel, b)
+				}
+			})
+		}
 	}
 }
 

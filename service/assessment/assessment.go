@@ -395,7 +395,6 @@ func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) err
 	// Receive responses from Evidence Store
 	// Currently we do not process the responses
 	go func() {
-		i := 1
 		for {
 			_, err := s.evidenceStoreStream.Recv()
 
@@ -409,18 +408,13 @@ func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) err
 				log.Error(newError)
 				break
 			}
-			log.Debugf("received response from Evidence Store")
 
-			if i%100 == 0 {
-				log.Tracef("evidenceStoreStream recv responses currently @ %v", i)
-			}
-
-			i++
+			log.Debugf("Received response from Evidence Store")
 		}
 	}()
 
 	// Send evidences from evidenceStoreChannel to the Evidence Store
-	go func() {
+	/*go func() {
 		i := 1
 		for e := range s.evidenceStoreChannel {
 			err := s.evidenceStoreStream.Send(&evidence.StoreEvidenceRequest{Evidence: e})
@@ -440,9 +434,32 @@ func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) err
 			}
 			i++
 		}
-	}()
+	}()*/
+	go sendLoop[*evidence.Evidence, evidence.StoreEvidenceRequest](s.evidenceStoreChannel, s.evidenceStoreStream, "evidence", "evidence store")
 
 	return nil
+}
+
+type StreamRequester[T any] interface {
+	StreamRequest() *T
+	GetId() string
+}
+
+func sendLoop[T StreamRequester[S], S any](channel chan T, stream grpc.ClientStream, typ string, target string) {
+	for msg := range channel {
+		err := stream.SendMsg(msg.StreamRequest())
+		if errors.Is(err, io.EOF) {
+			log.Infof("Stream to %s was closed", target)
+			break
+		}
+
+		if err != nil {
+			log.Errorf("Error when sending %s to %s: %v", err, typ, target)
+			break
+		}
+
+		log.Debugf("%s (%v) sent to %s", typ, msg.GetId(), target)
+	}
 }
 
 // initOrchestratorStream initializes the stream to the Orchestrator
