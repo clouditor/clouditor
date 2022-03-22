@@ -16,13 +16,7 @@ import (
 func TestMain(m *testing.M) {
 	clitest.AutoChdir()
 
-	server, _ := startBufConnServer()
-
-	code := m.Run()
-
-	server.Stop()
-
-	os.Exit(code)
+	os.Exit(m.Run())
 }
 
 func Test_doCmd(t *testing.T) {
@@ -45,8 +39,6 @@ func Test_doCmd(t *testing.T) {
 				viper.Set(APIStartEmbeddedOAuth2ServerFlag, true)
 				viper.Set(APIHTTPPortFlag, 0)
 				viper.Set(APIgRPCPortFlag, 0)
-				viper.Set(DefaultOrchestratorURL, "bufnet")
-				viper.Set(DefaultEvidenceStoreURLFlag, "bufnet")
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				discoveryService := i1.(*service_discovery.Service)

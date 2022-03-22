@@ -139,7 +139,7 @@ func BenchmarkAssessEvidence1000x10(b *testing.B) {
 }
 
 func BenchmarkAssessEvidence3000(b *testing.B) {
-	benchmarkAssessEvidence(3000, 2, b)
+	benchmarkAssessEvidence(3000, 1, b)
 }
 
 func BenchmarkAssessEvidence10000(b *testing.B) {
