@@ -52,7 +52,7 @@ func TestMain(m *testing.M) {
 	// Add one evidence
 	_, _ = svc.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{
 		Evidence: &evidence.Evidence{
-			Id:        "00000000-0000-0000-000000000000",
+			Id:        "00000000-0000-0000-0000-000000000000",
 			Resource:  r,
 			ToolId:    "clouditor",
 			Timestamp: timestamppb.Now(),
