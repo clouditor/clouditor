@@ -176,6 +176,7 @@ func (s *Service) initAssessmentStream(additionalOpts ...grpc.DialOption) error 
 		for {
 			_, err := s.assessmentStream.Recv()
 			if errors.Is(err, io.EOF) {
+				log.Debugf("no more requests in assessment stream available")
 				break
 			}
 
