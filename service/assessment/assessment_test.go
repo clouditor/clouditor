@@ -388,7 +388,8 @@ func TestAssessEvidences(t *testing.T) {
 		{
 			name: "No RPC connections to evidence store and orchestrator",
 			fields: fields{
-				hasRPCConnection: false,
+				hasRPCConnection:    false,
+				evidenceResourceMap: make(map[string]*evidence.Evidence),
 			},
 			args: args{
 				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
