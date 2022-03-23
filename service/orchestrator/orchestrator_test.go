@@ -431,7 +431,7 @@ func TestCertificateAPIs(t *testing.T) {
 	// Change a property in the certificate and update it
 	cert.Scope = "High"
 	updatereq := &orchestrator.UpdateCertificateRequest{
-		Certificateid: cert.Certificateid,
+		CertificateId: cert.CertificateId,
 		Certificate:   cert,
 	}
 	res, err := s.UpdateCertificate(context.Background(), updatereq)
@@ -440,7 +440,7 @@ func TestCertificateAPIs(t *testing.T) {
 
 	// Remove the certificate
 	removereq := &orchestrator.RemoveCertificateRequest{
-		Certificateid: cert.Certificateid,
+		CertificateId: cert.CertificateId,
 	}
 	_, err = s.RemoveCertificate(context.Background(), removereq)
 	t.Log(err)
@@ -449,16 +449,22 @@ func TestCertificateAPIs(t *testing.T) {
 
 // CreateCertificateMock creates a mock certificate
 func CreateCertificateMock() *orchestrator.Certificate {
+	mockHistory := &orchestrator.StateHistory{
+		State:     "new",
+		TreeId:    "12345",
+		Timestamp: timestamppb.Now(),
+	}
+
 	var mockCertificate = &orchestrator.Certificate{
 		Name:          "EUCS",
-		Certificateid: "1234",
-		State:         "new",
-		Serviceid:     "test service",
-		Issuedate:     "2021-11-06T17:06:55Z",
+		CertificateId: "1234",
+		ServiceId:     "test service",
+		Issuedate:     "2021-11-06",
 		Standard:      "EUCS",
 		Scope:         "Basic",
 		Cab:           "Cab123",
 		Description:   "Description",
+		StateHistory:  []*orchestrator.StateHistory{mockHistory},
 	}
 	return mockCertificate
 }

@@ -32,6 +32,7 @@ import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "api/assessment/metric.proto";
 import "api/assessment/assessment.proto";
+import "google/protobuf/timestamp.proto";
 
 option go_package = "clouditor.io/clouditor/api/orchestrator";
 
@@ -241,14 +242,14 @@ service Orchestrator {
   // Retrieves a certificate
   rpc GetCertificate(GetCertificateRequest) returns (Certificate) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/certificates/{certificateid}"
+      get : "/v1/orchestrator/certificates/{certificate_id}"
     };
   }
 
   // Updates an existing certificate
   rpc UpdateCertificate(UpdateCertificateRequest) returns (Certificate) {
     option (google.api.http) = {
-      put : "/v1/orchestrator/certificates/{certificateid}"
+      put : "/v1/orchestrator/certificates/{certificate_id}"
       body : "*"
     };
   }
@@ -372,26 +373,32 @@ message Requirement {
 }
 
 message GetCertificateRequest {
-  string certificateid = 1;
+  string certificate_id = 1;
 }
 
 message UpdateCertificateRequest {
-  string certificateid = 1;
+  string certificate_id = 1;
 	Certificate certificate = 2;
 }
 
 message CreateCertificateRequest { Certificate certificate = 1; }
 
-message RemoveCertificateRequest { string certificateid = 1; }
+message RemoveCertificateRequest { string certificate_id = 1; }
 
 message Certificate {
-  string certificateid = 1;
+  string certificate_id = 1;
 	string name = 2;
-  string state = 3;
-	string serviceid = 4;
-	string issuedate = 5;
-  string standard = 6;
-  string scope = 7;       
-  string cab = 8;
-  string description = 9;
+	string service_id = 3;
+	string issuedate = 4;
+  string standard = 5;
+  string scope = 6;       
+  string cab = 7;
+  string description = 8;
+  repeated StateHistory state_history = 9;
+}
+
+message StateHistory {
+  string state = 1;
+	string tree_id = 2;
+	google.protobuf.Timestamp timestamp = 3;
 }

@@ -316,12 +316,12 @@ func (s *Service) GetCertificate(_ context.Context, req *orchestrator.GetCertifi
 	if req == nil {
 		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrRequestIsNil.Error())
 	}
-	if req.Certificateid == "" {
+	if req.CertificateId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrIDIsMissing.Error())
 	}
 
 	response = new(orchestrator.Certificate)
-	err = s.storage.Get(response, "Id = ?", req.Certificateid)
+	err = s.storage.Get(response, "Id = ?", req.CertificateId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "certificate not found")
 	} else if err != nil {
@@ -350,7 +350,7 @@ func (s *Service) CreateCertificate(_ context.Context, req *orchestrator.CreateC
 
 // UpdateCertificate implements method for updating an existing certificate
 func (s *Service) UpdateCertificate(_ context.Context, req *orchestrator.UpdateCertificateRequest) (response *orchestrator.Certificate, err error) {
-	if req.Certificateid == "" {
+	if req.CertificateId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "certificate id is empty")
 	}
 
@@ -358,7 +358,7 @@ func (s *Service) UpdateCertificate(_ context.Context, req *orchestrator.UpdateC
 		return nil, status.Errorf(codes.InvalidArgument, "certificate is empty")
 	}
 
-	count, err := s.storage.Count(req.Certificate, "Id = ?", req.Certificateid)
+	count, err := s.storage.Count(req.Certificate, "CertificateId = ?", req.CertificateId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -368,9 +368,9 @@ func (s *Service) UpdateCertificate(_ context.Context, req *orchestrator.UpdateC
 	}
 
 	response = req.Certificate
-	response.Certificateid = req.Certificateid
+	response.CertificateId = req.CertificateId
 
-	err = s.storage.Save(response, "Id = ?", response.Certificateid)
+	err = s.storage.Save(response, "CertificateId = ?", response.CertificateId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
@@ -379,11 +379,11 @@ func (s *Service) UpdateCertificate(_ context.Context, req *orchestrator.UpdateC
 
 // RemoveCertificate implements method for removing a certificate
 func (s *Service) RemoveCertificate(_ context.Context, req *orchestrator.RemoveCertificateRequest) (response *emptypb.Empty, err error) {
-	if req.Certificateid == "" {
+	if req.CertificateId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "certificate id is empty")
 	}
 
-	err = s.storage.Delete(&orchestrator.Certificate{}, "Certificateid = ?", req.Certificateid)
+	err = s.storage.Delete(&orchestrator.Certificate{}, "CertificateId = ?", req.CertificateId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "certificate not found")
 	} else if err != nil {

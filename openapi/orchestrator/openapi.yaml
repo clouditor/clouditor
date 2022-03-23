@@ -153,14 +153,14 @@ paths:
                 "200":
                     description: OK
                     content: {}
-    /v1/orchestrator/certificates/{certificateid}:
+    /v1/orchestrator/certificates/{certificateId}:
         get:
             tags:
                 - Orchestrator
             description: Retrieves a certificate
             operationId: Orchestrator_GetCertificate
             parameters:
-                - name: certificateid
+                - name: certificateId
                   in: path
                   required: true
                   schema:
@@ -178,7 +178,7 @@ paths:
             description: Updates an existing certificate
             operationId: Orchestrator_UpdateCertificate
             parameters:
-                - name: certificateid
+                - name: certificateId
                   in: path
                   required: true
                   schema:
@@ -548,13 +548,11 @@ components:
         Certificate:
             type: object
             properties:
-                certificateid:
+                certificateId:
                     type: string
                 name:
                     type: string
-                state:
-                    type: string
-                serviceid:
+                serviceId:
                     type: string
                 issuedate:
                     type: string
@@ -566,6 +564,10 @@ components:
                     type: string
                 description:
                     type: string
+                stateHistory:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/StateHistory'
         CloudService:
             type: object
             properties:
@@ -725,6 +727,16 @@ components:
                     items:
                         type: string
             description: Requirement represents a certain requirement that needs to be fulfilled. It could be a control in a certification catalog.
+        StateHistory:
+            type: object
+            properties:
+                state:
+                    type: string
+                treeId:
+                    type: string
+                timestamp:
+                    type: string
+                    format: RFC3339
         StoreAssessmentResultResponse:
             type: object
             properties:
@@ -735,7 +747,7 @@ components:
         UpdateCertificateRequest:
             type: object
             properties:
-                certificateid:
+                certificateId:
                     type: string
                 certificate:
                     $ref: '#/components/schemas/Certificate'

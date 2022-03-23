@@ -1169,14 +1169,14 @@ func request_Orchestrator_GetCertificate_0(ctx context.Context, marshaler runtim
 		_   = err
 	)
 
-	val, ok = pathParams["certificateid"]
+	val, ok = pathParams["certificate_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "certificateid")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "certificate_id")
 	}
 
-	protoReq.Certificateid, err = runtime.String(val)
+	protoReq.CertificateId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "certificateid", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "certificate_id", err)
 	}
 
 	msg, err := client.GetCertificate(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -1195,14 +1195,14 @@ func local_request_Orchestrator_GetCertificate_0(ctx context.Context, marshaler 
 		_   = err
 	)
 
-	val, ok = pathParams["certificateid"]
+	val, ok = pathParams["certificate_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "certificateid")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "certificate_id")
 	}
 
-	protoReq.Certificateid, err = runtime.String(val)
+	protoReq.CertificateId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "certificateid", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "certificate_id", err)
 	}
 
 	msg, err := server.GetCertificate(ctx, &protoReq)
@@ -1229,14 +1229,14 @@ func request_Orchestrator_UpdateCertificate_0(ctx context.Context, marshaler run
 		_   = err
 	)
 
-	val, ok = pathParams["certificateid"]
+	val, ok = pathParams["certificate_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "certificateid")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "certificate_id")
 	}
 
-	protoReq.Certificateid, err = runtime.String(val)
+	protoReq.CertificateId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "certificateid", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "certificate_id", err)
 	}
 
 	msg, err := client.UpdateCertificate(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -1263,14 +1263,14 @@ func local_request_Orchestrator_UpdateCertificate_0(ctx context.Context, marshal
 		_   = err
 	)
 
-	val, ok = pathParams["certificateid"]
+	val, ok = pathParams["certificate_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "certificateid")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "certificate_id")
 	}
 
-	protoReq.Certificateid, err = runtime.String(val)
+	protoReq.CertificateId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "certificateid", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "certificate_id", err)
 	}
 
 	msg, err := server.UpdateCertificate(ctx, &protoReq)
@@ -1842,7 +1842,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/GetCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates/{certificateid}"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/GetCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates/{certificate_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1865,7 +1865,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/UpdateCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates/{certificateid}"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/UpdateCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates/{certificate_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2407,7 +2407,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/GetCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates/{certificateid}"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/GetCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates/{certificate_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2427,7 +2427,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/UpdateCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates/{certificateid}"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/UpdateCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates/{certificate_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2495,9 +2495,9 @@ var (
 
 	pattern_Orchestrator_CreateCertificate_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "certificates"}, ""))
 
-	pattern_Orchestrator_GetCertificate_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "certificates", "certificateid"}, ""))
+	pattern_Orchestrator_GetCertificate_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "certificates", "certificate_id"}, ""))
 
-	pattern_Orchestrator_UpdateCertificate_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "certificates", "certificateid"}, ""))
+	pattern_Orchestrator_UpdateCertificate_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "certificates", "certificate_id"}, ""))
 )
 
 var (
