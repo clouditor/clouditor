@@ -456,8 +456,6 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string,
 
 		s.resultMutex.Lock()
 		// Just a little hack to quickly enable multiple results per resource
-		s.resultMutex.Lock()
-		defer s.resultMutex.Unlock()
 		s.results[fmt.Sprintf("%s-%d", resourceId, i)] = result
 		s.resultMutex.Unlock()
 

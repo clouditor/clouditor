@@ -40,7 +40,7 @@ import (
 )
 
 const (
-	DefaultTargetCloudServiceId          = "00000000-0000-0000-000000000000"
+	DefaultTargetCloudServiceId          = "00000000-0000-0000-0000-000000000000"
 	DefaultTargetCloudServiceName        = "default"
 	DefaultTargetCloudServiceDescription = "The default target cloud service"
 )
