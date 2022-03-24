@@ -108,6 +108,7 @@ type Service struct {
 
 	// evidenceResourceMap is a cache which maps a resource ID (key) to its latest available evidence
 	evidenceResourceMap map[string]*evidence.Evidence
+	em                  sync.RWMutex
 
 	wg sync.WaitGroup
 
@@ -120,9 +121,9 @@ type Service struct {
 	rm sync.RWMutex
 
 	stats struct {
-		processed int64
-		waiting   int64
-		avgTime   float32
+		processed  int64
+		waiting    int64
+		avgWaiting time.Duration
 	}
 }
 
@@ -159,7 +160,9 @@ func (l *leftOverRequest) WaitAndHandle() {
 			additional := make(map[string]*structpb.Value)
 
 			for _, r := range l.Evidence.RelatedResourceIds {
+				l.s.em.RLock()
 				additional[r] = l.s.evidenceResourceMap[r].Resource
+				l.s.em.RUnlock()
 			}
 
 			// Let's go
@@ -170,6 +173,8 @@ func (l *leftOverRequest) WaitAndHandle() {
 			log.Infof("Evidence %s was waiting for %s", l.Evidence.Id, duration)
 
 			atomic.AddInt64(&l.s.stats.waiting, -1)
+			// TODO: make concurrency safe
+			l.s.stats.avgWaiting = (l.s.stats.avgWaiting + duration) / 2
 			break
 		}
 	}
@@ -262,6 +267,7 @@ func (s *Service) Authorizer() api.Authorizer {
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
 func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
+	log.Tracef("Trying to assess evidence %s from tool %s", req.Evidence.Id, req.Evidence.ToolId)
 
 	// Validate evidence
 	resourceId, err := req.Evidence.Validate()
@@ -296,6 +302,7 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 
 	var waitingFor map[voc.ResourceID]bool = make(map[voc.ResourceID]bool)
 
+	s.em.Lock()
 	// We need to check, if by any chance the related resource evidences
 	// have already arrived
 	//
@@ -311,6 +318,7 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 
 	// Update our evidence cache
 	s.evidenceResourceMap[resourceId] = req.Evidence
+	s.em.Unlock()
 
 	if canHandle {
 		// Assess evidence
@@ -332,7 +340,7 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 			Status: assessment.AssessEvidenceResponse_ASSESSED,
 		}
 	} else {
-		log.Infof("Evidence %s needs to wait for %d more resource(s) to assess evidence", req.Evidence.Id, len(waitingFor))
+		log.Tracef("Evidence %s needs to wait for %d more resource(s) to assess evidence", req.Evidence.Id, len(waitingFor))
 
 		// Create a left-over request with all the necessary information
 		l := leftOverRequest{
@@ -341,7 +349,7 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 			resourceId:   resourceId,
 			Evidence:     req.Evidence,
 			s:            s,
-			newResources: make(chan voc.ResourceID),
+			newResources: make(chan voc.ResourceID, 1000),
 		}
 
 		// Add it to our wait group

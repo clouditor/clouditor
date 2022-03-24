@@ -30,7 +30,7 @@ func createEvidences(n int, m int, b *testing.B) int {
 		sock net.Listener
 	)
 
-	logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetLevel(logrus.InfoLevel)
 
 	srv := grpc.NewServer()
 
@@ -61,20 +61,20 @@ func createEvidences(n int, m int, b *testing.B) int {
 
 	svc := NewService(WithOrchestratorAddress(addr), WithEvidenceStoreAddress(addr))
 
-	svc.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
+	orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
 		wg.Done()
 		current := atomic.AddInt64(&count, 1)
-		log.Debugf("Current count: %v", current)
+
+		log.Debugf("Current count: %v - stats: %+v", current, svc.stats)
 	})
 
 	// Create m parallel executions of our evidence creation
 	for j := 0; j < m; j++ {
 		go func() {
-			// Create evidences for n/2 resources (2 per resource)
+			// Create evidences for n/2 (2 resources per n)
 			for i := 0; i < n/2; i++ {
 				if i%100 == 0 {
-					log.Infof("Currently @ %v", i)
-					log.Infof("Current stats: %+v", svc.stats)
+					log.Infof("Currently @ %v - stats: %+v", i, svc.stats)
 				}
 
 				vm := voc.VirtualMachine{
@@ -157,6 +157,10 @@ func BenchmarkAssessEvidence(b *testing.B) {
 
 func BenchmarkAssessEvidence2(b *testing.B) {
 	benchmarkAssessEvidence(2, 1, b)
+}
+
+func BenchmarkAssessEvidence4(b *testing.B) {
+	benchmarkAssessEvidence(4, 1, b)
 }
 
 func BenchmarkAssessEvidence10(b *testing.B) {
