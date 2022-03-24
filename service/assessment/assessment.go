@@ -41,10 +41,10 @@ import (
 	"clouditor.io/clouditor/policies"
 	"clouditor.io/clouditor/service"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
-	"golang.org/x/oauth2/clientcredentials"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -409,8 +409,6 @@ func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) err
 				log.Error(newError)
 				break
 			}
-
-			log.Debugf("Received response from Evidence Store")
 		}
 	}()
 
@@ -457,7 +455,6 @@ func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) erro
 				log.Errorf("error receiving response from orchestrator stream: %+v", err)
 				break
 			}
-			log.Tracef("received response from Orchestrator")
 
 			if i%100 == 0 {
 				log.Debugf("orchestratorStream recv responses currently @ %v", i)
