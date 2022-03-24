@@ -175,11 +175,6 @@ func TestStateHistory_Value(t *testing.T) {
 }
 
 func TestStateHistory_Scan(t *testing.T) {
-	type fields struct {
-		State     string
-		TreeId    string
-		Timestamp string
-	}
 	type args struct {
 		value interface{}
 	}

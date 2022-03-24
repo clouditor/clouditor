@@ -36,12 +36,12 @@ import (
 	"runtime"
 	"sync"
 	"testing"
+	"time"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/persistence/inmemory"
-
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -412,76 +412,6 @@ func createStoreAssessmentResultRequestsMock(count int) []*orchestrator.StoreAss
 	return mockRequests
 }
 
-func TestCertificateAPIs(t *testing.T) {
-	s := NewService()
-	cert := CreateCertificateMock()
-
-	req := &orchestrator.CreateCertificateRequest{
-		Certificate: nil,
-	}
-	_, err := s.CreateCertificate(context.Background(), req)
-	assert.Contains(t, err.Error(), orchestrator.ErrCertificateIsNil.Error())
-
-	req = &orchestrator.CreateCertificateRequest{
-		Certificate: cert,
-	}
-	_, err = s.CreateCertificate(context.Background(), req)
-	assert.NoError(t, err)
-
-	// Change a property in the certificate and update it
-	cert.Scope = "High"
-	updatereq := &orchestrator.UpdateCertificateRequest{
-		CertificateId: cert.CertificateId,
-		Certificate:   cert,
-	}
-	res, err := s.UpdateCertificate(context.Background(), updatereq)
-	assert.NoError(t, err)
-	assert.NotNil(t, res)
-
-	// Remove the certificate
-	removereq := &orchestrator.RemoveCertificateRequest{
-		CertificateId: cert.CertificateId,
-	}
-	_, err = s.RemoveCertificate(context.Background(), removereq)
-	t.Log(err)
-	assert.NoError(t, err)
-}
-
-// CreateCertificateMock creates a mock certificate
-func CreateCertificateMock() *orchestrator.Certificate {
-	mockHistory := &orchestrator.StateHistory{
-		State:     "new",
-		TreeId:    "12345",
-		Timestamp: timestamppb.Now(),
-	}
-
-	var mockCertificate = &orchestrator.Certificate{
-		Name:          "EUCS",
-		CertificateId: "1234",
-		ServiceId:     "test service",
-		Issuedate:     "2021-11-06",
-		Standard:      "EUCS",
-		Scope:         "Basic",
-		Cab:           "Cab123",
-		Description:   "Description",
-		StateHistory:  []*orchestrator.StateHistory{mockHistory},
-	}
-	return mockCertificate
-}
-
-func TestUpdateCertificate(t *testing.T) {
-	// First create a new certificate
-	s := NewService()
-
-	cert := CreateCertificateMock()
-	createreq := &orchestrator.CreateCertificateRequest{
-		Certificate: cert,
-	}
-	_, err := s.CreateCertificate(context.Background(), createreq)
-	assert.Nil(t, err)
-
-}
-
 type mockStreamer struct {
 	grpc.ServerStream
 	RecvToServer   chan *orchestrator.StoreAssessmentResultRequest
@@ -660,6 +590,76 @@ func TestNewService(t *testing.T) {
 
 			if tt.want != nil {
 				tt.want(t, got, tt.args.opts)
+			}
+		})
+	}
+}
+
+// CreateCertificateMock creates a mock certificate creation request
+func CreateCertificateRequestMock() *orchestrator.CreateCertificateRequest {
+	mockHistory := &orchestrator.StateHistory{
+		State:     "new",
+		TreeId:    "12345",
+		Timestamp: time.Now().String(),
+	}
+
+	var mockCertificate = &orchestrator.Certificate{
+		Name:          "EUCS",
+		CertificateId: "1234",
+		ServiceId:     "test service",
+		Issuedate:     "2021-11-06",
+		Standard:      "EUCS",
+		Scope:         "Basic",
+		Cab:           "Cab123",
+		Description:   "Description",
+		StateHistory:  []*orchestrator.StateHistory{mockHistory},
+	}
+	req := &orchestrator.CreateCertificateRequest{
+		Certificate: mockCertificate,
+	}
+	return req
+}
+
+func TestService_CreateCertificate(t *testing.T) {
+	type args struct {
+		in0 context.Context
+		req *orchestrator.CreateCertificateRequest
+	}
+	tests := []struct {
+		name         string
+		args         args
+		wantResponse *emptypb.Empty
+		wantErr      bool
+	}{
+		{
+			"missing request",
+			args{
+				context.Background(),
+				nil,
+			},
+			nil,
+			true,
+		},
+		{
+			"valid certificate",
+			args{
+				context.Background(),
+				CreateCertificateRequestMock(),
+			},
+			&emptypb.Empty{},
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := NewService()
+			gotResponse, err := s.CreateCertificate(tt.args.in0, tt.args.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.CreateCertificate() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotResponse, tt.wantResponse) {
+				t.Errorf("Service.CreateCertificate() = %v, want %v", gotResponse, tt.wantResponse)
 			}
 		})
 	}
