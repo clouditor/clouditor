@@ -53,7 +53,7 @@ func createEvidences(n int, m int, b *testing.B) int {
 	}()
 	defer srv.Stop()
 
-	wg.Add(n * m * 8)
+	wg.Add(n / 2 * m * (3 + 8))
 
 	var count int64 = 0
 
@@ -87,16 +87,14 @@ func createEvidences(n int, m int, b *testing.B) int {
 					BlockStorage: []voc.ResourceID{voc.ResourceID(fmt.Sprintf("%d-storage", i))},
 				}
 
-				e := evidence.Evidence{
-					Id:                 uuid.NewString(),
-					Timestamp:          timestamppb.Now(),
-					ToolId:             "mytool",
-					Resource:           testutil.ToStruct(vm, b),
-					RelatedResourceIds: vm.Related(),
-				}
-
 				_, err := svc.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{
-					Evidence: &e,
+					Evidence: &evidence.Evidence{
+						Id:                 uuid.NewString(),
+						Timestamp:          timestamppb.Now(),
+						ToolId:             "mytool",
+						Resource:           testutil.ToStruct(vm, b),
+						RelatedResourceIds: vm.Related(),
+					},
 				})
 				if err != nil {
 					b.Errorf("Error while calling AssessEvidence: %v", err)
@@ -115,16 +113,14 @@ func createEvidences(n int, m int, b *testing.B) int {
 					},
 				}
 
-				e = evidence.Evidence{
-					Id:                 uuid.NewString(),
-					Timestamp:          timestamppb.Now(),
-					ToolId:             "mytool",
-					Resource:           testutil.ToStruct(s, b),
-					RelatedResourceIds: s.Related(),
-				}
-
 				_, err = svc.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{
-					Evidence: &e,
+					Evidence: &evidence.Evidence{
+						Id:                 uuid.NewString(),
+						Timestamp:          timestamppb.Now(),
+						ToolId:             "mytool",
+						Resource:           testutil.ToStruct(s, b),
+						RelatedResourceIds: s.Related(),
+					},
 				})
 				if err != nil {
 					b.Errorf("Error while calling AssessEvidence: %v", err)
@@ -159,8 +155,19 @@ func benchmarkAssessEvidence(i int, m int, b *testing.B) {
 	}
 }
 
-func BenchmarkAssessEvidence1(b *testing.B) {
-	benchmarkAssessEvidence(1, 1, b)
+var numEvidences = []int{10, 100, 1000, 5000, 10000, 20000, 30000, 40000, 50000}
+
+func BenchmarkAssessEvidence(b *testing.B) {
+	for _, k := range numEvidences {
+		for l := 0.; l <= 2; l++ {
+			parallel := int(math.Pow(2, l))
+			b.Run(fmt.Sprintf("%d/%d", k, parallel), func(b *testing.B) {
+				for n := 0; n < b.N; n++ {
+					createEvidences(k, parallel, b)
+				}
+			})
+		}
+	}
 }
 
 func BenchmarkAssessEvidence2(b *testing.B) {
