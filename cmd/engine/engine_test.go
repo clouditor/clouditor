@@ -20,7 +20,6 @@ func TestMain(m *testing.M) {
 }
 
 func Test_doCmd(t *testing.T) {
-
 	type args struct {
 		in0 *cobra.Command
 		in1 []string

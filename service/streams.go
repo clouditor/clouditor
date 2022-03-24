@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"io"
+	"strings"
 
 	"google.golang.org/grpc"
 )
@@ -31,6 +32,6 @@ func StreamSendLoop[T StreamRequester[S], S any](channel chan T, stream grpc.Cli
 			break
 		}
 
-		log.Debugf("%s (%v) sent to %s", typ, msg.GetId(), target)
+		log.Debugf("%s (%v) sent to %s", strings.ToUpper(typ), msg.GetId(), target)
 	}
 }
