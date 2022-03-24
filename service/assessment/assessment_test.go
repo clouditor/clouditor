@@ -486,7 +486,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 	var (
 		hookCallCounter = 0
 		wg              sync.WaitGroup
-		hookCounts      = 9 * 2
+		hookCounts      = 8 * 2
 	)
 
 	wg.Add(hookCounts)
