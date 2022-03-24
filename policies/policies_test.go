@@ -26,6 +26,7 @@
 package policies
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -33,6 +34,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
@@ -49,6 +51,8 @@ const (
 	mockVM1ResourceID         = "/mockresources/compute/vm1"
 	mockVM2EvidenceID         = "4"
 	mockVM2ResourceID         = "/mockresources/compute/vm2"
+	mockBlockStorage1ID       = "/mockresources/storage/storage1"
+	mockBlockStorage2ID       = "/mockresources/storage/storage2"
 )
 
 func TestMain(m *testing.M) {
@@ -57,6 +61,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+// TODO(oxisto): Move these to Rego unit tests
 func TestRunEvidence(t *testing.T) {
 	type fields struct {
 		resource   voc.IsCloudResource
@@ -73,6 +78,7 @@ func TestRunEvidence(t *testing.T) {
 		applicable bool
 		compliant  bool
 		wantErr    bool
+		want       []*Result
 	}{
 		{
 			name: "ObjectStorage: Compliant Case",
@@ -100,6 +106,29 @@ func TestRunEvidence(t *testing.T) {
 			applicable: true,
 			compliant:  true,
 			wantErr:    false,
+			want: []*Result{
+				{
+					Applicable:  true,
+					Compliant:   true,
+					TargetValue: "AES256",
+					Operator:    "==",
+					MetricId:    "AtRestEncryptionAlgorithm",
+				},
+				{
+					Applicable:  true,
+					Compliant:   true,
+					TargetValue: true,
+					Operator:    "==",
+					MetricId:    "AtRestEncryptionEnabled",
+				},
+				{
+					Applicable:  true,
+					Compliant:   true,
+					TargetValue: true,
+					Operator:    "==",
+					MetricId:    "CustomerKeyEncryption",
+				},
+			},
 		}, {
 			name: "ObjectStorage: Non-Compliant Case with no Encryption at rest",
 			fields: fields{
@@ -123,6 +152,29 @@ func TestRunEvidence(t *testing.T) {
 			applicable: true,
 			compliant:  false,
 			wantErr:    false,
+			want: []*Result{
+				{
+					Applicable:  true,
+					Compliant:   false,
+					TargetValue: "AES256",
+					Operator:    "==",
+					MetricId:    "AtRestEncryptionAlgorithm",
+				},
+				{
+					Applicable:  true,
+					Compliant:   false,
+					TargetValue: true,
+					Operator:    "==",
+					MetricId:    "AtRestEncryptionEnabled",
+				},
+				{
+					Applicable:  true,
+					Compliant:   false,
+					TargetValue: true,
+					Operator:    "==",
+					MetricId:    "CustomerKeyEncryption",
+				},
+			},
 		},
 		{
 			name: "ObjectStorage: Non-Compliant Case 2 with no customer managed key",
@@ -150,6 +202,29 @@ func TestRunEvidence(t *testing.T) {
 			applicable: true,
 			compliant:  false,
 			wantErr:    false,
+			want: []*Result{
+				{
+					Applicable:  true,
+					Compliant:   false,
+					TargetValue: "AES256",
+					Operator:    "==",
+					MetricId:    "AtRestEncryptionAlgorithm",
+				},
+				{
+					Applicable:  true,
+					Compliant:   false,
+					TargetValue: true,
+					Operator:    "==",
+					MetricId:    "AtRestEncryptionEnabled",
+				},
+				{
+					Applicable:  true,
+					Compliant:   false,
+					TargetValue: true,
+					Operator:    "==",
+					MetricId:    "CustomerKeyEncryption",
+				},
+			},
 		},
 		{
 			name: "VM: Compliant Case",
@@ -158,7 +233,7 @@ func TestRunEvidence(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:   mockVM1ResourceID,
-							Type: []string{"Virtual Machine", "Compute", "Resource"},
+							Type: []string{"VirtualMachine", "Compute", "Resource"},
 						}},
 					BlockStorage: nil,
 					BootLogging: &voc.BootLogging{
@@ -194,6 +269,64 @@ func TestRunEvidence(t *testing.T) {
 			applicable: true,
 			compliant:  true,
 			wantErr:    false,
+			want: []*Result{
+				{
+					Applicable:  true,
+					Compliant:   true,
+					TargetValue: true,
+					Operator:    "==",
+					MetricId:    "BootLoggingEnabled",
+				},
+				{
+					Applicable:  true,
+					Compliant:   true,
+					TargetValue: []interface{}{"SomeResourceId1", "SomeResourceId2"},
+					Operator:    "==",
+					MetricId:    "BootLoggingOutput",
+				},
+				{
+					Applicable:  true,
+					Compliant:   true,
+					TargetValue: json.Number("35"),
+					Operator:    ">=",
+					MetricId:    "BootLoggingRetention",
+				},
+				{
+					Applicable:  true,
+					Compliant:   true,
+					TargetValue: true,
+					Operator:    "==",
+					MetricId:    "MalwareProtectionEnabled",
+				},
+				{
+					Applicable:  true,
+					Compliant:   true,
+					TargetValue: []interface{}{"SomeAnalyticsService?", "?"},
+					Operator:    "==",
+					MetricId:    "MalwareProtectionOutput",
+				},
+				{
+					Applicable:  true,
+					Compliant:   true,
+					TargetValue: true,
+					Operator:    "==",
+					MetricId:    "OSLoggingEnabled",
+				},
+				{
+					Applicable:  true,
+					Compliant:   true,
+					TargetValue: []interface{}{"SomeResourceId1", "SomeResourceId2"},
+					Operator:    "==",
+					MetricId:    "OSLoggingOutput",
+				},
+				{
+					Applicable:  true,
+					Compliant:   true,
+					TargetValue: json.Number("35"),
+					Operator:    ">=",
+					MetricId:    "OSLoggingRetention",
+				},
+			},
 		},
 		{
 			name: "VM: Non-Compliant Case",
@@ -226,12 +359,156 @@ func TestRunEvidence(t *testing.T) {
 			applicable: true,
 			compliant:  false,
 			wantErr:    false,
+			want: []*Result{
+				{
+					Applicable:  true,
+					Compliant:   false,
+					TargetValue: true,
+					Operator:    "==",
+					MetricId:    "BootLoggingEnabled",
+				},
+				{
+					Applicable:  true,
+					Compliant:   false,
+					TargetValue: []interface{}{"SomeResourceId1", "SomeResourceId2"},
+					Operator:    "==",
+					MetricId:    "BootLoggingOutput",
+				},
+				{
+					Applicable:  true,
+					Compliant:   false,
+					TargetValue: json.Number("35"),
+					Operator:    ">=",
+					MetricId:    "BootLoggingRetention",
+				},
+				{
+					Applicable:  true,
+					Compliant:   false,
+					TargetValue: true,
+					Operator:    "==",
+					MetricId:    "MalwareProtectionEnabled",
+				},
+				{
+					Applicable:  true,
+					Compliant:   false,
+					TargetValue: true,
+					Operator:    "==",
+					MetricId:    "OSLoggingEnabled",
+				},
+				{
+					Applicable:  true,
+					Compliant:   false,
+					TargetValue: []interface{}{"SomeResourceId1", "SomeResourceId2"},
+					Operator:    "==",
+					MetricId:    "OSLoggingOutput",
+				},
+				{
+					Applicable:  true,
+					Compliant:   false,
+					TargetValue: json.Number("35"),
+					Operator:    ">=",
+					MetricId:    "OSLoggingRetention",
+				},
+			},
+		},
+		{
+			name: "VM: Related Evidence",
+			fields: fields{
+				resource: voc.VirtualMachine{
+					Compute: &voc.Compute{
+						Resource: &voc.Resource{
+							ID:   mockVM1ResourceID,
+							Type: []string{"VirtualMachine", "Compute", "Resource"},
+						}},
+					BlockStorage: []voc.ResourceID{mockBlockStorage1ID},
+				},
+				evidenceID: mockVM1EvidenceID,
+			},
+			args: args{
+				source: &mockMetricConfigurationSource{t: t},
+				related: map[string]*structpb.Value{
+					mockBlockStorage1ID: testutil.ToStruct(&voc.BlockStorage{
+						Storage: &voc.Storage{
+							Resource: &voc.Resource{
+								ID:   mockBlockStorage1ID,
+								Type: []string{"BlockStorage", "Storage", "Resource"},
+							},
+							AtRestEncryption: voc.AtRestEncryption{
+								Enabled:   true,
+								Algorithm: "AES-256",
+							},
+						},
+					}, t),
+				},
+			},
+			wantErr: false,
+			want: []*Result{
+				{
+					Applicable:  true,
+					Compliant:   false,
+					TargetValue: true,
+					Operator:    "==",
+					MetricId:    "BootLoggingEnabled",
+				},
+				{
+					Applicable:  true,
+					Compliant:   false,
+					TargetValue: []interface{}{"SomeResourceId1", "SomeResourceId2"},
+					Operator:    "==",
+					MetricId:    "BootLoggingOutput",
+				},
+				{
+					Applicable:  true,
+					Compliant:   false,
+					TargetValue: json.Number("35"),
+					Operator:    ">=",
+					MetricId:    "BootLoggingRetention",
+				},
+				{
+					Applicable:  true,
+					Compliant:   false,
+					TargetValue: true,
+					Operator:    "==",
+					MetricId:    "MalwareProtectionEnabled",
+				},
+				{
+					Applicable:  true,
+					Compliant:   false,
+					TargetValue: true,
+					Operator:    "==",
+					MetricId:    "OSLoggingEnabled",
+				},
+				{
+					Applicable:  true,
+					Compliant:   false,
+					TargetValue: []interface{}{"SomeResourceId1", "SomeResourceId2"},
+					Operator:    "==",
+					MetricId:    "OSLoggingOutput",
+				},
+				{
+					Applicable:  true,
+					Compliant:   false,
+					TargetValue: json.Number("35"),
+					Operator:    ">=",
+					MetricId:    "OSLoggingRetention",
+				},
+				{
+					Applicable:  true,
+					Compliant:   true,
+					TargetValue: true,
+					Operator:    "==",
+					MetricId:    "VirtualMachineDiskEncryptionEnabled",
+				},
+			},
 		},
 	}
+
 	for _, tt := range tests {
 		resource, err := voc.ToStruct(tt.fields.resource)
 		assert.NoError(t, err)
 		t.Run(tt.name, func(t *testing.T) {
+			applicableMetrics.Clear()
+
 			results, err := RunEvidence(&evidence.Evidence{
 				Id:       tt.fields.evidenceID,
 				Resource: resource,
@@ -240,11 +517,8 @@ func TestRunEvidence(t *testing.T) {
 				t.Errorf("RunEvidence() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			assert.NotEmpty(t, results)
-			for _, result := range results {
-				assert.Equal(t, tt.applicable, result.Applicable)
-				assert.Equal(t, tt.compliant, result.Compliant)
-			}
+
+			assert.Equal(t, tt.want, results)
 		})
 	}
 }
@@ -255,7 +529,6 @@ type mockMetricConfigurationSource struct {
 
 func (m *mockMetricConfigurationSource) MetricConfiguration(metric string) (*assessment.MetricConfiguration, error) {
 	// Fetch the metric configuration directly from our file
-
 	bundle := fmt.Sprintf("policies/bundles/%s/data.json", metric)
 	file, err := os.OpenFile(bundle, os.O_RDONLY, 0600)
 	assert.NoError(m.t, err)

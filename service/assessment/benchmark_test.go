@@ -30,7 +30,7 @@ func createEvidences(n int, m int, b *testing.B) int {
 		sock net.Listener
 	)
 
-	logrus.SetLevel(logrus.InfoLevel)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	srv := grpc.NewServer()
 
@@ -193,4 +193,12 @@ func BenchmarkAssessEvidence3000(b *testing.B) {
 
 func BenchmarkAssessEvidence10000(b *testing.B) {
 	benchmarkAssessEvidence(10000, 1, b)
+}
+
+func BenchmarkAssessEvidence10000x2(b *testing.B) {
+	benchmarkAssessEvidence(10000, 2, b)
+}
+
+func BenchmarkAssessEvidence30000x4(b *testing.B) {
+	benchmarkAssessEvidence(30000, 4, b)
 }

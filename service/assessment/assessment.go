@@ -161,8 +161,15 @@ func (l *leftOverRequest) WaitAndHandle() {
 
 			for _, r := range l.Evidence.RelatedResourceIds {
 				l.s.em.RLock()
-				additional[r] = l.s.evidenceResourceMap[r].Resource
+				e, ok := l.s.evidenceResourceMap[r]
 				l.s.em.RUnlock()
+
+				if !ok {
+					log.Errorf("Apparently, we are missing an evidence for a resource %s which we are supposed to have", r)
+					break
+				}
+
+				additional[r] = e.Resource
 			}
 
 			// Let's go
@@ -266,7 +273,7 @@ func (s *Service) Authorizer() api.Authorizer {
 }
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
-func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
+func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
 	log.Tracef("Trying to assess evidence %s from tool %s", req.Evidence.Id, req.Evidence.ToolId)
 
 	// Validate evidence
@@ -274,7 +281,7 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 	if err != nil {
 		newError := fmt.Errorf("invalid evidence: %w", err)
 		log.Error(newError)
-		s.informHooks(nil, newError)
+		svc.informHooks(nil, newError)
 
 		res = &assessment.AssessEvidenceResponse{
 			Status:        assessment.AssessEvidenceResponse_FAILED,
@@ -284,25 +291,12 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 		return res, status.Errorf(codes.InvalidArgument, "%v", newError)
 	}
 
-	go func() {
-		// Lock requests for reading
-		s.rm.RLock()
-		// Defer unlock at the exit of the go-routine
-		defer s.rm.RUnlock()
-		for _, l := range s.requests {
-			if l.resourceId != resourceId {
-				// Inform any other left over evidences that might be waiting
-				l.newResources <- voc.ResourceID(resourceId)
-			}
-		}
-	}()
-
 	// Check, if we can immediately handle this evidence; we assume so at first
 	var canHandle = true
 
 	var waitingFor map[voc.ResourceID]bool = make(map[voc.ResourceID]bool)
 
-	s.em.Lock()
+	svc.em.Lock()
 	// We need to check, if by any chance the related resource evidences
 	// have already arrived
 	//
@@ -310,19 +304,22 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 	for _, r := range req.Evidence.RelatedResourceIds {
 		// If any of the related resource is not available, we cannot handle them immediately,
 		// but we need to add it to our waitingFor slice
-		if _, ok := s.evidenceResourceMap[r]; !ok {
+		if _, ok := svc.evidenceResourceMap[r]; !ok {
 			canHandle = false
 			waitingFor[voc.ResourceID(r)] = true
 		}
 	}
 
 	// Update our evidence cache
-	s.evidenceResourceMap[resourceId] = req.Evidence
-	s.em.Unlock()
+	svc.evidenceResourceMap[resourceId] = req.Evidence
+	svc.em.Unlock()
+
+	// Inform any other left over evidences that might be waiting
+	go svc.informLeftOverRequests(resourceId)
 
 	if canHandle {
 		// Assess evidence
-		err = s.handleEvidence(req.Evidence, resourceId, nil)
+		err = svc.handleEvidence(req.Evidence, resourceId, nil)
 
 		if err != nil {
 			res = &assessment.AssessEvidenceResponse{
@@ -348,22 +345,22 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 			waitingFor:   waitingFor,
 			resourceId:   resourceId,
 			Evidence:     req.Evidence,
-			s:            s,
+			s:            svc,
 			newResources: make(chan voc.ResourceID, 1000),
 		}
 
 		// Add it to our wait group
-		s.wg.Add(1)
-		atomic.AddInt64(&s.stats.waiting, 1)
+		svc.wg.Add(1)
+		atomic.AddInt64(&svc.stats.waiting, 1)
 
 		// Wait for evidences in the background and handle them
 		go l.WaitAndHandle()
 
 		// Lock requests for writing
-		s.rm.Lock()
-		s.requests[req.Evidence.Id] = l
+		svc.rm.Lock()
+		svc.requests[req.Evidence.Id] = l
 		// Unlock writing
-		s.rm.Unlock()
+		svc.rm.Unlock()
 
 		res = &assessment.AssessEvidenceResponse{
 			Status: assessment.AssessEvidenceResponse_WAITING_FOR_RELATED,
@@ -414,6 +411,20 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 			newError := fmt.Errorf("cannot send response to the client: %w", err)
 			log.Error(newError)
 			return status.Errorf(codes.Unknown, "%v", newError)
+		}
+	}
+}
+
+// informLeftOverRequests informs any waiting requests of the arrival of a new
+// resource ID, so that they might update their waiting decision.
+func (svc *Service) informLeftOverRequests(resourceId string) {
+	// Lock requests for reading
+	svc.rm.RLock()
+	// Defer unlock at the exit of the go-routine
+	defer svc.rm.RUnlock()
+	for _, l := range svc.requests {
+		if l.resourceId != resourceId {
+			l.newResources <- voc.ResourceID(resourceId)
 		}
 	}
 }

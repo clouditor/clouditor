@@ -5,6 +5,7 @@
         ]
     },
     "opa.bundleMode": false,
+    "opa.path": "/opt/homebrew/bin/opa",
     "opa.roots": [
         "${workspaceFolder}/policies"
     ],

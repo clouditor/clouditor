@@ -57,6 +57,13 @@ type metricsResourceTypeCache struct {
 	m map[string][]string
 }
 
+func (m *metricsResourceTypeCache) Clear() {
+	m.Lock()
+	defer m.Unlock()
+
+	m.m = make(map[string][]string)
+}
+
 type queryCache struct {
 	sync.Mutex
 	cache map[string]*rego.PreparedEvalQuery
@@ -197,8 +204,10 @@ func RunEvidence(evidence *evidence.Evidence, holder MetricConfigurationSource, 
 				return nil, err
 			}
 
-			runMap.MetricId = metric
-			data = append(data, runMap)
+			if runMap != nil {
+				runMap.MetricId = metric
+				data = append(data, runMap)
+			}
 		}
 	}
 
