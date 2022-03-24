@@ -13,6 +13,7 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/testutil"
 	service_evidence "clouditor.io/clouditor/service/evidence"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"clouditor.io/clouditor/voc"
@@ -52,7 +53,7 @@ func createEvidences(n int, m int, b *testing.B) int {
 	}()
 	defer srv.Stop()
 
-	wg.Add(n * m * 7)
+	wg.Add(n * m * 8)
 
 	var count int64 = 0
 
@@ -69,25 +70,60 @@ func createEvidences(n int, m int, b *testing.B) int {
 	// Create m parallel executions of our evidence creation
 	for j := 0; j < m; j++ {
 		go func() {
-			// Create evidences for n resources (1 per resource)
-			for i := 0; i < n; i++ {
-				r, _ := voc.ToStruct(&voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{
-					ID:   voc.ResourceID(fmt.Sprintf("%d", i)),
-					Type: []string{"VirtualMachine", "Compute", "Resource"},
-				}}})
-
-				e := evidence.Evidence{
-					Id:        uuid.NewString(),
-					Timestamp: timestamppb.Now(),
-					ToolId:    "mytool",
-					Resource:  r,
-				}
-
+			// Create evidences for n/2 resources (2 per resource)
+			for i := 0; i < n/2; i++ {
 				if i%100 == 0 {
 					log.Infof("Currently @ %v", i)
+					log.Infof("Current stats: %+v", svc.stats)
+				}
+
+				vm := voc.VirtualMachine{
+					Compute: &voc.Compute{
+						Resource: &voc.Resource{
+							ID:   voc.ResourceID(fmt.Sprintf("%d-vm", i)),
+							Type: []string{"VirtualMachine", "Compute", "Resource"},
+						},
+					},
+					BlockStorage: []voc.ResourceID{voc.ResourceID(fmt.Sprintf("%d-storage", i))},
+				}
+
+				e := evidence.Evidence{
+					Id:                 uuid.NewString(),
+					Timestamp:          timestamppb.Now(),
+					ToolId:             "mytool",
+					Resource:           testutil.ToStruct(vm, b),
+					RelatedResourceIds: vm.Related(),
 				}
 
 				_, err := svc.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{
+					Evidence: &e,
+				})
+				if err != nil {
+					b.Errorf("Error while calling AssessEvidence: %v", err)
+				}
+
+				s := voc.BlockStorage{
+					Storage: &voc.Storage{
+						Resource: &voc.Resource{
+							ID:   voc.ResourceID(fmt.Sprintf("%d-storage", i)),
+							Type: []string{"BlockStorage", "Storage"},
+						},
+						AtRestEncryption: &voc.AtRestEncryption{
+							Enabled:   true,
+							Algorithm: "AES-256",
+						},
+					},
+				}
+
+				e = evidence.Evidence{
+					Id:                 uuid.NewString(),
+					Timestamp:          timestamppb.Now(),
+					ToolId:             "mytool",
+					Resource:           testutil.ToStruct(s, b),
+					RelatedResourceIds: s.Related(),
+				}
+
+				_, err = svc.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{
 					Evidence: &e,
 				})
 				if err != nil {
