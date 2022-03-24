@@ -209,3 +209,11 @@ func BenchmarkAssessEvidence3000(b *testing.B) {
 func BenchmarkAssessEvidence10000(b *testing.B) {
 	benchmarkAssessEvidence(10000, 1, b)
 }
+
+func BenchmarkAssessEvidence10000x2(b *testing.B) {
+	benchmarkAssessEvidence(10000, 2, b)
+}
+
+func BenchmarkAssessEvidence30000x4(b *testing.B) {
+	benchmarkAssessEvidence(30000, 4, b)
+}
