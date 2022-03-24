@@ -32,7 +32,6 @@ import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "api/assessment/metric.proto";
 import "api/assessment/assessment.proto";
-import "google/protobuf/timestamp.proto";
 
 option go_package = "clouditor.io/clouditor/api/orchestrator";
 
@@ -400,5 +399,5 @@ message Certificate {
 message StateHistory {
   string state = 1;
 	string tree_id = 2;
-	google.protobuf.Timestamp timestamp = 3;
+	string timestamp = 3;
 }

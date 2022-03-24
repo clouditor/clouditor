@@ -736,7 +736,6 @@ components:
                     type: string
                 timestamp:
                     type: string
-                    format: RFC3339
         StoreAssessmentResultResponse:
             type: object
             properties:

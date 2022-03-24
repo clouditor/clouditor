@@ -121,3 +121,105 @@ func TestCloudService_Requirements_Value(t *testing.T) {
 		})
 	}
 }
+
+func TestStateHistory_Value(t *testing.T) {
+	type fields struct {
+		State     string
+		TreeId    string
+		Timestamp string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    driver.Value
+		wantErr bool
+	}{
+		{
+			name: "valid state history",
+			fields: fields{
+				State:     "new",
+				TreeId:    "1234",
+				Timestamp: "20220324",
+			},
+			want:    driver.Value(string("new,1234,20220324")),
+			wantErr: false,
+		},
+		{
+			name: "empty state history",
+			fields: fields{
+				State:     "",
+				TreeId:    "",
+				Timestamp: "",
+			},
+			want:    nil,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &StateHistory{
+				State:     tt.fields.State,
+				TreeId:    tt.fields.TreeId,
+				Timestamp: tt.fields.Timestamp,
+			}
+			got, err := c.Value()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("StateHistory.Value() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("StateHistory.Value() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestStateHistory_Scan(t *testing.T) {
+	type fields struct {
+		State     string
+		TreeId    string
+		Timestamp string
+	}
+	type args struct {
+		value interface{}
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		want    *StateHistory
+	}{
+		{
+			name: "string type",
+			args: args{
+				value: "new,1234,20220324",
+			},
+			wantErr: false,
+			want: &StateHistory{
+				State:     "new",
+				TreeId:    "1234",
+				Timestamp: "20220324",
+			},
+		},
+		{
+			name: "unsupported type",
+			args: args{
+				value: 0,
+			},
+			wantErr: true,
+			want:    &StateHistory{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &StateHistory{
+				State:     tt.want.State,
+				TreeId:    tt.want.TreeId,
+				Timestamp: tt.want.Timestamp,
+			}
+			if err := c.Scan(tt.args.value); (err != nil) != tt.wantErr {
+				t.Errorf("StateHistory.Scan() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
