@@ -486,7 +486,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 	var (
 		hookCallCounter = 0
 		wg              sync.WaitGroup
-		hookCounts      = 1 * 2
+		hookCounts      = 9 * 2
 	)
 
 	wg.Add(hookCounts)
@@ -1091,7 +1091,7 @@ func TestService_AssessEvidenceWaitFor(t *testing.T) {
 	// For more fun, we add a second evidence also waiting for the same resource
 	resp, err = s.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{
 		Evidence: &evidence.Evidence{
-			Id: "2222222222-2222-2222-2222-2222222222",
+			Id: "22222222-2222-2222-2222-222222222222",
 			Resource: toStruct(&voc.Resource{
 				ID:   "my-other-resource",
 				Type: []string{"VirtualMachine", "Compute"},
@@ -1109,7 +1109,7 @@ func TestService_AssessEvidenceWaitFor(t *testing.T) {
 	// also depends on the first resource, creating a mutual dependency.
 	resp, err = s.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{
 		Evidence: &evidence.Evidence{
-			Id: "33333333333-3333-3333-3333-333333333",
+			Id: "33333333-3333-3333-3333-333333333333",
 			Resource: toStruct(&voc.Resource{
 				ID:   "my-third-resource",
 				Type: []string{"Compute"},
