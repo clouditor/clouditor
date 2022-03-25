@@ -6,7 +6,7 @@ default applicable = false
 
 default compliant = false
 
-OSLogging := input.oSLogging
+OSLogging := input.osLogging
 
 applicable {
 	OSLogging

@@ -15,14 +15,14 @@ applicable {
 	ls.storage[_]
 }
 
-disks[s] {
+object_storages[s] {
 	related[_].id == ls.storage[_]
 
 	s := related[_]
 }
 
 compliant {
-    every disk in disks {
-		disk.immutability.enabled == true
+    every object_storage in object_storages {
+		object_storage.immutability.enabled == true
 	}
 }

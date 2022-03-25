@@ -19,7 +19,7 @@
     "allowedValues": {
       "values": [
         "AES-128",
-        "AES-256",
+        "AES256",
         ""
       ]
     }
@@ -46,7 +46,7 @@
     "id": "BootLoggingEnabled"
   },
   {
-    "id": "BootLoggingOutput"
+    "id": "BootLoggingSecureTransport"
   },
   {
     "id": "BootLoggingRetention"
@@ -67,7 +67,7 @@
     "id": "MalwareProtectionEnabled"
   },
   {
-    "id": "MalwareProtectionOutput"
+    "id": "MalwareProtectionSecureTransport"
   },
   {
     "id": "MixedDuties"
@@ -79,7 +79,7 @@
     "id": "OSLoggingEnabled"
   },
   {
-    "id": "OSLoggingOutput"
+    "id": "OSLoggingSecureTransport"
   },
   {
     "id": "OSLoggingRetention"
