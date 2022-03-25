@@ -38,3 +38,13 @@ func (v VirtualMachine) Related() []string {
 
 	return list
 }
+
+func (l LoggingService) Related() []string {
+	list := make([]string, 0)
+
+	for _, s := range l.Storage {
+		list = append(list, string(s))
+	}
+
+	return list
+}

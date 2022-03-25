@@ -19,9 +19,145 @@ import (
 	"clouditor.io/clouditor/voc"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
+
+var NumVMMetrics = 11
+var NumLoggingServiceMetrics = 2
+var NumBlockStorageMetrics = 3
+
+func createVMWithMalwareProtection(numVMs int, b *testing.B) {
+	var (
+		wg   sync.WaitGroup
+		err  error
+		sock net.Listener
+	)
+
+	srv := grpc.NewServer()
+
+	logrus.SetLevel(logrus.TraceLevel)
+
+	orchestratorService := service_orchestrator.NewService()
+	orchestrator.RegisterOrchestratorServer(srv, orchestratorService)
+
+	evidenceService := service_evidence.NewService()
+	evidence.RegisterEvidenceStoreServer(srv, evidenceService)
+
+	sock, err = net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		b.Errorf("could not listen: %v", err)
+	}
+
+	go func() {
+		err := srv.Serve(sock)
+		if err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Error while creating gRPC server: %v", err)
+		}
+	}()
+	defer srv.Stop()
+
+	addr := fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)
+
+	var count int64 = 0
+
+	wg.Add(numVMs*NumVMMetrics + (numVMs+1)*NumBlockStorageMetrics + 1*NumLoggingServiceMetrics)
+
+	svc := NewService(WithOrchestratorAddress(addr), WithEvidenceStoreAddress(addr))
+	orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
+		wg.Done()
+		current := atomic.AddInt64(&count, 1)
+
+		log.Debugf("Current count: %v - stats: %+v", current, svc.stats)
+	})
+
+	for i := 0; i < numVMs; i++ {
+		vm := &voc.VirtualMachine{
+			Compute: &voc.Compute{
+				Resource: &voc.Resource{
+					ID:   voc.ResourceID(fmt.Sprintf("%d-vm", i)),
+					Type: []string{"VirtualMachine", "Compute", "Resource"},
+				},
+			},
+			BootLogging: &voc.BootLogging{
+				Logging: &voc.Logging{LoggingService: []voc.ResourceID{"logging-service"}},
+			},
+			OSLogging: &voc.OSLogging{
+				Logging: &voc.Logging{LoggingService: []voc.ResourceID{"logging-service"}},
+			},
+			BlockStorage: []voc.ResourceID{voc.ResourceID(fmt.Sprintf("%d-storage", i))},
+		}
+		s := voc.BlockStorage{
+			Storage: &voc.Storage{
+				Resource: &voc.Resource{
+					ID:   voc.ResourceID(fmt.Sprintf("%d-storage", i)),
+					Type: []string{"BlockStorage", "Storage"},
+				},
+				AtRestEncryption: &voc.AtRestEncryption{
+					Enabled:   true,
+					Algorithm: "AES-256",
+				},
+			},
+		}
+
+		assess(svc, vm, b)
+		assess(svc, s, b)
+	}
+
+	ls := voc.LoggingService{
+		NetworkService: &voc.NetworkService{
+			Networking: &voc.Networking{
+				Resource: &voc.Resource{
+					ID:   voc.ResourceID("logging-service"),
+					Type: []string{"LoggingService", "NetworkService", "Networking", "Resource"},
+				},
+			},
+			Authenticity: &voc.TokenBasedAuthentication{
+				Activated: true,
+			},
+		},
+		Storage: []voc.ResourceID{voc.ResourceID("log-storage")},
+	}
+	lss := voc.BlockStorage{
+		Storage: &voc.Storage{
+			Resource: &voc.Resource{
+				ID:   voc.ResourceID("log-storage"),
+				Type: []string{"BlockStorage", "Storage"},
+			},
+			AtRestEncryption: &voc.AtRestEncryption{
+				Enabled:   true,
+				Algorithm: "AES-256",
+			},
+		},
+	}
+
+	assess(svc, ls, b)
+	assess(svc, lss, b)
+
+	wg.Wait()
+}
+
+func assess(svc assessment.AssessmentServer, r voc.IsCloudResource, t assert.TestingT) {
+	_, err := svc.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{
+		Evidence: &evidence.Evidence{
+			Id:                 uuid.NewString(),
+			Timestamp:          timestamppb.Now(),
+			ToolId:             "mytool",
+			Resource:           testutil.ToStruct(r, t),
+			RelatedResourceIds: r.Related(),
+		},
+	})
+	if err != nil {
+		t.Errorf("Error while calling AssessEvidence: %v", err)
+	}
+}
+
+func BenchmarkComplex(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		createVMWithMalwareProtection(4, b)
+	}
+}
 
 func createEvidences(n int, m int, b *testing.B) int {
 	var (
