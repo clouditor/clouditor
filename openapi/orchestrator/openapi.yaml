@@ -138,6 +138,18 @@ paths:
                     description: OK
                     content: {}
     /v1/orchestrator/certificates:
+        get:
+            tags:
+                - Orchestrator
+            description: Lists all target certificates
+            operationId: Orchestrator_ListCertificates
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListCertificatesResponse'
         post:
             tags:
                 - Orchestrator
@@ -568,6 +580,9 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/StateHistory'
+                ID:
+                    type: integer
+                    format: uint32
         CloudService:
             type: object
             properties:
@@ -600,6 +615,13 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/AssessmentTool'
+        ListCertificatesResponse:
+            type: object
+            properties:
+                certificates:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Certificate'
         ListCloudServicesResponse:
             type: object
             properties:
@@ -736,6 +758,9 @@ components:
                     type: string
                 timestamp:
                     type: string
+                CertificateID:
+                    type: integer
+                    format: uint32
         StoreAssessmentResultResponse:
             type: object
             properties:

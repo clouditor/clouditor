@@ -311,25 +311,6 @@ func (s *Service) informHook(result *assessment.AssessmentResult, err error) {
 	}
 }
 
-// GetCertificate implements method for getting a certificate, e.g. to show its state in the UI
-func (s *Service) GetCertificate(_ context.Context, req *orchestrator.GetCertificateRequest) (response *orchestrator.Certificate, err error) {
-	if req == nil {
-		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrRequestIsNil.Error())
-	}
-	if req.CertificateId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrIDIsMissing.Error())
-	}
-
-	response = new(orchestrator.Certificate)
-	err = s.storage.Get(response, "Id = ?", req.CertificateId)
-	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Errorf(codes.NotFound, "certificate not found")
-	} else if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %s", err)
-	}
-	return response, nil
-}
-
 // CreateCertificate implements method for creating a new certificate
 func (s *Service) CreateCertificate(_ context.Context, req *orchestrator.CreateCertificateRequest) (response *emptypb.Empty, err error) {
 	if req == nil {
@@ -348,6 +329,39 @@ func (s *Service) CreateCertificate(_ context.Context, req *orchestrator.CreateC
 	return &emptypb.Empty{}, nil
 }
 
+// GetCertificate implements method for getting a certificate, e.g. to show its state in the UI
+func (s *Service) GetCertificate(_ context.Context, req *orchestrator.GetCertificateRequest) (response *orchestrator.Certificate, err error) {
+	if req == nil {
+		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrRequestIsNil.Error())
+	}
+	if req.CertificateId == "" {
+		return nil, status.Errorf(codes.NotFound, orchestrator.ErrCertIDIsMissing.Error())
+	}
+
+	response = new(orchestrator.Certificate)
+	err = s.storage.Get(response, "Certificate_id = ?", req.CertificateId)
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Errorf(codes.NotFound, "certificate not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %s", err)
+	}
+	return response, nil
+}
+
+// ListCertificates implements method for getting a certificate, e.g. to show its state in the UI
+func (s *Service) ListCertificates(_ context.Context, req *orchestrator.ListCertificatesRequest) (response *orchestrator.ListCertificatesResponse, err error) {
+	if req == nil {
+		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrRequestIsNil.Error())
+	}
+
+	response = new(orchestrator.ListCertificatesResponse)
+	err = s.storage.List(response.Certificates)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %s", err)
+	}
+	return response, nil
+}
+
 // UpdateCertificate implements method for updating an existing certificate
 func (s *Service) UpdateCertificate(_ context.Context, req *orchestrator.UpdateCertificateRequest) (response *orchestrator.Certificate, err error) {
 	if req.CertificateId == "" {
@@ -358,7 +372,7 @@ func (s *Service) UpdateCertificate(_ context.Context, req *orchestrator.UpdateC
 		return nil, status.Errorf(codes.InvalidArgument, "certificate is empty")
 	}
 
-	count, err := s.storage.Count(req.Certificate, "CertificateId = ?", req.CertificateId)
+	count, err := s.storage.Count(req.Certificate, "Certificate_id = ?", req.CertificateId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -370,7 +384,7 @@ func (s *Service) UpdateCertificate(_ context.Context, req *orchestrator.UpdateC
 	response = req.Certificate
 	response.CertificateId = req.CertificateId
 
-	err = s.storage.Save(response, "CertificateId = ?", response.CertificateId)
+	err = s.storage.Save(response, "Certificate_id = ?", response.CertificateId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
@@ -383,7 +397,7 @@ func (s *Service) RemoveCertificate(_ context.Context, req *orchestrator.RemoveC
 		return nil, status.Errorf(codes.InvalidArgument, "certificate id is empty")
 	}
 
-	err = s.storage.Delete(&orchestrator.Certificate{}, "CertificateId = ?", req.CertificateId)
+	err = s.storage.Delete(&orchestrator.Certificate{}, "Certificate_id = ?", req.CertificateId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "certificate not found")
 	} else if err != nil {

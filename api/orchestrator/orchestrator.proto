@@ -245,6 +245,13 @@ service Orchestrator {
     };
   }
 
+  // Lists all target certificates
+  rpc ListCertificates(ListCertificatesRequest) returns (ListCertificatesResponse) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/certificates"
+ };
+}
+
   // Updates an existing certificate
   rpc UpdateCertificate(UpdateCertificateRequest) returns (Certificate) {
     option (google.api.http) = {
@@ -375,6 +382,9 @@ message GetCertificateRequest {
   string certificate_id = 1;
 }
 
+message ListCertificatesRequest {}
+message ListCertificatesResponse { repeated Certificate certificates = 1; }
+
 message UpdateCertificateRequest {
   string certificate_id = 1;
 	Certificate certificate = 2;
@@ -394,10 +404,12 @@ message Certificate {
   string cab = 7;
   string description = 8;
   repeated StateHistory state_history = 9;
+  uint32 ID = 10;
 }
 
 message StateHistory {
   string state = 1;
 	string tree_id = 2;
 	string timestamp = 3;
+  uint32 CertificateID = 4;
 }

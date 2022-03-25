@@ -1,9 +1,10 @@
 package gorm
 
 import (
-	"clouditor.io/clouditor/api/orchestrator"
 	"fmt"
 	"testing"
+
+	"clouditor.io/clouditor/api/orchestrator"
 
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/persistence"

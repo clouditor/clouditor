@@ -70,7 +70,11 @@ func init() {
 
 // NewStorage creates a new storage using GORM (which DB to use depends on the StorageOption)
 func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
-	g := &storage{}
+	g := &storage{
+		// config: gorm.Config{
+		// 	DisableForeignKeyConstraintWhenMigrating: true,
+		// },
+	}
 
 	// Init storage
 	log.Println("Creating storage")
@@ -98,11 +102,19 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 		return
 	}
 
-	// Migrate Certificate
-	if err = g.db.AutoMigrate(&orchestrator.Certificate{}); err != nil {
+	// Migrate StateHistory and Certificate
+	if err = g.db.AutoMigrate(&orchestrator.StateHistory{}, &orchestrator.Certificate{}); err != nil {
 		err = fmt.Errorf("error during auto-migration: %w", err)
 		return
 	}
+
+	g.db.Migrator().CreateConstraint(&orchestrator.Certificate{}, "StateHistory")
+	g.db.Migrator().CreateConstraint(&orchestrator.Certificate{}, "fk_certificates_state_history")
+
+	// fmt.Println(g.db.Migrator().HasTable(&orchestrator.StateHistory{}))
+	// fmt.Println(g.db.Migrator().HasTable(&orchestrator.Certificate{}))
+	// fmt.Println(g.db.Migrator().HasConstraint(&orchestrator.Certificate{}, "StateHistory"))
+	// fmt.Println(g.db.Migrator().HasConstraint(&orchestrator.Certificate{}, "fk_certificates_state_history"))
 
 	s = g
 	return

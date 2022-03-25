@@ -79,6 +79,8 @@ type OrchestratorClient interface {
 	CreateCertificate(ctx context.Context, in *CreateCertificateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Retrieves a certificate
 	GetCertificate(ctx context.Context, in *GetCertificateRequest, opts ...grpc.CallOption) (*Certificate, error)
+	// Lists all target certificates
+	ListCertificates(ctx context.Context, in *ListCertificatesRequest, opts ...grpc.CallOption) (*ListCertificatesResponse, error)
 	// Updates an existing certificate
 	UpdateCertificate(ctx context.Context, in *UpdateCertificateRequest, opts ...grpc.CallOption) (*Certificate, error)
 }
@@ -338,6 +340,15 @@ func (c *orchestratorClient) GetCertificate(ctx context.Context, in *GetCertific
 	return out, nil
 }
 
+func (c *orchestratorClient) ListCertificates(ctx context.Context, in *ListCertificatesRequest, opts ...grpc.CallOption) (*ListCertificatesResponse, error) {
+	out := new(ListCertificatesResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/ListCertificates", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *orchestratorClient) UpdateCertificate(ctx context.Context, in *UpdateCertificateRequest, opts ...grpc.CallOption) (*Certificate, error) {
 	out := new(Certificate)
 	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/UpdateCertificate", in, out, opts...)
@@ -406,6 +417,8 @@ type OrchestratorServer interface {
 	CreateCertificate(context.Context, *CreateCertificateRequest) (*emptypb.Empty, error)
 	// Retrieves a certificate
 	GetCertificate(context.Context, *GetCertificateRequest) (*Certificate, error)
+	// Lists all target certificates
+	ListCertificates(context.Context, *ListCertificatesRequest) (*ListCertificatesResponse, error)
 	// Updates an existing certificate
 	UpdateCertificate(context.Context, *UpdateCertificateRequest) (*Certificate, error)
 	mustEmbedUnimplementedOrchestratorServer()
@@ -489,6 +502,9 @@ func (UnimplementedOrchestratorServer) CreateCertificate(context.Context, *Creat
 }
 func (UnimplementedOrchestratorServer) GetCertificate(context.Context, *GetCertificateRequest) (*Certificate, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCertificate not implemented")
+}
+func (UnimplementedOrchestratorServer) ListCertificates(context.Context, *ListCertificatesRequest) (*ListCertificatesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListCertificates not implemented")
 }
 func (UnimplementedOrchestratorServer) UpdateCertificate(context.Context, *UpdateCertificateRequest) (*Certificate, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateCertificate not implemented")
@@ -964,6 +980,24 @@ func _Orchestrator_GetCertificate_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Orchestrator_ListCertificates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListCertificatesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).ListCertificates(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/ListCertificates",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).ListCertificates(ctx, req.(*ListCertificatesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Orchestrator_UpdateCertificate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateCertificateRequest)
 	if err := dec(in); err != nil {
@@ -1084,6 +1118,10 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetCertificate",
 			Handler:    _Orchestrator_GetCertificate_Handler,
+		},
+		{
+			MethodName: "ListCertificates",
+			Handler:    _Orchestrator_ListCertificates_Handler,
 		},
 		{
 			MethodName: "UpdateCertificate",
