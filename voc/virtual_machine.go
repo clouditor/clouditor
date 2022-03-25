@@ -31,4 +31,5 @@ type VirtualMachine struct {
 	BootLogging       *BootLogging       `json:"bootLogging"`
 	MalwareProtection *MalwareProtection `json:"malwareProtection"`
 	OSLogging         *OSLogging         `json:"oSLogging"`
+	AutomaticUpdates  *AutomaticUpdates  `json:"automaticUpdates"`
 }

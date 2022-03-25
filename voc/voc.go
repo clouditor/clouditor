@@ -120,6 +120,11 @@ type HasAtRestEncryption interface {
 	GetAtRestEncryption() *AtRestEncryption
 }
 
+type HasAuthenticity interface {
+	GetAuthenticity() *Authenticity
+	Type() string
+}
+
 type HasHttpEndpoint interface {
 	GetHttpEndpoint() *HttpEndpoint
 }

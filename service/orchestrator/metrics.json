@@ -137,5 +137,11 @@
   },
   {
     "id": "VirtualMachineDiskEncryptionEnabled"
+  },
+  {
+    "id": "LoggingServiceEncryptedStorage"
+  },
+  {
+    "id": "LoggingServiceImmutableStorage"
   }
 ]
