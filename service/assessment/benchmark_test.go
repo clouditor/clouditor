@@ -2,6 +2,7 @@ package assessment
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math"
 	"net"
@@ -9,6 +10,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
@@ -24,7 +26,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-var NumVMMetrics = 11
+var NumVMMetrics = 12
 var NumLoggingServiceMetrics = 2
 var NumBlockStorageMetrics = 3
 
@@ -70,6 +72,11 @@ func createVMWithMalwareProtection(numVMs int, b *testing.B) {
 		current := atomic.AddInt64(&count, 1)
 
 		log.Debugf("Current count: %v - stats: %+v", current, svc.stats)
+
+		// In this scenario, we expect that all results are 100 % true
+		if !result.Compliant {
+			b.Fatalf("Assesment result (metric %s) for resource %s is not compliant", result.MetricId, result.ResourceId)
+		}
 	})
 
 	for i := 0; i < numVMs; i++ {
@@ -81,12 +88,35 @@ func createVMWithMalwareProtection(numVMs int, b *testing.B) {
 				},
 			},
 			BootLogging: &voc.BootLogging{
-				Logging: &voc.Logging{LoggingService: []voc.ResourceID{"logging-service"}},
+				Logging: &voc.Logging{
+					LoggingService:  []voc.ResourceID{"logging-service"},
+					Enabled:         true,
+					RetentionPeriod: time.Hour * 24 * 30,
+				},
 			},
 			OSLogging: &voc.OSLogging{
-				Logging: &voc.Logging{LoggingService: []voc.ResourceID{"logging-service"}},
+				Logging: &voc.Logging{
+					LoggingService:  []voc.ResourceID{"logging-service"},
+					Enabled:         true,
+					RetentionPeriod: time.Hour * 24 * 30,
+				},
 			},
 			BlockStorage: []voc.ResourceID{voc.ResourceID(fmt.Sprintf("%d-storage", i))},
+			AutomaticUpdates: &voc.AutomaticUpdates{
+				Enabled:      true,
+				SecurityOnly: true,
+				Interval:     time.Hour * 24 * 2,
+			},
+			MalwareProtection: &voc.MalwareProtection{
+				Enabled: true,
+				ApplicationLogging: &voc.ApplicationLogging{
+					Logging: &voc.Logging{
+						LoggingService:  []voc.ResourceID{"logging-service"},
+						Enabled:         true,
+						RetentionPeriod: time.Hour * 24 * 30,
+					},
+				},
+			},
 		}
 		s := voc.BlockStorage{
 			Storage: &voc.Storage{
@@ -94,9 +124,11 @@ func createVMWithMalwareProtection(numVMs int, b *testing.B) {
 					ID:   voc.ResourceID(fmt.Sprintf("%d-storage", i)),
 					Type: []string{"BlockStorage", "Storage"},
 				},
-				AtRestEncryption: &voc.AtRestEncryption{
-					Enabled:   true,
-					Algorithm: "AES-256",
+				AtRestEncryption: &voc.CustomerKeyEncryption{
+					AtRestEncryption: &voc.AtRestEncryption{
+						Enabled:   true,
+						Algorithm: "AES256",
+					},
 				},
 			},
 		}
@@ -119,18 +151,25 @@ func createVMWithMalwareProtection(numVMs int, b *testing.B) {
 		},
 		Storage: []voc.ResourceID{voc.ResourceID("log-storage")},
 	}
-	lss := voc.BlockStorage{
+	lss := voc.ObjectStorage{
 		Storage: &voc.Storage{
 			Resource: &voc.Resource{
 				ID:   voc.ResourceID("log-storage"),
-				Type: []string{"BlockStorage", "Storage"},
+				Type: []string{"ObjectStorage", "Storage"},
 			},
-			AtRestEncryption: &voc.AtRestEncryption{
-				Enabled:   true,
-				Algorithm: "AES-256",
+			AtRestEncryption: &voc.CustomerKeyEncryption{
+				AtRestEncryption: &voc.AtRestEncryption{
+					Enabled:   true,
+					Algorithm: "AES256",
+				},
 			},
 		},
+		Immutability: &voc.Immutability{
+			Enabled: true,
+		},
 	}
+	s, _ := json.Marshal(lss)
+	log.Printf("%s", s)
 
 	assess(svc, ls, b)
 	assess(svc, lss, b)
@@ -244,7 +283,7 @@ func createEvidences(n int, m int, b *testing.B) int {
 						},
 						AtRestEncryption: &voc.AtRestEncryption{
 							Enabled:   true,
-							Algorithm: "AES-256",
+							Algorithm: "AES256",
 						},
 					},
 				}

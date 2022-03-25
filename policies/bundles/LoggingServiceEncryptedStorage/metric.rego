@@ -15,14 +15,14 @@ applicable {
 	ls.storage[_]
 }
 
-disks[s] {
+storages[s] {
 	related[_].id == ls.storage[_]
 
 	s := related[_]
 }
 
 compliant {
-    every disk in disks {
-		disk.atRestEncryption.enabled == true
+    every storage in storages {
+		storage.atRestEncryption.enabled == true
 	}
 }

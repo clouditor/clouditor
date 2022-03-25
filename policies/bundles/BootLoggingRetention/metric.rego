@@ -13,5 +13,8 @@ applicable {
 }
 
 compliant {
-	compare(data.operator, data.target_value, bootLogging.retentionPeriod)
+	# time.Duration is nanoseconds, we want to convert this to hours
+	days := bootLogging.retentionPeriod / (1000*1000*1000*3600)
+
+	compare(data.operator, data.target_value, days)
 }

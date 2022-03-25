@@ -30,6 +30,6 @@ type VirtualMachine struct {
 	BlockStorage      []ResourceID       `json:"blockStorage"`
 	BootLogging       *BootLogging       `json:"bootLogging"`
 	MalwareProtection *MalwareProtection `json:"malwareProtection"`
-	OSLogging         *OSLogging         `json:"oSLogging"`
+	OSLogging         *OSLogging         `json:"osLogging"`
 	AutomaticUpdates  *AutomaticUpdates  `json:"automaticUpdates"`
 }

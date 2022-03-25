@@ -282,7 +282,7 @@ func TestRunEvidence(t *testing.T) {
 					Compliant:   true,
 					TargetValue: []interface{}{"SomeResourceId1", "SomeResourceId2"},
 					Operator:    "==",
-					MetricId:    "BootLoggingOutput",
+					MetricId:    "BootLoggingSecureTransport",
 				},
 				{
 					Applicable:  true,
@@ -303,7 +303,7 @@ func TestRunEvidence(t *testing.T) {
 					Compliant:   true,
 					TargetValue: []interface{}{"SomeAnalyticsService?", "?"},
 					Operator:    "==",
-					MetricId:    "MalwareProtectionOutput",
+					MetricId:    "MalwareProtectionSecureTransport",
 				},
 				{
 					Applicable:  true,
@@ -317,7 +317,7 @@ func TestRunEvidence(t *testing.T) {
 					Compliant:   true,
 					TargetValue: []interface{}{"SomeResourceId1", "SomeResourceId2"},
 					Operator:    "==",
-					MetricId:    "OSLoggingOutput",
+					MetricId:    "OSLoggingSecureTransport",
 				},
 				{
 					Applicable:  true,
@@ -372,7 +372,7 @@ func TestRunEvidence(t *testing.T) {
 					Compliant:   false,
 					TargetValue: []interface{}{"SomeResourceId1", "SomeResourceId2"},
 					Operator:    "==",
-					MetricId:    "BootLoggingOutput",
+					MetricId:    "BootLoggingSecureTransport",
 				},
 				{
 					Applicable:  true,
@@ -400,7 +400,7 @@ func TestRunEvidence(t *testing.T) {
 					Compliant:   false,
 					TargetValue: []interface{}{"SomeResourceId1", "SomeResourceId2"},
 					Operator:    "==",
-					MetricId:    "OSLoggingOutput",
+					MetricId:    "OSLoggingSecureTransport",
 				},
 				{
 					Applicable:  true,
@@ -435,7 +435,7 @@ func TestRunEvidence(t *testing.T) {
 							},
 							AtRestEncryption: voc.AtRestEncryption{
 								Enabled:   true,
-								Algorithm: "AES-256",
+								Algorithm: "AES256",
 							},
 						},
 					}, t),
@@ -455,7 +455,7 @@ func TestRunEvidence(t *testing.T) {
 					Compliant:   false,
 					TargetValue: []interface{}{"SomeResourceId1", "SomeResourceId2"},
 					Operator:    "==",
-					MetricId:    "BootLoggingOutput",
+					MetricId:    "BootLoggingSecureTransport",
 				},
 				{
 					Applicable:  true,
@@ -483,7 +483,7 @@ func TestRunEvidence(t *testing.T) {
 					Compliant:   false,
 					TargetValue: []interface{}{"SomeResourceId1", "SomeResourceId2"},
 					Operator:    "==",
-					MetricId:    "OSLoggingOutput",
+					MetricId:    "OSLoggingSecureTransport",
 				},
 				{
 					Applicable:  true,
