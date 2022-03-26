@@ -275,7 +275,7 @@ func BenchmarkComplex(b *testing.B) {
 	}
 }
 
-func createEvidences(n int, m int, b *testing.B) int {
+func createVMEvidences(n int, m int, b *testing.B) int {
 	var (
 		wg   sync.WaitGroup
 		err  error
@@ -350,73 +350,180 @@ func createEvidences(n int, m int, b *testing.B) int {
 	return 0
 }
 
-func benchmarkAssessEvidence(i int, m int, b *testing.B) {
-	for n := 0; n < b.N; n++ {
-		createEvidences(i, m, b)
+func createStorageEvidences(n int, m int, b *testing.B) int {
+	var (
+		wg   sync.WaitGroup
+		err  error
+		sock net.Listener
+	)
+
+	logrus.SetLevel(logrus.PanicLevel)
+
+	srv := grpc.NewServer()
+
+	orchestratorService := service_orchestrator.NewService()
+	orchestrator.RegisterOrchestratorServer(srv, orchestratorService)
+
+	evidenceService := service_evidence.NewService()
+	evidence.RegisterEvidenceStoreServer(srv, evidenceService)
+
+	sock, err = net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		b.Errorf("could not listen: %v", err)
 	}
+
+	go func() {
+		err := srv.Serve(sock)
+		if err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Error while creating gRPC server: %v", err)
+		}
+	}()
+	defer srv.Stop()
+
+	wg.Add(n * m * 4)
+
+	var count int64 = 0
+
+	addr := fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)
+
+	svc := NewService(WithOrchestratorAddress(addr), WithEvidenceStoreAddress(addr))
+
+	orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
+		current := atomic.AddInt64(&count, 1)
+
+		log.Debugf("Current count: %v - stats: %+v", current, svc.stats)
+
+		wg.Done()
+	})
+
+	// Create m parallel executions of our evidence creation
+	for j := 0; j < m; j++ {
+		go func() {
+			// Create evidences for n (1 resource per )
+			for i := 0; i < n; i++ {
+				if i%100 == 0 {
+					log.Infof("Currently @ %v - stats: %+v", i, svc.stats)
+				}
+
+				vm := voc.BlockStorage{
+					Storage: &voc.Storage{
+						Resource: &voc.Resource{
+							ID:   voc.ResourceID(fmt.Sprintf("%d-%d-storage", j, i)),
+							Type: []string{"BlockStorage", "Storage", "Resource"},
+						},
+					},
+				}
+
+				assess(svc, vm, b)
+			}
+		}()
+	}
+
+	wg.Wait()
+
+	return 0
 }
 
 var numEvidences = []int{10, 100, 1000, 5000, 10000, 20000, 30000, 40000, 50000}
 
-//var numEvidences = []int{10, 100, 1000, 5000}
-
 func BenchmarkAssessVMEvidence(b *testing.B) {
 	for _, k := range numEvidences {
-		for l := 0.; l <= 2; l++ {
-			parallel := int(math.Pow(2, l))
-			b.Run(fmt.Sprintf("%d/%d", k, parallel), func(b *testing.B) {
+		for l := 1; l <= 3; l++ {
+			b.Run(fmt.Sprintf("%d/%d", k, l), func(b *testing.B) {
 				for n := 0; n < b.N; n++ {
-					createEvidences(k, parallel, b)
+					createVMEvidences(k, l, b)
 				}
 			})
 		}
 	}
 }
 
+func BenchmarkAssessStorageEvidence(b *testing.B) {
+	for _, k := range numEvidences {
+		for l := 1; l <= 3; l++ {
+			b.Run(fmt.Sprintf("%d/%d", k, l), func(b *testing.B) {
+				for n := 0; n < b.N; n++ {
+					createStorageEvidences(k, l, b)
+				}
+			})
+		}
+	}
+}
+
+func BenchmarkAssessStorageEvidence2(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		createStorageEvidences(2, 1, b)
+	}
+}
+
 func BenchmarkAssessVMEvidence2(b *testing.B) {
-	benchmarkAssessEvidence(2, 1, b)
+	for n := 0; n < b.N; n++ {
+		createVMEvidences(2, 1, b)
+	}
 }
 
 func BenchmarkAssessVMEvidence4(b *testing.B) {
-	benchmarkAssessEvidence(4, 1, b)
+	for n := 0; n < b.N; n++ {
+		createVMEvidences(4, 1, b)
+	}
 }
 
 func BenchmarkAssessVMEvidence10(b *testing.B) {
-	benchmarkAssessEvidence(10, 1, b)
+	for n := 0; n < b.N; n++ {
+		createVMEvidences(10, 1, b)
+	}
 }
 
 func BenchmarkAssessVMEvidence10x2(b *testing.B) {
-	benchmarkAssessEvidence(10, 2, b)
+	for n := 0; n < b.N; n++ {
+		createVMEvidences(10, 2, b)
+	}
 }
 
 func BenchmarkAssessVMEvidence100(b *testing.B) {
-	benchmarkAssessEvidence(100, 1, b)
+	for n := 0; n < b.N; n++ {
+		createVMEvidences(100, 1, b)
+	}
 }
 
 func BenchmarkAssessVMEvidence1000(b *testing.B) {
-	benchmarkAssessEvidence(1000, 1, b)
+	for n := 0; n < b.N; n++ {
+		createVMEvidences(1000, 1, b)
+	}
 }
 
 func BenchmarkAssessVMEvidence1000x2(b *testing.B) {
-	benchmarkAssessEvidence(1000, 2, b)
+	for n := 0; n < b.N; n++ {
+		createVMEvidences(1000, 2, b)
+	}
 }
 
 func BenchmarkAssessVMEvidence1000x10(b *testing.B) {
-	benchmarkAssessEvidence(1000, 10, b)
+	for n := 0; n < b.N; n++ {
+		createVMEvidences(1000, 10, b)
+	}
 }
 
 func BenchmarkAssessVMEvidence3000(b *testing.B) {
-	benchmarkAssessEvidence(3000, 1, b)
+	for n := 0; n < b.N; n++ {
+		createVMEvidences(3000, 1, b)
+	}
 }
 
 func BenchmarkAssessVMEvidence10000(b *testing.B) {
-	benchmarkAssessEvidence(10000, 1, b)
+	for n := 0; n < b.N; n++ {
+		createVMEvidences(10000, 1, b)
+	}
 }
 
 func BenchmarkAssessVMEvidence10000x2(b *testing.B) {
-	benchmarkAssessEvidence(10000, 2, b)
+	for n := 0; n < b.N; n++ {
+		createVMEvidences(10000, 2, b)
+	}
 }
 
 func BenchmarkAssessVMEvidence30000x4(b *testing.B) {
-	benchmarkAssessEvidence(30000, 4, b)
+	for n := 0; n < b.N; n++ {
+		createVMEvidences(30000, 4, b)
+	}
 }
