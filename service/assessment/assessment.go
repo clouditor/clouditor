@@ -51,7 +51,9 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-var log *logrus.Entry
+var (
+	log *logrus.Entry
+)
 
 func init() {
 	log = logrus.WithField("component", "assessment")
@@ -76,24 +78,31 @@ type Service struct {
 	// evidenceStoreStream sends evidences to the Evidence Store
 	evidenceStoreStream  evidence.EvidenceStore_StoreEvidencesClient
 	evidenceStoreAddress string
+	// evidenceStoreChannel stores evidences for the Evidence Store
+	evidenceStoreChannel chan *evidence.Evidence
 
-	// orchestratorStream sends ARs to the Orchestrator
+	// orchestratorStream sends assessment results to the Orchestrator
 	orchestratorStream  orchestrator.Orchestrator_StoreAssessmentResultsClient
 	orchestratorClient  orchestrator.OrchestratorClient
 	orchestratorAddress string
+	// orchestratorChannel stores assessment results for the Orchestrator
+	orchestratorChannel chan *assessment.AssessmentResult
 
 	// resultHooks is a list of hook functions that can be used if one wants to be
 	// informed about each assessment result
 	resultHooks []assessment.ResultHookFunc
 	// hookMutex is used for (un)locking result hook calls
-	hookMutex sync.Mutex
+	hookMutex sync.RWMutex
 
 	// Currently, results are just stored as a map (=in-memory). In the future, we will use a DB.
-	results map[string]*assessment.AssessmentResult
+	results     map[string]*assessment.AssessmentResult
+	resultMutex sync.Mutex
 
 	// cachedConfigurations holds cached metric configurations for faster access with key being the corresponding
 	// metric name
 	cachedConfigurations map[string]cachedConfiguration
+	// TODO(oxisto): combine with hookMutex and replace with a generic version of a mutex'd map
+	confMutex sync.Mutex
 
 	authorizer api.Authorizer
 }
@@ -135,13 +144,27 @@ func NewService(opts ...ServiceOption) *Service {
 	s := &Service{
 		results:              make(map[string]*assessment.AssessmentResult),
 		evidenceStoreAddress: DefaultEvidenceStoreAddress,
+		evidenceStoreChannel: make(chan *evidence.Evidence, 1000),
 		orchestratorAddress:  DefaultOrchestratorAddress,
+		orchestratorChannel:  make(chan *assessment.AssessmentResult, 1000),
 		cachedConfigurations: make(map[string]cachedConfiguration),
 	}
 
 	// Apply any options
 	for _, o := range opts {
 		o(s)
+	}
+
+	// Initialise Evidence Store stream
+	err := s.initEvidenceStoreStream()
+	if err != nil {
+		log.Errorf("Error while initializing evidence store stream: %v", err)
+	}
+
+	// Initialise Orchestrator stream
+	err = s.initOrchestratorStream()
+	if err != nil {
+		log.Errorf("Error while initializing orchestrator stream: %v", err)
 	}
 
 	return s
@@ -159,6 +182,8 @@ func (s *Service) Authorizer() api.Authorizer {
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
 func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
+
+	// Validate evidence
 	resourceId, err := req.Evidence.Validate()
 	if err != nil {
 		newError := fmt.Errorf("invalid evidence: %w", err)
@@ -175,7 +200,6 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 
 	// Assess evidence
 	err = s.handleEvidence(req.Evidence, resourceId)
-
 	if err != nil {
 		res = &assessment.AssessEvidenceResponse{
 			Status:        assessment.AssessEvidenceResponse_FAILED,
@@ -188,6 +212,7 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 		return res, status.Errorf(codes.Internal, "%v", newError)
 	}
 
+	// Create response
 	res = &assessment.AssessEvidenceResponse{
 		Status: assessment.AssessEvidenceResponse_ASSESSED,
 	}
@@ -203,12 +228,11 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 	)
 
 	for {
-
-		// TODO(all): Check context?
+		// Receive requests from client
 		req, err = stream.Recv()
 
 		// If no more input of the stream is available, return
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			return nil
 		}
 		if err != nil {
@@ -228,6 +252,11 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 
 		// Send response back to the client
 		err = stream.Send(res)
+
+		// Check for send errors
+		if errors.Is(err, io.EOF) {
+			return nil
+		}
 		if err != nil {
 			newError := fmt.Errorf("cannot send response to the client: %w", err)
 			log.Error(newError)
@@ -238,8 +267,8 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 
 // handleEvidence is the helper method for the actual assessment used by AssessEvidence and AssessEvidences
 func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string) (err error) {
-	log.Infof("Evaluating evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, evidence.ToolId, evidence.Timestamp)
-	log.Debugf("Evidence: %+v", evidence)
+	log.Debugf("Evaluating evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, evidence.ToolId, evidence.Timestamp)
+	log.Tracef("Evidence: %+v", evidence)
 
 	evaluations, err := policies.RunEvidence(evidence, s)
 	if err != nil {
@@ -250,17 +279,14 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 
 		return newError
 	}
-	// The evidence is sent to the evidence store since it has been successfully evaluated
-	// We could also just log, but an AR could be sent without an accompanying evidence in the Evidence Store
-	err = s.sendToEvidenceStore(evidence)
-	if err != nil {
-		return fmt.Errorf("could not send evidence to the evidence store: %v", err)
-	}
+
+	// Store evidence in evidenceStoreChannel
+	s.evidenceStoreChannel <- evidence
 
 	for i, data := range evaluations {
 		metricId := data.MetricId
 
-		log.Infof("Evaluated evidence with metric '%v' as %v", metricId, data.Compliant)
+		log.Debugf("Evaluated evidence %v with metric '%v' as %v", evidence.Id, metricId, data.Compliant)
 
 		targetValue := data.TargetValue
 
@@ -283,18 +309,18 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 			NonComplianceComments: "No comments so far",
 		}
 
+		s.resultMutex.Lock()
 		// Just a little hack to quickly enable multiple results per resource
 		s.results[fmt.Sprintf("%s-%d", resourceId, i)] = result
+		s.resultMutex.Unlock()
 
 		// Inform hooks about new assessment result
 		go s.informHooks(result, nil)
 
-		// Send assessment result to the Orchestrator
-		err = s.sendToOrchestrator(result)
-		if err != nil {
-			return fmt.Errorf("could not send assessment result to orchestrator: %v", err)
-		}
+		// Store assessment result in orchestratorChannel
+		s.orchestratorChannel <- result
 	}
+
 	return nil
 }
 
@@ -302,7 +328,7 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 func convertTargetValue(v interface{}) (s *structpb.Value, err error) {
 	var b []byte
 
-	// json.Marshal and json.Unmarshaling is used instead of structpb.NewValue() which cannot handle json numbers
+	// json.Marshal and json.Unmarshal is used instead of structpb.NewValue() which cannot handle json numbers
 	if b, err = json.Marshal(v); err != nil {
 		return nil, fmt.Errorf("JSON marshal failed: %w", err)
 	}
@@ -315,12 +341,13 @@ func convertTargetValue(v interface{}) (s *structpb.Value, err error) {
 
 // informHooks informs the registered hook functions
 func (s *Service) informHooks(result *assessment.AssessmentResult, err error) {
-	s.hookMutex.Lock()
-	defer s.hookMutex.Unlock()
+	s.hookMutex.RLock()
+	hooks := s.resultHooks
+	defer s.hookMutex.RUnlock()
 
 	// Inform our hook, if we have any
-	if s.resultHooks != nil {
-		for _, hook := range s.resultHooks {
+	if len(hooks) > 0 {
+		for _, hook := range hooks {
 			// We could do hook concurrent again (assuming different hooks don't interfere with each other)
 			hook(result, err)
 		}
@@ -340,6 +367,8 @@ func (s *Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAss
 }
 
 func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result *assessment.AssessmentResult, err error)) {
+	s.hookMutex.Lock()
+	defer s.hookMutex.Unlock()
 	s.resultHooks = append(s.resultHooks, assessmentResultsHook)
 }
 
@@ -363,24 +392,55 @@ func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) err
 
 	log.Infof("Connected to Evidence Store")
 
-	return nil
-}
+	// Receive responses from Evidence Store
+	// Currently we do not process the responses
+	go func() {
+		i := 1
+		for {
+			_, err := s.evidenceStoreStream.Recv()
 
-// sendToEvidenceStore sends evidence e to the Evidence Store
-func (s *Service) sendToEvidenceStore(e *evidence.Evidence) error {
-	if s.evidenceStoreStream == nil {
-		err := s.initEvidenceStoreStream()
-		if err != nil {
-			return fmt.Errorf("could not initialize stream to Evidence Store: %v", err)
+			if errors.Is(err, io.EOF) {
+				log.Debugf("no more responses from evidence store stream: EOF")
+				break
+			}
+
+			if err != nil {
+				newError := fmt.Errorf("error receiving response from evidence store stream: %w", err)
+				log.Error(newError)
+				break
+			}
+
+			if i%100 == 0 {
+				log.Tracef("evidenceStoreStream recv responses currently @ %v", i)
+			}
+
+			i++
 		}
-	}
+	}()
 
-	log.Infof("Sending evidence (%v) to Evidence Store", e.Id)
+	// Send evidences from evidenceStoreChannel to the Evidence Store
+	go func() {
+		i := 1
+		for e := range s.evidenceStoreChannel {
+			err := s.evidenceStoreStream.Send(&evidence.StoreEvidenceRequest{Evidence: e})
+			if errors.Is(err, io.EOF) {
+				log.Debugf("EOF")
+				break
+			}
+			if err != nil {
+				log.Errorf("Error when sending evidence to Evidence Store:- %v", err)
+				break
+			}
 
-	err := s.evidenceStoreStream.Send(&evidence.StoreEvidenceRequest{Evidence: e})
-	if err != nil {
-		return err
-	}
+			log.Debugf("Evidence (%v) sent to Evidence Store", e.Id)
+
+			if i%100 == 0 {
+				log.Debugf("evidenceStoreStream send evidences currently @ %v", i)
+			}
+			i++
+		}
+	}()
+
 	return nil
 }
 
@@ -404,28 +464,60 @@ func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) erro
 
 	log.Infof("Connected to Orchestrator")
 
-	return nil
-}
+	// Receive responses from Orchestrator
+	// Currently we do not process the responses
+	go func() {
+		i := 1
 
-// sendToOrchestrator sends the assessment result to the Orchestrator
-func (s *Service) sendToOrchestrator(result *assessment.AssessmentResult) error {
-	if s.orchestratorStream == nil || s.orchestratorClient == nil {
-		err := s.initOrchestratorStream()
-		if err != nil {
-			return fmt.Errorf("could not initialize stream to Orchestrator: %v", err)
+		for {
+			_, err := s.orchestratorStream.Recv()
+
+			if errors.Is(err, io.EOF) {
+				log.Debugf("no more responses from orchestrator stream: EOF")
+				break
+			}
+
+			if err != nil {
+				log.Errorf("error receiving response from orchestrator stream: %+v", err)
+				break
+			}
+
+			if i%100 == 0 {
+				log.Debugf("orchestratorStream recv responses currently @ %v", i)
+			}
+
+			i++
 		}
-	}
+	}()
 
-	log.Infof("Sending assessment result (%v) to Orchestrator", result.Id)
+	// Send assessment results in orchestratorChannel to the Orchestrator
+	go func() {
+		i := 1
+		for result := range s.orchestratorChannel {
+			log.Debugf("Sending assessment result (%v) to Orchestrator", result.Id)
 
-	req := &orchestrator.StoreAssessmentResultRequest{
-		Result: result,
-	}
-	err := s.orchestratorStream.Send(req)
-	if err != nil {
-		log.Errorf("Error when sending assessment result to Orchestrator: %v", err)
-		return err
-	}
+			req := &orchestrator.StoreAssessmentResultRequest{
+				Result: result,
+			}
+
+			err := s.orchestratorStream.Send(req)
+			if errors.Is(err, io.EOF) {
+				log.Debugf("EOF")
+				break
+			}
+			if err != nil {
+				log.Errorf("Error when sending assessment result to Orchestrator: %v", err)
+				break
+			}
+
+			log.Debugf("Assessment result (%v) sent to Orchestrator", result.Id)
+
+			if i%100 == 0 {
+				log.Debugf("orchestratorStream send assessment results currently @ %v", i)
+			}
+			i++
+		}
+	}()
 
 	return nil
 }
@@ -447,7 +539,9 @@ func (s *Service) MetricConfiguration(metric string) (config *assessment.MetricC
 	}
 
 	// Retrieve our cached entry
+	s.confMutex.Lock()
 	cache, ok = s.cachedConfigurations[metric]
+	s.confMutex.Unlock()
 
 	// Check if entry is not there or is expired
 	if !ok || cache.cachedAt.After(time.Now().Add(EvictionTime)) {
@@ -465,8 +559,10 @@ func (s *Service) MetricConfiguration(metric string) (config *assessment.MetricC
 			MetricConfiguration: config,
 		}
 
+		s.confMutex.Lock()
 		// Update the metric configuration
 		s.cachedConfigurations[metric] = cache
+		defer s.confMutex.Unlock()
 	}
 
 	return cache.MetricConfiguration, nil

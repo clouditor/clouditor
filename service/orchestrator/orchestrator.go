@@ -29,6 +29,7 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -271,10 +272,9 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 		result, err = stream.Recv()
 
 		// If no more input of the stream is available, return
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			return nil
 		}
-
 		if err != nil {
 			newError := fmt.Errorf("cannot receive stream request: %w", err)
 			log.Error(newError)
@@ -291,6 +291,11 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 		}
 
 		err = stream.Send(res)
+
+		// Check for send errors
+		if errors.Is(err, io.EOF) {
+			return nil
+		}
 		if err != nil {
 			newError := fmt.Errorf("cannot stream response to the client: %w", err)
 			log.Error(newError)
