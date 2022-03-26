@@ -340,18 +340,7 @@ func createEvidences(n int, m int, b *testing.B) int {
 					BlockStorage: nil,
 				}
 
-				_, err := svc.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{
-					Evidence: &evidence.Evidence{
-						Id:                 uuid.NewString(),
-						Timestamp:          timestamppb.Now(),
-						ToolId:             "mytool",
-						Resource:           testutil.ToStruct(vm, b),
-						RelatedResourceIds: vm.Related(),
-					},
-				})
-				if err != nil {
-					b.Errorf("Error while calling AssessEvidence: %v", err)
-				}
+				assess(svc, vm, b)
 			}
 		}()
 	}
@@ -359,21 +348,6 @@ func createEvidences(n int, m int, b *testing.B) int {
 	wg.Wait()
 
 	return 0
-}
-
-var numEvidences = []int{10, 100, 1000, 5000, 10000, 20000, 30000, 40000, 50000}
-
-func BenchmarkAssessEvidence(b *testing.B) {
-	for _, k := range numEvidences {
-		for l := 0.; l <= 2; l++ {
-			parallel := int(math.Pow(2, l))
-			b.Run(fmt.Sprintf("%d/%d", k, parallel), func(b *testing.B) {
-				for n := 0; n < b.N; n++ {
-					createEvidences(k, parallel, b)
-				}
-			})
-		}
-	}
 }
 
 func benchmarkAssessEvidence(i int, m int, b *testing.B) {
