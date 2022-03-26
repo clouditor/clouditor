@@ -1,4 +1,4 @@
-package clouditor.metrics.broad_assignments
+package clouditor.metrics.role_broad_assignments
 
 import data.clouditor.compare
 

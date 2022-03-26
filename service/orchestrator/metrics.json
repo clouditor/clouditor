@@ -3,10 +3,10 @@
     "id": "AdminMFAEnabled"
   },
   {
-    "id": "AdminPasswordPolicy"
+    "id": "IdentityPasswordPolicy"
   },
   {
-    "id": "AccountRecentActivity"
+    "id": "IdentityRecentActivity"
   },
   {
     "id": "AtRestEncryptionEnabled",
@@ -49,9 +49,6 @@
     "id": "AnonymousAuthentication"
   },
   {
-    "id": "AnomalyDetectionOutput"
-  },
-  {
     "id": "BootLoggingEnabled"
   },
   {
@@ -61,7 +58,7 @@
     "id": "BootLoggingRetention"
   },
   {
-    "id": "BroadAssignments"
+    "id": "RoleBroadAssignments"
   },
   {
     "id": "CustomerKeyEncryption"
@@ -79,7 +76,7 @@
     "id": "MalwareProtectionSecureTransport"
   },
   {
-    "id": "MixedDuties"
+    "id": "AdminMixedDuties"
   },
   {
     "id": "MutualAuthentication"

@@ -297,7 +297,7 @@ func RunMap(baseDir string, metric string, m map[string]interface{}, holder Metr
 	}
 
 	if len(results) == 0 {
-		return nil, fmt.Errorf("no results. probably the package name of the metric is wrong")
+		return nil, fmt.Errorf("no results for metric %s. probably the package name of the metric is wrong", metric)
 	}
 
 	result = &Result{

@@ -1,7 +1,10 @@
 {
-    "isAdmin": true,
-    "type": ["Account","Resource"],    
-    "disablePasswordPolicy": false,
+    "privileged": true,
+    "type": [
+        "Identity",
+        "Resource"
+    ],
+    "lastActivity": "2022-03-25T00:00:00-00:00",
     "authenticity": [
         {
             "type": "OTPBasedAuthentication",

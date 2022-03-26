@@ -1,6 +1,9 @@
 {
-    "isAdmin": true,
-    "type": ["Account","Resource"],    
+    "privileged": true,
+    "type": [
+        "Identity",
+        "Resource"
+    ],
     "authenticity": [
         {
             "type": "OTPBasedAuthentication",
