@@ -530,14 +530,6 @@ func (s *Service) MetricConfiguration(metric string) (config *assessment.MetricC
 		cache cachedConfiguration
 	)
 
-	// Lazy init of connection
-	if s.orchestratorStream == nil || s.orchestratorClient == nil {
-		err = s.initOrchestratorStream()
-		if err != nil {
-			return nil, fmt.Errorf("could not initialize connection to orchestrator: %v", err)
-		}
-	}
-
 	// Retrieve our cached entry
 	s.confMutex.Lock()
 	cache, ok = s.cachedConfigurations[metric]
