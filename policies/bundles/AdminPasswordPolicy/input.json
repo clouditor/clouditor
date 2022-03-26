@@ -1,0 +1,15 @@
+{
+    "isAdmin": true,
+    "type": ["Account","Resource"],    
+    "disablePasswordPolicy": false,
+    "authenticity": [
+        {
+            "type": "OTPBasedAuthentication",
+            "activated": true
+        },
+        {
+            "type": "PasswordBasedAuthentication",
+            "activated": true
+        }
+    ]
+}

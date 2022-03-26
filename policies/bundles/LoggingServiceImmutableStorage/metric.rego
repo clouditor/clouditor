@@ -15,14 +15,14 @@ applicable {
 	ls.storage[_]
 }
 
-object_storages[s] {
+storages[s] {
 	related[_].id == ls.storage[_]
 
 	s := related[_]
 }
 
 compliant {
-    every object_storage in object_storages {
-		object_storage.immutability.enabled == true
+    every storage in storages {
+		storage.immutability.enabled == true
 	}
 }

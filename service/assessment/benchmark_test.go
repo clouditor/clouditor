@@ -2,7 +2,6 @@ package assessment
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"math"
 	"net"
@@ -26,11 +25,13 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+var NumFunctionsMetrics = 1
 var NumVMMetrics = 12
-var NumLoggingServiceMetrics = 2
+var NumLoggingServiceMetrics = 6
 var NumBlockStorageMetrics = 3
+var NumAccountMetrics = 3
 
-func createVMWithMalwareProtection(numVMs int, b *testing.B) {
+func createVMWithMalwareProtection(numCloudServices int, numAccounts int, numVMs, numFunction int, b *testing.B) {
 	var (
 		wg   sync.WaitGroup
 		err  error
@@ -39,7 +40,7 @@ func createVMWithMalwareProtection(numVMs int, b *testing.B) {
 
 	srv := grpc.NewServer()
 
-	logrus.SetLevel(logrus.TraceLevel)
+	logrus.SetLevel(logrus.DebugLevel)
 
 	orchestratorService := service_orchestrator.NewService()
 	orchestrator.RegisterOrchestratorServer(srv, orchestratorService)
@@ -64,7 +65,11 @@ func createVMWithMalwareProtection(numVMs int, b *testing.B) {
 
 	var count int64 = 0
 
-	wg.Add(numVMs*NumVMMetrics + (numVMs+1)*NumBlockStorageMetrics + 1*NumLoggingServiceMetrics)
+	wg.Add((NumFunctionsMetrics*NumFunctionsMetrics +
+		numVMs*NumVMMetrics +
+		(numVMs+1)*NumBlockStorageMetrics +
+		1*NumLoggingServiceMetrics +
+		NumAccountMetrics*numAccounts) * numCloudServices)
 
 	svc := NewService(WithOrchestratorAddress(addr), WithEvidenceStoreAddress(addr))
 	orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
@@ -79,100 +84,143 @@ func createVMWithMalwareProtection(numVMs int, b *testing.B) {
 		}
 	})
 
-	for i := 0; i < numVMs; i++ {
-		vm := &voc.VirtualMachine{
-			Compute: &voc.Compute{
-				Resource: &voc.Resource{
-					ID:   voc.ResourceID(fmt.Sprintf("%d-vm", i)),
-					Type: []string{"VirtualMachine", "Compute", "Resource"},
-				},
-			},
-			BootLogging: &voc.BootLogging{
-				Logging: &voc.Logging{
-					LoggingService:  []voc.ResourceID{"logging-service"},
-					Enabled:         true,
-					RetentionPeriod: time.Hour * 24 * 30,
-				},
-			},
-			OSLogging: &voc.OSLogging{
-				Logging: &voc.Logging{
-					LoggingService:  []voc.ResourceID{"logging-service"},
-					Enabled:         true,
-					RetentionPeriod: time.Hour * 24 * 30,
-				},
-			},
-			BlockStorage: []voc.ResourceID{voc.ResourceID(fmt.Sprintf("%d-storage", i))},
-			AutomaticUpdates: &voc.AutomaticUpdates{
-				Enabled:      true,
-				SecurityOnly: true,
-				Interval:     time.Hour * 24 * 2,
-			},
-			MalwareProtection: &voc.MalwareProtection{
-				Enabled: true,
-				ApplicationLogging: &voc.ApplicationLogging{
-					Logging: &voc.Logging{
-						LoggingService:  []voc.ResourceID{"logging-service"},
-						Enabled:         true,
-						RetentionPeriod: time.Hour * 24 * 30,
+	// Create m parallel executions for each "cloud service"
+	for j := 0; j < numCloudServices; j++ {
+		go func() {
+			for i := 0; i < numFunction; i++ {
+				f := &voc.Function{
+					Compute: &voc.Compute{
+						Resource: &voc.Resource{
+							ID:   voc.ResourceID(fmt.Sprintf("%d-function", i)),
+							Type: []string{"Function", "Compute", "Resource"},
+						},
+					},
+					RuntimeVersion:  "11",
+					RuntimeLanguage: "Java",
+				}
+
+				assess(svc, f, b)
+			}
+
+			for i := 0; i < numVMs; i++ {
+				vm := &voc.VirtualMachine{
+					Compute: &voc.Compute{
+						Resource: &voc.Resource{
+							ID:   voc.ResourceID(fmt.Sprintf("%d-vm", i)),
+							Type: []string{"VirtualMachine", "Compute", "Resource"},
+						},
+					},
+					BootLogging: &voc.BootLogging{
+						Logging: &voc.Logging{
+							LoggingService:  []voc.ResourceID{"logging-service"},
+							Enabled:         true,
+							RetentionPeriod: time.Hour * 24 * 30,
+						},
+					},
+					OSLogging: &voc.OSLogging{
+						Logging: &voc.Logging{
+							LoggingService:  []voc.ResourceID{"logging-service"},
+							Enabled:         true,
+							RetentionPeriod: time.Hour * 24 * 30,
+						},
+					},
+					BlockStorage: []voc.ResourceID{voc.ResourceID(fmt.Sprintf("%d-storage", i))},
+					AutomaticUpdates: &voc.AutomaticUpdates{
+						Enabled:      true,
+						SecurityOnly: true,
+						Interval:     time.Hour * 24 * 2,
+					},
+					MalwareProtection: &voc.MalwareProtection{
+						Enabled: true,
+						ApplicationLogging: &voc.ApplicationLogging{
+							Logging: &voc.Logging{
+								LoggingService:  []voc.ResourceID{"logging-service"},
+								Enabled:         true,
+								RetentionPeriod: time.Hour * 24 * 30,
+							},
+						},
+					},
+				}
+				s := voc.BlockStorage{
+					Storage: &voc.Storage{
+						Resource: &voc.Resource{
+							ID:   voc.ResourceID(fmt.Sprintf("%d-storage", i)),
+							Type: []string{"BlockStorage", "Storage"},
+						},
+						AtRestEncryption: &voc.CustomerKeyEncryption{
+							AtRestEncryption: &voc.AtRestEncryption{
+								Enabled:   true,
+								Algorithm: "AES256",
+							},
+						},
+					},
+				}
+
+				assess(svc, vm, b)
+				assess(svc, s, b)
+			}
+
+			ls := voc.LoggingService{
+				NetworkService: &voc.NetworkService{
+					Networking: &voc.Networking{
+						Resource: &voc.Resource{
+							ID:   voc.ResourceID("logging-service"),
+							Type: []string{"LoggingService", "NetworkService", "Networking", "Resource"},
+						},
+					},
+					Authenticity: &voc.TokenBasedAuthentication{
+						Activated: true,
+					},
+					TransportEncryption: &voc.TransportEncryption{
+						Enforced:   true,
+						Enabled:    true,
+						Algorithm:  "TLS",
+						TlsVersion: "TLS1.2",
 					},
 				},
-			},
-		}
-		s := voc.BlockStorage{
-			Storage: &voc.Storage{
-				Resource: &voc.Resource{
-					ID:   voc.ResourceID(fmt.Sprintf("%d-storage", i)),
-					Type: []string{"BlockStorage", "Storage"},
-				},
-				AtRestEncryption: &voc.CustomerKeyEncryption{
-					AtRestEncryption: &voc.AtRestEncryption{
-						Enabled:   true,
-						Algorithm: "AES256",
+				Storage: []voc.ResourceID{voc.ResourceID("log-storage")},
+			}
+			lss := voc.ObjectStorage{
+				Storage: &voc.Storage{
+					Resource: &voc.Resource{
+						ID:   voc.ResourceID("log-storage"),
+						Type: []string{"ObjectStorage", "Storage"},
+					},
+					AtRestEncryption: &voc.CustomerKeyEncryption{
+						AtRestEncryption: &voc.AtRestEncryption{
+							Enabled:   true,
+							Algorithm: "AES256",
+						},
+					},
+					Immutability: &voc.Immutability{
+						Enabled: true,
 					},
 				},
-			},
-		}
+			}
 
-		assess(svc, vm, b)
-		assess(svc, s, b)
-	}
+			assess(svc, ls, b)
+			assess(svc, lss, b)
 
-	ls := voc.LoggingService{
-		NetworkService: &voc.NetworkService{
-			Networking: &voc.Networking{
-				Resource: &voc.Resource{
-					ID:   voc.ResourceID("logging-service"),
-					Type: []string{"LoggingService", "NetworkService", "Networking", "Resource"},
-				},
-			},
-			Authenticity: &voc.TokenBasedAuthentication{
-				Activated: true,
-			},
-		},
-		Storage: []voc.ResourceID{voc.ResourceID("log-storage")},
-	}
-	lss := voc.ObjectStorage{
-		Storage: &voc.Storage{
-			Resource: &voc.Resource{
-				ID:   voc.ResourceID("log-storage"),
-				Type: []string{"ObjectStorage", "Storage"},
-			},
-			AtRestEncryption: &voc.CustomerKeyEncryption{
-				AtRestEncryption: &voc.AtRestEncryption{
-					Enabled:   true,
-					Algorithm: "AES256",
-				},
-			},
-		},
-		Immutability: &voc.Immutability{
-			Enabled: true,
-		},
-	}
-	s, _ := json.Marshal(lss)
-	log.Printf("%s", s)
+			for j := 0; j < numAccounts; j++ {
+				user := &voc.Account{
+					Resource: &voc.Resource{
+						ID:   voc.ResourceID(fmt.Sprintf("%d-user", j)),
+						Type: []string{"Account", "Resource"},
+					},
+					Authenticity: []voc.HasAuthenticity{
+						&voc.OTPBasedAuthentication{Activated: true},
+						&voc.PasswordBasedAuthentication{Activated: true},
+					},
+					IsAdmin:               true,
+					DisablePasswordPolicy: false,
+					Activated:             true,
+					LastActivity:          time.Now().Add(-time.Hour * 24 * 7),
+				}
 
-	assess(svc, ls, b)
-	assess(svc, lss, b)
+				assess(svc, user, b)
+			}
+		}()
+	}
 
 	wg.Wait()
 }
@@ -192,9 +240,18 @@ func assess(svc assessment.AssessmentServer, r voc.IsCloudResource, t assert.Tes
 	}
 }
 
+var numVMs = []int{10 /*, 100, 1000, 5000*/}
+
 func BenchmarkComplex(b *testing.B) {
-	for n := 0; n < b.N; n++ {
-		createVMWithMalwareProtection(4, b)
+	for _, k := range numVMs {
+		for l := 0.; l <= 2; l++ {
+			parallel := int(math.Pow(2, l))
+			b.Run(fmt.Sprintf("%d/%d", k, parallel), func(b *testing.B) {
+				for n := 0; n < b.N; n++ {
+					createVMWithMalwareProtection(parallel, k, k/10, k/10, b)
+				}
+			})
+		}
 	}
 }
 
@@ -205,7 +262,7 @@ func createEvidences(n int, m int, b *testing.B) int {
 		sock net.Listener
 	)
 
-	logrus.SetLevel(logrus.PanicLevel)
+	logrus.SetLevel(logrus.InfoLevel)
 
 	srv := grpc.NewServer()
 
@@ -228,7 +285,7 @@ func createEvidences(n int, m int, b *testing.B) int {
 	}()
 	defer srv.Stop()
 
-	wg.Add(n / 2 * m * (3 + 8))
+	wg.Add(n / 2 * m * (3 + 9))
 
 	var count int64 = 0
 
@@ -255,11 +312,11 @@ func createEvidences(n int, m int, b *testing.B) int {
 				vm := voc.VirtualMachine{
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
-							ID:   voc.ResourceID(fmt.Sprintf("%d-vm", i)),
+							ID:   voc.ResourceID(fmt.Sprintf("%d-%d-vm", j, i)),
 							Type: []string{"VirtualMachine", "Compute", "Resource"},
 						},
 					},
-					BlockStorage: []voc.ResourceID{voc.ResourceID(fmt.Sprintf("%d-storage", i))},
+					BlockStorage: []voc.ResourceID{voc.ResourceID(fmt.Sprintf("%d-%d-storage", j, i))},
 				}
 
 				_, err := svc.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{
@@ -278,7 +335,7 @@ func createEvidences(n int, m int, b *testing.B) int {
 				s := voc.BlockStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID:   voc.ResourceID(fmt.Sprintf("%d-storage", i)),
+							ID:   voc.ResourceID(fmt.Sprintf("%d-%d-storage", j, i)),
 							Type: []string{"BlockStorage", "Storage"},
 						},
 						AtRestEncryption: &voc.AtRestEncryption{
@@ -315,7 +372,8 @@ func benchmarkAssessEvidence(i int, m int, b *testing.B) {
 	}
 }
 
-var numEvidences = []int{10, 100, 1000, 5000, 10000, 20000, 30000, 40000, 50000}
+//var numEvidences = []int{10, 100, 1000, 5000, 10000, 20000, 30000, 40000, 50000}
+var numEvidences = []int{10, 100, 1000, 5000}
 
 func BenchmarkAssessEvidence(b *testing.B) {
 	for _, k := range numEvidences {
