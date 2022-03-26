@@ -1,5 +1,14 @@
 [
   {
+    "id": "AdminMFAEnabled"
+  },
+  {
+    "id": "AdminPasswordPolicy"
+  },
+  {
+    "id": "AccountRecentActivity"
+  },
+  {
     "id": "AtRestEncryptionEnabled",
     "name": "Storage Encryption: Enabled",
     "description": "This metric describes whether storage encryption is enabled",
@@ -143,5 +152,8 @@
   },
   {
     "id": "LoggingServiceImmutableStorage"
+  },
+  {
+    "id": "ResourceInventory"
   }
 ]

@@ -27,5 +27,4 @@ package voc
 
 type ObjectStorage struct {
 	*Storage
-	Immutability *Immutability `json:"immutability"`
 }

@@ -134,19 +134,27 @@ func RunEvidence(evidence *evidence.Evidence, holder MetricConfigurationSource, 
 	}
 
 	var types []string
+	var typeField interface{}
+	var rawTypes []interface{}
+	var ok bool
 
-	if rawTypes, ok := m["type"].([]interface{}); ok {
+	if typeField, ok = m["type"]; !ok || typeField == nil {
+		return nil, fmt.Errorf("type property is missing in evidence %s", evidence.Id)
+	}
+
+	if rawTypes, ok = typeField.([]interface{}); ok {
 		if len(rawTypes) != 0 {
 			types = make([]string, len(rawTypes))
 		} else {
 			return nil, fmt.Errorf("list of types is empty")
 		}
 	} else {
-		return nil, fmt.Errorf("got type '%T' but wanted '[]interface {}'. Check if resource types are specified ", rawTypes)
+		return nil, fmt.Errorf("type property in evidence %s has invalid type '%T', should be a string array", evidence.Id, rawTypes)
 	}
-	for i, v := range m["type"].([]interface{}) {
+
+	for i, v := range rawTypes {
 		if t, ok := v.(string); !ok {
-			return nil, fmt.Errorf("got type '%T' but wanted 'string'", t)
+			return nil, fmt.Errorf("member of type property in evidence %s has invalid type '%T' but wanted 'string'", evidence.Id, t)
 		} else {
 			types[i] = t
 		}
