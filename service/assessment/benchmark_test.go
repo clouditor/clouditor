@@ -775,7 +775,7 @@ func BenchmarkEvidenceTypes(b *testing.B) {
 
 func BenchmarkAssessVMEvidence(b *testing.B) {
 	for _, k := range numEvidences {
-		for l := 1; l <= 3; l++ {
+		for l := 1; l <= 4; l++ {
 			b.Run(fmt.Sprintf("%d/%d", k, l), func(b *testing.B) {
 				for n := 0; n < b.N; n++ {
 					createVMEvidences(k, l, b)
