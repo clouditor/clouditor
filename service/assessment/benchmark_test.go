@@ -22,7 +22,6 @@ import (
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"clouditor.io/clouditor/voc"
 	"github.com/google/uuid"
-	"github.com/prometheus/common/log"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -693,12 +692,4 @@ func BenchmarkAssessVMEvidence30000x4(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		createVMEvidences(30000, 4, b)
 	}
-}
-
-func BenchmarkAssessEvidence10000x2(b *testing.B) {
-	benchmarkAssessEvidence(10000, 2, b)
-}
-
-func BenchmarkAssessEvidence30000x4(b *testing.B) {
-	benchmarkAssessEvidence(30000, 4, b)
 }
