@@ -6,6 +6,9 @@ import (
 	"math"
 	"net"
 	"net/http"
+	"reflect"
+	"runtime"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -275,7 +278,7 @@ func BenchmarkComplex(b *testing.B) {
 	}
 }
 
-func createVMEvidences(n int, m int, b *testing.B) int {
+func createVMEvidences(n int, m int, b *testing.B) {
 	var (
 		wg   sync.WaitGroup
 		err  error
@@ -346,11 +349,158 @@ func createVMEvidences(n int, m int, b *testing.B) int {
 	}
 
 	wg.Wait()
-
-	return 0
 }
 
-func createStorageEvidences(n int, m int, b *testing.B) int {
+func createIdentityEvidences(n int, m int, b *testing.B) {
+	var (
+		wg   sync.WaitGroup
+		err  error
+		sock net.Listener
+	)
+
+	logrus.SetLevel(logrus.PanicLevel)
+
+	srv := grpc.NewServer()
+
+	orchestratorService := service_orchestrator.NewService()
+	orchestrator.RegisterOrchestratorServer(srv, orchestratorService)
+
+	evidenceService := service_evidence.NewService()
+	evidence.RegisterEvidenceStoreServer(srv, evidenceService)
+
+	sock, err = net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		b.Errorf("could not listen: %v", err)
+	}
+
+	go func() {
+		err := srv.Serve(sock)
+		if err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Error while creating gRPC server: %v", err)
+		}
+	}()
+	defer srv.Stop()
+
+	wg.Add(n * m * NumIdentityMetrics)
+
+	var count int64 = 0
+
+	addr := fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)
+
+	svc := NewService(WithOrchestratorAddress(addr), WithEvidenceStoreAddress(addr))
+
+	orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
+		current := atomic.AddInt64(&count, 1)
+
+		log.Debugf("Current count: %v - stats: %+v", current, svc.stats)
+
+		wg.Done()
+	})
+
+	// Create m parallel executions of our evidence creation
+	for j := 0; j < m; j++ {
+		go func() {
+			// Create evidences for n (1 resource per )
+			for i := 0; i < n; i++ {
+				if i%100 == 0 {
+					log.Infof("Currently @ %v - stats: %+v", i, svc.stats)
+				}
+
+				i := voc.Identity{
+					Identifiable: &voc.Identifiable{
+						Resource: &voc.Resource{
+							ID:   voc.ResourceID(fmt.Sprintf("%d-%d-identity", j, i)),
+							Type: []string{"Identity", "Identifiable", "Resource"},
+						},
+					},
+					Privileged: true,
+				}
+
+				assess(svc, i, b)
+			}
+		}()
+	}
+
+	wg.Wait()
+}
+
+func createServiceEvidences(n int, m int, b *testing.B) {
+	var (
+		wg   sync.WaitGroup
+		err  error
+		sock net.Listener
+	)
+
+	logrus.SetLevel(logrus.PanicLevel)
+
+	srv := grpc.NewServer()
+
+	orchestratorService := service_orchestrator.NewService()
+	orchestrator.RegisterOrchestratorServer(srv, orchestratorService)
+
+	evidenceService := service_evidence.NewService()
+	evidence.RegisterEvidenceStoreServer(srv, evidenceService)
+
+	sock, err = net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		b.Errorf("could not listen: %v", err)
+	}
+
+	go func() {
+		err := srv.Serve(sock)
+		if err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Error while creating gRPC server: %v", err)
+		}
+	}()
+	defer srv.Stop()
+
+	wg.Add(n * m * NumIdentityMetrics)
+
+	var count int64 = 0
+
+	addr := fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)
+
+	svc := NewService(WithOrchestratorAddress(addr), WithEvidenceStoreAddress(addr))
+
+	orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
+		current := atomic.AddInt64(&count, 1)
+
+		log.Debugf("Current count: %v - stats: %+v", current, svc.stats)
+
+		wg.Done()
+	})
+
+	// Create m parallel executions of our evidence creation
+	for j := 0; j < m; j++ {
+		go func() {
+			// Create evidences for n (1 resource per )
+			for i := 0; i < n; i++ {
+				if i%100 == 0 {
+					log.Infof("Currently @ %v - stats: %+v", i, svc.stats)
+				}
+
+				i := voc.NetworkService{
+					Networking: &voc.Networking{
+						Resource: &voc.Resource{
+							ID:   voc.ResourceID(fmt.Sprintf("%d-%d-network-service", j, i)),
+							Type: []string{"NetworkService", "Networking", "Resource"},
+						},
+					},
+					Authenticity: &voc.TokenBasedAuthentication{},
+					TransportEncryption: &voc.TransportEncryption{
+						Enabled: true,
+					},
+				}
+
+				assess(svc, i, b)
+			}
+		}()
+	}
+
+	wg.Wait()
+}
+
+func createStorageEvidences(n int, m int, b *testing.B) {
 	var (
 		wg   sync.WaitGroup
 		err  error
@@ -420,11 +570,13 @@ func createStorageEvidences(n int, m int, b *testing.B) int {
 	}
 
 	wg.Wait()
-
-	return 0
 }
 
 var numEvidences = []int{10, 100, 1000, 5000, 10000, 20000, 30000, 40000, 50000}
+
+var create = []createFuncType{createVMEvidences, createStorageEvidences, createIdentityEvidences, createServiceEvidences}
+
+type createFuncType func(int, int, *testing.B)
 
 func BenchmarkAssessVMEvidence(b *testing.B) {
 	for _, k := range numEvidences {
@@ -447,6 +599,20 @@ func BenchmarkAssessStorageEvidence(b *testing.B) {
 				}
 			})
 		}
+	}
+}
+
+func BenchmarkEvidenceTypes(b *testing.B) {
+	numEvidences := 10000
+
+	for _, k := range create {
+		_, name, _ := strings.Cut(runtime.FuncForPC(reflect.ValueOf(k).Pointer()).Name(), "assessment.")
+
+		b.Run(fmt.Sprintf("%s/%d", name, numEvidences), func(b *testing.B) {
+			for n := 0; n < b.N; n++ {
+				k(numEvidences, 1, b)
+			}
+		})
 	}
 }
 
