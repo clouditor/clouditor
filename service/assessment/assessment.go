@@ -296,7 +296,7 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 
 	var waitingFor map[voc.ResourceID]bool = make(map[voc.ResourceID]bool)
 
-	svc.em.Lock()
+	svc.em.RLock()
 	// We need to check, if by any chance the related resource evidences
 	// have already arrived
 	//
@@ -309,7 +309,9 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 			waitingFor[voc.ResourceID(r)] = true
 		}
 	}
+	svc.em.RUnlock()
 
+	svc.em.Lock()
 	// Update our evidence cache
 	svc.evidenceResourceMap[resourceId] = req.Evidence
 	svc.em.Unlock()

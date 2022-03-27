@@ -285,7 +285,7 @@ func createVMEvidences(n int, m int, b *testing.B) {
 		sock net.Listener
 	)
 
-	logrus.SetLevel(logrus.PanicLevel)
+	logrus.SetLevel(logrus.DebugLevel)
 
 	srv := grpc.NewServer()
 

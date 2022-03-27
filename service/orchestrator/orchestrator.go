@@ -181,11 +181,11 @@ func NewService(opts ...ServiceOption) *Service {
 		defaultMetricConfigurations[m.Id] = &config
 	}
 
-	s.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
+	/*s.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
 		if err == nil {
 			s.Evaluate(result)
 		}
-	})
+	})*/
 
 	return &s
 }
