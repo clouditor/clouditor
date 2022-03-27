@@ -35,7 +35,6 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/internal/util"
-	"github.com/mitchellh/mapstructure"
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/open-policy-agent/opa/storage"
 	"github.com/open-policy-agent/opa/storage/inmem"
@@ -262,12 +261,11 @@ func RunMap(baseDir string, metric string, m map[string]interface{}, holder Metr
 		}
 
 		query, err := rego.New(
-			rego.Query(fmt.Sprintf(`x = {
-				"applicable": data.clouditor.metrics.%s.applicable, 
-				"compliant": data.clouditor.metrics.%s.compliant, 
-				"operator": data.clouditor.operator,
-				"target_value": data.clouditor.target_value,
-			}`, metric, metric)),
+			rego.Query(fmt.Sprintf(`
+			applicable = data.clouditor.metrics.%s.applicable;
+			compliant = data.clouditor.metrics.%s.compliant;
+			operator = data.clouditor.operator;
+			target_value = data.clouditor.target_value`, metric, metric)),
 			rego.Package("clouditor.metrics"),
 			rego.Store(store),
 			rego.Transaction(tx),
@@ -299,14 +297,14 @@ func RunMap(baseDir string, metric string, m map[string]interface{}, holder Metr
 	}
 
 	if len(results) == 0 {
-		return nil, fmt.Errorf("no results. probably the package name of the metric is wrong")
+		return nil, fmt.Errorf("no results for metric %s. probably the package name of the metric is wrong", metric)
 	}
 
-	result = new(Result)
-	err = mapstructure.Decode(results[0].Bindings["x"], result)
-
-	if err != nil {
-		return nil, fmt.Errorf("expected data is not a map[string]interface{}: %w", err)
+	result = &Result{
+		Applicable:  results[0].Bindings["applicable"].(bool),
+		Compliant:   results[0].Bindings["compliant"].(bool),
+		Operator:    results[0].Bindings["operator"].(string),
+		TargetValue: results[0].Bindings["target_value"],
 	}
 
 	if !result.Applicable {

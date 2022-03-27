@@ -296,7 +296,7 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 
 	var waitingFor map[voc.ResourceID]bool = make(map[voc.ResourceID]bool)
 
-	svc.em.Lock()
+	/*svc.em.Lock()
 	// We need to check, if by any chance the related resource evidences
 	// have already arrived
 	//
@@ -312,10 +312,10 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 
 	// Update our evidence cache
 	svc.evidenceResourceMap[resourceId] = req.Evidence
-	svc.em.Unlock()
+	svc.em.Unlock()*/
 
 	// Inform any other left over evidences that might be waiting
-	go svc.informLeftOverRequests(resourceId)
+	//go svc.informLeftOverRequests(resourceId)
 
 	if canHandle {
 		// Assess evidence
@@ -703,14 +703,6 @@ func (s *Service) MetricConfiguration(metric string) (config *assessment.MetricC
 		ok    bool
 		cache cachedConfiguration
 	)
-
-	// Lazy init of connection
-	if s.orchestratorStream == nil || s.orchestratorClient == nil {
-		err = s.initOrchestratorStream()
-		if err != nil {
-			return nil, fmt.Errorf("could not initialize connection to orchestrator: %v", err)
-		}
-	}
 
 	// Retrieve our cached entry
 	s.confMutex.Lock()

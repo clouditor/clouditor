@@ -1,4 +1,4 @@
-package clouditor.metrics.mixed_duties
+package clouditor.metrics.admin_mixed_duties
 
 import data.clouditor.compare
 

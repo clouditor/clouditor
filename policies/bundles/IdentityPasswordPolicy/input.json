@@ -4,6 +4,7 @@
         "Identity",
         "Resource"
     ],
+    "disablePasswordPolicy": false,
     "authenticity": [
         {
             "type": "OTPBasedAuthentication",
