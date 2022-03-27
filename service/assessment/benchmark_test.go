@@ -44,7 +44,7 @@ func createVMWithMalwareProtection(numCloudServices int, numAccounts int, numVMs
 
 	srv := grpc.NewServer()
 
-	logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	orchestratorService := service_orchestrator.NewService()
 	orchestrator.RegisterOrchestratorServer(srv, orchestratorService)
