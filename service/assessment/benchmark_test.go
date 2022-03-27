@@ -760,16 +760,16 @@ var wait = []int{2, 4, 5, 5, 7, 9}
 type createFuncType func(int, int, *testing.B)
 
 func BenchmarkEvidenceTypes(b *testing.B) {
-	numEvidences := 50000
+	for _, j := range []int{10000, 20000, 30000, 40000, 50000} {
+		for _, k := range create {
+			_, name, _ := strings.Cut(runtime.FuncForPC(reflect.ValueOf(k).Pointer()).Name(), "assessment.")
 
-	for _, k := range create {
-		_, name, _ := strings.Cut(runtime.FuncForPC(reflect.ValueOf(k).Pointer()).Name(), "assessment.")
-
-		b.Run(fmt.Sprintf("%d/%s", numEvidences, name), func(b *testing.B) {
-			for n := 0; n < b.N; n++ {
-				k(numEvidences, 1, b)
-			}
-		})
+			b.Run(fmt.Sprintf("%d/%s", j, name), func(b *testing.B) {
+				for n := 0; n < b.N; n++ {
+					k(j, 1, b)
+				}
+			})
+		}
 	}
 }
 
