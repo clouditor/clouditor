@@ -689,12 +689,12 @@ func BenchmarkAssessIdentityEvidence(b *testing.B) {
 }
 
 func BenchmarkEvidenceTypes(b *testing.B) {
-	numEvidences := 10000
+	numEvidences := 50000
 
 	for _, k := range create {
 		_, name, _ := strings.Cut(runtime.FuncForPC(reflect.ValueOf(k).Pointer()).Name(), "assessment.")
 
-		b.Run(fmt.Sprintf("%s/%d", name, numEvidences), func(b *testing.B) {
+		b.Run(fmt.Sprintf("%d/%s", numEvidences, name), func(b *testing.B) {
 			for n := 0; n < b.N; n++ {
 				k(numEvidences, 1, b)
 			}
