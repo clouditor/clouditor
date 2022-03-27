@@ -1,7 +1,6 @@
 package orchestrator
 
 import (
-	"errors"
 	"time"
 
 	"clouditor.io/clouditor/api/assessment"
@@ -16,23 +15,25 @@ var DefaultOETime = time.Hour * 24 * 7
 func (svc *Service) Evaluate(res *assessment.AssessmentResult) (err error) {
 	// Build a map of requirements and their results
 
-	metric, ok := svc.metric(res.MetricId)
+	/*metric, ok := svc.metric(res.MetricId)
 	if !ok {
 		return errors.New("could not evaluate: invalid metric")
 	}
+	// new average = old average * (n-1)/n + new value /n
 
-	reqID := metric.Category
+	//reqID := metric.Category
 
-	var list []*assessment.AssessmentResult
-	if list, ok = svc.evaluations[reqID]; !ok {
-		list = []*assessment.AssessmentResult{}
-	}
+	eval, ok := svc.EvalMetrics[reqID]
+	if !ok {
+		svc.EvalMetrics[reqID] = &EvalMetric{
+			requirementID: reqID,
+			fullfilled:    true,
+			op:            1,
+			n:             1,
+		}
+	}*/
 
-	svc.evaluations[reqID] = append(list, res)
-
-	log.Debugf("We have %d assessment results for requirement %s", len(list)+1, reqID)
-
-	svc.calculateMetrics()
+	//
 
 	return nil
 }

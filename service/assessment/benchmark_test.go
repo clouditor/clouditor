@@ -33,7 +33,7 @@ var NumVMMetrics = 13
 var NumLoggingServiceMetrics = 7
 var NumBlockStorageMetrics = 4
 var NumObjectStorageMetrics = 4
-var NumIdentityMetrics = 3
+var NumIdentityMetrics = 5
 
 func createVMWithMalwareProtection(numCloudServices int, numAccounts int, numVMs, numFunction int, b *testing.B) {
 	var (
@@ -285,7 +285,7 @@ func createVMEvidences(n int, m int, b *testing.B) {
 		sock net.Listener
 	)
 
-	logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	srv := grpc.NewServer()
 
@@ -414,6 +414,7 @@ func createIdentityEvidences(n int, m int, b *testing.B) {
 						},
 					},
 					Privileged: true,
+					Activated:  true,
 				}
 
 				assess(svc, i, b)
@@ -423,6 +424,79 @@ func createIdentityEvidences(n int, m int, b *testing.B) {
 
 	wg.Wait()
 }
+
+/*func createRoleEvidences(n int, m int, b *testing.B) {
+	var (
+		wg   sync.WaitGroup
+		err  error
+		sock net.Listener
+	)
+
+	logrus.SetLevel(logrus.PanicLevel)
+
+	srv := grpc.NewServer()
+
+	orchestratorService := service_orchestrator.NewService()
+	orchestrator.RegisterOrchestratorServer(srv, orchestratorService)
+
+	evidenceService := service_evidence.NewService()
+	evidence.RegisterEvidenceStoreServer(srv, evidenceService)
+
+	sock, err = net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		b.Errorf("could not listen: %v", err)
+	}
+
+	go func() {
+		err := srv.Serve(sock)
+		if err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Error while creating gRPC server: %v", err)
+		}
+	}()
+	defer srv.Stop()
+
+	wg.Add(n * m * 2)
+
+	var count int64 = 0
+
+	addr := fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)
+
+	svc := NewService(WithOrchestratorAddress(addr), WithEvidenceStoreAddress(addr))
+
+	orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
+		current := atomic.AddInt64(&count, 1)
+
+		log.Debugf("Current count: %v - stats: %+v", current, svc.stats)
+
+		wg.Done()
+	})
+
+	// Create m parallel executions of our evidence creation
+	for j := 0; j < m; j++ {
+		go func() {
+			// Create evidences for n (1 resource per )
+			for i := 0; i < n; i++ {
+				if i%100 == 0 {
+					log.Infof("Currently @ %v - stats: %+v", i, svc.stats)
+				}
+
+				i := voc.RoleAssignment{
+					Identifiable: &voc.Identifiable{
+						Resource: &voc.Resource{
+							ID:   voc.ResourceID(fmt.Sprintf("%d-%d-identity", j, i)),
+							Type: []string{"Identity", "Identifiable", "Resource"},
+						},
+					},
+					MixedDuties: 0.5,
+				}
+
+				assess(svc, i, b)
+			}
+		}()
+	}
+
+	wg.Wait()
+}*/
 
 func createServiceEvidences(n int, m int, b *testing.B) {
 	var (
@@ -454,7 +528,7 @@ func createServiceEvidences(n int, m int, b *testing.B) {
 	}()
 	defer srv.Stop()
 
-	wg.Add(n * m * NumIdentityMetrics)
+	wg.Add(n * m * 4)
 
 	var count int64 = 0
 
@@ -596,6 +670,18 @@ func BenchmarkAssessStorageEvidence(b *testing.B) {
 			b.Run(fmt.Sprintf("%d/%d", k, l), func(b *testing.B) {
 				for n := 0; n < b.N; n++ {
 					createStorageEvidences(k, l, b)
+				}
+			})
+		}
+	}
+}
+
+func BenchmarkAssessIdentityEvidence(b *testing.B) {
+	for _, k := range numEvidences {
+		for l := 1; l <= 3; l++ {
+			b.Run(fmt.Sprintf("%d/%d", k, l), func(b *testing.B) {
+				for n := 0; n < b.N; n++ {
+					createIdentityEvidences(k, l, b)
 				}
 			})
 		}

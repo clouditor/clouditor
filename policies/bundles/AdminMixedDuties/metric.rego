@@ -1,19 +1,18 @@
 package clouditor.metrics.admin_mixed_duties
 
 import data.clouditor.compare
+import future.keywords.every
+import input as account
 
 default applicable = false
 
 default compliant = false
 
-# TODO(lebogg): Check if `rBAC` is correct representation in JSON
-rbac := input.rBAC
-
 applicable {
-	rbac
+	# we are only interested in some kind of privileged user    
+	account.privileged
 }
 
 compliant {
-	# TODO(all): Target value ?
-	compare(data.operator, data.target_value, rbac.mixedDuties)
+	compare(data.operator, data.target_value, account.authorization.mixedDuties)
 }

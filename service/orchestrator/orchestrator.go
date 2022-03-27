@@ -91,6 +91,10 @@ type EvalMetric struct {
 	fullfilled bool
 
 	op float64
+
+	// we need to know how many evidences have been collected to calculate the moving average without
+	// storing the values itself
+	n int64
 }
 
 func init() {

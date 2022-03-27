@@ -125,6 +125,10 @@ type HasAuthenticity interface {
 	Type() string
 }
 
+type HasAuthorization interface {
+	hasAuthorization()
+}
+
 type HasHttpEndpoint interface {
 	GetHttpEndpoint() *HttpEndpoint
 }
