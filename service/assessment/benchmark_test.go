@@ -760,7 +760,7 @@ var wait = []int{2, 4, 5, 5, 7, 9}
 type createFuncType func(int, int, *testing.B)
 
 func BenchmarkEvidenceTypes(b *testing.B) {
-	numEvidences := 1
+	numEvidences := 50000
 
 	for _, k := range create {
 		_, name, _ := strings.Cut(runtime.FuncForPC(reflect.ValueOf(k).Pointer()).Name(), "assessment.")
