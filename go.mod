@@ -9,13 +9,13 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.11
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/MicahParks/keyfunc v1.0.1
-	github.com/aws/aws-sdk-go-v2 v1.15.0
+	github.com/aws/aws-sdk-go-v2 v1.16.1
 	github.com/aws/aws-sdk-go-v2/config v1.15.0
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.32.0
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.20.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.26.0
 	github.com/aws/aws-sdk-go-v2/service/sts v1.16.0
-	github.com/aws/smithy-go v1.11.1
+	github.com/aws/smithy-go v1.11.2
 	github.com/go-co-op/gocron v1.13.0
 	github.com/golang-jwt/jwt/v4 v4.4.0
 	github.com/google/uuid v1.3.0
