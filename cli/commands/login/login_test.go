@@ -80,7 +80,8 @@ func TestLogin(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEmpty(t, dir)
 
-	viper.Set(OAuth2ServerFlag, fmt.Sprintf("http://localhost:%d", port))
+	viper.Set(OAuth2AuthURLFlag, fmt.Sprintf("http://localhost:%d/v1/auth/authorize", port))
+	viper.Set(OAuth2TokenURLFlag, fmt.Sprintf("http://localhost:%d/v1/auth/token", port))
 	viper.Set(cli.SessionFolderFlag, dir)
 
 	verifier = "012345678901234567890123456789"
