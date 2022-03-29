@@ -38,14 +38,20 @@ import (
 )
 
 const (
-	// OAuth2ServerFlag is the viper flag for the OAuth 2.0 authorization server.
-	OAuth2ServerFlag = "oauth2-server"
+	// OAuth2AuthURLFlag is the viper flag for the OAuth 2.0 authorization endpoint.
+	OAuth2AuthURLFlag = "oauth2-auth-url"
+
+	// OAuth2TokenURLFlag is the viper flag for the OAuth 2.0 token endpoint.
+	OAuth2TokenURLFlag = "oauth2-token-url"
 
 	// OAuth2ClientIDFlag is the viper flag for the OAuth 2.0 client ID.
 	OAuth2ClientIDFlag = "oauth2-client-id"
 
-	// DefaultOAuth2Server is the default OAuth 2.0 authorization server.
-	DefaultOAuth2Server = "http://localhost:8080"
+	// DefaultOAuth2Server is the default OAuth 2.0 authorization endpoint.
+	DefaultOAuth2AuthURL = "http://localhost:8080/v1/auth/authorize"
+
+	// DefaultOAuth2TokenURL is the default OAuth 2.0 token endpoint.
+	DefaultOAuth2TokenURL = "http://localhost:8080/v1/auth/token"
 
 	// DefaultClientID is the default OAuth 2.0 client ID for the CLI.
 	DefaultClientID = "cli"
@@ -78,18 +84,14 @@ func NewLoginCommand() *cobra.Command {
 				sock    net.Listener
 				code    string
 				config  *oauth2.Config
-				authURL string
 			)
-
-			// Retrieve the URL of our authentication server
-			authURL = viper.GetString(OAuth2ServerFlag)
 
 			// Create an OAuth 2 config
 			config = &oauth2.Config{
-				ClientID: DefaultClientID,
+				ClientID: viper.GetString(OAuth2ClientIDFlag),
 				Endpoint: oauth2.Endpoint{
-					AuthURL:  fmt.Sprintf("%s/v1/auth/authorize", authURL),
-					TokenURL: fmt.Sprintf("%s/v1/auth/token", authURL),
+					AuthURL:  viper.GetString(OAuth2AuthURLFlag),
+					TokenURL: viper.GetString(OAuth2TokenURLFlag),
 				},
 				RedirectURL: DefaultCallback,
 			}
@@ -137,8 +139,11 @@ func NewLoginCommand() *cobra.Command {
 		},
 	}
 
-	cmd.PersistentFlags().String(OAuth2ServerFlag, DefaultOAuth2Server, "the URL of the OAuth 2.0 server")
-	_ = viper.BindPFlag(OAuth2ServerFlag, cmd.PersistentFlags().Lookup(OAuth2ServerFlag))
+	cmd.PersistentFlags().String(OAuth2AuthURLFlag, DefaultOAuth2AuthURL, "the authorization URL of the OAuth 2.0 server")
+	_ = viper.BindPFlag(OAuth2AuthURLFlag, cmd.PersistentFlags().Lookup(OAuth2AuthURLFlag))
+
+	cmd.PersistentFlags().String(OAuth2TokenURLFlag, DefaultOAuth2TokenURL, "the token URL of the OAuth 2.0 server")
+	_ = viper.BindPFlag(OAuth2TokenURLFlag, cmd.PersistentFlags().Lookup(OAuth2TokenURLFlag))
 
 	cmd.PersistentFlags().String(OAuth2ClientIDFlag, DefaultClientID, "the OAuth 2.0 client ID")
 	_ = viper.BindPFlag(OAuth2ClientIDFlag, cmd.PersistentFlags().Lookup(OAuth2ClientIDFlag))
