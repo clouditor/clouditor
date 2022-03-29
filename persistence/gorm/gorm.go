@@ -113,18 +113,23 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 
 	// fmt.Println(g.db.Migrator().HasTable(&orchestrator.StateHistory{}))
 	// fmt.Println(g.db.Migrator().HasTable(&orchestrator.Certificate{}))
-	// fmt.Println(g.db.Migrator().HasConstraint(&orchestrator.Certificate{}, "StateHistory"))
-	// fmt.Println(g.db.Migrator().HasConstraint(&orchestrator.Certificate{}, "fk_certificates_state_history"))
+	fmt.Println(g.db.Migrator().HasConstraint(&orchestrator.Certificate{}, "StateHistory"))
+	fmt.Println(g.db.Migrator().HasConstraint(&orchestrator.Certificate{}, "fk_certificates_state_history"))
 
 	s = g
 	return
 }
 
 func (s *storage) Create(r interface{}) error {
+	s.db.Model(&r).Association("StateHistory")
+	// s.db.Save(r)??
 	return s.db.Create(r).Error
 }
 
 func (s *storage) Get(r interface{}, conds ...interface{}) (err error) {
+	var stateHistory orchestrator.StateHistory
+	s.db.Model(&r).Association("StateHistory").Find(&stateHistory)
+	fmt.Println(stateHistory)
 	err = s.db.First(r, conds...).Error
 	// if record is not found, use the error message defined in the persistence package
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -132,6 +137,17 @@ func (s *storage) Get(r interface{}, conds ...interface{}) (err error) {
 	}
 	return
 }
+
+// func (s *storage) GetC(r orchestrator.Certificate, conds ...interface{}) (err error) {
+// 	var stateHistory orchestrator.StateHistory
+// 	s.db.Model(&r).Association("StateHistory").Find(&stateHistory)
+// 	err = s.db.First(r, conds...).Error
+// 	// if record is not found, use the error message defined in the persistence package
+// 	if errors.Is(err, gorm.ErrRecordNotFound) {
+// 		err = persistence.ErrRecordNotFound
+// 	}
+// 	return
+// }
 
 func (s *storage) List(r interface{}, conds ...interface{}) error {
 	return s.db.Find(r, conds...).Error

@@ -761,6 +761,9 @@ components:
                 CertificateID:
                     type: integer
                     format: uint32
+                ID:
+                    type: integer
+                    format: uint32
         StoreAssessmentResultResponse:
             type: object
             properties:

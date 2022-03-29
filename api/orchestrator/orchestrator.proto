@@ -412,4 +412,5 @@ message StateHistory {
 	string tree_id = 2;
 	string timestamp = 3;
   uint32 CertificateID = 4;
+  uint32 ID = 5;
 }

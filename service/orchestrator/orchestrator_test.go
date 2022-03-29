@@ -605,6 +605,7 @@ func CreateCertificateMock() *orchestrator.Certificate {
 		TreeId:        "12345",
 		Timestamp:     time.Now().String(),
 		CertificateID: 1234,
+		ID:            12345,
 	}
 
 	var mockCertificate = &orchestrator.Certificate{
