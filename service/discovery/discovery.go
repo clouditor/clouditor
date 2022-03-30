@@ -155,7 +155,7 @@ func (s *Service) initAssessmentStream(additionalOpts ...grpc.DialOption) error 
 
 	// Establish connection to assessment gRPC service
 	conn, err := grpc.Dial(s.assessmentAddress,
-		api.DefaultGrpcDialOptions(s, additionalOpts...)...,
+		api.DefaultGrpcDialOptions(s.assessmentAddress, s, additionalOpts...)...,
 	)
 	if err != nil {
 		return fmt.Errorf("could not connect to assessment service: %w", err)

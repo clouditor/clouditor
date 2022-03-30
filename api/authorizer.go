@@ -27,7 +27,9 @@ package api
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
+	"net"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
@@ -103,9 +105,26 @@ func (*oauthAuthorizer) RequireTransportSecurity() bool {
 
 // DefaultGrpcDialOptions returns a set of sensible default list of grpc.DialOption values. It includes
 // transport credentials and configures per-RPC credentials using an authorizer, if one is configured.
-func DefaultGrpcDialOptions(s UsesAuthorizer, additionalOpts ...grpc.DialOption) (opts []grpc.DialOption) {
-	// TODO(oxisto): Enable TLS to external based on the URL (scheme)
-	opts = []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+func DefaultGrpcDialOptions(hostport string, s UsesAuthorizer, additionalOpts ...grpc.DialOption) (opts []grpc.DialOption) {
+	var (
+		port string
+		host string
+		err  error
+	)
+
+	host, port, err = net.SplitHostPort(hostport)
+
+	// TODO(oxisto): make a better distinction, for now this is ok
+	if err == nil && port == "443" {
+		// Use default TLS configuration using the system cert store
+		opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
+			ServerName: host,
+			MinVersion: tls.VersionTLS12,
+			MaxVersion: 0,
+		})))
+	} else {
+		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	}
 
 	// In practice, we should always have an authorizer, so we could fail early here. However,
 	// if the server-side has not enabled the auth middleware (for example in testing), it is perfectly
