@@ -378,7 +378,7 @@ func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) err
 
 	// Establish connection to evidence store gRPC service
 	conn, err := grpc.Dial(s.evidenceStoreAddress,
-		api.DefaultGrpcDialOptions(s, additionalOpts...)...,
+		api.DefaultGrpcDialOptions(s.evidenceStoreAddress, s, additionalOpts...)...,
 	)
 	if err != nil {
 		return fmt.Errorf("could not connect to evidence store service: %w", err)
@@ -450,7 +450,7 @@ func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) erro
 
 	// Establish connection to orchestrator gRPC service
 	conn, err := grpc.Dial(s.orchestratorAddress,
-		api.DefaultGrpcDialOptions(s, additionalOpts...)...,
+		api.DefaultGrpcDialOptions(s.orchestratorAddress, s, additionalOpts...)...,
 	)
 	if err != nil {
 		return fmt.Errorf("could not connect to orchestrator service: %w", err)
