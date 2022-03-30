@@ -118,9 +118,9 @@ func DefaultGrpcDialOptions(hostport string, s UsesAuthorizer, additionalOpts ..
 	if err == nil && port == "443" {
 		// Use default TLS configuration using the system cert store
 		opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
-			ServerName:         host,
-			MinVersion:         12,
-			InsecureSkipVerify: false,
+			ServerName: host,
+			MinVersion: tls.VersionTLS12,
+			MaxVersion: 0,
 		})))
 	} else {
 		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
