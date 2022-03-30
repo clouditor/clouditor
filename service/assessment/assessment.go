@@ -155,18 +155,6 @@ func NewService(opts ...ServiceOption) *Service {
 		o(s)
 	}
 
-	// Initialise Evidence Store stream
-	err := s.initEvidenceStoreStream()
-	if err != nil {
-		log.Errorf("Error while initializing evidence store stream: %v", err)
-	}
-
-	// Initialise Orchestrator stream
-	err = s.initOrchestratorStream()
-	if err != nil {
-		log.Errorf("Error while initializing orchestrator stream: %v", err)
-	}
-
 	return s
 }
 
@@ -196,6 +184,23 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 		}
 
 		return res, status.Errorf(codes.InvalidArgument, "%v", newError)
+	}
+
+	// Check if evidence store stream exists
+	if s.evidenceStoreStream == nil {
+		err = s.initEvidenceStoreStream()
+		if err != nil {
+			log.Errorf("error initialising evidence store stream: %v", err)
+		}
+	}
+
+	// Check if orchestrator stream exists
+	if s.orchestratorStream == nil {
+		err = s.initOrchestratorStream()
+
+		if err != nil {
+			log.Errorf("error initialising orchestrator stream: %v", err)
+		}
 	}
 
 	// Assess evidence
