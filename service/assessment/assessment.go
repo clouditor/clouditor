@@ -189,8 +189,18 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 	// Check if evidence store stream exists
 	if s.evidenceStoreStream == nil {
 		err = s.initEvidenceStoreStream()
+
 		if err != nil {
-			log.Errorf("error initialising evidence store stream: %v", err)
+			newError := fmt.Errorf("error initialising evidence store stream: %w", err)
+			log.Error(newError)
+			s.informHooks(nil, newError)
+
+			res = &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: newError.Error(),
+			}
+
+			return res, status.Errorf(codes.Internal, "%v", newError)
 		}
 	}
 
@@ -199,7 +209,16 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 		err = s.initOrchestratorStream()
 
 		if err != nil {
-			log.Errorf("error initialising orchestrator stream: %v", err)
+			newError := fmt.Errorf("error initialising orchestrator stream: %w", err)
+			log.Error(newError)
+			s.informHooks(nil, newError)
+
+			res = &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: newError.Error(),
+			}
+
+			return res, status.Errorf(codes.Internal, "%v", newError)
 		}
 	}
 

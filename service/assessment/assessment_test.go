@@ -205,6 +205,24 @@ func TestAssessEvidence(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "No RPC connections",
+			args: args{
+				in0: context.TODO(),
+				evidence: &evidence.Evidence{
+					Id:        "11111111-1111-1111-1111-111111111111",
+					ToolId:    "mock",
+					Timestamp: timestamppb.Now(),
+					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+				},
+			},
+			hasRPCConnection: false,
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: "error initialising evidence store stream: could not set up stream for storing evidences: rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing dial tcp: missing address\"",
+			},
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {
