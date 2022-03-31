@@ -219,7 +219,7 @@ func TestAssessEvidence(t *testing.T) {
 			hasRPCConnection: false,
 			wantResp: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "error initialising evidence store stream: could not set up stream for storing evidences: rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing dial tcp: missing address\"",
+				StatusMessage: "could not evaluate evidence: could not fetch metric configuration: could not retrieve metric configuration for",
 			},
 			wantErr: true,
 		},
@@ -238,14 +238,15 @@ func TestAssessEvidence(t *testing.T) {
 			}
 
 			gotResp, err := s.AssessEvidence(tt.args.in0, &assessment.AssessEvidenceRequest{Evidence: tt.args.evidence})
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
-			if !reflect.DeepEqual(gotResp, tt.wantResp) {
-				t.Errorf("AssessEvidence() gotResp = %v, want %v", gotResp, tt.wantResp)
-			}
+			// Check response
+			assert.Equal(t, tt.wantResp.Status, gotResp.Status)
+			assert.Contains(t, gotResp.StatusMessage, tt.wantResp.StatusMessage)
 		})
 	}
 }
