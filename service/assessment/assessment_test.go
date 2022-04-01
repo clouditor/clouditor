@@ -112,13 +112,10 @@ func TestNewService(t *testing.T) {
 			// Check channels have been created
 			assert.NotNil(t, s.evidenceStoreChannel)
 			assert.NotNil(t, s.orchestratorChannel)
-			assert.NotNil(t, s.orchestratorClient)
 
 			// Ignore pointers to channel in subsequent DeepEqual check
 			s.evidenceStoreChannel = nil
 			s.orchestratorChannel = nil
-			// Ignore pointer to orchestrator client in subsequent DeepEqual check
-			s.orchestratorClient = nil
 
 			if got := s; !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewService() = %v, want %v", got, tt.want)
@@ -208,6 +205,24 @@ func TestAssessEvidence(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "No RPC connections",
+			args: args{
+				in0: context.TODO(),
+				evidence: &evidence.Evidence{
+					Id:        "11111111-1111-1111-1111-111111111111",
+					ToolId:    "mock",
+					Timestamp: timestamppb.Now(),
+					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+				},
+			},
+			hasRPCConnection: false,
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: "could not evaluate evidence: could not fetch metric configuration: could not retrieve metric configuration for",
+			},
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -223,14 +238,15 @@ func TestAssessEvidence(t *testing.T) {
 			}
 
 			gotResp, err := s.AssessEvidence(tt.args.in0, &assessment.AssessEvidenceRequest{Evidence: tt.args.evidence})
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
-			if !reflect.DeepEqual(gotResp, tt.wantResp) {
-				t.Errorf("AssessEvidence() gotResp = %v, want %v", gotResp, tt.wantResp)
-			}
+			// Check response
+			assert.Equal(t, tt.wantResp.Status, gotResp.Status)
+			assert.Contains(t, gotResp.StatusMessage, tt.wantResp.StatusMessage)
 		})
 	}
 }
