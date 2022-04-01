@@ -43,11 +43,6 @@ import (
 
 var (
 	log = logrus.WithField("component", "policies")
-
-	// applicableMetrics stores a list of applicable metrics per resourceType
-	applicableMetrics = metricsResourceTypeCache{m: make(map[string][]string)}
-
-	cache = newQueryCache()
 )
 
 type metricsResourceTypeCache struct {
@@ -61,6 +56,21 @@ type queryCache struct {
 }
 
 type orElseFunc func(key string) (query *rego.PreparedEvalQuery, err error)
+
+type policyEval struct {
+	// qc contains cached Rego queries
+	qc *queryCache
+
+	// mrtc stores a list of applicable metrics per resourceType
+	mrtc *metricsResourceTypeCache
+}
+
+func NewPolicyEval() *policyEval {
+	return &policyEval{
+		mrtc: &metricsResourceTypeCache{m: make(map[string][]string)},
+		qc:   newQueryCache(),
+	}
+}
 
 type Result struct {
 	Applicable  bool
@@ -110,13 +120,17 @@ func (qc *queryCache) Get(key string, orElse orElseFunc) (query *rego.PreparedEv
 	return
 }
 
-func RunEvidence(evidence *evidence.Evidence, holder MetricConfigurationSource) ([]*Result, error) {
-	data := make([]*Result, 0)
-	var baseDir = "."
+// Eval evaluates a given evidence against all available Rego policies and returns the result of all policies that were
+// considered to be applicable.
+func (pe *policyEval) Eval(evidence *evidence.Evidence, holder MetricConfigurationSource) (data []*Result, err error) {
+	var (
+		baseDir string
+		m       map[string]interface{}
+		types   []string
+	)
 
-	var m = evidence.Resource.GetStructValue().AsMap()
-
-	var types []string
+	baseDir = "."
+	m = evidence.Resource.GetStructValue().AsMap()
 
 	if rawTypes, ok := m["type"].([]interface{}); ok {
 		if len(rawTypes) != 0 {
@@ -137,9 +151,9 @@ func RunEvidence(evidence *evidence.Evidence, holder MetricConfigurationSource) 
 
 	key := createKey(types)
 
-	applicableMetrics.RLock()
-	metrics := applicableMetrics.m[key]
-	applicableMetrics.RUnlock()
+	pe.mrtc.RLock()
+	metrics := pe.mrtc.m[key]
+	pe.mrtc.RUnlock()
 
 	// TODO(lebogg): Try to optimize duplicated code
 	if metrics == nil {
@@ -149,14 +163,14 @@ func RunEvidence(evidence *evidence.Evidence, holder MetricConfigurationSource) 
 		}
 
 		// Lock until we looped through all files
-		applicableMetrics.Lock()
+		pe.mrtc.Lock()
 
 		// Start with an empty list, otherwise we might copy metrics into the list
 		// that are added by a parallel execution - which might occur if both goroutines
 		// start at the exactly same time.
 		metrics = []string{}
 		for _, fileInfo := range files {
-			runMap, err := RunMap(baseDir, fileInfo.Name(), m, holder)
+			runMap, err := pe.evalMap(baseDir, fileInfo.Name(), m, holder)
 			if err != nil {
 				return nil, err
 			}
@@ -171,13 +185,13 @@ func RunEvidence(evidence *evidence.Evidence, holder MetricConfigurationSource) 
 		}
 
 		// Set it and unlock
-		applicableMetrics.m[key] = metrics
-		applicableMetrics.Unlock()
+		pe.mrtc.m[key] = metrics
+		log.Infof("Resource type %v has the following %v applicable metric(s): %v", key, len(pe.mrtc.m[key]), pe.mrtc.m[key])
 
-		log.Infof("Resource type %v has the following %v applicable metric(s): %v", key, len(applicableMetrics.m[key]), applicableMetrics.m[key])
+		pe.mrtc.Unlock()
 	} else {
 		for _, metric := range metrics {
-			runMap, err := RunMap(baseDir, metric, m, holder)
+			runMap, err := pe.evalMap(baseDir, metric, m, holder)
 			if err != nil {
 				return nil, err
 			}
@@ -190,8 +204,11 @@ func RunEvidence(evidence *evidence.Evidence, holder MetricConfigurationSource) 
 	return data, nil
 }
 
-func RunMap(baseDir string, metric string, m map[string]interface{}, holder MetricConfigurationSource) (result *Result, err error) {
-	var query *rego.PreparedEvalQuery
+func (pe *policyEval) evalMap(baseDir string, metric string, m map[string]interface{}, holder MetricConfigurationSource) (result *Result, err error) {
+	var (
+		query *rego.PreparedEvalQuery
+		key   string
+	)
 
 	// We need to check, if the metric configuration has been changed. Any caching of this
 	// configuration will be done by the MetricConfigurationSource.
@@ -202,9 +219,9 @@ func RunMap(baseDir string, metric string, m map[string]interface{}, holder Metr
 
 	// We build a key out of the metric and its configuration, so we are creating a new Rego implementation
 	// if the metric configuration (i.e. its hash) has changed.
-	var key = fmt.Sprintf("%s-%s", metric, config.Hash())
+	key = fmt.Sprintf("%s-%s", metric, config.Hash())
 
-	query, err = cache.Get(key, func(key string) (*rego.PreparedEvalQuery, error) {
+	query, err = pe.qc.Get(key, func(key string) (*rego.PreparedEvalQuery, error) {
 		var (
 			tx storage.Transaction
 		)

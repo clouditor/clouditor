@@ -57,10 +57,15 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestRunEvidence(t *testing.T) {
+func Test_policyEval_Eval(t *testing.T) {
 	type fields struct {
-		resource   voc.IsCloudResource
+		// TODO(oxisto): move to args
+		resource voc.IsCloudResource
+		// TODO(oxisto): move to args
 		evidenceID string
+
+		qc   *queryCache
+		mrtc *metricsResourceTypeCache
 	}
 	type args struct {
 		source MetricConfigurationSource
@@ -94,6 +99,8 @@ func TestRunEvidence(t *testing.T) {
 					},
 				},
 				evidenceID: mockObjStorage1EvidenceID,
+				qc:         newQueryCache(),
+				mrtc:       &metricsResourceTypeCache{m: make(map[string][]string)},
 			},
 			args:       args{source: &mockMetricConfigurationSource{t: t}},
 			applicable: true,
@@ -117,6 +124,8 @@ func TestRunEvidence(t *testing.T) {
 					},
 				},
 				evidenceID: mockObjStorage2EvidenceID,
+				qc:         newQueryCache(),
+				mrtc:       &metricsResourceTypeCache{m: make(map[string][]string)},
 			},
 			args:       args{source: &mockMetricConfigurationSource{t: t}},
 			applicable: true,
@@ -144,6 +153,8 @@ func TestRunEvidence(t *testing.T) {
 					},
 				},
 				evidenceID: mockObjStorage2EvidenceID,
+				qc:         newQueryCache(),
+				mrtc:       &metricsResourceTypeCache{m: make(map[string][]string)},
 			},
 			args:       args{source: &mockMetricConfigurationSource{t: t}},
 			applicable: true,
@@ -188,6 +199,8 @@ func TestRunEvidence(t *testing.T) {
 					},
 				},
 				evidenceID: mockVM1EvidenceID,
+				qc:         newQueryCache(),
+				mrtc:       &metricsResourceTypeCache{m: make(map[string][]string)},
 			},
 			args:       args{source: &mockMetricConfigurationSource{t: t}},
 			applicable: true,
@@ -220,6 +233,8 @@ func TestRunEvidence(t *testing.T) {
 					},
 				},
 				evidenceID: mockVM2EvidenceID,
+				qc:         newQueryCache(),
+				mrtc:       &metricsResourceTypeCache{m: make(map[string][]string)},
 			},
 			args:       args{source: &mockMetricConfigurationSource{t: t}},
 			applicable: true,
@@ -227,18 +242,25 @@ func TestRunEvidence(t *testing.T) {
 			wantErr:    false,
 		},
 	}
+
 	for _, tt := range tests {
 		resource, err := voc.ToStruct(tt.fields.resource)
 		assert.NoError(t, err)
 		t.Run(tt.name, func(t *testing.T) {
-			results, err := RunEvidence(&evidence.Evidence{
+			pe := policyEval{
+				qc:   tt.fields.qc,
+				mrtc: tt.fields.mrtc,
+			}
+			results, err := pe.Eval(&evidence.Evidence{
 				Id:       tt.fields.evidenceID,
 				Resource: resource,
 			}, tt.args.source)
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RunEvidence() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
 			assert.NotEmpty(t, results)
 			for _, result := range results {
 				assert.Equal(t, tt.applicable, result.Applicable)
