@@ -155,18 +155,6 @@ func NewService(opts ...ServiceOption) *Service {
 		o(s)
 	}
 
-	// Initialise Evidence Store stream
-	err := s.initEvidenceStoreStream()
-	if err != nil {
-		log.Errorf("Error while initializing evidence store stream: %v", err)
-	}
-
-	// Initialise Orchestrator stream
-	err = s.initOrchestratorStream()
-	if err != nil {
-		log.Errorf("Error while initializing orchestrator stream: %v", err)
-	}
-
 	return s
 }
 
@@ -196,6 +184,22 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 		}
 
 		return res, status.Errorf(codes.InvalidArgument, "%v", newError)
+	}
+
+	// Check if evidence store stream exists
+	if s.evidenceStoreStream == nil {
+		err = s.initEvidenceStoreStream()
+		if err != nil {
+			log.Errorf("error initialising evidence store stream: %v", err)
+		}
+	}
+
+	// Check if orchestrator stream exists
+	if s.orchestratorStream == nil {
+		err = s.initOrchestratorStream()
+		if err != nil {
+			log.Errorf("error initialising orchestrator stream: %v", err)
+		}
 	}
 
 	// Assess evidence
@@ -378,7 +382,7 @@ func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) err
 
 	// Establish connection to evidence store gRPC service
 	conn, err := grpc.Dial(s.evidenceStoreAddress,
-		api.DefaultGrpcDialOptions(s, additionalOpts...)...,
+		api.DefaultGrpcDialOptions(s.evidenceStoreAddress, s, additionalOpts...)...,
 	)
 	if err != nil {
 		return fmt.Errorf("could not connect to evidence store service: %w", err)
@@ -450,7 +454,7 @@ func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) erro
 
 	// Establish connection to orchestrator gRPC service
 	conn, err := grpc.Dial(s.orchestratorAddress,
-		api.DefaultGrpcDialOptions(s, additionalOpts...)...,
+		api.DefaultGrpcDialOptions(s.orchestratorAddress, s, additionalOpts...)...,
 	)
 	if err != nil {
 		return fmt.Errorf("could not connect to orchestrator service: %w", err)

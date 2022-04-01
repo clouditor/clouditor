@@ -40,7 +40,6 @@ import (
 	"github.com/spf13/viper"
 	"golang.org/x/oauth2"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -95,9 +94,7 @@ func NewSession(url string, config *oauth2.Config, token *oauth2.Token) (session
 		Config:     config,
 	}
 
-	var opts = []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-
-	if session.ClientConn, err = grpc.Dial(session.URL, opts...); err != nil {
+	if session.ClientConn, err = grpc.Dial(session.URL, api.DefaultGrpcDialOptions(url, session)...); err != nil {
 		return nil, fmt.Errorf("could not connect: %w", err)
 	}
 
@@ -133,7 +130,7 @@ func ContinueSession() (session *Session, err error) {
 		_ = session.Save()
 	}
 
-	if session.ClientConn, err = grpc.Dial(session.URL, api.DefaultGrpcDialOptions(session)...); err != nil {
+	if session.ClientConn, err = grpc.Dial(session.URL, api.DefaultGrpcDialOptions(session.URL, session)...); err != nil {
 		return nil, fmt.Errorf("could not connect: %w", err)
 	}
 
