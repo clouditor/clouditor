@@ -1,5 +1,5 @@
 # Generated with protoc-gen-openapi
-# https://github.com/google/gnostic/tree/master/apps/protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
 
 openapi: 3.0.3
 info:
@@ -45,11 +45,27 @@ paths:
                                 $ref: '#/components/schemas/ListAssessmentResultsResponse'
 components:
     schemas:
+        AnyJSONValue:
+            oneOf:
+                - type: string
+                - type: number
+                - type: integer
+                - type: boolean
+                - type: object
+                - type: array
+                  items:
+                    $ref: '#/components/schemas/AnyJSONValue'
+            description: AnyJSONValue is a "catch all" type that can hold any JSON value, except null as this is not allowed in OpenAPI
         AssessEvidenceResponse:
             type: object
             properties:
                 status:
-                    type: integer
+                    enum:
+                        - ASSESSMENT_STATUS_UNSPECIFIED
+                        - WAITING_FOR_RELATED
+                        - ASSESSED
+                        - FAILED
+                    type: string
                     format: enum
                 statusMessage:
                     type: string
@@ -101,7 +117,7 @@ components:
                     type: string
                     description: Contains the evidence in its original form without following a defined schema, e.g. the raw JSON
                 resource:
-                    $ref: '#/components/schemas/Value'
+                    $ref: '#/components/schemas/AnyJSONValue'
             description: An evidence resource
         ListAssessmentResultsResponse:
             type: object
@@ -110,15 +126,6 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/AssessmentResult'
-        ListValue:
-            type: object
-            properties:
-                values:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/Value'
-                    description: Repeated field of dynamically typed values.
-            description: '`ListValue` is a wrapper around a repeated field of values. The JSON representation for `ListValue` is JSON array.'
         MetricConfiguration:
             type: object
             properties:
@@ -126,33 +133,10 @@ components:
                     type: string
                     description: The operator to compare the metric, such as == or >
                 targetValue:
-                    $ref: '#/components/schemas/Value'
+                    $ref: '#/components/schemas/AnyJSONValue'
                 isDefault:
                     type: boolean
                     description: Whether this configuration is a default configuration
             description: Defines the operator and a target value for an individual metric
-        Value:
-            type: object
-            properties:
-                nullValue:
-                    type: integer
-                    description: Represents a null value.
-                    format: enum
-                numberValue:
-                    type: number
-                    description: Represents a double value.
-                    format: double
-                stringValue:
-                    type: string
-                    description: Represents a string value.
-                boolValue:
-                    type: boolean
-                    description: Represents a boolean value.
-                structValue:
-                    type: object
-                    description: Represents a structured value.
-                listValue:
-                    $ref: '#/components/schemas/ListValue'
-            description: '`Value` represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values. A producer of value is expected to set one of that variants, absence of any variant indicates an error. The JSON representation for `Value` is JSON value.'
 tags:
     - name: Assessment
