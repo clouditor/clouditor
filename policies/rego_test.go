@@ -29,6 +29,8 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 )
@@ -40,8 +42,9 @@ func Test_regoEval_Eval(t *testing.T) {
 		// TODO(oxisto): move to args
 		evidenceID string
 
-		qc   *queryCache
-		mrtc *metricsResourceTypeCache
+		qc      *queryCache
+		mrtc    *metricsResourceTypeCache
+		storage persistence.Storage
 	}
 	type args struct {
 		source MetricConfigurationSource
@@ -77,6 +80,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				evidenceID: mockObjStorage1EvidenceID,
 				qc:         newQueryCache(),
 				mrtc:       &metricsResourceTypeCache{m: make(map[string][]string)},
+				storage:    testutil.NewInMemoryStorage(t),
 			},
 			args:       args{source: &mockMetricConfigurationSource{t: t}},
 			applicable: true,
@@ -102,6 +106,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				evidenceID: mockObjStorage2EvidenceID,
 				qc:         newQueryCache(),
 				mrtc:       &metricsResourceTypeCache{m: make(map[string][]string)},
+				storage:    testutil.NewInMemoryStorage(t),
 			},
 			args:       args{source: &mockMetricConfigurationSource{t: t}},
 			applicable: true,
@@ -131,6 +136,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				evidenceID: mockObjStorage2EvidenceID,
 				qc:         newQueryCache(),
 				mrtc:       &metricsResourceTypeCache{m: make(map[string][]string)},
+				storage:    testutil.NewInMemoryStorage(t),
 			},
 			args:       args{source: &mockMetricConfigurationSource{t: t}},
 			applicable: true,
@@ -177,6 +183,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				evidenceID: mockVM1EvidenceID,
 				qc:         newQueryCache(),
 				mrtc:       &metricsResourceTypeCache{m: make(map[string][]string)},
+				storage:    testutil.NewInMemoryStorage(t),
 			},
 			args:       args{source: &mockMetricConfigurationSource{t: t}},
 			applicable: true,
@@ -211,6 +218,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				evidenceID: mockVM2EvidenceID,
 				qc:         newQueryCache(),
 				mrtc:       &metricsResourceTypeCache{m: make(map[string][]string)},
+				storage:    testutil.NewInMemoryStorage(t),
 			},
 			args:       args{source: &mockMetricConfigurationSource{t: t}},
 			applicable: true,
@@ -224,8 +232,9 @@ func Test_regoEval_Eval(t *testing.T) {
 		assert.NoError(t, err)
 		t.Run(tt.name, func(t *testing.T) {
 			pe := regoEval{
-				qc:   tt.fields.qc,
-				mrtc: tt.fields.mrtc,
+				qc:      tt.fields.qc,
+				mrtc:    tt.fields.mrtc,
+				storage: tt.fields.storage,
 			}
 			results, err := pe.Eval(&evidence.Evidence{
 				Id:       tt.fields.evidenceID,

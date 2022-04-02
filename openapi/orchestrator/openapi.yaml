@@ -599,6 +599,9 @@ components:
         MetricImplementation:
             type: object
             properties:
+                metricId:
+                    type: string
+                    description: The metric which is implemented
                 language:
                     enum:
                         - LANGUAGE_UNSPECIFIED

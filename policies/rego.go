@@ -28,6 +28,7 @@ package policies
 import (
 	"context"
 	"fmt"
+	"os"
 	"sync"
 
 	"clouditor.io/clouditor/api/assessment"
@@ -167,6 +168,8 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 	var (
 		query *rego.PreparedEvalQuery
 		key   string
+		pkg   string
+		data  []byte
 	)
 
 	// We need to check, if the metric configuration has been changed. Any caching of this
@@ -194,9 +197,6 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 			"operator":     config.Operator,
 		}
 
-		// Convert camelCase metric in under_score_style for package name
-		metric = util.CamelCaseToSnakeCase(metric)
-
 		store := inmem.NewFromObject(c)
 		ctx := context.Background()
 
@@ -205,18 +205,44 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 			return nil, fmt.Errorf("could not create transaction: %w", err)
 		}
 
+		// Convert camelCase metric in under_score_style for package name
+		pkg = util.CamelCaseToSnakeCase(metric)
+
+		// TODO (oxisto): we should probably do this using some Rego store implementation
+
+		// Check, if an override in our database exists
+		var impl assessment.MetricImplementation
+		err = re.storage.Get(&impl, assessment.MetricImplementation{
+			MetricId: metric,
+			Language: assessment.MetricImplementation_REGO,
+		})
+		if err == persistence.ErrRecordNotFound {
+			// Load from file if it is not in the database
+			data, _ = os.ReadFile(bundle + "metric.rego")
+		} else if err != nil {
+			return nil, fmt.Errorf("could fetch policy from database: %w", err)
+		} else {
+			// Take the implementation from the DB
+			data = []byte(impl.Code)
+		}
+
+		err = store.UpsertPolicy(context.Background(), tx, bundle+"metric.rego", data)
+		if err != nil {
+			return nil, fmt.Errorf("could not upsert policy: %w", err)
+		}
+
 		query, err := rego.New(
 			rego.Query(fmt.Sprintf(`
 			applicable = data.clouditor.metrics.%s.applicable;
 			compliant = data.clouditor.metrics.%s.compliant;
 			operator = data.clouditor.operator;
-			target_value = data.clouditor.target_value`, metric, metric)),
+			target_value = data.clouditor.target_value`, pkg, pkg)),
 			rego.Package("clouditor.metrics"),
 			rego.Store(store),
 			rego.Transaction(tx),
 			rego.Load(
 				[]string{
-					bundle + "metric.rego",
+					//bundle + "metric.rego",
 					operators,
 				},
 				nil),
@@ -225,13 +251,14 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 			return nil, fmt.Errorf("could not prepare rego evaluation: %w", err)
 		}
 
-		lists, err := store.ListPolicies(context.Background(), tx)
-		fmt.Printf("%+v", lists)
-
 		err = store.Commit(ctx, tx)
 		if err != nil {
 			return nil, fmt.Errorf("could not commit transaction: %w", err)
 		}
+
+		tx, err = store.NewTransaction(ctx, storage.TransactionParams{})
+		lists, err := store.ListPolicies(context.Background(), tx)
+		fmt.Printf("%v, %+v", err, lists)
 
 		return &query, nil
 	})
