@@ -106,6 +106,9 @@ type Service struct {
 
 	// grpcOpts contains additional gRPC options that will be appended to all gRPC dial calls. Useful for testing.
 	grpcOpts []grpc.DialOption
+
+	// pe contains the actual policy evaluation engine we use
+	pe policies.PolicyEval
 }
 
 const (
@@ -156,6 +159,7 @@ func NewService(opts ...ServiceOption) *Service {
 		orchestratorAddress:  DefaultOrchestratorAddress,
 		orchestratorChannel:  make(chan *assessment.AssessmentResult, 1000),
 		cachedConfigurations: make(map[string]cachedConfiguration),
+		pe:                   policies.NewRegoEval(nil),
 	}
 
 	// Apply any options
@@ -274,7 +278,7 @@ func (s *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (err 
 	log.Debugf("Evaluating evidence %s (%s) collected by %s at %v", ev.Id, resourceId, ev.ToolId, ev.Timestamp)
 	log.Tracef("Evidence: %+v", ev)
 
-	evaluations, err := policies.RunEvidence(ev, s)
+	evaluations, err := s.pe.Eval(ev, s)
 	if err != nil {
 		newError := fmt.Errorf("could not evaluate evidence: %w", err)
 		log.Error(newError)

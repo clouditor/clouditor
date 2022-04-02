@@ -30,8 +30,10 @@ import (
 	"fmt"
 	"sync"
 
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/persistence"
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/open-policy-agent/opa/storage"
 	"github.com/open-policy-agent/opa/storage/inmem"
@@ -43,6 +45,9 @@ type regoEval struct {
 
 	// mrtc stores a list of applicable metrics per resourceType
 	mrtc *metricsResourceTypeCache
+
+	// storage contains our storage layer
+	storage persistence.Storage
 }
 
 type queryCache struct {
@@ -52,10 +57,11 @@ type queryCache struct {
 
 type orElseFunc func(key string) (query *rego.PreparedEvalQuery, err error)
 
-func NewRegoEval() PolicyEval {
+func NewRegoEval(storage persistence.Storage) PolicyEval {
 	return &regoEval{
-		mrtc: &metricsResourceTypeCache{m: make(map[string][]string)},
-		qc:   newQueryCache(),
+		mrtc:    &metricsResourceTypeCache{m: make(map[string][]string)},
+		qc:      newQueryCache(),
+		storage: storage,
 	}
 }
 
@@ -143,6 +149,20 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, holder MetricConfiguration
 	return data, nil
 }
 
+func (re *regoEval) UpdateImplementation(metricId string, impl *assessment.MetricImplementation) (err error) {
+	// Update the implementation in our storage
+	err = re.storage.Save(impl, "metridId = ?", metricId)
+	if err != nil {
+		return fmt.Errorf("could not persist metric implementation: %w", err)
+	}
+
+	// Invalidate query cache. Unfortunately, we need to empty the complete cache because the keys
+	// not only contain the metric but also the metric configuration, so we cannot remove a specific metric
+	re.qc.Empty()
+
+	return
+}
+
 func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interface{}, holder MetricConfigurationSource) (result *Result, err error) {
 	var (
 		query *rego.PreparedEvalQuery
@@ -204,6 +224,9 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 		if err != nil {
 			return nil, fmt.Errorf("could not prepare rego evaluation: %w", err)
 		}
+
+		lists, err := store.ListPolicies(context.Background(), tx)
+		fmt.Printf("%+v", lists)
 
 		err = store.Commit(ctx, tx)
 		if err != nil {
@@ -272,4 +295,14 @@ func (qc *queryCache) Get(key string, orElse orElseFunc) (query *rego.PreparedEv
 	// Update the cache
 	qc.cache[key] = query
 	return
+}
+
+func (qc *queryCache) Empty() {
+	qc.Lock()
+	for k := range qc.cache {
+		delete(qc.cache, k)
+	}
+
+	defer qc.Unlock()
+
 }

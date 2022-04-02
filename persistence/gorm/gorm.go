@@ -29,6 +29,7 @@ import (
 	"errors"
 	"fmt"
 
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
@@ -87,15 +88,17 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	}
 
 	// After successful DB initialization, migrate the schema
-	// Migrate User
-	if err = g.db.AutoMigrate(&auth.User{}); err != nil {
-		err = fmt.Errorf("error during auto-migration: %w", err)
-		return
+	var types = []interface{}{
+		&auth.User{},
+		&orchestrator.CloudService{},
+		&assessment.MetricImplementation{},
 	}
-	// Migrate CloudService
-	if err = g.db.AutoMigrate(&orchestrator.CloudService{}); err != nil {
-		err = fmt.Errorf("error during auto-migration: %w", err)
-		return
+
+	for _, typ := range types {
+		if err = g.db.AutoMigrate(typ); err != nil {
+			err = fmt.Errorf("error during auto-migration: %w", err)
+			return
+		}
 	}
 
 	s = g

@@ -44,8 +44,10 @@ type metricsResourceTypeCache struct {
 	m map[string][]string
 }
 
+// TODO(oxisto): Rename to AssessmentEngine or something?
 type PolicyEval interface {
 	Eval(evidence *evidence.Evidence, holder MetricConfigurationSource) (data []*Result, err error)
+	UpdateImplementation(metricId string, impl *assessment.MetricImplementation) (err error)
 }
 
 type Result struct {

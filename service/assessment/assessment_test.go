@@ -42,6 +42,7 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/policies"
 	"clouditor.io/clouditor/voc"
 
 	"github.com/stretchr/testify/assert"
@@ -88,6 +89,7 @@ func TestNewService(t *testing.T) {
 				orchestratorAddress:  "localhost:9090",
 				cachedConfigurations: make(map[string]cachedConfiguration),
 				orchestratorChannel:  nil,
+				pe:                   policies.NewRegoEval(nil),
 			},
 		},
 		{
@@ -104,6 +106,7 @@ func TestNewService(t *testing.T) {
 				evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 				orchestratorAddress:  "localhost:9092",
 				cachedConfigurations: make(map[string]cachedConfiguration),
+				pe:                   policies.NewRegoEval(nil),
 			},
 		},
 	}
@@ -360,6 +363,7 @@ func TestAssessEvidences(t *testing.T) {
 				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
 				orchestratorChannel:           make(chan *assessment.AssessmentResult, 1000),
 				grpcOpts:                      []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
+				pe:                            policies.NewRegoEval(nil),
 			}
 
 			assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
