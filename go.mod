@@ -22,12 +22,12 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.0
 	github.com/logrusorgru/aurora/v3 v3.0.0
-	github.com/open-policy-agent/opa v0.38.0
+	github.com/open-policy-agent/opa v0.39.0
 	github.com/oxisto/oauth2go v0.5.12
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.10.1
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	golang.org/x/crypto v0.0.0-20220307211146-efcb8507fb70
 	golang.org/x/oauth2 v0.0.0-20220309155454-6242fa91716a
 	google.golang.org/genproto v0.0.0-20220317150908-0efb43f6373e
@@ -74,7 +74,7 @@ require (
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
-	github.com/go-logr/logr v1.2.2 // indirect
+	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -116,7 +116,7 @@ require (
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
-	github.com/yashtewari/glob-intersection v0.0.0-20180916065949-5c77d914dd0b // indirect
+	github.com/yashtewari/glob-intersection v0.1.0 // indirect
 	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
