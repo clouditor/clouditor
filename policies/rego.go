@@ -256,10 +256,6 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 			return nil, fmt.Errorf("could not commit transaction: %w", err)
 		}
 
-		tx, err = store.NewTransaction(ctx, storage.TransactionParams{})
-		lists, err := store.ListPolicies(context.Background(), tx)
-		fmt.Printf("%v, %+v", err, lists)
-
 		return &query, nil
 	})
 	if err != nil {
