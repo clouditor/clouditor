@@ -38,6 +38,8 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/persistence/inmemory"
 	"clouditor.io/clouditor/policies"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"golang.org/x/oauth2/clientcredentials"
@@ -109,6 +111,10 @@ type Service struct {
 
 	// pe contains the actual policy evaluation engine we use
 	pe policies.PolicyEval
+
+	// storage contains an instance of our persistance layer to store objects, such as
+	// custom metric implementations.
+	storage persistence.Storage
 }
 
 const (
@@ -152,6 +158,8 @@ func WithAdditionalGRPCOpts(opts ...grpc.DialOption) ServiceOption {
 
 // NewService creates a new assessment service with default values.
 func NewService(opts ...ServiceOption) *Service {
+	var err error
+
 	s := &Service{
 		results:              make(map[string]*assessment.AssessmentResult),
 		evidenceStoreAddress: DefaultEvidenceStoreAddress,
@@ -159,13 +167,23 @@ func NewService(opts ...ServiceOption) *Service {
 		orchestratorAddress:  DefaultOrchestratorAddress,
 		orchestratorChannel:  make(chan *assessment.AssessmentResult, 1000),
 		cachedConfigurations: make(map[string]cachedConfiguration),
-		pe:                   policies.NewRegoEval(nil),
 	}
 
 	// Apply any options
 	for _, o := range opts {
 		o(s)
 	}
+
+	// Default to an in-memory storage, if nothing was explicitly set
+	if s.storage == nil {
+		s.storage, err = inmemory.NewStorage()
+		if err != nil {
+			log.Errorf("Could not initialize the storage: %v", err)
+		}
+	}
+
+	// Initialize the policy evaluator after storage is set
+	s.pe = policies.NewRegoEval(s.storage)
 
 	return s
 }

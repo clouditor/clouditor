@@ -37,6 +37,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var log *logrus.Entry
@@ -71,7 +72,11 @@ func init() {
 
 // NewStorage creates a new storage using GORM (which DB to use depends on the StorageOption)
 func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
-	g := &storage{}
+	g := &storage{
+		config: gorm.Config{
+			Logger: logger.Default.LogMode(logger.Silent),
+		},
+	}
 
 	// Init storage
 	log.Println("Creating storage")

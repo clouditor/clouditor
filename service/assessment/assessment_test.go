@@ -89,7 +89,6 @@ func TestNewService(t *testing.T) {
 				orchestratorAddress:  "localhost:9090",
 				cachedConfigurations: make(map[string]cachedConfiguration),
 				orchestratorChannel:  nil,
-				pe:                   policies.NewRegoEval(nil),
 			},
 		},
 		{
@@ -106,10 +105,10 @@ func TestNewService(t *testing.T) {
 				evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 				orchestratorAddress:  "localhost:9092",
 				cachedConfigurations: make(map[string]cachedConfiguration),
-				pe:                   policies.NewRegoEval(nil),
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService(tt.args.opts...)
@@ -119,6 +118,10 @@ func TestNewService(t *testing.T) {
 
 			// Ignore pointers to channel in subsequent DeepEqual check
 			s.orchestratorChannel = nil
+
+			// Ignore pointers to storage and policy eval
+			s.pe = nil
+			s.storage = nil
 
 			if got := s; !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewService() = %v, want %v", got, tt.want)
