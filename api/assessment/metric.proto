@@ -113,7 +113,7 @@ message MetricImplementation {
   };
 
   // The language this metric is implemented in
-  Language language = 2;
+  Language lang = 2;
 
   // The actual implementation
   string code = 3;

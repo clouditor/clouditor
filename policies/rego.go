@@ -214,7 +214,7 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 		var impl assessment.MetricImplementation
 		err = re.storage.Get(&impl, assessment.MetricImplementation{
 			MetricId: metric,
-			Language: assessment.MetricImplementation_REGO,
+			Lang:     assessment.MetricImplementation_REGO,
 		})
 		if err == persistence.ErrRecordNotFound {
 			// Load from file if it is not in the database

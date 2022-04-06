@@ -30,6 +30,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
@@ -129,4 +130,29 @@ func (*Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequest)
 	}
 
 	return
+}
+
+// SubscribeMetricChangeEvents implements a stream of metric events to the subscribed client.
+func (svc *Service) SubscribeMetricChangeEvents(_ *orchestrator.SubscribeMetricChangeEventRequest, stream orchestrator.Orchestrator_SubscribeMetricChangeEventsServer) (err error) {
+	var (
+		event *orchestrator.MetricChangeEvent
+	)
+
+	for {
+		// Wait for a new event in our event channel
+		event = <-svc.events
+
+		err = stream.Send(event)
+
+		// Check for send errors
+		if errors.Is(err, io.EOF) {
+			return nil
+		}
+		if err != nil {
+			err = fmt.Errorf("cannot stream response to the client: %w", err)
+			log.Error(err)
+
+			return status.Errorf(codes.Unknown, "%v", err)
+		}
+	}
 }

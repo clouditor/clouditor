@@ -76,6 +76,8 @@ type Service struct {
 	metricsFile string
 
 	requirements []*orchestrator.Requirement
+
+	events chan *orchestrator.MetricChangeEvent
 }
 
 func init() {
@@ -112,6 +114,7 @@ func NewService(opts ...ServiceOption) *Service {
 		results:              make(map[string]*assessment.AssessmentResult),
 		metricConfigurations: make(map[string]map[string]*assessment.MetricConfiguration),
 		metricsFile:          DefaultMetricsFile,
+		events:               make(chan *orchestrator.MetricChangeEvent),
 	}
 
 	// Apply service options

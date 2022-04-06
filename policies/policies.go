@@ -63,6 +63,11 @@ type MetricConfigurationSource interface {
 	MetricConfiguration(metric string) (*assessment.MetricConfiguration, error)
 }
 
+// MetricImplementationSource can be used to retrieve a metric implementation for a particular language and metric.
+type MetricImplementationSource interface {
+	MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (*assessment.MetricImplementation, error)
+}
+
 func scanBundleDir(baseDir string) ([]os.FileInfo, error) {
 	dirname := baseDir + "/policies/bundles"
 

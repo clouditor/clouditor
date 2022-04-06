@@ -507,6 +507,25 @@ func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) erro
 	return nil
 }
 
+// MetricImplementation implements MetricImplementationSource by retrieving the metric implementation
+// from the orchestrator.
+func (s *Service) MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (impl *assessment.MetricImplementation, err error) {
+	// For now, the orchestrator only supports the Rego language.
+	if lang != assessment.MetricImplementation_REGO {
+		return nil, errors.New("unsupported language")
+	}
+
+	// Retrieve it from the orchestrator
+	impl, err = s.orchestratorClient.GetMetricImplementation(context.Background(), &orchestrator.GetMetricImplementationRequest{
+		MetricId: metric,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve metric implementation from orchestrator: %w", err)
+	}
+
+	return
+}
+
 // MetricConfiguration implements MetricConfigurationSource by getting the corresponding metric configuration for the
 // default target cloud service
 func (s *Service) MetricConfiguration(metric string) (config *assessment.MetricConfiguration, err error) {

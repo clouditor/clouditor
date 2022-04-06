@@ -390,6 +390,10 @@ paths:
                   required: true
                   schema:
                     type: string
+                - name: lang
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
@@ -496,7 +500,7 @@ components:
                     items:
                         type: string
                     description: a list of metrics that this tool can assess, referred by their ids
-            description: Represents an external tool or service that offers assessments according to certain metrics
+            description: Represents an external tool or service that offers assessments according to certain metrics.
         CloudService:
             type: object
             properties:
@@ -602,7 +606,7 @@ components:
                 metricId:
                     type: string
                     description: The metric which is implemented
-                language:
+                lang:
                     enum:
                         - LANGUAGE_UNSPECIFIED
                         - REGO
