@@ -178,14 +178,14 @@ func Test_StreamChannelOf_sendLoop(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := &StreamChannelOf[*mockClientStream, proto.Message]{
-				Channel:   tt.fields.Channel,
+				channel:   tt.fields.Channel,
 				stream:    tt.fields.stream,
 				target:    tt.fields.target,
 				component: tt.fields.component,
 			}
 
 			// prepare something, otherwise the sendloop will block waiting for a message
-			go func() { c.Channel <- mockMessage{} }()
+			go func() { c.Send(&mockMessage{}) }()
 
 			c.sendLoop(tt.args.s)
 
@@ -207,7 +207,7 @@ func (mockMessage) ProtoReflect() protoreflect.Message {
 }
 
 func (m mockClientStream) Send(msg proto.Message) error {
-	return m.Send(msg)
+	return m.SendMsg(msg)
 }
 
 func (mockClientStream) CloseSend() error {

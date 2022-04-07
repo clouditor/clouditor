@@ -48,8 +48,8 @@ var (
 // that particular stream, using an internal go routine. This is necessary, because gRPC does not allow to send to a
 // stream from multiple goroutines directly.
 type StreamChannelOf[StreamType grpc.ClientStream, MsgType proto.Message] struct {
-	// Channel can be used to send message to the stream
-	Channel chan MsgType
+	// channel can be used to send a message to the stream
+	channel chan MsgType
 
 	// stream to the component
 	stream StreamType
@@ -65,12 +65,12 @@ type StreamChannelOf[StreamType grpc.ClientStream, MsgType proto.Message] struct
 // in target and returns the stream or an error. Additional gRPC dial options can be specified in additionalOpts.
 type InitFuncOf[StreamType grpc.ClientStream] func(target string, additionalOpts ...grpc.DialOption) (stream StreamType, err error)
 
-// StreamsOf handles stream channels to multiple gRPC servers, idenfitied by a unique target (host and port usually).
+// StreamsOf handles stream channels to multiple gRPC servers, identified by a unique target (host and port usually).
 // Since gRPC does only allow to send to a stream using one goroutine, each stream provides a go channel that can be
 // used to send messages to the particular stream.
 //
-// A stream for a given target can be retrieved with the GetStream function, which automatically initializes the stream if
-// it does not exist.
+// A stream for a given target can be retrieved with the GetStream function, which automatically initializes the stream
+// if it does not exist.
 type StreamsOf[StreamType grpc.ClientStream, MsgType proto.Message] struct {
 	mutex    sync.RWMutex
 	channels map[string]*StreamChannelOf[StreamType, MsgType]
@@ -125,7 +125,7 @@ func (s *StreamsOf[StreamType, MsgType]) addStream(target string, component stri
 		stream:    stream,
 		component: component,
 		target:    target,
-		Channel:   make(chan MsgType, 1000),
+		channel:   make(chan MsgType, 1000),
 	}
 
 	// Update the stream map. This time we need a real lock for an update
@@ -158,7 +158,7 @@ func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType,
 	var err error
 
 	// Fetch new messages from channel (this will block)
-	for e := range c.Channel {
+	for e := range c.channel {
 		// Try to send the message in our stream
 		err = c.stream.SendMsg(e)
 		if errors.Is(err, io.EOF) {
@@ -169,7 +169,7 @@ func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType,
 			return
 		}
 
-		// Some other error than EOF occured
+		// Some other error than EOF occurred
 		if err != nil {
 			log.Errorf("Error when sending message to %s (%s): %v", c.component, c.target, err)
 
@@ -185,7 +185,7 @@ func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType,
 	}
 }
 
-// recvLoop continously receives message from the stream. Currently they are just discarded. In the future, we might
+// recvLoop continuously receives message from the stream. Currently they are just discarded. In the future, we might
 // want to send them back to the caller. But we need to receive them, otherwise the buffer of the stream gets congested.
 func (c *StreamChannelOf[StreamType, MsgType]) recvLoop() {
 	for {
@@ -202,4 +202,11 @@ func (c *StreamChannelOf[StreamType, MsgType]) recvLoop() {
 			break
 		}
 	}
+}
+
+// Send sends the message into the stream via the channel. Since this uses the receive operator on the channel,
+// this function may block until the message is received on the the sendLoop of this StreamChannelOf or if
+// the buffer of the channel is full.
+func (c *StreamChannelOf[StreamType, MsgType]) Send(msg MsgType) {
+	c.channel <- msg
 }

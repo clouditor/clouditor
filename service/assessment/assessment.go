@@ -295,7 +295,7 @@ func (s *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (err 
 	}
 
 	// Store evidence in evidenceStoreChannel
-	channel.Channel <- &evidence.StoreEvidenceRequest{Evidence: ev}
+	channel.Send(&evidence.StoreEvidenceRequest{Evidence: ev})
 
 	for i, data := range evaluations {
 		metricId := data.MetricId

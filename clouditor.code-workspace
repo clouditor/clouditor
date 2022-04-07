@@ -15,6 +15,7 @@
 				"--proto_path=${env.GOPATH}/src"
 			]
 		},
-		"go.coverOnSave": true
+		"go.coverOnSave": true,
+		"rewrap.wrappingColumn": 120
 	}
 }
