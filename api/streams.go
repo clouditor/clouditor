@@ -43,10 +43,14 @@ var (
 	log = logrus.WithField("component", "api-streams")
 )
 
+type stream interface {
+	grpc.ClientStream
+}
+
 // StreamChannelOf provides a channel around a connection to a grpc.ClientStream to send messages of type MsgType to
 // that particular stream, using an internal go routine. This is necessary, because gRPC does not allow to send to a
 // stream from multiple goroutines directly.
-type StreamChannelOf[StreamType grpc.ClientStream, MsgType Message] struct {
+type StreamChannelOf[StreamType stream, MsgType Message] struct {
 	// Channel can be used to send message to the stream
 	Channel chan MsgType
 
@@ -64,7 +68,7 @@ type InitFuncOf[StreamType grpc.ClientStream] func(URL string, additionalOpts ..
 //
 // A stream for a given URL can be retrieved with the GetStream function, which automatically initializes the stream if
 // it does not exist.
-type StreamsOf[StreamType grpc.ClientStream, MsgType Message] struct {
+type StreamsOf[StreamType stream, MsgType Message] struct {
 	*sync.RWMutex
 	channels map[string]*StreamChannelOf[StreamType, MsgType]
 }
@@ -125,6 +129,26 @@ func (s *StreamsOf[StreamType, MsgType]) addStream(URL string, component string,
 
 	log.Infof("Established stream to %s (%s)", component, URL)
 
+	// Start go routine for receiving messages from the stream (especially relevant for bi-directional streams).
+	// Currently they are just discarded. In the future, we might want to send them back to the caller. But we need to
+	// receive them, otherwise the buffer of the stream gets congested.
+	go func() {
+		for {
+			// TODO(oxisto): Check, if this also works for uni-directional streams
+			var msg interface{}
+			err := c.stream.RecvMsg(&msg)
+
+			if errors.Is(err, io.EOF) {
+				break
+			}
+
+			if err != nil {
+				log.Errorf("Error receiving response from stream: %w", err)
+				break
+			}
+		}
+	}()
+
 	// Start go routine for sending messages from the channel to the stream
 	go func() {
 		// Fetch new messages from channel (this will block)
@@ -161,7 +185,7 @@ func (s *StreamsOf[StreamType, MsgType]) addStream(URL string, component string,
 
 // removeStream deletes the channel from the stream map.
 func (s *StreamsOf[StreamType, MsgType]) removeStream(URL string) {
-	log.Debugf("Removing connection entry for URL %s", URL)
+	log.Debugf("Removing stream channel for URL %s", URL)
 
 	s.Lock()
 	delete(s.channels, URL)
