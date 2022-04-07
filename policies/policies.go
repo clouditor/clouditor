@@ -32,6 +32,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/orchestrator"
 	"github.com/sirupsen/logrus"
 )
 
@@ -46,8 +47,8 @@ type metricsResourceTypeCache struct {
 
 // TODO(oxisto): Rename to AssessmentEngine or something?
 type PolicyEval interface {
-	Eval(evidence *evidence.Evidence, holder MetricConfigurationSource) (data []*Result, err error)
-	UpdateImplementation(metricId string, impl *assessment.MetricImplementation) (err error)
+	Eval(evidence *evidence.Evidence, mcs MetricConfigurationSource, mis MetricImplementationSource) (data []*Result, err error)
+	HandleMetricEvent(event *orchestrator.MetricChangeEvent) (err error)
 }
 
 type Result struct {

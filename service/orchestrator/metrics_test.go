@@ -28,11 +28,13 @@ package orchestrator
 import (
 	"context"
 	"io/fs"
+	"reflect"
 	"testing"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
-
+	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/persistence"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -284,4 +286,91 @@ func TestService_ListMetrics(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotEmpty(t, response.Metrics)
+}
+
+func TestService_GetMetricImplementation(t *testing.T) {
+	type fields struct {
+		metricConfigurations  map[string]map[string]*assessment.MetricConfiguration
+		results               map[string]*assessment.AssessmentResult
+		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		storage               persistence.Storage
+		metricsFile           string
+		requirements          []*orchestrator.Requirement
+		events                chan *orchestrator.MetricChangeEvent
+	}
+	type args struct {
+		ctx context.Context
+		req *orchestrator.GetMetricImplementationRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes *assessment.MetricImplementation
+		wantErr bool
+	}{
+		{
+			name: "metric not found",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+			},
+			args: args{
+				req: &orchestrator.GetMetricImplementationRequest{
+					MetricId: "some metric",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "metric found",
+			fields: fields{
+				storage: func() (s persistence.Storage) {
+					s = testutil.NewInMemoryStorage(t)
+					err := s.Save(&assessment.MetricImplementation{
+						MetricId: "some metric",
+						Lang:     assessment.MetricImplementation_REGO,
+						Code:     "package test",
+					}, "metric_id = ?", "some metric")
+					if err != nil {
+						t.Errorf("Could not save implementation: %v", err)
+					}
+
+					return s
+				}(),
+			},
+			args: args{
+				req: &orchestrator.GetMetricImplementationRequest{
+					MetricId: "some metric",
+				},
+			},
+			wantRes: &assessment.MetricImplementation{
+				MetricId: "some metric",
+				Lang:     assessment.MetricImplementation_REGO,
+				Code:     "package test",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				metricConfigurations:  tt.fields.metricConfigurations,
+				results:               tt.fields.results,
+				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
+				storage:               tt.fields.storage,
+				metricsFile:           tt.fields.metricsFile,
+				requirements:          tt.fields.requirements,
+				events:                tt.fields.events,
+			}
+
+			gotRes, err := svc.GetMetricImplementation(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.GetMetricImplementation() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotRes, tt.wantRes) {
+				t.Errorf("Service.GetMetricImplementation() = %v, want %v", gotRes, tt.wantRes)
+			}
+		})
+	}
 }

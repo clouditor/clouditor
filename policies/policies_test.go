@@ -27,7 +27,6 @@ package policies
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -61,12 +60,9 @@ type mockMetricConfigurationSource struct {
 
 func (m *mockMetricConfigurationSource) MetricConfiguration(metric string) (*assessment.MetricConfiguration, error) {
 	// Fetch the metric configuration directly from our file
-
 	bundle := fmt.Sprintf("policies/bundles/%s/data.json", metric)
-	file, err := os.OpenFile(bundle, os.O_RDONLY, 0600)
-	assert.NoError(m.t, err)
 
-	b, err := ioutil.ReadAll(file)
+	b, err := os.ReadFile(bundle)
 	assert.NoError(m.t, err)
 
 	var config assessment.MetricConfiguration
@@ -74,4 +70,24 @@ func (m *mockMetricConfigurationSource) MetricConfiguration(metric string) (*ass
 	assert.NoError(m.t, err)
 
 	return &config, nil
+}
+
+type mockMetricImplementationSource struct {
+	t *testing.T
+}
+
+func (m *mockMetricImplementationSource) MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (*assessment.MetricImplementation, error) {
+	// Fetch the metric implementation directly from our file
+	bundle := fmt.Sprintf("policies/bundles/%s/metric.rego", metric)
+
+	b, err := os.ReadFile(bundle)
+	assert.NoError(m.t, err)
+
+	var impl = &assessment.MetricImplementation{
+		MetricId: metric,
+		Lang:     assessment.MetricImplementation_REGO,
+		Code:     string(b),
+	}
+
+	return impl, nil
 }

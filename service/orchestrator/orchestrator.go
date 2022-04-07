@@ -171,49 +171,6 @@ func NewService(opts ...ServiceOption) *Service {
 	return &s
 }
 
-func (s *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.GetMetricConfigurationRequest) (response *assessment.MetricConfiguration, err error) {
-	// Check, if we have a specific configuration for the metric
-	if config, ok := s.metricConfigurations[req.ServiceId][req.MetricId]; ok {
-		return config, nil
-	}
-
-	// Otherwise, fall back to our default configuration
-	if config, ok := defaultMetricConfigurations[req.MetricId]; ok {
-		return config, nil
-	}
-
-	newError := fmt.Errorf("could not find metric configuration for metric %s in service %s", req.MetricId, req.ServiceId)
-	log.Error(newError)
-
-	return nil, status.Errorf(codes.NotFound, "%v", newError)
-}
-
-// ListMetricConfigurations retrieves a list of MetricConfiguration objects for a particular target
-// cloud service specified in req.
-//
-// The list MUST include a configuration for each known metric. If the user did not specify a custom
-// configuration for a particular metric within the service, the default metric configuration is
-// inserted into the list.
-func (s *Service) ListMetricConfigurations(ctx context.Context, req *orchestrator.ListMetricConfigurationRequest) (response *orchestrator.ListMetricConfigurationResponse, err error) {
-	response = &orchestrator.ListMetricConfigurationResponse{
-		Configurations: make(map[string]*assessment.MetricConfiguration),
-	}
-
-	// TODO(oxisto): This is not very efficient, we should do this once at startup so that we can just return the map
-	for metricId := range metricIndex {
-		config, err := s.GetMetricConfiguration(ctx, &orchestrator.GetMetricConfigurationRequest{ServiceId: req.ServiceId, MetricId: metricId})
-
-		if err != nil {
-			log.Errorf("Error getting metric configuration: %v", err)
-			return nil, err
-		}
-
-		response.Configurations[metricId] = config
-	}
-
-	return
-}
-
 // StoreAssessmentResult is a method implementation of the orchestrator interface: It receives an assessment result and stores it
 func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.StoreAssessmentResultRequest) (resp *orchestrator.StoreAssessmentResultResponse, err error) {
 	_, err = req.Result.Validate()

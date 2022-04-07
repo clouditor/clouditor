@@ -296,7 +296,7 @@ func (s *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (err 
 	log.Debugf("Evaluating evidence %s (%s) collected by %s at %v", ev.Id, resourceId, ev.ToolId, ev.Timestamp)
 	log.Tracef("Evidence: %+v", ev)
 
-	evaluations, err := s.pe.Eval(ev, s)
+	evaluations, err := s.pe.Eval(ev, s, s)
 	if err != nil {
 		newError := fmt.Errorf("could not evaluate evidence: %w", err)
 		log.Error(newError)

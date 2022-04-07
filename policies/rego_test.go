@@ -47,7 +47,8 @@ func Test_regoEval_Eval(t *testing.T) {
 		storage persistence.Storage
 	}
 	type args struct {
-		source MetricConfigurationSource
+		mcs MetricConfigurationSource
+		mis MetricImplementationSource
 	}
 	tests := []struct {
 		name       string
@@ -82,7 +83,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				mrtc:       &metricsResourceTypeCache{m: make(map[string][]string)},
 				storage:    testutil.NewInMemoryStorage(t),
 			},
-			args:       args{source: &mockMetricConfigurationSource{t: t}},
+			args:       args{mcs: &mockMetricConfigurationSource{t: t}, mis: &mockMetricImplementationSource{t: t}},
 			applicable: true,
 			compliant:  true,
 			wantErr:    false,
@@ -108,7 +109,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				mrtc:       &metricsResourceTypeCache{m: make(map[string][]string)},
 				storage:    testutil.NewInMemoryStorage(t),
 			},
-			args:       args{source: &mockMetricConfigurationSource{t: t}},
+			args:       args{mcs: &mockMetricConfigurationSource{t: t}, mis: &mockMetricImplementationSource{t: t}},
 			applicable: true,
 			compliant:  false,
 			wantErr:    false,
@@ -138,7 +139,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				mrtc:       &metricsResourceTypeCache{m: make(map[string][]string)},
 				storage:    testutil.NewInMemoryStorage(t),
 			},
-			args:       args{source: &mockMetricConfigurationSource{t: t}},
+			args:       args{mcs: &mockMetricConfigurationSource{t: t}, mis: &mockMetricImplementationSource{t: t}},
 			applicable: true,
 			compliant:  false,
 			wantErr:    false,
@@ -185,7 +186,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				mrtc:       &metricsResourceTypeCache{m: make(map[string][]string)},
 				storage:    testutil.NewInMemoryStorage(t),
 			},
-			args:       args{source: &mockMetricConfigurationSource{t: t}},
+			args:       args{mcs: &mockMetricConfigurationSource{t: t}, mis: &mockMetricImplementationSource{t: t}},
 			applicable: true,
 			compliant:  true,
 			wantErr:    false,
@@ -220,7 +221,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				mrtc:       &metricsResourceTypeCache{m: make(map[string][]string)},
 				storage:    testutil.NewInMemoryStorage(t),
 			},
-			args:       args{source: &mockMetricConfigurationSource{t: t}},
+			args:       args{mcs: &mockMetricConfigurationSource{t: t}, mis: &mockMetricImplementationSource{t: t}},
 			applicable: true,
 			compliant:  false,
 			wantErr:    false,
@@ -232,14 +233,13 @@ func Test_regoEval_Eval(t *testing.T) {
 		assert.NoError(t, err)
 		t.Run(tt.name, func(t *testing.T) {
 			pe := regoEval{
-				qc:      tt.fields.qc,
-				mrtc:    tt.fields.mrtc,
-				storage: tt.fields.storage,
+				qc:   tt.fields.qc,
+				mrtc: tt.fields.mrtc,
 			}
 			results, err := pe.Eval(&evidence.Evidence{
 				Id:       tt.fields.evidenceID,
 				Resource: resource,
-			}, tt.args.source)
+			}, tt.args.mcs, tt.args.mis)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RunEvidence() error = %v, wantErr %v", err, tt.wantErr)

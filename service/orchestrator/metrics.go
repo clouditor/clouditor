@@ -34,6 +34,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/persistence"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -127,6 +128,63 @@ func (*Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequest)
 
 	if metric, ok = metricIndex[req.MetricId]; !ok {
 		return nil, status.Errorf(codes.NotFound, "could not find metric with id %s", req.MetricId)
+	}
+
+	return
+}
+
+func (s *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.GetMetricConfigurationRequest) (response *assessment.MetricConfiguration, err error) {
+	// Check, if we have a specific configuration for the metric
+	if config, ok := s.metricConfigurations[req.ServiceId][req.MetricId]; ok {
+		return config, nil
+	}
+
+	// Otherwise, fall back to our default configuration
+	if config, ok := defaultMetricConfigurations[req.MetricId]; ok {
+		return config, nil
+	}
+
+	newError := fmt.Errorf("could not find metric configuration for metric %s in service %s", req.MetricId, req.ServiceId)
+	log.Error(newError)
+
+	return nil, status.Errorf(codes.NotFound, "%v", newError)
+}
+
+// ListMetricConfigurations retrieves a list of MetricConfiguration objects for a particular target
+// cloud service specified in req.
+//
+// The list MUST include a configuration for each known metric. If the user did not specify a custom
+// configuration for a particular metric within the service, the default metric configuration is
+// inserted into the list.
+func (s *Service) ListMetricConfigurations(ctx context.Context, req *orchestrator.ListMetricConfigurationRequest) (response *orchestrator.ListMetricConfigurationResponse, err error) {
+	response = &orchestrator.ListMetricConfigurationResponse{
+		Configurations: make(map[string]*assessment.MetricConfiguration),
+	}
+
+	// TODO(oxisto): This is not very efficient, we should do this once at startup so that we can just return the map
+	for metricId := range metricIndex {
+		config, err := s.GetMetricConfiguration(ctx, &orchestrator.GetMetricConfigurationRequest{ServiceId: req.ServiceId, MetricId: metricId})
+
+		if err != nil {
+			log.Errorf("Error getting metric configuration: %v", err)
+			return nil, err
+		}
+
+		response.Configurations[metricId] = config
+	}
+
+	return
+}
+
+func (svc *Service) GetMetricImplementation(ctx context.Context, req *orchestrator.GetMetricImplementationRequest) (res *assessment.MetricImplementation, err error) {
+	res = new(assessment.MetricImplementation)
+
+	// TODO(oxisto): Validate GetMetricImplementationRequest
+	err = svc.storage.Get(res, "metric_id = ?", req.MetricId)
+	if err == persistence.ErrRecordNotFound {
+		return nil, status.Error(codes.NotFound, "implementation for metric not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not retrieve metric implementation: %v", err)
 	}
 
 	return

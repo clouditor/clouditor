@@ -28,11 +28,12 @@ package policies
 import (
 	"context"
 	"fmt"
-	"os"
+	"strings"
 	"sync"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
 	"github.com/open-policy-agent/opa/rego"
@@ -46,9 +47,6 @@ type regoEval struct {
 
 	// mrtc stores a list of applicable metrics per resourceType
 	mrtc *metricsResourceTypeCache
-
-	// storage contains our storage layer
-	storage persistence.Storage
 }
 
 type queryCache struct {
@@ -60,15 +58,14 @@ type orElseFunc func(key string) (query *rego.PreparedEvalQuery, err error)
 
 func NewRegoEval(storage persistence.Storage) PolicyEval {
 	return &regoEval{
-		mrtc:    &metricsResourceTypeCache{m: make(map[string][]string)},
-		qc:      newQueryCache(),
-		storage: storage,
+		mrtc: &metricsResourceTypeCache{m: make(map[string][]string)},
+		qc:   newQueryCache(),
 	}
 }
 
 // Eval evaluates a given evidence against all available Rego policies and returns the result of all policies that were
 // considered to be applicable.
-func (re *regoEval) Eval(evidence *evidence.Evidence, holder MetricConfigurationSource) (data []*Result, err error) {
+func (re *regoEval) Eval(evidence *evidence.Evidence, mcs MetricConfigurationSource, mis MetricImplementationSource) (data []*Result, err error) {
 	var (
 		baseDir string
 		m       map[string]interface{}
@@ -116,7 +113,7 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, holder MetricConfiguration
 		// start at the exactly same time.
 		metrics = []string{}
 		for _, fileInfo := range files {
-			runMap, err := re.evalMap(baseDir, fileInfo.Name(), m, holder)
+			runMap, err := re.evalMap(baseDir, fileInfo.Name(), m, mcs, mis)
 			if err != nil {
 				return nil, err
 			}
@@ -137,7 +134,7 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, holder MetricConfiguration
 		re.mrtc.Unlock()
 	} else {
 		for _, metric := range metrics {
-			runMap, err := re.evalMap(baseDir, metric, m, holder)
+			runMap, err := re.evalMap(baseDir, metric, m, mcs, mis)
 			if err != nil {
 				return nil, err
 			}
@@ -150,31 +147,29 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, holder MetricConfiguration
 	return data, nil
 }
 
-func (re *regoEval) UpdateImplementation(metricId string, impl *assessment.MetricImplementation) (err error) {
-	// Update the implementation in our storage
-	err = re.storage.Save(impl, "metridId = ?", metricId)
-	if err != nil {
-		return fmt.Errorf("could not persist metric implementation: %w", err)
+func (re *regoEval) HandleMetricEvent(event *orchestrator.MetricChangeEvent) (err error) {
+	if event.Type == orchestrator.MetricChangeEvent_IMPLEMENTATION_CHANGED {
+		log.Infof("Implementation of %s has changed. Clearing cache for this metric", event.MetricId)
+	} else if event.Type == orchestrator.MetricChangeEvent_CONFIG_CHANGED {
+		log.Infof("Configuration of %s has changed. Clearing cache for this metric", event.MetricId)
 	}
 
-	// Invalidate query cache. Unfortunately, we need to empty the complete cache because the keys
-	// not only contain the metric but also the metric configuration, so we cannot remove a specific metric
-	re.qc.Empty()
+	// Evict the cache for the given metric
+	re.qc.Evict(event.MetricId)
 
-	return
+	return nil
 }
 
-func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interface{}, holder MetricConfigurationSource) (result *Result, err error) {
+func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interface{}, mcs MetricConfigurationSource, mis MetricImplementationSource) (result *Result, err error) {
 	var (
 		query *rego.PreparedEvalQuery
 		key   string
 		pkg   string
-		data  []byte
 	)
 
 	// We need to check, if the metric configuration has been changed. Any caching of this
 	// configuration will be done by the MetricConfigurationSource.
-	config, err := holder.MetricConfiguration(metric)
+	config, err := mcs.MetricConfiguration(metric)
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch metric configuration: %w", err)
 	}
@@ -185,7 +180,8 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 
 	query, err = re.qc.Get(key, func(key string) (*rego.PreparedEvalQuery, error) {
 		var (
-			tx storage.Transaction
+			tx   storage.Transaction
+			impl *assessment.MetricImplementation
 		)
 
 		// Create paths for bundle directory and utility functions file
@@ -211,7 +207,7 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 		// TODO (oxisto): we should probably do this using some Rego store implementation
 
 		// Check, if an override in our database exists
-		var impl assessment.MetricImplementation
+		/*var impl assessment.MetricImplementation
 		err = re.storage.Get(&impl, assessment.MetricImplementation{
 			MetricId: metric,
 			Lang:     assessment.MetricImplementation_REGO,
@@ -224,9 +220,13 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 		} else {
 			// Take the implementation from the DB
 			data = []byte(impl.Code)
+		}*/
+		impl, err = mis.MetricImplementation(assessment.MetricImplementation_REGO, metric)
+		if err != nil {
+			return nil, fmt.Errorf("could not fetch policy %w", err)
 		}
 
-		err = store.UpsertPolicy(context.Background(), tx, bundle+"metric.rego", data)
+		err = store.UpsertPolicy(context.Background(), tx, bundle+"metric.rego", []byte(impl.Code))
 		if err != nil {
 			return nil, fmt.Errorf("could not upsert policy: %w", err)
 		}
@@ -242,7 +242,6 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 			rego.Transaction(tx),
 			rego.Load(
 				[]string{
-					//bundle + "metric.rego",
 					operators,
 				},
 				nil),
@@ -322,10 +321,22 @@ func (qc *queryCache) Get(key string, orElse orElseFunc) (query *rego.PreparedEv
 
 func (qc *queryCache) Empty() {
 	qc.Lock()
+	defer qc.Unlock()
+
 	for k := range qc.cache {
 		delete(qc.cache, k)
 	}
+}
 
+// Evict deletes all keys from the cache that belong to the given metric.
+func (qc *queryCache) Evict(metric string) {
+	qc.Lock()
 	defer qc.Unlock()
 
+	// Look for keys that begin with the metric
+	for k := range qc.cache {
+		if strings.HasPrefix(k, metric) {
+			delete(qc.cache, k)
+		}
+	}
 }
