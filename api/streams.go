@@ -154,8 +154,6 @@ func (s *StreamsOf[StreamType, MsgType]) addStream(URL string, component string,
 			// Try to send the message in our stream
 			err = c.stream.SendMsg(e)
 			if errors.Is(err, io.EOF) {
-				// Close the stream gracefully
-				c.stream.CloseSend()
 				log.Infof("Stream to %s (%s) closed with EOF", component, URL)
 
 				// Remove the stream from our map and end this goroutine
@@ -165,9 +163,10 @@ func (s *StreamsOf[StreamType, MsgType]) addStream(URL string, component string,
 
 			// Some other error than EOF occured
 			if err != nil {
-				// We also need to close the stream here, we cannot recover from an error here
-				c.stream.CloseSend()
 				log.Errorf("Error when sending message to %s (%s): %v", component, URL, err)
+
+				// Close the stream gracefully. We can ignore any error resulting from the close here
+				_ = c.stream.CloseSend()
 
 				// Remove the stream from our map and end this goroutine
 				s.removeStream(URL)
