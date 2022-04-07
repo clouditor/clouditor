@@ -76,10 +76,8 @@ type Service struct {
 	assessment.UnimplementedAssessmentServer
 
 	// evidenceStoreStream sends evidences to the Evidence Store
-	evidenceStoreStream  evidence.EvidenceStore_StoreEvidencesClient
+	evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
 	evidenceStoreAddress string
-	// evidenceStoreChannel stores evidences for the Evidence Store
-	evidenceStoreChannel chan *evidence.Evidence
 
 	// orchestratorStream sends assessment results to the Orchestrator
 	orchestratorStream  orchestrator.Orchestrator_StoreAssessmentResultsClient
@@ -105,6 +103,9 @@ type Service struct {
 	confMutex sync.Mutex
 
 	authorizer api.Authorizer
+
+	// grpcOpts contains additional gRPC options that will be appended to all gRPC dial calls. Useful for testing.
+	grpcOpts []grpc.DialOption
 }
 
 const (
@@ -139,12 +140,19 @@ func WithOAuth2Authorizer(config *clientcredentials.Config) ServiceOption {
 	}
 }
 
+// WithAdditionalGRPCOpts is an option to configure additional gRPC options.
+func WithAdditionalGRPCOpts(opts ...grpc.DialOption) ServiceOption {
+	return func(s *Service) {
+		s.grpcOpts = opts
+	}
+}
+
 // NewService creates a new assessment service with default values.
 func NewService(opts ...ServiceOption) *Service {
 	s := &Service{
 		results:              make(map[string]*assessment.AssessmentResult),
 		evidenceStoreAddress: DefaultEvidenceStoreAddress,
-		evidenceStoreChannel: make(chan *evidence.Evidence, 1000),
+		evidenceStoreStreams: api.NewStreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](),
 		orchestratorAddress:  DefaultOrchestratorAddress,
 		orchestratorChannel:  make(chan *assessment.AssessmentResult, 1000),
 		cachedConfigurations: make(map[string]cachedConfiguration),
@@ -184,14 +192,6 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 		}
 
 		return res, status.Errorf(codes.InvalidArgument, "%v", newError)
-	}
-
-	// Check if evidence store stream exists
-	if s.evidenceStoreStream == nil {
-		err = s.initEvidenceStoreStream()
-		if err != nil {
-			log.Errorf("error initialising evidence store stream: %v", err)
-		}
 	}
 
 	// Check if orchestrator stream exists
@@ -270,11 +270,11 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 }
 
 // handleEvidence is the helper method for the actual assessment used by AssessEvidence and AssessEvidences
-func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string) (err error) {
-	log.Debugf("Evaluating evidence %s (%s) collected by %s at %v", evidence.Id, resourceId, evidence.ToolId, evidence.Timestamp)
-	log.Tracef("Evidence: %+v", evidence)
+func (s *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (err error) {
+	log.Debugf("Evaluating evidence %s (%s) collected by %s at %v", ev.Id, resourceId, ev.ToolId, ev.Timestamp)
+	log.Tracef("Evidence: %+v", ev)
 
-	evaluations, err := policies.RunEvidence(evidence, s)
+	evaluations, err := policies.RunEvidence(ev, s)
 	if err != nil {
 		newError := fmt.Errorf("could not evaluate evidence: %w", err)
 		log.Error(newError)
@@ -284,13 +284,23 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 		return newError
 	}
 
+	channel, err := s.evidenceStoreStreams.GetStream(s.evidenceStoreAddress, "Evidence Store", s.initEvidenceStoreStream, s.grpcOpts...)
+	if err != nil {
+		err = fmt.Errorf("could not get stream to evidence store (%s): %w", s.evidenceStoreAddress, err)
+		log.Error(err)
+
+		go s.informHooks(nil, err)
+
+		return err
+	}
+
 	// Store evidence in evidenceStoreChannel
-	s.evidenceStoreChannel <- evidence
+	channel.Channel <- &evidence.StoreEvidenceRequest{Evidence: ev}
 
 	for i, data := range evaluations {
 		metricId := data.MetricId
 
-		log.Debugf("Evaluated evidence %v with metric '%v' as %v", evidence.Id, metricId, data.Compliant)
+		log.Debugf("Evaluated evidence %v with metric '%v' as %v", ev.Id, metricId, data.Compliant)
 
 		targetValue := data.TargetValue
 
@@ -308,7 +318,7 @@ func (s *Service) handleEvidence(evidence *evidence.Evidence, resourceId string)
 				Operator:    data.Operator,
 			},
 			Compliant:             data.Compliant,
-			EvidenceId:            evidence.Id,
+			EvidenceId:            ev.Id,
 			ResourceId:            resourceId,
 			NonComplianceComments: "No comments so far",
 		}
@@ -377,75 +387,24 @@ func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result
 }
 
 // initEvidenceStoreStream initializes the stream to the Evidence Store
-func (s *Service) initEvidenceStoreStream(additionalOpts ...grpc.DialOption) error {
+func (s *Service) initEvidenceStoreStream(URL string, additionalOpts ...grpc.DialOption) (stream evidence.EvidenceStore_StoreEvidencesClient, err error) {
 	log.Infof("Trying to establish a connection to evidence store service @ %v", s.evidenceStoreAddress)
 
 	// Establish connection to evidence store gRPC service
-	conn, err := grpc.Dial(s.evidenceStoreAddress,
-		api.DefaultGrpcDialOptions(s.evidenceStoreAddress, s, additionalOpts...)...,
+	conn, err := grpc.Dial(URL,
+		api.DefaultGrpcDialOptions(URL, s, additionalOpts...)...,
 	)
 	if err != nil {
-		return fmt.Errorf("could not connect to evidence store service: %w", err)
+		return nil, fmt.Errorf("could not connect to evidence store service: %w", err)
 	}
 
 	evidenceStoreClient := evidence.NewEvidenceStoreClient(conn)
-	s.evidenceStoreStream, err = evidenceStoreClient.StoreEvidences(context.Background())
+	stream, err = evidenceStoreClient.StoreEvidences(context.Background())
 	if err != nil {
-		return fmt.Errorf("could not set up stream for storing evidences: %w", err)
+		return nil, fmt.Errorf("could not set up stream for storing evidences: %w", err)
 	}
 
-	log.Infof("Connected to Evidence Store")
-
-	// Receive responses from Evidence Store
-	// Currently we do not process the responses
-	go func() {
-		i := 1
-		for {
-			_, err := s.evidenceStoreStream.Recv()
-
-			if errors.Is(err, io.EOF) {
-				log.Debugf("no more responses from evidence store stream: EOF")
-				break
-			}
-
-			if err != nil {
-				newError := fmt.Errorf("error receiving response from evidence store stream: %w", err)
-				log.Error(newError)
-				break
-			}
-
-			if i%100 == 0 {
-				log.Tracef("evidenceStoreStream recv responses currently @ %v", i)
-			}
-
-			i++
-		}
-	}()
-
-	// Send evidences from evidenceStoreChannel to the Evidence Store
-	go func() {
-		i := 1
-		for e := range s.evidenceStoreChannel {
-			err := s.evidenceStoreStream.Send(&evidence.StoreEvidenceRequest{Evidence: e})
-			if errors.Is(err, io.EOF) {
-				log.Debugf("EOF")
-				break
-			}
-			if err != nil {
-				log.Errorf("Error when sending evidence to Evidence Store:- %v", err)
-				break
-			}
-
-			log.Debugf("Evidence (%v) sent to Evidence Store", e.Id)
-
-			if i%100 == 0 {
-				log.Debugf("evidenceStoreStream send evidences currently @ %v", i)
-			}
-			i++
-		}
-	}()
-
-	return nil
+	return
 }
 
 // initOrchestratorStream initializes the stream to the Orchestrator
@@ -482,7 +441,7 @@ func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) erro
 			}
 
 			if err != nil {
-				log.Errorf("error receiving response from orchestrator stream: %+v", err)
+				log.Errorf("error receiving response from orchestrator stream: %v", err)
 				break
 			}
 

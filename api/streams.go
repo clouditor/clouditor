@@ -33,6 +33,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/proto"
 )
 
 var (
@@ -69,13 +70,19 @@ type InitFuncOf[StreamType grpc.ClientStream] func(URL string, additionalOpts ..
 // A stream for a given URL can be retrieved with the GetStream function, which automatically initializes the stream if
 // it does not exist.
 type StreamsOf[StreamType stream, MsgType Message] struct {
-	*sync.RWMutex
+	mutex    sync.RWMutex
 	channels map[string]*StreamChannelOf[StreamType, MsgType]
 }
 
-// Message represents any gRPC message that has an identifier.
+// NewStreamsOf creates a new StreamsOf object and initializes all the necessary objects for it.
+func NewStreamsOf[StreamType stream, MsgType Message]() *StreamsOf[StreamType, MsgType] {
+	return &StreamsOf[StreamType, MsgType]{
+		channels: map[string]*StreamChannelOf[StreamType, MsgType]{},
+	}
+}
+
+// Message represents any gRPC message.
 type Message interface {
-	GetId() string
 	ProtoMessage()
 }
 
@@ -88,9 +95,9 @@ func (s *StreamsOf[StreamType, MsgType]) GetStream(URL string, component string,
 	)
 
 	// Try to retrieve the stream, given the URL. We can RLock here, because we only need read access.
-	s.RLock()
+	s.mutex.RLock()
 	c, ok = s.channels[URL]
-	s.RUnlock()
+	s.mutex.RUnlock()
 
 	// No stream found, let's try to add one
 	if !ok {
@@ -123,9 +130,9 @@ func (s *StreamsOf[StreamType, MsgType]) addStream(URL string, component string,
 	}
 
 	// Update the stream map. This time we need a real lock for an update
-	s.Lock()
+	s.mutex.Lock()
 	s.channels[URL] = c
-	s.Unlock()
+	s.mutex.Unlock()
 
 	log.Infof("Established stream to %s (%s)", component, URL)
 
@@ -135,7 +142,7 @@ func (s *StreamsOf[StreamType, MsgType]) addStream(URL string, component string,
 	go func() {
 		for {
 			// TODO(oxisto): Check, if this also works for uni-directional streams
-			var msg interface{}
+			var msg proto.Message
 			err := c.stream.RecvMsg(&msg)
 
 			if errors.Is(err, io.EOF) {
@@ -143,7 +150,7 @@ func (s *StreamsOf[StreamType, MsgType]) addStream(URL string, component string,
 			}
 
 			if err != nil {
-				log.Errorf("Error receiving response from stream: %w", err)
+				log.Errorf("Error receiving response from stream: %v", err)
 				break
 			}
 		}
@@ -176,18 +183,18 @@ func (s *StreamsOf[StreamType, MsgType]) addStream(URL string, component string,
 				return
 			}
 
-			log.Debugf("Message (%v) sent to %s (%s)", e.GetId(), component, URL)
+			log.Debugf("Message sent to %s (%s)", component, URL)
 		}
 	}()
 
-	return nil, nil
+	return c, nil
 }
 
 // removeStream deletes the channel from the stream map.
 func (s *StreamsOf[StreamType, MsgType]) removeStream(URL string) {
 	log.Debugf("Removing stream channel for URL %s", URL)
 
-	s.Lock()
+	s.mutex.Lock()
 	delete(s.channels, URL)
-	s.Unlock()
+	s.mutex.Unlock()
 }

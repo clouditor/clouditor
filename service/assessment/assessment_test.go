@@ -85,7 +85,6 @@ func TestNewService(t *testing.T) {
 				evidenceStoreAddress: "localhost:9090",
 				orchestratorAddress:  "localhost:9090",
 				cachedConfigurations: make(map[string]cachedConfiguration),
-				evidenceStoreChannel: nil,
 				orchestratorChannel:  nil,
 			},
 		},
@@ -110,11 +109,9 @@ func TestNewService(t *testing.T) {
 			s := NewService(tt.args.opts...)
 
 			// Check channels have been created
-			assert.NotNil(t, s.evidenceStoreChannel)
 			assert.NotNil(t, s.orchestratorChannel)
 
 			// Ignore pointers to channel in subsequent DeepEqual check
-			s.evidenceStoreChannel = nil
 			s.orchestratorChannel = nil
 
 			if got := s; !reflect.DeepEqual(got, tt.want) {
@@ -229,7 +226,7 @@ func TestAssessEvidence(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
 			if tt.hasRPCConnection {
-				assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
+				s.grpcOpts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
 				assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
 			} else {
 				// clear the evidence URL, just to be sure
@@ -358,11 +355,10 @@ func TestAssessEvidences(t *testing.T) {
 				results:                       tt.fields.results,
 				cachedConfigurations:          make(map[string]cachedConfiguration),
 				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
-				evidenceStoreChannel:          make(chan *evidence.Evidence, 1000),
 				orchestratorChannel:           make(chan *assessment.AssessmentResult, 1000),
+				grpcOpts:                      []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 			}
 
-			assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
 			assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
 
 			if tt.args.streamToServer != nil {
@@ -475,7 +471,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			hookCallCounter = 0
 			s := NewService()
-			assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
+			s.grpcOpts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
 			assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
 
 			for i, hookFunction := range tt.args.resultHooks {
@@ -510,7 +506,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 
 func TestListAssessmentResults(t *testing.T) {
 	s := NewService()
-	assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
+	s.grpcOpts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
 	assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
 	_, err := s.AssessEvidence(context.TODO(), &assessment.AssessEvidenceRequest{
 		Evidence: &evidence.Evidence{
@@ -809,7 +805,7 @@ func TestHandleEvidence(t *testing.T) {
 			s := NewService()
 			// Mock streams for target services if needed
 			if tt.fields.hasEvidenceStoreStream {
-				assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
+				s.grpcOpts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
 			}
 			if tt.fields.hasOrchestratorStream {
 				assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
@@ -823,7 +819,7 @@ func TestHandleEvidence(t *testing.T) {
 	}
 }
 
-func TestService_initEvidenceStoreStream(t *testing.T) {
+/*func TestService_initEvidenceStoreStream(t *testing.T) {
 	type fields struct {
 		opts []ServiceOption
 	}
@@ -897,7 +893,7 @@ func TestService_initEvidenceStoreStream(t *testing.T) {
 		})
 	}
 }
-
+*/
 func TestService_initOrchestratorStoreStream(t *testing.T) {
 	type fields struct {
 		opts []ServiceOption
