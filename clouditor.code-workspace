@@ -16,6 +16,9 @@
 			]
 		},
 		"go.coverOnSave": true,
-		"rewrap.wrappingColumn": 120
+		"rewrap.wrappingColumn": 120,
+		"yaml.schemas": {
+			"https://json.schemastore.org/github-workflow.json": ".github/workflows/*"
+		}
 	}
 }
