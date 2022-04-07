@@ -37,8 +37,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-type Test[T any] struct{}
-
 type StartGRPCServerOption func(srv *grpc.Server)
 
 func WithOrchestrator(svc orchestrator.OrchestratorServer) StartGRPCServerOption {
