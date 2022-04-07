@@ -40,10 +40,6 @@ var (
 	ErrMissingInitFunc = errors.New("missing stream initializer function")
 )
 
-var (
-	log = logrus.WithField("component", "api-streams")
-)
-
 // StreamChannelOf provides a channel around a connection to a grpc.ClientStream to send messages of type MsgType to
 // that particular stream, using an internal go routine. This is necessary, because gRPC does not allow to send to a
 // stream from multiple goroutines directly.
@@ -74,13 +70,37 @@ type InitFuncOf[StreamType grpc.ClientStream] func(target string, additionalOpts
 type StreamsOf[StreamType grpc.ClientStream, MsgType proto.Message] struct {
 	mutex    sync.RWMutex
 	channels map[string]*StreamChannelOf[StreamType, MsgType]
+	log      *logrus.Entry
+}
+
+// StreamsOfOption is a functional option type to configure the StreamOf type.
+type StreamsOfOption[StreamType grpc.ClientStream, MsgType proto.Message] func(*StreamsOf[StreamType, MsgType])
+
+// WithLogger can be used to specify a dedicated logger entry which is used for logging. Otherwise, the default logging
+// entry of logrus is used.
+func WithLogger[StreamType grpc.ClientStream, MsgType proto.Message](log *logrus.Entry) StreamsOfOption[StreamType, MsgType] {
+	return func(s *StreamsOf[StreamType, MsgType]) {
+		s.log = log
+	}
 }
 
 // NewStreamsOf creates a new StreamsOf object and initializes all the necessary objects for it.
-func NewStreamsOf[StreamType grpc.ClientStream, MsgType proto.Message]() *StreamsOf[StreamType, MsgType] {
-	return &StreamsOf[StreamType, MsgType]{
+func NewStreamsOf[StreamType grpc.ClientStream, MsgType proto.Message](opts ...StreamsOfOption[StreamType, MsgType]) (s *StreamsOf[StreamType, MsgType]) {
+	s = &StreamsOf[StreamType, MsgType]{
 		channels: map[string]*StreamChannelOf[StreamType, MsgType]{},
 	}
+
+	// Apply options
+	for _, o := range opts {
+		o(s)
+	}
+
+	// Default to a default logger
+	if s.log == nil {
+		s.log = logrus.NewEntry(logrus.StandardLogger())
+	}
+
+	return s
 }
 
 // GetStream tries to retrieve a stream for the given target and component. If no stream exists, it tries to
@@ -133,10 +153,10 @@ func (s *StreamsOf[StreamType, MsgType]) addStream(target string, component stri
 	s.channels[target] = c
 	s.mutex.Unlock()
 
-	log.Infof("Established stream to %s (%s)", component, target)
+	s.log.Infof("Established stream to %s (%s)", component, target)
 
 	// Start go routine for receiving messages from the stream (especially relevant for bi-directional streams).
-	go c.recvLoop()
+	go c.recvLoop(s)
 
 	// Start go routine for sending messages from the channel to the stream
 	go c.sendLoop(s)
@@ -146,7 +166,7 @@ func (s *StreamsOf[StreamType, MsgType]) addStream(target string, component stri
 
 // removeStream deletes the channel from the stream map.
 func (s *StreamsOf[StreamType, MsgType]) removeStream(target string) {
-	log.Debugf("Removing stream channel for target %s", target)
+	s.log.Debugf("Removing stream channel for target %s", target)
 
 	s.mutex.Lock()
 	delete(s.channels, target)
@@ -162,7 +182,7 @@ func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType,
 		// Try to send the message in our stream
 		err = c.stream.SendMsg(e)
 		if errors.Is(err, io.EOF) {
-			log.Infof("Stream to %s (%s) closed with EOF", c.component, c.target)
+			s.log.Infof("Stream to %s (%s) closed with EOF", c.component, c.target)
 
 			// Remove the stream from our map and end this goroutine
 			s.removeStream(c.target)
@@ -171,7 +191,7 @@ func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType,
 
 		// Some other error than EOF occurred
 		if err != nil {
-			log.Errorf("Error when sending message to %s (%s): %v", c.component, c.target, err)
+			s.log.Errorf("Error when sending message to %s (%s): %v", c.component, c.target, err)
 
 			// Close the stream gracefully. We can ignore any error resulting from the close here
 			_ = c.stream.CloseSend()
@@ -181,13 +201,13 @@ func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType,
 			return
 		}
 
-		log.Debugf("Message sent to %s (%s)", c.component, c.target)
+		s.log.Debugf("Message sent to %s (%s)", c.component, c.target)
 	}
 }
 
 // recvLoop continuously receives message from the stream. Currently they are just discarded. In the future, we might
 // want to send them back to the caller. But we need to receive them, otherwise the buffer of the stream gets congested.
-func (c *StreamChannelOf[StreamType, MsgType]) recvLoop() {
+func (c *StreamChannelOf[StreamType, MsgType]) recvLoop(s *StreamsOf[StreamType, MsgType]) {
 	for {
 		// TODO(oxisto): Check, if this also works for uni-directional streams
 		var msg proto.Message
@@ -198,7 +218,7 @@ func (c *StreamChannelOf[StreamType, MsgType]) recvLoop() {
 		}
 
 		if err != nil {
-			log.Errorf("Error receiving response from stream: %v", err)
+			s.log.Errorf("Error receiving response from stream: %v", err)
 			break
 		}
 	}
