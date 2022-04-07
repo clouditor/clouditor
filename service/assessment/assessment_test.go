@@ -37,6 +37,7 @@ import (
 	"sync"
 	"testing"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/internal/testutil"
@@ -83,6 +84,7 @@ func TestNewService(t *testing.T) {
 			want: &Service{
 				results:              make(map[string]*assessment.AssessmentResult),
 				evidenceStoreAddress: "localhost:9090",
+				evidenceStoreStreams: api.NewStreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](),
 				orchestratorAddress:  "localhost:9090",
 				cachedConfigurations: make(map[string]cachedConfiguration),
 				orchestratorChannel:  nil,
@@ -99,6 +101,7 @@ func TestNewService(t *testing.T) {
 			want: &Service{
 				results:              make(map[string]*assessment.AssessmentResult),
 				evidenceStoreAddress: "localhost:9091",
+				evidenceStoreStreams: api.NewStreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](),
 				orchestratorAddress:  "localhost:9092",
 				cachedConfigurations: make(map[string]cachedConfiguration),
 			},
