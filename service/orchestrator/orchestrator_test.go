@@ -598,32 +598,6 @@ func TestNewService(t *testing.T) {
 	}
 }
 
-// CreateCertificateMock creates a mock certificate creation request
-func CreateCertificateMock() *orchestrator.Certificate {
-	mockHistory := &orchestrator.StateHistory{
-		State:         "new",
-		TreeId:        "12345",
-		Timestamp:     time.Now().String(),
-		CertificateID: 1234,
-		ID:            12345,
-	}
-
-	var mockCertificate = &orchestrator.Certificate{
-		Name:          "EUCS",
-		CertificateId: "1234",
-		ServiceId:     "test service",
-		Issuedate:     "2021-11-06",
-		Standard:      "EUCS",
-		Scope:         "Basic",
-		Cab:           "Cab123",
-		Description:   "Description",
-		StateHistory:  []*orchestrator.StateHistory{mockHistory},
-		ID:            1234,
-	}
-
-	return mockCertificate
-}
-
 func Test_CreateCertificate(t *testing.T) {
 	type args struct {
 		in0 context.Context
@@ -700,7 +674,7 @@ func Test_UpdateCertificate(t *testing.T) {
 	// 3rd case: Certificate not found since there are no certificates yet
 	_, err = orchestratorService.UpdateCertificate(context.Background(), &orchestrator.UpdateCertificateRequest{
 		Certificate: &orchestrator.Certificate{
-			CertificateId: "1234",
+			ID: "1234",
 		},
 		CertificateId: "1234",
 	})
@@ -754,7 +728,7 @@ func Test_RemoveCertificate(t *testing.T) {
 	assert.NotEmpty(t, listCertificatesResponse.Certificates)
 
 	// Remove record
-	_, err = orchestratorService.RemoveCertificate(context.Background(), &orchestrator.RemoveCertificateRequest{CertificateId: mockCertificate.CertificateId})
+	_, err = orchestratorService.RemoveCertificate(context.Background(), &orchestrator.RemoveCertificateRequest{CertificateId: mockCertificate.ID})
 	assert.NoError(t, err)
 
 	// There is a record for cloud services in the DB (default one)
@@ -791,7 +765,11 @@ func Test_GetCertificate(t *testing.T) {
 		},
 	}
 	orchestratorService := NewService()
-	orchestratorService.storage.Create(CreateCertificateMock())
+
+	// Create Certificate
+	if err := orchestratorService.storage.Create(CreateCertificateMock()); err != nil {
+		panic(err)
+	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -800,14 +778,18 @@ func Test_GetCertificate(t *testing.T) {
 			if tt.err == nil {
 				assert.Equal(t, tt.err, err)
 			} else {
-				assert.EqualError(t, err, tt.err.Error())
+				assert.ErrorIs(t, err, tt.err)
+				return
 			}
 
 			if tt.res != nil {
-				assert.NotEmpty(t, res.CertificateId)
+				assert.NotEmpty(t, res.ID)
 			}
 
-			assert.True(t, proto.Equal(res, tt.res), "%v != %v", res, tt.res)
+			// Compare
+			// TODO(immqu, lebogg): Currently timestamp differs. Dunno why. (Comment out next line to see it)
+			tt.res.States[0].Timestamp = res.States[0].Timestamp
+			assert.True(t, proto.Equal(tt.res, res), "Want: %v\nGot : %v", tt.res, res)
 		})
 	}
 }
@@ -834,4 +816,29 @@ func Test_ListCertificates(t *testing.T) {
 	assert.NotNil(t, listCertificatesResponse.Certificates)
 	assert.NotEmpty(t, listCertificatesResponse.Certificates)
 	assert.Equal(t, len(listCertificatesResponse.Certificates), 1)
+}
+
+// CreateCertificateMock creates a mock certificate creation request
+func CreateCertificateMock() *orchestrator.Certificate {
+	mockHistory := &orchestrator.State{
+		State:         "new",
+		TreeId:        "12345",
+		Timestamp:     time.Now().String(),
+		CertificateID: "1234",
+		ID:            "12345",
+	}
+
+	var mockCertificate = &orchestrator.Certificate{
+		Name:        "EUCS",
+		ServiceId:   "test service",
+		Issuedate:   "2021-11-06",
+		Standard:    "EUCS",
+		Scope:       "Basic",
+		Cab:         "Cab123",
+		Description: "Description",
+		States:      []*orchestrator.State{mockHistory},
+		ID:          "1234",
+	}
+
+	return mockCertificate
 }

@@ -560,8 +560,9 @@ components:
         Certificate:
             type: object
             properties:
-                certificateId:
+                ID:
                     type: string
+                    description: 'TODO(lebogg to immqu): I changed certificate_id to id (and did some reordering). It is also in accordance with the MED datamodel'
                 name:
                     type: string
                 serviceId:
@@ -576,13 +577,11 @@ components:
                     type: string
                 description:
                     type: string
-                stateHistory:
+                states:
                     type: array
                     items:
-                        $ref: '#/components/schemas/StateHistory'
-                ID:
-                    type: integer
-                    format: uint32
+                        $ref: '#/components/schemas/State'
+            description: 'TODO(lebogg to immqu): For gorm one-to-many association to work in gorm, a repeated field of states here and CertificateID in State is enough'
         CloudService:
             type: object
             properties:
@@ -749,9 +748,11 @@ components:
                     items:
                         type: string
             description: Requirement represents a certain requirement that needs to be fulfilled. It could be a control in a certification catalog.
-        StateHistory:
+        State:
             type: object
             properties:
+                ID:
+                    type: string
                 state:
                     type: string
                 treeId:
@@ -759,11 +760,7 @@ components:
                 timestamp:
                     type: string
                 CertificateID:
-                    type: integer
-                    format: uint32
-                ID:
-                    type: integer
-                    format: uint32
+                    type: string
         StoreAssessmentResultResponse:
             type: object
             properties:

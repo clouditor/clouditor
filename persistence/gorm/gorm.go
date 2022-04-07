@@ -32,10 +32,13 @@ import (
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
+
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
+	"gorm.io/gorm/logger"
 )
 
 var log *logrus.Entry
@@ -71,9 +74,11 @@ func init() {
 // NewStorage creates a new storage using GORM (which DB to use depends on the StorageOption)
 func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	g := &storage{
-		// config: gorm.Config{
-		// 	DisableForeignKeyConstraintWhenMigrating: true,
-		// },
+		config: gorm.Config{
+			//DisableForeignKeyConstraintWhenMigrating: true,
+			// TODO(lebogg to immqu): This will log DB operations - good for debugging (e.g. seeing constraints). Remove later
+			Logger: logger.Default.LogMode(logger.Info),
+		},
 	}
 
 	// Init storage
@@ -103,34 +108,38 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	}
 
 	// Migrate StateHistory and Certificate
-	if err = g.db.AutoMigrate(&orchestrator.StateHistory{}, &orchestrator.Certificate{}); err != nil {
+	if err = g.db.AutoMigrate(&orchestrator.Certificate{}, &orchestrator.State{}); err != nil {
 		err = fmt.Errorf("error during auto-migration: %w", err)
 		return
 	}
 
-	g.db.Migrator().CreateConstraint(&orchestrator.Certificate{}, "StateHistory")
-	g.db.Migrator().CreateConstraint(&orchestrator.Certificate{}, "fk_certificates_state_history")
+	// TODO(lebogg to immqu): GORM automatically create constraints when proto messages/structs are set correctly
+	//if err = g.db.Migrator().CreateConstraint(&orchestrator.Certificate{}, "StateHistory"); err != nil {
+	//	return nil, err
+	//}
+	//if err = g.db.Migrator().CreateConstraint(&orchestrator.Certificate{}, "fk_certificates_state_history"); err != nil {
+	//	return nil, err
+	//}
 
 	// fmt.Println(g.db.Migrator().HasTable(&orchestrator.StateHistory{}))
 	// fmt.Println(g.db.Migrator().HasTable(&orchestrator.Certificate{}))
-	fmt.Println(g.db.Migrator().HasConstraint(&orchestrator.Certificate{}, "StateHistory"))
-	fmt.Println(g.db.Migrator().HasConstraint(&orchestrator.Certificate{}, "fk_certificates_state_history"))
+	//fmt.Println(g.db.Migrator().HasConstraint(&orchestrator.Certificate{}, "StateHistory"))
+	//fmt.Println(g.db.Migrator().HasConstraint(&orchestrator.Certificate{}, "fk_certificates_state_history"))
 
 	s = g
 	return
 }
 
 func (s *storage) Create(r interface{}) error {
-	s.db.Model(&r).Association("StateHistory")
+	// TODO(lebogg to immqu): I think ".Association(..)" just gives you helper methods on relationships (with dot notation afterwards
+	// s.db.Model(&r).Association("StateHistory")
 	// s.db.Save(r)??
 	return s.db.Create(r).Error
 }
 
 func (s *storage) Get(r interface{}, conds ...interface{}) (err error) {
-	var stateHistory orchestrator.StateHistory
-	s.db.Model(&r).Association("StateHistory").Find(&stateHistory)
-	fmt.Println(stateHistory)
-	err = s.db.First(r, conds...).Error
+	// Preload all associations for r being filled with all items (including relationships)
+	err = s.db.Preload(clause.Associations).First(r, conds...).Error
 	// if record is not found, use the error message defined in the persistence package
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		err = persistence.ErrRecordNotFound
@@ -149,6 +158,7 @@ func (s *storage) Get(r interface{}, conds ...interface{}) (err error) {
 // 	return
 // }
 
+// TODO(lebogg, immqu): Add AND TEST associations
 func (s *storage) List(r interface{}, conds ...interface{}) error {
 	return s.db.Find(r, conds...).Error
 }
