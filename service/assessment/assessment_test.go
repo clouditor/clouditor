@@ -112,13 +112,10 @@ func TestNewService(t *testing.T) {
 			// Check channels have been created
 			assert.NotNil(t, s.evidenceStoreChannel)
 			assert.NotNil(t, s.orchestratorChannel)
-			assert.NotNil(t, s.orchestratorClient)
 
 			// Ignore pointers to channel in subsequent DeepEqual check
 			s.evidenceStoreChannel = nil
 			s.orchestratorChannel = nil
-			// Ignore pointer to orchestrator client in subsequent DeepEqual check
-			s.orchestratorClient = nil
 
 			if got := s; !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewService() = %v, want %v", got, tt.want)
@@ -208,6 +205,24 @@ func TestAssessEvidence(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "No RPC connections",
+			args: args{
+				in0: context.TODO(),
+				evidence: &evidence.Evidence{
+					Id:        "11111111-1111-1111-1111-111111111111",
+					ToolId:    "mock",
+					Timestamp: timestamppb.Now(),
+					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+				},
+			},
+			hasRPCConnection: false,
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: "could not evaluate evidence: could not fetch metric configuration: could not retrieve metric configuration for",
+			},
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -223,14 +238,15 @@ func TestAssessEvidence(t *testing.T) {
 			}
 
 			gotResp, err := s.AssessEvidence(tt.args.in0, &assessment.AssessEvidenceRequest{Evidence: tt.args.evidence})
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
-			if !reflect.DeepEqual(gotResp, tt.wantResp) {
-				t.Errorf("AssessEvidence() gotResp = %v, want %v", gotResp, tt.wantResp)
-			}
+			// Check response
+			assert.Equal(t, tt.wantResp.Status, gotResp.Status)
+			assert.Contains(t, gotResp.StatusMessage, tt.wantResp.StatusMessage)
 		})
 	}
 }
@@ -238,7 +254,6 @@ func TestAssessEvidence(t *testing.T) {
 // TestAssessEvidences tests AssessEvidences
 func TestAssessEvidences(t *testing.T) {
 	type fields struct {
-		hasRPCConnection              bool
 		ResultHooks                   []assessment.ResultHookFunc
 		results                       map[string]*assessment.AssessmentResult
 		UnimplementedAssessmentServer assessment.UnimplementedAssessmentServer
@@ -259,8 +274,7 @@ func TestAssessEvidences(t *testing.T) {
 		{
 			name: "Missing toolId",
 			fields: fields{
-				hasRPCConnection: true,
-				results:          make(map[string]*assessment.AssessmentResult)},
+				results: make(map[string]*assessment.AssessmentResult)},
 			args: args{
 				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
@@ -276,8 +290,7 @@ func TestAssessEvidences(t *testing.T) {
 		{
 			name: "Missing evidenceID",
 			fields: fields{
-				hasRPCConnection: true,
-				results:          make(map[string]*assessment.AssessmentResult)},
+				results: make(map[string]*assessment.AssessmentResult)},
 			args: args{
 				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
@@ -294,8 +307,7 @@ func TestAssessEvidences(t *testing.T) {
 		{
 			name: "Assess evidences",
 			fields: fields{
-				hasRPCConnection: true,
-				results:          make(map[string]*assessment.AssessmentResult)},
+				results: make(map[string]*assessment.AssessmentResult)},
 			args: args{
 				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
@@ -309,29 +321,8 @@ func TestAssessEvidences(t *testing.T) {
 			},
 		},
 		{
-			name: "No RPC connections to evidence store and orchestrator",
-			fields: fields{
-				hasRPCConnection: false,
-			},
-			args: args{
-				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
-					Evidence: &evidence.Evidence{
-						Id:        "11111111-1111-1111-1111-111111111111",
-						Timestamp: timestamppb.Now(),
-						ToolId:    "2134",
-						Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
-			},
-			wantErr: false,
-			wantRespMessage: &assessment.AssessEvidenceResponse{
-				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "could not initialize connection",
-			},
-		},
-		{
-			name: "Error in stream to client - Send()-err",
-			fields: fields{
-				hasRPCConnection: false,
-			},
+			name:   "Error in stream to client - Send()-err",
+			fields: fields{},
 			args: args{
 				streamToClientWithSendErr: createMockAssessmentServerStreamWithSendErr(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
@@ -343,10 +334,8 @@ func TestAssessEvidences(t *testing.T) {
 			wantErrMessage: "rpc error: code = Unknown desc = cannot send response to the client",
 		},
 		{
-			name: "Error in stream to server - Recv()-err",
-			fields: fields{
-				hasRPCConnection: false,
-			},
+			name:   "Error in stream to server - Recv()-err",
+			fields: fields{},
 			args: args{
 				streamToServerWithRecvErr: createMockAssessmentServerStreamWithRecvErr(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
@@ -373,10 +362,8 @@ func TestAssessEvidences(t *testing.T) {
 				orchestratorChannel:           make(chan *assessment.AssessmentResult, 1000),
 			}
 
-			if tt.fields.hasRPCConnection {
-				assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
-				assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
-			}
+			assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
+			assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
 
 			if tt.args.streamToServer != nil {
 				err = s.AssessEvidences(tt.args.streamToServer)
