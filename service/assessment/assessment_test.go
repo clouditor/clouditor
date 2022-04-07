@@ -84,7 +84,7 @@ func TestNewService(t *testing.T) {
 			want: &Service{
 				results:              make(map[string]*assessment.AssessmentResult),
 				evidenceStoreAddress: "localhost:9090",
-				evidenceStoreStreams: api.NewStreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](),
+				evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 				orchestratorAddress:  "localhost:9090",
 				cachedConfigurations: make(map[string]cachedConfiguration),
 				orchestratorChannel:  nil,
@@ -101,7 +101,7 @@ func TestNewService(t *testing.T) {
 			want: &Service{
 				results:              make(map[string]*assessment.AssessmentResult),
 				evidenceStoreAddress: "localhost:9091",
-				evidenceStoreStreams: api.NewStreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](),
+				evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 				orchestratorAddress:  "localhost:9092",
 				cachedConfigurations: make(map[string]cachedConfiguration),
 			},

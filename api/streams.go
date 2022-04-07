@@ -97,7 +97,7 @@ func NewStreamsOf[StreamType grpc.ClientStream, MsgType proto.Message](opts ...S
 
 	// Default to a default logger
 	if s.log == nil {
-		s.log = logrus.NewEntry(logrus.StandardLogger())
+		s.log = defaultLog()
 	}
 
 	return s
@@ -229,4 +229,9 @@ func (c *StreamChannelOf[StreamType, MsgType]) recvLoop(s *StreamsOf[StreamType,
 // the buffer of the channel is full.
 func (c *StreamChannelOf[StreamType, MsgType]) Send(msg MsgType) {
 	c.channel <- msg
+}
+
+// defaultLog returns the default logger, if none is specified.
+func defaultLog() *logrus.Entry {
+	return logrus.NewEntry(logrus.StandardLogger())
 }

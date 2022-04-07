@@ -101,6 +101,7 @@ func TestStreamsOf_GetStream(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &StreamsOf[*mockClientStream, proto.Message]{
 				channels: tt.fields.channels,
+				log:      defaultLog(),
 			}
 			_, err := s.GetStream(tt.args.target, tt.args.component, tt.args.init, tt.args.additionalOpts...)
 
@@ -142,6 +143,7 @@ func Test_StreamChannelOf_sendLoop(t *testing.T) {
 					channels: map[string]*StreamChannelOf[*mockClientStream, protoreflect.ProtoMessage]{
 						"test": &StreamChannelOf[*mockClientStream, proto.Message]{},
 					},
+					log: defaultLog(),
 				},
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
@@ -164,6 +166,7 @@ func Test_StreamChannelOf_sendLoop(t *testing.T) {
 					channels: map[string]*StreamChannelOf[*mockClientStream, protoreflect.ProtoMessage]{
 						"test": &StreamChannelOf[*mockClientStream, proto.Message]{},
 					},
+					log: defaultLog(),
 				},
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
