@@ -44,14 +44,10 @@ var (
 	log = logrus.WithField("component", "api-streams")
 )
 
-type stream interface {
-	grpc.ClientStream
-}
-
 // StreamChannelOf provides a channel around a connection to a grpc.ClientStream to send messages of type MsgType to
 // that particular stream, using an internal go routine. This is necessary, because gRPC does not allow to send to a
 // stream from multiple goroutines directly.
-type StreamChannelOf[StreamType stream, MsgType Message] struct {
+type StreamChannelOf[StreamType grpc.ClientStream, MsgType proto.Message] struct {
 	// Channel can be used to send message to the stream
 	Channel chan MsgType
 
@@ -69,21 +65,16 @@ type InitFuncOf[StreamType grpc.ClientStream] func(URL string, additionalOpts ..
 //
 // A stream for a given URL can be retrieved with the GetStream function, which automatically initializes the stream if
 // it does not exist.
-type StreamsOf[StreamType stream, MsgType Message] struct {
+type StreamsOf[StreamType grpc.ClientStream, MsgType proto.Message] struct {
 	mutex    sync.RWMutex
 	channels map[string]*StreamChannelOf[StreamType, MsgType]
 }
 
 // NewStreamsOf creates a new StreamsOf object and initializes all the necessary objects for it.
-func NewStreamsOf[StreamType stream, MsgType Message]() *StreamsOf[StreamType, MsgType] {
+func NewStreamsOf[StreamType grpc.ClientStream, MsgType proto.Message]() *StreamsOf[StreamType, MsgType] {
 	return &StreamsOf[StreamType, MsgType]{
 		channels: map[string]*StreamChannelOf[StreamType, MsgType]{},
 	}
-}
-
-// Message represents any gRPC message.
-type Message interface {
-	ProtoMessage()
 }
 
 // GetStream tries to retrieve a stream for the given URL and component. If no stream exists, it tries to
