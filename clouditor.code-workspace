@@ -15,6 +15,9 @@
 				"--proto_path=${env.GOPATH}/src"
 			]
 		},
-		"go.coverOnSave": true
+		"go.coverOnSave": true,
+		"yaml.schemas": {
+			"https://json.schemastore.org/github-workflow.json": ".github/workflows/*"
+		}
 	}
 }
