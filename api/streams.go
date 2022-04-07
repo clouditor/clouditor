@@ -54,22 +54,22 @@ type StreamChannelOf[StreamType grpc.ClientStream, MsgType proto.Message] struct
 	// stream to the component
 	stream StreamType
 
-	// url of the component
-	url string
+	// target of the component (host and port usually)
+	target string
 
 	// component name
 	component string
 }
 
 // InitFuncOf describes a function with type paramters that creates any kind of stream towards a gRPC server specified
-// in URL and returns the stream or an error. Additional gRPC dial options can be specified in additionalOpts.
-type InitFuncOf[StreamType grpc.ClientStream] func(URL string, additionalOpts ...grpc.DialOption) (stream StreamType, err error)
+// in target and returns the stream or an error. Additional gRPC dial options can be specified in additionalOpts.
+type InitFuncOf[StreamType grpc.ClientStream] func(target string, additionalOpts ...grpc.DialOption) (stream StreamType, err error)
 
-// StreamsOf handles stream channels to multiple gRPC servers, idenfitied by a unique URL. Since gRPC does only allow to
-// send to a stream using one goroutine, each stream provides a go channel that can be used to send messages to the
-// particular stream.
+// StreamsOf handles stream channels to multiple gRPC servers, idenfitied by a unique target (host and port usually).
+// Since gRPC does only allow to send to a stream using one goroutine, each stream provides a go channel that can be
+// used to send messages to the particular stream.
 //
-// A stream for a given URL can be retrieved with the GetStream function, which automatically initializes the stream if
+// A stream for a given target can be retrieved with the GetStream function, which automatically initializes the stream if
 // it does not exist.
 type StreamsOf[StreamType grpc.ClientStream, MsgType proto.Message] struct {
 	mutex    sync.RWMutex
@@ -83,24 +83,24 @@ func NewStreamsOf[StreamType grpc.ClientStream, MsgType proto.Message]() *Stream
 	}
 }
 
-// GetStream tries to retrieve a stream for the given URL and component. If no stream exists, it tries to
+// GetStream tries to retrieve a stream for the given target and component. If no stream exists, it tries to
 // create a new stream using the supplied init function. An error is returned if the initialization is not
 // successful.
-func (s *StreamsOf[StreamType, MsgType]) GetStream(URL string, component string, init InitFuncOf[StreamType], opts ...grpc.DialOption) (c *StreamChannelOf[StreamType, MsgType], err error) {
+func (s *StreamsOf[StreamType, MsgType]) GetStream(target string, component string, init InitFuncOf[StreamType], opts ...grpc.DialOption) (c *StreamChannelOf[StreamType, MsgType], err error) {
 	var (
 		ok bool
 	)
 
-	// Try to retrieve the stream, given the URL. We can RLock here, because we only need read access.
+	// Try to retrieve the stream, given the target. We can RLock here, because we only need read access.
 	s.mutex.RLock()
-	c, ok = s.channels[URL]
+	c, ok = s.channels[target]
 	s.mutex.RUnlock()
 
 	// No stream found, let's try to add one
 	if !ok {
-		c, err = s.addStream(URL, component, init, opts...)
+		c, err = s.addStream(target, component, init, opts...)
 		if err != nil {
-			return nil, fmt.Errorf("could not add stream for %s with URL '%s': %w", component, URL, err)
+			return nil, fmt.Errorf("could not add stream for %s with target '%s': %w", component, target, err)
 		}
 	}
 
@@ -108,14 +108,14 @@ func (s *StreamsOf[StreamType, MsgType]) GetStream(URL string, component string,
 }
 
 // addStream stores a stream to the given component and starts a goroutine for sending messages from the channel to the given component
-func (s *StreamsOf[StreamType, MsgType]) addStream(URL string, component string, init InitFuncOf[StreamType], opts ...grpc.DialOption) (c *StreamChannelOf[StreamType, MsgType], err error) {
+func (s *StreamsOf[StreamType, MsgType]) addStream(target string, component string, init InitFuncOf[StreamType], opts ...grpc.DialOption) (c *StreamChannelOf[StreamType, MsgType], err error) {
 	// We need an init func
 	if init == nil {
 		return nil, ErrMissingInitFunc
 	}
 
 	// Initialize the stream using our init function
-	stream, err := init(URL, opts...)
+	stream, err := init(target, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not init stream: %w", err)
 	}
@@ -124,16 +124,16 @@ func (s *StreamsOf[StreamType, MsgType]) addStream(URL string, component string,
 	c = &StreamChannelOf[StreamType, MsgType]{
 		stream:    stream,
 		component: component,
-		url:       URL,
+		target:    target,
 		Channel:   make(chan MsgType, 1000),
 	}
 
 	// Update the stream map. This time we need a real lock for an update
 	s.mutex.Lock()
-	s.channels[URL] = c
+	s.channels[target] = c
 	s.mutex.Unlock()
 
-	log.Infof("Established stream to %s (%s)", component, URL)
+	log.Infof("Established stream to %s (%s)", component, target)
 
 	// Start go routine for receiving messages from the stream (especially relevant for bi-directional streams).
 	go c.recvLoop()
@@ -145,11 +145,11 @@ func (s *StreamsOf[StreamType, MsgType]) addStream(URL string, component string,
 }
 
 // removeStream deletes the channel from the stream map.
-func (s *StreamsOf[StreamType, MsgType]) removeStream(URL string) {
-	log.Debugf("Removing stream channel for URL %s", URL)
+func (s *StreamsOf[StreamType, MsgType]) removeStream(target string) {
+	log.Debugf("Removing stream channel for target %s", target)
 
 	s.mutex.Lock()
-	delete(s.channels, URL)
+	delete(s.channels, target)
 	s.mutex.Unlock()
 }
 
@@ -162,26 +162,26 @@ func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType,
 		// Try to send the message in our stream
 		err = c.stream.SendMsg(e)
 		if errors.Is(err, io.EOF) {
-			log.Infof("Stream to %s (%s) closed with EOF", c.component, c.url)
+			log.Infof("Stream to %s (%s) closed with EOF", c.component, c.target)
 
 			// Remove the stream from our map and end this goroutine
-			s.removeStream(c.url)
+			s.removeStream(c.target)
 			return
 		}
 
 		// Some other error than EOF occured
 		if err != nil {
-			log.Errorf("Error when sending message to %s (%s): %v", c.component, c.url, err)
+			log.Errorf("Error when sending message to %s (%s): %v", c.component, c.target, err)
 
 			// Close the stream gracefully. We can ignore any error resulting from the close here
 			_ = c.stream.CloseSend()
 
 			// Remove the stream from our map and end this goroutine
-			s.removeStream(c.url)
+			s.removeStream(c.target)
 			return
 		}
 
-		log.Debugf("Message sent to %s (%s)", c.component, c.url)
+		log.Debugf("Message sent to %s (%s)", c.component, c.target)
 	}
 }
 
