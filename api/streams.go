@@ -53,6 +53,12 @@ type StreamChannelOf[StreamType grpc.ClientStream, MsgType proto.Message] struct
 
 	// stream to the component
 	stream StreamType
+
+	// url of the component
+	url string
+
+	// component name
+	component string
 }
 
 // InitFuncOf describes a function with type paramters that creates any kind of stream towards a gRPC server specified
@@ -116,8 +122,10 @@ func (s *StreamsOf[StreamType, MsgType]) addStream(URL string, component string,
 
 	// Create our stream channel struct
 	c = &StreamChannelOf[StreamType, MsgType]{
-		stream:  stream,
-		Channel: make(chan MsgType, 1000),
+		stream:    stream,
+		component: component,
+		url:       URL,
+		Channel:   make(chan MsgType, 1000),
 	}
 
 	// Update the stream map. This time we need a real lock for an update
@@ -128,54 +136,10 @@ func (s *StreamsOf[StreamType, MsgType]) addStream(URL string, component string,
 	log.Infof("Established stream to %s (%s)", component, URL)
 
 	// Start go routine for receiving messages from the stream (especially relevant for bi-directional streams).
-	// Currently they are just discarded. In the future, we might want to send them back to the caller. But we need to
-	// receive them, otherwise the buffer of the stream gets congested.
-	go func() {
-		for {
-			// TODO(oxisto): Check, if this also works for uni-directional streams
-			var msg proto.Message
-			err := c.stream.RecvMsg(&msg)
-
-			if errors.Is(err, io.EOF) {
-				break
-			}
-
-			if err != nil {
-				log.Errorf("Error receiving response from stream: %v", err)
-				break
-			}
-		}
-	}()
+	go c.recvLoop()
 
 	// Start go routine for sending messages from the channel to the stream
-	go func() {
-		// Fetch new messages from channel (this will block)
-		for e := range c.Channel {
-			// Try to send the message in our stream
-			err = c.stream.SendMsg(e)
-			if errors.Is(err, io.EOF) {
-				log.Infof("Stream to %s (%s) closed with EOF", component, URL)
-
-				// Remove the stream from our map and end this goroutine
-				s.removeStream(URL)
-				return
-			}
-
-			// Some other error than EOF occured
-			if err != nil {
-				log.Errorf("Error when sending message to %s (%s): %v", component, URL, err)
-
-				// Close the stream gracefully. We can ignore any error resulting from the close here
-				_ = c.stream.CloseSend()
-
-				// Remove the stream from our map and end this goroutine
-				s.removeStream(URL)
-				return
-			}
-
-			log.Debugf("Message sent to %s (%s)", component, URL)
-		}
-	}()
+	go c.sendLoop(s)
 
 	return c, nil
 }
@@ -187,4 +151,55 @@ func (s *StreamsOf[StreamType, MsgType]) removeStream(URL string) {
 	s.mutex.Lock()
 	delete(s.channels, URL)
 	s.mutex.Unlock()
+}
+
+// sendLoop continuously fetches new messages from the channel inside c and sends them to the appropriate stream.
+func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType, MsgType]) {
+	var err error
+
+	// Fetch new messages from channel (this will block)
+	for e := range c.Channel {
+		// Try to send the message in our stream
+		err = c.stream.SendMsg(e)
+		if errors.Is(err, io.EOF) {
+			log.Infof("Stream to %s (%s) closed with EOF", c.component, c.url)
+
+			// Remove the stream from our map and end this goroutine
+			s.removeStream(c.url)
+			return
+		}
+
+		// Some other error than EOF occured
+		if err != nil {
+			log.Errorf("Error when sending message to %s (%s): %v", c.component, c.url, err)
+
+			// Close the stream gracefully. We can ignore any error resulting from the close here
+			_ = c.stream.CloseSend()
+
+			// Remove the stream from our map and end this goroutine
+			s.removeStream(c.url)
+			return
+		}
+
+		log.Debugf("Message sent to %s (%s)", c.component, c.url)
+	}
+}
+
+// recvLoop continously receives message from the stream. Currently they are just discarded. In the future, we might
+// want to send them back to the caller. But we need to receive them, otherwise the buffer of the stream gets congested.
+func (c *StreamChannelOf[StreamType, MsgType]) recvLoop() {
+	for {
+		// TODO(oxisto): Check, if this also works for uni-directional streams
+		var msg proto.Message
+		err := c.stream.RecvMsg(&msg)
+
+		if errors.Is(err, io.EOF) {
+			break
+		}
+
+		if err != nil {
+			log.Errorf("Error receiving response from stream: %v", err)
+			break
+		}
+	}
 }

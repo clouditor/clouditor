@@ -473,8 +473,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			hookCallCounter = 0
-			s := NewService()
-			s.grpcOpts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
+			s := NewService(WithAdditionalGRPCOpts(grpc.WithContextDialer(bufConnDialer)))
 			assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
 
 			for i, hookFunction := range tt.args.resultHooks {
@@ -508,9 +507,9 @@ func TestAssessmentResultHooks(t *testing.T) {
 }
 
 func TestListAssessmentResults(t *testing.T) {
-	s := NewService()
-	s.grpcOpts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
+	s := NewService(WithAdditionalGRPCOpts(grpc.WithContextDialer(bufConnDialer)))
 	assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
+
 	_, err := s.AssessEvidence(context.TODO(), &assessment.AssessEvidenceRequest{
 		Evidence: &evidence.Evidence{
 			Id:        "11111111-1111-1111-1111-111111111111",
