@@ -205,7 +205,7 @@ func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType,
 	}
 }
 
-// recvLoop continuously receives message from the stream. Currently they are just discarded. In the future, we might
+// recvLoop continuously receives message from the stream. Currently, they are just discarded. In the future, we might
 // want to send them back to the caller. But we need to receive them, otherwise the buffer of the stream gets congested.
 func (c *StreamChannelOf[StreamType, MsgType]) recvLoop(s *StreamsOf[StreamType, MsgType]) {
 	for {
