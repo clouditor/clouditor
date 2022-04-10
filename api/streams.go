@@ -41,7 +41,7 @@ var (
 )
 
 // StreamChannelOf provides a channel around a connection to a grpc.ClientStream to send messages of type MsgType to
-// that particular stream, using an internal go routine. This is necessary, because gRPC does not allow to send to a
+// that particular stream, using an internal go routine. This is necessary, because gRPC does not allow sending to a
 // stream from multiple goroutines directly.
 type StreamChannelOf[StreamType grpc.ClientStream, MsgType proto.Message] struct {
 	// channel can be used to send a message to the stream
