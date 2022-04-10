@@ -225,7 +225,7 @@ func (c *StreamChannelOf[StreamType, MsgType]) recvLoop(s *StreamsOf[StreamType,
 }
 
 // Send sends the message into the stream via the channel. Since this uses the receive operator on the channel,
-// this function may block until the message is received on the the sendLoop of this StreamChannelOf or if
+// this function may block until the message is received on the sendLoop of this StreamChannelOf or if
 // the buffer of the channel is full.
 func (c *StreamChannelOf[StreamType, MsgType]) Send(msg MsgType) {
 	c.channel <- msg
