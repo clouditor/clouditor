@@ -61,7 +61,7 @@ type StreamChannelOf[StreamType grpc.ClientStream, MsgType proto.Message] struct
 // in target and returns the stream or an error. Additional gRPC dial options can be specified in additionalOpts.
 type InitFuncOf[StreamType grpc.ClientStream] func(target string, additionalOpts ...grpc.DialOption) (stream StreamType, err error)
 
-// StreamsOf handles stream channels to multiple gRPC servers, identified by a unique target (host and port usually).
+// StreamsOf handles stream channels to multiple gRPC servers, identified by a unique target (usually host and port).
 // Since gRPC does only allow to send to a stream using one goroutine, each stream provides a go channel that can be
 // used to send messages to the particular stream.
 //
