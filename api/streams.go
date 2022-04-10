@@ -57,7 +57,7 @@ type StreamChannelOf[StreamType grpc.ClientStream, MsgType proto.Message] struct
 	component string
 }
 
-// InitFuncOf describes a function with type paramters that creates any kind of stream towards a gRPC server specified
+// InitFuncOf describes a function with type parameters that creates any kind of stream towards a gRPC server specified
 // in target and returns the stream or an error. Additional gRPC dial options can be specified in additionalOpts.
 type InitFuncOf[StreamType grpc.ClientStream] func(target string, additionalOpts ...grpc.DialOption) (stream StreamType, err error)
 
