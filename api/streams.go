@@ -71,9 +71,6 @@ type StreamsOf[StreamType grpc.ClientStream, MsgType proto.Message] struct {
 	mutex    sync.RWMutex
 	channels map[string]*StreamChannelOf[StreamType, MsgType]
 	log      *logrus.Entry
-
-	// response message
-	res proto.Message
 }
 
 // StreamsOfOption is a functional option type to configure the StreamOf type.
