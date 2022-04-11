@@ -158,9 +158,8 @@ func (s *storage) Get(r interface{}, conds ...interface{}) (err error) {
 // 	return
 // }
 
-// TODO(lebogg, immqu): Add AND TEST associations
 func (s *storage) List(r interface{}, conds ...interface{}) error {
-	return s.db.Find(r, conds...).Error
+	return s.db.Preload(clause.Associations).Find(r, conds...).Error
 }
 
 func (s *storage) Count(r interface{}, conds ...interface{}) (count int64, err error) {

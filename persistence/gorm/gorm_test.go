@@ -1,10 +1,10 @@
 package gorm
 
 import (
+	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/testutil"
 	"fmt"
 	"testing"
-
-	"clouditor.io/clouditor/api/orchestrator"
 
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/persistence"
@@ -138,6 +138,12 @@ func Test_storage_List(t *testing.T) {
 		users []auth.User
 	)
 
+	// Create storage
+	s, err = NewStorage()
+	assert.NoError(t, err)
+
+	// Test user
+
 	user1 = &auth.User{
 		Username: "SomeName",
 		Password: "SomePassword",
@@ -151,10 +157,6 @@ func Test_storage_List(t *testing.T) {
 		Email:    "SomeMail2",
 		FullName: "SomeFullName2",
 	}
-
-	// Create storage
-	s, err = NewStorage()
-	assert.NoError(t, err)
 
 	// List should return empty list since no users are in DB yet
 	err = s.List(&users)
@@ -170,14 +172,45 @@ func Test_storage_List(t *testing.T) {
 	assert.ErrorIs(t, err, nil)
 	assert.Equal(t, len(users), 2)
 
-	// Check if user with name "SomeName" (user1) is in the list
-	for i := range users {
-		if users[i].Username == user1.Username {
+	// Test with certificates (associations included via states)
+	var (
+		certificate1 *orchestrator.Certificate
+		certificate2 *orchestrator.Certificate
+		certificates []*orchestrator.Certificate
+	)
+
+	// List should return empty list since no certificates are in DB yet
+	err = s.List(&certificates)
+	assert.ErrorIs(t, err, nil)
+	assert.Empty(t, certificates)
+
+	// Create two certificates
+	certificate1 = testutil.CreateCertificateMock()
+	certificate1.ID = "0"
+	certificate2 = testutil.CreateCertificateMock()
+	certificate2.ID = "1"
+	err = s.Create(certificate1)
+	assert.NoError(t, err)
+	err = s.Create(certificate2)
+	assert.NoError(t, err)
+
+	// List should return list of 2 certificates with associated states
+	err = s.List(&certificates)
+	assert.ErrorIs(t, err, nil)
+	assert.Equal(t, len(certificates), 2)
+
+	fmt.Println(certificates)
+
+	// Check if certificate with id "1" (certificate2) is in the list and if states are included (association)
+	for i := range certificates {
+		if certificates[i].ID == certificate2.ID {
+			fmt.Println("Certificate:", certificates[i])
+			assert.NotEmpty(t, certificates[i].States)
 			return
 		}
 	}
 	// If not, let the test fail
-	assert.FailNow(t, "user1 is not listed but should be.")
+	assert.FailNow(t, "%s is not listed but should be.", certificate1.ID)
 
 }
 
@@ -326,7 +359,7 @@ func Test_storage_Update(t *testing.T) {
 	assert.Equal(t, user.Password, gotUser.Password)
 	assert.Equal(t, user.Email, gotUser.Email)
 
-	// Testing cloud service (A table test now would be better, probably)
+	// Testing cloud service (A entryType test now would be better, probably)
 
 	// Create user
 	cloudService := orchestrator.CloudService{
