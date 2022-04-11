@@ -71,6 +71,9 @@ type StreamsOf[StreamType grpc.ClientStream, MsgType proto.Message] struct {
 	mutex    sync.RWMutex
 	channels map[string]*StreamChannelOf[StreamType, MsgType]
 	log      *logrus.Entry
+
+	// response message
+	res proto.Message
 }
 
 // StreamsOfOption is a functional option type to configure the StreamOf type.
@@ -210,12 +213,8 @@ func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType,
 func (c *StreamChannelOf[StreamType, MsgType]) recvLoop(s *StreamsOf[StreamType, MsgType]) {
 	for {
 		// TODO(oxisto): Check, if this also works for uni-directional streams
-		//msg := new(evidence.StoreEvidenceResponse)
-		msg := dumbProtoMesssage{}
-		//var msg ResponseMsgType = ResponseMsgType{}
-		s.log.Infof("Waiting for receiving StoreEvidenceResponse")
-		err := c.stream.RecvMsg(&msg)
-		s.log.Infof("Received StoreEvidenceResponse")
+		msg := new(dumbProtoMesssage)
+		err := c.stream.RecvMsg(msg)
 
 		if errors.Is(err, io.EOF) {
 			break
@@ -241,18 +240,18 @@ func defaultLog() *logrus.Entry {
 }
 
 // dumbProtoMesssage is used for now to give a correctly typed message to RecvMsg in recvLoop. In the future, use
-// appropriate response message of RPC. It "implements" proto.Message of the proto package in lib.go
+// types of response message of respective RPCs. It "implements" the protoiface.MessageV1 interface
 type dumbProtoMesssage struct{}
 
-// Reset is an empty/dumb method implementation of proto.Message
+// Reset is an empty/dumb method implementation for protoiface.MessageV1
 func (d dumbProtoMesssage) Reset() {
 }
 
-// String is an empty/dumb method implementation of proto.Message
+// String is an empty/dumb method implementation for protoiface.MessageV1
 func (d dumbProtoMesssage) String() string {
 	return "dumbProtoMessage"
 }
 
-// ProtoMessage is an empty/dumb method implementation of proto.Message
+// ProtoMessage is an empty/dumb method implementation for protoiface.MessageV1
 func (d dumbProtoMesssage) ProtoMessage() {
 }
