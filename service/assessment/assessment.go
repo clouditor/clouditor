@@ -76,7 +76,7 @@ type Service struct {
 	assessment.UnimplementedAssessmentServer
 
 	// evidenceStoreStream sends evidences to the Evidence Store
-	evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest, *evidence.StoreEvidenceResponse]
+	evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
 	evidenceStoreAddress string
 
 	// orchestratorStream sends assessment results to the Orchestrator
@@ -152,7 +152,7 @@ func NewService(opts ...ServiceOption) *Service {
 	s := &Service{
 		results:              make(map[string]*assessment.AssessmentResult),
 		evidenceStoreAddress: DefaultEvidenceStoreAddress,
-		evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest, *evidence.StoreEvidenceResponse](log)),
+		evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 		orchestratorAddress:  DefaultOrchestratorAddress,
 		orchestratorChannel:  make(chan *assessment.AssessmentResult, 1000),
 		cachedConfigurations: make(map[string]cachedConfiguration),
