@@ -178,9 +178,9 @@ func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType,
 	var err error
 
 	// Fetch new messages from channel (this will block)
-	for e := range c.channel {
+	for m := range c.channel {
 		// Try to send the message in our stream
-		err = c.stream.SendMsg(e)
+		err = c.stream.SendMsg(m)
 		if errors.Is(err, io.EOF) {
 			s.log.Infof("Stream to %s (%s) closed with EOF", c.component, c.target)
 
