@@ -43,7 +43,7 @@ var (
 // StreamChannelOf provides a channel around a connection to a grpc.ClientStream to send messages of type MsgType to
 // that particular stream, using an internal go routine. This is necessary, because gRPC does not allow sending to a
 // stream from multiple goroutines directly.
-type StreamChannelOf[StreamType grpc.ClientStream, MsgType proto.Message] struct {
+type StreamChannelOf[StreamType grpc.ClientStream, MsgType proto.Message, ResponseMsgType proto.Message] struct {
 	// channel can be used to send a message to the stream
 	channel chan MsgType
 
@@ -67,27 +67,27 @@ type InitFuncOf[StreamType grpc.ClientStream] func(target string, additionalOpts
 //
 // A stream for a given target can be retrieved with the GetStream function, which automatically initializes the stream
 // if it does not exist.
-type StreamsOf[StreamType grpc.ClientStream, MsgType proto.Message] struct {
+type StreamsOf[StreamType grpc.ClientStream, MsgType proto.Message, ResponseMsgType proto.Message] struct {
 	mutex    sync.RWMutex
-	channels map[string]*StreamChannelOf[StreamType, MsgType]
+	channels map[string]*StreamChannelOf[StreamType, MsgType, ResponseMsgType]
 	log      *logrus.Entry
 }
 
 // StreamsOfOption is a functional option type to configure the StreamOf type.
-type StreamsOfOption[StreamType grpc.ClientStream, MsgType proto.Message] func(*StreamsOf[StreamType, MsgType])
+type StreamsOfOption[StreamType grpc.ClientStream, MsgType proto.Message, ResponseMsgType proto.Message] func(*StreamsOf[StreamType, MsgType, ResponseMsgType])
 
 // WithLogger can be used to specify a dedicated logger entry which is used for logging. Otherwise, the default logging
 // entry of logrus is used.
-func WithLogger[StreamType grpc.ClientStream, MsgType proto.Message](log *logrus.Entry) StreamsOfOption[StreamType, MsgType] {
-	return func(s *StreamsOf[StreamType, MsgType]) {
+func WithLogger[StreamType grpc.ClientStream, MsgType proto.Message, ResponseMsgType proto.Message](log *logrus.Entry) StreamsOfOption[StreamType, MsgType, ResponseMsgType] {
+	return func(s *StreamsOf[StreamType, MsgType, ResponseMsgType]) {
 		s.log = log
 	}
 }
 
 // NewStreamsOf creates a new StreamsOf object and initializes all the necessary objects for it.
-func NewStreamsOf[StreamType grpc.ClientStream, MsgType proto.Message](opts ...StreamsOfOption[StreamType, MsgType]) (s *StreamsOf[StreamType, MsgType]) {
-	s = &StreamsOf[StreamType, MsgType]{
-		channels: map[string]*StreamChannelOf[StreamType, MsgType]{},
+func NewStreamsOf[StreamType grpc.ClientStream, MsgType proto.Message, ResponseMsgType proto.Message](opts ...StreamsOfOption[StreamType, MsgType, ResponseMsgType]) (s *StreamsOf[StreamType, MsgType, ResponseMsgType]) {
+	s = &StreamsOf[StreamType, MsgType, ResponseMsgType]{
+		channels: map[string]*StreamChannelOf[StreamType, MsgType, ResponseMsgType]{},
 	}
 
 	// Apply options
@@ -106,7 +106,7 @@ func NewStreamsOf[StreamType grpc.ClientStream, MsgType proto.Message](opts ...S
 // GetStream tries to retrieve a stream for the given target and component. If no stream exists, it tries to
 // create a new stream using the supplied init function. An error is returned if the initialization is not
 // successful.
-func (s *StreamsOf[StreamType, MsgType]) GetStream(target string, component string, init InitFuncOf[StreamType], opts ...grpc.DialOption) (c *StreamChannelOf[StreamType, MsgType], err error) {
+func (s *StreamsOf[StreamType, MsgType, ResponseMsgType]) GetStream(target string, component string, init InitFuncOf[StreamType], opts ...grpc.DialOption) (c *StreamChannelOf[StreamType, MsgType, ResponseMsgType], err error) {
 	var (
 		ok bool
 	)
@@ -128,7 +128,7 @@ func (s *StreamsOf[StreamType, MsgType]) GetStream(target string, component stri
 }
 
 // addStream stores a stream to the given component and starts a goroutine for sending messages from the channel to the given component
-func (s *StreamsOf[StreamType, MsgType]) addStream(target string, component string, init InitFuncOf[StreamType], opts ...grpc.DialOption) (c *StreamChannelOf[StreamType, MsgType], err error) {
+func (s *StreamsOf[StreamType, MsgType, ResponseMsgType]) addStream(target string, component string, init InitFuncOf[StreamType], opts ...grpc.DialOption) (c *StreamChannelOf[StreamType, MsgType, ResponseMsgType], err error) {
 	// We need an init func
 	if init == nil {
 		return nil, ErrMissingInitFunc
@@ -141,7 +141,7 @@ func (s *StreamsOf[StreamType, MsgType]) addStream(target string, component stri
 	}
 
 	// Create our stream channel struct
-	c = &StreamChannelOf[StreamType, MsgType]{
+	c = &StreamChannelOf[StreamType, MsgType, ResponseMsgType]{
 		stream:    stream,
 		component: component,
 		target:    target,
@@ -165,7 +165,7 @@ func (s *StreamsOf[StreamType, MsgType]) addStream(target string, component stri
 }
 
 // removeStream deletes the channel from the stream map.
-func (s *StreamsOf[StreamType, MsgType]) removeStream(target string) {
+func (s *StreamsOf[StreamType, MsgType, ResponseMsgType]) removeStream(target string) {
 	s.log.Debugf("Removing stream channel for target %s", target)
 
 	s.mutex.Lock()
@@ -174,7 +174,7 @@ func (s *StreamsOf[StreamType, MsgType]) removeStream(target string) {
 }
 
 // sendLoop continuously fetches new messages from the channel inside c and sends them to the appropriate stream.
-func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType, MsgType]) {
+func (c *StreamChannelOf[StreamType, MsgType, ResponseMsgType]) sendLoop(s *StreamsOf[StreamType, MsgType, ResponseMsgType]) {
 	var err error
 
 	// Fetch new messages from channel (this will block)
@@ -207,11 +207,15 @@ func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType,
 
 // recvLoop continuously receives message from the stream. Currently, they are just discarded. In the future, we might
 // want to send them back to the caller. But we need to receive them, otherwise the buffer of the stream gets congested.
-func (c *StreamChannelOf[StreamType, MsgType]) recvLoop(s *StreamsOf[StreamType, MsgType]) {
+func (c *StreamChannelOf[StreamType, MsgType, ResponseMsgType]) recvLoop(s *StreamsOf[StreamType, MsgType, ResponseMsgType]) {
 	for {
 		// TODO(oxisto): Check, if this also works for uni-directional streams
-		var msg proto.Message
+		//msg := new(evidence.StoreEvidenceResponse)
+		msg := dumbProtoMesssage{}
+		//var msg ResponseMsgType = ResponseMsgType{}
+		s.log.Infof("Waiting for receiving StoreEvidenceResponse")
 		err := c.stream.RecvMsg(&msg)
+		s.log.Infof("Received StoreEvidenceResponse")
 
 		if errors.Is(err, io.EOF) {
 			break
@@ -227,11 +231,28 @@ func (c *StreamChannelOf[StreamType, MsgType]) recvLoop(s *StreamsOf[StreamType,
 // Send sends the message into the stream via the channel. Since this uses the receive operator on the channel,
 // this function may block until the message is received on the sendLoop of this StreamChannelOf or if
 // the buffer of the channel is full.
-func (c *StreamChannelOf[StreamType, MsgType]) Send(msg MsgType) {
+func (c *StreamChannelOf[StreamType, MsgType, ResponseMsgType]) Send(msg MsgType) {
 	c.channel <- msg
 }
 
 // defaultLog returns the default logger, if none is specified.
 func defaultLog() *logrus.Entry {
 	return logrus.NewEntry(logrus.StandardLogger())
+}
+
+// dumbProtoMesssage is used for now to give a correctly typed message to RecvMsg in recvLoop. In the future, use
+// appropriate response message of RPC. It "implements" proto.Message of the proto package in lib.go
+type dumbProtoMesssage struct{}
+
+// Reset is an empty/dumb method implementation of proto.Message
+func (d dumbProtoMesssage) Reset() {
+}
+
+// String is an empty/dumb method implementation of proto.Message
+func (d dumbProtoMesssage) String() string {
+	return "dumbProtoMessage"
+}
+
+// ProtoMessage is an empty/dumb method implementation of proto.Message
+func (d dumbProtoMesssage) ProtoMessage() {
 }
