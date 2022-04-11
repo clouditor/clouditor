@@ -34,6 +34,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 var (
@@ -210,7 +211,10 @@ func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType,
 func (c *StreamChannelOf[StreamType, MsgType]) recvLoop(s *StreamsOf[StreamType, MsgType]) {
 	for {
 		// TODO(oxisto): Check, if this also works for uni-directional streams
-		msg := new(dumbProtoMesssage)
+		// emptypb.Empty is used for now to give a correctly typed message to RecvMsg. In the future, use
+		// types of response message of respective RPCs.
+
+		msg := new(emptypb.Empty)
 		err := c.stream.RecvMsg(msg)
 
 		if errors.Is(err, io.EOF) {
@@ -234,21 +238,4 @@ func (c *StreamChannelOf[StreamType, MsgType]) Send(msg MsgType) {
 // defaultLog returns the default logger, if none is specified.
 func defaultLog() *logrus.Entry {
 	return logrus.NewEntry(logrus.StandardLogger())
-}
-
-// dumbProtoMesssage is used for now to give a correctly typed message to RecvMsg in recvLoop. In the future, use
-// types of response message of respective RPCs. It "implements" the protoiface.MessageV1 interface
-type dumbProtoMesssage struct{}
-
-// Reset is an empty/dumb method implementation for protoiface.MessageV1
-func (d dumbProtoMesssage) Reset() {
-}
-
-// String is an empty/dumb method implementation for protoiface.MessageV1
-func (d dumbProtoMesssage) String() string {
-	return "dumbProtoMessage"
-}
-
-// ProtoMessage is an empty/dumb method implementation for protoiface.MessageV1
-func (d dumbProtoMesssage) ProtoMessage() {
 }
