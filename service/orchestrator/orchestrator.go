@@ -137,7 +137,7 @@ func NewService(opts ...ServiceOption) *Service {
 		}
 	}
 
-	if err = LoadMetrics(s.metricsFile); err != nil {
+	if err = s.loadMetrics(); err != nil {
 		log.Errorf("Could not load embedded metrics. Will continue with empty metric list: %v", err)
 	}
 

@@ -222,7 +222,7 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 		}*/
 		impl, err = src.MetricImplementation(assessment.MetricImplementation_REGO, metric)
 		if err != nil {
-			return nil, fmt.Errorf("could not fetch policy %w", err)
+			return nil, fmt.Errorf("could not fetch policy: %w", err)
 		}
 
 		err = store.UpsertPolicy(context.Background(), tx, bundle+"metric.rego", []byte(impl.Code))

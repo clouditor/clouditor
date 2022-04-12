@@ -41,15 +41,15 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// LoadMetrics loads metrics definitions from a JSON file.
-func LoadMetrics(metricsFile string) (err error) {
+func (svc *Service) loadMetrics() (err error) {
 	var (
-		b []byte
+		impl *assessment.MetricImplementation
+		b    []byte
 	)
 
-	b, err = f.ReadFile(metricsFile)
+	b, err = f.ReadFile(svc.metricsFile)
 	if err != nil {
-		return fmt.Errorf("error while loading %s: %w", metricsFile, err)
+		return fmt.Errorf("error while loading %s: %w", svc.metricsFile, err)
 	}
 
 	err = json.Unmarshal(b, &metrics)
@@ -57,7 +57,37 @@ func LoadMetrics(metricsFile string) (err error) {
 		return fmt.Errorf("error in JSON marshal: %w", err)
 	}
 
-	return nil
+	for _, metric := range metrics {
+		file := fmt.Sprintf("policies/bundles/%s/metric.rego", metric)
+
+		impl, err = LoadMetricImplementation(metric.Id, file)
+		if err != nil {
+			return fmt.Errorf("could not load metric implementation: %w", err)
+		}
+
+		err = svc.storage.Save(impl)
+		if err != nil {
+			return fmt.Errorf("could not save metric implementation: %w", err)
+		}
+	}
+
+	return
+}
+
+func LoadMetricImplementation(metricID, file string) (impl *assessment.MetricImplementation, err error) {
+	// Fetch the metric implementation directly from our file
+	b, err := os.ReadFile(file)
+	if err != nil {
+		return nil, fmt.Errorf("could not read file: %w", err)
+	}
+
+	impl = &assessment.MetricImplementation{
+		MetricId: metricID,
+		Lang:     assessment.MetricImplementation_REGO,
+		Code:     string(b),
+	}
+
+	return
 }
 
 // CreateMetric creates a new metric in the database.
@@ -214,20 +244,4 @@ func (svc *Service) SubscribeMetricChangeEvents(_ *orchestrator.SubscribeMetricC
 			return status.Errorf(codes.Unknown, "%v", err)
 		}
 	}
-}
-
-func scanBundleDir(baseDir string) ([]os.FileInfo, error) {
-	dirname := baseDir + "/policies/bundles"
-
-	f, err := os.Open(dirname)
-	if err != nil {
-		return nil, err
-	}
-	files, err := f.Readdir(-1)
-	_ = f.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	return files, err
 }
