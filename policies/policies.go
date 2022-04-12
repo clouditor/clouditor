@@ -26,7 +26,6 @@
 package policies
 
 import (
-	"os"
 	"strings"
 	"sync"
 
@@ -47,7 +46,7 @@ type metricsResourceTypeCache struct {
 
 // TODO(oxisto): Rename to AssessmentEngine or something?
 type PolicyEval interface {
-	Eval(evidence *evidence.Evidence, mcs MetricConfigurationSource, mis MetricImplementationSource) (data []*Result, err error)
+	Eval(evidence *evidence.Evidence, src MetricsSource) (data []*Result, err error)
 	HandleMetricEvent(event *orchestrator.MetricChangeEvent) (err error)
 }
 
@@ -59,30 +58,12 @@ type Result struct {
 	MetricId    string
 }
 
-// MetricConfigurationSource can be used to retrieve a metric configuration for a particular metric (and target service)
-type MetricConfigurationSource interface {
+// MetricsSource is used to retrieve a list of metrics and to retrieve a metric
+// configuration as well as implementation for a particular metric (and target service)
+type MetricsSource interface {
+	Metrics() ([]*assessment.Metric, error)
 	MetricConfiguration(metric string) (*assessment.MetricConfiguration, error)
-}
-
-// MetricImplementationSource can be used to retrieve a metric implementation for a particular language and metric.
-type MetricImplementationSource interface {
 	MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (*assessment.MetricImplementation, error)
-}
-
-func scanBundleDir(baseDir string) ([]os.FileInfo, error) {
-	dirname := baseDir + "/policies/bundles"
-
-	f, err := os.Open(dirname)
-	if err != nil {
-		return nil, err
-	}
-	files, err := f.Readdir(-1)
-	_ = f.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	return files, err
 }
 
 func createKey(types []string) (key string) {

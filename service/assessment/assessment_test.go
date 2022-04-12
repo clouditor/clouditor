@@ -236,7 +236,7 @@ func TestAssessEvidence(t *testing.T) {
 			s := NewService()
 			if tt.hasRPCConnection {
 				s.grpcOpts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
-				assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
+				assert.NoError(t, s.initOrchestratorStream())
 			} else {
 				// clear the evidence URL, just to be sure
 				s.evidenceStoreAddress = ""
@@ -369,7 +369,7 @@ func TestAssessEvidences(t *testing.T) {
 				pe:                            policies.NewRegoEval(nil),
 			}
 
-			assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
+			assert.NoError(t, s.initOrchestratorStream())
 
 			if tt.args.streamToServer != nil {
 				err = s.AssessEvidences(tt.args.streamToServer)
@@ -481,7 +481,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			hookCallCounter = 0
 			s := NewService(WithAdditionalGRPCOpts(grpc.WithContextDialer(bufConnDialer)))
-			assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
+			assert.NoError(t, s.initOrchestratorStream())
 
 			for i, hookFunction := range tt.args.resultHooks {
 				s.RegisterAssessmentResultHook(hookFunction)
@@ -515,7 +515,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 
 func TestListAssessmentResults(t *testing.T) {
 	s := NewService(WithAdditionalGRPCOpts(grpc.WithContextDialer(bufConnDialer)))
-	assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
+	assert.NoError(t, s.initOrchestratorStream())
 
 	_, err := s.AssessEvidence(context.TODO(), &assessment.AssessEvidenceRequest{
 		Evidence: &evidence.Evidence{
@@ -817,7 +817,7 @@ func TestHandleEvidence(t *testing.T) {
 				s.grpcOpts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
 			}
 			if tt.fields.hasOrchestratorStream {
-				assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
+				assert.NoError(t, s.initOrchestratorStream())
 			}
 			// Two tests: 1st) wantErr function. 2nd) if wantErr false then check if a result is added to map
 			if !tt.wantErr(t, s.handleEvidence(tt.args.evidence, tt.args.resourceId), fmt.Sprintf("handleEvidence(%v, %v)", tt.args.evidence, tt.args.resourceId)) {
@@ -830,10 +830,10 @@ func TestHandleEvidence(t *testing.T) {
 
 func TestService_initOrchestratorStoreStream(t *testing.T) {
 	type fields struct {
-		opts []ServiceOption
+		opts     []ServiceOption
+		grpcOpts []grpc.DialOption
 	}
 	type args struct {
-		additionalOpts []grpc.DialOption
 	}
 	tests := []struct {
 		name    string
@@ -860,10 +860,9 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 					WithOrchestratorAddress("bufnet"),
 					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
 				},
+				grpcOpts: []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 			},
-			args: args{
-				[]grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
-			},
+			args: args{},
 		},
 		{
 			name: "Authenticated RPC connection with invalid user",
@@ -872,9 +871,7 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 					WithOrchestratorAddress("bufnet"),
 					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
 				},
-			},
-			args: args{
-				[]grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
+				grpcOpts: []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				s, _ := status.FromError(errors.Unwrap(err))
@@ -886,7 +883,7 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService(tt.fields.opts...)
-			err := s.initOrchestratorStream(tt.args.additionalOpts...)
+			err := s.initOrchestratorStream()
 
 			if tt.wantErr != nil {
 				tt.wantErr(t, err)

@@ -26,6 +26,7 @@
 package policies
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"testing"
@@ -54,11 +55,30 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-type mockMetricConfigurationSource struct {
+type mockMetricsSource struct {
 	t *testing.T
 }
 
-func (m *mockMetricConfigurationSource) MetricConfiguration(metric string) (*assessment.MetricConfiguration, error) {
+func (m *mockMetricsSource) Metrics() (metrics []*assessment.Metric, err error) {
+	var (
+		b           []byte
+		metricsFile = "service/orchestrator/metrics.json"
+	)
+
+	b, err = os.ReadFile(metricsFile)
+	if err != nil {
+		return nil, fmt.Errorf("error while loading %s: %w", metricsFile, err)
+	}
+
+	err = json.Unmarshal(b, &metrics)
+	if err != nil {
+		return nil, fmt.Errorf("error in JSON marshal: %w", err)
+	}
+
+	return
+}
+
+func (m *mockMetricsSource) MetricConfiguration(metric string) (*assessment.MetricConfiguration, error) {
 	// Fetch the metric configuration directly from our file
 	bundle := fmt.Sprintf("policies/bundles/%s/data.json", metric)
 
@@ -72,11 +92,7 @@ func (m *mockMetricConfigurationSource) MetricConfiguration(metric string) (*ass
 	return &config, nil
 }
 
-type mockMetricImplementationSource struct {
-	t *testing.T
-}
-
-func (m *mockMetricImplementationSource) MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (*assessment.MetricImplementation, error) {
+func (m *mockMetricsSource) MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (*assessment.MetricImplementation, error) {
 	// Fetch the metric implementation directly from our file
 	bundle := fmt.Sprintf("policies/bundles/%s/metric.rego", metric)
 

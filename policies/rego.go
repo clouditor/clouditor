@@ -65,7 +65,7 @@ func NewRegoEval(storage persistence.Storage) PolicyEval {
 
 // Eval evaluates a given evidence against all available Rego policies and returns the result of all policies that were
 // considered to be applicable.
-func (re *regoEval) Eval(evidence *evidence.Evidence, mcs MetricConfigurationSource, mis MetricImplementationSource) (data []*Result, err error) {
+func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data []*Result, err error) {
 	var (
 		baseDir string
 		m       map[string]interface{}
@@ -95,14 +95,14 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, mcs MetricConfigurationSou
 	key := createKey(types)
 
 	re.mrtc.RLock()
-	metrics := re.mrtc.m[key]
+	cached := re.mrtc.m[key]
 	re.mrtc.RUnlock()
 
 	// TODO(lebogg): Try to optimize duplicated code
-	if metrics == nil {
-		files, err := scanBundleDir(baseDir)
+	if cached == nil {
+		metrics, err := src.Metrics()
 		if err != nil {
-			return nil, fmt.Errorf("could not load metric bundles: %w", err)
+			return nil, fmt.Errorf("could not retrieve metric definitions: %w", err)
 		}
 
 		// Lock until we looped through all files
@@ -111,30 +111,29 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, mcs MetricConfigurationSou
 		// Start with an empty list, otherwise we might copy metrics into the list
 		// that are added by a parallel execution - which might occur if both goroutines
 		// start at the exactly same time.
-		metrics = []string{}
-		for _, fileInfo := range files {
-			runMap, err := re.evalMap(baseDir, fileInfo.Name(), m, mcs, mis)
+		cached = []string{}
+		for _, metric := range metrics {
+			runMap, err := re.evalMap(baseDir, metric.Id, m, src)
 			if err != nil {
 				return nil, err
 			}
 
 			if runMap != nil {
-				metricId := fileInfo.Name()
-				metrics = append(metrics, metricId)
-				runMap.MetricId = metricId
+				cached = append(cached, metric.Id)
+				runMap.MetricId = metric.Id
 
 				data = append(data, runMap)
 			}
 		}
 
 		// Set it and unlock
-		re.mrtc.m[key] = metrics
+		re.mrtc.m[key] = cached
 		log.Infof("Resource type %v has the following %v applicable metric(s): %v", key, len(re.mrtc.m[key]), re.mrtc.m[key])
 
 		re.mrtc.Unlock()
 	} else {
-		for _, metric := range metrics {
-			runMap, err := re.evalMap(baseDir, metric, m, mcs, mis)
+		for _, metric := range cached {
+			runMap, err := re.evalMap(baseDir, metric, m, src)
 			if err != nil {
 				return nil, err
 			}
@@ -160,7 +159,7 @@ func (re *regoEval) HandleMetricEvent(event *orchestrator.MetricChangeEvent) (er
 	return nil
 }
 
-func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interface{}, mcs MetricConfigurationSource, mis MetricImplementationSource) (result *Result, err error) {
+func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interface{}, src MetricsSource) (result *Result, err error) {
 	var (
 		query *rego.PreparedEvalQuery
 		key   string
@@ -169,7 +168,7 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 
 	// We need to check, if the metric configuration has been changed. Any caching of this
 	// configuration will be done by the MetricConfigurationSource.
-	config, err := mcs.MetricConfiguration(metric)
+	config, err := src.MetricConfiguration(metric)
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch metric configuration: %w", err)
 	}
@@ -221,7 +220,7 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 			// Take the implementation from the DB
 			data = []byte(impl.Code)
 		}*/
-		impl, err = mis.MetricImplementation(assessment.MetricImplementation_REGO, metric)
+		impl, err = src.MetricImplementation(assessment.MetricImplementation_REGO, metric)
 		if err != nil {
 			return nil, fmt.Errorf("could not fetch policy %w", err)
 		}

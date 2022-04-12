@@ -220,7 +220,7 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 	if s.orchestratorStream == nil {
 		err = s.initOrchestratorStream()
 		if err != nil {
-			log.Errorf("error initialising orchestrator stream: %v", err)
+			log.Errorf("error initializing orchestrator stream: %v", err)
 		}
 	}
 
@@ -292,26 +292,26 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 }
 
 // handleEvidence is the helper method for the actual assessment used by AssessEvidence and AssessEvidences
-func (s *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (err error) {
+func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (err error) {
 	log.Debugf("Evaluating evidence %s (%s) collected by %s at %v", ev.Id, resourceId, ev.ToolId, ev.Timestamp)
 	log.Tracef("Evidence: %+v", ev)
 
-	evaluations, err := s.pe.Eval(ev, s, s)
+	evaluations, err := svc.pe.Eval(ev, svc)
 	if err != nil {
 		newError := fmt.Errorf("could not evaluate evidence: %w", err)
 		log.Error(newError)
 
-		go s.informHooks(nil, newError)
+		go svc.informHooks(nil, newError)
 
 		return newError
 	}
 
-	channel, err := s.evidenceStoreStreams.GetStream(s.evidenceStoreAddress, "Evidence Store", s.initEvidenceStoreStream, s.grpcOpts...)
+	channel, err := svc.evidenceStoreStreams.GetStream(svc.evidenceStoreAddress, "Evidence Store", svc.initEvidenceStoreStream, svc.grpcOpts...)
 	if err != nil {
-		err = fmt.Errorf("could not get stream to evidence store (%s): %w", s.evidenceStoreAddress, err)
+		err = fmt.Errorf("could not get stream to evidence store (%s): %w", svc.evidenceStoreAddress, err)
 		log.Error(err)
 
-		go s.informHooks(nil, err)
+		go svc.informHooks(nil, err)
 
 		return err
 	}
@@ -345,16 +345,16 @@ func (s *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (err 
 			NonComplianceComments: "No comments so far",
 		}
 
-		s.resultMutex.Lock()
+		svc.resultMutex.Lock()
 		// Just a little hack to quickly enable multiple results per resource
-		s.results[fmt.Sprintf("%s-%d", resourceId, i)] = result
-		s.resultMutex.Unlock()
+		svc.results[fmt.Sprintf("%s-%d", resourceId, i)] = result
+		svc.resultMutex.Unlock()
 
 		// Inform hooks about new assessment result
-		go s.informHooks(result, nil)
+		go svc.informHooks(result, nil)
 
 		// Store assessment result in orchestratorChannel
-		s.orchestratorChannel <- result
+		svc.orchestratorChannel <- result
 	}
 
 	return nil
@@ -430,12 +430,12 @@ func (s *Service) initEvidenceStoreStream(URL string, additionalOpts ...grpc.Dia
 }
 
 // initOrchestratorStream initializes the stream to the Orchestrator
-func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) error {
+func (s *Service) initOrchestratorStream() error {
 	log.Infof("Trying to establish a connection to orchestrator service @ %v", s.orchestratorAddress)
 
 	// Establish connection to orchestrator gRPC service
 	conn, err := grpc.Dial(s.orchestratorAddress,
-		api.DefaultGrpcDialOptions(s.orchestratorAddress, s, additionalOpts...)...,
+		api.DefaultGrpcDialOptions(s.orchestratorAddress, s, s.grpcOpts...)...,
 	)
 	if err != nil {
 		return fmt.Errorf("could not connect to orchestrator service: %w", err)
@@ -507,16 +507,28 @@ func (s *Service) initOrchestratorStream(additionalOpts ...grpc.DialOption) erro
 	return nil
 }
 
-// MetricImplementation implements MetricImplementationSource by retrieving the metric implementation
+// MetricImplementation implements MetricsSource by retrieving the metric list from the orchestrator.
+func (svc *Service) Metrics() (metrics []*assessment.Metric, err error) {
+	var res *orchestrator.ListMetricsResponse
+
+	res, err = svc.orchestratorClient.ListMetrics(context.Background(), &orchestrator.ListMetricsRequest{})
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve metric list from orchestrator: %w", err)
+	}
+
+	return res.Metrics, nil
+}
+
+// MetricImplementation implements MetricsSource by retrieving the metric implementation
 // from the orchestrator.
-func (s *Service) MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (impl *assessment.MetricImplementation, err error) {
+func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (impl *assessment.MetricImplementation, err error) {
 	// For now, the orchestrator only supports the Rego language.
 	if lang != assessment.MetricImplementation_REGO {
 		return nil, errors.New("unsupported language")
 	}
 
 	// Retrieve it from the orchestrator
-	impl, err = s.orchestratorClient.GetMetricImplementation(context.Background(), &orchestrator.GetMetricImplementationRequest{
+	impl, err = svc.orchestratorClient.GetMetricImplementation(context.Background(), &orchestrator.GetMetricImplementationRequest{
 		MetricId: metric,
 	})
 	if err != nil {
@@ -526,22 +538,22 @@ func (s *Service) MetricImplementation(lang assessment.MetricImplementation_Lang
 	return
 }
 
-// MetricConfiguration implements MetricConfigurationSource by getting the corresponding metric configuration for the
+// MetricConfiguration implements MetricsSource by getting the corresponding metric configuration for the
 // default target cloud service
-func (s *Service) MetricConfiguration(metric string) (config *assessment.MetricConfiguration, err error) {
+func (svc *Service) MetricConfiguration(metric string) (config *assessment.MetricConfiguration, err error) {
 	var (
 		ok    bool
 		cache cachedConfiguration
 	)
 
 	// Retrieve our cached entry
-	s.confMutex.Lock()
-	cache, ok = s.cachedConfigurations[metric]
-	s.confMutex.Unlock()
+	svc.confMutex.Lock()
+	cache, ok = svc.cachedConfigurations[metric]
+	svc.confMutex.Unlock()
 
 	// Check if entry is not there or is expired
 	if !ok || cache.cachedAt.After(time.Now().Add(EvictionTime)) {
-		config, err = s.orchestratorClient.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{
+		config, err = svc.orchestratorClient.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{
 			ServiceId: service_orchestrator.DefaultTargetCloudServiceId,
 			MetricId:  metric,
 		})
@@ -555,10 +567,10 @@ func (s *Service) MetricConfiguration(metric string) (config *assessment.MetricC
 			MetricConfiguration: config,
 		}
 
-		s.confMutex.Lock()
+		svc.confMutex.Lock()
 		// Update the metric configuration
-		s.cachedConfigurations[metric] = cache
-		defer s.confMutex.Unlock()
+		svc.cachedConfigurations[metric] = cache
+		defer svc.confMutex.Unlock()
 	}
 
 	return cache.MetricConfiguration, nil

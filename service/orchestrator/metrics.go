@@ -31,6 +31,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
@@ -213,4 +214,20 @@ func (svc *Service) SubscribeMetricChangeEvents(_ *orchestrator.SubscribeMetricC
 			return status.Errorf(codes.Unknown, "%v", err)
 		}
 	}
+}
+
+func scanBundleDir(baseDir string) ([]os.FileInfo, error) {
+	dirname := baseDir + "/policies/bundles"
+
+	f, err := os.Open(dirname)
+	if err != nil {
+		return nil, err
+	}
+	files, err := f.Readdir(-1)
+	_ = f.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	return files, err
 }
