@@ -573,16 +573,19 @@ components:
             properties:
                 ID:
                     type: string
-                    description: 'TODO(lebogg to immqu): I changed certificate_id to id (and did some reordering). It is also in accordance with the MED datamodel'
                 name:
                     type: string
                 serviceId:
                     type: string
-                issuedate:
+                issueDate:
+                    type: string
+                expirationDate:
                     type: string
                 standard:
                     type: string
                 scope:
+                    type: string
+                assuranceLevel:
                     type: string
                 cab:
                     type: string
@@ -592,7 +595,6 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/State'
-            description: 'TODO(lebogg to immqu): For gorm one-to-many association to work in gorm, a repeated field of states here and CertificateID in State is enough'
         CloudService:
             type: object
             properties:

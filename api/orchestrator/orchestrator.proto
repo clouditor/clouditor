@@ -394,18 +394,18 @@ message CreateCertificateRequest { Certificate certificate = 1; }
 
 message RemoveCertificateRequest { string certificate_id = 1; }
 
-// TODO(lebogg to immqu): For gorm one-to-many association to work in gorm, a repeated field of states here and CertificateID in State is enough
 message Certificate {
-  // TODO(lebogg to immqu): I changed certificate_id to id (and did some reordering). It is also in accordance with the MED datamodel
   string ID = 1;
 	string name = 2;
 	string service_id = 3;
-	string issuedate = 4;
-  string standard = 5;
-  string scope = 6;       
-  string cab = 7;
-  string description = 8;
-  repeated State states = 9;
+	string issue_date = 4;
+  string expiration_date = 5;
+  string standard = 6;
+  string scope = 7;  
+  string assurance_level = 8;     
+  string cab = 9;
+  string description = 10;
+  repeated State states = 11;
 }
 
 message State {

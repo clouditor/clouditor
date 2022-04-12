@@ -1,8 +1,9 @@
 package testutil
 
 import (
-	"clouditor.io/clouditor/api/orchestrator"
 	"time"
+
+	"clouditor.io/clouditor/api/orchestrator"
 )
 
 // CreateCertificateMock creates a mock certificate creation request
@@ -16,15 +17,16 @@ func CreateCertificateMock() *orchestrator.Certificate {
 	}
 
 	var mockCertificate = &orchestrator.Certificate{
-		Name:        "EUCS",
-		ServiceId:   "test service",
-		Issuedate:   "2021-11-06",
-		Standard:    "EUCS",
-		Scope:       "Basic",
-		Cab:         "Cab123",
-		Description: "Description",
-		States:      []*orchestrator.State{mockHistory},
-		ID:          "1234",
+		Name:           "EUCS",
+		ServiceId:      "test service",
+		IssueDate:      "2021-11-06",
+		ExpirationDate: "2024-11-06",
+		Standard:       "EUCS",
+		Scope:          "Basic",
+		Cab:            "Cab123",
+		Description:    "Description",
+		States:         []*orchestrator.State{mockHistory},
+		ID:             "1234",
 	}
 
 	return mockCertificate
