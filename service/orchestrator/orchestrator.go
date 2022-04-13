@@ -114,7 +114,7 @@ func NewService(opts ...ServiceOption) *Service {
 		results:              make(map[string]*assessment.AssessmentResult),
 		metricConfigurations: make(map[string]map[string]*assessment.MetricConfiguration),
 		metricsFile:          DefaultMetricsFile,
-		events:               make(chan *orchestrator.MetricChangeEvent),
+		events:               make(chan *orchestrator.MetricChangeEvent, 1000),
 	}
 
 	// Apply service options

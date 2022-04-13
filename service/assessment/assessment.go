@@ -87,6 +87,7 @@ type Service struct {
 	orchestratorAddress string
 	// orchestratorChannel stores assessment results for the Orchestrator
 	orchestratorChannel chan *assessment.AssessmentResult
+	metricEventStream   orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
 
 	// resultHooks is a list of hook functions that can be used if one wants to be
 	// informed about each assessment result
@@ -441,6 +442,7 @@ func (s *Service) initOrchestratorStream() error {
 		return fmt.Errorf("could not connect to orchestrator service: %w", err)
 	}
 
+	// TODO(oxisto): use our generic function instead
 	s.orchestratorClient = orchestrator.NewOrchestratorClient(conn)
 	s.orchestratorStream, err = s.orchestratorClient.StoreAssessmentResults(context.Background())
 	if err != nil {
@@ -501,6 +503,34 @@ func (s *Service) initOrchestratorStream() error {
 				log.Debugf("orchestratorStream send assessment results currently @ %v", i)
 			}
 			i++
+		}
+	}()
+
+	// TODO(oxisto): We should rewrite our generic StreamsOf to deal with incoming messages
+	s.metricEventStream, err = s.orchestratorClient.SubscribeMetricChangeEvents(context.Background(), &orchestrator.SubscribeMetricChangeEventRequest{})
+	if err != nil {
+		return fmt.Errorf("could not set up stream for listening to metric change events: %w", err)
+	}
+
+	go func() {
+		for {
+			var (
+				event *orchestrator.MetricChangeEvent
+				err   error
+			)
+			event, err = s.metricEventStream.Recv()
+
+			if errors.Is(err, io.EOF) {
+				log.Debugf("no more responses from orchestrator stream: EOF")
+				break
+			}
+
+			if err != nil {
+				log.Errorf("error receiving response from orchestrator stream: %v", err)
+				break
+			}
+
+			s.pe.HandleMetricEvent(event)
 		}
 	}()
 

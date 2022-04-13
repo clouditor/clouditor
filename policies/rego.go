@@ -146,6 +146,8 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 	return data, nil
 }
 
+// HandleMetricEvent takes care of handling metric events, such as evicting cache entries for the
+// appropriate metrics.
 func (re *regoEval) HandleMetricEvent(event *orchestrator.MetricChangeEvent) (err error) {
 	if event.Type == orchestrator.MetricChangeEvent_IMPLEMENTATION_CHANGED {
 		log.Infof("Implementation of %s has changed. Clearing cache for this metric", event.MetricId)
@@ -166,8 +168,7 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 		pkg   string
 	)
 
-	// We need to check, if the metric configuration has been changed. Any caching of this
-	// configuration will be done by the MetricConfigurationSource.
+	// We need to check, if the metric configuration has been changed.
 	config, err := src.MetricConfiguration(metric)
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch metric configuration: %w", err)

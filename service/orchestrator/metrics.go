@@ -41,6 +41,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// loadMetrics takes care of loading the metric definitions from the (embedded) metrics.json as
+// well as the default metric implementations from the Rego files.
 func (svc *Service) loadMetrics() (err error) {
 	var (
 		impl *assessment.MetricImplementation
@@ -92,7 +94,7 @@ func loadMetricImplementation(metricID, file string) (impl *assessment.MetricImp
 }
 
 // CreateMetric creates a new metric in the database.
-func (*Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetricRequest) (metric *assessment.Metric, err error) {
+func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetricRequest) (metric *assessment.Metric, err error) {
 	// Validate the metric request
 	err = req.Metric.Validate(assessment.WithMetricRequiresId())
 	if err != nil {
@@ -113,11 +115,17 @@ func (*Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetricRe
 	metricIndex[req.Metric.Id] = metric
 	metrics = append(metrics, metric)
 
+	// Notify event listeners
+	svc.events <- &orchestrator.MetricChangeEvent{
+		Type:     orchestrator.MetricChangeEvent_METADATA_CHANGED,
+		MetricId: metric.Id,
+	}
+
 	return
 }
 
 // UpdateMetric updates an existing metric, specified by the identifier in req.MetricId.
-func (*Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetricRequest) (metric *assessment.Metric, err error) {
+func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetricRequest) (metric *assessment.Metric, err error) {
 	var ok bool
 
 	// Validate the metric request
@@ -141,6 +149,44 @@ func (*Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetricRe
 	metric.Category = req.Metric.Category
 	metric.Range = req.Metric.Range
 	metric.Scale = req.Metric.Scale
+
+	// Notify event listeners
+	svc.events <- &orchestrator.MetricChangeEvent{
+		Type:     orchestrator.MetricChangeEvent_METADATA_CHANGED,
+		MetricId: metric.Id,
+	}
+
+	return
+}
+
+// UpdateMetricImplementation updates an existing metric implementation, specified by the identifier in req.MetricId.
+func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestrator.UpdateMetricImplementationRequest) (impl *assessment.MetricImplementation, err error) {
+	var (
+		ok     bool
+		metric *assessment.Metric
+	)
+
+	// TODO(oxisto): Validate the metric implementation request
+
+	// Check, if metric exists according to req.MetricId
+	if metric, ok = metricIndex[req.MetricId]; !ok {
+		err := fmt.Errorf("metric with identifier %s does not exist", req.MetricId)
+		log.Error(err)
+		return nil, status.Errorf(codes.NotFound, "%v", err)
+	}
+
+	// Update implementation
+	impl = req.Implementation
+	impl.MetricId = req.MetricId
+
+	// Store it in the database
+	svc.storage.Save(impl, "metric_id = ?", impl.MetricId)
+
+	// Notify event listeners
+	svc.events <- &orchestrator.MetricChangeEvent{
+		Type:     orchestrator.MetricChangeEvent_IMPLEMENTATION_CHANGED,
+		MetricId: metric.Id,
+	}
 
 	return
 }
@@ -229,6 +275,7 @@ func (svc *Service) SubscribeMetricChangeEvents(_ *orchestrator.SubscribeMetricC
 	)
 
 	for {
+		// TODO(oxisto): Does this work for multiple subcribers/readers or do we need a channel each?
 		// Wait for a new event in our event channel
 		event = <-svc.events
 
