@@ -532,7 +532,7 @@ func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_La
 		MetricId: metric,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("could not retrieve metric implementation from orchestrator: %w", err)
+		return nil, fmt.Errorf("could not retrieve metric implementation for %s from orchestrator: %w", metric, err)
 	}
 
 	return
