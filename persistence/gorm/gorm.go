@@ -75,8 +75,6 @@ func init() {
 func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	g := &storage{
 		config: gorm.Config{
-			//DisableForeignKeyConstraintWhenMigrating: true,
-			// TODO(lebogg to immqu): This will log DB operations - good for debugging (e.g. seeing constraints). Remove later
 			Logger: logger.Default.LogMode(logger.Info),
 		},
 	}
@@ -113,27 +111,11 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 		return
 	}
 
-	// TODO(lebogg to immqu): GORM automatically create constraints when proto messages/structs are set correctly
-	//if err = g.db.Migrator().CreateConstraint(&orchestrator.Certificate{}, "StateHistory"); err != nil {
-	//	return nil, err
-	//}
-	//if err = g.db.Migrator().CreateConstraint(&orchestrator.Certificate{}, "fk_certificates_state_history"); err != nil {
-	//	return nil, err
-	//}
-
-	// fmt.Println(g.db.Migrator().HasTable(&orchestrator.StateHistory{}))
-	// fmt.Println(g.db.Migrator().HasTable(&orchestrator.Certificate{}))
-	//fmt.Println(g.db.Migrator().HasConstraint(&orchestrator.Certificate{}, "StateHistory"))
-	//fmt.Println(g.db.Migrator().HasConstraint(&orchestrator.Certificate{}, "fk_certificates_state_history"))
-
 	s = g
 	return
 }
 
 func (s *storage) Create(r interface{}) error {
-	// TODO(lebogg to immqu): I think ".Association(..)" just gives you helper methods on relationships (with dot notation afterwards
-	// s.db.Model(&r).Association("StateHistory")
-	// s.db.Save(r)??
 	return s.db.Create(r).Error
 }
 
@@ -146,17 +128,6 @@ func (s *storage) Get(r interface{}, conds ...interface{}) (err error) {
 	}
 	return
 }
-
-// func (s *storage) GetC(r orchestrator.Certificate, conds ...interface{}) (err error) {
-// 	var stateHistory orchestrator.StateHistory
-// 	s.db.Model(&r).Association("StateHistory").Find(&stateHistory)
-// 	err = s.db.First(r, conds...).Error
-// 	// if record is not found, use the error message defined in the persistence package
-// 	if errors.Is(err, gorm.ErrRecordNotFound) {
-// 		err = persistence.ErrRecordNotFound
-// 	}
-// 	return
-// }
 
 func (s *storage) List(r interface{}, conds ...interface{}) error {
 	return s.db.Preload(clause.Associations).Find(r, conds...).Error

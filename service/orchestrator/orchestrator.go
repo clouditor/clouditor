@@ -319,6 +319,7 @@ func (s *Service) CreateCertificate(_ context.Context, req *orchestrator.CreateC
 	if req.Certificate == nil {
 		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrCertificateIsNil.Error())
 	}
+	fmt.Println("got request: ", req)
 
 	// Persist the certificate in our database
 	err = s.storage.Create(req.Certificate)
