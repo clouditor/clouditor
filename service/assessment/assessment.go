@@ -530,7 +530,7 @@ func (s *Service) initOrchestratorStream() error {
 				break
 			}
 
-			s.pe.HandleMetricEvent(event)
+			_ = s.pe.HandleMetricEvent(event)
 		}
 	}()
 
