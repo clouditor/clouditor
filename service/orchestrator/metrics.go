@@ -58,14 +58,14 @@ func (svc *Service) loadMetrics() (err error) {
 	}
 
 	for _, metric := range metrics {
-		file := fmt.Sprintf("policies/bundles/%s/metric.rego", metric)
+		file := fmt.Sprintf("policies/bundles/%s/metric.rego", metric.Id)
 
-		impl, err = LoadMetricImplementation(metric.Id, file)
+		impl, err = loadMetricImplementation(metric.Id, file)
 		if err != nil {
 			return fmt.Errorf("could not load metric implementation: %w", err)
 		}
 
-		err = svc.storage.Save(impl)
+		err = svc.storage.Save(impl, "metric_id = ?", metric.Id)
 		if err != nil {
 			return fmt.Errorf("could not save metric implementation: %w", err)
 		}
@@ -74,7 +74,8 @@ func (svc *Service) loadMetrics() (err error) {
 	return
 }
 
-func LoadMetricImplementation(metricID, file string) (impl *assessment.MetricImplementation, err error) {
+// loadMetricImplementation loads a metric implementation from a Rego file on a filesystem.
+func loadMetricImplementation(metricID, file string) (impl *assessment.MetricImplementation, err error) {
 	// Fetch the metric implementation directly from our file
 	b, err := os.ReadFile(file)
 	if err != nil {
