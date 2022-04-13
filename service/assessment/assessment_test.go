@@ -225,7 +225,7 @@ func TestAssessEvidence(t *testing.T) {
 			hasRPCConnection: false,
 			wantResp: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "could not evaluate evidence: could not fetch metric configuration: could not retrieve metric configuration for",
+				StatusMessage: "could not evaluate evidence: could not retrieve metric definitions: could not retrieve metric list from orchestrator",
 			},
 			wantErr: true,
 		},
@@ -830,8 +830,7 @@ func TestHandleEvidence(t *testing.T) {
 
 func TestService_initOrchestratorStoreStream(t *testing.T) {
 	type fields struct {
-		opts     []ServiceOption
-		grpcOpts []grpc.DialOption
+		opts []ServiceOption
 	}
 	type args struct {
 	}
@@ -859,8 +858,8 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 				opts: []ServiceOption{
 					WithOrchestratorAddress("bufnet"),
 					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
+					WithAdditionalGRPCOpts(grpc.WithContextDialer(bufConnDialer)),
 				},
-				grpcOpts: []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 			},
 			args: args{},
 		},
@@ -870,8 +869,8 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 				opts: []ServiceOption{
 					WithOrchestratorAddress("bufnet"),
 					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
+					WithAdditionalGRPCOpts(grpc.WithContextDialer(bufConnDialer)),
 				},
-				grpcOpts: []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				s, _ := status.FromError(errors.Unwrap(err))
