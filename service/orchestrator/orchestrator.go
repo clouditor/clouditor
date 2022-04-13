@@ -28,11 +28,9 @@ package orchestrator
 import (
 	"context"
 	"embed"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"sync"
 
 	"clouditor.io/clouditor/persistence/inmemory"
@@ -139,33 +137,6 @@ func NewService(opts ...ServiceOption) *Service {
 
 	if err = s.loadMetrics(); err != nil {
 		log.Errorf("Could not load embedded metrics. Will continue with empty metric list: %v", err)
-	}
-
-	metricIndex = make(map[string]*assessment.Metric)
-	defaultMetricConfigurations = make(map[string]*assessment.MetricConfiguration)
-
-	for _, m := range metrics {
-		// Look for the data.json to include default metric configurations
-		fileName := fmt.Sprintf("policies/bundles/%s/data.json", m.Id)
-
-		b, err := ioutil.ReadFile(fileName)
-		if err != nil {
-			log.Errorf("Could not retrieve default configuration for metric %s: %v. Ignoring metric", m.Id, err)
-			continue
-		}
-
-		var config assessment.MetricConfiguration
-
-		err = json.Unmarshal(b, &config)
-		if err != nil {
-			log.Errorf("Error in reading default configuration for metric %s: %v. Ignoring metric", m.Id, err)
-			continue
-		}
-
-		config.IsDefault = true
-
-		metricIndex[m.Id] = m
-		defaultMetricConfigurations[m.Id] = &config
 	}
 
 	return &s

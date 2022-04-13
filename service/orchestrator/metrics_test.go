@@ -27,6 +27,8 @@ package orchestrator
 
 import (
 	"context"
+	"errors"
+	"os"
 	"reflect"
 	"testing"
 
@@ -39,15 +41,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-/*func TestLoadMetrics(t *testing.T) {
-	var err = LoadMetrics("notfound.json")
-
-	assert.ErrorIs(t, err, fs.ErrNotExist)
-
-	err = LoadMetrics("metrics.json")
-
-	assert.NoError(t, err)
-}*/
+var ErrSomeError = errors.New("some error")
 
 func TestService_CreateMetric(t *testing.T) {
 	type args struct {
@@ -369,6 +363,145 @@ func TestService_GetMetricImplementation(t *testing.T) {
 			}
 			if !reflect.DeepEqual(gotRes, tt.wantRes) {
 				t.Errorf("Service.GetMetricImplementation() = %v, want %v", gotRes, tt.wantRes)
+			}
+		})
+	}
+}
+
+func TestService_loadMetrics(t *testing.T) {
+	type fields struct {
+		metricConfigurations  map[string]map[string]*assessment.MetricConfiguration
+		results               map[string]*assessment.AssessmentResult
+		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		storage               persistence.Storage
+		metricsFile           string
+		requirements          []*orchestrator.Requirement
+		events                chan *orchestrator.MetricChangeEvent
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "json not found",
+			fields: fields{
+				metricsFile: "notfound.json",
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, os.ErrNotExist)
+			},
+		},
+		{
+			name: "storage error",
+			fields: fields{
+				metricsFile: "metrics.json",
+				storage:     &testutil.StorageWithError{SaveErr: ErrSomeError},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, ErrSomeError)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				metricConfigurations:  tt.fields.metricConfigurations,
+				results:               tt.fields.results,
+				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
+				storage:               tt.fields.storage,
+				metricsFile:           tt.fields.metricsFile,
+				requirements:          tt.fields.requirements,
+				events:                tt.fields.events,
+			}
+
+			err := svc.loadMetrics()
+			if tt.wantErr != nil {
+				tt.wantErr(t, err)
+			}
+		})
+	}
+}
+
+func TestService_UpdateMetricImplementation(t *testing.T) {
+	type fields struct {
+		metricConfigurations  map[string]map[string]*assessment.MetricConfiguration
+		results               map[string]*assessment.AssessmentResult
+		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		storage               persistence.Storage
+		metricsFile           string
+		requirements          []*orchestrator.Requirement
+		events                chan *orchestrator.MetricChangeEvent
+	}
+	type args struct {
+		in0 context.Context
+		req *orchestrator.UpdateMetricImplementationRequest
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		args     args
+		wantImpl *assessment.MetricImplementation
+		wantErr  bool
+	}{
+		{
+			name: "metric not found",
+			fields: fields{
+				storage:     testutil.NewInMemoryStorage(t),
+				metricsFile: "metrics.json",
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricImplementationRequest{
+					MetricId: "notfound",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "update",
+			fields: fields{
+				storage:     testutil.NewInMemoryStorage(t),
+				metricsFile: "metrics.json",
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricImplementationRequest{
+					MetricId: "TransportEncryptionEnabled",
+					Implementation: &assessment.MetricImplementation{
+						Lang: assessment.MetricImplementation_REGO,
+						Code: "package example",
+					},
+				},
+			},
+			wantImpl: &assessment.MetricImplementation{
+				MetricId: "TransportEncryptionEnabled",
+				Lang:     assessment.MetricImplementation_REGO,
+				Code:     "package example",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				metricConfigurations:  tt.fields.metricConfigurations,
+				results:               tt.fields.results,
+				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
+				storage:               tt.fields.storage,
+				metricsFile:           tt.fields.metricsFile,
+				requirements:          tt.fields.requirements,
+				events:                tt.fields.events,
+			}
+			err := svc.loadMetrics()
+			assert.NoError(t, err)
+
+			gotImpl, err := svc.UpdateMetricImplementation(tt.args.in0, tt.args.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.UpdateMetricImplementation() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotImpl, tt.wantImpl) {
+				t.Errorf("Service.UpdateMetricImplementation() = %v, want %v", gotImpl, tt.wantImpl)
 			}
 		})
 	}

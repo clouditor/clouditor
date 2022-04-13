@@ -31,6 +31,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 
 	"clouditor.io/clouditor/api/assessment"
@@ -71,6 +72,33 @@ func (svc *Service) loadMetrics() (err error) {
 		if err != nil {
 			return fmt.Errorf("could not save metric implementation: %w", err)
 		}
+	}
+
+	metricIndex = make(map[string]*assessment.Metric)
+	defaultMetricConfigurations = make(map[string]*assessment.MetricConfiguration)
+
+	for _, m := range metrics {
+		// Look for the data.json to include default metric configurations
+		fileName := fmt.Sprintf("policies/bundles/%s/data.json", m.Id)
+
+		b, err := ioutil.ReadFile(fileName)
+		if err != nil {
+			log.Errorf("Could not retrieve default configuration for metric %s: %v. Ignoring metric", m.Id, err)
+			continue
+		}
+
+		var config assessment.MetricConfiguration
+
+		err = json.Unmarshal(b, &config)
+		if err != nil {
+			log.Errorf("Error in reading default configuration for metric %s: %v. Ignoring metric", m.Id, err)
+			continue
+		}
+
+		config.IsDefault = true
+
+		metricIndex[m.Id] = m
+		defaultMetricConfigurations[m.Id] = &config
 	}
 
 	return
@@ -116,10 +144,12 @@ func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetr
 	metrics = append(metrics, metric)
 
 	// Notify event listeners
-	svc.events <- &orchestrator.MetricChangeEvent{
-		Type:     orchestrator.MetricChangeEvent_METADATA_CHANGED,
-		MetricId: metric.Id,
-	}
+	go func() {
+		svc.events <- &orchestrator.MetricChangeEvent{
+			Type:     orchestrator.MetricChangeEvent_METADATA_CHANGED,
+			MetricId: metric.Id,
+		}
+	}()
 
 	return
 }
@@ -151,10 +181,12 @@ func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetr
 	metric.Scale = req.Metric.Scale
 
 	// Notify event listeners
-	svc.events <- &orchestrator.MetricChangeEvent{
-		Type:     orchestrator.MetricChangeEvent_METADATA_CHANGED,
-		MetricId: metric.Id,
-	}
+	go func() {
+		svc.events <- &orchestrator.MetricChangeEvent{
+			Type:     orchestrator.MetricChangeEvent_METADATA_CHANGED,
+			MetricId: metric.Id,
+		}
+	}()
 
 	return
 }
@@ -183,10 +215,12 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 	svc.storage.Save(impl, "metric_id = ?", impl.MetricId)
 
 	// Notify event listeners
-	svc.events <- &orchestrator.MetricChangeEvent{
-		Type:     orchestrator.MetricChangeEvent_IMPLEMENTATION_CHANGED,
-		MetricId: metric.Id,
-	}
+	go func() {
+		svc.events <- &orchestrator.MetricChangeEvent{
+			Type:     orchestrator.MetricChangeEvent_IMPLEMENTATION_CHANGED,
+			MetricId: metric.Id,
+		}
+	}()
 
 	return
 }
@@ -273,6 +307,8 @@ func (svc *Service) SubscribeMetricChangeEvents(_ *orchestrator.SubscribeMetricC
 	var (
 		event *orchestrator.MetricChangeEvent
 	)
+
+	// TODO(oxisto): Do we also need a (empty) recv func again?
 
 	for {
 		// TODO(oxisto): Does this work for multiple subcribers/readers or do we need a channel each?
