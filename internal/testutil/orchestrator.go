@@ -12,8 +12,8 @@ func CreateCertificateMock() *orchestrator.Certificate {
 		State:         "new",
 		TreeId:        "12345",
 		Timestamp:     time.Now().String(),
-		CertificateID: "1234",
-		ID:            "12345",
+		CertificateId: "1234",
+		Id:            "12345",
 	}
 
 	var mockCertificate = &orchestrator.Certificate{
@@ -26,7 +26,7 @@ func CreateCertificateMock() *orchestrator.Certificate {
 		Cab:            "Cab123",
 		Description:    "Description",
 		States:         []*orchestrator.State{mockHistory},
-		ID:             "1234",
+		Id:             "1234",
 	}
 
 	return mockCertificate

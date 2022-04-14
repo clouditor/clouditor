@@ -385,9 +385,9 @@ func (s *Service) UpdateCertificate(_ context.Context, req *orchestrator.UpdateC
 	}
 
 	response = req.Certificate
-	response.ID = req.CertificateId
+	response.Id = req.CertificateId
 
-	err = s.storage.Save(response, "Id = ?", response.ID)
+	err = s.storage.Save(response, "Id = ?", response.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}

@@ -304,7 +304,7 @@ paths:
             description: |-
                 Lists all a metric configurations (target value and operator) for a
                  specific service ID
-            operationId: Orchestrator_ListMetricConfigurations
+            operationId: Orchestrator_ListMetrifcConfigurations
             parameters:
                 - name: serviceId
                   in: path
@@ -571,7 +571,7 @@ components:
         Certificate:
             type: object
             properties:
-                ID:
+                id:
                     type: string
                 name:
                     type: string
@@ -762,7 +762,7 @@ components:
         State:
             type: object
             properties:
-                ID:
+                id:
                     type: string
                 state:
                     type: string
@@ -770,7 +770,7 @@ components:
                     type: string
                 timestamp:
                     type: string
-                CertificateID:
+                certificateId:
                     type: string
         StoreAssessmentResultResponse:
             type: object

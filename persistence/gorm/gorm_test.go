@@ -186,9 +186,9 @@ func Test_storage_List(t *testing.T) {
 
 	// Create two certificates
 	certificate1 = testutil.CreateCertificateMock()
-	certificate1.ID = "0"
+	certificate1.Id = "0"
 	certificate2 = testutil.CreateCertificateMock()
-	certificate2.ID = "1"
+	certificate2.Id = "1"
 	err = s.Create(certificate1)
 	assert.NoError(t, err)
 	err = s.Create(certificate2)
@@ -203,14 +203,14 @@ func Test_storage_List(t *testing.T) {
 
 	// Check if certificate with id "1" (certificate2) is in the list and if states are included (association)
 	for i := range certificates {
-		if certificates[i].ID == certificate2.ID {
+		if certificates[i].Id == certificate2.Id {
 			fmt.Println("Certificate:", certificates[i])
 			assert.NotEmpty(t, certificates[i].States)
 			return
 		}
 	}
 	// If not, let the test fail
-	assert.FailNow(t, "%s is not listed but should be.", certificate1.ID)
+	assert.FailNow(t, "%s is not listed but should be.", certificate1.Id)
 
 }
 

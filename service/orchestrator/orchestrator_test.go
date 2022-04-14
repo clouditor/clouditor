@@ -674,7 +674,7 @@ func Test_UpdateCertificate(t *testing.T) {
 	// 3rd case: Certificate not found since there are no certificates yet
 	_, err = orchestratorService.UpdateCertificate(context.Background(), &orchestrator.UpdateCertificateRequest{
 		Certificate: &orchestrator.Certificate{
-			ID: "1234",
+			Id: "1234",
 		},
 		CertificateId: "1234",
 	})
@@ -728,7 +728,7 @@ func Test_RemoveCertificate(t *testing.T) {
 	assert.NotEmpty(t, listCertificatesResponse.Certificates)
 
 	// Remove record
-	_, err = orchestratorService.RemoveCertificate(context.Background(), &orchestrator.RemoveCertificateRequest{CertificateId: mockCertificate.ID})
+	_, err = orchestratorService.RemoveCertificate(context.Background(), &orchestrator.RemoveCertificateRequest{CertificateId: mockCertificate.Id})
 	assert.NoError(t, err)
 
 	// There is a record for cloud services in the DB (default one)
@@ -783,7 +783,7 @@ func Test_GetCertificate(t *testing.T) {
 			}
 
 			if tt.res != nil {
-				assert.NotEmpty(t, res.ID)
+				assert.NotEmpty(t, res.Id)
 			}
 
 			// Compare

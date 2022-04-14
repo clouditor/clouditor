@@ -206,7 +206,7 @@ service Orchestrator {
 
   // Lists all a metric configurations (target value and operator) for a
   // specific service ID
-  rpc ListMetricConfigurations(ListMetricConfigurationRequest)
+  rpc ListMetrifcConfigurations(ListMetricConfigurationRequest)
       returns (ListMetricConfigurationResponse) {
     option (google.api.http) = {
       get : "/v1/orchestrator/cloud_services/{service_id}/metric_configurations"
@@ -395,7 +395,7 @@ message CreateCertificateRequest { Certificate certificate = 1; }
 message RemoveCertificateRequest { string certificate_id = 1; }
 
 message Certificate {
-  string ID = 1;
+  string id = 1;
 	string name = 2;
 	string service_id = 3;
 	string issue_date = 4;
@@ -409,9 +409,9 @@ message Certificate {
 }
 
 message State {
-  string ID = 1;
+  string id = 1;
   string state = 2;
 	string tree_id = 3;
 	string timestamp = 4;
-  string CertificateID = 5;
+  string certificate_id = 5;
 }
