@@ -108,12 +108,76 @@ func (m mockNetworkSender) Do(req *http.Request) (res *http.Response, err error)
 						},
 					},
 				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb2",
+					"name":     "lb2",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"loadBalancingRules": []map[string]interface{}{
+							{
+								"properties": map[string]interface{}{
+									"frontendPort": 1234,
+								},
+							},
+							{
+								"properties": map[string]interface{}{
+									"frontendPort": 5678,
+								},
+							},
+						},
+						"frontendIPConfigurations": []map[string]interface{}{
+							{
+								"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c",
+								"name": "b9cb3645-25d0-4288-910a-020563f63b1c",
+								"properties": map[string]interface{}{
+									"publicIPAddress": nil,
+								},
+							},
+						},
+					},
+				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3",
+					"name":     "lb3",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"loadBalancingRules": []map[string]interface{}{
+							{
+								"properties": map[string]interface{}{
+									"frontendPort": 1234,
+								},
+							},
+							{
+								"properties": map[string]interface{}{
+									"frontendPort": 5678,
+								},
+							},
+						},
+						"frontendIPConfigurations": []map[string]interface{}{
+							{
+								"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c",
+								"name": "b9cb3645-25d0-4288-910a-020563f63b1c",
+								"properties": map[string]interface{}{
+									"publicIPAddress": map[string]interface{}{
+										"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1d",
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c" {
 		return createResponse(map[string]interface{}{
 			"properties": map[string]interface{}{
 				"ipAddress": "111.222.333.444",
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1d" {
+		return createResponse(map[string]interface{}{
+			"properties": map[string]interface{}{
+				"ipAddress": nil,
 			},
 		}, 200)
 	}
@@ -141,7 +205,7 @@ func TestNetwork(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 2, len(list))
+	assert.Equal(t, 4, len(list))
 	assert.NotEmpty(t, d.Name())
 
 	iface, ok := list[0].(*voc.NetworkInterface)
@@ -156,6 +220,11 @@ func TestNetwork(t *testing.T) {
 	assert.Equal(t, "lb1", lb.Name)
 	assert.Equal(t, int16(1234), lb.Ports[0])
 	assert.Equal(t, "111.222.333.444", lb.Ips[0])
+
+	lb, ok = list[2].(*voc.LoadBalancer)
+	assert.True(t, ok)
+	assert.Equal(t, "lb2", lb.Name)
+	assert.Nil(t, lb.NetworkService.Ips)
 }
 
 func TestComputeDiscoverMethodsWhenInputIsInvalid(t *testing.T) {

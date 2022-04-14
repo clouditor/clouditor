@@ -147,7 +147,7 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc
 					},
 				},
 			},
-			Ips:   []string{d.publicIPAddressFromLoadBalancer(lb)},
+			Ips:   d.publicIPAddressFromLoadBalancer(lb),
 			Ports: LoadBalancerPorts(lb),
 		},
 		// TODO(all): do we need the AccessRestriction for load balancers?
@@ -236,9 +236,11 @@ func LoadBalancerPorts(lb *network.LoadBalancer) (loadBalancerPorts []int16) {
 //	return list
 //}
 
-func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *network.LoadBalancer) string {
+func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *network.LoadBalancer) []string {
 
-	var publicIPAddresses []string
+	var (
+		publicIPAddresses []string
+	)
 
 	// Get public IP resource
 	client := network.NewPublicIPAddressesClient(to.String(d.sub.SubscriptionID))
@@ -271,7 +273,7 @@ func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *network.Load
 		}
 	}
 
-	return strings.Join(publicIPAddresses, ",")
+	return publicIPAddresses
 }
 
 func getFrontendPublicIPAddressName(frontendPublicIPAddressID string) string {
