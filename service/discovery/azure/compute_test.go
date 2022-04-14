@@ -143,7 +143,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 				"diagnosticsProfile": map[string]interface{}{
 					"bootDiagnostics": map[string]interface{}{
 						"enabled":    true,
-						"storageUri": "",
+						"storageUri": nil,
 					},
 				},
 				"networkProfile": map[string]interface{}{
