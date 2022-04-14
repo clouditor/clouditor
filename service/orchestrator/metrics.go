@@ -212,7 +212,7 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 	impl.MetricId = req.MetricId
 
 	// Store it in the database
-	err = svc.storage.Save(impl, "metric_id = ?", impl.Id)
+	err = svc.storage.Save(impl, "metric_id = ?", impl.MetricId)
 	if err != nil {
 		return nil, fmt.Errorf("could not save metric implementation: %w", err)
 	}
