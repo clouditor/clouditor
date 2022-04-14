@@ -168,7 +168,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 				},
 			}},
 		BootLogging: &voc.BootLogging{Logging: &voc.Logging{
-			Enabled:         isBootDiagnosticEnabled(vmExtended), //TODO(garuppel): Delete if ready
+			Enabled:         isBootDiagnosticEnabled(vmExtended), 
 			LoggingService:  []voc.ResourceID{voc.ResourceID(bootLogOutput(vmExtended))},
 			RetentionPeriod: 0, // Currently, configuring the retention period for Managed Boot Diagnostics is not available. The logs will be overwritten after 1gb of space according to https://github.com/MicrosoftDocs/azure-docs/issues/69953
 		}},
