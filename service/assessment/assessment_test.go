@@ -37,6 +37,7 @@ import (
 	"sync"
 	"testing"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/internal/testutil"
@@ -83,9 +84,9 @@ func TestNewService(t *testing.T) {
 			want: &Service{
 				results:              make(map[string]*assessment.AssessmentResult),
 				evidenceStoreAddress: "localhost:9090",
+				evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 				orchestratorAddress:  "localhost:9090",
 				cachedConfigurations: make(map[string]cachedConfiguration),
-				evidenceStoreChannel: nil,
 				orchestratorChannel:  nil,
 			},
 		},
@@ -100,6 +101,7 @@ func TestNewService(t *testing.T) {
 			want: &Service{
 				results:              make(map[string]*assessment.AssessmentResult),
 				evidenceStoreAddress: "localhost:9091",
+				evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 				orchestratorAddress:  "localhost:9092",
 				cachedConfigurations: make(map[string]cachedConfiguration),
 			},
@@ -110,11 +112,9 @@ func TestNewService(t *testing.T) {
 			s := NewService(tt.args.opts...)
 
 			// Check channels have been created
-			assert.NotNil(t, s.evidenceStoreChannel)
 			assert.NotNil(t, s.orchestratorChannel)
 
 			// Ignore pointers to channel in subsequent DeepEqual check
-			s.evidenceStoreChannel = nil
 			s.orchestratorChannel = nil
 
 			if got := s; !reflect.DeepEqual(got, tt.want) {
@@ -229,7 +229,7 @@ func TestAssessEvidence(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
 			if tt.hasRPCConnection {
-				assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
+				s.grpcOpts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
 				assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
 			} else {
 				// clear the evidence URL, just to be sure
@@ -358,11 +358,10 @@ func TestAssessEvidences(t *testing.T) {
 				results:                       tt.fields.results,
 				cachedConfigurations:          make(map[string]cachedConfiguration),
 				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
-				evidenceStoreChannel:          make(chan *evidence.Evidence, 1000),
 				orchestratorChannel:           make(chan *assessment.AssessmentResult, 1000),
+				grpcOpts:                      []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 			}
 
-			assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
 			assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
 
 			if tt.args.streamToServer != nil {
@@ -474,8 +473,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			hookCallCounter = 0
-			s := NewService()
-			assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
+			s := NewService(WithAdditionalGRPCOpts(grpc.WithContextDialer(bufConnDialer)))
 			assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
 
 			for i, hookFunction := range tt.args.resultHooks {
@@ -509,9 +507,9 @@ func TestAssessmentResultHooks(t *testing.T) {
 }
 
 func TestListAssessmentResults(t *testing.T) {
-	s := NewService()
-	assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
+	s := NewService(WithAdditionalGRPCOpts(grpc.WithContextDialer(bufConnDialer)))
 	assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
+
 	_, err := s.AssessEvidence(context.TODO(), &assessment.AssessEvidenceRequest{
 		Evidence: &evidence.Evidence{
 			Id:        "11111111-1111-1111-1111-111111111111",
@@ -809,7 +807,7 @@ func TestHandleEvidence(t *testing.T) {
 			s := NewService()
 			// Mock streams for target services if needed
 			if tt.fields.hasEvidenceStoreStream {
-				assert.NoError(t, s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer)))
+				s.grpcOpts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
 			}
 			if tt.fields.hasOrchestratorStream {
 				assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
@@ -819,81 +817,6 @@ func TestHandleEvidence(t *testing.T) {
 				assert.NotEmpty(t, s.results)
 			}
 
-		})
-	}
-}
-
-func TestService_initEvidenceStoreStream(t *testing.T) {
-	type fields struct {
-		opts []ServiceOption
-	}
-	type args struct {
-		additionalOpts []grpc.DialOption
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "Invalid RPC connection",
-			fields: fields{
-				opts: []ServiceOption{
-					WithEvidenceStoreAddress("localhost:1"),
-				},
-			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				// We are looking for a connection refused message
-				innerErr := errors.Unwrap(err)
-				s, _ := status.FromError(innerErr)
-
-				if s.Code() != codes.Unavailable {
-					tt.Errorf("Status should be codes.Unavailable: %v", s.Code())
-					return false
-				}
-
-				return true
-			},
-		},
-		{
-			name: "Authenticated RPC connection with valid user",
-			fields: fields{
-				opts: []ServiceOption{
-					WithEvidenceStoreAddress("bufnet"),
-					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
-				},
-			},
-			args: args{
-				[]grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
-			},
-		},
-		{
-			name: "Authenticated RPC connection with invalid user",
-			fields: fields{
-				opts: []ServiceOption{
-					WithEvidenceStoreAddress("bufnet"),
-					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
-				},
-			},
-			args: args{
-				[]grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
-			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				s, _ := status.FromError(errors.Unwrap(err))
-				return assert.Equal(t, codes.Unauthenticated, s.Code())
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := NewService(tt.fields.opts...)
-			err := s.initEvidenceStoreStream(tt.args.additionalOpts...)
-
-			if tt.wantErr != nil {
-				tt.wantErr(t, err)
-			}
 		})
 	}
 }

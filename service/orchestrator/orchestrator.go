@@ -269,6 +269,8 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 			log.Errorf("Error storing assessment result: %v", err)
 		}
 
+		log.Debugf("Assessment result received (%v)", result.Result.Id)
+
 		err = stream.Send(res)
 
 		// Check for send errors
