@@ -257,8 +257,8 @@ func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *network.Load
 			if publicIpAddressName == "" {
 				continue
 			}
-			publicIPAddress, err := client.Get(context.Background(), getResourceGroupName(*publicIpProperties.ID), publicIpAddressName, "")
 
+			publicIPAddress, err := client.Get(context.Background(), getResourceGroupName(*publicIpProperties.ID), publicIpAddressName, "")
 			if err != nil {
 				log.Infof("Error getting public IP address: %v", err)
 				continue
