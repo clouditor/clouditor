@@ -151,6 +151,11 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 
 func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine) (voc.IsCompute, error) {
 
+	vmExtended, err := d.extendedVirtualMachine(vm)
+	if err != nil {
+		return nil, fmt.Errorf("could not get virtual machine with extended information: %w", err)
+	}
+
 	r := &voc.VirtualMachine{
 		Compute: &voc.Compute{
 			Resource: &voc.Resource{
@@ -163,17 +168,12 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 				},
 			}},
 		BootLogging: &voc.BootLogging{Logging: &voc.Logging{
-			Enabled:         isBootDiagnosticEnabled(vm),
-			LoggingService:  []voc.ResourceID{voc.ResourceID(bootLogOutput(vm))},
+			Enabled:         isBootDiagnosticEnabled(vmExtended), //TODO(garuppel): Delete if ready
+			LoggingService:  []voc.ResourceID{voc.ResourceID(bootLogOutput(vmExtended))},
 			RetentionPeriod: 0, // Currently, configuring the retention period for Managed Boot Diagnostics is not available. The logs will be overwritten after 1gb of space according to https://github.com/MicrosoftDocs/azure-docs/issues/69953
 		}},
 		OSLogging:    &voc.OSLogging{}, // TODO(garuppel): Add OSLogging
 		BlockStorage: []voc.ResourceID{},
-	}
-
-	vmExtended, err := d.extendedVirtualMachine(vm)
-	if err != nil {
-		return nil, fmt.Errorf("could not get virtual machine with extended information: %w", err)
 	}
 
 	// Reference to networkInterfaces
@@ -212,7 +212,12 @@ func isBootDiagnosticEnabled(vm *compute.VirtualMachine) bool {
 
 func bootLogOutput(vm *compute.VirtualMachine) string {
 	if isBootDiagnosticEnabled(vm) {
-		return *vm.DiagnosticsProfile.BootDiagnostics.StorageURI
+		// If storageUri is not specified while enabling boot diagnostics, managed storage will be used.
+		if vm.DiagnosticsProfile.BootDiagnostics.StorageURI != nil {
+			return *vm.DiagnosticsProfile.BootDiagnostics.StorageURI
+		}
+
+		return ""
 	}
 	return ""
 }
