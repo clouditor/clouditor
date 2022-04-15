@@ -47,7 +47,6 @@ import (
 	"clouditor.io/clouditor/policies"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/exp/slices"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -917,7 +916,7 @@ func TestService_recvEventsLoop(t *testing.T) {
 		{
 			name: "Receive event",
 			fields: fields{
-				metricEventStream: &mockStreamer{events: []*orchestrator.MetricChangeEvent{
+				metricEventStream: &testutil.ListRecvStreamerOf[*orchestrator.MetricChangeEvent]{Messages: []*orchestrator.MetricChangeEvent{
 					{
 						Type: orchestrator.MetricChangeEvent_CONFIG_CHANGED,
 					},
@@ -955,45 +954,6 @@ func TestService_recvEventsLoop(t *testing.T) {
 			}
 		})
 	}
-}
-
-// TODO(oxisto): would probably a good idea to move this to testutil
-type mockStreamer struct {
-	events []*orchestrator.MetricChangeEvent
-}
-
-func (mockStreamer) CloseSend() error {
-	return nil
-}
-
-func (m *mockStreamer) Recv() (req *orchestrator.MetricChangeEvent, err error) {
-	if len(m.events) == 0 {
-		return nil, io.EOF
-	}
-
-	event := m.events[0]
-	m.events = slices.Delete(m.events, 0, 1)
-	return event, nil
-}
-
-func (mockStreamer) Header() (metadata.MD, error) {
-	panic("implement me")
-}
-
-func (mockStreamer) Trailer() metadata.MD {
-	panic("implement me")
-}
-
-func (mockStreamer) Context() context.Context {
-	panic("implement me")
-}
-
-func (mockStreamer) SendMsg(_ interface{}) error {
-	panic("implement me")
-}
-
-func (mockStreamer) RecvMsg(_ interface{}) error {
-	panic("implement me")
 }
 
 type eventRecorder struct {
