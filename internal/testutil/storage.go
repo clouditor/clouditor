@@ -7,6 +7,8 @@ import (
 	"clouditor.io/clouditor/persistence/inmemory"
 )
 
+// NewInMemoryStorage uses the inmemory package to create a new in-memory storage that can be used
+// for unit testing. The funcs varargs can be used to immediately execute storage operations on it.
 func NewInMemoryStorage(t *testing.T, funcs ...func(s persistence.Storage)) (s persistence.Storage) {
 	var err error
 
@@ -22,8 +24,10 @@ func NewInMemoryStorage(t *testing.T, funcs ...func(s persistence.Storage)) (s p
 	return
 }
 
+// StorageWithError can be used to introduce various errors in a storage operation during unit testing.
 type StorageWithError struct {
 	SaveErr error
+	GetErr  error
 }
 
 func (*StorageWithError) Create(r interface{}) error                       { return nil }
@@ -31,7 +35,7 @@ func (s *StorageWithError) Save(r interface{}, conds ...interface{}) error { ret
 func (*StorageWithError) Update(r interface{}, query interface{}, args ...interface{}) error {
 	return nil
 }
-func (*StorageWithError) Get(r interface{}, conds ...interface{}) error            { return nil }
+func (s *StorageWithError) Get(r interface{}, conds ...interface{}) error          { return s.GetErr }
 func (*StorageWithError) List(r interface{}, conds ...interface{}) error           { return nil }
 func (*StorageWithError) Count(r interface{}, conds ...interface{}) (int64, error) { return 0, nil }
 func (*StorageWithError) Delete(r interface{}, conds ...interface{}) error         { return nil }

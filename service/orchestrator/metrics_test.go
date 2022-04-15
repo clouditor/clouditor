@@ -37,11 +37,15 @@ import (
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/persistence"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
 var ErrSomeError = errors.New("some error")
+
+const MockMetricID = "SomeMetric"
 
 func TestService_CreateMetric(t *testing.T) {
 	type args struct {
@@ -309,7 +313,19 @@ func TestService_GetMetricImplementation(t *testing.T) {
 			},
 			args: args{
 				req: &orchestrator.GetMetricImplementationRequest{
-					MetricId: "some metric",
+					MetricId: MockMetricID,
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "storage error",
+			fields: fields{
+				storage: &testutil.StorageWithError{GetErr: ErrSomeError},
+			},
+			args: args{
+				req: &orchestrator.GetMetricImplementationRequest{
+					MetricId: MockMetricID,
 				},
 			},
 			wantErr: true,
@@ -317,27 +333,24 @@ func TestService_GetMetricImplementation(t *testing.T) {
 		{
 			name: "metric found",
 			fields: fields{
-				storage: func() (s persistence.Storage) {
-					s = testutil.NewInMemoryStorage(t)
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					err := s.Save(&assessment.MetricImplementation{
-						MetricId: "some metric",
+						MetricId: MockMetricID,
 						Lang:     assessment.MetricImplementation_REGO,
 						Code:     "package test",
-					}, "metric_id = ?", "some metric")
+					}, "metric_id = ?", MockMetricID)
 					if err != nil {
 						t.Errorf("Could not save implementation: %v", err)
 					}
-
-					return s
-				}(),
+				}),
 			},
 			args: args{
 				req: &orchestrator.GetMetricImplementationRequest{
-					MetricId: "some metric",
+					MetricId: MockMetricID,
 				},
 			},
 			wantRes: &assessment.MetricImplementation{
-				MetricId: "some metric",
+				MetricId: MockMetricID,
 				Lang:     assessment.MetricImplementation_REGO,
 				Code:     "package test",
 			},
@@ -520,6 +533,165 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 			}
 			if !reflect.DeepEqual(gotImpl, tt.wantImpl) {
 				t.Errorf("Service.UpdateMetricImplementation() = %v, want %v", gotImpl, tt.wantImpl)
+			}
+		})
+	}
+}
+
+func Test_loadMetricImplementation(t *testing.T) {
+	type args struct {
+		metricID string
+		file     string
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantImpl *assessment.MetricImplementation
+		wantErr  assert.ErrorAssertionFunc
+	}{
+		{
+			name: "not existing",
+			args: args{
+				metricID: MockMetricID,
+				file:     "doesnotexist.rego",
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, os.ErrNotExist)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotImpl, err := loadMetricImplementation(tt.args.metricID, tt.args.file)
+			if tt.wantErr != nil {
+				tt.wantErr(t, err, tt.args)
+			}
+			if !reflect.DeepEqual(gotImpl, tt.wantImpl) {
+				t.Errorf("loadMetricImplementation() = %v, want %v", gotImpl, tt.wantImpl)
+			}
+		})
+	}
+}
+
+func TestService_GetMetricConfiguration(t *testing.T) {
+	type fields struct {
+		metricConfigurations  map[string]map[string]*assessment.MetricConfiguration
+		results               map[string]*assessment.AssessmentResult
+		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		storage               persistence.Storage
+		metrics               map[string]*assessment.Metric
+		metricsFile           string
+		requirements          []*orchestrator.Requirement
+		events                chan *orchestrator.MetricChangeEvent
+	}
+	type args struct {
+		in0 context.Context
+		req *orchestrator.GetMetricConfigurationRequest
+	}
+	tests := []struct {
+		name         string
+		fields       fields
+		args         args
+		wantResponse *assessment.MetricConfiguration
+		wantErr      assert.ErrorAssertionFunc
+	}{
+		{
+			name:   "metric not found",
+			fields: fields{},
+			args: args{
+				req: &orchestrator.GetMetricConfigurationRequest{
+					MetricId: "NotExists",
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				status, ok := status.FromError(err)
+				if !ok {
+					return false
+				}
+				return assert.Equal(t, status.Code(), codes.NotFound)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{
+				metricConfigurations:  tt.fields.metricConfigurations,
+				results:               tt.fields.results,
+				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
+				storage:               tt.fields.storage,
+				metrics:               tt.fields.metrics,
+				metricsFile:           tt.fields.metricsFile,
+				requirements:          tt.fields.requirements,
+				events:                tt.fields.events,
+			}
+			gotResponse, err := s.GetMetricConfiguration(tt.args.in0, tt.args.req)
+			if tt.wantErr != nil {
+				tt.wantErr(t, err, tt.args)
+			}
+			if !reflect.DeepEqual(gotResponse, tt.wantResponse) {
+				t.Errorf("Service.GetMetricConfiguration() = %v, want %v", gotResponse, tt.wantResponse)
+			}
+		})
+	}
+}
+
+func TestService_ListMetricConfigurations(t *testing.T) {
+	type fields struct {
+		metricConfigurations  map[string]map[string]*assessment.MetricConfiguration
+		results               map[string]*assessment.AssessmentResult
+		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		storage               persistence.Storage
+		metrics               map[string]*assessment.Metric
+		metricsFile           string
+		requirements          []*orchestrator.Requirement
+		events                chan *orchestrator.MetricChangeEvent
+	}
+	type args struct {
+		ctx context.Context
+		req *orchestrator.ListMetricConfigurationRequest
+	}
+	tests := []struct {
+		name         string
+		fields       fields
+		args         args
+		wantResponse *orchestrator.ListMetricConfigurationResponse
+		wantErr      bool
+	}{
+		{
+			name: "error",
+			fields: fields{
+				metrics: map[string]*assessment.Metric{
+					MockMetricID: {},
+				},
+			},
+			args: args{
+				req: &orchestrator.ListMetricConfigurationRequest{},
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				metricConfigurations:  tt.fields.metricConfigurations,
+				results:               tt.fields.results,
+				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
+				storage:               tt.fields.storage,
+				metrics:               tt.fields.metrics,
+				metricsFile:           tt.fields.metricsFile,
+				requirements:          tt.fields.requirements,
+				events:                tt.fields.events,
+			}
+			gotResponse, err := svc.ListMetricConfigurations(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.ListMetricConfigurations() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotResponse, tt.wantResponse) {
+				t.Errorf("Service.ListMetricConfigurations() = %v, want %v", gotResponse, tt.wantResponse)
 			}
 		})
 	}
