@@ -512,27 +512,7 @@ func (s *Service) initOrchestratorStream() error {
 		return fmt.Errorf("could not set up stream for listening to metric change events: %w", err)
 	}
 
-	go func() {
-		for {
-			var (
-				event *orchestrator.MetricChangeEvent
-				err   error
-			)
-			event, err = s.metricEventStream.Recv()
-
-			if errors.Is(err, io.EOF) {
-				log.Debugf("no more responses from orchestrator stream: EOF")
-				break
-			}
-
-			if err != nil {
-				log.Errorf("error receiving response from orchestrator stream: %v", err)
-				break
-			}
-
-			_ = s.pe.HandleMetricEvent(event)
-		}
-	}()
+	go s.recvEventsLoop()
 
 	return nil
 }
@@ -604,4 +584,27 @@ func (svc *Service) MetricConfiguration(metric string) (config *assessment.Metri
 	}
 
 	return cache.MetricConfiguration, nil
+}
+
+// recvEventsLoop continuously tries to receive events on the metricEventStream
+func (svc *Service) recvEventsLoop() {
+	for {
+		var (
+			event *orchestrator.MetricChangeEvent
+			err   error
+		)
+		event, err = svc.metricEventStream.Recv()
+
+		if errors.Is(err, io.EOF) {
+			log.Debugf("no more responses from orchestrator stream: EOF")
+			break
+		}
+
+		if err != nil {
+			log.Errorf("error receiving response from orchestrator stream: %v", err)
+			break
+		}
+
+		_ = svc.pe.HandleMetricEvent(event)
+	}
 }

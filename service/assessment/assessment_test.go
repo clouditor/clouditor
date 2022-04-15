@@ -40,12 +40,14 @@ import (
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/policies"
 	"clouditor.io/clouditor/voc"
-
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/exp/slices"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -889,4 +891,127 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestService_recvEventsLoop(t *testing.T) {
+	type fields struct {
+		evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
+		evidenceStoreAddress string
+		orchestratorStream   orchestrator.Orchestrator_StoreAssessmentResultsClient
+		orchestratorClient   orchestrator.OrchestratorClient
+		orchestratorAddress  string
+		orchestratorChannel  chan *assessment.AssessmentResult
+		metricEventStream    orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
+		resultHooks          []assessment.ResultHookFunc
+		results              map[string]*assessment.AssessmentResult
+		cachedConfigurations map[string]cachedConfiguration
+		authorizer           api.Authorizer
+		grpcOpts             []grpc.DialOption
+		storage              persistence.Storage
+	}
+	tests := []struct {
+		name      string
+		fields    fields
+		wantEvent *orchestrator.MetricChangeEvent
+	}{
+		{
+			name: "Receive event",
+			fields: fields{
+				metricEventStream: &mockStreamer{events: []*orchestrator.MetricChangeEvent{
+					{
+						Type: orchestrator.MetricChangeEvent_CONFIG_CHANGED,
+					},
+				}},
+			},
+			wantEvent: &orchestrator.MetricChangeEvent{
+				Type: orchestrator.MetricChangeEvent_CONFIG_CHANGED,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				evidenceStoreStreams: tt.fields.evidenceStoreStreams,
+				evidenceStoreAddress: tt.fields.evidenceStoreAddress,
+				orchestratorStream:   tt.fields.orchestratorStream,
+				orchestratorClient:   tt.fields.orchestratorClient,
+				orchestratorAddress:  tt.fields.orchestratorAddress,
+				orchestratorChannel:  tt.fields.orchestratorChannel,
+				metricEventStream:    tt.fields.metricEventStream,
+				resultHooks:          tt.fields.resultHooks,
+				results:              tt.fields.results,
+				cachedConfigurations: tt.fields.cachedConfigurations,
+				authorizer:           tt.fields.authorizer,
+				grpcOpts:             tt.fields.grpcOpts,
+				storage:              tt.fields.storage,
+			}
+			rec := &eventRecorder{}
+			svc.pe = rec
+			svc.recvEventsLoop()
+
+			if !reflect.DeepEqual(rec.event, tt.wantEvent) {
+				t.Errorf("recvEventsLoop() = %v, want %v", rec.event, tt.wantEvent)
+			}
+		})
+	}
+}
+
+// TODO(oxisto): would probably a good idea to move this to testutil
+type mockStreamer struct {
+	events []*orchestrator.MetricChangeEvent
+}
+
+func (mockStreamer) CloseSend() error {
+	return nil
+}
+
+func (m *mockStreamer) Recv() (req *orchestrator.MetricChangeEvent, err error) {
+	if len(m.events) == 0 {
+		return nil, io.EOF
+	}
+
+	event := m.events[0]
+	m.events = slices.Delete(m.events, 0, 1)
+	return event, nil
+}
+
+func (mockStreamer) Header() (metadata.MD, error) {
+	panic("implement me")
+}
+
+func (mockStreamer) Trailer() metadata.MD {
+	panic("implement me")
+}
+
+func (mockStreamer) Context() context.Context {
+	panic("implement me")
+}
+
+func (mockStreamer) SendMsg(_ interface{}) error {
+	panic("implement me")
+}
+
+func (mockStreamer) RecvMsg(_ interface{}) error {
+	panic("implement me")
+}
+
+type eventRecorder struct {
+	event *orchestrator.MetricChangeEvent
+	done  bool
+}
+
+func (*eventRecorder) Eval(evidence *evidence.Evidence, src policies.MetricsSource) (data []*policies.Result, err error) {
+	return nil, nil
+}
+
+func (e *eventRecorder) HandleMetricEvent(event *orchestrator.MetricChangeEvent) (err error) {
+	if e.done {
+		return nil
+	}
+
+	e.event = event
+	e.done = true
+
+	return nil
 }
