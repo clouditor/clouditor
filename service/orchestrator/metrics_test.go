@@ -431,6 +431,7 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
+		metrics               map[string]*assessment.Metric
 		requirements          []*orchestrator.Requirement
 		events                chan *orchestrator.MetricChangeEvent
 	}
@@ -459,10 +460,29 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "storage error",
+			fields: fields{
+				storage: &testutil.StorageWithError{SaveErr: ErrSomeError},
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricImplementationRequest{
+					MetricId: "TransportEncryptionEnabled",
+					Implementation: &assessment.MetricImplementation{
+						Lang: assessment.MetricImplementation_REGO,
+						Code: "package example",
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
 			name: "update",
 			fields: fields{
 				storage:     testutil.NewInMemoryStorage(t),
 				metricsFile: "metrics.json",
+				metrics: map[string]*assessment.Metric{
+					"TransportEncryptionEnabled": {},
+				},
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricImplementationRequest{
@@ -489,12 +509,10 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
+				metrics:               tt.fields.metrics,
 				requirements:          tt.fields.requirements,
 				events:                tt.fields.events,
 			}
-			err := svc.loadMetrics()
-			assert.NoError(t, err)
-
 			gotImpl, err := svc.UpdateMetricImplementation(tt.args.in0, tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Service.UpdateMetricImplementation() error = %v, wantErr %v", err, tt.wantErr)
