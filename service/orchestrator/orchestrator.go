@@ -46,8 +46,6 @@ import (
 //go:embed *.json
 var f embed.FS
 
-var metrics []*assessment.Metric
-var metricIndex map[string]*assessment.Metric
 var defaultMetricConfigurations map[string]*assessment.MetricConfiguration
 var log *logrus.Entry
 
@@ -70,6 +68,9 @@ type Service struct {
 	mu sync.Mutex
 
 	storage persistence.Storage
+
+	// metrics contains map of our metric definitions
+	metrics map[string]*assessment.Metric
 
 	metricsFile string
 

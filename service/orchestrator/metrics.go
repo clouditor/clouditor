@@ -38,6 +38,7 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
 
+	"golang.org/x/exp/maps"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -46,8 +47,9 @@ import (
 // well as the default metric implementations from the Rego files.
 func (svc *Service) loadMetrics() (err error) {
 	var (
-		impl *assessment.MetricImplementation
-		b    []byte
+		impl    *assessment.MetricImplementation
+		metrics []*assessment.Metric
+		b       []byte
 	)
 
 	b, err = f.ReadFile(svc.metricsFile)
@@ -60,24 +62,23 @@ func (svc *Service) loadMetrics() (err error) {
 		return fmt.Errorf("error in JSON marshal: %w", err)
 	}
 
-	for _, metric := range metrics {
-		file := fmt.Sprintf("policies/bundles/%s/metric.rego", metric.Id)
+	svc.metrics = make(map[string]*assessment.Metric)
+	defaultMetricConfigurations = make(map[string]*assessment.MetricConfiguration)
 
-		impl, err = loadMetricImplementation(metric.Id, file)
+	for _, m := range metrics {
+		// Load the Rego file
+		file := fmt.Sprintf("policies/bundles/%s/metric.rego", m.Id)
+		impl, err = loadMetricImplementation(m.Id, file)
 		if err != nil {
 			return fmt.Errorf("could not load metric implementation: %w", err)
 		}
 
-		err = svc.storage.Save(impl, "metric_id = ?", metric.Id)
+		// Save our metric implementation
+		err = svc.storage.Save(impl, "metric_id = ?", m.Id)
 		if err != nil {
 			return fmt.Errorf("could not save metric implementation: %w", err)
 		}
-	}
 
-	metricIndex = make(map[string]*assessment.Metric)
-	defaultMetricConfigurations = make(map[string]*assessment.MetricConfiguration)
-
-	for _, m := range metrics {
 		// Look for the data.json to include default metric configurations
 		fileName := fmt.Sprintf("policies/bundles/%s/data.json", m.Id)
 
@@ -97,7 +98,7 @@ func (svc *Service) loadMetrics() (err error) {
 
 		config.IsDefault = true
 
-		metricIndex[m.Id] = m
+		svc.metrics[m.Id] = m
 		defaultMetricConfigurations[m.Id] = &config
 	}
 
@@ -132,7 +133,7 @@ func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetr
 	}
 
 	// Check, if metric id already exists
-	if _, ok := metricIndex[req.Metric.Id]; ok {
+	if _, ok := svc.metrics[req.Metric.Id]; ok {
 		return nil, status.Error(codes.AlreadyExists, "metric already exists")
 	}
 
@@ -140,8 +141,7 @@ func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetr
 	metric = req.Metric
 
 	// Append metric
-	metricIndex[req.Metric.Id] = metric
-	metrics = append(metrics, metric)
+	svc.metrics[req.Metric.Id] = metric
 
 	// Notify event listeners
 	go func() {
@@ -167,7 +167,7 @@ func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetr
 	}
 
 	// Check, if metric exists according to req.MetricId
-	if metric, ok = metricIndex[req.MetricId]; !ok {
+	if metric, ok = svc.metrics[req.MetricId]; !ok {
 		newError := fmt.Errorf("metric with identifier %s does not exist", req.MetricId)
 		log.Error(newError)
 		return nil, status.Errorf(codes.NotFound, "%v", newError)
@@ -201,7 +201,7 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 	// TODO(oxisto): Validate the metric implementation request
 
 	// Check, if metric exists according to req.MetricId
-	if metric, ok = metricIndex[req.MetricId]; !ok {
+	if metric, ok = svc.metrics[req.MetricId]; !ok {
 		err := fmt.Errorf("metric with identifier %s does not exist", req.MetricId)
 		log.Error(err)
 		return nil, status.Errorf(codes.NotFound, "%v", err)
@@ -229,19 +229,19 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 }
 
 // ListMetrics lists all available metrics.
-func (*Service) ListMetrics(_ context.Context, _ *orchestrator.ListMetricsRequest) (response *orchestrator.ListMetricsResponse, err error) {
+func (svc *Service) ListMetrics(_ context.Context, _ *orchestrator.ListMetricsRequest) (response *orchestrator.ListMetricsResponse, err error) {
 	response = &orchestrator.ListMetricsResponse{
-		Metrics: metrics,
+		Metrics: maps.Values(svc.metrics),
 	}
 
 	return response, nil
 }
 
 // GetMetric retrieves a metric specified by req.MetridId
-func (*Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequest) (metric *assessment.Metric, err error) {
+func (svc *Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequest) (metric *assessment.Metric, err error) {
 	var ok bool
 
-	if metric, ok = metricIndex[req.MetricId]; !ok {
+	if metric, ok = svc.metrics[req.MetricId]; !ok {
 		return nil, status.Errorf(codes.NotFound, "could not find metric with id %s", req.MetricId)
 	}
 
@@ -271,14 +271,14 @@ func (s *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.Ge
 // The list MUST include a configuration for each known metric. If the user did not specify a custom
 // configuration for a particular metric within the service, the default metric configuration is
 // inserted into the list.
-func (s *Service) ListMetricConfigurations(ctx context.Context, req *orchestrator.ListMetricConfigurationRequest) (response *orchestrator.ListMetricConfigurationResponse, err error) {
+func (svc *Service) ListMetricConfigurations(ctx context.Context, req *orchestrator.ListMetricConfigurationRequest) (response *orchestrator.ListMetricConfigurationResponse, err error) {
 	response = &orchestrator.ListMetricConfigurationResponse{
 		Configurations: make(map[string]*assessment.MetricConfiguration),
 	}
 
 	// TODO(oxisto): This is not very efficient, we should do this once at startup so that we can just return the map
-	for metricId := range metricIndex {
-		config, err := s.GetMetricConfiguration(ctx, &orchestrator.GetMetricConfigurationRequest{ServiceId: req.ServiceId, MetricId: metricId})
+	for metricId := range svc.metrics {
+		config, err := svc.GetMetricConfiguration(ctx, &orchestrator.GetMetricConfigurationRequest{ServiceId: req.ServiceId, MetricId: metricId})
 
 		if err != nil {
 			log.Errorf("Error getting metric configuration: %v", err)

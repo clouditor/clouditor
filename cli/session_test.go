@@ -53,13 +53,13 @@ func TestMain(m *testing.M) {
 		err error
 	)
 
+	clitest.AutoChdir()
+
 	svc = service_orchestrator.NewService()
 	_, err = svc.CreateDefaultTargetCloudService()
 	if err != nil {
 		panic(err)
 	}
-
-	clitest.AutoChdir()
 
 	os.Exit(clitest.RunCLITest(m, service.WithOrchestrator(svc)))
 }
