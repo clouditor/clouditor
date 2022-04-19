@@ -304,7 +304,7 @@ paths:
             description: |-
                 Lists all a metric configurations (target value and operator) for a
                  specific service ID
-            operationId: Orchestrator_ListMetrifcConfigurations
+            operationId: Orchestrator_ListMetricConfigurations
             parameters:
                 - name: serviceId
                   in: path
