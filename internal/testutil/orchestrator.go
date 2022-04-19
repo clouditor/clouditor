@@ -22,7 +22,7 @@ func CreateCertificateMock() *orchestrator.Certificate {
 		IssueDate:      "2021-11-06",
 		ExpirationDate: "2024-11-06",
 		Standard:       "EUCS",
-		Scope:          "Basic",
+		AssuranceLevel: "Basic",
 		Cab:            "Cab123",
 		Description:    "Description",
 		States:         []*orchestrator.State{mockHistory},

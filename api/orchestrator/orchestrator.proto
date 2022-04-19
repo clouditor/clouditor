@@ -401,11 +401,10 @@ message Certificate {
 	string issue_date = 4;
   string expiration_date = 5;
   string standard = 6;
-  string scope = 7;  
-  string assurance_level = 8;     
-  string cab = 9;
-  string description = 10;
-  repeated State states = 11;
+  string assurance_level = 7;
+  string cab = 8;
+  string description = 9;
+  repeated State states = 10;
 }
 
 message State {

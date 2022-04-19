@@ -583,8 +583,6 @@ components:
                     type: string
                 standard:
                     type: string
-                scope:
-                    type: string
                 assuranceLevel:
                     type: string
                 cab:
