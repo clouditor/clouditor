@@ -593,6 +593,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/State'
+                    description: A list of states at specific times
+            description: An ISO17021-based certificate
         CloudService:
             type: object
             properties:
@@ -764,12 +766,15 @@ components:
                     type: string
                 state:
                     type: string
+                    description: An EUCS-defined state, e.g. `new`, `suspended` or `withdrawn`
                 treeId:
                     type: string
                 timestamp:
                     type: string
                 certificateId:
                     type: string
+                    description: Reference to the certificate
+            description: A state of a certificate at a given time
         StoreAssessmentResultResponse:
             type: object
             properties:

@@ -394,6 +394,7 @@ message CreateCertificateRequest { Certificate certificate = 1; }
 
 message RemoveCertificateRequest { string certificate_id = 1; }
 
+// An ISO17021-based certificate
 message Certificate {
   string id = 1;
 	string name = 2;
@@ -404,13 +405,17 @@ message Certificate {
   string assurance_level = 7;
   string cab = 8;
   string description = 9;
+  // A list of states at specific times
   repeated State states = 10;
 }
 
+// A state of a certificate at a given time
 message State {
   string id = 1;
+  // An EUCS-defined state, e.g. `new`, `suspended` or `withdrawn`
   string state = 2;
 	string tree_id = 3;
 	string timestamp = 4;
+  // Reference to the certificate
   string certificate_id = 5;
 }

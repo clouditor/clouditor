@@ -1856,21 +1856,23 @@ func (x *RemoveCertificateRequest) GetCertificateId() string {
 	return ""
 }
 
+// An ISO17021-based certificate
 type Certificate struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id             string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name           string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	ServiceId      string   `protobuf:"bytes,3,opt,name=service_id,json=serviceId,proto3" json:"service_id,omitempty"`
-	IssueDate      string   `protobuf:"bytes,4,opt,name=issue_date,json=issueDate,proto3" json:"issue_date,omitempty"`
-	ExpirationDate string   `protobuf:"bytes,5,opt,name=expiration_date,json=expirationDate,proto3" json:"expiration_date,omitempty"`
-	Standard       string   `protobuf:"bytes,6,opt,name=standard,proto3" json:"standard,omitempty"`
-	AssuranceLevel string   `protobuf:"bytes,7,opt,name=assurance_level,json=assuranceLevel,proto3" json:"assurance_level,omitempty"`
-	Cab            string   `protobuf:"bytes,8,opt,name=cab,proto3" json:"cab,omitempty"`
-	Description    string   `protobuf:"bytes,9,opt,name=description,proto3" json:"description,omitempty"`
-	States         []*State `protobuf:"bytes,10,rep,name=states,proto3" json:"states,omitempty"`
+	Id             string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name           string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	ServiceId      string `protobuf:"bytes,3,opt,name=service_id,json=serviceId,proto3" json:"service_id,omitempty"`
+	IssueDate      string `protobuf:"bytes,4,opt,name=issue_date,json=issueDate,proto3" json:"issue_date,omitempty"`
+	ExpirationDate string `protobuf:"bytes,5,opt,name=expiration_date,json=expirationDate,proto3" json:"expiration_date,omitempty"`
+	Standard       string `protobuf:"bytes,6,opt,name=standard,proto3" json:"standard,omitempty"`
+	AssuranceLevel string `protobuf:"bytes,7,opt,name=assurance_level,json=assuranceLevel,proto3" json:"assurance_level,omitempty"`
+	Cab            string `protobuf:"bytes,8,opt,name=cab,proto3" json:"cab,omitempty"`
+	Description    string `protobuf:"bytes,9,opt,name=description,proto3" json:"description,omitempty"`
+	// A list of states at specific times
+	States []*State `protobuf:"bytes,10,rep,name=states,proto3" json:"states,omitempty"`
 }
 
 func (x *Certificate) Reset() {
@@ -1975,15 +1977,18 @@ func (x *Certificate) GetStates() []*State {
 	return nil
 }
 
+// A state of a certificate at a given time
 type State struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id            string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	State         string `protobuf:"bytes,2,opt,name=state,proto3" json:"state,omitempty"`
-	TreeId        string `protobuf:"bytes,3,opt,name=tree_id,json=treeId,proto3" json:"tree_id,omitempty"`
-	Timestamp     string `protobuf:"bytes,4,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// An EUCS-defined state, e.g. `new`, `suspended` or `withdrawn`
+	State     string `protobuf:"bytes,2,opt,name=state,proto3" json:"state,omitempty"`
+	TreeId    string `protobuf:"bytes,3,opt,name=tree_id,json=treeId,proto3" json:"tree_id,omitempty"`
+	Timestamp string `protobuf:"bytes,4,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	// Reference to the certificate
 	CertificateId string `protobuf:"bytes,5,opt,name=certificate_id,json=certificateId,proto3" json:"certificate_id,omitempty"`
 }
 
