@@ -256,7 +256,7 @@ service Orchestrator {
   rpc UpdateCertificate(UpdateCertificateRequest) returns (Certificate) {
     option (google.api.http) = {
       put : "/v1/orchestrator/certificates/{certificate_id}"
-      body : "*"
+      body : "certificate"
     };
   }
 }

@@ -199,7 +199,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/UpdateCertificateRequest'
+                            $ref: '#/components/schemas/Certificate'
                 required: true
             responses:
                 "200":
@@ -782,12 +782,5 @@ components:
                     type: boolean
                 statusMessage:
                     type: string
-        UpdateCertificateRequest:
-            type: object
-            properties:
-                certificateId:
-                    type: string
-                certificate:
-                    $ref: '#/components/schemas/Certificate'
 tags:
     - name: Orchestrator
