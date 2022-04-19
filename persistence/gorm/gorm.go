@@ -67,17 +67,20 @@ func WithPostgres(host string, port int16) StorageOption {
 	}
 }
 
+// WithLogger is an option to configure Storage to use a Logger
+func WithLogger(logger logger.Interface) StorageOption {
+	return func(s *storage) {
+		s.config.Logger = logger
+	}
+}
+
 func init() {
 	log = logrus.WithField("component", "storage")
 }
 
 // NewStorage creates a new storage using GORM (which DB to use depends on the StorageOption)
 func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
-	g := &storage{
-		config: gorm.Config{
-			Logger: logger.Default.LogMode(logger.Info),
-		},
-	}
+	g := &storage{}
 
 	// Init storage
 	log.Println("Creating storage")
