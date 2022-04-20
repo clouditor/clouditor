@@ -42,7 +42,7 @@
     "id": "RuntimeVersion"
   },
   {
-    "id": "TLSVersion"
+    "id": "TlsVersion"
   },
   {
     "id": "TransportEncryptionEnabled",
