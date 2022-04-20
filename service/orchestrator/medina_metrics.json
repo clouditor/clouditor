@@ -1,0 +1,70 @@
+[
+  {
+    "id": "ACLEnabled"
+  },
+  {
+    "id": "AnomalyDetectionEnabled"
+  },
+  {
+    "id": "EncryptionAtRestEnabled",
+    "name": "Storage Encryption: Enabled",
+    "description": "This metric describes whether storage encryption is enabled",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        false,
+        true
+      ]
+    }
+  },
+  {
+    "id": "AutomaticUpdatesEnabled"
+  },
+  {
+    "id": "AutomaticUpdatesInterval"
+  },
+  {
+    "id": "BootLoggingEnabled"
+  },
+  {
+    "id": "BootLoggingRetention"
+  },
+  {
+    "id": "AntiMalwareEnabled"
+  },
+  {
+    "id": "OSLoggingEnabled"
+  },
+  {
+    "id": "OSLoggingRetention"
+  },
+  {
+    "id": "RuntimeVersion"
+  },
+  {
+    "id": "TLSVersion"
+  },
+  {
+    "id": "TransportEncryptionEnabled",
+    "name": "Transport Encryption: Enabled",
+    "description": "This metric describes, whether transport encryption is turned on or not",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          false,
+          true
+        ]
+      }
+    },
+    "requirements_id": [
+      "CKM-02.2"
+    ]
+  },
+  {
+    "id": "TransportEncryptionEnforced"
+  },
+  {
+    "id": "WebApplicationFirewallEnabled"
+  }
+]
