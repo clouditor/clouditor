@@ -211,7 +211,7 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 		}
 
 		newError := errors.New("error while handling evidence")
-		log.Error(newError)
+		log.Errorf("%v: %v", newError, err)
 
 		return res, status.Errorf(codes.Internal, "%v", newError)
 	}
