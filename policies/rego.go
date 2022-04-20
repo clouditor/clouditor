@@ -35,7 +35,6 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/persistence"
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/open-policy-agent/opa/storage"
 	"github.com/open-policy-agent/opa/storage/inmem"
@@ -56,7 +55,7 @@ type queryCache struct {
 
 type orElseFunc func(key string) (query *rego.PreparedEvalQuery, err error)
 
-func NewRegoEval(storage persistence.Storage) PolicyEval {
+func NewRegoEval() PolicyEval {
 	return &regoEval{
 		mrtc: &metricsResourceTypeCache{m: make(map[string][]string)},
 		qc:   newQueryCache(),

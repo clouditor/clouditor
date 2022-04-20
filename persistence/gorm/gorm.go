@@ -99,11 +99,9 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 		&assessment.MetricImplementation{},
 	}
 
-	for _, typ := range types {
-		if err = g.db.AutoMigrate(typ); err != nil {
-			err = fmt.Errorf("error during auto-migration: %w", err)
-			return
-		}
+	if err = g.db.AutoMigrate(types...); err != nil {
+		err = fmt.Errorf("error during auto-migration: %w", err)
+		return
 	}
 
 	s = g

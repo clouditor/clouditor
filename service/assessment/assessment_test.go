@@ -43,7 +43,6 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/policies"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
@@ -122,7 +121,6 @@ func TestNewService(t *testing.T) {
 
 			// Ignore pointers to storage and policy eval
 			s.pe = nil
-			s.storage = nil
 
 			if got := s; !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewService() = %v, want %v", got, tt.want)
@@ -367,7 +365,7 @@ func TestAssessEvidences(t *testing.T) {
 				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
 				orchestratorChannel:           make(chan *assessment.AssessmentResult, 1000),
 				grpcOpts:                      []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
-				pe:                            policies.NewRegoEval(nil),
+				pe:                            policies.NewRegoEval(),
 			}
 
 			assert.NoError(t, s.initOrchestratorStream())
@@ -906,7 +904,6 @@ func TestService_recvEventsLoop(t *testing.T) {
 		cachedConfigurations map[string]cachedConfiguration
 		authorizer           api.Authorizer
 		grpcOpts             []grpc.DialOption
-		storage              persistence.Storage
 	}
 	tests := []struct {
 		name      string
@@ -943,7 +940,6 @@ func TestService_recvEventsLoop(t *testing.T) {
 				cachedConfigurations: tt.fields.cachedConfigurations,
 				authorizer:           tt.fields.authorizer,
 				grpcOpts:             tt.fields.grpcOpts,
-				storage:              tt.fields.storage,
 			}
 			rec := &eventRecorder{}
 			svc.pe = rec
