@@ -25,6 +25,7 @@
         "PBES",
         "protobuf",
         "protoc",
+        "Rego",
         "stretchr",
         "structpb",
         "timestamppb",
