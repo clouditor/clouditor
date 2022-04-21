@@ -143,7 +143,7 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc
 					CreationTime: 0, // No creation time available
 					Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
 					GeoLocation: voc.GeoLocation{
-						Region: *lb.Location,
+						Region: to.String(lb.Location),
 					},
 				},
 			},
@@ -166,7 +166,7 @@ func (*azureNetworkDiscovery) handleNetworkInterfaces(ni *network.Interface) voc
 				CreationTime: 0, // No creation time available
 				Type:         []string{"NetworkInterface", "Compute", "Resource"},
 				GeoLocation: voc.GeoLocation{
-					Region: *ni.Location,
+					Region: to.String(ni.Location),
 				},
 			},
 		},
@@ -180,7 +180,7 @@ func (*azureNetworkDiscovery) handleNetworkInterfaces(ni *network.Interface) voc
 func LoadBalancerPorts(lb *network.LoadBalancer) (loadBalancerPorts []int16) {
 
 	for _, item := range *lb.LoadBalancingRules {
-		loadBalancerPorts = append(loadBalancerPorts, int16(*item.FrontendPort))
+		loadBalancerPorts = append(loadBalancerPorts, int16(to.Int32(item.FrontendPort)))
 	}
 
 	return loadBalancerPorts
@@ -253,12 +253,12 @@ func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *network.Load
 				continue
 			}
 
-			publicIpAddressName := getFrontendPublicIPAddressName(*publicIpProperties.PublicIPAddress.ID)
+			publicIpAddressName := getFrontendPublicIPAddressName(to.String(publicIpProperties.PublicIPAddress.ID))
 			if publicIpAddressName == "" {
 				continue
 			}
 
-			publicIPAddress, err := client.Get(context.Background(), getResourceGroupName(*publicIpProperties.ID), publicIpAddressName, "")
+			publicIPAddress, err := client.Get(context.Background(), getResourceGroupName(to.String(publicIpProperties.ID)), publicIpAddressName, "")
 			if err != nil {
 				log.Infof("Error getting public IP address: %v", err)
 				continue
@@ -269,7 +269,7 @@ func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *network.Load
 				continue
 			}
 
-			publicIPAddresses = append(publicIPAddresses, *publicIPAddress.IPAddress)
+			publicIPAddresses = append(publicIPAddresses, to.String(publicIPAddress.IPAddress))
 		}
 	}
 

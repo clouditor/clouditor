@@ -115,7 +115,7 @@ func (*azureComputeDiscovery) handleFunction(function *web.Site) voc.IsCompute {
 				CreationTime: 0, // No creation time available
 				Type:         []string{"Function", "Compute", "Resource"},
 				GeoLocation: voc.GeoLocation{
-					Region: *function.Location,
+					Region: to.String(function.Location),
 				},
 			},
 		},
@@ -164,11 +164,11 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 				CreationTime: 0, // No creation time available
 				Type:         []string{"VirtualMachine", "Compute", "Resource"},
 				GeoLocation: voc.GeoLocation{
-					Region: *vm.Location,
+					Region: to.String(vm.Location),
 				},
 			}},
 		BootLogging: &voc.BootLogging{Logging: &voc.Logging{
-			Enabled:         isBootDiagnosticEnabled(vmExtended), 
+			Enabled:         isBootDiagnosticEnabled(vmExtended),
 			LoggingService:  []voc.ResourceID{voc.ResourceID(bootLogOutput(vmExtended))},
 			RetentionPeriod: 0, // Currently, configuring the retention period for Managed Boot Diagnostics is not available. The logs will be overwritten after 1gb of space according to https://github.com/MicrosoftDocs/azure-docs/issues/69953
 		}},
@@ -182,9 +182,9 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 	}
 
 	// Reference to blockstorage
-	r.BlockStorage = append(r.BlockStorage, voc.ResourceID(*vmExtended.StorageProfile.OsDisk.ManagedDisk.ID))
+	r.BlockStorage = append(r.BlockStorage, voc.ResourceID(to.String(vmExtended.StorageProfile.OsDisk.ManagedDisk.ID)))
 	for _, blockstorage := range *vmExtended.StorageProfile.DataDisks {
-		r.BlockStorage = append(r.BlockStorage, voc.ResourceID(*blockstorage.ManagedDisk.ID))
+		r.BlockStorage = append(r.BlockStorage, voc.ResourceID(to.String(blockstorage.ManagedDisk.ID)))
 	}
 
 	return r, nil
@@ -195,7 +195,7 @@ func (d *azureComputeDiscovery) extendedVirtualMachine(vm *compute.VirtualMachin
 	client := compute.NewVirtualMachinesClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
 
-	vmExtended, err := client.Get(context.Background(), getResourceGroupName(*vm.ID), *vm.Name, "")
+	vmExtended, err := client.Get(context.Background(), getResourceGroupName(to.String(vm.ID)), to.String(vm.Name), "")
 	if err != nil {
 		return nil, fmt.Errorf("could not get virtual machine: %w", err)
 	}
@@ -214,7 +214,7 @@ func bootLogOutput(vm *compute.VirtualMachine) string {
 	if isBootDiagnosticEnabled(vm) {
 		// If storageUri is not specified while enabling boot diagnostics, managed storage will be used.
 		if vm.DiagnosticsProfile.BootDiagnostics.StorageURI != nil {
-			return *vm.DiagnosticsProfile.BootDiagnostics.StorageURI
+			return to.String(vm.DiagnosticsProfile.BootDiagnostics.StorageURI)
 		}
 
 		return ""
