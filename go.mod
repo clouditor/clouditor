@@ -48,6 +48,8 @@ require (
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0
 )
 
+require golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd
+
 require (
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.9.18 // indirect

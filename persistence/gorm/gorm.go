@@ -29,6 +29,7 @@ import (
 	"errors"
 	"fmt"
 
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
@@ -36,6 +37,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var log *logrus.Entry
@@ -70,7 +72,11 @@ func init() {
 
 // NewStorage creates a new storage using GORM (which DB to use depends on the StorageOption)
 func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
-	g := &storage{}
+	g := &storage{
+		config: gorm.Config{
+			Logger: logger.Default.LogMode(logger.Silent),
+		},
+	}
 
 	// Init storage
 	log.Println("Creating storage")
@@ -87,13 +93,13 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	}
 
 	// After successful DB initialization, migrate the schema
-	// Migrate User
-	if err = g.db.AutoMigrate(&auth.User{}); err != nil {
-		err = fmt.Errorf("error during auto-migration: %w", err)
-		return
+	var types = []interface{}{
+		&auth.User{},
+		&orchestrator.CloudService{},
+		&assessment.MetricImplementation{},
 	}
-	// Migrate CloudService
-	if err = g.db.AutoMigrate(&orchestrator.CloudService{}); err != nil {
+
+	if err = g.db.AutoMigrate(types...); err != nil {
 		err = fmt.Errorf("error during auto-migration: %w", err)
 		return
 	}

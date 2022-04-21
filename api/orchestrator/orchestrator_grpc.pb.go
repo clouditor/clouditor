@@ -75,6 +75,7 @@ type OrchestratorClient interface {
 	UpdateMetricImplementation(ctx context.Context, in *UpdateMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error)
 	// Returns the metric implementation of the passed metric id
 	GetMetricImplementation(ctx context.Context, in *GetMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error)
+	SubscribeMetricChangeEvents(ctx context.Context, in *SubscribeMetricChangeEventRequest, opts ...grpc.CallOption) (Orchestrator_SubscribeMetricChangeEventsClient, error)
 }
 
 type orchestratorClient struct {
@@ -314,6 +315,38 @@ func (c *orchestratorClient) GetMetricImplementation(ctx context.Context, in *Ge
 	return out, nil
 }
 
+func (c *orchestratorClient) SubscribeMetricChangeEvents(ctx context.Context, in *SubscribeMetricChangeEventRequest, opts ...grpc.CallOption) (Orchestrator_SubscribeMetricChangeEventsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Orchestrator_ServiceDesc.Streams[1], "/clouditor.Orchestrator/SubscribeMetricChangeEvents", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &orchestratorSubscribeMetricChangeEventsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Orchestrator_SubscribeMetricChangeEventsClient interface {
+	Recv() (*MetricChangeEvent, error)
+	grpc.ClientStream
+}
+
+type orchestratorSubscribeMetricChangeEventsClient struct {
+	grpc.ClientStream
+}
+
+func (x *orchestratorSubscribeMetricChangeEventsClient) Recv() (*MetricChangeEvent, error) {
+	m := new(MetricChangeEvent)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // OrchestratorServer is the server API for Orchestrator service.
 // All implementations must embed UnimplementedOrchestratorServer
 // for forward compatibility
@@ -369,6 +402,7 @@ type OrchestratorServer interface {
 	UpdateMetricImplementation(context.Context, *UpdateMetricImplementationRequest) (*assessment.MetricImplementation, error)
 	// Returns the metric implementation of the passed metric id
 	GetMetricImplementation(context.Context, *GetMetricImplementationRequest) (*assessment.MetricImplementation, error)
+	SubscribeMetricChangeEvents(*SubscribeMetricChangeEventRequest, Orchestrator_SubscribeMetricChangeEventsServer) error
 	mustEmbedUnimplementedOrchestratorServer()
 }
 
@@ -444,6 +478,9 @@ func (UnimplementedOrchestratorServer) UpdateMetricImplementation(context.Contex
 }
 func (UnimplementedOrchestratorServer) GetMetricImplementation(context.Context, *GetMetricImplementationRequest) (*assessment.MetricImplementation, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMetricImplementation not implemented")
+}
+func (UnimplementedOrchestratorServer) SubscribeMetricChangeEvents(*SubscribeMetricChangeEventRequest, Orchestrator_SubscribeMetricChangeEventsServer) error {
+	return status.Errorf(codes.Unimplemented, "method SubscribeMetricChangeEvents not implemented")
 }
 func (UnimplementedOrchestratorServer) mustEmbedUnimplementedOrchestratorServer() {}
 
@@ -880,6 +917,27 @@ func _Orchestrator_GetMetricImplementation_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Orchestrator_SubscribeMetricChangeEvents_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(SubscribeMetricChangeEventRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(OrchestratorServer).SubscribeMetricChangeEvents(m, &orchestratorSubscribeMetricChangeEventsServer{stream})
+}
+
+type Orchestrator_SubscribeMetricChangeEventsServer interface {
+	Send(*MetricChangeEvent) error
+	grpc.ServerStream
+}
+
+type orchestratorSubscribeMetricChangeEventsServer struct {
+	grpc.ServerStream
+}
+
+func (x *orchestratorSubscribeMetricChangeEventsServer) Send(m *MetricChangeEvent) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // Orchestrator_ServiceDesc is the grpc.ServiceDesc for Orchestrator service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -982,6 +1040,11 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 			Handler:       _Orchestrator_StoreAssessmentResults_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
+		},
+		{
+			StreamName:    "SubscribeMetricChangeEvents",
+			Handler:       _Orchestrator_SubscribeMetricChangeEvents_Handler,
+			ServerStreams: true,
 		},
 	},
 	Metadata: "api/orchestrator/orchestrator.proto",

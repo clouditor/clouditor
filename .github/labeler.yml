@@ -1,20 +1,23 @@
 "cmd/engine":
-- cmd/engine/*
+  - cmd/engine/*
 
 "policies":
-- policies/**/*
+  - policies/**/*
 
 "api/evaluation":
-- api/evaluation/*
+  - api/evaluation/*
 
 "api":
-- any: ['api/**/*', '!api/evaluation/*']
+  - any: ["api/**/*", "!api/evaluation/*"]
 
 "service/assessment":
-- service/assessment/*
+  - service/assessment/*
+
+"service/orchestrator":
+  - service/orchestrator/*
 
 "service":
-- any: ['service/**/*', '!service/assessment/*']
+  - any: ["service/**/*", "!service/assessment/*", "!service/orchestrator/*"]
 
 "internal":
-- internal/**/*
+  - internal/**/*
