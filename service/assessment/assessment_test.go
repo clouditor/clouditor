@@ -603,7 +603,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 					{Id: "11111111-1111-1111-1111-111111111111"}, {Id: "22222222-2222-2222-2222-222222222222"},
 				},
 				NextPageToken: func() string {
-					token, _ := encodeToken(&assessment.PageToken{Start: 2, Size: 2})
+					token, _ := (&api.PageToken{Start: 2, Size: 2}).Encode()
 					return token
 				}(),
 			},
@@ -627,7 +627,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				req: &assessment.ListAssessmentResultsRequest{
 					PageSize: 2,
 					PageToken: func() string {
-						token, _ := encodeToken(&assessment.PageToken{Start: 2, Size: 2})
+						token, _ := (&api.PageToken{Start: 2, Size: 2}).Encode()
 						return token
 					}(),
 				},
@@ -637,7 +637,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 					{Id: "33333333-3333-3333-3333-333333333333"}, {Id: "44444444-4444-4444-4444-444444444444"},
 				},
 				NextPageToken: func() string {
-					token, _ := encodeToken(&assessment.PageToken{Start: 4, Size: 2})
+					token, _ := (&api.PageToken{Start: 4, Size: 2}).Encode()
 					return token
 				}(),
 			},
@@ -661,7 +661,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				req: &assessment.ListAssessmentResultsRequest{
 					PageSize: 2,
 					PageToken: func() string {
-						token, _ := encodeToken(&assessment.PageToken{Start: 8, Size: 2})
+						token, _ := (&api.PageToken{Start: 8, Size: 2}).Encode()
 						return token
 					}(),
 				},
