@@ -384,7 +384,6 @@ const MaxSize = 100
 // ListAssessmentResults is a method implementation of the assessment interface
 func (s *Service) ListAssessmentResults(_ context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
 	var (
-		token  *assessment.PageToken
 		values []*assessment.AssessmentResult
 		start  int64
 		end    int64
@@ -396,31 +395,13 @@ func (s *Service) ListAssessmentResults(_ context.Context, req *assessment.ListA
 		req.PageSize = MaxSize
 	}
 
-	if req.PageToken == "" {
-		// We need a new page token
-		token = &assessment.PageToken{
-			Start: 0,
-			Size:  req.PageSize,
-		}
-	} else {
-		// Try to decode our existing token
-		token, err = decodeToken(req.PageToken)
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, "could not decode page token: %v", err)
-		}
-	}
+	max = int64(len(s.results))
 
 	res = new(assessment.ListAssessmentResultsResponse)
-	res.Results = []*assessment.AssessmentResult{}
 
-	start = token.Start
-	end = token.Start + int64(token.Size)
-	max = int64(len(s.results))
-	if end >= max {
-		end = max
-
-		// Indicate that we are at the end
-		token = nil
+	start, end, res.NextPageToken, err = paginate(req, max)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not decode page token: %v", err)
 	}
 
 	// We need to sort the values, because they are otherwise in a random order
@@ -431,18 +412,6 @@ func (s *Service) ListAssessmentResults(_ context.Context, req *assessment.ListA
 
 	// Prepare a sub slice based on the page token
 	res.Results = values[start:end]
-
-	// Only needed, if more pages exist
-	if token != nil {
-		// Move the token "forward"
-		token.Start = end
-
-		// Encode next page token
-		res.NextPageToken, err = encodeToken(token)
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, "could not create page token: %v", err)
-		}
-	}
 
 	return
 }
@@ -678,6 +647,55 @@ func decodeToken(b64token string) (t *assessment.PageToken, err error) {
 	err = proto.Unmarshal(b, t)
 	if err != nil {
 		return nil, fmt.Errorf("error while unmarshalling protobuf message: %w", err)
+	}
+
+	return
+}
+
+type PaginatedRequest interface {
+	GetPageToken() string
+	GetPageSize() int32
+}
+
+// paginate is a helper function that helps to paginate list requests. It parses the necessary
+// informaton out if a paginated request, e.g. the page token and the desired page size and returns
+// the offset values for the requested page as well as the next page token.
+func paginate(req PaginatedRequest, max int64) (start int64, end int64, nbt string, err error) {
+	var token *assessment.PageToken
+
+	if req.GetPageToken() == "" {
+		// We need a new page token
+		token = &assessment.PageToken{
+			Start: 0,
+			Size:  req.GetPageSize(),
+		}
+	} else {
+		// Try to decode our existing token
+		token, err = decodeToken(req.GetPageToken())
+		if err != nil {
+			return 0, 0, "", fmt.Errorf("could not decode page token: %w", err)
+		}
+	}
+
+	start = token.Start
+	end = token.Start + int64(token.Size)
+	if end >= max {
+		end = max
+
+		// Indicate that we are at the end
+		token = nil
+	}
+
+	// Only needed, if more pages exist
+	if token != nil {
+		// Move the token "forward"
+		token.Start = end
+
+		// Encode next page token
+		nbt, err = encodeToken(token)
+		if err != nil {
+			return 0, 0, "", status.Errorf(codes.Internal, "could not create page token: %v", err)
+		}
 	}
 
 	return
