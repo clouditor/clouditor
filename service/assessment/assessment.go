@@ -27,6 +27,7 @@ package assessment
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -40,13 +41,15 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/policies"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
-	"golang.org/x/oauth2/clientcredentials"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/exp/maps"
+	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -375,13 +378,65 @@ func (s *Service) informHooks(result *assessment.AssessmentResult, err error) {
 	}
 }
 
+const MaxSize = 100
+
 // ListAssessmentResults is a method implementation of the assessment interface
-func (s *Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
+func (s *Service) ListAssessmentResults(_ context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
+	var (
+		token *assessment.PageToken
+		npt   string
+		start int64
+		end   int64
+		max   int64
+	)
+
+	// Check, if the size was specified and is within our maximum size
+	if req.PageSize == 0 || req.PageSize > MaxSize {
+		req.PageSize = MaxSize
+	}
+
+	if req.PageToken == "" {
+		// We need a new page token
+		token = &assessment.PageToken{
+			Start: 0,
+			Size:  req.PageSize,
+		}
+	} else {
+		// Try to decode our existing token
+		token, err = decodeToken(req.PageToken)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "could not decode page token: %v", err)
+		}
+	}
+
 	res = new(assessment.ListAssessmentResultsResponse)
 	res.Results = []*assessment.AssessmentResult{}
 
-	for _, result := range s.results {
-		res.Results = append(res.Results, result)
+	start = token.Start
+	end = token.Start + int64(token.Size)
+	max = int64(len(s.results))
+	if end >= max {
+		end = max
+
+		// Indicate that we are at the end
+		token = nil
+	}
+
+	// Prepare a sub slice based on the page token
+	res.Results = maps.Values(s.results)[start:end]
+
+	// Only needed, if more pages exist
+	if token != nil {
+		// Move the token "forward"
+		token.Start = end
+
+		// Encode next page token
+		npt, err = encodeToken(token)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "could not create page token: %v", err)
+		}
+
+		res.NextPageToken = npt
 	}
 
 	return
@@ -591,4 +646,34 @@ func (svc *Service) recvEventsLoop() {
 
 		_ = svc.pe.HandleMetricEvent(event)
 	}
+}
+
+func encodeToken(t *assessment.PageToken) (b64token string, err error) {
+	var b []byte
+
+	b, err = proto.Marshal(t)
+	if err != nil {
+		return "", fmt.Errorf("error while marshaling protobuf message: %w", err)
+	}
+
+	b64token = base64.URLEncoding.EncodeToString(b)
+	return
+}
+
+func decodeToken(b64token string) (t *assessment.PageToken, err error) {
+	var b []byte
+
+	b, err = base64.URLEncoding.DecodeString(b64token)
+	if err != nil {
+		return nil, fmt.Errorf("error while decoding base64 token: %w", err)
+	}
+
+	t = new(assessment.PageToken)
+
+	err = proto.Unmarshal(b, t)
+	if err != nil {
+		return nil, fmt.Errorf("error while unmarshalling protobuf message: %w", err)
+	}
+
+	return
 }

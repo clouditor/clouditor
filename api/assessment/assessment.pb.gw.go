@@ -65,9 +65,20 @@ func local_request_Assessment_AssessEvidence_0(ctx context.Context, marshaler ru
 
 }
 
+var (
+	filter_Assessment_ListAssessmentResults_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
+
 func request_Assessment_ListAssessmentResults_0(ctx context.Context, marshaler runtime.Marshaler, client AssessmentClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq ListAssessmentResultsRequest
 	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_Assessment_ListAssessmentResults_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
 
 	msg, err := client.ListAssessmentResults(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -77,6 +88,13 @@ func request_Assessment_ListAssessmentResults_0(ctx context.Context, marshaler r
 func local_request_Assessment_ListAssessmentResults_0(ctx context.Context, marshaler runtime.Marshaler, server AssessmentServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq ListAssessmentResultsRequest
 	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_Assessment_ListAssessmentResults_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
 
 	msg, err := server.ListAssessmentResults(ctx, &protoReq)
 	return msg, metadata, err
@@ -95,12 +113,13 @@ func RegisterAssessmentHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Assessment/AssessEvidence", runtime.WithHTTPPathPattern("/v1/assessment/evidences"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Assessment/AssessEvidence", runtime.WithHTTPPathPattern("/v1/assessment/evidences"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Assessment_AssessEvidence_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_Assessment_AssessEvidence_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -118,12 +137,13 @@ func RegisterAssessmentHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Assessment/ListAssessmentResults", runtime.WithHTTPPathPattern("/v1/assessment/results"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Assessment/ListAssessmentResults", runtime.WithHTTPPathPattern("/v1/assessment/results"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Assessment_ListAssessmentResults_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_Assessment_ListAssessmentResults_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -165,7 +185,7 @@ func RegisterAssessmentHandlerFromEndpoint(ctx context.Context, mux *runtime.Ser
 
 // RegisterAssessmentHandler registers the http handlers for service Assessment to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterAssessmentHandler(ctx context.Context, mux *runtime.ServeMux, conn grpc.ClientConnInterface) error {
+func RegisterAssessmentHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
 	return RegisterAssessmentHandlerClient(ctx, mux, NewAssessmentClient(conn))
 }
 
@@ -180,12 +200,13 @@ func RegisterAssessmentHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.Assessment/AssessEvidence", runtime.WithHTTPPathPattern("/v1/assessment/evidences"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Assessment/AssessEvidence", runtime.WithHTTPPathPattern("/v1/assessment/evidences"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Assessment_AssessEvidence_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Assessment_AssessEvidence_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -200,12 +221,13 @@ func RegisterAssessmentHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.Assessment/ListAssessmentResults", runtime.WithHTTPPathPattern("/v1/assessment/results"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Assessment/ListAssessmentResults", runtime.WithHTTPPathPattern("/v1/assessment/results"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Assessment_ListAssessmentResults_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Assessment_ListAssessmentResults_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)

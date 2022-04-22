@@ -118,3 +118,8 @@ message MetricImplementation {
   // The actual implementation
   string code = 3;
 }
+
+message PageToken {
+  int64 start = 1;
+  int32 size = 2;
+}
