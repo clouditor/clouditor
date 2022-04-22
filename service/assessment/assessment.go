@@ -32,6 +32,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sort"
 	"sync"
 	"time"
 
@@ -383,11 +384,11 @@ const MaxSize = 100
 // ListAssessmentResults is a method implementation of the assessment interface
 func (s *Service) ListAssessmentResults(_ context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
 	var (
-		token *assessment.PageToken
-		npt   string
-		start int64
-		end   int64
-		max   int64
+		token  *assessment.PageToken
+		values []*assessment.AssessmentResult
+		start  int64
+		end    int64
+		max    int64
 	)
 
 	// Check, if the size was specified and is within our maximum size
@@ -422,8 +423,14 @@ func (s *Service) ListAssessmentResults(_ context.Context, req *assessment.ListA
 		token = nil
 	}
 
+	// We need to sort the values, because they are otherwise in a random order
+	values = maps.Values(s.results)
+	sort.Slice(values, func(i, j int) bool {
+		return values[i].Id < values[j].Id
+	})
+
 	// Prepare a sub slice based on the page token
-	res.Results = maps.Values(s.results)[start:end]
+	res.Results = values[start:end]
 
 	// Only needed, if more pages exist
 	if token != nil {
@@ -431,12 +438,10 @@ func (s *Service) ListAssessmentResults(_ context.Context, req *assessment.ListA
 		token.Start = end
 
 		// Encode next page token
-		npt, err = encodeToken(token)
+		res.NextPageToken, err = encodeToken(token)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "could not create page token: %v", err)
 		}
-
-		res.NextPageToken = npt
 	}
 
 	return
