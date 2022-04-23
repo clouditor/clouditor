@@ -74,11 +74,18 @@ components:
             properties:
                 filteredType:
                     type: string
+                pageSize:
+                    type: integer
+                    format: int32
+                pageToken:
+                    type: string
         QueryResponse:
             type: object
             properties:
                 results:
                     $ref: '#/components/schemas/ListValue'
+                nextPageToken:
+                    type: string
         StartDiscoveryRequest:
             type: object
             properties: {}

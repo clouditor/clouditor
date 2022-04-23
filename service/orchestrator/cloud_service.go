@@ -77,7 +77,7 @@ func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.Regi
 func (svc *Service) ListCloudServices(_ context.Context, req *orchestrator.ListCloudServicesRequest) (res *orchestrator.ListCloudServicesResponse, err error) {
 	res = new(orchestrator.ListCloudServicesResponse)
 
-	// Paginate the results according to the request
+	// Paginate the cloud services according to the request
 	res.Services, res.NextPageToken, err = service.PaginateStorage[*orchestrator.CloudService](req, svc.storage, MaxMetricPageSize)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)

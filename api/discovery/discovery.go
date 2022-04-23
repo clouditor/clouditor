@@ -36,3 +36,8 @@ type Discoverer interface {
 type Authorizer interface {
 	Authorize() (err error)
 }
+
+// SetPageToken implements PaginatedRequest so we can set the page token programmatically.
+func (r *QueryRequest) SetPageToken(token string) {
+	r.PageToken = token
+}

@@ -33,6 +33,7 @@ import (
 	"sync"
 
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/service"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -139,13 +140,18 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 }
 
 // ListEvidences is a method implementation of the evidenceServer interface: It returns the evidences lying in the req storage
-func (s *Service) ListEvidences(_ context.Context, _ *evidence.ListEvidencesRequest) (*evidence.ListEvidencesResponse, error) {
-	var listOfEvidences []*evidence.Evidence
-	for _, v := range s.evidences {
-		listOfEvidences = append(listOfEvidences, v)
+func (s *Service) ListEvidences(_ context.Context, req *evidence.ListEvidencesRequest) (res *evidence.ListEvidencesResponse, err error) {
+	res = new(evidence.ListEvidencesResponse)
+
+	// Paginate the evidences according to the request
+	res.Evidences, res.NextPageToken, err = service.PaginateMapValues(req, s.evidences, func(a, b *evidence.Evidence) bool {
+		return a.Id < b.Id
+	}, 1000)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
 
-	return &evidence.ListEvidencesResponse{Evidences: listOfEvidences}, nil
+	return
 }
 
 func (s *Service) RegisterEvidenceHook(evidenceHook evidence.EvidenceHookFunc) {

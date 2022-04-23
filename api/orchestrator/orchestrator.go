@@ -82,6 +82,7 @@ func (r *ListMetricsRequest) SetPageToken(token string) {
 	r.PageToken = token
 }
 
+// SetPageToken implements PaginatedRequest so we can set the page token programmatically.
 func (r *ListAssessmentToolsRequest) SetPageToken(token string) {
 	r.PageToken = token
 }

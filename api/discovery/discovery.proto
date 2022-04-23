@@ -55,11 +55,17 @@ service Discovery {
   }
 }
 
-message StartDiscoveryRequest {
-}
+message StartDiscoveryRequest {}
 
 message StartDiscoveryResponse { bool successful = 1; }
 
-message QueryRequest { string filtered_type = 1; }
+message QueryRequest {
+  string filtered_type = 1;
+  int32 page_size = 2;
+  string page_token = 3;
+}
 
-message QueryResponse { google.protobuf.ListValue results = 1; }
+message QueryResponse {
+  google.protobuf.ListValue results = 1;
+  string next_page_token = 2;
+}

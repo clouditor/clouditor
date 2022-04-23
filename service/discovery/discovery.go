@@ -30,12 +30,15 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sort"
 	"time"
 
 	"clouditor.io/clouditor/api"
+	"clouditor.io/clouditor/service"
 	"clouditor.io/clouditor/service/discovery/aws"
 	"clouditor.io/clouditor/service/discovery/azure"
 	"clouditor.io/clouditor/service/discovery/k8s"
+	"golang.org/x/exp/maps"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -320,15 +323,21 @@ func (s *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}
 }
 
-func (s *Service) Query(_ context.Context, request *discovery.QueryRequest) (response *discovery.QueryResponse, err error) {
+func (s *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *discovery.QueryResponse, err error) {
 	var r []*structpb.Value
+	var resources []voc.IsCloudResource
 
 	var filteredType = ""
-	if request != nil {
-		filteredType = request.FilteredType
+	if req != nil {
+		filteredType = req.FilteredType
 	}
 
-	for _, v := range s.resources {
+	resources = maps.Values(s.resources)
+	sort.Slice(resources, func(i, j int) bool {
+		return resources[i].GetID() < resources[j].GetID()
+	})
+
+	for _, v := range resources {
 		var resource *structpb.Value
 
 		if filteredType != "" && !v.HasType(filteredType) {
@@ -344,9 +353,17 @@ func (s *Service) Query(_ context.Context, request *discovery.QueryRequest) (res
 		r = append(r, resource)
 	}
 
-	return &discovery.QueryResponse{
-		Results: &structpb.ListValue{Values: r},
-	}, nil
+	res = new(discovery.QueryResponse)
+
+	// Paginate the evidences according to the request
+	r, res.NextPageToken, err = service.PaginateSlice(req, r, 1000)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
+	}
+
+	res.Results = &structpb.ListValue{Values: r}
+
+	return
 }
 
 // handleError prints out the error according to the status code
