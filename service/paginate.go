@@ -113,7 +113,6 @@ func PaginateStorage[T any](req PaginatedRequest, storage persistence.Storage, m
 	var (
 		token *api.PageToken
 		start int64
-		end   int64
 		size  int32
 	)
 
@@ -148,7 +147,7 @@ func PaginateStorage[T any](req PaginatedRequest, storage persistence.Storage, m
 		return nil, "", fmt.Errorf("database error: %w", err)
 	}
 
-	if len(page) == 0 {
+	if len(page) == 0 || len(page) < int(size) {
 		// Indicate that we are at the end
 		token = nil
 	}
@@ -156,7 +155,7 @@ func PaginateStorage[T any](req PaginatedRequest, storage persistence.Storage, m
 	// Only needed, if more pages exist
 	if token != nil {
 		// Move the token "forward"
-		token.Start = end
+		token.Start = token.Start + int64(len(page))
 
 		// Encode next page token
 		nbt, err = token.Encode()
