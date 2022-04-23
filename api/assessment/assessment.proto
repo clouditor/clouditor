@@ -72,10 +72,9 @@ message ListAssessmentResultsRequest {
   int32 page_size = 1;
   string page_token = 2;
 }
-
 message ListAssessmentResultsResponse {
   repeated AssessmentResult results = 1;
-  string next_page_token = 4;
+  string next_page_token = 2;
 }
 
 message ConfigureAssessmentRequest {}

@@ -320,6 +320,16 @@ paths:
                 - Orchestrator
             description: List all metrics provided by the metric catalog
             operationId: Orchestrator_ListMetrics
+            parameters:
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
@@ -440,6 +450,16 @@ paths:
             tags:
                 - Orchestrator
             operationId: Orchestrator_ListRequirements
+            parameters:
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
@@ -567,6 +587,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Metric'
+                nextPageToken:
+                    type: string
         ListRequirementsResponse:
             type: object
             properties:
@@ -574,6 +596,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Requirement'
+                nextPageToken:
+                    type: string
         Metric:
             type: object
             properties:

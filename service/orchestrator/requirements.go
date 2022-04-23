@@ -31,6 +31,9 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/service"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // LoadRequirements loads requirements definitions from a JSON file.
@@ -56,8 +59,14 @@ func LoadRequirements(file string) (requirements []*orchestrator.Requirement, er
 
 // ListRequirements is a method implementation of the OrchestratorServer interface,
 // returning a list of requirements
-func (svc *Service) ListRequirements(_ context.Context, _ *orchestrator.ListRequirementsRequest) (response *orchestrator.ListRequirementsResponse, err error) {
-	return &orchestrator.ListRequirementsResponse{
-		Requirements: svc.requirements,
-	}, nil
+func (svc *Service) ListRequirements(_ context.Context, req *orchestrator.ListRequirementsRequest) (res *orchestrator.ListRequirementsResponse, err error) {
+	res = new(orchestrator.ListRequirementsResponse)
+
+	// Paginate the requirements according to the request
+	res.Requirements, res.NextPageToken, err = service.PaginateSlice(req, svc.requirements, MaxMetricPageSize)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not paginate requirements: %v", err)
+	}
+
+	return
 }

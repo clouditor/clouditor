@@ -31,7 +31,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"sort"
 	"sync"
 	"time"
 
@@ -45,7 +44,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/exp/maps"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -381,36 +379,16 @@ func (s *Service) informHooks(result *assessment.AssessmentResult, err error) {
 const MaxSize = 100
 
 // ListAssessmentResults is a method implementation of the assessment interface
-func (s *Service) ListAssessmentResults(_ context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
-	var (
-		values []*assessment.AssessmentResult
-		start  int64
-		end    int64
-		max    int64
-	)
-
-	// Check, if the size was specified and is within our maximum size
-	if req.PageSize == 0 || req.PageSize > MaxSize {
-		req.PageSize = MaxSize
-	}
-
-	max = int64(len(s.results))
-
+func (svc *Service) ListAssessmentResults(_ context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
 	res = new(assessment.ListAssessmentResultsResponse)
 
-	start, end, res.NextPageToken, err = service.Paginate(req, max)
+	// Paginate the results according to the request
+	res.Results, res.NextPageToken, err = service.PaginateMapValues(req, svc.results, func(a *assessment.AssessmentResult, b *assessment.AssessmentResult) bool {
+		return a.Id < b.Id
+	}, MaxSize)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not decode page token: %v", err)
+		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
-
-	// We need to sort the values, because they are otherwise in a random order
-	values = maps.Values(s.results)
-	sort.Slice(values, func(i, j int) bool {
-		return values[i].Id < values[j].Id
-	})
-
-	// Prepare a sub slice based on the page token
-	res.Results = values[start:end]
 
 	return
 }

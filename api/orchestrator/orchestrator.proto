@@ -266,11 +266,23 @@ message UpdateMetricRequest {
 
 message GetMetricRequest { string metric_id = 1; }
 
-message ListMetricsRequest {}
-message ListMetricsResponse { repeated Metric metrics = 1; }
+message ListMetricsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+message ListMetricsResponse {
+  repeated Metric metrics = 1;
+  string next_page_token = 2;
+}
 
-message ListRequirementsRequest {}
-message ListRequirementsResponse { repeated Requirement requirements = 1; }
+message ListRequirementsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+message ListRequirementsResponse {
+  repeated Requirement requirements = 1;
+  string next_page_token = 2;
+}
 
 message GetCloudServiceRequest { string service_id = 1; }
 

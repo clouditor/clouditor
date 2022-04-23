@@ -37,11 +37,14 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/service"
 
-	"golang.org/x/exp/maps"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
+
+const DefaultMetricPageSize = 50
+const MaxMetricPageSize = 1000
 
 // loadMetrics takes care of loading the metric definitions from the (embedded) metrics.json as
 // well as the default metric implementations from the Rego files.
@@ -229,12 +232,18 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 }
 
 // ListMetrics lists all available metrics.
-func (svc *Service) ListMetrics(_ context.Context, _ *orchestrator.ListMetricsRequest) (response *orchestrator.ListMetricsResponse, err error) {
-	response = &orchestrator.ListMetricsResponse{
-		Metrics: maps.Values(svc.metrics),
+func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetricsRequest) (res *orchestrator.ListMetricsResponse, err error) {
+	res = new(orchestrator.ListMetricsResponse)
+
+	// Paginate the metrics according to the request
+	res.Metrics, res.NextPageToken, err = service.PaginateMapValues(req, svc.metrics, func(a *assessment.Metric, b *assessment.Metric) bool {
+		return a.Id < b.Id
+	}, MaxMetricPageSize)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not paginate metrics: %v", err)
 	}
 
-	return response, nil
+	return res, nil
 }
 
 // GetMetric retrieves a metric specified by req.MetridId

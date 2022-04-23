@@ -27,39 +27,58 @@ package service
 
 import (
 	"fmt"
+	"sort"
 
 	"clouditor.io/clouditor/api"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"golang.org/x/exp/maps"
 )
 
+// PaginatedRequest contains the typical parameters for a paginated request,
+// usually a List gRPC call.
 type PaginatedRequest interface {
 	GetPageToken() string
 	GetPageSize() int32
 }
 
-// Paginate is a helper function that helps to paginate list requests. It parses the necessary
-// informaton out if a paginated request, e.g. the page token and the desired page size and returns
-// the offset values for the requested page as well as the next page token.
-func Paginate(req PaginatedRequest, max int64) (start int64, end int64, nbt string, err error) {
-	var token *api.PageToken
+// PaginateSlice is a helper function that helps to paginate a slice based on
+// list requests. It parses the necessary informaton out if a paginated request,
+// e.g. the page token and the desired page size and returns the sliced page as
+// well as the next page token.
+func PaginateSlice[T any](req PaginatedRequest, values []T, maxPageSize int32) (page []T, nbt string, err error) {
+	var (
+		token *api.PageToken
+		start int64
+		end   int64
+		size  int32
+		max   int64
+	)
 
+	// Check, if the size was specified and is within our maximum size
+	if req.GetPageSize() == 0 || req.GetPageSize() > maxPageSize {
+		size = maxPageSize
+	} else {
+		size = req.GetPageSize()
+	}
+
+	// Check, if this is the first request (empty token) or a subsequent one
 	if req.GetPageToken() == "" {
 		// We need a new page token
 		token = &api.PageToken{
 			Start: 0,
-			Size:  req.GetPageSize(),
+			Size:  size,
 		}
 	} else {
 		// Try to decode our existing token
 		token, err = api.DecodePageToken(req.GetPageToken())
 		if err != nil {
-			return 0, 0, "", fmt.Errorf("could not decode page token: %w", err)
+			return nil, "", fmt.Errorf("could not decode page token: %w", err)
 		}
 	}
 
+	// Calculate our offsets for slices
 	start = token.Start
-	end = token.Start + int64(token.Size)
+	end = token.Start + int64(size)
+	max = int64(len(values))
 	if end >= max {
 		end = max
 
@@ -75,9 +94,25 @@ func Paginate(req PaginatedRequest, max int64) (start int64, end int64, nbt stri
 		// Encode next page token
 		nbt, err = token.Encode()
 		if err != nil {
-			return 0, 0, "", status.Errorf(codes.Internal, "could not create page token: %v", err)
+			return nil, "", fmt.Errorf("could not create page token: %w", err)
 		}
 	}
 
+	// Prepare a sub slice based on the page token
+	page = values[start:end]
+
 	return
+}
+
+// PaginateMapValues is a wrapper around PaginateSlice that uses maps.Values to
+// determine the maps values and sorts them according to the specified less
+// function, to return a deterministic result.
+func PaginateMapValues[T any](req PaginatedRequest, m map[string]T, less func(a T, b T) bool, maxPageSize int32) (page []T, nbt string, err error) {
+	// We need to sort the values, because they are otherwise in a random order
+	var values = maps.Values(m)
+	sort.Slice(values, func(i, j int) bool {
+		return less(values[i], values[j])
+	})
+
+	return PaginateSlice(req, values, maxPageSize)
 }
