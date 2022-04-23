@@ -47,6 +47,7 @@ func NewListAssessmentResultsCommand() *cobra.Command {
 				session *cli.Session
 				client  orchestrator.OrchestratorClient
 				res     *assessment.ListAssessmentResultsResponse
+				results []*assessment.AssessmentResult
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -56,7 +57,28 @@ func NewListAssessmentResultsCommand() *cobra.Command {
 
 			client = orchestrator.NewOrchestratorClient(session)
 
-			res, err = client.ListAssessmentResults(context.Background(), &assessment.ListAssessmentResultsRequest{})
+			var pageToken string = ""
+			for {
+				res, err = client.ListAssessmentResults(context.Background(), &assessment.ListAssessmentResultsRequest{
+					PageSize:  100,
+					PageToken: pageToken,
+				})
+				if err != nil {
+					break
+				}
+
+				results = append(results, res.Results...)
+				pageToken = res.NextPageToken
+
+				if pageToken == "" {
+					break
+				}
+			}
+
+			// Build a response with all results
+			res = &assessment.ListAssessmentResultsResponse{
+				Results: results,
+			}
 
 			return session.HandleResponse(res, err)
 		},

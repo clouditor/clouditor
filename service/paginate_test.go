@@ -177,11 +177,11 @@ func TestPaginateStorage(t *testing.T) {
 					PageToken: "",
 				},
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					s.Save(&orchestrator.CloudService{Id: "1"})
-					s.Save(&orchestrator.CloudService{Id: "2"})
-					s.Save(&orchestrator.CloudService{Id: "3"})
-					s.Save(&orchestrator.CloudService{Id: "4"})
-					s.Save(&orchestrator.CloudService{Id: "5"})
+					_ = s.Save(&orchestrator.CloudService{Id: "1"})
+					_ = s.Save(&orchestrator.CloudService{Id: "2"})
+					_ = s.Save(&orchestrator.CloudService{Id: "3"})
+					_ = s.Save(&orchestrator.CloudService{Id: "4"})
+					_ = s.Save(&orchestrator.CloudService{Id: "5"})
 				}),
 				maxPageSize: 10,
 			},
@@ -196,11 +196,11 @@ func TestPaginateStorage(t *testing.T) {
 					PageToken: "CAIQAg==",
 				},
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					s.Save(&orchestrator.CloudService{Id: "1"})
-					s.Save(&orchestrator.CloudService{Id: "2"})
-					s.Save(&orchestrator.CloudService{Id: "3"})
-					s.Save(&orchestrator.CloudService{Id: "4"})
-					s.Save(&orchestrator.CloudService{Id: "5"})
+					_ = s.Save(&orchestrator.CloudService{Id: "1"})
+					_ = s.Save(&orchestrator.CloudService{Id: "2"})
+					_ = s.Save(&orchestrator.CloudService{Id: "3"})
+					_ = s.Save(&orchestrator.CloudService{Id: "4"})
+					_ = s.Save(&orchestrator.CloudService{Id: "5"})
 				}),
 				maxPageSize: 10,
 			},
