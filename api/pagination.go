@@ -32,6 +32,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 // PaginatedRequest contains the typical parameters for a paginated request,
@@ -39,8 +40,7 @@ import (
 type PaginatedRequest interface {
 	GetPageToken() string
 	GetPageSize() int32
-
-	SetPageToken(string)
+	proto.Message
 }
 
 // PaginatedResponse contains the typical parameters for a paginated response,
@@ -88,8 +88,9 @@ func ListAllPaginated[ResponseType PaginatedResponse, RequestType PaginatedReque
 	)
 
 	for {
-		// Modify the request to include our page token. This will be empty for the first page
-		req.SetPageToken(pageToken)
+		// Modify the request to include our page token using protoreflect. This will be empty for the first page
+		m := req.ProtoReflect()
+		m.Set(m.Descriptor().Fields().ByName("page_token"), protoreflect.ValueOf(pageToken))
 
 		// Call the list function to fetch the next page
 		res, err = list(context.Background(), req)
