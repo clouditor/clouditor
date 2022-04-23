@@ -67,8 +67,6 @@ func NewListToolsCommand() *cobra.Command {
 				Tools: tools,
 			}
 
-			res, err = client.ListAssessmentTools(context.Background(), &orchestrator.ListAssessmentToolsRequest{})
-
 			return session.HandleResponse(res, err)
 		},
 		ValidArgsFunction: cli.DefaultArgsShellComp,
