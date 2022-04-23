@@ -29,6 +29,7 @@ import (
 	"reflect"
 	"testing"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil"
@@ -37,7 +38,7 @@ import (
 
 func TestPaginateSlice(t *testing.T) {
 	type args struct {
-		req         PaginatedRequest
+		req         api.PaginatedRequest
 		values      []int
 		maxPageSize int32
 	}
@@ -108,7 +109,7 @@ func TestPaginateSlice(t *testing.T) {
 
 func TestPaginateMapValues(t *testing.T) {
 	type args struct {
-		req         PaginatedRequest
+		req         api.PaginatedRequest
 		m           map[string]int
 		less        func(a int, b int) bool
 		maxPageSize int32
@@ -157,7 +158,7 @@ func TestPaginateMapValues(t *testing.T) {
 
 func TestPaginateStorage(t *testing.T) {
 	type args struct {
-		req         PaginatedRequest
+		req         api.PaginatedRequest
 		storage     persistence.Storage
 		maxPageSize int32
 		conds       []interface{}

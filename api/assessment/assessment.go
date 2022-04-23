@@ -80,3 +80,8 @@ func (result *AssessmentResult) Validate() (resourceId string, err error) {
 
 	return
 }
+
+// SetPageToken implements PaginatedRequest so we can set the page token programmatically.
+func (r *ListAssessmentResultsRequest) SetPageToken(token string) {
+	r.PageToken = token
+}

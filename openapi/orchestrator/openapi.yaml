@@ -62,6 +62,15 @@ paths:
                   description: filter tools by metric id
                   schema:
                     type: string
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
@@ -575,6 +584,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/AssessmentTool'
+                nextPageToken:
+                    type: string
         ListCloudServicesResponse:
             type: object
             properties:

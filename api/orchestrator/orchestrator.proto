@@ -239,8 +239,13 @@ message RegisterAssessmentToolRequest { AssessmentTool tool = 1; }
 message ListAssessmentToolsRequest {
   // filter tools by metric id
   string metric_id = 1;
+  int32 page_size = 2;
+  string page_token = 3;
 }
-message ListAssessmentToolsResponse { repeated AssessmentTool tools = 1; }
+message ListAssessmentToolsResponse {
+  repeated AssessmentTool tools = 1;
+  string next_page_token = 2;
+}
 
 message GetAssessmentToolRequest { string tool_id = 1; }
 

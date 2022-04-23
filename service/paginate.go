@@ -34,18 +34,11 @@ import (
 	"golang.org/x/exp/maps"
 )
 
-// PaginatedRequest contains the typical parameters for a paginated request,
-// usually a List gRPC call.
-type PaginatedRequest interface {
-	GetPageToken() string
-	GetPageSize() int32
-}
-
 // PaginateSlice is a helper function that helps to paginate a slice based on
 // list requests. It parses the necessary informaton out if a paginated request,
 // e.g. the page token and the desired page size and returns a sliced page as
 // well as the next page token.
-func PaginateSlice[T any](req PaginatedRequest, values []T, maxPageSize int32) (page []T, nbt string, err error) {
+func PaginateSlice[T any](req api.PaginatedRequest, values []T, maxPageSize int32) (page []T, nbt string, err error) {
 	var (
 		token *api.PageToken
 		start int64
@@ -109,7 +102,7 @@ func PaginateSlice[T any](req PaginatedRequest, values []T, maxPageSize int32) (
 // persisted storage based on list requests. It parses the necessary informaton
 // out if a paginated request, e.g. the page token and the desired page size and
 // returns a sliced page as well as the next page token.
-func PaginateStorage[T any](req PaginatedRequest, storage persistence.Storage, maxPageSize int32, conds ...interface{}) (page []T, nbt string, err error) {
+func PaginateStorage[T any](req api.PaginatedRequest, storage persistence.Storage, maxPageSize int32, conds ...interface{}) (page []T, nbt string, err error) {
 	var (
 		token *api.PageToken
 		start int64
@@ -170,7 +163,7 @@ func PaginateStorage[T any](req PaginatedRequest, storage persistence.Storage, m
 // PaginateMapValues is a wrapper around PaginateSlice that uses maps.Values to
 // determine the maps values and sorts them according to the specified less
 // function, to return a deterministic result.
-func PaginateMapValues[T any](req PaginatedRequest, m map[string]T, less func(a T, b T) bool, maxPageSize int32) (page []T, nbt string, err error) {
+func PaginateMapValues[T any](req api.PaginatedRequest, m map[string]T, less func(a T, b T) bool, maxPageSize int32) (page []T, nbt string, err error) {
 	// We need to sort the values, because they are otherwise in a random order
 	var values = maps.Values(m)
 	sort.Slice(values, func(i, j int) bool {

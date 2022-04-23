@@ -66,3 +66,22 @@ func (c *CloudService_Requirements) Scan(value interface{}) error {
 func (*CloudService_Requirements) GormDataType() string {
 	return "string"
 }
+
+// SetPageToken implements PaginatedRequest so we can set the page token programmatically.
+func (r *ListRequirementsRequest) SetPageToken(token string) {
+	r.PageToken = token
+}
+
+// SetPageToken implements PaginatedRequest so we can set the page token programmatically.
+func (r *ListCloudServicesRequest) SetPageToken(token string) {
+	r.PageToken = token
+}
+
+// SetPageToken implements PaginatedRequest so we can set the page token programmatically.
+func (r *ListMetricsRequest) SetPageToken(token string) {
+	r.PageToken = token
+}
+
+func (r *ListAssessmentToolsRequest) SetPageToken(token string) {
+	r.PageToken = token
+}
