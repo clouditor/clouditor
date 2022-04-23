@@ -295,8 +295,14 @@ message UpdateCloudServiceRequest {
 
 message RemoveCloudServiceRequest { string service_id = 1; }
 
-message ListCloudServicesRequest {}
-message ListCloudServicesResponse { repeated CloudService services = 1; }
+message ListCloudServicesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+message ListCloudServicesResponse {
+  repeated CloudService services = 1;
+  string next_page_token = 2;
+}
 
 message UpdateMetricConfigurationRequest {
   string service_id = 1;

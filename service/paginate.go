@@ -30,6 +30,7 @@ import (
 	"sort"
 
 	"clouditor.io/clouditor/api"
+	"clouditor.io/clouditor/persistence"
 	"golang.org/x/exp/maps"
 )
 
@@ -42,7 +43,7 @@ type PaginatedRequest interface {
 
 // PaginateSlice is a helper function that helps to paginate a slice based on
 // list requests. It parses the necessary informaton out if a paginated request,
-// e.g. the page token and the desired page size and returns the sliced page as
+// e.g. the page token and the desired page size and returns a sliced page as
 // well as the next page token.
 func PaginateSlice[T any](req PaginatedRequest, values []T, maxPageSize int32) (page []T, nbt string, err error) {
 	var (
@@ -100,6 +101,69 @@ func PaginateSlice[T any](req PaginatedRequest, values []T, maxPageSize int32) (
 
 	// Prepare a sub slice based on the page token
 	page = values[start:end]
+
+	return
+}
+
+// PaginateStorage is a helper function that helps to paginate records in
+// persisted storage based on list requests. It parses the necessary informaton
+// out if a paginated request, e.g. the page token and the desired page size and
+// returns a sliced page as well as the next page token.
+func PaginateStorage[T any](req PaginatedRequest, storage persistence.Storage, maxPageSize int32, conds ...interface{}) (page []T, nbt string, err error) {
+	var (
+		token *api.PageToken
+		start int64
+		end   int64
+		size  int32
+	)
+
+	// Check, if the size was specified and is within our maximum size
+	if req.GetPageSize() == 0 || req.GetPageSize() > maxPageSize {
+		size = maxPageSize
+	} else {
+		size = req.GetPageSize()
+	}
+
+	// Check, if this is the first request (empty token) or a subsequent one
+	if req.GetPageToken() == "" {
+		// We need a new page token
+		token = &api.PageToken{
+			Start: 0,
+			Size:  size,
+		}
+	} else {
+		// Try to decode our existing token
+		token, err = api.DecodePageToken(req.GetPageToken())
+		if err != nil {
+			return nil, "", fmt.Errorf("could not decode page token: %w", err)
+		}
+	}
+
+	// Calculate our offsets for slices
+	start = token.Start
+
+	// Retrieve values from the DB
+	err = storage.ListLimOff(&page, int(start), int(size), conds...)
+	if err != nil {
+		return nil, "", fmt.Errorf("database error: %w", err)
+	}
+
+	if len(page) == 0 {
+		// Indicate that we are at the end
+		token = nil
+	}
+
+	// Only needed, if more pages exist
+	if token != nil {
+		// Move the token "forward"
+		token.Start = end
+
+		// Encode next page token
+		nbt, err = token.Encode()
+		if err != nil {
+			return nil, "", fmt.Errorf("could not create page token: %w", err)
+		}
+	}
 
 	return
 }

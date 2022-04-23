@@ -153,6 +153,16 @@ paths:
                 - Orchestrator
             description: Lists all target cloud services
             operationId: Orchestrator_ListCloudServices
+            parameters:
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
@@ -572,6 +582,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/CloudService'
+                nextPageToken:
+                    type: string
         ListMetricConfigurationResponse:
             type: object
             properties:

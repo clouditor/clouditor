@@ -125,6 +125,10 @@ func (s *storage) List(r interface{}, conds ...interface{}) error {
 	return s.db.Find(r, conds...).Error
 }
 
+func (s *storage) ListLimOff(r interface{}, offset int, limit int, conds ...interface{}) error {
+	return s.db.Limit(limit).Offset(offset).Find(r, conds...).Error
+}
+
 func (s *storage) Count(r interface{}, conds ...interface{}) (count int64, err error) {
 	err = s.db.Model(r).Where(conds).Count(&count).Error
 	return
