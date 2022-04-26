@@ -135,7 +135,7 @@ func PaginateStorage[T any](req api.PaginatedRequest, storage persistence.Storag
 	start = token.Start
 
 	// Retrieve values from the DB
-	err = storage.ListLimOff(&page, int(start), int(size), conds...)
+	err = storage.List(&page, int(start), int(size), conds...)
 	if err != nil {
 		return nil, "", fmt.Errorf("database error: %w", err)
 	}

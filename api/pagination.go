@@ -35,6 +35,9 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
+// PageTokenField is the protobuf field that contains our page token.
+const PageTokenField = "page_token"
+
 // PaginatedRequest contains the typical parameters for a paginated request,
 // usually a request for a List gRPC call.
 type PaginatedRequest interface {
@@ -79,8 +82,10 @@ func DecodePageToken(b64token string) (t *PageToken, err error) {
 	return
 }
 
-// ListAllPaginated issues a List gRPC call that supports pagination and combines all results of all requests into a
-// single slice.
+// ListAllPaginated invokes a List gRPC function that supports pagination, fetches all pages using individual calls and
+// finally combines all results of all pages into a single slice. It executes the function specified in list using the
+// req of RequestType. Afterwards, the function getter is executed to transform the response of the list calls into the
+// results slice.
 func ListAllPaginated[ResponseType PaginatedResponse, RequestType PaginatedRequest, ResultType any](req RequestType, list func(context.Context, RequestType, ...grpc.CallOption) (ResponseType, error), getter func(res ResponseType) []ResultType) (results []ResultType, err error) {
 	var (
 		res       ResponseType
@@ -90,7 +95,7 @@ func ListAllPaginated[ResponseType PaginatedResponse, RequestType PaginatedReque
 	for {
 		// Modify the request to include our page token using protoreflect. This will be empty for the first page
 		m := req.ProtoReflect()
-		m.Set(m.Descriptor().Fields().ByName("page_token"), protoreflect.ValueOf(pageToken))
+		m.Set(m.Descriptor().Fields().ByName(PageTokenField), protoreflect.ValueOf(pageToken))
 
 		// Call the list function to fetch the next page
 		res, err = list(context.Background(), req)

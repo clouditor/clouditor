@@ -31,7 +31,6 @@ type StorageWithError struct {
 	UpdateErr     error
 	GetErr        error
 	ListErr       error
-	ListLimOffErr error
 	CountErr      error
 	DeleteErr     error
 }
@@ -42,9 +41,8 @@ func (*StorageWithError) Update(r interface{}, query interface{}, args ...interf
 	return nil
 }
 func (s *StorageWithError) Get(r interface{}, conds ...interface{}) error  { return s.GetErr }
-func (s *StorageWithError) List(r interface{}, conds ...interface{}) error { return s.ListErr }
-func (s *StorageWithError) ListLimOff(r interface{}, offset int, limit int, conds ...interface{}) error {
-	return s.ListLimOffErr
+func (s *StorageWithError) List(r interface{}, offset int, limit int, conds ...interface{}) error {
+	return s.ListErr
 }
 func (s *StorageWithError) Count(r interface{}, conds ...interface{}) (int64, error) {
 	return 0, s.CountErr

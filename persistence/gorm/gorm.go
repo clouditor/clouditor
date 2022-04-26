@@ -121,12 +121,14 @@ func (s *storage) Get(r interface{}, conds ...interface{}) (err error) {
 	return
 }
 
-func (s *storage) List(r interface{}, conds ...interface{}) error {
-	return s.db.Find(r, conds...).Error
-}
+func (s *storage) List(r interface{}, offset int, limit int, conds ...interface{}) error {
+	var query = s.db
 
-func (s *storage) ListLimOff(r interface{}, offset int, limit int, conds ...interface{}) error {
-	return s.db.Limit(limit).Offset(offset).Find(r, conds...).Error
+	if limit != -1 {
+		query = s.db.Limit(limit)
+	}
+
+	return query.Offset(offset).Find(r, conds...).Error
 }
 
 func (s *storage) Count(r interface{}, conds ...interface{}) (count int64, err error) {

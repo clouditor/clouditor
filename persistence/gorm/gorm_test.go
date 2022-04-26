@@ -156,7 +156,7 @@ func Test_storage_List(t *testing.T) {
 	assert.NoError(t, err)
 
 	// List should return empty list since no users are in DB yet
-	err = s.List(&users)
+	err = s.List(&users, 0, -1)
 	assert.ErrorIs(t, err, nil)
 	assert.Empty(t, users)
 
@@ -165,7 +165,7 @@ func Test_storage_List(t *testing.T) {
 	assert.NoError(t, err)
 	err = s.Create(user2)
 	assert.NoError(t, err)
-	err = s.List(&users)
+	err = s.List(&users, 0, -1)
 	assert.ErrorIs(t, err, nil)
 	assert.Equal(t, len(users), 2)
 
