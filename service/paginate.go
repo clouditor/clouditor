@@ -55,7 +55,7 @@ var DefaultPaginationOpts = PaginationOpts{
 // e.g. the page token and the desired page size and returns a sliced page as
 // well as the next page token.
 func PaginateSlice[T any](req api.PaginatedRequest, values []T, opts PaginationOpts) (page []T, npt string, err error) {
-	return paginate(req, values, opts, func(start int64, size int32) (page []T, done bool) {
+	return paginate(req, opts, func(start int64, size int32) (page []T, done bool, err error) {
 		var (
 			end, max int64
 		)
@@ -80,63 +80,19 @@ func PaginateSlice[T any](req api.PaginatedRequest, values []T, opts PaginationO
 // out if a paginated request, e.g. the page token and the desired page size and
 // returns a sliced page as well as the next page token.
 func PaginateStorage[T any](req api.PaginatedRequest, storage persistence.Storage, opts PaginationOpts, conds ...interface{}) (page []T, npt string, err error) {
-	var (
-		token *api.PageToken
-		start int64
-		size  int32
-	)
-
-	// Check, if the size was specified and is within our maximum size
-	if req.GetPageSize() == 0 {
-		size = opts.DefaultPageSize
-	} else if req.GetPageSize() > opts.MaxPageSize {
-		size = opts.MaxPageSize
-	} else {
-		size = req.GetPageSize()
-	}
-
-	// Check, if this is the first request (empty token) or a subsequent one
-	if req.GetPageToken() == "" {
-		// We need a new page token
-		token = &api.PageToken{
-			Start: 0,
-			Size:  size,
-		}
-	} else {
-		// Try to decode our existing token
-		token, err = api.DecodePageToken(req.GetPageToken())
+	return paginate(req, opts, func(start int64, size int32) (page []T, done bool, err error) {
+		// Retrieve values from the DB
+		err = storage.List(&page, int(start), int(size), conds...)
 		if err != nil {
-			return nil, "", fmt.Errorf("could not decode page token: %w", err)
+			return nil, true, fmt.Errorf("database error: %w", err)
 		}
-	}
 
-	// Calculate our offsets for slices
-	start = token.Start
-
-	// Retrieve values from the DB
-	err = storage.List(&page, int(start), int(size), conds...)
-	if err != nil {
-		return nil, "", fmt.Errorf("database error: %w", err)
-	}
-
-	if len(page) == 0 || len(page) < int(size) {
-		// Indicate that we are at the end
-		token = nil
-	}
-
-	// Only needed, if more pages exist
-	if token != nil {
-		// Move the token "forward"
-		token.Start = token.Start + int64(len(page))
-
-		// Encode next page token
-		npt, err = token.Encode()
-		if err != nil {
-			return nil, "", fmt.Errorf("could not create page token: %w", err)
+		if len(page) == 0 || len(page) < int(size) {
+			// Indicate that we are at the end
+			done = true
 		}
-	}
-
-	return
+		return
+	})
 }
 
 // PaginateMapValues is a wrapper around PaginateSlice that uses maps.Values to
@@ -152,7 +108,11 @@ func PaginateMapValues[T any](req api.PaginatedRequest, m map[string]T, less fun
 	return PaginateSlice(req, values, opts)
 }
 
-func paginate[T any](req api.PaginatedRequest, values []T, opts PaginationOpts, pager func(start int64, size int32) (page []T, done bool)) (page []T, npt string, err error) {
+// paginate takes cares of the heavy lifting of handling the actual pagination request. It takes the paginated request
+// req, calculates offsets and sizes, which can be fine-tuned using opts and supplies them to the pager function. The
+// pager function needs to return the actual page contents based on the calculated size and offset. This result is then
+// returned to the caller as well as a token that can be used to request the next page.
+func paginate[T any](req api.PaginatedRequest, opts PaginationOpts, pager func(start int64, size int32) (page []T, done bool, err error)) (page []T, npt string, err error) {
 	var (
 		token *api.PageToken
 		size  int32
@@ -184,7 +144,11 @@ func paginate[T any](req api.PaginatedRequest, values []T, opts PaginationOpts, 
 	}
 
 	// Call our pager function with the offset and size
-	page, done = pager(token.Start, size)
+	page, done, err = pager(token.Start, size)
+	if err != nil {
+		// Transparently return the error
+		return nil, "", err
+	}
 
 	if !done {
 		// Move the token "forward"
