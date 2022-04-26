@@ -38,20 +38,19 @@ import (
 // PageTokenField is the protobuf field that contains our page token.
 const PageTokenField = "page_token"
 
-// PaginatedRequest contains the typical parameters for a paginated request,
-// usually a request for a List gRPC call.
+// PaginatedRequest contains the typical parameters for a paginated request, usually a request for a List gRPC call.
 type PaginatedRequest interface {
 	GetPageToken() string
 	GetPageSize() int32
 	proto.Message
 }
 
-// PaginatedResponse contains the typical parameters for a paginated response,
-// usually a response for a List gRPC call.
+// PaginatedResponse contains the typical parameters for a paginated response, usually a response for a List gRPC call.
 type PaginatedResponse interface {
 	GetNextPageToken() string
 }
 
+// Encode encodes this page token into a base64 URL encoded string.
 func (t *PageToken) Encode() (b64token string, err error) {
 	var b []byte
 
@@ -64,6 +63,7 @@ func (t *PageToken) Encode() (b64token string, err error) {
 	return
 }
 
+// DecodePageToken decodes a PageToken out of a base 64 URL encoded string.
 func DecodePageToken(b64token string) (t *PageToken, err error) {
 	var b []byte
 
