@@ -239,8 +239,13 @@ message RegisterAssessmentToolRequest { AssessmentTool tool = 1; }
 message ListAssessmentToolsRequest {
   // filter tools by metric id
   string metric_id = 1;
+  int32 page_size = 2;
+  string page_token = 3;
 }
-message ListAssessmentToolsResponse { repeated AssessmentTool tools = 1; }
+message ListAssessmentToolsResponse {
+  repeated AssessmentTool tools = 1;
+  string next_page_token = 2;
+}
 
 message GetAssessmentToolRequest { string tool_id = 1; }
 
@@ -266,11 +271,23 @@ message UpdateMetricRequest {
 
 message GetMetricRequest { string metric_id = 1; }
 
-message ListMetricsRequest {}
-message ListMetricsResponse { repeated Metric metrics = 1; }
+message ListMetricsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+message ListMetricsResponse {
+  repeated Metric metrics = 1;
+  string next_page_token = 2;
+}
 
-message ListRequirementsRequest {}
-message ListRequirementsResponse { repeated Requirement requirements = 1; }
+message ListRequirementsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+message ListRequirementsResponse {
+  repeated Requirement requirements = 1;
+  string next_page_token = 2;
+}
 
 message GetCloudServiceRequest { string service_id = 1; }
 
@@ -283,8 +300,14 @@ message UpdateCloudServiceRequest {
 
 message RemoveCloudServiceRequest { string service_id = 1; }
 
-message ListCloudServicesRequest {}
-message ListCloudServicesResponse { repeated CloudService services = 1; }
+message ListCloudServicesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+message ListCloudServicesResponse {
+  repeated CloudService services = 1;
+  string next_page_token = 2;
+}
 
 message UpdateMetricConfigurationRequest {
   string service_id = 1;

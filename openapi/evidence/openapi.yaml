@@ -34,6 +34,16 @@ paths:
                 - EvidenceStore
             description: Returns all stored evidences. Part of the public API, also exposed as REST.
             operationId: EvidenceStore_ListEvidences
+            parameters:
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
@@ -83,6 +93,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Evidence'
+                nextPageToken:
+                    type: string
         StoreEvidenceResponse:
             type: object
             properties:

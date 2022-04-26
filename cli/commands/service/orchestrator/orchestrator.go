@@ -26,9 +26,9 @@
 package orchestrator
 
 import (
-	"context"
 	"fmt"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 
@@ -47,6 +47,7 @@ func NewListAssessmentResultsCommand() *cobra.Command {
 				session *cli.Session
 				client  orchestrator.OrchestratorClient
 				res     *assessment.ListAssessmentResultsResponse
+				results []*assessment.AssessmentResult
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -56,7 +57,14 @@ func NewListAssessmentResultsCommand() *cobra.Command {
 
 			client = orchestrator.NewOrchestratorClient(session)
 
-			res, err = client.ListAssessmentResults(context.Background(), &assessment.ListAssessmentResultsRequest{})
+			results, err = api.ListAllPaginated(&assessment.ListAssessmentResultsRequest{}, client.ListAssessmentResults, func(res *assessment.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
+				return res.Results
+			})
+
+			// Build a response with all results
+			res = &assessment.ListAssessmentResultsResponse{
+				Results: results,
+			}
 
 			return session.HandleResponse(res, err)
 		},
@@ -75,10 +83,11 @@ func NewListRequirementsCommand() *cobra.Command {
 		Short: "Lists all requirements",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
-				err     error
-				session *cli.Session
-				client  orchestrator.OrchestratorClient
-				res     *orchestrator.ListRequirementsResponse
+				err          error
+				session      *cli.Session
+				client       orchestrator.OrchestratorClient
+				res          *orchestrator.ListRequirementsResponse
+				requirements []*orchestrator.Requirement
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -88,7 +97,14 @@ func NewListRequirementsCommand() *cobra.Command {
 
 			client = orchestrator.NewOrchestratorClient(session)
 
-			res, err = client.ListRequirements(context.Background(), &orchestrator.ListRequirementsRequest{})
+			requirements, err = api.ListAllPaginated(&orchestrator.ListRequirementsRequest{}, client.ListRequirements, func(res *orchestrator.ListRequirementsResponse) []*orchestrator.Requirement {
+				return res.Requirements
+			})
+
+			// Build a response with all results
+			res = &orchestrator.ListRequirementsResponse{
+				Requirements: requirements,
+			}
 
 			return session.HandleResponse(res, err)
 		},

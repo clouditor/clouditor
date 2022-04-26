@@ -32,6 +32,7 @@ import (
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/service"
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
@@ -73,16 +74,16 @@ func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.Regi
 }
 
 // ListCloudServices implements method for OrchestratorServer interface for listing all cloud services
-func (s *Service) ListCloudServices(_ context.Context, _ *orchestrator.ListCloudServicesRequest) (response *orchestrator.ListCloudServicesResponse, err error) {
-	response = new(orchestrator.ListCloudServicesResponse)
-	response.Services = make([]*orchestrator.CloudService, 0)
+func (svc *Service) ListCloudServices(_ context.Context, req *orchestrator.ListCloudServicesRequest) (res *orchestrator.ListCloudServicesResponse, err error) {
+	res = new(orchestrator.ListCloudServicesResponse)
 
-	err = s.storage.List(&response.Services)
+	// Paginate the cloud services according to the request
+	res.Services, res.NextPageToken, err = service.PaginateStorage[*orchestrator.CloudService](req, svc.storage, service.DefaultPaginationOpts)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %s", err)
+		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
 
-	return response, nil
+	return
 }
 
 // GetCloudService implements method for OrchestratorServer interface for getting a cloud service with provided id

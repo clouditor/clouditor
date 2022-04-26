@@ -29,6 +29,7 @@ import (
 	"context"
 	"fmt"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
@@ -83,10 +84,11 @@ func NewListCloudServicesCommand() *cobra.Command {
 		Short: "Lists all target cloud services",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
-				err     error
-				session *cli.Session
-				client  orchestrator.OrchestratorClient
-				res     *orchestrator.ListCloudServicesResponse
+				err      error
+				session  *cli.Session
+				client   orchestrator.OrchestratorClient
+				res      *orchestrator.ListCloudServicesResponse
+				services []*orchestrator.CloudService
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -96,7 +98,14 @@ func NewListCloudServicesCommand() *cobra.Command {
 
 			client = orchestrator.NewOrchestratorClient(session)
 
-			res, err = client.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{})
+			services, err = api.ListAllPaginated(&orchestrator.ListCloudServicesRequest{}, client.ListCloudServices, func(res *orchestrator.ListCloudServicesResponse) []*orchestrator.CloudService {
+				return res.Services
+			})
+
+			// Build a response with all services
+			res = &orchestrator.ListCloudServicesResponse{
+				Services: services,
+			}
 
 			return session.HandleResponse(res, err)
 		},

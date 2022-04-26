@@ -39,11 +39,12 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/policies"
+	"clouditor.io/clouditor/service"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
-	"golang.org/x/oauth2/clientcredentials"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -376,12 +377,15 @@ func (s *Service) informHooks(result *assessment.AssessmentResult, err error) {
 }
 
 // ListAssessmentResults is a method implementation of the assessment interface
-func (s *Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
+func (svc *Service) ListAssessmentResults(_ context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
 	res = new(assessment.ListAssessmentResultsResponse)
-	res.Results = []*assessment.AssessmentResult{}
 
-	for _, result := range s.results {
-		res.Results = append(res.Results, result)
+	// Paginate the results according to the request
+	res.Results, res.NextPageToken, err = service.PaginateMapValues(req, svc.results, func(a *assessment.AssessmentResult, b *assessment.AssessmentResult) bool {
+		return a.Id < b.Id
+	}, service.DefaultPaginationOpts)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
 
 	return

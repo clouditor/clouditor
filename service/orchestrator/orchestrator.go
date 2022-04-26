@@ -34,6 +34,7 @@ import (
 	"sync"
 
 	"clouditor.io/clouditor/persistence/inmemory"
+	"clouditor.io/clouditor/service"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
@@ -227,12 +228,15 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 }
 
 // ListAssessmentResults is a method implementation of the orchestrator interface
-func (s *Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
+func (svc *Service) ListAssessmentResults(_ context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
 	res = new(assessment.ListAssessmentResultsResponse)
-	res.Results = []*assessment.AssessmentResult{}
 
-	for _, result := range s.results {
-		res.Results = append(res.Results, result)
+	// Paginate the results according to the request
+	res.Results, res.NextPageToken, err = service.PaginateMapValues(req, svc.results, func(a *assessment.AssessmentResult, b *assessment.AssessmentResult) bool {
+		return a.Id < b.Id
+	}, service.DefaultPaginationOpts)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
 
 	return

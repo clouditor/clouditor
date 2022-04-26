@@ -36,6 +36,16 @@ paths:
                 - Assessment
             description: List all assessment results. Part of the public API, also exposed as REST.
             operationId: Assessment_ListAssessmentResults
+            parameters:
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
@@ -126,6 +136,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/AssessmentResult'
+                nextPageToken:
+                    type: string
         MetricConfiguration:
             type: object
             properties:

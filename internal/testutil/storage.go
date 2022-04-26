@@ -26,13 +26,13 @@ func NewInMemoryStorage(t *testing.T, funcs ...func(s persistence.Storage)) (s p
 
 // StorageWithError can be used to introduce various errors in a storage operation during unit testing.
 type StorageWithError struct {
-	CreateErr error
-	SaveErr   error
-	UpdateErr error
-	GetErr    error
-	ListErr   error
-	CountErr  error
-	DeleteErr error
+	CreateErr     error
+	SaveErr       error
+	UpdateErr     error
+	GetErr        error
+	ListErr       error
+	CountErr      error
+	DeleteErr     error
 }
 
 func (s *StorageWithError) Create(r interface{}) error                     { return s.CreateErr }
@@ -41,7 +41,9 @@ func (*StorageWithError) Update(r interface{}, query interface{}, args ...interf
 	return nil
 }
 func (s *StorageWithError) Get(r interface{}, conds ...interface{}) error  { return s.GetErr }
-func (s *StorageWithError) List(r interface{}, conds ...interface{}) error { return s.ListErr }
+func (s *StorageWithError) List(r interface{}, offset int, limit int, conds ...interface{}) error {
+	return s.ListErr
+}
 func (s *StorageWithError) Count(r interface{}, conds ...interface{}) (int64, error) {
 	return 0, s.CountErr
 }
