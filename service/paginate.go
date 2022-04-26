@@ -55,65 +55,24 @@ var DefaultPaginationOpts = PaginationOpts{
 // e.g. the page token and the desired page size and returns a sliced page as
 // well as the next page token.
 func PaginateSlice[T any](req api.PaginatedRequest, values []T, opts PaginationOpts) (page []T, npt string, err error) {
-	var (
-		token *api.PageToken
-		start int64
-		end   int64
-		size  int32
-		max   int64
-	)
+	return paginate(req, values, opts, func(start int64, size int32) (page []T, done bool) {
+		var (
+			end, max int64
+		)
 
-	// Check, if the size was specified and is within our maximum size
-	if req.GetPageSize() == 0 {
-		size = opts.DefaultPageSize
-	} else if req.GetPageSize() > opts.MaxPageSize {
-		size = opts.MaxPageSize
-	} else {
-		size = req.GetPageSize()
-	}
+		// Clamp the end to the maximum of the slice
+		end = start + int64(size)
+		max = int64(len(values))
+		if end >= max {
+			end = max
 
-	// Check, if this is the first request (empty token) or a subsequent one
-	if req.GetPageToken() == "" {
-		// We need a new page token
-		token = &api.PageToken{
-			Start: 0,
-			Size:  size,
+			// Indicate that we are at the end
+			done = true
 		}
-	} else {
-		// Try to decode our existing token
-		token, err = api.DecodePageToken(req.GetPageToken())
-		if err != nil {
-			return nil, "", fmt.Errorf("could not decode page token: %w", err)
-		}
-	}
 
-	// Calculate our offsets for slices
-	start = token.Start
-	end = token.Start + int64(size)
-	max = int64(len(values))
-	if end >= max {
-		end = max
-
-		// Indicate that we are at the end
-		token = nil
-	}
-
-	// Only needed, if more pages exist
-	if token != nil {
-		// Move the token "forward"
-		token.Start = end
-
-		// Encode next page token
-		npt, err = token.Encode()
-		if err != nil {
-			return nil, "", fmt.Errorf("could not create page token: %w", err)
-		}
-	}
-
-	// Prepare a sub slice based on the page token
-	page = values[start:end]
-
-	return
+		page = values[start:end]
+		return
+	})
 }
 
 // PaginateStorage is a helper function that helps to paginate records in
@@ -191,4 +150,52 @@ func PaginateMapValues[T any](req api.PaginatedRequest, m map[string]T, less fun
 	})
 
 	return PaginateSlice(req, values, opts)
+}
+
+func paginate[T any](req api.PaginatedRequest, values []T, opts PaginationOpts, pager func(start int64, size int32) (page []T, done bool)) (page []T, npt string, err error) {
+	var (
+		token *api.PageToken
+		size  int32
+		done  bool
+	)
+
+	// Check, if the size was specified and is within our maximum size
+	if req.GetPageSize() == 0 {
+		size = opts.DefaultPageSize
+	} else if req.GetPageSize() > opts.MaxPageSize {
+		size = opts.MaxPageSize
+	} else {
+		size = req.GetPageSize()
+	}
+
+	// Check, if this is the first request (empty token) or a subsequent one
+	if req.GetPageToken() == "" {
+		// We need a new page token
+		token = &api.PageToken{
+			Start: 0,
+			Size:  size,
+		}
+	} else {
+		// Try to decode our existing token
+		token, err = api.DecodePageToken(req.GetPageToken())
+		if err != nil {
+			return nil, "", fmt.Errorf("could not decode page token: %w", err)
+		}
+	}
+
+	// Call our pager function with the offset and size
+	page, done = pager(token.Start, size)
+
+	if !done {
+		// Move the token "forward"
+		token.Start = token.Start + int64(len(page))
+
+		// Encode next page token
+		npt, err = token.Encode()
+		if err != nil {
+			return nil, "", fmt.Errorf("could not create page token: %w", err)
+		}
+	}
+
+	return
 }
