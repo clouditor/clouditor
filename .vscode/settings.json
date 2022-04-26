@@ -29,6 +29,7 @@
         "stretchr",
         "structpb",
         "timestamppb",
+        "unmarshalling",
         "Warnf"
     ]
 }

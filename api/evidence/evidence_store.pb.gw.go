@@ -65,9 +65,20 @@ func local_request_EvidenceStore_StoreEvidence_0(ctx context.Context, marshaler 
 
 }
 
+var (
+	filter_EvidenceStore_ListEvidences_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
+
 func request_EvidenceStore_ListEvidences_0(ctx context.Context, marshaler runtime.Marshaler, client EvidenceStoreClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq ListEvidencesRequest
 	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_EvidenceStore_ListEvidences_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
 
 	msg, err := client.ListEvidences(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -77,6 +88,13 @@ func request_EvidenceStore_ListEvidences_0(ctx context.Context, marshaler runtim
 func local_request_EvidenceStore_ListEvidences_0(ctx context.Context, marshaler runtime.Marshaler, server EvidenceStoreServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq ListEvidencesRequest
 	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_EvidenceStore_ListEvidences_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
 
 	msg, err := server.ListEvidences(ctx, &protoReq)
 	return msg, metadata, err
@@ -95,12 +113,13 @@ func RegisterEvidenceStoreHandlerServer(ctx context.Context, mux *runtime.ServeM
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.EvidenceStore/StoreEvidence", runtime.WithHTTPPathPattern("/v1/evidence_store/evidence"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.EvidenceStore/StoreEvidence", runtime.WithHTTPPathPattern("/v1/evidence_store/evidence"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_EvidenceStore_StoreEvidence_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_EvidenceStore_StoreEvidence_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -118,12 +137,13 @@ func RegisterEvidenceStoreHandlerServer(ctx context.Context, mux *runtime.ServeM
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.EvidenceStore/ListEvidences", runtime.WithHTTPPathPattern("/v1/evidence_store/evidences"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.EvidenceStore/ListEvidences", runtime.WithHTTPPathPattern("/v1/evidence_store/evidences"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_EvidenceStore_ListEvidences_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_EvidenceStore_ListEvidences_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -165,7 +185,7 @@ func RegisterEvidenceStoreHandlerFromEndpoint(ctx context.Context, mux *runtime.
 
 // RegisterEvidenceStoreHandler registers the http handlers for service EvidenceStore to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterEvidenceStoreHandler(ctx context.Context, mux *runtime.ServeMux, conn grpc.ClientConnInterface) error {
+func RegisterEvidenceStoreHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
 	return RegisterEvidenceStoreHandlerClient(ctx, mux, NewEvidenceStoreClient(conn))
 }
 
@@ -180,12 +200,13 @@ func RegisterEvidenceStoreHandlerClient(ctx context.Context, mux *runtime.ServeM
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.EvidenceStore/StoreEvidence", runtime.WithHTTPPathPattern("/v1/evidence_store/evidence"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.EvidenceStore/StoreEvidence", runtime.WithHTTPPathPattern("/v1/evidence_store/evidence"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_EvidenceStore_StoreEvidence_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_EvidenceStore_StoreEvidence_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -200,12 +221,13 @@ func RegisterEvidenceStoreHandlerClient(ctx context.Context, mux *runtime.ServeM
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.EvidenceStore/ListEvidences", runtime.WithHTTPPathPattern("/v1/evidence_store/evidences"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.EvidenceStore/ListEvidences", runtime.WithHTTPPathPattern("/v1/evidence_store/evidences"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_EvidenceStore_ListEvidences_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_EvidenceStore_ListEvidences_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)

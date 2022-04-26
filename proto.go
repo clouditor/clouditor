@@ -27,6 +27,7 @@
 
 package clouditor
 
+//go:generate protoc -I . -I third_party api/page_token.proto --go_out=paths=source_relative:.
 //go:generate protoc -I . -I third_party api/assessment/metric.proto --go_out=paths=source_relative:.
 //go:generate protoc -I . -I third_party api/evidence/evidence.proto --go_out=paths=source_relative:.
 //go:generate protoc -I . -I third_party api/assessment/assessment.proto --go_out=paths=source_relative:. --go-grpc_out=paths=source_relative:. --openapi_out=openapi/assessment --openapi_opt enum_type=string --grpc-gateway_out=paths=source_relative:. --grpc-gateway_opt logtostderr=true

@@ -512,7 +512,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 	}
 }
 
-func TestListAssessmentResults(t *testing.T) {
+/*func TestListAssessmentResults(t *testing.T) {
 	s := NewService(WithAdditionalGRPCOpts(grpc.WithContextDialer(bufConnDialer)))
 	assert.NoError(t, s.initOrchestratorStream())
 
@@ -528,6 +528,179 @@ func TestListAssessmentResults(t *testing.T) {
 	results, err = s.ListAssessmentResults(context.TODO(), &assessment.ListAssessmentResultsRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, results)
+}*/
+
+func TestService_ListAssessmentResults(t *testing.T) {
+	type fields struct {
+		evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
+		evidenceStoreAddress string
+		orchestratorStream   orchestrator.Orchestrator_StoreAssessmentResultsClient
+		orchestratorClient   orchestrator.OrchestratorClient
+		orchestratorAddress  string
+		orchestratorChannel  chan *assessment.AssessmentResult
+		metricEventStream    orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
+		resultHooks          []assessment.ResultHookFunc
+		results              map[string]*assessment.AssessmentResult
+		cachedConfigurations map[string]cachedConfiguration
+		authorizer           api.Authorizer
+		grpcOpts             []grpc.DialOption
+		pe                   policies.PolicyEval
+	}
+	type args struct {
+		in0 context.Context
+		req *assessment.ListAssessmentResultsRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes *assessment.ListAssessmentResultsResponse
+		wantErr bool
+	}{
+		{
+			name: "single page result",
+			fields: fields{
+				results: map[string]*assessment.AssessmentResult{
+					"1": {
+						Id: "1",
+					},
+				},
+			},
+			args: args{
+				req: &assessment.ListAssessmentResultsRequest{},
+			},
+			wantRes: &assessment.ListAssessmentResultsResponse{
+				NextPageToken: "",
+				Results: []*assessment.AssessmentResult{
+					{
+						Id: "1",
+					},
+				},
+			},
+		},
+		{
+			name: "multiple page result - first page",
+			fields: fields{
+				results: map[string]*assessment.AssessmentResult{
+					"11111111-1111-1111-1111-111111111111": {Id: "11111111-1111-1111-1111-111111111111"},
+					"22222222-2222-2222-2222-222222222222": {Id: "22222222-2222-2222-2222-222222222222"},
+					"33333333-3333-3333-3333-333333333333": {Id: "33333333-3333-3333-3333-333333333333"},
+					"44444444-4444-4444-4444-444444444444": {Id: "44444444-4444-4444-4444-444444444444"},
+					"55555555-5555-5555-5555-555555555555": {Id: "55555555-5555-5555-5555-555555555555"},
+					"66666666-6666-6666-6666-666666666666": {Id: "66666666-6666-6666-6666-666666666666"},
+					"77777777-7777-7777-7777-777777777777": {Id: "77777777-7777-7777-7777-777777777777"},
+					"88888888-8888-8888-8888-888888888888": {Id: "88888888-8888-8888-8888-888888888888"},
+					"99999999-9999-9999-9999-999999999999": {Id: "99999999-9999-9999-9999-999999999999"},
+				},
+			},
+			args: args{
+				req: &assessment.ListAssessmentResultsRequest{
+					PageSize: 2,
+				},
+			},
+			wantRes: &assessment.ListAssessmentResultsResponse{
+				Results: []*assessment.AssessmentResult{
+					{Id: "11111111-1111-1111-1111-111111111111"}, {Id: "22222222-2222-2222-2222-222222222222"},
+				},
+				NextPageToken: func() string {
+					token, _ := (&api.PageToken{Start: 2, Size: 2}).Encode()
+					return token
+				}(),
+			},
+		},
+		{
+			name: "multiple page result - second page",
+			fields: fields{
+				results: map[string]*assessment.AssessmentResult{
+					"11111111-1111-1111-1111-111111111111": {Id: "11111111-1111-1111-1111-111111111111"},
+					"22222222-2222-2222-2222-222222222222": {Id: "22222222-2222-2222-2222-222222222222"},
+					"33333333-3333-3333-3333-333333333333": {Id: "33333333-3333-3333-3333-333333333333"},
+					"44444444-4444-4444-4444-444444444444": {Id: "44444444-4444-4444-4444-444444444444"},
+					"55555555-5555-5555-5555-555555555555": {Id: "55555555-5555-5555-5555-555555555555"},
+					"66666666-6666-6666-6666-666666666666": {Id: "66666666-6666-6666-6666-666666666666"},
+					"77777777-7777-7777-7777-777777777777": {Id: "77777777-7777-7777-7777-777777777777"},
+					"88888888-8888-8888-8888-888888888888": {Id: "88888888-8888-8888-8888-888888888888"},
+					"99999999-9999-9999-9999-999999999999": {Id: "99999999-9999-9999-9999-999999999999"},
+				},
+			},
+			args: args{
+				req: &assessment.ListAssessmentResultsRequest{
+					PageSize: 2,
+					PageToken: func() string {
+						token, _ := (&api.PageToken{Start: 2, Size: 2}).Encode()
+						return token
+					}(),
+				},
+			},
+			wantRes: &assessment.ListAssessmentResultsResponse{
+				Results: []*assessment.AssessmentResult{
+					{Id: "33333333-3333-3333-3333-333333333333"}, {Id: "44444444-4444-4444-4444-444444444444"},
+				},
+				NextPageToken: func() string {
+					token, _ := (&api.PageToken{Start: 4, Size: 2}).Encode()
+					return token
+				}(),
+			},
+		},
+		{
+			name: "multiple page result - last page",
+			fields: fields{
+				results: map[string]*assessment.AssessmentResult{
+					"11111111-1111-1111-1111-111111111111": {Id: "11111111-1111-1111-1111-111111111111"},
+					"22222222-2222-2222-2222-222222222222": {Id: "22222222-2222-2222-2222-222222222222"},
+					"33333333-3333-3333-3333-333333333333": {Id: "33333333-3333-3333-3333-333333333333"},
+					"44444444-4444-4444-4444-444444444444": {Id: "44444444-4444-4444-4444-444444444444"},
+					"55555555-5555-5555-5555-555555555555": {Id: "55555555-5555-5555-5555-555555555555"},
+					"66666666-6666-6666-6666-666666666666": {Id: "66666666-6666-6666-6666-666666666666"},
+					"77777777-7777-7777-7777-777777777777": {Id: "77777777-7777-7777-7777-777777777777"},
+					"88888888-8888-8888-8888-888888888888": {Id: "88888888-8888-8888-8888-888888888888"},
+					"99999999-9999-9999-9999-999999999999": {Id: "99999999-9999-9999-9999-999999999999"},
+				},
+			},
+			args: args{
+				req: &assessment.ListAssessmentResultsRequest{
+					PageSize: 2,
+					PageToken: func() string {
+						token, _ := (&api.PageToken{Start: 8, Size: 2}).Encode()
+						return token
+					}(),
+				},
+			},
+			wantRes: &assessment.ListAssessmentResultsResponse{
+				Results: []*assessment.AssessmentResult{
+					{Id: "99999999-9999-9999-9999-999999999999"},
+				},
+				NextPageToken: "",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{
+				evidenceStoreStreams: tt.fields.evidenceStoreStreams,
+				evidenceStoreAddress: tt.fields.evidenceStoreAddress,
+				orchestratorStream:   tt.fields.orchestratorStream,
+				orchestratorClient:   tt.fields.orchestratorClient,
+				orchestratorAddress:  tt.fields.orchestratorAddress,
+				orchestratorChannel:  tt.fields.orchestratorChannel,
+				metricEventStream:    tt.fields.metricEventStream,
+				resultHooks:          tt.fields.resultHooks,
+				results:              tt.fields.results,
+				cachedConfigurations: tt.fields.cachedConfigurations,
+				authorizer:           tt.fields.authorizer,
+				grpcOpts:             tt.fields.grpcOpts,
+				pe:                   tt.fields.pe,
+			}
+			gotRes, err := s.ListAssessmentResults(tt.args.in0, tt.args.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.ListAssessmentResults() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotRes, tt.wantRes) {
+				t.Errorf("Service.ListAssessmentResults() = %v, want %v", gotRes, tt.wantRes)
+			}
+		})
+	}
 }
 
 // toStruct transforms r to a struct and asserts if it was successful
