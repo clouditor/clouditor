@@ -49,17 +49,17 @@ func (svc *Service) loadMetrics() (err error) {
 	var (
 		impl    *assessment.MetricImplementation
 		metrics []*assessment.Metric
-		b       []byte
 	)
 
-	b, err = f.ReadFile(svc.metricsFile)
-	if err != nil {
-		return fmt.Errorf("error while loading %s: %w", svc.metricsFile, err)
+	// Default to loading metrics from our embedded file system
+	if svc.loadMetricsFunc == nil {
+		svc.loadMetricsFunc = svc.loadEmbeddedMetrics
 	}
 
-	err = json.Unmarshal(b, &metrics)
+	// Execute our metric loading function
+	metrics, err = svc.loadMetricsFunc()
 	if err != nil {
-		return fmt.Errorf("error in JSON marshal: %w", err)
+		return fmt.Errorf("could not load metrics: %w", err)
 	}
 
 	svc.metrics = make(map[string]*assessment.Metric)
@@ -100,6 +100,24 @@ func (svc *Service) loadMetrics() (err error) {
 
 		svc.metrics[m.Id] = m
 		defaultMetricConfigurations[m.Id] = &config
+	}
+
+	return
+}
+
+// loadEmbeddedMetrics loads the metric definitions from the embedded file system using the path specified in
+// the service's metricsFile.
+func (svc *Service) loadEmbeddedMetrics() (metrics []*assessment.Metric, err error) {
+	var b []byte
+
+	b, err = f.ReadFile(svc.metricsFile)
+	if err != nil {
+		return nil, fmt.Errorf("error while loading %s: %w", svc.metricsFile, err)
+	}
+
+	err = json.Unmarshal(b, &metrics)
+	if err != nil {
+		return nil, fmt.Errorf("error in JSON marshal: %w", err)
 	}
 
 	return

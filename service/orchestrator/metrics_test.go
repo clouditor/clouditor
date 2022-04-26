@@ -388,6 +388,7 @@ func TestService_loadMetrics(t *testing.T) {
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
+		loadMetricsFunc       func() ([]*assessment.Metric, error)
 		requirements          []*orchestrator.Requirement
 		events                chan *orchestrator.MetricChangeEvent
 	}
@@ -415,6 +416,17 @@ func TestService_loadMetrics(t *testing.T) {
 				return assert.ErrorIs(t, err, ErrSomeError)
 			},
 		},
+		{
+			name: "custom loading function with error",
+			fields: fields{
+				loadMetricsFunc: func() ([]*assessment.Metric, error) {
+					return nil, ErrSomeError
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, ErrSomeError)
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -425,6 +437,7 @@ func TestService_loadMetrics(t *testing.T) {
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
+				loadMetricsFunc:       tt.fields.loadMetricsFunc,
 				requirements:          tt.fields.requirements,
 				events:                tt.fields.events,
 			}
