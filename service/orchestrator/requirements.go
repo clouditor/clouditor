@@ -63,7 +63,7 @@ func (svc *Service) ListRequirements(_ context.Context, req *orchestrator.ListRe
 	res = new(orchestrator.ListRequirementsResponse)
 
 	// Paginate the requirements according to the request
-	res.Requirements, res.NextPageToken, err = service.PaginateSlice(req, svc.requirements, MaxMetricPageSize)
+	res.Requirements, res.NextPageToken, err = service.PaginateSlice(req, svc.requirements, service.DefaultPaginationOpts)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate requirements: %v", err)
 	}

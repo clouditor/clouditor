@@ -43,9 +43,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-const DefaultMetricPageSize = 50
-const MaxMetricPageSize = 1000
-
 // loadMetrics takes care of loading the metric definitions from the (embedded) metrics.json as
 // well as the default metric implementations from the Rego files.
 func (svc *Service) loadMetrics() (err error) {
@@ -238,7 +235,7 @@ func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetrics
 	// Paginate the metrics according to the request
 	res.Metrics, res.NextPageToken, err = service.PaginateMapValues(req, svc.metrics, func(a *assessment.Metric, b *assessment.Metric) bool {
 		return a.Id < b.Id
-	}, MaxMetricPageSize)
+	}, service.DefaultPaginationOpts)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate metrics: %v", err)
 	}

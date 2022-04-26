@@ -146,7 +146,7 @@ func (s *Service) ListEvidences(_ context.Context, req *evidence.ListEvidencesRe
 	// Paginate the evidences according to the request
 	res.Evidences, res.NextPageToken, err = service.PaginateMapValues(req, s.evidences, func(a, b *evidence.Evidence) bool {
 		return a.Id < b.Id
-	}, 1000)
+	}, service.DefaultPaginationOpts)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}

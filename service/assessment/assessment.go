@@ -376,8 +376,6 @@ func (s *Service) informHooks(result *assessment.AssessmentResult, err error) {
 	}
 }
 
-const MaxSize = 100
-
 // ListAssessmentResults is a method implementation of the assessment interface
 func (svc *Service) ListAssessmentResults(_ context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
 	res = new(assessment.ListAssessmentResultsResponse)
@@ -385,7 +383,7 @@ func (svc *Service) ListAssessmentResults(_ context.Context, req *assessment.Lis
 	// Paginate the results according to the request
 	res.Results, res.NextPageToken, err = service.PaginateMapValues(req, svc.results, func(a *assessment.AssessmentResult, b *assessment.AssessmentResult) bool {
 		return a.Id < b.Id
-	}, MaxSize)
+	}, service.DefaultPaginationOpts)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}

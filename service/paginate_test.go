@@ -38,9 +38,9 @@ import (
 
 func TestPaginateSlice(t *testing.T) {
 	type args struct {
-		req         api.PaginatedRequest
-		values      []int
-		maxPageSize int32
+		req    api.PaginatedRequest
+		values []int
+		opts   PaginationOpts
 	}
 	tests := []struct {
 		name     string
@@ -56,8 +56,8 @@ func TestPaginateSlice(t *testing.T) {
 					PageSize:  2,
 					PageToken: "",
 				},
-				values:      []int{1, 2, 3, 4, 5},
-				maxPageSize: 10,
+				values: []int{1, 2, 3, 4, 5},
+				opts:   PaginationOpts{10, 10},
 			},
 			wantPage: []int{1, 2},
 			wantNbt:  "CAIQAg==",
@@ -69,8 +69,8 @@ func TestPaginateSlice(t *testing.T) {
 					PageSize:  2,
 					PageToken: "CAIQAg==",
 				},
-				values:      []int{1, 2, 3, 4, 5},
-				maxPageSize: 10,
+				values: []int{1, 2, 3, 4, 5},
+				opts:   PaginationOpts{10, 10},
 			},
 			wantPage: []int{3, 4},
 			wantNbt:  "CAQQAg==",
@@ -82,8 +82,8 @@ func TestPaginateSlice(t *testing.T) {
 					PageSize:  2,
 					PageToken: "CAQQAg==",
 				},
-				values:      []int{1, 2, 3, 4, 5},
-				maxPageSize: 10,
+				values: []int{1, 2, 3, 4, 5},
+				opts:   PaginationOpts{10, 10},
 			},
 			wantPage: []int{5},
 			wantNbt:  "",
@@ -92,7 +92,7 @@ func TestPaginateSlice(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotPage, gotNbt, err := PaginateSlice(tt.args.req, tt.args.values, tt.args.maxPageSize)
+			gotPage, gotNbt, err := PaginateSlice(tt.args.req, tt.args.values, tt.args.opts)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("PaginateSlice() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -109,10 +109,10 @@ func TestPaginateSlice(t *testing.T) {
 
 func TestPaginateMapValues(t *testing.T) {
 	type args struct {
-		req         api.PaginatedRequest
-		m           map[string]int
-		less        func(a int, b int) bool
-		maxPageSize int32
+		req  api.PaginatedRequest
+		m    map[string]int
+		less func(a int, b int) bool
+		opts PaginationOpts
 	}
 	tests := []struct {
 		name     string
@@ -131,8 +131,8 @@ func TestPaginateMapValues(t *testing.T) {
 				m: map[string]int{
 					"a": 2, "b": 1, "c": 3, "d": 4, "e": 5,
 				},
-				less:        func(a, b int) bool { return a < b },
-				maxPageSize: 10,
+				less: func(a, b int) bool { return a < b },
+				opts: PaginationOpts{10, 10},
 			},
 			wantPage: []int{1, 2},
 			wantNbt:  "CAIQAg==",
@@ -141,7 +141,7 @@ func TestPaginateMapValues(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotPage, gotNbt, err := PaginateMapValues(tt.args.req, tt.args.m, tt.args.less, tt.args.maxPageSize)
+			gotPage, gotNbt, err := PaginateMapValues(tt.args.req, tt.args.m, tt.args.less, tt.args.opts)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("PaginateMapValues() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -158,10 +158,10 @@ func TestPaginateMapValues(t *testing.T) {
 
 func TestPaginateStorage(t *testing.T) {
 	type args struct {
-		req         api.PaginatedRequest
-		storage     persistence.Storage
-		maxPageSize int32
-		conds       []interface{}
+		req     api.PaginatedRequest
+		storage persistence.Storage
+		opts    PaginationOpts
+		conds   []interface{}
 	}
 	tests := []struct {
 		name     string
@@ -184,7 +184,7 @@ func TestPaginateStorage(t *testing.T) {
 					_ = s.Save(&orchestrator.CloudService{Id: "4"})
 					_ = s.Save(&orchestrator.CloudService{Id: "5"})
 				}),
-				maxPageSize: 10,
+				opts: PaginationOpts{10, 10},
 			},
 			wantPage: []orchestrator.CloudService{{Id: "1"}, {Id: "2"}},
 			wantNbt:  "CAIQAg==",
@@ -203,7 +203,7 @@ func TestPaginateStorage(t *testing.T) {
 					_ = s.Save(&orchestrator.CloudService{Id: "4"})
 					_ = s.Save(&orchestrator.CloudService{Id: "5"})
 				}),
-				maxPageSize: 10,
+				opts: PaginationOpts{10, 10},
 			},
 			wantPage: []orchestrator.CloudService{{Id: "3"}, {Id: "4"}},
 			wantNbt:  "CAQQAg==",
@@ -222,7 +222,7 @@ func TestPaginateStorage(t *testing.T) {
 					_ = s.Save(&orchestrator.CloudService{Id: "4"})
 					_ = s.Save(&orchestrator.CloudService{Id: "5"})
 				}),
-				maxPageSize: 10,
+				opts: PaginationOpts{10, 10},
 			},
 			wantPage: []orchestrator.CloudService{{Id: "5"}},
 			wantNbt:  "",
@@ -231,7 +231,7 @@ func TestPaginateStorage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotPage, gotNbt, err := PaginateStorage[orchestrator.CloudService](tt.args.req, tt.args.storage, tt.args.maxPageSize, tt.args.conds...)
+			gotPage, gotNbt, err := PaginateStorage[orchestrator.CloudService](tt.args.req, tt.args.storage, tt.args.opts, tt.args.conds...)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("PaginateStorage() error = %v, wantErr %v", err, tt.wantErr)
 				return

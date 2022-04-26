@@ -356,7 +356,7 @@ func (s *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *di
 	res = new(discovery.QueryResponse)
 
 	// Paginate the evidences according to the request
-	r, res.NextPageToken, err = service.PaginateSlice(req, r, 1000)
+	r, res.NextPageToken, err = service.PaginateSlice(req, r, service.DefaultPaginationOpts)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
