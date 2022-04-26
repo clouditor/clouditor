@@ -75,6 +75,9 @@ type Service struct {
 
 	metricsFile string
 
+	// loadMetricsFunc is a function that is used to initially load metrics at the start of the orchestrator
+	loadMetricsFunc func() ([]*assessment.Metric, error)
+
 	requirements []*orchestrator.Requirement
 
 	events chan *orchestrator.MetricChangeEvent
@@ -91,6 +94,13 @@ type ServiceOption func(*Service)
 func WithMetricsFile(file string) ServiceOption {
 	return func(s *Service) {
 		s.metricsFile = file
+	}
+}
+
+// WithExternalMetrics can be used to load metric definitions from an external source
+func WithExternalMetrics(f func() ([]*assessment.Metric, error)) ServiceOption {
+	return func(s *Service) {
+		s.loadMetricsFunc = f
 	}
 }
 
