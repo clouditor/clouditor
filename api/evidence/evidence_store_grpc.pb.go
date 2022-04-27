@@ -25,7 +25,8 @@ type EvidenceStoreClient interface {
 	// Stores an evidence to the evidence storage. Part of the public API, also
 	// exposed as REST.
 	StoreEvidence(ctx context.Context, in *StoreEvidenceRequest, opts ...grpc.CallOption) (*StoreEvidenceResponse, error)
-	// Stores a stream of evidences to the evidence storage and returns a response stream. Part of the public API, not exposed as REST.
+	// Stores a stream of evidences to the evidence storage and returns a response
+	// stream. Part of the public API, not exposed as REST.
 	StoreEvidences(ctx context.Context, opts ...grpc.CallOption) (EvidenceStore_StoreEvidencesClient, error)
 	// Returns all stored evidences. Part of the public API, also exposed as REST.
 	ListEvidences(ctx context.Context, in *ListEvidencesRequest, opts ...grpc.CallOption) (*ListEvidencesResponse, error)
@@ -95,7 +96,8 @@ type EvidenceStoreServer interface {
 	// Stores an evidence to the evidence storage. Part of the public API, also
 	// exposed as REST.
 	StoreEvidence(context.Context, *StoreEvidenceRequest) (*StoreEvidenceResponse, error)
-	// Stores a stream of evidences to the evidence storage and returns a response stream. Part of the public API, not exposed as REST.
+	// Stores a stream of evidences to the evidence storage and returns a response
+	// stream. Part of the public API, not exposed as REST.
 	StoreEvidences(EvidenceStore_StoreEvidencesServer) error
 	// Returns all stored evidences. Part of the public API, also exposed as REST.
 	ListEvidences(context.Context, *ListEvidencesRequest) (*ListEvidencesResponse, error)

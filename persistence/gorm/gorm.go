@@ -29,6 +29,7 @@ import (
 	"errors"
 	"fmt"
 
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
@@ -80,7 +81,11 @@ func init() {
 
 // NewStorage creates a new storage using GORM (which DB to use depends on the StorageOption)
 func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
-	g := &storage{}
+	g := &storage{
+		config: gorm.Config{
+			Logger: logger.Default.LogMode(logger.Silent),
+		},
+	}
 
 	// Init storage
 	log.Println("Creating storage")
@@ -97,19 +102,15 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	}
 
 	// After successful DB initialization, migrate the schema
-	// Migrate User
-	if err = g.db.AutoMigrate(&auth.User{}); err != nil {
-		err = fmt.Errorf("error during auto-migration: %w", err)
-		return
-	}
-	// Migrate CloudService
-	if err = g.db.AutoMigrate(&orchestrator.CloudService{}); err != nil {
-		err = fmt.Errorf("error during auto-migration: %w", err)
-		return
+	var types = []interface{}{
+		&auth.User{},
+		&orchestrator.CloudService{},
+		&assessment.MetricImplementation{},
+		&orchestrator.Certificate{},
+		&orchestrator.State{},
 	}
 
-	// Migrate StateHistory and Certificate
-	if err = g.db.AutoMigrate(&orchestrator.Certificate{}, &orchestrator.State{}); err != nil {
+	if err = g.db.AutoMigrate(types...); err != nil {
 		err = fmt.Errorf("error during auto-migration: %w", err)
 		return
 	}
@@ -132,8 +133,14 @@ func (s *storage) Get(r interface{}, conds ...interface{}) (err error) {
 	return
 }
 
-func (s *storage) List(r interface{}, conds ...interface{}) error {
-	return s.db.Preload(clause.Associations).Find(r, conds...).Error
+func (s *storage) List(r interface{}, offset int, limit int, conds ...interface{}) error {
+	var query = s.db
+
+	if limit != -1 {
+		query = s.db.Limit(limit)
+	}
+
+	return query.Offset(offset).Preload(clause.Associations).Find(r, conds...).Error
 }
 
 func (s *storage) Count(r interface{}, conds ...interface{}) (count int64, err error) {

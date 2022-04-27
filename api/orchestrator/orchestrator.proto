@@ -230,6 +230,9 @@ service Orchestrator {
     };
   }
 
+  rpc SubscribeMetricChangeEvents(SubscribeMetricChangeEventRequest)
+      returns (stream MetricChangeEvent) {}
+
   // Creates a new certificate
   rpc CreateCertificate(CreateCertificateRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
@@ -266,8 +269,13 @@ message RegisterAssessmentToolRequest { AssessmentTool tool = 1; }
 message ListAssessmentToolsRequest {
   // filter tools by metric id
   string metric_id = 1;
+  int32 page_size = 2;
+  string page_token = 3;
 }
-message ListAssessmentToolsResponse { repeated AssessmentTool tools = 1; }
+message ListAssessmentToolsResponse {
+  repeated AssessmentTool tools = 1;
+  string next_page_token = 2;
+}
 
 message GetAssessmentToolRequest { string tool_id = 1; }
 
@@ -293,11 +301,23 @@ message UpdateMetricRequest {
 
 message GetMetricRequest { string metric_id = 1; }
 
-message ListMetricsRequest {}
-message ListMetricsResponse { repeated Metric metrics = 1; }
+message ListMetricsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+message ListMetricsResponse {
+  repeated Metric metrics = 1;
+  string next_page_token = 2;
+}
 
-message ListRequirementsRequest {}
-message ListRequirementsResponse { repeated Requirement requirements = 1; }
+message ListRequirementsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+message ListRequirementsResponse {
+  repeated Requirement requirements = 1;
+  string next_page_token = 2;
+}
 
 message GetCloudServiceRequest { string service_id = 1; }
 
@@ -310,8 +330,14 @@ message UpdateCloudServiceRequest {
 
 message RemoveCloudServiceRequest { string service_id = 1; }
 
-message ListCloudServicesRequest {}
-message ListCloudServicesResponse { repeated CloudService services = 1; }
+message ListCloudServicesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+message ListCloudServicesResponse {
+  repeated CloudService services = 1;
+  string next_page_token = 2;
+}
 
 message UpdateMetricConfigurationRequest {
   string service_id = 1;
@@ -339,10 +365,29 @@ message UpdateMetricImplementationRequest {
   MetricImplementation implementation = 2;
 }
 
-message GetMetricImplementationRequest { string metric_id = 1; }
+message GetMetricImplementationRequest {
+  string metric_id = 1;
+  string lang = 2;
+}
+
+message SubscribeMetricChangeEventRequest {}
+
+// MetricChangeEvent represents a change of either a metric configuration or
+// implementation.
+message MetricChangeEvent {
+  enum Type {
+    TYPE_UNSPECIFIED = 0;
+    CONFIG_CHANGED = 1;
+    IMPLEMENTATION_CHANGED = 2;
+    METADATA_CHANGED = 3;
+  }
+
+  Type type = 1;
+  string metric_id = 2;
+}
 
 // Represents an external tool or service that offers assessments according to
-// certain metrics
+// certain metrics.
 message AssessmentTool {
   string id = 1;
 
@@ -382,8 +427,14 @@ message GetCertificateRequest {
   string certificate_id = 1;
 }
 
-message ListCertificatesRequest {}
-message ListCertificatesResponse { repeated Certificate certificates = 1; }
+message ListCertificatesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+message ListCertificatesResponse {
+  repeated Certificate certificates = 1;
+  string next_page_token = 2;
+}
 
 message UpdateCertificateRequest {
   string certificate_id = 1;

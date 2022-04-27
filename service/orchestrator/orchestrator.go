@@ -28,14 +28,13 @@ package orchestrator
 import (
 	"context"
 	"embed"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"sync"
 
 	"clouditor.io/clouditor/persistence/inmemory"
+	"clouditor.io/clouditor/service"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
@@ -49,8 +48,6 @@ import (
 //go:embed *.json
 var f embed.FS
 
-var metrics []*assessment.Metric
-var metricIndex map[string]*assessment.Metric
 var defaultMetricConfigurations map[string]*assessment.MetricConfiguration
 var log *logrus.Entry
 
@@ -74,9 +71,17 @@ type Service struct {
 
 	storage persistence.Storage
 
+	// metrics contains map of our metric definitions
+	metrics map[string]*assessment.Metric
+
 	metricsFile string
 
+	// loadMetricsFunc is a function that is used to initially load metrics at the start of the orchestrator
+	loadMetricsFunc func() ([]*assessment.Metric, error)
+
 	requirements []*orchestrator.Requirement
+
+	events chan *orchestrator.MetricChangeEvent
 }
 
 func init() {
@@ -90,6 +95,13 @@ type ServiceOption func(*Service)
 func WithMetricsFile(file string) ServiceOption {
 	return func(s *Service) {
 		s.metricsFile = file
+	}
+}
+
+// WithExternalMetrics can be used to load metric definitions from an external source
+func WithExternalMetrics(f func() ([]*assessment.Metric, error)) ServiceOption {
+	return func(s *Service) {
+		s.loadMetricsFunc = f
 	}
 }
 
@@ -113,6 +125,7 @@ func NewService(opts ...ServiceOption) *Service {
 		results:              make(map[string]*assessment.AssessmentResult),
 		metricConfigurations: make(map[string]map[string]*assessment.MetricConfiguration),
 		metricsFile:          DefaultMetricsFile,
+		events:               make(chan *orchestrator.MetricChangeEvent, 1000),
 	}
 
 	// Apply service options
@@ -135,81 +148,11 @@ func NewService(opts ...ServiceOption) *Service {
 		}
 	}
 
-	if err = LoadMetrics(s.metricsFile); err != nil {
+	if err = s.loadMetrics(); err != nil {
 		log.Errorf("Could not load embedded metrics. Will continue with empty metric list: %v", err)
 	}
 
-	metricIndex = make(map[string]*assessment.Metric)
-	defaultMetricConfigurations = make(map[string]*assessment.MetricConfiguration)
-
-	for _, m := range metrics {
-		// Look for the data.json to include default metric configurations
-		fileName := fmt.Sprintf("policies/bundles/%s/data.json", m.Id)
-
-		b, err := ioutil.ReadFile(fileName)
-		if err != nil {
-			log.Errorf("Could not retrieve default configuration for metric %s: %v. Ignoring metric", m.Id, err)
-			continue
-		}
-
-		var config assessment.MetricConfiguration
-
-		err = json.Unmarshal(b, &config)
-		if err != nil {
-			log.Errorf("Error in reading default configuration for metric %s: %v. Ignoring metric", m.Id, err)
-			continue
-		}
-
-		config.IsDefault = true
-
-		metricIndex[m.Id] = m
-		defaultMetricConfigurations[m.Id] = &config
-	}
-
 	return &s
-}
-
-func (s *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.GetMetricConfigurationRequest) (response *assessment.MetricConfiguration, err error) {
-	// Check, if we have a specific configuration for the metric
-	if config, ok := s.metricConfigurations[req.ServiceId][req.MetricId]; ok {
-		return config, nil
-	}
-
-	// Otherwise, fall back to our default configuration
-	if config, ok := defaultMetricConfigurations[req.MetricId]; ok {
-		return config, nil
-	}
-
-	newError := fmt.Errorf("could not find metric configuration for metric %s in service %s", req.MetricId, req.ServiceId)
-	log.Error(newError)
-
-	return nil, status.Errorf(codes.NotFound, "%v", newError)
-}
-
-// ListMetricConfigurations retrieves a list of MetricConfiguration objects for a particular target
-// cloud service specified in req.
-//
-// The list MUST include a configuration for each known metric. If the user did not specify a custom
-// configuration for a particular metric within the service, the default metric configuration is
-// inserted into the list.
-func (s *Service) ListMetricConfigurations(ctx context.Context, req *orchestrator.ListMetricConfigurationRequest) (response *orchestrator.ListMetricConfigurationResponse, err error) {
-	response = &orchestrator.ListMetricConfigurationResponse{
-		Configurations: make(map[string]*assessment.MetricConfiguration),
-	}
-
-	// TODO(oxisto): This is not very efficient, we should do this once at startup so that we can just return the map
-	for metricId := range metricIndex {
-		config, err := s.GetMetricConfiguration(ctx, &orchestrator.GetMetricConfigurationRequest{ServiceId: req.ServiceId, MetricId: metricId})
-
-		if err != nil {
-			log.Errorf("Error getting metric configuration: %v", err)
-			return nil, err
-		}
-
-		response.Configurations[metricId] = config
-	}
-
-	return
 }
 
 // StoreAssessmentResult is a method implementation of the orchestrator interface: It receives an assessment result and stores it
@@ -286,12 +229,15 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 }
 
 // ListAssessmentResults is a method implementation of the orchestrator interface
-func (s *Service) ListAssessmentResults(_ context.Context, _ *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
+func (svc *Service) ListAssessmentResults(_ context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
 	res = new(assessment.ListAssessmentResultsResponse)
-	res.Results = []*assessment.AssessmentResult{}
 
-	for _, result := range s.results {
-		res.Results = append(res.Results, result)
+	// Paginate the results according to the request
+	res.Results, res.NextPageToken, err = service.PaginateMapValues(req, svc.results, func(a *assessment.AssessmentResult, b *assessment.AssessmentResult) bool {
+		return a.Id < b.Id
+	}, service.DefaultPaginationOpts)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
 
 	return
@@ -352,17 +298,18 @@ func (s *Service) GetCertificate(_ context.Context, req *orchestrator.GetCertifi
 }
 
 // ListCertificates implements method for getting a certificate, e.g. to show its state in the UI
-func (s *Service) ListCertificates(_ context.Context, req *orchestrator.ListCertificatesRequest) (response *orchestrator.ListCertificatesResponse, err error) {
+func (s *Service) ListCertificates(_ context.Context, req *orchestrator.ListCertificatesRequest) (res *orchestrator.ListCertificatesResponse, err error) {
 	if req == nil {
 		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrRequestIsNil.Error())
 	}
 
-	response = new(orchestrator.ListCertificatesResponse)
-	err = s.storage.List(&response.Certificates)
+	res = new(orchestrator.ListCertificatesResponse)
+
+	res.Certificates, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Certificate](req, s.storage, service.DefaultPaginationOpts)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %s", err)
+		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
-	return response, nil
+	return
 }
 
 // UpdateCertificate implements method for updating an existing certificate

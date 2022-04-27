@@ -30,9 +30,10 @@ import (
 	"errors"
 	"fmt"
 
+	"strings"
+
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
-	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
@@ -162,7 +163,7 @@ func (d *azureStorageDiscovery) discoverFileStorages(account *storage.Account) (
 	client := storage.NewFileSharesClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
 
-	result, err := client.List(context.Background(), getResourceGroupName(*account.ID), *account.Name, "", "", "")
+	result, err := client.List(context.Background(), getResourceGroupName(to.String(account.ID)), to.String(account.Name), "", "", "")
 	if err != nil {
 		return nil, fmt.Errorf("could not list file storages: %w", err)
 	}
@@ -187,7 +188,7 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *storage.Account)
 	client := storage.NewBlobContainersClient(to.String(d.sub.SubscriptionID))
 	d.apply(&client.Client)
 
-	result, err := client.List(context.Background(), getResourceGroupName(*account.ID), *account.Name, "", "", "")
+	result, err := client.List(context.Background(), getResourceGroupName(to.String(account.ID)), to.String(account.Name), "", "", "")
 	if err != nil {
 		return nil, fmt.Errorf("could not list object storages: %w", err)
 	}
@@ -219,7 +220,7 @@ func (d *azureStorageDiscovery) handleBlockStorage(disk *compute.Disk) (*voc.Blo
 				CreationTime: disk.TimeCreated.Unix(),
 				Type:         []string{"BlockStorage", "Storage", "Resource"},
 				GeoLocation: voc.GeoLocation{
-					Region: *disk.Location,
+					Region: to.String(disk.Location),
 				},
 			},
 			AtRestEncryption: enc,
@@ -241,7 +242,7 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 				CreationTime: account.CreationTime.Unix(),
 				Type:         []string{"ObjectStorage", "Storage", "Resource"},
 				GeoLocation: voc.GeoLocation{
-					Region: *account.Location,
+					Region: to.String(account.Location),
 				},
 			},
 			AtRestEncryption: enc,
@@ -263,17 +264,17 @@ func (*azureStorageDiscovery) handleStorageAccount(account *storage.Account, sto
 			Networking: &voc.Networking{
 				Resource: &voc.Resource{
 					ID:           voc.ResourceID(to.String(account.ID)),
-					Name:         *account.Name,
+					Name:         to.String(account.Name),
 					CreationTime: account.CreationTime.Unix(),
 					Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
 					GeoLocation: voc.GeoLocation{
-						Region: *account.Location,
+						Region: to.String(account.Location),
 					},
 				},
 			},
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
-			Url: generalizeURL(*account.PrimaryEndpoints.Blob),
+			Url: generalizeURL(to.String(account.PrimaryEndpoints.Blob)),
 			TransportEncryption: &voc.TransportEncryption{
 				Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
 				Enabled:    true, // cannot be disabled
@@ -309,7 +310,7 @@ func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem
 				CreationTime: account.CreationTime.Unix(),
 				Type:         []string{"FileStorage", "Storage", "Resource"},
 				GeoLocation: voc.GeoLocation{
-					Region: *account.Location,
+					Region: to.String(account.Location),
 				},
 			},
 			AtRestEncryption: enc,
@@ -330,7 +331,7 @@ func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk *compute.Disk)
 		var keyUrl string
 		discEncryptionSetID := disk.Encryption.DiskEncryptionSetID
 
-		keyUrl, err := d.sourceVaultID(*discEncryptionSetID)
+		keyUrl, err := d.sourceVaultID(to.String(discEncryptionSetID))
 		if err != nil {
 			return nil, fmt.Errorf("could not get keyVaultID: %w", err)
 		}
@@ -386,7 +387,7 @@ func (d *azureStorageDiscovery) sourceVaultID(discEncryptionSetID string) (strin
 		return "", fmt.Errorf("could not get sourceVaultID")
 	}
 
-	return *discEncryptionSet.ActiveKey.SourceVault.ID, nil
+	return to.String(discEncryptionSet.ActiveKey.SourceVault.ID), nil
 }
 
 func diskEncryptionSetName(discEncryptionSetID string) string {

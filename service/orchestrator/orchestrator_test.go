@@ -36,10 +36,10 @@ import (
 	"runtime"
 	"sync"
 	"testing"
+	"time"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/persistence/inmemory"
 	"github.com/google/uuid"
@@ -632,7 +632,7 @@ func Test_CreateCertificate(t *testing.T) {
 			args{
 				context.Background(),
 				&orchestrator.CreateCertificateRequest{
-					Certificate: testutil.CreateCertificateMock(),
+					Certificate: CreateCertificateMock(),
 				},
 			},
 			&emptypb.Empty{},
@@ -681,7 +681,7 @@ func Test_UpdateCertificate(t *testing.T) {
 	assert.Equal(t, codes.NotFound, status.Code(err))
 
 	// 4th case: Certificate updated successfully
-	mockCertificate := testutil.CreateCertificateMock()
+	mockCertificate := CreateCertificateMock()
 	err = orchestratorService.storage.Create(mockCertificate)
 	assert.NoError(t, err)
 	if err != nil {
@@ -717,7 +717,7 @@ func Test_RemoveCertificate(t *testing.T) {
 	assert.Equal(t, status.Code(err), codes.NotFound)
 
 	// 3rd case: Record removed successfully
-	mockCertificate := testutil.CreateCertificateMock()
+	mockCertificate := CreateCertificateMock()
 	err = orchestratorService.storage.Create(mockCertificate)
 	assert.NoError(t, err)
 
@@ -760,14 +760,14 @@ func Test_GetCertificate(t *testing.T) {
 		{
 			"valid",
 			&orchestrator.GetCertificateRequest{CertificateId: "1234"},
-			testutil.CreateCertificateMock(),
+			CreateCertificateMock(),
 			nil,
 		},
 	}
 	orchestratorService := NewService()
 
 	// Create Certificate
-	if err := orchestratorService.storage.Create(testutil.CreateCertificateMock()); err != nil {
+	if err := orchestratorService.storage.Create(CreateCertificateMock()); err != nil {
 		panic(err)
 	}
 
@@ -808,7 +808,7 @@ func Test_ListCertificates(t *testing.T) {
 	assert.Empty(t, listCertificatesResponse.Certificates)
 
 	// 2nd case: One service stored
-	err = orchestratorService.storage.Create(testutil.CreateCertificateMock())
+	err = orchestratorService.storage.Create(CreateCertificateMock())
 	assert.NoError(t, err)
 
 	listCertificatesResponse, err = orchestratorService.ListCertificates(context.Background(), &orchestrator.ListCertificatesRequest{})
@@ -816,4 +816,30 @@ func Test_ListCertificates(t *testing.T) {
 	assert.NotNil(t, listCertificatesResponse.Certificates)
 	assert.NotEmpty(t, listCertificatesResponse.Certificates)
 	assert.Equal(t, len(listCertificatesResponse.Certificates), 1)
+}
+
+// CreateCertificateMock creates a mock certificate creation request
+func CreateCertificateMock() *orchestrator.Certificate {
+	mockHistory := &orchestrator.State{
+		State:         "new",
+		TreeId:        "12345",
+		Timestamp:     time.Now().String(),
+		CertificateId: "1234",
+		Id:            "12345",
+	}
+
+	var mockCertificate = &orchestrator.Certificate{
+		Name:           "EUCS",
+		ServiceId:      "test service",
+		IssueDate:      "2021-11-06",
+		ExpirationDate: "2024-11-06",
+		Standard:       "EUCS",
+		AssuranceLevel: "Basic",
+		Cab:            "Cab123",
+		Description:    "Description",
+		States:         []*orchestrator.State{mockHistory},
+		Id:             "1234",
+	}
+
+	return mockCertificate
 }

@@ -40,10 +40,11 @@ import (
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/policies"
 	"clouditor.io/clouditor/voc"
-
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -107,6 +108,7 @@ func TestNewService(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService(tt.args.opts...)
@@ -116,6 +118,9 @@ func TestNewService(t *testing.T) {
 
 			// Ignore pointers to channel in subsequent DeepEqual check
 			s.orchestratorChannel = nil
+
+			// Ignore pointers to storage and policy eval
+			s.pe = nil
 
 			if got := s; !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewService() = %v, want %v", got, tt.want)
@@ -219,7 +224,7 @@ func TestAssessEvidence(t *testing.T) {
 			hasRPCConnection: false,
 			wantResp: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "could not evaluate evidence: could not fetch metric configuration: could not retrieve metric configuration for",
+				StatusMessage: "could not evaluate evidence: could not retrieve metric definitions: could not retrieve metric list from orchestrator",
 			},
 			wantErr: true,
 		},
@@ -230,7 +235,7 @@ func TestAssessEvidence(t *testing.T) {
 			s := NewService()
 			if tt.hasRPCConnection {
 				s.grpcOpts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
-				assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
+				assert.NoError(t, s.initOrchestratorStream())
 			} else {
 				// clear the evidence URL, just to be sure
 				s.evidenceStoreAddress = ""
@@ -360,9 +365,10 @@ func TestAssessEvidences(t *testing.T) {
 				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
 				orchestratorChannel:           make(chan *assessment.AssessmentResult, 1000),
 				grpcOpts:                      []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
+				pe:                            policies.NewRegoEval(),
 			}
 
-			assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
+			assert.NoError(t, s.initOrchestratorStream())
 
 			if tt.args.streamToServer != nil {
 				err = s.AssessEvidences(tt.args.streamToServer)
@@ -474,7 +480,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			hookCallCounter = 0
 			s := NewService(WithAdditionalGRPCOpts(grpc.WithContextDialer(bufConnDialer)))
-			assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
+			assert.NoError(t, s.initOrchestratorStream())
 
 			for i, hookFunction := range tt.args.resultHooks {
 				s.RegisterAssessmentResultHook(hookFunction)
@@ -506,9 +512,9 @@ func TestAssessmentResultHooks(t *testing.T) {
 	}
 }
 
-func TestListAssessmentResults(t *testing.T) {
+/*func TestListAssessmentResults(t *testing.T) {
 	s := NewService(WithAdditionalGRPCOpts(grpc.WithContextDialer(bufConnDialer)))
-	assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
+	assert.NoError(t, s.initOrchestratorStream())
 
 	_, err := s.AssessEvidence(context.TODO(), &assessment.AssessEvidenceRequest{
 		Evidence: &evidence.Evidence{
@@ -522,6 +528,179 @@ func TestListAssessmentResults(t *testing.T) {
 	results, err = s.ListAssessmentResults(context.TODO(), &assessment.ListAssessmentResultsRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, results)
+}*/
+
+func TestService_ListAssessmentResults(t *testing.T) {
+	type fields struct {
+		evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
+		evidenceStoreAddress string
+		orchestratorStream   orchestrator.Orchestrator_StoreAssessmentResultsClient
+		orchestratorClient   orchestrator.OrchestratorClient
+		orchestratorAddress  string
+		orchestratorChannel  chan *assessment.AssessmentResult
+		metricEventStream    orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
+		resultHooks          []assessment.ResultHookFunc
+		results              map[string]*assessment.AssessmentResult
+		cachedConfigurations map[string]cachedConfiguration
+		authorizer           api.Authorizer
+		grpcOpts             []grpc.DialOption
+		pe                   policies.PolicyEval
+	}
+	type args struct {
+		in0 context.Context
+		req *assessment.ListAssessmentResultsRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes *assessment.ListAssessmentResultsResponse
+		wantErr bool
+	}{
+		{
+			name: "single page result",
+			fields: fields{
+				results: map[string]*assessment.AssessmentResult{
+					"1": {
+						Id: "1",
+					},
+				},
+			},
+			args: args{
+				req: &assessment.ListAssessmentResultsRequest{},
+			},
+			wantRes: &assessment.ListAssessmentResultsResponse{
+				NextPageToken: "",
+				Results: []*assessment.AssessmentResult{
+					{
+						Id: "1",
+					},
+				},
+			},
+		},
+		{
+			name: "multiple page result - first page",
+			fields: fields{
+				results: map[string]*assessment.AssessmentResult{
+					"11111111-1111-1111-1111-111111111111": {Id: "11111111-1111-1111-1111-111111111111"},
+					"22222222-2222-2222-2222-222222222222": {Id: "22222222-2222-2222-2222-222222222222"},
+					"33333333-3333-3333-3333-333333333333": {Id: "33333333-3333-3333-3333-333333333333"},
+					"44444444-4444-4444-4444-444444444444": {Id: "44444444-4444-4444-4444-444444444444"},
+					"55555555-5555-5555-5555-555555555555": {Id: "55555555-5555-5555-5555-555555555555"},
+					"66666666-6666-6666-6666-666666666666": {Id: "66666666-6666-6666-6666-666666666666"},
+					"77777777-7777-7777-7777-777777777777": {Id: "77777777-7777-7777-7777-777777777777"},
+					"88888888-8888-8888-8888-888888888888": {Id: "88888888-8888-8888-8888-888888888888"},
+					"99999999-9999-9999-9999-999999999999": {Id: "99999999-9999-9999-9999-999999999999"},
+				},
+			},
+			args: args{
+				req: &assessment.ListAssessmentResultsRequest{
+					PageSize: 2,
+				},
+			},
+			wantRes: &assessment.ListAssessmentResultsResponse{
+				Results: []*assessment.AssessmentResult{
+					{Id: "11111111-1111-1111-1111-111111111111"}, {Id: "22222222-2222-2222-2222-222222222222"},
+				},
+				NextPageToken: func() string {
+					token, _ := (&api.PageToken{Start: 2, Size: 2}).Encode()
+					return token
+				}(),
+			},
+		},
+		{
+			name: "multiple page result - second page",
+			fields: fields{
+				results: map[string]*assessment.AssessmentResult{
+					"11111111-1111-1111-1111-111111111111": {Id: "11111111-1111-1111-1111-111111111111"},
+					"22222222-2222-2222-2222-222222222222": {Id: "22222222-2222-2222-2222-222222222222"},
+					"33333333-3333-3333-3333-333333333333": {Id: "33333333-3333-3333-3333-333333333333"},
+					"44444444-4444-4444-4444-444444444444": {Id: "44444444-4444-4444-4444-444444444444"},
+					"55555555-5555-5555-5555-555555555555": {Id: "55555555-5555-5555-5555-555555555555"},
+					"66666666-6666-6666-6666-666666666666": {Id: "66666666-6666-6666-6666-666666666666"},
+					"77777777-7777-7777-7777-777777777777": {Id: "77777777-7777-7777-7777-777777777777"},
+					"88888888-8888-8888-8888-888888888888": {Id: "88888888-8888-8888-8888-888888888888"},
+					"99999999-9999-9999-9999-999999999999": {Id: "99999999-9999-9999-9999-999999999999"},
+				},
+			},
+			args: args{
+				req: &assessment.ListAssessmentResultsRequest{
+					PageSize: 2,
+					PageToken: func() string {
+						token, _ := (&api.PageToken{Start: 2, Size: 2}).Encode()
+						return token
+					}(),
+				},
+			},
+			wantRes: &assessment.ListAssessmentResultsResponse{
+				Results: []*assessment.AssessmentResult{
+					{Id: "33333333-3333-3333-3333-333333333333"}, {Id: "44444444-4444-4444-4444-444444444444"},
+				},
+				NextPageToken: func() string {
+					token, _ := (&api.PageToken{Start: 4, Size: 2}).Encode()
+					return token
+				}(),
+			},
+		},
+		{
+			name: "multiple page result - last page",
+			fields: fields{
+				results: map[string]*assessment.AssessmentResult{
+					"11111111-1111-1111-1111-111111111111": {Id: "11111111-1111-1111-1111-111111111111"},
+					"22222222-2222-2222-2222-222222222222": {Id: "22222222-2222-2222-2222-222222222222"},
+					"33333333-3333-3333-3333-333333333333": {Id: "33333333-3333-3333-3333-333333333333"},
+					"44444444-4444-4444-4444-444444444444": {Id: "44444444-4444-4444-4444-444444444444"},
+					"55555555-5555-5555-5555-555555555555": {Id: "55555555-5555-5555-5555-555555555555"},
+					"66666666-6666-6666-6666-666666666666": {Id: "66666666-6666-6666-6666-666666666666"},
+					"77777777-7777-7777-7777-777777777777": {Id: "77777777-7777-7777-7777-777777777777"},
+					"88888888-8888-8888-8888-888888888888": {Id: "88888888-8888-8888-8888-888888888888"},
+					"99999999-9999-9999-9999-999999999999": {Id: "99999999-9999-9999-9999-999999999999"},
+				},
+			},
+			args: args{
+				req: &assessment.ListAssessmentResultsRequest{
+					PageSize: 2,
+					PageToken: func() string {
+						token, _ := (&api.PageToken{Start: 8, Size: 2}).Encode()
+						return token
+					}(),
+				},
+			},
+			wantRes: &assessment.ListAssessmentResultsResponse{
+				Results: []*assessment.AssessmentResult{
+					{Id: "99999999-9999-9999-9999-999999999999"},
+				},
+				NextPageToken: "",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{
+				evidenceStoreStreams: tt.fields.evidenceStoreStreams,
+				evidenceStoreAddress: tt.fields.evidenceStoreAddress,
+				orchestratorStream:   tt.fields.orchestratorStream,
+				orchestratorClient:   tt.fields.orchestratorClient,
+				orchestratorAddress:  tt.fields.orchestratorAddress,
+				orchestratorChannel:  tt.fields.orchestratorChannel,
+				metricEventStream:    tt.fields.metricEventStream,
+				resultHooks:          tt.fields.resultHooks,
+				results:              tt.fields.results,
+				cachedConfigurations: tt.fields.cachedConfigurations,
+				authorizer:           tt.fields.authorizer,
+				grpcOpts:             tt.fields.grpcOpts,
+				pe:                   tt.fields.pe,
+			}
+			gotRes, err := s.ListAssessmentResults(tt.args.in0, tt.args.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.ListAssessmentResults() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotRes, tt.wantRes) {
+				t.Errorf("Service.ListAssessmentResults() = %v, want %v", gotRes, tt.wantRes)
+			}
+		})
+	}
 }
 
 // toStruct transforms r to a struct and asserts if it was successful
@@ -810,7 +989,7 @@ func TestHandleEvidence(t *testing.T) {
 				s.grpcOpts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
 			}
 			if tt.fields.hasOrchestratorStream {
-				assert.NoError(t, s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer)))
+				assert.NoError(t, s.initOrchestratorStream())
 			}
 			// Two tests: 1st) wantErr function. 2nd) if wantErr false then check if a result is added to map
 			if !tt.wantErr(t, s.handleEvidence(tt.args.evidence, tt.args.resourceId), fmt.Sprintf("handleEvidence(%v, %v)", tt.args.evidence, tt.args.resourceId)) {
@@ -826,7 +1005,6 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 		opts []ServiceOption
 	}
 	type args struct {
-		additionalOpts []grpc.DialOption
 	}
 	tests := []struct {
 		name    string
@@ -852,11 +1030,10 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 				opts: []ServiceOption{
 					WithOrchestratorAddress("bufnet"),
 					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
+					WithAdditionalGRPCOpts(grpc.WithContextDialer(bufConnDialer)),
 				},
 			},
-			args: args{
-				[]grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
-			},
+			args: args{},
 		},
 		{
 			name: "Authenticated RPC connection with invalid user",
@@ -864,10 +1041,8 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 				opts: []ServiceOption{
 					WithOrchestratorAddress("bufnet"),
 					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
+					WithAdditionalGRPCOpts(grpc.WithContextDialer(bufConnDialer)),
 				},
-			},
-			args: args{
-				[]grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				s, _ := status.FromError(errors.Unwrap(err))
@@ -879,11 +1054,93 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService(tt.fields.opts...)
-			err := s.initOrchestratorStream(tt.args.additionalOpts...)
+			err := s.initOrchestratorStream()
 
 			if tt.wantErr != nil {
 				tt.wantErr(t, err)
 			}
 		})
 	}
+}
+
+func TestService_recvEventsLoop(t *testing.T) {
+	type fields struct {
+		evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
+		evidenceStoreAddress string
+		orchestratorStream   orchestrator.Orchestrator_StoreAssessmentResultsClient
+		orchestratorClient   orchestrator.OrchestratorClient
+		orchestratorAddress  string
+		orchestratorChannel  chan *assessment.AssessmentResult
+		metricEventStream    orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
+		resultHooks          []assessment.ResultHookFunc
+		results              map[string]*assessment.AssessmentResult
+		cachedConfigurations map[string]cachedConfiguration
+		authorizer           api.Authorizer
+		grpcOpts             []grpc.DialOption
+	}
+	tests := []struct {
+		name      string
+		fields    fields
+		wantEvent *orchestrator.MetricChangeEvent
+	}{
+		{
+			name: "Receive event",
+			fields: fields{
+				metricEventStream: &testutil.ListRecvStreamerOf[*orchestrator.MetricChangeEvent]{Messages: []*orchestrator.MetricChangeEvent{
+					{
+						Type: orchestrator.MetricChangeEvent_CONFIG_CHANGED,
+					},
+				}},
+			},
+			wantEvent: &orchestrator.MetricChangeEvent{
+				Type: orchestrator.MetricChangeEvent_CONFIG_CHANGED,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				evidenceStoreStreams: tt.fields.evidenceStoreStreams,
+				evidenceStoreAddress: tt.fields.evidenceStoreAddress,
+				orchestratorStream:   tt.fields.orchestratorStream,
+				orchestratorClient:   tt.fields.orchestratorClient,
+				orchestratorAddress:  tt.fields.orchestratorAddress,
+				orchestratorChannel:  tt.fields.orchestratorChannel,
+				metricEventStream:    tt.fields.metricEventStream,
+				resultHooks:          tt.fields.resultHooks,
+				results:              tt.fields.results,
+				cachedConfigurations: tt.fields.cachedConfigurations,
+				authorizer:           tt.fields.authorizer,
+				grpcOpts:             tt.fields.grpcOpts,
+			}
+			rec := &eventRecorder{}
+			svc.pe = rec
+			svc.recvEventsLoop()
+
+			if !reflect.DeepEqual(rec.event, tt.wantEvent) {
+				t.Errorf("recvEventsLoop() = %v, want %v", rec.event, tt.wantEvent)
+			}
+		})
+	}
+}
+
+type eventRecorder struct {
+	event *orchestrator.MetricChangeEvent
+	done  bool
+}
+
+func (*eventRecorder) Eval(evidence *evidence.Evidence, src policies.MetricsSource) (data []*policies.Result, err error) {
+	return nil, nil
+}
+
+func (e *eventRecorder) HandleMetricEvent(event *orchestrator.MetricChangeEvent) (err error) {
+	if e.done {
+		return nil
+	}
+
+	e.event = event
+	e.done = true
+
+	return nil
 }

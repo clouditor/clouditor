@@ -29,6 +29,7 @@ import (
 	"context"
 	"fmt"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
@@ -46,6 +47,7 @@ func NewListMetricsCommand() *cobra.Command {
 				session *cli.Session
 				client  orchestrator.OrchestratorClient
 				res     *orchestrator.ListMetricsResponse
+				metrics []*assessment.Metric
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -55,7 +57,14 @@ func NewListMetricsCommand() *cobra.Command {
 
 			client = orchestrator.NewOrchestratorClient(session)
 
-			res, err = client.ListMetrics(context.Background(), &orchestrator.ListMetricsRequest{})
+			metrics, err = api.ListAllPaginated(&orchestrator.ListMetricsRequest{}, client.ListMetrics, func(res *orchestrator.ListMetricsResponse) []*assessment.Metric {
+				return res.Metrics
+			})
+
+			// Build a response with all metrics
+			res = &orchestrator.ListMetricsResponse{
+				Metrics: metrics,
+			}
 
 			return session.HandleResponse(res, err)
 		},

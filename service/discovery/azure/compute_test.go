@@ -62,10 +62,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 					"location": "eastus",
 					"properties": map[string]interface{}{
 						"diagnosticsProfile": map[string]interface{}{
-							"bootDiagnostics": map[string]interface{}{
-								"enabled":    true,
-								"storageUri": "https://logstoragevm1.blob.core.windows.net/",
-							},
+							"bootDiagnostics": map[string]interface{}{},
 						},
 					},
 				},
@@ -75,10 +72,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 					"location": "eastus",
 					"properties": map[string]interface{}{
 						"diagnosticsProfile": map[string]interface{}{
-							"bootDiagnostics": map[string]interface{}{
-								"enabled":    true,
-								"storageUri": "",
-							},
+							"bootDiagnostics": map[string]interface{}{},
 						},
 					},
 				},
@@ -108,8 +102,8 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 				},
 				"diagnosticsProfile": map[string]interface{}{
 					"bootDiagnostics": map[string]interface{}{
-						"enabled":    false,
-						"storageUri": "test",
+						"enabled":    true,
+						"storageUri": "https://logstoragevm1.blob.core.windows.net/",
 					},
 				},
 				"networkProfile": map[string]interface{}{
@@ -149,7 +143,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 				"diagnosticsProfile": map[string]interface{}{
 					"bootDiagnostics": map[string]interface{}{
 						"enabled":    true,
-						"storageUri": "test",
+						"storageUri": nil,
 					},
 				},
 				"networkProfile": map[string]interface{}{

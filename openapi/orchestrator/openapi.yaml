@@ -13,6 +13,16 @@ paths:
                 - Orchestrator
             description: List all assessment results. Part of the public API, also exposed as REST.
             operationId: Orchestrator_ListAssessmentResults
+            parameters:
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
@@ -50,6 +60,15 @@ paths:
                 - name: metricId
                   in: query
                   description: filter tools by metric id
+                  schema:
+                    type: string
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
                   schema:
                     type: string
             responses:
@@ -143,6 +162,16 @@ paths:
                 - Orchestrator
             description: Lists all target certificates
             operationId: Orchestrator_ListCertificates
+            parameters:
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
@@ -214,6 +243,16 @@ paths:
                 - Orchestrator
             description: Lists all target cloud services
             operationId: Orchestrator_ListCloudServices
+            parameters:
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
@@ -381,6 +420,16 @@ paths:
                 - Orchestrator
             description: List all metrics provided by the metric catalog
             operationId: Orchestrator_ListMetrics
+            parameters:
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
@@ -461,6 +510,10 @@ paths:
                   required: true
                   schema:
                     type: string
+                - name: lang
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
@@ -497,6 +550,16 @@ paths:
             tags:
                 - Orchestrator
             operationId: Orchestrator_ListRequirements
+            parameters:
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
@@ -567,7 +630,7 @@ components:
                     items:
                         type: string
                     description: a list of metrics that this tool can assess, referred by their ids
-            description: Represents an external tool or service that offers assessments according to certain metrics
+            description: Represents an external tool or service that offers assessments according to certain metrics.
         Certificate:
             type: object
             properties:
@@ -620,6 +683,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/AssessmentResult'
+                nextPageToken:
+                    type: string
         ListAssessmentToolsResponse:
             type: object
             properties:
@@ -627,6 +692,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/AssessmentTool'
+                nextPageToken:
+                    type: string
         ListCertificatesResponse:
             type: object
             properties:
@@ -634,6 +701,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Certificate'
+                nextPageToken:
+                    type: string
         ListCloudServicesResponse:
             type: object
             properties:
@@ -641,6 +710,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/CloudService'
+                nextPageToken:
+                    type: string
         ListMetricConfigurationResponse:
             type: object
             properties:
@@ -656,6 +727,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Metric'
+                nextPageToken:
+                    type: string
         ListRequirementsResponse:
             type: object
             properties:
@@ -663,6 +736,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Requirement'
+                nextPageToken:
+                    type: string
         Metric:
             type: object
             properties:
@@ -704,7 +779,10 @@ components:
         MetricImplementation:
             type: object
             properties:
-                language:
+                metricId:
+                    type: string
+                    description: The metric which is implemented
+                lang:
                     enum:
                         - LANGUAGE_UNSPECIFIED
                         - REGO

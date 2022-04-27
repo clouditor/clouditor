@@ -2,9 +2,9 @@ package gorm
 
 import (
 	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/internal/testutil"
 	"fmt"
 	"testing"
+	"time"
 
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/persistence"
@@ -159,7 +159,7 @@ func Test_storage_List(t *testing.T) {
 	}
 
 	// List should return empty list since no users are in DB yet
-	err = s.List(&users)
+	err = s.List(&users, 0, -1)
 	assert.ErrorIs(t, err, nil)
 	assert.Empty(t, users)
 
@@ -168,7 +168,7 @@ func Test_storage_List(t *testing.T) {
 	assert.NoError(t, err)
 	err = s.Create(user2)
 	assert.NoError(t, err)
-	err = s.List(&users)
+	err = s.List(&users, 0, -1)
 	assert.ErrorIs(t, err, nil)
 	assert.Equal(t, len(users), 2)
 
@@ -180,14 +180,14 @@ func Test_storage_List(t *testing.T) {
 	)
 
 	// List should return empty list since no certificates are in DB yet
-	err = s.List(&certificates)
+	err = s.List(&certificates, 0, 0)
 	assert.ErrorIs(t, err, nil)
 	assert.Empty(t, certificates)
 
 	// Create two certificates
-	certificate1 = testutil.CreateCertificateMock()
+	certificate1 = CreateCertificateMock()
 	certificate1.Id = "0"
-	certificate2 = testutil.CreateCertificateMock()
+	certificate2 = CreateCertificateMock()
 	certificate2.Id = "1"
 	err = s.Create(certificate1)
 	assert.NoError(t, err)
@@ -195,7 +195,7 @@ func Test_storage_List(t *testing.T) {
 	assert.NoError(t, err)
 
 	// List should return list of 2 certificates with associated states
-	err = s.List(&certificates)
+	err = s.List(&certificates, 0, 0)
 	assert.ErrorIs(t, err, nil)
 	assert.Equal(t, len(certificates), 2)
 
@@ -420,4 +420,30 @@ func Test_storage_Delete(t *testing.T) {
 	// Should return DB error since a non-supported type is passed (just a string instead of, e.g., &auth.User{})
 	assert.Contains(t, s.Delete("Unsupported Type").Error(), "unsupported data type")
 
+}
+
+// CreateCertificateMock creates a mock certificate creation request
+func CreateCertificateMock() *orchestrator.Certificate {
+	mockHistory := &orchestrator.State{
+		State:         "new",
+		TreeId:        "12345",
+		Timestamp:     time.Now().String(),
+		CertificateId: "1234",
+		Id:            "12345",
+	}
+
+	var mockCertificate = &orchestrator.Certificate{
+		Name:           "EUCS",
+		ServiceId:      "test service",
+		IssueDate:      "2021-11-06",
+		ExpirationDate: "2024-11-06",
+		Standard:       "EUCS",
+		AssuranceLevel: "Basic",
+		Cab:            "Cab123",
+		Description:    "Description",
+		States:         []*orchestrator.State{mockHistory},
+		Id:             "1234",
+	}
+
+	return mockCertificate
 }
