@@ -81,14 +81,15 @@ func init() {
 
 // NewStorage creates a new storage using GORM (which DB to use depends on the StorageOption)
 func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
+	log.Println("Creating storage")
+	// Create storage with default gorm config
 	g := &storage{
 		config: gorm.Config{
 			Logger: logger.Default.LogMode(logger.Silent),
 		},
 	}
 
-	// Init storage
-	log.Println("Creating storage")
+	// Add or override default options
 	for _, o := range opts {
 		o(g)
 	}
