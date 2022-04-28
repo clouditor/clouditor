@@ -292,7 +292,7 @@ func (s *Service) GetCertificate(_ context.Context, req *orchestrator.GetCertifi
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "certificate not found")
 	} else if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %s", err)
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 	return response, nil
 }
@@ -324,7 +324,7 @@ func (s *Service) UpdateCertificate(_ context.Context, req *orchestrator.UpdateC
 
 	count, err := s.storage.Count(req.Certificate, "Certificate_id = ?", req.CertificateId)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %s", err)
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
 	if count == 0 {
@@ -351,7 +351,7 @@ func (s *Service) RemoveCertificate(_ context.Context, req *orchestrator.RemoveC
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "certificate not found")
 	} else if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %s", err)
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
 	return &emptypb.Empty{}, nil
