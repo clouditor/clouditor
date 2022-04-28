@@ -1,12 +1,13 @@
 package gorm
 
 import (
-	"clouditor.io/clouditor/api/orchestrator"
 	"fmt"
 	"testing"
 
 	"clouditor.io/clouditor/api/auth"
+	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -39,7 +40,7 @@ func TestStorageOptions(t *testing.T) {
 			name: "postgres with option - invalid port",
 			args: args{
 				opts: []StorageOption{
-					WithPostgres("", 0),
+					WithPostgres("", 0, "", "", ""),
 				},
 			},
 			wantDialectorType: "",

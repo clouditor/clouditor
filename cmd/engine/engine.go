@@ -216,7 +216,13 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	if viper.GetBool(DBInMemoryFlag) {
 		db, err = inmemory.NewStorage()
 	} else {
-		db, err = gorm.NewStorage(gorm.WithPostgres(viper.GetString(DBHostFlag), int16(viper.GetInt(DBPortFlag))))
+		db, err = gorm.NewStorage(gorm.WithPostgres(
+			viper.GetString(DBHostFlag),
+			int16(viper.GetInt(DBPortFlag)),
+			viper.GetString(DBUserNameFlag),
+			viper.GetString(DBPasswordFlag),
+			viper.GetString(DBNameFlag),
+		))
 	}
 	if err != nil {
 		// We could also just log the error and forward db = nil which will result in inmemory storages
