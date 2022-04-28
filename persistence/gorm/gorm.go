@@ -60,9 +60,9 @@ func WithInMemory() StorageOption {
 }
 
 // WithPostgres is an option to configure Storage to use a Postgres DB
-func WithPostgres(host string, port int16) StorageOption {
+func WithPostgres(host string, port int16, user string, pw string, db string) StorageOption {
 	return func(s *storage) {
-		s.dialector = postgres.Open(fmt.Sprintf("postgres://postgres@%s:%d/postgres?sslmode=disable", host, port))
+		s.dialector = postgres.Open(fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", user, pw, host, port, db))
 	}
 }
 
