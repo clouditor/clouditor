@@ -1,14 +1,13 @@
 package gorm
 
 import (
-	"clouditor.io/clouditor/api/orchestrator"
-	"fmt"
-	"testing"
-	"time"
-
 	"clouditor.io/clouditor/api/auth"
+	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/testutil/orchestratortest"
 	"clouditor.io/clouditor/persistence"
+	"fmt"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestStorageOptions(t *testing.T) {
@@ -185,9 +184,9 @@ func Test_storage_List(t *testing.T) {
 	assert.Empty(t, certificates)
 
 	// Create two certificates
-	certificate1 = CreateCertificateMock()
+	certificate1 = orchestratortest.CreateCertificateMock()
 	certificate1.Id = "0"
-	certificate2 = CreateCertificateMock()
+	certificate2 = orchestratortest.CreateCertificateMock()
 	certificate2.Id = "1"
 	err = s.Create(certificate1)
 	assert.NoError(t, err)
@@ -420,30 +419,4 @@ func Test_storage_Delete(t *testing.T) {
 	// Should return DB error since a non-supported type is passed (just a string instead of, e.g., &auth.User{})
 	assert.Contains(t, s.Delete("Unsupported Type").Error(), "unsupported data type")
 
-}
-
-// CreateCertificateMock creates a mock certificate creation request
-func CreateCertificateMock() *orchestrator.Certificate {
-	mockHistory := &orchestrator.State{
-		State:         "new",
-		TreeId:        "12345",
-		Timestamp:     time.Now().String(),
-		CertificateId: "1234",
-		Id:            "12345",
-	}
-
-	var mockCertificate = &orchestrator.Certificate{
-		Name:           "EUCS",
-		ServiceId:      "test service",
-		IssueDate:      "2021-11-06",
-		ExpirationDate: "2024-11-06",
-		Standard:       "EUCS",
-		AssuranceLevel: "Basic",
-		Cab:            "Cab123",
-		Description:    "Description",
-		States:         []*orchestrator.State{mockHistory},
-		Id:             "1234",
-	}
-
-	return mockCertificate
 }
