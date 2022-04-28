@@ -47,7 +47,6 @@ import (
 // well as the default metric implementations from the Rego files.
 func (svc *Service) loadMetrics() (err error) {
 	var (
-		impl    *assessment.MetricImplementation
 		metrics []*assessment.Metric
 	)
 
@@ -64,47 +63,64 @@ func (svc *Service) loadMetrics() (err error) {
 
 	defaultMetricConfigurations = make(map[string]*assessment.MetricConfiguration)
 
+	// Try to prepare the (initial) metric implementations and configurations. We can still continue if they should
+	// fail, since they can still be updated later during runtime. Also, this makes it possible to load metrics of which
+	// we intentially do not have the implementation, because they are assess outside the Clouditor toolset, but we
+	// still need to be aware of the particular metric.
 	for _, m := range metrics {
-		// Load the Rego file
-		file := fmt.Sprintf("policies/bundles/%s/metric.rego", m.Id)
-		impl, err = loadMetricImplementation(m.Id, file)
+		err = svc.prepareMetric(m)
 		if err != nil {
-			return fmt.Errorf("could not load metric implementation: %w", err)
+			log.Warnf("Could not prepare implementation or default configuration for metric %s: %v", m.Id, err)
 		}
-
-		// Save our metric implementation
-		err = svc.storage.Save(impl, "metric_id = ?", m.Id)
-		if err != nil {
-			return fmt.Errorf("could not save metric implementation: %w", err)
-		}
-
-		// Look for the data.json to include default metric configurations
-		fileName := fmt.Sprintf("policies/bundles/%s/data.json", m.Id)
-
-		b, err := ioutil.ReadFile(fileName)
-		if err != nil {
-			log.Errorf("Could not retrieve default configuration for metric %s: %v. Ignoring metric", m.Id, err)
-			continue
-		}
-
-		var config assessment.MetricConfiguration
-
-		err = json.Unmarshal(b, &config)
-		if err != nil {
-			log.Errorf("Error in reading default configuration for metric %s: %v. Ignoring metric", m.Id, err)
-			continue
-		}
-
-		config.IsDefault = true
 
 		err = svc.storage.Save(m)
 		if err != nil {
 			log.Errorf("Error while saving metric %s: %v. Ignoring metric", m.Id, err)
 			continue
 		}
-
-		defaultMetricConfigurations[m.Id] = &config
 	}
+
+	return
+}
+
+// prepareMetric takes care of the heavy lifting of loading the default implementation and configuration of a particular
+// metric and storing them into the service.
+func (svc *Service) prepareMetric(m *assessment.Metric) (err error) {
+	var (
+		impl   *assessment.MetricImplementation
+		config *assessment.MetricConfiguration
+	)
+
+	// Load the Rego file
+	file := fmt.Sprintf("policies/bundles/%s/metric.rego", m.Id)
+	impl, err = loadMetricImplementation(m.Id, file)
+	if err != nil {
+		return fmt.Errorf("could not load metric implementation: %w", err)
+	}
+
+	// Save our metric implementation
+	err = svc.storage.Save(impl, "metric_id = ?", m.Id)
+	if err != nil {
+		return fmt.Errorf("could not save metric implementation: %w", err)
+	}
+
+	// Look for the data.json to include default metric configurations
+	fileName := fmt.Sprintf("policies/bundles/%s/data.json", m.Id)
+
+	// Load the default configuration file
+	b, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		return fmt.Errorf("could not retrieve default configuration for metric %s: %w", m.Id, err)
+	}
+
+	err = json.Unmarshal(b, &config)
+	if err != nil {
+		return fmt.Errorf("error in reading default configuration for metric %s: %w", m.Id, err)
+	}
+
+	config.IsDefault = true
+
+	defaultMetricConfigurations[m.Id] = config
 
 	return
 }
