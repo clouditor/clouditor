@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	"clouditor.io/clouditor/api/orchestrator"
-
 	"clouditor.io/clouditor/api/auth"
+	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
+
 	"github.com/stretchr/testify/assert"
 )
 

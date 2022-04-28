@@ -4,6 +4,9 @@
 "policies":
   - policies/**/*
 
+"persistence":
+  - persistence/**/*
+
 "api/evaluation":
   - api/evaluation/*
 
