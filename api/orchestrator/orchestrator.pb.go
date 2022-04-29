@@ -2671,7 +2671,7 @@ var file_api_orchestrator_orchestrator_proto_rawDesc = []byte{
 	0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70,
 	0x12, 0x25, 0x0a, 0x0e, 0x63, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65, 0x5f,
 	0x69, 0x64, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x63, 0x65, 0x72, 0x74, 0x69, 0x66,
-	0x69, 0x63, 0x61, 0x74, 0x65, 0x49, 0x64, 0x32, 0x90, 0x20, 0x0a, 0x0c, 0x4f, 0x72, 0x63, 0x68,
+	0x69, 0x63, 0x61, 0x74, 0x65, 0x49, 0x64, 0x32, 0x9b, 0x21, 0x0a, 0x0c, 0x4f, 0x72, 0x63, 0x68,
 	0x65, 0x73, 0x74, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x8e, 0x01, 0x0a, 0x16, 0x52, 0x65, 0x67,
 	0x69, 0x73, 0x74, 0x65, 0x72, 0x41, 0x73, 0x73, 0x65, 0x73, 0x73, 0x6d, 0x65, 0x6e, 0x74, 0x54,
 	0x6f, 0x6f, 0x6c, 0x12, 0x28, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e,
@@ -2928,10 +2928,19 @@ var file_api_orchestrator_orchestrator_proto_rawDesc = []byte{
 	0x76, 0x31, 0x2f, 0x6f, 0x72, 0x63, 0x68, 0x65, 0x73, 0x74, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x2f,
 	0x63, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65, 0x73, 0x2f, 0x7b, 0x63, 0x65,
 	0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65, 0x5f, 0x69, 0x64, 0x7d, 0x3a, 0x0b, 0x63,
-	0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65, 0x42, 0x29, 0x5a, 0x27, 0x63, 0x6c,
-	0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x69, 0x6f, 0x2f, 0x63, 0x6c, 0x6f, 0x75, 0x64,
-	0x69, 0x74, 0x6f, 0x72, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x6f, 0x72, 0x63, 0x68, 0x65, 0x73, 0x74,
-	0x72, 0x61, 0x74, 0x6f, 0x72, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65, 0x12, 0x88, 0x01, 0x0a, 0x11, 0x52,
+	0x65, 0x6d, 0x6f, 0x76, 0x65, 0x43, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65,
+	0x12, 0x23, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x52, 0x65, 0x6d,
+	0x6f, 0x76, 0x65, 0x43, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x36, 0x82,
+	0xd3, 0xe4, 0x93, 0x02, 0x30, 0x2a, 0x2e, 0x2f, 0x76, 0x31, 0x2f, 0x6f, 0x72, 0x63, 0x68, 0x65,
+	0x73, 0x74, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x2f, 0x63, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63,
+	0x61, 0x74, 0x65, 0x73, 0x2f, 0x7b, 0x63, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74,
+	0x65, 0x5f, 0x69, 0x64, 0x7d, 0x42, 0x29, 0x5a, 0x27, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74,
+	0x6f, 0x72, 0x2e, 0x69, 0x6f, 0x2f, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2f,
+	0x61, 0x70, 0x69, 0x2f, 0x6f, 0x72, 0x63, 0x68, 0x65, 0x73, 0x74, 0x72, 0x61, 0x74, 0x6f, 0x72,
+	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -3050,36 +3059,38 @@ var file_api_orchestrator_orchestrator_proto_depIdxs = []int32{
 	33, // 46: clouditor.Orchestrator.GetCertificate:input_type -> clouditor.GetCertificateRequest
 	34, // 47: clouditor.Orchestrator.ListCertificates:input_type -> clouditor.ListCertificatesRequest
 	36, // 48: clouditor.Orchestrator.UpdateCertificate:input_type -> clouditor.UpdateCertificateRequest
-	30, // 49: clouditor.Orchestrator.RegisterAssessmentTool:output_type -> clouditor.AssessmentTool
-	3,  // 50: clouditor.Orchestrator.ListAssessmentTools:output_type -> clouditor.ListAssessmentToolsResponse
-	30, // 51: clouditor.Orchestrator.GetAssessmentTool:output_type -> clouditor.AssessmentTool
-	30, // 52: clouditor.Orchestrator.UpdateAssessmentTool:output_type -> clouditor.AssessmentTool
-	48, // 53: clouditor.Orchestrator.DeregisterAssessmentTool:output_type -> google.protobuf.Empty
-	8,  // 54: clouditor.Orchestrator.StoreAssessmentResult:output_type -> clouditor.StoreAssessmentResultResponse
-	8,  // 55: clouditor.Orchestrator.StoreAssessmentResults:output_type -> clouditor.StoreAssessmentResultResponse
-	49, // 56: clouditor.Orchestrator.ListAssessmentResults:output_type -> clouditor.ListAssessmentResultsResponse
-	44, // 57: clouditor.Orchestrator.CreateMetric:output_type -> clouditor.Metric
-	44, // 58: clouditor.Orchestrator.UpdateMetric:output_type -> clouditor.Metric
-	44, // 59: clouditor.Orchestrator.GetMetric:output_type -> clouditor.Metric
-	13, // 60: clouditor.Orchestrator.ListMetrics:output_type -> clouditor.ListMetricsResponse
-	15, // 61: clouditor.Orchestrator.ListRequirements:output_type -> clouditor.ListRequirementsResponse
-	31, // 62: clouditor.Orchestrator.RegisterCloudService:output_type -> clouditor.CloudService
-	31, // 63: clouditor.Orchestrator.UpdateCloudService:output_type -> clouditor.CloudService
-	31, // 64: clouditor.Orchestrator.GetCloudService:output_type -> clouditor.CloudService
-	21, // 65: clouditor.Orchestrator.ListCloudServices:output_type -> clouditor.ListCloudServicesResponse
-	48, // 66: clouditor.Orchestrator.RemoveCloudService:output_type -> google.protobuf.Empty
-	45, // 67: clouditor.Orchestrator.UpdateMetricConfiguration:output_type -> clouditor.MetricConfiguration
-	45, // 68: clouditor.Orchestrator.GetMetricConfiguration:output_type -> clouditor.MetricConfiguration
-	25, // 69: clouditor.Orchestrator.ListMetricConfigurations:output_type -> clouditor.ListMetricConfigurationResponse
-	46, // 70: clouditor.Orchestrator.UpdateMetricImplementation:output_type -> clouditor.MetricImplementation
-	46, // 71: clouditor.Orchestrator.GetMetricImplementation:output_type -> clouditor.MetricImplementation
-	29, // 72: clouditor.Orchestrator.SubscribeMetricChangeEvents:output_type -> clouditor.MetricChangeEvent
-	48, // 73: clouditor.Orchestrator.CreateCertificate:output_type -> google.protobuf.Empty
-	39, // 74: clouditor.Orchestrator.GetCertificate:output_type -> clouditor.Certificate
-	35, // 75: clouditor.Orchestrator.ListCertificates:output_type -> clouditor.ListCertificatesResponse
-	39, // 76: clouditor.Orchestrator.UpdateCertificate:output_type -> clouditor.Certificate
-	49, // [49:77] is the sub-list for method output_type
-	21, // [21:49] is the sub-list for method input_type
+	38, // 49: clouditor.Orchestrator.RemoveCertificate:input_type -> clouditor.RemoveCertificateRequest
+	30, // 50: clouditor.Orchestrator.RegisterAssessmentTool:output_type -> clouditor.AssessmentTool
+	3,  // 51: clouditor.Orchestrator.ListAssessmentTools:output_type -> clouditor.ListAssessmentToolsResponse
+	30, // 52: clouditor.Orchestrator.GetAssessmentTool:output_type -> clouditor.AssessmentTool
+	30, // 53: clouditor.Orchestrator.UpdateAssessmentTool:output_type -> clouditor.AssessmentTool
+	48, // 54: clouditor.Orchestrator.DeregisterAssessmentTool:output_type -> google.protobuf.Empty
+	8,  // 55: clouditor.Orchestrator.StoreAssessmentResult:output_type -> clouditor.StoreAssessmentResultResponse
+	8,  // 56: clouditor.Orchestrator.StoreAssessmentResults:output_type -> clouditor.StoreAssessmentResultResponse
+	49, // 57: clouditor.Orchestrator.ListAssessmentResults:output_type -> clouditor.ListAssessmentResultsResponse
+	44, // 58: clouditor.Orchestrator.CreateMetric:output_type -> clouditor.Metric
+	44, // 59: clouditor.Orchestrator.UpdateMetric:output_type -> clouditor.Metric
+	44, // 60: clouditor.Orchestrator.GetMetric:output_type -> clouditor.Metric
+	13, // 61: clouditor.Orchestrator.ListMetrics:output_type -> clouditor.ListMetricsResponse
+	15, // 62: clouditor.Orchestrator.ListRequirements:output_type -> clouditor.ListRequirementsResponse
+	31, // 63: clouditor.Orchestrator.RegisterCloudService:output_type -> clouditor.CloudService
+	31, // 64: clouditor.Orchestrator.UpdateCloudService:output_type -> clouditor.CloudService
+	31, // 65: clouditor.Orchestrator.GetCloudService:output_type -> clouditor.CloudService
+	21, // 66: clouditor.Orchestrator.ListCloudServices:output_type -> clouditor.ListCloudServicesResponse
+	48, // 67: clouditor.Orchestrator.RemoveCloudService:output_type -> google.protobuf.Empty
+	45, // 68: clouditor.Orchestrator.UpdateMetricConfiguration:output_type -> clouditor.MetricConfiguration
+	45, // 69: clouditor.Orchestrator.GetMetricConfiguration:output_type -> clouditor.MetricConfiguration
+	25, // 70: clouditor.Orchestrator.ListMetricConfigurations:output_type -> clouditor.ListMetricConfigurationResponse
+	46, // 71: clouditor.Orchestrator.UpdateMetricImplementation:output_type -> clouditor.MetricImplementation
+	46, // 72: clouditor.Orchestrator.GetMetricImplementation:output_type -> clouditor.MetricImplementation
+	29, // 73: clouditor.Orchestrator.SubscribeMetricChangeEvents:output_type -> clouditor.MetricChangeEvent
+	48, // 74: clouditor.Orchestrator.CreateCertificate:output_type -> google.protobuf.Empty
+	39, // 75: clouditor.Orchestrator.GetCertificate:output_type -> clouditor.Certificate
+	35, // 76: clouditor.Orchestrator.ListCertificates:output_type -> clouditor.ListCertificatesResponse
+	39, // 77: clouditor.Orchestrator.UpdateCertificate:output_type -> clouditor.Certificate
+	48, // 78: clouditor.Orchestrator.RemoveCertificate:output_type -> google.protobuf.Empty
+	50, // [50:79] is the sub-list for method output_type
+	21, // [21:50] is the sub-list for method input_type
 	21, // [21:21] is the sub-list for extension type_name
 	21, // [21:21] is the sub-list for extension extendee
 	0,  // [0:21] is the sub-list for field type_name

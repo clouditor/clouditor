@@ -84,6 +84,8 @@ type OrchestratorClient interface {
 	ListCertificates(ctx context.Context, in *ListCertificatesRequest, opts ...grpc.CallOption) (*ListCertificatesResponse, error)
 	// Updates an existing certificate
 	UpdateCertificate(ctx context.Context, in *UpdateCertificateRequest, opts ...grpc.CallOption) (*Certificate, error)
+	// Removes a certificate
+	RemoveCertificate(ctx context.Context, in *RemoveCertificateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type orchestratorClient struct {
@@ -391,6 +393,15 @@ func (c *orchestratorClient) UpdateCertificate(ctx context.Context, in *UpdateCe
 	return out, nil
 }
 
+func (c *orchestratorClient) RemoveCertificate(ctx context.Context, in *RemoveCertificateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/RemoveCertificate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OrchestratorServer is the server API for Orchestrator service.
 // All implementations must embed UnimplementedOrchestratorServer
 // for forward compatibility
@@ -455,6 +466,8 @@ type OrchestratorServer interface {
 	ListCertificates(context.Context, *ListCertificatesRequest) (*ListCertificatesResponse, error)
 	// Updates an existing certificate
 	UpdateCertificate(context.Context, *UpdateCertificateRequest) (*Certificate, error)
+	// Removes a certificate
+	RemoveCertificate(context.Context, *RemoveCertificateRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedOrchestratorServer()
 }
 
@@ -545,6 +558,9 @@ func (UnimplementedOrchestratorServer) ListCertificates(context.Context, *ListCe
 }
 func (UnimplementedOrchestratorServer) UpdateCertificate(context.Context, *UpdateCertificateRequest) (*Certificate, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateCertificate not implemented")
+}
+func (UnimplementedOrchestratorServer) RemoveCertificate(context.Context, *RemoveCertificateRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveCertificate not implemented")
 }
 func (UnimplementedOrchestratorServer) mustEmbedUnimplementedOrchestratorServer() {}
 
@@ -1074,6 +1090,24 @@ func _Orchestrator_UpdateCertificate_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Orchestrator_RemoveCertificate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveCertificateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).RemoveCertificate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/RemoveCertificate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).RemoveCertificate(ctx, req.(*RemoveCertificateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Orchestrator_ServiceDesc is the grpc.ServiceDesc for Orchestrator service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1184,6 +1218,10 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateCertificate",
 			Handler:    _Orchestrator_UpdateCertificate_Handler,
+		},
+		{
+			MethodName: "RemoveCertificate",
+			Handler:    _Orchestrator_RemoveCertificate_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

@@ -237,6 +237,21 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Certificate'
+        delete:
+            tags:
+                - Orchestrator
+            description: Removes a certificate
+            operationId: Orchestrator_RemoveCertificate
+            parameters:
+                - name: certificateId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
     /v1/orchestrator/cloud_services:
         get:
             tags:
