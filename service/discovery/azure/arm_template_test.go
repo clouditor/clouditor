@@ -427,6 +427,7 @@ func TestVmProperties(t *testing.T) {
 	assert.False(t, resourceVM.OSLogging.Enabled)
 
 	resourceVM, ok = list[1].(*voc.VirtualMachine)
+	assert.True(t, ok)
 	assert.Equal(t, []voc.ResourceID{"https://storageAccounts_storage_2_name.blob.core.windows.net/"}, resourceVM.BootLogging.Logging.LoggingService)
 }
 
