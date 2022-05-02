@@ -549,8 +549,17 @@ func storageURIFromARMTemplate(name map[string]interface{}) string {
 		return ""
 	}
 
-	// URI example: "[concat('https://', parameters('storageAccounts_test_name'), '.blob.core.windows.net/')]"
+	// The storage URI can occur in 2 forms:
+	// URI example 1: "[concat('https://', parameters('storageAccounts_test_name'), '.blob.core.windows.net/')]"
+	// URI example 2: "https://storageaccounttest.blob.core.windows.net/"
 	storageUriInformation := name["bootDiagnostics"].(map[string]interface{})["storageUri"].(string)
+
+	// Check for URI example 2
+	if strings.HasPrefix(storageUriInformation, "http") {
+		return storageUriInformation
+	}
+
+	// Extract URI for example 1
 	nameSplit := strings.Split(storageUriInformation, "'")
 	storageUriName := strings.Split(nameSplit[3], "_")
 	storageUri = nameSplit[1] + storageUriName[1] + nameSplit[5]
