@@ -9,9 +9,9 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.11
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/MicahParks/keyfunc v1.1.0
-	github.com/aws/aws-sdk-go-v2 v1.16.2
+	github.com/aws/aws-sdk-go-v2 v1.16.3
 	github.com/aws/aws-sdk-go-v2/config v1.15.0
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.36.0
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.37.0
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.22.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.26.0
 	github.com/aws/aws-sdk-go-v2/service/sts v1.16.0
@@ -62,12 +62,12 @@ require (
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.0 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.10.0 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.12.0 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.9 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.3 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.10 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.4 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.3.7 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.9.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.1.0 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.3 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.4 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.13.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.11.0 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.0.2 // indirect
