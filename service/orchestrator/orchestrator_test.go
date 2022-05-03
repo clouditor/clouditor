@@ -26,15 +26,23 @@
 package orchestrator
 
 import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"os"
+	"reflect"
+	"runtime"
+	"sync"
+	"testing"
+
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
 	"clouditor.io/clouditor/persistence/inmemory"
-	"context"
-	"encoding/json"
-	"errors"
-	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -45,12 +53,6 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"io"
-	"os"
-	"reflect"
-	"runtime"
-	"sync"
-	"testing"
 )
 
 const (

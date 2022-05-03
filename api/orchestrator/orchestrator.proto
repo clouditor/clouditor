@@ -456,9 +456,9 @@ message RemoveCertificateRequest { string certificate_id = 1; }
 // An ISO17021-based certificate
 message Certificate {
   string id = 1;
-	string name = 2;
-	string service_id = 3;
-	string issue_date = 4;
+  string name = 2;
+  string service_id = 3;
+  string issue_date = 4;
   string expiration_date = 5;
   string standard = 6;
   string assurance_level = 7;
@@ -473,8 +473,8 @@ message State {
   string id = 1;
   // An EUCS-defined state, e.g. `new`, `suspended` or `withdrawn`
   string state = 2;
-	string tree_id = 3;
-	string timestamp = 4;
+  string tree_id = 3;
+  string timestamp = 4;
   // Reference to the certificate
   string certificate_id = 5;
 }

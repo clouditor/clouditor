@@ -33,12 +33,12 @@ import (
 	"io"
 	"sync"
 
-	"clouditor.io/clouditor/persistence/inmemory"
-	"clouditor.io/clouditor/service"
-
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/persistence/inmemory"
+	"clouditor.io/clouditor/service"
+
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -267,7 +267,6 @@ func (s *Service) CreateCertificate(_ context.Context, req *orchestrator.CreateC
 	if req.Certificate == nil {
 		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrCertificateIsNil.Error())
 	}
-	fmt.Println("got request: ", req)
 
 	// Persist the certificate in our database
 	err = s.storage.Create(req.Certificate)

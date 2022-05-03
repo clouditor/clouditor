@@ -1,13 +1,15 @@
 package gorm
 
 import (
+	"fmt"
+	"testing"
+
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
 	"clouditor.io/clouditor/persistence"
-	"fmt"
+
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestStorageOptions(t *testing.T) {
@@ -265,7 +267,6 @@ func Test_storage_Count(t *testing.T) {
 	// Calling s.Count() with unsupported record type should throw "unsupported" error
 	_, err = s.Count(nil)
 	assert.Error(t, err)
-	fmt.Println(err)
 	assert.Contains(t, err.Error(), "unsupported data type")
 }
 
@@ -336,6 +337,7 @@ func Test_storage_Update(t *testing.T) {
 	s, err = NewStorage()
 	assert.NoError(t, err)
 
+	// Testing user
 	// Create user
 	err = s.Create(user)
 	assert.NoError(t, err)
@@ -358,9 +360,9 @@ func Test_storage_Update(t *testing.T) {
 	assert.Equal(t, user.Password, gotUser.Password)
 	assert.Equal(t, user.Email, gotUser.Email)
 
-	// Testing cloud service (A entryType test now would be better, probably)
+	// Testing cloud service
 
-	// Create user
+	// Create cloud service
 	cloudService := orchestrator.CloudService{
 		Id:          "SomeId",
 		Name:        "SomeName",
