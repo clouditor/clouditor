@@ -955,8 +955,7 @@ func TestHandleEvidence(t *testing.T) {
 						},
 						BootLogging: &voc.BootLogging{
 							Logging: &voc.Logging{
-								LoggingService: nil,
-								// TODO(lebogg): If set to false, it is not set as applicable metric! Probably because in the rego file it is evaluated (boolean value).
+								LoggingService:  nil,
 								Enabled:         true,
 								RetentionPeriod: 0,
 							},

@@ -9,6 +9,7 @@ default compliant = false
 enabled := input.bootLogging.enabled
 
 applicable {
+    # TODO(lebogg): FIxed this. Fix the remaining policies
 	enabled != null
 }
 
