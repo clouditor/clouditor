@@ -949,7 +949,19 @@ func TestHandleEvidence(t *testing.T) {
 					Id:        "11111111-1111-1111-1111-111111111111",
 					ToolId:    "mock",
 					Timestamp: timestamppb.Now(),
-					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+					Resource: toStruct(voc.VirtualMachine{
+						Compute: &voc.Compute{
+							Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}},
+						},
+						BootLogging: &voc.BootLogging{
+							Logging: &voc.Logging{
+								LoggingService: nil,
+								// TODO(lebogg): If set to false, it is not set as applicable metric! Probably because in the rego file it is evaluated (boolean value).
+								Enabled:         true,
+								RetentionPeriod: 0,
+							},
+						},
+					}, t),
 				},
 				resourceId: "my-resource-id",
 			},
