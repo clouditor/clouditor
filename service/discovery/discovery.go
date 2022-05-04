@@ -223,7 +223,8 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
 			}
 			discoverer = append(discoverer,
-				azure.NewAzureARMTemplateDiscovery(azure.WithAuthorizer(authorizer)),
+				// For now, we do not want to discover the ARM template
+				// azure.NewAzureARMTemplateDiscovery(azure.WithAuthorizer(authorizer)),
 				azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
 				azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
 				azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)))

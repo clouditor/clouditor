@@ -113,13 +113,12 @@ func RegisterAssessmentHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Assessment/AssessEvidence", runtime.WithHTTPPathPattern("/v1/assessment/evidences"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Assessment/AssessEvidence")
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Assessment_AssessEvidence_0(ctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_Assessment_AssessEvidence_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -137,13 +136,12 @@ func RegisterAssessmentHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Assessment/ListAssessmentResults", runtime.WithHTTPPathPattern("/v1/assessment/results"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Assessment/ListAssessmentResults")
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Assessment_ListAssessmentResults_0(ctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_Assessment_ListAssessmentResults_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -200,13 +198,12 @@ func RegisterAssessmentHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Assessment/AssessEvidence", runtime.WithHTTPPathPattern("/v1/assessment/evidences"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.Assessment/AssessEvidence")
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Assessment_AssessEvidence_0(ctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Assessment_AssessEvidence_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -221,13 +218,12 @@ func RegisterAssessmentHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Assessment/ListAssessmentResults", runtime.WithHTTPPathPattern("/v1/assessment/results"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.Assessment/ListAssessmentResults")
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Assessment_ListAssessmentResults_0(ctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Assessment_ListAssessmentResults_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
