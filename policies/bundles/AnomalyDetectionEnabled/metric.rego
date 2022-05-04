@@ -6,12 +6,12 @@ default applicable = false
 
 default compliant = false
 
-ad := input.anomalyDetection
+enabled := input.anomalyDetection.enabled
 
 applicable {
-	ad
+	enabled
 }
 
 compliant {
-	compare(data.operator, data.target_value, ad.enabled)
+	compare(data.operator, data.target_value, enabled)
 }

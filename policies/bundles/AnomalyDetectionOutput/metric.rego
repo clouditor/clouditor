@@ -6,12 +6,12 @@ default applicable = false
 
 default compliant = false
 
-ad := input.anomalyDetection
+output := input.anomalyDetection.output
 
 applicable {
-	ad
+	output
 }
 
 compliant {
-	isIn(data.target_value, ad.output)
+	isIn(data.target_value, output)
 }

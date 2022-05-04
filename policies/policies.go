@@ -39,7 +39,7 @@ var (
 	log = logrus.WithField("component", "policies")
 )
 
-type metricsResourceTypeCache struct {
+type metricsToolIDAndResourceTypeCache struct {
 	sync.RWMutex
 	m map[string][]string
 }
@@ -66,8 +66,10 @@ type MetricsSource interface {
 	MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (*assessment.MetricImplementation, error)
 }
 
-func createKey(types []string) (key string) {
-	key = strings.Join(types, "-")
+// createKey creates a key by concatenating toolID and all types
+func createKey(toolID string, types []string) (key string) {
+	// Merge toolID and types to one slice and concatenate all its elements
+	key = strings.Join(append(types, toolID), "-")
 	key = strings.ReplaceAll(key, " ", "")
 	return
 }

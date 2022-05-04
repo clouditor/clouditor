@@ -6,9 +6,9 @@ default applicable = false
 
 default compliant = false
 
-runtimeLanguage := input.runtimeLanguage
+runtimeLanguage := input.runtime.language
 
-runtimeVersion := input.runtimeVersion
+runtimeVersion := input.runtime.version
 
 applicable {
 	runtimeLanguage

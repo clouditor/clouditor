@@ -6,12 +6,12 @@ default applicable = false
 
 default compliant = false
 
-bootLogging := input.bootLogging
+retentionPeriod := input.bootLogging.retentionPeriod
 
 applicable {
-	bootLogging
+	retentionPeriod
 }
 
 compliant {
-	compare(data.operator, data.target_value, bootLogging.retentionPeriod)
+	compare(data.operator, data.target_value, retentionPeriod)
 }

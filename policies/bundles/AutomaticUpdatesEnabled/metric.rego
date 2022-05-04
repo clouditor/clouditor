@@ -6,12 +6,12 @@ default applicable = false
 
 default compliant = false
 
-autoUpdates := input.automaticUpdates
+enabled := input.automaticUpdates.enabled
 
 applicable {
-	autoUpdates
+	enabled
 }
 
 compliant {
-	compare(data.operator, data.target_value, autoUpdates.enabled)
+	compare(data.operator, data.target_value, enabled)
 }

@@ -6,12 +6,12 @@ default applicable = false
 
 default compliant = false
 
-sso := input.singleSignOn
+enabled := input.singleSignOn.enabled
 
 applicable {
-	sso
+	enabled
 }
 
 compliant {
-	compare(data.operator, data.target_value, sso.enabled)
+	compare(data.operator, data.target_value, enabled)
 }

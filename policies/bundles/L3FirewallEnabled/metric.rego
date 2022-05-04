@@ -6,12 +6,12 @@ default applicable = false
 
 default compliant = false
 
-l3f := input.l3Firewall
+enabled := input.l3Firewall.enabled
 
 applicable {
-	l3f
+	enabled
 }
 
 compliant {
-	compare(data.operator, data.target_value, l3f.enabled)
+	compare(data.operator, data.target_value, enabled)
 }

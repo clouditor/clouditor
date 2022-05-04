@@ -7,13 +7,13 @@ default applicable = false
 default compliant = false
 
 # TODO(lebogg): Not yet in VOC. Check if `rBAC` is correct representation in JSON
-rbac := input.rBAC
+broadAssignments := input.rBAC.broadAssignments
 
 applicable {
-	rbac
+	broadAssignments
 }
 
 compliant {
 	# TODO(all): Target value ?
-	compare(data.operator, data.target_value, rbac.broadAssignments)
+	compare(data.operator, data.target_value, broadAssignments)
 }

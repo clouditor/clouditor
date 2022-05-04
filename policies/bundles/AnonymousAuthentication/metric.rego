@@ -6,12 +6,12 @@ default applicable = false
 
 default compliant = false
 
-cba := input.certificateBasedAuthentication
+enabled := input.certificateBasedAuthentication.enabled
 
 applicable {
-	cba
+	enabled
 }
 
 compliant {
-	compare(data.operator, data.target_value, cba.enabled)
+	compare(data.operator, data.target_value, enabled)
 }
