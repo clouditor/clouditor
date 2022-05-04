@@ -150,7 +150,7 @@ func (m mockARMTemplateSender) Do(req *http.Request) (res *http.Response, err er
 							"diagnosticsProfile": map[string]interface{}{
 								"bootDiagnostics": map[string]interface{}{
 									"enabled":    true,
-									"storageUri": "[concat('https://', parameters('storageAccounts_storage_2_name'), '.blob.core.windows.net/')]",
+									"storageUri": "https://storageAccounts_storage_2_name.blob.core.windows.net/",
 								},
 							},
 						},
@@ -425,6 +425,10 @@ func TestVmProperties(t *testing.T) {
 	assert.True(t, resourceVM.BootLogging.Enabled)
 	assert.Equal(t, []voc.ResourceID{"https://storage1.blob.core.windows.net/"}, resourceVM.BootLogging.LoggingService)
 	assert.False(t, resourceVM.OSLogging.Enabled)
+
+	resourceVM, ok = list[1].(*voc.VirtualMachine)
+	assert.True(t, ok)
+	assert.Equal(t, []voc.ResourceID{"https://storageAccounts_storage_2_name.blob.core.windows.net/"}, resourceVM.BootLogging.Logging.LoggingService)
 }
 
 func TestLoadBalancerProperties(t *testing.T) {
