@@ -112,6 +112,7 @@ func getNetworkServiceResourceID(service *corev1.Service) string {
 	return fmt.Sprintf("/namespaces/%s/services/%s", service.Namespace, service.Name)
 }
 
+// TODO(all): We have somehow to deal with the different API versions
 func (k8sNetworkDiscovery) handleIngress(ingress *networking_v1beta1.Ingress) voc.IsNetwork {
 	lb := &voc.LoadBalancer{
 		NetworkService: &voc.NetworkService{
