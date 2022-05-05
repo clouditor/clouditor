@@ -32,7 +32,7 @@ import (
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
-	networkingv1 "k8s.io/api/networking/v1"
+	networking_v1beta1 "k8s.io/api/networking/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 )
@@ -40,12 +40,12 @@ import (
 func TestListIngresses(t *testing.T) {
 	client := fake.NewSimpleClientset()
 
-	_, err := client.NetworkingV1().Ingresses("my-namespace").Create(context.TODO(), &networkingv1.Ingress{
+	_, err := client.NetworkingV1beta1().Ingresses("my-namespace").Create(context.TODO(), &networking_v1beta1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{Name: "my-ingress", CreationTimestamp: metav1.Now()},
-		Spec: networkingv1.IngressSpec{Rules: []networkingv1.IngressRule{{
+		Spec: networking_v1beta1.IngressSpec{Rules: []networking_v1beta1.IngressRule{{
 			Host: "myhost",
-			IngressRuleValue: networkingv1.IngressRuleValue{HTTP: &networkingv1.HTTPIngressRuleValue{
-				Paths: []networkingv1.HTTPIngressPath{{
+			IngressRuleValue: networking_v1beta1.IngressRuleValue{HTTP: &networking_v1beta1.HTTPIngressRuleValue{
+				Paths: []networking_v1beta1.HTTPIngressPath{{
 					Path: "test",
 				}},
 			},
@@ -57,18 +57,18 @@ func TestListIngresses(t *testing.T) {
 		t.Fatalf("error injecting pod add: %v", err)
 	}
 
-	_, err = client.NetworkingV1().Ingresses("my-namespace").Create(context.TODO(), &networkingv1.Ingress{
+	_, err = client.NetworkingV1beta1().Ingresses("my-namespace").Create(context.TODO(), &networking_v1beta1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{Name: "my-other-ingress", CreationTimestamp: metav1.Now()},
-		Spec: networkingv1.IngressSpec{
-			Rules: []networkingv1.IngressRule{{
+		Spec: networking_v1beta1.IngressSpec{
+			Rules: []networking_v1beta1.IngressRule{{
 				Host: "myhost",
-				IngressRuleValue: networkingv1.IngressRuleValue{HTTP: &networkingv1.HTTPIngressRuleValue{
-					Paths: []networkingv1.HTTPIngressPath{{
+				IngressRuleValue: networking_v1beta1.IngressRuleValue{HTTP: &networking_v1beta1.HTTPIngressRuleValue{
+					Paths: []networking_v1beta1.HTTPIngressPath{{
 						Path: "test",
 					}}},
 				},
 			}},
-			TLS: []networkingv1.IngressTLS{{Hosts: []string{"myhost"}}},
+			TLS: []networking_v1beta1.IngressTLS{{Hosts: []string{"myhost"}}},
 		},
 	}, metav1.CreateOptions{})
 	if err != nil {
