@@ -11,8 +11,8 @@ cbaEnabled := input.certificateBasedAuthentication.enabled
 encEnabled := input.httpEndpoint.transportEncryption.enabled
 
 applicable {
-	cbaEnabled
-	encEnabled
+	cbaEnabled != null
+	encEnabled != null
 }
 
 # TODO(all): Actually, in this case, data.operator and data.target_value are for the overall metric. Not single checks.

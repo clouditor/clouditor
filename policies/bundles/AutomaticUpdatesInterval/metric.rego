@@ -9,7 +9,7 @@ default compliant = false
 interval := input.automaticUpdates.interval
 
 applicable {
-	interval
+	interval != null
 }
 
 compliant {

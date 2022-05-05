@@ -9,7 +9,7 @@ default compliant = false
 retentionPeriod := input.oSLogging.retentionPeriod
 
 applicable {
-	retentionPeriod
+	retentionPeriod != null
 }
 
 compliant {

@@ -9,7 +9,7 @@ default compliant = false
 enabled := input.l3Firewall.enabled
 
 applicable {
-	enabled
+	enabled != null
 }
 
 compliant {

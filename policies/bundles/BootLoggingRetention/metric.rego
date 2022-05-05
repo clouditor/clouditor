@@ -9,7 +9,7 @@ default compliant = false
 retentionPeriod := input.bootLogging.retentionPeriod
 
 applicable {
-	retentionPeriod
+	retentionPeriod != null
 }
 
 compliant {

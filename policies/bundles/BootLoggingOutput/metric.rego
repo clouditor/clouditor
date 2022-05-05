@@ -11,7 +11,7 @@ metricConfiguration := data.target_value
 output := input.bootLogging.loggingService
 
 applicable {
-	output
+	output != null
 }
 
 compliant {

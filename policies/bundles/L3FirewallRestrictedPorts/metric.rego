@@ -9,7 +9,7 @@ default compliant = false
 restrictedPorts := input.l3Firewall.restrictedPorts
 
 applicable {
-	restrictedPorts
+	restrictedPorts != null
 }
 
 # TODO(all): Maybe change restrictet ports to array of strings. See comment in Ontology.

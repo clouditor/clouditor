@@ -9,7 +9,7 @@ default compliant = false
 enabled := input.webApplicationFirewall.enabled
 
 applicable {
-	enabled
+	enabled != null
 }
 
 compliant {

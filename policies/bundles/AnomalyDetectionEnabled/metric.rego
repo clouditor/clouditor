@@ -9,7 +9,7 @@ default compliant = false
 enabled := input.anomalyDetection.enabled
 
 applicable {
-	enabled
+	enabled != null
 }
 
 compliant {

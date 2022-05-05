@@ -9,7 +9,7 @@ default applicable = false
 enforced := input.httpEndpoint.transportEncryption.enforced
 
 applicable {
-	enforced
+	enforced != null
 }
 
 compliant {

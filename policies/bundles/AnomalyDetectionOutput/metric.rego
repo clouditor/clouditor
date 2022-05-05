@@ -9,7 +9,7 @@ default compliant = false
 output := input.anomalyDetection.output
 
 applicable {
-	output
+	output != null
 }
 
 compliant {

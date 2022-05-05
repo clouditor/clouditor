@@ -9,7 +9,7 @@ default compliant = false
 enabled := input.automaticUpdates.enabled
 
 applicable {
-	enabled
+	enabled != null
 }
 
 compliant {

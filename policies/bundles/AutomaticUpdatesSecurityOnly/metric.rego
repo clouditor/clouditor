@@ -9,7 +9,7 @@ default compliant = false
 securityOnly := input.automaticUpdates.securityOnly
 
 applicable {
-	securityOnly
+	securityOnly != null
 }
 
 compliant {

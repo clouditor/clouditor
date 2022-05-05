@@ -10,7 +10,7 @@ default compliant = false
 broadAssignments := input.rBAC.broadAssignments
 
 applicable {
-	broadAssignments
+	broadAssignments != null
 }
 
 compliant {

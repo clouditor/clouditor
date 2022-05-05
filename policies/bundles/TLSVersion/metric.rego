@@ -10,7 +10,7 @@ default applicable = false
 version := input.httpEndpoint.transportEncryption.tlsVersion
 
 applicable {
-	version
+	version != null
 }
 
 compliant {

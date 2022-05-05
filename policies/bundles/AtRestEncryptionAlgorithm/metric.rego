@@ -9,7 +9,7 @@ default compliant = false
 algorithm := input.atRestEncryption.algorithm
 
 applicable {
-	algorithm
+	algorithm != null
 }
 
 compliant {

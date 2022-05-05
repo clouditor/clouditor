@@ -7,7 +7,7 @@ default compliant = false
 keyUrl := input.atRestEncryption.keyUrl
 
 applicable {
-	keyUrl
+	keyUrl != null
 }
 
 compliant {

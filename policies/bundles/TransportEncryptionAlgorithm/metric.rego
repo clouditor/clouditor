@@ -10,7 +10,7 @@ default applicable = false
 algorithm := endpoint.transportEncryption.algorithm
 
 applicable {
-	algorithm
+	algorithm != null
 }
 
 compliant {

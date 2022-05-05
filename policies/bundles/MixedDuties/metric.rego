@@ -10,7 +10,7 @@ default compliant = false
 mixedDuties := input.rBAC.mixedDuties
 
 applicable {
-	mixedDuties
+	mixedDuties != null
 }
 
 compliant {
