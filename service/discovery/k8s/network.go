@@ -32,7 +32,8 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/networking/v1"
+	networking_v1beta1 "k8s.io/api/networking/v1beta1"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
@@ -67,8 +68,7 @@ func (d k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
 		list = append(list, c)
 	}
 
-	// TODO Does not get ingresses
-	ingresses, err := d.intf.NetworkingV1().Ingresses("").List(context.TODO(), metav1.ListOptions{})
+	ingresses, err := d.intf.NetworkingV1beta1().Ingresses("").List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return list, fmt.Errorf("could not list ingresses: %w", err)
 	}
@@ -112,7 +112,7 @@ func getNetworkServiceResourceID(service *corev1.Service) string {
 	return fmt.Sprintf("/namespaces/%s/services/%s", service.Namespace, service.Name)
 }
 
-func (k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
+func (k8sNetworkDiscovery) handleIngress(ingress *networking_v1beta1.Ingress) voc.IsNetwork {
 	lb := &voc.LoadBalancer{
 		NetworkService: &voc.NetworkService{
 			Networking: &voc.Networking{
@@ -164,6 +164,6 @@ func (k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 	return lb
 }
 
-func getLoadBalancerResourceID(ingress *v1.Ingress) string {
+func getLoadBalancerResourceID(ingress *networking_v1beta1.Ingress) string {
 	return fmt.Sprintf("/namespaces/%s/ingresses/%s", ingress.Namespace, ingress.Name)
 }
