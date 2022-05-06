@@ -47,7 +47,9 @@ import (
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -985,68 +987,80 @@ func TestHandleEvidence(t *testing.T) {
 	}
 }
 
-// func TestService_initOrchestratorStoreStream(t *testing.T) {
-// 	type fields struct {
-// 		opts []ServiceOption
-// 	}
-// 	type args struct {
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		fields  fields
-// 		args    args
-// 		wantErr assert.ErrorAssertionFunc
-// 	}{
-// 		{
-// 			name: "Invalid RPC connection",
-// 			fields: fields{
-// 				opts: []ServiceOption{
-// 					WithOrchestratorAddress("localhost:1"),
-// 				},
-// 			},
-// 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-// 				s, _ := status.FromError(errors.Unwrap(err))
-// 				return assert.Equal(t, codes.Unavailable, s.Code())
-// 			},
-// 		},
-// 		{
-// 			name: "Authenticated RPC connection with valid user",
-// 			fields: fields{
-// 				opts: []ServiceOption{
-// 					WithOrchestratorAddress("bufnet"),
-// 					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
-// 					WithAdditionalGRPCOpts(grpc.WithContextDialer(bufConnDialer)),
-// 				},
-// 			},
-// 			args: args{},
-// 		},
-// 		{
-// 			name: "Authenticated RPC connection with invalid user",
-// 			fields: fields{
-// 				opts: []ServiceOption{
-// 					WithOrchestratorAddress("bufnet"),
-// 					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
-// 					WithAdditionalGRPCOpts(grpc.WithContextDialer(bufConnDialer)),
-// 				},
-// 			},
-// 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-// 				s, _ := status.FromError(errors.Unwrap(err))
-// 				return assert.Equal(t, codes.Unauthenticated, s.Code())
-// 			},
-// 		},
-// 	}
+func TestService_initOrchestratorStoreStream(t *testing.T) {
+	type fields struct {
+		opts []ServiceOption
+	}
+	type args struct {
+		url string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Invalid RPC connection",
+			args: args{
+				url: "localhost:1",
+			},
+			fields: fields{
+				opts: []ServiceOption{
+					WithOrchestratorAddress("localhost:1"),
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				s, _ := status.FromError(errors.Unwrap(err))
+				return assert.Equal(t, codes.Unavailable, s.Code())
+			},
+		},
+		// TODO: Fix test
+		// {
+		// 	name: "Authenticated RPC connection with valid user",
+		// 	args: args{
+		// 		url: "bufnet",
+		// 	},
+		// 	fields: fields{
+		// 		opts: []ServiceOption{
+		// 			WithOrchestratorAddress("bufnet"),
+		// 			WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
+		// 			WithAdditionalGRPCOpts(grpc.WithContextDialer(bufConnDialer)),
+		// 		},
+		// 	},
+		// },
+		{
+			name: "Authenticated RPC connection with invalid user",
+			args: args{
+				url: "bufnet",
+			},
+			fields: fields{
+				opts: []ServiceOption{
+					WithOrchestratorAddress("bufnet"),
+					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
+					WithAdditionalGRPCOpts(grpc.WithContextDialer(bufConnDialer)),
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				s, _ := status.FromError(errors.Unwrap(err))
+				return assert.Equal(t, codes.Unauthenticated, s.Code())
+			},
+		},
+	}
 
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			s := NewService(tt.fields.opts...)
-// 			err := s.initOrchestratorStream()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := NewService(tt.fields.opts...)
+			stream, err := s.initOrchestratorStream(tt.args.url, s.grpcOpts...)
 
-// 			if tt.wantErr != nil {
-// 				tt.wantErr(t, err)
-// 			}
-// 		})
-// 	}
-// }
+			if tt.wantErr != nil {
+				tt.wantErr(t, err)
+			} else {
+				assert.NotEmpty(t, stream)
+			}
+		})
+	}
+}
 
 func TestService_recvEventsLoop(t *testing.T) {
 	type fields struct {
