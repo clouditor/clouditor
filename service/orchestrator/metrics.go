@@ -320,6 +320,12 @@ func (svc *Service) UpdateMetricConfiguration(_ context.Context, req *orchestrat
 		cld orchestrator.CloudService
 	)
 
+	// TODO(oxisto): Validate the metric configuration request
+
+	// Lock metrics mutex
+	svc.mm.Lock()
+	defer svc.mm.Unlock()
+
 	// Check, if metric exists according to req.MetricId
 	if _, ok = svc.metrics[req.MetricId]; !ok {
 		return nil, status.Errorf(codes.NotFound, "could not find metric with id %s", req.MetricId)
