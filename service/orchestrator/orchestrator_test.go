@@ -149,7 +149,7 @@ func TestAssessmentResultHook(t *testing.T) {
 			wg.Wait()
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("StoreAssessmentResult() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("StoreAssessmentResult() error = %v, wantErrMessage %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(gotResp, tt.wantResp) {
@@ -244,7 +244,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 			s := NewService()
 			gotResp, err := s.StoreAssessmentResult(tt.args.in0, tt.args.assessment)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("StoreAssessmentResult() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("StoreAssessmentResult() error = %v, wantErrMessage %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(gotResp, tt.wantResp) {
@@ -355,7 +355,7 @@ func TestStoreAssessmentResults(t *testing.T) {
 			}
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Got StoreAssessmentResults() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Got StoreAssessmentResults() error = %v, wantErrMessage %v", err, tt.wantErr)
 				assert.Equal(t, tt.fields.countElementsInResults, len(s.results))
 				return
 			} else if tt.wantErr {
@@ -600,15 +600,21 @@ func TestNewService(t *testing.T) {
 }
 
 func Test_CreateCertificate(t *testing.T) {
+	// Mock certificates
+	mockCertificate := orchestratortest.CreateCertificateMock()
+	mockCertificateWithoutID := orchestratortest.CreateCertificateMock()
+	mockCertificateWithoutID.Id = ""
+
 	type args struct {
 		in0 context.Context
 		req *orchestrator.CreateCertificateRequest
 	}
-	tests := []struct {
-		name         string
-		args         args
-		wantResponse *emptypb.Empty
-		wantErr      bool
+	var tests = []struct {
+		name           string
+		args           args
+		wantResponse   *orchestrator.Certificate
+		wantErrMessage error
+		wantErrCode    codes.Code
 	}{
 		{
 			"missing request",
@@ -617,7 +623,8 @@ func Test_CreateCertificate(t *testing.T) {
 				nil,
 			},
 			nil,
-			true,
+			orchestrator.ErrRequestIsNil,
+			codes.InvalidArgument,
 		},
 		{
 			"missing certificate",
@@ -626,28 +633,47 @@ func Test_CreateCertificate(t *testing.T) {
 				&orchestrator.CreateCertificateRequest{},
 			},
 			nil,
-			true,
+			orchestrator.ErrCertificateIsNil,
+			codes.InvalidArgument,
+		},
+		{
+			"missing certificate id",
+			args{
+				context.Background(),
+				&orchestrator.CreateCertificateRequest{
+					Certificate: mockCertificateWithoutID,
+				},
+			},
+			nil,
+			orchestrator.ErrCertIDIsMissing,
+			codes.InvalidArgument,
 		},
 		{
 			"valid certificate",
 			args{
 				context.Background(),
 				&orchestrator.CreateCertificateRequest{
-					Certificate: orchestratortest.CreateCertificateMock(),
+					Certificate: mockCertificate,
 				},
 			},
-			&emptypb.Empty{},
-			false,
+			mockCertificate,
+			nil,
+			// wantErrCode doesn't matter since error (message) is nil
+			0,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
 			gotResponse, err := s.CreateCertificate(tt.args.in0, tt.args.req)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.CreateCertificate() error = %v, wantErr %v", err, tt.wantErr)
+			// If error shouldn't be nil, check error message and code
+			// TODO(lebogg): This pattern we probably have quite often. Maybe extract it (to test utils)?
+			if tt.wantErrMessage != nil {
+				assert.Equal(t, status.Code(err), tt.wantErrCode)
+				assert.Contains(t, err.Error(), tt.wantErrMessage.Error())
 				return
 			}
+			// If no error is wanted, check response
 			if !reflect.DeepEqual(gotResponse, tt.wantResponse) {
 				t.Errorf("Service.CreateCertificate() = %v, want %v", gotResponse, tt.wantResponse)
 			}
