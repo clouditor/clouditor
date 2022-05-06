@@ -6,12 +6,12 @@ default applicable = false
 
 default compliant = false
 
-enc := input.atRestEncryption
+enabled := input.atRestEncryption.enabled
 
 applicable {
-	enc
+	enabled != null
 }
 
 compliant {
-	compare(data.operator, data.target_value, enc.enabled)
+	compare(data.operator, data.target_value, enabled)
 }

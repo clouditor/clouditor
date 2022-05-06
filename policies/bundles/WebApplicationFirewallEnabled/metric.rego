@@ -6,12 +6,12 @@ default applicable = false
 
 default compliant = false
 
-waf := input.webApplicationFirewall
+enabled := input.webApplicationFirewall.enabled
 
 applicable {
-	waf
+	enabled != null
 }
 
 compliant {
-	compare(data.operator, data.target_value, waf.enabled)
+	compare(data.operator, data.target_value, enabled)
 }

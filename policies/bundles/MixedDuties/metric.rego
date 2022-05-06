@@ -7,13 +7,13 @@ default applicable = false
 default compliant = false
 
 # TODO(lebogg): Check if `rBAC` is correct representation in JSON
-rbac := input.rBAC
+mixedDuties := input.rBAC.mixedDuties
 
 applicable {
-	rbac
+	mixedDuties != null
 }
 
 compliant {
 	# TODO(all): Target value ?
-	compare(data.operator, data.target_value, rbac.mixedDuties)
+	compare(data.operator, data.target_value, mixedDuties)
 }
