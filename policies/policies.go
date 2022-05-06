@@ -39,8 +39,10 @@ var (
 	log = logrus.WithField("component", "policies")
 )
 
-type metricsToolIDAndResourceTypeCache struct {
+// metricsCache holds all cached metrics for different combinations of Tools with resource types
+type metricsCache struct {
 	sync.RWMutex
+	// Metrics cached in a map. Key is composed of tool id and resource types concatenation
 	m map[string][]string
 }
 

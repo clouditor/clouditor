@@ -45,7 +45,7 @@ type regoEval struct {
 	qc *queryCache
 
 	// mrtc stores a list of applicable metrics per toolID and resourceType
-	mrtc *metricsToolIDAndResourceTypeCache
+	mrtc *metricsCache
 }
 
 type queryCache struct {
@@ -57,7 +57,7 @@ type orElseFunc func(key string) (query *rego.PreparedEvalQuery, err error)
 
 func NewRegoEval() PolicyEval {
 	return &regoEval{
-		mrtc: &metricsToolIDAndResourceTypeCache{m: make(map[string][]string)},
+		mrtc: &metricsCache{m: make(map[string][]string)},
 		qc:   newQueryCache(),
 	}
 }

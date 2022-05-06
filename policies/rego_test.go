@@ -43,7 +43,7 @@ func Test_regoEval_Eval(t *testing.T) {
 		evidenceID string
 
 		qc      *queryCache
-		mrtc    *metricsToolIDAndResourceTypeCache
+		mrtc    *metricsCache
 		storage persistence.Storage
 	}
 	type args struct {
@@ -79,7 +79,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				},
 				evidenceID: mockObjStorage1EvidenceID,
 				qc:         newQueryCache(),
-				mrtc:       &metricsToolIDAndResourceTypeCache{m: make(map[string][]string)},
+				mrtc:       &metricsCache{m: make(map[string][]string)},
 				storage:    testutil.NewInMemoryStorage(t),
 			},
 			args:       args{src: &mockMetricsSource{t: t}},
@@ -105,7 +105,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				},
 				evidenceID: mockObjStorage2EvidenceID,
 				qc:         newQueryCache(),
-				mrtc:       &metricsToolIDAndResourceTypeCache{m: make(map[string][]string)},
+				mrtc:       &metricsCache{m: make(map[string][]string)},
 				storage:    testutil.NewInMemoryStorage(t),
 			},
 			args:       args{src: &mockMetricsSource{t: t}},
@@ -135,7 +135,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				},
 				evidenceID: mockObjStorage2EvidenceID,
 				qc:         newQueryCache(),
-				mrtc:       &metricsToolIDAndResourceTypeCache{m: make(map[string][]string)},
+				mrtc:       &metricsCache{m: make(map[string][]string)},
 				storage:    testutil.NewInMemoryStorage(t),
 			},
 			args:       args{src: &mockMetricsSource{t: t}},
@@ -182,7 +182,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				},
 				evidenceID: mockVM1EvidenceID,
 				qc:         newQueryCache(),
-				mrtc:       &metricsToolIDAndResourceTypeCache{m: make(map[string][]string)},
+				mrtc:       &metricsCache{m: make(map[string][]string)},
 				storage:    testutil.NewInMemoryStorage(t),
 			},
 			args:       args{src: &mockMetricsSource{t: t}},
@@ -217,7 +217,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				},
 				evidenceID: mockVM2EvidenceID,
 				qc:         newQueryCache(),
-				mrtc:       &metricsToolIDAndResourceTypeCache{m: make(map[string][]string)},
+				mrtc:       &metricsCache{m: make(map[string][]string)},
 				storage:    testutil.NewInMemoryStorage(t),
 			},
 			args:       args{src: &mockMetricsSource{t: t}},
