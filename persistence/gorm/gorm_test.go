@@ -361,7 +361,6 @@ func Test_storage_Update(t *testing.T) {
 	assert.Equal(t, user.Email, gotUser.Email)
 
 	// Testing cloud service
-
 	// Create cloud service
 	cloudService := orchestrator.CloudService{
 		Id:          "SomeId",
