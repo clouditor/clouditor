@@ -178,7 +178,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine
 				RetentionPeriod: 0,
 				LoggingService:  []voc.ResourceID{},
 			},
-		}, // TODO(garuppel): Add OSLogging
+		}, 
 		BlockStorage: []voc.ResourceID{},
 	}
 
