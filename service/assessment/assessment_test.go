@@ -47,9 +47,7 @@ import (
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -85,10 +83,10 @@ func TestNewService(t *testing.T) {
 			want: &Service{
 				results:              make(map[string]*assessment.AssessmentResult),
 				evidenceStoreAddress: "localhost:9090",
-				evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
+				evidenceStoreStreams: nil,
 				orchestratorAddress:  "localhost:9090",
+				orchestratorStreams:  nil,
 				cachedConfigurations: make(map[string]cachedConfiguration),
-				orchestratorChannel:  nil,
 			},
 		},
 		{
@@ -102,8 +100,9 @@ func TestNewService(t *testing.T) {
 			want: &Service{
 				results:              make(map[string]*assessment.AssessmentResult),
 				evidenceStoreAddress: "localhost:9091",
-				evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
+				evidenceStoreStreams: nil,
 				orchestratorAddress:  "localhost:9092",
+				orchestratorStreams:  nil,
 				cachedConfigurations: make(map[string]cachedConfiguration),
 			},
 		},
@@ -113,14 +112,14 @@ func TestNewService(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService(tt.args.opts...)
 
-			// Check channels have been created
-			assert.NotNil(t, s.orchestratorChannel)
-
-			// Ignore pointers to channel in subsequent DeepEqual check
-			s.orchestratorChannel = nil
-
 			// Ignore pointers to storage and policy eval
 			s.pe = nil
+
+			// Check if stream are not nil and ignore them for the following deepEqual
+			assert.NotNil(t, s.evidenceStoreStreams)
+			assert.NotNil(t, s.orchestratorStreams)
+			s.evidenceStoreStreams = nil
+			s.orchestratorStreams = nil
 
 			if got := s; !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewService() = %v, want %v", got, tt.want)
@@ -235,7 +234,6 @@ func TestAssessEvidence(t *testing.T) {
 			s := NewService()
 			if tt.hasRPCConnection {
 				s.grpcOpts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
-				assert.NoError(t, s.initOrchestratorStream())
 			} else {
 				// clear the evidence URL, just to be sure
 				s.evidenceStoreAddress = ""
@@ -363,12 +361,9 @@ func TestAssessEvidences(t *testing.T) {
 				results:                       tt.fields.results,
 				cachedConfigurations:          make(map[string]cachedConfiguration),
 				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
-				orchestratorChannel:           make(chan *assessment.AssessmentResult, 1000),
 				grpcOpts:                      []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 				pe:                            policies.NewRegoEval(),
 			}
-
-			assert.NoError(t, s.initOrchestratorStream())
 
 			if tt.args.streamToServer != nil {
 				err = s.AssessEvidences(tt.args.streamToServer)
@@ -480,7 +475,6 @@ func TestAssessmentResultHooks(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			hookCallCounter = 0
 			s := NewService(WithAdditionalGRPCOpts(grpc.WithContextDialer(bufConnDialer)))
-			assert.NoError(t, s.initOrchestratorStream())
 
 			for i, hookFunction := range tt.args.resultHooks {
 				s.RegisterAssessmentResultHook(hookFunction)
@@ -512,32 +506,13 @@ func TestAssessmentResultHooks(t *testing.T) {
 	}
 }
 
-/*func TestListAssessmentResults(t *testing.T) {
-	s := NewService(WithAdditionalGRPCOpts(grpc.WithContextDialer(bufConnDialer)))
-	assert.NoError(t, s.initOrchestratorStream())
-
-	_, err := s.AssessEvidence(context.TODO(), &assessment.AssessEvidenceRequest{
-		Evidence: &evidence.Evidence{
-			Id:        "11111111-1111-1111-1111-111111111111",
-			ToolId:    "mock",
-			Timestamp: timestamppb.Now(),
-			Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
-		}})
-	assert.NoError(t, err)
-	var results *assessment.ListAssessmentResultsResponse
-	results, err = s.ListAssessmentResults(context.TODO(), &assessment.ListAssessmentResultsRequest{})
-	assert.NoError(t, err)
-	assert.NotNil(t, results)
-}*/
-
 func TestService_ListAssessmentResults(t *testing.T) {
 	type fields struct {
 		evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
 		evidenceStoreAddress string
-		orchestratorStream   orchestrator.Orchestrator_StoreAssessmentResultsClient
+		orchestratorStreams  *api.StreamsOf[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest]
 		orchestratorClient   orchestrator.OrchestratorClient
 		orchestratorAddress  string
-		orchestratorChannel  chan *assessment.AssessmentResult
 		metricEventStream    orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
 		resultHooks          []assessment.ResultHookFunc
 		results              map[string]*assessment.AssessmentResult
@@ -679,10 +654,9 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			s := &Service{
 				evidenceStoreStreams: tt.fields.evidenceStoreStreams,
 				evidenceStoreAddress: tt.fields.evidenceStoreAddress,
-				orchestratorStream:   tt.fields.orchestratorStream,
+				orchestratorStreams:  tt.fields.orchestratorStreams,
 				orchestratorClient:   tt.fields.orchestratorClient,
 				orchestratorAddress:  tt.fields.orchestratorAddress,
-				orchestratorChannel:  tt.fields.orchestratorChannel,
 				metricEventStream:    tt.fields.metricEventStream,
 				resultHooks:          tt.fields.resultHooks,
 				results:              tt.fields.results,
@@ -1000,7 +974,7 @@ func TestHandleEvidence(t *testing.T) {
 				s.grpcOpts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
 			}
 			if tt.fields.hasOrchestratorStream {
-				assert.NoError(t, s.initOrchestratorStream())
+				s.grpcOpts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
 			}
 			// Two tests: 1st) wantErr function. 2nd) if wantErr false then check if a result is added to map
 			if !tt.wantErr(t, s.handleEvidence(tt.args.evidence, tt.args.resourceId), fmt.Sprintf("handleEvidence(%v, %v)", tt.args.evidence, tt.args.resourceId)) {
@@ -1011,77 +985,76 @@ func TestHandleEvidence(t *testing.T) {
 	}
 }
 
-func TestService_initOrchestratorStoreStream(t *testing.T) {
-	type fields struct {
-		opts []ServiceOption
-	}
-	type args struct {
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "Invalid RPC connection",
-			fields: fields{
-				opts: []ServiceOption{
-					WithOrchestratorAddress("localhost:1"),
-				},
-			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				s, _ := status.FromError(errors.Unwrap(err))
-				return assert.Equal(t, codes.Unavailable, s.Code())
-			},
-		},
-		{
-			name: "Authenticated RPC connection with valid user",
-			fields: fields{
-				opts: []ServiceOption{
-					WithOrchestratorAddress("bufnet"),
-					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
-					WithAdditionalGRPCOpts(grpc.WithContextDialer(bufConnDialer)),
-				},
-			},
-			args: args{},
-		},
-		{
-			name: "Authenticated RPC connection with invalid user",
-			fields: fields{
-				opts: []ServiceOption{
-					WithOrchestratorAddress("bufnet"),
-					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
-					WithAdditionalGRPCOpts(grpc.WithContextDialer(bufConnDialer)),
-				},
-			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				s, _ := status.FromError(errors.Unwrap(err))
-				return assert.Equal(t, codes.Unauthenticated, s.Code())
-			},
-		},
-	}
+// func TestService_initOrchestratorStoreStream(t *testing.T) {
+// 	type fields struct {
+// 		opts []ServiceOption
+// 	}
+// 	type args struct {
+// 	}
+// 	tests := []struct {
+// 		name    string
+// 		fields  fields
+// 		args    args
+// 		wantErr assert.ErrorAssertionFunc
+// 	}{
+// 		{
+// 			name: "Invalid RPC connection",
+// 			fields: fields{
+// 				opts: []ServiceOption{
+// 					WithOrchestratorAddress("localhost:1"),
+// 				},
+// 			},
+// 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+// 				s, _ := status.FromError(errors.Unwrap(err))
+// 				return assert.Equal(t, codes.Unavailable, s.Code())
+// 			},
+// 		},
+// 		{
+// 			name: "Authenticated RPC connection with valid user",
+// 			fields: fields{
+// 				opts: []ServiceOption{
+// 					WithOrchestratorAddress("bufnet"),
+// 					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
+// 					WithAdditionalGRPCOpts(grpc.WithContextDialer(bufConnDialer)),
+// 				},
+// 			},
+// 			args: args{},
+// 		},
+// 		{
+// 			name: "Authenticated RPC connection with invalid user",
+// 			fields: fields{
+// 				opts: []ServiceOption{
+// 					WithOrchestratorAddress("bufnet"),
+// 					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
+// 					WithAdditionalGRPCOpts(grpc.WithContextDialer(bufConnDialer)),
+// 				},
+// 			},
+// 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+// 				s, _ := status.FromError(errors.Unwrap(err))
+// 				return assert.Equal(t, codes.Unauthenticated, s.Code())
+// 			},
+// 		},
+// 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := NewService(tt.fields.opts...)
-			err := s.initOrchestratorStream()
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			s := NewService(tt.fields.opts...)
+// 			err := s.initOrchestratorStream()
 
-			if tt.wantErr != nil {
-				tt.wantErr(t, err)
-			}
-		})
-	}
-}
+// 			if tt.wantErr != nil {
+// 				tt.wantErr(t, err)
+// 			}
+// 		})
+// 	}
+// }
 
 func TestService_recvEventsLoop(t *testing.T) {
 	type fields struct {
 		evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
 		evidenceStoreAddress string
-		orchestratorStream   orchestrator.Orchestrator_StoreAssessmentResultsClient
+		orchestratorStreams  *api.StreamsOf[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest]
 		orchestratorClient   orchestrator.OrchestratorClient
 		orchestratorAddress  string
-		orchestratorChannel  chan *assessment.AssessmentResult
 		metricEventStream    orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
 		resultHooks          []assessment.ResultHookFunc
 		results              map[string]*assessment.AssessmentResult
@@ -1114,10 +1087,9 @@ func TestService_recvEventsLoop(t *testing.T) {
 			svc := &Service{
 				evidenceStoreStreams: tt.fields.evidenceStoreStreams,
 				evidenceStoreAddress: tt.fields.evidenceStoreAddress,
-				orchestratorStream:   tt.fields.orchestratorStream,
+				orchestratorStreams:  tt.fields.orchestratorStreams,
 				orchestratorClient:   tt.fields.orchestratorClient,
 				orchestratorAddress:  tt.fields.orchestratorAddress,
-				orchestratorChannel:  tt.fields.orchestratorChannel,
 				metricEventStream:    tt.fields.metricEventStream,
 				resultHooks:          tt.fields.resultHooks,
 				results:              tt.fields.results,
