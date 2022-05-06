@@ -36,9 +36,9 @@ require (
 	gorm.io/driver/postgres v1.3.1
 	gorm.io/driver/sqlite v1.3.1
 	gorm.io/gorm v1.23.2
-	k8s.io/api v0.23.4
-	k8s.io/apimachinery v0.23.4
-	k8s.io/client-go v0.23.4
+	k8s.io/api v0.23.6
+	k8s.io/apimachinery v0.23.6
+	k8s.io/client-go v0.23.6
 )
 
 // tools dependencies
