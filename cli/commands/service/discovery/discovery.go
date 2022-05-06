@@ -101,8 +101,6 @@ func NewQueryDiscoveryCommand() *cobra.Command {
 				Results: results,
 			}
 
-			res, err = client.Query(context.Background(), &req)
-
 			return session.HandleResponse(res, err)
 		},
 	}
