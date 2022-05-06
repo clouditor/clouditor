@@ -150,6 +150,10 @@ func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetr
 		return nil, status.Errorf(codes.InvalidArgument, "%v", newError)
 	}
 
+	// Lock metrics mutex
+	svc.mm.Lock()
+	defer svc.mm.Unlock()
+
 	// Check, if metric id already exists
 	if _, ok := svc.metrics[req.Metric.Id]; ok {
 		return nil, status.Error(codes.AlreadyExists, "metric already exists")
@@ -183,6 +187,10 @@ func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetr
 		log.Error(newError)
 		return nil, status.Errorf(codes.InvalidArgument, "%v", newError)
 	}
+
+	// Lock metrics mutex
+	svc.mm.Lock()
+	defer svc.mm.Unlock()
 
 	// Check, if metric exists according to req.MetricId
 	if metric, ok = svc.metrics[req.MetricId]; !ok {
@@ -218,6 +226,10 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 
 	// TODO(oxisto): Validate the metric implementation request
 
+	// Lock metrics mutex
+	svc.mm.Lock()
+	defer svc.mm.Unlock()
+
 	// Check, if metric exists according to req.MetricId
 	if metric, ok = svc.metrics[req.MetricId]; !ok {
 		err := fmt.Errorf("metric with identifier %s does not exist", req.MetricId)
@@ -250,6 +262,10 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetricsRequest) (res *orchestrator.ListMetricsResponse, err error) {
 	res = new(orchestrator.ListMetricsResponse)
 
+	// Lock metrics mutex
+	svc.mm.Lock()
+	defer svc.mm.Unlock()
+
 	// Paginate the metrics according to the request
 	res.Metrics, res.NextPageToken, err = service.PaginateMapValues(req, svc.metrics, func(a *assessment.Metric, b *assessment.Metric) bool {
 		return a.Id < b.Id
@@ -265,6 +281,10 @@ func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetrics
 func (svc *Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequest) (metric *assessment.Metric, err error) {
 	var ok bool
 
+	// Lock metrics mutex
+	svc.mm.Lock()
+	defer svc.mm.Unlock()
+
 	if metric, ok = svc.metrics[req.MetricId]; !ok {
 		return nil, status.Errorf(codes.NotFound, "could not find metric with id %s", req.MetricId)
 	}
@@ -272,9 +292,13 @@ func (svc *Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequ
 	return
 }
 
-func (s *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.GetMetricConfigurationRequest) (response *assessment.MetricConfiguration, err error) {
+func (svc *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.GetMetricConfigurationRequest) (response *assessment.MetricConfiguration, err error) {
+	// Lock metrics mutex
+	svc.mm.Lock()
+	defer svc.mm.Unlock()
+
 	// Check, if we have a specific configuration for the metric
-	if config, ok := s.metricConfigurations[req.ServiceId][req.MetricId]; ok {
+	if config, ok := svc.metricConfigurations[req.ServiceId][req.MetricId]; ok {
 		return config, nil
 	}
 
@@ -297,6 +321,10 @@ func (svc *Service) UpdateMetricConfiguration(_ context.Context, req *orchestrat
 	)
 
 	// TODO(oxisto): Validate the metric configuration request
+
+	// Lock metrics mutex
+	svc.mm.Lock()
+	defer svc.mm.Unlock()
 
 	// Check, if metric exists according to req.MetricId
 	if _, ok = svc.metrics[req.MetricId]; !ok {
