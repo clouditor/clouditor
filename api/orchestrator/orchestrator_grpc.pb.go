@@ -77,7 +77,7 @@ type OrchestratorClient interface {
 	GetMetricImplementation(ctx context.Context, in *GetMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error)
 	SubscribeMetricChangeEvents(ctx context.Context, in *SubscribeMetricChangeEventRequest, opts ...grpc.CallOption) (Orchestrator_SubscribeMetricChangeEventsClient, error)
 	// Creates a new certificate
-	CreateCertificate(ctx context.Context, in *CreateCertificateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	CreateCertificate(ctx context.Context, in *CreateCertificateRequest, opts ...grpc.CallOption) (*Certificate, error)
 	// Retrieves a certificate
 	GetCertificate(ctx context.Context, in *GetCertificateRequest, opts ...grpc.CallOption) (*Certificate, error)
 	// Lists all target certificates
@@ -357,8 +357,8 @@ func (x *orchestratorSubscribeMetricChangeEventsClient) Recv() (*MetricChangeEve
 	return m, nil
 }
 
-func (c *orchestratorClient) CreateCertificate(ctx context.Context, in *CreateCertificateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *orchestratorClient) CreateCertificate(ctx context.Context, in *CreateCertificateRequest, opts ...grpc.CallOption) (*Certificate, error) {
+	out := new(Certificate)
 	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/CreateCertificate", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -459,7 +459,7 @@ type OrchestratorServer interface {
 	GetMetricImplementation(context.Context, *GetMetricImplementationRequest) (*assessment.MetricImplementation, error)
 	SubscribeMetricChangeEvents(*SubscribeMetricChangeEventRequest, Orchestrator_SubscribeMetricChangeEventsServer) error
 	// Creates a new certificate
-	CreateCertificate(context.Context, *CreateCertificateRequest) (*emptypb.Empty, error)
+	CreateCertificate(context.Context, *CreateCertificateRequest) (*Certificate, error)
 	// Retrieves a certificate
 	GetCertificate(context.Context, *GetCertificateRequest) (*Certificate, error)
 	// Lists all target certificates
@@ -547,7 +547,7 @@ func (UnimplementedOrchestratorServer) GetMetricImplementation(context.Context, 
 func (UnimplementedOrchestratorServer) SubscribeMetricChangeEvents(*SubscribeMetricChangeEventRequest, Orchestrator_SubscribeMetricChangeEventsServer) error {
 	return status.Errorf(codes.Unimplemented, "method SubscribeMetricChangeEvents not implemented")
 }
-func (UnimplementedOrchestratorServer) CreateCertificate(context.Context, *CreateCertificateRequest) (*emptypb.Empty, error) {
+func (UnimplementedOrchestratorServer) CreateCertificate(context.Context, *CreateCertificateRequest) (*Certificate, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateCertificate not implemented")
 }
 func (UnimplementedOrchestratorServer) GetCertificate(context.Context, *GetCertificateRequest) (*Certificate, error) {

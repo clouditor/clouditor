@@ -234,7 +234,7 @@ service Orchestrator {
       returns (stream MetricChangeEvent) {}
 
   // Creates a new certificate
-  rpc CreateCertificate(CreateCertificateRequest) returns (google.protobuf.Empty) {
+  rpc CreateCertificate(CreateCertificateRequest) returns (Certificate) {
     option (google.api.http) = {
       post : "/v1/orchestrator/certificates"
       body : "certificate"
