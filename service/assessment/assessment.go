@@ -105,7 +105,8 @@ type Service struct {
 	authorizer api.Authorizer
 
 	// grpcOpts contains additional gRPC options that will be appended to all gRPC dial calls. Useful for testing.
-	grpcOpts []grpc.DialOption
+	grpcOptsEvidenceStore []grpc.DialOption
+	grpcOptsOrchestrator  []grpc.DialOption
 
 	// pe contains the actual policy evaluation engine we use
 	pe policies.PolicyEval
@@ -143,10 +144,17 @@ func WithOAuth2Authorizer(config *clientcredentials.Config) ServiceOption {
 	}
 }
 
-// WithAdditionalGRPCOpts is an option to configure additional gRPC options.
-func WithAdditionalGRPCOpts(opts ...grpc.DialOption) ServiceOption {
+// WithAdditionalGRPCOptsEvidenceStore is an option to configure additional gRPC options for the Evidence Store.
+func WithAdditionalGRPCOptsEvidenceStore(opts ...grpc.DialOption) ServiceOption {
 	return func(s *Service) {
-		s.grpcOpts = opts
+		s.grpcOptsEvidenceStore = opts
+	}
+}
+
+// WithAdditionalGRPCOpts is an option to configure additional gRPC options for the Orchestrator.
+func WithAdditionalGRPCOptsOrchestrator(opts ...grpc.DialOption) ServiceOption {
+	return func(s *Service) {
+		s.grpcOptsOrchestrator = opts
 	}
 }
 
@@ -283,7 +291,7 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 	}
 
 	// Get Evidence Store stream
-	channelEvidenceStore, err := svc.evidenceStoreStreams.GetStream(svc.evidenceStoreAddress, "Evidence Store", svc.initEvidenceStoreStream, svc.grpcOpts...)
+	channelEvidenceStore, err := svc.evidenceStoreStreams.GetStream(svc.evidenceStoreAddress, "Evidence Store", svc.initEvidenceStoreStream, svc.grpcOptsEvidenceStore...)
 	if err != nil {
 		err = fmt.Errorf("could not get stream to evidence store (%s): %w", svc.evidenceStoreAddress, err)
 		log.Error(err)
@@ -294,7 +302,7 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 	}
 
 	// Get Orchestrator stream
-	channelOrchestrator, err := svc.orchestratorStreams.GetStream(svc.orchestratorAddress, "Orchestrator", svc.initOrchestratorStream, svc.grpcOpts...)
+	channelOrchestrator, err := svc.orchestratorStreams.GetStream(svc.orchestratorAddress, "Orchestrator", svc.initOrchestratorStream, svc.grpcOptsOrchestrator...)
 	if err != nil {
 		err = fmt.Errorf("could not get stream to orchestrator (%s): %w", svc.orchestratorAddress, err)
 		log.Error(err)
@@ -567,7 +575,7 @@ func (svc *Service) recvEventsLoop() {
 func (svc *Service) setOrchestratorClient() error {
 	// Establish connection to orchestrator gRPC service
 	conn, err := grpc.Dial(svc.orchestratorAddress,
-		api.DefaultGrpcDialOptions(svc.orchestratorAddress, svc, svc.grpcOpts...)...,
+		api.DefaultGrpcDialOptions(svc.orchestratorAddress, svc, svc.grpcOptsOrchestrator...)...,
 	)
 	if err != nil {
 		return fmt.Errorf("could not connect to orchestrator service: %w", err)
