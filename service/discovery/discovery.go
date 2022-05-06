@@ -362,7 +362,7 @@ func (s *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *di
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
 
-	res.Results = &structpb.ListValue{Values: r}
+	res.Results = r
 
 	return
 }

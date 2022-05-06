@@ -29,8 +29,10 @@ import (
 	"context"
 	"fmt"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/cli"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/spf13/cobra"
 )
@@ -75,6 +77,7 @@ func NewQueryDiscoveryCommand() *cobra.Command {
 				session *cli.Session
 				client  discovery.DiscoveryClient
 				res     *discovery.QueryResponse
+				results []*structpb.Value
 				req     discovery.QueryRequest
 			)
 
@@ -89,7 +92,14 @@ func NewQueryDiscoveryCommand() *cobra.Command {
 				req.FilteredType = args[0]
 			}
 
-			res, err = client.Query(context.Background(), &req)
+			results, err = api.ListAllPaginated(&discovery.QueryRequest{}, client.Query, func(res *discovery.QueryResponse) []*structpb.Value {
+				return res.Results
+			})
+
+			// Build a response with all results
+			res = &discovery.QueryResponse{
+				Results: results,
+			}
 
 			return session.HandleResponse(res, err)
 		},

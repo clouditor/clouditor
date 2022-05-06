@@ -227,7 +227,7 @@ func TestQuery(t *testing.T) {
 			if err != nil {
 				return
 			}
-			assert.Equal(t, tt.numberOfQueriedResources, len(response.Results.Values))
+			assert.Equal(t, tt.numberOfQueriedResources, len(response.Results))
 		})
 		// If a bad resource was added it will be removed. Otherwise no-op
 		delete(s.resources, "MockResourceId")
