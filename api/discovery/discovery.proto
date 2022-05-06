@@ -66,6 +66,6 @@ message QueryRequest {
 }
 
 message QueryResponse {
-  google.protobuf.ListValue results = 1;
+  repeated google.protobuf.Value results = 1;
   string next_page_token = 2;
 }

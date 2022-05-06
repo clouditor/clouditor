@@ -26,9 +26,9 @@
 package evidence
 
 import (
-	"context"
 	"fmt"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
@@ -41,10 +41,11 @@ func NewListEvidencesCommand() *cobra.Command {
 		Short: "Lists all evidences",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
-				err     error
-				session *cli.Session
-				client  evidence.EvidenceStoreClient
-				res     *evidence.ListEvidencesResponse
+				err       error
+				session   *cli.Session
+				client    evidence.EvidenceStoreClient
+				res       *evidence.ListEvidencesResponse
+				evidences []*evidence.Evidence
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -54,7 +55,14 @@ func NewListEvidencesCommand() *cobra.Command {
 
 			client = evidence.NewEvidenceStoreClient(session)
 
-			res, err = client.ListEvidences(context.Background(), &evidence.ListEvidencesRequest{})
+			evidences, err = api.ListAllPaginated(&evidence.ListEvidencesRequest{}, client.ListEvidences, func(res *evidence.ListEvidencesResponse) []*evidence.Evidence {
+				return res.Evidences
+			})
+
+			// Build a response with all results
+			res = &evidence.ListEvidencesResponse{
+				Evidences: evidences,
+			}
 
 			return session.HandleResponse(res, err)
 		},
