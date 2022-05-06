@@ -283,10 +283,53 @@ func (s *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.Ge
 		return config, nil
 	}
 
-	newError := fmt.Errorf("could not find metric configuration for metric %s in service %s", req.MetricId, req.ServiceId)
-	log.Error(newError)
+	err = fmt.Errorf("could not find metric configuration for metric %s in service %s", req.MetricId, req.ServiceId)
+	log.Error(err)
 
-	return nil, status.Errorf(codes.NotFound, "%v", newError)
+	return nil, status.Errorf(codes.NotFound, "%v", err)
+}
+
+// UpdateMetricConfiguration updates the configuration for a metric, specified by the identifier in req.MetricId.
+func (svc *Service) UpdateMetricConfiguration(_ context.Context, req *orchestrator.UpdateMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
+	var (
+		ok  bool
+		cld orchestrator.CloudService
+	)
+
+	// TODO(oxisto): Validate the metric configuration request
+
+	// Check, if metric exists according to req.MetricId
+	if _, ok = svc.metrics[req.MetricId]; !ok {
+		return nil, status.Errorf(codes.NotFound, "could not find metric with id %s", req.MetricId)
+	}
+
+	err = svc.storage.Get(&cld, "Id = ?", req.ServiceId)
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Errorf(codes.NotFound, "service not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %s", err)
+	}
+
+	// Update config
+	res = req.Configuration
+
+	// Make sure, that metric configuration exists for the service
+	if _, ok = svc.metricConfigurations[req.ServiceId]; !ok {
+		svc.metricConfigurations[req.ServiceId] = make(map[string]*assessment.MetricConfiguration)
+	}
+
+	// Store it
+	svc.metricConfigurations[req.ServiceId][req.MetricId] = res
+
+	// Notify event listeners
+	go func() {
+		svc.events <- &orchestrator.MetricChangeEvent{
+			Type:     orchestrator.MetricChangeEvent_CONFIG_CHANGED,
+			MetricId: req.MetricId,
+		}
+	}()
+
+	return
 }
 
 // ListMetricConfigurations retrieves a list of MetricConfiguration objects for a particular target
