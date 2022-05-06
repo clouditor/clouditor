@@ -455,7 +455,10 @@ func (svc *Service) Metrics() (metrics []*assessment.Metric, err error) {
 	var res *orchestrator.ListMetricsResponse
 
 	if svc.orchestratorClient == nil {
-		svc.setOrchestratorClient()
+		err = svc.setOrchestratorClient()
+		if err != nil {
+			return nil, fmt.Errorf("could not set orchestrator client")
+		}
 	}
 
 	res, err = svc.orchestratorClient.ListMetrics(context.Background(), &orchestrator.ListMetricsRequest{})
@@ -475,7 +478,10 @@ func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_La
 	}
 
 	if svc.orchestratorClient == nil {
-		svc.setOrchestratorClient()
+		err = svc.setOrchestratorClient()
+		if err != nil {
+			return nil, fmt.Errorf("could not set orchestrator client")
+		}
 	}
 
 	// Retrieve it from the orchestrator
@@ -503,7 +509,10 @@ func (svc *Service) MetricConfiguration(metric string) (config *assessment.Metri
 	svc.confMutex.Unlock()
 
 	if svc.orchestratorClient == nil {
-		svc.setOrchestratorClient()
+		err = svc.setOrchestratorClient()
+		if err != nil {
+			return nil, fmt.Errorf("could not set orchestrator client")
+		}
 	}
 
 	// Check if entry is not there or is expired
