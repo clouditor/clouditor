@@ -6,7 +6,7 @@ default applicable = false
 
 default compliant = false
 
-output := input.anomalyDetection.output
+output := input.anomalyDetection.applicationLogging.loggingService
 
 applicable {
 	output != null
