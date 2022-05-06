@@ -89,7 +89,7 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 		},
 	}
 
-	// Add or override default options
+	// Add options and/or override default ones
 	for _, o := range opts {
 		o(g)
 	}
