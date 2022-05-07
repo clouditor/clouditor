@@ -102,7 +102,7 @@ func Test_storage_Create(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = s.Create(metric)
-	assert.NoError(t, err)
+	assert.Error(t, err)
 }
 
 func Test_storage_Get(t *testing.T) {

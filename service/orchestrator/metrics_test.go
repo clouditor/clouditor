@@ -546,7 +546,6 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
-		metrics               map[string]*assessment.Metric
 		requirements          []*orchestrator.Requirement
 		events                chan *orchestrator.MetricChangeEvent
 	}
@@ -597,9 +596,6 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 					_ = s.Create(assessment.Metric{Id: "TransportEncryptionEnabled"})
 				}),
 				metricsFile: "metrics.json",
-				metrics: map[string]*assessment.Metric{
-					"TransportEncryptionEnabled": {},
-				},
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricImplementationRequest{
@@ -626,7 +622,6 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
-				metrics:               tt.fields.metrics,
 				requirements:          tt.fields.requirements,
 				events:                tt.fields.events,
 			}
@@ -648,7 +643,6 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
-		metrics               map[string]*assessment.Metric
 		metricsFile           string
 		requirements          []*orchestrator.Requirement
 		events                chan *orchestrator.MetricChangeEvent
@@ -689,7 +683,6 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
-				metrics:               tt.fields.metrics,
 				metricsFile:           tt.fields.metricsFile,
 				requirements:          tt.fields.requirements,
 				events:                tt.fields.events,
@@ -711,7 +704,6 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
-		metrics               map[string]*assessment.Metric
 		metricsFile           string
 		requirements          []*orchestrator.Requirement
 		events                chan *orchestrator.MetricChangeEvent
@@ -731,9 +723,6 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 			name: "error",
 			fields: fields{
 				storage: &testutil.StorageWithError{ListErr: ErrSomeError},
-				metrics: map[string]*assessment.Metric{
-					MockMetricID: {},
-				},
 			},
 			args: args{
 				req: &orchestrator.ListMetricConfigurationRequest{},
@@ -776,7 +765,6 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
-				metrics:               tt.fields.metrics,
 				metricsFile:           tt.fields.metricsFile,
 				requirements:          tt.fields.requirements,
 				events:                tt.fields.events,
@@ -799,7 +787,6 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
-		metrics               map[string]*assessment.Metric
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
 		requirements          []*orchestrator.Requirement
@@ -817,10 +804,8 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "metric does not exist",
-			fields: fields{
-				metrics: map[string]*assessment.Metric{},
-			},
+			name:   "metric does not exist",
+			fields: fields{storage: testutil.NewInMemoryStorage(t)},
 			args: args{
 				req: &orchestrator.UpdateMetricConfigurationRequest{ServiceId: DefaultTargetCloudServiceId, MetricId: "MyMetric"},
 			},
@@ -829,8 +814,9 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 		{
 			name: "service does not exist",
 			fields: fields{
-				metrics: map[string]*assessment.Metric{"MyMetric": {}},
-				storage: testutil.NewInMemoryStorage(t),
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					_ = s.Create(assessment.Metric{Id: "MyMetric"})
+				}),
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricConfigurationRequest{ServiceId: "MyService", MetricId: "MyMetric"},
@@ -840,8 +826,8 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 		{
 			name: "first metric in service",
 			fields: fields{
-				metrics: map[string]*assessment.Metric{"MyMetric": {}},
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					_ = s.Create(assessment.Metric{Id: "MyMetric"})
 					_ = s.Create(&orchestrator.CloudService{Id: DefaultTargetCloudServiceId})
 				}),
 				metricConfigurations: map[string]map[string]*assessment.MetricConfiguration{},
@@ -860,7 +846,6 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
-				metrics:               tt.fields.metrics,
 				metricsFile:           tt.fields.metricsFile,
 				loadMetricsFunc:       tt.fields.loadMetricsFunc,
 				requirements:          tt.fields.requirements,

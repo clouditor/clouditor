@@ -313,8 +313,9 @@ func (svc *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.
 // UpdateMetricConfiguration updates the configuration for a metric, specified by the identifier in req.MetricId.
 func (svc *Service) UpdateMetricConfiguration(_ context.Context, req *orchestrator.UpdateMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
 	var (
-		ok  bool
-		cld orchestrator.CloudService
+		ok     bool
+		metric assessment.Metric
+		cld    orchestrator.CloudService
 	)
 
 	// TODO(oxisto): Validate the metric configuration request
@@ -324,8 +325,11 @@ func (svc *Service) UpdateMetricConfiguration(_ context.Context, req *orchestrat
 	defer svc.mm.Unlock()
 
 	// Check, if metric exists according to req.MetricId
-	if _, ok = svc.metrics[req.MetricId]; !ok {
-		return nil, status.Errorf(codes.NotFound, "could not find metric with id %s", req.MetricId)
+	err = svc.storage.Get(&metric, "id = ?", req.MetricId)
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Error(codes.NotFound, "metric not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
 
 	err = svc.storage.Get(&cld, "Id = ?", req.ServiceId)

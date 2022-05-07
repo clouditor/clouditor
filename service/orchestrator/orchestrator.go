@@ -61,8 +61,6 @@ type Service struct {
 	// metricConfigurations holds a double-map of metric configurations associated first by service ID and then metric ID
 	metricConfigurations map[string]map[string]*assessment.MetricConfiguration
 
-	metrics map[string]*assessment.Metric
-
 	// mm is a mutex for metric related maps
 	mm sync.Mutex
 
