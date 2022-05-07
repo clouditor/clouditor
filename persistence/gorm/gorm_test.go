@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
@@ -84,6 +85,26 @@ func TestStorageOptions(t *testing.T) {
 	}
 }
 
+func Test_storage_Create(t *testing.T) {
+	var (
+		err    error
+		s      persistence.Storage
+		metric *assessment.Metric
+	)
+
+	metric = &assessment.Metric{Id: "Test"}
+
+	// Create storage
+	s, err = NewStorage()
+	assert.NoError(t, err)
+
+	err = s.Create(metric)
+	assert.NoError(t, err)
+
+	err = s.Create(metric)
+	assert.NoError(t, err)
+}
+
 func Test_storage_Get(t *testing.T) {
 	var (
 		err  error
@@ -128,6 +149,20 @@ func Test_storage_Get(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, user, gotUser3)
 
+	var metric *assessment.Metric = &assessment.Metric{
+		Id:    "test",
+		Range: &assessment.Range{Range: &assessment.Range_MinMax{MinMax: &assessment.MinMax{Min: 1, Max: 2}}},
+	}
+
+	// Create metric
+	err = s.Create(metric)
+	assert.NoError(t, err)
+
+	// Get metric via Id
+	gotMetric := &assessment.Metric{}
+	err = s.Get(gotMetric, "id = ?", "test")
+	assert.NoError(t, err)
+	assert.Equal(t, metric, gotMetric)
 }
 
 func Test_storage_List(t *testing.T) {

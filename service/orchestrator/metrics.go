@@ -62,7 +62,6 @@ func (svc *Service) loadMetrics() (err error) {
 		return fmt.Errorf("could not load metrics: %w", err)
 	}
 
-	svc.metrics = make(map[string]*assessment.Metric)
 	defaultMetricConfigurations = make(map[string]*assessment.MetricConfiguration)
 
 	for _, m := range metrics {
@@ -98,7 +97,12 @@ func (svc *Service) loadMetrics() (err error) {
 
 		config.IsDefault = true
 
-		svc.metrics[m.Id] = m
+		err = svc.storage.Save(m)
+		if err != nil {
+			log.Errorf("Error while saving metric %s: %v. Ignoring metric", m.Id, err)
+			continue
+		}
+
 		defaultMetricConfigurations[m.Id] = &config
 	}
 
@@ -142,6 +146,8 @@ func loadMetricImplementation(metricID, file string) (impl *assessment.MetricImp
 
 // CreateMetric creates a new metric in the database.
 func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetricRequest) (metric *assessment.Metric, err error) {
+	var count int64
+
 	// Validate the metric request
 	err = req.Metric.Validate(assessment.WithMetricRequiresId())
 	if err != nil {
@@ -150,12 +156,13 @@ func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetr
 		return nil, status.Errorf(codes.InvalidArgument, "%v", newError)
 	}
 
-	// Lock metrics mutex
-	svc.mm.Lock()
-	defer svc.mm.Unlock()
-
 	// Check, if metric id already exists
-	if _, ok := svc.metrics[req.Metric.Id]; ok {
+	count, err = svc.storage.Count(metric, "Id = ?", req.Metric.Id)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %s", err)
+	}
+
+	if count > 0 {
 		return nil, status.Error(codes.AlreadyExists, "metric already exists")
 	}
 
@@ -163,7 +170,10 @@ func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetr
 	metric = req.Metric
 
 	// Append metric
-	svc.metrics[req.Metric.Id] = metric
+	err = svc.storage.Create(metric)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %s", err)
+	}
 
 	// Notify event listeners
 	go func() {
@@ -178,8 +188,6 @@ func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetr
 
 // UpdateMetric updates an existing metric, specified by the identifier in req.MetricId.
 func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetricRequest) (metric *assessment.Metric, err error) {
-	var ok bool
-
 	// Validate the metric request
 	err = req.Metric.Validate()
 	if err != nil {
@@ -188,15 +196,12 @@ func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetr
 		return nil, status.Errorf(codes.InvalidArgument, "%v", newError)
 	}
 
-	// Lock metrics mutex
-	svc.mm.Lock()
-	defer svc.mm.Unlock()
-
 	// Check, if metric exists according to req.MetricId
-	if metric, ok = svc.metrics[req.MetricId]; !ok {
-		newError := fmt.Errorf("metric with identifier %s does not exist", req.MetricId)
-		log.Error(newError)
-		return nil, status.Errorf(codes.NotFound, "%v", newError)
+	err = svc.storage.Get(&metric, "id = ?", req.MetricId)
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Error(codes.NotFound, "metric not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
 
 	// Update metric
@@ -205,6 +210,11 @@ func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetr
 	metric.Category = req.Metric.Category
 	metric.Range = req.Metric.Range
 	metric.Scale = req.Metric.Scale
+
+	err = svc.storage.Save(metric, "id = ? ", metric.Id)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %s", err)
+	}
 
 	// Notify event listeners
 	go func() {
@@ -220,21 +230,17 @@ func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetr
 // UpdateMetricImplementation updates an existing metric implementation, specified by the identifier in req.MetricId.
 func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestrator.UpdateMetricImplementationRequest) (impl *assessment.MetricImplementation, err error) {
 	var (
-		ok     bool
 		metric *assessment.Metric
 	)
 
 	// TODO(oxisto): Validate the metric implementation request
 
-	// Lock metrics mutex
-	svc.mm.Lock()
-	defer svc.mm.Unlock()
-
 	// Check, if metric exists according to req.MetricId
-	if metric, ok = svc.metrics[req.MetricId]; !ok {
-		err := fmt.Errorf("metric with identifier %s does not exist", req.MetricId)
-		log.Error(err)
-		return nil, status.Errorf(codes.NotFound, "%v", err)
+	err = svc.storage.Get(&metric, "id = ?", req.MetricId)
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Error(codes.NotFound, "metric not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
 
 	// Update implementation
@@ -262,14 +268,8 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetricsRequest) (res *orchestrator.ListMetricsResponse, err error) {
 	res = new(orchestrator.ListMetricsResponse)
 
-	// Lock metrics mutex
-	svc.mm.Lock()
-	defer svc.mm.Unlock()
-
 	// Paginate the metrics according to the request
-	res.Metrics, res.NextPageToken, err = service.PaginateMapValues(req, svc.metrics, func(a *assessment.Metric, b *assessment.Metric) bool {
-		return a.Id < b.Id
-	}, service.DefaultPaginationOpts)
+	res.Metrics, res.NextPageToken, err = service.PaginateStorage[*assessment.Metric](req, svc.storage, service.DefaultPaginationOpts)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate metrics: %v", err)
 	}
@@ -279,14 +279,11 @@ func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetrics
 
 // GetMetric retrieves a metric specified by req.MetridId
 func (svc *Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequest) (metric *assessment.Metric, err error) {
-	var ok bool
-
-	// Lock metrics mutex
-	svc.mm.Lock()
-	defer svc.mm.Unlock()
-
-	if metric, ok = svc.metrics[req.MetricId]; !ok {
-		return nil, status.Errorf(codes.NotFound, "could not find metric with id %s", req.MetricId)
+	err = svc.storage.Get(&metric, "id = ?", req.MetricId)
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Error(codes.NotFound, "metric not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
 
 	return
@@ -371,16 +368,22 @@ func (svc *Service) ListMetricConfigurations(ctx context.Context, req *orchestra
 		Configurations: make(map[string]*assessment.MetricConfiguration),
 	}
 
+	var metrics []*assessment.Metric
+	err = svc.storage.List(&metrics, 0, -1)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %s", err)
+	}
+
 	// TODO(oxisto): This is not very efficient, we should do this once at startup so that we can just return the map
-	for metricId := range svc.metrics {
-		config, err := svc.GetMetricConfiguration(ctx, &orchestrator.GetMetricConfigurationRequest{ServiceId: req.ServiceId, MetricId: metricId})
+	for _, metric := range metrics {
+		config, err := svc.GetMetricConfiguration(ctx, &orchestrator.GetMetricConfigurationRequest{ServiceId: req.ServiceId, MetricId: metric.Id})
 
 		if err != nil {
 			log.Errorf("Error getting metric configuration: %v", err)
 			return nil, err
 		}
 
-		response.Configurations[metricId] = config
+		response.Configurations[metric.Id] = config
 	}
 
 	return
