@@ -60,15 +60,6 @@ components:
                   items:
                     $ref: '#/components/schemas/AnyJSONValue'
             description: AnyJSONValue is a "catch all" type that can hold any JSON value, except null as this is not allowed in OpenAPI
-        ListValue:
-            type: object
-            properties:
-                values:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/AnyJSONValue'
-                    description: Repeated field of dynamically typed values.
-            description: '`ListValue` is a wrapper around a repeated field of values. The JSON representation for `ListValue` is JSON array.'
         QueryRequest:
             type: object
             properties:
@@ -83,7 +74,9 @@ components:
             type: object
             properties:
                 results:
-                    $ref: '#/components/schemas/ListValue'
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/AnyJSONValue'
                 nextPageToken:
                     type: string
         StartDiscoveryRequest:
