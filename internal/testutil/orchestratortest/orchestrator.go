@@ -1,20 +1,13 @@
 package orchestratortest
 
 import (
-	"clouditor.io/clouditor/api/orchestrator"
 	"time"
+
+	"clouditor.io/clouditor/api/orchestrator"
 )
 
-// CreateCertificateMock creates a mock certificate creation request
-func CreateCertificateMock() *orchestrator.Certificate {
-	mockHistory := &orchestrator.State{
-		State:         "new",
-		TreeId:        "12345",
-		Timestamp:     time.Now().String(),
-		CertificateId: "1234",
-		Id:            "12345",
-	}
-
+// NewCertificate creates a mock certificate creation request
+func NewCertificate() *orchestrator.Certificate {
 	var mockCertificate = &orchestrator.Certificate{
 		Name:           "EUCS",
 		ServiceId:      "test service",
@@ -24,8 +17,14 @@ func CreateCertificateMock() *orchestrator.Certificate {
 		AssuranceLevel: "Basic",
 		Cab:            "Cab123",
 		Description:    "Description",
-		States:         []*orchestrator.State{mockHistory},
-		Id:             "1234",
+		States: []*orchestrator.State{{
+			State:         "new",
+			TreeId:        "12345",
+			Timestamp:     time.Now().String(),
+			CertificateId: "1234",
+			Id:            "12345",
+		}},
+		Id: "1234",
 	}
 
 	return mockCertificate

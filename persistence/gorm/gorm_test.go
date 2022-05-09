@@ -186,9 +186,9 @@ func Test_storage_List(t *testing.T) {
 	assert.Empty(t, certificates)
 
 	// Create two certificates
-	certificate1 = orchestratortest.CreateCertificateMock()
+	certificate1 = orchestratortest.NewCertificate()
 	certificate1.Id = "0"
-	certificate2 = orchestratortest.CreateCertificateMock()
+	certificate2 = orchestratortest.NewCertificate()
 	certificate2.Id = "1"
 	err = s.Create(certificate1)
 	assert.NoError(t, err)

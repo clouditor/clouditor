@@ -249,7 +249,8 @@ service Orchestrator {
   }
 
   // Lists all target certificates
-  rpc ListCertificates(ListCertificatesRequest) returns (ListCertificatesResponse) {
+  rpc ListCertificates(ListCertificatesRequest)
+      returns (ListCertificatesResponse) {
     option (google.api.http) = {
       get : "/v1/orchestrator/certificates"
     };
@@ -265,7 +266,7 @@ service Orchestrator {
 
   // Removes a certificate
   rpc RemoveCertificate(RemoveCertificateRequest)
-    returns (google.protobuf.Empty) {
+      returns (google.protobuf.Empty) {
     option (google.api.http) = {
       delete : "/v1/orchestrator/certificates/{certificate_id}"
     };
@@ -431,9 +432,7 @@ message Requirement {
   repeated string metric_ids = 4;
 }
 
-message GetCertificateRequest {
-  string certificate_id = 1;
-}
+message GetCertificateRequest { string certificate_id = 1; }
 
 message ListCertificatesRequest {
   int32 page_size = 1;
@@ -446,7 +445,7 @@ message ListCertificatesResponse {
 
 message UpdateCertificateRequest {
   string certificate_id = 1;
-	Certificate certificate = 2;
+  Certificate certificate = 2;
 }
 
 message CreateCertificateRequest { Certificate certificate = 1; }

@@ -601,8 +601,8 @@ func TestNewService(t *testing.T) {
 
 func Test_CreateCertificate(t *testing.T) {
 	// Mock certificates
-	mockCertificate := orchestratortest.CreateCertificateMock()
-	mockCertificateWithoutID := orchestratortest.CreateCertificateMock()
+	mockCertificate := orchestratortest.NewCertificate()
+	mockCertificateWithoutID := orchestratortest.NewCertificate()
 	mockCertificateWithoutID.Id = ""
 
 	type args struct {
@@ -708,7 +708,7 @@ func Test_UpdateCertificate(t *testing.T) {
 	assert.Equal(t, codes.NotFound, status.Code(err))
 
 	// 4th case: Certificate updated successfully
-	mockCertificate := orchestratortest.CreateCertificateMock()
+	mockCertificate := orchestratortest.NewCertificate()
 	err = orchestratorService.storage.Create(mockCertificate)
 	assert.NoError(t, err)
 	if err != nil {
@@ -744,7 +744,7 @@ func Test_RemoveCertificate(t *testing.T) {
 	assert.Equal(t, status.Code(err), codes.NotFound)
 
 	// 3rd case: Record removed successfully
-	mockCertificate := orchestratortest.CreateCertificateMock()
+	mockCertificate := orchestratortest.NewCertificate()
 	err = orchestratorService.storage.Create(mockCertificate)
 	assert.NoError(t, err)
 
@@ -787,14 +787,14 @@ func Test_GetCertificate(t *testing.T) {
 		{
 			"valid",
 			&orchestrator.GetCertificateRequest{CertificateId: "1234"},
-			orchestratortest.CreateCertificateMock(),
+			orchestratortest.NewCertificate(),
 			nil,
 		},
 	}
 	orchestratorService := NewService()
 
 	// Create Certificate
-	if err := orchestratorService.storage.Create(orchestratortest.CreateCertificateMock()); err != nil {
+	if err := orchestratorService.storage.Create(orchestratortest.NewCertificate()); err != nil {
 		panic(err)
 	}
 
@@ -835,7 +835,7 @@ func Test_ListCertificates(t *testing.T) {
 	assert.Empty(t, listCertificatesResponse.Certificates)
 
 	// 2nd case: One service stored
-	err = orchestratorService.storage.Create(orchestratortest.CreateCertificateMock())
+	err = orchestratorService.storage.Create(orchestratortest.NewCertificate())
 	assert.NoError(t, err)
 
 	listCertificatesResponse, err = orchestratorService.ListCertificates(context.Background(), &orchestrator.ListCertificatesRequest{})
