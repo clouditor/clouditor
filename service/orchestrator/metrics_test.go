@@ -225,6 +225,36 @@ func TestService_CreateMetric(t *testing.T) {
 			wantErr:        true,
 			wantErrMessage: "rpc error: code = AlreadyExists desc = metric already exists",
 		},
+		{
+			name: "Error while counting",
+			fields: fields{
+				storage: &testutil.StorageWithError{CountErr: ErrSomeError},
+			},
+			args: args{
+				context.TODO(),
+				&orchestrator.CreateMetricRequest{
+					Metric: &assessment.Metric{Id: "SomeMetric", Name: "A very good metric"},
+				},
+			},
+			wantMetric:     nil,
+			wantErr:        true,
+			wantErrMessage: "rpc error: code = Internal desc = database error: some error",
+		},
+		{
+			name: "Error while creating",
+			fields: fields{
+				storage: &testutil.StorageWithError{CreateErr: ErrSomeError},
+			},
+			args: args{
+				context.TODO(),
+				&orchestrator.CreateMetricRequest{
+					Metric: &assessment.Metric{Id: "SomeMetric", Name: "A very good metric"},
+				},
+			},
+			wantMetric:     nil,
+			wantErr:        true,
+			wantErrMessage: "rpc error: code = Internal desc = database error: some error",
+		},
 	}
 
 	for _, tt := range tests {
