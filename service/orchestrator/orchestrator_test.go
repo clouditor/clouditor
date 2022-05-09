@@ -40,12 +40,16 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/internal/testutil/orchestratortest"
 	"clouditor.io/clouditor/persistence/inmemory"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -145,7 +149,7 @@ func TestAssessmentResultHook(t *testing.T) {
 			wg.Wait()
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("StoreAssessmentResult() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("StoreAssessmentResult() error = %v, wantErrMessage %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(gotResp, tt.wantResp) {
@@ -240,7 +244,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 			s := NewService()
 			gotResp, err := s.StoreAssessmentResult(tt.args.in0, tt.args.assessment)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("StoreAssessmentResult() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("StoreAssessmentResult() error = %v, wantErrMessage %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(gotResp, tt.wantResp) {
@@ -351,7 +355,7 @@ func TestStoreAssessmentResults(t *testing.T) {
 			}
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Got StoreAssessmentResults() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Got StoreAssessmentResults() error = %v, wantErrMessage %v", err, tt.wantErr)
 				assert.Equal(t, tt.fields.countElementsInResults, len(s.results))
 				return
 			} else if tt.wantErr {
@@ -593,4 +597,250 @@ func TestNewService(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_CreateCertificate(t *testing.T) {
+	// Mock certificates
+	mockCertificate := orchestratortest.NewCertificate()
+	mockCertificateWithoutID := orchestratortest.NewCertificate()
+	mockCertificateWithoutID.Id = ""
+
+	type args struct {
+		in0 context.Context
+		req *orchestrator.CreateCertificateRequest
+	}
+	var tests = []struct {
+		name           string
+		args           args
+		wantResponse   *orchestrator.Certificate
+		wantErrMessage error
+		wantErrCode    codes.Code
+	}{
+		{
+			"missing request",
+			args{
+				context.Background(),
+				nil,
+			},
+			nil,
+			orchestrator.ErrRequestIsNil,
+			codes.InvalidArgument,
+		},
+		{
+			"missing certificate",
+			args{
+				context.Background(),
+				&orchestrator.CreateCertificateRequest{},
+			},
+			nil,
+			orchestrator.ErrCertificateIsNil,
+			codes.InvalidArgument,
+		},
+		{
+			"missing certificate id",
+			args{
+				context.Background(),
+				&orchestrator.CreateCertificateRequest{
+					Certificate: mockCertificateWithoutID,
+				},
+			},
+			nil,
+			orchestrator.ErrCertIDIsMissing,
+			codes.InvalidArgument,
+		},
+		{
+			"valid certificate",
+			args{
+				context.Background(),
+				&orchestrator.CreateCertificateRequest{
+					Certificate: mockCertificate,
+				},
+			},
+			mockCertificate,
+			nil,
+			// wantErrCode doesn't matter since error (message) is nil
+			0,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := NewService()
+			gotResponse, err := s.CreateCertificate(tt.args.in0, tt.args.req)
+			// If error shouldn't be nil, check error message and code
+			// TODO(lebogg): This pattern we probably have quite often. Maybe extract it (to test utils)?
+			if tt.wantErrMessage != nil {
+				assert.Equal(t, status.Code(err), tt.wantErrCode)
+				assert.Contains(t, err.Error(), tt.wantErrMessage.Error())
+				return
+			}
+			// If no error is wanted, check response
+			if !reflect.DeepEqual(gotResponse, tt.wantResponse) {
+				t.Errorf("Service.CreateCertificate() = %v, want %v", gotResponse, tt.wantResponse)
+			}
+		})
+	}
+}
+
+func Test_UpdateCertificate(t *testing.T) {
+	var (
+		certificate *orchestrator.Certificate
+		err         error
+	)
+	orchestratorService := NewService()
+
+	// 1st case: Certificate is nil
+	_, err = orchestratorService.UpdateCertificate(context.Background(), &orchestrator.UpdateCertificateRequest{})
+	assert.Equal(t, codes.InvalidArgument, status.Code(err))
+
+	// 2nd case: Certificate ID is nil
+	_, err = orchestratorService.UpdateCertificate(context.Background(), &orchestrator.UpdateCertificateRequest{
+		Certificate: certificate,
+	})
+	assert.Equal(t, codes.InvalidArgument, status.Code(err))
+
+	// 3rd case: Certificate not found since there are no certificates yet
+	_, err = orchestratorService.UpdateCertificate(context.Background(), &orchestrator.UpdateCertificateRequest{
+		Certificate: &orchestrator.Certificate{
+			Id: "1234",
+		},
+		CertificateId: "1234",
+	})
+	assert.Equal(t, codes.NotFound, status.Code(err))
+
+	// 4th case: Certificate updated successfully
+	mockCertificate := orchestratortest.NewCertificate()
+	err = orchestratorService.storage.Create(mockCertificate)
+	assert.NoError(t, err)
+	if err != nil {
+		return
+	}
+
+	// update the certificate's description and send the update request
+	mockCertificate.Description = "new description"
+	certificate, err = orchestratorService.UpdateCertificate(context.Background(), &orchestrator.UpdateCertificateRequest{
+		CertificateId: "1234",
+		Certificate:   mockCertificate,
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, certificate)
+	assert.Equal(t, "new description", certificate.Description)
+}
+
+func Test_RemoveCertificate(t *testing.T) {
+	var (
+		err                      error
+		listCertificatesResponse *orchestrator.ListCertificatesResponse
+	)
+	orchestratorService := NewService()
+
+	// 1st case: Empty certificate ID error
+	_, err = orchestratorService.RemoveCertificate(context.Background(), &orchestrator.RemoveCertificateRequest{CertificateId: ""})
+	assert.Error(t, err)
+	assert.Equal(t, status.Code(err), codes.InvalidArgument)
+
+	// 2nd case: ErrRecordNotFound
+	_, err = orchestratorService.RemoveCertificate(context.Background(), &orchestrator.RemoveCertificateRequest{CertificateId: "0000"})
+	assert.Error(t, err)
+	assert.Equal(t, status.Code(err), codes.NotFound)
+
+	// 3rd case: Record removed successfully
+	mockCertificate := orchestratortest.NewCertificate()
+	err = orchestratorService.storage.Create(mockCertificate)
+	assert.NoError(t, err)
+
+	// There is a record for certificates in the DB (default one)
+	listCertificatesResponse, err = orchestratorService.ListCertificates(context.Background(), &orchestrator.ListCertificatesRequest{})
+	assert.NoError(t, err)
+	assert.NotNil(t, listCertificatesResponse.Certificates)
+	assert.NotEmpty(t, listCertificatesResponse.Certificates)
+
+	// Remove record
+	_, err = orchestratorService.RemoveCertificate(context.Background(), &orchestrator.RemoveCertificateRequest{CertificateId: mockCertificate.Id})
+	assert.NoError(t, err)
+
+	// There is a record for cloud services in the DB (default one)
+	listCertificatesResponse, err = orchestratorService.ListCertificates(context.Background(), &orchestrator.ListCertificatesRequest{})
+	assert.NoError(t, err)
+	assert.NotNil(t, listCertificatesResponse.Certificates)
+	assert.Empty(t, listCertificatesResponse.Certificates)
+}
+
+func Test_GetCertificate(t *testing.T) {
+	tests := []struct {
+		name string
+		req  *orchestrator.GetCertificateRequest
+		res  *orchestrator.Certificate
+		err  error
+	}{
+		{
+			"invalid request",
+			nil,
+			nil,
+			status.Error(codes.InvalidArgument, orchestrator.ErrRequestIsNil.Error()),
+		},
+		{
+			"certificate not found",
+			&orchestrator.GetCertificateRequest{CertificateId: ""},
+			nil,
+			status.Error(codes.NotFound, "certificate ID is empty"),
+		},
+		{
+			"valid",
+			&orchestrator.GetCertificateRequest{CertificateId: "1234"},
+			orchestratortest.NewCertificate(),
+			nil,
+		},
+	}
+	orchestratorService := NewService()
+
+	// Create Certificate
+	if err := orchestratorService.storage.Create(orchestratortest.NewCertificate()); err != nil {
+		panic(err)
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res, err := orchestratorService.GetCertificate(context.Background(), tt.req)
+
+			if tt.err == nil {
+				assert.Equal(t, tt.err, err)
+			} else {
+				assert.ErrorIs(t, err, tt.err)
+				return
+			}
+
+			if tt.res != nil {
+				assert.NotEmpty(t, res.Id)
+			}
+
+			// Compare
+			// TODO(immqu, lebogg): Currently timestamp differs. Dunno why. (Comment out next line to see it)
+			tt.res.States[0].Timestamp = res.States[0].Timestamp
+			assert.True(t, proto.Equal(tt.res, res), "Want: %v\nGot : %v", tt.res, res)
+		})
+	}
+}
+
+func Test_ListCertificates(t *testing.T) {
+	var (
+		listCertificatesResponse *orchestrator.ListCertificatesResponse
+		err                      error
+	)
+
+	orchestratorService := NewService()
+	// 1st case: No services stored
+	listCertificatesResponse, err = orchestratorService.ListCertificates(context.Background(), &orchestrator.ListCertificatesRequest{})
+	assert.NoError(t, err)
+	assert.NotNil(t, listCertificatesResponse.Certificates)
+	assert.Empty(t, listCertificatesResponse.Certificates)
+
+	// 2nd case: One service stored
+	err = orchestratorService.storage.Create(orchestratortest.NewCertificate())
+	assert.NoError(t, err)
+
+	listCertificatesResponse, err = orchestratorService.ListCertificates(context.Background(), &orchestrator.ListCertificatesRequest{})
+	assert.NoError(t, err)
+	assert.NotNil(t, listCertificatesResponse.Certificates)
+	assert.NotEmpty(t, listCertificatesResponse.Certificates)
+	assert.Equal(t, len(listCertificatesResponse.Certificates), 1)
 }

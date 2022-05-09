@@ -32,10 +32,12 @@ import (
 )
 
 var (
-	ErrRequestIsNil  = errors.New("request is empty")
-	ErrServiceIsNil  = errors.New("service is empty")
-	ErrNameIsMissing = errors.New("service name is empty")
-	ErrIDIsMissing   = errors.New("service ID is empty")
+	ErrRequestIsNil     = errors.New("request is empty")
+	ErrCertificateIsNil = errors.New("certificate is empty")
+	ErrServiceIsNil     = errors.New("service is empty")
+	ErrNameIsMissing    = errors.New("service name is empty")
+	ErrIDIsMissing      = errors.New("service ID is empty")
+	ErrCertIDIsMissing  = errors.New("certificate ID is empty")
 )
 
 // Value implements https://pkg.go.dev/database/sql/driver#Valuer to indicate
