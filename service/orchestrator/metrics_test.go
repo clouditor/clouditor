@@ -113,7 +113,7 @@ func TestService_CreateMetric(t *testing.T) {
 			gotMetric, err := service.CreateMetric(tt.args.in0, tt.args.req)
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.CreateMetric() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Service.CreateMetric() error = %v, wantErrMessage %v", err, tt.wantErr)
 				return
 			}
 
@@ -195,7 +195,7 @@ func TestService_UpdateMetric(t *testing.T) {
 			gotMetric, err := service.UpdateMetric(tt.args.in0, tt.args.req)
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.UpdateMetric() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Service.UpdateMetric() error = %v, wantErrMessage %v", err, tt.wantErr)
 				return
 			}
 
@@ -262,7 +262,7 @@ func TestService_GetMetric(t *testing.T) {
 			gotMetric, err := service.GetMetric(tt.args.in0, tt.args.req)
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.GetMetric() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Service.GetMetric() error = %v, wantErrMessage %v", err, tt.wantErr)
 				return
 			}
 			if !proto.Equal(gotMetric, tt.wantMetric) {
@@ -371,7 +371,7 @@ func TestService_GetMetricImplementation(t *testing.T) {
 
 			gotRes, err := svc.GetMetricImplementation(tt.args.ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.GetMetricImplementation() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Service.GetMetricImplementation() error = %v, wantErrMessage %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(gotRes, tt.wantRes) {
@@ -541,7 +541,7 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 			}
 			gotImpl, err := svc.UpdateMetricImplementation(tt.args.in0, tt.args.req)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.UpdateMetricImplementation() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Service.UpdateMetricImplementation() error = %v, wantErrMessage %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(gotImpl, tt.wantImpl) {
@@ -618,11 +618,11 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				status, ok := status.FromError(err)
+				gotStatus, ok := status.FromError(err)
 				if !ok {
 					return false
 				}
-				return assert.Equal(t, status.Code(), codes.NotFound)
+				return assert.Equal(t, gotStatus.Code(), codes.NotFound)
 			},
 		},
 	}
@@ -700,7 +700,7 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 			}
 			gotResponse, err := svc.ListMetricConfigurations(tt.args.ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.ListMetricConfigurations() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Service.ListMetricConfigurations() error = %v, wantErrMessage %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(gotResponse, tt.wantResponse) {

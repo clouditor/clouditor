@@ -76,6 +76,16 @@ type OrchestratorClient interface {
 	// Returns the metric implementation of the passed metric id
 	GetMetricImplementation(ctx context.Context, in *GetMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error)
 	SubscribeMetricChangeEvents(ctx context.Context, in *SubscribeMetricChangeEventRequest, opts ...grpc.CallOption) (Orchestrator_SubscribeMetricChangeEventsClient, error)
+	// Creates a new certificate
+	CreateCertificate(ctx context.Context, in *CreateCertificateRequest, opts ...grpc.CallOption) (*Certificate, error)
+	// Retrieves a certificate
+	GetCertificate(ctx context.Context, in *GetCertificateRequest, opts ...grpc.CallOption) (*Certificate, error)
+	// Lists all target certificates
+	ListCertificates(ctx context.Context, in *ListCertificatesRequest, opts ...grpc.CallOption) (*ListCertificatesResponse, error)
+	// Updates an existing certificate
+	UpdateCertificate(ctx context.Context, in *UpdateCertificateRequest, opts ...grpc.CallOption) (*Certificate, error)
+	// Removes a certificate
+	RemoveCertificate(ctx context.Context, in *RemoveCertificateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type orchestratorClient struct {
@@ -347,6 +357,51 @@ func (x *orchestratorSubscribeMetricChangeEventsClient) Recv() (*MetricChangeEve
 	return m, nil
 }
 
+func (c *orchestratorClient) CreateCertificate(ctx context.Context, in *CreateCertificateRequest, opts ...grpc.CallOption) (*Certificate, error) {
+	out := new(Certificate)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/CreateCertificate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orchestratorClient) GetCertificate(ctx context.Context, in *GetCertificateRequest, opts ...grpc.CallOption) (*Certificate, error) {
+	out := new(Certificate)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/GetCertificate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orchestratorClient) ListCertificates(ctx context.Context, in *ListCertificatesRequest, opts ...grpc.CallOption) (*ListCertificatesResponse, error) {
+	out := new(ListCertificatesResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/ListCertificates", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orchestratorClient) UpdateCertificate(ctx context.Context, in *UpdateCertificateRequest, opts ...grpc.CallOption) (*Certificate, error) {
+	out := new(Certificate)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/UpdateCertificate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orchestratorClient) RemoveCertificate(ctx context.Context, in *RemoveCertificateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/RemoveCertificate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OrchestratorServer is the server API for Orchestrator service.
 // All implementations must embed UnimplementedOrchestratorServer
 // for forward compatibility
@@ -403,6 +458,16 @@ type OrchestratorServer interface {
 	// Returns the metric implementation of the passed metric id
 	GetMetricImplementation(context.Context, *GetMetricImplementationRequest) (*assessment.MetricImplementation, error)
 	SubscribeMetricChangeEvents(*SubscribeMetricChangeEventRequest, Orchestrator_SubscribeMetricChangeEventsServer) error
+	// Creates a new certificate
+	CreateCertificate(context.Context, *CreateCertificateRequest) (*Certificate, error)
+	// Retrieves a certificate
+	GetCertificate(context.Context, *GetCertificateRequest) (*Certificate, error)
+	// Lists all target certificates
+	ListCertificates(context.Context, *ListCertificatesRequest) (*ListCertificatesResponse, error)
+	// Updates an existing certificate
+	UpdateCertificate(context.Context, *UpdateCertificateRequest) (*Certificate, error)
+	// Removes a certificate
+	RemoveCertificate(context.Context, *RemoveCertificateRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedOrchestratorServer()
 }
 
@@ -481,6 +546,21 @@ func (UnimplementedOrchestratorServer) GetMetricImplementation(context.Context, 
 }
 func (UnimplementedOrchestratorServer) SubscribeMetricChangeEvents(*SubscribeMetricChangeEventRequest, Orchestrator_SubscribeMetricChangeEventsServer) error {
 	return status.Errorf(codes.Unimplemented, "method SubscribeMetricChangeEvents not implemented")
+}
+func (UnimplementedOrchestratorServer) CreateCertificate(context.Context, *CreateCertificateRequest) (*Certificate, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateCertificate not implemented")
+}
+func (UnimplementedOrchestratorServer) GetCertificate(context.Context, *GetCertificateRequest) (*Certificate, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCertificate not implemented")
+}
+func (UnimplementedOrchestratorServer) ListCertificates(context.Context, *ListCertificatesRequest) (*ListCertificatesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListCertificates not implemented")
+}
+func (UnimplementedOrchestratorServer) UpdateCertificate(context.Context, *UpdateCertificateRequest) (*Certificate, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateCertificate not implemented")
+}
+func (UnimplementedOrchestratorServer) RemoveCertificate(context.Context, *RemoveCertificateRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveCertificate not implemented")
 }
 func (UnimplementedOrchestratorServer) mustEmbedUnimplementedOrchestratorServer() {}
 
@@ -938,6 +1018,96 @@ func (x *orchestratorSubscribeMetricChangeEventsServer) Send(m *MetricChangeEven
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Orchestrator_CreateCertificate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateCertificateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).CreateCertificate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/CreateCertificate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).CreateCertificate(ctx, req.(*CreateCertificateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Orchestrator_GetCertificate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCertificateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).GetCertificate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/GetCertificate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).GetCertificate(ctx, req.(*GetCertificateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Orchestrator_ListCertificates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListCertificatesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).ListCertificates(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/ListCertificates",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).ListCertificates(ctx, req.(*ListCertificatesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Orchestrator_UpdateCertificate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateCertificateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).UpdateCertificate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/UpdateCertificate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).UpdateCertificate(ctx, req.(*UpdateCertificateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Orchestrator_RemoveCertificate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveCertificateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).RemoveCertificate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/RemoveCertificate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).RemoveCertificate(ctx, req.(*RemoveCertificateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Orchestrator_ServiceDesc is the grpc.ServiceDesc for Orchestrator service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1032,6 +1202,26 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetMetricImplementation",
 			Handler:    _Orchestrator_GetMetricImplementation_Handler,
+		},
+		{
+			MethodName: "CreateCertificate",
+			Handler:    _Orchestrator_CreateCertificate_Handler,
+		},
+		{
+			MethodName: "GetCertificate",
+			Handler:    _Orchestrator_GetCertificate_Handler,
+		},
+		{
+			MethodName: "ListCertificates",
+			Handler:    _Orchestrator_ListCertificates_Handler,
+		},
+		{
+			MethodName: "UpdateCertificate",
+			Handler:    _Orchestrator_UpdateCertificate_Handler,
+		},
+		{
+			MethodName: "RemoveCertificate",
+			Handler:    _Orchestrator_RemoveCertificate_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

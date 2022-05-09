@@ -33,10 +33,12 @@ import (
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
+
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"gorm.io/gorm/logger"
 )
 
@@ -66,20 +68,28 @@ func WithPostgres(host string, port int16, user string, pw string, db string) St
 	}
 }
 
+// WithLogger is an option to configure Storage to use a Logger
+func WithLogger(logger logger.Interface) StorageOption {
+	return func(s *storage) {
+		s.config.Logger = logger
+	}
+}
+
 func init() {
 	log = logrus.WithField("component", "storage")
 }
 
 // NewStorage creates a new storage using GORM (which DB to use depends on the StorageOption)
 func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
+	log.Println("Creating storage")
+	// Create storage with default gorm config
 	g := &storage{
 		config: gorm.Config{
 			Logger: logger.Default.LogMode(logger.Silent),
 		},
 	}
 
-	// Init storage
-	log.Println("Creating storage")
+	// Add options and/or override default ones
 	for _, o := range opts {
 		o(g)
 	}
@@ -97,6 +107,8 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 		&auth.User{},
 		&orchestrator.CloudService{},
 		&assessment.MetricImplementation{},
+		&orchestrator.Certificate{},
+		&orchestrator.State{},
 	}
 
 	if err = g.db.AutoMigrate(types...); err != nil {
@@ -113,7 +125,8 @@ func (s *storage) Create(r interface{}) error {
 }
 
 func (s *storage) Get(r interface{}, conds ...interface{}) (err error) {
-	err = s.db.First(r, conds...).Error
+	// Preload all associations for r being filled with all items (including relationships)
+	err = s.db.Preload(clause.Associations).First(r, conds...).Error
 	// if record is not found, use the error message defined in the persistence package
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		err = persistence.ErrRecordNotFound
@@ -128,7 +141,7 @@ func (s *storage) List(r interface{}, offset int, limit int, conds ...interface{
 		query = s.db.Limit(limit)
 	}
 
-	return query.Offset(offset).Find(r, conds...).Error
+	return query.Offset(offset).Preload(clause.Associations).Find(r, conds...).Error
 }
 
 func (s *storage) Count(r interface{}, conds ...interface{}) (count int64, err error) {
