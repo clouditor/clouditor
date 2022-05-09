@@ -223,7 +223,8 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
 			}
 			discoverer = append(discoverer,
-				azure.NewAzureARMTemplateDiscovery(azure.WithAuthorizer(authorizer)),
+				// For now, we do not want to discover the ARM template
+				// azure.NewAzureARMTemplateDiscovery(azure.WithAuthorizer(authorizer)),
 				azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
 				azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
 				azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)))
@@ -361,7 +362,7 @@ func (s *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *di
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
 
-	res.Results = &structpb.ListValue{Values: r}
+	res.Results = r
 
 	return
 }

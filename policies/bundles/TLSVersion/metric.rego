@@ -7,18 +7,18 @@ default compliant = false
 
 default applicable = false
 
-endpoint := input.httpEndpoint
+version := input.httpEndpoint.transportEncryption.tlsVersion
 
 applicable {
-	endpoint
+	version != null
 }
 
 compliant {
 	# If target_value is a list of strings/numbers
-	isIn(data.target_value, endpoint.transportEncryption.tlsVersion)
+	isIn(data.target_value, version)
 }
 
 compliant {
 	# If target_value is the version number represented as int/float
-	compare(data.operator, data.target_value, endpoint.transportEncryption.tlsVersion)
+	compare(data.operator, data.target_value, version)
 }

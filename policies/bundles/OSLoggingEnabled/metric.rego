@@ -6,12 +6,12 @@ default applicable = false
 
 default compliant = false
 
-OSLogging := input.oSLogging
+enabled := input.oSLogging.enabled
 
 applicable {
-	OSLogging
+	enabled != null
 }
 
 compliant {
-	compare(data.operator, data.target_value, OSLogging.enabled)
+	compare(data.operator, data.target_value, enabled)
 }

@@ -44,8 +44,8 @@ type regoEval struct {
 	// qc contains cached Rego queries
 	qc *queryCache
 
-	// mrtc stores a list of applicable metrics per resourceType
-	mrtc *metricsResourceTypeCache
+	// mrtc stores a list of applicable metrics per toolID and resourceType
+	mrtc *metricsCache
 }
 
 type queryCache struct {
@@ -57,7 +57,7 @@ type orElseFunc func(key string) (query *rego.PreparedEvalQuery, err error)
 
 func NewRegoEval() PolicyEval {
 	return &regoEval{
-		mrtc: &metricsResourceTypeCache{m: make(map[string][]string)},
+		mrtc: &metricsCache{m: make(map[string][]string)},
 		qc:   newQueryCache(),
 	}
 }
@@ -91,7 +91,7 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 		}
 	}
 
-	key := createKey(types)
+	key := createKey(evidence.ToolId, types)
 
 	re.mrtc.RLock()
 	cached := re.mrtc.m[key]

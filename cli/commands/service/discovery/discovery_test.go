@@ -95,7 +95,7 @@ func TestNewQueryDiscoveryCommand(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
-	assert.NotEmpty(t, response.Results.Values)
+	assert.NotEmpty(t, response.Results)
 }
 
 // Mocking code below is copied from clouditor.io/service/discovery

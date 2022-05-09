@@ -6,12 +6,12 @@ default compliant = false
 
 default applicable = false
 
-endpoint := input.httpEndpoint
+enforced := input.httpEndpoint.transportEncryption.enforced
 
 applicable {
-	endpoint
+	enforced != null
 }
 
 compliant {
-	compare(data.operator, data.target_value, endpoint.transportEncryption.enforced)
+	compare(data.operator, data.target_value, enforced)
 }
