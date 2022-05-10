@@ -435,7 +435,7 @@ func (s *Service) initOrchestratorStream(URL string, additionalOpts ...grpc.Dial
 	log.Infof("Trying to establish a connection to orchestrator service @ %v", s.orchestratorAddress)
 
 	// Establish connection to orchestrator gRPC service
-	err = s.setOrchestratorClient()
+	err = s.initOrchestratorClient()
 	if err != nil {
 		return nil, fmt.Errorf("could not set orchestrator client")
 	}
@@ -463,7 +463,7 @@ func (svc *Service) Metrics() (metrics []*assessment.Metric, err error) {
 	var res *orchestrator.ListMetricsResponse
 
 	if svc.orchestratorClient == nil {
-		err = svc.setOrchestratorClient()
+		err = svc.initOrchestratorClient()
 		if err != nil {
 			return nil, fmt.Errorf("could not set orchestrator client")
 		}
@@ -486,7 +486,7 @@ func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_La
 	}
 
 	if svc.orchestratorClient == nil {
-		err = svc.setOrchestratorClient()
+		err = svc.initOrchestratorClient()
 		if err != nil {
 			return nil, fmt.Errorf("could not set orchestrator client")
 		}
@@ -517,7 +517,7 @@ func (svc *Service) MetricConfiguration(metric string) (config *assessment.Metri
 	svc.confMutex.Unlock()
 
 	if svc.orchestratorClient == nil {
-		err = svc.setOrchestratorClient()
+		err = svc.initOrchestratorClient()
 		if err != nil {
 			return nil, fmt.Errorf("could not set orchestrator client")
 		}
@@ -571,8 +571,8 @@ func (svc *Service) recvEventsLoop() {
 	}
 }
 
-// setOrchestratorClient set the orchestrator client
-func (svc *Service) setOrchestratorClient() error {
+// initOrchestratorClient set the orchestrator client
+func (svc *Service) initOrchestratorClient() error {
 	// Establish connection to orchestrator gRPC service
 	conn, err := grpc.Dial(svc.orchestratorAddress,
 		api.DefaultGrpcDialOptions(svc.orchestratorAddress, svc, svc.grpcOptsOrchestrator...)...,
