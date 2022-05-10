@@ -156,6 +156,105 @@ paths:
                 "200":
                     description: OK
                     content: {}
+    /v1/orchestrator/certificates:
+        get:
+            tags:
+                - Orchestrator
+            description: Lists all target certificates
+            operationId: Orchestrator_ListCertificates
+            parameters:
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListCertificatesResponse'
+        post:
+            tags:
+                - Orchestrator
+            description: Creates a new certificate
+            operationId: Orchestrator_CreateCertificate
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Certificate'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Certificate'
+    /v1/orchestrator/certificates/{certificateId}:
+        get:
+            tags:
+                - Orchestrator
+            description: Retrieves a certificate
+            operationId: Orchestrator_GetCertificate
+            parameters:
+                - name: certificateId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Certificate'
+        put:
+            tags:
+                - Orchestrator
+            description: Updates an existing certificate
+            operationId: Orchestrator_UpdateCertificate
+            parameters:
+                - name: certificateId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Certificate'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Certificate'
+        delete:
+            tags:
+                - Orchestrator
+            description: Removes a certificate
+            operationId: Orchestrator_RemoveCertificate
+            parameters:
+                - name: certificateId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
     /v1/orchestrator/cloud_services:
         get:
             tags:
@@ -550,6 +649,33 @@ components:
                         type: string
                     description: a list of metrics that this tool can assess, referred by their ids
             description: Represents an external tool or service that offers assessments according to certain metrics.
+        Certificate:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                serviceId:
+                    type: string
+                issueDate:
+                    type: string
+                expirationDate:
+                    type: string
+                standard:
+                    type: string
+                assuranceLevel:
+                    type: string
+                cab:
+                    type: string
+                description:
+                    type: string
+                states:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/State'
+                    description: A list of states at specific times
+            description: An ISO17021-based certificate
         CloudService:
             type: object
             properties:
@@ -584,6 +710,15 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/AssessmentTool'
+                nextPageToken:
+                    type: string
+        ListCertificatesResponse:
+            type: object
+            properties:
+                certificates:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Certificate'
                 nextPageToken:
                     type: string
         ListCloudServicesResponse:
@@ -720,6 +855,22 @@ components:
                     items:
                         type: string
             description: Requirement represents a certain requirement that needs to be fulfilled. It could be a control in a certification catalog.
+        State:
+            type: object
+            properties:
+                id:
+                    type: string
+                state:
+                    type: string
+                    description: An EUCS-defined state, e.g. `new`, `suspended` or `withdrawn`
+                treeId:
+                    type: string
+                timestamp:
+                    type: string
+                certificateId:
+                    type: string
+                    description: Reference to the certificate
+            description: A state of a certificate at a given time
         StoreAssessmentResultResponse:
             type: object
             properties:

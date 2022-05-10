@@ -232,6 +232,45 @@ service Orchestrator {
 
   rpc SubscribeMetricChangeEvents(SubscribeMetricChangeEventRequest)
       returns (stream MetricChangeEvent) {}
+
+  // Creates a new certificate
+  rpc CreateCertificate(CreateCertificateRequest) returns (Certificate) {
+    option (google.api.http) = {
+      post : "/v1/orchestrator/certificates"
+      body : "certificate"
+    };
+  }
+
+  // Retrieves a certificate
+  rpc GetCertificate(GetCertificateRequest) returns (Certificate) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/certificates/{certificate_id}"
+    };
+  }
+
+  // Lists all target certificates
+  rpc ListCertificates(ListCertificatesRequest)
+      returns (ListCertificatesResponse) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/certificates"
+    };
+  }
+
+  // Updates an existing certificate
+  rpc UpdateCertificate(UpdateCertificateRequest) returns (Certificate) {
+    option (google.api.http) = {
+      put : "/v1/orchestrator/certificates/{certificate_id}"
+      body : "certificate"
+    };
+  }
+
+  // Removes a certificate
+  rpc RemoveCertificate(RemoveCertificateRequest)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete : "/v1/orchestrator/certificates/{certificate_id}"
+    };
+  }
 }
 
 message RegisterAssessmentToolRequest { AssessmentTool tool = 1; }
@@ -391,4 +430,50 @@ message Requirement {
   string description = 3;
 
   repeated string metric_ids = 4;
+}
+
+message GetCertificateRequest { string certificate_id = 1; }
+
+message ListCertificatesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+message ListCertificatesResponse {
+  repeated Certificate certificates = 1;
+  string next_page_token = 2;
+}
+
+message UpdateCertificateRequest {
+  string certificate_id = 1;
+  Certificate certificate = 2;
+}
+
+message CreateCertificateRequest { Certificate certificate = 1; }
+
+message RemoveCertificateRequest { string certificate_id = 1; }
+
+// An ISO17021-based certificate
+message Certificate {
+  string id = 1;
+  string name = 2;
+  string service_id = 3;
+  string issue_date = 4;
+  string expiration_date = 5;
+  string standard = 6;
+  string assurance_level = 7;
+  string cab = 8;
+  string description = 9;
+  // A list of states at specific times
+  repeated State states = 10;
+}
+
+// A state of a certificate at a given time
+message State {
+  string id = 1;
+  // An EUCS-defined state, e.g. `new`, `suspended` or `withdrawn`
+  string state = 2;
+  string tree_id = 3;
+  string timestamp = 4;
+  // Reference to the certificate
+  string certificate_id = 5;
 }

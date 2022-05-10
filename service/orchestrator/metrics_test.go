@@ -113,7 +113,7 @@ func TestService_CreateMetric(t *testing.T) {
 			gotMetric, err := service.CreateMetric(tt.args.in0, tt.args.req)
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.CreateMetric() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Service.CreateMetric() error = %v, wantErrMessage %v", err, tt.wantErr)
 				return
 			}
 
@@ -195,7 +195,7 @@ func TestService_UpdateMetric(t *testing.T) {
 			gotMetric, err := service.UpdateMetric(tt.args.in0, tt.args.req)
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.UpdateMetric() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Service.UpdateMetric() error = %v, wantErrMessage %v", err, tt.wantErr)
 				return
 			}
 
@@ -262,7 +262,7 @@ func TestService_GetMetric(t *testing.T) {
 			gotMetric, err := service.GetMetric(tt.args.in0, tt.args.req)
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.GetMetric() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Service.GetMetric() error = %v, wantErrMessage %v", err, tt.wantErr)
 				return
 			}
 			if !proto.Equal(gotMetric, tt.wantMetric) {
@@ -371,7 +371,7 @@ func TestService_GetMetricImplementation(t *testing.T) {
 
 			gotRes, err := svc.GetMetricImplementation(tt.args.ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.GetMetricImplementation() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Service.GetMetricImplementation() error = %v, wantErrMessage %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(gotRes, tt.wantRes) {
@@ -541,7 +541,7 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 			}
 			gotImpl, err := svc.UpdateMetricImplementation(tt.args.in0, tt.args.req)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.UpdateMetricImplementation() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Service.UpdateMetricImplementation() error = %v, wantErrMessage %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(gotImpl, tt.wantImpl) {
@@ -618,11 +618,11 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				status, ok := status.FromError(err)
+				gotStatus, ok := status.FromError(err)
 				if !ok {
 					return false
 				}
-				return assert.Equal(t, status.Code(), codes.NotFound)
+				return assert.Equal(t, gotStatus.Code(), codes.NotFound)
 			},
 		},
 	}
@@ -700,11 +700,96 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 			}
 			gotResponse, err := svc.ListMetricConfigurations(tt.args.ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.ListMetricConfigurations() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Service.ListMetricConfigurations() error = %v, wantErrMessage %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(gotResponse, tt.wantResponse) {
 				t.Errorf("Service.ListMetricConfigurations() = %v, want %v", gotResponse, tt.wantResponse)
+			}
+		})
+	}
+}
+
+func TestService_UpdateMetricConfiguration(t *testing.T) {
+	type fields struct {
+		metricConfigurations  map[string]map[string]*assessment.MetricConfiguration
+		results               map[string]*assessment.AssessmentResult
+		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		storage               persistence.Storage
+		metrics               map[string]*assessment.Metric
+		metricsFile           string
+		loadMetricsFunc       func() ([]*assessment.Metric, error)
+		requirements          []*orchestrator.Requirement
+		events                chan *orchestrator.MetricChangeEvent
+	}
+	type args struct {
+		in0 context.Context
+		req *orchestrator.UpdateMetricConfigurationRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes *assessment.MetricConfiguration
+		wantErr bool
+	}{
+		{
+			name: "metric does not exist",
+			fields: fields{
+				metrics: map[string]*assessment.Metric{},
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricConfigurationRequest{ServiceId: DefaultTargetCloudServiceId, MetricId: "MyMetric"},
+			},
+			wantErr: true,
+		},
+		{
+			name: "service does not exist",
+			fields: fields{
+				metrics: map[string]*assessment.Metric{"MyMetric": {}},
+				storage: testutil.NewInMemoryStorage(t),
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricConfigurationRequest{ServiceId: "MyService", MetricId: "MyMetric"},
+			},
+			wantErr: true,
+		},
+		{
+			name: "first metric in service",
+			fields: fields{
+				metrics: map[string]*assessment.Metric{"MyMetric": {}},
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					_ = s.Create(&orchestrator.CloudService{Id: DefaultTargetCloudServiceId})
+				}),
+				metricConfigurations: map[string]map[string]*assessment.MetricConfiguration{},
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricConfigurationRequest{ServiceId: DefaultTargetCloudServiceId, MetricId: "MyMetric", Configuration: &assessment.MetricConfiguration{Operator: "<"}},
+			},
+			wantErr: false,
+			wantRes: &assessment.MetricConfiguration{Operator: "<"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				metricConfigurations:  tt.fields.metricConfigurations,
+				results:               tt.fields.results,
+				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
+				storage:               tt.fields.storage,
+				metrics:               tt.fields.metrics,
+				metricsFile:           tt.fields.metricsFile,
+				loadMetricsFunc:       tt.fields.loadMetricsFunc,
+				requirements:          tt.fields.requirements,
+				events:                tt.fields.events,
+			}
+			gotRes, err := svc.UpdateMetricConfiguration(tt.args.in0, tt.args.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.UpdateMetricConfiguration() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotRes, tt.wantRes) {
+				t.Errorf("Service.UpdateMetricConfiguration() = %v, want %v", gotRes, tt.wantRes)
 			}
 		})
 	}
