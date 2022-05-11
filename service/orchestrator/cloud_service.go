@@ -134,6 +134,7 @@ func (s *Service) UpdateCloudService(_ context.Context, req *orchestrator.Update
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
+	go s.informHooks(response, nil)
 	return
 }
 
