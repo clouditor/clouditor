@@ -11,7 +11,7 @@ jobs:
       - name: Move issue to Someday
         uses: leonsteinhaeuser/project-beta-automations@v1.2.1
         with:
-          gh_token: ${{ secrets.GITHUB_TOKEN }}
+          gh_token: ${{ secrets.ISSUE_TOKEN }}
           organization: clouditor
           project_id: 1
           resource_node_id: ${{ github.event.issue.node_id }}
