@@ -74,12 +74,11 @@ func (r *Range) MarshalJSON() (b []byte, err error) {
 // how this struct will be saved into an SQL database field.
 func (r *Range) Value() (val driver.Value, err error) {
 	if r == nil {
-		return nil, nil
+		return
 	} else {
 		val, err = json.Marshal(r)
-		fmt.Printf("%s", val)
 		if err != nil {
-			return nil, fmt.Errorf("could not marshal JSON: %w", err)
+			err = fmt.Errorf("could not marshal JSON: %w", err)
 		}
 
 		return
@@ -93,14 +92,12 @@ func (r *Range) Scan(value interface{}) (err error) {
 	case []byte:
 		err = json.Unmarshal(v, r)
 		if err != nil {
-			return fmt.Errorf("could not unmarshal JSON: %w", err)
+			err = fmt.Errorf("could not unmarshal JSON: %w", err)
 		}
 	default:
-		return ErrUnsupportedType
-	}
+		err = ErrUnsupportedType
 
-	return nil
-}
+	return
 
 // GormDataType implements GormDataTypeInterface to give an indication how
 // this struct will be serialized into a database using GORM.
