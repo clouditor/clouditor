@@ -849,7 +849,7 @@ func TestCloudServiceHooks(t *testing.T) {
 	var (
 		hookCallCounter = 0
 		wg              sync.WaitGroup
-		hookCounts      = 16
+		hookCounts      = 2
 	)
 
 	wg.Add(hookCounts)
