@@ -31,7 +31,7 @@ import (
 	"strings"
 )
 
-type CloudServiceHookFunc func(result *CloudService, err error)
+type CloudServiceHookFunc func(cld *CloudService, err error)
 
 var (
 	ErrRequestIsNil     = errors.New("request is empty")

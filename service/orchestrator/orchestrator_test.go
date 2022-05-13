@@ -920,7 +920,7 @@ func TestCloudServiceHooks(t *testing.T) {
 				s.RegisterCloudServiceHook(hookFunction)
 
 				// Check if hook is registered
-				funcName1 := runtime.FuncForPC(reflect.ValueOf(s.CloudServiceHooks[i]).Pointer()).Name()
+				funcName1 := runtime.FuncForPC(reflect.ValueOf(s.cloudServiceHooks[i]).Pointer()).Name()
 				funcName2 := runtime.FuncForPC(reflect.ValueOf(hookFunction).Pointer()).Name()
 				assert.Equal(t, funcName1, funcName2)
 			}
