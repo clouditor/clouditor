@@ -882,9 +882,9 @@ func TestCloudServiceHooks(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				serviceUpdate: &orchestrator.UpdateCloudServiceRequest{
-					ServiceId: "1234",
+					ServiceId: "00000000-0000-0000-000000000000",
 					Service: &orchestrator.CloudService{
-						Id:          "1234",
+						Id:          "00000000-0000-0000-000000000000",
 						Name:        "test service",
 						Description: "test service",
 						Requirements: &orchestrator.CloudService_Requirements{
@@ -894,8 +894,15 @@ func TestCloudServiceHooks(t *testing.T) {
 				},
 				cloudServiceHooks: []orchestrator.CloudServiceHookFunc{firstHookFunction, secondHookFunction},
 			},
-			wantErr:  false,
-			wantResp: nil, // TODO
+			wantErr: false,
+			wantResp: &orchestrator.CloudService{
+				Id:          "00000000-0000-0000-000000000000",
+				Name:        "test service",
+				Description: "test service",
+				Requirements: &orchestrator.CloudService_Requirements{
+					RequirementIds: []string{"1", "2", "3"},
+				},
+			},
 		},
 	}
 
@@ -903,6 +910,8 @@ func TestCloudServiceHooks(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			hookCallCounter = 0
 			s := NewService()
+
+			s.CreateDefaultTargetCloudService()
 
 			for i, hookFunction := range tt.args.cloudServiceHooks {
 				s.RegisterCloudServiceHook(hookFunction)
@@ -928,7 +937,6 @@ func TestCloudServiceHooks(t *testing.T) {
 			}
 
 			assert.Equal(t, tt.wantResp, gotResp)
-			assert.NotEmpty(t, s.results)
 			assert.Equal(t, hookCounts, hookCallCounter)
 		})
 	}
