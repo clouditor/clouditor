@@ -69,7 +69,7 @@ type Service struct {
 
 	// cloudServiceHooks is a list of hook functions that can be used to inform
 	// about updated CloudServices
-	cloudServiceHooks []orchestrator.CloudServiceHookFunc
+	CloudServiceHooks []orchestrator.CloudServiceHookFunc
 	// hookMutex is used for (un)locking result hook calls
 	hookMutex sync.RWMutex
 
@@ -167,7 +167,7 @@ func NewService(opts ...ServiceOption) *Service {
 // informHooks informs the registered hook functions
 func (s *Service) informHooks(result *orchestrator.CloudService, err error) {
 	s.hookMutex.RLock()
-	hooks := s.cloudServiceHooks
+	hooks := s.CloudServiceHooks
 	defer s.hookMutex.RUnlock()
 
 	// Inform our hook, if we have any
@@ -182,7 +182,7 @@ func (s *Service) informHooks(result *orchestrator.CloudService, err error) {
 func (s *Service) RegisterCloudServiceHook(cloudServiceHook func(result *orchestrator.CloudService, err error)) {
 	s.hookMutex.Lock()
 	defer s.hookMutex.Unlock()
-	s.cloudServiceHooks = append(s.cloudServiceHooks, cloudServiceHook)
+	s.CloudServiceHooks = append(s.CloudServiceHooks, cloudServiceHook)
 }
 
 // StoreAssessmentResult is a method implementation of the orchestrator interface: It receives an assessment result and stores it
