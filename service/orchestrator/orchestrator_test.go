@@ -911,7 +911,10 @@ func TestCloudServiceHooks(t *testing.T) {
 			hookCallCounter = 0
 			s := NewService()
 
-			s.CreateDefaultTargetCloudService()
+			_, err := s.CreateDefaultTargetCloudService()
+			if err != nil {
+				t.Errorf("CreateCloudService() error = %v", err)
+			}
 
 			for i, hookFunction := range tt.args.cloudServiceHooks {
 				s.RegisterCloudServiceHook(hookFunction)
