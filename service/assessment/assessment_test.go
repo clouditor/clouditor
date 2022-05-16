@@ -1191,11 +1191,11 @@ func TestService_recvEventsLoop(t *testing.T) {
 			svc := &Service{
 				evidenceStoreStreams: tt.fields.evidenceStoreStreams,
 				grpcTargets: map[string]grpcTarget{
-					evidenceStore: grpcTarget{
+					evidenceStore: {
 						target: tt.fields.evidenceStoreAddress,
 						opts:   tt.fields.grpcOptsEvidenceStore,
 					},
-					orchestrator: grpcTarget{
+					orchestrator: {
 						target: tt.fields.orchestratorAddress,
 						opts:   tt.fields.grpcOptsOrchestrator,
 					},
