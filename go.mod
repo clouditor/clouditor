@@ -11,7 +11,7 @@ require (
 	github.com/MicahParks/keyfunc v1.1.0
 	github.com/aws/aws-sdk-go-v2 v1.16.3
 	github.com/aws/aws-sdk-go-v2/config v1.15.0
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.40.0
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.43.0
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.23.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.26.0
 	github.com/aws/aws-sdk-go-v2/service/sts v1.16.0
