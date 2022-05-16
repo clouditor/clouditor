@@ -431,16 +431,16 @@ func (s *Service) initEvidenceStoreStream(URL string, additionalOpts ...grpc.Dia
 }
 
 // initOrchestratorStream initializes the stream to the Orchestrator
-func (s *Service) initOrchestratorStream(URL string, additionalOpts ...grpc.DialOption) (stream orchestrator.Orchestrator_StoreAssessmentResultsClient, err error) {
-	log.Infof("Trying to establish a connection to orchestrator service @ %v", s.orchestratorAddress)
+func (svc *Service) initOrchestratorStream(URL string, additionalOpts ...grpc.DialOption) (stream orchestrator.Orchestrator_StoreAssessmentResultsClient, err error) {
+	log.Infof("Trying to establish a connection to orchestrator service @ %v", svc.orchestratorAddress)
 
 	// Establish connection to orchestrator gRPC service
-	err = s.initOrchestratorClient()
+	err = svc.initOrchestratorClient()
 	if err != nil {
 		return nil, fmt.Errorf("could not set orchestrator client")
 	}
 
-	stream, err = s.orchestratorClient.StoreAssessmentResults(context.Background())
+	stream, err = svc.orchestratorClient.StoreAssessmentResults(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("could not set up stream to orchestrator for storing assessment results: %w", err)
 	}
@@ -448,25 +448,23 @@ func (s *Service) initOrchestratorStream(URL string, additionalOpts ...grpc.Dial
 	log.Infof("Connected to Orchestrator")
 
 	// TODO(oxisto): We should rewrite our generic StreamsOf to deal with incoming messages
-	s.metricEventStream, err = s.orchestratorClient.SubscribeMetricChangeEvents(context.Background(), &orchestrator.SubscribeMetricChangeEventRequest{})
+	svc.metricEventStream, err = svc.orchestratorClient.SubscribeMetricChangeEvents(context.Background(), &orchestrator.SubscribeMetricChangeEventRequest{})
 	if err != nil {
 		return nil, fmt.Errorf("could not set up stream for listening to metric change events: %w", err)
 	}
 
-	go s.recvEventsLoop()
+	go svc.recvEventsLoop()
 
 	return
 }
 
-// MetricImplementation implements MetricsSource by retrieving the metric list from the orchestrator.
+// Metrics implements MetricsSource by retrieving the metric list from the orchestrator.
 func (svc *Service) Metrics() (metrics []*assessment.Metric, err error) {
 	var res *orchestrator.ListMetricsResponse
 
-	if svc.orchestratorClient == nil {
-		err = svc.initOrchestratorClient()
-		if err != nil {
-			return nil, fmt.Errorf("could not set orchestrator client")
-		}
+	err = svc.initOrchestratorClient()
+	if err != nil {
+		return nil, fmt.Errorf("could not set orchestrator client")
 	}
 
 	res, err = svc.orchestratorClient.ListMetrics(context.Background(), &orchestrator.ListMetricsRequest{})
@@ -485,11 +483,9 @@ func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_La
 		return nil, errors.New("unsupported language")
 	}
 
-	if svc.orchestratorClient == nil {
-		err = svc.initOrchestratorClient()
-		if err != nil {
-			return nil, fmt.Errorf("could not set orchestrator client")
-		}
+	err = svc.initOrchestratorClient()
+	if err != nil {
+		return nil, fmt.Errorf("could not set orchestrator client")
 	}
 
 	// Retrieve it from the orchestrator
@@ -516,11 +512,9 @@ func (svc *Service) MetricConfiguration(metric string) (config *assessment.Metri
 	cache, ok = svc.cachedConfigurations[metric]
 	svc.confMutex.Unlock()
 
-	if svc.orchestratorClient == nil {
-		err = svc.initOrchestratorClient()
-		if err != nil {
-			return nil, fmt.Errorf("could not set orchestrator client")
-		}
+	err = svc.initOrchestratorClient()
+	if err != nil {
+		return nil, fmt.Errorf("could not set orchestrator client")
 	}
 
 	// Check if entry is not there or is expired
@@ -573,6 +567,11 @@ func (svc *Service) recvEventsLoop() {
 
 // initOrchestratorClient set the orchestrator client
 func (svc *Service) initOrchestratorClient() error {
+	if svc.orchestratorClient != nil {
+		log.Debug("Orchestrator client is already initialized.")
+		return nil
+	}
+
 	// Establish connection to orchestrator gRPC service
 	conn, err := grpc.Dial(svc.orchestratorAddress,
 		api.DefaultGrpcDialOptions(svc.orchestratorAddress, svc, svc.grpcOptsOrchestrator...)...,
