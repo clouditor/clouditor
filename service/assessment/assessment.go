@@ -189,24 +189,24 @@ func NewService(opts ...ServiceOption) *Service {
 }
 
 // SetAuthorizer implements UsesAuthorizer
-func (s *Service) SetAuthorizer(auth api.Authorizer) {
-	s.authorizer = auth
+func (svc *Service) SetAuthorizer(auth api.Authorizer) {
+	svc.authorizer = auth
 }
 
 // Authorizer implements UsesAuthorizer
-func (s *Service) Authorizer() api.Authorizer {
-	return s.authorizer
+func (svc *Service) Authorizer() api.Authorizer {
+	return svc.authorizer
 }
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
-func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
+func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
 
 	// Validate evidence
 	resourceId, err := req.Evidence.Validate()
 	if err != nil {
 		newError := fmt.Errorf("invalid evidence: %w", err)
 		log.Error(newError)
-		s.informHooks(nil, newError)
+		svc.informHooks(nil, newError)
 
 		res = &assessment.AssessEvidenceResponse{
 			Status:        assessment.AssessEvidenceResponse_FAILED,
@@ -217,7 +217,7 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 	}
 
 	// Assess evidence
-	err = s.handleEvidence(req.Evidence, resourceId)
+	err = svc.handleEvidence(req.Evidence, resourceId)
 	if err != nil {
 		res = &assessment.AssessEvidenceResponse{
 			Status:        assessment.AssessEvidenceResponse_FAILED,
@@ -239,7 +239,7 @@ func (s *Service) AssessEvidence(_ context.Context, req *assessment.AssessEviden
 }
 
 // AssessEvidences is a method implementation of the assessment interface: It assesses multiple evidences (stream) and responds with a stream.
-func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) (err error) {
+func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) (err error) {
 	var (
 		req *assessment.AssessEvidenceRequest
 		res *assessment.AssessEvidenceResponse
@@ -263,7 +263,7 @@ func (s *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesSe
 		assessEvidencesReq := &assessment.AssessEvidenceRequest{
 			Evidence: req.Evidence,
 		}
-		res, err = s.AssessEvidence(context.Background(), assessEvidencesReq)
+		res, err = svc.AssessEvidence(context.Background(), assessEvidencesReq)
 		if err != nil {
 			log.Errorf("Error assessing evidence: %v", err)
 		}
@@ -380,10 +380,10 @@ func convertTargetValue(v interface{}) (s *structpb.Value, err error) {
 }
 
 // informHooks informs the registered hook functions
-func (s *Service) informHooks(result *assessment.AssessmentResult, err error) {
-	s.hookMutex.RLock()
-	hooks := s.resultHooks
-	defer s.hookMutex.RUnlock()
+func (svc *Service) informHooks(result *assessment.AssessmentResult, err error) {
+	svc.hookMutex.RLock()
+	hooks := svc.resultHooks
+	defer svc.hookMutex.RUnlock()
 
 	// Inform our hook, if we have any
 	if len(hooks) > 0 {
@@ -409,19 +409,19 @@ func (svc *Service) ListAssessmentResults(_ context.Context, req *assessment.Lis
 	return
 }
 
-func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result *assessment.AssessmentResult, err error)) {
-	s.hookMutex.Lock()
-	defer s.hookMutex.Unlock()
-	s.resultHooks = append(s.resultHooks, assessmentResultsHook)
+func (svc *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result *assessment.AssessmentResult, err error)) {
+	svc.hookMutex.Lock()
+	defer svc.hookMutex.Unlock()
+	svc.resultHooks = append(svc.resultHooks, assessmentResultsHook)
 }
 
 // initEvidenceStoreStream initializes the stream to the Evidence Store
-func (s *Service) initEvidenceStoreStream(URL string, additionalOpts ...grpc.DialOption) (stream evidence.EvidenceStore_StoreEvidencesClient, err error) {
-	log.Infof("Trying to establish a connection to evidence store service @ %v", s.evidenceStoreAddress.target)
+func (svc *Service) initEvidenceStoreStream(URL string, additionalOpts ...grpc.DialOption) (stream evidence.EvidenceStore_StoreEvidencesClient, err error) {
+	log.Infof("Trying to establish a connection to evidence store service @ %v", svc.evidenceStoreAddress.target)
 
 	// Establish connection to evidence store gRPC service
 	conn, err := grpc.Dial(URL,
-		api.DefaultGrpcDialOptions(URL, s, additionalOpts...)...,
+		api.DefaultGrpcDialOptions(URL, svc, additionalOpts...)...,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("could not connect to evidence store service: %w", err)

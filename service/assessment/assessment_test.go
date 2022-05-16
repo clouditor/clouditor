@@ -1189,7 +1189,7 @@ type eventRecorder struct {
 	done  bool
 }
 
-func (*eventRecorder) Eval(evidence *evidence.Evidence, src policies.MetricsSource) (data []*policies.Result, err error) {
+func (*eventRecorder) Eval(_ *evidence.Evidence, _ policies.MetricsSource) (data []*policies.Result, err error) {
 	return nil, nil
 }
 
