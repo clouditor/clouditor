@@ -109,9 +109,6 @@ type Service struct {
 
 	authorizer api.Authorizer
 
-	// // grpcTargets contains the target and DialOptions
-	// grpcTargets map[string]grpcTarget
-
 	// pe contains the actual policy evaluation engine we use
 	pe policies.PolicyEval
 }
@@ -127,7 +124,7 @@ const (
 // ServiceOption is a functional option type to configure the assessment service.
 type ServiceOption func(*Service)
 
-// WithEvidenceStoreAddress is an option to configure the orchestrator gRPC address.
+// WithEvidenceStoreAddress is an option to configure the evidence store gRPC address.
 func WithEvidenceStoreAddress(address string, opts ...grpc.DialOption) ServiceOption {
 	return func(s *Service) {
 		s.evidenceStoreAddress = &grpcTarget{
