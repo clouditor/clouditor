@@ -37,7 +37,7 @@ import (
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
-	api_orchestrator "clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/policies"
 	"clouditor.io/clouditor/service"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
@@ -62,9 +62,7 @@ func init() {
 
 const (
 	// EvictionTime is the time after which an entry in the metric configuration is invalid
-	EvictionTime  = time.Hour * 1
-	evidenceStore = "evidenceStore"
-	orchestrator  = "orchestrator"
+	EvictionTime = time.Hour * 1
 )
 
 type cachedConfiguration struct {
@@ -85,11 +83,13 @@ type Service struct {
 
 	// evidenceStoreStream sends evidences to the Evidence Store
 	evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
+	evidenceStoreAddress *grpcTarget
 
 	// orchestratorStream sends assessment results to the Orchestrator
-	orchestratorStreams *api.StreamsOf[api_orchestrator.Orchestrator_StoreAssessmentResultsClient, *api_orchestrator.StoreAssessmentResultRequest]
-	orchestratorClient  api_orchestrator.OrchestratorClient
-	metricEventStream   api_orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
+	orchestratorStreams *api.StreamsOf[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest]
+	orchestratorClient  orchestrator.OrchestratorClient
+	orchestratorAddress *grpcTarget
+	metricEventStream   orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
 
 	// resultHooks is a list of hook functions that can be used if one wants to be
 	// informed about each assessment result
@@ -109,8 +109,8 @@ type Service struct {
 
 	authorizer api.Authorizer
 
-	// grpcTargets contains the target and DialOptions
-	grpcTargets map[string]grpcTarget
+	// // grpcTargets contains the target and DialOptions
+	// grpcTargets map[string]grpcTarget
 
 	// pe contains the actual policy evaluation engine we use
 	pe policies.PolicyEval
@@ -127,27 +127,23 @@ const (
 // ServiceOption is a functional option type to configure the assessment service.
 type ServiceOption func(*Service)
 
-// WithEvidenceStore is an option to configure the evidence store gRPC address.
-func WithEvidenceStore(target string, opts ...grpc.DialOption) ServiceOption {
+// WithEvidenceStoreAddress is an option to configure the orchestrator gRPC address.
+func WithEvidenceStoreAddress(address string, opts ...grpc.DialOption) ServiceOption {
 	return func(s *Service) {
-		opts := grpcTarget{
-			target: target,
+		s.evidenceStoreAddress = &grpcTarget{
+			target: address,
 			opts:   opts,
 		}
-
-		s.grpcTargets[evidenceStore] = opts
 	}
 }
 
-// WithOrchestrator is an option to configure the orchestrator gRPC address.
-func WithOrchestrator(target string, opts ...grpc.DialOption) ServiceOption {
+// WithOrchestratorAddress is an option to configure the orchestrator gRPC address.
+func WithOrchestratorAddress(address string, opts ...grpc.DialOption) ServiceOption {
 	return func(s *Service) {
-		opts := grpcTarget{
-			target: target,
+		s.orchestratorAddress = &grpcTarget{
+			target: address,
 			opts:   opts,
 		}
-
-		s.grpcTargets[orchestrator] = opts
 	}
 }
 
@@ -163,9 +159,8 @@ func NewService(opts ...ServiceOption) *Service {
 	s := &Service{
 		results:              make(map[string]*assessment.AssessmentResult),
 		evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
-		orchestratorStreams:  api.NewStreamsOf(api.WithLogger[api_orchestrator.Orchestrator_StoreAssessmentResultsClient, *api_orchestrator.StoreAssessmentResultRequest](log)),
+		orchestratorStreams:  api.NewStreamsOf(api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest](log)),
 		cachedConfigurations: make(map[string]cachedConfiguration),
-		grpcTargets:          make(map[string]grpcTarget),
 	}
 
 	// Apply any options
@@ -173,17 +168,17 @@ func NewService(opts ...ServiceOption) *Service {
 		o(s)
 	}
 
-	if _, ok := s.grpcTargets[evidenceStore]; !ok {
-		s.grpcTargets[evidenceStore] = grpcTarget{
+	// Set to default Evidence Store
+	if s.evidenceStoreAddress == nil {
+		s.evidenceStoreAddress = &grpcTarget{
 			target: DefaultEvidenceStoreAddress,
-			opts:   nil,
 		}
 	}
 
-	if _, ok := s.grpcTargets[orchestrator]; !ok {
-		s.grpcTargets[orchestrator] = grpcTarget{
+	// Set to default Orchestrator
+	if s.orchestratorAddress == nil {
+		s.orchestratorAddress = &grpcTarget{
 			target: DefaultOrchestratorAddress,
-			opts:   nil,
 		}
 	}
 
@@ -304,9 +299,9 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 	}
 
 	// Get Evidence Store stream
-	channelEvidenceStore, err := svc.evidenceStoreStreams.GetStream(svc.grpcTargets[evidenceStore].target, "Evidence Store", svc.initEvidenceStoreStream, svc.grpcTargets[evidenceStore].opts...)
+	channelEvidenceStore, err := svc.evidenceStoreStreams.GetStream(svc.evidenceStoreAddress.target, "Evidence Store", svc.initEvidenceStoreStream, svc.evidenceStoreAddress.opts...)
 	if err != nil {
-		err = fmt.Errorf("could not get stream to evidence store (%s): %w", svc.grpcTargets[evidenceStore].target, err)
+		err = fmt.Errorf("could not get stream to evidence store (%s): %w", svc.evidenceStoreAddress.target, err)
 		log.Error(err)
 
 		go svc.informHooks(nil, err)
@@ -315,9 +310,9 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 	}
 
 	// Get Orchestrator stream
-	channelOrchestrator, err := svc.orchestratorStreams.GetStream(svc.grpcTargets[orchestrator].target, "Orchestrator", svc.initOrchestratorStream, svc.grpcTargets[orchestrator].opts...)
+	channelOrchestrator, err := svc.orchestratorStreams.GetStream(svc.orchestratorAddress.target, "Orchestrator", svc.initOrchestratorStream, svc.orchestratorAddress.opts...)
 	if err != nil {
-		err = fmt.Errorf("could not get stream to orchestrator (%s): %w", svc.grpcTargets[orchestrator].target, err)
+		err = fmt.Errorf("could not get stream to orchestrator (%s): %w", svc.orchestratorAddress.target, err)
 		log.Error(err)
 
 		go svc.informHooks(nil, err)
@@ -363,7 +358,7 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 		go svc.informHooks(result, nil)
 
 		// Send assessment result in orchestratorChannel
-		channelOrchestrator.Send(&api_orchestrator.StoreAssessmentResultRequest{Result: result})
+		channelOrchestrator.Send(&orchestrator.StoreAssessmentResultRequest{Result: result})
 	}
 
 	return nil
@@ -422,7 +417,7 @@ func (s *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result
 
 // initEvidenceStoreStream initializes the stream to the Evidence Store
 func (s *Service) initEvidenceStoreStream(URL string, additionalOpts ...grpc.DialOption) (stream evidence.EvidenceStore_StoreEvidencesClient, err error) {
-	log.Infof("Trying to establish a connection to evidence store service @ %v", s.grpcTargets[evidenceStore].target)
+	log.Infof("Trying to establish a connection to evidence store service @ %v", s.evidenceStoreAddress.target)
 
 	// Establish connection to evidence store gRPC service
 	conn, err := grpc.Dial(URL,
@@ -444,8 +439,8 @@ func (s *Service) initEvidenceStoreStream(URL string, additionalOpts ...grpc.Dia
 }
 
 // initOrchestratorStream initializes the stream to the Orchestrator
-func (svc *Service) initOrchestratorStream(URL string, additionalOpts ...grpc.DialOption) (stream api_orchestrator.Orchestrator_StoreAssessmentResultsClient, err error) {
-	log.Infof("Trying to establish a connection to orchestrator service @ %v", svc.grpcTargets[orchestrator].target)
+func (svc *Service) initOrchestratorStream(URL string, additionalOpts ...grpc.DialOption) (stream orchestrator.Orchestrator_StoreAssessmentResultsClient, err error) {
+	log.Infof("Trying to establish a connection to orchestrator This will disappear when I changeOrcservice @ %v", svc.orchestratorAddress.target)
 
 	// Establish connection to orchestrator gRPC service
 	err = svc.initOrchestratorClient()
@@ -461,7 +456,7 @@ func (svc *Service) initOrchestratorStream(URL string, additionalOpts ...grpc.Di
 	log.Infof("Connected to Orchestrator")
 
 	// TODO(oxisto): We should rewrite our generic StreamsOf to deal with incoming messages
-	svc.metricEventStream, err = svc.orchestratorClient.SubscribeMetricChangeEvents(context.Background(), &api_orchestrator.SubscribeMetricChangeEventRequest{})
+	svc.metricEventStream, err = svc.orchestratorClient.SubscribeMetricChangeEvents(context.Background(), &orchestrator.SubscribeMetricChangeEventRequest{})
 	if err != nil {
 		return nil, fmt.Errorf("could not set up stream for listening to metric change events: %w", err)
 	}
@@ -473,14 +468,14 @@ func (svc *Service) initOrchestratorStream(URL string, additionalOpts ...grpc.Di
 
 // Metrics implements MetricsSource by retrieving the metric list from the orchestrator.
 func (svc *Service) Metrics() (metrics []*assessment.Metric, err error) {
-	var res *api_orchestrator.ListMetricsResponse
+	var res *orchestrator.ListMetricsResponse
 
 	err = svc.initOrchestratorClient()
 	if err != nil {
 		return nil, fmt.Errorf("could not set orchestrator client")
 	}
 
-	res, err = svc.orchestratorClient.ListMetrics(context.Background(), &api_orchestrator.ListMetricsRequest{})
+	res, err = svc.orchestratorClient.ListMetrics(context.Background(), &orchestrator.ListMetricsRequest{})
 	if err != nil {
 		return nil, fmt.Errorf("could not retrieve metric list from orchestrator: %w", err)
 	}
@@ -502,7 +497,7 @@ func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_La
 	}
 
 	// Retrieve it from the orchestrator
-	impl, err = svc.orchestratorClient.GetMetricImplementation(context.Background(), &api_orchestrator.GetMetricImplementationRequest{
+	impl, err = svc.orchestratorClient.GetMetricImplementation(context.Background(), &orchestrator.GetMetricImplementationRequest{
 		MetricId: metric,
 	})
 	if err != nil {
@@ -532,7 +527,7 @@ func (svc *Service) MetricConfiguration(metric string) (config *assessment.Metri
 
 	// Check if entry is not there or is expired
 	if !ok || cache.cachedAt.After(time.Now().Add(EvictionTime)) {
-		config, err = svc.orchestratorClient.GetMetricConfiguration(context.Background(), &api_orchestrator.GetMetricConfigurationRequest{
+		config, err = svc.orchestratorClient.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{
 			ServiceId: service_orchestrator.DefaultTargetCloudServiceId,
 			MetricId:  metric,
 		})
@@ -559,7 +554,7 @@ func (svc *Service) MetricConfiguration(metric string) (config *assessment.Metri
 func (svc *Service) recvEventsLoop() {
 	for {
 		var (
-			event *api_orchestrator.MetricChangeEvent
+			event *orchestrator.MetricChangeEvent
 			err   error
 		)
 		event, err = svc.metricEventStream.Recv()
@@ -586,14 +581,14 @@ func (svc *Service) initOrchestratorClient() error {
 	}
 
 	// Establish connection to orchestrator gRPC service
-	conn, err := grpc.Dial(svc.grpcTargets[orchestrator].target,
-		api.DefaultGrpcDialOptions(svc.grpcTargets[orchestrator].target, svc, svc.grpcTargets[orchestrator].opts...)...,
+	conn, err := grpc.Dial(svc.orchestratorAddress.target,
+		api.DefaultGrpcDialOptions(svc.orchestratorAddress.target, svc, svc.orchestratorAddress.opts...)...,
 	)
 	if err != nil {
 		return fmt.Errorf("could not connect to orchestrator service: %w", err)
 	}
 
-	svc.orchestratorClient = api_orchestrator.NewOrchestratorClient(conn)
+	svc.orchestratorClient = orchestrator.NewOrchestratorClient(conn)
 
 	return nil
 }

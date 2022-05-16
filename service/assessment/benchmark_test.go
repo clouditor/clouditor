@@ -58,7 +58,7 @@ func createEvidences(n int, m int, b *testing.B) int {
 
 	addr := fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)
 
-	svc := NewService(WithOrchestrator(addr), WithEvidenceStore(addr))
+	svc := NewService(WithOrchestratorAddress(addr), WithEvidenceStoreAddress(addr))
 
 	orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
 		wg.Done()

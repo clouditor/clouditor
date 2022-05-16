@@ -84,13 +84,11 @@ func TestNewService(t *testing.T) {
 			name: "AssessmentServer created with empty results map",
 			want: &Service{
 				results: make(map[string]*assessment.AssessmentResult),
-				grpcTargets: map[string]grpcTarget{
-					evidenceStore: {
-						target: "localhost:9090",
-					},
-					orchestrator: {
-						target: "localhost:9090",
-					},
+				evidenceStoreAddress: &grpcTarget{
+					target: "localhost:9090",
+				},
+				orchestratorAddress: &grpcTarget{
+					target: "localhost:9090",
 				},
 				evidenceStoreStreams: nil,
 				orchestratorStreams:  nil,
@@ -101,19 +99,17 @@ func TestNewService(t *testing.T) {
 			name: "AssessmentServer created with options",
 			args: args{
 				opts: []ServiceOption{
-					WithEvidenceStore("localhost:9091"),
-					WithOrchestrator("localhost:9092"),
+					WithEvidenceStoreAddress("localhost:9091"),
+					WithOrchestratorAddress("localhost:9092"),
 				},
 			},
 			want: &Service{
 				results: make(map[string]*assessment.AssessmentResult),
-				grpcTargets: map[string]grpcTarget{
-					evidenceStore: {
-						target: "localhost:9091",
-					},
-					orchestrator: {
-						target: "localhost:9092",
-					},
+				evidenceStoreAddress: &grpcTarget{
+					target: "localhost:9091",
+				},
+				orchestratorAddress: &grpcTarget{
+					target: "localhost:9092",
 				},
 				evidenceStoreStreams: nil,
 				orchestratorStreams:  nil,
@@ -247,24 +243,12 @@ func TestAssessEvidence(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
 			if tt.hasRPCConnection {
-				if entry, ok := s.grpcTargets[evidenceStore]; ok {
-					entry.opts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
-					s.grpcTargets[evidenceStore] = entry
-				}
-				if entry, ok := s.grpcTargets[orchestrator]; ok {
-					entry.opts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
-					s.grpcTargets[orchestrator] = entry
-				}
+				s.evidenceStoreAddress.opts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
+				s.orchestratorAddress.opts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
 			} else {
 				// clear the evidence URL, just to be sure
-				if entry, ok := s.grpcTargets[evidenceStore]; ok {
-					entry.target = ""
-					s.grpcTargets[evidenceStore] = entry
-				}
-				if entry, ok := s.grpcTargets[orchestrator]; ok {
-					entry.target = ""
-					s.grpcTargets[orchestrator] = entry
-				}
+				s.evidenceStoreAddress.target = ""
+				s.orchestratorAddress.target = ""
 			}
 
 			gotResp, err := s.AssessEvidence(tt.args.in0, &assessment.AssessEvidenceRequest{Evidence: tt.args.evidence})
@@ -388,13 +372,11 @@ func TestAssessEvidences(t *testing.T) {
 				results:                       tt.fields.results,
 				cachedConfigurations:          make(map[string]cachedConfiguration),
 				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
-				grpcTargets: map[string]grpcTarget{
-					evidenceStore: {
-						opts: []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
-					},
-					orchestrator: {
-						opts: []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
-					},
+				evidenceStoreAddress: &grpcTarget{
+					opts: []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
+				},
+				orchestratorAddress: &grpcTarget{
+					opts: []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 				},
 				pe: policies.NewRegoEval(),
 			}
@@ -508,7 +490,7 @@ func TestAssessmentResultHooks(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			hookCallCounter = 0
-			s := NewService(WithEvidenceStore("", grpc.WithContextDialer(bufConnDialer)), WithOrchestrator("", grpc.WithContextDialer(bufConnDialer)))
+			s := NewService(WithEvidenceStoreAddress("", grpc.WithContextDialer(bufConnDialer)), WithOrchestratorAddress("", grpc.WithContextDialer(bufConnDialer)))
 
 			for i, hookFunction := range tt.args.resultHooks {
 				s.RegisterAssessmentResultHook(hookFunction)
@@ -688,15 +670,13 @@ func TestService_ListAssessmentResults(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
 				evidenceStoreStreams: tt.fields.evidenceStoreStreams,
-				grpcTargets: map[string]grpcTarget{
-					evidenceStore: {
-						target: tt.fields.evidenceStoreAddress,
-						opts:   tt.fields.grpcOptsEvidenceStore,
-					},
-					orchestrator: {
-						target: tt.fields.orchestratorAddress,
-						opts:   tt.fields.grpcOptsOrchestrator,
-					},
+				evidenceStoreAddress: &grpcTarget{
+					target: tt.fields.evidenceStoreAddress,
+					opts:   tt.fields.grpcOptsEvidenceStore,
+				},
+				orchestratorAddress: &grpcTarget{
+					target: tt.fields.orchestratorAddress,
+					opts:   tt.fields.grpcOptsOrchestrator,
 				},
 				orchestratorStreams:  tt.fields.orchestratorStreams,
 				orchestratorClient:   tt.fields.orchestratorClient,
@@ -1045,26 +1025,14 @@ func TestHandleEvidence(t *testing.T) {
 
 			// Mock streams for target services
 			if tt.fields.hasEvidenceStoreStream {
-				if entry, ok := s.grpcTargets[evidenceStore]; ok {
-					entry.opts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
-					s.grpcTargets[evidenceStore] = entry
-				}
+				s.evidenceStoreAddress.opts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
 			} else {
-				if entry, ok := s.grpcTargets[evidenceStore]; ok {
-					entry.opts = []grpc.DialOption{grpc.WithContextDialer(nil)}
-					s.grpcTargets[evidenceStore] = entry
-				}
+				s.evidenceStoreAddress.opts = []grpc.DialOption{grpc.WithContextDialer(nil)}
 			}
 			if tt.fields.hasOrchestratorStream {
-				if entry, ok := s.grpcTargets[orchestrator]; ok {
-					entry.opts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
-					s.grpcTargets[orchestrator] = entry
-				}
+				s.orchestratorAddress.opts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
 			} else {
-				if entry, ok := s.grpcTargets[orchestrator]; ok {
-					entry.opts = []grpc.DialOption{grpc.WithContextDialer(nil)}
-					s.grpcTargets[orchestrator] = entry
-				}
+				s.orchestratorAddress.opts = []grpc.DialOption{grpc.WithContextDialer(nil)}
 			}
 
 			// Two tests: 1st) wantErr function. 2nd) if wantErr false then check if a result is added to map
@@ -1096,7 +1064,7 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 			},
 			fields: fields{
 				opts: []ServiceOption{
-					WithOrchestrator("localhost:1"),
+					WithOrchestratorAddress("localhost:1"),
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -1125,9 +1093,8 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 			},
 			fields: fields{
 				opts: []ServiceOption{
-					WithOrchestrator("bufnet"),
+					WithOrchestratorAddress("bufnet", grpc.WithContextDialer(bufConnDialer)),
 					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
-					WithOrchestrator("", grpc.WithContextDialer(bufConnDialer)),
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -1140,7 +1107,7 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService(tt.fields.opts...)
-			stream, err := s.initOrchestratorStream(tt.args.url, s.grpcTargets[orchestrator].opts...)
+			stream, err := s.initOrchestratorStream(tt.args.url, s.orchestratorAddress.opts...)
 
 			if tt.wantErr != nil {
 				tt.wantErr(t, err)
@@ -1190,15 +1157,13 @@ func TestService_recvEventsLoop(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
 				evidenceStoreStreams: tt.fields.evidenceStoreStreams,
-				grpcTargets: map[string]grpcTarget{
-					evidenceStore: {
-						target: tt.fields.evidenceStoreAddress,
-						opts:   tt.fields.grpcOptsEvidenceStore,
-					},
-					orchestrator: {
-						target: tt.fields.orchestratorAddress,
-						opts:   tt.fields.grpcOptsOrchestrator,
-					},
+				evidenceStoreAddress: &grpcTarget{
+					target: tt.fields.evidenceStoreAddress,
+					opts:   tt.fields.grpcOptsEvidenceStore,
+				},
+				orchestratorAddress: &grpcTarget{
+					target: tt.fields.orchestratorAddress,
+					opts:   tt.fields.grpcOptsOrchestrator,
 				},
 				orchestratorStreams:  tt.fields.orchestratorStreams,
 				orchestratorClient:   tt.fields.orchestratorClient,
