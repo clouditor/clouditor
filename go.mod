@@ -4,15 +4,15 @@ go 1.18
 
 // runtime dependencies
 require (
-	github.com/Azure/azure-sdk-for-go v63.4.0+incompatible
+	github.com/Azure/azure-sdk-for-go v64.0.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.11.24
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.11
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/MicahParks/keyfunc v1.1.0
 	github.com/aws/aws-sdk-go-v2 v1.16.3
 	github.com/aws/aws-sdk-go-v2/config v1.15.0
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.40.0
-	github.com/aws/aws-sdk-go-v2/service/lambda v1.22.0
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.43.0
+	github.com/aws/aws-sdk-go-v2/service/lambda v1.23.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.26.0
 	github.com/aws/aws-sdk-go-v2/service/sts v1.16.0
 	github.com/aws/smithy-go v1.11.2
