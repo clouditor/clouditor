@@ -831,3 +831,103 @@ func Test_ListCertificates(t *testing.T) {
 	assert.NotEmpty(t, listCertificatesResponse.Certificates)
 	assert.Equal(t, len(listCertificatesResponse.Certificates), 1)
 }
+
+func TestCloudServiceHooks(t *testing.T) {
+	var (
+		hookCallCounter = 0
+		wg              sync.WaitGroup
+		hookCounts      = 2
+	)
+
+	wg.Add(hookCounts)
+
+	firstHookFunction := func(cloudService *orchestrator.CloudService, err error) {
+		hookCallCounter++
+		log.Println("Hello from inside the firstHookFunction")
+		wg.Done()
+	}
+
+	secondHookFunction := func(cloudService *orchestrator.CloudService, err error) {
+		hookCallCounter++
+		log.Println("Hello from inside the secondHookFunction")
+		wg.Done()
+	}
+
+	type args struct {
+		in0               context.Context
+		serviceUpdate     *orchestrator.UpdateCloudServiceRequest
+		cloudServiceHooks []orchestrator.CloudServiceHookFunc
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantResp *orchestrator.CloudService
+		wantErr  bool
+	}{
+		{
+			name: "Update Cloud Service",
+			args: args{
+				in0: context.TODO(),
+				serviceUpdate: &orchestrator.UpdateCloudServiceRequest{
+					ServiceId: "00000000-0000-0000-000000000000",
+					Service: &orchestrator.CloudService{
+						Id:          "00000000-0000-0000-000000000000",
+						Name:        "test service",
+						Description: "test service",
+						Requirements: &orchestrator.CloudService_Requirements{
+							RequirementIds: []string{"1", "2", "3"},
+						},
+					},
+				},
+				cloudServiceHooks: []orchestrator.CloudServiceHookFunc{firstHookFunction, secondHookFunction},
+			},
+			wantErr: false,
+			wantResp: &orchestrator.CloudService{
+				Id:          "00000000-0000-0000-000000000000",
+				Name:        "test service",
+				Description: "test service",
+				Requirements: &orchestrator.CloudService_Requirements{
+					RequirementIds: []string{"1", "2", "3"},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			hookCallCounter = 0
+			s := NewService()
+
+			_, err := s.CreateDefaultTargetCloudService()
+			if err != nil {
+				t.Errorf("CreateCloudService() error = %v", err)
+			}
+
+			for i, hookFunction := range tt.args.cloudServiceHooks {
+				s.RegisterCloudServiceHook(hookFunction)
+
+				// Check if hook is registered
+				funcName1 := runtime.FuncForPC(reflect.ValueOf(s.cloudServiceHooks[i]).Pointer()).Name()
+				funcName2 := runtime.FuncForPC(reflect.ValueOf(hookFunction).Pointer()).Name()
+				assert.Equal(t, funcName1, funcName2)
+			}
+
+			// To test the hooks we have to call a function that calls the hook function
+			gotResp, err := s.UpdateCloudService(tt.args.in0, tt.args.serviceUpdate)
+
+			// wait for all hooks (2 services * 2 hooks)
+			wg.Wait()
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("UpdateCloudService() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotResp, tt.wantResp) {
+				t.Errorf("UpdateCloudService() gotResp = %v, want %v", gotResp, tt.wantResp)
+			}
+
+			assert.Equal(t, tt.wantResp, gotResp)
+			assert.Equal(t, hookCounts, hookCallCounter)
+		})
+	}
+}
