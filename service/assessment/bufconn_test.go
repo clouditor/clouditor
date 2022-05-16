@@ -30,7 +30,7 @@ import (
 	"net"
 
 	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/api/orchestrator"
+	api_orchestrator "clouditor.io/clouditor/api/orchestrator"
 	service_evidence "clouditor.io/clouditor/service/evidence"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"google.golang.org/grpc"
@@ -58,7 +58,7 @@ func startBufConnServer() (*grpc.Server, *service_orchestrator.Service, *service
 	server := grpc.NewServer()
 
 	orchestratorService := service_orchestrator.NewService()
-	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
+	api_orchestrator.RegisterOrchestratorServer(server, orchestratorService)
 
 	evidenceService := service_evidence.NewService()
 	evidence.RegisterEvidenceStoreServer(server, evidenceService)

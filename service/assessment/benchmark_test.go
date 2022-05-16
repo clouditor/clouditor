@@ -12,7 +12,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/api/orchestrator"
+	api_orchestrator "clouditor.io/clouditor/api/orchestrator"
 	service_evidence "clouditor.io/clouditor/service/evidence"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"clouditor.io/clouditor/voc"
@@ -34,7 +34,7 @@ func createEvidences(n int, m int, b *testing.B) int {
 	srv := grpc.NewServer()
 
 	orchestratorService := service_orchestrator.NewService()
-	orchestrator.RegisterOrchestratorServer(srv, orchestratorService)
+	api_orchestrator.RegisterOrchestratorServer(srv, orchestratorService)
 
 	evidenceService := service_evidence.NewService()
 	evidence.RegisterEvidenceStoreServer(srv, evidenceService)
@@ -58,7 +58,7 @@ func createEvidences(n int, m int, b *testing.B) int {
 
 	addr := fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)
 
-	svc := NewService(WithOrchestratorAddress(addr), WithEvidenceStoreAddress(addr))
+	svc := NewService(WithOrchestrator(addr), WithEvidenceStore(addr))
 
 	orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
 		wg.Done()
