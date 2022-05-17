@@ -84,10 +84,10 @@ func TestNewService(t *testing.T) {
 			name: "AssessmentServer created with empty results map",
 			want: &Service{
 				results: make(map[string]*assessment.AssessmentResult),
-				evidenceStoreAddress: &grpcTarget{
+				evidenceStoreAddress: grpcTarget{
 					target: "localhost:9090",
 				},
-				orchestratorAddress: &grpcTarget{
+				orchestratorAddress: grpcTarget{
 					target: "localhost:9090",
 				},
 				evidenceStoreStreams: nil,
@@ -105,10 +105,10 @@ func TestNewService(t *testing.T) {
 			},
 			want: &Service{
 				results: make(map[string]*assessment.AssessmentResult),
-				evidenceStoreAddress: &grpcTarget{
+				evidenceStoreAddress: grpcTarget{
 					target: "localhost:9091",
 				},
-				orchestratorAddress: &grpcTarget{
+				orchestratorAddress: grpcTarget{
 					target: "localhost:9092",
 				},
 				evidenceStoreStreams: nil,
@@ -372,10 +372,10 @@ func TestAssessEvidences(t *testing.T) {
 				results:                       tt.fields.results,
 				cachedConfigurations:          make(map[string]cachedConfiguration),
 				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
-				evidenceStoreAddress: &grpcTarget{
+				evidenceStoreAddress: grpcTarget{
 					opts: []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 				},
-				orchestratorAddress: &grpcTarget{
+				orchestratorAddress: grpcTarget{
 					opts: []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 				},
 				pe: policies.NewRegoEval(),
@@ -670,11 +670,11 @@ func TestService_ListAssessmentResults(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
 				evidenceStoreStreams: tt.fields.evidenceStoreStreams,
-				evidenceStoreAddress: &grpcTarget{
+				evidenceStoreAddress: grpcTarget{
 					target: tt.fields.evidenceStoreAddress,
 					opts:   tt.fields.grpcOptsEvidenceStore,
 				},
-				orchestratorAddress: &grpcTarget{
+				orchestratorAddress: grpcTarget{
 					target: tt.fields.orchestratorAddress,
 					opts:   tt.fields.grpcOptsOrchestrator,
 				},
@@ -1157,11 +1157,11 @@ func TestService_recvEventsLoop(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
 				evidenceStoreStreams: tt.fields.evidenceStoreStreams,
-				evidenceStoreAddress: &grpcTarget{
+				evidenceStoreAddress: grpcTarget{
 					target: tt.fields.evidenceStoreAddress,
 					opts:   tt.fields.grpcOptsEvidenceStore,
 				},
-				orchestratorAddress: &grpcTarget{
+				orchestratorAddress: grpcTarget{
 					target: tt.fields.orchestratorAddress,
 					opts:   tt.fields.grpcOptsOrchestrator,
 				},

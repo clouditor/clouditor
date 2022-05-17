@@ -83,12 +83,12 @@ type Service struct {
 
 	// evidenceStoreStream sends evidences to the Evidence Store
 	evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
-	evidenceStoreAddress *grpcTarget
+	evidenceStoreAddress grpcTarget
 
 	// orchestratorStream sends assessment results to the Orchestrator
 	orchestratorStreams *api.StreamsOf[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest]
 	orchestratorClient  orchestrator.OrchestratorClient
-	orchestratorAddress *grpcTarget
+	orchestratorAddress grpcTarget
 	metricEventStream   orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
 
 	// resultHooks is a list of hook functions that can be used if one wants to be
@@ -127,7 +127,11 @@ type ServiceOption func(*Service)
 // WithEvidenceStoreAddress is an option to configure the evidence store gRPC address.
 func WithEvidenceStoreAddress(address string, opts ...grpc.DialOption) ServiceOption {
 	return func(s *Service) {
-		s.evidenceStoreAddress = &grpcTarget{
+		if address == "" {
+			address = DefaultEvidenceStoreAddress
+		}
+
+		s.evidenceStoreAddress = grpcTarget{
 			target: address,
 			opts:   opts,
 		}
@@ -137,7 +141,11 @@ func WithEvidenceStoreAddress(address string, opts ...grpc.DialOption) ServiceOp
 // WithOrchestratorAddress is an option to configure the orchestrator gRPC address.
 func WithOrchestratorAddress(address string, opts ...grpc.DialOption) ServiceOption {
 	return func(s *Service) {
-		s.orchestratorAddress = &grpcTarget{
+		if address == "" {
+			address = DefaultOrchestratorAddress
+		}
+
+		s.orchestratorAddress = grpcTarget{
 			target: address,
 			opts:   opts,
 		}
@@ -166,15 +174,15 @@ func NewService(opts ...ServiceOption) *Service {
 	}
 
 	// Set to default Evidence Store
-	if s.evidenceStoreAddress == nil {
-		s.evidenceStoreAddress = &grpcTarget{
+	if s.evidenceStoreAddress.target == "" {
+		s.evidenceStoreAddress = grpcTarget{
 			target: DefaultEvidenceStoreAddress,
 		}
 	}
 
 	// Set to default Orchestrator
-	if s.orchestratorAddress == nil {
-		s.orchestratorAddress = &grpcTarget{
+	if s.orchestratorAddress.target == "" {
+		s.orchestratorAddress = grpcTarget{
 			target: DefaultOrchestratorAddress,
 		}
 	}
