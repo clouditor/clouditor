@@ -107,6 +107,7 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 		&auth.User{},
 		&orchestrator.CloudService{},
 		&assessment.MetricImplementation{},
+		&assessment.Metric{},
 		&orchestrator.Certificate{},
 		&orchestrator.State{},
 	}

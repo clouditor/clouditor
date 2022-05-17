@@ -1,6 +1,7 @@
 package assessment
 
 import (
+	"database/sql/driver"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -10,6 +11,7 @@ import (
 var (
 	ErrMetricNameMissing = errors.New("metric name is missing")
 	ErrMetricEmpty       = errors.New("metric is missing or empty")
+	ErrUnsupportedType   = errors.New("unsupported type")
 )
 
 func (r *Range) UnmarshalJSON(b []byte) (err error) {
@@ -36,6 +38,73 @@ func (r *Range) UnmarshalJSON(b []byte) (err error) {
 	}
 
 	return
+}
+
+// MarshalJSON is a custom implementation of JSON marshalling to correctly
+// serialize the Range type because the inner types, such as Range_AllowedValues
+// are missing json struct tags. This is needed if the Range type is marshalled
+// on its own (for example) as a single field in a database. In gRPC messages,
+// the protojson.Marshal function takes care of this.
+func (r *Range) MarshalJSON() (b []byte, err error) {
+	switch v := r.Range.(type) {
+	case *Range_AllowedValues:
+		return json.Marshal(&struct {
+			AllowedValues *AllowedValues `json:"allowedValues"`
+		}{
+			AllowedValues: v.AllowedValues,
+		})
+	case *Range_Order:
+		return json.Marshal(&struct {
+			Order *Order `json:"order"`
+		}{
+			Order: v.Order,
+		})
+	case *Range_MinMax:
+		return json.Marshal(&struct {
+			MinMax *MinMax `json:"minMax"`
+		}{
+			MinMax: v.MinMax,
+		})
+	default:
+		return nil, ErrUnsupportedType
+	}
+}
+
+// Value implements https://pkg.go.dev/database/sql/driver#Valuer to indicate
+// how this struct will be saved into an SQL database field.
+func (r *Range) Value() (val driver.Value, err error) {
+	if r == nil {
+		return
+	} else {
+		val, err = json.Marshal(r)
+		if err != nil {
+			err = fmt.Errorf("could not marshal JSON: %w", err)
+		}
+
+		return
+	}
+}
+
+// Scan implements https://pkg.go.dev/database/sql#Scanner to indicate how
+// this struct can be loaded from an SQL database field.
+func (r *Range) Scan(value interface{}) (err error) {
+	switch v := value.(type) {
+	case []byte:
+		err = json.Unmarshal(v, r)
+		if err != nil {
+			err = fmt.Errorf("could not unmarshal JSON: %w", err)
+		}
+	default:
+		err = ErrUnsupportedType
+	}
+
+	return
+}
+
+// GormDataType implements GormDataTypeInterface to give an indication how
+// this struct will be serialized into a database using GORM.
+func (r *Range) GormDataType() string {
+	return "jsonb"
 }
 
 // MetricValidationOption is a function-style option to fine-tune metric validation.
