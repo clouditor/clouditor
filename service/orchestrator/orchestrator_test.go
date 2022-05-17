@@ -161,19 +161,6 @@ func TestAssessmentResultHook(t *testing.T) {
 	}
 }
 
-// TODO(lebogg): Convert to table tests
-func TestListMetricConfigurations(t *testing.T) {
-	var (
-		response *orchestrator.ListMetricConfigurationResponse
-		err      error
-	)
-	s := NewService()
-	response, err = s.ListMetricConfigurations(context.TODO(), &orchestrator.ListMetricConfigurationRequest{})
-
-	assert.NoError(t, err)
-	assert.NotEmpty(t, response.Configurations)
-}
-
 func TestStoreAssessmentResult(t *testing.T) {
 	type args struct {
 		in0        context.Context
