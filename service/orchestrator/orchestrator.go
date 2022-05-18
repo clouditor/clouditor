@@ -154,6 +154,12 @@ func NewService(opts ...ServiceOption) *Service {
 		}
 	}
 
+	// Persist requirements in storage backend
+	err = s.storage.Save(s.requirements)
+	if err != nil {
+		log.Errorf("Could not save requirements. Will continue with empty requirements list: %v", err)
+	}
+
 	if err = s.loadMetrics(); err != nil {
 		log.Errorf("Could not load embedded metrics. Will continue with empty metric list: %v", err)
 	}

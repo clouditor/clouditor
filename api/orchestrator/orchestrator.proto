@@ -429,7 +429,9 @@ message Requirement {
 
   string description = 3;
 
-  repeated string metric_ids = 4;
+  message Metrics { repeated string metric_ids = 1; }
+
+  Metrics metrics = 4;
 }
 
 message GetCertificateRequest { string certificate_id = 1; }

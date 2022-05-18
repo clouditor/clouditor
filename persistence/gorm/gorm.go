@@ -62,6 +62,7 @@ var DefaultTypes = []any{
 	&assessment.Metric{},
 	&orchestrator.Certificate{},
 	&orchestrator.State{},
+	&orchestrator.Requirement{},
 }
 
 // StorageOption is a functional option type to configure the GORM storage. E.g. WithInMemory or WithPostgres

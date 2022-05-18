@@ -3,9 +3,11 @@
         "id": "Req-1",
         "name": "Make-it-Secure",
         "description": "You should make everything secure",
-        "metric_ids": [
-            "TransportEncryptionEnabled",
-            "TransportEncryptionAlgorithm"
-        ]
+        "metrics": {
+            "metric_ids": [
+                "TransportEncryptionEnabled",
+                "TransportEncryptionAlgorithm"
+            ]
+        }
     }
 ]
