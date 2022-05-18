@@ -93,6 +93,7 @@ func TestNewService(t *testing.T) {
 				evidenceStoreStreams: nil,
 				orchestratorStreams:  nil,
 				cachedConfigurations: make(map[string]cachedConfiguration),
+				evalPkg:              policies.DefaultRegoPackage,
 			},
 		},
 		{
@@ -114,6 +115,7 @@ func TestNewService(t *testing.T) {
 				evidenceStoreStreams: nil,
 				orchestratorStreams:  nil,
 				cachedConfigurations: make(map[string]cachedConfiguration),
+				evalPkg:              policies.DefaultRegoPackage,
 			},
 		},
 	}
