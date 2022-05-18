@@ -74,14 +74,11 @@ func NewRegoEval(opts ...RegoEvalOption) PolicyEval {
 	re := regoEval{
 		mrtc: &metricsCache{m: make(map[string][]string)},
 		qc:   newQueryCache(),
+		pkg:  DefaultRegoPackage,
 	}
 
 	for _, o := range opts {
 		o(&re)
-	}
-
-	if re.pkg == "" {
-		re.pkg = DefaultRegoPackage
 	}
 
 	return &re

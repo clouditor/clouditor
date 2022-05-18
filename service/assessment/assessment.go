@@ -163,7 +163,7 @@ func WithOAuth2Authorizer(config *clientcredentials.Config) ServiceOption {
 }
 
 // WithRegoPackageName is an option to configure the Rego package name
-func WithEvaluation(pkg string) ServiceOption {
+func WithRegoPackageName(pkg string) ServiceOption {
 	return func(s *Service) {
 		s.evalPkg = pkg
 	}
