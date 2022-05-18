@@ -46,7 +46,7 @@ func TestStorageOptions(t *testing.T) {
 				},
 			},
 			wantDialectorType: "",
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+			wantErr: func(tt assert.TestingT, err error, i ...any) bool {
 				return assert.Contains(t, err.Error(), "invalid port")
 			},
 		},

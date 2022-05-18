@@ -51,11 +51,11 @@ type storage struct {
 	config    gorm.Config
 
 	// types contains all types that we need to auto-migrate into database tables
-	types []interface{}
+	types []any
 }
 
 // DefaultTypes contains a list of internal types that need to be migrated by default
-var DefaultTypes = []interface{}{
+var DefaultTypes = []any{
 	&auth.User{},
 	&orchestrator.CloudService{},
 	&assessment.MetricImplementation{},
@@ -89,7 +89,7 @@ func WithLogger(logger logger.Interface) StorageOption {
 }
 
 // WithAdditionalAutoMigration is an option to add additional types to GORM's auto-migration.
-func WithAdditionalAutoMigration(types ...interface{}) StorageOption {
+func WithAdditionalAutoMigration(types ...any) StorageOption {
 	return func(s *storage) {
 		s.types = append(s.types, types...)
 	}
@@ -134,11 +134,11 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	return
 }
 
-func (s *storage) Create(r interface{}) error {
+func (s *storage) Create(r any) error {
 	return s.db.Create(r).Error
 }
 
-func (s *storage) Get(r interface{}, conds ...interface{}) (err error) {
+func (s *storage) Get(r any, conds ...any) (err error) {
 	// Preload all associations for r being filled with all items (including relationships)
 	err = s.db.Preload(clause.Associations).First(r, conds...).Error
 	// if record is not found, use the error message defined in the persistence package
@@ -148,7 +148,7 @@ func (s *storage) Get(r interface{}, conds ...interface{}) (err error) {
 	return
 }
 
-func (s *storage) List(r interface{}, offset int, limit int, conds ...interface{}) error {
+func (s *storage) List(r any, offset int, limit int, conds ...any) error {
 	var query = s.db
 
 	if limit != -1 {
@@ -158,22 +158,22 @@ func (s *storage) List(r interface{}, offset int, limit int, conds ...interface{
 	return query.Offset(offset).Preload(clause.Associations).Find(r, conds...).Error
 }
 
-func (s *storage) Count(r interface{}, conds ...interface{}) (count int64, err error) {
+func (s *storage) Count(r any, conds ...any) (count int64, err error) {
 	err = s.db.Model(r).Where(conds).Count(&count).Error
 	return
 }
 
-func (s *storage) Save(r interface{}, conds ...interface{}) error {
+func (s *storage) Save(r any, conds ...any) error {
 	return s.db.Where(conds).Save(r).Error
 }
 
 // Update will update the record with non-zero fields. Note that to get the entire updated record you have to call Get
-func (s *storage) Update(r interface{}, query interface{}, args ...interface{}) error {
+func (s *storage) Update(r any, query any, args ...any) error {
 	return s.db.Model(r).Where(query, args).Updates(r).Error
 }
 
 // Delete deletes record with given id. If no record was found, returns ErrRecordNotFound
-func (s *storage) Delete(r interface{}, conds ...interface{}) error {
+func (s *storage) Delete(r any, conds ...any) error {
 	// Remove record r with given ID
 	tx := s.db.Delete(r, conds...)
 	if err := tx.Error; err != nil { // db error
