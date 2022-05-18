@@ -40,12 +40,18 @@ import (
 	"github.com/open-policy-agent/opa/storage/inmem"
 )
 
+// DefaultRegoPackage is the default package name for the Rego files
+const DefaultRegoPackage = "clouditor.metrics"
+
 type regoEval struct {
 	// qc contains cached Rego queries
 	qc *queryCache
 
 	// mrtc stores a list of applicable metrics per toolID and resourceType
 	mrtc *metricsCache
+
+	// pkg is the base package name that is used in the Rego files
+	pkg string
 }
 
 type queryCache struct {
@@ -55,11 +61,30 @@ type queryCache struct {
 
 type orElseFunc func(key string) (query *rego.PreparedEvalQuery, err error)
 
-func NewRegoEval() PolicyEval {
-	return &regoEval{
+type RegoEvalOption func(re *regoEval)
+
+// WithPackageName is an option to configure the package name
+func WithPackageName(pkg string) RegoEvalOption {
+	return func(re *regoEval) {
+		re.pkg = pkg
+	}
+}
+
+func NewRegoEval(opts ...RegoEvalOption) PolicyEval {
+	re := regoEval{
 		mrtc: &metricsCache{m: make(map[string][]string)},
 		qc:   newQueryCache(),
 	}
+
+	for _, o := range opts {
+		o(&re)
+	}
+
+	if re.pkg == "" {
+		re.pkg = DefaultRegoPackage
+	}
+
+	return &re
 }
 
 // Eval evaluates a given evidence against all available Rego policies and returns the result of all policies that were
@@ -162,9 +187,10 @@ func (re *regoEval) HandleMetricEvent(event *orchestrator.MetricChangeEvent) (er
 
 func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interface{}, src MetricsSource) (result *Result, err error) {
 	var (
-		query *rego.PreparedEvalQuery
-		key   string
-		pkg   string
+		query  *rego.PreparedEvalQuery
+		key    string
+		pkg    string
+		prefix string
 	)
 
 	// We need to check, if the metric configuration has been changed.
@@ -200,6 +226,8 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 			return nil, fmt.Errorf("could not create transaction: %w", err)
 		}
 
+		prefix = re.pkg
+
 		// Convert camelCase metric in under_score_style for package name
 		pkg = util.CamelCaseToSnakeCase(metric)
 
@@ -232,11 +260,11 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 
 		query, err := rego.New(
 			rego.Query(fmt.Sprintf(`
-			applicable = data.clouditor.metrics.%s.applicable;
-			compliant = data.clouditor.metrics.%s.compliant;
+			applicable = data.%s.%s.applicable;
+			compliant = data.%s.%s.compliant;
 			operator = data.clouditor.operator;
-			target_value = data.clouditor.target_value`, pkg, pkg)),
-			rego.Package("clouditor.metrics"),
+			target_value = data.clouditor.target_value`, prefix, pkg, prefix, pkg)),
+			rego.Package(prefix),
 			rego.Store(store),
 			rego.Transaction(tx),
 			rego.Load(

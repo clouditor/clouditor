@@ -111,6 +111,9 @@ type Service struct {
 
 	// pe contains the actual policy evaluation engine we use
 	pe policies.PolicyEval
+
+	// evalPkg specifies the package used for the evaluation engine
+	evalPkg string
 }
 
 const (
@@ -159,6 +162,13 @@ func WithOAuth2Authorizer(config *clientcredentials.Config) ServiceOption {
 	}
 }
 
+// WithRegoPackageName is an option to configure the Rego package name
+func WithEvaluation(pkg string) ServiceOption {
+	return func(s *Service) {
+		s.evalPkg = pkg
+	}
+}
+
 // NewService creates a new assessment service with default values.
 func NewService(opts ...ServiceOption) *Service {
 	s := &Service{
@@ -187,8 +197,13 @@ func NewService(opts ...ServiceOption) *Service {
 		}
 	}
 
-	// Initialize the policy evaluator after storage is set
-	s.pe = policies.NewRegoEval()
+	// Set to default Rego package
+	if s.evalPkg == "" {
+		s.evalPkg = policies.DefaultRegoPackage
+	}
+
+	// Initialize the policy evaluator after options are set
+	s.pe = policies.NewRegoEval(policies.WithPackageName(s.evalPkg))
 
 	return s
 }
