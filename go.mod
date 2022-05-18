@@ -44,7 +44,7 @@ require (
 // tools dependencies
 require (
 	github.com/google/addlicense v1.0.0
-	github.com/google/gnostic v0.6.7
+	github.com/google/gnostic v0.6.8
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0
 )
 

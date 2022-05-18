@@ -142,7 +142,6 @@ func Test_storage_Get(t *testing.T) {
 	err = s.Get(gotUser2, "username = ?", user.Username)
 	assert.NoError(t, err)
 	assert.Equal(t, user, gotUser2)
-	
 
 	// Get user via mail
 	gotUser3 := &auth.User{}

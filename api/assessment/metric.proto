@@ -54,9 +54,10 @@ message Metric {
 
   // The values a Scale accepts
   enum Scale {
-    NOMINAL = 0;
-    ORDINAL = 1;
-    METRIC = 2;
+    SCALE_UNSPECIFIED = 0;
+    NOMINAL = 1;
+    ORDINAL = 2;
+    METRIC = 3;
   }
 }
 
