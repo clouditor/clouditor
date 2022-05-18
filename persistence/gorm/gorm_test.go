@@ -306,12 +306,18 @@ func Test_storage_Count(t *testing.T) {
 }
 
 func Test_storage_Save(t *testing.T) {
+	type MyTest struct {
+		ID   int
+		Name string
+	}
+
 	var (
 		err     error
 		s       persistence.Storage
 		user    *auth.User
 		newUser *auth.User
 		gotUser *auth.User
+		myVar   MyTest
 	)
 	user = &auth.User{
 		Username: "SomeName",
@@ -321,7 +327,7 @@ func Test_storage_Save(t *testing.T) {
 	}
 
 	// Create storage
-	s, err = NewStorage()
+	s, err = NewStorage(WithAdditionalAutoMigration(&MyTest{}))
 	assert.NoError(t, err)
 
 	// Create user
@@ -353,6 +359,10 @@ func Test_storage_Save(t *testing.T) {
 	// Email should be zero
 	assert.Equal(t, "", gotUser.Email)
 
+	// Save MyTest
+	myVar = MyTest{ID: 1, Name: "Test"}
+	err = s.Save(&myVar)
+	assert.NoError(t, err)
 }
 
 func Test_storage_Update(t *testing.T) {

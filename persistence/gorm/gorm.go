@@ -49,6 +49,19 @@ type storage struct {
 	// for options: (set default when not in opts)
 	dialector gorm.Dialector
 	config    gorm.Config
+
+	// types contains all types that we need to auto-migrate into database tables
+	types []interface{}
+}
+
+// DefaultTypes contains a list of internal types that need to be migrated by default
+var DefaultTypes = []interface{}{
+	&auth.User{},
+	&orchestrator.CloudService{},
+	&assessment.MetricImplementation{},
+	&assessment.Metric{},
+	&orchestrator.Certificate{},
+	&orchestrator.State{},
 }
 
 // StorageOption is a functional option type to configure the GORM storage. E.g. WithInMemory or WithPostgres
@@ -75,6 +88,13 @@ func WithLogger(logger logger.Interface) StorageOption {
 	}
 }
 
+// WithAdditionalAutoMigration is an option to add additional types to GORM's auto-migration.
+func WithAdditionalAutoMigration(types ...interface{}) StorageOption {
+	return func(s *storage) {
+		s.types = append(s.types, types...)
+	}
+}
+
 func init() {
 	log = logrus.WithField("component", "storage")
 }
@@ -87,12 +107,14 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 		config: gorm.Config{
 			Logger: logger.Default.LogMode(logger.Silent),
 		},
+		types: DefaultTypes,
 	}
 
 	// Add options and/or override default ones
 	for _, o := range opts {
 		o(g)
 	}
+
 	if g.dialector == nil {
 		WithInMemory()(g)
 	}
@@ -103,16 +125,7 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	}
 
 	// After successful DB initialization, migrate the schema
-	var types = []interface{}{
-		&auth.User{},
-		&orchestrator.CloudService{},
-		&assessment.MetricImplementation{},
-		&assessment.Metric{},
-		&orchestrator.Certificate{},
-		&orchestrator.State{},
-	}
-
-	if err = g.db.AutoMigrate(types...); err != nil {
+	if err = g.db.AutoMigrate(g.types...); err != nil {
 		err = fmt.Errorf("error during auto-migration: %w", err)
 		return
 	}
