@@ -45,6 +45,7 @@ func Test_regoEval_Eval(t *testing.T) {
 		qc      *queryCache
 		mrtc    *metricsCache
 		storage persistence.Storage
+		pkg     string
 	}
 	type args struct {
 		src MetricsSource
@@ -81,6 +82,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				qc:         newQueryCache(),
 				mrtc:       &metricsCache{m: make(map[string][]string)},
 				storage:    testutil.NewInMemoryStorage(t),
+				pkg:        DefaultRegoPackage,
 			},
 			args:       args{src: &mockMetricsSource{t: t}},
 			applicable: true,
@@ -107,6 +109,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				qc:         newQueryCache(),
 				mrtc:       &metricsCache{m: make(map[string][]string)},
 				storage:    testutil.NewInMemoryStorage(t),
+				pkg:        DefaultRegoPackage,
 			},
 			args:       args{src: &mockMetricsSource{t: t}},
 			applicable: true,
@@ -137,6 +140,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				qc:         newQueryCache(),
 				mrtc:       &metricsCache{m: make(map[string][]string)},
 				storage:    testutil.NewInMemoryStorage(t),
+				pkg:        DefaultRegoPackage,
 			},
 			args:       args{src: &mockMetricsSource{t: t}},
 			applicable: true,
@@ -184,6 +188,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				qc:         newQueryCache(),
 				mrtc:       &metricsCache{m: make(map[string][]string)},
 				storage:    testutil.NewInMemoryStorage(t),
+				pkg:        DefaultRegoPackage,
 			},
 			args:       args{src: &mockMetricsSource{t: t}},
 			applicable: true,
@@ -219,6 +224,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				qc:         newQueryCache(),
 				mrtc:       &metricsCache{m: make(map[string][]string)},
 				storage:    testutil.NewInMemoryStorage(t),
+				pkg:        DefaultRegoPackage,
 			},
 			args:       args{src: &mockMetricsSource{t: t}},
 			applicable: true,
@@ -234,6 +240,7 @@ func Test_regoEval_Eval(t *testing.T) {
 			pe := regoEval{
 				qc:   tt.fields.qc,
 				mrtc: tt.fields.mrtc,
+				pkg:  tt.fields.pkg,
 			}
 			results, err := pe.Eval(&evidence.Evidence{
 				Id:       tt.fields.evidenceID,
