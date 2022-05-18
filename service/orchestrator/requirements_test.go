@@ -26,10 +26,14 @@
 package orchestrator
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/persistence"
 )
 
 func TestLoadRequirements(t *testing.T) {
@@ -52,11 +56,9 @@ func TestLoadRequirements(t *testing.T) {
 					Id:          "Req-1",
 					Name:        "Make-it-Secure",
 					Description: "You should make everything secure",
-					Metrics: &orchestrator.Requirement_Metrics{
-						MetricIds: []string{
-							"TransportEncryptionEnabled",
-							"TransportEncryptionAlgorithm",
-						},
+					Metrics: []*assessment.Metric{
+						{Id: "TransportEncryptionEnabled"},
+						{Id: "TransportEncryptionAlgorithm"},
 					},
 				},
 			},
@@ -71,6 +73,76 @@ func TestLoadRequirements(t *testing.T) {
 			}
 			if !reflect.DeepEqual(gotRequirements, tt.wantRequirements) {
 				t.Errorf("LoadRequirements() = %v, want %v", gotRequirements, tt.wantRequirements)
+			}
+		})
+	}
+}
+
+func TestService_ListRequirements(t *testing.T) {
+	type fields struct {
+		metricConfigurations  map[string]map[string]*assessment.MetricConfiguration
+		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
+		results               map[string]*assessment.AssessmentResult
+		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		storage               persistence.Storage
+		metricsFile           string
+		loadMetricsFunc       func() ([]*assessment.Metric, error)
+		requirements          []*orchestrator.Requirement
+		events                chan *orchestrator.MetricChangeEvent
+	}
+	type args struct {
+		in0 context.Context
+		req *orchestrator.ListRequirementsRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes *orchestrator.ListRequirementsResponse
+		wantErr bool
+	}{
+		{
+			name: "list requirements",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					_ = s.Save(&assessment.Metric{Id: "Metric1", Name: "Metric1"})
+					_ = s.Save(&assessment.Metric{Id: "Metric2", Name: "Metric2"})
+					_ = s.Save(&orchestrator.Requirement{Id: "Req1", Metrics: []*assessment.Metric{{Id: "Metric1"}}})
+				}),
+			},
+			args: args{req: &orchestrator.ListRequirementsRequest{}},
+			wantRes: &orchestrator.ListRequirementsResponse{
+				Requirements: []*orchestrator.Requirement{
+					{
+						Id: "Req1",
+						Metrics: []*assessment.Metric{
+							{Id: "Metric1", Name: "Metric1"},
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				metricConfigurations:  tt.fields.metricConfigurations,
+				cloudServiceHooks:     tt.fields.cloudServiceHooks,
+				results:               tt.fields.results,
+				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
+				storage:               tt.fields.storage,
+				metricsFile:           tt.fields.metricsFile,
+				loadMetricsFunc:       tt.fields.loadMetricsFunc,
+				requirements:          tt.fields.requirements,
+				events:                tt.fields.events,
+			}
+			gotRes, err := svc.ListRequirements(tt.args.in0, tt.args.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.ListRequirements() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotRes, tt.wantRes) {
+				t.Errorf("Service.ListRequirements() = %v, want %v", gotRes, tt.wantRes)
 			}
 		})
 	}

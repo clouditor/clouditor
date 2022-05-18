@@ -70,32 +70,3 @@ func (c *CloudService_Requirements) Scan(value interface{}) error {
 func (*CloudService_Requirements) GormDataType() string {
 	return "string"
 }
-
-// Value implements https://pkg.go.dev/database/sql/driver#Valuer to indicate
-// how this struct will be saved into an SQL database field.
-func (r *Requirement_Metrics) Value() (driver.Value, error) {
-	if r == nil || r.MetricIds == nil {
-		return nil, nil
-	} else {
-		return driver.Value(strings.Join(r.MetricIds, ",")), nil
-	}
-}
-
-// Scan implements https://pkg.go.dev/database/sql#Scanner to indicate how
-// this struct can be loaded from an SQL database field.
-func (r *Requirement_Metrics) Scan(value interface{}) error {
-	switch v := value.(type) {
-	case string:
-		(*r).MetricIds = strings.Split(v, ",")
-	default:
-		return errors.New("unsupported type")
-	}
-
-	return nil
-}
-
-// GormDataType implements GormDataTypeInterface to give an indication how
-// this struct will be serialized into a database using GORM.
-func (*Requirement_Metrics) GormDataType() string {
-	return "string"
-}
