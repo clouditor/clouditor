@@ -81,6 +81,8 @@ type Service struct {
 	// Embedded for FWD compatibility
 	assessment.UnimplementedAssessmentServer
 
+	// True if evidences are sent to an evidence store. False if evidences are discarded.
+	hasEvidenceStore bool
 	// evidenceStoreStream sends evidences to the Evidence Store
 	evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
 	evidenceStoreAddress grpcTarget
@@ -124,17 +126,21 @@ const (
 	DefaultOrchestratorAddress = "localhost:9090"
 )
 
-// ServiceOption is a functional option type to configure the assessment service.
-type ServiceOption func(*Service)
+// WithoutEvidenceStore is a service option to discard evidences and don't send them to an evidence store
+func WithoutEvidenceStore() service.Option[Service] {
+	return func(svc *Service) {
+		svc.hasEvidenceStore = false
+	}
+}
 
 // WithEvidenceStoreAddress is an option to configure the evidence store gRPC address.
-func WithEvidenceStoreAddress(address string, opts ...grpc.DialOption) ServiceOption {
-	return func(s *Service) {
+func WithEvidenceStoreAddress(address string, opts ...grpc.DialOption) service.Option[Service] {
+	return func(svc *Service) {
 		if address == "" {
 			address = DefaultEvidenceStoreAddress
 		}
 
-		s.evidenceStoreAddress = grpcTarget{
+		svc.evidenceStoreAddress = grpcTarget{
 			target: address,
 			opts:   opts,
 		}
@@ -142,13 +148,13 @@ func WithEvidenceStoreAddress(address string, opts ...grpc.DialOption) ServiceOp
 }
 
 // WithOrchestratorAddress is an option to configure the orchestrator gRPC address.
-func WithOrchestratorAddress(address string, opts ...grpc.DialOption) ServiceOption {
-	return func(s *Service) {
+func WithOrchestratorAddress(address string, opts ...grpc.DialOption) service.Option[Service] {
+	return func(svc *Service) {
 		if address == "" {
 			address = DefaultOrchestratorAddress
 		}
 
-		s.orchestratorAddress = grpcTarget{
+		svc.orchestratorAddress = grpcTarget{
 			target: address,
 			opts:   opts,
 		}
@@ -156,23 +162,24 @@ func WithOrchestratorAddress(address string, opts ...grpc.DialOption) ServiceOpt
 }
 
 // WithOAuth2Authorizer is an option to use an OAuth 2.0 authorizer
-func WithOAuth2Authorizer(config *clientcredentials.Config) ServiceOption {
+func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[Service] {
 	return func(s *Service) {
 		s.SetAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(config))
 	}
 }
 
 // WithRegoPackageName is an option to configure the Rego package name
-func WithRegoPackageName(pkg string) ServiceOption {
+func WithRegoPackageName(pkg string) service.Option[Service] {
 	return func(s *Service) {
 		s.evalPkg = pkg
 	}
 }
 
 // NewService creates a new assessment service with default values.
-func NewService(opts ...ServiceOption) *Service {
+func NewService(opts ...service.Option[Service]) *Service {
 	s := &Service{
 		results:              make(map[string]*assessment.AssessmentResult),
+		hasEvidenceStore:     true,
 		evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 		orchestratorStreams:  api.NewStreamsOf(api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest](log)),
 		cachedConfigurations: make(map[string]cachedConfiguration),
@@ -318,15 +325,19 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 		return newError
 	}
 
-	// Get Evidence Store stream
-	channelEvidenceStore, err := svc.evidenceStoreStreams.GetStream(svc.evidenceStoreAddress.target, "Evidence Store", svc.initEvidenceStoreStream, svc.evidenceStoreAddress.opts...)
-	if err != nil {
-		err = fmt.Errorf("could not get stream to evidence store (%s): %w", svc.evidenceStoreAddress.target, err)
-		log.Error(err)
+	// Send evidence via Evidence Store stream if hasEvidenceStore is true
+	if svc.hasEvidenceStore {
+		// Get Evidence Store stream
+		channelEvidenceStore, err := svc.evidenceStoreStreams.GetStream(svc.evidenceStoreAddress.target, "Evidence Store", svc.initEvidenceStoreStream, svc.evidenceStoreAddress.opts...)
+		if err != nil {
+			err = fmt.Errorf("could not get stream to evidence store (%s): %w", svc.evidenceStoreAddress.target, err)
+			log.Error(err)
 
-		go svc.informHooks(nil, err)
+			go svc.informHooks(nil, err)
 
-		return err
+			return err
+		}
+		channelEvidenceStore.Send(&evidence.StoreEvidenceRequest{Evidence: ev})
 	}
 
 	// Get Orchestrator stream
@@ -339,9 +350,6 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 
 		return err
 	}
-
-	// Send evidence in evidenceStoreChannel
-	channelEvidenceStore.Send(&evidence.StoreEvidenceRequest{Evidence: ev})
 
 	for i, data := range evaluations {
 		metricId := data.MetricId

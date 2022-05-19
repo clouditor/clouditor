@@ -26,6 +26,7 @@
 package assessment
 
 import (
+	"clouditor.io/clouditor/service"
 	"context"
 	"encoding/json"
 	"errors"
@@ -73,7 +74,7 @@ func TestMain(m *testing.M) {
 // TestNewService is a simply test for NewService
 func TestNewService(t *testing.T) {
 	type args struct {
-		opts []ServiceOption
+		opts []service.Option[Service]
 	}
 	tests := []struct {
 		name string
@@ -83,7 +84,8 @@ func TestNewService(t *testing.T) {
 		{
 			name: "AssessmentServer created with empty results map",
 			want: &Service{
-				results: make(map[string]*assessment.AssessmentResult),
+				results:          make(map[string]*assessment.AssessmentResult),
+				hasEvidenceStore: true,
 				evidenceStoreAddress: grpcTarget{
 					target: "localhost:9090",
 				},
@@ -99,13 +101,14 @@ func TestNewService(t *testing.T) {
 		{
 			name: "AssessmentServer created with options",
 			args: args{
-				opts: []ServiceOption{
+				opts: []service.Option[Service]{
 					WithEvidenceStoreAddress("localhost:9091"),
 					WithOrchestratorAddress("localhost:9092"),
 				},
 			},
 			want: &Service{
-				results: make(map[string]*assessment.AssessmentResult),
+				results:          make(map[string]*assessment.AssessmentResult),
+				hasEvidenceStore: true,
 				evidenceStoreAddress: grpcTarget{
 					target: "localhost:9091",
 				},
@@ -113,6 +116,27 @@ func TestNewService(t *testing.T) {
 					target: "localhost:9092",
 				},
 				evidenceStoreStreams: nil,
+				orchestratorStreams:  nil,
+				cachedConfigurations: make(map[string]cachedConfiguration),
+				evalPkg:              policies.DefaultRegoPackage,
+			},
+		},
+		{
+			name: "AssessmentServer without EvidenceStore",
+			args: args{
+				opts: []service.Option[Service]{
+					WithoutEvidenceStore(),
+				},
+			},
+			want: &Service{
+				results:          make(map[string]*assessment.AssessmentResult),
+				hasEvidenceStore: false,
+				evidenceStoreAddress: grpcTarget{
+					target: DefaultEvidenceStoreAddress,
+				},
+				orchestratorAddress: grpcTarget{
+					target: DefaultOrchestratorAddress,
+				},
 				orchestratorStreams:  nil,
 				cachedConfigurations: make(map[string]cachedConfiguration),
 				evalPkg:              policies.DefaultRegoPackage,
@@ -134,7 +158,7 @@ func TestNewService(t *testing.T) {
 			s.orchestratorStreams = nil
 
 			if got := s; !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewService() = %v, want %v", got, tt.want)
+				t.Errorf("\nGot Service:\n%v, \nWant:\n%v", got, tt.want)
 			}
 		})
 	}
@@ -1048,7 +1072,7 @@ func TestHandleEvidence(t *testing.T) {
 
 func TestService_initOrchestratorStoreStream(t *testing.T) {
 	type fields struct {
-		opts []ServiceOption
+		opts []service.Option[Service]
 	}
 	type args struct {
 		url string
@@ -1065,7 +1089,7 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 				url: "localhost:1",
 			},
 			fields: fields{
-				opts: []ServiceOption{
+				opts: []service.Option[Service]{
 					WithOrchestratorAddress("localhost:1"),
 				},
 			},
@@ -1094,7 +1118,7 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 				url: "bufnet",
 			},
 			fields: fields{
-				opts: []ServiceOption{
+				opts: []service.Option[Service]{
 					WithOrchestratorAddress("bufnet", grpc.WithContextDialer(bufConnDialer)),
 					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
 				},
