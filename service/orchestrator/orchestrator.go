@@ -147,7 +147,6 @@ func NewService(opts ...ServiceOption) *Service {
 		}
 	}
 
-	// Load requirements if nothing was specified
 	if err = s.loadRequirements(); err != nil {
 		log.Errorf("Could not load embedded requirements. Will continue with empty requirements list: %v", err)
 	}

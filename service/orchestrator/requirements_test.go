@@ -147,3 +147,48 @@ func TestService_ListRequirements(t *testing.T) {
 		})
 	}
 }
+
+func TestService_loadRequirements(t *testing.T) {
+	type fields struct {
+		metricConfigurations  map[string]map[string]*assessment.MetricConfiguration
+		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
+		results               map[string]*assessment.AssessmentResult
+		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		storage               persistence.Storage
+		metricsFile           string
+		loadMetricsFunc       func() ([]*assessment.Metric, error)
+		requirements          []*orchestrator.Requirement
+		events                chan *orchestrator.MetricChangeEvent
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr bool
+	}{
+		{
+			name: "save error",
+			fields: fields{
+				storage: &testutil.StorageWithError{SaveErr: ErrSomeError},
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				metricConfigurations:  tt.fields.metricConfigurations,
+				cloudServiceHooks:     tt.fields.cloudServiceHooks,
+				results:               tt.fields.results,
+				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
+				storage:               tt.fields.storage,
+				metricsFile:           tt.fields.metricsFile,
+				loadMetricsFunc:       tt.fields.loadMetricsFunc,
+				requirements:          tt.fields.requirements,
+				events:                tt.fields.events,
+			}
+			if err := svc.loadRequirements(); (err != nil) != tt.wantErr {
+				t.Errorf("Service.loadRequirements() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
