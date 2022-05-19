@@ -96,21 +96,9 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 	baseDir = "."
 	m = evidence.Resource.GetStructValue().AsMap()
 
-	if rawTypes, ok := m["type"].([]interface{}); ok {
-		if len(rawTypes) != 0 {
-			types = make([]string, len(rawTypes))
-		} else {
-			return nil, fmt.Errorf("list of types is empty")
-		}
-	} else {
-		return nil, fmt.Errorf("got type '%T' but wanted '[]interface {}'. Check if resource types are specified ", rawTypes)
-	}
-	for i, v := range m["type"].([]interface{}) {
-		if t, ok := v.(string); !ok {
-			return nil, fmt.Errorf("got type '%T' but wanted 'string'", t)
-		} else {
-			types[i] = t
-		}
+	types, err = evidence.ResourceTypes()
+	if err != nil {
+		return nil, fmt.Errorf("could not extract resource types from evidence: %w", err)
 	}
 
 	key := createKey(evidence.ToolId, types)

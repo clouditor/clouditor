@@ -30,7 +30,6 @@ package clouditor;
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
-import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "api/evidence/evidence.proto";
 import "api/assessment/metric.proto";
@@ -120,9 +119,9 @@ message AssessmentResult {
   // Reference to the resource of the assessed evidence
   string resource_id = 7;
 
-  // Some comments on the reason for non-compliance
-  string non_compliance_comments = 8;
+  // Resource types
+  repeated string resource_types = 8;
 
-  // Resource type
-  google.protobuf.Value resource = 9;
+  // Some comments on the reason for non-compliance
+  string non_compliance_comments = 9;
 }
