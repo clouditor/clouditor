@@ -32,6 +32,7 @@ import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "api/assessment/metric.proto";
 import "api/assessment/assessment.proto";
+import "tagger/tagger.proto";
 
 option go_package = "clouditor.io/clouditor/api/orchestrator";
 
@@ -429,7 +430,11 @@ message Requirement {
 
   string description = 3;
 
-  repeated string metric_ids = 4;
+  // metrics contains either a list of reference to metrics - in this case only
+  // the id field of the metric is populated - or a list of populated metric
+  // meta-data, most likely returned by the database.
+  repeated Metric metrics = 4 [ (tagger.tags) = "gorm:\"many2many\"" ];
+  ;
 }
 
 message GetCertificateRequest { string certificate_id = 1; }

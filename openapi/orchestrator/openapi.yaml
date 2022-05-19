@@ -1012,10 +1012,11 @@ components:
                     type: string
                 description:
                     type: string
-                metricIds:
+                metrics:
                     type: array
                     items:
-                        type: string
+                        $ref: '#/components/schemas/Metric'
+                    description: metrics contains either a list of reference to metrics - in this case only the id field of the metric is populated - or a list of populated metric meta-data, most likely returned by the database.
             description: Requirement represents a certain requirement that needs to be fulfilled. It could be a control in a certification catalog.
         State:
             type: object

@@ -29,6 +29,7 @@ require (
 	github.com/spf13/viper v1.11.0
 	github.com/stretchr/testify v1.7.1
 	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4
+	golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
 	google.golang.org/genproto v0.0.0-20220407144326-9054f6ed7bac
 	google.golang.org/grpc v1.46.0
@@ -45,10 +46,9 @@ require (
 require (
 	github.com/google/addlicense v1.0.0
 	github.com/google/gnostic v0.6.8
+	github.com/srikrsna/protoc-gen-gotag v0.6.2
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0
 )
-
-require golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd
 
 require (
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
@@ -77,6 +77,7 @@ require (
 	github.com/dimchansky/utfbom v1.1.1 // indirect
 	github.com/emicklei/go-restful v2.9.5+incompatible // indirect
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
+	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
@@ -105,6 +106,7 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/lyft/protoc-gen-star v0.5.3 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/mattn/go-sqlite3 v1.14.9 // indirect
