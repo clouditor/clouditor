@@ -81,7 +81,7 @@ type Service struct {
 	// Embedded for FWD compatibility
 	assessment.UnimplementedAssessmentServer
 
-	// True if evidences shall be discarded.
+	// isEvidenceStoreDisabled specifies if evidences shall be discarded (when true).
 	isEvidenceStoreDisabled bool
 	// evidenceStoreStream sends evidences to the Evidence Store
 	evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
