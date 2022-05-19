@@ -81,8 +81,8 @@ type Service struct {
 	// Embedded for FWD compatibility
 	assessment.UnimplementedAssessmentServer
 
-	// True if evidences are sent to an evidence store. False if evidences are discarded.
-	hasEvidenceStore bool
+	// True if evidences shall be discarded.
+	isEvidenceStoreDisabled bool
 	// evidenceStoreStream sends evidences to the Evidence Store
 	evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
 	evidenceStoreAddress grpcTarget
@@ -129,7 +129,7 @@ const (
 // WithoutEvidenceStore is a service option to discard evidences and don't send them to an evidence store
 func WithoutEvidenceStore() service.Option[Service] {
 	return func(svc *Service) {
-		svc.hasEvidenceStore = false
+		svc.isEvidenceStoreDisabled = false
 	}
 }
 
@@ -179,7 +179,6 @@ func WithRegoPackageName(pkg string) service.Option[Service] {
 func NewService(opts ...service.Option[Service]) *Service {
 	s := &Service{
 		results:              make(map[string]*assessment.AssessmentResult),
-		hasEvidenceStore:     true,
 		evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 		orchestratorStreams:  api.NewStreamsOf(api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest](log)),
 		cachedConfigurations: make(map[string]cachedConfiguration),
@@ -325,8 +324,8 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 		return newError
 	}
 
-	// Send evidence via Evidence Store stream if hasEvidenceStore is true
-	if svc.hasEvidenceStore {
+	// Send evidence via Evidence Store stream if sending evidences is not disabled
+	if !svc.isEvidenceStoreDisabled {
 		// Get Evidence Store stream
 		channelEvidenceStore, err := svc.evidenceStoreStreams.GetStream(svc.evidenceStoreAddress.target, "Evidence Store", svc.initEvidenceStoreStream, svc.evidenceStoreAddress.opts...)
 		if err != nil {

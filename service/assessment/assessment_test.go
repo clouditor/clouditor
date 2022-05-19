@@ -84,8 +84,8 @@ func TestNewService(t *testing.T) {
 		{
 			name: "AssessmentServer created with empty results map",
 			want: &Service{
-				results:          make(map[string]*assessment.AssessmentResult),
-				hasEvidenceStore: true,
+				results:                 make(map[string]*assessment.AssessmentResult),
+				isEvidenceStoreDisabled: true,
 				evidenceStoreAddress: grpcTarget{
 					target: "localhost:9090",
 				},
@@ -107,8 +107,8 @@ func TestNewService(t *testing.T) {
 				},
 			},
 			want: &Service{
-				results:          make(map[string]*assessment.AssessmentResult),
-				hasEvidenceStore: true,
+				results:                 make(map[string]*assessment.AssessmentResult),
+				isEvidenceStoreDisabled: true,
 				evidenceStoreAddress: grpcTarget{
 					target: "localhost:9091",
 				},
@@ -129,8 +129,8 @@ func TestNewService(t *testing.T) {
 				},
 			},
 			want: &Service{
-				results:          make(map[string]*assessment.AssessmentResult),
-				hasEvidenceStore: false,
+				results:                 make(map[string]*assessment.AssessmentResult),
+				isEvidenceStoreDisabled: false,
 				evidenceStoreAddress: grpcTarget{
 					target: DefaultEvidenceStoreAddress,
 				},
@@ -158,7 +158,7 @@ func TestNewService(t *testing.T) {
 			s.orchestratorStreams = nil
 
 			if got := s; !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("\nGot Service:\n%v, \nWant:\n%v", got, tt.want)
+				t.Errorf("NewService() = %v, want %v", got, tt.want)
 			}
 		})
 	}
