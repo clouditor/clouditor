@@ -148,16 +148,8 @@ func NewService(opts ...ServiceOption) *Service {
 	}
 
 	// Load requirements if nothing was specified
-	if s.requirements == nil {
-		if s.requirements, err = LoadRequirements(DefaultRequirementsFile); err != nil {
-			log.Errorf("Could not load embedded requirements. Will continue with empty requirements list: %v", err)
-		}
-	}
-
-	// Persist requirements in storage backend
-	err = s.storage.Save(s.requirements)
-	if err != nil {
-		log.Errorf("Could not save requirements. Will continue with empty requirements list: %v", err)
+	if err = s.loadRequirements(); err != nil {
+		log.Errorf("Could not load embedded requirements. Will continue with empty requirements list: %v", err)
 	}
 
 	if err = s.loadMetrics(); err != nil {

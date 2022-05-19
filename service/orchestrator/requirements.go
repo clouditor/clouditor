@@ -57,6 +57,24 @@ func LoadRequirements(file string) (requirements []*orchestrator.Requirement, er
 	return requirements, nil
 }
 
+func (svc *Service) loadRequirements() (err error) {
+	// Load requirements if nothing was specified
+	if svc.requirements == nil {
+		if svc.requirements, err = LoadRequirements(DefaultRequirementsFile); err != nil {
+			// Transparently return the error here to avoid uncessary wrapping
+			return err
+		}
+	}
+
+	// Persist requirements in storage backend
+	err = svc.storage.Save(svc.requirements)
+	if err != nil {
+		return fmt.Errorf("could not save requirements to storage: %w", err)
+	}
+
+	return
+}
+
 // ListRequirements is a method implementation of the OrchestratorServer interface,
 // returning a list of requirements
 func (svc *Service) ListRequirements(_ context.Context, req *orchestrator.ListRequirementsRequest) (res *orchestrator.ListRequirementsResponse, err error) {
