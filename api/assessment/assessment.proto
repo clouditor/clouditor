@@ -30,6 +30,7 @@ package clouditor;
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "api/evidence/evidence.proto";
 import "api/assessment/metric.proto";
@@ -121,4 +122,7 @@ message AssessmentResult {
 
   // Some comments on the reason for non-compliance
   string non_compliance_comments = 8;
+
+  // Resource type
+  google.protobuf.Value resource = 9;
 }

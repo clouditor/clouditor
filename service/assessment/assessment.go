@@ -26,6 +26,7 @@
 package assessment
 
 import (
+	"clouditor.io/clouditor/voc"
 	"context"
 	"encoding/json"
 	"errors"
@@ -367,6 +368,7 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 			EvidenceId:            ev.Id,
 			ResourceId:            resourceId,
 			NonComplianceComments: "No comments so far",
+			Resource:              getResourceType(ev.Resource),
 		}
 
 		svc.resultMutex.Lock()
@@ -610,5 +612,24 @@ func (svc *Service) initOrchestratorClient() error {
 
 	svc.orchestratorClient = orchestrator.NewOrchestratorClient(conn)
 
+	return nil
+}
+
+type resourceType struct {
+}
+
+func getResourceType(value *structpb.Value) *structpb.Value {
+	var (
+		resource     voc.Resource
+		resourceType *structpb.Value
+	)
+
+	b, _ := json.Marshal(value)
+	err := json.Unmarshal(b, &resource)
+	if err != nil {
+		log.Errorf("ERROR: %v", err)
+	}
+
+	resourceType = &structpb.Value{}
 	return nil
 }
