@@ -129,7 +129,7 @@ const (
 // WithoutEvidenceStore is a service option to discard evidences and don't send them to an evidence store
 func WithoutEvidenceStore() service.Option[Service] {
 	return func(svc *Service) {
-		svc.isEvidenceStoreDisabled = false
+		svc.isEvidenceStoreDisabled = true
 	}
 }
 

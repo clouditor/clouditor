@@ -84,8 +84,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "AssessmentServer created with empty results map",
 			want: &Service{
-				results:                 make(map[string]*assessment.AssessmentResult),
-				isEvidenceStoreDisabled: true,
+				results: make(map[string]*assessment.AssessmentResult),
 				evidenceStoreAddress: grpcTarget{
 					target: "localhost:9090",
 				},
@@ -107,8 +106,7 @@ func TestNewService(t *testing.T) {
 				},
 			},
 			want: &Service{
-				results:                 make(map[string]*assessment.AssessmentResult),
-				isEvidenceStoreDisabled: true,
+				results: make(map[string]*assessment.AssessmentResult),
 				evidenceStoreAddress: grpcTarget{
 					target: "localhost:9091",
 				},
@@ -130,7 +128,7 @@ func TestNewService(t *testing.T) {
 			},
 			want: &Service{
 				results:                 make(map[string]*assessment.AssessmentResult),
-				isEvidenceStoreDisabled: false,
+				isEvidenceStoreDisabled: true,
 				evidenceStoreAddress: grpcTarget{
 					target: DefaultEvidenceStoreAddress,
 				},
