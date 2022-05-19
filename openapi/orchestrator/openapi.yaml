@@ -781,6 +781,11 @@ components:
                 resourceId:
                     type: string
                     description: Reference to the resource of the assessed evidence
+                resourceTypes:
+                    type: array
+                    items:
+                        type: string
+                    description: Resource types
                 nonComplianceComments:
                     type: string
                     description: Some comments on the reason for non-compliance

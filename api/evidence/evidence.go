@@ -27,7 +27,10 @@ package evidence
 
 import (
 	"errors"
+	"fmt"
+
 	"github.com/google/uuid"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type EvidenceHookFunc func(result *Evidence, err error)
@@ -82,6 +85,40 @@ func (evidence *Evidence) Validate() (resourceId string, err error) {
 
 	if _, err = uuid.Parse(evidence.Id); err != nil {
 		return "", ErrEvidenceIdInvalidFormat
+	}
+
+	return
+}
+
+// ResourceTypes parses the embedded resource of this evidence and returns its types according to the ontology.
+func (evidence *Evidence) ResourceTypes() (types []string, err error) {
+	var (
+		m     map[string]interface{}
+		value *structpb.Value
+	)
+
+	value = evidence.Resource
+	if value == nil {
+		return
+	}
+
+	m = value.GetStructValue().AsMap()
+
+	if rawTypes, ok := m["type"].([]interface{}); ok {
+		if len(rawTypes) != 0 {
+			types = make([]string, len(rawTypes))
+		} else {
+			return nil, fmt.Errorf("list of types is empty")
+		}
+	} else {
+		return nil, fmt.Errorf("got type '%T' but wanted '[]interface {}'. Check if resource types are specified ", rawTypes)
+	}
+	for i, v := range m["type"].([]interface{}) {
+		if t, ok := v.(string); !ok {
+			return nil, fmt.Errorf("got type '%T' but wanted 'string'", t)
+		} else {
+			types[i] = t
+		}
 	}
 
 	return

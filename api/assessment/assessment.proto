@@ -119,6 +119,9 @@ message AssessmentResult {
   // Reference to the resource of the assessed evidence
   string resource_id = 7;
 
+  // Resource types
+  repeated string resource_types = 8;
+
   // Some comments on the reason for non-compliance
-  string non_compliance_comments = 8;
+  string non_compliance_comments = 9;
 }

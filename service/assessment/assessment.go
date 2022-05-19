@@ -311,6 +311,8 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 
 // handleEvidence is the helper method for the actual assessment used by AssessEvidence and AssessEvidences
 func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (err error) {
+	var types []string
+
 	log.Debugf("Evaluating evidence %s (%s) collected by %s at %v", ev.Id, resourceId, ev.ToolId, ev.Timestamp)
 	log.Tracef("Evidence: %+v", ev)
 
@@ -362,6 +364,11 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 			return fmt.Errorf("could not convert target value: %w", err)
 		}
 
+		types, err = ev.ResourceTypes()
+		if err != nil {
+			return fmt.Errorf("could not extract resource types from evidence: %w", err)
+		}
+
 		result := &assessment.AssessmentResult{
 			Id:        uuid.NewString(),
 			Timestamp: timestamppb.Now(),
@@ -373,6 +380,7 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 			Compliant:             data.Compliant,
 			EvidenceId:            ev.Id,
 			ResourceId:            resourceId,
+			ResourceTypes:         types,
 			NonComplianceComments: "No comments so far",
 		}
 
