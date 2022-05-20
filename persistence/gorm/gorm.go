@@ -52,6 +52,9 @@ type storage struct {
 
 	// types contains all types that we need to auto-migrate into database tables
 	types []any
+
+	// maxConn is the maximum number of connections. 0 means unlimited.
+	maxConn int
 }
 
 // DefaultTypes contains a list of internal types that need to be migrated by default
@@ -72,6 +75,13 @@ type StorageOption func(*storage)
 func WithInMemory() StorageOption {
 	return func(s *storage) {
 		s.dialector = sqlite.Open(":memory:")
+	}
+}
+
+// WithMaxOpenConns is an option to configure the maximum number of open connections
+func WithMaxOpenConns(max int) StorageOption {
+	return func(s *storage) {
+		s.maxConn = max
 	}
 }
 
@@ -123,6 +133,15 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	g.db, err = gorm.Open(g.dialector, &g.config)
 	if err != nil {
 		return nil, err
+	}
+
+	if g.maxConn > 0 {
+		sql, err := g.db.DB()
+		if err != nil {
+			return nil, fmt.Errorf("could not retrieve sql.DB: %v", err)
+		}
+
+		sql.SetMaxOpenConns(g.maxConn)
 	}
 
 	// After successful DB initialization, migrate the schema
