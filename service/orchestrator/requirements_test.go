@@ -55,6 +55,7 @@ func TestLoadRequirements(t *testing.T) {
 				{
 					Id:          "Req-1",
 					Name:        "Make-it-Secure",
+					Category:    "Some Category",
 					Description: "You should make everything secure",
 					Metrics: []*assessment.Metric{
 						{Id: "TransportEncryptionEnabled"},
