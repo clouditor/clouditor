@@ -434,7 +434,11 @@ message Requirement {
   // the id field of the metric is populated - or a list of populated metric
   // meta-data, most likely returned by the database.
   repeated Metric metrics = 4 [ (tagger.tags) = "gorm:\"many2many\"" ];
-  ;
+
+  // category can be used to categorize requirements, e.g., according to a
+  // specific security catalog or something that groups requirements together,
+  // e.g., a security control.
+  string category = 5;
 }
 
 message GetCertificateRequest { string certificate_id = 1; }
