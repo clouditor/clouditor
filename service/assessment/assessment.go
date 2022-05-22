@@ -313,7 +313,7 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (err error) {
 	var types []string
 
-	log.Debugf("Evaluating evidence %s (%s) collected by %s at %v", ev.Id, resourceId, ev.ToolId, ev.Timestamp)
+	log.Debugf("Evaluating evidence %s (%s) collected by %s at %s", ev.Id, resourceId, ev.ToolId, ev.Timestamp.AsTime())
 	log.Tracef("Evidence: %+v", ev)
 
 	evaluations, err := svc.pe.Eval(ev, svc)
@@ -611,7 +611,6 @@ func (svc *Service) recvEventsLoop() {
 // initOrchestratorClient set the orchestrator client
 func (svc *Service) initOrchestratorClient() error {
 	if svc.orchestratorClient != nil {
-		log.Debug("Orchestrator client is already initialized.")
 		return nil
 	}
 
