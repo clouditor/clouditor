@@ -208,7 +208,7 @@ func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType,
 
 		// Some protobuf refletion magic to print more meaningful debug messages. Since this causes some performance
 		// drawbacks, we are only doing this if DEBUG level is enabled.
-		if logrus.GetLevel() >= logrus.DebugLevel {
+		if logrus.IsLevelEnabled(logrus.DebugLevel) {
 			id := extractID(m)
 			if id == "" {
 				s.log.Debugf("Message containing %s sent to %s (%s)", id, c.component, c.target)
