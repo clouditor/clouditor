@@ -35,17 +35,15 @@ import (
 	"testing"
 	"time"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/service/discovery/azure"
 	"clouditor.io/clouditor/voc"
 
-	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -81,7 +79,7 @@ func TestNewService(t *testing.T) {
 				},
 			},
 			want: &Service{
-				assessmentAddress: "localhost:9091",
+				assessmentAddress: grpcTarget{target: "localhost:9091"},
 				resources:         make(map[string]voc.IsCloudResource),
 				configurations:    make(map[discovery.Discoverer]*Configuration),
 			},
@@ -104,12 +102,8 @@ func TestNewService(t *testing.T) {
 }
 
 func TestStartDiscovery(t *testing.T) {
-	discoveryService := NewService()
-
 	type fields struct {
-		assessmentStream    assessment.Assessment_AssessEvidencesClient
-		evidenceStoreStream evidence.EvidenceStore_StoreEvidencesClient
-		discoverer          discovery.Discoverer
+		discoverer discovery.Discoverer
 	}
 
 	tests := []struct {
@@ -120,12 +114,14 @@ func TestStartDiscovery(t *testing.T) {
 		{
 			name: "Err in discoverer",
 			fields: fields{
-				discoverer: mockDiscoverer{testCase: 0}},
+				discoverer: mockDiscoverer{testCase: 0},
+			},
 		},
 		{
 			name: "Err in marshaling the resource containing circular dependencies",
 			fields: fields{
-				discoverer: mockDiscoverer{testCase: 1}},
+				discoverer: mockDiscoverer{testCase: 1},
+			},
 		},
 		{
 			name: "No err in discoverer but no evidence stream to assessment",
@@ -136,34 +132,41 @@ func TestStartDiscovery(t *testing.T) {
 		{
 			name: "No err in discoverer but no evidence stream to assessment available",
 			fields: fields{
-				assessmentStream: &mockAssessmentStream{},
-				discoverer:       mockDiscoverer{testCase: 2}},
+				discoverer: mockDiscoverer{testCase: 2},
+			},
 		},
 		{
 			name: "No err in discoverer but streaming to assessment fails",
 			fields: fields{
-				assessmentStream:    &mockAssessmentStream{},
-				evidenceStoreStream: mockEvidenceStoreStream{},
-				discoverer:          mockDiscoverer{testCase: 2}},
+				discoverer: mockDiscoverer{testCase: 2},
+			},
 		},
 		{
 			name: "No err",
 			fields: fields{
-				assessmentStream:    &mockAssessmentStream{connectionEstablished: true},
-				evidenceStoreStream: mockEvidenceStoreStream{},
-				discoverer:          mockDiscoverer{testCase: 2}},
+				discoverer: mockDiscoverer{testCase: 2},
+			},
 			checkEvidence: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			discoveryService.assessmentStream = tt.fields.assessmentStream
-			discoveryService.StartDiscovery(tt.fields.discoverer)
+			mockStream := &mockAssessmentStream{connectionEstablished: true}
 
-			// APIs for assessment and evidence store both send the same evidence. Thus, testing one is enough.
+			svc := NewService()
+			svc.assessmentStreams = api.NewStreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]()
+			svc.assessmentStreams.GetStream("mock", "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
+				return mockStream, nil
+			})
+			svc.assessmentAddress = grpcTarget{target: "mock"}
+			svc.StartDiscovery(tt.fields.discoverer)
+
 			if tt.checkEvidence {
-				e := discoveryService.assessmentStream.(*mockAssessmentStream).sentEvidence
+				e := mockStream.sentEvidence
+
+				// Check, if evidence was sent
+				assert.NotNil(t, e)
 				// Check if UUID has been created
 				assert.NotEmpty(t, e.Id)
 				// Check if cloud resources / properties are there
@@ -447,9 +450,6 @@ func TestStart(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService(WithProviders(tt.providers))
-			if tt.fields.hasRPCConnection {
-				assert.NoError(t, s.initAssessmentStream(grpc.WithContextDialer(bufConnDialer)))
-			}
 
 			for _, env := range tt.fields.envVariables {
 				if env.hasEnvVariable {
@@ -472,7 +472,7 @@ func TestStart(t *testing.T) {
 	}
 }
 
-func TestService_initAssessmentStream(t *testing.T) {
+/*func TestService_initAssessmentStream(t *testing.T) {
 	var (
 		authSrv *oauth2.AuthorizationServer
 		port    int
@@ -550,8 +550,10 @@ func TestService_initAssessmentStream(t *testing.T) {
 			var opts []grpc.DialOption
 			if tt.fields.hasRPCConnection {
 				// Make this a valid RPC connection by connecting to our bufnet service
-				opts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
-				s.assessmentAddress = "bufnet"
+				s.assessmentAddress = grpcTarget{
+					target: "bufconn",
+					opts: []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
+				}
 			}
 
 			err := s.initAssessmentStream(opts...)
@@ -560,7 +562,7 @@ func TestService_initAssessmentStream(t *testing.T) {
 			}
 		})
 	}
-}
+}*/
 
 func TestShutdown(t *testing.T) {
 	service := NewService()
@@ -698,13 +700,7 @@ func (m *mockAssessmentStream) Recv() (*assessment.AssessEvidenceResponse, error
 }
 
 func (m *mockAssessmentStream) Send(req *assessment.AssessEvidenceRequest) (err error) {
-	e := req.Evidence
-	if m.connectionEstablished {
-		m.sentEvidence = e
-	} else {
-		err = fmt.Errorf("mock send error")
-	}
-	return
+	return m.SendMsg(req)
 }
 
 func (*mockAssessmentStream) CloseAndRecv() (*emptypb.Empty, error) {
@@ -727,51 +723,18 @@ func (*mockAssessmentStream) Context() context.Context {
 	return nil
 }
 
-func (*mockAssessmentStream) SendMsg(_ interface{}) error {
-	return nil
+func (m *mockAssessmentStream) SendMsg(req interface{}) (err error) {
+	e := req.(*assessment.AssessEvidenceRequest).Evidence
+	if m.connectionEstablished {
+		m.sentEvidence = e
+	} else {
+		err = fmt.Errorf("mock send error")
+	}
+
+	return
 }
 
 func (*mockAssessmentStream) RecvMsg(_ interface{}) error {
-	return nil
-}
-
-// mockEvidenceStoreStream implements EvidenceStore_StoreEvidencesClient interface
-type mockEvidenceStoreStream struct {
-}
-
-func (mockEvidenceStoreStream) Recv() (*evidence.StoreEvidenceResponse, error) {
-	return nil, nil
-}
-
-func (mockEvidenceStoreStream) Send(_ *evidence.StoreEvidenceRequest) error {
-	return fmt.Errorf("mock send error")
-}
-
-func (mockEvidenceStoreStream) CloseAndRecv() (*emptypb.Empty, error) {
-	return nil, nil
-}
-
-func (mockEvidenceStoreStream) Header() (metadata.MD, error) {
-	return nil, nil
-}
-
-func (mockEvidenceStoreStream) Trailer() metadata.MD {
-	return nil
-}
-
-func (mockEvidenceStoreStream) CloseSend() error {
-	return nil
-}
-
-func (mockEvidenceStoreStream) Context() context.Context {
-	return nil
-}
-
-func (mockEvidenceStoreStream) SendMsg(_ interface{}) error {
-	return nil
-}
-
-func (mockEvidenceStoreStream) RecvMsg(_ interface{}) error {
 	return nil
 }
 
