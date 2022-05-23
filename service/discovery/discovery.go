@@ -302,6 +302,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 		if err != nil {
 			err = fmt.Errorf("could not get stream to assessment service (%s): %w", svc.assessmentAddress.target, err)
 			log.Error(err)
+			continue
 		}
 
 		channel.Send(&assessment.AssessEvidenceRequest{Evidence: e})
