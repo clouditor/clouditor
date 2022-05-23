@@ -80,7 +80,7 @@ func TestNewService(t *testing.T) {
 				},
 			},
 			want: &Service{
-				assessmentStreams: api.NewStreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](),
+				assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
 				assessmentAddress: grpcTarget{target: "localhost:9091"},
 				resources:         make(map[string]voc.IsCloudResource),
 				configurations:    make(map[discovery.Discoverer]*Configuration),
