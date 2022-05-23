@@ -27,11 +27,11 @@ package policies
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 	"sync"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
@@ -40,7 +40,6 @@ import (
 	"github.com/open-policy-agent/opa/storage"
 	"github.com/open-policy-agent/opa/storage/inmem"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 // DefaultRegoPackage is the default package name for the Rego files
@@ -134,7 +133,7 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 			runMap, err := re.evalMap(baseDir, metric.Id, m, src)
 			if err != nil {
 				// Try to retrieve the gRPC status from the error, to check if the metric implementation just does not exist.
-				status, ok := status.FromError(errors.Unwrap(errors.Unwrap(err)))
+				status, ok := api.StatusFromWrappedError(err)
 				if ok && status.Code() == codes.Unavailable {
 					log.Warnf("Resource type %v ignored metric %v because of its missing implementation of default configuration ", key, metric.Id)
 					// In this case, we can continue
