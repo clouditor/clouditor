@@ -3,6 +3,7 @@
         "id": "Req-1",
         "name": "Make-it-Secure",
         "description": "You should make everything secure",
+        "category": "Some Category",
         "metrics": [
             {
                 "id": "TransportEncryptionEnabled"
