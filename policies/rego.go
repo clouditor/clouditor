@@ -27,6 +27,7 @@ package policies
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -133,7 +134,7 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 			runMap, err := re.evalMap(baseDir, metric.Id, m, src)
 			if err != nil {
 				// Try to retrieve the gRPC status from the error, to check if the metric implementation just does not exist.
-				status, ok := status.FromError(err)
+				status, ok := status.FromError(errors.Unwrap(errors.Unwrap(err)))
 				if ok && status.Code() == codes.Unavailable {
 					log.Warnf("Resource type %v ignored metric %v because of its missing implementation of default configuration ", key, metric.Id)
 					// In this case, we can continue
