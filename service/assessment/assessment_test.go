@@ -26,7 +26,6 @@
 package assessment
 
 import (
-	"clouditor.io/clouditor/service"
 	"context"
 	"encoding/json"
 	"errors"
@@ -37,6 +36,8 @@ import (
 	"runtime"
 	"sync"
 	"testing"
+
+	"clouditor.io/clouditor/service"
 
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
@@ -1038,8 +1039,11 @@ func TestHandleEvidence(t *testing.T) {
 				resourceId: "my-resource-id",
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				assert.Contains(t, err.Error(), "could not get stream to evidence store")
-				return true
+				if !assert.NotEmpty(t, err) {
+					return false
+				}
+
+				return assert.Contains(t, err.Error(), "could not get stream to evidence store")
 			},
 		},
 	}

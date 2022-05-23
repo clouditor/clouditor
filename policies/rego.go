@@ -38,6 +38,8 @@ import (
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/open-policy-agent/opa/storage"
 	"github.com/open-policy-agent/opa/storage/inmem"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // DefaultRegoPackage is the default package name for the Rego files
@@ -122,8 +124,27 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 		// start at the exactly same time.
 		cached = []string{}
 		for _, metric := range metrics {
+			// Try to evaluate it and check, if the metric is applicable (in which case we are getting a result). We
+			// need to differentiate here between an execution error (which might be temporary) and an error if the
+			// metric configuration or implementation is not found. The latter case happens if the metric is not
+			// assessed within the Clouditor toolset but we need to know that the metric exists, e.g., because it is
+			// evaluated by an external tool. In this case, we can just pretend that the metric is not applicable for us
+			// and continue.
 			runMap, err := re.evalMap(baseDir, metric.Id, m, src)
 			if err != nil {
+				// Try to retrieve the gRPC status from the error, to check if the metric implementation just does not exist.
+				status, ok := status.FromError(err)
+				if ok && status.Code() == codes.Unavailable {
+					log.Warnf("Resource type %v ignored metric %v because of its missing implementation of default configuration ", key, metric.Id)
+					// In this case, we can continue
+					continue
+				}
+
+				// Otherwise, we are not really in a state where our cache is valid, so we mark it as not cached at all.
+				re.mrtc.m[key] = nil
+
+				// Unlock, to avoid deadlock and return from here with the error
+				re.mrtc.Unlock()
 				return nil, err
 			}
 
