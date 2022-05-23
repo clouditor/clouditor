@@ -134,7 +134,7 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 			if err != nil {
 				// Try to retrieve the gRPC status from the error, to check if the metric implementation just does not exist.
 				status, ok := api.StatusFromWrappedError(err)
-				if ok && status.Code() == codes.Unavailable {
+				if ok && status.Code() == codes.NotFound {
 					log.Warnf("Resource type %v ignored metric %v because of its missing implementation of default configuration ", key, metric.Id)
 					// In this case, we can continue
 					continue
@@ -237,23 +237,6 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 		// Convert camelCase metric in under_score_style for package name
 		pkg = util.CamelCaseToSnakeCase(metric)
 
-		// TODO (oxisto): we should probably do this using some Rego store implementation
-
-		// Check, if an override in our database exists
-		/*var impl assessment.MetricImplementation
-		err = re.storage.Get(&impl, assessment.MetricImplementation{
-			MetricId: metric,
-			Lang:     assessment.MetricImplementation_REGO,
-		})
-		if err == persistence.ErrRecordNotFound {
-			// Load from file if it is not in the database
-			data, _ = os.ReadFile(bundle + "metric.rego")
-		} else if err != nil {
-			return nil, fmt.Errorf("could fetch policy from database: %w", err)
-		} else {
-			// Take the implementation from the DB
-			data = []byte(impl.Code)
-		}*/
 		impl, err = src.MetricImplementation(assessment.MetricImplementation_REGO, metric)
 		if err != nil {
 			return nil, fmt.Errorf("could not fetch policy: %w", err)
