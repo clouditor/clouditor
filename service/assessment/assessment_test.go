@@ -26,7 +26,6 @@
 package assessment
 
 import (
-	"clouditor.io/clouditor/service"
 	"context"
 	"encoding/json"
 	"errors"
@@ -45,6 +44,7 @@ import (
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/policies"
+	"clouditor.io/clouditor/service"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -1038,8 +1038,11 @@ func TestHandleEvidence(t *testing.T) {
 				resourceId: "my-resource-id",
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				assert.Contains(t, err.Error(), "could not get stream to evidence store")
-				return true
+				if !assert.NotEmpty(t, err) {
+					return false
+				}
+
+				return assert.Contains(t, err.Error(), "could not get stream to evidence store")
 			},
 		},
 	}
