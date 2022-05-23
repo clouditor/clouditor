@@ -1039,7 +1039,7 @@ func TestHandleEvidence(t *testing.T) {
 				resourceId: "my-resource-id",
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				if assert.Empty(t, err) {
+				if !assert.NotEmpty(t, err) {
 					return false
 				}
 
