@@ -211,9 +211,9 @@ func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType,
 		if logrus.IsLevelEnabled(logrus.DebugLevel) {
 			id := extractID(m)
 			if id != "" {
-				s.log.Debugf("Message containing %s sent to %s (%s)", id, c.component, c.target)
+				s.log.Debugf("%T containing %s sent to %s (%s)", m, id, c.component, c.target)
 			} else {
-				s.log.Debugf("Message sent to %s (%s)", c.component, c.target)
+				s.log.Debugf("%T sent to %s (%s)", m, c.component, c.target)
 			}
 		}
 	}
@@ -256,6 +256,9 @@ func defaultLog() *logrus.Entry {
 // extractID uses a simple heuristic to extract an ID field out of a protobuf message. It assumes that the protobuf
 // message either directly has an ID field or that the last field of the message contains another protobuf message that
 // contains ID. The latter is a typical scenario for request and response messages.
+//
+// This function uses the protoreflect package and the caller needs to be aware of potential performance drawbacks of
+// using reflection.
 func extractID(msg proto.Message) string {
 	var (
 		inner any
