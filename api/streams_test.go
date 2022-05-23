@@ -32,6 +32,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/evidence"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -243,4 +244,45 @@ func (m mockClientStream) SendMsg(interface{}) error {
 
 func (mockClientStream) RecvMsg(interface{}) error {
 	return nil
+}
+
+func Test_extractID(t *testing.T) {
+	type args struct {
+		msg proto.Message
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "ID in message",
+			args: args{
+				msg: &evidence.Evidence{Id: "MyID"},
+			},
+			want: "MyID",
+		},
+		{
+			name: "ID in response",
+			args: args{
+				msg: &assessment.AssessEvidenceRequest{Evidence: &evidence.Evidence{Id: "MyID"}},
+			},
+			want: "MyID",
+		},
+		{
+			name: "No ID",
+			args: args{
+				msg: &assessment.MinMax{},
+			},
+			want: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := extractID(tt.args.msg); got != tt.want {
+				t.Errorf("extractID() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

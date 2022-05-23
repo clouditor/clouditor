@@ -34,12 +34,16 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 var (
 	ErrMissingInitFunc = errors.New("missing stream initializer function")
 )
+
+// IDField is the name of the ID field used in protobuf messages
+const IDField = "id"
 
 // StreamChannelOf provides a channel around a connection to a grpc.ClientStream to send messages of type MsgType to
 // that particular stream, using an internal go routine. This is necessary, because gRPC does not allow sending to a
@@ -202,7 +206,16 @@ func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType,
 			return
 		}
 
-		s.log.Debugf("Message sent to %s (%s)", c.component, c.target)
+		// Some protobuf refletion magic to print more meaningful debug messages. Since this causes some performance
+		// drawbacks, we are only doing this if DEBUG level is enabled.
+		if logrus.IsLevelEnabled(logrus.DebugLevel) {
+			id := extractID(m)
+			if id != "" {
+				s.log.Debugf("%T containing id %s sent to %s (%s)", m, id, c.component, c.target)
+			} else {
+				s.log.Debugf("%T sent to %s (%s)", m, c.component, c.target)
+			}
+		}
 	}
 }
 
@@ -238,4 +251,40 @@ func (c *StreamChannelOf[StreamType, MsgType]) Send(msg MsgType) {
 // defaultLog returns the default logger, if none is specified.
 func defaultLog() *logrus.Entry {
 	return logrus.NewEntry(logrus.StandardLogger())
+}
+
+// extractID uses a simple heuristic to extract an ID field out of a protobuf message. It assumes that the protobuf
+// message either directly has an ID field or that the last field of the message contains another protobuf message that
+// contains ID. The latter is a typical scenario for request and response messages.
+//
+// This function uses the protoreflect package and the caller needs to be aware of potential performance drawbacks of
+// using reflection.
+func extractID(msg proto.Message) string {
+	var (
+		inner any
+		ok    bool
+		r     protoreflect.Message
+	)
+	// Try the message directly
+	r = msg.ProtoReflect()
+	fd := r.Descriptor().Fields().ByName(IDField)
+	if fd != nil {
+		return r.Get(fd).String()
+	}
+
+	// Otherwise try to go one level "deeper", e.g., to retrieve the inner message in a request/response message.
+	fields := r.Descriptor().Fields()
+	fd = fields.Get(fields.Len() - 1)
+	if fd == nil {
+		return ""
+	}
+
+	// Retrieve the value of the inner message
+	inner = r.Get(fd).Interface()
+	if r, ok = inner.(protoreflect.Message); !ok {
+		return ""
+	}
+
+	// And try to extract the ID based on it
+	return extractID(r.Interface())
 }
