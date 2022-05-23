@@ -155,6 +155,8 @@ func (s *Service) ListEvidences(_ context.Context, req *evidence.ListEvidencesRe
 }
 
 func (s *Service) RegisterEvidenceHook(evidenceHook evidence.EvidenceHookFunc) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.evidenceHooks = append(s.evidenceHooks, evidenceHook)
 }
 

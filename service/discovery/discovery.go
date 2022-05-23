@@ -29,7 +29,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"sort"
 	"time"
 
@@ -64,6 +63,11 @@ const (
 
 var log *logrus.Entry
 
+type grpcTarget struct {
+	target string
+	opts   []grpc.DialOption
+}
+
 // Service is an implementation of the Clouditor Discovery service.
 // It should not be used directly, but rather the NewService constructor
 // should be used.
@@ -72,8 +76,8 @@ type Service struct {
 
 	configurations map[discovery.Discoverer]*Configuration
 
-	assessmentStream  assessment.Assessment_AssessEvidencesClient
-	assessmentAddress string
+	assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
+	assessmentAddress grpcTarget
 
 	resources map[string]voc.IsCloudResource
 	scheduler *gocron.Scheduler
@@ -100,9 +104,12 @@ const (
 type ServiceOption func(*Service)
 
 // WithAssessmentAddress is an option to configure the assessment service gRPC address.
-func WithAssessmentAddress(address string) ServiceOption {
+func WithAssessmentAddress(address string, opts ...grpc.DialOption) ServiceOption {
 	return func(s *Service) {
-		s.assessmentAddress = address
+		s.assessmentAddress = grpcTarget{
+			target: address,
+			opts:   opts,
+		}
 	}
 }
 
@@ -127,10 +134,13 @@ func WithProviders(providersList []string) ServiceOption {
 
 func NewService(opts ...ServiceOption) *Service {
 	s := &Service{
-		assessmentAddress: DefaultAssessmentAddress,
-		resources:         make(map[string]voc.IsCloudResource),
-		scheduler:         gocron.NewScheduler(time.UTC),
-		configurations:    make(map[discovery.Discoverer]*Configuration),
+		assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
+		assessmentAddress: grpcTarget{
+			target: DefaultAssessmentAddress,
+		},
+		resources:      make(map[string]voc.IsCloudResource),
+		scheduler:      gocron.NewScheduler(time.UTC),
+		configurations: make(map[discovery.Discoverer]*Configuration),
 	}
 
 	// Apply any options
@@ -153,46 +163,29 @@ func (s *Service) Authorizer() api.Authorizer {
 
 // initAssessmentStream initializes the stream that is used to send evidences to the assessment service.
 // If configured, it uses the Authorizer of the discovery service to authenticate requests to the assessment.
-func (s *Service) initAssessmentStream(additionalOpts ...grpc.DialOption) error {
-	log.Infof("Trying to establish a connection to assessment service @ %v", s.assessmentAddress)
+func (s *Service) initAssessmentStream(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
+	log.Infof("Trying to establish a connection to assessment service @ %v", target)
 
 	// Establish connection to assessment gRPC service
-	conn, err := grpc.Dial(s.assessmentAddress,
-		api.DefaultGrpcDialOptions(s.assessmentAddress, s, additionalOpts...)...,
+	conn, err := grpc.Dial(target,
+		api.DefaultGrpcDialOptions(target, s, additionalOpts...)...,
 	)
 	if err != nil {
-		return fmt.Errorf("could not connect to assessment service: %w", err)
+		return nil, fmt.Errorf("could not connect to assessment service: %w", err)
 	}
 
 	client := assessment.NewAssessmentClient(conn)
 
 	// Set up the stream and store it in our service struct, so we can access it later to actually
 	// send the evidence data
-	s.assessmentStream, err = client.AssessEvidences(context.Background())
+	stream, err = client.AssessEvidences(context.Background())
 	if err != nil {
-		return fmt.Errorf("could not set up stream for assessing evidences: %w", err)
+		return nil, fmt.Errorf("could not set up stream for assessing evidences: %w", err)
 	}
-
-	// Receive responses from Assessment
-	// Currently we do not process the responses
-	go func() {
-		for {
-			_, err := s.assessmentStream.Recv()
-			if errors.Is(err, io.EOF) {
-				log.Debugf("no more requests in assessment stream available")
-				break
-			}
-
-			if err != nil {
-				log.Errorf("error receiving response from assessment stream: %+v", err)
-				break
-			}
-		}
-	}()
 
 	log.Infof("Connected to Assessment")
 
-	return nil
+	return
 }
 
 // Start starts discovery
@@ -201,15 +194,6 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 
 	log.Infof("Starting discovery...")
 	s.scheduler.TagsUnique()
-
-	// Establish connection to assessment component
-	if s.assessmentStream == nil {
-		err = s.initAssessmentStream()
-		if err != nil {
-			log.Errorf("Could not initialize stream to Assessment: %v", err)
-			return nil, status.Error(codes.Internal, "could not initialize stream to Assessment")
-		}
-	}
 
 	var discoverer []discovery.Discoverer
 
@@ -279,7 +263,7 @@ func (s *Service) Shutdown() {
 	s.scheduler.Stop()
 }
 
-func (s *Service) StartDiscovery(discoverer discovery.Discoverer) {
+func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	var (
 		err  error
 		list []voc.IsCloudResource
@@ -293,7 +277,7 @@ func (s *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}
 
 	for _, resource := range list {
-		s.resources[string(resource.GetID())] = resource
+		svc.resources[string(resource.GetID())] = resource
 
 		var (
 			v *structpb.Value
@@ -313,14 +297,15 @@ func (s *Service) StartDiscovery(discoverer discovery.Discoverer) {
 			Resource:  v,
 		}
 
-		if s.assessmentStream == nil {
-			log.Warnf("Evidence stream to Assessment component not available")
+		// Get Evidence Store stream
+		channel, err := svc.assessmentStreams.GetStream(svc.assessmentAddress.target, "Assessment", svc.initAssessmentStream, svc.assessmentAddress.opts...)
+		if err != nil {
+			err = fmt.Errorf("could not get stream to assessment service (%s): %w", svc.assessmentAddress.target, err)
+			log.Error(err)
 			continue
 		}
 
-		if err = s.assessmentStream.Send(&assessment.AssessEvidenceRequest{Evidence: e}); err != nil {
-			log.WithError(handleError(err, "Assessment"))
-		}
+		channel.Send(&assessment.AssessEvidenceRequest{Evidence: e})
 	}
 }
 
