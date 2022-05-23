@@ -37,8 +37,6 @@ import (
 	"sync"
 	"testing"
 
-	"clouditor.io/clouditor/service"
-
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
@@ -46,6 +44,7 @@ import (
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/policies"
+	"clouditor.io/clouditor/service"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
