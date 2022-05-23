@@ -211,7 +211,7 @@ func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType,
 		if logrus.IsLevelEnabled(logrus.DebugLevel) {
 			id := extractID(m)
 			if id != "" {
-				s.log.Debugf("%T containing %s sent to %s (%s)", m, id, c.component, c.target)
+				s.log.Debugf("%T containing id %s sent to %s (%s)", m, id, c.component, c.target)
 			} else {
 				s.log.Debugf("%T sent to %s (%s)", m, c.component, c.target)
 			}
