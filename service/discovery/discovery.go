@@ -134,7 +134,7 @@ func WithProviders(providersList []string) ServiceOption {
 
 func NewService(opts ...ServiceOption) *Service {
 	s := &Service{
-		assessmentStreams: api.NewStreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](),
+		assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
 		assessmentAddress: grpcTarget{
 			target: DefaultAssessmentAddress,
 		},
