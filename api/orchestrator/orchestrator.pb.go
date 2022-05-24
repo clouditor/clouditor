@@ -1772,7 +1772,8 @@ type Requirement struct {
 	// meta-data, most likely returned by the database.
 	Metrics []*assessment.Metric `protobuf:"bytes,4,rep,name=metrics,proto3" json:"metrics,omitempty" gorm:"many2many"`
 	// category can be used to categorize requirements, e.g., according to a
-	// specific security catalog
+	// specific security catalog or something that groups requirements together,
+	// e.g., a security control.
 	Category string `protobuf:"bytes,5,opt,name=category,proto3" json:"category,omitempty"`
 }
 

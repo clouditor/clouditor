@@ -63,6 +63,31 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/evidence_store/evidences/{evidenceId}:
+        get:
+            tags:
+                - EvidenceStore
+            description: Returns a stored evidences. Part of the public API, also exposed as REST.
+            operationId: EvidenceStore_GetEvidence
+            parameters:
+                - name: evidenceId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Evidence'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
     schemas:
         Evidence:

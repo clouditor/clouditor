@@ -154,6 +154,17 @@ func (s *Service) ListEvidences(_ context.Context, req *evidence.ListEvidencesRe
 	return
 }
 
+// Get is a method implementation of the evidenceServer interface: It returns a evidences in the storage
+func (s *Service) GetEvidence(_ context.Context, req *evidence.GetEvidenceRequest) (res *evidence.Evidence, err error) {
+	var ok bool
+	res, ok = s.evidences[req.EvidenceId]
+	if !ok {
+		return nil, status.Errorf(codes.NotFound, "evidence not found")
+	}
+
+	return
+}
+
 func (s *Service) RegisterEvidenceHook(evidenceHook evidence.EvidenceHookFunc) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
