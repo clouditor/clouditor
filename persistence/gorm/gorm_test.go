@@ -1,7 +1,9 @@
 package gorm
 
 import (
+	"context"
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
 
@@ -10,9 +12,9 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
 	"clouditor.io/clouditor/persistence"
-	"google.golang.org/protobuf/types/known/timestamppb"
-
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/timestamppb"
+	"gorm.io/gorm/schema"
 )
 
 func TestStorageOptions(t *testing.T) {
@@ -482,4 +484,99 @@ func Test_storage_Delete(t *testing.T) {
 	// Should return DB error since a non-supported type is passed (just a string instead of, e.g., &auth.User{})
 	assert.Contains(t, s.Delete("Unsupported Type").Error(), "unsupported data type")
 
+}
+
+func TestTimestampSerializer_Value(t *testing.T) {
+	type args struct {
+		ctx        context.Context
+		field      *schema.Field
+		dst        reflect.Value
+		fieldValue interface{}
+	}
+	tests := []struct {
+		name    string
+		tr      TimestampSerializer
+		args    args
+		want    interface{}
+		wantErr bool
+	}{
+		{
+			name: "ok field",
+			args: args{
+				field:      &schema.Field{Name: "timestamp"},
+				dst:        reflect.Value{},
+				fieldValue: timestamppb.New(time.Date(2000, 1, 1, 1, 1, 1, 1, time.UTC)),
+			},
+			want:    time.Date(2000, 1, 1, 1, 1, 1, 1, time.UTC),
+			wantErr: false,
+		},
+		{
+			name: "nil field",
+			args: args{
+				field:      &schema.Field{Name: "timestamp"},
+				dst:        reflect.Value{},
+				fieldValue: nil,
+			},
+			want:    nil,
+			wantErr: false,
+		},
+		{
+			name: "field wrong type",
+			args: args{
+				field:      &schema.Field{Name: "timestamp"},
+				dst:        reflect.Value{},
+				fieldValue: "string",
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tr := TimestampSerializer{}
+
+			got, err := tr.Value(tt.args.ctx, tt.args.field, tt.args.dst, tt.args.fieldValue)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("TimestampSerializer.Value() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("TimestampSerializer.Value() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestTimestampSerializer_Scan(t *testing.T) {
+	type args struct {
+		ctx     context.Context
+		field   *schema.Field
+		dst     reflect.Value
+		dbValue interface{}
+	}
+	tests := []struct {
+		name    string
+		tr      TimestampSerializer
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "db wrong type",
+			args: args{
+				field:   &schema.Field{},
+				dbValue: "string",
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tr := TimestampSerializer{}
+			if err := tr.Scan(tt.args.ctx, tt.args.field, tt.args.dst, tt.args.dbValue); (err != nil) != tt.wantErr {
+				t.Errorf("TimestampSerializer.Scan() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
 }
