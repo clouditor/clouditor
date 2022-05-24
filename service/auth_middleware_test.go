@@ -46,7 +46,7 @@ func ValidClaimAssertion(tt assert.TestingT, i1 interface{}, _ ...interface{}) b
 		return false
 	}
 
-	claims, ok := ctx.Value(AuthContextKey).(*OpenIDClaim)
+	claims, ok := ctx.Value(AuthContextKey).(*OpenIDConnectClaim)
 	if !ok {
 		tt.Errorf("Token value in context not a JWT claims object")
 		return false

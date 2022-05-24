@@ -157,10 +157,10 @@ func parseToken(token string, authConfig *AuthConfig) (jwt.Claims, error) {
 
 	// Use JWKS, if enabled
 	if authConfig.useJWKS {
-		parsedToken, err = jwt.ParseWithClaims(token, &OpenIDClaim{}, authConfig.Jwks.Keyfunc)
+		parsedToken, err = jwt.ParseWithClaims(token, &OpenIDConnectClaim{}, authConfig.Jwks.Keyfunc)
 	} else {
 		// Otherwise, we will use the supplied public key
-		parsedToken, err = jwt.ParseWithClaims(token, &OpenIDClaim{}, func(t *jwt.Token) (interface{}, error) {
+		parsedToken, err = jwt.ParseWithClaims(token, &OpenIDConnectClaim{}, func(t *jwt.Token) (interface{}, error) {
 			return authConfig.publicKey, nil
 		})
 	}
