@@ -397,13 +397,9 @@ func (svc *Service) ListMetricConfigurations(ctx context.Context, req *orchestra
 	// TODO(oxisto): This is not very efficient, we should do this once at startup so that we can just return the map
 	for _, metric := range metrics {
 		config, err := svc.GetMetricConfiguration(ctx, &orchestrator.GetMetricConfigurationRequest{ServiceId: req.ServiceId, MetricId: metric.Id})
-
-		if err != nil {
-			log.Errorf("Error getting metric configuration: %v", err)
-			return nil, err
+		if err == nil {
+			response.Configurations[metric.Id] = config
 		}
-
-		response.Configurations[metric.Id] = config
 	}
 
 	return
