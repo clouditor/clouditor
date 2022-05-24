@@ -26,12 +26,13 @@
 package orchestrator
 
 import (
+	"context"
 	"database/sql/driver"
 	"errors"
 	"strings"
 )
 
-type CloudServiceHookFunc func(cld *CloudService, err error)
+type CloudServiceHookFunc func(ctx context.Context, cld *CloudService, err error)
 
 var (
 	ErrRequestIsNil     = errors.New("request is empty")
