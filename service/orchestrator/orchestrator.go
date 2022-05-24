@@ -268,6 +268,8 @@ func (svc *Service) ListAssessmentResults(_ context.Context, req *assessment.Lis
 }
 
 func (s *Service) RegisterAssessmentResultHook(hook func(result *assessment.AssessmentResult, err error)) {
+	s.hookMutex.Lock()
+	defer s.hookMutex.Unlock()
 	s.AssessmentResultHooks = append(s.AssessmentResultHooks, hook)
 }
 
