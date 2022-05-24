@@ -32,7 +32,6 @@ import (
 
 	"clouditor.io/clouditor/internal/testutil"
 
-	"github.com/golang-jwt/jwt/v4"
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
@@ -47,7 +46,7 @@ func ValidClaimAssertion(tt assert.TestingT, i1 interface{}, _ ...interface{}) b
 		return false
 	}
 
-	claims, ok := ctx.Value(AuthContextKey).(*jwt.RegisteredClaims)
+	claims, ok := ctx.Value(AuthContextKey).(*OpenIDConnectClaim)
 	if !ok {
 		tt.Errorf("Token value in context not a JWT claims object")
 		return false
