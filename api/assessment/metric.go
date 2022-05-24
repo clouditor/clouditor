@@ -6,12 +6,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
+	"clouditor.io/clouditor/persistence"
 )
 
 var (
 	ErrMetricNameMissing = errors.New("metric name is missing")
 	ErrMetricEmpty       = errors.New("metric is missing or empty")
-	ErrUnsupportedType   = errors.New("unsupported type")
 )
 
 func (r *Range) UnmarshalJSON(b []byte) (err error) {
@@ -66,7 +67,7 @@ func (r *Range) MarshalJSON() (b []byte, err error) {
 			MinMax: v.MinMax,
 		})
 	default:
-		return nil, ErrUnsupportedType
+		return nil, persistence.ErrUnsupportedType
 	}
 }
 
@@ -95,7 +96,7 @@ func (r *Range) Scan(value interface{}) (err error) {
 			err = fmt.Errorf("could not unmarshal JSON: %w", err)
 		}
 	default:
-		err = ErrUnsupportedType
+		err = persistence.ErrUnsupportedType
 	}
 
 	return

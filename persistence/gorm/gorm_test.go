@@ -3,12 +3,14 @@ package gorm
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
 	"clouditor.io/clouditor/persistence"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -163,6 +165,21 @@ func Test_storage_Get(t *testing.T) {
 	err = s.Get(gotMetric, "id = ?", "test")
 	assert.NoError(t, err)
 	assert.Equal(t, metric, gotMetric)
+
+	var impl = &assessment.MetricImplementation{
+		MetricId:  "1",
+		UpdatedAt: timestamppb.New(time.Date(2000, 1, 1, 1, 1, 1, 1, time.UTC)),
+	}
+
+	// Create metric implementation
+	err = s.Create(impl)
+	assert.NoError(t, err)
+
+	// Get metric implementation via Id
+	gotImpl := &assessment.MetricImplementation{}
+	err = s.Get(gotImpl, "metric_id = ?", "1")
+	assert.NoError(t, err)
+	assert.Equal(t, impl, gotImpl)
 }
 
 func Test_storage_List(t *testing.T) {

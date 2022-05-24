@@ -26,13 +26,17 @@
 package gorm
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"reflect"
+	"time"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
@@ -40,6 +44,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/logger"
+	"gorm.io/gorm/schema"
 )
 
 var log *logrus.Entry
@@ -144,6 +149,8 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 		sql.SetMaxOpenConns(g.maxConn)
 	}
 
+	schema.RegisterSerializer("timestamppb", &TimestampSerializer{})
+
 	// After successful DB initialization, migrate the schema
 	if err = g.db.AutoMigrate(g.types...); err != nil {
 		err = fmt.Errorf("error during auto-migration: %w", err)
@@ -205,4 +212,46 @@ func (s *storage) Delete(r any, conds ...any) error {
 	}
 
 	return nil
+}
+
+// TimestampSerializer is a GORM serializer that allows the serialization and unserialization of the
+// google.protobuf.Timestamp protobuf message type.
+type TimestampSerializer struct{}
+
+// Value implements https://pkg.go.dev/gorm.io/gorm/schema#SerializerValuerInterface to indicate
+// how this struct will be saved into an SQL database field.
+func (TimestampSerializer) Value(ctx context.Context, field *schema.Field, dst reflect.Value, fieldValue interface{}) (interface{}, error) {
+	var (
+		t  *timestamppb.Timestamp
+		ok bool
+	)
+
+	if fieldValue == nil {
+		return nil, nil
+	}
+
+	if t, ok = fieldValue.(*timestamppb.Timestamp); !ok {
+		return nil, persistence.ErrUnsupportedType
+	}
+
+	return t.AsTime(), nil
+}
+
+// Scan implements https://pkg.go.dev/gorm.io/gorm/schema#SerializerInterface to indicate how
+// this struct can be loaded from an SQL database field.
+func (TimestampSerializer) Scan(ctx context.Context, field *schema.Field, dst reflect.Value, dbValue interface{}) (err error) {
+	var t *timestamppb.Timestamp
+
+	if dbValue != nil {
+		switch v := dbValue.(type) {
+		case time.Time:
+			t = timestamppb.New(v)
+		default:
+			return persistence.ErrUnsupportedType
+		}
+
+		field.ReflectValueOf(ctx, dst).Set(reflect.ValueOf(t))
+	}
+
+	return
 }

@@ -35,16 +35,16 @@ import (
 	"sync"
 	"testing"
 
+	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/voc"
+
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-
-	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/voc"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc/metadata"
 )
 
 // TestNewService is a simply test for NewService

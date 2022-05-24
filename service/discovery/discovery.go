@@ -39,7 +39,6 @@ import (
 	"clouditor.io/clouditor/service/discovery/k8s"
 	"golang.org/x/exp/maps"
 	"golang.org/x/oauth2/clientcredentials"
-	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/google/uuid"
 
@@ -53,6 +52,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const (
