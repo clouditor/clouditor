@@ -258,7 +258,7 @@ func (svc *Service) ListAssessmentResults(_ context.Context, req *assessment.Lis
 
 	// Paginate the results according to the request
 	res.Results, res.NextPageToken, err = service.PaginateMapValues(req, svc.results, func(a *assessment.AssessmentResult, b *assessment.AssessmentResult) bool {
-		return a.Id < b.Id
+		return a.Timestamp.AsTime().After(b.Timestamp.AsTime())
 	}, service.DefaultPaginationOpts)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
