@@ -107,7 +107,7 @@ func (s *Service) GetCloudService(_ context.Context, req *orchestrator.GetCloudS
 }
 
 // UpdateCloudService implements method for OrchestratorServer interface for updating a cloud service
-func (s *Service) UpdateCloudService(_ context.Context, req *orchestrator.UpdateCloudServiceRequest) (response *orchestrator.CloudService, err error) {
+func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.UpdateCloudServiceRequest) (response *orchestrator.CloudService, err error) {
 	if req.Service == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "service is empty")
 	}
@@ -134,7 +134,7 @@ func (s *Service) UpdateCloudService(_ context.Context, req *orchestrator.Update
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
-	go s.informHooks(response, nil)
+	go s.informHooks(ctx, response, nil)
 	return
 }
 

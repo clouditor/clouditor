@@ -159,7 +159,7 @@ func NewService(opts ...ServiceOption) *Service {
 }
 
 // informHooks informs the registered hook functions
-func (s *Service) informHooks(cld *orchestrator.CloudService, err error) {
+func (s *Service) informHooks(ctx context.Context, cld *orchestrator.CloudService, err error) {
 	s.hookMutex.RLock()
 	hooks := s.cloudServiceHooks
 	defer s.hookMutex.RUnlock()
@@ -168,7 +168,7 @@ func (s *Service) informHooks(cld *orchestrator.CloudService, err error) {
 	if len(hooks) > 0 {
 		for _, hook := range hooks {
 			// We could do hook concurrent again (assuming different hooks don't interfere with each other)
-			hook(cld, err)
+			hook(ctx, cld, err)
 		}
 	}
 }
@@ -268,6 +268,8 @@ func (svc *Service) ListAssessmentResults(_ context.Context, req *assessment.Lis
 }
 
 func (s *Service) RegisterAssessmentResultHook(hook func(result *assessment.AssessmentResult, err error)) {
+	s.hookMutex.Lock()
+	defer s.hookMutex.Unlock()
 	s.AssessmentResultHooks = append(s.AssessmentResultHooks, hook)
 }
 

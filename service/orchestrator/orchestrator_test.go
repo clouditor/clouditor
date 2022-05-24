@@ -841,13 +841,13 @@ func TestCloudServiceHooks(t *testing.T) {
 
 	wg.Add(hookCounts)
 
-	firstHookFunction := func(cloudService *orchestrator.CloudService, err error) {
+	firstHookFunction := func(_ context.Context, cloudService *orchestrator.CloudService, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the firstHookFunction")
 		wg.Done()
 	}
 
-	secondHookFunction := func(cloudService *orchestrator.CloudService, err error) {
+	secondHookFunction := func(_ context.Context, cloudService *orchestrator.CloudService, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the secondHookFunction")
 		wg.Done()
