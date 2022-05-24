@@ -958,59 +958,59 @@ func TestHandleEvidence(t *testing.T) {
 		args    args
 		wantErr assert.ErrorAssertionFunc
 	}{
-		// {
-		// 	name: "correct evidence",
-		// 	fields: fields{
-		// 		hasOrchestratorStream:  true,
-		// 		hasEvidenceStoreStream: true,
-		// 	},
-		// 	args: args{
-		// 		evidence: &evidence.Evidence{
-		// 			Id:        "11111111-1111-1111-1111-111111111111",
-		// 			ToolId:    "mock",
-		// 			Timestamp: timestamppb.Now(),
-		// 			Resource: toStruct(voc.VirtualMachine{
-		// 				Compute: &voc.Compute{
-		// 					Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}},
-		// 				},
-		// 				BootLogging: &voc.BootLogging{
-		// 					Logging: &voc.Logging{
-		// 						LoggingService:  nil,
-		// 						Enabled:         true,
-		// 						RetentionPeriod: 0,
-		// 					},
-		// 				},
-		// 			}, t),
-		// 		},
-		// 		resourceId: "my-resource-id",
-		// 	},
-		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-		// 		assert.NoError(t, err)
-		// 		return false
-		// 	},
-		// },
-		// {
-		// 	name: "missing type in evidence",
-		// 	fields: fields{
-		// 		hasOrchestratorStream:  true,
-		// 		hasEvidenceStoreStream: true,
-		// 	},
-		// 	args: args{
-		// 		evidence: &evidence.Evidence{
-		// 			Id:        "11111111-1111-1111-1111-111111111111",
-		// 			ToolId:    "mock",
-		// 			Timestamp: timestamppb.Now(),
-		// 			Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{}}}}, t),
-		// 		},
-		// 		resourceId: "my-resource-id",
-		// 	},
-		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-		// 		assert.Error(t, err)
-		// 		// Check if error message contains "empty" (list of types)
-		// 		assert.Contains(t, err.Error(), "empty")
-		// 		return true
-		// 	},
-		// },
+		{
+			name: "correct evidence",
+			fields: fields{
+				hasOrchestratorStream:  true,
+				hasEvidenceStoreStream: true,
+			},
+			args: args{
+				evidence: &evidence.Evidence{
+					Id:        "11111111-1111-1111-1111-111111111111",
+					ToolId:    "mock",
+					Timestamp: timestamppb.Now(),
+					Resource: toStruct(voc.VirtualMachine{
+						Compute: &voc.Compute{
+							Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}},
+						},
+						BootLogging: &voc.BootLogging{
+							Logging: &voc.Logging{
+								LoggingService:  nil,
+								Enabled:         true,
+								RetentionPeriod: 0,
+							},
+						},
+					}, t),
+				},
+				resourceId: "my-resource-id",
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.NoError(t, err)
+				return false
+			},
+		},
+		{
+			name: "missing type in evidence",
+			fields: fields{
+				hasOrchestratorStream:  true,
+				hasEvidenceStoreStream: true,
+			},
+			args: args{
+				evidence: &evidence.Evidence{
+					Id:        "11111111-1111-1111-1111-111111111111",
+					ToolId:    "mock",
+					Timestamp: timestamppb.Now(),
+					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{}}}}, t),
+				},
+				resourceId: "my-resource-id",
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Error(t, err)
+				// Check if error message contains "empty" (list of types)
+				assert.Contains(t, err.Error(), "empty")
+				return true
+			},
+		},
 		{
 			name: "evidence store stream error",
 			fields: fields{
