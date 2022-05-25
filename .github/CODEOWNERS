@@ -2,3 +2,4 @@
 
 service/discovery @anatheka
 persistence @lebogg
+**/*.proto @lebogg
