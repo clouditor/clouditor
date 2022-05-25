@@ -202,7 +202,7 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 	// We need to check, if the metric configuration has been changed.
 	config, err := src.MetricConfiguration(metric)
 	if err != nil {
-		return nil, fmt.Errorf("could not fetch metric configuration: %w", err)
+		return nil, fmt.Errorf("could not fetch metric configuration for metric %s: %w", metric, err)
 	}
 
 	// We build a key out of the metric and its configuration, so we are creating a new Rego implementation
@@ -239,7 +239,7 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 
 		impl, err = src.MetricImplementation(assessment.MetricImplementation_REGO, metric)
 		if err != nil {
-			return nil, fmt.Errorf("could not fetch policy: %w", err)
+			return nil, fmt.Errorf("could not fetch policy for metric %s: %w", metric, err)
 		}
 
 		err = store.UpsertPolicy(context.Background(), tx, bundle+"metric.rego", []byte(impl.Code))
@@ -263,7 +263,7 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 				nil),
 		).PrepareForEval(ctx)
 		if err != nil {
-			return nil, fmt.Errorf("could not prepare rego evaluation: %w", err)
+			return nil, fmt.Errorf("could not prepare rego evaluation for metric %s: %w", metric, err)
 		}
 
 		err = store.Commit(ctx, tx)
@@ -274,7 +274,7 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 		return &query, nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("could not fetch cached query: %w", err)
+		return nil, fmt.Errorf("could not fetch cached query for metric %s: %w", metric, err)
 	}
 
 	results, err := query.Eval(context.Background(), rego.EvalInput(m))
@@ -283,7 +283,7 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 	}
 
 	if len(results) == 0 {
-		return nil, fmt.Errorf("no results. probably the package name of the metric is wrong")
+		return nil, fmt.Errorf("no results. probably the package name of metric %s is wrong", metric)
 	}
 
 	result = &Result{
