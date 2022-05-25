@@ -320,9 +320,6 @@ func (svc *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.
 		return config, nil
 	}
 
-	err = fmt.Errorf("could not find metric configuration for metric %s in service %s", req.MetricId, req.ServiceId)
-	log.Error(err)
-
 	return nil, status.Errorf(codes.NotFound, "%v", err)
 }
 
