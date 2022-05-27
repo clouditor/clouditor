@@ -158,6 +158,7 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 							Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
 						},
 					},
+					TransportEncryption: encryptionAtTransmit,
 				},
 				HttpEndpoint: &voc.HttpEndpoint{
 					Url:                 b.endpoint,
