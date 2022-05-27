@@ -258,6 +258,13 @@ func (*azureStorageDiscovery) handleStorageAccount(account *storage.Account, sto
 		storageResourceIDs = append(storageResourceIDs, storage.GetID())
 	}
 
+	te := &voc.TransportEncryption{
+		Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
+		Enabled:    true, // cannot be disabled
+		TlsVersion: string(account.MinimumTLSVersion),
+		Algorithm:  "TLS",
+	}
+
 	storageService := &voc.StorageService{
 		Storages: storageResourceIDs,
 		NetworkService: &voc.NetworkService{
@@ -272,15 +279,11 @@ func (*azureStorageDiscovery) handleStorageAccount(account *storage.Account, sto
 					},
 				},
 			},
+			TransportEncryption: te,
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
-			Url: generalizeURL(to.String(account.PrimaryEndpoints.Blob)),
-			TransportEncryption: &voc.TransportEncryption{
-				Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
-				Enabled:    true, // cannot be disabled
-				TlsVersion: string(account.MinimumTLSVersion),
-				Algorithm:  "TLS",
-			},
+			Url:                 generalizeURL(to.String(account.PrimaryEndpoints.Blob)),
+			TransportEncryption: te,
 		},
 	}
 
