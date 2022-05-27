@@ -498,7 +498,7 @@ func TestTimestampSerializer_Value(t *testing.T) {
 		tr      TimestampSerializer
 		args    args
 		want    interface{}
-		wantErr bool
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "ok field",
@@ -508,7 +508,7 @@ func TestTimestampSerializer_Value(t *testing.T) {
 				fieldValue: timestamppb.New(time.Date(2000, 1, 1, 1, 1, 1, 1, time.UTC)),
 			},
 			want:    time.Date(2000, 1, 1, 1, 1, 1, 1, time.UTC),
-			wantErr: false,
+			wantErr: nil,
 		},
 		{
 			name: "nil field",
@@ -518,7 +518,7 @@ func TestTimestampSerializer_Value(t *testing.T) {
 				fieldValue: nil,
 			},
 			want:    nil,
-			wantErr: false,
+			wantErr: nil,
 		},
 		{
 			name: "field wrong type",
@@ -527,8 +527,10 @@ func TestTimestampSerializer_Value(t *testing.T) {
 				dst:        reflect.Value{},
 				fieldValue: "string",
 			},
-			want:    nil,
-			wantErr: true,
+			want: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, persistence.ErrUnsupportedType)
+			},
 		},
 	}
 
@@ -537,10 +539,13 @@ func TestTimestampSerializer_Value(t *testing.T) {
 			tr := TimestampSerializer{}
 
 			got, err := tr.Value(tt.args.ctx, tt.args.field, tt.args.dst, tt.args.fieldValue)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("TimestampSerializer.Value() error = %v, wantErr %v", err, tt.wantErr)
-				return
+
+			if tt.wantErr != nil {
+				tt.wantErr(t, err, tt.args)
+			} else {
+				assert.Nil(t, err)
 			}
+
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("TimestampSerializer.Value() = %v, want %v", got, tt.want)
 			}
@@ -559,7 +564,7 @@ func TestTimestampSerializer_Scan(t *testing.T) {
 		name    string
 		tr      TimestampSerializer
 		args    args
-		wantErr bool
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "db wrong type",
@@ -567,15 +572,21 @@ func TestTimestampSerializer_Scan(t *testing.T) {
 				field:   &schema.Field{},
 				dbValue: "string",
 			},
-			wantErr: true,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, persistence.ErrUnsupportedType)
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tr := TimestampSerializer{}
-			if err := tr.Scan(tt.args.ctx, tt.args.field, tt.args.dst, tt.args.dbValue); (err != nil) != tt.wantErr {
-				t.Errorf("TimestampSerializer.Scan() error = %v, wantErr %v", err, tt.wantErr)
+			err := tr.Scan(tt.args.ctx, tt.args.field, tt.args.dst, tt.args.dbValue)
+
+			if tt.wantErr != nil {
+				tt.wantErr(t, err, tt.args)
+			} else {
+				assert.Nil(t, err)
 			}
 		})
 	}

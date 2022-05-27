@@ -28,8 +28,8 @@ syntax = "proto3";
 
 package clouditor;
 
-import "google/protobuf/timestamp.proto";
 import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
 
 option go_package = "clouditor.io/clouditor/api/evidence";
 

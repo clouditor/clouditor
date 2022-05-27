@@ -36,9 +36,9 @@ import (
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
-	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -214,7 +214,7 @@ func (s *storage) Delete(r any, conds ...any) error {
 	return nil
 }
 
-// TimestampSerializer is a GORM serializer that allows the serialization and unserialization of the
+// TimestampSerializer is a GORM serializer that allows the serialization and deserialization of the
 // google.protobuf.Timestamp protobuf message type.
 type TimestampSerializer struct{}
 
