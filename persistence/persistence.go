@@ -30,7 +30,8 @@ import (
 )
 
 var (
-	ErrRecordNotFound = errors.New("record not in the database")
+	ErrRecordNotFound  = errors.New("record not in the database")
+	ErrUnsupportedType = errors.New("unsupported type")
 )
 
 // Storage comprises a database interface
