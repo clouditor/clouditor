@@ -165,6 +165,10 @@ components:
                 isDefault:
                     type: boolean
                     description: Whether this configuration is a default configuration
+                updatedAt:
+                    type: string
+                    description: The last time of update
+                    format: date-time
             description: Defines the operator and a target value for an individual metric
         Status:
             type: object

@@ -29,6 +29,8 @@ syntax = "proto3";
 package clouditor;
 
 import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+import "tagger/tagger.proto";
 
 option go_package = "clouditor.io/clouditor/api/assessment;assessment";
 
@@ -101,6 +103,10 @@ message MetricConfiguration {
 
   // Whether this configuration is a default configuration
   bool is_default = 3;
+
+  // The last time of update
+  google.protobuf.Timestamp updated_at = 4
+      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
 }
 
 // MetricImplementation defines the implementation of an individual metric.
@@ -118,4 +124,8 @@ message MetricImplementation {
 
   // The actual implementation
   string code = 3;
+
+  // The last time of update
+  google.protobuf.Timestamp updated_at = 4
+      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
 }

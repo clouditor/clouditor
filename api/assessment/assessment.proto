@@ -33,6 +33,7 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "api/evidence/evidence.proto";
 import "api/assessment/metric.proto";
+import "tagger/tagger.proto";
 
 option go_package = "clouditor.io/clouditor/api/assessment";
 
@@ -102,7 +103,8 @@ message AssessmentResult {
   string id = 1;
 
   // Time of assessment
-  google.protobuf.Timestamp timestamp = 2;
+  google.protobuf.Timestamp timestamp = 2
+      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
 
   // Reference to the metric the assessment was based on
   string metric_id = 3;
