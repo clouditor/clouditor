@@ -475,7 +475,7 @@ func (svc *Service) initEvidenceStoreStream(URL string, additionalOpts ...grpc.D
 
 // initOrchestratorStream initializes the stream to the Orchestrator
 func (svc *Service) initOrchestratorStream(URL string, additionalOpts ...grpc.DialOption) (stream orchestrator.Orchestrator_StoreAssessmentResultsClient, err error) {
-	log.Infof("Trying to establish a connection to orchestrator This will disappear when I changeOrcservice @ %v", svc.orchestratorAddress.target)
+	log.Infof("Trying to establish a connection to orchestrator service @ %v", svc.orchestratorAddress.target)
 
 	// Establish connection to orchestrator gRPC service
 	err = svc.initOrchestratorClient()
