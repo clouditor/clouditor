@@ -175,14 +175,22 @@ func (s *storage) Get(r any, conds ...any) (err error) {
 	return
 }
 
-func (s *storage) List(r any, offset int, limit int, conds ...any) error {
+func (s *storage) List(r any, orderBy string, asc bool, offset int, limit int, conds ...any) error {
 	var query = s.db
+	var orderDirection = "asc"
 
 	if limit != -1 {
 		query = s.db.Limit(limit)
 	}
+	if !asc {
+		orderDirection = "desc"
+	}
+	orderStmt := orderBy + " " + orderDirection
+	if orderBy == "" {
+		orderStmt = ""
+	}
 
-	return query.Offset(offset).Preload(clause.Associations).Find(r, conds...).Error
+	return query.Offset(offset).Preload(clause.Associations).Order(orderStmt).Find(r, conds...).Error
 }
 
 func (s *storage) Count(r any, conds ...any) (count int64, err error) {
@@ -220,7 +228,7 @@ type TimestampSerializer struct{}
 
 // Value implements https://pkg.go.dev/gorm.io/gorm/schema#SerializerValuerInterface to indicate
 // how this struct will be saved into an SQL database field.
-func (TimestampSerializer) Value(ctx context.Context, field *schema.Field, dst reflect.Value, fieldValue interface{}) (interface{}, error) {
+func (TimestampSerializer) Value(_ context.Context, _ *schema.Field, _ reflect.Value, fieldValue interface{}) (interface{}, error) {
 	var (
 		t  *timestamppb.Timestamp
 		ok bool

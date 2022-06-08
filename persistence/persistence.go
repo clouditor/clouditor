@@ -54,7 +54,7 @@ type Storage interface {
 
 	// List lists all records in database which meet the (optionally) given conditions with a certain limit after an
 	// offset. If no limit is desired, the value -1 can be specified
-	List(r interface{}, offset int, limit int, conds ...interface{}) error
+	List(r interface{}, orderBy string, asc bool, offset int, limit int, conds ...interface{}) error
 
 	// Count counts the number of records which meet the (optionally) given conditions
 	Count(r interface{}, conds ...interface{}) (int64, error)
