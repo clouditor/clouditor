@@ -285,7 +285,8 @@ func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetrics
 	res = new(orchestrator.ListMetricsResponse)
 
 	// Paginate the metrics according to the request
-	res.Metrics, res.NextPageToken, err = service.PaginateStorage[*assessment.Metric](req, svc.storage, service.DefaultPaginationOpts)
+	res.Metrics, res.NextPageToken, err = service.PaginateStorage[*assessment.Metric](req, svc.storage, req.OrderBy,
+		req.Asc, service.DefaultPaginationOpts)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate metrics: %v", err)
 	}
@@ -386,7 +387,7 @@ func (svc *Service) ListMetricConfigurations(ctx context.Context, req *orchestra
 	}
 
 	var metrics []*assessment.Metric
-	err = svc.storage.List(&metrics, 0, -1)
+	err = svc.storage.List(&metrics, "", true, 0, -1)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -402,7 +403,7 @@ func (svc *Service) ListMetricConfigurations(ctx context.Context, req *orchestra
 	return
 }
 
-func (svc *Service) GetMetricImplementation(ctx context.Context, req *orchestrator.GetMetricImplementationRequest) (res *assessment.MetricImplementation, err error) {
+func (svc *Service) GetMetricImplementation(_ context.Context, req *orchestrator.GetMetricImplementationRequest) (res *assessment.MetricImplementation, err error) {
 	res = new(assessment.MetricImplementation)
 
 	// TODO(oxisto): Validate GetMetricImplementationRequest

@@ -30,10 +30,11 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/service"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/service"
 )
 
 // LoadRequirements loads requirements definitions from a JSON file.
@@ -81,7 +82,8 @@ func (svc *Service) ListRequirements(_ context.Context, req *orchestrator.ListRe
 	res = new(orchestrator.ListRequirementsResponse)
 
 	// Paginate the requirements according to the request
-	res.Requirements, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Requirement](req, svc.storage, service.DefaultPaginationOpts)
+	res.Requirements, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Requirement](req, svc.storage,
+		req.OrderBy, req.Asc, service.DefaultPaginationOpts)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate requirements: %v", err)
 	}

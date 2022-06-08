@@ -340,7 +340,8 @@ func (svc *Service) ListCertificates(_ context.Context, req *orchestrator.ListCe
 
 	res = new(orchestrator.ListCertificatesResponse)
 
-	res.Certificates, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Certificate](req, svc.storage, service.DefaultPaginationOpts)
+	res.Certificates, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Certificate](req, svc.storage,
+		req.OrderBy, req.Asc, service.DefaultPaginationOpts)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}

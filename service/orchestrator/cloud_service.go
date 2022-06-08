@@ -74,11 +74,13 @@ func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.Regi
 }
 
 // ListCloudServices implements method for OrchestratorServer interface for listing all cloud services
-func (svc *Service) ListCloudServices(_ context.Context, req *orchestrator.ListCloudServicesRequest) (res *orchestrator.ListCloudServicesResponse, err error) {
+func (svc *Service) ListCloudServices(_ context.Context, req *orchestrator.ListCloudServicesRequest) (
+	res *orchestrator.ListCloudServicesResponse, err error) {
 	res = new(orchestrator.ListCloudServicesResponse)
 
 	// Paginate the cloud services according to the request
-	res.Services, res.NextPageToken, err = service.PaginateStorage[*orchestrator.CloudService](req, svc.storage, service.DefaultPaginationOpts)
+	res.Services, res.NextPageToken, err = service.PaginateStorage[*orchestrator.CloudService](req, svc.storage,
+		req.OrderBy, req.Asc, service.DefaultPaginationOpts)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}

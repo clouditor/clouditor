@@ -160,6 +160,8 @@ func TestPaginateStorage(t *testing.T) {
 	type args struct {
 		req     api.PaginatedRequest
 		storage persistence.Storage
+		orderBy string
+		asc     bool
 		opts    PaginationOpts
 		conds   []interface{}
 	}
@@ -231,7 +233,8 @@ func TestPaginateStorage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotPage, gotNbt, err := PaginateStorage[orchestrator.CloudService](tt.args.req, tt.args.storage, tt.args.opts, tt.args.conds...)
+			gotPage, gotNbt, err := PaginateStorage[orchestrator.CloudService](tt.args.req, tt.args.storage,
+				tt.args.orderBy, tt.args.asc, tt.args.opts, tt.args.conds...)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("PaginateStorage() error = %v, wantErr %v", err, tt.wantErr)
 				return

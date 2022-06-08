@@ -30,12 +30,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListAssessmentResultsResponse'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
         post:
             tags:
                 - Orchestrator
@@ -54,12 +48,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/StoreAssessmentResultResponse'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/assessment_tools:
         get:
             tags:
@@ -90,12 +78,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListAssessmentToolsResponse'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
         post:
             tags:
                 - Orchestrator
@@ -114,12 +96,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/AssessmentTool'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/assessment_tools/{toolId}:
         get:
             tags:
@@ -139,12 +115,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/AssessmentTool'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
         put:
             tags:
                 - Orchestrator
@@ -169,12 +139,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/AssessmentTool'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
         delete:
             tags:
                 - Orchestrator
@@ -192,12 +156,6 @@ paths:
                 "200":
                     description: OK
                     content: {}
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/certificates:
         get:
             tags:
@@ -214,6 +172,14 @@ paths:
                   in: query
                   schema:
                     type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
             responses:
                 "200":
                     description: OK
@@ -221,12 +187,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListCertificatesResponse'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
         post:
             tags:
                 - Orchestrator
@@ -245,12 +205,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Certificate'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/certificates/{certificateId}:
         get:
             tags:
@@ -270,12 +224,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Certificate'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
         put:
             tags:
                 - Orchestrator
@@ -300,12 +248,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Certificate'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
         delete:
             tags:
                 - Orchestrator
@@ -321,12 +263,6 @@ paths:
                 "200":
                     description: OK
                     content: {}
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/cloud_services:
         get:
             tags:
@@ -343,6 +279,14 @@ paths:
                   in: query
                   schema:
                     type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
             responses:
                 "200":
                     description: OK
@@ -350,12 +294,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListCloudServicesResponse'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
         post:
             tags:
                 - Orchestrator
@@ -374,12 +312,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/CloudService'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/cloud_services/{serviceId}:
         get:
             tags:
@@ -399,12 +331,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/CloudService'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
         put:
             tags:
                 - Orchestrator
@@ -429,12 +355,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/CloudService'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
         delete:
             tags:
                 - Orchestrator
@@ -450,12 +370,6 @@ paths:
                 "200":
                     description: OK
                     content: {}
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/cloud_services/{serviceId}/metric_configurations:
         get:
             tags:
@@ -477,12 +391,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListMetricConfigurationResponse'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/cloud_services/{serviceId}/metric_configurations/{metricId}:
         get:
             tags:
@@ -509,12 +417,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/MetricConfiguration'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
         put:
             tags:
                 - Orchestrator
@@ -546,12 +448,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/MetricConfiguration'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/metrics:
         get:
             tags:
@@ -568,6 +464,14 @@ paths:
                   in: query
                   schema:
                     type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
             responses:
                 "200":
                     description: OK
@@ -575,12 +479,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListMetricsResponse'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
         post:
             tags:
                 - Orchestrator
@@ -599,12 +497,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Metric'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/metrics/{metricId}:
         get:
             tags:
@@ -624,12 +516,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Metric'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
         put:
             tags:
                 - Orchestrator
@@ -654,12 +540,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Metric'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/metrics/{metricId}/implementation:
         get:
             tags:
@@ -683,12 +563,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/MetricImplementation'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
         put:
             tags:
                 - Orchestrator
@@ -713,12 +587,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/MetricImplementation'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/requirements:
         get:
             tags:
@@ -734,6 +602,14 @@ paths:
                   in: query
                   schema:
                     type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
             responses:
                 "200":
                     description: OK
@@ -741,12 +617,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListRequirementsResponse'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
 components:
     schemas:
         AllowedValues:
@@ -755,8 +625,19 @@ components:
                 values:
                     type: array
                     items:
-                        $ref: '#/components/schemas/GoogleProtobufValue'
+                        $ref: '#/components/schemas/AnyJSONValue'
             description: Defines a range
+        AnyJSONValue:
+            oneOf:
+                - type: string
+                - type: number
+                - type: integer
+                - type: boolean
+                - type: object
+                - type: array
+                  items:
+                    $ref: '#/components/schemas/AnyJSONValue'
+            description: AnyJSONValue is a "catch all" type that can hold any JSON value, except null as this is not allowed in OpenAPI
         AssessmentResult:
             type: object
             properties:
@@ -766,7 +647,7 @@ components:
                 timestamp:
                     type: string
                     description: Time of assessment
-                    format: date-time
+                    format: RFC3339
                 metricId:
                     type: string
                     description: Reference to the metric the assessment was based on
@@ -850,16 +731,6 @@ components:
                     type: array
                     items:
                         type: string
-        GoogleProtobufAny:
-            type: object
-            properties:
-                '@type':
-                    type: string
-                    description: The type of the serialized message.
-            additionalProperties: true
-            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
-        GoogleProtobufValue:
-            description: Represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values.
         ListAssessmentResultsResponse:
             type: object
             properties:
@@ -956,14 +827,14 @@ components:
                     type: string
                     description: The operator to compare the metric, such as == or >
                 targetValue:
-                    $ref: '#/components/schemas/GoogleProtobufValue'
+                    $ref: '#/components/schemas/AnyJSONValue'
                 isDefault:
                     type: boolean
                     description: Whether this configuration is a default configuration
                 updatedAt:
                     type: string
                     description: The last time of update
-                    format: date-time
+                    format: RFC3339
             description: Defines the operator and a target value for an individual metric
         MetricImplementation:
             type: object
@@ -984,7 +855,7 @@ components:
                 updatedAt:
                     type: string
                     description: The last time of update
-                    format: date-time
+                    format: RFC3339
             description: MetricImplementation defines the implementation of an individual metric.
         MinMax:
             type: object
@@ -1004,7 +875,7 @@ components:
                 values:
                     type: array
                     items:
-                        $ref: '#/components/schemas/GoogleProtobufValue'
+                        $ref: '#/components/schemas/AnyJSONValue'
             description: Defines a range of values in a pre-defined order from the lowest to the highest.
         Range:
             type: object
@@ -1050,22 +921,6 @@ components:
                     type: string
                     description: Reference to the certificate
             description: A state of a certificate at a given time
-        Status:
-            type: object
-            properties:
-                code:
-                    type: integer
-                    description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
-                    format: int32
-                message:
-                    type: string
-                    description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
-                details:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/GoogleProtobufAny'
-                    description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
-            description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
         StoreAssessmentResultResponse:
             type: object
             properties:
