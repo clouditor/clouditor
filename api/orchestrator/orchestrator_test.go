@@ -29,6 +29,9 @@ import (
 	"database/sql/driver"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/runtime/protoimpl"
 )
 
 func TestCloudService_Requirements_Scan(t *testing.T) {
@@ -118,6 +121,59 @@ func TestCloudService_Requirements_Value(t *testing.T) {
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("CloudService_Requirements.Value() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestListCertificatesRequest_Validate(t *testing.T) {
+	type fields struct {
+		state         protoimpl.MessageState
+		sizeCache     protoimpl.SizeCache
+		unknownFields protoimpl.UnknownFields
+		PageSize      int32
+		PageToken     string
+		OrderBy       string
+		Asc           bool
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Valid",
+			fields: fields{
+				OrderBy: "Id",
+				Asc:     true,
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Nil(t, err)
+			},
+		},
+		{
+			name: "Invalid",
+			fields: fields{
+				OrderBy: "notAField",
+				Asc:     true,
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Contains(t, err.Error(), ErrInvalidColumnName.Error())
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := &ListCertificatesRequest{
+				state:         tt.fields.state,
+				sizeCache:     tt.fields.sizeCache,
+				unknownFields: tt.fields.unknownFields,
+				PageSize:      tt.fields.PageSize,
+				PageToken:     tt.fields.PageToken,
+				OrderBy:       tt.fields.OrderBy,
+				Asc:           tt.fields.Asc,
+			}
+			err := req.Validate()
+			tt.wantErr(t, err)
 		})
 	}
 }

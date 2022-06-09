@@ -29,18 +29,23 @@ import (
 	"context"
 	"database/sql/driver"
 	"errors"
+	"fmt"
+	"reflect"
 	"strings"
+
+	"k8s.io/utils/strings/slices"
 )
 
 type CloudServiceHookFunc func(ctx context.Context, cld *CloudService, err error)
 
 var (
-	ErrRequestIsNil     = errors.New("request is empty")
-	ErrCertificateIsNil = errors.New("certificate is empty")
-	ErrServiceIsNil     = errors.New("service is empty")
-	ErrNameIsMissing    = errors.New("service name is empty")
-	ErrIDIsMissing      = errors.New("service ID is empty")
-	ErrCertIDIsMissing  = errors.New("certificate ID is empty")
+	ErrRequestIsNil      = errors.New("request is empty")
+	ErrCertificateIsNil  = errors.New("certificate is empty")
+	ErrServiceIsNil      = errors.New("service is empty")
+	ErrNameIsMissing     = errors.New("service name is empty")
+	ErrIDIsMissing       = errors.New("service ID is empty")
+	ErrCertIDIsMissing   = errors.New("certificate ID is empty")
+	ErrInvalidColumnName = errors.New("column name is invalid")
 )
 
 // Value implements https://pkg.go.dev/database/sql/driver#Valuer to indicate
@@ -70,4 +75,31 @@ func (c *CloudService_Requirements) Scan(value interface{}) error {
 // this struct will be serialized into a database using GORM.
 func (*CloudService_Requirements) GormDataType() string {
 	return "string"
+}
+
+func (req *ListCertificatesRequest) Validate() (err error) {
+	if req == nil {
+		err = ErrRequestIsNil
+		return
+	}
+	// TODO(lebogg): Extract to method GetFieldNames (and move it to internal)
+	// TODO(lebogg): Only exported fields
+	var whitelist []string
+	t := reflect.TypeOf(struct{ Certificate }{})
+	fields := reflect.VisibleFields(t)
+	for _, f := range fields {
+		fmt.Println(f)
+		whitelist = append(whitelist, f.Name)
+	}
+	fmt.Println(whitelist)
+	if !slices.Contains(whitelist, req.OrderBy) {
+		err = ErrInvalidColumnName
+		return
+	}
+	return
+
+}
+
+func GetFieldNames(aStruct interface{}) (fieldNames []string) {
+	return
 }
