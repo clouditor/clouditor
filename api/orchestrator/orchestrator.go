@@ -84,7 +84,7 @@ func (req *ListCertificatesRequest) Validate() (err error) {
 	}
 	// TODO(lebogg): Extract to method GetFieldNames (and move it to internal)
 	// TODO(lebogg): Only exported fields
-	var whitelist []string
+	whitelist := []string{""}
 	t := reflect.TypeOf(struct{ Certificate }{})
 	fields := reflect.VisibleFields(t)
 	for _, f := range fields {
