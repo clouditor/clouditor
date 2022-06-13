@@ -37,6 +37,7 @@ import (
 	"sync"
 	"testing"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil/clitest"
@@ -610,7 +611,7 @@ func Test_CreateCertificate(t *testing.T) {
 				nil,
 			},
 			nil,
-			orchestrator.ErrRequestIsNil,
+			api.ErrRequestIsNil,
 			codes.InvalidArgument,
 		},
 		{
@@ -763,7 +764,7 @@ func Test_GetCertificate(t *testing.T) {
 			"invalid request",
 			nil,
 			nil,
-			status.Error(codes.InvalidArgument, orchestrator.ErrRequestIsNil.Error()),
+			status.Error(codes.InvalidArgument, api.ErrRequestIsNil.Error()),
 		},
 		{
 			"certificate not found",
@@ -835,7 +836,7 @@ func Test_ListCertificates(t *testing.T) {
 	listCertificatesResponse, err = orchestratorService.ListCertificates(context.Background(),
 		&orchestrator.ListCertificatesRequest{OrderBy: "not a field"})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
-	assert.Contains(t, err.Error(), orchestrator.ErrInvalidColumnName.Error())
+	assert.Contains(t, err.Error(), api.ErrInvalidColumnName.Error())
 }
 
 func TestCloudServiceHooks(t *testing.T) {

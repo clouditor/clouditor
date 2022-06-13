@@ -34,6 +34,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
@@ -285,7 +286,7 @@ func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetrics
 	res = new(orchestrator.ListMetricsResponse)
 
 	// Validate the request
-	if err = req.Validate(); err != nil {
+	if err = api.ValidateListReq(req, assessment.Metric{}); err != nil {
 		err = fmt.Errorf("invalid request: %w", err)
 		log.Error(err)
 		err = status.Errorf(codes.InvalidArgument, "%v", err)

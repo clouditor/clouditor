@@ -33,6 +33,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/service"
 )
@@ -80,6 +81,14 @@ func (svc *Service) loadRequirements() (err error) {
 // returning a list of requirements
 func (svc *Service) ListRequirements(_ context.Context, req *orchestrator.ListRequirementsRequest) (res *orchestrator.ListRequirementsResponse, err error) {
 	res = new(orchestrator.ListRequirementsResponse)
+
+	// Validate the request
+	if err = api.ValidateListReq(req, orchestrator.Requirement{}); err != nil {
+		err = fmt.Errorf("invalid request: %w", err)
+		log.Error(err)
+		err = status.Errorf(codes.InvalidArgument, "%v", err)
+		return
+	}
 
 	// Paginate the requirements according to the request
 	res.Requirements, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Requirement](req, svc.storage,

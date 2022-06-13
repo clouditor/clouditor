@@ -30,6 +30,7 @@ import (
 	"errors"
 	"fmt"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
@@ -48,7 +49,7 @@ const (
 
 func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.RegisterCloudServiceRequest) (service *orchestrator.CloudService, err error) {
 	if req == nil {
-		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrRequestIsNil.Error())
+		return nil, status.Errorf(codes.InvalidArgument, api.ErrRequestIsNil.Error())
 	}
 	if req.Service == nil {
 		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrServiceIsNil.Error())
@@ -79,7 +80,7 @@ func (svc *Service) ListCloudServices(_ context.Context, req *orchestrator.ListC
 	res = new(orchestrator.ListCloudServicesResponse)
 
 	// Validate tne request
-	if err = req.Validate(); err != nil {
+	if err = api.ValidateListReq(req, orchestrator.CloudService{}); err != nil {
 		err = fmt.Errorf("invalid request: %w", err)
 		log.Error(err)
 		err = status.Errorf(codes.InvalidArgument, "%v", err)
@@ -99,7 +100,7 @@ func (svc *Service) ListCloudServices(_ context.Context, req *orchestrator.ListC
 // GetCloudService implements method for OrchestratorServer interface for getting a cloud service with provided id
 func (s *Service) GetCloudService(_ context.Context, req *orchestrator.GetCloudServiceRequest) (response *orchestrator.CloudService, err error) {
 	if req == nil {
-		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrRequestIsNil.Error())
+		return nil, status.Errorf(codes.InvalidArgument, api.ErrRequestIsNil.Error())
 	}
 	if req.ServiceId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrIDIsMissing.Error())

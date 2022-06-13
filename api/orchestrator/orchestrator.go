@@ -30,23 +30,16 @@ import (
 	"database/sql/driver"
 	"errors"
 	"strings"
-
-	"k8s.io/utils/strings/slices"
-
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/internal/util"
 )
 
 type CloudServiceHookFunc func(ctx context.Context, cld *CloudService, err error)
 
 var (
-	ErrRequestIsNil      = errors.New("request is empty")
-	ErrCertificateIsNil  = errors.New("certificate is empty")
-	ErrServiceIsNil      = errors.New("service is empty")
-	ErrNameIsMissing     = errors.New("service name is empty")
-	ErrIDIsMissing       = errors.New("service ID is empty")
-	ErrCertIDIsMissing   = errors.New("certificate ID is empty")
-	ErrInvalidColumnName = errors.New("column name is invalid")
+	ErrCertificateIsNil = errors.New("certificate is empty")
+	ErrServiceIsNil     = errors.New("service is empty")
+	ErrNameIsMissing    = errors.New("service name is empty")
+	ErrIDIsMissing      = errors.New("service ID is empty")
+	ErrCertIDIsMissing  = errors.New("certificate ID is empty")
 )
 
 // Value implements https://pkg.go.dev/database/sql/driver#Valuer to indicate
@@ -76,64 +69,4 @@ func (c *CloudService_Requirements) Scan(value interface{}) error {
 // this struct will be serialized into a database using GORM.
 func (*CloudService_Requirements) GormDataType() string {
 	return "string"
-}
-
-// Validate validates a ListCertificatesRequest
-func (req *ListCertificatesRequest) Validate() (err error) {
-	// req must be non-nil
-	if req == nil {
-		err = ErrRequestIsNil
-		return
-	}
-
-	// Avoid DB injections by whitelisting the valid orderBy statements
-	whitelist, err := util.GetFieldNames(Certificate{})
-	// Add empty string indicating no explicit ordering
-	whitelist = append(whitelist, "")
-	if !slices.Contains(whitelist, req.OrderBy) {
-		err = ErrInvalidColumnName
-		return
-	}
-
-	return
-}
-
-// Validate validates a ListCloudServicesRequest
-func (req *ListCloudServicesRequest) Validate() (err error) {
-	// req must be non-nil
-	if req == nil {
-		err = ErrRequestIsNil
-		return
-	}
-
-	// Avoid DB injections by whitelisting the valid orderBy statements
-	whitelist, err := util.GetFieldNames(CloudService{})
-	// Add empty string indicating no explicit ordering
-	whitelist = append(whitelist, "")
-	if !slices.Contains(whitelist, req.OrderBy) {
-		err = ErrInvalidColumnName
-		return
-	}
-
-	return
-}
-
-// Validate validates a ListMetricsRequest
-func (req *ListMetricsRequest) Validate() (err error) {
-	// req must be non-nil
-	if req == nil {
-		err = ErrRequestIsNil
-		return
-	}
-
-	// Avoid DB injections by whitelisting the valid orderBy statements
-	whitelist, err := util.GetFieldNames(assessment.Metric{})
-	// Add empty string indicating no explicit ordering
-	whitelist = append(whitelist, "")
-	if !slices.Contains(whitelist, req.OrderBy) {
-		err = ErrInvalidColumnName
-		return
-	}
-
-	return
 }
