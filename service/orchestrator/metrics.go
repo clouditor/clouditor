@@ -284,6 +284,14 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetricsRequest) (res *orchestrator.ListMetricsResponse, err error) {
 	res = new(orchestrator.ListMetricsResponse)
 
+	// Validate the request
+	if err = req.Validate(); err != nil {
+		err = fmt.Errorf("invalid request: %w", err)
+		log.Error(err)
+		err = status.Errorf(codes.InvalidArgument, "%v", err)
+		return
+	}
+
 	// Paginate the metrics according to the request
 	res.Metrics, res.NextPageToken, err = service.PaginateStorage[*assessment.Metric](req, svc.storage, req.OrderBy,
 		req.Asc, service.DefaultPaginationOpts)

@@ -33,6 +33,7 @@ import (
 
 	"k8s.io/utils/strings/slices"
 
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/internal/util"
 )
 
@@ -97,7 +98,7 @@ func (req *ListCertificatesRequest) Validate() (err error) {
 	return
 }
 
-// Validate validates a ListCertificatesRequest
+// Validate validates a ListCloudServicesRequest
 func (req *ListCloudServicesRequest) Validate() (err error) {
 	// req must be non-nil
 	if req == nil {
@@ -107,6 +108,26 @@ func (req *ListCloudServicesRequest) Validate() (err error) {
 
 	// Avoid DB injections by whitelisting the valid orderBy statements
 	whitelist, err := util.GetFieldNames(CloudService{})
+	// Add empty string indicating no explicit ordering
+	whitelist = append(whitelist, "")
+	if !slices.Contains(whitelist, req.OrderBy) {
+		err = ErrInvalidColumnName
+		return
+	}
+
+	return
+}
+
+// Validate validates a ListMetricsRequest
+func (req *ListMetricsRequest) Validate() (err error) {
+	// req must be non-nil
+	if req == nil {
+		err = ErrRequestIsNil
+		return
+	}
+
+	// Avoid DB injections by whitelisting the valid orderBy statements
+	whitelist, err := util.GetFieldNames(assessment.Metric{})
 	// Add empty string indicating no explicit ordering
 	whitelist = append(whitelist, "")
 	if !slices.Contains(whitelist, req.OrderBy) {
