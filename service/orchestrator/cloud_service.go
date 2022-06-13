@@ -78,6 +78,14 @@ func (svc *Service) ListCloudServices(_ context.Context, req *orchestrator.ListC
 	res *orchestrator.ListCloudServicesResponse, err error) {
 	res = new(orchestrator.ListCloudServicesResponse)
 
+	// Validate tne request
+	if err = req.Validate(); err != nil {
+		err = fmt.Errorf("invalid request: %w", err)
+		log.Error(err)
+		err = status.Errorf(codes.InvalidArgument, "%v", err)
+		return
+	}
+
 	// Paginate the cloud services according to the request
 	res.Services, res.NextPageToken, err = service.PaginateStorage[*orchestrator.CloudService](req, svc.storage,
 		req.OrderBy, req.Asc, service.DefaultPaginationOpts)

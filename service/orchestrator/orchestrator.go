@@ -334,7 +334,7 @@ func (svc *Service) GetCertificate(_ context.Context, req *orchestrator.GetCerti
 
 // ListCertificates implements method for getting a certificate, e.g. to show its state in the UI
 func (svc *Service) ListCertificates(_ context.Context, req *orchestrator.ListCertificatesRequest) (res *orchestrator.ListCertificatesResponse, err error) {
-	// Validate request
+	// Validate the request
 	if err = req.Validate(); err != nil {
 		err = fmt.Errorf("invalid request: %w", err)
 		log.Error(err)

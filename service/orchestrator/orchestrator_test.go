@@ -830,6 +830,12 @@ func Test_ListCertificates(t *testing.T) {
 	assert.NotNil(t, listCertificatesResponse.Certificates)
 	assert.NotEmpty(t, listCertificatesResponse.Certificates)
 	assert.Equal(t, len(listCertificatesResponse.Certificates), 1)
+
+	// 3rd case: Invalid request
+	listCertificatesResponse, err = orchestratorService.ListCertificates(context.Background(),
+		&orchestrator.ListCertificatesRequest{OrderBy: "not a field"})
+	assert.Equal(t, codes.InvalidArgument, status.Code(err))
+	assert.Contains(t, err.Error(), orchestrator.ErrInvalidColumnName.Error())
 }
 
 func TestCloudServiceHooks(t *testing.T) {

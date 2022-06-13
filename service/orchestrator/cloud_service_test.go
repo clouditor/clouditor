@@ -120,6 +120,14 @@ func TestService_ListCloudServices(t *testing.T) {
 	assert.NotNil(t, listCloudServicesResponse.Services)
 	assert.NotEmpty(t, listCloudServicesResponse.Services)
 	assert.Equal(t, len(listCloudServicesResponse.Services), 1)
+
+	// 3rd case: Invalid request
+	listCloudServicesResponse, err = orchestratorService.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{
+		OrderBy: "not a field",
+	})
+	assert.Equal(t, codes.InvalidArgument, status.Code(err))
+	assert.Contains(t, err.Error(), orchestrator.ErrInvalidColumnName.Error())
+
 }
 
 func TestGetCloudService(t *testing.T) {

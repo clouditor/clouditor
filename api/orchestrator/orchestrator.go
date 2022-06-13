@@ -96,3 +96,23 @@ func (req *ListCertificatesRequest) Validate() (err error) {
 
 	return
 }
+
+// Validate validates a ListCertificatesRequest
+func (req *ListCloudServicesRequest) Validate() (err error) {
+	// req must be non-nil
+	if req == nil {
+		err = ErrRequestIsNil
+		return
+	}
+
+	// Avoid DB injections by whitelisting the valid orderBy statements
+	whitelist, err := util.GetFieldNames(CloudService{})
+	// Add empty string indicating no explicit ordering
+	whitelist = append(whitelist, "")
+	if !slices.Contains(whitelist, req.OrderBy) {
+		err = ErrInvalidColumnName
+		return
+	}
+
+	return
+}
