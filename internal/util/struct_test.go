@@ -9,7 +9,8 @@ import (
 
 func TestGetFieldNames(t *testing.T) {
 	type someStruct struct {
-		Name   string
+		Name string
+		// TODO(lebogg): When unexported, linter throws err 'field `secret` is unused (unused)'
 		Secret int
 	}
 	type args struct {

@@ -137,9 +137,19 @@ func TestListCertificatesRequest_Validate(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Valid",
+			name: "Valid with id",
 			fields: fields{
 				OrderBy: "Id",
+				Asc:     true,
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Nil(t, err)
+			},
+		},
+		{
+			name: "Valid with empty string",
+			fields: fields{
+				OrderBy: "",
 				Asc:     true,
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
