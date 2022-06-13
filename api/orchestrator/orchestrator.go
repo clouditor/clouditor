@@ -29,11 +29,11 @@ import (
 	"context"
 	"database/sql/driver"
 	"errors"
-	"fmt"
-	"reflect"
 	"strings"
 
 	"k8s.io/utils/strings/slices"
+
+	"clouditor.io/clouditor/internal/util"
 )
 
 type CloudServiceHookFunc func(ctx context.Context, cld *CloudService, err error)
@@ -77,29 +77,22 @@ func (*CloudService_Requirements) GormDataType() string {
 	return "string"
 }
 
+// Validate validates a ListCertificatesRequest
 func (req *ListCertificatesRequest) Validate() (err error) {
+	// req must be non-nil
 	if req == nil {
 		err = ErrRequestIsNil
 		return
 	}
-	// TODO(lebogg): Extract to method GetFieldNames (and move it to internal)
-	// TODO(lebogg): Only exported fields
-	whitelist := []string{""}
-	t := reflect.TypeOf(struct{ Certificate }{})
-	fields := reflect.VisibleFields(t)
-	for _, f := range fields {
-		fmt.Println(f)
-		whitelist = append(whitelist, f.Name)
-	}
-	fmt.Println(whitelist)
+
+	// Avoid DB injections by whitelisting the valid orderBy statements
+	whitelist, err := util.GetFieldNames(Certificate{})
+	// Add empty string indicating no explicit ordering
+	whitelist = append(whitelist, "")
 	if !slices.Contains(whitelist, req.OrderBy) {
 		err = ErrInvalidColumnName
 		return
 	}
-	return
 
-}
-
-func GetFieldNames(aStruct interface{}) (fieldNames []string) {
 	return
 }
