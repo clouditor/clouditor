@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGetFieldNames(t *testing.T) {
 	type someStruct struct {
 		Name   string
-		secret int
+		Secret int
 	}
 	type args struct {
 		aStruct any
@@ -39,7 +38,7 @@ func TestGetFieldNames(t *testing.T) {
 		{
 			name:           "successful",
 			args:           args{aStruct: someStruct{}},
-			wantFieldNames: []string{"Name", "secret"},
+			wantFieldNames: []string{"Name", "Secret"},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				return assert.NoError(t, err)
 			},
@@ -50,11 +49,6 @@ func TestGetFieldNames(t *testing.T) {
 			gotFieldNames, err := GetFieldNames(tt.args.aStruct)
 			if !tt.wantErr(t, err, fmt.Sprintf("GetFieldNames(%v)", tt.args.aStruct)) {
 				return
-			}
-			// Type assertion avoids linter err 'field `secret` is unused (unused)'
-			s, ok := tt.args.aStruct.(someStruct)
-			if ok {
-				logrus.Debug(s.secret)
 			}
 			assert.Equalf(t, tt.wantFieldNames, gotFieldNames, "GetFieldNames(%v)", tt.args.aStruct)
 		})
