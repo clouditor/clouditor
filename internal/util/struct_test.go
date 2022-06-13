@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -51,7 +52,10 @@ func TestGetFieldNames(t *testing.T) {
 				return
 			}
 			// Type assertion avoids linter err 'field `secret` is unused (unused)'
-			_, _ = tt.args.aStruct.(someStruct)
+			s, ok := tt.args.aStruct.(someStruct)
+			if ok {
+				logrus.Debug(s.secret)
+			}
 			assert.Equalf(t, tt.wantFieldNames, gotFieldNames, "GetFieldNames(%v)", tt.args.aStruct)
 		})
 	}
