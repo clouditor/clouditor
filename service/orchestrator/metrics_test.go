@@ -475,7 +475,7 @@ func TestService_ListMetrics(t *testing.T) {
 	assert.NotEmpty(t, response.Metrics)
 
 	// Invalid request
-	response, err = service.ListMetrics(context.TODO(), &orchestrator.ListMetricsRequest{OrderBy: "not a field"})
+	_, err = service.ListMetrics(context.TODO(), &orchestrator.ListMetricsRequest{OrderBy: "not a field"})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
 	assert.Contains(t, err.Error(), api.ErrInvalidColumnName.Error())
 

@@ -833,7 +833,7 @@ func Test_ListCertificates(t *testing.T) {
 	assert.Equal(t, len(listCertificatesResponse.Certificates), 1)
 
 	// 3rd case: Invalid request
-	listCertificatesResponse, err = orchestratorService.ListCertificates(context.Background(),
+	_, err = orchestratorService.ListCertificates(context.Background(),
 		&orchestrator.ListCertificatesRequest{OrderBy: "not a field"})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
 	assert.Contains(t, err.Error(), api.ErrInvalidColumnName.Error())

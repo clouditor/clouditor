@@ -123,7 +123,7 @@ func TestService_ListCloudServices(t *testing.T) {
 	assert.Equal(t, len(listCloudServicesResponse.Services), 1)
 
 	// 3rd case: Invalid request
-	listCloudServicesResponse, err = orchestratorService.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{
+	_, err = orchestratorService.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{
 		OrderBy: "not a field",
 	})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
