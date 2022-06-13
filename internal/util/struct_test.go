@@ -51,7 +51,7 @@ func TestGetFieldNames(t *testing.T) {
 				return
 			}
 			// Type assertion avoids linter err 'field `secret` is unused (unused)'
-			_ = tt.args.aStruct.(someStruct)
+			_, _ = tt.args.aStruct.(someStruct)
 			assert.Equalf(t, tt.wantFieldNames, gotFieldNames, "GetFieldNames(%v)", tt.args.aStruct)
 		})
 	}
