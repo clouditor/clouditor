@@ -27,7 +27,6 @@ package orchestrator
 
 import (
 	"database/sql/driver"
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -236,7 +235,7 @@ func TestListCloudServicesRequest_Validate(t *testing.T) {
 				OrderBy:   tt.fields.OrderBy,
 				Asc:       tt.fields.Asc,
 			}
-			tt.wantErr(t, api.ValidateListReq(req, CloudService{}), fmt.Sprintf("Validate()"))
+			tt.wantErr(t, api.ValidateListReq(req, CloudService{}), "Validate()")
 		})
 	}
 }
@@ -292,7 +291,7 @@ func TestListMetricsRequest_Validate(t *testing.T) {
 				OrderBy:   tt.fields.OrderBy,
 				Asc:       tt.fields.Asc,
 			}
-			tt.wantErr(t, api.ValidateListReq(req, assessment.Metric{}), fmt.Sprintf("Validate()"))
+			tt.wantErr(t, api.ValidateListReq(req, assessment.Metric{}), "Validate()")
 		})
 	}
 }
@@ -358,9 +357,7 @@ func TestListRequirementsRequest_Validate(t *testing.T) {
 				OrderBy:   tt.fields.OrderBy,
 				Asc:       tt.fields.Asc,
 			}
-			fmt.Println(req.OrderBy)
-			fmt.Println(req.GetOrderBy())
-			tt.wantErr(t, api.ValidateListReq(req, Requirement{}), fmt.Sprintf("Validate()"))
+			tt.wantErr(t, api.ValidateListReq(req, Requirement{}), "Validate()")
 		})
 	}
 }

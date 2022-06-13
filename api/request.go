@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
 
 	"google.golang.org/protobuf/proto"
 	"k8s.io/utils/strings/slices"
@@ -33,7 +32,6 @@ func ValidateListReq(req ListRequest, responseType any) (err error) {
 	whitelist, err := util.GetFieldNames(responseType)
 	// Add empty string indicating no explicit ordering
 	whitelist = append(whitelist, "")
-	fmt.Println(whitelist)
 	if !slices.Contains(whitelist, req.GetOrderBy()) {
 		err = ErrInvalidColumnName
 		return
