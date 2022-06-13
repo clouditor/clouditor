@@ -31,7 +31,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/protobuf/runtime/protoimpl"
 )
 
 func TestCloudService_Requirements_Scan(t *testing.T) {
@@ -127,13 +126,10 @@ func TestCloudService_Requirements_Value(t *testing.T) {
 
 func TestListCertificatesRequest_Validate(t *testing.T) {
 	type fields struct {
-		state         protoimpl.MessageState
-		sizeCache     protoimpl.SizeCache
-		unknownFields protoimpl.UnknownFields
-		PageSize      int32
-		PageToken     string
-		OrderBy       string
-		Asc           bool
+		PageSize  int32
+		PageToken string
+		OrderBy   string
+		Asc       bool
 	}
 	tests := []struct {
 		name    string
@@ -164,13 +160,10 @@ func TestListCertificatesRequest_Validate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			req := &ListCertificatesRequest{
-				state:         tt.fields.state,
-				sizeCache:     tt.fields.sizeCache,
-				unknownFields: tt.fields.unknownFields,
-				PageSize:      tt.fields.PageSize,
-				PageToken:     tt.fields.PageToken,
-				OrderBy:       tt.fields.OrderBy,
-				Asc:           tt.fields.Asc,
+				PageSize:  tt.fields.PageSize,
+				PageToken: tt.fields.PageToken,
+				OrderBy:   tt.fields.OrderBy,
+				Asc:       tt.fields.Asc,
 			}
 			err := req.Validate()
 			tt.wantErr(t, err)
