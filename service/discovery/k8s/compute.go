@@ -60,16 +60,19 @@ func (d k8sComputeDiscovery) List() ([]voc.IsCloudResource, error) {
 
 	for i := range pods.Items {
 		c := d.handlePod(&pods.Items[i])
-
 		log.Infof("Adding container %+v", c)
-
 		list = append(list, c)
+
+		v := d.handleVolume(&pods.Items[i])
+		log.Infof("Adding volume %+v", v)
+		list = append(list, v)
+
 	}
 
 	return list, nil
 }
 
-func (k8sComputeDiscovery) handlePod(pod *v1.Pod) voc.IsCompute {
+func (k8sComputeDiscovery) handlePod(pod *v1.Pod) *voc.Container {
 	r := &voc.Container{
 		Compute: &voc.Compute{
 			Resource: &voc.Resource{
@@ -83,9 +86,7 @@ func (k8sComputeDiscovery) handlePod(pod *v1.Pod) voc.IsCompute {
 			}},
 	}
 
-	// Currently, the container has no network interface in the Ontology
-	// // TODO Exists a namespace ID?
-	// r.NetworkInterface = append(r.NetworkInterfaces, voc.ResourceID(pod.Namespace))
+	r.NetworkInterface = append(r.NetworkInterface, voc.ResourceID(pod.Namespace))
 
 	return r
 
@@ -93,4 +94,35 @@ func (k8sComputeDiscovery) handlePod(pod *v1.Pod) voc.IsCompute {
 
 func getContainerResourceID(pod *v1.Pod) string {
 	return fmt.Sprintf("/namespaces/%s/containers/%s", pod.Namespace, pod.Name)
+}
+
+// handleVolume return all persistens volumes connected to a pod
+func (k8sComputeDiscovery) handleVolume(pod *v1.Pod) *voc.BlockStorage {
+
+	var name string
+
+	for i := range pod.Spec.Volumes {
+		if pod.Spec.Volumes[i].PersistentVolumeClaim != nil {
+			name = pod.Spec.Volumes[i].PersistentVolumeClaim.ClaimName
+		}
+	}
+
+	// TODO(anatheka): Can we get all volumes instead of the connected persistent volume claims
+	// Difference between persistend volume claim,persistent volumes and storage classes
+	s := &voc.BlockStorage{
+		Storage: &voc.Storage{
+			Resource: &voc.Resource{
+				ID:           voc.ResourceID(getContainerResourceID(pod)), //Fix
+				Name:         name,
+				CreationTime: pod.CreationTimestamp.Unix(), // Fix
+				Type:         []string{"BlockStorage", "Storage", "Resource"},
+				GeoLocation: voc.GeoLocation{
+					Region: "", // TODO(all) Add region to k8s volume
+				},
+			},
+			AtRestEncryption: &voc.AtRestEncryption{},
+		},
+	}
+
+	return s
 }
