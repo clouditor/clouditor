@@ -65,7 +65,7 @@ func (d k8sComputeDiscovery) List() ([]voc.IsCloudResource, error) {
 
 		v := d.handleVolume(&pods.Items[i])
 		log.Infof("Adding volume %+v", v)
-		list = append(list, v)
+		list = append(list, v...)
 
 	}
 
@@ -96,24 +96,17 @@ func getContainerResourceID(pod *v1.Pod) string {
 	return fmt.Sprintf("/namespaces/%s/containers/%s", pod.Namespace, pod.Name)
 }
 
-// handleVolume return all persistens volumes connected to a pod
-func (k8sComputeDiscovery) handleVolume(pod *v1.Pod) *voc.BlockStorage {
+// handleVolume returns all persistens volume claims connected to a pod
+func (k8sComputeDiscovery) handleVolume(pod *v1.Pod) []voc.IsCloudResource {
 
-	var name string
+	var volumes []voc.IsCloudResource
 
-	for i := range pod.Spec.Volumes {
-		if pod.Spec.Volumes[i].PersistentVolumeClaim != nil {
-			name = pod.Spec.Volumes[i].PersistentVolumeClaim.ClaimName
-		}
-	}
-
-	// TODO(anatheka): Can we get all volumes instead of the connected persistent volume claims
-	// Difference between persistend volume claim,persistent volumes and storage classes
-	s := &voc.BlockStorage{
-		Storage: &voc.Storage{
+	// TODO(all): Do we have to differentiate between between persistend volume claim,persistent volumes and storage classes?
+	for _, vol := range pod.Spec.Volumes {
+		s := &voc.Storage{
 			Resource: &voc.Resource{
-				ID:           voc.ResourceID(getContainerResourceID(pod)), //Fix
-				Name:         name,
+				ID:           voc.ResourceID(vol.Name), //Fix
+				Name:         vol.Name,
 				CreationTime: pod.CreationTimestamp.Unix(), // Fix
 				Type:         []string{"BlockStorage", "Storage", "Resource"},
 				GeoLocation: voc.GeoLocation{
@@ -121,8 +114,23 @@ func (k8sComputeDiscovery) handleVolume(pod *v1.Pod) *voc.BlockStorage {
 				},
 			},
 			AtRestEncryption: &voc.AtRestEncryption{},
-		},
+		}
+
+		// TODO(all): Define all volume types
+		if vol.AWSElasticBlockStore != nil || vol.AzureDisk != nil {
+			v := &voc.BlockStorage{
+				Storage: s,
+			}
+			volumes = append(volumes, v)
+		} else if vol.AzureFile != nil {
+			v := &voc.FileStorage{
+				Storage: s,
+			}
+			volumes = append(volumes, v)
+		} else {
+
+		}
 	}
 
-	return s
+	return volumes
 }
