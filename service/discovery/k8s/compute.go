@@ -102,6 +102,7 @@ func (k8sComputeDiscovery) handleVolume(pod *v1.Pod) []voc.IsCloudResource {
 	var volumes []voc.IsCloudResource
 
 	// TODO(all): Do we have to differentiate between between persistend volume claim,persistent volumes and storage classes?
+	// TODO(all): The atRestEncryption information we have to get directly from the related storage
 	for _, vol := range pod.Spec.Volumes {
 		s := &voc.Storage{
 			Resource: &voc.Resource{
