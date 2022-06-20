@@ -117,19 +117,43 @@ func (k8sComputeDiscovery) handleVolume(pod *v1.Pod) []voc.IsCloudResource {
 			AtRestEncryption: &voc.AtRestEncryption{},
 		}
 
+		// TODO(anatheka): Possible to use generics for the follwing if?
 		// TODO(all): Define all volume types
+		// HostPathVolumeSource
+		// GitRepoVolumeSource
+		// SecretVolumeSource
+		// ISCSIVolumeSource
+		// GlusterfsVolumeSource
+		// PersistentVolumeClaimVolumeSource
+		// RBDVolumeSource
+		// FlexVolumeSource
+		// CinderVolumeSource
+		// CephFSVolumeSource
+		// FlockerVolumeSource
+		// DownwardAPIVolumeSource
+		// FCVolumeSource
+		// ConfigMapVolumeSource
+		// VsphereVirtualDiskVolumeSource
+		// QuobyteVolumeSource
+		// PhotonPersistentDiskVolumeSource
+		// ProjectedVolumeSource
+		// PortworxVolumeSource
+		// ScaleIOVolumeSource
+		// StorageOSVolumeSource
+		// CSIVolumeSource
+		// EphemeralVolumeSource
 		if vol.AWSElasticBlockStore != nil || vol.AzureDisk != nil {
 			v := &voc.BlockStorage{
 				Storage: s,
 			}
 			volumes = append(volumes, v)
-		} else if vol.AzureFile != nil {
+		} else if vol.AzureFile != nil || vol.EmptyDir != nil || vol.GCEPersistentDisk != nil || vol.NFS != nil {
 			v := &voc.FileStorage{
 				Storage: s,
 			}
 			volumes = append(volumes, v)
 		} else {
-
+			continue
 		}
 	}
 
