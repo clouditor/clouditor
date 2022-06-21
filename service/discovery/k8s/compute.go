@@ -83,7 +83,9 @@ func (k8sComputeDiscovery) handlePod(pod *v1.Pod) *voc.Container {
 				GeoLocation: voc.GeoLocation{
 					Region: "", // TODO(all) Add region to k8s container
 				},
-			}},
+				Labels: pod.Labels,
+			},
+		},
 	}
 
 	r.NetworkInterface = append(r.NetworkInterface, voc.ResourceID(pod.Namespace))
@@ -99,7 +101,9 @@ func getContainerResourceID(pod *v1.Pod) string {
 // handleVolume returns all persistens volume claims connected to a pod
 func (k8sComputeDiscovery) handleVolume(pod *v1.Pod) []voc.IsCloudResource {
 
-	var volumes []voc.IsCloudResource
+	var (
+		volumes []voc.IsCloudResource
+	)
 
 	// TODO(all): Do we have to differentiate between between persistend volume claim,persistent volumes and storage classes?
 	// TODO(all): The atRestEncryption information we have to get directly from the related storage
@@ -119,16 +123,9 @@ func (k8sComputeDiscovery) handleVolume(pod *v1.Pod) []voc.IsCloudResource {
 
 		// TODO(anatheka): Possible to use generics for the follwing if?
 		// TODO(all): Define all volume types
-		// HostPathVolumeSource
-		// GitRepoVolumeSource
-		// SecretVolumeSource
 		// ISCSIVolumeSource
-		// GlusterfsVolumeSource
 		// PersistentVolumeClaimVolumeSource
 		// RBDVolumeSource
-		// FlexVolumeSource
-		// CinderVolumeSource
-		// CephFSVolumeSource
 		// FlockerVolumeSource
 		// DownwardAPIVolumeSource
 		// FCVolumeSource
@@ -142,12 +139,20 @@ func (k8sComputeDiscovery) handleVolume(pod *v1.Pod) []voc.IsCloudResource {
 		// StorageOSVolumeSource
 		// CSIVolumeSource
 		// EphemeralVolumeSource
-		if vol.AWSElasticBlockStore != nil || vol.AzureDisk != nil {
+
+		// Deprecated
+		// GitRepoVolumeSource is deprecated
+		// cinder - Cinder (OpenStack block storage) (deprecated in v1.18)
+		// flexVolume - FlexVolume (deprecated in v1.23)
+		// flocker - Flocker storage (deprecated in v1.22)
+		// quobyte - Quobyte volume (deprecated in v1.22)
+		// storageos - StorageOS volume (deprecated in v1.22)
+		if vol.AWSElasticBlockStore != nil || vol.AzureDisk != nil || vol.Cinder != nil || vol.FlexVolume != nil || vol.CephFS != nil || vol.Glusterfs != nil || vol.GCEPersistentDisk != nil {
 			v := &voc.BlockStorage{
 				Storage: s,
 			}
 			volumes = append(volumes, v)
-		} else if vol.AzureFile != nil || vol.EmptyDir != nil || vol.GCEPersistentDisk != nil || vol.NFS != nil {
+		} else if vol.AzureFile != nil || vol.EmptyDir != nil || vol.NFS != nil || vol.HostPath != nil || vol.Secret != nil {
 			v := &voc.FileStorage{
 				Storage: s,
 			}
