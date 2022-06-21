@@ -121,21 +121,15 @@ func (k8sComputeDiscovery) handleVolume(pod *v1.Pod) []voc.IsCloudResource {
 
 		// TODO(anatheka): Possible to use generics for the follwing if?
 		// TODO(all): Define all volume types
-		// ISCSIVolumeSource
 		// PersistentVolumeClaimVolumeSource
-		// RBDVolumeSource
-		// FlockerVolumeSource
 		// DownwardAPIVolumeSource
-		// FCVolumeSource
 		// ConfigMapVolumeSource
 		// VsphereVirtualDiskVolumeSource
 		// QuobyteVolumeSource
 		// PhotonPersistentDiskVolumeSource
 		// ProjectedVolumeSource
-		// PortworxVolumeSource
 		// ScaleIOVolumeSource
-		// StorageOSVolumeSource
-		// CSIVolumeSource
+		// CSIVolumeSource -> CSI was developed as a standard for exposing arbitrary block and file storage storage systems to containerized workloads on Container Orchestration Systems (COs) like Kubernetes. (https://kubernetes.io/blog/2019/01/15/container-storage-interface-ga/)
 		// EphemeralVolumeSource
 
 		// Deprecated
@@ -145,7 +139,7 @@ func (k8sComputeDiscovery) handleVolume(pod *v1.Pod) []voc.IsCloudResource {
 		// flocker - Flocker storage (deprecated in v1.22)
 		// quobyte - Quobyte volume (deprecated in v1.22)
 		// storageos - StorageOS volume (deprecated in v1.22)
-		if vol.AWSElasticBlockStore != nil || vol.AzureDisk != nil || vol.Cinder != nil || vol.FlexVolume != nil || vol.CephFS != nil || vol.Glusterfs != nil || vol.GCEPersistentDisk != nil {
+		if vol.AWSElasticBlockStore != nil || vol.AzureDisk != nil || vol.Cinder != nil || vol.FlexVolume != nil || vol.CephFS != nil || vol.Glusterfs != nil || vol.GCEPersistentDisk != nil || vol.RBD != nil || vol.StorageOS != nil || vol.FC != nil || vol.PortworxVolume != nil || vol.ISCSI != nil || vol.Flocker != nil {
 			v := &voc.BlockStorage{
 				Storage: s,
 			}
