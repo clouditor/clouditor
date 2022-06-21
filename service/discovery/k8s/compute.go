@@ -106,18 +106,16 @@ func (k8sComputeDiscovery) handleVolume(pod *v1.Pod) []voc.IsCloudResource {
 	)
 
 	// TODO(all): Do we have to differentiate between between persistend volume claim,persistent volumes and storage classes?
-	// TODO(all): The atRestEncryption information we have to get directly from the related storage
+	// TODO(all): The ID, region, label and atRestEncryption information we have to get directly from the related storage, but do we have access?
 	for _, vol := range pod.Spec.Volumes {
 		s := &voc.Storage{
 			Resource: &voc.Resource{
-				ID:           voc.ResourceID(vol.Name), //Fix
+				ID:           voc.ResourceID(vol.Name), // The ID we have to get directly from the related storage
 				Name:         vol.Name,
-				CreationTime: pod.CreationTimestamp.Unix(), // Fix
+				CreationTime: pod.CreationTimestamp.Unix(), // The CreationTime we have to get directly from the related storage
 				Type:         []string{"BlockStorage", "Storage", "Resource"},
-				GeoLocation: voc.GeoLocation{
-					Region: "", // TODO(all) Add region to k8s volume
-				},
 			},
+			// The AtRestEncryption we have to get directly from the related storage
 			AtRestEncryption: &voc.AtRestEncryption{},
 		}
 
