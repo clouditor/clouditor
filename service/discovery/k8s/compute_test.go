@@ -45,6 +45,7 @@ func TestListPods(t *testing.T) {
 		podName         = "my-pod"
 		podID           = "/namespaces/my-namespace/containers/my-pod"
 		podNamespace    = "my-namespace"
+		podLabel        = map[string]string{"my": "label"}
 	)
 
 	client := fake.NewSimpleClientset()
@@ -54,6 +55,7 @@ func TestListPods(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              podName,
 			CreationTimestamp: podCreationTime,
+			Labels:            podLabel,
 		},
 		Spec: corev1.PodSpec{
 			Volumes: []corev1.Volume{
@@ -90,6 +92,7 @@ func TestListPods(t *testing.T) {
 				Name:         podName,
 				CreationTime: podCreationTime.Unix(),
 				Type:         []string{"Container", "Compute", "Resource"},
+				Labels:       podLabel,
 			},
 			NetworkInterface: []voc.ResourceID{
 				voc.ResourceID(podNamespace),
