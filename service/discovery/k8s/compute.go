@@ -106,7 +106,7 @@ func (k8sComputeDiscovery) handleVolume(pod *v1.Pod) []voc.IsCloudResource {
 	)
 
 	// TODO(all): Do we have to differentiate between between persistend volume claim,persistent volumes and storage classes?
-	// TODO(all): The ID, region, label and atRestEncryption information we have to get directly from the related storage, but do we have access?
+	// TODO(all): The ID, region, label and atRestEncryption information we have to get directly from the related storage, but I think we do not have credentials for the other providers in Clouditor?
 	for _, vol := range pod.Spec.Volumes {
 		s := &voc.Storage{
 			Resource: &voc.Resource{
@@ -114,9 +114,9 @@ func (k8sComputeDiscovery) handleVolume(pod *v1.Pod) []voc.IsCloudResource {
 				Name:         vol.Name,
 				CreationTime: pod.CreationTimestamp.Unix(), // The CreationTime we have to get directly from the related storage
 				Type:         []string{"BlockStorage", "Storage", "Resource"},
+				Labels:       pod.Labels,
 			},
-			// The AtRestEncryption we have to get directly from the related storage
-			AtRestEncryption: &voc.AtRestEncryption{},
+			AtRestEncryption: &voc.AtRestEncryption{}, // Not able to get the AtRestEncryption information, that must be retrieved directly from the storage
 		}
 
 		// TODO(anatheka): Possible to use generics for the follwing if?
