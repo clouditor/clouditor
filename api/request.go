@@ -46,7 +46,7 @@ type ListRequest interface {
 	proto.Message
 }
 
-func ValidateListReq(req ListRequest, responseType any) (err error) {
+func ValidateListRequest[T any](req ListRequest) (err error) {
 	// req must be non-nil
 	if req == nil {
 		err = ErrRequestIsNil
@@ -54,7 +54,7 @@ func ValidateListReq(req ListRequest, responseType any) (err error) {
 	}
 
 	// Avoid DB injections by whitelisting the valid orderBy statements
-	whitelist, err := util.GetFieldNames(responseType)
+	whitelist, err := util.GetFieldNames[T]()
 	// Add empty string indicating no explicit ordering
 	whitelist = append(whitelist, "")
 	if !slices.Contains(whitelist, req.GetOrderBy()) {

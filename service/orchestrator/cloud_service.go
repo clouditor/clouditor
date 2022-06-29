@@ -80,7 +80,7 @@ func (svc *Service) ListCloudServices(_ context.Context, req *orchestrator.ListC
 	res = new(orchestrator.ListCloudServicesResponse)
 
 	// Validate tne request
-	if err = api.ValidateListReq(req, orchestrator.CloudService{}); err != nil {
+	if err = api.ValidateListRequest[orchestrator.CloudService](req); err != nil {
 		err = fmt.Errorf("invalid request: %w", err)
 		log.Error(err)
 		err = status.Errorf(codes.InvalidArgument, "%v", err)

@@ -8,18 +8,12 @@ import (
 var (
 	// ErrNoStruct indicates the passed argument is not a struct
 	ErrNoStruct = errors.New("no struct")
-	// ErrStructIsNil indicates the passed argument is nil
-	ErrStructIsNil = errors.New("struct is nil")
 )
 
 // GetFieldNames extracts all field names of aStruct
 // TODO(lebogg): Only take exported fields
-func GetFieldNames(aStruct any) (fieldNames []string, err error) {
-	// Check aStruct isn't nil
-	if aStruct == nil {
-		err = ErrStructIsNil
-		return
-	}
+func GetFieldNames[T any]() (fieldNames []string, err error) {
+	var aStruct T
 	// Check aStruct is a struct
 	if reflect.TypeOf(aStruct).Kind() != reflect.Struct {
 		err = ErrNoStruct
