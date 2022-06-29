@@ -29,32 +29,16 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"clouditor.io/clouditor/api/auth"
 )
 
 func TestGetFieldNames(t *testing.T) {
 	var (
 		fieldnames []string
-		err        error
 	)
-	type someStruct struct {
-		Name string
-		// TODO(lebogg): When unexported, linter throws err 'field `secret` is unused (unused)'
-		Secret int
-	}
-	// Avoid linter msg: "type `someStruct` is unused (unused)"
-	_ = someStruct{}
-
-	// Type has to be struct, not string
-	_, err = GetFieldNames[string]()
-	assert.ErrorIs(t, err, ErrNoStruct)
-
-	// Type has to be struct, not int
-	_, err = GetFieldNames[int]()
-	assert.ErrorIs(t, err, ErrNoStruct)
 
 	// Successful
-	fieldnames, err = GetFieldNames[someStruct]()
-	assert.NoError(t, err)
-	assert.Equal(t, fieldnames, []string{"Name", "Secret"})
-
+	fieldnames = GetFieldNames[*auth.User]()
+	assert.Equal(t, []string{"username", "password", "email", "full_name", "shadow"}, fieldnames)
 }

@@ -286,7 +286,7 @@ func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetrics
 	res = new(orchestrator.ListMetricsResponse)
 
 	// Validate the request
-	if err = api.ValidateListRequest[assessment.Metric](req); err != nil {
+	if err = api.ValidateListRequest[*assessment.Metric](req); err != nil {
 		err = fmt.Errorf("invalid request: %w", err)
 		log.Error(err)
 		err = status.Errorf(codes.InvalidArgument, "%v", err)

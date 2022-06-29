@@ -178,7 +178,7 @@ func TestListCertificatesRequest_Validate(t *testing.T) {
 				OrderBy:   tt.fields.OrderBy,
 				Asc:       tt.fields.Asc,
 			}
-			err := api.ValidateListRequest[Certificate](req)
+			err := api.ValidateListRequest[*Certificate](req)
 			tt.wantErr(t, err)
 		})
 	}
@@ -235,7 +235,7 @@ func TestListCloudServicesRequest_Validate(t *testing.T) {
 				OrderBy:   tt.fields.OrderBy,
 				Asc:       tt.fields.Asc,
 			}
-			tt.wantErr(t, api.ValidateListRequest[CloudService](req), "Validate()")
+			tt.wantErr(t, api.ValidateListRequest[*CloudService](req), "Validate()")
 		})
 	}
 }
@@ -291,7 +291,7 @@ func TestListMetricsRequest_Validate(t *testing.T) {
 				OrderBy:   tt.fields.OrderBy,
 				Asc:       tt.fields.Asc,
 			}
-			tt.wantErr(t, api.ValidateListRequest[assessment.Metric](req), "Validate()")
+			tt.wantErr(t, api.ValidateListRequest[*assessment.Metric](req), "Validate()")
 		})
 	}
 }
@@ -357,7 +357,7 @@ func TestListRequirementsRequest_Validate(t *testing.T) {
 				OrderBy:   tt.fields.OrderBy,
 				Asc:       tt.fields.Asc,
 			}
-			tt.wantErr(t, api.ValidateListRequest[Requirement](req), "Validate()")
+			tt.wantErr(t, api.ValidateListRequest[*Requirement](req), "Validate()")
 		})
 	}
 }

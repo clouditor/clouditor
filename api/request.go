@@ -27,6 +27,7 @@ package api
 
 import (
 	"errors"
+	"strings"
 
 	"golang.org/x/exp/slices"
 	"google.golang.org/protobuf/proto"
@@ -39,6 +40,8 @@ var (
 	ErrRequestIsNil      = errors.New("request is empty")
 )
 
+// Oxi: I am torn whether we should have interfaces for the messages or whether we should use protoreflect to retrieve
+// these values (we do it this way in the pagination request handling)
 // ListRequest indicates a proto message being a request for ListXXX RPCs
 type ListRequest interface {
 	GetOrderBy() string
@@ -46,7 +49,7 @@ type ListRequest interface {
 	proto.Message
 }
 
-func ValidateListRequest[T any](req ListRequest) (err error) {
+func ValidateListRequest[T proto.Message](req ListRequest) (err error) {
 	// req must be non-nil
 	if req == nil {
 		err = ErrRequestIsNil
@@ -54,8 +57,9 @@ func ValidateListRequest[T any](req ListRequest) (err error) {
 	}
 
 	// Avoid DB injections by whitelisting the valid orderBy statements
-	whitelist, err := createWhitelist[T]()
-	if !slices.Contains(whitelist, req.GetOrderBy()) {
+	whitelist := createWhitelist[T]()
+	normalizedReq := strings.ToLower(req.GetOrderBy())
+	if !slices.Contains(whitelist, normalizedReq) {
 		err = ErrInvalidColumnName
 		return
 	}
@@ -65,8 +69,8 @@ func ValidateListRequest[T any](req ListRequest) (err error) {
 }
 
 // createWhitelist creates a whitelist out of fields of struct T. Returns error if T is no struct.
-func createWhitelist[T any]() (whitelist []string, err error) {
-	whitelist, err = util.GetFieldNames[T]()
+func createWhitelist[T proto.Message]() (whitelist []string) {
+	whitelist = util.GetFieldNames[T]()
 	// Add empty string indicating no explicit ordering
 	whitelist = append(whitelist, "")
 	return

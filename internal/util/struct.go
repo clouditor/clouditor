@@ -26,29 +26,19 @@
 package util
 
 import (
-	"errors"
-	"reflect"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
-var (
-	// ErrNoStruct indicates the passed argument is not a struct
-	ErrNoStruct = errors.New("no struct")
-)
+// GetFieldNames extracts all field names of a proto.Message T. The extracted names are in lowercase with underscores
+func GetFieldNames[T proto.Message]() (fieldNames []string) {
+	var message T
 
-// GetFieldNames extracts all field names of struct T. Returns error if T is no struct.
-// TODO(lebogg): Only take exported fields
-func GetFieldNames[T any]() (fieldNames []string, err error) {
-	var aStruct T
-	// Check aStruct is a struct
-	if reflect.TypeOf(aStruct).Kind() != reflect.Struct {
-		err = ErrNoStruct
-		return
-	}
-	// Get all fields of aStruct and add their names to fieldNames
-	t := reflect.TypeOf(aStruct)
-	fields := reflect.VisibleFields(t)
-	for _, f := range fields {
-		fieldNames = append(fieldNames, f.Name)
+	fields := message.ProtoReflect().Type().Descriptor().Fields()
+	// Start with 1 since fields[0] is always nil - for whatever reason.
+	// ProtoReflect().Range is would be more elegant, but it only iterates over populated fields which we don't have
+	for i := 1; i < fields.Len()+1; i++ {
+		fieldNames = append(fieldNames, string(fields.ByNumber(protoreflect.FieldNumber(i)).Name()))
 	}
 	return
 }

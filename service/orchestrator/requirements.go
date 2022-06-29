@@ -83,7 +83,7 @@ func (svc *Service) ListRequirements(_ context.Context, req *orchestrator.ListRe
 	res = new(orchestrator.ListRequirementsResponse)
 
 	// Validate the request
-	if err = api.ValidateListRequest[orchestrator.Requirement](req); err != nil {
+	if err = api.ValidateListRequest[*orchestrator.Requirement](req); err != nil {
 		err = fmt.Errorf("invalid request: %w", err)
 		log.Error(err)
 		err = status.Errorf(codes.InvalidArgument, "%v", err)
