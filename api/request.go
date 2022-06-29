@@ -28,8 +28,8 @@ package api
 import (
 	"errors"
 
+	"golang.org/x/exp/slices"
 	"google.golang.org/protobuf/proto"
-	"k8s.io/utils/strings/slices"
 
 	"clouditor.io/clouditor/internal/util"
 )
