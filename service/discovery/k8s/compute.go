@@ -53,17 +53,20 @@ func (*k8sComputeDiscovery) Description() string {
 func (d k8sComputeDiscovery) List() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
+	// Get pods
 	pods, err := d.intf.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("could not list ingresses: %v", err)
 	}
 
 	for i := range pods.Items {
+		// Get virtual machines
 		c := d.handlePod(&pods.Items[i])
 		log.Infof("Adding container %+v", c)
 		list = append(list, c)
 
-		v := d.handleVolume(&pods.Items[i])
+		// Get all volumes conntected to the specific pod
+		v := d.handlePodVolume(&pods.Items[i])
 		log.Infof("Adding volume %+v", v)
 		list = append(list, v...)
 
@@ -72,6 +75,7 @@ func (d k8sComputeDiscovery) List() ([]voc.IsCloudResource, error) {
 	return list, nil
 }
 
+// handlePod returns all existing pods
 func (k8sComputeDiscovery) handlePod(pod *v1.Pod) *voc.Container {
 	r := &voc.Container{
 		Compute: &voc.Compute{
@@ -98,8 +102,8 @@ func getContainerResourceID(pod *v1.Pod) string {
 	return fmt.Sprintf("/namespaces/%s/containers/%s", pod.Namespace, pod.Name)
 }
 
-// handleVolume returns all persistens volume claims connected to a pod
-func (k8sComputeDiscovery) handleVolume(pod *v1.Pod) []voc.IsCloudResource {
+// handleVolume returns all volumes connected to a pod
+func (k8sComputeDiscovery) handlePodVolume(pod *v1.Pod) []voc.IsCloudResource {
 
 	var (
 		volumes []voc.IsCloudResource
@@ -112,46 +116,14 @@ func (k8sComputeDiscovery) handleVolume(pod *v1.Pod) []voc.IsCloudResource {
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(vol.Name), // The ID we have to get directly from the related storage
 				Name:         vol.Name,
-				CreationTime: pod.CreationTimestamp.Unix(), // The CreationTime we have to get directly from the related storage
+				CreationTime: 0, // The CreationTime we have to get directly from the related storage
 				Type:         []string{"BlockStorage", "Storage", "Resource"},
-				Labels:       pod.Labels,
 			},
 			AtRestEncryption: &voc.AtRestEncryption{}, // Not able to get the AtRestEncryption information, that must be retrieved directly from the storage
 		}
 
-		// TODO(anatheka): Possible to use generics for the follwing if?
-		// TODO(all): Define all volume types
-		// PersistentVolumeClaimVolumeSource
-		// DownwardAPIVolumeSource
-		// ConfigMapVolumeSource
-		// VsphereVirtualDiskVolumeSource
-		// QuobyteVolumeSource
-		// PhotonPersistentDiskVolumeSource
-		// ProjectedVolumeSource
-		// ScaleIOVolumeSource
-		// CSIVolumeSource -> CSI was developed as a standard for exposing arbitrary block and file storage storage systems to containerized workloads on Container Orchestration Systems (COs) like Kubernetes. (https://kubernetes.io/blog/2019/01/15/container-storage-interface-ga/)
-		// EphemeralVolumeSource
-
-		// Deprecated
-		// GitRepoVolumeSource is deprecated
-		// cinder - Cinder (OpenStack block storage) (deprecated in v1.18)
-		// flexVolume - FlexVolume (deprecated in v1.23)
-		// flocker - Flocker storage (deprecated in v1.22)
-		// quobyte - Quobyte volume (deprecated in v1.22)
-		// storageos - StorageOS volume (deprecated in v1.22)
-		if vol.AWSElasticBlockStore != nil || vol.AzureDisk != nil || vol.Cinder != nil || vol.FlexVolume != nil || vol.CephFS != nil || vol.Glusterfs != nil || vol.GCEPersistentDisk != nil || vol.RBD != nil || vol.StorageOS != nil || vol.FC != nil || vol.PortworxVolume != nil || vol.ISCSI != nil || vol.Flocker != nil {
-			v := &voc.BlockStorage{
-				Storage: s,
-			}
-			volumes = append(volumes, v)
-		} else if vol.AzureFile != nil || vol.EmptyDir != nil || vol.NFS != nil || vol.HostPath != nil || vol.Secret != nil {
-			v := &voc.FileStorage{
-				Storage: s,
-			}
-			volumes = append(volumes, v)
-		} else {
-			continue
-		}
+		v := addVolumeSource(s, vol.VolumeSource)
+		volumes = append(volumes, v)
 	}
 
 	return volumes
