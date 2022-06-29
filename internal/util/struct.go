@@ -10,7 +10,7 @@ var (
 	ErrNoStruct = errors.New("no struct")
 )
 
-// GetFieldNames extracts all field names of aStruct
+// GetFieldNames extracts all field names of struct T. Returns error if T is no struct.
 // TODO(lebogg): Only take exported fields
 func GetFieldNames[T any]() (fieldNames []string, err error) {
 	var aStruct T

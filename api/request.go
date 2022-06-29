@@ -54,9 +54,7 @@ func ValidateListRequest[T any](req ListRequest) (err error) {
 	}
 
 	// Avoid DB injections by whitelisting the valid orderBy statements
-	whitelist, err := util.GetFieldNames[T]()
-	// Add empty string indicating no explicit ordering
-	whitelist = append(whitelist, "")
+	whitelist, err := createWhitelist[T]()
 	if !slices.Contains(whitelist, req.GetOrderBy()) {
 		err = ErrInvalidColumnName
 		return
@@ -64,4 +62,12 @@ func ValidateListRequest[T any](req ListRequest) (err error) {
 
 	return
 
+}
+
+// createWhitelist creates a whitelist out of fields of struct T. Returns error if T is no struct.
+func createWhitelist[T any]() (whitelist []string, err error) {
+	whitelist, err = util.GetFieldNames[T]()
+	// Add empty string indicating no explicit ordering
+	whitelist = append(whitelist, "")
+	return
 }
