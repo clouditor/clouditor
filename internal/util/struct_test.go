@@ -41,6 +41,8 @@ func TestGetFieldNames(t *testing.T) {
 		// TODO(lebogg): When unexported, linter throws err 'field `secret` is unused (unused)'
 		Secret int
 	}
+	// Avoid linter msg: "type `someStruct` is unused (unused)"
+	_ = someStruct{}
 
 	// Type has to be struct, not string
 	_, err = GetFieldNames[string]()
@@ -52,6 +54,7 @@ func TestGetFieldNames(t *testing.T) {
 
 	// Successful
 	fieldnames, err = GetFieldNames[someStruct]()
+	assert.NoError(t, err)
 	assert.Equal(t, fieldnames, []string{"Name", "Secret"})
 
 }
