@@ -26,13 +26,18 @@
 package util
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"clouditor.io/clouditor/api/auth"
+	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/orchestrator"
 )
 
+// Not the most sophisticated tests. They will probably fail at some point when these proto messages change. Mocking
+// a proto.Message (and thus implementing ProtoReflect() as well) would be ideal ...
 func TestGetFieldNames(t *testing.T) {
 	var (
 		fieldnames []string
@@ -41,4 +46,15 @@ func TestGetFieldNames(t *testing.T) {
 	// Successful
 	fieldnames = GetFieldNames[*auth.User]()
 	assert.Equal(t, []string{"username", "password", "email", "full_name", "shadow"}, fieldnames)
+	assert.Equal(t, reflect.ValueOf(auth.User{}).NumField()-3, len(fieldnames))
+
+	// Successful
+	fieldnames = GetFieldNames[*orchestrator.Certificate]()
+	assert.Equal(t, reflect.ValueOf(orchestrator.Certificate{}).NumField()-3, len(fieldnames))
+	assert.Equal(t, []string{"id", "name", "service_id", "issue_date", "expiration_date", "standard", "assurance_level", "cab", "description", "states"}, fieldnames)
+
+	// Successful
+	fieldnames = GetFieldNames[*evidence.Evidence]()
+	assert.Equal(t, reflect.ValueOf(evidence.Evidence{}).NumField()-3, len(fieldnames))
+	assert.Equal(t, []string{"id", "timestamp", "service_id", "tool_id", "raw", "resource"}, fieldnames)
 }
