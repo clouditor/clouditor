@@ -40,16 +40,15 @@ var (
 	ErrRequestIsNil      = errors.New("request is empty")
 )
 
-// Oxi: I am torn whether we should have interfaces for the messages or whether we should use protoreflect to retrieve
-// these values (we do it this way in the pagination request handling)
-// ListRequest indicates a proto message being a request for ListXXX RPCs
-type ListRequest interface {
+// SortedListRequest indicates a proto message being a request for ListXXX RPCs
+type SortedListRequest interface {
 	GetOrderBy() string
 	GetAsc() bool
 	proto.Message
+	PaginatedRequest
 }
 
-func ValidateListRequest[T proto.Message](req ListRequest) (err error) {
+func ValidateListRequest[T proto.Message](req SortedListRequest) (err error) {
 	// req must be non-nil
 	if req == nil {
 		err = ErrRequestIsNil
