@@ -37,7 +37,7 @@ import (
 )
 
 // Not the most sophisticated tests. They will probably fail at some point when these proto messages change. Mocking
-// a proto.Message (and thus implementing ProtoReflect() as well) would be ideal ...
+// a proto.Message (and thus implementing ProtoReflect() as well) would be ideal...
 func TestGetFieldNames(t *testing.T) {
 	var (
 		fieldnames []string
