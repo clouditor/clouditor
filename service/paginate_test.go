@@ -160,8 +160,6 @@ func TestPaginateStorage(t *testing.T) {
 	type args struct {
 		req     api.PaginatedRequest
 		storage persistence.Storage
-		orderBy string
-		asc     bool
 		opts    PaginationOpts
 		conds   []interface{}
 	}
