@@ -68,6 +68,11 @@ type MetricsSource interface {
 	MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (*assessment.MetricImplementation, error)
 }
 
+// RequirementsSource is used to retrieve a list of requirements
+type RequirementsSource interface {
+	Requirements() ([]*orchestrator.Requirement, error)
+}
+
 // createKey creates a key by concatenating toolID and all types
 func createKey(toolID string, types []string) (key string) {
 	// Merge toolID and types to one slice and concatenate all its elements
