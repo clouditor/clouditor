@@ -40,15 +40,7 @@ var (
 	ErrRequestIsNil      = errors.New("request is empty")
 )
 
-// SortedListRequest indicates a proto message being a request for ListXXX RPCs
-type SortedListRequest interface {
-	GetOrderBy() string
-	GetAsc() bool
-	proto.Message
-	PaginatedRequest
-}
-
-func ValidateListRequest[T proto.Message](req SortedListRequest) (err error) {
+func ValidateListRequest[T proto.Message](req PaginatedRequest) (err error) {
 	// req must be non-nil
 	if req == nil {
 		err = ErrRequestIsNil

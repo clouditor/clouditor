@@ -89,7 +89,7 @@ func (svc *Service) ListCloudServices(_ context.Context, req *orchestrator.ListC
 
 	// Paginate the cloud services according to the request
 	res.Services, res.NextPageToken, err = service.PaginateStorage[*orchestrator.CloudService](req, svc.storage,
-		req.OrderBy, req.Asc, service.DefaultPaginationOpts)
+		service.DefaultPaginationOpts)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}

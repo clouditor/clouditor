@@ -281,6 +281,8 @@ message ListAssessmentToolsRequest {
   string metric_id = 1;
   int32 page_size = 2;
   string page_token = 3;
+  string order_by = 4;
+  bool asc = 5;
 }
 message ListAssessmentToolsResponse {
   repeated AssessmentTool tools = 1;

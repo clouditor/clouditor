@@ -70,6 +70,10 @@ components:
                     format: int32
                 pageToken:
                     type: string
+                orderBy:
+                    type: string
+                asc:
+                    type: boolean
         QueryResponse:
             type: object
             properties:

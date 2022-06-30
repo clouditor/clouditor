@@ -294,8 +294,8 @@ func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetrics
 	}
 
 	// Paginate the metrics according to the request
-	res.Metrics, res.NextPageToken, err = service.PaginateStorage[*assessment.Metric](req, svc.storage, req.OrderBy,
-		req.Asc, service.DefaultPaginationOpts)
+	res.Metrics, res.NextPageToken, err = service.PaginateStorage[*assessment.Metric](req, svc.storage,
+		service.DefaultPaginationOpts)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate metrics: %v", err)
 	}
