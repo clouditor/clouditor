@@ -51,7 +51,7 @@ func (*k8sStorageDiscovery) Description() string {
 }
 
 func (d k8sStorageDiscovery) List() ([]voc.IsCloudResource, error) {
-	var list []voc.IsCloudResource
+	list := []voc.IsCloudResource{}
 
 	// Get persistent volumes
 	// Note: Volumes exist in the context of a pod and cannot be created on its own, PersistentVolumes are first class objects with its own lifecycle.
@@ -62,8 +62,14 @@ func (d k8sStorageDiscovery) List() ([]voc.IsCloudResource, error) {
 
 	for i := range pvc.Items {
 		p := d.handlePV(&pvc.Items[i])
-		log.Infof("Adding volume %+v", p)
-		list = append(list, p)
+		if p != nil {
+			log.Infof("Adding volume %+v", p)
+			list = append(list, p)
+		}
+	}
+
+	if list == nil {
+		log.Debugf("No Kubernetes persistent volumes available")
 	}
 
 	return list, nil

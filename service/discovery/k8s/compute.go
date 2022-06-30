@@ -67,9 +67,11 @@ func (d k8sComputeDiscovery) List() ([]voc.IsCloudResource, error) {
 
 		// Get all volumes conntected to the specific pod
 		v := d.handlePodVolume(&pods.Items[i])
-		log.Infof("Adding volume %+v", v)
-		list = append(list, v...)
 
+		if len(v) != 0 {
+			log.Infof("Adding pod volume %+v", v)
+			list = append(list, v...)
+		}
 	}
 
 	return list, nil
@@ -123,7 +125,9 @@ func (k8sComputeDiscovery) handlePodVolume(pod *v1.Pod) []voc.IsCloudResource {
 		}
 
 		v := addVolumeSource(s, vol.VolumeSource)
-		volumes = append(volumes, v)
+		if v != nil {
+			volumes = append(volumes, v)
+		}
 	}
 
 	return volumes
