@@ -219,7 +219,8 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 			}
 			discoverer = append(discoverer,
 				k8s.NewKubernetesComputeDiscovery(k8sClient),
-				k8s.NewKubernetesNetworkDiscovery(k8sClient))
+				k8s.NewKubernetesNetworkDiscovery(k8sClient),
+				k8s.NewKubernetesStorageDiscovery(k8sClient))
 		case provider == ProviderAWS:
 			awsClient, err := aws.NewClient()
 			if err != nil {

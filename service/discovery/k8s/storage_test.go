@@ -1,4 +1,4 @@
-// Copyright 2021 Fraunhofer AISEC
+// Copyright 2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,90 +33,65 @@ import (
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-func TestListPods(t *testing.T) {
+func Test_k8sStorageDiscovery_List(t *testing.T) {
 
 	var (
-		volumeName      = "my-volume"
-		diskName        = "my-disk"
-		podCreationTime = metav1.Now()
-		podName         = "my-pod"
-		podID           = "/namespaces/my-namespace/containers/my-pod"
-		podNamespace    = "my-namespace"
-		podLabel        = map[string]string{"my": "label"}
+		volumeName              = "my-volume"
+		volumeUID               = "00000000-0000-0000-0000-000000000000"
+		volumeCreationTime      = metav1.Now()
+		volumeLabel             = map[string]string{"my": "label"}
+		persistenVolumeDiskName = "my-disk"
 	)
 
 	client := fake.NewSimpleClientset()
 
-	// Create an Pod with name, creationTimestamp and a AzureDisk volume
-	p := &corev1.Pod{
+	// Create persistent volumes
+	v := &corev1.PersistentVolume{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:              podName,
-			CreationTimestamp: podCreationTime,
-			Labels:            podLabel,
+			Name:              volumeName,
+			UID:               types.UID(volumeUID),
+			CreationTimestamp: volumeCreationTime,
+			Labels:            volumeLabel,
 		},
-		Spec: corev1.PodSpec{
-			Volumes: []corev1.Volume{
-				{
-					Name: volumeName,
-					VolumeSource: corev1.VolumeSource{
-						AzureDisk: &corev1.AzureDiskVolumeSource{
-							DiskName: diskName,
-						},
-					},
+		Spec: corev1.PersistentVolumeSpec{
+			PersistentVolumeSource: corev1.PersistentVolumeSource{
+				AzureDisk: &corev1.AzureDiskVolumeSource{
+					DiskName: persistenVolumeDiskName,
 				},
 			},
 		},
 	}
-	_, err := client.CoreV1().Pods(podNamespace).Create(context.TODO(), p, metav1.CreateOptions{})
+
+	_, err := client.CoreV1().PersistentVolumes().Create(context.TODO(), v, metav1.CreateOptions{})
 	if err != nil {
-		t.Fatalf("error injecting pod add: %v", err)
+		t.Fatalf("error injecting volume add: %v", err)
 	}
 
-	d := NewKubernetesComputeDiscovery(client)
+	d := NewKubernetesStorageDiscovery(client)
 
 	list, err := d.List()
-
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
 
-	// Check container
-	container, ok := list[0].(*voc.Container)
+	// Check persistentVolume
+	volume, ok := list[0].(*voc.BlockStorage)
 
-	// Create expected voc.Container
-	expectedContainer := &voc.Container{
-		Compute: &voc.Compute{
-			Resource: &voc.Resource{
-				ID:           voc.ResourceID(podID),
-				Name:         podName,
-				CreationTime: podCreationTime.Unix(),
-				Type:         []string{"Container", "Compute", "Resource"},
-				Labels:       podLabel,
-			},
-			NetworkInterface: []voc.ResourceID{
-				voc.ResourceID(podNamespace),
-			},
-		},
-	}
-
-	assert.True(t, ok)
-	assert.Equal(t, expectedContainer, container)
-
-	// Check volume
-	volume, ok := list[1].(*voc.BlockStorage)
-	// Create expected voc.BlockStorage
+	// Create exptected voc.BlockStorage
 	expectedVolume := &voc.BlockStorage{
 		Storage: &voc.Storage{
 			Resource: &voc.Resource{
-				ID:           voc.ResourceID(volumeName),
+				ID:           voc.ResourceID(volumeUID),
 				Name:         volumeName,
-				CreationTime: 0,
+				CreationTime: volume.CreationTime,
 				Type:         []string{"BlockStorage", "Storage", "Resource"},
 				GeoLocation: voc.GeoLocation{
 					Region: "",
 				},
+				Labels: volumeLabel,
 			},
 			AtRestEncryption: &voc.AtRestEncryption{},
 		},
