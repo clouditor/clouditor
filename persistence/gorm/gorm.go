@@ -177,15 +177,18 @@ func (s *storage) Get(r any, conds ...any) (err error) {
 
 func (s *storage) List(r any, orderBy string, asc bool, offset int, limit int, conds ...any) error {
 	var query = s.db
+	// Set default direction to "ascending"
 	var orderDirection = "asc"
 
 	if limit != -1 {
 		query = s.db.Limit(limit)
 	}
+	// Set direction to "descending"
 	if !asc {
 		orderDirection = "desc"
 	}
 	orderStmt := orderBy + " " + orderDirection
+	// No explicit ordering
 	if orderBy == "" {
 		orderStmt = ""
 	}
