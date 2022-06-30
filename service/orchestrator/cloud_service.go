@@ -30,6 +30,7 @@ import (
 	"errors"
 	"fmt"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
@@ -48,7 +49,7 @@ const (
 
 func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.RegisterCloudServiceRequest) (service *orchestrator.CloudService, err error) {
 	if req == nil {
-		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrRequestIsNil.Error())
+		return nil, status.Errorf(codes.InvalidArgument, api.ErrRequestIsNil.Error())
 	}
 	if req.Service == nil {
 		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrServiceIsNil.Error())
@@ -74,11 +75,21 @@ func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.Regi
 }
 
 // ListCloudServices implements method for OrchestratorServer interface for listing all cloud services
-func (svc *Service) ListCloudServices(_ context.Context, req *orchestrator.ListCloudServicesRequest) (res *orchestrator.ListCloudServicesResponse, err error) {
+func (svc *Service) ListCloudServices(_ context.Context, req *orchestrator.ListCloudServicesRequest) (
+	res *orchestrator.ListCloudServicesResponse, err error) {
 	res = new(orchestrator.ListCloudServicesResponse)
 
+	// Validate tne request
+	if err = api.ValidateListRequest[*orchestrator.CloudService](req); err != nil {
+		err = fmt.Errorf("invalid request: %w", err)
+		log.Error(err)
+		err = status.Errorf(codes.InvalidArgument, "%v", err)
+		return
+	}
+
 	// Paginate the cloud services according to the request
-	res.Services, res.NextPageToken, err = service.PaginateStorage[*orchestrator.CloudService](req, svc.storage, service.DefaultPaginationOpts)
+	res.Services, res.NextPageToken, err = service.PaginateStorage[*orchestrator.CloudService](req, svc.storage,
+		service.DefaultPaginationOpts)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
@@ -89,7 +100,7 @@ func (svc *Service) ListCloudServices(_ context.Context, req *orchestrator.ListC
 // GetCloudService implements method for OrchestratorServer interface for getting a cloud service with provided id
 func (s *Service) GetCloudService(_ context.Context, req *orchestrator.GetCloudServiceRequest) (response *orchestrator.CloudService, err error) {
 	if req == nil {
-		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrRequestIsNil.Error())
+		return nil, status.Errorf(codes.InvalidArgument, api.ErrRequestIsNil.Error())
 	}
 	if req.ServiceId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrIDIsMissing.Error())

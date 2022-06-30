@@ -42,6 +42,8 @@ const PageTokenField = "page_token"
 type PaginatedRequest interface {
 	GetPageToken() string
 	GetPageSize() int32
+	GetOrderBy() string // For ordering
+	GetAsc() bool       // For ordering
 	proto.Message
 }
 
@@ -86,7 +88,10 @@ func DecodePageToken(b64token string) (t *PageToken, err error) {
 // finally combines all results of all pages into a single slice. It executes the function specified in list using the
 // req of RequestType. Afterwards, the function getter is executed to transform the response of the list calls into the
 // results slice.
-func ListAllPaginated[ResponseType PaginatedResponse, RequestType PaginatedRequest, ResultType any](req RequestType, list func(context.Context, RequestType, ...grpc.CallOption) (ResponseType, error), getter func(res ResponseType) []ResultType) (results []ResultType, err error) {
+func ListAllPaginated[ResponseType PaginatedResponse, RequestType PaginatedRequest, ResultType any](
+	req RequestType, list func(context.Context, RequestType, ...grpc.CallOption) (ResponseType, error),
+	getter func(res ResponseType) []ResultType) (results []ResultType, err error) {
+
 	var (
 		res       ResponseType
 		pageToken string = ""

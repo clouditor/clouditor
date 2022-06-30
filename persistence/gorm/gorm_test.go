@@ -7,14 +7,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/timestamppb"
+	"gorm.io/gorm/schema"
+
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
 	"clouditor.io/clouditor/persistence"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/protobuf/types/known/timestamppb"
-	"gorm.io/gorm/schema"
 )
 
 func TestStorageOptions(t *testing.T) {
@@ -214,7 +215,7 @@ func Test_storage_List(t *testing.T) {
 	}
 
 	// List should return empty list since no users are in DB yet
-	err = s.List(&users, 0, -1)
+	err = s.List(&users, "", true, 0, -1)
 	assert.ErrorIs(t, err, nil)
 	assert.Empty(t, users)
 
@@ -223,7 +224,7 @@ func Test_storage_List(t *testing.T) {
 	assert.NoError(t, err)
 	err = s.Create(user2)
 	assert.NoError(t, err)
-	err = s.List(&users, 0, -1)
+	err = s.List(&users, "", true, 0, -1)
 	assert.ErrorIs(t, err, nil)
 	assert.Equal(t, len(users), 2)
 
@@ -235,7 +236,7 @@ func Test_storage_List(t *testing.T) {
 	)
 
 	// List should return empty list since no certificates are in DB yet
-	err = s.List(&certificates, 0, 0)
+	err = s.List(&certificates, "", true, 0, 0)
 	assert.ErrorIs(t, err, nil)
 	assert.Empty(t, certificates)
 
@@ -250,9 +251,11 @@ func Test_storage_List(t *testing.T) {
 	assert.NoError(t, err)
 
 	// List should return list of 2 certificates with associated states
-	err = s.List(&certificates, 0, 0)
+	err = s.List(&certificates, "id", false, 0, 0)
 	assert.ErrorIs(t, err, nil)
 	assert.Equal(t, len(certificates), 2)
+	// Check ordering
+	assert.Equal(t, certificate2.Id, certificates[0].Id)
 
 	fmt.Println(certificates)
 

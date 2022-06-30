@@ -32,15 +32,17 @@ import (
 	"reflect"
 	"testing"
 
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/internal/testutil"
-	"clouditor.io/clouditor/persistence"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
+
+	"clouditor.io/clouditor/api"
+	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/persistence"
 )
 
 var ErrSomeError = errors.New("some error")
@@ -471,6 +473,12 @@ func TestService_ListMetrics(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotEmpty(t, response.Metrics)
+
+	// Invalid request
+	_, err = service.ListMetrics(context.TODO(), &orchestrator.ListMetricsRequest{OrderBy: "not a field"})
+	assert.Equal(t, codes.InvalidArgument, status.Code(err))
+	assert.Contains(t, err.Error(), api.ErrInvalidColumnName.Error())
+
 }
 
 func TestService_GetMetricImplementation(t *testing.T) {
