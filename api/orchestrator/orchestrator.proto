@@ -281,6 +281,8 @@ message ListAssessmentToolsRequest {
   string metric_id = 1;
   int32 page_size = 2;
   string page_token = 3;
+  string order_by = 4;
+  bool asc = 5;
 }
 message ListAssessmentToolsResponse {
   repeated AssessmentTool tools = 1;
@@ -314,6 +316,8 @@ message GetMetricRequest { string metric_id = 1; }
 message ListMetricsRequest {
   int32 page_size = 1;
   string page_token = 2;
+  string order_by = 3;
+  bool asc = 4;
 }
 message ListMetricsResponse {
   repeated Metric metrics = 1;
@@ -323,6 +327,8 @@ message ListMetricsResponse {
 message ListRequirementsRequest {
   int32 page_size = 1;
   string page_token = 2;
+  string order_by = 3;
+  bool asc = 4;
 }
 message ListRequirementsResponse {
   repeated Requirement requirements = 1;
@@ -343,6 +349,8 @@ message RemoveCloudServiceRequest { string service_id = 1; }
 message ListCloudServicesRequest {
   int32 page_size = 1;
   string page_token = 2;
+  string order_by = 3;
+  bool asc = 4;
 }
 message ListCloudServicesResponse {
   repeated CloudService services = 1;
@@ -446,6 +454,8 @@ message GetCertificateRequest { string certificate_id = 1; }
 message ListCertificatesRequest {
   int32 page_size = 1;
   string page_token = 2;
+  string order_by = 3;
+  bool asc = 4;
 }
 message ListCertificatesResponse {
   repeated Certificate certificates = 1;

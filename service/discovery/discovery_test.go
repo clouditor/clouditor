@@ -615,14 +615,14 @@ func (*mockAssessmentStream) Context() context.Context {
 }
 
 func (m *mockAssessmentStream) SendMsg(req interface{}) (err error) {
-	m.wg.Done()
-
 	e := req.(*assessment.AssessEvidenceRequest).Evidence
 	if m.connectionEstablished {
 		m.sentEvidences = append(m.sentEvidences, e)
 	} else {
 		err = fmt.Errorf("mock send error")
 	}
+
+	m.wg.Done()
 
 	return
 }

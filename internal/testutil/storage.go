@@ -35,16 +35,16 @@ type StorageWithError struct {
 	DeleteErr error
 }
 
-func (s *StorageWithError) Create(r interface{}) error                     { return s.CreateErr }
-func (s *StorageWithError) Save(r interface{}, conds ...interface{}) error { return s.SaveErr }
-func (*StorageWithError) Update(r interface{}, query interface{}, args ...interface{}) error {
+func (s *StorageWithError) Create(_ interface{}) error                 { return s.CreateErr }
+func (s *StorageWithError) Save(_ interface{}, _ ...interface{}) error { return s.SaveErr }
+func (*StorageWithError) Update(_ interface{}, _ interface{}, _ ...interface{}) error {
 	return nil
 }
-func (s *StorageWithError) Get(r interface{}, conds ...interface{}) error { return s.GetErr }
-func (s *StorageWithError) List(r interface{}, offset int, limit int, conds ...interface{}) error {
+func (s *StorageWithError) Get(_ interface{}, _ ...interface{}) error { return s.GetErr }
+func (s *StorageWithError) List(_ interface{}, _ string, _ bool, _ int, _ int, _ ...interface{}) error {
 	return s.ListErr
 }
-func (s *StorageWithError) Count(r interface{}, conds ...interface{}) (int64, error) {
+func (s *StorageWithError) Count(_ interface{}, _ ...interface{}) (int64, error) {
 	return 0, s.CountErr
 }
-func (s *StorageWithError) Delete(r interface{}, conds ...interface{}) error { return s.DeleteErr }
+func (s *StorageWithError) Delete(_ interface{}, _ ...interface{}) error { return s.DeleteErr }

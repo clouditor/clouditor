@@ -34,6 +34,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
@@ -284,8 +285,17 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetricsRequest) (res *orchestrator.ListMetricsResponse, err error) {
 	res = new(orchestrator.ListMetricsResponse)
 
+	// Validate the request
+	if err = api.ValidateListRequest[*assessment.Metric](req); err != nil {
+		err = fmt.Errorf("invalid request: %w", err)
+		log.Error(err)
+		err = status.Errorf(codes.InvalidArgument, "%v", err)
+		return
+	}
+
 	// Paginate the metrics according to the request
-	res.Metrics, res.NextPageToken, err = service.PaginateStorage[*assessment.Metric](req, svc.storage, service.DefaultPaginationOpts)
+	res.Metrics, res.NextPageToken, err = service.PaginateStorage[*assessment.Metric](req, svc.storage,
+		service.DefaultPaginationOpts)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate metrics: %v", err)
 	}
@@ -386,7 +396,7 @@ func (svc *Service) ListMetricConfigurations(ctx context.Context, req *orchestra
 	}
 
 	var metrics []*assessment.Metric
-	err = svc.storage.List(&metrics, 0, -1)
+	err = svc.storage.List(&metrics, "", true, 0, -1)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -402,7 +412,7 @@ func (svc *Service) ListMetricConfigurations(ctx context.Context, req *orchestra
 	return
 }
 
-func (svc *Service) GetMetricImplementation(ctx context.Context, req *orchestrator.GetMetricImplementationRequest) (res *assessment.MetricImplementation, err error) {
+func (svc *Service) GetMetricImplementation(_ context.Context, req *orchestrator.GetMetricImplementationRequest) (res *assessment.MetricImplementation, err error) {
 	res = new(assessment.MetricImplementation)
 
 	// TODO(oxisto): Validate GetMetricImplementationRequest

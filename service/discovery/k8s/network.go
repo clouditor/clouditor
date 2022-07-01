@@ -103,6 +103,7 @@ func (k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwork 
 				},
 			},
 		},
+
 		Ips:   service.Spec.ClusterIPs,
 		Ports: ports,
 	}

@@ -33,6 +33,7 @@ import (
 	"io"
 	"sync"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
@@ -291,7 +292,7 @@ func (svc *Service) CreateCertificate(_ context.Context, req *orchestrator.Creat
 	// Validate request
 	if req == nil {
 		return nil,
-			status.Errorf(codes.InvalidArgument, orchestrator.ErrRequestIsNil.Error())
+			status.Errorf(codes.InvalidArgument, api.ErrRequestIsNil.Error())
 	}
 	if req.Certificate == nil {
 		return nil,
@@ -316,7 +317,7 @@ func (svc *Service) CreateCertificate(_ context.Context, req *orchestrator.Creat
 // GetCertificate implements method for getting a certificate, e.g. to show its state in the UI
 func (svc *Service) GetCertificate(_ context.Context, req *orchestrator.GetCertificateRequest) (response *orchestrator.Certificate, err error) {
 	if req == nil {
-		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrRequestIsNil.Error())
+		return nil, status.Errorf(codes.InvalidArgument, api.ErrRequestIsNil.Error())
 	}
 	if req.CertificateId == "" {
 		return nil, status.Errorf(codes.NotFound, orchestrator.ErrCertIDIsMissing.Error())
@@ -334,13 +335,18 @@ func (svc *Service) GetCertificate(_ context.Context, req *orchestrator.GetCerti
 
 // ListCertificates implements method for getting a certificate, e.g. to show its state in the UI
 func (svc *Service) ListCertificates(_ context.Context, req *orchestrator.ListCertificatesRequest) (res *orchestrator.ListCertificatesResponse, err error) {
-	if req == nil {
-		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrRequestIsNil.Error())
+	// Validate the request
+	if err = api.ValidateListRequest[*orchestrator.Certificate](req); err != nil {
+		err = fmt.Errorf("invalid request: %w", err)
+		log.Error(err)
+		err = status.Errorf(codes.InvalidArgument, "%v", err)
+		return
 	}
 
 	res = new(orchestrator.ListCertificatesResponse)
 
-	res.Certificates, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Certificate](req, svc.storage, service.DefaultPaginationOpts)
+	res.Certificates, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Certificate](req, svc.storage,
+		service.DefaultPaginationOpts)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}

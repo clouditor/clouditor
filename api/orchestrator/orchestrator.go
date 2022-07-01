@@ -35,7 +35,6 @@ import (
 type CloudServiceHookFunc func(ctx context.Context, cld *CloudService, err error)
 
 var (
-	ErrRequestIsNil     = errors.New("request is empty")
 	ErrCertificateIsNil = errors.New("certificate is empty")
 	ErrServiceIsNil     = errors.New("service is empty")
 	ErrNameIsMissing    = errors.New("service name is empty")

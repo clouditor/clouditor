@@ -507,7 +507,7 @@ func (svc *Service) Metrics() (metrics []*assessment.Metric, err error) {
 
 	err = svc.initOrchestratorClient()
 	if err != nil {
-		return nil, fmt.Errorf("could not set orchestrator client")
+		return nil, fmt.Errorf("could not init orchestrator client")
 	}
 
 	res, err = svc.orchestratorClient.ListMetrics(context.Background(), &orchestrator.ListMetricsRequest{})
@@ -516,6 +516,23 @@ func (svc *Service) Metrics() (metrics []*assessment.Metric, err error) {
 	}
 
 	return res.Metrics, nil
+}
+
+// Requirements implements RequirementsSource by retrieving the requirement list from the orchestrator.
+func (svc *Service) Requirements() (requirements []*orchestrator.Requirement, err error) {
+	var res *orchestrator.ListRequirementsResponse
+
+	err = svc.initOrchestratorClient()
+	if err != nil {
+		return nil, fmt.Errorf("could not init orchestrator client")
+	}
+
+	res, err = svc.orchestratorClient.ListRequirements(context.Background(), &orchestrator.ListRequirementsRequest{})
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve metric list from orchestrator: %w", err)
+	}
+
+	return res.Requirements, nil
 }
 
 // MetricImplementation implements MetricsSource by retrieving the metric implementation
