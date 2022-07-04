@@ -28,6 +28,7 @@ syntax = "proto3";
 
 package clouditor;
 
+import "google/protobuf/duration.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "tagger/tagger.proto";
@@ -61,6 +62,9 @@ message Metric {
     ORDINAL = 2;
     METRIC = 3;
   }
+
+  // The interval the evidences must be collected for the respective metric. 
+  google.protobuf.Duration interval = 7;
 }
 
 // A range resource representing the range of values
