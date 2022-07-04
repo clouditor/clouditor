@@ -35,8 +35,8 @@ import (
 
 	"clouditor.io/clouditor/voc"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -50,11 +50,11 @@ func newMockStorageSender() *mockStorageSender {
 }
 
 type responseStorageAccount struct {
-	Value storage.Account `json:"value,omitempty"`
+	Value armstorage.Account `json:"value,omitempty"`
 }
 
 type responseDisk struct {
-	Value []compute.Disk `json:"value,omitempty"`
+	Value []armcompute.Disk `json:"value,omitempty"`
 }
 
 func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error) {
@@ -84,9 +84,9 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 									"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
 								},
 							},
-							"keySource": storage.KeySourceMicrosoftStorage,
+							"keySource": armstorage.KeySourceMicrosoftStorage,
 						},
-						"minimumTlsVersion":        storage.MinimumTLSVersionTLS12,
+						"minimumTlsVersion":        armstorage.MinimumTLSVersionTLS12,
 						"allowBlobPublicAccess":    false,
 						"supportsHttpsTrafficOnly": true,
 					},
@@ -114,12 +114,12 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 									"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
 								},
 							},
-							"keySource": storage.KeySourceMicrosoftKeyvault,
+							"keySource": armstorage.KeySourceMicrosoftKeyvault,
 							"keyvaultproperties": map[string]interface{}{
 								"keyvaulturi": "https://testvault.vault.azure.net/keys/testkey/123456",
 							},
 						},
-						"minimumTlsVersion":        storage.MinimumTLSVersionTLS12,
+						"minimumTlsVersion":        armstorage.MinimumTLSVersionTLS12,
 						"allowBlobPublicAccess":    false,
 						"supportsHttpsTrafficOnly": true,
 					},
@@ -151,9 +151,9 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 								"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
 							},
 						},
-						"keySource": storage.KeySourceMicrosoftStorage,
+						"keySource": armstorage.KeySourceMicrosoftStorage,
 					},
-					"minimumTlsVersion":        storage.MinimumTLSVersionTLS12,
+					"minimumTlsVersion":        armstorage.MinimumTLSVersionTLS12,
 					"allowBlobPublicAccess":    false,
 					"supportsHttpsTrafficOnly": true,
 				},
@@ -271,7 +271,6 @@ func TestAzureStorageAuthorizer(t *testing.T) {
 
 func TestStorage(t *testing.T) {
 	d := NewAzureStorageDiscovery(
-		WithSender(&mockStorageSender{}),
 		WithAuthorizer(&mockAuthorizer{}),
 	)
 
@@ -285,7 +284,6 @@ func TestStorage(t *testing.T) {
 
 func TestListObjectStorage(t *testing.T) {
 	d := NewAzureStorageDiscovery(
-		WithSender(&mockStorageSender{}),
 		WithAuthorizer(&mockAuthorizer{}),
 	)
 
@@ -304,7 +302,6 @@ func TestListObjectStorage(t *testing.T) {
 
 func TestObjectStorage(t *testing.T) {
 	d := NewAzureStorageDiscovery(
-		WithSender(&mockStorageSender{}),
 		WithAuthorizer(&mockAuthorizer{}),
 	)
 
@@ -351,7 +348,6 @@ func TestObjectStorage(t *testing.T) {
 
 func TestListFileStorage(t *testing.T) {
 	d := NewAzureStorageDiscovery(
-		WithSender(&mockStorageSender{}),
 		WithAuthorizer(&mockAuthorizer{}),
 	)
 
@@ -370,7 +366,6 @@ func TestListFileStorage(t *testing.T) {
 
 func TestFileStorage(t *testing.T) {
 	d := NewAzureStorageDiscovery(
-		WithSender(&mockStorageSender{}),
 		WithAuthorizer(&mockAuthorizer{}),
 	)
 
@@ -399,8 +394,7 @@ func TestFileStorage(t *testing.T) {
 
 func TestListBlockStorage(t *testing.T) {
 	d := NewAzureStorageDiscovery(
-		WithSender(&mockStorageSender{}),
-		WithAuthorizer(&mockAuthorizer{}),
+	// WithAuthorizer(&mockAuthorizer{}),
 	)
 
 	list, err := d.List()
@@ -418,8 +412,7 @@ func TestListBlockStorage(t *testing.T) {
 
 func TestBlockStorage(t *testing.T) {
 	d := NewAzureStorageDiscovery(
-		WithSender(&mockStorageSender{}),
-		WithAuthorizer(&mockAuthorizer{}),
+	// WithAuthorizer(&mockAuthorizer{}),
 	)
 
 	list, err := d.List()
@@ -440,29 +433,31 @@ func TestBlockStorage(t *testing.T) {
 func TestStorageHandleMethodsWhenInputIsInvalid(t *testing.T) {
 	d := azureStorageDiscovery{}
 
-	// Get mocked storage.Account
+	// Get mocked armstorage.Account
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"
 	mockedStorageAccountObject, err := mockedStorageAccount(reqURL)
 	if err != nil {
 		fmt.Println("error getting mocked storage account object: %w", err)
 	}
 	// Test method handleObjectStorage
-	containerItem := storage.ListContainerItem{}
+	containerItem := armstorage.ListContainerItem{}
 
-	// Clear KeySource
-	mockedStorageAccountObject.Encryption.KeySource = ""
+	// //TODO(anatheka): Do we need that anymore?
+	// // Clear KeySource
+	// mockedStorageAccountObject.Properties.Encryption.KeySource = ""
 
-	handleObjectStorageRespone, err := handleObjectStorage(&mockedStorageAccountObject, containerItem)
+	handleObjectStorageRespone, err := handleObjectStorage(mockedStorageAccountObject, &containerItem)
 	assert.Error(t, err)
 	assert.Nil(t, handleObjectStorageRespone)
 
 	// Test method handleFileStorage
-	fileShare := storage.FileShareItem{}
+	fileShare := &armstorage.FileShareItem{}
 
-	// Clear KeySource
-	mockedStorageAccountObject.Encryption.KeySource = ""
+	// //TODO(anatheka): Do we need that anymore?
+	// // Clear KeySource
+	// mockedStorageAccountObject.Properties.Encryption.KeySource = ""
 
-	handleFileStorageRespone, err := handleFileStorage(&mockedStorageAccountObject, fileShare)
+	handleFileStorageRespone, err := handleFileStorage(mockedStorageAccountObject, fileShare)
 	assert.Error(t, err)
 	assert.Nil(t, handleFileStorageRespone)
 
@@ -472,8 +467,10 @@ func TestStorageHandleMethodsWhenInputIsInvalid(t *testing.T) {
 	if err != nil {
 		fmt.Println("error getting mocked disk object: %w", err)
 	}
-	// Clear KeySource
-	disk.Encryption.Type = ""
+
+	// TODO(anatheka): Do we need that anymore?
+	// // Clear KeySource
+	// disk.Properties.Encryption.Type = ""
 
 	handleBlockStorageResponse, err := d.handleBlockStorage(&disk)
 	assert.Error(t, err)
@@ -481,7 +478,7 @@ func TestStorageHandleMethodsWhenInputIsInvalid(t *testing.T) {
 }
 
 func TestStorageMethodsWhenInputIsInvalid(t *testing.T) {
-	// Get mocked storage.Account
+	// Get mocked armstorage.Account
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"
 	mockedStorageAccountObject, err := mockedStorageAccount(reqURL)
 	if err != nil {
@@ -493,7 +490,7 @@ func TestStorageMethodsWhenInputIsInvalid(t *testing.T) {
 	assert.Equal(t, "encryptionkeyvault1", diskEncryptionSetName(discEncryptionSetID))
 
 	// Test method storageAtRestEncryption
-	atRestEncryption, err := storageAtRestEncryption(&mockedStorageAccountObject)
+	atRestEncryption, err := storageAtRestEncryption(mockedStorageAccountObject)
 	assert.NoError(t, err)
 
 	managedKeyEncryption := voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{Algorithm: "AES256", Enabled: true}}
@@ -504,7 +501,7 @@ func TestStorageMethodsWhenInputIsInvalid(t *testing.T) {
 func TestStorageDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
 	d := azureStorageDiscovery{}
 
-	// Get mocked storage.Account
+	// Get mocked armstorage.Account
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"
 	mockedStorageAccountObject, err := mockedStorageAccount(reqURL)
 	if err != nil {
@@ -517,12 +514,12 @@ func TestStorageDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
 	assert.Nil(t, discoverStorageAccountsResponse)
 
 	// Test method discoverObjectStorages
-	discoverObjectStoragesResponse, err := d.discoverObjectStorages(&mockedStorageAccountObject)
+	discoverObjectStoragesResponse, err := d.discoverObjectStorages(mockedStorageAccountObject)
 	assert.Error(t, err)
 	assert.Nil(t, discoverObjectStoragesResponse)
 
 	// Test method discoverFileStorages
-	discoverFileStoragesResponse, err := d.discoverFileStorages(&mockedStorageAccountObject)
+	discoverFileStoragesResponse, err := d.discoverFileStorages(mockedStorageAccountObject)
 	assert.Error(t, err)
 	assert.Nil(t, discoverFileStoragesResponse)
 
@@ -533,7 +530,7 @@ func TestStorageDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
 }
 
 // mockedDisk returns one mocked compute disk
-func mockedDisk(reqUrl string) (disk compute.Disk, err error) {
+func mockedDisk(reqUrl string) (disk armcompute.Disk, err error) {
 
 	m := newMockStorageSender()
 	req, err := http.NewRequest("GET", reqUrl, nil)
@@ -566,7 +563,7 @@ func mockedDisk(reqUrl string) (disk compute.Disk, err error) {
 }
 
 // mockedStorageAccount returns one mocked storage account
-func mockedStorageAccount(reqUrl string) (storageAccount storage.Account, err error) {
+func mockedStorageAccount(reqUrl string) (storageAccount *armstorage.Account, err error) {
 	var storageAccountResponse responseStorageAccount
 
 	m := newMockStorageSender()
@@ -594,7 +591,7 @@ func mockedStorageAccount(reqUrl string) (storageAccount storage.Account, err er
 		return storageAccount, fmt.Errorf("error unmarshalling: %w", err)
 	}
 
-	storageAccount = storageAccountResponse.Value
+	storageAccount = &storageAccountResponse.Value
 
 	return storageAccount, nil
 }
