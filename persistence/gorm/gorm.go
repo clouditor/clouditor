@@ -38,6 +38,7 @@ import (
 	"clouditor.io/clouditor/persistence"
 
 	"github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
@@ -150,6 +151,7 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	}
 
 	schema.RegisterSerializer("timestamppb", &TimestampSerializer{})
+	schema.RegisterSerializer("durationpb", &DurationSerializer{})
 
 	// After successful DB initialization, migrate the schema
 	if err = g.db.AutoMigrate(g.types...); err != nil {
@@ -257,6 +259,48 @@ func (TimestampSerializer) Scan(ctx context.Context, field *schema.Field, dst re
 		switch v := dbValue.(type) {
 		case time.Time:
 			t = timestamppb.New(v)
+		default:
+			return persistence.ErrUnsupportedType
+		}
+
+		field.ReflectValueOf(ctx, dst).Set(reflect.ValueOf(t))
+	}
+
+	return
+}
+
+// DurationSerializer is a GORM serializer that allows the serialization and deserialization of the
+// google.protobuf.Duration protobuf message type.
+type DurationSerializer struct{}
+
+// Value implements https://pkg.go.dev/gorm.io/gorm/schema#SerializerValuerInterface to indicate
+// how this struct will be saved into an SQL database field.
+func (DurationSerializer) Value(_ context.Context, _ *schema.Field, _ reflect.Value, fieldValue interface{}) (interface{}, error) {
+	var (
+		t  *durationpb.Duration
+		ok bool
+	)
+
+	if fieldValue == nil {
+		return nil, nil
+	}
+
+	if t, ok = fieldValue.(*durationpb.Duration); !ok {
+		return nil, persistence.ErrUnsupportedType
+	}
+
+	return t.AsDuration(), nil
+}
+
+// Scan implements https://pkg.go.dev/gorm.io/gorm/schema#SerializerInterface to indicate how
+// this struct can be loaded from an SQL database field.
+func (DurationSerializer) Scan(ctx context.Context, field *schema.Field, dst reflect.Value, dbValue interface{}) (err error) {
+	var t *durationpb.Duration
+
+	if dbValue != nil {
+		switch v := dbValue.(type) {
+		case time.Duration:
+			t = durationpb.New(v)
 		default:
 			return persistence.ErrUnsupportedType
 		}
