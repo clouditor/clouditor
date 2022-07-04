@@ -35,7 +35,7 @@ import (
 
 	"clouditor.io/clouditor/voc"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/compute/mgmt/compute"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -49,7 +49,7 @@ func newMockComputeSender() *mockComputeSender {
 }
 
 type mockedVirtualMachinesResponse struct {
-	Value []compute.VirtualMachine `json:"value,omitempty"`
+	Value []armcompute.VirtualMachine `json:"value,omitempty"`
 }
 
 func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error) {
@@ -186,7 +186,7 @@ func TestAzureComputeAuthorizer(t *testing.T) {
 
 func TestCompute(t *testing.T) {
 	d := NewAzureComputeDiscovery(
-		WithSender(&mockComputeSender{}),
+		// WithSender(&mockComputeSender{}),
 		WithAuthorizer(&mockAuthorizer{}),
 	)
 
@@ -200,7 +200,7 @@ func TestCompute(t *testing.T) {
 
 func TestVirtualMachine(t *testing.T) {
 	d := NewAzureComputeDiscovery(
-		WithSender(&mockComputeSender{}),
+		// WithSender(&mockComputeSender{}),
 		WithAuthorizer(&mockAuthorizer{}),
 	)
 
@@ -277,7 +277,7 @@ func TestBootLogOutput(t *testing.T) {
 
 	assert.NotEmpty(t, virtualMachine)
 	// Delete the "diagnosticsProfile" property
-	virtualMachine.DiagnosticsProfile = nil
+	virtualMachine.Properties.DiagnosticsProfile = nil
 
 	getBootLogOutputResponse := bootLogOutput(&virtualMachine)
 
@@ -285,7 +285,7 @@ func TestBootLogOutput(t *testing.T) {
 }
 
 // mockedVirtualMachines returns the mocked virtualMachines list
-func mockedVirtualMachines(reqUrl string) (virtualMachines []compute.VirtualMachine, err error) {
+func mockedVirtualMachines(reqUrl string) (virtualMachines []armcompute.VirtualMachine, err error) {
 	var mockedVirtualMachinesResponse mockedVirtualMachinesResponse
 
 	m := newMockComputeSender()

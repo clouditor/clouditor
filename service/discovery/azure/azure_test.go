@@ -137,22 +137,22 @@ func TestApply(t *testing.T) {
 	assert.Equal(t, so.sender, client.Sender)
 
 	// Test authorizerOption
-	ao := authorizerOption{
-		authorizer: mockAuthorizer{},
+	ao := credentialOption{
+		credential: mockAuthorizer{},
 	}
 
 	ao.apply(&client)
-	assert.Equal(t, ao.authorizer, client.Authorizer)
+	assert.Equal(t, ao.credential, client.Authorizer)
 
 	// Test azureDiscovery
 	ad := azureDiscovery{
-		authOption: &authorizerOption{
-			authorizer: mockAuthorizer{},
+		authCredentials: &credentialOption{
+			credential: mockAuthorizer{},
 		},
 	}
 
 	ad.apply(&client)
-	assert.Equal(t, ad.authOption.authorizer, client.Authorizer)
+	assert.Equal(t, ad.authCredentials.credential, client.Authorizer)
 }
 
 func TestWithSender(t *testing.T) {
@@ -166,8 +166,8 @@ func TestWithSender(t *testing.T) {
 }
 
 func TestWithAuthorizer(t *testing.T) {
-	expected := &authorizerOption{
-		authorizer: mockAuthorizer{},
+	expected := &credentialOption{
+		credential: mockAuthorizer{},
 	}
 
 	resp := WithAuthorizer(mockAuthorizer{})

@@ -32,7 +32,9 @@ import (
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/network/mgmt/network"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
+
 	"github.com/Azure/go-autorest/autorest/to"
 )
 
@@ -44,8 +46,8 @@ func NewAzureNetworkDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureNetworkDiscovery{}
 
 	for _, opt := range opts {
-		if auth, ok := opt.(*authorizerOption); ok {
-			d.authOption = auth
+		if auth, ok := opt.(*credentialOption); ok {
+			d.authCredentials = auth
 		} else {
 			d.options = append(d.options, opt)
 		}
@@ -89,17 +91,27 @@ func (d *azureNetworkDiscovery) List() (list []voc.IsCloudResource, err error) {
 func (d *azureNetworkDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
-	clientNetworkInterfaces := network.NewInterfacesClient(to.String(d.sub.SubscriptionID))
-	d.apply(&clientNetworkInterfaces.Client)
-
-	resultNetworkInterfaces, err := clientNetworkInterfaces.ListAll(context.Background())
+	// Create network client
+	client, err := armnetwork.NewInterfacesClient(to.String(d.sub.SubscriptionID), d.authCredentials.credential, &arm.ClientOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("could not list network interfaces: %w", err)
+		err = fmt.Errorf("could not get new virtual machines client: %w", err)
+		return nil, err
 	}
 
-	interfaces := resultNetworkInterfaces.Values()
-	for i := range interfaces {
-		s := d.handleNetworkInterfaces(&interfaces[i])
+	// List all network interfaces accross all resource groups
+	listPager := client.NewListAllPager(&armnetwork.InterfacesClientListAllOptions{})
+	ni := make([]*armnetwork.Interface, 0)
+	for listPager.More() {
+		pageResponse, err := listPager.NextPage(context.TODO())
+		if err != nil {
+			// TODO(anatheka): Do we want to return here or take the VMs we alreday got?
+			log.Errorf("error getting next page: %v", err)
+		}
+		ni = append(ni, pageResponse.Value...)
+	}
+
+	for i := range ni {
+		s := d.handleNetworkInterfaces(ni[i])
 
 		log.Infof("Adding network interfaces %+v", s)
 
@@ -113,17 +125,35 @@ func (d *azureNetworkDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResour
 func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
-	clientLoadBalancer := network.NewLoadBalancersClient(to.String(d.sub.SubscriptionID))
-	d.apply(&clientLoadBalancer.Client)
+	// clientLoadBalancer := network.NewLoadBalancersClient(to.String(d.sub.SubscriptionID))
+	// d.apply(&clientLoadBalancer.Client)
 
-	resultLoadBalancer, err := clientLoadBalancer.ListAll(context.Background())
+	// resultLoadBalancer, err := clientLoadBalancer.ListAll(context.Background())
+	// if err != nil {
+	// 	return nil, fmt.Errorf("could not list load balancer: %w", err)
+	// }
+
+	// Create load balancer client
+	client, err := armnetwork.NewLoadBalancersClient(to.String(d.sub.SubscriptionID), d.authCredentials.credential, &arm.ClientOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("could not list load balancer: %w", err)
+		err = fmt.Errorf("could not get new load balancers client: %w", err)
+		return nil, err
 	}
 
-	lbs := resultLoadBalancer.Values()
+	// List all load balancers accross all resource groups
+	listPager := client.NewListAllPager(&armnetwork.LoadBalancersClientListAllOptions{})
+	lbs := make([]*armnetwork.LoadBalancer, 0)
+	for listPager.More() {
+		pageResponse, err := listPager.NextPage(context.TODO())
+		if err != nil {
+			// TODO(anatheka): Do we want to return here or take the VMs we alreday got?
+			log.Errorf("error getting next page: %v", err)
+		}
+		lbs = append(lbs, pageResponse.Value...)
+	}
+
 	for i := range lbs {
-		s := d.handleLoadBalancer(&lbs[i])
+		s := d.handleLoadBalancer(lbs[i])
 
 		log.Infof("Adding load balancer %+v", s)
 
@@ -133,7 +163,7 @@ func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, e
 	return list, err
 }
 
-func (d *azureNetworkDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc.IsNetwork {
+func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) voc.IsNetwork {
 	return &voc.LoadBalancer{
 		NetworkService: &voc.NetworkService{
 			Networking: &voc.Networking{
@@ -145,6 +175,7 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc
 					GeoLocation: voc.GeoLocation{
 						Region: to.String(lb.Location),
 					},
+					Labels: labels(lb.Tags),
 				},
 			},
 			Ips:   d.publicIPAddressFromLoadBalancer(lb),
@@ -157,7 +188,7 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc
 	}
 }
 
-func (*azureNetworkDiscovery) handleNetworkInterfaces(ni *network.Interface) voc.IsNetwork {
+func (*azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface) voc.IsNetwork {
 	return &voc.NetworkInterface{
 		Networking: &voc.Networking{
 			Resource: &voc.Resource{
@@ -168,19 +199,20 @@ func (*azureNetworkDiscovery) handleNetworkInterfaces(ni *network.Interface) voc
 				GeoLocation: voc.GeoLocation{
 					Region: to.String(ni.Location),
 				},
+				Labels: labels(ni.Tags),
 			},
 		},
-		//AccessRestriction: &voc.AccessRestriction{
-		//	Inbound:         false, // TODO(garuppel): TBD
-		//	RestrictedPorts: d.getRestrictedPorts(ni),
-		//},
+		// AccessRestriction: &voc.AccessRestriction{
+		// 	Inbound:         false, // TODO(garuppel): TBD
+		// 	RestrictedPorts: d.getRestrictedPorts(ni),
+		// },
 	}
 }
 
-func LoadBalancerPorts(lb *network.LoadBalancer) (loadBalancerPorts []int16) {
+func LoadBalancerPorts(lb *armnetwork.LoadBalancer) (loadBalancerPorts []int16) {
 
-	for _, item := range *lb.LoadBalancingRules {
-		loadBalancerPorts = append(loadBalancerPorts, int16(to.Int32(item.FrontendPort)))
+	for _, item := range lb.Properties.LoadBalancingRules {
+		loadBalancerPorts = append(loadBalancerPorts, int16(to.Int32(item.Properties.FrontendPort)))
 	}
 
 	return loadBalancerPorts
@@ -236,47 +268,61 @@ func LoadBalancerPorts(lb *network.LoadBalancer) (loadBalancerPorts []int16) {
 //	return list
 //}
 
-func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *network.LoadBalancer) []string {
+func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *armnetwork.LoadBalancer) []string {
 
 	var (
 		publicIPAddresses []string
 	)
 
-	// Get public IP resource
-	client := network.NewPublicIPAddressesClient(to.String(d.sub.SubscriptionID))
-	d.apply(&client.Client)
+	// Create public IP address client
+	client, err := armnetwork.NewPublicIPAddressesClient(to.String(d.sub.SubscriptionID), d.authCredentials.credential, &arm.ClientOptions{})
+	if err != nil {
+		err = fmt.Errorf("could not get new public ip addresses client: %w", err)
+		return []string{}
+	}
 
-	if lb.LoadBalancerPropertiesFormat != nil && lb.LoadBalancerPropertiesFormat.FrontendIPConfigurations != nil {
-		for _, publicIpProperties := range *lb.FrontendIPConfigurations {
+	fIpConfig := lb.Properties.FrontendIPConfigurations
+	for i := range fIpConfig {
 
-			if publicIpProperties.PublicIPAddress == nil {
-				continue
-			}
-
-			publicIpAddressName := getFrontendPublicIPAddressName(to.String(publicIpProperties.PublicIPAddress.ID))
-			if publicIpAddressName == "" {
-				continue
-			}
-
-			publicIPAddress, err := client.Get(context.Background(), getResourceGroupName(to.String(publicIpProperties.ID)), publicIpAddressName, "")
-			if err != nil {
-				log.Infof("Error getting public IP address: %v", err)
-				continue
-			}
-
-			if publicIPAddress.IPAddress == nil {
-				log.Infof("Error getting public IP address: %v", err)
-				continue
-			}
-
-			publicIPAddresses = append(publicIPAddresses, to.String(publicIPAddress.IPAddress))
+		if fIpConfig[i].Properties.PublicIPAddress == nil {
+			continue
 		}
+
+		publicIPAddressID := to.String(fIpConfig[i].Properties.PublicIPAddress.ID)
+		if publicIPAddressID == "" {
+			continue
+		}
+
+		publicIpAddressName := frontendPublicIPAddressName(publicIPAddressID)
+		if publicIpAddressName == "" {
+			continue
+		}
+
+		// Get public IP address
+		publicIPAddress, err := client.Get(
+			context.TODO(),
+			resourceGroupName(publicIPAddressID),
+			publicIpAddressName,
+			&armnetwork.PublicIPAddressesClientGetOptions{})
+		if err != nil {
+			err = fmt.Errorf("could not get public ip address: %w", err)
+			return []string{}
+		}
+
+		ipAddress := publicIPAddress.PublicIPAddress.Properties.IPAddress
+		if ipAddress == nil {
+			log.Infof("Error getting public IP address: %v", err)
+			continue
+		}
+
+		publicIPAddresses = append(publicIPAddresses, to.String(ipAddress))
 	}
 
 	return publicIPAddresses
 }
 
-func getFrontendPublicIPAddressName(frontendPublicIPAddressID string) string {
+// frontendPublicIPAddressName returns the frontend public IP address name from the given public IP address ID
+func frontendPublicIPAddressName(frontendPublicIPAddressID string) string {
 	if frontendPublicIPAddressID == "" {
 		log.Infof("Public IP address ID of frontend is empty.")
 		return ""

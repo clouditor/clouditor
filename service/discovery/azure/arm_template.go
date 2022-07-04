@@ -45,8 +45,8 @@ func NewAzureARMTemplateDiscovery(opts ...DiscoveryOption) discovery.Discoverer 
 	d := &azureARMTemplateDiscovery{}
 
 	for _, opt := range opts {
-		if auth, ok := opt.(*authorizerOption); ok {
-			d.authOption = auth
+		if auth, ok := opt.(*credentialOption); ok {
+			d.authCredentials = auth
 		} else {
 			d.options = append(d.options, opt)
 		}
