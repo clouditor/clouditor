@@ -69,6 +69,8 @@ func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
 	}
 
+	log.Info("Discover Azure compute resources")
+
 	// Discover virtual machines
 	virtualMachines, err := d.discoverVirtualMachines()
 	if err != nil {
@@ -101,8 +103,8 @@ func (d *azureComputeDiscovery) discoverFunctions() ([]voc.IsCloudResource, erro
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
-			// TODO(anatheka): Do we want to return here or take the functions we alreday got?
-			log.Errorf("error getting next page: %v", err)
+			err = fmt.Errorf("error getting next page: %v", err)
+			return nil, err
 		}
 		functionApps = append(functionApps, pageResponse.Value...)
 	}
@@ -154,8 +156,8 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
-			// TODO(anatheka): Do we want to return here or take the VMs we alreday got?
-			log.Errorf("error getting next page: %v", err)
+			err = fmt.Errorf("error getting next page: %v", err)
+			return nil, err
 		}
 		vms = append(vms, pageResponse.Value...)
 	}

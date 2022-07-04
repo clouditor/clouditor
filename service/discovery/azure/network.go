@@ -70,6 +70,8 @@ func (d *azureNetworkDiscovery) List() (list []voc.IsCloudResource, err error) {
 		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
 	}
 
+	log.Info("Discover Azure network resources")
+
 	// Discover network interfaces
 	networkInterfaces, err := d.discoverNetworkInterfaces()
 	if err != nil {
@@ -104,8 +106,8 @@ func (d *azureNetworkDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResour
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
-			// TODO(anatheka): Do we want to return here or take the VMs we alreday got?
-			log.Errorf("error getting next page: %v", err)
+			err = fmt.Errorf("error getting next page: %v", err)
+			return nil, err
 		}
 		ni = append(ni, pageResponse.Value...)
 	}
@@ -125,14 +127,6 @@ func (d *azureNetworkDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResour
 func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
-	// clientLoadBalancer := network.NewLoadBalancersClient(to.String(d.sub.SubscriptionID))
-	// d.apply(&clientLoadBalancer.Client)
-
-	// resultLoadBalancer, err := clientLoadBalancer.ListAll(context.Background())
-	// if err != nil {
-	// 	return nil, fmt.Errorf("could not list load balancer: %w", err)
-	// }
-
 	// Create load balancer client
 	client, err := armnetwork.NewLoadBalancersClient(to.String(d.sub.SubscriptionID), d.authCredentials.credential, &arm.ClientOptions{})
 	if err != nil {
@@ -146,8 +140,8 @@ func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, e
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
-			// TODO(anatheka): Do we want to return here or take the VMs we alreday got?
-			log.Errorf("error getting next page: %v", err)
+			err = fmt.Errorf("error getting next page: %v", err)
+			return nil, err
 		}
 		lbs = append(lbs, pageResponse.Value...)
 	}

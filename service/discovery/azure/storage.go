@@ -74,6 +74,8 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
 	}
 
+	log.Info("Discover Azure storage resources")
+
 	// Discover storage accounts
 	storageAccounts, err := d.discoverStorageAccounts()
 	if err != nil {
@@ -100,8 +102,8 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
-			// TODO(anatheka): Do we want to return here or take the VMs we alreday got?
-			log.Errorf("error getting next page: %v", err)
+			err = fmt.Errorf("error getting next page: %v", err)
+			return nil, err
 		}
 		accounts = append(accounts, pageResponse.Value...)
 	}
@@ -161,8 +163,8 @@ func (d *azureStorageDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, 
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
-			// TODO(anatheka): Do we want to return here or take the VMs we alreday got?
-			log.Errorf("error getting next page: %v", err)
+			err = fmt.Errorf("error getting next page: %w", err)
+			return nil, err
 		}
 		disks = append(disks, pageResponse.Value...)
 	}
@@ -196,8 +198,8 @@ func (d *azureStorageDiscovery) discoverFileStorages(account *armstorage.Account
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
-			// TODO(anatheka): Do we want to return here or take the VMs we alreday got?
-			log.Errorf("error getting next page: %v", err)
+			err = fmt.Errorf("error getting next page: %v", err)
+			return nil, err
 		}
 		fs = append(fs, pageResponse.Value...)
 	}
@@ -232,8 +234,8 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
-			// TODO(anatheka): Do we want to return here or take the VMs we alreday got?
-			log.Errorf("error getting next page: %v", err)
+			err = fmt.Errorf("error getting next page: %v", err)
+			return nil, err
 		}
 		bc = append(bc, pageResponse.Value...)
 	}
