@@ -30,6 +30,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"sync"
 	"time"
 
 	"clouditor.io/clouditor/api"
@@ -84,6 +85,9 @@ type Service struct {
 	authorizer api.Authorizer
 
 	providers []string
+
+	// Mutex for resources
+	resourceMutex sync.RWMutex
 }
 
 type Configuration struct {
@@ -277,7 +281,9 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}
 
 	for _, resource := range list {
+		svc.resourceMutex.Lock()
 		svc.resources[string(resource.GetID())] = resource
+		svc.resourceMutex.Unlock()
 
 		var (
 			v *structpb.Value
