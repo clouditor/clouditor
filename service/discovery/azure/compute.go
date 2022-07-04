@@ -45,7 +45,7 @@ func NewAzureComputeDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureComputeDiscovery{}
 
 	for _, opt := range opts {
-		if auth, ok := opt.(*credentialOption); ok {
+		if auth, ok := opt.(*authOption); ok {
 			d.authCredentials = auth
 		} else {
 			d.options = append(d.options, opt)

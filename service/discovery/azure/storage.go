@@ -50,7 +50,7 @@ func NewAzureStorageDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureStorageDiscovery{}
 
 	for _, opt := range opts {
-		if auth, ok := opt.(*credentialOption); ok {
+		if auth, ok := opt.(*authOption); ok {
 			d.authCredentials = auth
 		} else {
 			d.options = append(d.options, opt)

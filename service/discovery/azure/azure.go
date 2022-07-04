@@ -38,8 +38,6 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 
 	"github.com/sirupsen/logrus"
-	// "github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/resources/mgmt/subscriptions"
-	// "github.com/Azure/go-autorest/autorest"
 )
 
 var (
@@ -53,6 +51,7 @@ type DiscoveryOption interface {
 	apply(azcore.TokenCredential)
 }
 
+// TODO(all): Do we need that anymore?
 // type senderOption struct {
 // 	sender autorest.Sender
 // }
@@ -65,13 +64,13 @@ type DiscoveryOption interface {
 // 	return &senderOption{sender}
 // }
 
-// credentialOption contains the client secret credential
-type credentialOption struct {
+// authOption contains the client token credential
+type authOption struct {
 	credential azcore.TokenCredential
 }
 
 func WithAuthorizer(credential azcore.TokenCredential) DiscoveryOption {
-	return &credentialOption{credential: credential}
+	return &authOption{credential: credential}
 }
 
 func init() {
@@ -79,13 +78,13 @@ func init() {
 }
 
 // apply sets the credential
-func (a credentialOption) apply(credential azcore.TokenCredential) {
+func (a authOption) apply(credential azcore.TokenCredential) {
 	credential = a.credential
 }
 
 // azureDiscovery contains the necessary
 type azureDiscovery struct {
-	authCredentials *credentialOption // Contains the credentials
+	authCredentials *authOption
 	sub             armsubscription.Subscription
 
 	isAuthorized bool
@@ -176,7 +175,7 @@ func resourceGroupName(id string) string {
 	return strings.Split(id, "/")[4]
 }
 
-// labels return the tags from resources in the format map[string]string
+// labels converts the resource tags to the vocabulary label
 func labels(tags map[string]*string) map[string]string {
 	labels := make(map[string]string)
 
