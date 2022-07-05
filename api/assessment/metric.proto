@@ -64,7 +64,8 @@ message Metric {
   }
 
   // The interval the evidences must be collected for the respective metric. 
-  google.protobuf.Duration interval = 7;
+  google.protobuf.Duration interval = 7
+      [ (tagger.tags) = "gorm:\"serializer:durationpb;type:duration\"" ];
 }
 
 // A range resource representing the range of values
