@@ -158,8 +158,8 @@ func labels(tags map[string]*string) map[string]string {
 	return labels
 }
 
-// safeDate returns either the UNIX timestamp of the time t or 0 if it is nil
-func safeDate(t *time.Time) int64 {
+// safeTimestamp returns either the UNIX timestamp of the time t or 0 if it is nil
+func safeTimestamp(t *time.Time) int64 {
 	if t == nil {
 		return 0
 	}

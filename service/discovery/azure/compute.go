@@ -173,13 +173,12 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 }
 
 func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {
-
 	r := &voc.VirtualMachine{
 		Compute: &voc.Compute{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(to.String(vm.ID)),
 				Name:         to.String(vm.Name),
-				CreationTime: safeDate(vm.Properties.TimeCreated),
+				CreationTime: safeTimestamp(vm.Properties.TimeCreated),
 				Type:         []string{"VirtualMachine", "Compute", "Resource"},
 				GeoLocation: voc.GeoLocation{
 					Region: to.String(vm.Location),
