@@ -29,13 +29,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/go-autorest/autorest/to"
+
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
-	"github.com/Azure/go-autorest/autorest/to"
 
 	"github.com/sirupsen/logrus"
 )
@@ -47,57 +49,61 @@ var (
 		"(from environment, file, or CLI)")
 )
 
-type DiscoveryOption interface {
-	apply(azcore.TokenCredential)
+//type DiscoveryOption interface {
+//	apply(*policy.ClientOptions)
+//}
+
+type senderOption struct {
+	sender policy.Transporter
 }
 
-// TODO(all): Do we need that anymore?
-// type senderOption struct {
-// 	sender autorest.Sender
-// }
-
-// func (o senderOption) apply(client *autorest.Client) {
-// 	client.Sender = o.sender
-// }
-
-// func WithSender(sender autorest.Sender) DiscoveryOption {
-// 	return &senderOption{sender}
-// }
-
-// authOption contains the client token credential
-type authOption struct {
-	credential azcore.TokenCredential
+func (o senderOption) apply(client *policy.ClientOptions) {
+	client.Transport = o.sender
 }
 
-func WithAuthorizer(credential azcore.TokenCredential) DiscoveryOption {
-	return &authOption{credential: credential}
+//func WithSender(sender policy.Transporter) DiscoveryOption {
+//	return &senderOption{sender}
+//}
+
+type CredentialOption interface {
+	apply(credential *azcore.TokenCredential)
+}
+type authorizerOption struct {
+	authorizer azcore.TokenCredential
+}
+
+//func (a authorizerOption) GetToken(ctx context.Context, options policy.TokenRequestOptions) (azcore.AccessToken, error) {
+//	//TODO implement me
+//	panic("implement me")
+//}
+
+func WithAuthorizer(authorizer azcore.TokenCredential) CredentialOption {
+	return &authorizerOption{authorizer: authorizer}
+}
+
+func (a authorizerOption) apply(client *azcore.TokenCredential) {
+	client = &a.authorizer
 }
 
 func init() {
 	log = logrus.WithField("component", "azure-discovery")
 }
 
-// apply sets the credential
-func (a authOption) apply(credential azcore.TokenCredential) {
-	credential = a.credential
-}
-
-// azureDiscovery contains the necessary
 type azureDiscovery struct {
-	authCredentials *authOption
-	sub             armsubscription.Subscription
+	authOption *authorizerOption
+	sender     *senderOption
+	sub        armsubscription.Subscription
 
 	isAuthorized bool
 
-	options []DiscoveryOption
+	options []CredentialOption
 }
 
 func (a *azureDiscovery) authorize() (err error) {
-	if a.authCredentials == nil {
+	if a.authOption == nil {
 		return errors.New("no authorized was available")
 	}
 
-	// TODO(anatheka): Still after Azure sdk update
 	// If using NewAuthorizerFromFile() in discovery file, we do not need to re-authorize.
 	// If using NewAuthorizerFromCLI() in discovery file, the token expires after 75 minutes.
 	if a.isAuthorized {
@@ -110,7 +116,6 @@ func (a *azureDiscovery) authorize() (err error) {
 		log.Error(err)
 		return err
 	}
-	a.apply(cred)
 
 	// Create new subscriptions client
 	subClient, err := armsubscription.NewSubscriptionsClient(cred, &arm.ClientOptions{})
@@ -119,7 +124,9 @@ func (a *azureDiscovery) authorize() (err error) {
 		return err
 	}
 
-	// get subscriptions
+	// a.apply(&subClient.Client)
+
+	// Get subscriptions
 	subPager := subClient.NewListPager(nil)
 	subList := make([]*armsubscription.Subscription, 0)
 	for subPager.More() {
@@ -146,16 +153,6 @@ func (a *azureDiscovery) authorize() (err error) {
 	a.isAuthorized = true
 
 	return nil
-}
-
-func (a *azureDiscovery) apply(cred azcore.TokenCredential) {
-	if a.authCredentials != nil {
-		a.authCredentials.apply(cred)
-	}
-
-	for _, v := range a.options {
-		v.apply(cred)
-	}
 }
 
 // NewAuthorizer returns the Azure credential using one of the following authentication types (in the following order):
