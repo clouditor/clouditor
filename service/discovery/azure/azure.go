@@ -29,6 +29,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
@@ -48,6 +49,7 @@ var (
 
 	ErrCouldNotAuthenticate = errors.New("could not authenticate to Azure with any authorizer " +
 		"(from environment, file, or CLI)")
+	ErrNoCredentialsConfigured = errors.New("no credentials were configured")
 )
 
 type DiscoveryOption func(a *azureDiscovery)
@@ -86,6 +88,10 @@ func (a *azureDiscovery) authorize() (err error) {
 	// If using NewAuthorizerFromCLI() in discovery file, the token expires after 75 minutes.
 	if a.isAuthorized {
 		return
+	}
+
+	if a.cred == nil {
+		return ErrNoCredentialsConfigured
 	}
 
 	// Create new subscriptions client
@@ -150,4 +156,13 @@ func labels(tags map[string]*string) map[string]string {
 	}
 
 	return labels
+}
+
+// safeDate returns either the UNIX timestamp of the time t or 0 if it is nil
+func safeDate(t *time.Time) int64 {
+	if t == nil {
+		return 0
+	}
+
+	return t.Unix()
 }

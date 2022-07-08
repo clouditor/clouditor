@@ -181,12 +181,12 @@ func TestAzureComputeAuthorizer(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Nil(t, list)
-	assert.Equal(t, "could not authorize Azure account: no authorized was available", err.Error())
+	assert.ErrorIs(t, err, ErrNoCredentialsConfigured)
 }
 
 func TestCompute(t *testing.T) {
 	d := NewAzureComputeDiscovery(
-		// WithSender(&mockComputeSender{}),
+		WithSender(&mockComputeSender{}),
 		WithAuthorizer(&mockAuthorizer{}),
 	)
 
@@ -245,14 +245,14 @@ func TestFunction(t *testing.T) {
 	assert.Equal(t, "function1", function.Name)
 }
 
-func TestComputeDiscoverFunctionWhenInputIsInvalid(t *testing.T) {
+func TestComputeDiscoverFunctionsWhenInputIsInvalid(t *testing.T) {
 	d := azureComputeDiscovery{}
 
-	discoverFunctionResponse, err := d.discoverFunction()
+	discoverFunctionsResponse, err := d.discoverFunctions()
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "could not list functions")
-	assert.Nil(t, discoverFunctionResponse)
+	assert.Nil(t, discoverFunctionsResponse)
 }
 
 func TestComputeDiscoverVirtualMachines(t *testing.T) {

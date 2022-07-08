@@ -175,7 +175,7 @@ func TestGetResourceGroupName(t *testing.T) {
 // 	assert.Equal(t, expected, resp)
 // }
 
-func TestWithAuthorizer(t *testing.T) {
+/*func TestWithAuthorizer(t *testing.T) {
 	expected := &authOption{
 		credential: &mockAuthorizer{},
 	}
@@ -215,3 +215,4 @@ func Test_authOption_apply(t *testing.T) {
 		})
 	}
 }
+*/

@@ -179,7 +179,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(to.String(vm.ID)),
 				Name:         to.String(vm.Name),
-				CreationTime: vm.Properties.TimeCreated.Unix(),
+				CreationTime: safeDate(vm.Properties.TimeCreated),
 				Type:         []string{"VirtualMachine", "Compute", "Resource"},
 				GeoLocation: voc.GeoLocation{
 					Region: to.String(vm.Location),
