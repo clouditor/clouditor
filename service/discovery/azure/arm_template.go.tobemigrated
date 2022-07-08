@@ -44,12 +44,9 @@ type azureARMTemplateDiscovery struct {
 func NewAzureARMTemplateDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureARMTemplateDiscovery{}
 
+	// Apply options
 	for _, opt := range opts {
-		if auth, ok := opt.(*credentialOption); ok {
-			d.authCredentials = auth
-		} else {
-			d.options = append(d.options, opt)
-		}
+		opt(&d.azureDiscovery)
 	}
 
 	return d
@@ -85,7 +82,6 @@ func (d *azureARMTemplateDiscovery) discoverARMTemplate() ([]voc.IsCloudResource
 	)
 
 	client := resources.NewGroupsClient(to.String(d.sub.SubscriptionID))
-	d.apply(&client.Client)
 
 	// Get all resource groups, as the exportTemplate function works only on resource group level
 	resultResourceGroupsResult, err := client.ListComplete(context.Background(), "", nil)

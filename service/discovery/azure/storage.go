@@ -34,7 +34,6 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 
@@ -45,17 +44,12 @@ type azureStorageDiscovery struct {
 	azureDiscovery
 }
 
-func NewAzureStorageDiscovery(opts ...CredentialOption) discovery.Discoverer {
+func NewAzureStorageDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureStorageDiscovery{}
 
+	// Apply options
 	for _, opt := range opts {
-		if auth, ok := opt.(*authorizerOption); ok {
-			d.authOption = auth
-			//if auth, ok := opt.(*authorizerOption); ok {
-			//d.authOption = auth
-		} else {
-			d.options = append(d.options, opt)
-		}
+		opt(&d.azureDiscovery)
 	}
 
 	return d
@@ -91,7 +85,7 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 	var storageResourcesList []voc.IsCloudResource
 
 	// Create storage accounts client
-	client, err := armstorage.NewAccountsClient(to.String(d.sub.SubscriptionID), d.authOption.authorizer, &arm.ClientOptions{})
+	client, err := armstorage.NewAccountsClient(to.String(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	//d.apply(&policy.ClientOptions{})
 	if err != nil {
 		err = fmt.Errorf("could not get new storage accounts client: %w", err)
@@ -153,7 +147,7 @@ func (d *azureStorageDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, 
 	var list []voc.IsCloudResource
 
 	// Create disks client
-	client, err := armcompute.NewDisksClient(to.String(d.sub.SubscriptionID), d.authOption.authorizer, &arm.ClientOptions{})
+	client, err := armcompute.NewDisksClient(to.String(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("could not get new disks client: %w", err)
 		return nil, err
@@ -188,7 +182,7 @@ func (d *azureStorageDiscovery) discoverFileStorages(account *armstorage.Account
 	var list []voc.IsCloudResource
 
 	// Create file shares client
-	client, err := armstorage.NewFileSharesClient(to.String(d.sub.SubscriptionID), d.authOption.authorizer, &arm.ClientOptions{})
+	client, err := armstorage.NewFileSharesClient(to.String(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("could not get new virtual machines client: %w", err)
 		return nil, err
@@ -224,7 +218,7 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 	var list []voc.IsCloudResource
 
 	// Create blob containers client
-	client, err := armstorage.NewBlobContainersClient(to.String(d.sub.SubscriptionID), d.authOption.authorizer, &arm.ClientOptions{})
+	client, err := armstorage.NewBlobContainersClient(to.String(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("could not get new virtual machines client: %w", err)
 		return nil, err
@@ -432,7 +426,7 @@ func storageAtRestEncryption(account *armstorage.Account) (voc.HasAtRestEncrypti
 func (d *azureStorageDiscovery) sourceVaultID(diskEncryptionSetID string) (string, error) {
 
 	// Create Key Vault client
-	client, err := armcompute.NewDiskEncryptionSetsClient(to.String(d.sub.SubscriptionID), d.authOption.authorizer, &arm.ClientOptions{})
+	client, err := armcompute.NewDiskEncryptionSetsClient(to.String(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("could not get new key vault client: %w", err)
 		return "", err

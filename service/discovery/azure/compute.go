@@ -31,7 +31,6 @@ import (
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -44,12 +43,9 @@ type azureComputeDiscovery struct {
 func NewAzureComputeDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureComputeDiscovery{}
 
+	// Apply options
 	for _, opt := range opts {
-		if auth, ok := opt.(*authOption); ok {
-			d.authCredentials = auth
-		} else {
-			d.options = append(d.options, opt)
-		}
+		opt(&d.azureDiscovery)
 	}
 
 	return d
@@ -92,7 +88,7 @@ func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 func (d *azureComputeDiscovery) discoverFunctions() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
-	client, err := armappservice.NewWebAppsClient(to.String(d.sub.SubscriptionID), d.authCredentials.credential, &arm.ClientOptions{})
+	client, err := armappservice.NewWebAppsClient(to.String(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("could not get new web apps client: %w", err)
 	}
@@ -144,7 +140,7 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 	var list []voc.IsCloudResource
 
 	// Create VM client
-	client, err := armcompute.NewVirtualMachinesClient(to.String(d.sub.SubscriptionID), d.authCredentials.credential, &arm.ClientOptions{})
+	client, err := armcompute.NewVirtualMachinesClient(to.String(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("could not get new virtual machines client: %w", err)
 		return nil, err

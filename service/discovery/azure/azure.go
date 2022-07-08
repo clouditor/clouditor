@@ -29,6 +29,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
@@ -49,27 +50,12 @@ var (
 		"(from environment, file, or CLI)")
 )
 
-//type DiscoveryOption interface {
-//	apply(*policy.ClientOptions)
-//}
+type DiscoveryOption func(a *azureDiscovery)
 
-type senderOption struct {
-	sender policy.Transporter
-}
-
-func (o senderOption) apply(client *policy.ClientOptions) {
-	client.Transport = o.sender
-}
-
-//func WithSender(sender policy.Transporter) DiscoveryOption {
-//	return &senderOption{sender}
-//}
-
-type CredentialOption interface {
-	apply(credential *azcore.TokenCredential)
-}
-type authorizerOption struct {
-	authorizer azcore.TokenCredential
+func WithSender(sender policy.Transporter) DiscoveryOption {
+	return func(a *azureDiscovery) {
+		a.clientOptions.Transport = sender
+	}
 }
 
 //func (a authorizerOption) GetToken(ctx context.Context, options policy.TokenRequestOptions) (azcore.AccessToken, error) {
@@ -77,12 +63,10 @@ type authorizerOption struct {
 //	panic("implement me")
 //}
 
-func WithAuthorizer(authorizer azcore.TokenCredential) CredentialOption {
-	return &authorizerOption{authorizer: authorizer}
-}
-
-func (a authorizerOption) apply(client *azcore.TokenCredential) {
-	client = &a.authorizer
+func WithAuthorizer(authorizer azcore.TokenCredential) DiscoveryOption {
+	return func(a *azureDiscovery) {
+		a.cred = authorizer
+	}
 }
 
 func init() {
@@ -90,41 +74,26 @@ func init() {
 }
 
 type azureDiscovery struct {
-	authOption *authorizerOption
-	sender     *senderOption
-	sub        armsubscription.Subscription
-
 	isAuthorized bool
 
-	options []CredentialOption
+	sub           armsubscription.Subscription
+	cred          azcore.TokenCredential
+	clientOptions arm.ClientOptions
 }
 
 func (a *azureDiscovery) authorize() (err error) {
-	if a.authOption == nil {
-		return errors.New("no authorized was available")
-	}
-
 	// If using NewAuthorizerFromFile() in discovery file, we do not need to re-authorize.
 	// If using NewAuthorizerFromCLI() in discovery file, the token expires after 75 minutes.
 	if a.isAuthorized {
 		return
 	}
 
-	cred, err := NewAuthorizer()
-	if err != nil {
-		err = fmt.Errorf("could not get azure credentials: %w", err)
-		log.Error(err)
-		return err
-	}
-
 	// Create new subscriptions client
-	subClient, err := armsubscription.NewSubscriptionsClient(cred, &arm.ClientOptions{})
+	subClient, err := armsubscription.NewSubscriptionsClient(a.cred, &a.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("could not get new subscription client: %w", err)
 		return err
 	}
-
-	// a.apply(&subClient.Client)
 
 	// Get subscriptions
 	subPager := subClient.NewListPager(nil)

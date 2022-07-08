@@ -32,7 +32,6 @@ import (
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 
 	"github.com/Azure/go-autorest/autorest/to"
@@ -45,12 +44,9 @@ type azureNetworkDiscovery struct {
 func NewAzureNetworkDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureNetworkDiscovery{}
 
+	// Apply options
 	for _, opt := range opts {
-		if auth, ok := opt.(*authOption); ok {
-			d.authCredentials = auth
-		} else {
-			d.options = append(d.options, opt)
-		}
+		opt(&d.azureDiscovery)
 	}
 
 	return d
@@ -94,7 +90,7 @@ func (d *azureNetworkDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResour
 	var list []voc.IsCloudResource
 
 	// Create network client
-	client, err := armnetwork.NewInterfacesClient(to.String(d.sub.SubscriptionID), d.authCredentials.credential, &arm.ClientOptions{})
+	client, err := armnetwork.NewInterfacesClient(to.String(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("could not get new virtual machines client: %w", err)
 		return nil, err
@@ -128,7 +124,7 @@ func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, e
 	var list []voc.IsCloudResource
 
 	// Create load balancer client
-	client, err := armnetwork.NewLoadBalancersClient(to.String(d.sub.SubscriptionID), d.authCredentials.credential, &arm.ClientOptions{})
+	client, err := armnetwork.NewLoadBalancersClient(to.String(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("could not get new load balancers client: %w", err)
 		return nil, err
@@ -269,7 +265,7 @@ func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *armnetwork.L
 	)
 
 	// Create public IP address client
-	client, err := armnetwork.NewPublicIPAddressesClient(to.String(d.sub.SubscriptionID), d.authCredentials.credential, &arm.ClientOptions{})
+	client, err := armnetwork.NewPublicIPAddressesClient(to.String(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("could not get new public ip addresses client: %w", err)
 		return []string{}
