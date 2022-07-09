@@ -267,7 +267,7 @@ func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *armnetwork.L
 	// Create public IP address client
 	client, err := armnetwork.NewPublicIPAddressesClient(to.String(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
-		err = fmt.Errorf("could not get new public ip addresses client: %w", err)
+		log.Debugf("could not get new public ip addresses client: %v", err)
 		return []string{}
 	}
 
@@ -295,7 +295,7 @@ func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *armnetwork.L
 			publicIpAddressName,
 			&armnetwork.PublicIPAddressesClientGetOptions{})
 		if err != nil {
-			err = fmt.Errorf("could not get public ip address: %w", err)
+			log.Debugf("could not get public ip address: %v", err)
 			return []string{}
 		}
 
