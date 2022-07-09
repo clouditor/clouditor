@@ -445,7 +445,7 @@ func TestStorageHandleMethodsWhenInputIsInvalid(t *testing.T) {
 	if err != nil {
 		fmt.Println("error getting mocked storage account object: %w", err)
 	}
-	
+
 	// Test method handleObjectStorage
 	containerItem := armstorage.ListContainerItem{}
 	handleObjectStorageRespone, err := handleObjectStorage(mockedStorageAccountObject, &containerItem)

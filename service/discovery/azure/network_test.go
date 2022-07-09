@@ -192,7 +192,7 @@ func TestAzureNetworkAuthorizer(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Nil(t, list)
-	assert.Equal(t, "could not authorize Azure account: no authorized was available", err.Error())
+	assert.ErrorIs(t, err, ErrNoCredentialsConfigured)
 }
 
 func TestNetwork(t *testing.T) {
@@ -234,14 +234,14 @@ func TestComputeDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
 	discoverNetworkInterfacesResponse, err := d.discoverNetworkInterfaces()
 
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "could not list network interfaces")
+	assert.Contains(t, err.Error(), "error getting next page:")
 	assert.Nil(t, discoverNetworkInterfacesResponse)
 
 	// Test method discoverLoadBalancer
 	discoverLoadBalancerResponse, err := d.discoverLoadBalancer()
 
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "could not list load balancer")
+	assert.Contains(t, err.Error(), "error getting next page:")
 	assert.Nil(t, discoverLoadBalancerResponse)
 
 }
