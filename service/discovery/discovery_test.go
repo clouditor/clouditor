@@ -41,7 +41,6 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/service/discovery/azure"
 	"clouditor.io/clouditor/voc"
 
 	"github.com/stretchr/testify/assert"
@@ -279,95 +278,82 @@ func TestStart(t *testing.T) {
 			wantErr:        false,
 			wantErrMessage: "",
 		},
-		{
-			name: "Azure authorizer from file",
-			fields: fields{
-				envVariables: []envVariable{
-					// We must set AZURE_AUTH_LOCATION to the Azure credentials test file and the set HOME to a
-					// wrong path so that the Azure authorizer passes and the K8S authorizer fails
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "AZURE_AUTH_LOCATION",
-						envVariableValue: "service/discovery/testdata/credentials_test_file",
-					},
-					// Set $AZURE_ENVIRONMENT to sth. invalid s.t. Authorizer from file (2nd option is used)
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "AZURE_ENVIRONMENT",
-						envVariableValue: "!?NoEnvironment!?",
-					},
-				},
-			},
-			providers:      []string{ProviderAzure},
-			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
-			wantErr:        false,
-			wantErrMessage: "",
-		},
-		{
-			name: "No Azure authorizer",
-			fields: fields{
-				// We must set env variables accordingly s.t. all authorizer will fail
-				envVariables: []envVariable{
-					// Let `authorizer from ENV` fail
-					// It uses the order: 1. Client credentials 2. Client certificate 3. Username password 4. MSI
-					// 1. Set client credentials
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "AZURE_TENANT_ID",
-						envVariableValue: "",
-					},
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "AZURE_CLIENT_ID",
-						envVariableValue: "",
-					},
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "AZURE_CLIENT_SECRET",
-						envVariableValue: "",
-					},
-					// 2. set certificate path and certificate pw to empty string (client and tenant ID already empty)
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "AZURE_CERTIFICATE_PATH",
-						envVariableValue: "",
-					},
-					// 3. Set username and password to empty string (client and tenant ID already empty)
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "AZURE_USERNAME",
-						envVariableValue: "",
-					},
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "AZURE_PASSWORD",
-						envVariableValue: "",
-					},
-					// 4. Try to prevent getting authorizer from MSI: Set AZ ENV to sth. wrong (but not empty!)
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "AZURE_ENVIRONMENT",
-						envVariableValue: "!?NoEnvironment!?",
-					},
-
-					// Let `authorizer file and CLI` fail: Set $AZURE_AUTH_LOCATION and $HOME to a wrong path
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "AZURE_AUTH_LOCATION",
-						envVariableValue: "",
-					},
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "HOME",
-						envVariableValue: "",
-					},
-				},
-			},
-			providers:      []string{ProviderAzure},
-			wantResp:       nil,
-			wantErr:        true,
-			wantErrMessage: azure.ErrCouldNotAuthenticate.Error(),
-		},
+		//{
+		//	name: "Azure authorizer from file",
+		//	fields: fields{
+		//		envVariables: []envVariable{
+		//			// We must set AZURE_AUTH_LOCATION to the Azure credentials test file and the set HOME to a
+		//			// wrong path so that the Azure authorizer passes and the K8S authorizer fails
+		//			{
+		//				hasEnvVariable:   true,
+		//				envVariableKey:   "AZURE_AUTH_LOCATION",
+		//				envVariableValue: "service/discovery/testdata/credentials_test_file",
+		//			},
+		//			// Set $AZURE_ENVIRONMENT to sth. invalid s.t. Authorizer from file (2nd option is used)
+		//			{
+		//				hasEnvVariable:   true,
+		//				envVariableKey:   "AZURE_ENVIRONMENT",
+		//				envVariableValue: "!?NoEnvironment!?",
+		//			},
+		//		},
+		//	},
+		//	providers:      []string{ProviderAzure},
+		//	wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
+		//	wantErr:        false,
+		//	wantErrMessage: "",
+		//},
+		//{
+		//	// If I understand it right, it is not possible to get an error in azidentity.NewDefaultAzureCredential() and we are not able to check that.
+		//	name: "No Azure authorizer",
+		//	fields: fields{
+		//		// We must set env variables accordingly s.t. all authorizer will fail
+		//		envVariables: []envVariable{
+		//			// Let `NewDefaultAzureCredential()` fail
+		//			// It uses the order: 1. Environment credentials 2. Managed Identity credentials 3. CLI credentials
+		//			// 1. Set environment variables for NewEnvironmentCredential()
+		//			{
+		//				hasEnvVariable:   true,
+		//				envVariableKey:   "AZURE_TENANT_ID",
+		//				envVariableValue: "",
+		//			},
+		//			{
+		//				hasEnvVariable:   true,
+		//				envVariableKey:   "AZURE_CLIENT_SECRET",
+		//				envVariableValue: "",
+		//			},
+		//			{
+		//				hasEnvVariable:   true,
+		//				envVariableKey:   "AZURE_CLIENT_CERTIFICATE_PATH",
+		//				envVariableValue: "",
+		//			},
+		//			{
+		//				hasEnvVariable:   true,
+		//				envVariableKey:   "AZURE_USERNAME",
+		//				envVariableValue: "",
+		//			},
+		//			{
+		//				hasEnvVariable:   true,
+		//				envVariableKey:   "AZURE_PASSWORD",
+		//				envVariableValue: "",
+		//			},
+		//			// 2. set environment variables for NewManagedIdentityCredential()
+		//			{
+		//				hasEnvVariable:   true,
+		//				envVariableKey:   "IDENTITY_ENDPOINT",
+		//				envVariableValue: "",
+		//			},
+		//			{
+		//				hasEnvVariable:   true,
+		//				envVariableKey:   "MSI_ENDPOINT",
+		//				envVariableValue: "",
+		//			},
+		//		},
+		//	},
+		//	providers:      []string{ProviderAzure},
+		//	wantResp:       nil,
+		//	wantErr:        true,
+		//	wantErrMessage: azure.ErrCouldNotAuthenticate.Error(),
+		//},
 		{
 			name: "No K8s authorizer",
 			fields: fields{
@@ -523,7 +509,7 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 				},
 			},
 			&voc.StorageService{
-				Storages: []voc.ResourceID{("some-id")},
+				Storages: []voc.ResourceID{"some-id"},
 				NetworkService: &voc.NetworkService{
 					Networking: &voc.Networking{
 						Resource: &voc.Resource{

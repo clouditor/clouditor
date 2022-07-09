@@ -47,8 +47,7 @@ import (
 var (
 	log *logrus.Entry
 
-	ErrCouldNotAuthenticate = errors.New("could not authenticate to Azure with any authorizer " +
-		"(from environment, file, or CLI)")
+	ErrCouldNotAuthenticate    = errors.New("could not authenticate to Azure")
 	ErrNoCredentialsConfigured = errors.New("no credentials were configured")
 )
 
@@ -132,7 +131,7 @@ func (a *azureDiscovery) authorize() (err error) {
 func NewAuthorizer() (*azidentity.DefaultAzureCredential, error) {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
-		log.Fatalf("Authentication failure: %+v", err)
+		log.Fatalf("%s: %+v", ErrCouldNotAuthenticate, err)
 	}
 
 	return cred, nil

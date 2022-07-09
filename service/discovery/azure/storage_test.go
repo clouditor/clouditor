@@ -27,7 +27,6 @@ package azure
 
 import (
 	"clouditor.io/clouditor/voc"
-	"errors"
 	"fmt"
 	"io"
 	"k8s.io/apimachinery/pkg/util/json"
@@ -50,10 +49,6 @@ func newMockStorageSender() *mockStorageSender {
 
 type responseStorageAccount struct {
 	Value armstorage.Account `json:"value,omitempty"`
-}
-
-type responseDisk struct {
-	Value []armcompute.Disk `json:"value,omitempty"`
 }
 
 func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error) {
@@ -515,39 +510,6 @@ func TestStorageDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
 	discoverBlockStoragesResponse, err := d.discoverBlockStorages()
 	assert.Error(t, err)
 	assert.Nil(t, discoverBlockStoragesResponse)
-}
-
-// mockedDisk returns one mocked compute disk
-func mockedDisk(reqUrl string) (disk armcompute.Disk, err error) {
-
-	m := newMockStorageSender()
-	req, err := http.NewRequest("GET", reqUrl, nil)
-	if err != nil {
-		return disk, errors.New("error creating new request")
-	}
-	resp, err := m.Do(req)
-	if err != nil {
-		return disk, fmt.Errorf("error getting mock http response: %w", err)
-	}
-
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			fmt.Println("error io.ReadCloser: %w", err)
-		}
-	}(resp.Body)
-
-	responseBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return disk, fmt.Errorf("error read all: %w", err)
-	}
-	var disks responseDisk
-	err = json.Unmarshal(responseBody, &disks)
-	if err != nil {
-		return disk, fmt.Errorf("error unmarshalling: %w", err)
-	}
-
-	return disks.Value[0], nil
 }
 
 // mockedStorageAccount returns one mocked storage account
