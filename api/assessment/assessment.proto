@@ -51,7 +51,6 @@ service Assessment {
     option (google.api.http) = {
       post : "/v1/assessment/evidences"
       body : "evidence"
-      response_body : "status"
     };
   }
 

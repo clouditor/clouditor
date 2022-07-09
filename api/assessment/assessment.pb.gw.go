@@ -127,7 +127,7 @@ func RegisterAssessmentHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 			return
 		}
 
-		forward_Assessment_AssessEvidence_0(ctx, mux, outboundMarshaler, w, req, response_Assessment_AssessEvidence_0{resp}, mux.GetForwardResponseOptions()...)
+		forward_Assessment_AssessEvidence_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -213,7 +213,7 @@ func RegisterAssessmentHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 			return
 		}
 
-		forward_Assessment_AssessEvidence_0(ctx, mux, outboundMarshaler, w, req, response_Assessment_AssessEvidence_0{resp}, mux.GetForwardResponseOptions()...)
+		forward_Assessment_AssessEvidence_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -239,15 +239,6 @@ func RegisterAssessmentHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 	})
 
 	return nil
-}
-
-type response_Assessment_AssessEvidence_0 struct {
-	proto.Message
-}
-
-func (m response_Assessment_AssessEvidence_0) XXX_ResponseBody() interface{} {
-	response := m.Message.(*AssessEvidenceResponse)
-	return response.Status
 }
 
 var (
