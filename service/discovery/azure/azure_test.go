@@ -34,6 +34,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"testing"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
@@ -216,3 +217,92 @@ func Test_authOption_apply(t *testing.T) {
 	}
 }
 */
+
+func Test_labels(t *testing.T) {
+
+	testValue1 := "testValue1"
+	testValue2 := "testValue2"
+	testValue3 := "testValue3"
+
+	type args struct {
+		tags map[string]*string
+	}
+	tests := []struct {
+		name string
+		args args
+		want map[string]string
+	}{
+		{
+			name: "Empty map of tags",
+			args: args{
+				tags: map[string]*string{},
+			},
+			want: map[string]string{},
+		},
+		{
+			name: "Tags are nil",
+			args: args{},
+			want: map[string]string{},
+		},
+		{
+			name: "Valid tags",
+			args: args{
+				tags: map[string]*string{
+					"testTag1": &testValue1,
+					"testTag2": &testValue2,
+					"testTag3": &testValue3,
+				},
+			},
+			want: map[string]string{
+				"testTag1": testValue1,
+				"testTag2": testValue2,
+				"testTag3": testValue3,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, labels(tt.args.tags), "labels(%v)", tt.args.tags)
+		})
+	}
+}
+
+func Test_safeTimestamp(t *testing.T) {
+
+	testTime := time.Date(2000, 01, 20, 9, 20, 12, 123, time.UTC)
+	testTimeUnix := testTime.Unix()
+
+	type args struct {
+		t *time.Time
+	}
+	tests := []struct {
+		name string
+		args args
+		want int64
+	}{
+		{
+			name: "Empty time",
+			args: args{
+				t: &time.Time{},
+			},
+			want: 0,
+		},
+		{
+			name: "Time is nil",
+			args: args{},
+			want: 0,
+		},
+		{
+			name: "Valid time",
+			args: args{
+				t: &testTime,
+			},
+			want: testTimeUnix,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, safeTimestamp(tt.args.t), "safeTimestamp(%v)", tt.args.t)
+		})
+	}
+}

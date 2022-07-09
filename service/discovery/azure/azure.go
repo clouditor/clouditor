@@ -60,11 +60,6 @@ func WithSender(sender policy.Transporter) DiscoveryOption {
 	}
 }
 
-//func (a authorizerOption) GetToken(ctx context.Context, options policy.TokenRequestOptions) (azcore.AccessToken, error) {
-//	//TODO implement me
-//	panic("implement me")
-//}
-
 func WithAuthorizer(authorizer azcore.TokenCredential) DiscoveryOption {
 	return func(a *azureDiscovery) {
 		a.cred = authorizer
@@ -161,6 +156,10 @@ func labels(tags map[string]*string) map[string]string {
 // safeTimestamp returns either the UNIX timestamp of the time t or 0 if it is nil
 func safeTimestamp(t *time.Time) int64 {
 	if t == nil {
+		return 0
+	}
+
+	if t.IsZero() {
 		return 0
 	}
 
