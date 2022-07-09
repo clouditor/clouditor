@@ -197,18 +197,24 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 				LoggingService:  []voc.ResourceID{},
 			},
 		},
-		BlockStorage: []voc.ResourceID{},
 	}
 
 	// Reference to networkInterfaces
-	for _, networkInterfaces := range vm.Properties.NetworkProfile.NetworkInterfaces {
-		r.NetworkInterface = append(r.NetworkInterface, voc.ResourceID(to.String(networkInterfaces.ID)))
+	if vm.Properties.NetworkProfile != nil {
+		for _, networkInterfaces := range vm.Properties.NetworkProfile.NetworkInterfaces {
+			r.NetworkInterface = append(r.NetworkInterface, voc.ResourceID(to.String(networkInterfaces.ID)))
+		}
 	}
 
 	// Reference to blockstorage
-	r.BlockStorage = append(r.BlockStorage, voc.ResourceID(to.String(vm.Properties.StorageProfile.OSDisk.ManagedDisk.ID)))
-	for _, blockstorage := range vm.Properties.StorageProfile.DataDisks {
-		r.BlockStorage = append(r.BlockStorage, voc.ResourceID(to.String(blockstorage.ManagedDisk.ID)))
+	if vm.Properties.StorageProfile != nil && vm.Properties.StorageProfile.OSDisk != nil && vm.Properties.StorageProfile.OSDisk.ManagedDisk != nil {
+		r.BlockStorage = append(r.BlockStorage, voc.ResourceID(to.String(vm.Properties.StorageProfile.OSDisk.ManagedDisk.ID)))
+	}
+
+	if vm.Properties.StorageProfile != nil && vm.Properties.StorageProfile.DataDisks != nil {
+		for _, blockstorage := range vm.Properties.StorageProfile.DataDisks {
+			r.BlockStorage = append(r.BlockStorage, voc.ResourceID(to.String(blockstorage.ManagedDisk.ID)))
+		}
 	}
 
 	return r, nil

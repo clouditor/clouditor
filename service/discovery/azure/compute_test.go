@@ -61,8 +61,40 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 					"name":     "vm1",
 					"location": "eastus",
 					"properties": map[string]interface{}{
+						"storageProfile": map[string]interface{}{
+							"osDisk": map[string]interface{}{
+								"managedDisk": map[string]interface{}{
+									"id": "os_test_disk",
+								},
+							},
+							"dataDisks": &[]map[string]interface{}{
+								{
+									"managedDisk": map[string]interface{}{
+										"id": "data_disk_1",
+									},
+								},
+								{
+									"managedDisk": map[string]interface{}{
+										"id": "data_disk_2",
+									},
+								},
+							},
+						},
 						"diagnosticsProfile": map[string]interface{}{
-							"bootDiagnostics": map[string]interface{}{},
+							"bootDiagnostics": map[string]interface{}{
+								"enabled":    true,
+								"storageUri": "https://logstoragevm1.blob.core.windows.net/",
+							},
+						},
+						"networkProfile": map[string]interface{}{
+							"networkInterfaces": &[]map[string]interface{}{
+								{
+									"id": "123",
+								},
+								{
+									"id": "234",
+								},
+							},
 						},
 					},
 				},
@@ -71,88 +103,50 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 					"name":     "vm2",
 					"location": "eastus",
 					"properties": map[string]interface{}{
+						"storageProfile": map[string]interface{}{
+							"osDisk": map[string]interface{}{
+								"managedDisk": map[string]interface{}{
+									"id": "os_test_disk",
+								},
+							},
+							"dataDisks": &[]map[string]interface{}{
+								{
+									"managedDisk": map[string]interface{}{
+										"id": "data_disk_2",
+									},
+								},
+								{
+									"managedDisk": map[string]interface{}{
+										"id": "data_disk_3",
+									},
+								},
+							},
+						},
+						"diagnosticsProfile": map[string]interface{}{
+							"bootDiagnostics": map[string]interface{}{
+								"enabled":    true,
+								"storageUri": nil,
+							},
+						},
+						"networkProfile": map[string]interface{}{
+							"networkInterfaces": &[]map[string]interface{}{
+								{
+									"id": "987",
+								},
+								{
+									"id": "654",
+								},
+							},
+						},
+					},
+				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm3",
+					"name":     "vm2",
+					"location": "eastus",
+					"properties": map[string]interface{}{
 						"diagnosticsProfile": map[string]interface{}{
 							"bootDiagnostics": map[string]interface{}{},
-						},
-					},
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1" {
-		return createResponse(map[string]interface{}{
-			"properties": map[string]interface{}{
-				"storageProfile": map[string]interface{}{
-					"osDisk": map[string]interface{}{
-						"managedDisk": map[string]interface{}{
-							"id": "os_test_disk",
-						},
-					},
-					"dataDisks": &[]map[string]interface{}{
-						{
-							"managedDisk": map[string]interface{}{
-								"id": "data_disk_1",
-							},
-						},
-						{
-							"managedDisk": map[string]interface{}{
-								"id": "data_disk_2",
-							},
-						},
-					},
-				},
-				"diagnosticsProfile": map[string]interface{}{
-					"bootDiagnostics": map[string]interface{}{
-						"enabled":    true,
-						"storageUri": "https://logstoragevm1.blob.core.windows.net/",
-					},
-				},
-				"networkProfile": map[string]interface{}{
-					"networkInterfaces": &[]map[string]interface{}{
-						{
-							"id": "123",
-						},
-						{
-							"id": "234",
-						},
-					},
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2" {
-		return createResponse(map[string]interface{}{
-			"properties": map[string]interface{}{
-				"storageProfile": map[string]interface{}{
-					"osDisk": map[string]interface{}{
-						"managedDisk": map[string]interface{}{
-							"id": "os_test_disk",
-						},
-					},
-					"dataDisks": &[]map[string]interface{}{
-						{
-							"managedDisk": map[string]interface{}{
-								"id": "data_disk_2",
-							},
-						},
-						{
-							"managedDisk": map[string]interface{}{
-								"id": "data_disk_3",
-							},
-						},
-					},
-				},
-				"diagnosticsProfile": map[string]interface{}{
-					"bootDiagnostics": map[string]interface{}{
-						"enabled":    true,
-						"storageUri": nil,
-					},
-				},
-				"networkProfile": map[string]interface{}{
-					"networkInterfaces": &[]map[string]interface{}{
-						{
-							"id": "987",
-						},
-						{
-							"id": "654",
 						},
 					},
 				},
@@ -190,17 +184,18 @@ func TestCompute(t *testing.T) {
 		WithAuthorizer(&mockAuthorizer{}),
 	)
 
+	// TODO(anatheka): Check why it is nil
 	list, err := d.List()
 
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 3, len(list))
+	assert.Equal(t, 4, len(list))
 	assert.NotEmpty(t, d.Name())
 }
 
 func TestVirtualMachine(t *testing.T) {
 	d := NewAzureComputeDiscovery(
-		// WithSender(&mockComputeSender{}),
+		WithSender(&mockComputeSender{}),
 		WithAuthorizer(&mockAuthorizer{}),
 	)
 
@@ -225,6 +220,12 @@ func TestVirtualMachine(t *testing.T) {
 	virtualMachine2, ok := list[1].(*voc.VirtualMachine)
 	assert.True(t, ok)
 	assert.Equal(t, voc.ResourceID(""), virtualMachine2.BootLogging.LoggingService[0])
+
+	virtualMachine3, ok := list[2].(*voc.VirtualMachine)
+	assert.True(t, ok)
+	assert.Equal(t, []voc.ResourceID(nil), virtualMachine3.BlockStorage)
+	assert.Equal(t, []voc.ResourceID(nil), virtualMachine3.NetworkInterface)
+
 }
 
 func TestFunction(t *testing.T) {
@@ -237,9 +238,9 @@ func TestFunction(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 3, len(list))
+	assert.Equal(t, 4, len(list))
 
-	function, ok := list[2].(*voc.Function)
+	function, ok := list[3].(*voc.Function)
 
 	assert.True(t, ok)
 	assert.Equal(t, "function1", function.Name)
@@ -251,7 +252,7 @@ func TestComputeDiscoverFunctionsWhenInputIsInvalid(t *testing.T) {
 	discoverFunctionsResponse, err := d.discoverFunctions()
 
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "could not list functions")
+	assert.Contains(t, err.Error(), "error getting next page:")
 	assert.Nil(t, discoverFunctionsResponse)
 }
 
@@ -261,7 +262,7 @@ func TestComputeDiscoverVirtualMachines(t *testing.T) {
 	discoverVirtualMachineResponse, err := d.discoverVirtualMachines()
 
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "could not list virtual machines")
+	assert.Contains(t, err.Error(), "error getting next page:")
 	assert.Nil(t, discoverVirtualMachineResponse)
 }
 
