@@ -222,7 +222,6 @@ func LoadBalancerPorts(lb *armnetwork.LoadBalancer) (loadBalancerPorts []int16) 
 //	nsgID := to.String(ni.NetworkSecurityGroup.ID)
 //
 //	client := network.NewSecurityGroupsClient(to.String(d.sub.SubscriptionID))
-//	d.apply(&client.Client)
 //
 //	// Get the Security Group of the network interface ni
 //	sg, err := client.Get(context.Background(), getResourceGroupName(nsgID), strings.Split(nsgID, "/")[8], "")

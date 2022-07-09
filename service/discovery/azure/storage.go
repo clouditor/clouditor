@@ -86,7 +86,6 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 
 	// Create storage accounts client
 	client, err := armstorage.NewAccountsClient(to.String(d.sub.SubscriptionID), d.cred, &d.clientOptions)
-	//d.apply(&policy.ClientOptions{})
 	if err != nil {
 		err = fmt.Errorf("could not get new storage accounts client: %w", err)
 		return nil, err

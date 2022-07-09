@@ -255,7 +255,7 @@ func Test_azureDiscovery_authorize(t *testing.T) {
 				cred:          tt.fields.cred,
 				clientOptions: tt.fields.clientOptions,
 			}
-			tt.wantErr(t, a.authorize(), fmt.Sprintf("authorize()"))
+			tt.wantErr(t, a.authorize())
 		})
 	}
 }
