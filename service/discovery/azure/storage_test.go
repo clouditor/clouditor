@@ -26,6 +26,11 @@
 package azure
 
 import (
+	"clouditor.io/clouditor/voc"
+	"errors"
+	"fmt"
+	"io"
+	"k8s.io/apimachinery/pkg/util/json"
 	"net/http"
 	"testing"
 
@@ -260,13 +265,13 @@ func TestAzureStorageAuthorizer(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Nil(t, list)
-	assert.Equal(t, "could not authorize Azure account: no authorized was available", err.Error())
+	assert.ErrorIs(t, err, ErrNoCredentialsConfigured)
 }
 
 func TestStorage(t *testing.T) {
 	d := NewAzureStorageDiscovery(
-		WithSender(&mockSender{}),
-		//WithAuthorizer(&mockAuthorizer{}),
+		WithSender(&mockStorageSender{}),
+		WithAuthorizer(&mockAuthorizer{}),
 	)
 
 	list, err := d.List()
@@ -277,316 +282,304 @@ func TestStorage(t *testing.T) {
 	assert.NotEmpty(t, d.Name())
 }
 
-//func TestListObjectStorage(t *testing.T) {
-//	d := NewAzureStorageDiscovery(
-//		WithAuthorizer(&mockAuthorizer{}),
-//	)
-//
-//	list, err := d.List()
-//	assert.NoError(t, err)
-//	assert.NotNil(t, list)
-//
-//	var counter int
-//	for _, item := range list {
-//		if item.GetType()[0] == "ObjectStorage" {
-//			counter++
-//		}
-//	}
-//	assert.Equal(t, 4, counter)
-//}
-//
-//func TestObjectStorage(t *testing.T) {
-//	d := NewAzureStorageDiscovery(
-//		WithAuthorizer(&mockAuthorizer{}),
-//	)
-//
-//	list, err := d.List()
-//	assert.NoError(t, err)
-//	assert.NotNil(t, list)
-//
-//	objectStorage, ok := list[0].(*voc.ObjectStorage)
-//
-//	// Check ObjectStorage properties
-//	assert.True(t, ok)
-//	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1", string(objectStorage.ID))
-//	assert.Equal(t, "container1", objectStorage.Name)
-//	assert.NotNil(t, objectStorage.CreationTime)
-//	assert.Equal(t, "ObjectStorage", objectStorage.Type[0])
-//	assert.Equal(t, "eastus", objectStorage.GeoLocation.Region)
-//	assert.Equal(t, true, objectStorage.Storage.AtRestEncryption.GetAtRestEncryption().Enabled)
-//
-//	// Check StorageService properties
-//	storageService, ok := list[4].(*voc.StorageService)
-//	assert.True(t, ok)
-//	assert.Equal(t, "https://account1.[file,blob].core.windows.net/", storageService.HttpEndpoint.Url)
-//	assert.Equal(t, true, storageService.HttpEndpoint.TransportEncryption.Enabled)
-//	assert.Equal(t, true, storageService.HttpEndpoint.TransportEncryption.Enforced)
-//	assert.Equal(t, "TLS1_2", storageService.HttpEndpoint.TransportEncryption.TlsVersion)
-//	assert.Equal(t, "TLS", storageService.HttpEndpoint.TransportEncryption.Algorithm)
-//
-//	// Check ManagedKeyEncryption
-//	atRestEncryption := *objectStorage.Storage.GetAtRestEncryption()
-//	managedKeyEncryption, ok := atRestEncryption.(voc.ManagedKeyEncryption)
-//	assert.True(t, ok)
-//	assert.Equal(t, true, managedKeyEncryption.Enabled)
-//	assert.Equal(t, "AES256", managedKeyEncryption.Algorithm)
-//
-//	// Check CustomerKeyEncryption
-//	objectStorage, ok = list[5].(*voc.ObjectStorage)
-//	assert.True(t, ok)
-//	atRestEncryption = *objectStorage.Storage.GetAtRestEncryption()
-//	customerKeyEncryption, ok := atRestEncryption.(voc.CustomerKeyEncryption)
-//	assert.True(t, ok)
-//	assert.Equal(t, true, customerKeyEncryption.Enabled)
-//	assert.Equal(t, "https://testvault.vault.azure.net/keys/testkey/123456", customerKeyEncryption.KeyUrl)
-//}
-//
-//func TestListFileStorage(t *testing.T) {
-//	d := NewAzureStorageDiscovery(
-//		WithAuthorizer(&mockAuthorizer{}),
-//	)
-//
-//	list, err := d.List()
-//	assert.NoError(t, err)
-//	assert.NotNil(t, list)
-//
-//	var counter int
-//	for _, item := range list {
-//		if item.GetType()[0] == "FileStorage" {
-//			counter++
-//		}
-//	}
-//	assert.Equal(t, 2, counter)
-//}
-//
-//func TestFileStorage(t *testing.T) {
-//	d := NewAzureStorageDiscovery(
-//		WithAuthorizer(&mockAuthorizer{}),
-//	)
-//
-//	list, err := d.List()
-//	assert.NoError(t, err)
-//	assert.NotNil(t, list)
-//
-//	fileStorage, ok := list[2].(*voc.FileStorage)
-//
-//	assert.True(t, ok)
-//	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1", string(fileStorage.ID))
-//	assert.Equal(t, "fileshare1", fileStorage.Name)
-//	assert.NotNil(t, fileStorage.CreationTime)
-//	assert.Equal(t, "FileStorage", fileStorage.Type[0])
-//	assert.Equal(t, "eastus", fileStorage.GeoLocation.Region)
-//	assert.Equal(t, true, fileStorage.Storage.AtRestEncryption.GetAtRestEncryption().Enabled)
-//
-//	storageService, ok := list[4].(*voc.StorageService)
-//	assert.True(t, ok)
-//	assert.Equal(t, "https://account1.[file,blob].core.windows.net/", storageService.HttpEndpoint.Url)
-//	assert.Equal(t, true, storageService.HttpEndpoint.TransportEncryption.Enabled)
-//	assert.Equal(t, true, storageService.HttpEndpoint.TransportEncryption.Enforced)
-//	assert.Equal(t, "TLS1_2", storageService.HttpEndpoint.TransportEncryption.TlsVersion)
-//	assert.Equal(t, "TLS", storageService.HttpEndpoint.TransportEncryption.Algorithm)
-//}
-//
-//func TestListBlockStorage(t *testing.T) {
-//	d := NewAzureStorageDiscovery(
-//	// WithAuthorizer(&mockAuthorizer{}),
-//	)
-//
-//	list, err := d.List()
-//	assert.NoError(t, err)
-//	assert.NotNil(t, list)
-//
-//	var counter int
-//	for _, item := range list {
-//		if item.GetType()[0] == "BlockStorage" {
-//			counter++
-//		}
-//	}
-//	assert.Equal(t, 2, counter)
-//}
-//
-//func TestBlockStorage(t *testing.T) {
-//	d := NewAzureStorageDiscovery(
-//	// WithAuthorizer(&mockAuthorizer{}),
-//	)
-//
-//	list, err := d.List()
-//	assert.NoError(t, err)
-//	assert.NotNil(t, list)
-//
-//	blockStorage, ok := list[8].(*voc.BlockStorage)
-//
-//	assert.True(t, ok)
-//	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1", string(blockStorage.ID))
-//	assert.Equal(t, "disk1", blockStorage.Name)
-//	assert.NotNil(t, blockStorage.CreationTime)
-//	assert.Equal(t, "BlockStorage", blockStorage.Type[0])
-//	assert.Equal(t, "eastus", blockStorage.GeoLocation.Region)
-//	assert.Equal(t, true, blockStorage.AtRestEncryption.GetAtRestEncryption().Enabled)
-//}
-//
-//func TestStorageHandleMethodsWhenInputIsInvalid(t *testing.T) {
-//	d := azureStorageDiscovery{}
-//
-//	// Get mocked armstorage.Account
-//	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"
-//	mockedStorageAccountObject, err := mockedStorageAccount(reqURL)
-//	if err != nil {
-//		fmt.Println("error getting mocked storage account object: %w", err)
-//	}
-//	// Test method handleObjectStorage
-//	containerItem := armstorage.ListContainerItem{}
-//
-//	// //TODO(anatheka): Do we need that anymore?
-//	// // Clear KeySource
-//	// mockedStorageAccountObject.Properties.Encryption.KeySource = ""
-//
-//	handleObjectStorageRespone, err := handleObjectStorage(mockedStorageAccountObject, &containerItem)
-//	assert.Error(t, err)
-//	assert.Nil(t, handleObjectStorageRespone)
-//
-//	// Test method handleFileStorage
-//	fileShare := &armstorage.FileShareItem{}
-//
-//	// //TODO(anatheka): Do we need that anymore?
-//	// // Clear KeySource
-//	// mockedStorageAccountObject.Properties.Encryption.KeySource = ""
-//
-//	handleFileStorageRespone, err := handleFileStorage(mockedStorageAccountObject, fileShare)
-//	assert.Error(t, err)
-//	assert.Nil(t, handleFileStorageRespone)
-//
-//	// Test method handleBlockStorage
-//	reqURL = "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/disks"
-//	disk, err := mockedDisk(reqURL)
-//	if err != nil {
-//		fmt.Println("error getting mocked disk object: %w", err)
-//	}
-//
-//	// TODO(anatheka): Do we need that anymore?
-//	// // Clear KeySource
-//	// disk.Properties.Encryption.Type = ""
-//
-//	handleBlockStorageResponse, err := d.handleBlockStorage(&disk)
-//	assert.Error(t, err)
-//	assert.Nil(t, handleBlockStorageResponse)
-//}
-//
-//func TestStorageMethodsWhenInputIsInvalid(t *testing.T) {
-//	// Get mocked armstorage.Account
-//	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"
-//	mockedStorageAccountObject, err := mockedStorageAccount(reqURL)
-//	if err != nil {
-//		fmt.Println("error getting mocked storage account object: %w", err)
-//	}
-//
-//	// Test method diskEncryptionSetName
-//	discEncryptionSetID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1"
-//	assert.Equal(t, "encryptionkeyvault1", diskEncryptionSetName(discEncryptionSetID))
-//
-//	// Test method storageAtRestEncryption
-//	atRestEncryption, err := storageAtRestEncryption(mockedStorageAccountObject)
-//	assert.NoError(t, err)
-//
-//	managedKeyEncryption := voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{Algorithm: "AES256", Enabled: true}}
-//	assert.Equal(t, managedKeyEncryption, atRestEncryption)
-//
-//}
-//
-//func TestStorageDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
-//	d := azureStorageDiscovery{}
-//
-//	// Get mocked armstorage.Account
-//	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"
-//	mockedStorageAccountObject, err := mockedStorageAccount(reqURL)
-//	if err != nil {
-//		fmt.Println("error getting mocked storage account object: %w", err)
-//	}
-//	// Test method discoverStorageAccounts
-//	discoverStorageAccountsResponse, err := d.discoverStorageAccounts()
-//	assert.Error(t, err)
-//	assert.Contains(t, err.Error(), "could not list storage accounts")
-//	assert.Nil(t, discoverStorageAccountsResponse)
-//
-//	// Test method discoverObjectStorages
-//	discoverObjectStoragesResponse, err := d.discoverObjectStorages(mockedStorageAccountObject)
-//	assert.Error(t, err)
-//	assert.Nil(t, discoverObjectStoragesResponse)
-//
-//	// Test method discoverFileStorages
-//	discoverFileStoragesResponse, err := d.discoverFileStorages(mockedStorageAccountObject)
-//	assert.Error(t, err)
-//	assert.Nil(t, discoverFileStoragesResponse)
-//
-//	// Test method discoverBlockStorages
-//	discoverBlockStoragesResponse, err := d.discoverBlockStorages()
-//	assert.Error(t, err)
-//	assert.Nil(t, discoverBlockStoragesResponse)
-//}
-//
-//// mockedDisk returns one mocked compute disk
-//func mockedDisk(reqUrl string) (disk armcompute.Disk, err error) {
-//
-//	m := newMockStorageSender()
-//	req, err := http.NewRequest("GET", reqUrl, nil)
-//	if err != nil {
-//		return disk, errors.New("error creating new request")
-//	}
-//	resp, err := m.Do(req)
-//	if err != nil {
-//		return disk, fmt.Errorf("error getting mock http response: %w", err)
-//	}
-//
-//	defer func(Body io.ReadCloser) {
-//		err := Body.Close()
-//		if err != nil {
-//			fmt.Println("error io.ReadCloser: %w", err)
-//		}
-//	}(resp.Body)
-//
-//	responseBody, err := io.ReadAll(resp.Body)
-//	if err != nil {
-//		return disk, fmt.Errorf("error read all: %w", err)
-//	}
-//	var disks responseDisk
-//	err = json.Unmarshal(responseBody, &disks)
-//	if err != nil {
-//		return disk, fmt.Errorf("error unmarshalling: %w", err)
-//	}
-//
-//	return disks.Value[0], nil
-//}
-//
-//// mockedStorageAccount returns one mocked storage account
-//func mockedStorageAccount(reqUrl string) (storageAccount *armstorage.Account, err error) {
-//	var storageAccountResponse responseStorageAccount
-//
-//	m := newMockStorageSender()
-//	req, err := http.NewRequest("GET", reqUrl, nil)
-//	if err != nil {
-//		return storageAccount, fmt.Errorf("error creating new request: %w", err)
-//	}
-//	resp, err := m.Do(req)
-//	if err != nil {
-//		return storageAccount, fmt.Errorf("error getting mock http response: %w", err)
-//	}
-//
-//	defer func(Body io.ReadCloser) {
-//		err := Body.Close()
-//		if err != nil {
-//			fmt.Println("error io.ReadCloser: %w", err)
-//		}
-//	}(resp.Body)
-//	responseBody, err := io.ReadAll(resp.Body)
-//	if err != nil {
-//		return storageAccount, fmt.Errorf("error read all: %w", err)
-//	}
-//	err = json.Unmarshal(responseBody, &storageAccountResponse)
-//	if err != nil {
-//		return storageAccount, fmt.Errorf("error unmarshalling: %w", err)
-//	}
-//
-//	storageAccount = &storageAccountResponse.Value
-//
-//	return storageAccount, nil
-//}
+func TestListObjectStorage(t *testing.T) {
+	d := NewAzureStorageDiscovery(
+		WithSender(&mockStorageSender{}),
+		WithAuthorizer(&mockAuthorizer{}),
+	)
+
+	list, err := d.List()
+	assert.NoError(t, err)
+	assert.NotNil(t, list)
+
+	var counter int
+	for _, item := range list {
+		if item.GetType()[0] == "ObjectStorage" {
+			counter++
+		}
+	}
+	assert.Equal(t, 4, counter)
+}
+
+func TestObjectStorage(t *testing.T) {
+	d := NewAzureStorageDiscovery(
+		WithSender(&mockStorageSender{}),
+		WithAuthorizer(&mockAuthorizer{}),
+	)
+
+	list, err := d.List()
+	assert.NoError(t, err)
+	assert.NotNil(t, list)
+
+	objectStorage, ok := list[0].(*voc.ObjectStorage)
+
+	// Check ObjectStorage properties
+	assert.True(t, ok)
+	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1", string(objectStorage.ID))
+	assert.Equal(t, "container1", objectStorage.Name)
+	assert.NotNil(t, objectStorage.CreationTime)
+	assert.Equal(t, "ObjectStorage", objectStorage.Type[0])
+	assert.Equal(t, "eastus", objectStorage.GeoLocation.Region)
+	assert.Equal(t, true, objectStorage.Storage.AtRestEncryption.GetAtRestEncryption().Enabled)
+
+	// Check StorageService properties
+	storageService, ok := list[4].(*voc.StorageService)
+	assert.True(t, ok)
+	assert.Equal(t, "https://account1.[file,blob].core.windows.net/", storageService.HttpEndpoint.Url)
+	assert.Equal(t, true, storageService.HttpEndpoint.TransportEncryption.Enabled)
+	assert.Equal(t, true, storageService.HttpEndpoint.TransportEncryption.Enforced)
+	assert.Equal(t, "TLS1_2", storageService.HttpEndpoint.TransportEncryption.TlsVersion)
+	assert.Equal(t, "TLS", storageService.HttpEndpoint.TransportEncryption.Algorithm)
+
+	// Check ManagedKeyEncryption
+	atRestEncryption := *objectStorage.Storage.GetAtRestEncryption()
+	managedKeyEncryption, ok := atRestEncryption.(voc.ManagedKeyEncryption)
+	assert.True(t, ok)
+	assert.Equal(t, true, managedKeyEncryption.Enabled)
+	assert.Equal(t, "AES256", managedKeyEncryption.Algorithm)
+
+	// Check CustomerKeyEncryption
+	objectStorage, ok = list[5].(*voc.ObjectStorage)
+	assert.True(t, ok)
+	atRestEncryption = *objectStorage.Storage.GetAtRestEncryption()
+	customerKeyEncryption, ok := atRestEncryption.(voc.CustomerKeyEncryption)
+	assert.True(t, ok)
+	assert.Equal(t, true, customerKeyEncryption.Enabled)
+	assert.Equal(t, "https://testvault.vault.azure.net/keys/testkey/123456", customerKeyEncryption.KeyUrl)
+}
+
+func TestListFileStorage(t *testing.T) {
+	d := NewAzureStorageDiscovery(
+		WithSender(&mockStorageSender{}),
+		WithAuthorizer(&mockAuthorizer{}),
+	)
+
+	list, err := d.List()
+	assert.NoError(t, err)
+	assert.NotNil(t, list)
+
+	var counter int
+	for _, item := range list {
+		if item.GetType()[0] == "FileStorage" {
+			counter++
+		}
+	}
+	assert.Equal(t, 2, counter)
+}
+
+func TestFileStorage(t *testing.T) {
+	d := NewAzureStorageDiscovery(
+		WithSender(&mockStorageSender{}),
+		WithAuthorizer(&mockAuthorizer{}),
+	)
+
+	list, err := d.List()
+	assert.NoError(t, err)
+	assert.NotNil(t, list)
+
+	fileStorage, ok := list[2].(*voc.FileStorage)
+
+	assert.True(t, ok)
+	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1", string(fileStorage.ID))
+	assert.Equal(t, "fileshare1", fileStorage.Name)
+	assert.NotNil(t, fileStorage.CreationTime)
+	assert.Equal(t, "FileStorage", fileStorage.Type[0])
+	assert.Equal(t, "eastus", fileStorage.GeoLocation.Region)
+	assert.Equal(t, true, fileStorage.Storage.AtRestEncryption.GetAtRestEncryption().Enabled)
+
+	storageService, ok := list[4].(*voc.StorageService)
+	assert.True(t, ok)
+	assert.Equal(t, "https://account1.[file,blob].core.windows.net/", storageService.HttpEndpoint.Url)
+	assert.Equal(t, true, storageService.HttpEndpoint.TransportEncryption.Enabled)
+	assert.Equal(t, true, storageService.HttpEndpoint.TransportEncryption.Enforced)
+	assert.Equal(t, "TLS1_2", storageService.HttpEndpoint.TransportEncryption.TlsVersion)
+	assert.Equal(t, "TLS", storageService.HttpEndpoint.TransportEncryption.Algorithm)
+}
+
+func TestListBlockStorage(t *testing.T) {
+	d := NewAzureStorageDiscovery(
+		WithSender(&mockStorageSender{}),
+		WithAuthorizer(&mockAuthorizer{}),
+	)
+
+	list, err := d.List()
+	assert.NoError(t, err)
+	assert.NotNil(t, list)
+
+	var counter int
+	for _, item := range list {
+		if item.GetType()[0] == "BlockStorage" {
+			counter++
+		}
+	}
+	assert.Equal(t, 2, counter)
+}
+
+func TestBlockStorage(t *testing.T) {
+	d := NewAzureStorageDiscovery(
+		WithSender(&mockStorageSender{}),
+		WithAuthorizer(&mockAuthorizer{}),
+	)
+
+	list, err := d.List()
+	assert.NoError(t, err)
+	assert.NotNil(t, list)
+
+	blockStorage, ok := list[8].(*voc.BlockStorage)
+
+	assert.True(t, ok)
+	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1", string(blockStorage.ID))
+	assert.Equal(t, "disk1", blockStorage.Name)
+	assert.NotNil(t, blockStorage.CreationTime)
+	assert.Equal(t, "BlockStorage", blockStorage.Type[0])
+	assert.Equal(t, "eastus", blockStorage.GeoLocation.Region)
+	assert.Equal(t, true, blockStorage.AtRestEncryption.GetAtRestEncryption().Enabled)
+}
+
+func TestStorageHandleMethodsWhenInputIsInvalid(t *testing.T) {
+	d := azureStorageDiscovery{}
+
+	// Get mocked armstorage.Account
+	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"
+	mockedStorageAccountObject, err := mockedStorageAccount(reqURL)
+	if err != nil {
+		fmt.Println("error getting mocked storage account object: %w", err)
+	}
+	
+	// Test method handleObjectStorage
+	containerItem := armstorage.ListContainerItem{}
+	handleObjectStorageRespone, err := handleObjectStorage(mockedStorageAccountObject, &containerItem)
+	assert.Error(t, err)
+	assert.Nil(t, handleObjectStorageRespone)
+
+	// Test method handleFileStorage
+	fileShare := &armstorage.FileShareItem{}
+	handleFileStorageRespone, err := handleFileStorage(mockedStorageAccountObject, fileShare)
+	assert.Error(t, err)
+	assert.Nil(t, handleFileStorageRespone)
+
+	// Test method handleBlockStorage
+	disk := &armcompute.Disk{}
+	handleBlockStorageResponse, err := d.handleBlockStorage(disk)
+	assert.Error(t, err)
+	assert.Nil(t, handleBlockStorageResponse)
+}
+
+func TestStorageMethodsWhenInputIsInvalid(t *testing.T) {
+	// Get mocked armstorage.Account
+	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"
+	mockedStorageAccountObject, err := mockedStorageAccount(reqURL)
+	if err != nil {
+		fmt.Println("error getting mocked storage account object: %w", err)
+	}
+
+	// Test method diskEncryptionSetName
+	discEncryptionSetID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1"
+	assert.Equal(t, "encryptionkeyvault1", diskEncryptionSetName(discEncryptionSetID))
+
+	// Test method storageAtRestEncryption
+	atRestEncryption, err := storageAtRestEncryption(mockedStorageAccountObject)
+	assert.NoError(t, err)
+
+	managedKeyEncryption := voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{Algorithm: "AES256", Enabled: true}}
+	assert.Equal(t, managedKeyEncryption, atRestEncryption)
+
+}
+
+func TestStorageDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
+	d := azureStorageDiscovery{}
+
+	// Get mocked armstorage.Account
+	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"
+	mockedStorageAccountObject, err := mockedStorageAccount(reqURL)
+	if err != nil {
+		fmt.Println("error getting mocked storage account object: %w", err)
+	}
+	// Test method discoverStorageAccounts
+	discoverStorageAccountsResponse, err := d.discoverStorageAccounts()
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "error getting next page:")
+	assert.Nil(t, discoverStorageAccountsResponse)
+
+	// Test method discoverObjectStorages
+	discoverObjectStoragesResponse, err := d.discoverObjectStorages(mockedStorageAccountObject)
+	assert.Error(t, err)
+	assert.Nil(t, discoverObjectStoragesResponse)
+
+	// Test method discoverFileStorages
+	discoverFileStoragesResponse, err := d.discoverFileStorages(mockedStorageAccountObject)
+	assert.Error(t, err)
+	assert.Nil(t, discoverFileStoragesResponse)
+
+	// Test method discoverBlockStorages
+	discoverBlockStoragesResponse, err := d.discoverBlockStorages()
+	assert.Error(t, err)
+	assert.Nil(t, discoverBlockStoragesResponse)
+}
+
+// mockedDisk returns one mocked compute disk
+func mockedDisk(reqUrl string) (disk armcompute.Disk, err error) {
+
+	m := newMockStorageSender()
+	req, err := http.NewRequest("GET", reqUrl, nil)
+	if err != nil {
+		return disk, errors.New("error creating new request")
+	}
+	resp, err := m.Do(req)
+	if err != nil {
+		return disk, fmt.Errorf("error getting mock http response: %w", err)
+	}
+
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			fmt.Println("error io.ReadCloser: %w", err)
+		}
+	}(resp.Body)
+
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return disk, fmt.Errorf("error read all: %w", err)
+	}
+	var disks responseDisk
+	err = json.Unmarshal(responseBody, &disks)
+	if err != nil {
+		return disk, fmt.Errorf("error unmarshalling: %w", err)
+	}
+
+	return disks.Value[0], nil
+}
+
+// mockedStorageAccount returns one mocked storage account
+func mockedStorageAccount(reqUrl string) (storageAccount *armstorage.Account, err error) {
+	var storageAccountResponse responseStorageAccount
+
+	m := newMockStorageSender()
+	req, err := http.NewRequest("GET", reqUrl, nil)
+	if err != nil {
+		return storageAccount, fmt.Errorf("error creating new request: %w", err)
+	}
+	resp, err := m.Do(req)
+	if err != nil {
+		return storageAccount, fmt.Errorf("error getting mock http response: %w", err)
+	}
+
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			fmt.Println("error io.ReadCloser: %w", err)
+		}
+	}(resp.Body)
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return storageAccount, fmt.Errorf("error read all: %w", err)
+	}
+	err = json.Unmarshal(responseBody, &storageAccountResponse)
+	if err != nil {
+		return storageAccount, fmt.Errorf("error unmarshalling: %w", err)
+	}
+
+	storageAccount = &storageAccountResponse.Value
+
+	return storageAccount, nil
+}

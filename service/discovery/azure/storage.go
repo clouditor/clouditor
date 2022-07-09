@@ -250,6 +250,11 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 }
 
 func (d *azureStorageDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.BlockStorage, error) {
+	// If a mandatory field is empty, the whole disk is empty
+	if disk.ID == nil {
+		return nil, fmt.Errorf("disk is nil")
+	}
+
 	enc, err := d.blockStorageAtRestEncryption(disk)
 	if err != nil {
 		return nil, fmt.Errorf("could not get block storage properties for the atRestEncryption: %w", err)
@@ -272,6 +277,11 @@ func (d *azureStorageDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 }
 
 func handleObjectStorage(account *armstorage.Account, container *armstorage.ListContainerItem) (*voc.ObjectStorage, error) {
+	// If a mandatory field is empty, the whole container is empty
+	if container.ID == nil {
+		return nil, fmt.Errorf("container is nil")
+	}
+
 	enc, err := storageAtRestEncryption(account)
 	if err != nil {
 		return nil, fmt.Errorf("could not get object storage properties for the atRestEncryption: %w", err)
@@ -345,6 +355,11 @@ func generalizeURL(url string) string {
 }
 
 func handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileShareItem) (*voc.FileStorage, error) {
+	// If a mandatory field is empty, the whole fileshare is empty
+	if fileshare.ID == nil {
+		return nil, fmt.Errorf("fileshare is nil")
+	}
+
 	enc, err := storageAtRestEncryption(account)
 	if err != nil {
 		return nil, fmt.Errorf("could not get file storage properties for the atRestEncryption: %w", err)
