@@ -47,8 +47,9 @@ import (
 var (
 	log *logrus.Entry
 
-	ErrCouldNotAuthenticate    = errors.New("could not authenticate to Azure")
-	ErrNoCredentialsConfigured = errors.New("no credentials were configured")
+	ErrCouldNotAuthenticate     = errors.New("could not authenticate to Azure")
+	ErrCouldNotGetSubscriptions = errors.New("could not get azure subscription")
+	ErrNoCredentialsConfigured  = errors.New("no credentials were configured")
 )
 
 type DiscoveryOption func(a *azureDiscovery)
@@ -101,7 +102,7 @@ func (a *azureDiscovery) authorize() (err error) {
 	for subPager.More() {
 		pageResponse, err := subPager.NextPage(context.TODO())
 		if err != nil {
-			err = fmt.Errorf("could not get azure subscription: %w", err)
+			err = fmt.Errorf("%s: %w", ErrCouldNotGetSubscriptions, err)
 			log.Error(err)
 			return err
 		}
