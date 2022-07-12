@@ -31,11 +31,12 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
-
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
 
-	"github.com/Azure/go-autorest/autorest/to"
+	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/voc"
 )
 
 type azureNetworkDiscovery struct {
@@ -91,7 +92,7 @@ func (d *azureNetworkDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResour
 	var list []voc.IsCloudResource
 
 	// Create network client
-	client, err := armnetwork.NewInterfacesClient(to.String(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	client, err := armnetwork.NewInterfacesClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("could not get new virtual machines client: %w", err)
 		return nil, err
@@ -125,7 +126,7 @@ func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, e
 	var list []voc.IsCloudResource
 
 	// Create load balancer client
-	client, err := armnetwork.NewLoadBalancersClient(to.String(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	client, err := armnetwork.NewLoadBalancersClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("could not get new load balancers client: %w", err)
 		return nil, err
@@ -159,12 +160,12 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) 
 		NetworkService: &voc.NetworkService{
 			Networking: &voc.Networking{
 				Resource: &voc.Resource{
-					ID:           voc.ResourceID(to.String(lb.ID)),
-					Name:         to.String(lb.Name),
+					ID:           voc.ResourceID(util.Deref(lb.ID)),
+					Name:         util.Deref(lb.Name),
 					CreationTime: 0, // No creation time available
 					Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
 					GeoLocation: voc.GeoLocation{
-						Region: to.String(lb.Location),
+						Region: util.Deref(lb.Location),
 					},
 					Labels: labels(lb.Tags),
 				},
@@ -183,12 +184,12 @@ func (*azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface) 
 	return &voc.NetworkInterface{
 		Networking: &voc.Networking{
 			Resource: &voc.Resource{
-				ID:           voc.ResourceID(to.String(ni.ID)),
-				Name:         to.String(ni.Name),
+				ID:           voc.ResourceID(util.Deref(ni.ID)),
+				Name:         util.Deref(ni.Name),
 				CreationTime: 0, // No creation time available
 				Type:         []string{"NetworkInterface", "Compute", "Resource"},
 				GeoLocation: voc.GeoLocation{
-					Region: to.String(ni.Location),
+					Region: util.Deref(ni.Location),
 				},
 				Labels: labels(ni.Tags),
 			},
@@ -203,7 +204,7 @@ func (*azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface) 
 func LoadBalancerPorts(lb *armnetwork.LoadBalancer) (loadBalancerPorts []int16) {
 
 	for _, item := range lb.Properties.LoadBalancingRules {
-		loadBalancerPorts = append(loadBalancerPorts, int16(to.Int32(item.Properties.FrontendPort)))
+		loadBalancerPorts = append(loadBalancerPorts, int16(util.Deref(item.Properties.FrontendPort)))
 	}
 
 	return loadBalancerPorts
@@ -220,9 +221,9 @@ func LoadBalancerPorts(lb *armnetwork.LoadBalancer) (loadBalancerPorts []int16) 
 //             return ""
 //     }
 //
-//     nsgID := to.String(ni.NetworkSecurityGroup.ID)
+//	nsgID := util.Deref(ni.NetworkSecurityGroup.ID)
 //
-//     client := network.NewSecurityGroupsClient(to.String(d.sub.SubscriptionID))
+//	client := network.NewSecurityGroupsClient(util.Deref(d.sub.SubscriptionID))
 //
 //     // Get the Security Group of the network interface ni
 //     sg, err := client.Get(context.Background(), getResourceGroupName(nsgID), strings.Split(nsgID, "/")[8], "")
@@ -263,7 +264,7 @@ func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *armnetwork.L
 	var publicIPAddresses []string
 
 	// Create public IP address client
-	client, err := armnetwork.NewPublicIPAddressesClient(to.String(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	client, err := armnetwork.NewPublicIPAddressesClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		log.Debugf("could not get new public ip addresses client: %v", err)
 		return []string{}
@@ -280,7 +281,7 @@ func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *armnetwork.L
 			continue
 		}
 
-		publicIPAddressID := to.String(fIpConfig[i].Properties.PublicIPAddress.ID)
+		publicIPAddressID := util.Deref(fIpConfig[i].Properties.PublicIPAddress.ID)
 		if publicIPAddressID == "" {
 			continue
 		}
@@ -307,7 +308,7 @@ func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *armnetwork.L
 			continue
 		}
 
-		publicIPAddresses = append(publicIPAddresses, to.String(ipAddress))
+		publicIPAddresses = append(publicIPAddresses, util.Deref(ipAddress))
 	}
 
 	return publicIPAddresses

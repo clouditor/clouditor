@@ -67,3 +67,13 @@ func marksNewWord(i int, input []rune) bool {
 
 	return false
 }
+
+// Deref dereferences string pointer
+func Deref[T any](p *T) T {
+	var result T
+	if p != nil {
+		return *p
+	}
+
+	return result
+}

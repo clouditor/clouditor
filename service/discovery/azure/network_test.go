@@ -35,6 +35,8 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"clouditor.io/clouditor/api/discovery"
+	"github.com/stretchr/testify/assert"
+
 	"clouditor.io/clouditor/voc"
 )
 

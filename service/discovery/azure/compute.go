@@ -29,11 +29,12 @@ import (
 	"context"
 	"fmt"
 
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/voc"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
-	"github.com/Azure/go-autorest/autorest/to"
+
+	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/voc"
 )
 
 type azureComputeDiscovery struct {
@@ -88,7 +89,7 @@ func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 func (d *azureComputeDiscovery) discoverFunctions() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
-	client, err := armappservice.NewWebAppsClient(to.String(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	client, err := armappservice.NewWebAppsClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("could not get new web apps client: %w", err)
 	}
@@ -122,12 +123,12 @@ func (*azureComputeDiscovery) handleFunction(function *armappservice.Site) voc.I
 	return &voc.Function{
 		Compute: &voc.Compute{
 			Resource: &voc.Resource{
-				ID:           voc.ResourceID(to.String(function.ID)),
-				Name:         to.String(function.Name),
+				ID:           voc.ResourceID(util.Deref(function.ID)),
+				Name:         util.Deref(function.Name),
 				CreationTime: 0, // No creation time available
 				Type:         []string{"Function", "Compute", "Resource"},
 				GeoLocation: voc.GeoLocation{
-					Region: to.String(function.Location),
+					Region: util.Deref(function.Location),
 				},
 				Labels: labels(function.Tags),
 			},
@@ -140,7 +141,7 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 	var list []voc.IsCloudResource
 
 	// Create VM client
-	client, err := armcompute.NewVirtualMachinesClient(to.String(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	client, err := armcompute.NewVirtualMachinesClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("could not get new virtual machines client: %w", err)
 		return nil, err
@@ -176,12 +177,12 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 	r := &voc.VirtualMachine{
 		Compute: &voc.Compute{
 			Resource: &voc.Resource{
-				ID:           voc.ResourceID(to.String(vm.ID)),
-				Name:         to.String(vm.Name),
+				ID:           voc.ResourceID(util.Deref(vm.ID)),
+				Name:         util.Deref(vm.Name),
 				CreationTime: safeTimestamp(vm.Properties.TimeCreated),
 				Type:         []string{"VirtualMachine", "Compute", "Resource"},
 				GeoLocation: voc.GeoLocation{
-					Region: to.String(vm.Location),
+					Region: util.Deref(vm.Location),
 				},
 				Labels: labels(vm.Tags),
 			}},
@@ -202,18 +203,18 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 	// Reference to networkInterfaces
 	if vm.Properties.NetworkProfile != nil {
 		for _, networkInterfaces := range vm.Properties.NetworkProfile.NetworkInterfaces {
-			r.NetworkInterface = append(r.NetworkInterface, voc.ResourceID(to.String(networkInterfaces.ID)))
+			r.NetworkInterface = append(r.NetworkInterface, voc.ResourceID(util.Deref(networkInterfaces.ID)))
 		}
 	}
 
 	// Reference to blockstorage
 	if vm.Properties.StorageProfile != nil && vm.Properties.StorageProfile.OSDisk != nil && vm.Properties.StorageProfile.OSDisk.ManagedDisk != nil {
-		r.BlockStorage = append(r.BlockStorage, voc.ResourceID(to.String(vm.Properties.StorageProfile.OSDisk.ManagedDisk.ID)))
+		r.BlockStorage = append(r.BlockStorage, voc.ResourceID(util.Deref(vm.Properties.StorageProfile.OSDisk.ManagedDisk.ID)))
 	}
 
 	if vm.Properties.StorageProfile != nil && vm.Properties.StorageProfile.DataDisks != nil {
 		for _, blockstorage := range vm.Properties.StorageProfile.DataDisks {
-			r.BlockStorage = append(r.BlockStorage, voc.ResourceID(to.String(blockstorage.ManagedDisk.ID)))
+			r.BlockStorage = append(r.BlockStorage, voc.ResourceID(util.Deref(blockstorage.ManagedDisk.ID)))
 		}
 	}
 
@@ -224,7 +225,7 @@ func isBootDiagnosticEnabled(vm *armcompute.VirtualMachine) bool {
 	if vm.Properties.DiagnosticsProfile == nil {
 		return false
 	} else {
-		return to.Bool(vm.Properties.DiagnosticsProfile.BootDiagnostics.Enabled)
+		return util.Deref(vm.Properties.DiagnosticsProfile.BootDiagnostics.Enabled)
 	}
 }
 
@@ -232,7 +233,7 @@ func bootLogOutput(vm *armcompute.VirtualMachine) string {
 	if isBootDiagnosticEnabled(vm) {
 		// If storageUri is not specified while enabling boot diagnostics, managed storage will be used.
 		if vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI != nil {
-			return to.String(vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI)
+			return util.Deref(vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI)
 		}
 
 		return ""

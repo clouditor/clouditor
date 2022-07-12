@@ -41,7 +41,6 @@ service EvidenceStore {
     option (google.api.http) = {
       post : "/v1/evidence_store/evidence"
       body : "evidence"
-      response_body : "status"
     };
   }
 
