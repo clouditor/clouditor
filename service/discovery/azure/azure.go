@@ -29,14 +29,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/go-autorest/autorest/to"
-
-	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
@@ -79,8 +78,6 @@ type azureDiscovery struct {
 }
 
 func (a *azureDiscovery) authorize() (err error) {
-	// If using NewAuthorizerFromFile() in discovery file, we do not need to re-authorize.
-	// If using NewAuthorizerFromCLI() in discovery file, the token expires after 75 minutes.
 	if a.isAuthorized {
 		return
 	}
@@ -144,13 +141,13 @@ func resourceGroupName(id string) string {
 
 // labels converts the resource tags to the vocabulary label
 func labels(tags map[string]*string) map[string]string {
-	labels := make(map[string]string)
+	l := make(map[string]string)
 
 	for tag, i := range tags {
-		labels[tag] = to.String(i)
+		l[tag] = to.String(i)
 	}
 
-	return labels
+	return l
 }
 
 // safeTimestamp returns either the UNIX timestamp of the time t or 0 if it is nil
@@ -164,4 +161,12 @@ func safeTimestamp(t *time.Time) int64 {
 	}
 
 	return t.Unix()
+}
+
+type Client interface {
+	armsubscription.SubscriptionsClient
+}
+
+type Resource interface {
+	armsubscription.Subscription
 }
