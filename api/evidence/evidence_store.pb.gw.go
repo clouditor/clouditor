@@ -126,7 +126,7 @@ func RegisterEvidenceStoreHandlerServer(ctx context.Context, mux *runtime.ServeM
 			return
 		}
 
-		forward_EvidenceStore_StoreEvidence_0(ctx, mux, outboundMarshaler, w, req, response_EvidenceStore_StoreEvidence_0{resp}, mux.GetForwardResponseOptions()...)
+		forward_EvidenceStore_StoreEvidence_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -210,7 +210,7 @@ func RegisterEvidenceStoreHandlerClient(ctx context.Context, mux *runtime.ServeM
 			return
 		}
 
-		forward_EvidenceStore_StoreEvidence_0(ctx, mux, outboundMarshaler, w, req, response_EvidenceStore_StoreEvidence_0{resp}, mux.GetForwardResponseOptions()...)
+		forward_EvidenceStore_StoreEvidence_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -235,15 +235,6 @@ func RegisterEvidenceStoreHandlerClient(ctx context.Context, mux *runtime.ServeM
 	})
 
 	return nil
-}
-
-type response_EvidenceStore_StoreEvidence_0 struct {
-	proto.Message
-}
-
-func (m response_EvidenceStore_StoreEvidence_0) XXX_ResponseBody() interface{} {
-	response := m.Message.(*StoreEvidenceResponse)
-	return response.Status
 }
 
 var (
