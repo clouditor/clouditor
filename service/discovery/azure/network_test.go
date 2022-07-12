@@ -26,7 +26,6 @@
 package azure
 
 import (
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -334,7 +333,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
 			gotList, err := d.List()
-			if !tt.wantErr(t, err, fmt.Sprintf("List()")) {
+			if !tt.wantErr(t, err) {
 				return
 			}
 
@@ -427,7 +426,7 @@ func Test_azureNetworkDiscovery_discoverNetworkInterfaces(t *testing.T) {
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
 			got, err := d.discoverNetworkInterfaces()
-			if !tt.wantErr(t, err, fmt.Sprintf("discoverNetworkInterfaces()")) {
+			if !tt.wantErr(t, err) {
 				return
 			}
 			assert.Equalf(t, tt.want, got, "discoverNetworkInterfaces()")
@@ -464,7 +463,7 @@ func Test_azureNetworkDiscovery_discoverLoadBalancer(t *testing.T) {
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
 			got, err := d.discoverLoadBalancer()
-			if !tt.wantErr(t, err, fmt.Sprintf("discoverLoadBalancer()")) {
+			if !tt.wantErr(t, err) {
 				return
 			}
 			assert.Equalf(t, tt.want, got, "discoverLoadBalancer()")
