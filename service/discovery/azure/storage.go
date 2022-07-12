@@ -32,12 +32,11 @@ import (
 	"strings"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
-
-	"github.com/Azure/go-autorest/autorest/to"
 )
 
 type azureStorageDiscovery struct {
@@ -85,7 +84,7 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 	var storageResourcesList []voc.IsCloudResource
 
 	// Create storage accounts client
-	client, err := armstorage.NewAccountsClient(to.String(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	client, err := armstorage.NewAccountsClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("could not get new storage accounts client: %w", err)
 		return nil, err
@@ -146,7 +145,7 @@ func (d *azureStorageDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, 
 	var list []voc.IsCloudResource
 
 	// Create disks client
-	client, err := armcompute.NewDisksClient(to.String(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	client, err := armcompute.NewDisksClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("could not get new disks client: %w", err)
 		return nil, err
@@ -181,14 +180,14 @@ func (d *azureStorageDiscovery) discoverFileStorages(account *armstorage.Account
 	var list []voc.IsCloudResource
 
 	// Create file shares client
-	client, err := armstorage.NewFileSharesClient(to.String(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	client, err := armstorage.NewFileSharesClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("could not get new virtual machines client: %w", err)
 		return nil, err
 	}
 
 	// List all file shares in the specified resource group
-	listPager := client.NewListPager(resourceGroupName(to.String(account.ID)), to.String(account.Name), &armstorage.FileSharesClientListOptions{})
+	listPager := client.NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.FileSharesClientListOptions{})
 	fs := make([]*armstorage.FileShareItem, 0)
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
@@ -217,14 +216,14 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 	var list []voc.IsCloudResource
 
 	// Create blob containers client
-	client, err := armstorage.NewBlobContainersClient(to.String(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	client, err := armstorage.NewBlobContainersClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("could not get new virtual machines client: %w", err)
 		return nil, err
 	}
 
 	// List all file shares in the specified resource group
-	listPager := client.NewListPager(resourceGroupName(to.String(account.ID)), to.String(account.Name), &armstorage.BlobContainersClientListOptions{})
+	listPager := client.NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.BlobContainersClientListOptions{})
 	bc := make([]*armstorage.ListContainerItem, 0)
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
@@ -262,12 +261,12 @@ func (d *azureStorageDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 	return &voc.BlockStorage{
 		Storage: &voc.Storage{
 			Resource: &voc.Resource{
-				ID:           voc.ResourceID(to.String(disk.ID)),
-				Name:         to.String(disk.Name),
+				ID:           voc.ResourceID(util.Deref(disk.ID)),
+				Name:         util.Deref(disk.Name),
 				CreationTime: disk.Properties.TimeCreated.Unix(),
 				Type:         []string{"BlockStorage", "Storage", "Resource"},
 				GeoLocation: voc.GeoLocation{
-					Region: to.String(disk.Location),
+					Region: util.Deref(disk.Location),
 				},
 			},
 			AtRestEncryption: enc,
@@ -289,12 +288,12 @@ func handleObjectStorage(account *armstorage.Account, container *armstorage.List
 	return &voc.ObjectStorage{
 		Storage: &voc.Storage{
 			Resource: &voc.Resource{
-				ID:           voc.ResourceID(to.String(container.ID)),
-				Name:         to.String(container.Name),
+				ID:           voc.ResourceID(util.Deref(container.ID)),
+				Name:         util.Deref(container.Name),
 				CreationTime: account.Properties.CreationTime.Unix(),
 				Type:         []string{"ObjectStorage", "Storage", "Resource"},
 				GeoLocation: voc.GeoLocation{
-					Region: to.String(account.Location),
+					Region: util.Deref(account.Location),
 				},
 				Labels: labels(account.Tags), //the storage account labels the object storage belongs to
 			},
@@ -312,7 +311,7 @@ func (*azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, 
 	}
 
 	te := &voc.TransportEncryption{
-		Enforced:   to.Bool(account.Properties.EnableHTTPSTrafficOnly),
+		Enforced:   util.Deref(account.Properties.EnableHTTPSTrafficOnly),
 		Enabled:    true, // cannot be disabled
 		TlsVersion: string(*account.Properties.MinimumTLSVersion),
 		Algorithm:  "TLS",
@@ -323,12 +322,12 @@ func (*azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, 
 		NetworkService: &voc.NetworkService{
 			Networking: &voc.Networking{
 				Resource: &voc.Resource{
-					ID:           voc.ResourceID(to.String(account.ID)),
-					Name:         to.String(account.Name),
+					ID:           voc.ResourceID(util.Deref(account.ID)),
+					Name:         util.Deref(account.Name),
 					CreationTime: account.Properties.CreationTime.Unix(),
 					Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
 					GeoLocation: voc.GeoLocation{
-						Region: to.String(account.Location),
+						Region: util.Deref(account.Location),
 					},
 					Labels: labels(account.Tags),
 				},
@@ -336,7 +335,7 @@ func (*azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, 
 			TransportEncryption: te,
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
-			Url:                 generalizeURL(to.String(account.Properties.PrimaryEndpoints.Blob)),
+			Url:                 generalizeURL(util.Deref(account.Properties.PrimaryEndpoints.Blob)),
 			TransportEncryption: te,
 		},
 	}
@@ -367,12 +366,12 @@ func handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileSh
 	return &voc.FileStorage{
 		Storage: &voc.Storage{
 			Resource: &voc.Resource{
-				ID:           voc.ResourceID(to.String(fileshare.ID)),
-				Name:         to.String(fileshare.Name),
+				ID:           voc.ResourceID(util.Deref(fileshare.ID)),
+				Name:         util.Deref(fileshare.Name),
 				CreationTime: account.Properties.CreationTime.Unix(),
 				Type:         []string{"FileStorage", "Storage", "Resource"},
 				GeoLocation: voc.GeoLocation{
-					Region: to.String(account.Location),
+					Region: util.Deref(account.Location),
 				},
 				Labels: labels(account.Tags), //the storage account labels the file storage belongs to
 			},
@@ -394,7 +393,7 @@ func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk *armcompute.Di
 		var keyUrl string
 		discEncryptionSetID := disk.Properties.Encryption.DiskEncryptionSetID
 
-		keyUrl, err := d.sourceVaultID(to.String(discEncryptionSetID))
+		keyUrl, err := d.sourceVaultID(util.Deref(discEncryptionSetID))
 		if err != nil {
 			return nil, fmt.Errorf("could not get keyVaultID: %w", err)
 		}
@@ -428,7 +427,7 @@ func storageAtRestEncryption(account *armstorage.Account) (voc.HasAtRestEncrypti
 				Algorithm: "", // TODO(garuppel): TBD
 				Enabled:   true,
 			},
-			KeyUrl: to.String(account.Properties.Encryption.KeyVaultProperties.KeyVaultURI),
+			KeyUrl: util.Deref(account.Properties.Encryption.KeyVaultProperties.KeyVaultURI),
 		}
 	} else {
 		return enc, errors.New("error getting atRestEncryption properties of storage account")
@@ -440,7 +439,7 @@ func storageAtRestEncryption(account *armstorage.Account) (voc.HasAtRestEncrypti
 func (d *azureStorageDiscovery) sourceVaultID(diskEncryptionSetID string) (string, error) {
 
 	// Create Key Vault client
-	client, err := armcompute.NewDiskEncryptionSetsClient(to.String(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	client, err := armcompute.NewDiskEncryptionSetsClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("could not get new key vault client: %w", err)
 		return "", err
@@ -459,7 +458,7 @@ func (d *azureStorageDiscovery) sourceVaultID(diskEncryptionSetID string) (strin
 		return "", fmt.Errorf("could not get sourceVaultID")
 	}
 
-	return to.String(sourceVaultID), nil
+	return util.Deref(sourceVaultID), nil
 }
 
 func diskEncryptionSetName(diskEncryptionSetID string) string {

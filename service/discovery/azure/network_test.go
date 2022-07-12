@@ -29,8 +29,9 @@ import (
 	"net/http"
 	"testing"
 
-	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
+
+	"clouditor.io/clouditor/voc"
 )
 
 type mockNetworkSender struct {

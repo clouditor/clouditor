@@ -29,19 +29,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/Azure/go-autorest/autorest/to"
-
-	"strings"
-
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 
 	"github.com/sirupsen/logrus"
+
+	"clouditor.io/clouditor/internal/util"
 )
 
 var (
@@ -147,7 +146,7 @@ func labels(tags map[string]*string) map[string]string {
 	labels := make(map[string]string)
 
 	for tag, i := range tags {
-		labels[tag] = to.String(i)
+		labels[tag] = util.Deref(i)
 	}
 
 	return labels
