@@ -61,6 +61,10 @@ message Metric {
     ORDINAL = 2;
     METRIC = 3;
   }
+
+  // The interval in seconds the evidences must be collected for the respective metric.
+  // For now, we are not able to use google.protobuf.Duration because it is converted to a custom object in OpenAPI (https://github.com/google/gnostic/issues/351)
+  int64 interval = 7;
 }
 
 // A range resource representing the range of values
