@@ -135,7 +135,7 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 				// Try to retrieve the gRPC status from the error, to check if the metric implementation just does not exist.
 				status, ok := api.StatusFromWrappedError(err)
 				if ok && status.Code() == codes.NotFound {
-					log.Warnf("Resource type %v ignored metric %v because of its missing implementation of default configuration ", key, metric.Id)
+					log.Warnf("Resource type %v ignored metric %v because of its missing implementation or default configuration ", key, metric.Id)
 					// In this case, we can continue
 					continue
 				}
