@@ -52,6 +52,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	_ "k8s.io/client-go/plugin/pkg/client/auth/azure"
 )
 
 const (
