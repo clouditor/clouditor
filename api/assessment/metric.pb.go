@@ -167,7 +167,9 @@ type Metric struct {
 	// The range of this metric. Depending on the scale.
 	Range *Range `protobuf:"bytes,6,opt,name=range,proto3" json:"range,omitempty"`
 	// The interval in seconds the evidences must be collected for the respective metric.
-	Interval int64 `protobuf:"varint,7,opt,name=interval,proto3" json:"interval,omitempty"` // For now, we are not able to use google.protobuf.Duration because it is converted to a custom object in OpenAPI (https://github.com/google/gnostic/issues/351)
+	// For now, we are not able to use google.protobuf.Duration because it is converted to a custom object in OpenAPI (https://github.com/google/gnostic/issues/351)
+	// Note: Golang uses as time.Duration the elapsed time between two time objects as an int64 nanosecond count. If time.Duration is used, the interval must be converted to nanoseconds.
+	Interval int64 `protobuf:"varint,7,opt,name=interval,proto3" json:"interval,omitempty"`
 }
 
 func (x *Metric) Reset() {
