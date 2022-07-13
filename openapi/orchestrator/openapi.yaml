@@ -996,6 +996,10 @@ components:
                     format: enum
                 range:
                     $ref: '#/components/schemas/Range'
+                interval:
+                    type: integer
+                    description: The interval in seconds the evidences must be collected for the respective metric.
+                    format: int64
             description: A metric resource
         MetricConfiguration:
             type: object
