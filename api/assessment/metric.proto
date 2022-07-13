@@ -28,7 +28,6 @@ syntax = "proto3";
 
 package clouditor;
 
-import "google/protobuf/duration.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "tagger/tagger.proto";
@@ -63,9 +62,9 @@ message Metric {
     METRIC = 3;
   }
 
-  // The interval the evidences must be collected for the respective metric. 
-  google.protobuf.Duration interval = 7
-      [ (tagger.tags) = "gorm:\"serializer:durationpb;type:duration\"" ];
+  // The interval in seconds the evidences must be collected for the respective metric.
+  // For now, we are not able to use google.protobuf.Duration because it is converted to a custom object in OpenAPI (https://github.com/google/gnostic/issues/351)
+  int64 interval = 7;
 }
 
 // A range resource representing the range of values

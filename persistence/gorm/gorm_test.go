@@ -7,15 +7,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/timestamppb"
+	"gorm.io/gorm/schema"
+
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
 	"clouditor.io/clouditor/persistence"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/protobuf/types/known/durationpb"
-	"google.golang.org/protobuf/types/known/timestamppb"
-	"gorm.io/gorm/schema"
 )
 
 func TestStorageOptions(t *testing.T) {
@@ -585,109 +585,6 @@ func TestTimestampSerializer_Scan(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tr := TimestampSerializer{}
 			err := tr.Scan(tt.args.ctx, tt.args.field, tt.args.dst, tt.args.dbValue)
-
-			if tt.wantErr != nil {
-				tt.wantErr(t, err, tt.args)
-			} else {
-				assert.Nil(t, err)
-			}
-		})
-	}
-}
-
-func TestDurationSerializer_Value(t *testing.T) {
-	type args struct {
-		ctx        context.Context
-		field      *schema.Field
-		dst        reflect.Value
-		fieldValue interface{}
-	}
-	tests := []struct {
-		name    string
-		d       DurationSerializer
-		args    args
-		want    interface{}
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "ok field",
-			args: args{
-				field:      &schema.Field{Name: "duration"},
-				dst:        reflect.Value{},
-				fieldValue: durationpb.New(time.Duration(290)),
-			},
-			want:    time.Duration(290),
-			wantErr: nil,
-		},
-		{
-			name: "nil field",
-			args: args{
-				field:      &schema.Field{Name: "duration"},
-				dst:        reflect.Value{},
-				fieldValue: nil,
-			},
-			want:    nil,
-			wantErr: nil,
-		},
-		{
-			name: "field wrong type",
-			args: args{
-				field:      &schema.Field{Name: "duration"},
-				dst:        reflect.Value{},
-				fieldValue: "string",
-			},
-			want: nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, persistence.ErrUnsupportedType)
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			d := DurationSerializer{}
-			got, err := d.Value(tt.args.ctx, tt.args.field, tt.args.dst, tt.args.fieldValue)
-			if tt.wantErr != nil {
-				tt.wantErr(t, err, tt.args)
-			} else {
-				assert.Nil(t, err)
-			}
-
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("DurationSerializer.Value() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestDurationSerializer_Scan(t *testing.T) {
-	type args struct {
-		ctx     context.Context
-		field   *schema.Field
-		dst     reflect.Value
-		dbValue interface{}
-	}
-	tests := []struct {
-		name    string
-		tr      DurationSerializer
-		args    args
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "db wrong type",
-			args: args{
-				field:   &schema.Field{},
-				dbValue: "string",
-			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, persistence.ErrUnsupportedType)
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			dr := DurationSerializer{}
-			err := dr.Scan(tt.args.ctx, tt.args.field, tt.args.dst, tt.args.dbValue)
 
 			if tt.wantErr != nil {
 				tt.wantErr(t, err, tt.args)
