@@ -29,7 +29,12 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"github.com/stretchr/testify/assert"
+
+	"clouditor.io/clouditor/api/discovery"
 
 	"clouditor.io/clouditor/voc"
 )
@@ -196,53 +201,422 @@ func TestAzureNetworkAuthorizer(t *testing.T) {
 	assert.ErrorIs(t, err, ErrNoCredentialsConfigured)
 }
 
-func TestNetwork(t *testing.T) {
-	d := NewAzureNetworkDiscovery(
-		WithSender(&mockNetworkSender{}),
-		WithAuthorizer(&mockAuthorizer{}),
-	)
+func Test_azureNetworkDiscovery_List(t *testing.T) {
+	type fields struct {
+		azureDiscovery azureDiscovery
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		wantList []voc.IsCloudResource
+		wantErr  assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Authorize error",
+			fields: fields{
+				azureDiscovery: azureDiscovery{
+					cred: nil,
+				},
+			},
+			wantList: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrCouldNotAuthenticate.Error())
+			},
+		},
+		{
+			name: "Discovery error",
+			fields: fields{
+				azureDiscovery: azureDiscovery{
+					cred: &mockAuthorizer{},
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{
+							Transport: &mockStorageSender{},
+						},
+					},
+				},
+			},
+			wantList: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not discover network interfaces:")
+			},
+		},
+		{
+			name: "Without errors",
+			fields: fields{
+				azureDiscovery: azureDiscovery{
+					cred: &mockAuthorizer{},
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{
+							Transport: &mockNetworkSender{},
+						},
+					},
+				},
+			},
+			wantList: []voc.IsCloudResource{
+				&voc.NetworkInterface{
+					Networking: &voc.Networking{
+						Resource: &voc.Resource{
+							ID:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
+							Name: "iface1",
+							GeoLocation: voc.GeoLocation{
+								Region: "eastus",
+							},
+							Type:   []string{"NetworkInterface", "Compute", "Resource"},
+							Labels: map[string]string{},
+						},
+					},
+					AccessRestriction: nil,
+				},
+				&voc.LoadBalancer{
+					NetworkService: &voc.NetworkService{
+						Networking: &voc.Networking{
+							Resource: &voc.Resource{
+								ID:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1",
+								Name: "lb1",
+								GeoLocation: voc.GeoLocation{
+									Region: "eastus",
+								},
+								Type:   []string{"LoadBalancer", "NetworkService", "Resource"},
+								Labels: map[string]string{},
+							},
+						},
+						Ips:   []string{"111.222.333.444"},
+						Ports: []int16{1234, 5678},
+					},
+					AccessRestrictions: &[]voc.AccessRestriction{},
+					HttpEndpoints:      &[]voc.HttpEndpoint{},
+				},
+				&voc.LoadBalancer{
+					NetworkService: &voc.NetworkService{
+						Networking: &voc.Networking{
+							Resource: &voc.Resource{
+								ID:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb2",
+								Name: "lb2",
+								GeoLocation: voc.GeoLocation{
+									Region: "eastus",
+								},
+								Type:   []string{"LoadBalancer", "NetworkService", "Resource"},
+								Labels: map[string]string{},
+							},
+						},
+						Ports: []int16{1234, 5678},
+					},
+					AccessRestrictions: &[]voc.AccessRestriction{},
+					HttpEndpoints:      &[]voc.HttpEndpoint{},
+				},
+				&voc.LoadBalancer{
+					NetworkService: &voc.NetworkService{
+						Networking: &voc.Networking{
+							Resource: &voc.Resource{
+								ID:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3",
+								Name: "lb3",
+								GeoLocation: voc.GeoLocation{
+									Region: "eastus",
+								},
+								Type:   []string{"LoadBalancer", "NetworkService", "Resource"},
+								Labels: map[string]string{},
+							},
+						},
+						Ports: []int16{1234, 5678},
+					},
+					AccessRestrictions: &[]voc.AccessRestriction{},
+					HttpEndpoints:      &[]voc.HttpEndpoint{},
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.NoError(t, err)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureNetworkDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+			}
+			gotList, err := d.List()
+			if !tt.wantErr(t, err) {
+				return
+			}
 
-	list, err := d.List()
-
-	assert.NoError(t, err)
-	assert.NotNil(t, list)
-	assert.Equal(t, 4, len(list))
-	assert.NotEmpty(t, d.Name())
-
-	iface, ok := list[0].(*voc.NetworkInterface)
-
-	assert.True(t, ok)
-	assert.Equal(t, "iface1", iface.Name)
-	//assert.Equal(t, "*", iface.AccessRestriction.RestrictedPorts)
-
-	lb, ok := list[1].(*voc.LoadBalancer)
-
-	assert.True(t, ok)
-	assert.Equal(t, "lb1", lb.Name)
-	assert.Equal(t, int16(1234), lb.Ports[0])
-	assert.Equal(t, "111.222.333.444", lb.Ips[0])
-
-	lb, ok = list[2].(*voc.LoadBalancer)
-	assert.True(t, ok)
-	assert.Equal(t, "lb2", lb.Name)
-	assert.Nil(t, lb.NetworkService.Ips)
+			for i := 0; i < len(tt.wantList)-1; i++ {
+				assert.Equal(t, tt.wantList[i], gotList[i])
+			}
+		})
+	}
 }
 
-func TestComputeDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
-	d := azureNetworkDiscovery{}
+func TestNewAzureNetworkDiscovery(t *testing.T) {
+	type args struct {
+		opts []DiscoveryOption
+	}
+	tests := []struct {
+		name string
+		args args
+		want discovery.Discoverer
+	}{
+		{
+			name: "Empty input",
+			args: args{
+				opts: nil,
+			},
+			want: &azureNetworkDiscovery{},
+		},
+		{
+			name: "With sender",
+			args: args{
+				opts: []DiscoveryOption{WithSender(mockNetworkSender{})},
+			},
+			want: &azureNetworkDiscovery{
+				azureDiscovery{
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{
+							Transport: mockNetworkSender{},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "With authorizer",
+			args: args{
+				opts: []DiscoveryOption{WithAuthorizer(&mockAuthorizer{})},
+			},
+			want: &azureNetworkDiscovery{
+				azureDiscovery{
+					cred: &mockAuthorizer{},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := NewAzureNetworkDiscovery(tt.args.opts...)
+			assert.Equal(t, tt.want, d)
+			assert.Equal(t, "Azure Network", d.Name())
+		})
 
-	// Test method discoverNetworkInterfaces
-	discoverNetworkInterfacesResponse, err := d.discoverNetworkInterfaces()
+	}
+}
 
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "error getting next page:")
-	assert.Nil(t, discoverNetworkInterfacesResponse)
+func Test_azureNetworkDiscovery_discoverNetworkInterfaces(t *testing.T) {
+	type fields struct {
+		azureDiscovery azureDiscovery
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    []voc.IsCloudResource
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Error list pages",
+			fields: fields{
+				azureDiscovery: azureDiscovery{
+					cred: nil,
+				},
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "error getting next page:")
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureNetworkDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+			}
+			got, err := d.discoverNetworkInterfaces()
+			if !tt.wantErr(t, err) {
+				return
+			}
+			assert.Equalf(t, tt.want, got, "discoverNetworkInterfaces()")
+		})
+	}
+}
 
-	// Test method discoverLoadBalancer
-	discoverLoadBalancerResponse, err := d.discoverLoadBalancer()
+func Test_azureNetworkDiscovery_discoverLoadBalancer(t *testing.T) {
+	type fields struct {
+		azureDiscovery azureDiscovery
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    []voc.IsCloudResource
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Error list pages",
+			fields: fields{
+				azureDiscovery: azureDiscovery{
+					cred: nil,
+				},
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "error getting next page:")
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureNetworkDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+			}
+			got, err := d.discoverLoadBalancer()
+			if !tt.wantErr(t, err) {
+				return
+			}
+			assert.Equalf(t, tt.want, got, "discoverLoadBalancer()")
+		})
+	}
+}
 
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "error getting next page:")
-	assert.Nil(t, discoverLoadBalancerResponse)
+func Test_frontendPublicIPAddressName(t *testing.T) {
+	type args struct {
+		frontendPublicIPAddressID string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "Empty ip",
+			args: args{
+				frontendPublicIPAddressID: "",
+			},
+			want: "",
+		},
+		{
+			name: "IP incorrect",
+			args: args{
+				frontendPublicIPAddressID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/test-b9cb3645-25d0-4288-910a-020563f63b1c",
+			},
+			want: "",
+		},
+		{
+			name: "IP correct",
+			args: args{
+				frontendPublicIPAddressID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c",
+			},
+			want: "test-b9cb3645-25d0-4288-910a-020563f63b1c",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, frontendPublicIPAddressName(tt.args.frontendPublicIPAddressID), "frontendPublicIPAddressName(%v)", tt.args.frontendPublicIPAddressID)
+		})
+	}
+}
 
+func Test_azureNetworkDiscovery_publicIPAddressFromLoadBalancer(t *testing.T) {
+	id := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3"
+	name := "lb3"
+	location := "eastus"
+	publicIPID := "mockPublicID"
+
+	lbWithoutPublicIPAddressID := &armnetwork.LoadBalancer{
+		ID:       &id,
+		Name:     &name,
+		Location: &location,
+		Properties: &armnetwork.LoadBalancerPropertiesFormat{
+			FrontendIPConfigurations: []*armnetwork.FrontendIPConfiguration{
+				{
+					Properties: &armnetwork.FrontendIPConfigurationPropertiesFormat{
+						PublicIPAddress: &armnetwork.PublicIPAddress{},
+					},
+				},
+			},
+		},
+	}
+	lbWithoutPublicIPAddressName := &armnetwork.LoadBalancer{
+		ID:       &id,
+		Name:     &name,
+		Location: &location,
+		Properties: &armnetwork.LoadBalancerPropertiesFormat{
+			FrontendIPConfigurations: []*armnetwork.FrontendIPConfiguration{
+				{
+					Properties: &armnetwork.FrontendIPConfigurationPropertiesFormat{
+						PublicIPAddress: &armnetwork.PublicIPAddress{
+							ID: &publicIPID,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	type fields struct {
+		azureDiscovery azureDiscovery
+	}
+	type args struct {
+		lb *armnetwork.LoadBalancer
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   []string
+	}{
+
+		{
+			name: "Empty input",
+			args: args{
+				lb: nil,
+			},
+			want: []string{},
+		},
+		{
+			name: "Empty FrontendIPConfiguation",
+			args: args{
+				lb: &armnetwork.LoadBalancer{
+					ID:       &id,
+					Name:     &name,
+					Location: &location,
+					Properties: &armnetwork.LoadBalancerPropertiesFormat{
+						FrontendIPConfigurations: nil,
+					},
+				},
+			},
+			fields: fields{
+				azureDiscovery: azureDiscovery{
+					cred: &mockAuthorizer{},
+				},
+			},
+			want: []string(nil),
+		},
+		{
+			name: "Empty PublicIPAdressID",
+			args: args{
+				lb: lbWithoutPublicIPAddressID,
+			},
+			fields: fields{
+				azureDiscovery: azureDiscovery{
+					cred: &mockAuthorizer{},
+				},
+			},
+			want: []string(nil),
+		},
+		{
+			name: "Empty PublicIPAdressName",
+			args: args{
+				lb: lbWithoutPublicIPAddressName,
+			},
+			fields: fields{
+				azureDiscovery: azureDiscovery{
+					cred: &mockAuthorizer{},
+				},
+			},
+			want: []string(nil),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureNetworkDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+			}
+			assert.Equal(t, tt.want, d.publicIPAddressFromLoadBalancer(tt.args.lb))
+		})
+	}
 }

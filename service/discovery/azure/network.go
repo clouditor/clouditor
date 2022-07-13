@@ -63,7 +63,7 @@ func (*azureNetworkDiscovery) Description() string {
 // List network resources
 func (d *azureNetworkDiscovery) List() (list []voc.IsCloudResource, err error) {
 	if err = d.authorize(); err != nil {
-		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
+		return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
 	}
 
 	log.Info("Discover Azure network resources")
@@ -211,62 +211,64 @@ func LoadBalancerPorts(lb *armnetwork.LoadBalancer) (loadBalancerPorts []int16) 
 //// Returns all restricted ports for the network interface
 //func (d *azureNetworkDiscovery) getRestrictedPorts(ni *network.Interface) string {
 //
-//	var restrictedPorts []string
+//     var restrictedPorts []string
 //
-//	if ni.InterfacePropertiesFormat == nil ||
-//		ni.InterfacePropertiesFormat.NetworkSecurityGroup == nil ||
-//		ni.InterfacePropertiesFormat.NetworkSecurityGroup.ID == nil {
-//		return ""
-//	}
+//     if ni.InterfacePropertiesFormat == nil ||
+//             ni.InterfacePropertiesFormat.NetworkSecurityGroup == nil ||
+//             ni.InterfacePropertiesFormat.NetworkSecurityGroup.ID == nil {
+//             return ""
+//     }
 //
 //	nsgID := util.Deref(ni.NetworkSecurityGroup.ID)
 //
 //	client := network.NewSecurityGroupsClient(util.Deref(d.sub.SubscriptionID))
 //
-//	// Get the Security Group of the network interface ni
-//	sg, err := client.Get(context.Background(), getResourceGroupName(nsgID), strings.Split(nsgID, "/")[8], "")
+//     // Get the Security Group of the network interface ni
+//     sg, err := client.Get(context.Background(), getResourceGroupName(nsgID), strings.Split(nsgID, "/")[8], "")
 //
-//	if err != nil {
-//		log.Errorf("Could not get security group: %v", err)
-//		return ""
-//	}
+//     if err != nil {
+//             log.Errorf("Could not get security group: %v", err)
+//             return ""
+//     }
 //
-//	if sg.SecurityGroupPropertiesFormat != nil && sg.SecurityGroupPropertiesFormat.SecurityRules != nil {
-//		// Find all ports defined in the security rules with access property "Deny"
-//		for _, securityRule := range *sg.SecurityRules {
-//			if securityRule.Access == network.SecurityRuleAccessDeny {
-//				restrictedPorts = append(restrictedPorts, *securityRule.SourcePortRange)
-//			}
-//		}
-//	}
+//     if sg.SecurityGroupPropertiesFormat != nil && sg.SecurityGroupPropertiesFormat.SecurityRules != nil {
+//             // Find all ports defined in the security rules with access property "Deny"
+//             for _, securityRule := range *sg.SecurityRules {
+//                     if securityRule.Access == network.SecurityRuleAccessDeny {
+//                             restrictedPorts = append(restrictedPorts, *securityRule.SourcePortRange)
+//                     }
+//             }
+//     }
 //
-//	restrictedPortsClean := deleteDuplicatesFromSlice(restrictedPorts)
+//     restrictedPortsClean := deleteDuplicatesFromSlice(restrictedPorts)
 //
-//	return strings.Join(restrictedPortsClean, ",")
+//     return strings.Join(restrictedPortsClean, ",")
 //}
 //
 //func deleteDuplicatesFromSlice(intSlice []string) []string {
-//	keys := make(map[string]bool)
-//	var list []string
-//	for _, entry := range intSlice {
-//		if _, value := keys[entry]; !value {
-//			keys[entry] = true
-//			list = append(list, entry)
-//		}
-//	}
-//	return list
+//     keys := make(map[string]bool)
+//     var list []string
+//     for _, entry := range intSlice {
+//             if _, value := keys[entry]; !value {
+//                     keys[entry] = true
+//                     list = append(list, entry)
+//             }
+//     }
+//     return list
 //}
 
 func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *armnetwork.LoadBalancer) []string {
 
-	var (
-		publicIPAddresses []string
-	)
+	var publicIPAddresses []string
 
 	// Create public IP address client
 	client, err := armnetwork.NewPublicIPAddressesClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		log.Debugf("could not get new public ip addresses client: %v", err)
+		return []string{}
+	}
+
+	if lb == nil || lb.Properties == nil {
 		return []string{}
 	}
 

@@ -40,7 +40,8 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 
-	"github.com/Azure/go-autorest/autorest"
+  "github.com/Azure/go-autorest/autorest"
+
 	"github.com/stretchr/testify/assert"
 )
 
