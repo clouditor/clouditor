@@ -144,7 +144,7 @@ func labels(tags map[string]*string) map[string]string {
 	l := make(map[string]string)
 
 	for tag, i := range tags {
-		l[tag] = to.String(i)
+		l[tag] = util.Deref(i)
 	}
 
 	return l
