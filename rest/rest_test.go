@@ -52,7 +52,7 @@ var (
 	methods = []string{"GET", "POST"}
 	headers = DefaultAllowedHeaders
 
-	grpcPort = 0
+	grpcPort = uint16(0)
 )
 
 func TestMain(m *testing.M) {
@@ -76,7 +76,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	grpcPort = sock.Addr().(*net.TCPAddr).Port
+	grpcPort = uint16(sock.Addr().(*net.TCPAddr).Port)
 
 	exit := m.Run()
 

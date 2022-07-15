@@ -93,7 +93,7 @@ var (
 	DefaultAllowedMethods = []string{"GET", "POST", "PUT", "DELETE"}
 
 	// DefaultAPIHTTPPort specifies the default port for the REST API.
-	DefaultAPIHTTPPort int16 = 8080
+	DefaultAPIHTTPPort uint16 = 8080
 )
 
 func init() {
@@ -168,7 +168,7 @@ func WithEmbeddedOAuth2Server(keyPath string, keyPassword string, saveOnCreate b
 
 // RunServer starts our REST API. The REST API is a reverse proxy using grpc-gateway that
 // exposes certain gRPC calls as RESTful HTTP methods.
-func RunServer(ctx context.Context, grpcPort int, httpPort int, serverOpts ...ServerConfigOption) (err error) {
+func RunServer(ctx context.Context, grpcPort uint16, httpPort uint16, serverOpts ...ServerConfigOption) (err error) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 

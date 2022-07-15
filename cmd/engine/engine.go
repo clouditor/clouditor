@@ -94,7 +94,7 @@ const (
 
 	DefaultAPIDefaultUser               = "clouditor"
 	DefaultAPIDefaultPassword           = "clouditor"
-	DefaultAPIgRPCPort                  = 9090
+	DefaultAPIgRPCPort                  = uint16(9090)
 	DefaultAPIStartEmbeddedOAuth2Server = true
 	DefaultServiceOAuth2Endpoint        = "http://localhost:8080/v1/auth/token"
 	DefaultServiceOAuth2ClientID        = "clouditor"
@@ -103,7 +103,7 @@ const (
 	DefaultDBPassword                   = "postgres"
 	DefaultDBHost                       = "localhost"
 	DefaultDBName                       = "postgres"
-	DefaultDBPort                       = 5432
+	DefaultDBPort                       = uint16(5432)
 	DefaultDBInMemory                   = false
 	DefaultCreateDefaultTarget          = true
 	DefaultDiscoveryAutoStart           = false
@@ -142,8 +142,8 @@ func init() {
 	engineCmd.Flags().String(APIKeyPasswordFlag, auth.DefaultApiKeyPassword, "Specifies the password used to proctect the API private key")
 	engineCmd.Flags().String(APIKeyPathFlag, auth.DefaultApiKeyPath, "Specifies the location of the API private key")
 	engineCmd.Flags().Bool(APIKeySaveOnCreateFlag, auth.DefaultApiKeySaveOnCreate, "Specifies whether the API key should be saved on creation. It will only created if the default location is used.")
-	engineCmd.Flags().Int16(APIgRPCPortFlag, DefaultAPIgRPCPort, "Specifies the port used for the gRPC API")
-	engineCmd.Flags().Int16(APIHTTPPortFlag, rest.DefaultAPIHTTPPort, "Specifies the port used for the HTTP API")
+	engineCmd.Flags().Uint16(APIgRPCPortFlag, DefaultAPIgRPCPort, "Specifies the port used for the gRPC API")
+	engineCmd.Flags().Uint16(APIHTTPPortFlag, rest.DefaultAPIHTTPPort, "Specifies the port used for the HTTP API")
 	engineCmd.Flags().String(APIJWKSURLFlag, service.DefaultJWKSURL, "Specifies the JWKS URL used to verify authentication tokens in the gRPC and HTTP API")
 	engineCmd.Flags().String(ServiceOAuth2EndpointFlag, DefaultServiceOAuth2Endpoint, "Specifies the OAuth 2.0 token endpoint")
 	engineCmd.Flags().String(ServiceOAuth2ClientIDFlag, DefaultServiceOAuth2ClientID, "Specifies the OAuth 2.0 client ID")
@@ -156,7 +156,7 @@ func init() {
 	engineCmd.Flags().String(DBPasswordFlag, DefaultDBPassword, "Provides password of database")
 	engineCmd.Flags().String(DBHostFlag, DefaultDBHost, "Provides address of database")
 	engineCmd.Flags().String(DBNameFlag, DefaultDBName, "Provides name of database")
-	engineCmd.Flags().Int16(DBPortFlag, DefaultDBPort, "Provides port for database")
+	engineCmd.Flags().Uint16(DBPortFlag, DefaultDBPort, "Provides port for database")
 	engineCmd.Flags().Bool(DBInMemoryFlag, DefaultDBInMemory, "Uses an in-memory database which is not persisted at all")
 	engineCmd.Flags().Bool(CreateDefaultTarget, DefaultCreateDefaultTarget, "Creates a default target cloud service if it does not exist")
 	engineCmd.Flags().Bool(DiscoveryAutoStartFlag, DefaultDiscoveryAutoStart, "Automatically start the discovery when engine starts")
@@ -218,7 +218,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	} else {
 		db, err = gorm.NewStorage(gorm.WithPostgres(
 			viper.GetString(DBHostFlag),
-			int16(viper.GetInt(DBPortFlag)),
+			uint16(viper.GetUint(DBPortFlag)),
 			viper.GetString(DBUserNameFlag),
 			viper.GetString(DBPasswordFlag),
 			viper.GetString(DBNameFlag),
@@ -278,8 +278,8 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		}
 	}
 
-	grpcPort := viper.GetInt(APIgRPCPortFlag)
-	httpPort := viper.GetInt(APIHTTPPortFlag)
+	grpcPort := uint16(viper.GetUint(APIgRPCPortFlag))
+	httpPort := uint16(viper.GetUint(APIHTTPPortFlag))
 
 	grpcLogger := logrus.New()
 	grpcLogger.Formatter = &formatter.GRPCFormatter{TextFormatter: logrus.TextFormatter{ForceColors: true}}

@@ -30,5 +30,5 @@ type NetworkService struct {
 	Compute             []ResourceID         `json:"compute"`
 	TransportEncryption *TransportEncryption `json:"transportEncryption"`
 	Ips                 []string             `json:"ips"`
-	Ports               []int16              `json:"ports"`
+	Ports               []int16              `json:"ports"` // TODO(oxisto): This should be an uint16
 }
