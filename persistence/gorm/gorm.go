@@ -91,9 +91,9 @@ func WithMaxOpenConns(max int) StorageOption {
 }
 
 // WithPostgres is an option to configure Storage to use a Postgres DB
-func WithPostgres(host string, port uint16, user string, pw string, db string) StorageOption {
+func WithPostgres(host string, port uint16, user string, pw string, db string, sslmode string) StorageOption {
 	return func(s *storage) {
-		s.dialector = postgres.Open(fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", user, pw, host, port, db))
+		s.dialector = postgres.Open(fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s", user, pw, host, port, db, sslmode))
 	}
 }
 

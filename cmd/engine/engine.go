@@ -86,6 +86,7 @@ const (
 	DBHostFlag                       = "db-host"
 	DBNameFlag                       = "db-name"
 	DBPortFlag                       = "db-port"
+	DBSSLModeFlag                    = "db-ssl-mode"
 	DBInMemoryFlag                   = "db-in-memory"
 	CreateDefaultTarget              = "target-default-create"
 	DiscoveryAutoStartFlag           = "discovery-auto-start"
@@ -104,6 +105,7 @@ const (
 	DefaultDBHost                       = "localhost"
 	DefaultDBName                       = "postgres"
 	DefaultDBPort                       = 5432
+	DefaultDBSSLMode                    = "disable"
 	DefaultDBInMemory                   = false
 	DefaultCreateDefaultTarget          = true
 	DefaultDiscoveryAutoStart           = false
@@ -157,6 +159,7 @@ func init() {
 	engineCmd.Flags().String(DBHostFlag, DefaultDBHost, "Provides address of database")
 	engineCmd.Flags().String(DBNameFlag, DefaultDBName, "Provides name of database")
 	engineCmd.Flags().Uint16(DBPortFlag, DefaultDBPort, "Provides port for database")
+	engineCmd.Flags().String(DBSSLModeFlag, DefaultDBSSLMode, "The SSL mode for the database")
 	engineCmd.Flags().Bool(DBInMemoryFlag, DefaultDBInMemory, "Uses an in-memory database which is not persisted at all")
 	engineCmd.Flags().Bool(CreateDefaultTarget, DefaultCreateDefaultTarget, "Creates a default target cloud service if it does not exist")
 	engineCmd.Flags().Bool(DiscoveryAutoStartFlag, DefaultDiscoveryAutoStart, "Automatically start the discovery when engine starts")
@@ -183,6 +186,7 @@ func init() {
 	_ = viper.BindPFlag(DBHostFlag, engineCmd.Flags().Lookup(DBHostFlag))
 	_ = viper.BindPFlag(DBNameFlag, engineCmd.Flags().Lookup(DBNameFlag))
 	_ = viper.BindPFlag(DBPortFlag, engineCmd.Flags().Lookup(DBPortFlag))
+	_ = viper.BindPFlag(DBSSLModeFlag, engineCmd.Flags().Lookup(DBSSLModeFlag))
 	_ = viper.BindPFlag(DBInMemoryFlag, engineCmd.Flags().Lookup(DBInMemoryFlag))
 	_ = viper.BindPFlag(CreateDefaultTarget, engineCmd.Flags().Lookup(CreateDefaultTarget))
 	_ = viper.BindPFlag(DiscoveryAutoStartFlag, engineCmd.Flags().Lookup(DiscoveryAutoStartFlag))
@@ -222,6 +226,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			viper.GetString(DBUserNameFlag),
 			viper.GetString(DBPasswordFlag),
 			viper.GetString(DBNameFlag),
+			viper.GetString(DBSSLModeFlag),
 		))
 	}
 	if err != nil {
