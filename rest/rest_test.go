@@ -52,7 +52,7 @@ var (
 	methods = []string{"GET", "POST"}
 	headers = DefaultAllowedHeaders
 
-	grpcPort = uint16(0)
+	grpcPort uint16 = 0
 )
 
 func TestMain(m *testing.M) {
