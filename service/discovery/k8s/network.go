@@ -85,10 +85,10 @@ func (d k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
 }
 
 func (k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwork {
-	var ports []int16
+	var ports []uint16
 
 	for _, v := range service.Spec.Ports {
-		ports = append(ports, int16(v.Port))
+		ports = append(ports, uint16(v.Port))
 	}
 
 	return &voc.NetworkService{
@@ -128,7 +128,7 @@ func (k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 				},
 			},
 			Ips:   nil, // TODO (oxisto): fill out IPs
-			Ports: []int16{80, 443},
+			Ports: []uint16{80, 443},
 		},
 		// TODO(oxisto): fill out access restrictions
 		AccessRestrictions: &[]voc.AccessRestriction{},

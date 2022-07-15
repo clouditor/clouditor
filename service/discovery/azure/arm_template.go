@@ -398,7 +398,7 @@ func (d *azureARMTemplateDiscovery) handleLoadBalancer(template map[string]inter
 			},
 			Compute: []voc.ResourceID{},
 			Ips:     []string{},
-			Ports:   []int16{}, // TODO: This should be an uint16!
+			Ports:   []uint16{},
 		},
 		AccessRestrictions: &[]voc.AccessRestriction{
 			// TODO(all)
