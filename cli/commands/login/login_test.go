@@ -67,7 +67,7 @@ func TestLogin(t *testing.T) {
 		dir      string
 		verifier string
 		authSrv  *oauth2.AuthorizationServer
-		port     int
+		port     uint16
 	)
 
 	authSrv, port, err = testutil.StartAuthenticationServer()
@@ -110,7 +110,7 @@ func TestLogin(t *testing.T) {
 			}
 		}()
 
-		err = cmd.RunE(nil, []string{fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)})
+		err = cmd.RunE(nil, []string{fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).AddrPort().Port())})
 		assert.NoError(t, err)
 		done <- true
 	}()

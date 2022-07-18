@@ -56,7 +56,7 @@ import (
 )
 
 var (
-	authPort int
+	authPort uint16
 )
 
 func TestMain(m *testing.M) {

@@ -20,7 +20,7 @@ const (
 
 // StartAuthenticationServer starts an authentication server on a random port with
 // users and clients specified in the TestAuthUser and TestAuthClientID constants.
-func StartAuthenticationServer() (srv *oauth2.AuthorizationServer, port int, err error) {
+func StartAuthenticationServer() (srv *oauth2.AuthorizationServer, port uint16, err error) {
 	var nl net.Listener
 
 	srv = oauth2.NewServer(":0",
@@ -45,24 +45,24 @@ func StartAuthenticationServer() (srv *oauth2.AuthorizationServer, port int, err
 		_ = srv.Serve(nl)
 	}()
 
-	port = nl.Addr().(*net.TCPAddr).Port
+	port = nl.Addr().(*net.TCPAddr).AddrPort().Port()
 
 	return srv, port, nil
 }
 
-func JWKSURL(port int) string {
+func JWKSURL(port uint16) string {
 	return fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", port)
 }
 
-func TokenURL(port int) string {
+func TokenURL(port uint16) string {
 	return fmt.Sprintf("http://localhost:%d/v1/auth/token", port)
 }
 
-func AuthURL(port int) string {
+func AuthURL(port uint16) string {
 	return fmt.Sprintf("http://localhost:%d/v1/auth/authorize", port)
 }
 
-func AuthClientConfig(port int) *clientcredentials.Config {
+func AuthClientConfig(port uint16) *clientcredentials.Config {
 	return &clientcredentials.Config{
 		ClientID:     TestAuthClientID,
 		ClientSecret: TestAuthClientSecret,
