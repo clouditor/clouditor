@@ -218,7 +218,7 @@ func TestNetwork(t *testing.T) {
 
 	assert.True(t, ok)
 	assert.Equal(t, "lb1", lb.Name)
-	assert.Equal(t, int16(1234), lb.Ports[0])
+	assert.Equal(t, uint16(1234), lb.Ports[0])
 	assert.Equal(t, "111.222.333.444", lb.Ips[0])
 
 	lb, ok = list[2].(*voc.LoadBalancer)
