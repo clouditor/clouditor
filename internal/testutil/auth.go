@@ -45,7 +45,7 @@ func StartAuthenticationServer() (srv *oauth2.AuthorizationServer, port uint16, 
 		_ = srv.Serve(nl)
 	}()
 
-	port = uint16(nl.Addr().(*net.TCPAddr).Port)
+	port = nl.Addr().(*net.TCPAddr).AddrPort().Port()
 
 	return srv, port, nil
 }
