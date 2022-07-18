@@ -441,7 +441,8 @@ message Requirement {
   // metrics contains either a list of reference to metrics - in this case only
   // the id field of the metric is populated - or a list of populated metric
   // meta-data, most likely returned by the database.
-  repeated Metric metrics = 4 [ (tagger.tags) = "gorm:\"many2many\"" ];
+  repeated Metric metrics = 4
+      [ (tagger.tags) = "gorm:\"many2many:requirement_metrics\"" ];
 
   // category can be used to categorize requirements, e.g., according to a
   // specific security catalog or something that groups requirements together,
