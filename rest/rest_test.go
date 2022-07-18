@@ -60,7 +60,7 @@ func TestMain(m *testing.M) {
 		err      error
 		server   *grpc.Server
 		sock     net.Listener
-		authPort int
+		authPort uint16
 	)
 
 	clitest.AutoChdir()
@@ -76,7 +76,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	grpcPort = uint16(sock.Addr().(*net.TCPAddr).Port)
+	grpcPort = sock.Addr().(*net.TCPAddr).AddrPort().Port()
 
 	exit := m.Run()
 

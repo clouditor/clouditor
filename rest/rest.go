@@ -249,7 +249,7 @@ func GetReadyChannel() chan bool {
 }
 
 // GetServerPort returns the actual port used by the REST API
-func GetServerPort() (int, error) {
+func GetServerPort() (uint16, error) {
 	if sock == nil {
 		return 0, errors.New("server socket is empty")
 	}
@@ -260,7 +260,7 @@ func GetServerPort() (int, error) {
 		return 0, errors.New("server socket address is not a TCP address")
 	}
 
-	return tcpAddr.Port, nil
+	return tcpAddr.AddrPort().Port(), nil
 }
 
 // handleCORS adds an appropriate http.HandlerFunc to an existing http.Handler to configure

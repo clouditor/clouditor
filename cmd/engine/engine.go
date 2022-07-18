@@ -93,23 +93,23 @@ const (
 	DiscoveryProviderFlag            = "discovery-provider"
 	DashboardURLFlag                 = "dashboard-url"
 
-	DefaultAPIDefaultUser               = "clouditor"
-	DefaultAPIDefaultPassword           = "clouditor"
-	DefaultAPIgRPCPort                  = 9090
-	DefaultAPIStartEmbeddedOAuth2Server = true
-	DefaultServiceOAuth2Endpoint        = "http://localhost:8080/v1/auth/token"
-	DefaultServiceOAuth2ClientID        = "clouditor"
-	DefaultServiceOAuth2ClientSecret    = "clouditor"
-	DefaultDBUserName                   = "postgres"
-	DefaultDBPassword                   = "postgres"
-	DefaultDBHost                       = "localhost"
-	DefaultDBName                       = "postgres"
-	DefaultDBPort                       = 5432
-	DefaultDBSSLMode                    = "disable"
-	DefaultDBInMemory                   = false
-	DefaultCreateDefaultTarget          = true
-	DefaultDiscoveryAutoStart           = false
-	DefaultDashboardURL                 = "http://localhost:8080"
+	DefaultAPIDefaultUser                      = "clouditor"
+	DefaultAPIDefaultPassword                  = "clouditor"
+	DefaultAPIgRPCPort                  uint16 = 9090
+	DefaultAPIStartEmbeddedOAuth2Server        = true
+	DefaultServiceOAuth2Endpoint               = "http://localhost:8080/v1/auth/token"
+	DefaultServiceOAuth2ClientID               = "clouditor"
+	DefaultServiceOAuth2ClientSecret           = "clouditor"
+	DefaultDBUserName                          = "postgres"
+	DefaultDBPassword                          = "postgres"
+	DefaultDBHost                              = "localhost"
+	DefaultDBName                              = "postgres"
+	DefaultDBPort                       uint16 = 5432
+	DefaultDBSSLMode                           = "disable"
+	DefaultDBInMemory                          = false
+	DefaultCreateDefaultTarget                 = true
+	DefaultDiscoveryAutoStart                  = false
+	DefaultDashboardURL                        = "http://localhost:8080"
 
 	EnvPrefix = "CLOUDITOR"
 )
