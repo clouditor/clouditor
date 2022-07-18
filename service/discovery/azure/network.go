@@ -148,7 +148,7 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *network.LoadBalancer) voc
 				},
 			},
 			Ips:   d.publicIPAddressFromLoadBalancer(lb),
-			Ports: LoadBalancerPorts(lb),
+			Ports: loadBalancerPorts(lb),
 		},
 		// TODO(all): do we need the AccessRestriction for load balancers?
 		AccessRestrictions: &[]voc.AccessRestriction{},
@@ -177,10 +177,9 @@ func (*azureNetworkDiscovery) handleNetworkInterfaces(ni *network.Interface) voc
 	}
 }
 
-func LoadBalancerPorts(lb *network.LoadBalancer) (loadBalancerPorts []int16) {
-
+func loadBalancerPorts(lb *network.LoadBalancer) (loadBalancerPorts []uint16) {
 	for _, item := range *lb.LoadBalancingRules {
-		loadBalancerPorts = append(loadBalancerPorts, int16(to.Int32(item.FrontendPort)))
+		loadBalancerPorts = append(loadBalancerPorts, uint16(to.Int32(item.FrontendPort)))
 	}
 
 	return loadBalancerPorts

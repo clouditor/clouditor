@@ -98,7 +98,7 @@ func TestListIngresses(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "my-service", service.Name)
 	assert.Equal(t, "/namespaces/my-namespace/services/my-service", string(service.ID))
-	assert.Equal(t, []int16{80}, service.Ports)
+	assert.Equal(t, []uint16{80}, service.Ports)
 	assert.Equal(t, []string{"127.0.0.1"}, service.Ips)
 
 	lb, ok := list[1].(*voc.LoadBalancer)
