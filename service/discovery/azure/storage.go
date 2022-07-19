@@ -31,12 +31,18 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Azure/go-autorest/autorest/to"
+
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
+)
+
+var (
+	EmptyStorageAccount = errors.New("storage account is empty")
 )
 
 type azureStorageDiscovery struct {
@@ -65,7 +71,7 @@ func (*azureStorageDiscovery) Description() string {
 func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 	// make sure, we are authorized
 	if err = d.authorize(); err != nil {
-		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
+		return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
 	}
 
 	log.Info("Discover Azure storage resources")
@@ -151,7 +157,7 @@ func (d *azureStorageDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, 
 		return nil, err
 	}
 
-	// List all disks accross all resource groups
+	// List all disks across all resource groups
 	listPager := client.NewListPager(&armcompute.DisksClientListOptions{})
 	disks := make([]*armcompute.Disk, 0)
 	for listPager.More() {
@@ -249,7 +255,7 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 
 func (d *azureStorageDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.BlockStorage, error) {
 	// If a mandatory field is empty, the whole disk is empty
-	if disk.ID == nil {
+	if disk == nil || disk.ID == nil {
 		return nil, fmt.Errorf("disk is nil")
 	}
 
@@ -275,8 +281,11 @@ func (d *azureStorageDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 }
 
 func handleObjectStorage(account *armstorage.Account, container *armstorage.ListContainerItem) (*voc.ObjectStorage, error) {
-	// If a mandatory field is empty, the whole container is empty
-	if container.ID == nil {
+	if account == nil {
+		return nil, EmptyStorageAccount
+	}
+
+	if container == nil {
 		return nil, fmt.Errorf("container is nil")
 	}
 
@@ -305,9 +314,15 @@ func handleObjectStorage(account *armstorage.Account, container *armstorage.List
 func (*azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, storagesList []voc.IsCloudResource) (*voc.StorageService, error) {
 	var storageResourceIDs []voc.ResourceID
 
+	if account == nil {
+		return nil, EmptyStorageAccount
+	}
+
 	// Get all object storage IDs
 	for _, storage := range storagesList {
-		storageResourceIDs = append(storageResourceIDs, storage.GetID())
+		if strings.Contains(string(storage.GetID()), accountName(string(to.String(account.ID)))) {
+			storageResourceIDs = append(storageResourceIDs, storage.GetID())
+		}
 	}
 
 	te := &voc.TransportEncryption{
@@ -345,6 +360,10 @@ func (*azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, 
 
 //generalizeURL generalizes the URL, because the URL depends on the storage type
 func generalizeURL(url string) string {
+	if url == "" {
+		return ""
+	}
+
 	urlSplit := strings.Split(url, ".")
 	urlSplit[1] = "[file,blob]"
 	newURL := strings.Join(urlSplit, ".")
@@ -353,8 +372,11 @@ func generalizeURL(url string) string {
 }
 
 func handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileShareItem) (*voc.FileStorage, error) {
-	// If a mandatory field is empty, the whole fileshare is empty
-	if fileshare.ID == nil {
+	if account == nil {
+		return nil, EmptyStorageAccount
+	}
+
+	if fileshare == nil {
 		return nil, fmt.Errorf("fileshare is nil")
 	}
 
@@ -384,7 +406,13 @@ func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk *armcompute.Di
 
 	var enc voc.HasAtRestEncryption
 
-	if *disk.Properties.Encryption.Type == armcompute.EncryptionTypeEncryptionAtRestWithPlatformKey {
+	if disk == nil {
+		return enc, errors.New("disk is empty")
+	}
+
+	if disk.Properties.Encryption.Type == nil {
+		return enc, errors.New("error getting atRestEncryption properties of blockStorage")
+	} else if *disk.Properties.Encryption.Type == armcompute.EncryptionTypeEncryptionAtRestWithPlatformKey {
 		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
 			Algorithm: "AES256",
 			Enabled:   true,
@@ -393,7 +421,7 @@ func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk *armcompute.Di
 		var keyUrl string
 		discEncryptionSetID := disk.Properties.Encryption.DiskEncryptionSetID
 
-		keyUrl, err := d.sourceVaultID(util.Deref(discEncryptionSetID))
+		keyUrl, err := d.keyURL(util.Deref(discEncryptionSetID))
 		if err != nil {
 			return nil, fmt.Errorf("could not get keyVaultID: %w", err)
 		}
@@ -405,10 +433,7 @@ func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk *armcompute.Di
 			},
 			KeyUrl: keyUrl,
 		}
-	} else {
-		return enc, errors.New("error getting atRestEncryption properties of blockStorage")
 	}
-
 	return enc, nil
 }
 
@@ -416,11 +441,18 @@ func storageAtRestEncryption(account *armstorage.Account) (voc.HasAtRestEncrypti
 
 	var enc voc.HasAtRestEncryption
 
-	if *account.Properties.Encryption.KeySource == armstorage.KeySourceMicrosoftStorage {
-		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
-			Algorithm: "AES256",
-			Enabled:   true,
-		}}
+	if account == nil {
+		return enc, EmptyStorageAccount
+	}
+
+	if account.Properties == nil || account.Properties.Encryption.KeySource == nil {
+		return enc, errors.New("keySource is empty")
+	} else if *account.Properties.Encryption.KeySource == armstorage.KeySourceMicrosoftStorage {
+		enc = voc.ManagedKeyEncryption{
+			AtRestEncryption: &voc.AtRestEncryption{
+				Algorithm: "AES256",
+				Enabled:   true,
+			}}
 	} else if *account.Properties.Encryption.KeySource == armstorage.KeySourceMicrosoftKeyvault {
 		enc = voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
@@ -429,14 +461,15 @@ func storageAtRestEncryption(account *armstorage.Account) (voc.HasAtRestEncrypti
 			},
 			KeyUrl: util.Deref(account.Properties.Encryption.KeyVaultProperties.KeyVaultURI),
 		}
-	} else {
-		return enc, errors.New("error getting atRestEncryption properties of storage account")
 	}
 
 	return enc, nil
 }
 
-func (d *azureStorageDiscovery) sourceVaultID(diskEncryptionSetID string) (string, error) {
+func (d *azureStorageDiscovery) keyURL(diskEncryptionSetID string) (string, error) {
+	if diskEncryptionSetID == "" {
+		return "", fmt.Errorf("empty diskEncryptionSetID")
+	}
 
 	// Create Key Vault client
 	client, err := armcompute.NewDiskEncryptionSetsClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
@@ -452,16 +485,30 @@ func (d *azureStorageDiscovery) sourceVaultID(diskEncryptionSetID string) (strin
 		return "", err
 	}
 
-	sourceVaultID := kv.DiskEncryptionSet.Properties.ActiveKey.SourceVault.ID
+	keyURL := kv.DiskEncryptionSet.Properties.ActiveKey.KeyURL
 
-	if sourceVaultID == nil {
-		return "", fmt.Errorf("could not get sourceVaultID")
+	if keyURL == nil {
+		return "", fmt.Errorf("could not get keyURL")
 	}
 
-	return util.Deref(sourceVaultID), nil
+	return util.Deref(keyURL), nil
 }
 
+// diskEncryptionSetName return the disk encryption set ID's name
 func diskEncryptionSetName(diskEncryptionSetID string) string {
+	if diskEncryptionSetID == "" {
+		return ""
+	}
 	splitName := strings.Split(diskEncryptionSetID, "/")
+	return splitName[8]
+}
+
+// accountName return the ID's account name
+func accountName(id string) string {
+	if id == "" {
+		return ""
+	}
+
+	splitName := strings.Split(id, "/")
 	return splitName[8]
 }
