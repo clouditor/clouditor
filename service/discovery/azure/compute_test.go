@@ -184,7 +184,6 @@ func TestCompute(t *testing.T) {
 		WithAuthorizer(&mockAuthorizer{}),
 	)
 
-	// TODO(anatheka): Check why it is nil
 	list, err := d.List()
 
 	assert.NoError(t, err)

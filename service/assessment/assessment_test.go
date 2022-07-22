@@ -935,11 +935,11 @@ func TestConvertTargetValue(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotConvertedTargetValue, err := convertTargetValue(tt.args.value)
-			if !tt.wantErr(t, err) {
+			if !tt.wantErr(t, err, fmt.Sprintf("convertTargetValue(%v)", tt.args.value)) {
 				return
 			}
 			// Checking against 'String()' allows to compare the actual values instead of the respective pointers
-			assert.Equal(t, tt.wantConvertedTargetValue.String(), gotConvertedTargetValue.String())
+			assert.Equalf(t, tt.wantConvertedTargetValue.String(), gotConvertedTargetValue.String(), "convertTargetValue(%v)", tt.args.value)
 		})
 	}
 }

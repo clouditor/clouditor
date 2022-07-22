@@ -838,7 +838,7 @@ func Test_azureStorageDiscovery_discoverStorageAccounts(t *testing.T) {
 			}
 			got, err := d.discoverStorageAccounts()
 			if tt.wantErr != nil {
-				if !tt.wantErr(t, err, fmt.Sprintf("discoverStorageAccounts()")) {
+				if !tt.wantErr(t, err) {
 					return
 				}
 			} else {
@@ -1699,7 +1699,7 @@ func Test_azureStorageDiscovery_discoverBlockStorages(t *testing.T) {
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
 			got, err := d.discoverBlockStorages()
-			if !tt.wantErr(t, err, fmt.Sprintf("discoverBlockStorages()")) {
+			if !tt.wantErr(t, err) {
 				return
 			}
 			assert.Equalf(t, tt.want, got, "discoverBlockStorages()")
