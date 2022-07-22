@@ -285,7 +285,8 @@ func handleObjectStorage(account *armstorage.Account, container *armstorage.List
 		return nil, EmptyStorageAccount
 	}
 
-	if container == nil {
+	// It is possible that the container is not empty. In that case we have to check if a mandatory field is empty, so the whole disk is empty
+	if container == nil || container.ID == nil {
 		return nil, fmt.Errorf("container is nil")
 	}
 
@@ -376,7 +377,8 @@ func handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileSh
 		return nil, EmptyStorageAccount
 	}
 
-	if fileshare == nil {
+	// It is possible that the fileshare is not empty. In that case we have to check if a mandatory field is empty, so the whole disk is empty
+	if fileshare == nil || fileshare.ID == nil {
 		return nil, fmt.Errorf("fileshare is nil")
 	}
 
