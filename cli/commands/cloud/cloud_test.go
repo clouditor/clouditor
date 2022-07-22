@@ -280,8 +280,8 @@ func TestGetMetricConfiguration(t *testing.T) {
 func startServer(opts ...service.StartGRPCServerOption) (tmpDir string, auth *oauth2.AuthorizationServer, srv *grpc.Server) {
 	var (
 		err      error
-		grpcPort int
-		authPort int
+		grpcPort uint16
+		authPort uint16
 		sock     net.Listener
 	)
 
@@ -295,7 +295,7 @@ func startServer(opts ...service.StartGRPCServerOption) (tmpDir string, auth *oa
 		panic(err)
 	}
 
-	grpcPort = sock.Addr().(*net.TCPAddr).Port
+	grpcPort = sock.Addr().(*net.TCPAddr).AddrPort().Port()
 
 	tmpDir, err = clitest.PrepareSession(authPort, auth, fmt.Sprintf("localhost:%d", grpcPort))
 	if err != nil {

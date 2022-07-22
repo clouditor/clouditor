@@ -22,7 +22,7 @@ import (
 // test credentials. It is the responsibility of the caller to cleanup the temporary directory.
 //
 // This function will use asserts and fail/panic if errors occurs.
-func PrepareSession(authPort int, authSrv *oauth2.AuthorizationServer, grpcURL string) (dir string, err error) {
+func PrepareSession(authPort uint16, authSrv *oauth2.AuthorizationServer, grpcURL string) (dir string, err error) {
 	var (
 		token   *oauth2.Token
 		session *cli.Session
@@ -79,8 +79,8 @@ func RunCLITest(m *testing.M, opts ...service.StartGRPCServerOption) (code int) 
 		err      error
 		tmpDir   string
 		auth     *oauth2.AuthorizationServer
-		authPort int
-		grpcPort int
+		authPort uint16
+		grpcPort uint16
 		sock     net.Listener
 		server   *grpc.Server
 	)
@@ -95,7 +95,7 @@ func RunCLITest(m *testing.M, opts ...service.StartGRPCServerOption) (code int) 
 		panic(err)
 	}
 
-	grpcPort = sock.Addr().(*net.TCPAddr).Port
+	grpcPort = sock.Addr().(*net.TCPAddr).AddrPort().Port()
 
 	tmpDir, err = PrepareSession(authPort, auth, fmt.Sprintf("localhost:%d", grpcPort))
 	if err != nil {

@@ -42,7 +42,7 @@ import (
 func Test_oauthAuthorizer_Token(t *testing.T) {
 	var (
 		srv  *oauth2.AuthorizationServer
-		port int
+		port uint16
 		err  error
 	)
 	srv, port, err = testutil.StartAuthenticationServer()

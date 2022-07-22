@@ -32,11 +32,10 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
-	"github.com/stretchr/testify/assert"
 
 	"clouditor.io/clouditor/api/discovery"
-
 	"clouditor.io/clouditor/voc"
+	"github.com/stretchr/testify/assert"
 )
 
 type mockNetworkSender struct {
@@ -281,7 +280,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 							},
 						},
 						Ips:   []string{"111.222.333.444"},
-						Ports: []int16{1234, 5678},
+						Ports: []uint16{1234, 5678},
 					},
 					AccessRestrictions: &[]voc.AccessRestriction{},
 					HttpEndpoints:      &[]voc.HttpEndpoint{},
@@ -299,7 +298,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 								Labels: map[string]string{},
 							},
 						},
-						Ports: []int16{1234, 5678},
+						Ports: []uint16{1234, 5678},
 					},
 					AccessRestrictions: &[]voc.AccessRestriction{},
 					HttpEndpoints:      &[]voc.HttpEndpoint{},
@@ -317,7 +316,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 								Labels: map[string]string{},
 							},
 						},
-						Ports: []int16{1234, 5678},
+						Ports: []uint16{1234, 5678},
 					},
 					AccessRestrictions: &[]voc.AccessRestriction{},
 					HttpEndpoints:      &[]voc.HttpEndpoint{},

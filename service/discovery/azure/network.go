@@ -199,10 +199,10 @@ func (*azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface) 
 	}
 }
 
-func LoadBalancerPorts(lb *armnetwork.LoadBalancer) (loadBalancerPorts []int16) {
+func LoadBalancerPorts(lb *armnetwork.LoadBalancer) (loadBalancerPorts []uint16) {
 
 	for _, item := range lb.Properties.LoadBalancingRules {
-		loadBalancerPorts = append(loadBalancerPorts, int16(util.Deref(item.Properties.FrontendPort)))
+		loadBalancerPorts = append(loadBalancerPorts, uint16(util.Deref(item.Properties.FrontendPort)))
 	}
 
 	return loadBalancerPorts
