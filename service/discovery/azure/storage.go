@@ -31,8 +31,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Azure/go-autorest/autorest/to"
-
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
@@ -321,7 +319,7 @@ func (*azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, 
 
 	// Get all object storage IDs
 	for _, storage := range storagesList {
-		if strings.Contains(string(storage.GetID()), accountName(string(to.String(account.ID)))) {
+		if strings.Contains(string(storage.GetID()), accountName(util.Deref(account.ID))) {
 			storageResourceIDs = append(storageResourceIDs, storage.GetID())
 		}
 	}

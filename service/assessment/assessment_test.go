@@ -37,6 +37,14 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
@@ -46,13 +54,6 @@ import (
 	"clouditor.io/clouditor/policies"
 	"clouditor.io/clouditor/service"
 	"clouditor.io/clouditor/voc"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/structpb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var (
@@ -934,11 +935,11 @@ func TestConvertTargetValue(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotConvertedTargetValue, err := convertTargetValue(tt.args.value)
-			if !tt.wantErr(t, err, fmt.Sprintf("convertTargetValue(%v)", tt.args.value)) {
+			if !tt.wantErr(t, err) {
 				return
 			}
 			// Checking against 'String()' allows to compare the actual values instead of the respective pointers
-			assert.Equalf(t, tt.wantConvertedTargetValue.String(), gotConvertedTargetValue.String(), "convertTargetValue(%v)", tt.args.value)
+			assert.Equal(t, tt.wantConvertedTargetValue.String(), gotConvertedTargetValue.String())
 		})
 	}
 }
