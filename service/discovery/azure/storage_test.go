@@ -671,22 +671,22 @@ func TestStorageDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
 	// Test method discoverStorageAccounts
 	discoverStorageAccountsResponse, err := d.discoverStorageAccounts()
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "error getting next page:")
+	assert.ErrorContains(t, err, ErrGettingNextPage.Error())
 	assert.Nil(t, discoverStorageAccountsResponse)
 
 	// Test method discoverObjectStorages
 	discoverObjectStoragesResponse, err := d.discoverObjectStorages(mockedStorageAccountObject)
-	assert.Error(t, err)
+	assert.ErrorContains(t, err, ErrGettingNextPage.Error())
 	assert.Nil(t, discoverObjectStoragesResponse)
 
 	// Test method discoverFileStorages
 	discoverFileStoragesResponse, err := d.discoverFileStorages(mockedStorageAccountObject)
-	assert.Error(t, err)
+	assert.ErrorContains(t, err, ErrGettingNextPage.Error())
 	assert.Nil(t, discoverFileStoragesResponse)
 
 	// Test method discoverBlockStorages
 	discoverBlockStoragesResponse, err := d.discoverBlockStorages()
-	assert.Error(t, err)
+	assert.ErrorContains(t, err, ErrGettingNextPage.Error())
 	assert.Nil(t, discoverBlockStoragesResponse)
 }
 
@@ -810,7 +810,7 @@ func Test_azureStorageDiscovery_discoverStorageAccounts(t *testing.T) {
 			},
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "error getting next page:")
+				return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
 			},
 		},
 		{
@@ -1004,7 +1004,7 @@ func Test_storageAtRestEncryption(t *testing.T) {
 			args: args{},
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, EmptyStorageAccount)
+				return assert.ErrorIs(t, err, ErrEmptyStorageAccount)
 			},
 		},
 		{
@@ -1288,7 +1288,7 @@ func Test_handleFileStorage(t *testing.T) {
 			args: args{},
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, EmptyStorageAccount)
+				return assert.ErrorIs(t, err, ErrEmptyStorageAccount)
 			},
 		},
 		{
@@ -1427,7 +1427,7 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 			name: "Account is empty",
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, EmptyStorageAccount)
+				return assert.ErrorIs(t, err, ErrEmptyStorageAccount)
 			},
 		},
 		{
@@ -1522,7 +1522,7 @@ func Test_handleObjectStorage(t *testing.T) {
 			name: "Account is empty",
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, EmptyStorageAccount)
+				return assert.ErrorIs(t, err, ErrEmptyStorageAccount)
 			},
 		},
 		{
@@ -1630,7 +1630,7 @@ func Test_azureStorageDiscovery_discoverBlockStorages(t *testing.T) {
 			},
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "error getting next page:")
+				return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
 			},
 		},
 		{
@@ -1746,7 +1746,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 			},
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "error getting next page:")
+				return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
 			},
 		},
 		{
@@ -1875,7 +1875,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 			},
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "error getting next page:")
+				return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
 			},
 		},
 		{

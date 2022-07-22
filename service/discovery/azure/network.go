@@ -102,7 +102,7 @@ func (d *azureNetworkDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResour
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
-			err = fmt.Errorf("error getting next page: %v", err)
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
 			return nil, err
 		}
 		ni = append(ni, pageResponse.Value...)
@@ -136,7 +136,7 @@ func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, e
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
-			err = fmt.Errorf("error getting next page: %v", err)
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
 			return nil, err
 		}
 		lbs = append(lbs, pageResponse.Value...)

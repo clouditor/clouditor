@@ -100,7 +100,7 @@ func (d *azureComputeDiscovery) discoverFunctions() ([]voc.IsCloudResource, erro
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
-			err = fmt.Errorf("error getting next page: %v", err)
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
 			return nil, err
 		}
 		functionApps = append(functionApps, pageResponse.Value...)
@@ -153,7 +153,7 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
-			err = fmt.Errorf("error getting next page: %v", err)
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
 			return nil, err
 		}
 		vms = append(vms, pageResponse.Value...)

@@ -33,9 +33,10 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 
+	"github.com/stretchr/testify/assert"
+
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
-	"github.com/stretchr/testify/assert"
 )
 
 type mockNetworkSender struct {
@@ -416,7 +417,7 @@ func Test_azureNetworkDiscovery_discoverNetworkInterfaces(t *testing.T) {
 			},
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "error getting next page:")
+				return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
 			},
 		},
 	}
@@ -453,7 +454,7 @@ func Test_azureNetworkDiscovery_discoverLoadBalancer(t *testing.T) {
 			},
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "error getting next page:")
+				return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
 			},
 		},
 	}

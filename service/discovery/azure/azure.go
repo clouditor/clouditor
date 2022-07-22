@@ -49,6 +49,7 @@ var (
 	ErrCouldNotAuthenticate     = errors.New("could not authenticate to Azure")
 	ErrCouldNotGetSubscriptions = errors.New("could not get azure subscription")
 	ErrNoCredentialsConfigured  = errors.New("no credentials were configured")
+	ErrGettingNextPage          = errors.New("error getting next page")
 )
 
 type DiscoveryOption func(a *azureDiscovery)

@@ -42,7 +42,7 @@ import (
 )
 
 var (
-	EmptyStorageAccount = errors.New("storage account is empty")
+	ErrEmptyStorageAccount = errors.New("storage account is empty")
 )
 
 type azureStorageDiscovery struct {
@@ -102,7 +102,7 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
-			err = fmt.Errorf("error getting next page: %v", err)
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
 			return nil, err
 		}
 		accounts = append(accounts, pageResponse.Value...)
@@ -163,7 +163,7 @@ func (d *azureStorageDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, 
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
-			err = fmt.Errorf("error getting next page: %w", err)
+			err = fmt.Errorf("%s: %w", ErrGettingNextPage, err)
 			return nil, err
 		}
 		disks = append(disks, pageResponse.Value...)
@@ -198,7 +198,7 @@ func (d *azureStorageDiscovery) discoverFileStorages(account *armstorage.Account
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
-			err = fmt.Errorf("error getting next page: %v", err)
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
 			return nil, err
 		}
 		fs = append(fs, pageResponse.Value...)
@@ -234,7 +234,7 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
-			err = fmt.Errorf("error getting next page: %v", err)
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
 			return nil, err
 		}
 		bc = append(bc, pageResponse.Value...)
@@ -282,7 +282,7 @@ func (d *azureStorageDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 
 func handleObjectStorage(account *armstorage.Account, container *armstorage.ListContainerItem) (*voc.ObjectStorage, error) {
 	if account == nil {
-		return nil, EmptyStorageAccount
+		return nil, ErrEmptyStorageAccount
 	}
 
 	// It is possible that the container is not empty. In that case we have to check if a mandatory field is empty, so the whole disk is empty
@@ -316,7 +316,7 @@ func (*azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, 
 	var storageResourceIDs []voc.ResourceID
 
 	if account == nil {
-		return nil, EmptyStorageAccount
+		return nil, ErrEmptyStorageAccount
 	}
 
 	// Get all object storage IDs
@@ -374,7 +374,7 @@ func generalizeURL(url string) string {
 
 func handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileShareItem) (*voc.FileStorage, error) {
 	if account == nil {
-		return nil, EmptyStorageAccount
+		return nil, ErrEmptyStorageAccount
 	}
 
 	// It is possible that the fileshare is not empty. In that case we have to check if a mandatory field is empty, so the whole disk is empty
@@ -444,7 +444,7 @@ func storageAtRestEncryption(account *armstorage.Account) (voc.HasAtRestEncrypti
 	var enc voc.HasAtRestEncryption
 
 	if account == nil {
-		return enc, EmptyStorageAccount
+		return enc, ErrEmptyStorageAccount
 	}
 
 	if account.Properties == nil || account.Properties.Encryption.KeySource == nil {

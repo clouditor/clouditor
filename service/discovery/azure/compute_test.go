@@ -251,8 +251,7 @@ func TestComputeDiscoverFunctionsWhenInputIsInvalid(t *testing.T) {
 
 	discoverFunctionsResponse, err := d.discoverFunctions()
 
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "error getting next page:")
+	assert.ErrorContains(t, err, ErrGettingNextPage.Error())
 	assert.Nil(t, discoverFunctionsResponse)
 }
 
@@ -261,8 +260,7 @@ func TestComputeDiscoverVirtualMachines(t *testing.T) {
 
 	discoverVirtualMachineResponse, err := d.discoverVirtualMachines()
 
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "error getting next page:")
+	assert.ErrorContains(t, err, ErrGettingNextPage.Error())
 	assert.Nil(t, discoverVirtualMachineResponse)
 }
 
