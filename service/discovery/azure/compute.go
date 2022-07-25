@@ -27,6 +27,7 @@ package azure
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice"
@@ -35,6 +36,10 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
+)
+
+var (
+	ErrEmptyVirtualMachine = errors.New("virtual machine is empty")
 )
 
 type azureComputeDiscovery struct {
@@ -63,7 +68,7 @@ func (*azureComputeDiscovery) Description() string {
 // List compute resources
 func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 	if err = d.authorize(); err != nil {
-		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
+		return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
 	}
 
 	log.Info("Discover Azure compute resources")
@@ -120,6 +125,11 @@ func (d *azureComputeDiscovery) discoverFunctions() ([]voc.IsCloudResource, erro
 
 func (*azureComputeDiscovery) handleFunction(function *armappservice.Site) voc.IsCompute {
 
+	// If a mandatory field is empty, the whole function is empty
+	if function == nil || function.ID == nil {
+		return nil
+	}
+
 	return &voc.Function{
 		Compute: &voc.Compute{
 			Resource: &voc.Resource{
@@ -132,7 +142,10 @@ func (*azureComputeDiscovery) handleFunction(function *armappservice.Site) voc.I
 				},
 				Labels: labels(function.Tags),
 			},
+			NetworkInterface: []voc.ResourceID{},
 		},
+		RuntimeLanguage: "",
+		RuntimeVersion:  "",
 	}
 }
 
@@ -147,7 +160,7 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 		return nil, err
 	}
 
-	// List all VMs accross all resource groups
+	// List all VMs across all resource groups
 	listPager := client.NewListAllPager(&armcompute.VirtualMachinesClientListAllOptions{})
 	vms := make([]*armcompute.VirtualMachine, 0)
 	for listPager.More() {
@@ -174,6 +187,18 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 }
 
 func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {
+	var bootLogging = []voc.ResourceID{}
+	var osLogging = []voc.ResourceID{}
+
+	// If a mandatory field is empty, the whole disk is empty
+	if vm == nil || vm.ID == nil {
+		return nil, ErrEmptyVirtualMachine
+	}
+
+	if bootLogOutput(vm) != "" {
+		bootLogging = []voc.ResourceID{voc.ResourceID(bootLogOutput(vm))}
+	}
+
 	r := &voc.VirtualMachine{
 		Compute: &voc.Compute{
 			Resource: &voc.Resource{
@@ -185,17 +210,29 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 					Region: util.Deref(vm.Location),
 				},
 				Labels: labels(vm.Tags),
-			}},
-		BootLogging: &voc.BootLogging{Logging: &voc.Logging{
-			Enabled:         isBootDiagnosticEnabled(vm),
-			LoggingService:  []voc.ResourceID{voc.ResourceID(bootLogOutput(vm))},
-			RetentionPeriod: 0, // Currently, configuring the retention period for Managed Boot Diagnostics is not available. The logs will be overwritten after 1gb of space according to https://github.com/MicrosoftDocs/azure-docs/issues/69953
-		}},
+			},
+			NetworkInterface: []voc.ResourceID{},
+		},
+		BlockStorage:      []voc.ResourceID{},
+		MalwareProtection: &voc.MalwareProtection{},
+		BootLogging: &voc.BootLogging{
+			Logging: &voc.Logging{
+				Enabled:         isBootDiagnosticEnabled(vm),
+				LoggingService:  bootLogging,
+				RetentionPeriod: 0, // Currently, configuring the retention period for Managed Boot Diagnostics is not available. The logs will be overwritten after 1gb of space according to https://github.com/MicrosoftDocs/azure-docs/issues/69953
+				Auditing: &voc.Auditing{
+					SecurityFeature: &voc.SecurityFeature{},
+				},
+			},
+		},
 		OSLogging: &voc.OSLogging{
 			Logging: &voc.Logging{
 				Enabled:         false,
 				RetentionPeriod: 0,
-				LoggingService:  []voc.ResourceID{},
+				LoggingService:  osLogging,
+				Auditing: &voc.Auditing{
+					SecurityFeature: &voc.SecurityFeature{},
+				},
 			},
 		},
 	}
@@ -222,7 +259,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 }
 
 func isBootDiagnosticEnabled(vm *armcompute.VirtualMachine) bool {
-	if vm.Properties.DiagnosticsProfile == nil {
+	if vm == nil || vm.Properties == nil || vm.Properties.DiagnosticsProfile == nil || vm.Properties.DiagnosticsProfile.BootDiagnostics == nil {
 		return false
 	} else {
 		return util.Deref(vm.Properties.DiagnosticsProfile.BootDiagnostics.Enabled)
