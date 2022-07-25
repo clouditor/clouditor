@@ -72,7 +72,7 @@ func TestNewService(t *testing.T) {
 		want *Service
 	}{
 		{
-			name: "Create service with options",
+			name: "Create service with option 'WithAssessmentAddress'",
 			args: args{
 				opts: []ServiceOption{
 					WithAssessmentAddress("localhost:9091"),
@@ -251,6 +251,13 @@ func TestStart(t *testing.T) {
 		wantErrMessage string
 	}{
 		{
+			name:           "No Azure authorizer",
+			providers:      []string{ProviderAzure},
+			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
+			wantErr:        false,
+			wantErrMessage: "could not authenticate to Azure:",
+		},
+		{
 			name: "Azure authorizer from ENV",
 			fields: fields{
 				envVariables: []envVariable{
@@ -278,82 +285,6 @@ func TestStart(t *testing.T) {
 			wantErr:        false,
 			wantErrMessage: "",
 		},
-		//{
-		//	name: "Azure authorizer from file",
-		//	fields: fields{
-		//		envVariables: []envVariable{
-		//			// We must set AZURE_AUTH_LOCATION to the Azure credentials test file and the set HOME to a
-		//			// wrong path so that the Azure authorizer passes and the K8S authorizer fails
-		//			{
-		//				hasEnvVariable:   true,
-		//				envVariableKey:   "AZURE_AUTH_LOCATION",
-		//				envVariableValue: "service/discovery/testdata/credentials_test_file",
-		//			},
-		//			// Set $AZURE_ENVIRONMENT to sth. invalid s.t. Authorizer from file (2nd option is used)
-		//			{
-		//				hasEnvVariable:   true,
-		//				envVariableKey:   "AZURE_ENVIRONMENT",
-		//				envVariableValue: "!?NoEnvironment!?",
-		//			},
-		//		},
-		//	},
-		//	providers:      []string{ProviderAzure},
-		//	wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
-		//	wantErr:        false,
-		//	wantErrMessage: "",
-		//},
-		//{
-		//	// If I understand it right, it is not possible to get an error in azidentity.NewDefaultAzureCredential() and we are not able to check that.
-		//	name: "No Azure authorizer",
-		//	fields: fields{
-		//		// We must set env variables accordingly s.t. all authorizer will fail
-		//		envVariables: []envVariable{
-		//			// Let `NewDefaultAzureCredential()` fail
-		//			// It uses the order: 1. Environment credentials 2. Managed Identity credentials 3. CLI credentials
-		//			// 1. Set environment variables for NewEnvironmentCredential()
-		//			{
-		//				hasEnvVariable:   true,
-		//				envVariableKey:   "AZURE_TENANT_ID",
-		//				envVariableValue: "",
-		//			},
-		//			{
-		//				hasEnvVariable:   true,
-		//				envVariableKey:   "AZURE_CLIENT_SECRET",
-		//				envVariableValue: "",
-		//			},
-		//			{
-		//				hasEnvVariable:   true,
-		//				envVariableKey:   "AZURE_CLIENT_CERTIFICATE_PATH",
-		//				envVariableValue: "",
-		//			},
-		//			{
-		//				hasEnvVariable:   true,
-		//				envVariableKey:   "AZURE_USERNAME",
-		//				envVariableValue: "",
-		//			},
-		//			{
-		//				hasEnvVariable:   true,
-		//				envVariableKey:   "AZURE_PASSWORD",
-		//				envVariableValue: "",
-		//			},
-		//			// 2. set environment variables for NewManagedIdentityCredential()
-		//			{
-		//				hasEnvVariable:   true,
-		//				envVariableKey:   "IDENTITY_ENDPOINT",
-		//				envVariableValue: "",
-		//			},
-		//			{
-		//				hasEnvVariable:   true,
-		//				envVariableKey:   "MSI_ENDPOINT",
-		//				envVariableValue: "",
-		//			},
-		//		},
-		//	},
-		//	providers:      []string{ProviderAzure},
-		//	wantResp:       nil,
-		//	wantErr:        true,
-		//	wantErrMessage: azure.ErrCouldNotAuthenticate.Error(),
-		//},
 		{
 			name: "No K8s authorizer",
 			fields: fields{
