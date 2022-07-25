@@ -323,9 +323,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 					HttpEndpoints:      &[]voc.HttpEndpoint{},
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.NoError(t, err)
-			},
+			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
@@ -338,7 +336,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 				return
 			}
 
-			for i := 0; i < len(tt.wantList)-1; i++ {
+			for i := 0; i < len(tt.wantList); i++ {
 				assert.Equal(t, tt.wantList[i], gotList[i])
 			}
 		})

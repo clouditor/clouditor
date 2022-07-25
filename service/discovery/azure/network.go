@@ -192,6 +192,7 @@ func (*azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface) 
 				Labels: labels(ni.Tags),
 			},
 		},
+
 		// AccessRestriction: &voc.AccessRestriction{
 		// 	Inbound:         false, // TODO(garuppel): TBD
 		// 	RestrictedPorts: d.getRestrictedPorts(ni),
