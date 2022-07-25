@@ -272,6 +272,7 @@ func (d *azureStorageDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 				GeoLocation: voc.GeoLocation{
 					Region: util.Deref(disk.Location),
 				},
+				Labels: labels(disk.Tags),
 			},
 			AtRestEncryption: enc,
 		},
@@ -452,7 +453,8 @@ func storageAtRestEncryption(account *armstorage.Account) (voc.HasAtRestEncrypti
 			AtRestEncryption: &voc.AtRestEncryption{
 				Algorithm: "AES256",
 				Enabled:   true,
-			}}
+			},
+		}
 	} else if *account.Properties.Encryption.KeySource == armstorage.KeySourceMicrosoftKeyvault {
 		enc = voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{

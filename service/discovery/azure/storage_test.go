@@ -239,7 +239,7 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1" { // ?api-version=2021-07-01?
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1" {
 		return createResponse(map[string]interface{}{
 			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault1",
 			"type":     "Microsoft.Compute/diskEncryptionSets",
@@ -254,7 +254,7 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault2" { // ?api-version=2021-07-01?
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault2" {
 		return createResponse(map[string]interface{}{
 			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault2",
 			"type":     "Microsoft.Compute/diskEncryptionSets",
@@ -554,7 +554,8 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
-							Type: []string{"BlockStorage", "Storage", "Resource"},
+							Labels: map[string]string{},
+							Type:   []string{"BlockStorage", "Storage", "Resource"},
 						},
 
 						AtRestEncryption: voc.ManagedKeyEncryption{
@@ -579,16 +580,15 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 						},
 						AtRestEncryption: voc.CustomerKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
-								Algorithm: "AES256",
+								Algorithm: "",
 								Enabled:   true,
 							},
+							KeyUrl: "https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382",
 						},
 					},
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.NoError(t, err)
-			},
+			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
@@ -601,10 +601,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 				return
 			}
 
-			for i := 0; i < len(tt.wantList)-1; i++ {
-				fmt.Printf("Resource: %s\n", tt.wantList[i].GetID())
-				assert.Equal(t, tt.wantList[i], gotList[i])
-			}
+			assert.Equal(t, tt.wantList, gotList)
 		})
 	}
 }
@@ -956,6 +953,7 @@ func Test_azureStorageDiscovery_handleBlockStorage(t *testing.T) {
 						GeoLocation: voc.GeoLocation{
 							Region: "eastus",
 						},
+						Labels: map[string]string{},
 					},
 
 					AtRestEncryption: voc.CustomerKeyEncryption{
@@ -968,9 +966,7 @@ func Test_azureStorageDiscovery_handleBlockStorage(t *testing.T) {
 				},
 			},
 
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.NoError(t, err)
-			},
+			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
@@ -1038,9 +1034,7 @@ func Test_storageAtRestEncryption(t *testing.T) {
 					Enabled:   true,
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.NoError(t, err)
-			},
+			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
@@ -1129,10 +1123,8 @@ func Test_azureStorageDiscovery_keyURL(t *testing.T) {
 					sub: sub,
 				},
 			},
-			want: "https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382",
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.NoError(t, err)
-			},
+			want:    "https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382",
+			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
@@ -1246,9 +1238,7 @@ func Test_azureStorageDiscovery_blockStorageAtRestEncryption(t *testing.T) {
 				},
 				KeyUrl: "https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382",
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.NoError(t, err)
-			},
+			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
@@ -1355,9 +1345,7 @@ func Test_handleFileStorage(t *testing.T) {
 					},
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.NoError(t, err)
-			},
+			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
@@ -1481,9 +1469,7 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 					},
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.NoError(t, err)
-			},
+			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
@@ -1589,9 +1575,7 @@ func Test_handleObjectStorage(t *testing.T) {
 					},
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.NoError(t, err)
-			},
+			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
@@ -1656,7 +1640,8 @@ func Test_azureStorageDiscovery_discoverBlockStorages(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
-							Type: []string{"BlockStorage", "Storage", "Resource"},
+							Type:   []string{"BlockStorage", "Storage", "Resource"},
+							Labels: map[string]string{},
 						},
 
 						AtRestEncryption: voc.ManagedKeyEncryption{
@@ -1676,7 +1661,8 @@ func Test_azureStorageDiscovery_discoverBlockStorages(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
-							Type: []string{"BlockStorage", "Storage", "Resource"},
+							Type:   []string{"BlockStorage", "Storage", "Resource"},
+							Labels: map[string]string{},
 						},
 						AtRestEncryption: voc.CustomerKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
@@ -1688,9 +1674,7 @@ func Test_azureStorageDiscovery_discoverBlockStorages(t *testing.T) {
 					},
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.NoError(t, err)
-			},
+			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
@@ -1817,9 +1801,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 					},
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.NoError(t, err)
-			},
+			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
@@ -1946,9 +1928,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 					},
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.NoError(t, err)
-			},
+			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
