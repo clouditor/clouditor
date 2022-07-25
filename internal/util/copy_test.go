@@ -63,6 +63,27 @@ func TestDeepCopyOfMap(t *testing.T) {
 			},
 		},
 		{
+			name: "map[string]interface{} input",
+			args: args{
+				originalMap: map[string]interface{}{
+					"testKey1": map[string]interface{}{
+						"testKey11": "testValue11",
+					},
+					"testKey2": map[string]interface{}{
+						"testKey21": "testValue21",
+					},
+				},
+			},
+			want: map[string]interface{}{
+				"testKey1": map[string]interface{}{
+					"testKey11": "testValue11",
+				},
+				"testKey2": map[string]interface{}{
+					"testKey21": "testValue21",
+				},
+			},
+		},
+		{
 			name: "map[string]map[string]string input",
 			args: args{
 				originalMap: map[string]interface{}{
