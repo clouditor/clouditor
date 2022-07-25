@@ -108,6 +108,9 @@ func (m mockNetworkSender) Do(req *http.Request) (res *http.Response, err error)
 								"properties": map[string]interface{}{
 									"publicIPAddress": map[string]interface{}{
 										"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c",
+										"properties": map[string]interface{}{
+											"ipAddress": "111.222.333.444",
+										},
 									},
 								},
 							},
@@ -300,6 +303,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 							},
 						},
 						Ports: []uint16{1234, 5678},
+						Ips:   []string{},
 					},
 					AccessRestrictions: &[]voc.AccessRestriction{},
 					HttpEndpoints:      &[]voc.HttpEndpoint{},
@@ -318,6 +322,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 							},
 						},
 						Ports: []uint16{1234, 5678},
+						Ips:   []string{},
 					},
 					AccessRestrictions: &[]voc.AccessRestriction{},
 					HttpEndpoints:      &[]voc.HttpEndpoint{},
@@ -470,65 +475,16 @@ func Test_azureNetworkDiscovery_discoverLoadBalancer(t *testing.T) {
 	}
 }
 
-func Test_frontendPublicIPAddressName(t *testing.T) {
-	type args struct {
-		frontendPublicIPAddressID string
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{
-			name: "Empty ip",
-			args: args{
-				frontendPublicIPAddressID: "",
-			},
-			want: "",
-		},
-		{
-			name: "IP incorrect",
-			args: args{
-				frontendPublicIPAddressID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/test-b9cb3645-25d0-4288-910a-020563f63b1c",
-			},
-			want: "",
-		},
-		{
-			name: "IP correct",
-			args: args{
-				frontendPublicIPAddressID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c",
-			},
-			want: "test-b9cb3645-25d0-4288-910a-020563f63b1c",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, frontendPublicIPAddressName(tt.args.frontendPublicIPAddressID), "frontendPublicIPAddressName(%v)", tt.args.frontendPublicIPAddressID)
-		})
-	}
-}
-
 func Test_azureNetworkDiscovery_publicIPAddressFromLoadBalancer(t *testing.T) {
 	id := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3"
 	name := "lb3"
 	location := "eastus"
-	publicIPID := "mockPublicID"
+	publicIPID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c"
+	publicIPName := "mockPublicName"
+	publicIPAddress := "111.222.333.444"
+	emptyString := ""
 
-	lbWithoutPublicIPAddressID := &armnetwork.LoadBalancer{
-		ID:       &id,
-		Name:     &name,
-		Location: &location,
-		Properties: &armnetwork.LoadBalancerPropertiesFormat{
-			FrontendIPConfigurations: []*armnetwork.FrontendIPConfiguration{
-				{
-					Properties: &armnetwork.FrontendIPConfigurationPropertiesFormat{
-						PublicIPAddress: &armnetwork.PublicIPAddress{},
-					},
-				},
-			},
-		},
-	}
-	lbWithoutPublicIPAddressName := &armnetwork.LoadBalancer{
+	lbComplete := &armnetwork.LoadBalancer{
 		ID:       &id,
 		Name:     &name,
 		Location: &location,
@@ -537,8 +493,62 @@ func Test_azureNetworkDiscovery_publicIPAddressFromLoadBalancer(t *testing.T) {
 				{
 					Properties: &armnetwork.FrontendIPConfigurationPropertiesFormat{
 						PublicIPAddress: &armnetwork.PublicIPAddress{
-							ID: &publicIPID,
+							ID:   &publicIPID,
+							Name: &publicIPName,
+							Properties: &armnetwork.PublicIPAddressPropertiesFormat{
+								IPAddress: &publicIPAddress,
+							},
 						},
+					},
+				},
+			},
+		},
+	}
+	lbWithoutIPAddress := &armnetwork.LoadBalancer{
+		ID:       &id,
+		Name:     &name,
+		Location: &location,
+		Properties: &armnetwork.LoadBalancerPropertiesFormat{
+			FrontendIPConfigurations: []*armnetwork.FrontendIPConfiguration{
+				{
+					Properties: &armnetwork.FrontendIPConfigurationPropertiesFormat{
+						PublicIPAddress: &armnetwork.PublicIPAddress{
+							Properties: &armnetwork.PublicIPAddressPropertiesFormat{
+								IPAddress: nil,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	lbWithEmptyIPAddress := &armnetwork.LoadBalancer{
+		ID:       &id,
+		Name:     &name,
+		Location: &location,
+		Properties: &armnetwork.LoadBalancerPropertiesFormat{
+			FrontendIPConfigurations: []*armnetwork.FrontendIPConfiguration{
+				{
+					Properties: &armnetwork.FrontendIPConfigurationPropertiesFormat{
+						PublicIPAddress: &armnetwork.PublicIPAddress{
+							Properties: &armnetwork.PublicIPAddressPropertiesFormat{
+								IPAddress: &emptyString,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	lbWithoutPublicIPAddress := &armnetwork.LoadBalancer{
+		ID:       &id,
+		Name:     &name,
+		Location: &location,
+		Properties: &armnetwork.LoadBalancerPropertiesFormat{
+			FrontendIPConfigurations: []*armnetwork.FrontendIPConfiguration{
+				{
+					Properties: &armnetwork.FrontendIPConfigurationPropertiesFormat{
+						PublicIPAddress: nil,
 					},
 				},
 			},
@@ -566,7 +576,7 @@ func Test_azureNetworkDiscovery_publicIPAddressFromLoadBalancer(t *testing.T) {
 			want: []string{},
 		},
 		{
-			name: "Empty FrontendIPConfiguation",
+			name: "Empty FrontendIPConfiguration",
 			args: args{
 				lb: &armnetwork.LoadBalancer{
 					ID:       &id,
@@ -582,31 +592,55 @@ func Test_azureNetworkDiscovery_publicIPAddressFromLoadBalancer(t *testing.T) {
 					cred: &mockAuthorizer{},
 				},
 			},
-			want: []string(nil),
+			want: []string{},
 		},
 		{
-			name: "Empty PublicIPAdressID",
+			name: "Empty PublicIPAddress",
 			args: args{
-				lb: lbWithoutPublicIPAddressID,
+				lb: lbWithoutPublicIPAddress,
 			},
 			fields: fields{
 				azureDiscovery: azureDiscovery{
 					cred: &mockAuthorizer{},
 				},
 			},
-			want: []string(nil),
+			want: []string{},
 		},
 		{
-			name: "Empty PublicIPAdressName",
+			name: "Empty IPAddress (== nil)",
 			args: args{
-				lb: lbWithoutPublicIPAddressName,
+				lb: lbWithoutIPAddress,
 			},
 			fields: fields{
 				azureDiscovery: azureDiscovery{
 					cred: &mockAuthorizer{},
 				},
 			},
-			want: []string(nil),
+			want: []string{},
+		},
+		{
+			name: "Empty IPAddress string",
+			args: args{
+				lb: lbWithEmptyIPAddress,
+			},
+			fields: fields{
+				azureDiscovery: azureDiscovery{
+					cred: &mockAuthorizer{},
+				},
+			},
+			want: []string{},
+		},
+		{
+			name: "Correct IP",
+			args: args{
+				lb: lbComplete,
+			},
+			fields: fields{
+				azureDiscovery: azureDiscovery{
+					cred: &mockAuthorizer{},
+				},
+			},
+			want: []string{publicIPAddress},
 		},
 	}
 	for _, tt := range tests {

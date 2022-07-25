@@ -28,7 +28,6 @@ package azure
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 
@@ -260,71 +259,28 @@ func LoadBalancerPorts(lb *armnetwork.LoadBalancer) (loadBalancerPorts []uint16)
 
 func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *armnetwork.LoadBalancer) []string {
 
-	var publicIPAddresses []string
+	var publicIPAddresses = []string{}
 
-	// Create public IP address client
-	client, err := armnetwork.NewPublicIPAddressesClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
-	if err != nil {
-		log.Debugf("could not get new public ip addresses client: %v", err)
-		return []string{}
-	}
-
-	if lb == nil || lb.Properties == nil {
+	if lb == nil || lb.Properties == nil || lb.Properties.FrontendIPConfigurations == nil {
 		return []string{}
 	}
 
 	fIpConfig := lb.Properties.FrontendIPConfigurations
 	for i := range fIpConfig {
 
-		if fIpConfig[i].Properties.PublicIPAddress == nil {
-			continue
-		}
-
-		publicIPAddressID := util.Deref(fIpConfig[i].Properties.PublicIPAddress.ID)
-		if publicIPAddressID == "" {
-			continue
-		}
-
-		publicIpAddressName := frontendPublicIPAddressName(publicIPAddressID)
-		if publicIpAddressName == "" {
+		if fIpConfig[i].Properties.PublicIPAddress == nil || fIpConfig[i].Properties.PublicIPAddress.Properties == nil || fIpConfig[i].Properties.PublicIPAddress.Properties.IPAddress == nil {
 			continue
 		}
 
 		// Get public IP address
-		publicIPAddress, err := client.Get(
-			context.TODO(),
-			resourceGroupName(publicIPAddressID),
-			publicIpAddressName,
-			&armnetwork.PublicIPAddressesClientGetOptions{})
-		if err != nil {
-			log.Debugf("could not get public ip address: %v", err)
-			return []string{}
-		}
-
-		ipAddress := publicIPAddress.PublicIPAddress.Properties.IPAddress
-		if ipAddress == nil {
-			log.Infof("Error getting public IP address: %v", err)
+		ipAddress := util.Deref(fIpConfig[i].Properties.PublicIPAddress.Properties.IPAddress)
+		if ipAddress == "" {
+			log.Infof("No public IP adress available.")
 			continue
 		}
 
-		publicIPAddresses = append(publicIPAddresses, util.Deref(ipAddress))
+		publicIPAddresses = append(publicIPAddresses, ipAddress)
 	}
 
 	return publicIPAddresses
-}
-
-// frontendPublicIPAddressName returns the frontend public IP address name from the given public IP address ID
-func frontendPublicIPAddressName(frontendPublicIPAddressID string) string {
-	if frontendPublicIPAddressID == "" {
-		log.Infof("Public IP address ID of frontend is empty.")
-		return ""
-	}
-
-	split := strings.Split(frontendPublicIPAddressID, "/")
-	if len(split) != 9 {
-		log.Infof("Public IP address ID of frontend is not correct.")
-		return ""
-	}
-
-	return split[8]
 }
