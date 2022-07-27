@@ -204,7 +204,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(util.Deref(vm.ID)),
 				Name:         util.Deref(vm.Name),
-				CreationTime: safeTimestamp(vm.Properties.TimeCreated),
+				CreationTime: util.SafeTimestamp(vm.Properties.TimeCreated),
 				Type:         []string{"VirtualMachine", "Compute", "Resource"},
 				GeoLocation: voc.GeoLocation{
 					Region: util.Deref(vm.Location),

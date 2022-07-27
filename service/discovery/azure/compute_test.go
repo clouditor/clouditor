@@ -38,6 +38,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
@@ -402,7 +403,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
 							Name:         "vm1",
-							CreationTime: safeTimestamp(&creationTime),
+							CreationTime: util.SafeTimestamp(&creationTime),
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
 							Labels:       map[string]string{},
 							GeoLocation: voc.GeoLocation{
@@ -439,7 +440,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2",
 							Name:         "vm2",
-							CreationTime: safeTimestamp(&time.Time{}),
+							CreationTime: util.SafeTimestamp(&time.Time{}),
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
 							Labels:       map[string]string{},
 							GeoLocation: voc.GeoLocation{
@@ -477,7 +478,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm3",
 							Name:         "vm3",
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
-							CreationTime: safeTimestamp(&time.Time{}),
+							CreationTime: util.SafeTimestamp(&time.Time{}),
 							Labels:       map[string]string{},
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
@@ -513,7 +514,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
 							Name:         "function1",
-							CreationTime: safeTimestamp(&time.Time{}),
+							CreationTime: util.SafeTimestamp(&time.Time{}),
 							Type:         []string{"Function", "Compute", "Resource"},
 							Labels: map[string]string{
 								"testKey1": "testTag1",
@@ -592,7 +593,7 @@ func Test_azureComputeDiscovery_discoverFunctions(t *testing.T) {
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
 							Name:         "function1",
-							CreationTime: safeTimestamp(&time.Time{}),
+							CreationTime: util.SafeTimestamp(&time.Time{}),
 							Type:         []string{"Function", "Compute", "Resource"},
 							Labels: map[string]string{
 								"testKey1": "testTag1",
@@ -676,7 +677,7 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 					Resource: &voc.Resource{
 						ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
 						Name:         "function1",
-						CreationTime: safeTimestamp(&time.Time{}),
+						CreationTime: util.SafeTimestamp(&time.Time{}),
 						Type:         []string{"Function", "Compute", "Resource"},
 						Labels: map[string]string{
 							"testKey1": testTag1,
@@ -750,7 +751,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
 							Name:         "vm1",
-							CreationTime: safeTimestamp(&creationTime),
+							CreationTime: util.SafeTimestamp(&creationTime),
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
 							Labels:       map[string]string{},
 							GeoLocation: voc.GeoLocation{
@@ -787,7 +788,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2",
 							Name:         "vm2",
-							CreationTime: safeTimestamp(&time.Time{}),
+							CreationTime: util.SafeTimestamp(&time.Time{}),
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
 							Labels:       map[string]string{},
 							GeoLocation: voc.GeoLocation{
@@ -825,7 +826,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm3",
 							Name:         "vm3",
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
-							CreationTime: safeTimestamp(&time.Time{}),
+							CreationTime: util.SafeTimestamp(&time.Time{}),
 							Labels:       map[string]string{},
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
@@ -961,7 +962,7 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 					Resource: &voc.Resource{
 						ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
 						Name:         "vm1",
-						CreationTime: safeTimestamp(&creationTime),
+						CreationTime: util.SafeTimestamp(&creationTime),
 						Type:         []string{"VirtualMachine", "Compute", "Resource"},
 						Labels:       map[string]string{},
 						GeoLocation: voc.GeoLocation{

@@ -33,7 +33,6 @@ import (
 	"io"
 	"net/http"
 	"testing"
-	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
@@ -140,46 +139,6 @@ func Test_labels(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equalf(t, tt.want, labels(tt.args.tags), "labels(%v)", tt.args.tags)
-		})
-	}
-}
-
-func Test_safeTimestamp(t *testing.T) {
-
-	testTime := time.Date(2000, 01, 20, 9, 20, 12, 123, time.UTC)
-	testTimeUnix := testTime.Unix()
-
-	type args struct {
-		t *time.Time
-	}
-	tests := []struct {
-		name string
-		args args
-		want int64
-	}{
-		{
-			name: "Empty time",
-			args: args{
-				t: &time.Time{},
-			},
-			want: 0,
-		},
-		{
-			name: "Time is nil",
-			args: args{},
-			want: 0,
-		},
-		{
-			name: "Valid time",
-			args: args{
-				t: &testTime,
-			},
-			want: testTimeUnix,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, safeTimestamp(tt.args.t), "safeTimestamp(%v)", tt.args.t)
 		})
 	}
 }

@@ -30,7 +30,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
@@ -149,19 +148,6 @@ func labels(tags map[string]*string) map[string]string {
 	}
 
 	return l
-}
-
-// safeTimestamp returns either the UNIX timestamp of the time t or 0 if it is nil
-func safeTimestamp(t *time.Time) int64 {
-	if t == nil {
-		return 0
-	}
-
-	if t.IsZero() {
-		return 0
-	}
-
-	return t.Unix()
 }
 
 type Client interface {
