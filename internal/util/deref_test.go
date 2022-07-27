@@ -27,47 +27,36 @@ package util
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
+
+	"clouditor.io/clouditor/voc"
 )
 
-func Test_SafeTimestamp(t *testing.T) {
+func TestDeref(t *testing.T) {
+	testValue := "testString"
+	assert.Equal(t, testValue, Deref(&testValue))
 
-	testTime := time.Date(2000, 01, 20, 9, 20, 12, 123, time.UTC)
-	testTimeUnix := testTime.Unix()
+	var testInt32 int32 = 12
+	assert.Equal(t, testInt32, Deref(&testInt32))
 
-	type args struct {
-		t *time.Time
+	var testInt64 int64 = 12
+	assert.Equal(t, testInt64, Deref(&testInt64))
+
+	var testFloat32 float32 = 1.5
+	assert.Equal(t, testFloat32, Deref(&testFloat32))
+
+	var testFloat64 float32 = 1.5
+	assert.Equal(t, testFloat64, Deref(&testFloat64))
+
+	var testBool = true
+	assert.Equal(t, testBool, Deref(&testBool))
+
+	testStruct := voc.GeoLocation{
+		Region: "testlocation",
 	}
-	tests := []struct {
-		name string
-		args args
-		want int64
-	}{
-		{
-			name: "Empty time",
-			args: args{
-				t: &time.Time{},
-			},
-			want: 0,
-		},
-		{
-			name: "Time is nil",
-			args: args{},
-			want: 0,
-		},
-		{
-			name: "Valid time",
-			args: args{
-				t: &testTime,
-			},
-			want: testTimeUnix,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, SafeTimestamp(tt.args.t), "SafeTimestamp(%v)", tt.args.t)
-		})
-	}
+	assert.Equal(t, testStruct, Deref(&testStruct))
+
+	testByteArray := []byte("testByteArray")
+	assert.Equal(t, testByteArray, Deref(&testByteArray))
 }

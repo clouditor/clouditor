@@ -25,49 +25,12 @@
 
 package util
 
-import (
-	"testing"
-	"time"
-
-	"github.com/stretchr/testify/assert"
-)
-
-func Test_SafeTimestamp(t *testing.T) {
-
-	testTime := time.Date(2000, 01, 20, 9, 20, 12, 123, time.UTC)
-	testTimeUnix := testTime.Unix()
-
-	type args struct {
-		t *time.Time
+// Deref dereferences pointer values
+func Deref[T any](p *T) T {
+	var result T
+	if p != nil {
+		return *p
 	}
-	tests := []struct {
-		name string
-		args args
-		want int64
-	}{
-		{
-			name: "Empty time",
-			args: args{
-				t: &time.Time{},
-			},
-			want: 0,
-		},
-		{
-			name: "Time is nil",
-			args: args{},
-			want: 0,
-		},
-		{
-			name: "Valid time",
-			args: args{
-				t: &testTime,
-			},
-			want: testTimeUnix,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, SafeTimestamp(tt.args.t), "SafeTimestamp(%v)", tt.args.t)
-		})
-	}
+
+	return result
 }

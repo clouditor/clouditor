@@ -149,11 +149,3 @@ func labels(tags map[string]*string) map[string]string {
 
 	return l
 }
-
-type Client interface {
-	armsubscription.SubscriptionsClient
-}
-
-type Resource interface {
-	armsubscription.Subscription
-}

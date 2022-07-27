@@ -2,10 +2,6 @@ package util
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
-
-	"clouditor.io/clouditor/voc"
 )
 
 func TestCamelCaseToSnakeCase(t *testing.T) {
@@ -119,32 +115,4 @@ func Test_marksNewWord(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestDeref(t *testing.T) {
-	testValue := "testString"
-	assert.Equal(t, testValue, Deref(&testValue))
-
-	var testInt32 int32 = 12
-	assert.Equal(t, testInt32, Deref(&testInt32))
-
-	var testInt64 int64 = 12
-	assert.Equal(t, testInt64, Deref(&testInt64))
-
-	var testFloat32 float32 = 1.5
-	assert.Equal(t, testFloat32, Deref(&testFloat32))
-
-	var testFloat64 float32 = 1.5
-	assert.Equal(t, testFloat64, Deref(&testFloat64))
-
-	var testBool bool = false
-	assert.Equal(t, testBool, Deref(&testBool))
-
-	testStruct := voc.GeoLocation{
-		Region: "testlocation",
-	}
-	assert.Equal(t, testStruct, Deref(&testStruct))
-
-	testByteArray := []byte("testByteArray")
-	assert.Equal(t, testByteArray, Deref(&testByteArray))
 }
