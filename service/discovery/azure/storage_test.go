@@ -721,7 +721,7 @@ func Test_accountName(t *testing.T) {
 
 func Test_diskEncryptionSetName(t *testing.T) {
 	type args struct {
-		diskEncryptionSetId string
+		diskEncryptionSetID string
 	}
 	tests := []struct {
 		name string
@@ -731,21 +731,21 @@ func Test_diskEncryptionSetName(t *testing.T) {
 		{
 			name: "Correct ID",
 			args: args{
-				diskEncryptionSetId: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1",
+				diskEncryptionSetID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1",
 			},
 			want: "encryptionkeyvault1",
 		},
 		{
 			name: "Empty ID",
 			args: args{
-				diskEncryptionSetId: "",
+				diskEncryptionSetID: "",
 			},
 			want: "",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, diskEncryptionSetName(tt.args.diskEncryptionSetId))
+			assert.Equal(t, tt.want, diskEncryptionSetName(tt.args.diskEncryptionSetID))
 		})
 	}
 }
@@ -1061,7 +1061,7 @@ func Test_azureStorageDiscovery_keyURL(t *testing.T) {
 		azureDiscovery azureDiscovery
 	}
 	type args struct {
-		diskEncryptionSetId string
+		diskEncryptionSetID string
 	}
 	tests := []struct {
 		name    string
@@ -1074,13 +1074,13 @@ func Test_azureStorageDiscovery_keyURL(t *testing.T) {
 			name: "Empty input",
 			want: "",
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "empty diskEncryptionSetId")
+				return assert.ErrorIs(t, err, ErrMissingDiskEncryptionSetID)
 			},
 		},
 		{
 			name: "Error get disc encryption set",
 			args: args{
-				diskEncryptionSetId: encSetID,
+				diskEncryptionSetID: encSetID,
 			},
 			want: "",
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -1090,7 +1090,7 @@ func Test_azureStorageDiscovery_keyURL(t *testing.T) {
 		{
 			name: "Empty keyURL",
 			args: args{
-				diskEncryptionSetId: encSetID2,
+				diskEncryptionSetID: encSetID2,
 			},
 			fields: fields{
 				azureDiscovery: azureDiscovery{
@@ -1111,7 +1111,7 @@ func Test_azureStorageDiscovery_keyURL(t *testing.T) {
 		{
 			name: "No error",
 			args: args{
-				diskEncryptionSetId: encSetID,
+				diskEncryptionSetID: encSetID,
 			},
 			fields: fields{
 				azureDiscovery: azureDiscovery{
@@ -1133,11 +1133,11 @@ func Test_azureStorageDiscovery_keyURL(t *testing.T) {
 			d := &azureStorageDiscovery{
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
-			got, err := d.keyURL(tt.args.diskEncryptionSetId)
-			if !tt.wantErr(t, err, fmt.Sprintf("keyURL(%v)", tt.args.diskEncryptionSetId)) {
+			got, err := d.keyURL(tt.args.diskEncryptionSetID)
+			if !tt.wantErr(t, err, fmt.Sprintf("keyURL(%v)", tt.args.diskEncryptionSetID)) {
 				return
 			}
-			assert.Equalf(t, tt.want, got, "keyURL(%v)", tt.args.diskEncryptionSetId)
+			assert.Equalf(t, tt.want, got, "keyURL(%v)", tt.args.diskEncryptionSetID)
 		})
 	}
 }

@@ -40,7 +40,8 @@ import (
 )
 
 var (
-	ErrEmptyStorageAccount = errors.New("storage account is empty")
+	ErrEmptyStorageAccount        = errors.New("storage account is empty")
+	ErrMissingDiskEncryptionSetID = errors.New("no disk encryption set ID was specified")
 )
 
 type azureStorageDiscovery struct {
@@ -473,7 +474,7 @@ func storageAtRestEncryption(account *armstorage.Account) (enc voc.HasAtRestEncr
 
 func (d *azureStorageDiscovery) keyURL(diskEncryptionSetID string) (string, error) {
 	if diskEncryptionSetID == "" {
-		return "", fmt.Errorf("empty diskEncryptionSetId")
+		return "", ErrMissingDiskEncryptionSetID
 	}
 
 	// Create Key Vault client
