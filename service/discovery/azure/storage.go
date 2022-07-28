@@ -403,9 +403,13 @@ func handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileSh
 	}, nil
 }
 
-func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk *armcompute.Disk) (voc.HasAtRestEncryption, error) {
-
-	var enc voc.HasAtRestEncryption
+// blockStorageAtRestEncryption takes encryption properties of an armcompute.Disk and converts it into our respective
+// ontology object.
+func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk *armcompute.Disk) (enc voc.HasAtRestEncryption, err error) {
+	var (
+		diskEncryptionSetID string
+		keyUrl              string
+	)
 
 	if disk == nil {
 		return enc, errors.New("disk is empty")
@@ -419,10 +423,9 @@ func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk *armcompute.Di
 			Enabled:   true,
 		}}
 	} else if *disk.Properties.Encryption.Type == armcompute.EncryptionTypeEncryptionAtRestWithCustomerKey {
-		var keyUrl string
-		discEncryptionSetID := disk.Properties.Encryption.DiskEncryptionSetID
+		diskEncryptionSetID = util.Deref(disk.Properties.Encryption.DiskEncryptionSetID)
 
-		keyUrl, err := d.keyURL(util.Deref(discEncryptionSetID))
+		keyUrl, err = d.keyURL(diskEncryptionSetID)
 		if err != nil {
 			return nil, fmt.Errorf("could not get keyVaultID: %w", err)
 		}
@@ -435,13 +438,13 @@ func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk *armcompute.Di
 			KeyUrl: keyUrl,
 		}
 	}
+
 	return enc, nil
 }
 
-func storageAtRestEncryption(account *armstorage.Account) (voc.HasAtRestEncryption, error) {
-
-	var enc voc.HasAtRestEncryption
-
+// storageAtRestEncryption takes encryption properties of an armstorage.Account and converts it into our respective
+// ontology object.
+func storageAtRestEncryption(account *armstorage.Account) (enc voc.HasAtRestEncryption, err error) {
 	if account == nil {
 		return enc, ErrEmptyStorageAccount
 	}
@@ -470,7 +473,7 @@ func storageAtRestEncryption(account *armstorage.Account) (voc.HasAtRestEncrypti
 
 func (d *azureStorageDiscovery) keyURL(diskEncryptionSetID string) (string, error) {
 	if diskEncryptionSetID == "" {
-		return "", fmt.Errorf("empty diskEncryptionSetID")
+		return "", fmt.Errorf("empty diskEncryptionSetId")
 	}
 
 	// Create Key Vault client

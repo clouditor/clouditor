@@ -220,7 +220,7 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 					"properties": map[string]interface{}{
 						"timeCreated": "2017-05-24T13:28:53.4540398Z",
 						"encryption": map[string]interface{}{
-							"diskEncryptionSetID": "",
+							"diskEncryptionSetId": "",
 							"type":                "EncryptionAtRestWithPlatformKey",
 						},
 					},
@@ -233,7 +233,7 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 					"properties": map[string]interface{}{
 						"timeCreated": "2017-05-24T13:28:53.4540398Z",
 						"encryption": map[string]interface{}{
-							"diskEncryptionSetID": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1",
+							"diskEncryptionSetId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1",
 							"type":                "EncryptionAtRestWithCustomerKey",
 						},
 					},
@@ -721,7 +721,7 @@ func Test_accountName(t *testing.T) {
 
 func Test_diskEncryptionSetName(t *testing.T) {
 	type args struct {
-		diskEncryptionSetID string
+		diskEncryptionSetId string
 	}
 	tests := []struct {
 		name string
@@ -731,21 +731,21 @@ func Test_diskEncryptionSetName(t *testing.T) {
 		{
 			name: "Correct ID",
 			args: args{
-				diskEncryptionSetID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1",
+				diskEncryptionSetId: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1",
 			},
 			want: "encryptionkeyvault1",
 		},
 		{
 			name: "Empty ID",
 			args: args{
-				diskEncryptionSetID: "",
+				diskEncryptionSetId: "",
 			},
 			want: "",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, diskEncryptionSetName(tt.args.diskEncryptionSetID))
+			assert.Equal(t, tt.want, diskEncryptionSetName(tt.args.diskEncryptionSetId))
 		})
 	}
 }
@@ -1061,7 +1061,7 @@ func Test_azureStorageDiscovery_keyURL(t *testing.T) {
 		azureDiscovery azureDiscovery
 	}
 	type args struct {
-		diskEncryptionSetID string
+		diskEncryptionSetId string
 	}
 	tests := []struct {
 		name    string
@@ -1074,13 +1074,13 @@ func Test_azureStorageDiscovery_keyURL(t *testing.T) {
 			name: "Empty input",
 			want: "",
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "empty diskEncryptionSetID")
+				return assert.ErrorContains(t, err, "empty diskEncryptionSetId")
 			},
 		},
 		{
 			name: "Error get disc encryption set",
 			args: args{
-				diskEncryptionSetID: encSetID,
+				diskEncryptionSetId: encSetID,
 			},
 			want: "",
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -1090,7 +1090,7 @@ func Test_azureStorageDiscovery_keyURL(t *testing.T) {
 		{
 			name: "Empty keyURL",
 			args: args{
-				diskEncryptionSetID: encSetID2,
+				diskEncryptionSetId: encSetID2,
 			},
 			fields: fields{
 				azureDiscovery: azureDiscovery{
@@ -1111,7 +1111,7 @@ func Test_azureStorageDiscovery_keyURL(t *testing.T) {
 		{
 			name: "No error",
 			args: args{
-				diskEncryptionSetID: encSetID,
+				diskEncryptionSetId: encSetID,
 			},
 			fields: fields{
 				azureDiscovery: azureDiscovery{
@@ -1133,11 +1133,11 @@ func Test_azureStorageDiscovery_keyURL(t *testing.T) {
 			d := &azureStorageDiscovery{
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
-			got, err := d.keyURL(tt.args.diskEncryptionSetID)
-			if !tt.wantErr(t, err, fmt.Sprintf("keyURL(%v)", tt.args.diskEncryptionSetID)) {
+			got, err := d.keyURL(tt.args.diskEncryptionSetId)
+			if !tt.wantErr(t, err, fmt.Sprintf("keyURL(%v)", tt.args.diskEncryptionSetId)) {
 				return
 			}
-			assert.Equalf(t, tt.want, got, "keyURL(%v)", tt.args.diskEncryptionSetID)
+			assert.Equalf(t, tt.want, got, "keyURL(%v)", tt.args.diskEncryptionSetId)
 		})
 	}
 }
