@@ -48,7 +48,11 @@ type azureStorageDiscovery struct {
 }
 
 func NewAzureStorageDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
-	d := &azureStorageDiscovery{}
+	d := &azureStorageDiscovery{
+		azureDiscovery{
+			discovererName: "storage",
+		},
+	}
 
 	// Apply options
 	for _, opt := range opts {
@@ -304,7 +308,7 @@ func handleObjectStorage(account *armstorage.Account, container *armstorage.List
 				GeoLocation: voc.GeoLocation{
 					Region: util.Deref(account.Location),
 				},
-				Labels: labels(account.Tags), //the storage account labels the object storage belongs to
+				Labels: labels(account.Tags), // the storage account labels the object storage belongs to
 			},
 			AtRestEncryption: enc,
 		},
@@ -358,7 +362,7 @@ func (*azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, 
 	return storageService, nil
 }
 
-//generalizeURL generalizes the URL, because the URL depends on the storage type
+// generalizeURL generalizes the URL, because the URL depends on the storage type
 func generalizeURL(url string) string {
 	if url == "" {
 		return ""
@@ -396,7 +400,7 @@ func handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileSh
 				GeoLocation: voc.GeoLocation{
 					Region: util.Deref(account.Location),
 				},
-				Labels: labels(account.Tags), //the storage account labels the file storage belongs to
+				Labels: labels(account.Tags), // the storage account labels the file storage belongs to
 			},
 			AtRestEncryption: enc,
 		},

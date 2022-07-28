@@ -47,7 +47,11 @@ type azureComputeDiscovery struct {
 }
 
 func NewAzureComputeDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
-	d := &azureComputeDiscovery{}
+	d := &azureComputeDiscovery{
+		azureDiscovery{
+			discovererName: "compute",
+		},
+	}
 
 	// Apply options
 	for _, opt := range opts {

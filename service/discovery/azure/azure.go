@@ -72,9 +72,10 @@ func init() {
 type azureDiscovery struct {
 	isAuthorized bool
 
-	sub           armsubscription.Subscription
-	cred          azcore.TokenCredential
-	clientOptions arm.ClientOptions
+	sub            armsubscription.Subscription
+	cred           azcore.TokenCredential
+	clientOptions  arm.ClientOptions
+	discovererName string
 }
 
 func (a *azureDiscovery) authorize() (err error) {
@@ -115,7 +116,7 @@ func (a *azureDiscovery) authorize() (err error) {
 	// get first subscription
 	a.sub = *subList[0]
 
-	log.Infof("Using %s as subscription", *a.sub.SubscriptionID)
+	log.Infof("Azure %s discoverer uses %s as subscription", a.discovererName, *a.sub.SubscriptionID)
 
 	a.isAuthorized = true
 
