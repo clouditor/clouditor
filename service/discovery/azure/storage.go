@@ -35,12 +35,13 @@ import (
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 )
 
 var (
-	ErrEmptyStorageAccount = errors.New("storage account is empty")
+	ErrEmptyStorageAccount        = errors.New("storage account is empty")
+	ErrMissingDiskEncryptionSetID = errors.New("no disk encryption set ID was specified")
 )
 
 type azureStorageDiscovery struct {
@@ -117,14 +118,12 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 		if err != nil {
 			return nil, fmt.Errorf("could not handle object storages: %w", err)
 		}
-		log.Infof("Adding object storages %+v", objectStorages)
 
 		// Discover file storages
 		fileStorages, err := d.discoverFileStorages(account)
 		if err != nil {
 			return nil, fmt.Errorf("could not handle file storages: %w", err)
 		}
-		log.Infof("Adding file storages %+v", fileStorages)
 
 		storageResourcesList = append(storageResourcesList, objectStorages...)
 		storageResourcesList = append(storageResourcesList, fileStorages...)
@@ -134,7 +133,6 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 		if err != nil {
 			return nil, fmt.Errorf("could not create storage service: %w", err)
 		}
-		log.Infof("Adding storage account %+v", objectStorages)
 
 		storageResourcesList = append(storageResourcesList, storageService)
 	}
@@ -407,9 +405,13 @@ func handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileSh
 	}, nil
 }
 
-func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk *armcompute.Disk) (voc.HasAtRestEncryption, error) {
-
-	var enc voc.HasAtRestEncryption
+// blockStorageAtRestEncryption takes encryption properties of an armcompute.Disk and converts it into our respective
+// ontology object.
+func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk *armcompute.Disk) (enc voc.HasAtRestEncryption, err error) {
+	var (
+		diskEncryptionSetID string
+		keyUrl              string
+	)
 
 	if disk == nil {
 		return enc, errors.New("disk is empty")
@@ -423,10 +425,9 @@ func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk *armcompute.Di
 			Enabled:   true,
 		}}
 	} else if *disk.Properties.Encryption.Type == armcompute.EncryptionTypeEncryptionAtRestWithCustomerKey {
-		var keyUrl string
-		discEncryptionSetID := disk.Properties.Encryption.DiskEncryptionSetID
+		diskEncryptionSetID = util.Deref(disk.Properties.Encryption.DiskEncryptionSetID)
 
-		keyUrl, err := d.keyURL(util.Deref(discEncryptionSetID))
+		keyUrl, err = d.keyURL(diskEncryptionSetID)
 		if err != nil {
 			return nil, fmt.Errorf("could not get keyVaultID: %w", err)
 		}
@@ -439,13 +440,13 @@ func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk *armcompute.Di
 			KeyUrl: keyUrl,
 		}
 	}
+
 	return enc, nil
 }
 
-func storageAtRestEncryption(account *armstorage.Account) (voc.HasAtRestEncryption, error) {
-
-	var enc voc.HasAtRestEncryption
-
+// storageAtRestEncryption takes encryption properties of an armstorage.Account and converts it into our respective
+// ontology object.
+func storageAtRestEncryption(account *armstorage.Account) (enc voc.HasAtRestEncryption, err error) {
 	if account == nil {
 		return enc, ErrEmptyStorageAccount
 	}
@@ -474,7 +475,7 @@ func storageAtRestEncryption(account *armstorage.Account) (voc.HasAtRestEncrypti
 
 func (d *azureStorageDiscovery) keyURL(diskEncryptionSetID string) (string, error) {
 	if diskEncryptionSetID == "" {
-		return "", fmt.Errorf("empty diskEncryptionSetID")
+		return "", ErrMissingDiskEncryptionSetID
 	}
 
 	// Create Key Vault client
