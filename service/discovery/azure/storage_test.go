@@ -37,6 +37,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"k8s.io/apimachinery/pkg/util/json"
 
+	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 
@@ -272,6 +273,64 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 	}
 
 	return m.mockSender.Do(req)
+}
+
+func TestNewAzureStorageDiscovery(t *testing.T) {
+	type args struct {
+		opts []DiscoveryOption
+	}
+	tests := []struct {
+		name string
+		args args
+		want discovery.Discoverer
+	}{
+		{
+			name: "Empty input",
+			args: args{
+				opts: nil,
+			},
+			want: &azureStorageDiscovery{
+				azureDiscovery{
+					discovererComponent: StorageComponent,
+				},
+			},
+		},
+		{
+			name: "With sender",
+			args: args{
+				opts: []DiscoveryOption{WithSender(mockStorageSender{})},
+			},
+			want: &azureStorageDiscovery{
+				azureDiscovery{
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{
+							Transport: mockStorageSender{},
+						},
+					},
+					discovererComponent: StorageComponent,
+				},
+			},
+		},
+		{
+			name: "With authorizer",
+			args: args{
+				opts: []DiscoveryOption{WithAuthorizer(&mockAuthorizer{})},
+			},
+			want: &azureStorageDiscovery{
+				azureDiscovery{
+					cred:                &mockAuthorizer{},
+					discovererComponent: StorageComponent,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := NewAzureStorageDiscovery(tt.args.opts...)
+			assert.Equal(t, tt.want, d)
+			assert.Equal(t, "Azure Storage Account", d.Name())
+		})
+	}
 }
 
 func TestAzureStorageAuthorizer(t *testing.T) {

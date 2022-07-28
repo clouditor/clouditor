@@ -42,6 +42,12 @@ import (
 	"clouditor.io/clouditor/internal/util"
 )
 
+const (
+	StorageComponent = "storage"
+	ComputeComponent = "compute"
+	NetworkComponent = "network"
+)
+
 var (
 	log *logrus.Entry
 
@@ -72,10 +78,10 @@ func init() {
 type azureDiscovery struct {
 	isAuthorized bool
 
-	sub            armsubscription.Subscription
-	cred           azcore.TokenCredential
-	clientOptions  arm.ClientOptions
-	discovererName string
+	sub                 armsubscription.Subscription
+	cred                azcore.TokenCredential
+	clientOptions       arm.ClientOptions
+	discovererComponent string
 }
 
 func (a *azureDiscovery) authorize() (err error) {
@@ -116,7 +122,7 @@ func (a *azureDiscovery) authorize() (err error) {
 	// get first subscription
 	a.sub = *subList[0]
 
-	log.Infof("Azure %s discoverer uses %s as subscription", a.discovererName, *a.sub.SubscriptionID)
+	log.Infof("Azure %s discoverer uses %s as subscription", a.discovererComponent, *a.sub.SubscriptionID)
 
 	a.isAuthorized = true
 

@@ -43,7 +43,7 @@ type azureNetworkDiscovery struct {
 func NewAzureNetworkDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureNetworkDiscovery{
 		azureDiscovery{
-			discovererName: "network",
+			discovererComponent: NetworkComponent,
 		},
 	}
 

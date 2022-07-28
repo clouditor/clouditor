@@ -49,7 +49,7 @@ type azureComputeDiscovery struct {
 func NewAzureComputeDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureComputeDiscovery{
 		azureDiscovery{
-			discovererName: "compute",
+			discovererComponent: ComputeComponent,
 		},
 	}
 

@@ -50,7 +50,7 @@ type azureStorageDiscovery struct {
 func NewAzureStorageDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureStorageDiscovery{
 		azureDiscovery{
-			discovererName: "storage",
+			discovererComponent: StorageComponent,
 		},
 	}
 
