@@ -30,8 +30,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/util"
