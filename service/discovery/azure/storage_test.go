@@ -40,7 +40,7 @@ import (
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/stretchr/testify/assert"
 )
@@ -220,7 +220,7 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 					"properties": map[string]interface{}{
 						"timeCreated": "2017-05-24T13:28:53.4540398Z",
 						"encryption": map[string]interface{}{
-							"diskEncryptionSetID": "",
+							"diskEncryptionSetId": "",
 							"type":                "EncryptionAtRestWithPlatformKey",
 						},
 					},
@@ -233,7 +233,7 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 					"properties": map[string]interface{}{
 						"timeCreated": "2017-05-24T13:28:53.4540398Z",
 						"encryption": map[string]interface{}{
-							"diskEncryptionSetID": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1",
+							"diskEncryptionSetId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1",
 							"type":                "EncryptionAtRestWithCustomerKey",
 						},
 					},
@@ -1074,7 +1074,7 @@ func Test_azureStorageDiscovery_keyURL(t *testing.T) {
 			name: "Empty input",
 			want: "",
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "empty diskEncryptionSetID")
+				return assert.ErrorIs(t, err, ErrMissingDiskEncryptionSetID)
 			},
 		},
 		{
