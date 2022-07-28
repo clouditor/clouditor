@@ -113,14 +113,12 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 		if err != nil {
 			return nil, fmt.Errorf("could not handle object storages: %w", err)
 		}
-		log.Infof("Adding object storages %+v", objectStorages)
 
 		// Discover file storages
 		fileStorages, err := d.discoverFileStorages(account)
 		if err != nil {
 			return nil, fmt.Errorf("could not handle file storages: %w", err)
 		}
-		log.Infof("Adding file storages %+v", fileStorages)
 
 		storageResourcesList = append(storageResourcesList, objectStorages...)
 		storageResourcesList = append(storageResourcesList, fileStorages...)
@@ -130,7 +128,6 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 		if err != nil {
 			return nil, fmt.Errorf("could not create storage service: %w", err)
 		}
-		log.Infof("Adding storage account %+v", objectStorages)
 
 		storageResourcesList = append(storageResourcesList, storageService)
 	}
@@ -304,7 +301,7 @@ func handleObjectStorage(account *armstorage.Account, container *armstorage.List
 				GeoLocation: voc.GeoLocation{
 					Region: util.Deref(account.Location),
 				},
-				Labels: labels(account.Tags), //the storage account labels the object storage belongs to
+				Labels: labels(account.Tags), // the storage account labels the object storage belongs to
 			},
 			AtRestEncryption: enc,
 		},
@@ -358,7 +355,7 @@ func (*azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, 
 	return storageService, nil
 }
 
-//generalizeURL generalizes the URL, because the URL depends on the storage type
+// generalizeURL generalizes the URL, because the URL depends on the storage type
 func generalizeURL(url string) string {
 	if url == "" {
 		return ""
@@ -396,7 +393,7 @@ func handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileSh
 				GeoLocation: voc.GeoLocation{
 					Region: util.Deref(account.Location),
 				},
-				Labels: labels(account.Tags), //the storage account labels the file storage belongs to
+				Labels: labels(account.Tags), // the storage account labels the file storage belongs to
 			},
 			AtRestEncryption: enc,
 		},
