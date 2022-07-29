@@ -52,7 +52,8 @@ const (
 type Error_Code int32
 
 const (
-	Error_ERROR_UNKNOWN               Error_Code = 0
+	Error_ERROR_UNKNOWN Error_Code = 0
+	// TODO(all): But all invalid configs are rejected anyway (`Validate` functions)
 	Error_ERROR_INVALID_CONFIGURATION Error_Code = 1 // The collection module configuration did not allow for collection
 	// (e.g. Port number 1000000)
 	Error_ERROR_CONNECTION_FAILURE Error_Code = 2 // The service could not be reached (e.g. Timeout)
