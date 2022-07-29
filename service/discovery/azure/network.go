@@ -41,7 +41,11 @@ type azureNetworkDiscovery struct {
 }
 
 func NewAzureNetworkDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
-	d := &azureNetworkDiscovery{}
+	d := &azureNetworkDiscovery{
+		azureDiscovery{
+			discovererComponent: NetworkComponent,
+		},
+	}
 
 	// Apply options
 	for _, opt := range opts {
@@ -208,8 +212,8 @@ func LoadBalancerPorts(lb *armnetwork.LoadBalancer) (loadBalancerPorts []uint16)
 	return loadBalancerPorts
 }
 
-//// Returns all restricted ports for the network interface
-//func (d *azureNetworkDiscovery) getRestrictedPorts(ni *network.Interface) string {
+// // Returns all restricted ports for the network interface
+// func (d *azureNetworkDiscovery) getRestrictedPorts(ni *network.Interface) string {
 //
 //     var restrictedPorts []string
 //
@@ -243,9 +247,9 @@ func LoadBalancerPorts(lb *armnetwork.LoadBalancer) (loadBalancerPorts []uint16)
 //     restrictedPortsClean := deleteDuplicatesFromSlice(restrictedPorts)
 //
 //     return strings.Join(restrictedPortsClean, ",")
-//}
+// }
 //
-//func deleteDuplicatesFromSlice(intSlice []string) []string {
+// func deleteDuplicatesFromSlice(intSlice []string) []string {
 //     keys := make(map[string]bool)
 //     var list []string
 //     for _, entry := range intSlice {
@@ -255,7 +259,7 @@ func LoadBalancerPorts(lb *armnetwork.LoadBalancer) (loadBalancerPorts []uint16)
 //             }
 //     }
 //     return list
-//}
+// }
 
 func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *armnetwork.LoadBalancer) []string {
 

@@ -38,6 +38,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 
+	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 
@@ -177,6 +178,64 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 	}
 
 	return m.mockSender.Do(req)
+}
+
+func TestNewAzureComputeDiscovery(t *testing.T) {
+	type args struct {
+		opts []DiscoveryOption
+	}
+	tests := []struct {
+		name string
+		args args
+		want discovery.Discoverer
+	}{
+		{
+			name: "Empty input",
+			args: args{
+				opts: nil,
+			},
+			want: &azureComputeDiscovery{
+				azureDiscovery{
+					discovererComponent: ComputeComponent,
+				},
+			},
+		},
+		{
+			name: "With sender",
+			args: args{
+				opts: []DiscoveryOption{WithSender(mockComputeSender{})},
+			},
+			want: &azureComputeDiscovery{
+				azureDiscovery{
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{
+							Transport: mockComputeSender{},
+						},
+					},
+					discovererComponent: ComputeComponent,
+				},
+			},
+		},
+		{
+			name: "With authorizer",
+			args: args{
+				opts: []DiscoveryOption{WithAuthorizer(&mockAuthorizer{})},
+			},
+			want: &azureComputeDiscovery{
+				azureDiscovery{
+					cred:                &mockAuthorizer{},
+					discovererComponent: ComputeComponent,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := NewAzureComputeDiscovery(tt.args.opts...)
+			assert.Equal(t, tt.want, d)
+			assert.Equal(t, "Azure Compute", d.Name())
+		})
+	}
 }
 
 func TestAzureComputeAuthorizer(t *testing.T) {
@@ -719,7 +778,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		// TODO(anatheka): Wo kommt die panic her?
-		//{
+		// {
 		//	name: "Error list pages",
 		//	fields: fields{
 		//		azureDiscovery: azureDiscovery{
@@ -731,7 +790,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 		//	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 		//		return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
 		//	},
-		//},
+		// },
 		{
 			name: "No error",
 			fields: fields{
