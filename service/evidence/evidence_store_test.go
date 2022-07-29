@@ -51,21 +51,23 @@ import (
 func TestNewService(t *testing.T) {
 	tests := []struct {
 		name string
-		want evidence.EvidenceStoreServer
+		want assert.ValueAssertionFunc
 	}{
 		{
-			name: "EvidenceStoreServer created with empty req map",
-			want: &Service{
-				evidences:                        make(map[string]*evidence.Evidence),
-				UnimplementedEvidenceStoreServer: evidence.UnimplementedEvidenceStoreServer{},
+			name: "EvidenceStoreServer created without options",
+			want: func(t assert.TestingT, i interface{}, i3 ...interface{}) bool {
+				svc, ok := i.(*Service)
+				assert.True(t, ok)
+				// Storage should be default (in-memory storage). Hard to check since its type is unexported
+				assert.NotNil(t, svc.storage)
+				return true
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewService(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewService() = %v, want %v", got, tt.want)
-			}
+			got := NewService()
+			tt.want(t, got)
 		})
 	}
 }
@@ -80,7 +82,7 @@ func TestStoreEvidence(t *testing.T) {
 		name     string
 		args     args
 		wantResp *evidence.StoreEvidenceResponse
-		wantErr  bool
+		wantErr  assert.ErrorAssertionFunc
 	}{
 		{
 			name: "Store req to the map",
@@ -100,7 +102,7 @@ func TestStoreEvidence(t *testing.T) {
 						}, t),
 					}},
 			},
-			wantErr:  false,
+			wantErr:  assert.NoError,
 			wantResp: &evidence.StoreEvidenceResponse{Status: true},
 		},
 		{
@@ -123,7 +125,9 @@ func TestStoreEvidence(t *testing.T) {
 					},
 				},
 			},
-			wantErr: true,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, evidence.ErrToolIdMissing.Error())
+			},
 			wantResp: &evidence.StoreEvidenceResponse{
 				Status:        false,
 				StatusMessage: "invalid evidence: tool id in evidence is missing",
@@ -134,19 +138,18 @@ func TestStoreEvidence(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
 			gotResp, err := s.StoreEvidence(tt.args.in0, tt.args.req)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("StoreEvidence() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+
+			tt.wantErr(t, err)
 
 			if !reflect.DeepEqual(gotResp, tt.wantResp) {
 				t.Errorf("StoreEvidence() gotResp = %v, want %v", gotResp, tt.wantResp)
 			}
 
 			if gotResp.Status {
-				assert.NotNil(t, s.evidences["11111111-1111-1111-1111-111111111111"])
-			} else {
-				assert.Empty(t, s.evidences)
+				e := &evidence.Evidence{}
+				err := s.storage.Get(e)
+				assert.NoError(t, err)
+				assert.Equal(t, tt.args.req.Evidence.Id, e.Id)
 			}
 		})
 	}
@@ -269,20 +272,22 @@ func TestStoreEvidences(t *testing.T) {
 // TestListEvidences tests List req
 func TestListEvidences(t *testing.T) {
 	s := NewService()
-	s.evidences["MockEvidenceId-1"] = &evidence.Evidence{
+	err := s.storage.Create(&evidence.Evidence{
 		Id:        "MockEvidenceId-1",
 		ServiceId: "MockServiceId-1",
 		Timestamp: timestamppb.Now(),
 		Raw:       "",
 		Resource:  nil,
-	}
-	s.evidences["MockEvidenceId-2"] = &evidence.Evidence{
+	})
+	assert.NoError(t, err)
+	err = s.storage.Create(&evidence.Evidence{
 		Id:        "MockEvidenceId-2",
 		ServiceId: "MockServiceId-2",
 		Timestamp: timestamppb.Now(),
 		Raw:       "",
 		Resource:  nil,
-	}
+	})
+	assert.NoError(t, err)
 
 	resp, err := s.ListEvidences(context.TODO(), &evidence.ListEvidencesRequest{})
 	assert.NoError(t, err)
@@ -378,7 +383,10 @@ func TestEvidenceHook(t *testing.T) {
 			if !reflect.DeepEqual(gotResp, tt.wantResp) {
 				t.Errorf("StoreEvidence() gotResp = %v, want %v", gotResp, tt.wantResp)
 			}
-			assert.NotEmpty(t, s.evidences)
+			var evidences []evidence.Evidence
+			err = s.storage.List(&evidences, "", true, 0, -1)
+			assert.NoError(t, err)
+			assert.NotEmpty(t, evidences)
 			assert.Equal(t, 2, hookCallCounter)
 		})
 	}

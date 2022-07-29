@@ -82,7 +82,8 @@ func init() {
 }
 
 // StoreEvidence is a method implementation of the evidenceServer interface: It receives a req and stores it
-func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRequest) (resp *evidence.StoreEvidenceResponse, err error) {
+func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRequest) (
+	resp *evidence.StoreEvidenceResponse, err error) {
 
 	_, err = req.Evidence.Validate()
 	if err != nil {
