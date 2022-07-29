@@ -97,7 +97,8 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 			StatusMessage: err.Error(),
 		}
 
-		return resp, status.Errorf(codes.InvalidArgument, "%v", err)
+		err = status.Errorf(codes.InvalidArgument, "%v", err)
+		return
 	}
 
 	err = s.storage.Create(req.Evidence)
@@ -114,6 +115,7 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 		}
 
 		err = status.Errorf(codes.Internal, "%v", err)
+		return
 	}
 	go s.informHooks(req.Evidence, nil)
 
