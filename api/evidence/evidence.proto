@@ -54,4 +54,28 @@ message Evidence {
   // Semantic representation of the Cloud resource according to our defined
   // ontology
   google.protobuf.Value resource = 6;
+
+
+  // Conditional, Mutually exclusive with resource. An error
+  Error error = 8;
+
+}
+
+// An error result
+message Error {
+  // The broad type of error, should not be too collection module specific
+  enum Code {
+    ERROR_UNKNOWN = 0;
+    ERROR_INVALID_CONFIGURATION =
+        1; // The collection module configuration did not allow for collection
+    // (e.g. Port number 1000000)
+    ERROR_CONNECTION_FAILURE =
+        2; // The service could not be reached (e.g. Timeout)
+    ERROR_PROTOCOL_VIOLATION = 3; // The service did not behave as expected
+    // (e.g. served SMTP instead of HTTP)
+  }
+  // The type of error
+  Code code = 1;
+  // Optional. A human-readable description of the error.
+  string description = 2;
 }
