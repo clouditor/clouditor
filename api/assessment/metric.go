@@ -111,7 +111,7 @@ func (*Range) GormDataType() string {
 // MetricValidationOption is a function-style option to fine-tune metric validation.
 type MetricValidationOption func(*Metric) error
 
-// WithMetricRequiresId is a validation option that specifies that Id must not be empty.
+// WithMetricRequiresId is a validation option that specifies that ID must not be empty.
 func WithMetricRequiresId() MetricValidationOption {
 	return func(m *Metric) error {
 		if m.Id == "" {
