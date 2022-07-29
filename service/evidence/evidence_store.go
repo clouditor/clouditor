@@ -32,11 +32,14 @@ import (
 	"io"
 	"sync"
 
-	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/service"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/persistence/inmemory"
+	"clouditor.io/clouditor/service"
 )
 
 var log *logrus.Entry
@@ -44,7 +47,7 @@ var log *logrus.Entry
 // Service is an implementation of the Clouditor req service (evidenceServer)
 type Service struct {
 	// Currently only in-memory
-	evidences map[string]*evidence.Evidence
+	storage persistence.Storage
 
 	// evidenceHooks is a list of hook functions that can be used if one wants to be
 	// informed about each evidence
@@ -55,10 +58,23 @@ type Service struct {
 	evidence.UnimplementedEvidenceStoreServer
 }
 
-func NewService() *Service {
-	return &Service{
-		evidences: make(map[string]*evidence.Evidence),
+func NewService(opts ...service.Option[Service]) (svc *Service) {
+	var (
+		err error
+	)
+	svc = new(Service)
+
+	for _, o := range opts {
+		o(svc)
 	}
+
+	if svc.storage == nil {
+		svc.storage, err = inmemory.NewStorage()
+		if err != nil {
+			log.Errorf("Could not initialize the storage: %v", err)
+		}
+	}
+	return
 }
 
 func init() {
@@ -70,20 +86,34 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 
 	_, err = req.Evidence.Validate()
 	if err != nil {
-		newError := fmt.Errorf("invalid evidence: %w", err)
-		log.Error(newError)
+		err = fmt.Errorf("invalid evidence: %w", err)
+		log.Error(err)
 
-		go s.informHooks(nil, newError)
+		go s.informHooks(nil, err)
 
 		resp = &evidence.StoreEvidenceResponse{
 			Status:        false,
-			StatusMessage: newError.Error(),
+			StatusMessage: err.Error(),
 		}
 
-		return resp, status.Errorf(codes.InvalidArgument, "%v", newError)
+		return resp, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	s.evidences[req.Evidence.Id] = req.Evidence
+	err = s.storage.Create(req.Evidence)
+	if err != nil {
+		// TODO(lebogg): Almost identical error handling as above -> extract here or even to internal
+		err = fmt.Errorf("internal error: %w", err)
+		log.Error(err)
+
+		go s.informHooks(nil, err)
+
+		resp = &evidence.StoreEvidenceResponse{
+			Status:        false,
+			StatusMessage: err.Error(),
+		}
+
+		err = status.Errorf(codes.Internal, "%v", err)
+	}
 	go s.informHooks(req.Evidence, nil)
 
 	resp = &evidence.StoreEvidenceResponse{
@@ -144,9 +174,8 @@ func (s *Service) ListEvidences(_ context.Context, req *evidence.ListEvidencesRe
 	res = new(evidence.ListEvidencesResponse)
 
 	// Paginate the evidences according to the request
-	res.Evidences, res.NextPageToken, err = service.PaginateMapValues(req, s.evidences, func(a, b *evidence.Evidence) bool {
-		return a.Id < b.Id
-	}, service.DefaultPaginationOpts)
+	res.Evidences, res.NextPageToken, err = service.PaginateStorage[*evidence.Evidence](req, s.storage,
+		service.DefaultPaginationOpts)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
