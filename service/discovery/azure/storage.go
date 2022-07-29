@@ -49,7 +49,11 @@ type azureStorageDiscovery struct {
 }
 
 func NewAzureStorageDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
-	d := &azureStorageDiscovery{}
+	d := &azureStorageDiscovery{
+		azureDiscovery{
+			discovererComponent: StorageComponent,
+		},
+	}
 
 	// Apply options
 	for _, opt := range opts {

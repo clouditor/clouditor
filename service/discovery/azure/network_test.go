@@ -362,7 +362,11 @@ func TestNewAzureNetworkDiscovery(t *testing.T) {
 			args: args{
 				opts: nil,
 			},
-			want: &azureNetworkDiscovery{},
+			want: &azureNetworkDiscovery{
+				azureDiscovery{
+					discovererComponent: NetworkComponent,
+				},
+			},
 		},
 		{
 			name: "With sender",
@@ -376,6 +380,7 @@ func TestNewAzureNetworkDiscovery(t *testing.T) {
 							Transport: mockNetworkSender{},
 						},
 					},
+					discovererComponent: NetworkComponent,
 				},
 			},
 		},
@@ -386,7 +391,8 @@ func TestNewAzureNetworkDiscovery(t *testing.T) {
 			},
 			want: &azureNetworkDiscovery{
 				azureDiscovery{
-					cred: &mockAuthorizer{},
+					cred:                &mockAuthorizer{},
+					discovererComponent: NetworkComponent,
 				},
 			},
 		},
