@@ -36,6 +36,8 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/persistence/gorm"
+	"clouditor.io/clouditor/service"
 	"clouditor.io/clouditor/voc"
 
 	"github.com/google/uuid"
@@ -49,8 +51,14 @@ import (
 
 // TestNewService is a simply test for NewService
 func TestNewService(t *testing.T) {
+	db, err := gorm.NewStorage(gorm.WithInMemory())
+	assert.NoError(t, err)
+	type args struct {
+		opts []service.Option[Service]
+	}
 	tests := []struct {
 		name string
+		args args
 		want assert.ValueAssertionFunc
 	}{
 		{
@@ -59,6 +67,17 @@ func TestNewService(t *testing.T) {
 				svc, ok := i.(*Service)
 				assert.True(t, ok)
 				// Storage should be default (in-memory storage). Hard to check since its type is unexported
+				assert.NotNil(t, svc.storage)
+				return true
+			},
+		},
+		{
+			name: "EvidenceStoreServer created with storage option",
+			args: args{opts: []service.Option[Service]{WithStorage(db)}},
+			want: func(t assert.TestingT, i interface{}, i3 ...interface{}) bool {
+				svc, ok := i.(*Service)
+				assert.True(t, ok)
+				// Storage should be gorm (in-memory storage). Hard to check since its type is unexported
 				assert.NotNil(t, svc.storage)
 				return true
 			},
@@ -315,17 +334,17 @@ func TestEvidenceHook(t *testing.T) {
 		wg.Done()
 	}
 
-	service := NewService()
-	service.RegisterEvidenceHook(firstHookFunction)
-	service.RegisterEvidenceHook(secondHookFunction)
+	svc := NewService()
+	svc.RegisterEvidenceHook(firstHookFunction)
+	svc.RegisterEvidenceHook(secondHookFunction)
 
 	// Check if first hook is registered
-	funcName1 := runtime.FuncForPC(reflect.ValueOf(service.evidenceHooks[0]).Pointer()).Name()
+	funcName1 := runtime.FuncForPC(reflect.ValueOf(svc.evidenceHooks[0]).Pointer()).Name()
 	funcName2 := runtime.FuncForPC(reflect.ValueOf(firstHookFunction).Pointer()).Name()
 	assert.Equal(t, funcName1, funcName2)
 
 	// Check if second hook is registered
-	funcName1 = runtime.FuncForPC(reflect.ValueOf(service.evidenceHooks[1]).Pointer()).Name()
+	funcName1 = runtime.FuncForPC(reflect.ValueOf(svc.evidenceHooks[1]).Pointer()).Name()
 	funcName2 = runtime.FuncForPC(reflect.ValueOf(secondHookFunction).Pointer()).Name()
 	assert.Equal(t, funcName1, funcName2)
 
@@ -370,7 +389,7 @@ func TestEvidenceHook(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			hookCallCounter = 0
-			s := service
+			s := svc
 			gotResp, err := s.StoreEvidence(tt.args.in0, tt.args.evidence)
 
 			// wait for all hooks (2 hooks)
