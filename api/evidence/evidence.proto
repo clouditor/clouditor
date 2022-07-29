@@ -55,10 +55,8 @@ message Evidence {
   // ontology
   google.protobuf.Value resource = 6;
 
-
   // Conditional, Mutually exclusive with resource. An error
   Error error = 8;
-
 }
 
 // An error result
@@ -66,6 +64,7 @@ message Error {
   // The broad type of error, should not be too collection module specific
   enum Code {
     ERROR_UNKNOWN = 0;
+    // TODO(all): But all invalid configs are rejected anyway (`Validate` functions)
     ERROR_INVALID_CONFIGURATION =
         1; // The collection module configuration did not allow for collection
     // (e.g. Port number 1000000)
