@@ -30,6 +30,7 @@ package clouditor;
 
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
+import "tagger/tagger.proto";
 
 option go_package = "clouditor.io/clouditor/api/evidence";
 
@@ -39,7 +40,8 @@ message Evidence {
   string id = 1;
 
   // time of evidence creation
-  google.protobuf.Timestamp timestamp = 2;
+  google.protobuf.Timestamp timestamp = 2
+  [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
 
   // Reference to a service this evidence was gathered from
   string service_id = 3;
@@ -53,10 +55,8 @@ message Evidence {
 
   // Semantic representation of the Cloud resource according to our defined
   // ontology
-  google.protobuf.Value resource = 6;
-
-  // Conditional, Mutually exclusive with resource. An error
-  Error error = 8;
+  google.protobuf.Value resource = 6
+  [ (tagger.tags) = "gorm:\"serializer:structpbvalue;type:json\"" ];
 }
 
 // An error result

@@ -104,7 +104,7 @@ func (r *Range) Scan(value interface{}) (err error) {
 
 // GormDataType implements GormDataTypeInterface to give an indication how
 // this struct will be serialized into a database using GORM.
-func (r *Range) GormDataType() string {
+func (*Range) GormDataType() string {
 	return "jsonb"
 }
 

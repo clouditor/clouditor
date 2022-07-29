@@ -32,8 +32,11 @@ import (
 	"reflect"
 	"time"
 
+	"google.golang.org/protobuf/types/known/structpb"
+
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/auth"
+	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
 
@@ -71,6 +74,7 @@ var DefaultTypes = []any{
 	&orchestrator.Certificate{},
 	&orchestrator.State{},
 	&orchestrator.Requirement{},
+	&evidence.Evidence{},
 }
 
 // StorageOption is a functional option type to configure the GORM storage. E.g. WithInMemory or WithPostgres
@@ -150,6 +154,7 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	}
 
 	schema.RegisterSerializer("timestamppb", &TimestampSerializer{})
+	schema.RegisterSerializer("structpbvalue", &StructpbValueSerializer{})
 
 	// After successful DB initialization, migrate the schema
 	if err = g.db.AutoMigrate(g.types...); err != nil {
@@ -262,6 +267,51 @@ func (TimestampSerializer) Scan(ctx context.Context, field *schema.Field, dst re
 		}
 
 		field.ReflectValueOf(ctx, dst).Set(reflect.ValueOf(t))
+	}
+
+	return
+}
+
+// StructpbValueSerializer is a GORM serializer that allows the serialization and deserialization of the
+// google.protobuf.Value protobuf message type.
+type StructpbValueSerializer struct{}
+
+// Value implements https://pkg.go.dev/gorm.io/gorm/schema#SerializerValuerInterface to indicate
+// how this struct will be saved into an SQL database field.
+func (StructpbValueSerializer) Value(_ context.Context, _ *schema.Field, _ reflect.Value, fieldValue interface{}) (interface{}, error) {
+	var (
+		v  *structpb.Value
+		ok bool
+	)
+
+	if fieldValue == nil {
+		return nil, nil
+	}
+
+	if v, ok = fieldValue.(*structpb.Value); !ok {
+		return nil, persistence.ErrUnsupportedType
+	}
+
+	return v.MarshalJSON()
+}
+
+// Scan implements https://pkg.go.dev/gorm.io/gorm/schema#SerializerInterface to indicate how
+// this struct can be loaded from an SQL database field.
+func (StructpbValueSerializer) Scan(ctx context.Context, field *schema.Field, dst reflect.Value, dbValue interface{}) (err error) {
+	v := new(structpb.Value)
+
+	if dbValue != nil {
+		switch d := dbValue.(type) {
+		case []byte:
+			err = v.UnmarshalJSON(d)
+			if err != nil {
+				return err
+			}
+		default:
+			return persistence.ErrUnsupportedType
+		}
+
+		field.ReflectValueOf(ctx, dst).Set(reflect.ValueOf(v))
 	}
 
 	return

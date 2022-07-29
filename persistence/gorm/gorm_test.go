@@ -13,9 +13,11 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/auth"
+	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
 	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/voc"
 )
 
 func TestStorageOptions(t *testing.T) {
@@ -92,20 +94,51 @@ func TestStorageOptions(t *testing.T) {
 
 func Test_storage_Create(t *testing.T) {
 	var (
-		err    error
-		s      persistence.Storage
-		metric *assessment.Metric
+		err error
+		s   persistence.Storage
 	)
-
-	metric = &assessment.Metric{Id: "Test"}
 
 	// Create storage
 	s, err = NewStorage()
 	assert.NoError(t, err)
 
+	// Prepare evidence for creation
+	value, err := voc.ToStruct(voc.Compute{
+		Resource: &voc.Resource{
+			ID:           "1",
+			Name:         "SomeResource",
+			CreationTime: 0,
+			Type:         []string{"Compute", "VM"},
+			GeoLocation: voc.GeoLocation{
+				Region: "EU",
+			},
+		},
+		NetworkInterface: nil,
+	})
+	assert.NoError(t, err)
+	e := &evidence.Evidence{
+		Id:        "1",
+		Timestamp: timestamppb.Now(),
+		ServiceId: "1",
+		ToolId:    "1",
+		Raw:       "Some:Raw:Stuff",
+		Resource:  value,
+	}
+
+	// Create evidence
+	err = s.Create(e)
+	assert.NoError(t, err)
+
+	// Create evidence a second time should fail since it is stored already
+	err = s.Create(e)
+	assert.Error(t, err)
+
+	// Prepare and create metric
+	metric := &assessment.Metric{Id: "Test"}
 	err = s.Create(metric)
 	assert.NoError(t, err)
 
+	// Create metric a second time should fail since it is stored already
 	err = s.Create(metric)
 	assert.Error(t, err)
 }
@@ -183,6 +216,39 @@ func Test_storage_Get(t *testing.T) {
 	err = s.Get(gotImpl, "metric_id = ?", "1")
 	assert.NoError(t, err)
 	assert.Equal(t, impl, gotImpl)
+
+	// Prepare evidence for creation
+	value, err := voc.ToStruct(voc.Compute{
+		Resource: &voc.Resource{
+			ID:           "1",
+			Name:         "SomeResource",
+			CreationTime: 0,
+			Type:         []string{"Compute", "VM"},
+			GeoLocation: voc.GeoLocation{
+				Region: "EU",
+			},
+		},
+		NetworkInterface: nil,
+	})
+	assert.NoError(t, err)
+	e := &evidence.Evidence{
+		Id:        "1",
+		Timestamp: timestamppb.Now(),
+		ServiceId: "1",
+		ToolId:    "1",
+		Raw:       "Some:Raw:Stuff",
+		Resource:  value,
+	}
+
+	// Create evidence
+	err = s.Create(e)
+	assert.NoError(t, err)
+
+	// Get evidence via Id
+	gotEvidence := &evidence.Evidence{}
+	err = s.Get(gotEvidence, "id = ?", e.Id)
+	assert.NoError(t, err)
+	assert.Equal(t, e, gotEvidence)
 }
 
 func Test_storage_List(t *testing.T) {
