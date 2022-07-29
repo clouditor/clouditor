@@ -49,7 +49,7 @@ func TestStorageOptions(t *testing.T) {
 			name: "postgres with option - invalid port",
 			args: args{
 				opts: []StorageOption{
-					WithPostgres("", 0, "", "", ""),
+					WithPostgres("", 0, "", "", "", ""),
 				},
 			},
 			wantDialectorType: "",

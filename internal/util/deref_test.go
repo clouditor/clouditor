@@ -1,4 +1,4 @@
-// Copyright 2021 Fraunhofer AISEC
+// Copyright 2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,12 +23,40 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package voc
+package util
 
-type NetworkService struct {
-	*Networking
-	Compute             []ResourceID         `json:"compute"`
-	TransportEncryption *TransportEncryption `json:"transportEncryption"`
-	Ips                 []string             `json:"ips"`
-	Ports               []uint16             `json:"ports"`
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"clouditor.io/clouditor/voc"
+)
+
+func TestDeref(t *testing.T) {
+	testValue := "testString"
+	assert.Equal(t, testValue, Deref(&testValue))
+
+	var testInt32 int32 = 12
+	assert.Equal(t, testInt32, Deref(&testInt32))
+
+	var testInt64 int64 = 12
+	assert.Equal(t, testInt64, Deref(&testInt64))
+
+	var testFloat32 float32 = 1.5
+	assert.Equal(t, testFloat32, Deref(&testFloat32))
+
+	var testFloat64 float32 = 1.5
+	assert.Equal(t, testFloat64, Deref(&testFloat64))
+
+	var testBool = true
+	assert.Equal(t, testBool, Deref(&testBool))
+
+	testStruct := voc.GeoLocation{
+		Region: "testlocation",
+	}
+	assert.Equal(t, testStruct, Deref(&testStruct))
+
+	testByteArray := []byte("testByteArray")
+	assert.Equal(t, testByteArray, Deref(&testByteArray))
 }

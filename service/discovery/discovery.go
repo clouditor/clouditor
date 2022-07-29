@@ -30,6 +30,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"sync"
 	"time"
 
 	"clouditor.io/clouditor/api"
@@ -85,6 +86,9 @@ type Service struct {
 	authorizer api.Authorizer
 
 	providers []string
+
+	// Mutex for resources
+	resourceMutex sync.RWMutex
 }
 
 type Configuration struct {
@@ -152,23 +156,23 @@ func NewService(opts ...ServiceOption) *Service {
 }
 
 // SetAuthorizer implements UsesAuthorizer.
-func (s *Service) SetAuthorizer(auth api.Authorizer) {
-	s.authorizer = auth
+func (svc *Service) SetAuthorizer(auth api.Authorizer) {
+	svc.authorizer = auth
 }
 
 // Authorizer implements UsesAuthorizer.
-func (s *Service) Authorizer() api.Authorizer {
-	return s.authorizer
+func (svc *Service) Authorizer() api.Authorizer {
+	return svc.authorizer
 }
 
 // initAssessmentStream initializes the stream that is used to send evidences to the assessment service.
 // If configured, it uses the Authorizer of the discovery service to authenticate requests to the assessment.
-func (s *Service) initAssessmentStream(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
+func (svc *Service) initAssessmentStream(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
 	log.Infof("Trying to establish a connection to assessment service @ %v", target)
 
 	// Establish connection to assessment gRPC service
 	conn, err := grpc.Dial(target,
-		api.DefaultGrpcDialOptions(target, s, additionalOpts...)...,
+		api.DefaultGrpcDialOptions(target, svc, additionalOpts...)...,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("could not connect to assessment service: %w", err)
@@ -189,16 +193,16 @@ func (s *Service) initAssessmentStream(target string, additionalOpts ...grpc.Dia
 }
 
 // Start starts discovery
-func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
+func (svc *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
 	resp = &discovery.StartDiscoveryResponse{Successful: true}
 
 	log.Infof("Starting discovery...")
-	s.scheduler.TagsUnique()
+	svc.scheduler.TagsUnique()
 
 	var discoverer []discovery.Discoverer
 
 	// Configure discoverers for given providers
-	for _, provider := range s.providers {
+	for _, provider := range svc.providers {
 		switch {
 		case provider == ProviderAzure:
 			authorizer, err := azure.NewAuthorizer()
@@ -239,29 +243,29 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	}
 
 	for _, v := range discoverer {
-		s.configurations[v] = &Configuration{
+		svc.configurations[v] = &Configuration{
 			Interval: 5 * time.Minute,
 		}
 
 		log.Infof("Scheduling {%s} to execute every 5 minutes...", v.Name())
 
-		_, err = s.scheduler.
+		_, err = svc.scheduler.
 			Every(5).
 			Minute().
 			Tag(v.Name()).
-			Do(s.StartDiscovery, v)
+			Do(svc.StartDiscovery, v)
 		if err != nil {
 			log.Errorf("Could not schedule job for {%s}: %v", v.Name(), err)
 		}
 	}
 
-	s.scheduler.StartAsync()
+	svc.scheduler.StartAsync()
 
 	return resp, nil
 }
 
-func (s *Service) Shutdown() {
-	s.scheduler.Stop()
+func (svc *Service) Shutdown() {
+	svc.scheduler.Stop()
 }
 
 func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
@@ -278,7 +282,9 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}
 
 	for _, resource := range list {
+		svc.resourceMutex.Lock()
 		svc.resources[string(resource.GetID())] = resource
+		svc.resourceMutex.Unlock()
 
 		var (
 			v *structpb.Value
@@ -310,7 +316,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}
 }
 
-func (s *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *discovery.QueryResponse, err error) {
+func (svc *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *discovery.QueryResponse, err error) {
 	var r []*structpb.Value
 	var resources []voc.IsCloudResource
 
@@ -319,7 +325,7 @@ func (s *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *di
 		filteredType = req.FilteredType
 	}
 
-	resources = maps.Values(s.resources)
+	resources = maps.Values(svc.resources)
 	sort.Slice(resources, func(i, j int) bool {
 		return resources[i].GetID() < resources[j].GetID()
 	})

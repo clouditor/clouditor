@@ -1,4 +1,4 @@
-// Copyright 2021 Fraunhofer AISEC
+// Copyright 2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,12 +23,51 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package voc
+package util
 
-type NetworkService struct {
-	*Networking
-	Compute             []ResourceID         `json:"compute"`
-	TransportEncryption *TransportEncryption `json:"transportEncryption"`
-	Ips                 []string             `json:"ips"`
-	Ports               []uint16             `json:"ports"`
+import (
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func Test_SafeTimestamp(t *testing.T) {
+
+	testTime := time.Date(2000, 01, 20, 9, 20, 12, 123, time.UTC)
+	testTimeUnix := testTime.Unix()
+
+	type args struct {
+		t *time.Time
+	}
+	tests := []struct {
+		name string
+		args args
+		want int64
+	}{
+		{
+			name: "Empty time",
+			args: args{
+				t: &time.Time{},
+			},
+			want: 0,
+		},
+		{
+			name: "Time is nil",
+			args: args{},
+			want: 0,
+		},
+		{
+			name: "Valid time",
+			args: args{
+				t: &testTime,
+			},
+			want: testTimeUnix,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, SafeTimestamp(tt.args.t), "SafeTimestamp(%v)", tt.args.t)
+		})
+	}
 }

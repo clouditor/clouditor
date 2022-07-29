@@ -1,6 +1,8 @@
 package util
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestCamelCaseToSnakeCase(t *testing.T) {
 	type args struct {

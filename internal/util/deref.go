@@ -1,4 +1,4 @@
-// Copyright 2021 Fraunhofer AISEC
+// Copyright 2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,12 +23,14 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package voc
+package util
 
-type NetworkService struct {
-	*Networking
-	Compute             []ResourceID         `json:"compute"`
-	TransportEncryption *TransportEncryption `json:"transportEncryption"`
-	Ips                 []string             `json:"ips"`
-	Ports               []uint16             `json:"ports"`
+// Deref dereferences pointer values
+func Deref[T any](p *T) T {
+	var result T
+	if p != nil {
+		return *p
+	}
+
+	return result
 }

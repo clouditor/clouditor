@@ -64,7 +64,7 @@ func TestAuthConfig_AuthFunc(t *testing.T) {
 	var (
 		authSrv *oauth2.AuthorizationServer
 		err     error
-		port    int
+		port    uint16
 	)
 
 	// We need to start a REST server for JWKS (using our auth server)

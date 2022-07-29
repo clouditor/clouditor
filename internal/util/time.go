@@ -1,4 +1,4 @@
-// Copyright 2021 Fraunhofer AISEC
+// Copyright 2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,12 +23,19 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package voc
+package util
 
-type NetworkService struct {
-	*Networking
-	Compute             []ResourceID         `json:"compute"`
-	TransportEncryption *TransportEncryption `json:"transportEncryption"`
-	Ips                 []string             `json:"ips"`
-	Ports               []uint16             `json:"ports"`
+import "time"
+
+// SafeTimestamp returns either the UNIX timestamp of the time t or 0 if it is nil
+func SafeTimestamp(t *time.Time) int64 {
+	if t == nil {
+		return 0
+	}
+
+	if t.IsZero() {
+		return 0
+	}
+
+	return t.Unix()
 }
