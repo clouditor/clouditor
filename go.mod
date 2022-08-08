@@ -5,7 +5,7 @@ go 1.18
 // runtime dependencies (core)
 require (
 	github.com/MicahParks/keyfunc v1.2.0
-	github.com/go-co-op/gocron v1.15.0
+	github.com/go-co-op/gocron v1.16.2
 	github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
