@@ -129,6 +129,6 @@ func (AnySerializer) Scan(ctx context.Context, field *schema.Field, dst reflect.
 		}
 	}
 
-	field.ReflectValueOf(ctx, dst).Set(reflect.ValueOf(a))
+	field.ReflectValueOf(ctx, dst).Set(reflect.ValueOf(&a))
 	return
 }
