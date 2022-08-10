@@ -26,11 +26,8 @@
 package gorm
 
 import (
-	"context"
 	"errors"
 	"fmt"
-	"reflect"
-	"time"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/auth"
@@ -38,7 +35,6 @@ import (
 	"clouditor.io/clouditor/persistence"
 
 	"github.com/sirupsen/logrus"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -223,46 +219,4 @@ func (s *storage) Delete(r any, conds ...any) error {
 	}
 
 	return nil
-}
-
-// TimestampSerializer is a GORM serializer that allows the serialization and deserialization of the
-// google.protobuf.Timestamp protobuf message type.
-type TimestampSerializer struct{}
-
-// Value implements https://pkg.go.dev/gorm.io/gorm/schema#SerializerValuerInterface to indicate
-// how this struct will be saved into an SQL database field.
-func (TimestampSerializer) Value(_ context.Context, _ *schema.Field, _ reflect.Value, fieldValue interface{}) (interface{}, error) {
-	var (
-		t  *timestamppb.Timestamp
-		ok bool
-	)
-
-	if fieldValue == nil {
-		return nil, nil
-	}
-
-	if t, ok = fieldValue.(*timestamppb.Timestamp); !ok {
-		return nil, persistence.ErrUnsupportedType
-	}
-
-	return t.AsTime(), nil
-}
-
-// Scan implements https://pkg.go.dev/gorm.io/gorm/schema#SerializerInterface to indicate how
-// this struct can be loaded from an SQL database field.
-func (TimestampSerializer) Scan(ctx context.Context, field *schema.Field, dst reflect.Value, dbValue interface{}) (err error) {
-	var t *timestamppb.Timestamp
-
-	if dbValue != nil {
-		switch v := dbValue.(type) {
-		case time.Time:
-			t = timestamppb.New(v)
-		default:
-			return persistence.ErrUnsupportedType
-		}
-
-		field.ReflectValueOf(ctx, dst).Set(reflect.ValueOf(t))
-	}
-
-	return
 }
