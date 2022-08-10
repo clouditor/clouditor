@@ -146,6 +146,7 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	}
 
 	schema.RegisterSerializer("timestamppb", &TimestampSerializer{})
+	schema.RegisterSerializer("anypb", &AnySerializer{})
 
 	// After successful DB initialization, migrate the schema
 	if err = g.db.AutoMigrate(g.types...); err != nil {
