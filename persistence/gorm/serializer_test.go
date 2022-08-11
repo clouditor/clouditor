@@ -2,6 +2,7 @@ package gorm
 
 import (
 	"context"
+	"encoding/json"
 	"reflect"
 	"testing"
 	"time"
@@ -128,7 +129,7 @@ func TestAnySerializer_Value(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    interface{}
+		want    assert.ValueAssertionFunc
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -143,8 +144,25 @@ func TestAnySerializer_Value(t *testing.T) {
 					return a
 				}(),
 			},
-			want: []byte(
-				`{"@type":"type.googleapis.com/clouditor.CloudService", "id":"my-service"}`),
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				// output of protojson is randomized (see
+				// https://github.com/protocolbuffers/protobuf-go/commit/582ab3de426ef0758666e018b422dd20390f7f26),
+				// so we need to unmarshal it to compare the contents in a
+				// stable way
+				b, ok := i1.([]byte)
+				if assert.True(t, ok) {
+					return false
+				}
+
+				var m map[string]interface{}
+				err := json.Unmarshal(b, &m)
+				assert.NoError(t, err)
+
+				return assert.Equal(t, m, map[string]interface{}{
+					"@type": "type.googleapis.com/clouditor.CloudService",
+					"id":    "my-service",
+				})
+			},
 			wantErr: nil,
 		},
 		{
@@ -184,7 +202,9 @@ func TestAnySerializer_Value(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("AnySerializer.Value() = %s, want %s", got, tt.want)
+				if tt.want != nil {
+					tt.want(t, got)
+				}
 			}
 		})
 	}

@@ -101,14 +101,14 @@ func (AnySerializer) Value(_ context.Context, _ *schema.Field, _ reflect.Value, 
 		return nil, persistence.ErrUnsupportedType
 	}
 
-	return protojson.MarshalOptions{Multiline: false}.Marshal(a)
+	return protojson.Marshal(a)
 }
 
 // Scan implements https://pkg.go.dev/gorm.io/gorm/schema#SerializerInterface to indicate how
 // this struct can be loaded from an SQL database field.
 func (AnySerializer) Scan(ctx context.Context, field *schema.Field, dst reflect.Value, dbValue interface{}) (err error) {
 	var (
-		a *anypb.Any
+		a anypb.Any
 	)
 
 	if dbValue != nil {
@@ -124,12 +124,12 @@ func (AnySerializer) Scan(ctx context.Context, field *schema.Field, dst reflect.
 
 		fmt.Printf("%s", bytes)
 
-		err = protojson.Unmarshal(bytes, a)
+		err = protojson.Unmarshal(bytes, &a)
 		if err != nil {
 			return fmt.Errorf("could not unmarshal JSONB value into protobuf message: %w", err)
 		}
 	}
 
-	field.ReflectValueOf(ctx, dst).Set(reflect.ValueOf(a))
+	field.ReflectValueOf(ctx, dst).Set(reflect.ValueOf(&a))
 	return
 }
