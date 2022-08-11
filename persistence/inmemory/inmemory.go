@@ -14,5 +14,5 @@ func NewStorage() (persistence.Storage, error) {
 	return gorm.NewStorage(
 		gorm.WithInMemory(),
 		gorm.WithMaxOpenConns(1),
-		gorm.WithLogger(logger.Default.LogMode(logger.Info)))
+		gorm.WithLogger(logger.Default.LogMode(logger.Silent)))
 }
