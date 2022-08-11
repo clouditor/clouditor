@@ -168,6 +168,13 @@ func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[Servi
 	}
 }
 
+// WithAuthorizer is an option to use a pre-created authorizer
+func WithAuthorizer(auth api.Authorizer) service.Option[Service] {
+	return func(s *Service) {
+		s.SetAuthorizer(auth)
+	}
+}
+
 // WithRegoPackageName is an option to configure the Rego package name
 func WithRegoPackageName(pkg string) service.Option[Service] {
 	return func(s *Service) {
