@@ -117,7 +117,7 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	// Create storage with default gorm config
 	g := &storage{
 		config: gorm.Config{
-			Logger: logger.Default.LogMode(logger.Info),
+			Logger: logger.Default.LogMode(logger.Silent),
 		},
 		types: DefaultTypes,
 	}

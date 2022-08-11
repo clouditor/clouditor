@@ -31,7 +31,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 
 	"clouditor.io/clouditor/api"
@@ -109,7 +108,7 @@ func (svc *Service) prepareMetric(m *assessment.Metric) (err error) {
 	fileName := fmt.Sprintf("policies/bundles/%s/data.json", m.Id)
 
 	// Load the default configuration file
-	b, err := ioutil.ReadFile(fileName)
+	b, err := os.ReadFile(fileName)
 	if err != nil {
 		return fmt.Errorf("could not retrieve default configuration for metric %s: %w", m.Id, err)
 	}
@@ -372,7 +371,7 @@ func (svc *Service) UpdateMetricConfiguration(_ context.Context, req *orchestrat
 	}
 
 	// Update the cloud service
-	svc.storage.Save(&cld, "id = ?", req.ServiceId)
+	err = svc.storage.Save(&cld, "id = ?", req.ServiceId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
