@@ -898,6 +898,10 @@ components:
                     type: string
                 requirements:
                     $ref: '#/components/schemas/CloudService_Requirements'
+                metricConfigurations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/MetricConfiguration'
         CloudService_Requirements:
             type: object
             properties:
@@ -1023,6 +1027,12 @@ components:
                     type: string
                     description: The last time of update
                     format: date-time
+                metricId:
+                    type: string
+                    description: The metric this configuration belongs to
+                serviceId:
+                    type: string
+                    description: The service this configuration belongs to
             description: Defines the operator and a target value for an individual metric
         MetricImplementation:
             type: object
