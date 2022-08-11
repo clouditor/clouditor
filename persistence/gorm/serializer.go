@@ -31,11 +31,12 @@ import (
 	"reflect"
 	"time"
 
-	"clouditor.io/clouditor/persistence"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm/schema"
+
+	"clouditor.io/clouditor/persistence"
 )
 
 // TimestampSerializer is a GORM serializer that allows the serialization and deserialization of the
@@ -107,7 +108,7 @@ func (AnySerializer) Value(_ context.Context, _ *schema.Field, _ reflect.Value, 
 // this struct can be loaded from an SQL database field.
 func (AnySerializer) Scan(ctx context.Context, field *schema.Field, dst reflect.Value, dbValue interface{}) (err error) {
 	var (
-		a anypb.Any
+		a *anypb.Any
 	)
 
 	if dbValue != nil {
@@ -123,12 +124,12 @@ func (AnySerializer) Scan(ctx context.Context, field *schema.Field, dst reflect.
 
 		fmt.Printf("%s", bytes)
 
-		err = protojson.Unmarshal(bytes, &a)
+		err = protojson.Unmarshal(bytes, a)
 		if err != nil {
 			return fmt.Errorf("could not unmarshal JSONB value into protobuf message: %w", err)
 		}
 	}
 
-	field.ReflectValueOf(ctx, dst).Set(reflect.ValueOf(&a))
+	field.ReflectValueOf(ctx, dst).Set(reflect.ValueOf(a))
 	return
 }
