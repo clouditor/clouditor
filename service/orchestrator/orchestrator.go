@@ -53,7 +53,6 @@ var defaultMetricConfigurations map[string]*assessment.MetricConfiguration
 var log *logrus.Entry
 
 var DefaultMetricsFile = "metrics.json"
-var DefaultRequirementsFile = "requirements.json"
 
 // Service is an implementation of the Clouditor Orchestrator service
 type Service struct {
@@ -86,8 +85,6 @@ type Service struct {
 	// loadMetricsFunc is a function that is used to initially load metrics at the start of the orchestrator
 	loadMetricsFunc func() ([]*assessment.Metric, error)
 
-	requirements []*orchestrator.Requirement
-
 	events chan *orchestrator.MetricChangeEvent
 }
 
@@ -109,12 +106,6 @@ func WithMetricsFile(file string) ServiceOption {
 func WithExternalMetrics(f func() ([]*assessment.Metric, error)) ServiceOption {
 	return func(s *Service) {
 		s.loadMetricsFunc = f
-	}
-}
-
-func WithRequirements(r []*orchestrator.Requirement) ServiceOption {
-	return func(s *Service) {
-		s.requirements = r
 	}
 }
 
@@ -146,10 +137,6 @@ func NewService(opts ...ServiceOption) *Service {
 		if err != nil {
 			log.Errorf("Could not initialize the storage: %v", err)
 		}
-	}
-
-	if err = s.loadRequirements(); err != nil {
-		log.Errorf("Could not load embedded requirements. Will continue with empty requirements list: %v", err)
 	}
 
 	if err = s.loadMetrics(); err != nil {
@@ -391,6 +378,118 @@ func (svc *Service) RemoveCertificate(_ context.Context, req *orchestrator.Remov
 	err = svc.storage.Delete(&orchestrator.Certificate{}, "Id = ?", req.CertificateId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "certificate not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+	}
+
+	return &emptypb.Empty{}, nil
+}
+
+// CreateCatalog implements method for creating a new catalog
+func (svc *Service) CreateCatalog(_ context.Context, req *orchestrator.CreateCatalogRequest) (
+	*orchestrator.Catalog, error) {
+	// Validate request
+	if req == nil {
+		return nil,
+			status.Errorf(codes.InvalidArgument, api.ErrRequestIsNil.Error())
+	}
+	if req.Catalog == nil {
+		return nil,
+			status.Errorf(codes.InvalidArgument, orchestrator.ErrCatalogIsNil.Error())
+	}
+	if req.Catalog.Id == "" {
+		return nil,
+			status.Errorf(codes.InvalidArgument, orchestrator.ErrCatalogIDIsMissing.Error())
+	}
+
+	// Persist the new catalog in our database
+	err := svc.storage.Create(req.Catalog)
+	if err != nil {
+		return nil,
+			status.Errorf(codes.Internal, "could not add catalog to the database: %v", err)
+	}
+
+	// Return catalog
+	return req.Catalog, nil
+}
+
+// GetCatalog implements method for getting a catalog, e.g. to show its state in the UI
+func (svc *Service) GetCatalog(_ context.Context, req *orchestrator.GetCatalogRequest) (response *orchestrator.Catalog, err error) {
+	if req == nil {
+		return nil, status.Errorf(codes.InvalidArgument, api.ErrRequestIsNil.Error())
+	}
+	if req.CatalogId == "" {
+		return nil, status.Errorf(codes.NotFound, orchestrator.ErrCatalogIDIsMissing.Error())
+	}
+
+	response = new(orchestrator.Catalog)
+	err = svc.storage.Get(response, "Id = ?", req.CatalogId)
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Errorf(codes.NotFound, "catalog not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+	}
+	return response, nil
+}
+
+// ListCatalogs implements method for getting a catalog, e.g. to show its state in the UI
+func (svc *Service) ListCatalogs(_ context.Context, req *orchestrator.ListCatalogsRequest) (res *orchestrator.ListCatalogsResponse, err error) {
+	// Validate the request
+	if err = api.ValidateListRequest[*orchestrator.Catalog](req); err != nil {
+		err = fmt.Errorf("invalid request: %w", err)
+		log.Error(err)
+		err = status.Errorf(codes.InvalidArgument, "%v", err)
+		return
+	}
+
+	res = new(orchestrator.ListCatalogsResponse)
+
+	res.Catalogs, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Catalog](req, svc.storage,
+		service.DefaultPaginationOpts)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
+	}
+	return
+}
+
+// UpdateCatalog implements method for updating an existing catalog
+func (svc *Service) UpdateCatalog(_ context.Context, req *orchestrator.UpdateCatalogRequest) (response *orchestrator.Catalog, err error) {
+	if req.CatalogId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "catalog id is empty")
+	}
+
+	if req.Catalog == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "catalog is empty")
+	}
+
+	count, err := svc.storage.Count(req.Catalog, "Catalog_id = ?", req.CatalogId)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+	}
+
+	if count == 0 {
+		return nil, status.Error(codes.NotFound, "catalog not found")
+	}
+
+	response = req.Catalog
+	response.Id = req.CatalogId
+
+	err = svc.storage.Save(response, "Id = ?", response.Id)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+	}
+	return
+}
+
+// RemoveCatalog implements method for removing a catalog
+func (svc *Service) RemoveCatalog(_ context.Context, req *orchestrator.RemoveCatalogRequest) (response *emptypb.Empty, err error) {
+	if req.CatalogId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "catalog id is empty")
+	}
+
+	err = svc.storage.Delete(&orchestrator.Catalog{}, "Id = ?", req.CatalogId)
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Errorf(codes.NotFound, "catalog not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}

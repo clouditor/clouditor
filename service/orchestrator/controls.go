@@ -23,46 +23,32 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package requirement
+package orchestrator
 
 import (
-	"bytes"
-	"os"
-	"testing"
-
-	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/service"
+	"encoding/json"
+	"fmt"
 
 	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/cli"
-	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
-
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
-func TestMain(m *testing.M) {
-	clitest.AutoChdir()
+// LoadControls loads controls definitions from a JSON file.
+func LoadControls(file string) (controls []*orchestrator.Control, err error) {
+	var (
+		b []byte
+	)
 
-	os.Exit(clitest.RunCLITest(m, service.WithOrchestrator(service_orchestrator.NewService())))
-}
+	log.Infof("Loading controls from %s", file)
 
-func TestListRequirements(t *testing.T) {
-	var err error
-	var b bytes.Buffer
+	b, err = f.ReadFile(file)
+	if err != nil {
+		return nil, fmt.Errorf("error while loading %s: %w", file, err)
+	}
 
-	cli.Output = &b
+	err = json.Unmarshal(b, &controls)
+	if err != nil {
+		return nil, fmt.Errorf("error in JSON marshal: %w", err)
+	}
 
-	cmd := NewListRequirementsCommand()
-	err = cmd.RunE(nil, []string{})
-
-	assert.NoError(t, err)
-
-	var response *orchestrator.ListRequirementsResponse = &orchestrator.ListRequirementsResponse{}
-
-	err = protojson.Unmarshal(b.Bytes(), response)
-
-	assert.NoError(t, err)
-	assert.NotNil(t, response)
-	assert.NotEmpty(t, response.Requirements)
+	return controls, nil
 }

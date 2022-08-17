@@ -43,7 +43,6 @@ import (
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
 	"clouditor.io/clouditor/persistence/inmemory"
-
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -881,9 +880,6 @@ func TestCloudServiceHooks(t *testing.T) {
 						Id:          "00000000-0000-0000-000000000000",
 						Name:        "test service",
 						Description: "test service",
-						Requirements: &orchestrator.CloudService_Requirements{
-							RequirementIds: []string{"1", "2", "3"},
-						},
 					},
 				},
 				cloudServiceHooks: []orchestrator.CloudServiceHookFunc{firstHookFunction, secondHookFunction},
@@ -893,9 +889,6 @@ func TestCloudServiceHooks(t *testing.T) {
 				Id:          "00000000-0000-0000-000000000000",
 				Name:        "test service",
 				Description: "test service",
-				Requirements: &orchestrator.CloudService_Requirements{
-					RequirementIds: []string{"1", "2", "3"},
-				},
 			},
 		},
 	}
@@ -937,4 +930,253 @@ func TestCloudServiceHooks(t *testing.T) {
 			assert.Equal(t, hookCounts, hookCallCounter)
 		})
 	}
+}
+
+func Test_CreateCatalog(t *testing.T) {
+	// Mock catalogs
+	mockCatalog := orchestratortest.NewCatalog()
+	mockCatalogWithoutID := orchestratortest.NewCatalog()
+	mockCatalogWithoutID.Id = ""
+
+	type args struct {
+		in0 context.Context
+		req *orchestrator.CreateCatalogRequest
+	}
+	tests := []struct {
+		name           string
+		args           args
+		wantResponse   *orchestrator.Catalog
+		wantErrMessage error
+		wantErrCode    codes.Code
+	}{
+		{
+			"missing request",
+			args{
+				context.Background(),
+				nil,
+			},
+			nil,
+			api.ErrRequestIsNil,
+			codes.InvalidArgument,
+		},
+		{
+			"missing catalog",
+			args{
+				context.Background(),
+				&orchestrator.CreateCatalogRequest{},
+			},
+			nil,
+			orchestrator.ErrCatalogIsNil,
+			codes.InvalidArgument,
+		},
+		{
+			"missing catalog id",
+			args{
+				context.Background(),
+				&orchestrator.CreateCatalogRequest{
+					Catalog: mockCatalogWithoutID,
+				},
+			},
+			nil,
+			orchestrator.ErrCatalogIDIsMissing,
+			codes.InvalidArgument,
+		},
+		{
+			"valid catalog",
+			args{
+				context.Background(),
+				&orchestrator.CreateCatalogRequest{
+					Catalog: mockCatalog,
+				},
+			},
+			mockCatalog,
+			nil,
+			// wantErrCode doesn't matter since error (message) is nil
+			0,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := NewService()
+			gotResponse, err := s.CreateCatalog(tt.args.in0, tt.args.req)
+			// If error shouldn't be nil, check error message and code
+			if tt.wantErrMessage != nil {
+				assert.Equal(t, status.Code(err), tt.wantErrCode)
+				assert.Contains(t, err.Error(), tt.wantErrMessage.Error())
+				return
+			}
+			// If no error is wanted, check response
+			if !reflect.DeepEqual(gotResponse, tt.wantResponse) {
+				t.Errorf("Service.CreateCatalog() = %v, want %v", gotResponse, tt.wantResponse)
+			}
+		})
+	}
+}
+
+func Test_GetCatalog(t *testing.T) {
+	tests := []struct {
+		name string
+		req  *orchestrator.GetCatalogRequest
+		res  *orchestrator.Catalog
+		err  error
+	}{
+		{
+			"invalid request",
+			nil,
+			nil,
+			status.Error(codes.InvalidArgument, api.ErrRequestIsNil.Error()),
+		},
+		{
+			"catalog not found",
+			&orchestrator.GetCatalogRequest{CatalogId: ""},
+			nil,
+			status.Error(codes.NotFound, "catalog ID is empty"),
+		},
+		{
+			"valid",
+			&orchestrator.GetCatalogRequest{CatalogId: "Cat1234"},
+			orchestratortest.NewCatalog(),
+			nil,
+		},
+	}
+	orchestratorService := NewService()
+
+	// Create Certificate
+	if err := orchestratorService.storage.Create(orchestratortest.NewCatalog()); err != nil {
+		panic(err)
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res, err := orchestratorService.GetCatalog(context.Background(), tt.req)
+
+			if tt.err == nil {
+				assert.Equal(t, tt.err, err)
+			} else {
+				assert.ErrorIs(t, err, tt.err)
+				return
+			}
+
+			if tt.res != nil {
+				assert.NotEmpty(t, res.Id)
+			}
+
+			// Compare
+			assert.True(t, proto.Equal(tt.res, res), "Want: %v\nGot : %v", tt.res, res)
+		})
+	}
+}
+
+func Test_ListCatalogs(t *testing.T) {
+	var (
+		listCatalogsResponse *orchestrator.ListCatalogsResponse
+		err                  error
+	)
+
+	orchestratorService := NewService()
+	// 1st case: No services stored
+	listCatalogsResponse, err = orchestratorService.ListCatalogs(context.Background(), &orchestrator.ListCatalogsRequest{})
+	assert.NoError(t, err)
+	assert.NotNil(t, listCatalogsResponse.Catalogs)
+	assert.Empty(t, listCatalogsResponse.Catalogs)
+
+	// 2nd case: One service stored
+	err = orchestratorService.storage.Create(orchestratortest.NewCatalog())
+	assert.NoError(t, err)
+
+	listCatalogsResponse, err = orchestratorService.ListCatalogs(context.Background(), &orchestrator.ListCatalogsRequest{})
+	assert.NoError(t, err)
+	assert.NotNil(t, listCatalogsResponse.Catalogs)
+	assert.NotEmpty(t, listCatalogsResponse.Catalogs)
+	assert.Equal(t, len(listCatalogsResponse.Catalogs), 1)
+
+	// 3rd case: Invalid request
+	_, err = orchestratorService.ListCatalogs(context.Background(),
+		&orchestrator.ListCatalogsRequest{OrderBy: "not a field"})
+	assert.Equal(t, codes.InvalidArgument, status.Code(err))
+	assert.Contains(t, err.Error(), api.ErrInvalidColumnName.Error())
+}
+
+func Test_UpdateCatalog(t *testing.T) {
+	var (
+		catalog *orchestrator.Catalog
+		err     error
+	)
+	orchestratorService := NewService()
+
+	// 1st case: Certificate is nil
+	_, err = orchestratorService.UpdateCatalog(context.Background(), &orchestrator.UpdateCatalogRequest{})
+	assert.Equal(t, codes.InvalidArgument, status.Code(err))
+
+	// 2nd case: Certificate ID is nil
+	_, err = orchestratorService.UpdateCatalog(context.Background(), &orchestrator.UpdateCatalogRequest{
+		Catalog: catalog,
+	})
+	assert.Equal(t, codes.InvalidArgument, status.Code(err))
+
+	// 3rd case: Certificate not found since there are no certificates yet
+	_, err = orchestratorService.UpdateCatalog(context.Background(), &orchestrator.UpdateCatalogRequest{
+		Catalog: &orchestrator.Catalog{
+			Id: "Cat1234",
+		},
+		CatalogId: "Cat1234",
+	})
+	assert.Equal(t, codes.NotFound, status.Code(err))
+
+	// 4th case: Certificate updated successfully
+	mockCatalog := orchestratortest.NewCatalog()
+	err = orchestratorService.storage.Create(mockCatalog)
+	assert.NoError(t, err)
+	if err != nil {
+		return
+	}
+
+	// update the certificate's description and send the update request
+	mockCatalog.Description = "new description"
+	catalog, err = orchestratorService.UpdateCatalog(context.Background(), &orchestrator.UpdateCatalogRequest{
+		CatalogId: "Cat1234",
+		Catalog:   mockCatalog,
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, catalog)
+	assert.Equal(t, "new description", catalog.Description)
+}
+
+func Test_RemoveCatalog(t *testing.T) {
+	var (
+		err                  error
+		listCatalogsResponse *orchestrator.ListCatalogsResponse
+	)
+	orchestratorService := NewService()
+
+	// 1st case: Empty certificate ID error
+	_, err = orchestratorService.RemoveCatalog(context.Background(), &orchestrator.RemoveCatalogRequest{CatalogId: ""})
+	assert.Error(t, err)
+	assert.Equal(t, status.Code(err), codes.InvalidArgument)
+
+	// 2nd case: ErrRecordNotFound
+	_, err = orchestratorService.RemoveCatalog(context.Background(), &orchestrator.RemoveCatalogRequest{CatalogId: "0000"})
+	assert.Error(t, err)
+	assert.Equal(t, status.Code(err), codes.NotFound)
+
+	// 3rd case: Record removed successfully
+	mockCatalog := orchestratortest.NewCatalog()
+	err = orchestratorService.storage.Create(mockCatalog)
+	assert.NoError(t, err)
+
+	// There is a record for certificates in the DB (default one)
+	listCatalogsResponse, err = orchestratorService.ListCatalogs(context.Background(), &orchestrator.ListCatalogsRequest{})
+	assert.NoError(t, err)
+	assert.NotNil(t, listCatalogsResponse.Catalogs)
+	assert.NotEmpty(t, listCatalogsResponse.Catalogs)
+
+	// Remove record
+	_, err = orchestratorService.RemoveCatalog(context.Background(), &orchestrator.RemoveCatalogRequest{CatalogId: mockCatalog.Id})
+	assert.NoError(t, err)
+
+	// There is a record for cloud services in the DB (default one)
+	listCatalogsResponse, err = orchestratorService.ListCatalogs(context.Background(), &orchestrator.ListCatalogsRequest{})
+	assert.NoError(t, err)
+	assert.NotNil(t, listCatalogsResponse.Catalogs)
+	assert.Empty(t, listCatalogsResponse.Catalogs)
 }

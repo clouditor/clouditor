@@ -253,8 +253,8 @@ func ValidArgsGetMetrics(_ *cobra.Command, _ []string, toComplete string) ([]str
 	return getMetrics(toComplete), cobra.ShellCompDirectiveNoFileComp
 }
 
-func ValidArgsGetRequirements(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	return getRequirements(toComplete), cobra.ShellCompDirectiveNoFileComp
+func ValidArgsGetControls(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return getControls(toComplete), cobra.ShellCompDirectiveNoFileComp
 }
 
 func ValidArgsGetCloudServices(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -317,12 +317,12 @@ func getMetrics(_ string) []string {
 }
 
 // TODO(oxisto): This could be an interesting use case for 1.18 Go generics
-func getRequirements(_ string) []string {
+func getControls(_ string) []string {
 	var (
 		err     error
 		session *Session
 		client  orchestrator.OrchestratorClient
-		res     *orchestrator.ListRequirementsResponse
+		res     *orchestrator.ListControlsResponse
 	)
 
 	if session, err = ContinueSession(); err != nil {
@@ -332,16 +332,16 @@ func getRequirements(_ string) []string {
 
 	client = orchestrator.NewOrchestratorClient(session)
 
-	if res, err = client.ListRequirements(context.Background(), &orchestrator.ListRequirementsRequest{}); err != nil {
+	if res, err = client.ListControls(context.Background(), &orchestrator.ListControlsRequest{}); err != nil {
 		return []string{}
 	}
 
-	var requirements []string
-	for _, v := range res.Requirements {
-		requirements = append(requirements, fmt.Sprintf("%s\t%s: %s", v.Id, v.Name, v.Description))
+	var controls []string
+	for _, v := range res.Controls {
+		controls = append(controls, fmt.Sprintf("%s\t%s: %s", v.Id, v.Name, v.Description))
 	}
 
-	return requirements
+	return controls
 }
 
 func getCloudServices(_ string) []string {

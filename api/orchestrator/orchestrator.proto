@@ -136,10 +136,10 @@ service Orchestrator {
     };
   }
 
-  rpc ListRequirements(ListRequirementsRequest)
-      returns (ListRequirementsResponse) {
+  rpc ListControls(ListControlsRequest)
+      returns (ListControlsResponse) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/requirements"
+      get : "/v1/orchestrator/controls"
     };
   }
 
@@ -272,6 +272,45 @@ service Orchestrator {
       delete : "/v1/orchestrator/certificates/{certificate_id}"
     };
   }
+
+  // Creates a new catalog
+  rpc CreateCatalog(CreateCatalogRequest) returns (Catalog) {
+    option (google.api.http) = {
+      post : "/v1/orchestrator/catalogs"
+      body : "catalog"
+    };
+  }
+
+  // Retrieves a catalog
+  rpc GetCatalog(GetCatalogRequest) returns (Catalog) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/catalog/{catalog_id}"
+    };
+  }
+
+  // Lists all target catalogs
+  rpc ListCatalogs(ListCatalogsRequest)
+      returns (ListCatalogsResponse) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/catalogs"
+    };
+  }
+
+  // Updates an existing certificate
+  rpc UpdateCatalog(UpdateCatalogRequest) returns (Catalog) {
+    option (google.api.http) = {
+      put : "/v1/orchestrator/catalog/{catalog_id}"
+      body : "catalog"
+    };
+  }
+
+  // Removes a catalog
+  rpc RemoveCatalog(RemoveCatalogRequest)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete : "/v1/orchestrator/catalogs/{catalog_id}"
+    };
+  }
 }
 
 message RegisterAssessmentToolRequest { AssessmentTool tool = 1; }
@@ -324,14 +363,14 @@ message ListMetricsResponse {
   string next_page_token = 2;
 }
 
-message ListRequirementsRequest {
+message ListControlsRequest {
   int32 page_size = 1;
   string page_token = 2;
   string order_by = 3;
   bool asc = 4;
 }
-message ListRequirementsResponse {
-  repeated Requirement requirements = 1;
+message ListControlsResponse {
+  repeated Control Controls = 1;
   string next_page_token = 2;
 }
 
@@ -423,15 +462,21 @@ message CloudService {
   string name = 2;
 
   string description = 3;
-
-  message Requirements { repeated string requirement_ids = 1; }
-
-  Requirements requirements = 4;
 }
 
-// Requirement represents a certain requirement that needs to be fulfilled. It
-// could be a control in a certification catalog.
-message Requirement {
+message Catalog {
+  string id = 1;
+
+  string name = 2;
+
+  string description = 3;
+
+  repeated Control controls = 4;
+}
+
+// Control represents a certain Control that needs to be fulfilled. It
+// could be a Control in a certification catalog.
+message Control {
   string id = 1;
 
   string name = 2;
@@ -442,12 +487,14 @@ message Requirement {
   // the id field of the metric is populated - or a list of populated metric
   // meta-data, most likely returned by the database.
   repeated Metric metrics = 4
-      [ (tagger.tags) = "gorm:\"many2many:requirement_metrics\"" ];
+      [ (tagger.tags) = "gorm:\"many2many:control_metrics\"" ];
 
-  // category can be used to categorize requirements, e.g., according to a
-  // specific security catalog or something that groups requirements together,
-  // e.g., a security control.
+  // category can be used to categorize Controls, e.g., according to a
+  // specific security catalog or something that groups Controls together,
+  // e.g., a security Control.
   string category = 5;
+
+  string catalog_id = 6;
 }
 
 message GetCertificateRequest { string certificate_id = 1; }
@@ -466,6 +513,28 @@ message ListCertificatesResponse {
 message UpdateCertificateRequest {
   string certificate_id = 1;
   Certificate certificate = 2;
+}
+
+message CreateCatalogRequest { Catalog catalog = 1; }
+
+message RemoveCatalogRequest { string catalog_id = 1; }
+
+message GetCatalogRequest { string catalog_id = 1; }
+
+message ListCatalogsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string order_by = 3;
+  bool asc = 4;
+}
+message ListCatalogsResponse {
+  repeated Catalog catalogs = 1;
+  string next_page_token = 2;
+}
+
+message UpdateCatalogRequest {
+  string catalog_id = 1;
+  Catalog catalog = 2;
 }
 
 message CreateCertificateRequest { Certificate certificate = 1; }

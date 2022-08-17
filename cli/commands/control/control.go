@@ -1,4 +1,4 @@
-// Copyright 2021 Fraunhofer AISEC
+// Copyright 2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,42 +23,38 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package commands
+package control
 
 import (
-	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/cli/commands/assessmentresult"
-	"clouditor.io/clouditor/cli/commands/cloud"
-	"clouditor.io/clouditor/cli/commands/completion"
-	"clouditor.io/clouditor/cli/commands/control"
-	"clouditor.io/clouditor/cli/commands/evidence"
-	"clouditor.io/clouditor/cli/commands/login"
-	"clouditor.io/clouditor/cli/commands/metric"
-	"clouditor.io/clouditor/cli/commands/resource"
-	"clouditor.io/clouditor/cli/commands/service"
-	"clouditor.io/clouditor/cli/commands/tool"
-
+	"clouditor.io/clouditor/cli/commands/service/orchestrator"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
+
+// NewListControlsCommand returns a cobra command for the `list` subcommand
+func NewListControlsCommand() *cobra.Command {
+	// Use Orchestrator's function for listing controls
+	cmd := orchestrator.NewListControlsCommand()
+
+	// Change use for better readability
+	cmd.Use = "list"
+	return cmd
+}
+
+// NewControlCommand returns a cobra command for `control` subcommands
+func NewControlCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "control",
+		Short: "Control commands",
+	}
+
+	AddCommands(cmd)
+
+	return cmd
+}
 
 // AddCommands adds all subcommands
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
-		// commands for resources
-		login.NewLoginCommand(),
-		metric.NewMetricCommand(),
-		control.NewControlCommand(),
-		tool.NewToolCommand(),
-		resource.NewResourceCommand(),
-		evidence.NewEvidenceCommand(),
-		assessmentresult.NewAssessmentResultCommand(),
-		completion.NewCompletionCommand(),
-		cloud.NewCloudCommand(),
-		// command consisting of service commands
-		service.NewServiceCommand(),
+		NewListControlsCommand(),
 	)
-
-	cmd.PersistentFlags().StringP(cli.SessionFolderFlag, "s", cli.DefaultSessionFolder, "the directory where the session will be saved and loaded from")
-	_ = viper.BindPFlag(cli.SessionFolderFlag, cmd.PersistentFlags().Lookup(cli.SessionFolderFlag))
 }

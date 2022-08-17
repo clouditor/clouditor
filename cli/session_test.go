@@ -169,7 +169,7 @@ func TestValidArgsGetMetrics(t *testing.T) {
 	}
 }
 
-func TestValidArgsGetRequirements(t *testing.T) {
+func TestValidArgsGetControls(t *testing.T) {
 	type args struct {
 		in0        *cobra.Command
 		args       []string
@@ -182,7 +182,7 @@ func TestValidArgsGetRequirements(t *testing.T) {
 		want1 cobra.ShellCompDirective
 	}{
 		{
-			name: "some requirements",
+			name: "some controls",
 			args: args{
 				toComplete: "",
 			},
@@ -195,14 +195,14 @@ func TestValidArgsGetRequirements(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := cli.ValidArgsGetRequirements(tt.args.in0, tt.args.args, tt.args.toComplete)
+			got, got1 := cli.ValidArgsGetControls(tt.args.in0, tt.args.args, tt.args.toComplete)
 
 			if tt.want != nil {
 				tt.want(t, got)
 			}
 
 			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("ValidArgsGetRequirements() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("ValidArgsGetControls() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}

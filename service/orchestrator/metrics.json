@@ -106,7 +106,7 @@
         ]
       }
     },
-    "requirements_id": [
+    "controls_id": [
       "CKM-02.2"
     ]
   },
@@ -125,7 +125,7 @@
         ]
       }
     },
-    "requirements_id": [
+    "controls_id": [
       "CKM-02.2"
     ]
   },

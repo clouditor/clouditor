@@ -3,10 +3,12 @@ package orchestratortest
 import (
 	"time"
 
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
-// NewCertificate creates a mock certificate creation request
+// NewCertificate creates a mock certificate
 func NewCertificate() *orchestrator.Certificate {
 	var mockCertificate = &orchestrator.Certificate{
 		Name:           "EUCS",
@@ -28,4 +30,33 @@ func NewCertificate() *orchestrator.Certificate {
 	}
 
 	return mockCertificate
+}
+
+// NewCatalog creates a mock catalog
+func NewCatalog() *orchestrator.Catalog {
+	var mockCatalog = &orchestrator.Catalog{
+		Name:        "MockCatalog",
+		Id:          "Cat1234",
+		Description: "This is a mock catalog",
+		Controls: []*orchestrator.Control{{
+			Id:          "Cont1234",
+			Name:        "Mock Control",
+			Description: "This is a mock control",
+			Metrics: []*assessment.Metric{{
+				Id:          "MockMetric",
+				Name:        "A Mock Metric",
+				Description: "This Metric is a mock metric",
+				Scale:       assessment.Metric_ORDINAL,
+				Range: &assessment.Range{
+					Range: &assessment.Range_AllowedValues{AllowedValues: &assessment.AllowedValues{
+						Values: []*structpb.Value{
+							structpb.NewBoolValue(false),
+							structpb.NewBoolValue(true),
+						}}}},
+			}},
+			Category:  "Operational Security",
+			CatalogId: "Cat1234",
+		}},
+	}
+	return mockCatalog
 }

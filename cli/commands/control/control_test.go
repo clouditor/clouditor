@@ -23,38 +23,46 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package requirement
+package control
 
 import (
-	"clouditor.io/clouditor/cli/commands/service/orchestrator"
-	"github.com/spf13/cobra"
+	"bytes"
+	"os"
+	"testing"
+
+	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/service"
+
+	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/cli"
+	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
-// NewListRequirementsCommand returns a cobra command for the `list` subcommand
-func NewListRequirementsCommand() *cobra.Command {
-	// Use Orchestrator's function for listing requirements
-	cmd := orchestrator.NewListRequirementsCommand()
+func TestMain(m *testing.M) {
+	clitest.AutoChdir()
 
-	// Change use for better readability
-	cmd.Use = "list"
-	return cmd
+	os.Exit(clitest.RunCLITest(m, service.WithOrchestrator(service_orchestrator.NewService())))
 }
 
-// NewRequirementCommand returns a cobra command for `requirement` subcommands
-func NewRequirementCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "requirement",
-		Short: "Requirement commands",
-	}
+func TestListControls(t *testing.T) {
+	var err error
+	var b bytes.Buffer
 
-	AddCommands(cmd)
+	cli.Output = &b
 
-	return cmd
-}
+	cmd := NewListControlsCommand()
+	err = cmd.RunE(nil, []string{})
 
-// AddCommands adds all subcommands
-func AddCommands(cmd *cobra.Command) {
-	cmd.AddCommand(
-		NewListRequirementsCommand(),
-	)
+	assert.NoError(t, err)
+
+	var response *orchestrator.ListControlsResponse = &orchestrator.ListControlsResponse{}
+
+	err = protojson.Unmarshal(b.Bytes(), response)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, response)
+	assert.NotEmpty(t, response.Controls)
 }

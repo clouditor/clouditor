@@ -57,7 +57,6 @@ func TestService_loadMetrics(t *testing.T) {
 		storage               persistence.Storage
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
-		requirements          []*orchestrator.Requirement
 		events                chan *orchestrator.MetricChangeEvent
 	}
 	tests := []struct {
@@ -106,7 +105,6 @@ func TestService_loadMetrics(t *testing.T) {
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
 				loadMetricsFunc:       tt.fields.loadMetricsFunc,
-				requirements:          tt.fields.requirements,
 				events:                tt.fields.events,
 			}
 
@@ -488,7 +486,6 @@ func TestService_GetMetricImplementation(t *testing.T) {
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
-		requirements          []*orchestrator.Requirement
 		events                chan *orchestrator.MetricChangeEvent
 	}
 	type args struct {
@@ -561,7 +558,6 @@ func TestService_GetMetricImplementation(t *testing.T) {
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
-				requirements:          tt.fields.requirements,
 				events:                tt.fields.events,
 			}
 
@@ -584,7 +580,6 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
-		requirements          []*orchestrator.Requirement
 		events                chan *orchestrator.MetricChangeEvent
 	}
 	type args struct {
@@ -660,7 +655,6 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
-				requirements:          tt.fields.requirements,
 				events:                tt.fields.events,
 			}
 			gotImpl, err := svc.UpdateMetricImplementation(tt.args.in0, tt.args.req)
@@ -682,7 +676,6 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
-		requirements          []*orchestrator.Requirement
 		events                chan *orchestrator.MetricChangeEvent
 	}
 	type args struct {
@@ -722,7 +715,6 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
-				requirements:          tt.fields.requirements,
 				events:                tt.fields.events,
 			}
 			gotResponse, err := s.GetMetricConfiguration(tt.args.in0, tt.args.req)
@@ -743,7 +735,6 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
-		requirements          []*orchestrator.Requirement
 		events                chan *orchestrator.MetricChangeEvent
 	}
 	type args struct {
@@ -804,7 +795,6 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
-				requirements:          tt.fields.requirements,
 				events:                tt.fields.events,
 			}
 			gotResponse, err := svc.ListMetricConfigurations(tt.args.ctx, tt.args.req)
@@ -827,7 +817,6 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 		storage               persistence.Storage
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
-		requirements          []*orchestrator.Requirement
 		events                chan *orchestrator.MetricChangeEvent
 	}
 	type args struct {
@@ -886,7 +875,6 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
 				loadMetricsFunc:       tt.fields.loadMetricsFunc,
-				requirements:          tt.fields.requirements,
 				events:                tt.fields.events,
 			}
 			gotRes, err := svc.UpdateMetricConfiguration(tt.args.in0, tt.args.req)

@@ -26,8 +26,6 @@
 package orchestrator
 
 import (
-	"database/sql/driver"
-	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -35,97 +33,6 @@ import (
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 )
-
-func TestCloudService_Requirements_Scan(t *testing.T) {
-	type args struct {
-		value interface{}
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-		want    *CloudService_Requirements
-	}{
-		{
-			name: "string type",
-			args: args{
-				value: "a,b",
-			},
-			wantErr: false,
-			want: &CloudService_Requirements{
-				RequirementIds: []string{"a", "b"},
-			},
-		},
-		{
-			name: "unsupported type",
-			args: args{
-				value: 0,
-			},
-			wantErr: true,
-			want:    &CloudService_Requirements{},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			c := &CloudService_Requirements{}
-
-			if err := c.Scan(tt.args.value); (err != nil) != tt.wantErr {
-				t.Errorf("CloudService_Requirements.Scan() error = %v, wantErr %v", err, tt.wantErr)
-			}
-
-			if !reflect.DeepEqual(c, tt.want) {
-				t.Errorf("CloudService_Requirements.Scan() = %v, want %v", c, tt.want)
-			}
-		})
-	}
-}
-
-func TestCloudService_Requirements_Value(t *testing.T) {
-	type fields struct {
-		RequirementIds []string
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		want    driver.Value
-		wantErr bool
-	}{
-		{
-			name: "empty requirements",
-			fields: fields{
-				RequirementIds: nil,
-			},
-			want:    nil,
-			wantErr: false,
-		},
-		{
-			name: "some requirements",
-			fields: fields{
-				RequirementIds: []string{"a", "b"},
-			},
-			want:    driver.Value(string("a,b")),
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			c := &CloudService_Requirements{
-				RequirementIds: tt.fields.RequirementIds,
-			}
-
-			got, err := c.Value()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("CloudService_Requirements.Value() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("CloudService_Requirements.Value() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
 
 func TestListCertificatesRequest_Validate(t *testing.T) {
 	type fields struct {
@@ -296,7 +203,7 @@ func TestListMetricsRequest_Validate(t *testing.T) {
 	}
 }
 
-func TestListRequirementsRequest_Validate(t *testing.T) {
+func TestListControlsRequest_Validate(t *testing.T) {
 	type fields struct {
 		PageSize  int32
 		PageToken string
@@ -351,13 +258,13 @@ func TestListRequirementsRequest_Validate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req := &ListRequirementsRequest{
+			req := &ListControlsRequest{
 				PageSize:  tt.fields.PageSize,
 				PageToken: tt.fields.PageToken,
 				OrderBy:   tt.fields.OrderBy,
 				Asc:       tt.fields.Asc,
 			}
-			tt.wantErr(t, api.ValidateListRequest[*Requirement](req), "Validate()")
+			tt.wantErr(t, api.ValidateListRequest[*Control](req), "Validate()")
 		})
 	}
 }

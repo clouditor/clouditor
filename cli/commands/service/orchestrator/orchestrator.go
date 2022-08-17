@@ -76,18 +76,18 @@ func NewListAssessmentResultsCommand() *cobra.Command {
 	return cmd
 }
 
-// NewListRequirementsCommand returns a cobra command for the `list-requirements` subcommand
-func NewListRequirementsCommand() *cobra.Command {
+// NewListControlsCommand returns a cobra command for the `list-controls` subcommand
+func NewListControlsCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list-requirements",
-		Short: "Lists all requirements",
+		Use:   "list-controls",
+		Short: "Lists all controls",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
-				err          error
-				session      *cli.Session
-				client       orchestrator.OrchestratorClient
-				res          *orchestrator.ListRequirementsResponse
-				requirements []*orchestrator.Requirement
+				err      error
+				session  *cli.Session
+				client   orchestrator.OrchestratorClient
+				res      *orchestrator.ListControlsResponse
+				controls []*orchestrator.Control
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -97,13 +97,13 @@ func NewListRequirementsCommand() *cobra.Command {
 
 			client = orchestrator.NewOrchestratorClient(session)
 
-			requirements, err = api.ListAllPaginated(&orchestrator.ListRequirementsRequest{}, client.ListRequirements, func(res *orchestrator.ListRequirementsResponse) []*orchestrator.Requirement {
-				return res.Requirements
+			controls, err = api.ListAllPaginated(&orchestrator.ListControlsRequest{}, client.ListControls, func(res *orchestrator.ListControlsResponse) []*orchestrator.Control {
+				return res.Controls
 			})
 
 			// Build a response with all results
-			res = &orchestrator.ListRequirementsResponse{
-				Requirements: requirements,
+			res = &orchestrator.ListControlsResponse{
+				Controls: controls,
 			}
 
 			return session.HandleResponse(res, err)
@@ -132,6 +132,6 @@ func NewOrchestratorCommand() *cobra.Command {
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewListAssessmentResultsCommand(),
-		NewListRequirementsCommand(),
+		NewListControlsCommand(),
 	)
 }
