@@ -122,8 +122,6 @@ func (AnySerializer) Scan(ctx context.Context, field *schema.Field, dst reflect.
 			return persistence.ErrUnsupportedType
 		}
 
-		fmt.Printf("%s", bytes)
-
 		err = protojson.Unmarshal(bytes, &a)
 		if err != nil {
 			return fmt.Errorf("could not unmarshal JSONB value into protobuf message: %w", err)
