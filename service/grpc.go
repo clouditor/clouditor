@@ -36,6 +36,7 @@ import (
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 type StartGRPCServerOption func(srv *grpc.Server)
@@ -78,6 +79,8 @@ func StartGRPCServer(jwksURL string, opts ...StartGRPCServerOption) (sock net.Li
 			StreamServerInterceptorWithFilter(grpc_auth.StreamServerInterceptor(authConfig.AuthFunc), StreamReflectionFilter),
 		),
 	)
+
+	reflection.Register(srv)
 
 	for _, o := range opts {
 		o(srv)
