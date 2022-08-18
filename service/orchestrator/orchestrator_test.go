@@ -37,12 +37,6 @@ import (
 	"sync"
 	"testing"
 
-	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/internal/testutil/orchestratortest"
-	"clouditor.io/clouditor/persistence/inmemory"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -53,6 +47,13 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"clouditor.io/clouditor/api"
+	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/internal/testutil/orchestratortest"
+	"clouditor.io/clouditor/persistence/inmemory"
 )
 
 const (
@@ -1017,7 +1018,7 @@ func Test_GetCatalog(t *testing.T) {
 	tests := []struct {
 		name string
 		req  *orchestrator.GetCatalogRequest
-		res  *orchestrator.Catalog
+		res  assert.ValueAssertionFunc
 		err  error
 	}{
 		{
@@ -1035,7 +1036,12 @@ func Test_GetCatalog(t *testing.T) {
 		{
 			"valid",
 			&orchestrator.GetCatalogRequest{CatalogId: "Cat1234"},
-			orchestratortest.NewCatalog(),
+			func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
+				res, ok := i.(*orchestrator.Catalog)
+				want := orchestratortest.NewCatalog()
+				assert.True(t, ok)
+				return assert.Equal(t, want.Id, res.Id)
+			},
 			nil,
 		},
 	}
@@ -1062,7 +1068,7 @@ func Test_GetCatalog(t *testing.T) {
 			}
 
 			// Compare
-			assert.True(t, proto.Equal(tt.res, res), "Want: %v\nGot : %v", tt.res, res)
+			tt.res(t, res)
 		})
 	}
 }
