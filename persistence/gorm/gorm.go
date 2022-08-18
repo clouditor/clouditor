@@ -168,12 +168,7 @@ func (s *storage) Create(r any) error {
 
 func (s *storage) Get(r any, conds ...any) (err error) {
 	// Preload all associations for r being filled with all items (including relationships)
-	if _, ok := r.(*orchestrator.Catalog); ok {
-		err = s.db.Preload("Controls.Metrics").Preload(clause.Associations).First(r, conds...).Error
-
-	} else {
-		err = s.db.Preload(clause.Associations).First(r, conds...).Error
-	}
+	err = s.db.Preload(clause.Associations).First(r, conds...).Error
 	// if record is not found, use the error message defined in the persistence package
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		err = persistence.ErrRecordNotFound
