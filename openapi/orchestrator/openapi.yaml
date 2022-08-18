@@ -722,42 +722,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/controls:
-        get:
-            tags:
-                - Orchestrator
-            operationId: Orchestrator_ListControls
-            parameters:
-                - name: pageSize
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pageToken
-                  in: query
-                  schema:
-                    type: string
-                - name: orderBy
-                  in: query
-                  schema:
-                    type: string
-                - name: asc
-                  in: query
-                  schema:
-                    type: boolean
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ListControlsResponse'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/metrics:
         get:
             tags:
@@ -1113,15 +1077,6 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/CloudService'
-                nextPageToken:
-                    type: string
-        ListControlsResponse:
-            type: object
-            properties:
-                Controls:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/Control'
                 nextPageToken:
                     type: string
         ListMetricConfigurationResponse:
