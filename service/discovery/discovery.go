@@ -47,6 +47,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/exp/maps"
+	"golang.org/x/exp/slices"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -298,6 +299,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 		// TODO(all): What is the raw type in our case?
 		e := &evidence.Evidence{
 			Id:        uuid.New().String(),
+			ServiceId: resource.GetServiceID(),
 			Timestamp: timestamppb.Now(),
 			ToolId:    "Clouditor Evidences Collection",
 			Raw:       "",
@@ -325,6 +327,11 @@ func (svc *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *
 		filteredType = req.FilteredType
 	}
 
+	var filteredServiceId = ""
+	if req != nil {
+		filteredServiceId = req.FilteredServiceId
+	}
+
 	resources = maps.Values(svc.resources)
 	sort.Slice(resources, func(i, j int) bool {
 		return resources[i].GetID() < resources[j].GetID()
@@ -334,6 +341,10 @@ func (svc *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *
 		var resource *structpb.Value
 
 		if filteredType != "" && !v.HasType(filteredType) {
+			continue
+		}
+
+		if filteredServiceId != "" && v.GetServiceID() != filteredServiceId {
 			continue
 		}
 
@@ -347,6 +358,14 @@ func (svc *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *
 	}
 
 	res = new(discovery.QueryResponse)
+
+	slices.SortFunc(resources, func(a voc.IsCloudResource, b voc.IsCloudResource) bool {
+		if req.OrderBy == "creation_time" {
+			return a.GetCreationTime().Before(*b.GetCreationTime())
+		} else {
+			return a.GetID() < b.GetID()
+		}
+	})
 
 	// Paginate the evidences according to the request
 	r, res.NextPageToken, err = service.PaginateSlice(req, r, service.DefaultPaginationOpts)

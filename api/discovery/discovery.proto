@@ -61,10 +61,12 @@ message StartDiscoveryResponse { bool successful = 1; }
 
 message QueryRequest {
   string filtered_type = 1;
-  int32 page_size = 2;
-  string page_token = 3;
-  string order_by = 4;
-  bool asc = 5;
+  string filtered_service_id = 2;
+
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
 }
 
 message QueryResponse {
