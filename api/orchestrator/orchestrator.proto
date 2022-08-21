@@ -103,6 +103,10 @@ service Orchestrator {
       returns (ListAssessmentResultsResponse) {
     option (google.api.http) = {
       get : "/v1/orchestrator/assessment_results"
+      additional_bindings {
+        get : "/v1/orchestrator/cloud_services/{filtered_service_id}/"
+              "assessment_results"
+      }
     };
   }
 

@@ -47,7 +47,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -359,16 +358,14 @@ func (svc *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *
 
 	res = new(discovery.QueryResponse)
 
-	slices.SortFunc(resources, func(a voc.IsCloudResource, b voc.IsCloudResource) bool {
-		if req.OrderBy == "creation_time" {
-			return a.GetCreationTime().Before(*b.GetCreationTime())
-		} else {
-			return a.GetID() < b.GetID()
-		}
-	})
-
 	// Paginate the evidences according to the request
-	r, res.NextPageToken, err = service.PaginateSlice(req, r, service.DefaultPaginationOpts)
+	r, res.NextPageToken, err = service.PaginateSlice(req, r, func(a *structpb.Value, b *structpb.Value) bool {
+		if req.OrderBy == "creation_time" {
+			return a.GetStructValue().Fields["creation_time"].GetNumberValue() < b.GetStructValue().Fields["creation_time"].GetNumberValue()
+		} else {
+			return a.GetStructValue().Fields["id"].GetStringValue() < b.GetStructValue().Fields["b"].GetStringValue()
+		}
+	}, service.DefaultPaginationOpts)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}

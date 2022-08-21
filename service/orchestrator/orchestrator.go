@@ -39,6 +39,7 @@ import (
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/inmemory"
 	"clouditor.io/clouditor/service"
+	"golang.org/x/exp/maps"
 
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -257,8 +258,19 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 func (svc *Service) ListAssessmentResults(_ context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
 	res = new(assessment.ListAssessmentResultsResponse)
 
+	var values = maps.Values(svc.results)
+	var filtered []*assessment.AssessmentResult
+
+	for _, v := range values {
+		if req.FilteredServiceId != "" && v.ServiceId != req.FilteredServiceId {
+			continue
+		}
+
+		filtered = append(filtered, v)
+	}
+
 	// Paginate the results according to the request
-	res.Results, res.NextPageToken, err = service.PaginateMapValues(req, svc.results, func(a *assessment.AssessmentResult, b *assessment.AssessmentResult) bool {
+	res.Results, res.NextPageToken, err = service.PaginateSlice(req, filtered, func(a *assessment.AssessmentResult, b *assessment.AssessmentResult) bool {
 		return a.Timestamp.AsTime().After(b.Timestamp.AsTime())
 	}, service.DefaultPaginationOpts)
 	if err != nil {
