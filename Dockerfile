@@ -25,5 +25,6 @@ COPY --from=builder /build/engine /engine
 COPY --from=builder /build/cl /cl
 COPY --from=builder /build/policies /policies
 COPY --from=builder /build/service/orchestrator/metrics.json /metrics.json
+RUN mkdir "/root/.clouditor"
 
 CMD ["./engine", "--db-in-memory"]
