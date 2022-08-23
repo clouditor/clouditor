@@ -27,4 +27,5 @@ COPY --from=builder /build/policies /policies
 COPY --from=builder /build/service/orchestrator/metrics.json /metrics.json
 RUN mkdir "/root/.clouditor"
 
-CMD ["./engine", "--db-in-memory"]
+# TODO(lebogg): Use ENV instead of hardcoded arguments
+CMD ["./engine", "--db-in-memory", "--discovery-auto-start", "--discovery-provider azure", "--dashboard-url=deployment_engine_1:3000"]
