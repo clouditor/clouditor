@@ -136,6 +136,13 @@ service Orchestrator {
     };
   }
 
+  // List all metrics that are applicable to a certain control
+  rpc ListMetricsForControl(ListMetricsForControlRequest) returns (ListMetricsResponse) {
+    option (google.api.http) = {
+      get: "/v1/orchestrator/controls/{control_id}/metrics"
+    };
+  }
+  
   // Registers a new target cloud service
   rpc RegisterCloudService(RegisterCloudServiceRequest) returns (CloudService) {
     option (google.api.http) = {
@@ -351,6 +358,15 @@ message ListMetricsRequest {
   string order_by = 3;
   bool asc = 4;
 }
+
+message ListMetricsForControlRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string order_by = 3;
+  bool asc = 4;
+  string control_id = 5;
+}
+
 message ListMetricsResponse {
   repeated Metric metrics = 1;
   string next_page_token = 2;
@@ -465,16 +481,14 @@ message Control {
 
   string description = 3;
 
+  repeated Control controls = 4
+      [ (tagger.tags) = "gorm:\"serializer:json\"" ];
+
   // metrics contains either a list of reference to metrics - in this case only
   // the id field of the metric is populated - or a list of populated metric
   // meta-data, most likely returned by the database.
-  repeated Metric metrics = 4
+  repeated Metric metrics = 5
       [ (tagger.tags) = "gorm:\"many2many:control_metrics\"" ];
-
-  // category can be used to categorize Controls, e.g., according to a
-  // specific security catalog or something that groups Controls together,
-  // e.g., a security Control.
-  string category = 5;
 
   string catalog_id = 6;
 }

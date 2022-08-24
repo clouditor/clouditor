@@ -50,14 +50,16 @@ func TestLoadControls(t *testing.T) {
 			},
 			wantControls: []*orchestrator.Control{
 				{
-					Id:          "Req-1",
+					Id:          "Cont-1",
 					Name:        "Make-it-Secure",
-					Category:    "Some Category",
 					Description: "You should make everything secure",
 					Metrics: []*assessment.Metric{
 						{Id: "TransportEncryptionEnabled"},
 						{Id: "TransportEncryptionAlgorithm"},
 					},
+					Controls: []*orchestrator.Control{{
+						Id: "Cont-2",
+					}},
 				},
 			},
 		},

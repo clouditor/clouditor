@@ -28,6 +28,7 @@ package orchestrator
 import (
 	"context"
 	"embed"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -53,6 +54,8 @@ var defaultMetricConfigurations map[string]*assessment.MetricConfiguration
 var log *logrus.Entry
 
 var DefaultMetricsFile = "metrics.json"
+
+var DefaultCatalogsFile = "catalogs.json"
 
 // Service is an implementation of the Clouditor Orchestrator service
 type Service struct {
@@ -84,6 +87,11 @@ type Service struct {
 
 	// loadMetricsFunc is a function that is used to initially load metrics at the start of the orchestrator
 	loadMetricsFunc func() ([]*assessment.Metric, error)
+
+	catalogsFile string
+
+	// loadCatalogsFunc is a function that is used to initially load catalogs at the start of the orchestrator
+	loadCatalogsFunc func() ([]*orchestrator.Catalog, error)
 
 	events chan *orchestrator.MetricChangeEvent
 }
@@ -123,6 +131,7 @@ func NewService(opts ...ServiceOption) *Service {
 		results:              make(map[string]*assessment.AssessmentResult),
 		metricConfigurations: make(map[string]map[string]*assessment.MetricConfiguration),
 		metricsFile:          DefaultMetricsFile,
+		catalogsFile:         DefaultCatalogsFile,
 		events:               make(chan *orchestrator.MetricChangeEvent, 1000),
 	}
 
@@ -141,6 +150,10 @@ func NewService(opts ...ServiceOption) *Service {
 
 	if err = s.loadMetrics(); err != nil {
 		log.Errorf("Could not load embedded metrics. Will continue with empty metric list: %v", err)
+	}
+
+	if err = s.loadCatalogs(); err != nil {
+		log.Errorf("Could not load embedded catalogs: %v", err)
 	}
 
 	return &s
@@ -495,4 +508,31 @@ func (svc *Service) RemoveCatalog(_ context.Context, req *orchestrator.RemoveCat
 	}
 
 	return &emptypb.Empty{}, nil
+}
+
+// LoadControls loads controls definitions from a JSON file.
+func (svc *Service) loadCatalogs() (err error) {
+	var (
+		b        []byte
+		catalogs []orchestrator.Catalog
+	)
+
+	log.Infof("Loading catalogs from %s", svc.catalogsFile)
+
+	b, err = f.ReadFile(svc.catalogsFile)
+	if err != nil {
+		return fmt.Errorf("error while loading %s: %w", svc.catalogsFile, err)
+	}
+
+	err = json.Unmarshal(b, &catalogs)
+	if err != nil {
+		return fmt.Errorf("error in JSON marshal: %w", err)
+	}
+
+	err = svc.storage.Save(catalogs)
+	if err != nil {
+		log.Errorf("Error while saving catalog %v", err)
+	}
+
+	return nil
 }

@@ -253,10 +253,6 @@ func ValidArgsGetMetrics(_ *cobra.Command, _ []string, toComplete string) ([]str
 	return getMetrics(toComplete), cobra.ShellCompDirectiveNoFileComp
 }
 
-func ValidArgsGetControls(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	return getControls(toComplete), cobra.ShellCompDirectiveNoFileComp
-}
-
 func ValidArgsGetCloudServices(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return getCloudServices(toComplete), cobra.ShellCompDirectiveNoFileComp
 }
@@ -314,34 +310,6 @@ func getMetrics(_ string) []string {
 	}
 
 	return metrics
-}
-
-// TODO(oxisto): This could be an interesting use case for 1.18 Go generics
-func getControls(_ string) []string {
-	var (
-		err     error
-		session *Session
-		client  orchestrator.OrchestratorClient
-		res     *orchestrator.ListControlsResponse
-	)
-
-	if session, err = ContinueSession(); err != nil {
-		fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
-		return nil
-	}
-
-	client = orchestrator.NewOrchestratorClient(session)
-
-	if res, err = client.ListControls(context.Background(), &orchestrator.ListControlsRequest{}); err != nil {
-		return []string{}
-	}
-
-	var controls []string
-	for _, v := range res.Controls {
-		controls = append(controls, fmt.Sprintf("%s\t%s: %s", v.Id, v.Name, v.Description))
-	}
-
-	return controls
 }
 
 func getCloudServices(_ string) []string {

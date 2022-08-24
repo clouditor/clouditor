@@ -1084,7 +1084,7 @@ func Test_ListCatalogs(t *testing.T) {
 	listCatalogsResponse, err = orchestratorService.ListCatalogs(context.Background(), &orchestrator.ListCatalogsRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listCatalogsResponse.Catalogs)
-	assert.Empty(t, listCatalogsResponse.Catalogs)
+	assert.NotEmpty(t, listCatalogsResponse.Catalogs)
 
 	// 2nd case: One service stored
 	err = orchestratorService.storage.Create(orchestratortest.NewCatalog())
@@ -1094,7 +1094,8 @@ func Test_ListCatalogs(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, listCatalogsResponse.Catalogs)
 	assert.NotEmpty(t, listCatalogsResponse.Catalogs)
-	assert.Equal(t, len(listCatalogsResponse.Catalogs), 1)
+	// there is a default catalog plus the mock catalog
+	assert.Equal(t, len(listCatalogsResponse.Catalogs), 2)
 
 	// 3rd case: Invalid request
 	_, err = orchestratorService.ListCatalogs(context.Background(),
@@ -1170,11 +1171,11 @@ func Test_RemoveCatalog(t *testing.T) {
 	err = orchestratorService.storage.Create(mockCatalog)
 	assert.NoError(t, err)
 
-	// There is a record for certificates in the DB (default one)
+	// There is a record for catalogs in the DB (default one)
 	listCatalogsResponse, err = orchestratorService.ListCatalogs(context.Background(), &orchestrator.ListCatalogsRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listCatalogsResponse.Catalogs)
-	assert.NotEmpty(t, listCatalogsResponse.Catalogs)
+	assert.Equal(t, len(listCatalogsResponse.Catalogs), 2)
 
 	// Remove record
 	_, err = orchestratorService.RemoveCatalog(context.Background(), &orchestrator.RemoveCatalogRequest{CatalogId: mockCatalog.Id})
@@ -1184,5 +1185,5 @@ func Test_RemoveCatalog(t *testing.T) {
 	listCatalogsResponse, err = orchestratorService.ListCatalogs(context.Background(), &orchestrator.ListCatalogsRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listCatalogsResponse.Catalogs)
-	assert.Empty(t, listCatalogsResponse.Catalogs)
+	assert.Equal(t, len(listCatalogsResponse.Catalogs), 1)
 }

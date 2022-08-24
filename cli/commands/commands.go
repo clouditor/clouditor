@@ -30,7 +30,6 @@ import (
 	"clouditor.io/clouditor/cli/commands/assessmentresult"
 	"clouditor.io/clouditor/cli/commands/cloud"
 	"clouditor.io/clouditor/cli/commands/completion"
-	"clouditor.io/clouditor/cli/commands/control"
 	"clouditor.io/clouditor/cli/commands/evidence"
 	"clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/cli/commands/metric"
@@ -48,7 +47,6 @@ func AddCommands(cmd *cobra.Command) {
 		// commands for resources
 		login.NewLoginCommand(),
 		metric.NewMetricCommand(),
-		control.NewControlCommand(),
 		tool.NewToolCommand(),
 		resource.NewResourceCommand(),
 		evidence.NewEvidenceCommand(),

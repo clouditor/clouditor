@@ -76,46 +76,6 @@ func NewListAssessmentResultsCommand() *cobra.Command {
 	return cmd
 }
 
-// NewListControlsCommand returns a cobra command for the `list-controls` subcommand
-func NewListControlsCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "list-controls",
-		Short: "Lists all controls",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			var (
-				err      error
-				session  *cli.Session
-				client   orchestrator.OrchestratorClient
-				res      *orchestrator.ListControlsResponse
-				controls []*orchestrator.Control
-			)
-
-			if session, err = cli.ContinueSession(); err != nil {
-				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
-				return nil
-			}
-
-			client = orchestrator.NewOrchestratorClient(session)
-
-			controls, err = api.ListAllPaginated(&orchestrator.ListControlsRequest{}, client.ListControls, func(res *orchestrator.ListControlsResponse) []*orchestrator.Control {
-				return res.Controls
-			})
-
-			// Build a response with all results
-			res = &orchestrator.ListControlsResponse{
-				Controls: controls,
-			}
-
-			return session.HandleResponse(res, err)
-		},
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return []string{}, cobra.ShellCompDirectiveNoFileComp
-		},
-	}
-
-	return cmd
-}
-
 // NewOrchestratorCommand returns a cobra command for `orchestrator` subcommands
 func NewOrchestratorCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -132,6 +92,5 @@ func NewOrchestratorCommand() *cobra.Command {
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewListAssessmentResultsCommand(),
-		NewListControlsCommand(),
 	)
 }

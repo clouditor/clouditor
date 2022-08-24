@@ -722,6 +722,48 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/orchestrator/controls/{controlId}/metrics:
+        get:
+            tags:
+                - Orchestrator
+            description: List all metrics that are applicable to a certain control
+            operationId: Orchestrator_ListMetricsForControl
+            parameters:
+                - name: controlId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListMetricsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/metrics:
         get:
             tags:
@@ -1013,14 +1055,15 @@ components:
                     type: string
                 description:
                     type: string
+                controls:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Control'
                 metrics:
                     type: array
                     items:
                         $ref: '#/components/schemas/Metric'
                     description: metrics contains either a list of reference to metrics - in this case only the id field of the metric is populated - or a list of populated metric meta-data, most likely returned by the database.
-                category:
-                    type: string
-                    description: category can be used to categorize Controls, e.g., according to a specific security catalog or something that groups Controls together, e.g., a security Control.
                 catalogId:
                     type: string
             description: Control represents a certain Control that needs to be fulfilled. It could be a Control in a certification catalog.

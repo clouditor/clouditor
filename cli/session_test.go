@@ -169,45 +169,6 @@ func TestValidArgsGetMetrics(t *testing.T) {
 	}
 }
 
-func TestValidArgsGetControls(t *testing.T) {
-	type args struct {
-		in0        *cobra.Command
-		args       []string
-		toComplete string
-	}
-	tests := []struct {
-		name  string
-		args  args
-		want  assert.ValueAssertionFunc
-		want1 cobra.ShellCompDirective
-	}{
-		{
-			name: "some controls",
-			args: args{
-				toComplete: "",
-			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.NotNil(tt, i1)
-			},
-			want1: cobra.ShellCompDirectiveNoFileComp,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := cli.ValidArgsGetControls(tt.args.in0, tt.args.args, tt.args.toComplete)
-
-			if tt.want != nil {
-				tt.want(t, got)
-			}
-
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("ValidArgsGetControls() got1 = %v, want %v", got1, tt.want1)
-			}
-		})
-	}
-}
-
 func TestValidArgsGetCloudServices(t *testing.T) {
 	type args struct {
 		in0        *cobra.Command

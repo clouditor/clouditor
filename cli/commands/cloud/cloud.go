@@ -231,7 +231,6 @@ func NewUpdateCloudServiceCommand() *cobra.Command {
 	_ = cmd.RegisterFlagCompletionFunc("id", cli.ValidArgsGetCloudServices)
 	_ = cmd.RegisterFlagCompletionFunc("name", cli.DefaultArgsShellComp)
 	_ = cmd.RegisterFlagCompletionFunc("description", cli.DefaultArgsShellComp)
-	_ = cmd.RegisterFlagCompletionFunc("control-ids", cli.ValidArgsGetControls)
 
 	return cmd
 }

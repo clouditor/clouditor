@@ -32,6 +32,28 @@ func NewCertificate() *orchestrator.Certificate {
 	return mockCertificate
 }
 
+// NewCertificate creates a mock certificate
+func NewControl() *orchestrator.Control {
+	var mockControl = &orchestrator.Control{
+		Id:          "Cont1234",
+		Name:        "Mock Control",
+		Description: "This is a mock control",
+		Metrics: []*assessment.Metric{{
+			Id:          "MockMetric",
+			Name:        "A Mock Metric",
+			Description: "This Metric is a mock metric",
+			Scale:       assessment.Metric_ORDINAL,
+			Range: &assessment.Range{
+				Range: &assessment.Range_AllowedValues{AllowedValues: &assessment.AllowedValues{
+					Values: []*structpb.Value{
+						structpb.NewBoolValue(false),
+						structpb.NewBoolValue(true),
+					}}}},
+		}},
+	}
+	return mockControl
+}
+
 // NewCatalog creates a mock catalog
 func NewCatalog() *orchestrator.Catalog {
 	var mockCatalog = &orchestrator.Catalog{
@@ -54,8 +76,16 @@ func NewCatalog() *orchestrator.Catalog {
 							structpb.NewBoolValue(true),
 						}}}},
 			}},
-			Category:  "Operational Security",
 			CatalogId: "Cat1234",
+			// create a nested control
+			Controls: []*orchestrator.Control{{
+				Id:          "Cont1234.1",
+				Name:        "Mock Sub-Control",
+				Description: "This is a mock sub-control",
+				Metrics:     []*assessment.Metric{},
+				CatalogId:   "Cat1234",
+				Controls:    []*orchestrator.Control{},
+			}},
 		}},
 	}
 	return mockCatalog
