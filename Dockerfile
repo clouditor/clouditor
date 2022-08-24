@@ -19,7 +19,7 @@ RUN go generate ./...
 RUN go build -o /build/engine ./cmd/engine/engine.go
 RUN go build -o /build/cl cmd/cli/cl.go
 
-FROM golang:1.18-alpine
+FROM alpine
 
 WORKDIR /app
 
