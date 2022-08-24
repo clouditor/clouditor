@@ -1,11 +1,11 @@
-FROM golang:1.18 as builder
+FROM golang:1.18-alpine as builder
 
 WORKDIR /build
 
 ADD go.mod .
 ADD go.sum .
 
-RUN apt update && apt install -y protobuf-compiler
+RUN apk update && apk add protobuf
 
 RUN go install google.golang.org/protobuf/cmd/protoc-gen-go \
     google.golang.org/grpc/cmd/protoc-gen-go-grpc \
@@ -16,7 +16,6 @@ RUN go install google.golang.org/protobuf/cmd/protoc-gen-go \
 ADD . .
 
 RUN go generate ./...
-ENV CGO_ENABLED=0
 RUN go build -o /build/engine ./cmd/engine/engine.go
 RUN go build -o /build/cl cmd/cli/cl.go
 
