@@ -5,7 +5,7 @@ WORKDIR /build
 ADD go.mod .
 ADD go.sum .
 
-RUN apk update && apk add protobuf
+RUN apk update && apk add protobuf gcc libc-dev
 
 RUN go install google.golang.org/protobuf/cmd/protoc-gen-go \
     google.golang.org/grpc/cmd/protoc-gen-go-grpc \
@@ -23,11 +23,14 @@ FROM alpine
 
 WORKDIR /app
 
+#RUN apk update && apk add gcc libc-dev
+
 COPY --from=builder /build/engine .
 COPY --from=builder /build/cl .
 COPY --from=builder /build/policies ./policies
 COPY --from=builder /build/service/orchestrator/metrics.json .
 RUN mkdir "/root/.clouditor"
 
-# TODO(lebogg): Use ENV instead of hardcoded arguments
-CMD ["./engine", "--db-in-memory", "--discovery-auto-start", "--discovery-provider=azure", "--dashboard-url=deployment_engine_1:3000"]
+
+# Set program arguments via ENV variables
+CMD ["./engine"]
