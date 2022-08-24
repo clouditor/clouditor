@@ -16,15 +16,18 @@ RUN go install google.golang.org/protobuf/cmd/protoc-gen-go \
 ADD . .
 
 RUN go generate ./...
+ENV CGO_ENABLED=0
 RUN go build -o /build/engine ./cmd/engine/engine.go
 RUN go build -o /build/cl cmd/cli/cl.go
 
-FROM debian:stable-slim
+FROM golang:1.18-alpine
 
-COPY --from=builder /build/engine /engine
-COPY --from=builder /build/cl /cl
-COPY --from=builder /build/policies /policies
-COPY --from=builder /build/service/orchestrator/metrics.json /metrics.json
+WORKDIR /app
+
+COPY --from=builder /build/engine .
+COPY --from=builder /build/cl .
+COPY --from=builder /build/policies ./policies
+COPY --from=builder /build/service/orchestrator/metrics.json .
 RUN mkdir "/root/.clouditor"
 
 # TODO(lebogg): Use ENV instead of hardcoded arguments
