@@ -8,7 +8,16 @@
                 "id": "OIS-01",
                 "name": "INFORMATION SECURITY MANAGEMENT SYSTEM",
                 "description": "The CSP operates an information security management system (ISMS). The scope of the ISMS covers the CSP's organisational units, locations and processes for providing the cloud service.",
-                "controls": [{}],
+                "controls": [
+                    {
+                        "id": "OIS-01.1",
+                        "name": "INFORMATION SECURITY MANAGEMENT SYSTEM 01",
+                        "description": "The CSP shall define, implement, maintain and continually improve an information security management system (ISMS), covering at least the operational units, locations and processes for providing the cloud service",
+                        "controls": [{}],
+                        "metrics": [{}],
+                        "catalogId": "EUCS"
+                    }
+                ],
                 "metrics": [{}],
                 "catalogId": "EUCS"
             }
