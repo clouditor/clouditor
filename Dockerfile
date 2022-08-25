@@ -29,7 +29,7 @@ COPY --from=builder /build/engine .
 COPY --from=builder /build/cl .
 COPY --from=builder /build/policies ./policies
 COPY --from=builder /build/service/orchestrator/metrics.json .
-RUN mkdir "/root/.clouditor"
+RUN mkdir "/root/.clouditor" # TODO: Can be removed after https://github.com/clouditor/clouditor/issues/786 is fixed
 
 
 # Set program arguments via ENV variables
