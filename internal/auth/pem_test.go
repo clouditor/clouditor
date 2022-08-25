@@ -28,7 +28,7 @@ package auth
 import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
-	"math/big"
+	"crypto/rand"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -100,6 +100,9 @@ v8wNrNmehUyxEOQZlRPRdmgJJHObuOZ3Z49iWRJh26uvQLRYj0EdV9KkEKmSzxaF
 }
 
 func TestMarshalECPrivateKeyWithPassword(t *testing.T) {
+	pk, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	assert.NoError(t, err)
+
 	type args struct {
 		key      *ecdsa.PrivateKey
 		password []byte
@@ -113,7 +116,7 @@ func TestMarshalECPrivateKeyWithPassword(t *testing.T) {
 		{
 			name: "Marshal EC key",
 			args: args{
-				key:      &ecdsa.PrivateKey{D: big.NewInt(1), PublicKey: ecdsa.PublicKey{Curve: elliptic.P256(), X: big.NewInt(2), Y: big.NewInt(3)}},
+				key:      pk,
 				password: []byte("test"),
 			},
 			wantData: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
@@ -126,7 +129,7 @@ func TestMarshalECPrivateKeyWithPassword(t *testing.T) {
 			},
 		},
 		{
-			name: "Marshal EC key",
+			name: "Error while marshalling EC key",
 			args: args{
 				key:      &ecdsa.PrivateKey{},
 				password: []byte("test"),
