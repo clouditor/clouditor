@@ -86,8 +86,8 @@ jobs:
           push: true # TODO(lebogg): only on release, like push: ${{ github.event_name == 'release' }}
           tags: |
             ${{ steps.meta.outputs.tags }}
-            ghrc.io/clouditor/engine
-          labels: ${{ steps.meta.outputs.labels }} # TODO(lebogg): Check what happens here
+            ghrc.io/clouditor/engine:latest
+          #labels: ${{ steps.meta.outputs.labels }} # TODO(lebogg): Check what happens here
   lint:
     runs-on: ubuntu-latest
     steps:
