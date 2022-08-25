@@ -90,9 +90,6 @@ type Service struct {
 
 	catalogsFile string
 
-	// loadCatalogsFunc is a function that is used to initially load catalogs at the start of the orchestrator
-	loadCatalogsFunc func() ([]*orchestrator.Catalog, error)
-
 	events chan *orchestrator.MetricChangeEvent
 }
 
