@@ -74,11 +74,14 @@ jobs:
           push: true # TODO(lebogg): only on release, like push: ${{ github.event_name == 'release' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }} # TODO(lebogg): Check what happens here
-      - name: Login to Github Docker Registry
+      - name: Login to GitHub Docker Registry
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
         # if: github.ref == 'refs/heads/main'
-      - name: Push Docker Image to Github Registry
+      - name: Build Docker Image for GitHub Registry
+        run: |
+          docker build -t ghcr.io/clouditor/engine .
+      - name: Push Docker Image to GitHub Registry
         run: |
           docker push ghcr.io/clouditor/ui
 #        if: github.ref == 'refs/heads/main'
