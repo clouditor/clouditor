@@ -481,8 +481,7 @@ message Control {
 
   string description = 3;
 
-  repeated Control controls = 4
-      [ (tagger.tags) = "gorm:\"serializer:json\"" ];
+  repeated Control controls = 4;
 
   // metrics contains either a list of reference to metrics - in this case only
   // the id field of the metric is populated - or a list of populated metric
@@ -491,6 +490,8 @@ message Control {
       [ (tagger.tags) = "gorm:\"many2many:control_metrics\"" ];
 
   string catalog_id = 6;
+
+  string control_id = 7;
 }
 
 // A Target of Evaluation binds a cloud service to a catalog, so the service is evaluated regarding this catalog's controls

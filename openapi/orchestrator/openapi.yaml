@@ -1066,6 +1066,8 @@ components:
                     description: metrics contains either a list of reference to metrics - in this case only the id field of the metric is populated - or a list of populated metric meta-data, most likely returned by the database.
                 catalogId:
                     type: string
+                controlId:
+                    type: string
             description: Control represents a certain Control that needs to be fulfilled. It could be a Control in a certification catalog.
         GoogleProtobufAny:
             type: object
