@@ -57,7 +57,7 @@ jobs:
         name: Print event name
         run: echo ${{github.event_name }}
       - name: Log in to Docker Hub
-        if: github.event_name == 'push' # TODO(lebogg): Change to Release
+        if: github.event_name == 'pull_request' # TODO(lebogg): Change to Release
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
