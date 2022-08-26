@@ -51,8 +51,10 @@ import (
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
+	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/inmemory"
 )
 
@@ -307,7 +309,7 @@ func TestStoreAssessmentResults(t *testing.T) {
 			},
 		},
 		{
-			name: "Error in stream to server - Recv()-err",
+			name: "Error in stream to server - Recv()-wantErr",
 			fields: fields{
 				countElementsInMock:    count1,
 				countElementsInResults: 0,
@@ -317,7 +319,7 @@ func TestStoreAssessmentResults(t *testing.T) {
 			wantErrMessage: "rpc error: code = Unknown desc = cannot receive stream request",
 		},
 		{
-			name: "Error in stream to client - Send()-err",
+			name: "Error in stream to client - Send()-wantErr",
 			fields: fields{
 				countElementsInMock:    count1,
 				countElementsInResults: 0,
@@ -474,7 +476,7 @@ type mockStreamerWithSendErr struct {
 }
 
 func (mockStreamerWithSendErr) Send(*orchestrator.StoreAssessmentResultResponse) error {
-	return errors.New("Send()-err")
+	return errors.New("Send()-wantErr")
 }
 
 func (m mockStreamerWithSendErr) Recv() (*orchestrator.StoreAssessmentResultRequest, error) {
@@ -1014,61 +1016,74 @@ func Test_CreateCatalog(t *testing.T) {
 	}
 }
 
-func Test_GetCatalog(t *testing.T) {
+func TestService_GetCatalog(t *testing.T) {
+	type fields struct {
+		storage persistence.Storage
+	}
+	type args struct {
+		in0 context.Context
+		req *orchestrator.GetCatalogRequest
+	}
 	tests := []struct {
-		name string
-		req  *orchestrator.GetCatalogRequest
-		res  assert.ValueAssertionFunc
-		err  error
+		name         string
+		fields       fields
+		args         args
+		wantResponse assert.ValueAssertionFunc
+		wantErr      assert.ErrorAssertionFunc
 	}{
 		{
-			"invalid request",
-			nil,
-			nil,
-			status.Error(codes.InvalidArgument, api.ErrRequestIsNil.Error()),
+			name: "invalid request",
+			fields: fields{storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+				// Create Catalog
+				assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+			})},
+			wantResponse: assert.Nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, api.ErrRequestIsNil.Error())
+			},
 		},
 		{
-			"catalog not found",
-			&orchestrator.GetCatalogRequest{CatalogId: ""},
-			nil,
-			status.Error(codes.NotFound, "catalog ID is empty"),
+			name: "catalog not found",
+			fields: fields{storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+				// Create Catalog
+				assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+			})},
+			args:         args{req: &orchestrator.GetCatalogRequest{CatalogId: ""}},
+			wantResponse: assert.Nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.NotFound, status.Code(err))
+				return assert.ErrorContains(t, err, "catalog ID is empty")
+			},
 		},
 		{
-			"valid",
-			&orchestrator.GetCatalogRequest{CatalogId: "Cat1234"},
-			func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
+			name: "valid",
+			fields: fields{storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+				// Create Catalog
+				assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+			})},
+			args: args{req: &orchestrator.GetCatalogRequest{CatalogId: "Cat1234"}},
+			wantResponse: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
 				res, ok := i.(*orchestrator.Catalog)
 				want := orchestratortest.NewCatalog()
 				assert.True(t, ok)
+				fmt.Println(res)
 				return assert.Equal(t, want.Id, res.Id)
 			},
-			nil,
+			wantErr: assert.NoError,
 		},
 	}
-	orchestratorService := NewService()
-
-	// Create Certificate
-	if err := orchestratorService.storage.Create(orchestratortest.NewCatalog()); err != nil {
-		panic(err)
-	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := orchestratorService.GetCatalog(context.Background(), tt.req)
-
-			if tt.err == nil {
-				assert.Equal(t, tt.err, err)
-			} else {
-				assert.ErrorIs(t, err, tt.err)
-				return
+			orchestratorService := Service{
+				storage: tt.fields.storage,
 			}
+			res, err := orchestratorService.GetCatalog(context.Background(), tt.args.req)
 
-			if tt.res != nil {
-				assert.NotEmpty(t, res.Id)
-			}
-
-			// Compare
-			tt.res(t, res)
+			// Validate the response via the ValueAssertionFunc function
+			tt.wantResponse(t, res)
+			// Validate the error via the ErrorAssertionFunc function
+			tt.wantErr(t, err)
 		})
 	}
 }
