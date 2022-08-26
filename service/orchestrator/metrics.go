@@ -282,7 +282,6 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 }
 
 // ListMetrics lists all available metrics.
-// TODO(leboo): Scope
 func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetricsRequest) (res *orchestrator.ListMetricsResponse, err error) {
 	res = new(orchestrator.ListMetricsResponse)
 
@@ -311,6 +310,15 @@ func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetrics
 // listMetricsForControl lists all metrics associated to a given control.
 func (svc *Service) listMetricsForControl(_ context.Context, req *orchestrator.ListMetricsRequest) (res *orchestrator.ListMetricsResponse, err error) {
 	res = new(orchestrator.ListMetricsResponse)
+
+	// Validate the request
+	if err = api.ValidateListRequest[*assessment.Metric](req); err != nil {
+		err = fmt.Errorf("invalid request: %w", err)
+		log.Error(err)
+		err = status.Errorf(codes.InvalidArgument, "%v", err)
+		return
+	}
+
 	control := new(orchestrator.Control)
 
 	// first, get the control
