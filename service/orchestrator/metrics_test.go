@@ -32,17 +32,18 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/structpb"
+
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
 	"clouditor.io/clouditor/persistence"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 var ErrSomeError = errors.New("some error")
@@ -479,7 +480,7 @@ func TestService_ListMetrics(t *testing.T) {
 
 }
 
-func TestService_ListMetricsForControl(t *testing.T) {
+func TestService_listMetricsForControl(t *testing.T) {
 	var (
 		response *orchestrator.ListMetricsResponse
 		err      error
@@ -494,7 +495,7 @@ func TestService_ListMetricsForControl(t *testing.T) {
 		return
 	}
 
-	response, err = service.ListMetricsForControl(context.TODO(), &orchestrator.ListMetricsForControlRequest{
+	response, err = service.listMetricsForControl(context.TODO(), &orchestrator.ListMetricsRequest{
 		ControlId: "Cont1234",
 	})
 
@@ -502,7 +503,7 @@ func TestService_ListMetricsForControl(t *testing.T) {
 	assert.NotEmpty(t, response.Metrics)
 
 	// Invalid request
-	_, err = service.ListMetricsForControl(context.TODO(), &orchestrator.ListMetricsForControlRequest{OrderBy: "not a field"})
+	_, err = service.listMetricsForControl(context.TODO(), &orchestrator.ListMetricsRequest{OrderBy: "not a field"})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
 	assert.Contains(t, err.Error(), api.ErrInvalidColumnName.Error())
 

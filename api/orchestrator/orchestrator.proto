@@ -135,13 +135,6 @@ service Orchestrator {
       get : "/v1/orchestrator/metrics"
     };
   }
-
-  // List all metrics that are applicable to a certain control
-  rpc ListMetricsForControl(ListMetricsForControlRequest) returns (ListMetricsResponse) {
-    option (google.api.http) = {
-      get: "/v1/orchestrator/controls/{control_id}/metrics"
-    };
-  }
   
   // Registers a new target cloud service
   rpc RegisterCloudService(RegisterCloudServiceRequest) returns (CloudService) {
@@ -357,13 +350,7 @@ message ListMetricsRequest {
   string page_token = 2;
   string order_by = 3;
   bool asc = 4;
-}
-
-message ListMetricsForControlRequest {
-  int32 page_size = 1;
-  string page_token = 2;
-  string order_by = 3;
-  bool asc = 4;
+  // Optionally list only metrics that are applicable to a specific control
   string control_id = 5;
 }
 

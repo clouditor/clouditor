@@ -722,48 +722,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/controls/{controlId}/metrics:
-        get:
-            tags:
-                - Orchestrator
-            description: List all metrics that are applicable to a certain control
-            operationId: Orchestrator_ListMetricsForControl
-            parameters:
-                - name: controlId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: pageSize
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pageToken
-                  in: query
-                  schema:
-                    type: string
-                - name: orderBy
-                  in: query
-                  schema:
-                    type: string
-                - name: asc
-                  in: query
-                  schema:
-                    type: boolean
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ListMetricsResponse'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/metrics:
         get:
             tags:
@@ -788,6 +746,11 @@ paths:
                   in: query
                   schema:
                     type: boolean
+                - name: controlId
+                  in: query
+                  description: Optionally list only metrics that are applicable to a specific control
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK

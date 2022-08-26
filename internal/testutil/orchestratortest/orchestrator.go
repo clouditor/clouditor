@@ -78,20 +78,23 @@ func NewCatalog() *orchestrator.Catalog {
 						}}}},
 			}},
 			CatalogId: "Cat1234",
+			ControlId: "",
 			// create a nested control
 			Controls: []*orchestrator.Control{{
 				Id:          "Cont1234.1",
 				Name:        "Mock Sub-Control",
 				Description: "This is a mock sub-control",
 				Metrics:     []*assessment.Metric{},
-				CatalogId:   "Cat1234",
+				CatalogId:   "",
+				ControlId:   "Cont1234",
 				Controls: []*orchestrator.Control{
 					{
 						Id:          "Cont1234.1.1",
 						Name:        "Mock Sub-Sub-Control",
 						Description: "This is a mock sub-sub-control",
 						Metrics:     []*assessment.Metric{},
-						CatalogId:   "Cat1234",
+						CatalogId:   "",
+						ControlId:   "Cont1234.1",
 						Controls:    []*orchestrator.Control{},
 					},
 				},
