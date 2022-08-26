@@ -1068,6 +1068,7 @@ func TestService_GetCatalog(t *testing.T) {
 				want := orchestratortest.NewCatalog()
 				assert.True(t, ok)
 				fmt.Println(res)
+				assert.Equal(t, 1, len(res.Controls)) // TODO: Fails since both sub controls (Cont1234.1 and Cont1234.1.1) are referring to catalog as well
 				return assert.Equal(t, want.Id, res.Id)
 			},
 			wantErr: assert.NoError,

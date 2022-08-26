@@ -3,9 +3,10 @@ package orchestratortest
 import (
 	"time"
 
+	"google.golang.org/protobuf/types/known/structpb"
+
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 // NewCertificate creates a mock certificate
@@ -84,7 +85,16 @@ func NewCatalog() *orchestrator.Catalog {
 				Description: "This is a mock sub-control",
 				Metrics:     []*assessment.Metric{},
 				CatalogId:   "Cat1234",
-				Controls:    []*orchestrator.Control{},
+				Controls: []*orchestrator.Control{
+					{
+						Id:          "Cont1234.1.1",
+						Name:        "Mock Sub-Sub-Control",
+						Description: "This is a mock sub-sub-control",
+						Metrics:     []*assessment.Metric{},
+						CatalogId:   "Cat1234",
+						Controls:    []*orchestrator.Control{},
+					},
+				},
 			}},
 		}},
 	}
