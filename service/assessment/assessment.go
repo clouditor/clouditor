@@ -40,7 +40,6 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/policies"
 	"clouditor.io/clouditor/service"
-	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
@@ -569,15 +568,19 @@ func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_La
 
 // MetricConfiguration implements MetricsSource by getting the corresponding metric configuration for the
 // default target cloud service
-func (svc *Service) MetricConfiguration(metric string) (config *assessment.MetricConfiguration, err error) {
+func (svc *Service) MetricConfiguration(serviceId, metricId string) (config *assessment.MetricConfiguration, err error) {
 	var (
 		ok    bool
 		cache cachedConfiguration
+		key   string
 	)
+
+	// Calculate the cache key
+	key = fmt.Sprintf("%s-%s", serviceId, metricId)
 
 	// Retrieve our cached entry
 	svc.confMutex.Lock()
-	cache, ok = svc.cachedConfigurations[metric]
+	cache, ok = svc.cachedConfigurations[key]
 	svc.confMutex.Unlock()
 
 	err = svc.initOrchestratorClient()
@@ -588,12 +591,12 @@ func (svc *Service) MetricConfiguration(metric string) (config *assessment.Metri
 	// Check if entry is not there or is expired
 	if !ok || cache.cachedAt.After(time.Now().Add(EvictionTime)) {
 		config, err = svc.orchestratorClient.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{
-			ServiceId: service_orchestrator.DefaultTargetCloudServiceId,
-			MetricId:  metric,
+			ServiceId: serviceId,
+			MetricId:  metricId,
 		})
 
 		if err != nil {
-			return nil, fmt.Errorf("could not retrieve metric configuration for %s: %w", metric, err)
+			return nil, fmt.Errorf("could not retrieve metric configuration for %s: %w", metricId, err)
 		}
 
 		cache = cachedConfiguration{
@@ -603,7 +606,7 @@ func (svc *Service) MetricConfiguration(metric string) (config *assessment.Metri
 
 		svc.confMutex.Lock()
 		// Update the metric configuration
-		svc.cachedConfigurations[metric] = cache
+		svc.cachedConfigurations[key] = cache
 		defer svc.confMutex.Unlock()
 	}
 
@@ -634,13 +637,19 @@ func (svc *Service) recvEventsLoop() {
 }
 
 func (svc *Service) handleMetricEvent(event *orchestrator.MetricChangeEvent) {
+	var key string
+
 	// In case the configuration has changed, we need to clear our configuration cache. Otherwise the policy evaluation
 	// will clear the Rego cache, but still refer to the old metric configuration (until it expires). Handle metric event in our policy
 	// evaluation
 	if event.GetType() == orchestrator.MetricChangeEvent_CONFIG_CHANGED {
 		// Evict the metric configuration from cache
 		svc.confMutex.Lock()
-		delete(svc.cachedConfigurations, event.MetricId)
+
+		// Calculate the cache key
+		key = fmt.Sprintf("%s-%s", event.ServiceId, event.MetricId)
+
+		delete(svc.cachedConfigurations, key)
 		svc.confMutex.Unlock()
 	}
 

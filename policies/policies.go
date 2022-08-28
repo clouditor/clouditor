@@ -64,7 +64,7 @@ type Result struct {
 // configuration as well as implementation for a particular metric (and target service)
 type MetricsSource interface {
 	Metrics() ([]*assessment.Metric, error)
-	MetricConfiguration(metric string) (*assessment.MetricConfiguration, error)
+	MetricConfiguration(serviceId, metricId string) (*assessment.MetricConfiguration, error)
 	MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (*assessment.MetricImplementation, error)
 }
 
@@ -73,10 +73,10 @@ type RequirementsSource interface {
 	Requirements() ([]*orchestrator.Requirement, error)
 }
 
-// createKey creates a key by concatenating toolID and all types
-func createKey(toolID string, types []string) (key string) {
-	// Merge toolID and types to one slice and concatenate all its elements
-	key = strings.Join(append(types, toolID), "-")
+// createKey creates a key by concatenating toolID, serviceID and all types
+func createKey(evidence *evidence.Evidence, types []string) (key string) {
+	// Merge serviceID, toolID and types to one slice and concatenate all its elements
+	key = strings.Join(append(types, evidence.ToolId, evidence.ServiceId), "-")
 	key = strings.ReplaceAll(key, " ", "")
 	return
 }

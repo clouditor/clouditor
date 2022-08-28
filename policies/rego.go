@@ -103,7 +103,7 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 		return nil, fmt.Errorf("could not extract resource types from evidence: %w", err)
 	}
 
-	key := createKey(evidence.ToolId, types)
+	key := createKey(evidence, types)
 
 	re.mrtc.RLock()
 	cached := re.mrtc.m[key]
@@ -130,7 +130,7 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 			// assessed within the Clouditor toolset but we need to know that the metric exists, e.g., because it is
 			// evaluated by an external tool. In this case, we can just pretend that the metric is not applicable for us
 			// and continue.
-			runMap, err := re.evalMap(baseDir, metric.Id, m, src)
+			runMap, err := re.evalMap(baseDir, evidence.ServiceId, metric.Id, m, src)
 			if err != nil {
 				// Try to retrieve the gRPC status from the error, to check if the metric implementation just does not exist.
 				status, ok := api.StatusFromWrappedError(err)
@@ -163,7 +163,7 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 		re.mrtc.Unlock()
 	} else {
 		for _, metric := range cached {
-			runMap, err := re.evalMap(baseDir, metric, m, src)
+			runMap, err := re.evalMap(baseDir, evidence.ServiceId, metric, m, src)
 			if err != nil {
 				return nil, err
 			}
@@ -191,7 +191,7 @@ func (re *regoEval) HandleMetricEvent(event *orchestrator.MetricChangeEvent) (er
 	return nil
 }
 
-func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interface{}, src MetricsSource) (result *Result, err error) {
+func (re *regoEval) evalMap(baseDir string, serviceId, metricId string, m map[string]interface{}, src MetricsSource) (result *Result, err error) {
 	var (
 		query  *rego.PreparedEvalQuery
 		key    string
@@ -200,14 +200,14 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 	)
 
 	// We need to check, if the metric configuration has been changed.
-	config, err := src.MetricConfiguration(metric)
+	config, err := src.MetricConfiguration(serviceId, metricId)
 	if err != nil {
-		return nil, fmt.Errorf("could not fetch metric configuration for metric %s: %w", metric, err)
+		return nil, fmt.Errorf("could not fetch metric configuration for metric %s: %w", metricId, err)
 	}
 
 	// We build a key out of the metric and its configuration, so we are creating a new Rego implementation
 	// if the metric configuration (i.e. its hash) has changed.
-	key = fmt.Sprintf("%s-%s", metric, config.Hash())
+	key = fmt.Sprintf("%s-%s", metricId, config.Hash())
 
 	query, err = re.qc.Get(key, func(key string) (*rego.PreparedEvalQuery, error) {
 		var (
@@ -216,7 +216,7 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 		)
 
 		// Create paths for bundle directory and utility functions file
-		bundle := fmt.Sprintf("%s/policies/bundles/%s/", baseDir, metric)
+		bundle := fmt.Sprintf("%s/policies/bundles/%s/", baseDir, metricId)
 		operators := fmt.Sprintf("%s/policies/operators.rego", baseDir)
 
 		c := map[string]interface{}{
@@ -235,11 +235,11 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 		prefix = re.pkg
 
 		// Convert camelCase metric in under_score_style for package name
-		pkg = util.CamelCaseToSnakeCase(metric)
+		pkg = util.CamelCaseToSnakeCase(metricId)
 
-		impl, err = src.MetricImplementation(assessment.MetricImplementation_REGO, metric)
+		impl, err = src.MetricImplementation(assessment.MetricImplementation_REGO, metricId)
 		if err != nil {
-			return nil, fmt.Errorf("could not fetch policy for metric %s: %w", metric, err)
+			return nil, fmt.Errorf("could not fetch policy for metric %s: %w", metricId, err)
 		}
 
 		err = store.UpsertPolicy(context.Background(), tx, bundle+"metric.rego", []byte(impl.Code))
@@ -263,7 +263,7 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 				nil),
 		).PrepareForEval(ctx)
 		if err != nil {
-			return nil, fmt.Errorf("could not prepare rego evaluation for metric %s: %w", metric, err)
+			return nil, fmt.Errorf("could not prepare rego evaluation for metric %s: %w", metricId, err)
 		}
 
 		err = store.Commit(ctx, tx)
@@ -274,7 +274,7 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 		return &query, nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("could not fetch cached query for metric %s: %w", metric, err)
+		return nil, fmt.Errorf("could not fetch cached query for metric %s: %w", metricId, err)
 	}
 
 	results, err := query.Eval(context.Background(), rego.EvalInput(m))
@@ -283,7 +283,7 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 	}
 
 	if len(results) == 0 {
-		return nil, fmt.Errorf("no results. probably the package name of metric %s is wrong", metric)
+		return nil, fmt.Errorf("no results. probably the package name of metric %s is wrong", metricId)
 	}
 
 	result = &Result{
