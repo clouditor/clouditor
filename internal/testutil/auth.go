@@ -7,6 +7,7 @@ import (
 
 	"clouditor.io/clouditor/internal/testdata"
 
+	"github.com/golang-jwt/jwt/v5"
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/oxisto/oauth2go/login"
 	"golang.org/x/oauth2/clientcredentials"
