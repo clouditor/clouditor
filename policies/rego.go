@@ -206,8 +206,8 @@ func (re *regoEval) evalMap(baseDir string, serviceId, metricId string, m map[st
 	}
 
 	// We build a key out of the metric and its configuration, so we are creating a new Rego implementation
-	// if the metric configuration (i.e. its hash) has changed.
-	key = fmt.Sprintf("%s-%s", metricId, config.Hash())
+	// if the metric configuration (i.e. its hash) for a particular service has changed.
+	key = fmt.Sprintf("%s-%s-%s", metricId, serviceId, config.Hash())
 
 	query, err = re.qc.Get(key, func(key string) (*rego.PreparedEvalQuery, error) {
 		var (

@@ -73,10 +73,10 @@ type RequirementsSource interface {
 	Requirements() ([]*orchestrator.Requirement, error)
 }
 
-// createKey creates a key by concatenating toolID, serviceID and all types
+// createKey creates a key by concatenating toolID and all types
 func createKey(evidence *evidence.Evidence, types []string) (key string) {
-	// Merge serviceID, toolID and types to one slice and concatenate all its elements
-	key = strings.Join(append(types, evidence.ToolId, evidence.ServiceId), "-")
+	// Merge toolID and types to one slice and concatenate all its elements
+	key = strings.Join(append(types, evidence.ToolId), "-")
 	key = strings.ReplaceAll(key, " ", "")
 	return
 }
