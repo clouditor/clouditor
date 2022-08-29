@@ -405,7 +405,13 @@ message MetricChangeEvent {
   }
 
   Type type = 1;
+
+  // The metric that is changing.
   string metric_id = 2;
+
+  // Optionally, the service id that is affected by this change. Primarily
+  // concerns metric configuration changes.
+  string service_id = 3;
 }
 
 // Represents an external tool or service that offers assessments according to
