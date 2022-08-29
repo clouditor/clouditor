@@ -277,7 +277,7 @@ service Orchestrator {
   // Retrieves a catalog
   rpc GetCatalog(GetCatalogRequest) returns (Catalog) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/catalog/{catalog_id}"
+      get : "/v1/orchestrator/catalogs/{catalog_id}"
     };
   }
 

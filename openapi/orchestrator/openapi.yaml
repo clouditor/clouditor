@@ -215,30 +215,6 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/Status'
     /v1/orchestrator/catalog/{catalogId}:
-        get:
-            tags:
-                - Orchestrator
-            description: Retrieves a catalog
-            operationId: Orchestrator_GetCatalog
-            parameters:
-                - name: catalogId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Catalog'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
         put:
             tags:
                 - Orchestrator
@@ -331,6 +307,30 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/Status'
     /v1/orchestrator/catalogs/{catalogId}:
+        get:
+            tags:
+                - Orchestrator
+            description: Retrieves a catalog
+            operationId: Orchestrator_GetCatalog
+            parameters:
+                - name: catalogId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Catalog'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
         delete:
             tags:
                 - Orchestrator
