@@ -379,6 +379,7 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 		result := &assessment.AssessmentResult{
 			Id:        uuid.NewString(),
 			Timestamp: timestamppb.Now(),
+			ServiceId: ev.ServiceId,
 			MetricId:  metricId,
 			MetricConfiguration: &assessment.MetricConfiguration{
 				TargetValue: convertedTargetValue,

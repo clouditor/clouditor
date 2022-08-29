@@ -558,6 +558,10 @@ func (mockIsCloudResource) GetID() voc.ResourceID {
 	return "MockResourceId"
 }
 
+func (mockIsCloudResource) GetServiceID() string {
+	return "MockServiceId"
+}
+
 func (mockIsCloudResource) GetName() string {
 	return ""
 }
