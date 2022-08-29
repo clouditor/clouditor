@@ -78,9 +78,9 @@ func (m *mockMetricsSource) Metrics() (metrics []*assessment.Metric, err error) 
 	return
 }
 
-func (m *mockMetricsSource) MetricConfiguration(serviceId, metricId string) (*assessment.MetricConfiguration, error) {
+func (m *mockMetricsSource) MetricConfiguration(serviceID, metricID string) (*assessment.MetricConfiguration, error) {
 	// Fetch the metric configuration directly from our file
-	bundle := fmt.Sprintf("policies/bundles/%s/data.json", metricId)
+	bundle := fmt.Sprintf("policies/bundles/%s/data.json", metricID)
 
 	b, err := os.ReadFile(bundle)
 	assert.NoError(m.t, err)

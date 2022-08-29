@@ -191,7 +191,7 @@ func (re *regoEval) HandleMetricEvent(event *orchestrator.MetricChangeEvent) (er
 	return nil
 }
 
-func (re *regoEval) evalMap(baseDir string, serviceId, metricId string, m map[string]interface{}, src MetricsSource) (result *Result, err error) {
+func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[string]interface{}, src MetricsSource) (result *Result, err error) {
 	var (
 		query  *rego.PreparedEvalQuery
 		key    string
@@ -200,14 +200,14 @@ func (re *regoEval) evalMap(baseDir string, serviceId, metricId string, m map[st
 	)
 
 	// We need to check, if the metric configuration has been changed.
-	config, err := src.MetricConfiguration(serviceId, metricId)
+	config, err := src.MetricConfiguration(serviceID, metricID)
 	if err != nil {
-		return nil, fmt.Errorf("could not fetch metric configuration for metric %s: %w", metricId, err)
+		return nil, fmt.Errorf("could not fetch metric configuration for metric %s: %w", metricID, err)
 	}
 
 	// We build a key out of the metric and its configuration, so we are creating a new Rego implementation
 	// if the metric configuration (i.e. its hash) for a particular service has changed.
-	key = fmt.Sprintf("%s-%s-%s", metricId, serviceId, config.Hash())
+	key = fmt.Sprintf("%s-%s-%s", metricID, serviceID, config.Hash())
 
 	query, err = re.qc.Get(key, func(key string) (*rego.PreparedEvalQuery, error) {
 		var (
@@ -216,7 +216,7 @@ func (re *regoEval) evalMap(baseDir string, serviceId, metricId string, m map[st
 		)
 
 		// Create paths for bundle directory and utility functions file
-		bundle := fmt.Sprintf("%s/policies/bundles/%s/", baseDir, metricId)
+		bundle := fmt.Sprintf("%s/policies/bundles/%s/", baseDir, metricID)
 		operators := fmt.Sprintf("%s/policies/operators.rego", baseDir)
 
 		c := map[string]interface{}{
@@ -235,11 +235,11 @@ func (re *regoEval) evalMap(baseDir string, serviceId, metricId string, m map[st
 		prefix = re.pkg
 
 		// Convert camelCase metric in under_score_style for package name
-		pkg = util.CamelCaseToSnakeCase(metricId)
+		pkg = util.CamelCaseToSnakeCase(metricID)
 
-		impl, err = src.MetricImplementation(assessment.MetricImplementation_REGO, metricId)
+		impl, err = src.MetricImplementation(assessment.MetricImplementation_REGO, metricID)
 		if err != nil {
-			return nil, fmt.Errorf("could not fetch policy for metric %s: %w", metricId, err)
+			return nil, fmt.Errorf("could not fetch policy for metric %s: %w", metricID, err)
 		}
 
 		err = store.UpsertPolicy(context.Background(), tx, bundle+"metric.rego", []byte(impl.Code))
@@ -263,7 +263,7 @@ func (re *regoEval) evalMap(baseDir string, serviceId, metricId string, m map[st
 				nil),
 		).PrepareForEval(ctx)
 		if err != nil {
-			return nil, fmt.Errorf("could not prepare rego evaluation for metric %s: %w", metricId, err)
+			return nil, fmt.Errorf("could not prepare rego evaluation for metric %s: %w", metricID, err)
 		}
 
 		err = store.Commit(ctx, tx)
@@ -274,7 +274,7 @@ func (re *regoEval) evalMap(baseDir string, serviceId, metricId string, m map[st
 		return &query, nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("could not fetch cached query for metric %s: %w", metricId, err)
+		return nil, fmt.Errorf("could not fetch cached query for metric %s: %w", metricID, err)
 	}
 
 	results, err := query.Eval(context.Background(), rego.EvalInput(m))
@@ -283,7 +283,7 @@ func (re *regoEval) evalMap(baseDir string, serviceId, metricId string, m map[st
 	}
 
 	if len(results) == 0 {
-		return nil, fmt.Errorf("no results. probably the package name of metric %s is wrong", metricId)
+		return nil, fmt.Errorf("no results. probably the package name of metric %s is wrong", metricID)
 	}
 
 	result = &Result{

@@ -64,7 +64,7 @@ type Result struct {
 // configuration as well as implementation for a particular metric (and target service)
 type MetricsSource interface {
 	Metrics() ([]*assessment.Metric, error)
-	MetricConfiguration(serviceId, metricId string) (*assessment.MetricConfiguration, error)
+	MetricConfiguration(serviceID, metricID string) (*assessment.MetricConfiguration, error)
 	MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (*assessment.MetricImplementation, error)
 }
 

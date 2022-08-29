@@ -359,9 +359,9 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 	}
 
 	for i, data := range evaluations {
-		metricId := data.MetricId
+		metricID := data.MetricId
 
-		log.Debugf("Evaluated evidence %v with metric '%v' as %v", ev.Id, metricId, data.Compliant)
+		log.Debugf("Evaluated evidence %v with metric '%v' as %v", ev.Id, metricID, data.Compliant)
 
 		targetValue := data.TargetValue
 
@@ -379,7 +379,7 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 			Id:        uuid.NewString(),
 			Timestamp: timestamppb.Now(),
 			ServiceId: ev.ServiceId,
-			MetricId:  metricId,
+			MetricId:  metricID,
 			MetricConfiguration: &assessment.MetricConfiguration{
 				TargetValue: convertedTargetValue,
 				Operator:    data.Operator,
@@ -568,7 +568,7 @@ func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_La
 
 // MetricConfiguration implements MetricsSource by getting the corresponding metric configuration for the
 // default target cloud service
-func (svc *Service) MetricConfiguration(serviceId, metricId string) (config *assessment.MetricConfiguration, err error) {
+func (svc *Service) MetricConfiguration(serviceID, metricID string) (config *assessment.MetricConfiguration, err error) {
 	var (
 		ok    bool
 		cache cachedConfiguration
@@ -576,7 +576,7 @@ func (svc *Service) MetricConfiguration(serviceId, metricId string) (config *ass
 	)
 
 	// Calculate the cache key
-	key = fmt.Sprintf("%s-%s", serviceId, metricId)
+	key = fmt.Sprintf("%s-%s", serviceID, metricID)
 
 	// Retrieve our cached entry
 	svc.confMutex.Lock()
@@ -591,12 +591,12 @@ func (svc *Service) MetricConfiguration(serviceId, metricId string) (config *ass
 	// Check if entry is not there or is expired
 	if !ok || cache.cachedAt.After(time.Now().Add(EvictionTime)) {
 		config, err = svc.orchestratorClient.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{
-			ServiceId: serviceId,
-			MetricId:  metricId,
+			ServiceId: serviceID,
+			MetricId:  metricID,
 		})
 
 		if err != nil {
-			return nil, fmt.Errorf("could not retrieve metric configuration for %s: %w", metricId, err)
+			return nil, fmt.Errorf("could not retrieve metric configuration for %s: %w", metricID, err)
 		}
 
 		cache = cachedConfiguration{
