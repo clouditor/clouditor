@@ -1767,23 +1767,30 @@ func (x *Catalog) GetControls() []*Control {
 	return nil
 }
 
-// Control represents a certain Control that needs to be fulfilled. It
-// could be a Control in a certification catalog.
+// Control represents a certain Control that needs to be fulfilled. It could be a Control in a certification catalog.
+// It follows the OSCAL model. A requirement in the EUCS terminology, e.g., is represented as the lowest sub-control.
 type Control struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id          string     `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name        string     `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Description string     `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	Controls    []*Control `protobuf:"bytes,4,rep,name=controls,proto3" json:"controls,omitempty"`
+	// Unique identifier of a control
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// Human-readable name of the control
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// Description of the control
+	Description string `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	// List of sub-controls - this is in accordance with the OSCAL model.
+	Controls []*Control `protobuf:"bytes,4,rep,name=controls,proto3" json:"controls,omitempty"`
 	// metrics contains either a list of reference to metrics - in this case only
 	// the id field of the metric is populated - or a list of populated metric
 	// meta-data, most likely returned by the database.
-	Metrics   []*assessment.Metric `protobuf:"bytes,5,rep,name=metrics,proto3" json:"metrics,omitempty" gorm:"many2many:control_metrics"`
-	CatalogId string               `protobuf:"bytes,6,opt,name=catalog_id,json=catalogId,proto3" json:"catalog_id,omitempty"`
-	ControlId string               `protobuf:"bytes,7,opt,name=control_id,json=controlId,proto3" json:"control_id,omitempty"`
+	Metrics []*assessment.Metric `protobuf:"bytes,5,rep,name=metrics,proto3" json:"metrics,omitempty" gorm:"many2many:control_metrics"`
+	// Reference to the catalog this control belongs to.
+	CatalogId string `protobuf:"bytes,6,opt,name=catalog_id,json=catalogId,proto3" json:"catalog_id,omitempty"`
+	// Reference to the parent control this sub-control belongs to. Adheres to the OSCAL model. Leaving it empty means it
+	// it is a root control.
+	ControlId string `protobuf:"bytes,7,opt,name=control_id,json=controlId,proto3" json:"control_id,omitempty"`
 }
 
 func (x *Control) Reset() {

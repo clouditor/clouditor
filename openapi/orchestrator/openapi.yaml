@@ -1014,14 +1014,18 @@ components:
             properties:
                 id:
                     type: string
+                    description: Unique identifier of a control
                 name:
                     type: string
+                    description: Human-readable name of the control
                 description:
                     type: string
+                    description: Description of the control
                 controls:
                     type: array
                     items:
                         $ref: '#/components/schemas/Control'
+                    description: List of sub-controls - this is in accordance with the OSCAL model.
                 metrics:
                     type: array
                     items:
@@ -1029,9 +1033,11 @@ components:
                     description: metrics contains either a list of reference to metrics - in this case only the id field of the metric is populated - or a list of populated metric meta-data, most likely returned by the database.
                 catalogId:
                     type: string
+                    description: Reference to the catalog this control belongs to.
                 controlId:
                     type: string
-            description: Control represents a certain Control that needs to be fulfilled. It could be a Control in a certification catalog.
+                    description: Reference to the parent control this sub-control belongs to. Adheres to the OSCAL model. Leaving it empty means it it is a root control.
+            description: Control represents a certain Control that needs to be fulfilled. It could be a Control in a certification catalog. It follows the OSCAL model. A requirement in the EUCS terminology, e.g., is represented as the lowest sub-control.
         GoogleProtobufAny:
             type: object
             properties:

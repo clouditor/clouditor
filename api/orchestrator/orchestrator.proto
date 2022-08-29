@@ -459,25 +459,34 @@ message Catalog {
   repeated Control controls = 4;
 }
 
-// Control represents a certain Control that needs to be fulfilled. It
-// could be a Control in a certification catalog.
+// Control represents a certain Control that needs to be fulfilled. It could be a Control in a certification catalog.
+// It follows the OSCAL model. A requirement in the EUCS terminology, e.g., is represented as the lowest sub-control.
 message Control {
+  // Unique identifier of a control
   string id = 1;
 
+  // Human-readable name of the control
   string name = 2;
 
+  // TODO(lebogg to all): Add short name, e.g. OPS (name being "Operational Security")
+  // string short_name = ;
+
+  // Description of the control
   string description = 3;
 
+  // List of sub-controls - this is in accordance with the OSCAL model.
   repeated Control controls = 4;
 
   // metrics contains either a list of reference to metrics - in this case only
   // the id field of the metric is populated - or a list of populated metric
   // meta-data, most likely returned by the database.
-  repeated Metric metrics = 5
-      [ (tagger.tags) = "gorm:\"many2many:control_metrics\"" ];
+  repeated Metric metrics = 5 [ (tagger.tags) = "gorm:\"many2many:control_metrics\"" ];
 
+  // Reference to the catalog this control belongs to.
   string catalog_id = 6;
 
+  // Reference to the parent control this sub-control belongs to. Adheres to the OSCAL model. Leaving it empty means it
+  // it is a root control.
   string control_id = 7;
 }
 
