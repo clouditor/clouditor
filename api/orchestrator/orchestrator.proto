@@ -501,11 +501,11 @@ message TargetOfEvaluation {
   string assurance_level = 4;
 }
 
-message CreateTargetOfEvaluationRequest { TargetOfEvaluation targetOfEvaluation = 1; }
+message CreateTargetOfEvaluationRequest { TargetOfEvaluation target_of_evaluation = 1; }
 
-message RemoveTargetOfEvaluationRequest { string targetOfEvaluation_id = 1; }
+message RemoveTargetOfEvaluationRequest { string target_of_evaluation_id = 1; }
 
-message GetTargetOfEvaluationRequest { string targetOfEvaluation_id = 1; }
+message GetTargetOfEvaluationRequest { string target_of_evaluation_id = 1; }
 
 message ListTargetsOfEvaluationRequest {
   int32 page_size = 1;
@@ -514,12 +514,12 @@ message ListTargetsOfEvaluationRequest {
   bool asc = 4;
 }
 message ListTargetsOfEvaluationResponse {
-  repeated TargetOfEvaluation targetsOfEvaluation = 1;
+  repeated TargetOfEvaluation targets_of_evaluation = 1;
   string next_page_token = 2;
 }
 
 message UpdateTargetOfEvaluationRequest {
-  string toe_id = 1;
+  string target_of_evaluation_id = 1;
   TargetOfEvaluation targetOfEvaluation = 2;
 }
 
