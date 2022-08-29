@@ -76,6 +76,46 @@ func NewListAssessmentResultsCommand() *cobra.Command {
 	return cmd
 }
 
+// NewListCatalogsCommand returns a cobra command for the `list-requirements` subcommand
+func NewListCatalogsCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "list-catalogs",
+		Short: "Lists all catalogs",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var (
+				err      error
+				session  *cli.Session
+				client   orchestrator.OrchestratorClient
+				res      *orchestrator.ListCatalogsResponse
+				catalogs []*orchestrator.Catalog
+			)
+
+			if session, err = cli.ContinueSession(); err != nil {
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+				return nil
+			}
+
+			client = orchestrator.NewOrchestratorClient(session)
+
+			catalogs, err = api.ListAllPaginated(&orchestrator.ListCatalogsRequest{}, client.ListCatalogs, func(res *orchestrator.ListCatalogsResponse) []*orchestrator.Catalog {
+				return res.Catalogs
+			})
+
+			// Build a response with all results
+			res = &orchestrator.ListCatalogsResponse{
+				Catalogs: catalogs,
+			}
+
+			return session.HandleResponse(res, err)
+		},
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return []string{}, cobra.ShellCompDirectiveNoFileComp
+		},
+	}
+
+	return cmd
+}
+
 // NewOrchestratorCommand returns a cobra command for `orchestrator` subcommands
 func NewOrchestratorCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -92,5 +132,6 @@ func NewOrchestratorCommand() *cobra.Command {
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewListAssessmentResultsCommand(),
+		NewListCatalogsCommand(),
 	)
 }
