@@ -415,6 +415,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
+							ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "container1",
 							Type:         []string{"ObjectStorage", "Storage", "Resource"},
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -435,6 +436,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2",
+							ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "container2",
 							Type:         []string{"ObjectStorage", "Storage", "Resource"},
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -455,6 +457,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1",
+							ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "fileshare1",
 							Type:         []string{"FileStorage", "Storage", "Resource"},
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -475,6 +478,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2",
+							ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "fileshare2",
 							Type:         []string{"FileStorage", "Storage", "Resource"},
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -511,6 +515,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
 								ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
+								ServiceID:    discovery.DefaultCloudServiceID,
 								Name:         "account1",
 								Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
 								CreationTime: util.SafeTimestamp(&creationTime),
@@ -532,6 +537,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container3",
+							ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "container3",
 							Type:         []string{"ObjectStorage", "Storage", "Resource"},
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -553,6 +559,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container4",
+							ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "container4",
 							Type:         []string{"ObjectStorage", "Storage", "Resource"},
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -588,6 +595,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
 								ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2",
+								ServiceID:    discovery.DefaultCloudServiceID,
 								Name:         "account2",
 								Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
 								CreationTime: util.SafeTimestamp(&creationTime),
@@ -609,6 +617,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
+							ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "disk1",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							GeoLocation: voc.GeoLocation{
@@ -630,6 +639,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2",
+							ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "disk2",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							GeoLocation: voc.GeoLocation{
@@ -1007,6 +1017,7 @@ func Test_azureStorageDiscovery_handleBlockStorage(t *testing.T) {
 				Storage: &voc.Storage{
 					Resource: &voc.Resource{
 						ID:           voc.ResourceID(diskID),
+						ServiceID:    discovery.DefaultCloudServiceID,
 						Name:         "disk1",
 						CreationTime: util.SafeTimestamp(&creationTime),
 						Type:         []string{"BlockStorage", "Storage", "Resource"},
@@ -1389,6 +1400,7 @@ func Test_handleFileStorage(t *testing.T) {
 				Storage: &voc.Storage{
 					Resource: &voc.Resource{
 						ID:           voc.ResourceID(fileShareID),
+						ServiceID:    discovery.DefaultCloudServiceID,
 						Name:         fileShareName,
 						CreationTime: util.SafeTimestamp(&creationTime),
 						GeoLocation: voc.GeoLocation{
@@ -1503,6 +1515,7 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 					Networking: &voc.Networking{
 						Resource: &voc.Resource{
 							ID:           voc.ResourceID(accountID),
+							ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         accountName,
 							CreationTime: util.SafeTimestamp(&creationTime),
 							Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
@@ -1619,6 +1632,7 @@ func Test_handleObjectStorage(t *testing.T) {
 				Storage: &voc.Storage{
 					Resource: &voc.Resource{
 						ID:           voc.ResourceID(containerID),
+						ServiceID:    discovery.DefaultCloudServiceID,
 						Name:         containerName,
 						CreationTime: util.SafeTimestamp(&creationTime),
 						GeoLocation: voc.GeoLocation{
@@ -1695,6 +1709,7 @@ func Test_azureStorageDiscovery_discoverBlockStorages(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
+							ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "disk1",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							GeoLocation: voc.GeoLocation{
@@ -1716,6 +1731,7 @@ func Test_azureStorageDiscovery_discoverBlockStorages(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2",
+							ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "disk2",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							GeoLocation: voc.GeoLocation{
@@ -1824,6 +1840,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1",
+							ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "fileshare1",
 							Type:         []string{"FileStorage", "Storage", "Resource"},
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -1844,6 +1861,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2",
+							ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "fileshare2",
 							Type:         []string{"FileStorage", "Storage", "Resource"},
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -1951,6 +1969,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
+							ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "container1",
 							Type:         []string{"ObjectStorage", "Storage", "Resource"},
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -1971,6 +1990,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2",
+							ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "container2",
 							Type:         []string{"ObjectStorage", "Storage", "Resource"},
 							CreationTime: util.SafeTimestamp(&creationTime),

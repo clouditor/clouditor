@@ -42,6 +42,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -1205,7 +1206,7 @@ func TestService_recvEventsLoop(t *testing.T) {
 			svc.pe = rec
 			svc.recvEventsLoop()
 
-			if !reflect.DeepEqual(rec.event, tt.wantEvent) {
+			if !proto.Equal(rec.event, tt.wantEvent) {
 				t.Errorf("recvEventsLoop() = %v, want %v", rec.event, tt.wantEvent)
 			}
 		})

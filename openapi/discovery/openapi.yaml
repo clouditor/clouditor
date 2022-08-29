@@ -76,6 +76,8 @@ components:
             properties:
                 filteredType:
                     type: string
+                filteredServiceId:
+                    type: string
                 pageSize:
                     type: integer
                     format: int32

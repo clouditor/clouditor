@@ -268,6 +268,7 @@ func (d *azureStorageDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 		Storage: &voc.Storage{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(util.Deref(disk.ID)),
+				ServiceID:    discovery.DefaultCloudServiceID,
 				Name:         util.Deref(disk.Name),
 				CreationTime: disk.Properties.TimeCreated.Unix(),
 				Type:         []string{"BlockStorage", "Storage", "Resource"},
@@ -300,6 +301,7 @@ func handleObjectStorage(account *armstorage.Account, container *armstorage.List
 		Storage: &voc.Storage{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(util.Deref(container.ID)),
+				ServiceID:    discovery.DefaultCloudServiceID,
 				Name:         util.Deref(container.Name),
 				CreationTime: account.Properties.CreationTime.Unix(),
 				Type:         []string{"ObjectStorage", "Storage", "Resource"},
@@ -340,6 +342,7 @@ func (*azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, 
 			Networking: &voc.Networking{
 				Resource: &voc.Resource{
 					ID:           voc.ResourceID(util.Deref(account.ID)),
+					ServiceID:    discovery.DefaultCloudServiceID,
 					Name:         util.Deref(account.Name),
 					CreationTime: account.Properties.CreationTime.Unix(),
 					Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
@@ -392,6 +395,7 @@ func handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileSh
 		Storage: &voc.Storage{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(util.Deref(fileshare.ID)),
+				ServiceID:    discovery.DefaultCloudServiceID,
 				Name:         util.Deref(fileshare.Name),
 				CreationTime: account.Properties.CreationTime.Unix(),
 				Type:         []string{"FileStorage", "Storage", "Resource"},

@@ -149,7 +149,11 @@ type mockIsCloudResource struct {
 }
 
 func (mockIsCloudResource) GetID() voc.ResourceID {
-	return "MockResourceId"
+	return "MockResourceID"
+}
+
+func (mockIsCloudResource) GetServiceID() string {
+	return "MockServiceID"
 }
 
 func (mockIsCloudResource) GetName() string {

@@ -103,6 +103,10 @@ service Orchestrator {
       returns (ListAssessmentResultsResponse) {
     option (google.api.http) = {
       get : "/v1/orchestrator/assessment_results"
+      additional_bindings {
+        get : "/v1/orchestrator/cloud_services/{filtered_service_id}/"
+              "assessment_results"
+      }
     };
   }
 
@@ -401,7 +405,13 @@ message MetricChangeEvent {
   }
 
   Type type = 1;
+
+  // The metric that is changing.
   string metric_id = 2;
+
+  // Optionally, the service id that is affected by this change. Primarily
+  // concerns metric configuration changes.
+  string service_id = 3;
 }
 
 // Represents an external tool or service that offers assessments according to

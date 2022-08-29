@@ -123,6 +123,7 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachine, erro
 			computeResource := &voc.Compute{
 				Resource: &voc.Resource{
 					ID:           d.addARNToVM(vm),
+					ServiceID:    discovery.DefaultCloudServiceID,
 					Name:         d.getNameOfVM(vm),
 					CreationTime: 0,
 					Type:         []string{"VirtualMachine", "Compute", "Resource"},
@@ -178,6 +179,7 @@ func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.Function
 			Compute: &voc.Compute{
 				Resource: &voc.Resource{
 					ID:           voc.ResourceID(aws.ToString(function.FunctionArn)),
+					ServiceID:    discovery.DefaultCloudServiceID,
 					Name:         aws.ToString(function.FunctionName),
 					CreationTime: 0,
 					Type:         []string{"Function", "Compute", "Resource"},
