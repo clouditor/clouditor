@@ -461,6 +461,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
+							ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "vm1",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
@@ -498,6 +499,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2",
+							ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "vm2",
 							CreationTime: util.SafeTimestamp(&time.Time{}),
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
@@ -535,6 +537,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm3",
+							ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "vm3",
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
 							CreationTime: util.SafeTimestamp(&time.Time{}),
@@ -572,6 +575,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
+							ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "function1",
 							CreationTime: util.SafeTimestamp(&time.Time{}),
 							Type:         []string{"Function", "Compute", "Resource"},
@@ -651,6 +655,7 @@ func Test_azureComputeDiscovery_discoverFunctions(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
+							ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "function1",
 							CreationTime: util.SafeTimestamp(&time.Time{}),
 							Type:         []string{"Function", "Compute", "Resource"},
@@ -735,6 +740,7 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 				Compute: &voc.Compute{
 					Resource: &voc.Resource{
 						ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
+						ServiceID:    discovery.DefaultCloudServiceID,
 						Name:         "function1",
 						CreationTime: util.SafeTimestamp(&time.Time{}),
 						Type:         []string{"Function", "Compute", "Resource"},
@@ -809,6 +815,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
+							ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "vm1",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
@@ -846,6 +853,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2",
+							ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "vm2",
 							CreationTime: util.SafeTimestamp(&time.Time{}),
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
@@ -883,6 +891,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm3",
+							ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "vm3",
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
 							CreationTime: util.SafeTimestamp(&time.Time{}),
@@ -1020,6 +1029,7 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 				Compute: &voc.Compute{
 					Resource: &voc.Resource{
 						ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
+						ServiceID:    discovery.DefaultCloudServiceID,
 						Name:         "vm1",
 						CreationTime: util.SafeTimestamp(&creationTime),
 						Type:         []string{"VirtualMachine", "Compute", "Resource"},

@@ -407,8 +407,9 @@ func (svc *Service) UpdateMetricConfiguration(_ context.Context, req *orchestrat
 	// Notify event listeners
 	go func() {
 		svc.events <- &orchestrator.MetricChangeEvent{
-			Type:     orchestrator.MetricChangeEvent_CONFIG_CHANGED,
-			MetricId: req.MetricId,
+			Type:      orchestrator.MetricChangeEvent_CONFIG_CHANGED,
+			ServiceId: req.ServiceId,
+			MetricId:  req.MetricId,
 		}
 	}()
 

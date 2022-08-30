@@ -43,6 +43,10 @@ paths:
             description: List all assessment results. Part of the public API, also exposed as REST.
             operationId: Assessment_ListAssessmentResults
             parameters:
+                - name: filteredServiceId
+                  in: query
+                  schema:
+                    type: string
                 - name: pageSize
                   in: query
                   schema:
@@ -120,6 +124,9 @@ components:
                 nonComplianceComments:
                     type: string
                     description: Some comments on the reason for non-compliance
+                serviceId:
+                    type: string
+                    description: The cloud service which this assessment result belongs to
             description: A result resource, representing the result after assessing the cloud resource with id resource_id.
         Evidence:
             type: object

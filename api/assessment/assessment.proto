@@ -41,8 +41,9 @@ option go_package = "clouditor.io/clouditor/api/assessment";
 // from discovery and sending results to orchestrator
 service Assessment {
 
-  // Triggers the assessment. Part of the private API. Not exposed as REST.
-  rpc TriggerAssessment(TriggerAssessmentRequest)
+  // Triggers the compliance calculation. Part of the private API. Not exposed
+  // as REST.
+  rpc CalculateCompliance(CalculateComplianceRequest)
       returns (google.protobuf.Empty) {}
 
   // Assesses the evidence sent by the discovery. Part of the public API, also
@@ -69,10 +70,12 @@ service Assessment {
 };
 
 message ListAssessmentResultsRequest {
-  int32 page_size = 1;
-  string page_token = 2;
-  string order_by = 3;
-  bool asc = 4;
+  string filtered_service_id = 1;
+
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
 }
 message ListAssessmentResultsResponse {
   repeated AssessmentResult results = 1;
@@ -82,7 +85,7 @@ message ListAssessmentResultsResponse {
 message ConfigureAssessmentRequest {}
 message ConfigureAssessmentResponse {}
 
-message TriggerAssessmentRequest { string some_option = 1; }
+message CalculateComplianceRequest { string control_id = 1; }
 
 message AssessEvidenceRequest { Evidence evidence = 1; }
 message AssessEvidenceResponse {
@@ -127,4 +130,31 @@ message AssessmentResult {
 
   // Some comments on the reason for non-compliance
   string non_compliance_comments = 9;
+
+  // The cloud service which this assessment result belongs to
+  string service_id = 10;
 }
+
+/*
+prepared for future use
+message ComplianceResult {
+  string id = 1;
+
+  enum Status {
+    STATUS_UNSPECIFIED = 0;
+    COMPLIANT = 1;
+    NOT_COMPLIANT = 2;
+    PENDING = 3;
+  }
+
+  Status status = 2;
+
+  google.protobuf.Timestamp timestamp = 3
+      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
+
+  string control_id = 4;
+
+  string service_id = 5;
+
+  repeated AssessmentResult results = 6;
+}*/

@@ -348,6 +348,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 				{Compute: &voc.Compute{
 					Resource: &voc.Resource{
 						ID:           mockFunction1ID,
+						ServiceID:    discovery.DefaultCloudServiceID,
 						Name:         mockFunction1,
 						CreationTime: int64(0),
 						Type:         []string{"Function", "Compute", "Resource"},

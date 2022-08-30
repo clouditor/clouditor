@@ -92,7 +92,7 @@ func TestPaginateSlice(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotPage, gotNbt, err := PaginateSlice(tt.args.req, tt.args.values, tt.args.opts)
+			gotPage, gotNbt, err := PaginateSlice(tt.args.req, tt.args.values, func(a int, b int) bool { return a < b }, tt.args.opts)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("PaginateSlice() error = %v, wantErr %v", err, tt.wantErr)
 				return

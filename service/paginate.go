@@ -52,9 +52,13 @@ var DefaultPaginationOpts = PaginationOpts{
 }
 
 // PaginateSlice is a helper function that helps to paginate a slice based on list requests. It parses the necessary
-// informaton out if a paginated request, e.g. the page token and the desired page size and returns a sliced page as
+// information out if a paginated request, e.g. the page token and the desired page size and returns a sliced page as
 // well as the next page token.
-func PaginateSlice[T any](req api.PaginatedRequest, values []T, opts PaginationOpts) (page []T, npt string, err error) {
+func PaginateSlice[T any](req api.PaginatedRequest, values []T, less func(a T, b T) bool, opts PaginationOpts) (page []T, npt string, err error) {
+	sort.Slice(values, func(i, j int) bool {
+		return less(values[i], values[j])
+	})
+
 	return paginate(req, opts, func(start int64, size int32) (page []T, done bool, err error) {
 		var (
 			end, max int64
@@ -101,11 +105,8 @@ func PaginateStorage[T any](req api.PaginatedRequest, storage persistence.Storag
 func PaginateMapValues[T any](req api.PaginatedRequest, m map[string]T, less func(a T, b T) bool, opts PaginationOpts) (page []T, nbt string, err error) {
 	// We need to sort the values, because they are otherwise in a random order
 	var values = maps.Values(m)
-	sort.Slice(values, func(i, j int) bool {
-		return less(values[i], values[j])
-	})
 
-	return PaginateSlice(req, values, opts)
+	return PaginateSlice(req, values, less, opts)
 }
 
 // paginate takes cares of the heavy lifting of handling the actual pagination request. It takes the paginated request

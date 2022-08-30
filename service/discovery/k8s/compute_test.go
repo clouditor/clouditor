@@ -29,6 +29,7 @@ import (
 	"context"
 	"testing"
 
+	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
@@ -90,6 +91,7 @@ func TestListPods(t *testing.T) {
 		Compute: &voc.Compute{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(podID),
+				ServiceID:    discovery.DefaultCloudServiceID,
 				Name:         podName,
 				CreationTime: podCreationTime.Unix(),
 				Type:         []string{"Container", "Compute", "Resource"},
@@ -111,6 +113,7 @@ func TestListPods(t *testing.T) {
 		Storage: &voc.Storage{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(volumeName),
+				ServiceID:    discovery.DefaultCloudServiceID,
 				Name:         volumeName,
 				CreationTime: 0,
 				Type:         []string{"BlockStorage", "Storage", "Resource"},
