@@ -200,7 +200,7 @@ func (s *storage) Count(r any, conds ...any) (count int64, err error) {
 }
 
 func (s *storage) Save(r any, conds ...any) error {
-	return s.db.Where(conds).Save(r).Error
+	return s.db.Session(&gorm.Session{FullSaveAssociations: true}).Where(conds).Save(r).Error
 }
 
 // Update will update the record with non-zero fields. Note that to get the entire updated record you have to call Get
