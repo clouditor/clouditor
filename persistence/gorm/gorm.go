@@ -205,7 +205,7 @@ func (s *storage) Save(r any, conds ...any) error {
 
 // Update will update the record with non-zero fields. Note that to get the entire updated record you have to call Get
 func (s *storage) Update(r any, query any, args ...any) error {
-	return s.db.Model(r).Where(query, args).Updates(r).Error
+	return s.db.Session(&gorm.Session{FullSaveAssociations: true}).Model(r).Where(query, args).Updates(r).Error
 }
 
 // Delete deletes record with given id. If no record was found, returns ErrRecordNotFound
