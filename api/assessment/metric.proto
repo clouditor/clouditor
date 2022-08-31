@@ -62,8 +62,10 @@ message Metric {
     METRIC = 3;
   }
 
-  // The interval in seconds the evidences must be collected for the respective metric.
-  // For now, we are not able to use google.protobuf.Duration because it is converted to a custom object in OpenAPI (https://github.com/google/gnostic/issues/351)
+  // The interval in seconds the evidences must be collected for the respective
+  // metric. For now, we are not able to use google.protobuf.Duration because it
+  // is converted to a custom object in OpenAPI
+  // (https://github.com/google/gnostic/issues/351)
   int64 interval = 7;
 }
 
@@ -103,7 +105,8 @@ message MetricConfiguration {
   string operator = 1;
 
   // The target value
-  google.protobuf.Value target_value = 2;
+  google.protobuf.Value target_value = 2
+      [ (tagger.tags) = "gorm:\"serializer:json\"" ];
 
   // Whether this configuration is a default configuration
   bool is_default = 3;
@@ -111,6 +114,14 @@ message MetricConfiguration {
   // The last time of update
   google.protobuf.Timestamp updated_at = 4
       [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
+
+  // The metric this configuration belongs to
+  string metric_id = 5
+    [ (tagger.tags) = "gorm:\"primaryKey\"" ];
+
+  // The service this configuration belongs to
+  string service_id = 6
+    [ (tagger.tags) = "gorm:\"primaryKey\"" ];
 }
 
 // MetricImplementation defines the implementation of an individual metric.

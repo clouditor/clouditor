@@ -437,6 +437,10 @@ message CloudService {
   message Requirements { repeated string requirement_ids = 1; }
 
   Requirements requirements = 4;
+
+  repeated MetricConfiguration metric_configurations = 5
+      [ (tagger.tags) = "gorm:\"many2many:cloud_service_metric_configurations;"
+                        "References:service_id\"" ];
 }
 
 // Requirement represents a certain requirement that needs to be fulfilled. It

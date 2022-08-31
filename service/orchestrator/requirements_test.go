@@ -81,7 +81,6 @@ func TestLoadRequirements(t *testing.T) {
 
 func TestService_ListRequirements(t *testing.T) {
 	type fields struct {
-		metricConfigurations  map[string]map[string]*assessment.MetricConfiguration
 		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
 		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
@@ -127,7 +126,6 @@ func TestService_ListRequirements(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				metricConfigurations:  tt.fields.metricConfigurations,
 				cloudServiceHooks:     tt.fields.cloudServiceHooks,
 				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
@@ -151,7 +149,6 @@ func TestService_ListRequirements(t *testing.T) {
 
 func TestService_loadRequirements(t *testing.T) {
 	type fields struct {
-		metricConfigurations  map[string]map[string]*assessment.MetricConfiguration
 		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
 		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
@@ -177,7 +174,6 @@ func TestService_loadRequirements(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				metricConfigurations:  tt.fields.metricConfigurations,
 				cloudServiceHooks:     tt.fields.cloudServiceHooks,
 				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,

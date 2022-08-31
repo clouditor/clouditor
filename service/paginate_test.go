@@ -186,8 +186,11 @@ func TestPaginateStorage(t *testing.T) {
 				}),
 				opts: PaginationOpts{10, 10},
 			},
-			wantPage: []orchestrator.CloudService{{Id: "1"}, {Id: "2"}},
-			wantNbt:  "CAIQAg==",
+			wantPage: []orchestrator.CloudService{
+				{Id: "1", MetricConfigurations: []*assessment.MetricConfiguration{}},
+				{Id: "2", MetricConfigurations: []*assessment.MetricConfiguration{}},
+			},
+			wantNbt: "CAIQAg==",
 		},
 		{
 			name: "next page",
@@ -205,8 +208,11 @@ func TestPaginateStorage(t *testing.T) {
 				}),
 				opts: PaginationOpts{10, 10},
 			},
-			wantPage: []orchestrator.CloudService{{Id: "3"}, {Id: "4"}},
-			wantNbt:  "CAQQAg==",
+			wantPage: []orchestrator.CloudService{
+				{Id: "3", MetricConfigurations: []*assessment.MetricConfiguration{}},
+				{Id: "4", MetricConfigurations: []*assessment.MetricConfiguration{}},
+			},
+			wantNbt: "CAQQAg==",
 		},
 		{
 			name: "last page",
@@ -224,7 +230,7 @@ func TestPaginateStorage(t *testing.T) {
 				}),
 				opts: PaginationOpts{10, 10},
 			},
-			wantPage: []orchestrator.CloudService{{Id: "5"}},
+			wantPage: []orchestrator.CloudService{{Id: "5", MetricConfigurations: []*assessment.MetricConfiguration{}}},
 			wantNbt:  "",
 		},
 	}

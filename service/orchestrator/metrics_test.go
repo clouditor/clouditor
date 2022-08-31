@@ -51,7 +51,6 @@ const MockMetricID = "SomeMetric"
 
 func TestService_loadMetrics(t *testing.T) {
 	type fields struct {
-		metricConfigurations  map[string]map[string]*assessment.MetricConfiguration
 		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
@@ -100,7 +99,6 @@ func TestService_loadMetrics(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				metricConfigurations:  tt.fields.metricConfigurations,
 				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
@@ -483,7 +481,6 @@ func TestService_ListMetrics(t *testing.T) {
 
 func TestService_GetMetricImplementation(t *testing.T) {
 	type fields struct {
-		metricConfigurations  map[string]map[string]*assessment.MetricConfiguration
 		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
@@ -556,7 +553,6 @@ func TestService_GetMetricImplementation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				metricConfigurations:  tt.fields.metricConfigurations,
 				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
@@ -579,7 +575,6 @@ func TestService_GetMetricImplementation(t *testing.T) {
 
 func TestService_UpdateMetricImplementation(t *testing.T) {
 	type fields struct {
-		metricConfigurations  map[string]map[string]*assessment.MetricConfiguration
 		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
@@ -655,7 +650,6 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				metricConfigurations:  tt.fields.metricConfigurations,
 				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
@@ -677,7 +671,6 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 
 func TestService_GetMetricConfiguration(t *testing.T) {
 	type fields struct {
-		metricConfigurations  map[string]map[string]*assessment.MetricConfiguration
 		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
@@ -697,8 +690,10 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 		wantErr      assert.ErrorAssertionFunc
 	}{
 		{
-			name:   "metric not found",
-			fields: fields{},
+			name: "metric not found",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+			},
 			args: args{
 				req: &orchestrator.GetMetricConfigurationRequest{
 					MetricId: "NotExists",
@@ -717,7 +712,6 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
-				metricConfigurations:  tt.fields.metricConfigurations,
 				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
@@ -738,7 +732,6 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 
 func TestService_ListMetricConfigurations(t *testing.T) {
 	type fields struct {
-		metricConfigurations  map[string]map[string]*assessment.MetricConfiguration
 		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
@@ -772,14 +765,17 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					_ = s.Create(assessment.Metric{Id: MockMetricID})
-				}),
-				metricConfigurations: map[string]map[string]*assessment.MetricConfiguration{
-					DefaultTargetCloudServiceId: {
-						MockMetricID: {
-							Operator: "==",
+					_ = s.Create(orchestrator.CloudService{
+						Id: DefaultTargetCloudServiceId,
+						MetricConfigurations: []*assessment.MetricConfiguration{
+							{
+								MetricId:  MockMetricID,
+								ServiceId: DefaultTargetCloudServiceId,
+								Operator:  "==",
+							},
 						},
-					},
-				},
+					})
+				}),
 			},
 			args: args{
 				req: &orchestrator.ListMetricConfigurationRequest{
@@ -789,7 +785,9 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 			wantResponse: &orchestrator.ListMetricConfigurationResponse{
 				Configurations: map[string]*assessment.MetricConfiguration{
 					MockMetricID: {
-						Operator: "==",
+						MetricId:  MockMetricID,
+						ServiceId: DefaultTargetCloudServiceId,
+						Operator:  "==",
 					},
 				},
 			},
@@ -799,7 +797,6 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				metricConfigurations:  tt.fields.metricConfigurations,
 				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
@@ -821,7 +818,6 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 
 func TestService_UpdateMetricConfiguration(t *testing.T) {
 	type fields struct {
-		metricConfigurations  map[string]map[string]*assessment.MetricConfiguration
 		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
@@ -845,7 +841,10 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			name:   "metric does not exist",
 			fields: fields{storage: testutil.NewInMemoryStorage(t)},
 			args: args{
-				req: &orchestrator.UpdateMetricConfigurationRequest{ServiceId: DefaultTargetCloudServiceId, MetricId: "MyMetric"},
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					ServiceId: DefaultTargetCloudServiceId,
+					MetricId:  "MyMetric",
+				},
 			},
 			wantErr: true,
 		},
@@ -857,30 +856,76 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 				}),
 			},
 			args: args{
-				req: &orchestrator.UpdateMetricConfigurationRequest{ServiceId: "MyService", MetricId: "MyMetric"},
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					ServiceId: "MyService",
+					MetricId:  "MyMetric",
+				},
 			},
 			wantErr: true,
 		},
 		{
-			name: "first metric in service",
+			name: "append metric configuration",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Create(assessment.Metric{Id: "MyMetric"})
+					_ = s.Create(assessment.Metric{Id: MockMetricID})
 					_ = s.Create(&orchestrator.CloudService{Id: DefaultTargetCloudServiceId})
 				}),
-				metricConfigurations: map[string]map[string]*assessment.MetricConfiguration{},
 			},
 			args: args{
-				req: &orchestrator.UpdateMetricConfigurationRequest{ServiceId: DefaultTargetCloudServiceId, MetricId: "MyMetric", Configuration: &assessment.MetricConfiguration{Operator: "<"}},
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					ServiceId: DefaultTargetCloudServiceId,
+					MetricId:  MockMetricID,
+					Configuration: &assessment.MetricConfiguration{
+						ServiceId: DefaultTargetCloudServiceId,
+						MetricId:  MockMetricID,
+						Operator:  "<",
+					},
+				},
 			},
 			wantErr: false,
-			wantRes: &assessment.MetricConfiguration{Operator: "<"},
+			wantRes: &assessment.MetricConfiguration{
+				ServiceId: DefaultTargetCloudServiceId,
+				MetricId:  MockMetricID,
+				Operator:  "<",
+			},
+		},
+		{
+			name: "replace metric configuration",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					_ = s.Create(assessment.Metric{Id: MockMetricID})
+					_ = s.Create(&orchestrator.CloudService{
+						Id: DefaultTargetCloudServiceId,
+						MetricConfigurations: []*assessment.MetricConfiguration{{
+							MetricId:  MockMetricID,
+							ServiceId: DefaultTargetCloudServiceId,
+							Operator:  ">",
+						}},
+					})
+				}),
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					ServiceId: DefaultTargetCloudServiceId,
+					MetricId:  MockMetricID,
+					Configuration: &assessment.MetricConfiguration{
+						ServiceId: DefaultTargetCloudServiceId,
+						MetricId:  MockMetricID,
+						Operator:  "<",
+					},
+				},
+			},
+			wantErr: false,
+			wantRes: &assessment.MetricConfiguration{
+				ServiceId: DefaultTargetCloudServiceId,
+				MetricId:  MockMetricID,
+				Operator:  "<",
+			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				metricConfigurations:  tt.fields.metricConfigurations,
 				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
