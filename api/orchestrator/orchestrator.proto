@@ -308,6 +308,73 @@ service Orchestrator {
   }
 }
 
+// Creates a new Target of Evaluation
+rpc CreateTargetOfEvaluation(CreateTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
+  option (google.api.http) = {
+    post : "/v1/orchestrator/targetofevaluation"
+    body : "target_of_evaluation"
+  };
+}
+
+// Retrieves a Target of Evaluation
+rpc GetTargetOfEvaluation(GetTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
+  option (google.api.http) = {
+    get : "/v1/orchestrator/targetofevaluation/{target_of_evaluation_id}"
+  };
+}
+
+// Lists all Targets of Evaluation
+rpc ListTargetsOfEvaluation(ListTargetsOfEvaluationRequest) returns (ListTargetsOfEvaluationResponse) {
+  option (google.api.http) = {
+    get : "/v1/orchestrator/targetofevaluation"
+  };
+}
+
+// Updates an existing Target of Evaluation
+rpc UpdateTargetOfEvaluation(UpdateTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
+  option (google.api.http) = {
+    put : "/v1/orchestrator/targetofevaluation/{target_of_evaluation_id}"
+    body : "target_of_evaluation"
+  };
+}
+
+// Removes a Target of Evaluation
+rpc RemoveTargetOfEvaluation(RemoveTargetOfEvaluationRequest) returns (google.protobuf.Empty) {
+  option (google.api.http) = {
+    delete : "/v1/orchestrator/targetofevaluation/{target_of_evaluation_id}"
+  };
+}
+
+// Retrieves a Category
+rpc GetCategory(GetCategoryRequest) returns (Category) {
+  option (google.api.http) = {
+    get : "/v1/orchestrator/categories/{category_id}"
+  };
+}
+
+// Lists all Categories (optionally only categories related to a certain catalog)
+rpc ListCategories(ListCategoriesRequest)
+    returns (ListCategoriesResponse) {
+  option (google.api.http) = {
+    get : "/v1/orchestrator/categories"
+  };
+}
+
+// Retrieves a Control
+rpc GetControl(GetControlRequest) returns (Control) {
+  option (google.api.http) = {
+    get : "/v1/orchestrator/controls/{control_id}"
+  };
+}
+
+// Lists all Controls (optionally only controls related to a certain category)
+rpc ListControls(ListControlsRequest)
+    returns (ListControlsResponse) {
+  option (google.api.http) = {
+    get : "/v1/orchestrator/controls"
+  };
+}
+
 message RegisterAssessmentToolRequest { AssessmentTool tool = 1; }
 
 message ListAssessmentToolsRequest {
@@ -464,7 +531,20 @@ message Catalog {
 
   string description = 3;
 
+  repeated Category categories = 4;
+}
+
+message Category {
+  string id = 1;
+
+  string name = 2;
+  
+  string description = 3;
+
   repeated Control controls = 4;
+
+  // Reference to the catalog this Category belongs to.
+  optional string catalog_id = 6;
 }
 
 // Control represents a certain Control that needs to be fulfilled. It could be
@@ -493,8 +573,8 @@ message Control {
   repeated Metric metrics = 5
       [ (tagger.tags) = "gorm:\"many2many:control_metrics\"" ];
 
-  // Reference to the catalog this control belongs to.
-  optional string catalog_id = 6;
+  // Reference to the parent category this control belongs to. Leaving it empty means it it is a sub-control.
+  optional string category_id = 6;
 
   // Reference to the parent control this sub-control belongs to. Adheres to the
   // OSCAL model. Leaving it empty means it it is a root control.
@@ -510,7 +590,8 @@ message TargetOfEvaluation {
 
   Catalog catalog = 3;
 
-  string assurance_level = 4;
+  // an assurance level is not offered by every catalog, therefore it is optional
+  optional string assurance_level = 4;
 }
 
 message CreateTargetOfEvaluationRequest {
@@ -527,6 +608,7 @@ message ListTargetsOfEvaluationRequest {
   string order_by = 3;
   bool asc = 4;
 }
+
 message ListTargetsOfEvaluationResponse {
   repeated TargetOfEvaluation targets_of_evaluation = 1;
   string next_page_token = 2;
@@ -567,6 +649,7 @@ message ListCatalogsRequest {
   string order_by = 3;
   bool asc = 4;
 }
+
 message ListCatalogsResponse {
   repeated Catalog catalogs = 1;
   string next_page_token = 2;
@@ -575,6 +658,44 @@ message ListCatalogsResponse {
 message UpdateCatalogRequest {
   string catalog_id = 1;
   Catalog catalog = 2;
+}
+
+message GetCategoryRequest { 
+  string category_id = 1; 
+  string catalog_id = 2; 
+}
+
+message ListCategoriesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string order_by = 3;
+  bool asc = 4;
+  // return either all categories or only the categories of the specified catalog
+  optional string catalog_id = 5;
+}
+
+message ListCategoriesResponse {
+  repeated Category categories = 1;
+  string next_page_token = 2;
+}
+
+message GetControlRequest { 
+  string control_id = 1; 
+  string catalog_id = 2; 
+}
+
+message ListControlsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string order_by = 3;
+  bool asc = 4;
+  // return either all controls or only the controls of the specified category
+  optional string category_id = 5;
+}
+
+message ListControlsResponse {
+  repeated Control controls = 1;
+  string next_page_token = 2;
 }
 
 message CreateCertificateRequest { Certificate certificate = 1; }
