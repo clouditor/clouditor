@@ -577,7 +577,7 @@ message Control {
 
   // List of sub-controls - this is in accordance with the OSCAL model.
   repeated Control controls = 4 
-    [ (tagger.tags) = "gorm:\"foreignKey:control_id\"" ];
+    [ (tagger.tags) = "gorm:\"foreignKey:short_name,category_id\"" ];
 
 
   // metrics contains either a list of reference to metrics - in this case only
