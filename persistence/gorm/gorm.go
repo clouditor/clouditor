@@ -67,6 +67,7 @@ var DefaultTypes = []any{
 	&orchestrator.Certificate{},
 	&orchestrator.State{},
 	&orchestrator.Catalog{},
+	&orchestrator.Category{},
 	&orchestrator.Control{},
 }
 

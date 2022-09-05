@@ -26,6 +26,7 @@
 package orchestrator
 
 import (
+	"context"
 	"fmt"
 
 	"clouditor.io/clouditor/api"
@@ -116,6 +117,40 @@ func NewListCatalogsCommand() *cobra.Command {
 	return cmd
 }
 
+// NewGetCategoryCommand returns a cobra command for the `get-category` subcommand
+func NewGetCategoryCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "get-category",
+		Short: "Retrieves a category by name and catalog ID",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var (
+				err     error
+				session *cli.Session
+				client  orchestrator.OrchestratorClient
+				res     *orchestrator.Category
+			)
+
+			if session, err = cli.ContinueSession(); err != nil {
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+				return nil
+			}
+
+			client = orchestrator.NewOrchestratorClient(session)
+
+			catalogID := args[0]
+			categoryName := args[1]
+
+			res, err = client.GetCategory(context.Background(), &orchestrator.GetCategoryRequest{CatalogId: catalogID, CategoryName: categoryName})
+
+			return session.HandleResponse(res, err)
+		},
+		ValidArgsFunction: cli.ValidArgsGetMetrics,
+	}
+
+	return cmd
+}
+
 // NewOrchestratorCommand returns a cobra command for `orchestrator` subcommands
 func NewOrchestratorCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -133,5 +168,6 @@ func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewListAssessmentResultsCommand(),
 		NewListCatalogsCommand(),
+		NewGetCategoryCommand(),
 	)
 }

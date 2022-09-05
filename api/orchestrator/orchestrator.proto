@@ -308,7 +308,8 @@ service Orchestrator {
   }
 
   // Creates a new Target of Evaluation
-  rpc CreateTargetOfEvaluation(CreateTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
+  rpc CreateTargetOfEvaluation(CreateTargetOfEvaluationRequest)
+      returns (TargetOfEvaluation) {
     option (google.api.http) = {
       post : "/v1/orchestrator/toes"
       body : "toe"
@@ -316,27 +317,28 @@ service Orchestrator {
   }
 
   // Retrieves a Target of Evaluation
-  rpc GetTargetOfEvaluation(GetTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
+  rpc GetTargetOfEvaluation(GetTargetOfEvaluationRequest)
+      returns (TargetOfEvaluation) {
     option (google.api.http) = {
       get : "/v1/orchestrator/toes/{toe_id}"
     };
   }
 
   // Lists all Targets of Evaluation
-  rpc ListTargetsOfEvaluation(ListTargetsOfEvaluationRequest) returns (ListTargetsOfEvaluationResponse) {
+  rpc ListTargetsOfEvaluation(ListTargetsOfEvaluationRequest)
+      returns (ListTargetsOfEvaluationResponse) {
     option (google.api.http) = {
       get : "/v1/orchestrator/toes"
       additional_bindings {
         get : "/v1/orchestrator/cloud_services/{service_id}/toes"
       }
-      additional_bindings {
-        get : "/v1/orchestrator/catalogs/{catalog_id}/toes"
-      }
+      additional_bindings {get : "/v1/orchestrator/catalogs/{catalog_id}/toes"}
     };
   }
 
   // Updates an existing Target of Evaluation
-  rpc UpdateTargetOfEvaluation(UpdateTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
+  rpc UpdateTargetOfEvaluation(UpdateTargetOfEvaluationRequest)
+      returns (TargetOfEvaluation) {
     option (google.api.http) = {
       put : "/v1/orchestrator/toes/{toe_id}"
       body : "toe"
@@ -344,7 +346,8 @@ service Orchestrator {
   }
 
   // Removes a Target of Evaluation
-  rpc RemoveTargetOfEvaluation(RemoveTargetOfEvaluationRequest) returns (google.protobuf.Empty) {
+  rpc RemoveTargetOfEvaluation(RemoveTargetOfEvaluationRequest)
+      returns (google.protobuf.Empty) {
     option (google.api.http) = {
       delete : "/v1/orchestrator/toes/{toe_id}"
     };
@@ -353,18 +356,7 @@ service Orchestrator {
   // Retrieves a Category
   rpc GetCategory(GetCategoryRequest) returns (Category) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/categories/{category_id}"
-    };
-  }
-
-  // Lists all Categories (optionally only categories related to a certain catalog)
-  rpc ListCategories(ListCategoriesRequest)
-      returns (ListCategoriesResponse) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/categories"
-      additional_bindings {
-        get : "/v1/orchestrator/catalogs/{catalog_id}/categories"
-      }
+      get : "/v1/orchestrator/catalogs/{catalog_id}/category/{category_name}"
     };
   }
 
@@ -376,8 +368,7 @@ service Orchestrator {
   }
 
   // Lists all Controls (optionally only controls related to a certain category)
-  rpc ListControls(ListControlsRequest)
-      returns (ListControlsResponse) {
+  rpc ListControls(ListControlsRequest) returns (ListControlsResponse) {
     option (google.api.http) = {
       get : "/v1/orchestrator/controls"
       additional_bindings {
@@ -546,18 +537,18 @@ message Catalog {
   repeated Category categories = 4;
 }
 
-message Category { 
+message Category {
 
-  string name = 1
-    [ (tagger.tags) = "gorm:\"primaryKey\"" ];
-  
+  string name = 1 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
+
   string description = 2;
 
-  repeated Control controls = 3;
+  repeated Control controls = 3
+      [ (tagger.tags) = "gorm:\"foreignKey:category_name,category_"
+                        "catalog_id;references:name,catalog_id\"" ];
 
   // Reference to the catalog this Category belongs to.
-  string catalog_id = 4
-    [ (tagger.tags) = "gorm:\"primaryKey\"" ];
+  string catalog_id = 4 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
 }
 
 // Control represents a certain Control that needs to be fulfilled. It could be
@@ -566,8 +557,7 @@ message Category {
 // sub-control.
 message Control {
   // A short name, e.g. OPS-01
-  string short_name = 1
-    [ (tagger.tags) = "gorm:\"primaryKey\"" ];
+  string short_name = 1 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
 
   // Human-readable name of the control
   string name = 2;
@@ -576,10 +566,11 @@ message Control {
   string description = 3;
 
   // List of sub-controls - this is in accordance with the OSCAL model.
-  repeated Control controls = 4 
-    [ (tagger.tags) = "gorm:\"foreignKey:short_name,category_id\"" ];
-
-
+  // repeated Control controls = 4
+  //    [ (tagger.tags) =
+  //          "gorm:\"foreignKey:short_name,category_id;references=parent_"
+  //          "control_short_name,parent_control_category_id\"" ];
+  //
   // metrics contains either a list of reference to metrics - in this case only
   // the id field of the metric is populated - or a list of populated metric
   // meta-data, most likely returned by the database.
@@ -587,12 +578,11 @@ message Control {
       [ (tagger.tags) = "gorm:\"many2many:control_metrics\"" ];
 
   // Reference to the parent category this control belongs to.
-  string category_id = 6
-    [ (tagger.tags) = "gorm:\"primaryKey\"" ];
-  
-  // Reference to the parent control this sub-control belongs to. Adheres to the
-  // OSCAL model. Leaving it empty means it it is a root control.
-  optional string control_id = 7;
+  string category_name = 6 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
+  string category_catalog_id = 7 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
+
+  //  optional string parent_control_short_name = 8;
+  //  optional string parent_control_category_id = 9;
 }
 
 // A Target of Evaluation binds a cloud service to a catalog, so the service is
@@ -604,29 +594,28 @@ message TargetOfEvaluation {
 
   Catalog catalog = 3;
 
-  // an assurance level is not offered by every catalog, therefore it is optional
+  // an assurance level is not offered by every catalog, therefore it is
+  // optional
   optional string assurance_level = 4;
 }
 
-message CreateTargetOfEvaluationRequest {
-  TargetOfEvaluation toe = 1;
-}
+message CreateTargetOfEvaluationRequest { TargetOfEvaluation toe = 1; }
 
 message RemoveTargetOfEvaluationRequest { string toe_id = 1; }
 
-message GetTargetOfEvaluationRequest { 
-  string toe_id = 1; 
-}
+message GetTargetOfEvaluationRequest { string toe_id = 1; }
 
 message ListTargetsOfEvaluationRequest {
   int32 page_size = 1;
   string page_token = 2;
   string order_by = 3;
   bool asc = 4;
-  // We cannot create additional bindings when the parameter is optional so we check for != "" in the method to see if it is set
-  // when the service is specified, return all ToEs that evaluate the given service for any catalog
+  // We cannot create additional bindings when the parameter is optional so we
+  // check for != "" in the method to see if it is set when the service is
+  // specified, return all ToEs that evaluate the given service for any catalog
   string service_id = 5;
-  // when the catalog is specified, return all ToEs that evaluate the given catalog for any service
+  // when the catalog is specified, return all ToEs that evaluate the given
+  // catalog for any service
   string catalog_id = 6;
 }
 
@@ -681,27 +670,12 @@ message UpdateCatalogRequest {
   Catalog catalog = 2;
 }
 
-message GetCategoryRequest { 
-  string category_id = 1; 
+message GetCategoryRequest {
+  string catalog_id = 1;
+  string category_name = 2;
 }
 
-message ListCategoriesRequest {
-  int32 page_size = 1;
-  string page_token = 2;
-  string order_by = 3;
-  bool asc = 4;
-  // If the catalog id is set, return the categories of the specified catalog, otherwise list all
-  string catalog_id = 5;
-}
-
-message ListCategoriesResponse {
-  repeated Category categories = 1;
-  string next_page_token = 2;
-}
-
-message GetControlRequest { 
-  string control_id = 1; 
-}
+message GetControlRequest { string control_id = 1; }
 
 message ListControlsRequest {
   int32 page_size = 1;
