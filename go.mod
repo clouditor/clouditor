@@ -47,7 +47,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.24.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.27.1
 	github.com/aws/aws-sdk-go-v2/service/sts v1.16.13
-	github.com/aws/smithy-go v1.12.1
+	github.com/aws/smithy-go v1.13.2
 )
 
 // runtime dependencies (k8s)
