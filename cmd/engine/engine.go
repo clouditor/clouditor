@@ -222,7 +222,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	} else {
 		db, err = gorm.NewStorage(gorm.WithPostgres(
 			viper.GetString(DBHostFlag),
-			uint16(viper.GetUint(DBPortFlag)),
+			viper.GetUint16(DBPortFlag),
 			viper.GetString(DBUserNameFlag),
 			viper.GetString(DBPasswordFlag),
 			viper.GetString(DBNameFlag),
@@ -283,8 +283,8 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		}
 	}
 
-	grpcPort := uint16(viper.GetUint(APIgRPCPortFlag))
-	httpPort := uint16(viper.GetUint(APIHTTPPortFlag))
+	grpcPort := viper.GetUint16(APIgRPCPortFlag)
+	httpPort := viper.GetUint16(APIHTTPPortFlag)
 
 	grpcLogger := logrus.New()
 	grpcLogger.Formatter = &formatter.GRPCFormatter{TextFormatter: logrus.TextFormatter{ForceColors: true}}
