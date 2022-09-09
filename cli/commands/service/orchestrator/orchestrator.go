@@ -117,6 +117,39 @@ func NewListCatalogsCommand() *cobra.Command {
 	return cmd
 }
 
+// NewGetCatalogCommand returns a cobra command for the `get-catalog` subcommand
+func NewGetCatalogCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "get-catalog [catalog ID]",
+		Short: "Retrieves a catalog by its ID",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var (
+				err     error
+				session *cli.Session
+				client  orchestrator.OrchestratorClient
+				res     *orchestrator.Catalog
+			)
+
+			if session, err = cli.ContinueSession(); err != nil {
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+				return nil
+			}
+
+			client = orchestrator.NewOrchestratorClient(session)
+
+			catalogID := args[0]
+
+			res, err = client.GetCatalog(context.Background(), &orchestrator.GetCatalogRequest{CatalogId: catalogID})
+
+			return session.HandleResponse(res, err)
+		},
+		ValidArgsFunction: cli.ValidArgsGetMetrics,
+	}
+
+	return cmd
+}
+
 // NewGetCategoryCommand returns a cobra command for the `get-category` subcommand
 func NewGetCategoryCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -203,6 +236,7 @@ func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewListAssessmentResultsCommand(),
 		NewListCatalogsCommand(),
+		NewGetCatalogCommand(),
 		NewGetCategoryCommand(),
 		NewGetControlCommand(),
 	)

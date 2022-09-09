@@ -15,7 +15,12 @@
                         "controls": [
                             {
                                 "short_name": "OIS-01.1",
-                                "name": "Some kind of sub-control"
+                                "name": "Some kind of sub-control",
+                                "metrics": [
+                                    {
+                                        "id": "TlsVersion"
+                                    }
+                                ]
                             }
                         ]
                     }

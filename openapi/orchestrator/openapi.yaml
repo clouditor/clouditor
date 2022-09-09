@@ -1304,6 +1304,11 @@ components:
                     items:
                         $ref: '#/components/schemas/Control'
                     description: List of sub - controls -     this is in accordance with the OSCAL model.
+                metrics:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Metric'
+                    description: metrics contains either a list of reference to metrics - in this case only the id field of the metric is populated - or a list of populated metric meta-data, most likely returned by the database.
                 parentControlShortName:
                     type: string
                 parentControlCategoryName:

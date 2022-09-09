@@ -1021,7 +1021,6 @@ func TestService_GetCatalog(t *testing.T) {
 		storage persistence.Storage
 	}
 	type args struct {
-		in0 context.Context
 		req *orchestrator.GetCatalogRequest
 	}
 	tests := []struct {
@@ -1068,7 +1067,7 @@ func TestService_GetCatalog(t *testing.T) {
 				want := orchestratortest.NewCatalog()
 				assert.True(t, ok)
 				fmt.Println(res)
-				assert.Equal(t, 1, len(res.Controls)) // TODO: Fails since both sub controls (Cont1234.1 and Cont1234.1.1) are referring to catalog as well
+				assert.Equal(t, 1, len(res.Categories))
 				return assert.Equal(t, want.Id, res.Id)
 			},
 			wantErr: assert.NoError,
@@ -1081,10 +1080,11 @@ func TestService_GetCatalog(t *testing.T) {
 			}
 			res, err := orchestratorService.GetCatalog(context.Background(), tt.args.req)
 
-			// Validate the response via the ValueAssertionFunc function
-			tt.wantResponse(t, res)
 			// Validate the error via the ErrorAssertionFunc function
 			tt.wantErr(t, err)
+
+			// Validate the response via the ValueAssertionFunc function
+			tt.wantResponse(t, res)
 		})
 	}
 }
