@@ -11,7 +11,13 @@
                     {
                         "short_name": "OIS-01",
                         "name": "INFORMATION SECURITY MANAGEMENT SYSTEM",
-                        "description": "The CSP operates an information security management system (ISMS). The scope of the ISMS covers the CSP's organisational units, locations and processes for providing the cloud service."
+                        "description": "The CSP operates an information security management system (ISMS). The scope of the ISMS covers the CSP's organisational units, locations and processes for providing the cloud service.",
+                        "controls": [
+                            {
+                                "short_name": "OIS-01.1",
+                                "name": "Some kind of sub-control"
+                            }
+                        ]
                     }
                 ]
             }

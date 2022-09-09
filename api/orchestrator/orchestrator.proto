@@ -363,7 +363,8 @@ service Orchestrator {
   // Retrieves a Control
   rpc GetControl(GetControlRequest) returns (Control) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/controls/{control_id}"
+      get : "/v1/orchestrator/catalogs/{catalog_id}/category/{category_name}/"
+            "{control_short_name}"
     };
   }
 
@@ -558,6 +559,8 @@ message Category {
 message Control {
   // A short name, e.g. OPS-01
   string short_name = 1 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
+  string category_name = 6 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
+  string category_catalog_id = 7 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
 
   // Human-readable name of the control
   string name = 2;
@@ -565,24 +568,24 @@ message Control {
   // Description of the control
   string description = 3;
 
-  // List of sub-controls - this is in accordance with the OSCAL model.
-  // repeated Control controls = 4
-  //    [ (tagger.tags) =
-  //          "gorm:\"foreignKey:short_name,category_id;references=parent_"
-  //          "control_short_name,parent_control_category_id\"" ];
-  //
+  // List of sub - controls -
+  //     this is in accordance with the OSCAL model.
+  repeated Control controls = 4
+      [ (tagger.tags) =
+            "gorm:\"foreignKey:parent_control_short_name,parent_control_"
+            "category_name,parent_control_category_catalog_id;references=short_"
+            "name,category_name;category_catalog_id\"" ];
   // metrics contains either a list of reference to metrics - in this case only
   // the id field of the metric is populated - or a list of populated metric
   // meta-data, most likely returned by the database.
-  repeated Metric metrics = 5
-      [ (tagger.tags) = "gorm:\"many2many:control_metrics\"" ];
+  // repeated Metric metrics = 5
+  //    [ (tagger.tags) = "gorm:\"many2many:control_metrics\"" ];
 
   // Reference to the parent category this control belongs to.
-  string category_name = 6 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
-  string category_catalog_id = 7 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
 
-  //  optional string parent_control_short_name = 8;
-  //  optional string parent_control_category_id = 9;
+  optional string parent_control_short_name = 8;
+  optional string parent_control_category_name = 10;
+  optional string parent_control_category_catalog_id = 9;
 }
 
 // A Target of Evaluation binds a cloud service to a catalog, so the service is
@@ -675,7 +678,11 @@ message GetCategoryRequest {
   string category_name = 2;
 }
 
-message GetControlRequest { string control_id = 1; }
+message GetControlRequest {
+  string catalog_id = 1;
+  string category_name = 2;
+  string control_short_name = 3;
+}
 
 message ListControlsRequest {
   int32 page_size = 1;

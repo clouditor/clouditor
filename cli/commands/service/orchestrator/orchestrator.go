@@ -120,7 +120,7 @@ func NewListCatalogsCommand() *cobra.Command {
 // NewGetCategoryCommand returns a cobra command for the `get-category` subcommand
 func NewGetCategoryCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get-category",
+		Use:   "get-category [catalog ID] [category name]",
 		Short: "Retrieves a category by name and catalog ID",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -151,6 +151,41 @@ func NewGetCategoryCommand() *cobra.Command {
 	return cmd
 }
 
+// NewGetControlCommand returns a cobra command for the `get-control` subcommand
+func NewGetControlCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "get-control [catalog ID] [category name] [short name]",
+		Short: "Retrieves a control by its short name, its category and catalog ID",
+		Args:  cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var (
+				err     error
+				session *cli.Session
+				client  orchestrator.OrchestratorClient
+				res     *orchestrator.Control
+			)
+
+			if session, err = cli.ContinueSession(); err != nil {
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+				return nil
+			}
+
+			client = orchestrator.NewOrchestratorClient(session)
+
+			catalogID := args[0]
+			categoryName := args[1]
+			controlShortName := args[2]
+
+			res, err = client.GetControl(context.Background(), &orchestrator.GetControlRequest{CatalogId: catalogID, CategoryName: categoryName, ControlShortName: controlShortName})
+
+			return session.HandleResponse(res, err)
+		},
+		ValidArgsFunction: cli.ValidArgsGetMetrics,
+	}
+
+	return cmd
+}
+
 // NewOrchestratorCommand returns a cobra command for `orchestrator` subcommands
 func NewOrchestratorCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -169,5 +204,6 @@ func AddCommands(cmd *cobra.Command) {
 		NewListAssessmentResultsCommand(),
 		NewListCatalogsCommand(),
 		NewGetCategoryCommand(),
+		NewGetControlCommand(),
 	)
 }

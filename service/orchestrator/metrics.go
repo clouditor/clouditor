@@ -325,7 +325,7 @@ func (svc *Service) listMetricsForControl(_ context.Context, req *orchestrator.L
 	err = svc.storage.Get(control, "Id = ?", req.ControlId)
 	// then, return the associated metrics
 	res = &orchestrator.ListMetricsResponse{
-		Metrics: control.Metrics,
+		//Metrics: control.Metrics,
 	}
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not get metrics for control: %v", err)

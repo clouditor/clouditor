@@ -164,9 +164,24 @@ func (s *storage) Create(r any) error {
 	return s.db.Create(r).Error
 }
 
+type preloadHack struct {
+	query string
+	args  []any
+}
+
+func WithPreload(query string, args ...any) *preloadHack {
+	return &preloadHack{query: query, args: args}
+}
+
 func (s *storage) Get(r any, conds ...any) (err error) {
+	if preload, ok := conds[0].(*preloadHack); ok {
+		err = s.db.Preload(preload.query, preload.args...).First(r, conds[1:]...).Error
+	} else {
+		err = s.db.Preload(clause.Associations).First(r, conds...).Error
+	}
+
 	// Preload all associations for r being filled with all items (including relationships)
-	err = s.db.Preload(clause.Associations).First(r, conds...).Error
+
 	// if record is not found, use the error message defined in the persistence package
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		err = persistence.ErrRecordNotFound

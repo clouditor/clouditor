@@ -523,7 +523,7 @@ func (svc *Service) RemoveCatalog(_ context.Context, req *orchestrator.RemoveCat
 func (svc *Service) loadCatalogs() (err error) {
 	var (
 		b        []byte
-		catalogs []orchestrator.Catalog
+		catalogs []*orchestrator.Catalog
 	)
 
 	log.Infof("Loading catalogs from %s", svc.catalogsFile)
@@ -536,6 +536,18 @@ func (svc *Service) loadCatalogs() (err error) {
 	err = json.Unmarshal(b, &catalogs)
 	if err != nil {
 		return fmt.Errorf("error in JSON marshal: %w", err)
+	}
+
+	// We need to make sure that sub-controls have the category_name and category_catalog_id of their parents set, otherwise we are failing a constraint.
+	for _, catalog := range catalogs {
+		for _, category := range catalog.Categories {
+			for _, control := range category.Controls {
+				for _, sub := range control.Controls {
+					sub.CategoryName = category.Name
+					sub.CategoryCatalogId = catalog.Id
+				}
+			}
+		}
 	}
 
 	err = svc.storage.Save(catalogs)

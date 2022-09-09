@@ -385,6 +385,41 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/orchestrator/catalogs/{catalogId}/category/{categoryName}/{controlShortName}:
+        get:
+            tags:
+                - Orchestrator
+            description: Retrieves a Control
+            operationId: Orchestrator_GetControl
+            parameters:
+                - name: catalogId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: categoryName
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: controlShortName
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Control'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/certificates:
         get:
             tags:
@@ -791,31 +826,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListControlsResponse'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /v1/orchestrator/controls/{controlId}:
-        get:
-            tags:
-                - Orchestrator
-            description: Retrieves a Control
-            operationId: Orchestrator_GetControl
-            parameters:
-                - name: controlId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Control'
                 default:
                     description: Default error response
                     content:
@@ -1279,21 +1289,26 @@ components:
                 shortName:
                     type: string
                     description: A short name, e.g. OPS-01
+                categoryName:
+                    type: string
+                categoryCatalogId:
+                    type: string
                 name:
                     type: string
                     description: Human-readable name of the control
                 description:
                     type: string
                     description: Description of the control
-                metrics:
+                controls:
                     type: array
                     items:
-                        $ref: '#/components/schemas/Metric'
-                    description: List of sub-controls - this is in accordance with the OSCAL model. repeated Control controls = 4    [ (tagger.tags) =          "gorm:\"foreignKey:short_name,category_id;references=parent_"          "control_short_name,parent_control_category_id\"" ]; metrics contains either a list of reference to metrics - in this case only the id field of the metric is populated - or a list of populated metric meta-data, most likely returned by the database.
-                categoryName:
+                        $ref: '#/components/schemas/Control'
+                    description: List of sub - controls -     this is in accordance with the OSCAL model.
+                parentControlShortName:
                     type: string
-                    description: Reference to the parent category this control belongs to.
-                categoryCatalogId:
+                parentControlCategoryName:
+                    type: string
+                parentControlCategoryCatalogId:
                     type: string
             description: Control represents a certain Control that needs to be fulfilled. It could be a Control in a certification catalog. It follows the OSCAL model. A requirement in the EUCS terminology, e.g., is represented as the lowest sub-control.
         GoogleProtobufAny:
