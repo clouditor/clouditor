@@ -62,15 +62,10 @@ var DefaultCatalogsFile = "catalogs.json"
 type Service struct {
 	orchestrator.UnimplementedOrchestratorServer
 
-	// metricConfigurations holds a double-map of metric configurations associated first by service ID and then metric ID
-	metricConfigurations map[string]map[string]*assessment.MetricConfiguration
-
-	// mm is a mutex for metric related maps
-	mm sync.Mutex
-
 	// cloudServiceHooks is a list of hook functions that can be used to inform
 	// about updated CloudServices
 	cloudServiceHooks []orchestrator.CloudServiceHookFunc
+
 	// hookMutex is used for (un)locking hook calls
 	hookMutex sync.RWMutex
 
@@ -126,11 +121,10 @@ func WithStorage(storage persistence.Storage) ServiceOption {
 func NewService(opts ...ServiceOption) *Service {
 	var err error
 	s := Service{
-		results:              make(map[string]*assessment.AssessmentResult),
-		metricConfigurations: make(map[string]map[string]*assessment.MetricConfiguration),
-		metricsFile:          DefaultMetricsFile,
-		catalogsFile:         DefaultCatalogsFile,
-		events:               make(chan *orchestrator.MetricChangeEvent, 1000),
+		results:      make(map[string]*assessment.AssessmentResult),
+		metricsFile:  DefaultMetricsFile,
+		catalogsFile: DefaultCatalogsFile,
+		events:       make(chan *orchestrator.MetricChangeEvent, 1000),
 	}
 
 	// Apply service options

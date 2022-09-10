@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"clouditor.io/clouditor/api/assessment"
@@ -430,6 +431,14 @@ func Test_storage_Update(t *testing.T) {
 		Id:          "SomeId",
 		Name:        "SomeName",
 		Description: "SomeDescription",
+		MetricConfigurations: []*assessment.MetricConfiguration{
+			{
+				ServiceId:   "SomeId",
+				MetricId:    "SomeMetric",
+				Operator:    "==",
+				TargetValue: structpb.NewBoolValue(true),
+			},
+		},
 	}
 	err = s.Create(&cloudService)
 	assert.NoError(t, err)
@@ -449,6 +458,7 @@ func Test_storage_Update(t *testing.T) {
 	// Other properties should stay the same
 	assert.Equal(t, cloudService.Id, gotCloudService.Id)
 	assert.Equal(t, cloudService.Description, gotCloudService.Description)
+	assert.Equal(t, len(cloudService.MetricConfigurations), len(gotCloudService.MetricConfigurations))
 }
 
 func Test_storage_Delete(t *testing.T) {

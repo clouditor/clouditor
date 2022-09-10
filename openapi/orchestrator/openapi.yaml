@@ -1278,6 +1278,10 @@ components:
                     type: string
                 description:
                     type: string
+                metricConfigurations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/MetricConfiguration'
         Control:
             type: object
             properties:
@@ -1447,6 +1451,12 @@ components:
                     type: string
                     description: The last time of update
                     format: date-time
+                metricId:
+                    type: string
+                    description: The metric this configuration belongs to
+                serviceId:
+                    type: string
+                    description: The service this configuration belongs to
             description: Defines the operator and a target value for an individual metric
         MetricImplementation:
             type: object
