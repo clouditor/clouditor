@@ -144,7 +144,7 @@ func NewGetCatalogCommand() *cobra.Command {
 
 			return session.HandleResponse(res, err)
 		},
-		ValidArgsFunction: cli.ValidArgsGetMetrics,
+		ValidArgsFunction: cli.ValidArgsGetCatalogs,
 	}
 
 	return cmd
