@@ -61,6 +61,7 @@ type storage struct {
 // DefaultTypes contains a list of internal types that need to be migrated by default
 var DefaultTypes = []any{
 	&auth.User{},
+	&assessment.MetricConfiguration{},
 	&orchestrator.CloudService{},
 	&assessment.MetricImplementation{},
 	&assessment.Metric{},
@@ -77,7 +78,7 @@ type StorageOption func(*storage)
 // WithInMemory is an option to configure Storage to use an in memory DB
 func WithInMemory() StorageOption {
 	return func(s *storage) {
-		s.dialector = sqlite.Open(":memory:")
+		s.dialector = sqlite.Open(":memory:?_pragma=foreign_keys(1)")
 	}
 }
 
