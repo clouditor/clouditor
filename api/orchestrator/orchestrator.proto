@@ -440,7 +440,8 @@ message CloudService {
 
   repeated MetricConfiguration metric_configurations = 5
       [ (tagger.tags) = "gorm:\"many2many:cloud_service_metric_configurations;"
-                        "References:service_id\"" ];
+                        "foreignKey:id;"
+                        "references:service_id,metric_id\"" ];
 }
 
 // Requirement represents a certain requirement that needs to be fulfilled. It
@@ -498,7 +499,8 @@ message Certificate {
   string cab = 8;
   string description = 9;
   // A list of states at specific times
-  repeated State states = 10;
+  repeated State states = 10
+      [ (tagger.tags) = "gorm:\"constraint:OnDelete:CASCADE\"" ];
 }
 
 // A state of a certificate at a given time
