@@ -525,7 +525,7 @@ message CloudService {
 
   string description = 3;
 
-  repeated MetricConfiguration metric_configurations = 5
+  repeated MetricConfiguration metric_configurations = 4
       [ (tagger.tags) = "gorm:\"many2many:cloud_service_metric_configurations;"
                         "References:service_id\"" ];
 }

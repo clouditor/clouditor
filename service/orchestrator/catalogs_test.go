@@ -17,7 +17,6 @@ import (
 
 func TestService_GetCategory(t *testing.T) {
 	type fields struct {
-		metricConfigurations  map[string]map[string]*assessment.MetricConfiguration
 		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
 		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
@@ -71,7 +70,6 @@ func TestService_GetCategory(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			srv := &Service{
-				metricConfigurations:  tt.fields.metricConfigurations,
 				cloudServiceHooks:     tt.fields.cloudServiceHooks,
 				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
@@ -95,15 +93,13 @@ func TestService_GetCategory(t *testing.T) {
 
 func TestService_GetControl(t *testing.T) {
 	type fields struct {
-		UnimplementedOrchestratorServer orchestrator.UnimplementedOrchestratorServer
-		metricConfigurations            map[string]map[string]*assessment.MetricConfiguration
-		cloudServiceHooks               []orchestrator.CloudServiceHookFunc
-		results                         map[string]*assessment.AssessmentResult
-		AssessmentResultHooks           []func(result *assessment.AssessmentResult, err error)
-		storage                         persistence.Storage
-		metricsFile                     string
-		loadMetricsFunc                 func() ([]*assessment.Metric, error)
-		catalogsFile                    string
+		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
+		results               map[string]*assessment.AssessmentResult
+		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		storage               persistence.Storage
+		metricsFile           string
+		loadMetricsFunc       func() ([]*assessment.Metric, error)
+		catalogsFile          string
 	}
 	type args struct {
 		ctx context.Context
@@ -150,15 +146,13 @@ func TestService_GetControl(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			srv := &Service{
-				UnimplementedOrchestratorServer: tt.fields.UnimplementedOrchestratorServer,
-				metricConfigurations:            tt.fields.metricConfigurations,
-				cloudServiceHooks:               tt.fields.cloudServiceHooks,
-				results:                         tt.fields.results,
-				AssessmentResultHooks:           tt.fields.AssessmentResultHooks,
-				storage:                         tt.fields.storage,
-				metricsFile:                     tt.fields.metricsFile,
-				loadMetricsFunc:                 tt.fields.loadMetricsFunc,
-				catalogsFile:                    tt.fields.catalogsFile,
+				cloudServiceHooks:     tt.fields.cloudServiceHooks,
+				results:               tt.fields.results,
+				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
+				storage:               tt.fields.storage,
+				metricsFile:           tt.fields.metricsFile,
+				loadMetricsFunc:       tt.fields.loadMetricsFunc,
+				catalogsFile:          tt.fields.catalogsFile,
 			}
 			gotRes, err := srv.GetControl(tt.args.ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
