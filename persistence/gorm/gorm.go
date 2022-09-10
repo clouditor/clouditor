@@ -174,8 +174,12 @@ func WithPreload(query string, args ...any) *preloadHack {
 }
 
 func (s *storage) Get(r any, conds ...any) (err error) {
-	if preload, ok := conds[0].(*preloadHack); ok {
-		err = s.db.Preload(preload.query, preload.args...).First(r, conds[1:]...).Error
+	if len(conds) > 0 {
+		if preload, ok := conds[0].(*preloadHack); ok {
+			err = s.db.Preload(preload.query, preload.args...).First(r, conds[1:]...).Error
+		} else {
+			err = s.db.Preload(clause.Associations).First(r, conds...).Error
+		}
 	} else {
 		err = s.db.Preload(clause.Associations).First(r, conds...).Error
 	}
