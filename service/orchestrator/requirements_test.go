@@ -105,9 +105,9 @@ func TestService_ListRequirements(t *testing.T) {
 			name: "list requirements",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Save(&assessment.Metric{Id: "Metric1", Name: "Metric1"})
-					_ = s.Save(&assessment.Metric{Id: "Metric2", Name: "Metric2"})
-					_ = s.Save(&orchestrator.Requirement{Id: "Req1", Metrics: []*assessment.Metric{{Id: "Metric1"}}})
+					_ = s.Create(&assessment.Metric{Id: "Metric1", Name: "Metric1"})
+					_ = s.Create(&assessment.Metric{Id: "Metric2", Name: "Metric2"})
+					_ = s.Create(&orchestrator.Requirement{Id: "Req1", Metrics: []*assessment.Metric{{Id: "Metric1"}}})
 				}),
 			},
 			args: args{req: &orchestrator.ListRequirementsRequest{}},
