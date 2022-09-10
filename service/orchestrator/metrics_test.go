@@ -42,7 +42,6 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil"
-	"clouditor.io/clouditor/internal/testutil/orchestratortest"
 	"clouditor.io/clouditor/persistence"
 )
 
@@ -475,35 +474,6 @@ func TestService_ListMetrics(t *testing.T) {
 
 	// Invalid request
 	_, err = service.ListMetrics(context.TODO(), &orchestrator.ListMetricsRequest{OrderBy: "not a field"})
-	assert.Equal(t, codes.InvalidArgument, status.Code(err))
-	assert.Contains(t, err.Error(), api.ErrInvalidColumnName.Error())
-
-}
-
-func TestService_listMetricsForControl(t *testing.T) {
-	var (
-		response *orchestrator.ListMetricsResponse
-		err      error
-	)
-	service := NewService()
-
-	// first, create a mock control
-	mockControl := orchestratortest.NewControl()
-	err = service.storage.Create(mockControl)
-	assert.NoError(t, err)
-	if err != nil {
-		return
-	}
-
-	response, err = service.listMetricsForControl(context.TODO(), &orchestrator.ListMetricsRequest{
-		ControlId: "Cont1234",
-	})
-
-	assert.NoError(t, err)
-	assert.NotEmpty(t, response.Metrics)
-
-	// Invalid request
-	_, err = service.listMetricsForControl(context.TODO(), &orchestrator.ListMetricsRequest{OrderBy: "not a field"})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
 	assert.Contains(t, err.Error(), api.ErrInvalidColumnName.Error())
 

@@ -856,11 +856,6 @@ paths:
                   in: query
                   schema:
                     type: boolean
-                - name: controlId
-                  in: query
-                  description: Optionally list only metrics that are applicable to a specific control
-                  schema:
-                    type: string
             responses:
                 "200":
                     description: OK
@@ -1288,7 +1283,7 @@ components:
             properties:
                 shortName:
                     type: string
-                    description: A short name, e.g. OPS-01
+                    description: 'A short name, e.g. OPS-01 TODO(oxisto): name this "id"? or is it too confusing that this id is not unique? however, it is usually referred to as a control ID'
                 categoryName:
                     type: string
                 categoryCatalogId:

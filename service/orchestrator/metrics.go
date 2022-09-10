@@ -31,7 +31,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 
 	"clouditor.io/clouditor/api"
@@ -109,7 +108,7 @@ func (svc *Service) prepareMetric(m *assessment.Metric) (err error) {
 	fileName := fmt.Sprintf("policies/bundles/%s/data.json", m.Id)
 
 	// Load the default configuration file
-	b, err := ioutil.ReadFile(fileName)
+	b, err := os.ReadFile(fileName)
 	if err != nil {
 		return fmt.Errorf("could not retrieve default configuration for metric %s: %w", m.Id, err)
 	}
@@ -292,43 +291,12 @@ func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetrics
 		err = status.Errorf(codes.InvalidArgument, "%v", err)
 		return
 	}
-	// If control ID is set in the request, return all metrics that are applicable to this control
-	if req.ControlId != "" {
-		return svc.listMetricsForControl(context.TODO(), req)
-	}
 
 	// Paginate the metrics according to the request
 	res.Metrics, res.NextPageToken, err = service.PaginateStorage[*assessment.Metric](req, svc.storage,
 		service.DefaultPaginationOpts)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate metrics: %v", err)
-	}
-
-	return res, nil
-}
-
-// listMetricsForControl lists all metrics associated to a given control.
-func (svc *Service) listMetricsForControl(_ context.Context, req *orchestrator.ListMetricsRequest) (res *orchestrator.ListMetricsResponse, err error) {
-	res = new(orchestrator.ListMetricsResponse)
-
-	// Validate the request
-	if err = api.ValidateListRequest[*assessment.Metric](req); err != nil {
-		err = fmt.Errorf("invalid request: %w", err)
-		log.Error(err)
-		err = status.Errorf(codes.InvalidArgument, "%v", err)
-		return
-	}
-
-	control := new(orchestrator.Control)
-
-	// first, get the control
-	err = svc.storage.Get(control, "Id = ?", req.ControlId)
-	// then, return the associated metrics
-	res = &orchestrator.ListMetricsResponse{
-		//Metrics: control.Metrics,
-	}
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not get metrics for control: %v", err)
 	}
 
 	return res, nil

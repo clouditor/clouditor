@@ -423,8 +423,6 @@ message ListMetricsRequest {
   string page_token = 2;
   string order_by = 3;
   bool asc = 4;
-  // Optionally list only metrics that are applicable to a specific control
-  string control_id = 5;
 }
 
 message ListMetricsResponse {
