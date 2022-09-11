@@ -1233,15 +1233,15 @@ components:
             properties:
                 name:
                     type: string
+                catalogId:
+                    type: string
+                    description: Reference to the catalog this category belongs to.
                 description:
                     type: string
                 controls:
                     type: array
                     items:
                         $ref: '#/components/schemas/Control'
-                catalogId:
-                    type: string
-                    description: Reference to the catalog this Category belongs to.
         Certificate:
             type: object
             properties:

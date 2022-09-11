@@ -35,8 +35,7 @@ func (svc *Service) CreateCatalog(_ context.Context, req *orchestrator.CreateCat
 	// Persist the new catalog in our database
 	err := svc.storage.Create(req.Catalog)
 	if err != nil {
-		return nil,
-			status.Errorf(codes.Internal, "could not add catalog to the database: %v", err)
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
 	// Return catalog
