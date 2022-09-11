@@ -62,7 +62,10 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	svc.CreateCatalog(context.TODO(), &orchestrator.CreateCatalogRequest{Catalog: orchestratortest.NewCatalog()})
+	_, err = svc.CreateCatalog(context.TODO(), &orchestrator.CreateCatalogRequest{Catalog: orchestratortest.NewCatalog()})
+	if err != nil {
+		panic(err)
+	}
 
 	os.Exit(clitest.RunCLITest(m, service.WithOrchestrator(svc)))
 }
