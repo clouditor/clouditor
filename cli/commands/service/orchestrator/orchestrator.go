@@ -178,7 +178,7 @@ func NewGetCategoryCommand() *cobra.Command {
 
 			return session.HandleResponse(res, err)
 		},
-		ValidArgsFunction: cli.ValidArgsGetMetrics,
+		ValidArgsFunction: cli.ValidArgsGetCategory,
 	}
 
 	return cmd
@@ -213,7 +213,7 @@ func NewGetControlCommand() *cobra.Command {
 
 			return session.HandleResponse(res, err)
 		},
-		ValidArgsFunction: cli.ValidArgsGetMetrics,
+		ValidArgsFunction: cli.ValidArgsGetControls,
 	}
 
 	return cmd

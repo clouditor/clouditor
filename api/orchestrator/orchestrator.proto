@@ -363,8 +363,8 @@ service Orchestrator {
   // Retrieves a Control
   rpc GetControl(GetControlRequest) returns (Control) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/catalogs/{catalog_id}/category/{category_name}/"
-            "{control_short_name}"
+      get : "/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/"
+            "controls/{control_short_name}"
     };
   }
 
@@ -373,7 +373,8 @@ service Orchestrator {
     option (google.api.http) = {
       get : "/v1/orchestrator/controls"
       additional_bindings {
-        get : "/v1/orchestrator/categories/{category_id}/controls"
+        get : "/v1/orchestrator/catalogs/{catalog_id}/categories/"
+              "{category_name}/controls"
       }
     };
   }
@@ -697,8 +698,10 @@ message ListControlsRequest {
   string page_token = 2;
   string order_by = 3;
   bool asc = 4;
+
   // return either all controls or only the controls of the specified category
-  string category_id = 5;
+  string catalog_id = 5;
+  string category_name = 6;
 }
 
 message ListControlsResponse {

@@ -261,6 +261,35 @@ func ValidArgsGetCatalogs(_ *cobra.Command, args []string, toComplete string) ([
 	}
 }
 
+// ValidArgsGetCategory returns autocomplete suggestions for selecting a
+// category. Since a category identified by a composite key of catalog and
+// category name, first a list of catalogs is returned, then a category to select.
+func ValidArgsGetCategory(_ *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if len(args) == 0 {
+		return getCatalogs(toComplete), cobra.ShellCompDirectiveNoFileComp
+	} else if len(args) == 1 {
+		return getCategories(args[0], toComplete), cobra.ShellCompDirectiveNoFileComp
+	} else {
+		return []string{}, cobra.ShellCompDirectiveNoFileComp
+	}
+}
+
+// ValidArgsGetControls returns autocomplete suggestions for selecting a control.
+// Since a control identified by a composite key of catalog, category and
+// control name, first a list of catalogs and categories is returned, then a
+// control to select.
+func ValidArgsGetControls(_ *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if len(args) == 0 {
+		return getCatalogs(toComplete), cobra.ShellCompDirectiveNoFileComp
+	} else if len(args) == 1 {
+		return getCategories(args[0], toComplete), cobra.ShellCompDirectiveNoFileComp
+	} else if len(args) == 2 {
+		return getControls(args[0], args[1], toComplete), cobra.ShellCompDirectiveNoFileComp
+	} else {
+		return []string{}, cobra.ShellCompDirectiveNoFileComp
+	}
+}
+
 func ValidArgsGetCloudServices(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return getCloudServices(toComplete), cobra.ShellCompDirectiveNoFileComp
 }
@@ -343,6 +372,60 @@ func getCatalogs(_ string) []string {
 	var output []string
 	for _, v := range res.Catalogs {
 		output = append(output, fmt.Sprintf("%s\t%s: %s", v.Id, v.Name, v.Description))
+	}
+
+	return output
+}
+
+func getCategories(catalogID string, _ string) []string {
+	var (
+		err     error
+		session *Session
+		client  orchestrator.OrchestratorClient
+		res     *orchestrator.Catalog
+	)
+
+	if session, err = ContinueSession(); err != nil {
+		fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+		return nil
+	}
+
+	client = orchestrator.NewOrchestratorClient(session)
+
+	if res, err = client.GetCatalog(context.Background(), &orchestrator.GetCatalogRequest{CatalogId: catalogID}); err != nil {
+		return []string{}
+	}
+
+	var output []string
+	for _, v := range res.Categories {
+		output = append(output, fmt.Sprintf("%s\t%s", v.Name, v.Description))
+	}
+
+	return output
+}
+
+func getControls(catalogID string, categoryName string, _ string) []string {
+	var (
+		err     error
+		session *Session
+		client  orchestrator.OrchestratorClient
+		res     *orchestrator.Category
+	)
+
+	if session, err = ContinueSession(); err != nil {
+		fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+		return nil
+	}
+
+	client = orchestrator.NewOrchestratorClient(session)
+
+	if res, err = client.GetCategory(context.Background(), &orchestrator.GetCategoryRequest{CatalogId: catalogID, CategoryName: categoryName}); err != nil {
+		return []string{}
+	}
+
+	var output []string
+	for _, v := range res.Controls {
+		output = append(output, fmt.Sprintf("%s\t%s: %s", v.ShortName, v.Name, v.Description))
 	}
 
 	return output

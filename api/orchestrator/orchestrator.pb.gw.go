@@ -2333,7 +2333,7 @@ func local_request_Orchestrator_ListControls_0(ctx context.Context, marshaler ru
 }
 
 var (
-	filter_Orchestrator_ListControls_1 = &utilities.DoubleArray{Encoding: map[string]int{"category_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+	filter_Orchestrator_ListControls_1 = &utilities.DoubleArray{Encoding: map[string]int{"catalog_id": 0, "category_name": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
 )
 
 func request_Orchestrator_ListControls_1(ctx context.Context, marshaler runtime.Marshaler, client OrchestratorClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -2347,14 +2347,24 @@ func request_Orchestrator_ListControls_1(ctx context.Context, marshaler runtime.
 		_   = err
 	)
 
-	val, ok = pathParams["category_id"]
+	val, ok = pathParams["catalog_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "category_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "catalog_id")
 	}
 
-	protoReq.CategoryId, err = runtime.String(val)
+	protoReq.CatalogId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "category_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "catalog_id", err)
+	}
+
+	val, ok = pathParams["category_name"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "category_name")
+	}
+
+	protoReq.CategoryName, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "category_name", err)
 	}
 
 	if err := req.ParseForm(); err != nil {
@@ -2380,14 +2390,24 @@ func local_request_Orchestrator_ListControls_1(ctx context.Context, marshaler ru
 		_   = err
 	)
 
-	val, ok = pathParams["category_id"]
+	val, ok = pathParams["catalog_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "category_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "catalog_id")
 	}
 
-	protoReq.CategoryId, err = runtime.String(val)
+	protoReq.CatalogId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "category_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "catalog_id", err)
+	}
+
+	val, ok = pathParams["category_name"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "category_name")
+	}
+
+	protoReq.CategoryName, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "category_name", err)
 	}
 
 	if err := req.ParseForm(); err != nil {
@@ -3399,7 +3419,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/GetControl", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}/category/{category_name}/{control_short_name}"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/GetControl", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/controls/{control_short_name}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3447,7 +3467,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/ListControls", runtime.WithHTTPPathPattern("/v1/orchestrator/categories/{category_id}/controls"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/ListControls", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/controls"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4371,7 +4391,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/GetControl", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}/category/{category_name}/{control_short_name}"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/GetControl", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/controls/{control_short_name}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4413,7 +4433,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/ListControls", runtime.WithHTTPPathPattern("/v1/orchestrator/categories/{category_id}/controls"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/ListControls", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/controls"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4515,11 +4535,11 @@ var (
 
 	pattern_Orchestrator_GetCategory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "catalogs", "catalog_id", "category", "category_name"}, ""))
 
-	pattern_Orchestrator_GetControl_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6}, []string{"v1", "orchestrator", "catalogs", "catalog_id", "category", "category_name", "control_short_name"}, ""))
+	pattern_Orchestrator_GetControl_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7}, []string{"v1", "orchestrator", "catalogs", "catalog_id", "categories", "category_name", "controls", "control_short_name"}, ""))
 
 	pattern_Orchestrator_ListControls_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "controls"}, ""))
 
-	pattern_Orchestrator_ListControls_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "orchestrator", "categories", "category_id", "controls"}, ""))
+	pattern_Orchestrator_ListControls_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"v1", "orchestrator", "catalogs", "catalog_id", "categories", "category_name", "controls"}, ""))
 )
 
 var (

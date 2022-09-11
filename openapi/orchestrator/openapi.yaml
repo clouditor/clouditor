@@ -355,37 +355,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/catalogs/{catalogId}/category/{categoryName}:
-        get:
-            tags:
-                - Orchestrator
-            description: Retrieves a Category
-            operationId: Orchestrator_GetCategory
-            parameters:
-                - name: catalogId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: categoryName
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Category'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /v1/orchestrator/catalogs/{catalogId}/category/{categoryName}/{controlShortName}:
+    /v1/orchestrator/catalogs/{catalogId}/categories/{categoryName}/controls/{controlShortName}:
         get:
             tags:
                 - Orchestrator
@@ -414,6 +384,36 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Control'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/catalogs/{catalogId}/category/{categoryName}:
+        get:
+            tags:
+                - Orchestrator
+            description: Retrieves a Category
+            operationId: Orchestrator_GetCategory
+            parameters:
+                - name: catalogId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: categoryName
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Category'
                 default:
                     description: Default error response
                     content:
@@ -814,9 +814,13 @@ paths:
                   in: query
                   schema:
                     type: boolean
-                - name: categoryId
+                - name: catalogId
                   in: query
                   description: return either all controls or only the controls of the specified category
+                  schema:
+                    type: string
+                - name: categoryName
+                  in: query
                   schema:
                     type: string
             responses:

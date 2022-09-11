@@ -129,8 +129,10 @@ func (svc *Service) RemoveCatalog(_ context.Context, req *orchestrator.RemoveCat
 func (srv *Service) GetCategory(ctx context.Context, req *orchestrator.GetCategoryRequest) (res *orchestrator.Category, err error) {
 	res = new(orchestrator.Category)
 	err = srv.storage.Get(&res, gorm.WithPreload("Controls", "parent_control_short_name IS NULL"), "name = ? AND catalog_id = ?", req.CategoryName, req.CatalogId)
-	if err != nil {
-		return nil, err
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Errorf(codes.NotFound, "category not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
 	return res, nil
@@ -139,8 +141,10 @@ func (srv *Service) GetCategory(ctx context.Context, req *orchestrator.GetCatego
 func (srv *Service) GetControl(ctx context.Context, req *orchestrator.GetControlRequest) (res *orchestrator.Control, err error) {
 	res = new(orchestrator.Control)
 	err = srv.storage.Get(&res, "short_name = ? AND category_name = ? AND category_catalog_id = ?", req.ControlShortName, req.CategoryName, req.CatalogId)
-	if err != nil {
-		return nil, err
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Errorf(codes.NotFound, "control not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
 	return res, nil
