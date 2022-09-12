@@ -37,6 +37,7 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
 
 	"google.golang.org/grpc/codes"
@@ -72,12 +73,11 @@ func (svc *Service) loadMetrics() (err error) {
 		if err != nil {
 			log.Warnf("Could not prepare implementation or default configuration for metric %s: %v", m.Id, err)
 		}
+	}
 
-		err = svc.storage.Save(m)
-		if err != nil {
-			log.Errorf("Error while saving metric %s: %v. Ignoring metric", m.Id, err)
-			continue
-		}
+	err = svc.storage.Save(metrics)
+	if err != nil {
+		log.Errorf("Error while saving metrics: %v", err)
 	}
 
 	return
@@ -87,21 +87,14 @@ func (svc *Service) loadMetrics() (err error) {
 // metric and storing them into the service.
 func (svc *Service) prepareMetric(m *assessment.Metric) (err error) {
 	var (
-		impl   *assessment.MetricImplementation
 		config *assessment.MetricConfiguration
 	)
 
 	// Load the Rego file
 	file := fmt.Sprintf("policies/bundles/%s/metric.rego", m.Id)
-	impl, err = loadMetricImplementation(m.Id, file)
+	m.Implementation, err = loadMetricImplementation(m.Id, file)
 	if err != nil {
 		return fmt.Errorf("could not load metric implementation: %w", err)
-	}
-
-	// Save our metric implementation
-	err = svc.storage.Save(impl, "metric_id = ?", m.Id)
-	if err != nil {
-		return fmt.Errorf("could not save metric implementation: %w", err)
 	}
 
 	// Look for the data.json to include default metric configurations
@@ -173,7 +166,7 @@ func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetr
 	}
 
 	// Check, if metric id already exists
-	count, err = svc.storage.Count(metric, "Id = ?", req.Metric.Id)
+	count, err = svc.storage.Count(metric, "id = ?", req.Metric.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -316,7 +309,7 @@ func (svc *Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequ
 
 func (svc *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.GetMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
 	res = new(assessment.MetricConfiguration)
-	err = svc.storage.Get(res, "service_id = ? AND metric_id = ?", req.ServiceId, req.MetricId)
+	err = svc.storage.Get(res, gorm.WithoutPreload(), "cloud_service_id = ? AND metric_id = ?", req.ServiceId, req.MetricId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		// Otherwise, fall back to our default configuration
 		if config, ok := defaultMetricConfigurations[req.MetricId]; ok {
@@ -333,46 +326,16 @@ func (svc *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.
 
 // UpdateMetricConfiguration updates the configuration for a metric, specified by the identifier in req.MetricId.
 func (svc *Service) UpdateMetricConfiguration(_ context.Context, req *orchestrator.UpdateMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
-	var (
-		metric assessment.Metric
-		cld    orchestrator.CloudService
-	)
+	// TODO(oxisto): Validate the request
 
-	// TODO(oxisto): Validate the metric configuration request
+	// Make sure that the configuration also has metric/service ID set
+	req.Configuration.CloudServiceId = req.ServiceId
+	req.Configuration.MetricId = req.MetricId
 
-	// Check, if metric exists according to req.MetricId
-	err = svc.storage.Get(&metric, "id = ?", req.MetricId)
-	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Error(codes.NotFound, "metric not found")
+	err = svc.storage.Save(&req.Configuration)
+	if err != nil && errors.Is(err, persistence.ErrConstaintFailed) {
+		return nil, status.Errorf(codes.NotFound, "metric or service does not exist")
 	} else if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %s", err)
-	}
-
-	err = svc.storage.Get(&cld, "Id = ?", req.ServiceId)
-	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Errorf(codes.NotFound, "service not found")
-	} else if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %s", err)
-	}
-
-	// Check, if it already exists
-	var exists bool = false
-	for idx, conf := range cld.MetricConfigurations {
-		// Update existing entry
-		if conf.MetricId == req.MetricId && conf.ServiceId == req.ServiceId {
-			cld.MetricConfigurations[idx] = req.Configuration
-			exists = true
-		}
-	}
-
-	// Otherwise, we can just append
-	if !exists {
-		cld.MetricConfigurations = append(cld.MetricConfigurations, req.Configuration)
-	}
-
-	// Update the cloud service
-	err = svc.storage.Save(&cld, "id = ?", req.ServiceId)
-	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
 

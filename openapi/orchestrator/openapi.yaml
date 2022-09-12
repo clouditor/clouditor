@@ -898,10 +898,10 @@ components:
                     type: string
                 requirements:
                     $ref: '#/components/schemas/CloudService_Requirements'
-                metricConfigurations:
+                configuredMetrics:
                     type: array
                     items:
-                        $ref: '#/components/schemas/MetricConfiguration'
+                        $ref: '#/components/schemas/Metric'
         CloudService_Requirements:
             type: object
             properties:
@@ -1011,6 +1011,8 @@ components:
                     type: integer
                     description: The interval in seconds the evidences must be collected for the respective metric. For now, we are not able to use google.protobuf.Duration because it is converted to a custom object in OpenAPI (https://github.com/google/gnostic/issues/351)
                     format: int64
+                implementation:
+                    $ref: '#/components/schemas/MetricImplementation'
             description: A metric resource
         MetricConfiguration:
             type: object
@@ -1030,7 +1032,7 @@ components:
                 metricId:
                     type: string
                     description: The metric this configuration belongs to
-                serviceId:
+                cloudServiceId:
                     type: string
                     description: The service this configuration belongs to
             description: Defines the operator and a target value for an individual metric
