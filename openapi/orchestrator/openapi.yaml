@@ -1286,6 +1286,10 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/MetricConfiguration'
+                catalogsInScope:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Catalog'
         Control:
             type: object
             properties:
@@ -1555,12 +1559,10 @@ components:
         TargetOfEvaluation:
             type: object
             properties:
-                id:
+                cloudServiceId:
                     type: string
-                service:
-                    $ref: '#/components/schemas/CloudService'
-                catalog:
-                    $ref: '#/components/schemas/Catalog'
+                catalogId:
+                    type: string
                 assuranceLevel:
                     type: string
                     description: an assurance level is not offered by every catalog, therefore it is optional

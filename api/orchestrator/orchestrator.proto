@@ -530,6 +530,9 @@ message CloudService {
       [ (tagger.tags) = "gorm:\"many2many:cloud_service_metric_configurations;"
                         "foreignKey:id;"
                         "references:service_id,metric_id\"" ];
+
+  repeated Catalog catalogs_in_scope = 5
+      [ (tagger.tags) = "gorm:\"many2many:target_of_evaluations\"" ];
 }
 
 message Catalog {
@@ -600,11 +603,8 @@ message Control {
 // A Target of Evaluation binds a cloud service to a catalog, so the service is
 // evaluated regarding this catalog's controls
 message TargetOfEvaluation {
-  string id = 1;
-
-  CloudService service = 2;
-
-  Catalog catalog = 3;
+  string cloud_service_id = 2 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
+  string catalog_id = 3 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
 
   // an assurance level is not offered by every catalog, therefore it is
   // optional
