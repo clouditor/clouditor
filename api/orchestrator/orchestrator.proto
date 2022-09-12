@@ -438,10 +438,8 @@ message CloudService {
 
   Requirements requirements = 4;
 
-  repeated MetricConfiguration metric_configurations = 5
-      [ (tagger.tags) = "gorm:\"many2many:cloud_service_metric_configurations;"
-                        "foreignKey:id;"
-                        "references:service_id,metric_id\"" ];
+  repeated Metric configured_metrics = 5
+      [ (tagger.tags) = "gorm:\"many2many:metric_configurations\"" ];
 }
 
 // Requirement represents a certain requirement that needs to be fulfilled. It
