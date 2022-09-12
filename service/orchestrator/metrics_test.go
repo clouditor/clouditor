@@ -683,6 +683,35 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 		wantErr      assert.ErrorAssertionFunc
 	}{
 		{
+			name: "metric found",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					_ = s.Create(assessment.Metric{Id: MockMetricID})
+					_ = s.Create(orchestrator.CloudService{
+						Id: DefaultTargetCloudServiceId,
+						MetricConfigurations: []*assessment.MetricConfiguration{
+							{
+								MetricId:  MockMetricID,
+								ServiceId: DefaultTargetCloudServiceId,
+								Operator:  "==",
+							},
+						},
+					})
+				})},
+			args: args{
+				req: &orchestrator.GetMetricConfigurationRequest{
+					MetricId:  MockMetricID,
+					ServiceId: DefaultTargetCloudServiceId,
+				},
+			},
+			wantResponse: &assessment.MetricConfiguration{
+				MetricId:  MockMetricID,
+				ServiceId: DefaultTargetCloudServiceId,
+				Operator:  "==",
+			},
+			wantErr: nil,
+		},
+		{
 			name: "metric not found",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),

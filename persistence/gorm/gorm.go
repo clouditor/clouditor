@@ -187,7 +187,7 @@ func (s *storage) Get(r any, conds ...any) (err error) {
 	// Preload all associations of r if necessary
 	db, conds := applyPreload(s.db, conds...)
 
-	err = db.First(r, conds).Error
+	err = db.First(r, conds...).Error
 
 	// if record is not found, use the error message defined in the persistence package
 	if errors.Is(err, gorm.ErrRecordNotFound) {
