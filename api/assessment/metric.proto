@@ -67,6 +67,8 @@ message Metric {
   // is converted to a custom object in OpenAPI
   // (https://github.com/google/gnostic/issues/351)
   int64 interval = 7;
+
+  optional MetricImplementation implementation = 8;
 }
 
 // A range resource representing the range of values
@@ -116,12 +118,10 @@ message MetricConfiguration {
       [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
 
   // The metric this configuration belongs to
-  string metric_id = 5
-    [ (tagger.tags) = "gorm:\"primaryKey\"" ];
+  string metric_id = 5 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
 
   // The service this configuration belongs to
-  string service_id = 6
-    [ (tagger.tags) = "gorm:\"primaryKey\"" ];
+  string cloud_service_id = 6 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
 }
 
 // MetricImplementation defines the implementation of an individual metric.

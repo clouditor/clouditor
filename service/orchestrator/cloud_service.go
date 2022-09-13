@@ -127,7 +127,7 @@ func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.Upda
 		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
 	}
 
-	count, err := s.storage.Count(req.Service, "Id = ?", req.ServiceId)
+	count, err := s.storage.Count(req.Service, "id = ?", req.ServiceId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}

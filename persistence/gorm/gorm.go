@@ -28,6 +28,7 @@ package gorm
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/auth"
@@ -61,7 +62,6 @@ type storage struct {
 // DefaultTypes contains a list of internal types that need to be migrated by default
 var DefaultTypes = []any{
 	&auth.User{},
-	&assessment.MetricConfiguration{},
 	&orchestrator.CloudService{},
 	&assessment.MetricImplementation{},
 	&assessment.Metric{},
@@ -156,6 +156,11 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 		return
 	}
 
+	if err = g.db.SetupJoinTable(orchestrator.CloudService{}, "ConfiguredMetrics", assessment.MetricConfiguration{}); err != nil {
+		err = fmt.Errorf("error during join-table: %w", err)
+		return
+	}
+
 	// After successful DB initialization, migrate the schema
 	if err = g.db.AutoMigrate(g.types...); err != nil {
 		err = fmt.Errorf("error during auto-migration: %w", err)
@@ -194,6 +199,16 @@ func (s *storage) Get(r any, conds ...any) (err error) {
 		err = persistence.ErrRecordNotFound
 	}
 	return
+}
+
+func applyWhere(db *gorm.DB, conds ...any) *gorm.DB {
+	if len(conds) == 0 {
+		return db
+	} else if len(conds) == 1 {
+		return db.Where(conds[0])
+	} else {
+		return db.Where(conds[0], conds[1:]...)
+	}
 }
 
 // applyPreload checks for any preload options and prepends them to the DB query. If no extra option is specified,
@@ -237,17 +252,36 @@ func (s *storage) List(r any, orderBy string, asc bool, offset int, limit int, c
 }
 
 func (s *storage) Count(r any, conds ...any) (count int64, err error) {
-	err = s.db.Model(r).Where(conds).Count(&count).Error
+	db := applyWhere(s.db.Model(r), conds...)
+
+	err = db.Count(&count).Error
 	return
 }
 
 func (s *storage) Save(r any, conds ...any) error {
-	return s.db.Session(&gorm.Session{FullSaveAssociations: true}).Where(conds).Save(r).Error
+	tx := applyWhere(s.db, conds...).Save(r)
+	err := tx.Error
+
+	if err != nil && strings.Contains(err.Error(), "constraint failed") {
+		return persistence.ErrConstaintFailed
+	}
+
+	return err
 }
 
 // Update will update the record with non-zero fields. Note that to get the entire updated record you have to call Get
-func (s *storage) Update(r any, query any, args ...any) error {
-	return s.db.Session(&gorm.Session{FullSaveAssociations: true}).Model(r).Where(query, args).Updates(r).Error
+func (s *storage) Update(r any, conds ...any) error {
+	db := s.db.Session(&gorm.Session{FullSaveAssociations: true}).Model(r)
+	db = applyWhere(db, conds...)
+
+	db = db.Updates(r)
+
+	// No record with given ID found
+	if db.RowsAffected == 0 {
+		return persistence.ErrRecordNotFound
+	}
+
+	return db.Error
 }
 
 // Delete deletes record with given id. If no record was found, returns ErrRecordNotFound

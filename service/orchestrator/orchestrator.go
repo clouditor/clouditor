@@ -366,7 +366,7 @@ func (svc *Service) UpdateCertificate(_ context.Context, req *orchestrator.Updat
 		return nil, status.Errorf(codes.InvalidArgument, "certificate is empty")
 	}
 
-	count, err := svc.storage.Count(req.Certificate, "Certificate_id = ?", req.CertificateId)
+	count, err := svc.storage.Count(req.Certificate, req.CertificateId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}

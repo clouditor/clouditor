@@ -82,7 +82,7 @@ func (svc *Service) ListCatalogs(_ context.Context, req *orchestrator.ListCatalo
 }
 
 // UpdateCatalog implements method for updating an existing catalog
-func (svc *Service) UpdateCatalog(_ context.Context, req *orchestrator.UpdateCatalogRequest) (response *orchestrator.Catalog, err error) {
+func (svc *Service) UpdateCatalog(_ context.Context, req *orchestrator.UpdateCatalogRequest) (res *orchestrator.Catalog, err error) {
 	if req.CatalogId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "catalog id is empty")
 	}
@@ -91,20 +91,14 @@ func (svc *Service) UpdateCatalog(_ context.Context, req *orchestrator.UpdateCat
 		return nil, status.Errorf(codes.InvalidArgument, "catalog is empty")
 	}
 
-	count, err := svc.storage.Count(req.Catalog, "Catalog_id = ?", req.CatalogId)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %v", err)
-	}
+	res = req.Catalog
+	res.Id = req.CatalogId
 
-	if count == 0 {
+	err = svc.storage.Update(res, "id = ?", res.Id)
+
+	if err != nil && errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Error(codes.NotFound, "catalog not found")
-	}
-
-	response = req.Catalog
-	response.Id = req.CatalogId
-
-	err = svc.storage.Save(response, "Id = ?", response.Id)
-	if err != nil {
+	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 	return
