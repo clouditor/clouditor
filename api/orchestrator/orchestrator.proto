@@ -564,22 +564,20 @@ message Category {
 // requirement in the EUCS terminology, e.g., is represented as the lowest
 // sub-control.
 message Control {
-  // A short name, e.g. OPS-01
-  // TODO(oxisto): name this "id"? or is it too confusing that this id is not
-  // unique? however, it is usually referred to as a control ID
+  // The short name, e.g. OPS-01, is also called the "Control ID"
   string short_name = 1 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
-  string category_name = 6 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
-  string category_catalog_id = 7 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
+  string category_name = 2 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
+  string category_catalog_id = 3 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
 
   // Human-readable name of the control
-  string name = 2;
+  string name = 4;
 
   // Description of the control
-  string description = 3;
+  string description = 5;
 
   // List of sub - controls -
   //     this is in accordance with the OSCAL model.
-  repeated Control controls = 4
+  repeated Control controls = 6
       [ (tagger.tags) =
             "gorm:\"foreignKey:parent_control_short_name,parent_control_"
             "category_name,parent_control_category_catalog_id;references=short_"
@@ -587,20 +585,21 @@ message Control {
   // metrics contains either a list of reference to metrics - in this case only
   // the id field of the metric is populated - or a list of populated metric
   // meta-data, most likely returned by the database.
-  repeated Metric metrics = 5
+  repeated Metric metrics = 7
       [ (tagger.tags) =
             "gorm:\"many2many:control_metrics;constraint:OnDelete:CASCADE\"" ];
 
   // Reference to the parent category this control belongs to.
 
   optional string parent_control_short_name = 8;
-  optional string parent_control_category_name = 10;
-  optional string parent_control_category_catalog_id = 9;
+  optional string parent_control_category_name = 9;
+  optional string parent_control_category_catalog_id = 10;
 }
 
 // A Target of Evaluation binds a cloud service to a catalog, so the service is
 // evaluated regarding this catalog's controls
 message TargetOfEvaluation {
+  string id = 1;
   string cloud_service_id = 2 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
   string catalog_id = 3 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
 

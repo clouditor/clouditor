@@ -143,3 +143,29 @@ func (srv *Service) GetControl(ctx context.Context, req *orchestrator.GetControl
 
 	return res, nil
 }
+
+func (srv *Service) ListControls(ctx context.Context, req *orchestrator.ListControlsRequest) (res *orchestrator.ListControlsResponse, err error) {
+	// Validate the request
+	if err = api.ValidateListRequest[*orchestrator.Control](req); err != nil {
+		err = fmt.Errorf("invalid request: %w", err)
+		log.Error(err)
+		err = status.Errorf(codes.InvalidArgument, "%v", err)
+		return
+	}
+
+	res = new(orchestrator.ListControlsResponse)
+
+	// If the category name is set (additional binding), forward it as a condition to the pagination method
+	if req.CategoryName != "" {
+		res.Controls, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Control](req, srv.storage,
+			service.DefaultPaginationOpts, "category_name = ?", req.CategoryName)
+	} else {
+		res.Controls, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Control](req, srv.storage,
+			service.DefaultPaginationOpts)
+	}
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
+	}
+	return
+}

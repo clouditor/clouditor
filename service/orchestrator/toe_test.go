@@ -40,7 +40,7 @@ import (
 
 var AssuranceLevelHigh = "high"
 
-func TestService_CreateTargetOfEvaluation(t *testing.T) {
+func Test_CreateTargetOfEvaluation(t *testing.T) {
 	type fields struct {
 		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
 		results               map[string]*assessment.AssessmentResult

@@ -1295,7 +1295,7 @@ components:
             properties:
                 shortName:
                     type: string
-                    description: 'A short name, e.g. OPS-01 TODO(oxisto): name this "id"? or is it too confusing that this id is not unique? however, it is usually referred to as a control ID'
+                    description: The short name, e.g. OPS-01, is also called the "Control ID"
                 categoryName:
                     type: string
                 categoryCatalogId:
@@ -1561,6 +1561,8 @@ components:
         TargetOfEvaluation:
             type: object
             properties:
+                id:
+                    type: string
                 cloudServiceId:
                     type: string
                 catalogId:

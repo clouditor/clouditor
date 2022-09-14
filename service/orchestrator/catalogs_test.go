@@ -105,7 +105,7 @@ func Test_CreateCatalog(t *testing.T) {
 	}
 }
 
-func TestService_GetCatalog(t *testing.T) {
+func Test_GetCatalog(t *testing.T) {
 	type fields struct {
 		storage persistence.Storage
 	}
@@ -185,13 +185,13 @@ func Test_ListCatalogs(t *testing.T) {
 	)
 
 	orchestratorService := NewService()
-	// 1st case: No services stored
+	// 1st case: No catalogs stored
 	listCatalogsResponse, err = orchestratorService.ListCatalogs(context.Background(), &orchestrator.ListCatalogsRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listCatalogsResponse.Catalogs)
 	assert.NotEmpty(t, listCatalogsResponse.Catalogs)
 
-	// 2nd case: One service stored
+	// 2nd case: One catalog stored
 	err = orchestratorService.storage.Create(orchestratortest.NewCatalog())
 	assert.NoError(t, err)
 
@@ -293,7 +293,7 @@ func Test_RemoveCatalog(t *testing.T) {
 	assert.Equal(t, 1, len(listCatalogsResponse.Catalogs))
 }
 
-func TestService_GetCategory(t *testing.T) {
+func Test_GetCategory(t *testing.T) {
 	type fields struct {
 		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
 		results               map[string]*assessment.AssessmentResult
@@ -369,7 +369,7 @@ func TestService_GetCategory(t *testing.T) {
 	}
 }
 
-func TestService_GetControl(t *testing.T) {
+func Test_GetControl(t *testing.T) {
 	type fields struct {
 		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
 		results               map[string]*assessment.AssessmentResult
@@ -454,4 +454,43 @@ func TestService_GetControl(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_ListControls(t *testing.T) {
+	var (
+		listControlsResponse *orchestrator.ListControlsResponse
+		err                  error
+	)
+
+	orchestratorService := NewService()
+	// 1st case: No Controls stored
+	listControlsResponse, err = orchestratorService.ListControls(context.Background(), &orchestrator.ListControlsRequest{})
+	assert.NoError(t, err)
+	assert.NotNil(t, listControlsResponse.Controls)
+	assert.NotEmpty(t, listControlsResponse.Controls)
+
+	// 2nd case: Two controls stored; note that we do not have to create an extra catalog/control since NewService above already loads the default catalogs/controls
+	listControlsResponse, err = orchestratorService.ListControls(context.Background(), &orchestrator.ListControlsRequest{})
+	assert.NoError(t, err)
+	assert.NotNil(t, listControlsResponse.Controls)
+	assert.NotEmpty(t, listControlsResponse.Controls)
+	// there are the two default controls
+	assert.Equal(t, len(listControlsResponse.Controls), 2)
+
+	// 3rd case: List controls for a specific catalog; first, create a new catalog with two controls, but only request controls for one of the two existing catalogs
+	orchestratortest.NewCatalog()
+	listControlsResponse, err = orchestratorService.ListControls(context.Background(), &orchestrator.ListControlsRequest{
+		CatalogId: "EUCS",
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, listControlsResponse.Controls)
+	assert.NotEmpty(t, listControlsResponse.Controls)
+	// there are the two default controls
+	assert.Equal(t, len(listControlsResponse.Controls), 2)
+
+	// 4th case: Invalid request
+	_, err = orchestratorService.ListControls(context.Background(),
+		&orchestrator.ListControlsRequest{OrderBy: "not a field"})
+	assert.Equal(t, codes.InvalidArgument, status.Code(err))
+	assert.Contains(t, err.Error(), api.ErrInvalidColumnName.Error())
 }
