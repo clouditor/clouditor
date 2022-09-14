@@ -33,6 +33,7 @@ import (
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -60,7 +61,7 @@ func (svc *Service) GetTargetOfEvaluation(_ context.Context, req *orchestrator.G
 	}
 
 	response = new(orchestrator.TargetOfEvaluation)
-	err = svc.storage.Get(response, "cloud_service_id = ? AND catalog_id = ?", req.CloudServiceId, req.CatalogId)
+	err = svc.storage.Get(response, gorm.WithoutPreload(), "cloud_service_id = ? AND catalog_id = ?", req.CloudServiceId, req.CatalogId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "ToE not found")
 	} else if err != nil {

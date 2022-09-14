@@ -241,6 +241,11 @@ func Test_ListTargetsOfEvaluation(t *testing.T) {
 	)
 
 	orchestratorService := NewService()
+	err = orchestratorService.storage.Create(&orchestrator.CloudService{Id: "MyService"})
+	assert.NoError(t, err)
+	err = orchestratorService.storage.Create(orchestratortest.NewCatalog())
+	assert.NoError(t, err)
+
 	// 1st case: No ToEs stored
 	listTargetsOfEvaluationResponse, err = orchestratorService.ListTargetsOfEvaluation(context.Background(), &orchestrator.ListTargetsOfEvaluationRequest{})
 	assert.NoError(t, err)
