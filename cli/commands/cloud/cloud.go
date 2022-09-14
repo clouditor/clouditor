@@ -140,7 +140,7 @@ func NewGetCloudServiceCommand() *cobra.Command {
 
 			serviceID := args[0]
 
-			res, err = client.GetCloudService(context.Background(), &orchestrator.GetCloudServiceRequest{ServiceId: serviceID})
+			res, err = client.GetCloudService(context.Background(), &orchestrator.GetCloudServiceRequest{CloudServiceId: serviceID})
 
 			return session.HandleResponse(res, err)
 		},
@@ -173,7 +173,7 @@ func NewRemoveCloudServiceComand() *cobra.Command {
 
 			serviceID := args[0]
 
-			res, err = client.RemoveCloudService(context.Background(), &orchestrator.RemoveCloudServiceRequest{ServiceId: serviceID})
+			res, err = client.RemoveCloudService(context.Background(), &orchestrator.RemoveCloudServiceRequest{CloudServiceId: serviceID})
 
 			return session.HandleResponse(res, err)
 		},
@@ -204,7 +204,7 @@ func NewUpdateCloudServiceCommand() *cobra.Command {
 			client = orchestrator.NewOrchestratorClient(session)
 
 			res, err = client.UpdateCloudService(context.Background(), &orchestrator.UpdateCloudServiceRequest{
-				ServiceId: viper.GetString("id"),
+				CloudServiceId: viper.GetString("id"),
 				Service: &orchestrator.CloudService{
 					Name:        viper.GetString("name"),
 					Description: viper.GetString("description"),
@@ -260,7 +260,7 @@ func NewGetMetricConfigurationCommand() *cobra.Command {
 			serviceID := args[0]
 			metricID := args[1]
 
-			res, err = client.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{ServiceId: serviceID, MetricId: metricID})
+			res, err = client.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{CloudServiceId: serviceID, MetricId: metricID})
 
 			return session.HandleResponse(res, err)
 		},

@@ -104,7 +104,7 @@ service Orchestrator {
     option (google.api.http) = {
       get : "/v1/orchestrator/assessment_results"
       additional_bindings {
-        get : "/v1/orchestrator/cloud_services/{filtered_service_id}/"
+        get : "/v1/orchestrator/cloud_services/{filtered_cloud_service_id}/"
               "assessment_results"
       }
     };
@@ -151,7 +151,7 @@ service Orchestrator {
   // Registers a new target cloud service
   rpc UpdateCloudService(UpdateCloudServiceRequest) returns (CloudService) {
     option (google.api.http) = {
-      put : "/v1/orchestrator/cloud_services/{service_id}"
+      put : "/v1/orchestrator/cloud_services/{cloud_service_id}"
       body : "service"
     };
   }
@@ -159,7 +159,7 @@ service Orchestrator {
   // Retrieves a target cloud service
   rpc GetCloudService(GetCloudServiceRequest) returns (CloudService) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/cloud_services/{service_id}"
+      get : "/v1/orchestrator/cloud_services/{cloud_service_id}"
     };
   }
 
@@ -175,7 +175,7 @@ service Orchestrator {
   rpc RemoveCloudService(RemoveCloudServiceRequest)
       returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      delete : "/v1/orchestrator/cloud_services/{service_id}"
+      delete : "/v1/orchestrator/cloud_services/{cloud_service_id}"
     };
   }
 
@@ -184,7 +184,7 @@ service Orchestrator {
   rpc UpdateMetricConfiguration(UpdateMetricConfigurationRequest)
       returns (MetricConfiguration) {
     option (google.api.http) = {
-      put : "/v1/orchestrator/cloud_services/{service_id}/"
+      put : "/v1/orchestrator/cloud_services/{cloud_service_id}/"
             "metric_configurations/"
             "{metric_id}"
       body : "configuration"
@@ -196,7 +196,7 @@ service Orchestrator {
   rpc GetMetricConfiguration(GetMetricConfigurationRequest)
       returns (MetricConfiguration) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/cloud_services/{service_id}/"
+      get : "/v1/orchestrator/cloud_services/{cloud_service_id}/"
             "metric_configurations/"
             "{metric_id}"
     };
@@ -207,7 +207,7 @@ service Orchestrator {
   rpc ListMetricConfigurations(ListMetricConfigurationRequest)
       returns (ListMetricConfigurationResponse) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/cloud_services/{service_id}/metric_configurations"
+      get : "/v1/orchestrator/cloud_services/{cloud_service_id}/metric_configurations"
     };
   }
 
@@ -320,7 +320,7 @@ service Orchestrator {
   rpc GetTargetOfEvaluation(GetTargetOfEvaluationRequest)
       returns (TargetOfEvaluation) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/toes/{toe_id}"
+      get : "/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/{catalog_id}/toes"
     };
   }
 
@@ -330,7 +330,7 @@ service Orchestrator {
     option (google.api.http) = {
       get : "/v1/orchestrator/toes"
       additional_bindings {
-        get : "/v1/orchestrator/cloud_services/{service_id}/toes"
+        get : "/v1/orchestrator/cloud_services/{cloud_service_id}/toes"
       }
       additional_bindings {get : "/v1/orchestrator/catalogs/{catalog_id}/toes"}
     };
@@ -340,7 +340,7 @@ service Orchestrator {
   rpc UpdateTargetOfEvaluation(UpdateTargetOfEvaluationRequest)
       returns (TargetOfEvaluation) {
     option (google.api.http) = {
-      put : "/v1/orchestrator/toes/{toe_id}"
+      put : "/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/{catalog_id}/toes"
       body : "toe"
     };
   }
@@ -349,7 +349,7 @@ service Orchestrator {
   rpc RemoveTargetOfEvaluation(RemoveTargetOfEvaluationRequest)
       returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      delete : "/v1/orchestrator/toes/{toe_id}"
+      delete : "/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/{catalog_id}/toes"
     };
   }
 
@@ -431,16 +431,16 @@ message ListMetricsResponse {
   string next_page_token = 2;
 }
 
-message GetCloudServiceRequest { string service_id = 1; }
+message GetCloudServiceRequest { string cloud_service_id = 1; }
 
 message RegisterCloudServiceRequest { CloudService service = 1; }
 
 message UpdateCloudServiceRequest {
-  string service_id = 1;
+  string cloud_service_id = 1;
   CloudService service = 2;
 }
 
-message RemoveCloudServiceRequest { string service_id = 1; }
+message RemoveCloudServiceRequest { string cloud_service_id = 1; }
 
 message ListCloudServicesRequest {
   int32 page_size = 1;
@@ -454,7 +454,7 @@ message ListCloudServicesResponse {
 }
 
 message UpdateMetricConfigurationRequest {
-  string service_id = 1;
+  string cloud_service_id = 1;
 
   string metric_id = 2;
 
@@ -462,12 +462,12 @@ message UpdateMetricConfigurationRequest {
 }
 
 message GetMetricConfigurationRequest {
-  string service_id = 1;
+  string cloud_service_id = 1;
 
   string metric_id = 2;
 }
 
-message ListMetricConfigurationRequest { string service_id = 1; }
+message ListMetricConfigurationRequest { string cloud_service_id = 1; }
 
 message ListMetricConfigurationResponse {
   // A map of metric configurations associated by their metric ID
@@ -503,7 +503,7 @@ message MetricChangeEvent {
 
   // Optionally, the service id that is affected by this change. Primarily
   // concerns metric configuration changes.
-  string service_id = 3;
+  string cloud_service_id = 3;
 }
 
 // Represents an external tool or service that offers assessments according to
@@ -599,20 +599,25 @@ message Control {
 // A Target of Evaluation binds a cloud service to a catalog, so the service is
 // evaluated regarding this catalog's controls
 message TargetOfEvaluation {
-  string id = 1;
-  string cloud_service_id = 2 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
-  string catalog_id = 3 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
+  string cloud_service_id = 1 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
+  string catalog_id = 2 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
 
   // an assurance level is not offered by every catalog, therefore it is
   // optional
-  optional string assurance_level = 4;
+  optional string assurance_level = 3;
 }
 
 message CreateTargetOfEvaluationRequest { TargetOfEvaluation toe = 1; }
 
-message RemoveTargetOfEvaluationRequest { string toe_id = 1; }
+message RemoveTargetOfEvaluationRequest { 
+  string cloud_service_id = 1;
+  string catalog_id = 2;
+}
 
-message GetTargetOfEvaluationRequest { string toe_id = 1; }
+message GetTargetOfEvaluationRequest { 
+  string cloud_service_id = 1;
+  string catalog_id = 2;
+}
 
 message ListTargetsOfEvaluationRequest {
   int32 page_size = 1;
@@ -622,7 +627,7 @@ message ListTargetsOfEvaluationRequest {
   // We cannot create additional bindings when the parameter is optional so we
   // check for != "" in the method to see if it is set when the service is
   // specified, return all ToEs that evaluate the given service for any catalog
-  string service_id = 5;
+  string cloud_service_id = 5;
   // when the catalog is specified, return all ToEs that evaluate the given
   // catalog for any service
   string catalog_id = 6;
@@ -634,8 +639,9 @@ message ListTargetsOfEvaluationResponse {
 }
 
 message UpdateTargetOfEvaluationRequest {
-  string toe_id = 1;
-  TargetOfEvaluation toe = 2;
+  string cloud_service_id = 1;
+  string catalog_id = 2;
+  TargetOfEvaluation toe = 3;
 }
 
 message GetCertificateRequest { string certificate_id = 1; }
@@ -714,7 +720,7 @@ message RemoveCertificateRequest { string certificate_id = 1; }
 message Certificate {
   string id = 1;
   string name = 2;
-  string service_id = 3;
+  string cloud_service_id = 3;
   string issue_date = 4;
   string expiration_date = 5;
   string standard = 6;

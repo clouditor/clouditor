@@ -146,13 +146,13 @@ func TestGetCloudService(t *testing.T) {
 		},
 		{
 			"cloud service not found",
-			&orchestrator.GetCloudServiceRequest{ServiceId: "does-not-exist"},
+			&orchestrator.GetCloudServiceRequest{CloudServiceId: "does-not-exist"},
 			nil,
 			status.Error(codes.NotFound, "service not found"),
 		},
 		{
 			"valid",
-			&orchestrator.GetCloudServiceRequest{ServiceId: DefaultTargetCloudServiceId},
+			&orchestrator.GetCloudServiceRequest{CloudServiceId: DefaultTargetCloudServiceId},
 			&orchestrator.CloudService{
 				Id:          DefaultTargetCloudServiceId,
 				Name:        DefaultTargetCloudServiceName,
@@ -209,7 +209,7 @@ func TestService_UpdateCloudService(t *testing.T) {
 			Name:        DefaultTargetCloudServiceName,
 			Description: DefaultTargetCloudServiceDescription,
 		},
-		ServiceId: DefaultTargetCloudServiceId,
+		CloudServiceId: DefaultTargetCloudServiceId,
 	})
 	assert.Equal(t, codes.NotFound, status.Code(err))
 	// 4th case: Service updated successfully
@@ -223,7 +223,7 @@ func TestService_UpdateCloudService(t *testing.T) {
 			Name:        "NewName",
 			Description: "",
 		},
-		ServiceId: DefaultTargetCloudServiceId,
+		CloudServiceId: DefaultTargetCloudServiceId,
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, cloudService)
@@ -241,12 +241,12 @@ func TestService_RemoveCloudService(t *testing.T) {
 	orchestratorService := NewService()
 
 	// 1st case: Empty service ID error
-	_, err = orchestratorService.RemoveCloudService(context.Background(), &orchestrator.RemoveCloudServiceRequest{ServiceId: ""})
+	_, err = orchestratorService.RemoveCloudService(context.Background(), &orchestrator.RemoveCloudServiceRequest{CloudServiceId: ""})
 	assert.Error(t, err)
 	assert.Equal(t, status.Code(err), codes.InvalidArgument)
 
 	// 2nd case: ErrRecordNotFound
-	_, err = orchestratorService.RemoveCloudService(context.Background(), &orchestrator.RemoveCloudServiceRequest{ServiceId: DefaultTargetCloudServiceId})
+	_, err = orchestratorService.RemoveCloudService(context.Background(), &orchestrator.RemoveCloudServiceRequest{CloudServiceId: DefaultTargetCloudServiceId})
 	assert.Error(t, err)
 	assert.Equal(t, status.Code(err), codes.NotFound)
 
@@ -262,7 +262,7 @@ func TestService_RemoveCloudService(t *testing.T) {
 	assert.NotEmpty(t, listCloudServicesResponse.Services)
 
 	// Remove record
-	_, err = orchestratorService.RemoveCloudService(context.Background(), &orchestrator.RemoveCloudServiceRequest{ServiceId: DefaultTargetCloudServiceId})
+	_, err = orchestratorService.RemoveCloudService(context.Background(), &orchestrator.RemoveCloudServiceRequest{CloudServiceId: DefaultTargetCloudServiceId})
 	assert.NoError(t, err)
 
 	// There is a record for cloud services in the DB (default one)

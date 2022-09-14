@@ -27,10 +27,16 @@ package orchestrator
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/service"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestrator.CreateTargetOfEvaluationRequest) (res *orchestrator.TargetOfEvaluation, err error) {
@@ -42,4 +48,83 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 	res = req.Toe
 
 	return
+}
+
+// GetTargetOfEvaluation implements method for getting a TargetOfEvaluation, e.g. to show its state in the UI
+func (svc *Service) GetTargetOfEvaluation(_ context.Context, req *orchestrator.GetTargetOfEvaluationRequest) (response *orchestrator.TargetOfEvaluation, err error) {
+	if req == nil {
+		return nil, status.Errorf(codes.InvalidArgument, api.ErrRequestIsNil.Error())
+	}
+	if req.CloudServiceId == "" || req.CatalogId == "" {
+		return nil, status.Errorf(codes.NotFound, orchestrator.ErrToEIDIsMissing.Error())
+	}
+
+	response = new(orchestrator.TargetOfEvaluation)
+	err = svc.storage.Get(response, "cloud_service_id = ? AND catalog_id = ?", req.CloudServiceId, req.CatalogId)
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Errorf(codes.NotFound, "ToE not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+	}
+	return response, nil
+}
+
+// ListTargetOfEvaluation implements method for getting a TargetOfEvaluation
+func (svc *Service) ListTargetsOfEvaluation(_ context.Context, req *orchestrator.ListTargetsOfEvaluationRequest) (res *orchestrator.ListTargetsOfEvaluationResponse, err error) {
+	// Validate the request
+	if err = api.ValidateListRequest[*orchestrator.TargetOfEvaluation](req); err != nil {
+		err = fmt.Errorf("invalid request: %w", err)
+		log.Error(err)
+		err = status.Errorf(codes.InvalidArgument, "%v", err)
+		return
+	}
+
+	res = new(orchestrator.ListTargetsOfEvaluationResponse)
+
+	res.Toes, res.NextPageToken, err = service.PaginateStorage[*orchestrator.TargetOfEvaluation](req, svc.storage,
+		service.DefaultPaginationOpts)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
+	}
+	return
+}
+
+// UpdateTargetOfEvaluation implements method for updating an existing TargetOfEvaluation
+func (svc *Service) UpdateTargetOfEvaluation(_ context.Context, req *orchestrator.UpdateTargetOfEvaluationRequest) (res *orchestrator.TargetOfEvaluation, err error) {
+	if req.Toe.CloudServiceId == "" || req.Toe.CatalogId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "id is empty")
+	}
+
+	if req.Toe == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "ToE is empty")
+	}
+
+	res = req.Toe
+	res.CloudServiceId = req.Toe.CloudServiceId
+	res.CatalogId = req.Toe.CatalogId
+
+	err = svc.storage.Update(res, "cloud_service_id = ? AND catalog_id = ?", res.CloudServiceId, res.CatalogId)
+
+	if err != nil && errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Error(codes.NotFound, "ToE not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+	}
+	return
+}
+
+// RemoveTargetOfEvaluation implements method for removing a TargetOfEvaluation
+func (svc *Service) RemoveTargetOfEvaluation(_ context.Context, req *orchestrator.RemoveTargetOfEvaluationRequest) (response *emptypb.Empty, err error) {
+	if req.CloudServiceId == "" || req.CatalogId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "ToE id is empty")
+	}
+
+	err = svc.storage.Delete(&orchestrator.TargetOfEvaluation{}, "service_id = ? AND catalog_id", req.CloudServiceId, req.CatalogId)
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Errorf(codes.NotFound, "ToE not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+	}
+
+	return &emptypb.Empty{}, nil
 }

@@ -309,7 +309,7 @@ func (svc *Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequ
 
 func (svc *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.GetMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
 	res = new(assessment.MetricConfiguration)
-	err = svc.storage.Get(res, gorm.WithoutPreload(), "cloud_service_id = ? AND metric_id = ?", req.ServiceId, req.MetricId)
+	err = svc.storage.Get(res, gorm.WithoutPreload(), "cloud_service_id = ? AND metric_id = ?", req.CloudServiceId, req.MetricId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		// Otherwise, fall back to our default configuration
 		if config, ok := defaultMetricConfigurations[req.MetricId]; ok {
@@ -329,7 +329,7 @@ func (svc *Service) UpdateMetricConfiguration(_ context.Context, req *orchestrat
 	// TODO(oxisto): Validate the request
 
 	// Make sure that the configuration also has metric/service ID set
-	req.Configuration.CloudServiceId = req.ServiceId
+	req.Configuration.CloudServiceId = req.CloudServiceId
 	req.Configuration.MetricId = req.MetricId
 
 	err = svc.storage.Save(&req.Configuration)
@@ -342,9 +342,9 @@ func (svc *Service) UpdateMetricConfiguration(_ context.Context, req *orchestrat
 	// Notify event listeners
 	go func() {
 		svc.events <- &orchestrator.MetricChangeEvent{
-			Type:      orchestrator.MetricChangeEvent_CONFIG_CHANGED,
-			ServiceId: req.ServiceId,
-			MetricId:  req.MetricId,
+			Type:           orchestrator.MetricChangeEvent_CONFIG_CHANGED,
+			CloudServiceId: req.CloudServiceId,
+			MetricId:       req.MetricId,
 		}
 	}()
 
@@ -373,7 +373,7 @@ func (svc *Service) ListMetricConfigurations(ctx context.Context, req *orchestra
 
 	// TODO(oxisto): This is not very efficient, we should do this once at startup so that we can just return the map
 	for _, metric := range metrics {
-		config, err := svc.GetMetricConfiguration(ctx, &orchestrator.GetMetricConfigurationRequest{ServiceId: req.ServiceId, MetricId: metric.Id})
+		config, err := svc.GetMetricConfiguration(ctx, &orchestrator.GetMetricConfigurationRequest{CloudServiceId: req.CloudServiceId, MetricId: metric.Id})
 		if err == nil {
 			response.Configurations[metric.Id] = config
 		}

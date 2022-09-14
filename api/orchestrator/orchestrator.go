@@ -47,6 +47,7 @@ var (
 	ErrCertIDIsMissing    = errors.New("certificate ID is empty")
 	ErrCatalogIsNil       = errors.New("catalog is empty")
 	ErrCatalogIDIsMissing = errors.New("catalog ID is empty")
+	ErrToEIDIsMissing     = errors.New("toe ID is empty")
 )
 
 // // Value implements https://pkg.go.dev/database/sql/driver#Valuer to indicate

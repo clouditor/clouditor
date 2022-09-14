@@ -9,17 +9,19 @@ import (
 )
 
 var (
-	MockCatalogID    = "Cat1234"
-	MockCategoryName = "My name"
-	MockControlID    = "Cont1234"
-	MockSubControlID = "Cont1234.1"
+	MockCatalogID      = "Cat1234"
+	MockCategoryName   = "My name"
+	MockControlID      = "Cont1234"
+	MockSubControlID   = "Cont1234.1"
+	AssuranceLevelHigh = "high"
+	MockServiceID      = "MyService"
 )
 
 // NewCertificate creates a mock certificate
 func NewCertificate() *orchestrator.Certificate {
 	var mockCertificate = &orchestrator.Certificate{
 		Name:           "EUCS",
-		ServiceId:      "test service",
+		CloudServiceId: "test service",
 		IssueDate:      "2021-11-06",
 		ExpirationDate: "2024-11-06",
 		Standard:       "EUCS",
@@ -76,4 +78,13 @@ func NewCatalog() *orchestrator.Catalog {
 			}},
 		}}}
 	return mockCatalog
+}
+
+func NewTargetOfEvaluation() *orchestrator.TargetOfEvaluation {
+	var toe = &orchestrator.TargetOfEvaluation{
+		CloudServiceId: MockServiceID,
+		CatalogId:      MockCatalogID,
+		AssuranceLevel: &AssuranceLevelHigh,
+	}
+	return toe
 }

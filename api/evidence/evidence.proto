@@ -42,7 +42,7 @@ message Evidence {
   google.protobuf.Timestamp timestamp = 2;
 
   // Reference to a service this evidence was gathered from
-  string service_id = 3;
+  string cloud_service_id = 3;
 
   // Reference to the tool which provided the evidence
   string tool_id = 4;

@@ -253,7 +253,7 @@ func (svc *Service) ListAssessmentResults(_ context.Context, req *assessment.Lis
 	var filtered []*assessment.AssessmentResult
 
 	for _, v := range values {
-		if req.FilteredServiceId != "" && v.ServiceId != req.FilteredServiceId {
+		if req.FilteredCloudServiceId != "" && v.CloudServiceId != req.FilteredCloudServiceId {
 			continue
 		}
 

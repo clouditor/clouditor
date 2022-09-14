@@ -699,8 +699,8 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 				})},
 			args: args{
 				req: &orchestrator.GetMetricConfigurationRequest{
-					MetricId:  MockMetricID,
-					ServiceId: DefaultTargetCloudServiceId,
+					MetricId:       MockMetricID,
+					CloudServiceId: DefaultTargetCloudServiceId,
 				},
 			},
 			wantResponse: &assessment.MetricConfiguration{
@@ -796,7 +796,7 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 			},
 			args: args{
 				req: &orchestrator.ListMetricConfigurationRequest{
-					ServiceId: DefaultTargetCloudServiceId,
+					CloudServiceId: DefaultTargetCloudServiceId,
 				},
 			},
 			wantResponse: &orchestrator.ListMetricConfigurationResponse{
@@ -857,9 +857,9 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			fields: fields{storage: testutil.NewInMemoryStorage(t)},
 			args: args{
 				req: &orchestrator.UpdateMetricConfigurationRequest{
-					ServiceId:     DefaultTargetCloudServiceId,
-					MetricId:      "MyMetric",
-					Configuration: &assessment.MetricConfiguration{},
+					CloudServiceId: DefaultTargetCloudServiceId,
+					MetricId:       "MyMetric",
+					Configuration:  &assessment.MetricConfiguration{},
 				},
 			},
 			wantErr: true,
@@ -873,9 +873,9 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricConfigurationRequest{
-					ServiceId:     "MyService",
-					MetricId:      "MyMetric",
-					Configuration: &assessment.MetricConfiguration{},
+					CloudServiceId: "MyService",
+					MetricId:       "MyMetric",
+					Configuration:  &assessment.MetricConfiguration{},
 				},
 			},
 			wantErr: true,
@@ -890,8 +890,8 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricConfigurationRequest{
-					ServiceId: DefaultTargetCloudServiceId,
-					MetricId:  MockMetricID,
+					CloudServiceId: DefaultTargetCloudServiceId,
+					MetricId:       MockMetricID,
 					Configuration: &assessment.MetricConfiguration{
 						CloudServiceId: DefaultTargetCloudServiceId,
 						MetricId:       MockMetricID,
@@ -929,8 +929,8 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricConfigurationRequest{
-					ServiceId: DefaultTargetCloudServiceId,
-					MetricId:  MockMetricID,
+					CloudServiceId: DefaultTargetCloudServiceId,
+					MetricId:       MockMetricID,
 					Configuration: &assessment.MetricConfiguration{
 						CloudServiceId: DefaultTargetCloudServiceId,
 						MetricId:       MockMetricID,

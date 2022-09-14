@@ -297,12 +297,12 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 
 		// TODO(all): What is the raw type in our case?
 		e := &evidence.Evidence{
-			Id:        uuid.New().String(),
-			ServiceId: resource.GetServiceID(),
-			Timestamp: timestamppb.Now(),
-			ToolId:    "Clouditor Evidences Collection",
-			Raw:       "",
-			Resource:  v,
+			Id:             uuid.New().String(),
+			CloudServiceId: resource.GetServiceID(),
+			Timestamp:      timestamppb.Now(),
+			ToolId:         "Clouditor Evidences Collection",
+			Raw:            "",
+			Resource:       v,
 		}
 
 		// Get Evidence Store stream
@@ -328,7 +328,7 @@ func (svc *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *
 
 	var filteredServiceId = ""
 	if req != nil {
-		filteredServiceId = req.FilteredServiceId
+		filteredServiceId = req.FilteredCloudServiceId
 	}
 
 	resources = maps.Values(svc.resources)
