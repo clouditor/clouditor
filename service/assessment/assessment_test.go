@@ -97,6 +97,7 @@ func TestNewService(t *testing.T) {
 				evidenceStoreStreams: nil,
 				orchestratorStreams:  nil,
 				cachedConfigurations: make(map[string]cachedConfiguration),
+				evidenceResourceMap:  make(map[string]*evidence.Evidence),
 				evalPkg:              policies.DefaultRegoPackage,
 			},
 		},
@@ -120,6 +121,7 @@ func TestNewService(t *testing.T) {
 				evidenceStoreStreams: nil,
 				orchestratorStreams:  nil,
 				cachedConfigurations: make(map[string]cachedConfiguration),
+				evidenceResourceMap:  make(map[string]*evidence.Evidence),
 				evalPkg:              policies.DefaultRegoPackage,
 			},
 		},
@@ -132,6 +134,7 @@ func TestNewService(t *testing.T) {
 			},
 			want: &Service{
 				results:                 make(map[string]*assessment.AssessmentResult),
+				requests:                make(map[string]leftOverRequest),
 				isEvidenceStoreDisabled: true,
 				evidenceStoreAddress: grpcTarget{
 					target: DefaultEvidenceStoreAddress,
@@ -139,8 +142,10 @@ func TestNewService(t *testing.T) {
 				orchestratorAddress: grpcTarget{
 					target: DefaultOrchestratorAddress,
 				},
+				evidenceStoreStreams: nil,
 				orchestratorStreams:  nil,
 				cachedConfigurations: make(map[string]cachedConfiguration),
+				evidenceResourceMap:  make(map[string]*evidence.Evidence),
 				evalPkg:              policies.DefaultRegoPackage,
 			},
 		},
