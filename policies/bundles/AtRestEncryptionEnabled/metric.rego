@@ -7,7 +7,7 @@ default applicable = false
 
 default compliant = false
 
-enabled := input.atRestEncryption.enabled
+enabled := enc.enabled
 
 applicable {
 	enabled != null

@@ -56,5 +56,5 @@ func TestGetFieldNames(t *testing.T) {
 	// Successful
 	fieldnames = GetFieldNames[*evidence.Evidence]()
 	assert.Equal(t, reflect.ValueOf(evidence.Evidence{}).NumField()-3, len(fieldnames))
-	assert.Equal(t, []string{"id", "timestamp", "service_id", "tool_id", "raw", "resource"}, fieldnames)
+	assert.Equal(t, []string{"id", "timestamp", "service_id", "tool_id", "raw", "resource", "related_resource_ids"}, fieldnames)
 }

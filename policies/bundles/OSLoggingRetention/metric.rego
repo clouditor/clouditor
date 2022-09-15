@@ -6,7 +6,7 @@ default applicable = false
 
 default compliant = false
 
-OSLogging := input.osLogging
+retentionPeriod := input.osLogging.retentionPeriod
 
 applicable {
 	retentionPeriod != null
@@ -14,7 +14,7 @@ applicable {
 
 compliant {
 	# time.Duration is nanoseconds, we want to convert this to hours
-	days := OSLogging.retentionPeriod / (((1000 * 1000) * 1000) * 3600)
+	days := retentionPeriod / (((1000 * 1000) * 1000) * 3600)
 
 	compare(data.operator, data.target_value, days)
 }

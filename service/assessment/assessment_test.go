@@ -1271,12 +1271,10 @@ func TestService_recvEventsLoop(t *testing.T) {
 }
 
 func TestService_AssessEvidenceWaitFor(t *testing.T) {
-	s := NewService()
-	/// err := s.initEvidenceStoreStream(grpc.WithContextDialer(bufConnDialer))
-	/// assert.ErrorIs(t, err, nil)
-	///
-	/// err = s.initOrchestratorStream(grpc.WithContextDialer(bufConnDialer))
-	/// assert.ErrorIs(t, err, nil)
+	s := NewService(
+		WithEvidenceStoreAddress("bufnet", grpc.WithContextDialer(bufConnDialer)),
+		WithOrchestratorAddress("bufnet", grpc.WithContextDialer(bufConnDialer)),
+	)
 
 	// Add our first evidence
 	resp, err := s.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{

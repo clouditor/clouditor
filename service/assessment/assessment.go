@@ -278,6 +278,7 @@ func NewService(opts ...service.Option[Service]) *Service {
 		requests:             make(map[string]leftOverRequest),
 		evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 		orchestratorStreams:  api.NewStreamsOf(api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest](log)),
+		evidenceResourceMap:  make(map[string]*evidence.Evidence),
 		cachedConfigurations: make(map[string]cachedConfiguration),
 	}
 
@@ -365,7 +366,7 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 	svc.em.Unlock()
 
 	// Inform any other left over evidences that might be waiting
-	//go svc.informLeftOverRequests(resourceId)
+	go svc.informLeftOverRequests(resourceId)
 
 	if canHandle {
 		// Assess evidence
