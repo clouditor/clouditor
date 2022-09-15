@@ -32,6 +32,7 @@ import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "api/assessment/metric.proto";
 import "api/assessment/assessment.proto";
+import "tagger/tagger.proto";
 
 option go_package = "clouditor.io/clouditor/api/orchestrator";
 
@@ -102,6 +103,10 @@ service Orchestrator {
       returns (ListAssessmentResultsResponse) {
     option (google.api.http) = {
       get : "/v1/orchestrator/assessment_results"
+      additional_bindings {
+        get : "/v1/orchestrator/cloud_services/{filtered_service_id}/"
+              "assessment_results"
+      }
     };
   }
 
@@ -229,6 +234,48 @@ service Orchestrator {
       get : "/v1/orchestrator/metrics/{metric_id}/implementation"
     };
   }
+
+  rpc SubscribeMetricChangeEvents(SubscribeMetricChangeEventRequest)
+      returns (stream MetricChangeEvent) {}
+
+  // Creates a new certificate
+  rpc CreateCertificate(CreateCertificateRequest) returns (Certificate) {
+    option (google.api.http) = {
+      post : "/v1/orchestrator/certificates"
+      body : "certificate"
+    };
+  }
+
+  // Retrieves a certificate
+  rpc GetCertificate(GetCertificateRequest) returns (Certificate) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/certificates/{certificate_id}"
+    };
+  }
+
+  // Lists all target certificates
+  rpc ListCertificates(ListCertificatesRequest)
+      returns (ListCertificatesResponse) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/certificates"
+    };
+  }
+
+  // Updates an existing certificate
+  rpc UpdateCertificate(UpdateCertificateRequest) returns (Certificate) {
+    option (google.api.http) = {
+      put : "/v1/orchestrator/certificates/{certificate_id}"
+      body : "certificate"
+    };
+  }
+
+  // Removes a certificate
+  rpc RemoveCertificate(RemoveCertificateRequest)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete : "/v1/orchestrator/certificates/{certificate_id}"
+    };
+  }
 }
 
 message RegisterAssessmentToolRequest { AssessmentTool tool = 1; }
@@ -236,8 +283,15 @@ message RegisterAssessmentToolRequest { AssessmentTool tool = 1; }
 message ListAssessmentToolsRequest {
   // filter tools by metric id
   string metric_id = 1;
+  int32 page_size = 2;
+  string page_token = 3;
+  string order_by = 4;
+  bool asc = 5;
 }
-message ListAssessmentToolsResponse { repeated AssessmentTool tools = 1; }
+message ListAssessmentToolsResponse {
+  repeated AssessmentTool tools = 1;
+  string next_page_token = 2;
+}
 
 message GetAssessmentToolRequest { string tool_id = 1; }
 
@@ -263,11 +317,27 @@ message UpdateMetricRequest {
 
 message GetMetricRequest { string metric_id = 1; }
 
-message ListMetricsRequest {}
-message ListMetricsResponse { repeated Metric metrics = 1; }
+message ListMetricsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string order_by = 3;
+  bool asc = 4;
+}
+message ListMetricsResponse {
+  repeated Metric metrics = 1;
+  string next_page_token = 2;
+}
 
-message ListRequirementsRequest {}
-message ListRequirementsResponse { repeated Requirement requirements = 1; }
+message ListRequirementsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string order_by = 3;
+  bool asc = 4;
+}
+message ListRequirementsResponse {
+  repeated Requirement requirements = 1;
+  string next_page_token = 2;
+}
 
 message GetCloudServiceRequest { string service_id = 1; }
 
@@ -280,8 +350,16 @@ message UpdateCloudServiceRequest {
 
 message RemoveCloudServiceRequest { string service_id = 1; }
 
-message ListCloudServicesRequest {}
-message ListCloudServicesResponse { repeated CloudService services = 1; }
+message ListCloudServicesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string order_by = 3;
+  bool asc = 4;
+}
+message ListCloudServicesResponse {
+  repeated CloudService services = 1;
+  string next_page_token = 2;
+}
 
 message UpdateMetricConfigurationRequest {
   string service_id = 1;
@@ -309,10 +387,35 @@ message UpdateMetricImplementationRequest {
   MetricImplementation implementation = 2;
 }
 
-message GetMetricImplementationRequest { string metric_id = 1; }
+message GetMetricImplementationRequest {
+  string metric_id = 1;
+  string lang = 2;
+}
+
+message SubscribeMetricChangeEventRequest {}
+
+// MetricChangeEvent represents a change of either a metric configuration or
+// implementation.
+message MetricChangeEvent {
+  enum Type {
+    TYPE_UNSPECIFIED = 0;
+    CONFIG_CHANGED = 1;
+    IMPLEMENTATION_CHANGED = 2;
+    METADATA_CHANGED = 3;
+  }
+
+  Type type = 1;
+
+  // The metric that is changing.
+  string metric_id = 2;
+
+  // Optionally, the service id that is affected by this change. Primarily
+  // concerns metric configuration changes.
+  string service_id = 3;
+}
 
 // Represents an external tool or service that offers assessments according to
-// certain metrics
+// certain metrics.
 message AssessmentTool {
   string id = 1;
 
@@ -334,6 +437,11 @@ message CloudService {
   message Requirements { repeated string requirement_ids = 1; }
 
   Requirements requirements = 4;
+
+  repeated MetricConfiguration metric_configurations = 5
+      [ (tagger.tags) = "gorm:\"many2many:cloud_service_metric_configurations;"
+                        "foreignKey:id;"
+                        "references:service_id,metric_id\"" ];
 }
 
 // Requirement represents a certain requirement that needs to be fulfilled. It
@@ -345,5 +453,63 @@ message Requirement {
 
   string description = 3;
 
-  repeated string metric_ids = 4;
+  // metrics contains either a list of reference to metrics - in this case only
+  // the id field of the metric is populated - or a list of populated metric
+  // meta-data, most likely returned by the database.
+  repeated Metric metrics = 4
+      [ (tagger.tags) = "gorm:\"many2many:requirement_metrics\"" ];
+
+  // category can be used to categorize requirements, e.g., according to a
+  // specific security catalog or something that groups requirements together,
+  // e.g., a security control.
+  string category = 5;
+}
+
+message GetCertificateRequest { string certificate_id = 1; }
+
+message ListCertificatesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string order_by = 3;
+  bool asc = 4;
+}
+message ListCertificatesResponse {
+  repeated Certificate certificates = 1;
+  string next_page_token = 2;
+}
+
+message UpdateCertificateRequest {
+  string certificate_id = 1;
+  Certificate certificate = 2;
+}
+
+message CreateCertificateRequest { Certificate certificate = 1; }
+
+message RemoveCertificateRequest { string certificate_id = 1; }
+
+// An ISO17021-based certificate
+message Certificate {
+  string id = 1;
+  string name = 2;
+  string service_id = 3;
+  string issue_date = 4;
+  string expiration_date = 5;
+  string standard = 6;
+  string assurance_level = 7;
+  string cab = 8;
+  string description = 9;
+  // A list of states at specific times
+  repeated State states = 10
+      [ (tagger.tags) = "gorm:\"constraint:OnDelete:CASCADE\"" ];
+}
+
+// A state of a certificate at a given time
+message State {
+  string id = 1;
+  // An EUCS-defined state, e.g. `new`, `suspended` or `withdrawn`
+  string state = 2;
+  string tree_id = 3;
+  string timestamp = 4;
+  // Reference to the certificate
+  string certificate_id = 5;
 }

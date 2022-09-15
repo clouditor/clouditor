@@ -45,6 +45,22 @@ func init() {
 	log = logrus.WithField("component", "auth-middleware")
 }
 
+// ProfileClaim represents claims that are contained in the profile scope of OpenID Connect.
+type ProfileClaim struct {
+	PreferredUsername string `json:"preferred_username"`
+	Name              string `json:"name"`
+	GivenName         string `json:"given_name"`
+	FamilyName        string `json:"family_name"`
+}
+
+// OpenIDConnectClaim represents a claim that supports some aspects of a token issued by an OpenID Connect provider. It
+// contains the regular registered JWT claims as well as some specific optional claims, which are empty if Open ID
+// Connect is not used.
+type OpenIDConnectClaim struct {
+	*jwt.RegisteredClaims
+	*ProfileClaim
+}
+
 type AuthConfig struct {
 	jwksURL string
 	useJWKS bool
@@ -115,6 +131,8 @@ func ConfigureAuth(opts ...AuthOption) *AuthConfig {
 
 		token, err := grpc_auth.AuthFromMD(ctx, "bearer")
 		if err != nil {
+			log.Debugf("Could not retrieve bearer token from header metadata: %v", err)
+
 			// We do not want to disclose any error details which could be security related,
 			// so we do not wrap the original error
 			return nil, status.Error(codes.Unauthenticated, "invalid auth token")
@@ -122,6 +140,8 @@ func ConfigureAuth(opts ...AuthOption) *AuthConfig {
 
 		tokenInfo, err := parseToken(token, config)
 		if err != nil {
+			log.Debugf("Could not parse token in request: %v", err)
+
 			// We do not want to disclose any error details which could be security related,
 			// so we do not wrap the original error
 			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token")
@@ -141,10 +161,10 @@ func parseToken(token string, authConfig *AuthConfig) (jwt.Claims, error) {
 
 	// Use JWKS, if enabled
 	if authConfig.useJWKS {
-		parsedToken, err = jwt.ParseWithClaims(token, &jwt.RegisteredClaims{}, authConfig.Jwks.Keyfunc)
+		parsedToken, err = jwt.ParseWithClaims(token, &OpenIDConnectClaim{}, authConfig.Jwks.Keyfunc)
 	} else {
 		// Otherwise, we will use the supplied public key
-		parsedToken, err = jwt.ParseWithClaims(token, &jwt.RegisteredClaims{}, func(t *jwt.Token) (interface{}, error) {
+		parsedToken, err = jwt.ParseWithClaims(token, &OpenIDConnectClaim{}, func(t *jwt.Token) (interface{}, error) {
 			return authConfig.publicKey, nil
 		})
 	}

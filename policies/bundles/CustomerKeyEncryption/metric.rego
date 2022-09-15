@@ -4,13 +4,13 @@ default applicable = false
 
 default compliant = false
 
-enc := input.atRestEncryption
+keyUrl := input.atRestEncryption.keyUrl
 
 applicable {
-	enc
+	keyUrl != null
 }
 
 compliant {
-	# Check if keyUrl is set. It is only set in the customer key encryption case.
-	enc.keyUrl
+	# Check if keyUrl is set (not an empty string)
+	keyUrl != ""
 }

@@ -55,11 +55,21 @@ service Discovery {
   }
 }
 
-message StartDiscoveryRequest {
-}
+message StartDiscoveryRequest {}
 
 message StartDiscoveryResponse { bool successful = 1; }
 
-message QueryRequest { string filtered_type = 1; }
+message QueryRequest {
+  string filtered_type = 1;
+  string filtered_service_id = 2;
 
-message QueryResponse { google.protobuf.ListValue results = 1; }
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
+}
+
+message QueryResponse {
+  repeated google.protobuf.Value results = 1;
+  string next_page_token = 2;
+}

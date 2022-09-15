@@ -31,5 +31,5 @@ type NetworkService struct {
 	Authenticity        HasAuthenticity        `json:"authenticity"`
 	TransportEncryption *TransportEncryption `json:"transportEncryption"`
 	Ips                 []string             `json:"ips"`
-	Ports               []int16              `json:"ports"`
+	Ports               []uint16             `json:"ports"`
 }

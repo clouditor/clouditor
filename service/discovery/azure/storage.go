@@ -29,14 +29,19 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/voc"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-07-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-02-01/storage"
-	"github.com/Azure/go-autorest/autorest/to"
+	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/voc"
+
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
+)
+
+var (
+	ErrEmptyStorageAccount        = errors.New("storage account is empty")
+	ErrMissingDiskEncryptionSetID = errors.New("no disk encryption set ID was specified")
 )
 
 type azureStorageDiscovery struct {
@@ -44,14 +49,15 @@ type azureStorageDiscovery struct {
 }
 
 func NewAzureStorageDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
-	d := &azureStorageDiscovery{}
+	d := &azureStorageDiscovery{
+		azureDiscovery{
+			discovererComponent: StorageComponent,
+		},
+	}
 
+	// Apply options
 	for _, opt := range opts {
-		if auth, ok := opt.(*authorizerOption); ok {
-			d.authOption = auth
-		} else {
-			d.options = append(d.options, opt)
-		}
+		opt(&d.azureDiscovery)
 	}
 
 	return d
@@ -68,8 +74,10 @@ func (*azureStorageDiscovery) Description() string {
 func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 	// make sure, we are authorized
 	if err = d.authorize(); err != nil {
-		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
+		return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
 	}
+
+	log.Info("Discover Azure storage resources")
 
 	// Discover storage accounts
 	storageAccounts, err := d.discoverStorageAccounts()
@@ -84,40 +92,47 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource, error) {
 	var storageResourcesList []voc.IsCloudResource
 
-	client := storage.NewAccountsClient(to.String(d.sub.SubscriptionID))
-	d.apply(&client.Client)
-
-	result, err := client.List(context.Background())
+	// Create storage accounts client
+	client, err := armstorage.NewAccountsClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
-		return nil, fmt.Errorf("could not list storage accounts: %w", err)
+		err = fmt.Errorf("could not get new storage accounts client: %w", err)
+		return nil, err
+	}
+
+	// List all storage accounts accross all resource groups
+	listPager := client.NewListPager(&armstorage.AccountsClientListOptions{})
+	accounts := make([]*armstorage.Account, 0)
+	for listPager.More() {
+		pageResponse, err := listPager.NextPage(context.TODO())
+		if err != nil {
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
+			return nil, err
+		}
+		accounts = append(accounts, pageResponse.Value...)
 	}
 
 	// Discover object and file storages
-	accounts := result.Values()
 	for _, account := range accounts {
 		// Discover object storages
-		objectStorages, err := d.discoverObjectStorages(&account)
+		objectStorages, err := d.discoverObjectStorages(account)
 		if err != nil {
 			return nil, fmt.Errorf("could not handle object storages: %w", err)
 		}
-		log.Infof("Adding object storages %+v", objectStorages)
 
 		// Discover file storages
-		fileStorages, err := d.discoverFileStorages(&account)
+		fileStorages, err := d.discoverFileStorages(account)
 		if err != nil {
 			return nil, fmt.Errorf("could not handle file storages: %w", err)
 		}
-		log.Infof("Adding file storages %+v", fileStorages)
 
 		storageResourcesList = append(storageResourcesList, objectStorages...)
 		storageResourcesList = append(storageResourcesList, fileStorages...)
 
 		// Create storage service for all storage account resources
-		storageService, err := d.handleStorageAccount(&account, storageResourcesList)
+		storageService, err := d.handleStorageAccount(account, storageResourcesList)
 		if err != nil {
 			return nil, fmt.Errorf("could not create storage service: %w", err)
 		}
-		log.Infof("Adding storage account %+v", objectStorages)
 
 		storageResourcesList = append(storageResourcesList, storageService)
 	}
@@ -135,16 +150,27 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 func (d *azureStorageDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
-	client := compute.NewDisksClient(to.String(d.sub.SubscriptionID))
-	d.apply(&client.Client)
-
-	result, err := client.ListComplete(context.Background())
+	// Create disks client
+	client, err := armcompute.NewDisksClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
-		return nil, fmt.Errorf("could not list block storages: %w", err)
+		err = fmt.Errorf("could not get new disks client: %w", err)
+		return nil, err
 	}
 
-	for _, disk := range *result.Response().Value {
-		blockStorages, err := d.handleBlockStorage(&disk)
+	// List all disks across all resource groups
+	listPager := client.NewListPager(&armcompute.DisksClientListOptions{})
+	disks := make([]*armcompute.Disk, 0)
+	for listPager.More() {
+		pageResponse, err := listPager.NextPage(context.TODO())
+		if err != nil {
+			err = fmt.Errorf("%s: %w", ErrGettingNextPage, err)
+			return nil, err
+		}
+		disks = append(disks, pageResponse.Value...)
+	}
+
+	for _, disk := range disks {
+		blockStorages, err := d.handleBlockStorage(disk)
 		if err != nil {
 			return nil, fmt.Errorf("could not handle block storage: %w", err)
 		}
@@ -156,18 +182,29 @@ func (d *azureStorageDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, 
 	return list, nil
 }
 
-func (d *azureStorageDiscovery) discoverFileStorages(account *storage.Account) ([]voc.IsCloudResource, error) {
+func (d *azureStorageDiscovery) discoverFileStorages(account *armstorage.Account) ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
-	client := storage.NewFileSharesClient(to.String(d.sub.SubscriptionID))
-	d.apply(&client.Client)
-
-	result, err := client.List(context.Background(), getResourceGroupName(*account.ID), *account.Name, "", "", "")
+	// Create file shares client
+	client, err := armstorage.NewFileSharesClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
-		return nil, fmt.Errorf("could not list file storages: %w", err)
+		err = fmt.Errorf("could not get new virtual machines client: %w", err)
+		return nil, err
 	}
 
-	for _, value := range result.Values() {
+	// List all file shares in the specified resource group
+	listPager := client.NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.FileSharesClientListOptions{})
+	fs := make([]*armstorage.FileShareItem, 0)
+	for listPager.More() {
+		pageResponse, err := listPager.NextPage(context.TODO())
+		if err != nil {
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
+			return nil, err
+		}
+		fs = append(fs, pageResponse.Value...)
+	}
+
+	for _, value := range fs {
 		fileStorages, err := handleFileStorage(account, value)
 		if err != nil {
 			return nil, fmt.Errorf("could not handle file storage: %w", err)
@@ -181,18 +218,29 @@ func (d *azureStorageDiscovery) discoverFileStorages(account *storage.Account) (
 	return list, nil
 }
 
-func (d *azureStorageDiscovery) discoverObjectStorages(account *storage.Account) ([]voc.IsCloudResource, error) {
+func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Account) ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
-	client := storage.NewBlobContainersClient(to.String(d.sub.SubscriptionID))
-	d.apply(&client.Client)
-
-	result, err := client.List(context.Background(), getResourceGroupName(*account.ID), *account.Name, "", "", "")
+	// Create blob containers client
+	client, err := armstorage.NewBlobContainersClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
-		return nil, fmt.Errorf("could not list object storages: %w", err)
+		err = fmt.Errorf("could not get new virtual machines client: %w", err)
+		return nil, err
 	}
 
-	for _, value := range result.Values() {
+	// List all file shares in the specified resource group
+	listPager := client.NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.BlobContainersClientListOptions{})
+	bc := make([]*armstorage.ListContainerItem, 0)
+	for listPager.More() {
+		pageResponse, err := listPager.NextPage(context.TODO())
+		if err != nil {
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
+			return nil, err
+		}
+		bc = append(bc, pageResponse.Value...)
+	}
+
+	for _, value := range bc {
 		objectStorages, err := handleObjectStorage(account, value)
 		if err != nil {
 			return nil, fmt.Errorf("could not handle object storage: %w", err)
@@ -205,7 +253,12 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *storage.Account)
 	return list, nil
 }
 
-func (d *azureStorageDiscovery) handleBlockStorage(disk *compute.Disk) (*voc.BlockStorage, error) {
+func (d *azureStorageDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.BlockStorage, error) {
+	// If a mandatory field is empty, the whole disk is empty
+	if disk == nil || disk.ID == nil {
+		return nil, fmt.Errorf("disk is nil")
+	}
+
 	enc, err := d.blockStorageAtRestEncryption(disk)
 	if err != nil {
 		return nil, fmt.Errorf("could not get block storage properties for the atRestEncryption: %w", err)
@@ -214,20 +267,31 @@ func (d *azureStorageDiscovery) handleBlockStorage(disk *compute.Disk) (*voc.Blo
 	return &voc.BlockStorage{
 		Storage: &voc.Storage{
 			Resource: &voc.Resource{
-				ID:           voc.ResourceID(to.String(disk.ID)),
-				Name:         to.String(disk.Name),
-				CreationTime: disk.TimeCreated.Unix(),
+				ID:           voc.ResourceID(util.Deref(disk.ID)),
+				ServiceID:    discovery.DefaultCloudServiceID,
+				Name:         util.Deref(disk.Name),
+				CreationTime: disk.Properties.TimeCreated.Unix(),
 				Type:         []string{"BlockStorage", "Storage", "Resource"},
 				GeoLocation: voc.GeoLocation{
-					Region: *disk.Location,
+					Region: util.Deref(disk.Location),
 				},
+				Labels: labels(disk.Tags),
 			},
 			AtRestEncryption: enc,
 		},
 	}, nil
 }
 
-func handleObjectStorage(account *storage.Account, container storage.ListContainerItem) (*voc.ObjectStorage, error) {
+func handleObjectStorage(account *armstorage.Account, container *armstorage.ListContainerItem) (*voc.ObjectStorage, error) {
+	if account == nil {
+		return nil, ErrEmptyStorageAccount
+	}
+
+	// It is possible that the container is not empty. In that case we have to check if a mandatory field is empty, so the whole disk is empty
+	if container == nil || container.ID == nil {
+		return nil, fmt.Errorf("container is nil")
+	}
+
 	enc, err := storageAtRestEncryption(account)
 	if err != nil {
 		return nil, fmt.Errorf("could not get object storage properties for the atRestEncryption: %w", err)
@@ -236,25 +300,40 @@ func handleObjectStorage(account *storage.Account, container storage.ListContain
 	return &voc.ObjectStorage{
 		Storage: &voc.Storage{
 			Resource: &voc.Resource{
-				ID:           voc.ResourceID(to.String(container.ID)),
-				Name:         to.String(container.Name),
-				CreationTime: account.CreationTime.Unix(),
+				ID:           voc.ResourceID(util.Deref(container.ID)),
+				ServiceID:    discovery.DefaultCloudServiceID,
+				Name:         util.Deref(container.Name),
+				CreationTime: account.Properties.CreationTime.Unix(),
 				Type:         []string{"ObjectStorage", "Storage", "Resource"},
 				GeoLocation: voc.GeoLocation{
-					Region: *account.Location,
+					Region: util.Deref(account.Location),
 				},
+				Labels: labels(account.Tags), // the storage account labels the object storage belongs to
 			},
 			AtRestEncryption: enc,
 		},
 	}, nil
 }
 
-func (*azureStorageDiscovery) handleStorageAccount(account *storage.Account, storagesList []voc.IsCloudResource) (*voc.StorageService, error) {
+func (*azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, storagesList []voc.IsCloudResource) (*voc.StorageService, error) {
 	var storageResourceIDs []voc.ResourceID
+
+	if account == nil {
+		return nil, ErrEmptyStorageAccount
+	}
 
 	// Get all object storage IDs
 	for _, storage := range storagesList {
-		storageResourceIDs = append(storageResourceIDs, storage.GetID())
+		if strings.Contains(string(storage.GetID()), accountName(util.Deref(account.ID))) {
+			storageResourceIDs = append(storageResourceIDs, storage.GetID())
+		}
+	}
+
+	te := &voc.TransportEncryption{
+		Enforced:   util.Deref(account.Properties.EnableHTTPSTrafficOnly),
+		Enabled:    true, // cannot be disabled
+		TlsVersion: string(*account.Properties.MinimumTLSVersion),
+		Algorithm:  "TLS",
 	}
 
 	storageService := &voc.StorageService{
@@ -262,32 +341,34 @@ func (*azureStorageDiscovery) handleStorageAccount(account *storage.Account, sto
 		NetworkService: &voc.NetworkService{
 			Networking: &voc.Networking{
 				Resource: &voc.Resource{
-					ID:           voc.ResourceID(to.String(account.ID)),
-					Name:         *account.Name,
-					CreationTime: account.CreationTime.Unix(),
+					ID:           voc.ResourceID(util.Deref(account.ID)),
+					ServiceID:    discovery.DefaultCloudServiceID,
+					Name:         util.Deref(account.Name),
+					CreationTime: account.Properties.CreationTime.Unix(),
 					Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
 					GeoLocation: voc.GeoLocation{
-						Region: *account.Location,
+						Region: util.Deref(account.Location),
 					},
+					Labels: labels(account.Tags),
 				},
 			},
+			TransportEncryption: te,
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
-			Url: generalizeURL(*account.PrimaryEndpoints.Blob),
-			TransportEncryption: &voc.TransportEncryption{
-				Enforced:   to.Bool(account.EnableHTTPSTrafficOnly),
-				Enabled:    true, // cannot be disabled
-				TlsVersion: string(account.MinimumTLSVersion),
-				Algorithm:  "TLS",
-			},
+			Url:                 generalizeURL(util.Deref(account.Properties.PrimaryEndpoints.Blob)),
+			TransportEncryption: te,
 		},
 	}
 
 	return storageService, nil
 }
 
-//generalizeURL generalizes the URL, because the URL depends on the storage type
+// generalizeURL generalizes the URL, because the URL depends on the storage type
 func generalizeURL(url string) string {
+	if url == "" {
+		return ""
+	}
+
 	urlSplit := strings.Split(url, ".")
 	urlSplit[1] = "[file,blob]"
 	newURL := strings.Join(urlSplit, ".")
@@ -295,7 +376,16 @@ func generalizeURL(url string) string {
 	return newURL
 }
 
-func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem) (*voc.FileStorage, error) {
+func handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileShareItem) (*voc.FileStorage, error) {
+	if account == nil {
+		return nil, ErrEmptyStorageAccount
+	}
+
+	// It is possible that the fileshare is not empty. In that case we have to check if a mandatory field is empty, so the whole disk is empty
+	if fileshare == nil || fileshare.ID == nil {
+		return nil, fmt.Errorf("fileshare is nil")
+	}
+
 	enc, err := storageAtRestEncryption(account)
 	if err != nil {
 		return nil, fmt.Errorf("could not get file storage properties for the atRestEncryption: %w", err)
@@ -304,33 +394,44 @@ func handleFileStorage(account *storage.Account, fileshare storage.FileShareItem
 	return &voc.FileStorage{
 		Storage: &voc.Storage{
 			Resource: &voc.Resource{
-				ID:           voc.ResourceID(to.String(fileshare.ID)),
-				Name:         to.String(fileshare.Name),
-				CreationTime: account.CreationTime.Unix(),
+				ID:           voc.ResourceID(util.Deref(fileshare.ID)),
+				ServiceID:    discovery.DefaultCloudServiceID,
+				Name:         util.Deref(fileshare.Name),
+				CreationTime: account.Properties.CreationTime.Unix(),
 				Type:         []string{"FileStorage", "Storage", "Resource"},
 				GeoLocation: voc.GeoLocation{
-					Region: *account.Location,
+					Region: util.Deref(account.Location),
 				},
+				Labels: labels(account.Tags), // the storage account labels the file storage belongs to
 			},
 			AtRestEncryption: enc,
 		},
 	}, nil
 }
 
-func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk *compute.Disk) (voc.HasAtRestEncryption, error) {
+// blockStorageAtRestEncryption takes encryption properties of an armcompute.Disk and converts it into our respective
+// ontology object.
+func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk *armcompute.Disk) (enc voc.HasAtRestEncryption, err error) {
+	var (
+		diskEncryptionSetID string
+		keyUrl              string
+	)
 
-	var enc voc.HasAtRestEncryption
+	if disk == nil {
+		return enc, errors.New("disk is empty")
+	}
 
-	if disk.Encryption.Type == compute.EncryptionTypeEncryptionAtRestWithPlatformKey {
+	if disk.Properties.Encryption.Type == nil {
+		return enc, errors.New("error getting atRestEncryption properties of blockStorage")
+	} else if *disk.Properties.Encryption.Type == armcompute.EncryptionTypeEncryptionAtRestWithPlatformKey {
 		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
 			Algorithm: "AES256",
 			Enabled:   true,
 		}}
-	} else if disk.Encryption.Type == compute.EncryptionTypeEncryptionAtRestWithCustomerKey {
-		var keyUrl string
-		discEncryptionSetID := disk.Encryption.DiskEncryptionSetID
+	} else if *disk.Properties.Encryption.Type == armcompute.EncryptionTypeEncryptionAtRestWithCustomerKey {
+		diskEncryptionSetID = util.Deref(disk.Properties.Encryption.DiskEncryptionSetID)
 
-		keyUrl, err := d.sourceVaultID(*discEncryptionSetID)
+		keyUrl, err = d.keyURL(diskEncryptionSetID)
 		if err != nil {
 			return nil, fmt.Errorf("could not get keyVaultID: %w", err)
 		}
@@ -342,54 +443,83 @@ func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk *compute.Disk)
 			},
 			KeyUrl: keyUrl,
 		}
-	} else {
-		return enc, errors.New("error getting atRestEncryption properties of blockStorage")
 	}
 
 	return enc, nil
 }
 
-func storageAtRestEncryption(account *storage.Account) (voc.HasAtRestEncryption, error) {
+// storageAtRestEncryption takes encryption properties of an armstorage.Account and converts it into our respective
+// ontology object.
+func storageAtRestEncryption(account *armstorage.Account) (enc voc.HasAtRestEncryption, err error) {
+	if account == nil {
+		return enc, ErrEmptyStorageAccount
+	}
 
-	var enc voc.HasAtRestEncryption
-
-	if account.Encryption.KeySource == storage.KeySourceMicrosoftStorage {
-		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
-			Algorithm: "AES256",
-			Enabled:   true,
-		}}
-	} else if account.Encryption.KeySource == storage.KeySourceMicrosoftKeyvault {
+	if account.Properties == nil || account.Properties.Encryption.KeySource == nil {
+		return enc, errors.New("keySource is empty")
+	} else if *account.Properties.Encryption.KeySource == armstorage.KeySourceMicrosoftStorage {
+		enc = voc.ManagedKeyEncryption{
+			AtRestEncryption: &voc.AtRestEncryption{
+				Algorithm: "AES256",
+				Enabled:   true,
+			},
+		}
+	} else if *account.Properties.Encryption.KeySource == armstorage.KeySourceMicrosoftKeyvault {
 		enc = voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
 				Algorithm: "", // TODO(garuppel): TBD
 				Enabled:   true,
 			},
-			KeyUrl: to.String(account.Encryption.KeyVaultProperties.KeyVaultURI),
+			KeyUrl: util.Deref(account.Properties.Encryption.KeyVaultProperties.KeyVaultURI),
 		}
-	} else {
-		return enc, errors.New("error getting atRestEncryption properties of storage account")
 	}
 
 	return enc, nil
 }
 
-func (d *azureStorageDiscovery) sourceVaultID(discEncryptionSetID string) (string, error) {
-	client := compute.NewDiskEncryptionSetsClient(to.String(d.sub.SubscriptionID))
-	d.apply(&client.Client)
+func (d *azureStorageDiscovery) keyURL(diskEncryptionSetID string) (string, error) {
+	if diskEncryptionSetID == "" {
+		return "", ErrMissingDiskEncryptionSetID
+	}
 
-	discEncryptionSet, err := client.Get(context.Background(), getResourceGroupName(discEncryptionSetID), diskEncryptionSetName(discEncryptionSetID))
+	// Create Key Vault client
+	client, err := armcompute.NewDiskEncryptionSetsClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
-		return "", fmt.Errorf("could not get discEncryptionSet: %w", err)
+		err = fmt.Errorf("could not get new key vault client: %w", err)
+		return "", err
 	}
 
-	if discEncryptionSet.EncryptionSetProperties.ActiveKey.SourceVault.ID == nil {
-		return "", fmt.Errorf("could not get sourceVaultID")
+	// Get disk encryption set
+	kv, err := client.Get(context.TODO(), resourceGroupName(diskEncryptionSetID), diskEncryptionSetName(diskEncryptionSetID), &armcompute.DiskEncryptionSetsClientGetOptions{})
+	if err != nil {
+		err = fmt.Errorf("could not get key vault: %w", err)
+		return "", err
 	}
 
-	return *discEncryptionSet.ActiveKey.SourceVault.ID, nil
+	keyURL := kv.DiskEncryptionSet.Properties.ActiveKey.KeyURL
+
+	if keyURL == nil {
+		return "", fmt.Errorf("could not get keyURL")
+	}
+
+	return util.Deref(keyURL), nil
 }
 
-func diskEncryptionSetName(discEncryptionSetID string) string {
-	splitName := strings.Split(discEncryptionSetID, "/")
+// diskEncryptionSetName return the disk encryption set ID's name
+func diskEncryptionSetName(diskEncryptionSetID string) string {
+	if diskEncryptionSetID == "" {
+		return ""
+	}
+	splitName := strings.Split(diskEncryptionSetID, "/")
+	return splitName[8]
+}
+
+// accountName return the ID's account name
+func accountName(id string) string {
+	if id == "" {
+		return ""
+	}
+
+	splitName := strings.Split(id, "/")
 	return splitName[8]
 }

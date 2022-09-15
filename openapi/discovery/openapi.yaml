@@ -1,5 +1,5 @@
 # Generated with protoc-gen-openapi
-# https://github.com/google/gnostic/tree/master/apps/protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
 
 openapi: 3.0.3
 info:
@@ -28,6 +28,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/QueryResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/discovery/start:
         post:
             tags:
@@ -47,27 +53,49 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/StartDiscoveryResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
     schemas:
-        ListValue:
+        GoogleProtobufAny:
             type: object
             properties:
-                values:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/Value'
-                    description: Repeated field of dynamically typed values.
-            description: '`ListValue` is a wrapper around a repeated field of values. The JSON representation for `ListValue` is JSON array.'
+                '@type':
+                    type: string
+                    description: The type of the serialized message.
+            additionalProperties: true
+            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        GoogleProtobufValue:
+            description: Represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values.
         QueryRequest:
             type: object
             properties:
                 filteredType:
                     type: string
+                filteredServiceId:
+                    type: string
+                pageSize:
+                    type: integer
+                    format: int32
+                pageToken:
+                    type: string
+                orderBy:
+                    type: string
+                asc:
+                    type: boolean
         QueryResponse:
             type: object
             properties:
                 results:
-                    $ref: '#/components/schemas/ListValue'
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GoogleProtobufValue'
+                nextPageToken:
+                    type: string
         StartDiscoveryRequest:
             type: object
             properties: {}
@@ -76,28 +104,21 @@ components:
             properties:
                 successful:
                     type: boolean
-        Value:
+        Status:
             type: object
             properties:
-                nullValue:
+                code:
                     type: integer
-                    description: Represents a null value.
-                    format: enum
-                numberValue:
-                    type: number
-                    description: Represents a double value.
-                    format: double
-                stringValue:
+                    description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
+                    format: int32
+                message:
                     type: string
-                    description: Represents a string value.
-                boolValue:
-                    type: boolean
-                    description: Represents a boolean value.
-                structValue:
-                    type: object
-                    description: Represents a structured value.
-                listValue:
-                    $ref: '#/components/schemas/ListValue'
-            description: '`Value` represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values. A producer of value is expected to set one of that variants, absence of any variant indicates an error. The JSON representation for `Value` is JSON value.'
+                    description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
+                details:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GoogleProtobufAny'
+                    description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
+            description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
 tags:
     - name: Discovery

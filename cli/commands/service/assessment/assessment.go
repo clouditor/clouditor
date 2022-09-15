@@ -26,9 +26,9 @@
 package assessment
 
 import (
-	"context"
 	"fmt"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
@@ -45,6 +45,7 @@ func NewListAssessmentResultsCommand() *cobra.Command {
 				session *cli.Session
 				client  assessment.AssessmentClient
 				res     *assessment.ListAssessmentResultsResponse
+				results []*assessment.AssessmentResult
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -54,7 +55,14 @@ func NewListAssessmentResultsCommand() *cobra.Command {
 
 			client = assessment.NewAssessmentClient(session)
 
-			res, err = client.ListAssessmentResults(context.Background(), &assessment.ListAssessmentResultsRequest{})
+			results, err = api.ListAllPaginated(&assessment.ListAssessmentResultsRequest{}, client.ListAssessmentResults, func(res *assessment.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
+				return res.Results
+			})
+
+			// Build a response with all results
+			res = &assessment.ListAssessmentResultsResponse{
+				Results: results,
+			}
 
 			return session.HandleResponse(res, err)
 		},

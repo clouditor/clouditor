@@ -6,13 +6,13 @@ default applicable = false
 
 default compliant = false
 
-runtimeLanguage := input.runtimeLanguage
+runtimeLanguage := input.runtime.language
 
-runtimeVersion := input.runtimeVersion
+runtimeVersion := input.runtime.version
 
 applicable {
-	runtimeLanguage
-	runtimeVersion
+	runtimeLanguage != null
+	runtimeVersion != null
 }
 
 # TODO(all): Consider to put `operator` into list of target_values for more granularity

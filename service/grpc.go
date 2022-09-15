@@ -26,6 +26,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"net"
 
@@ -36,6 +37,7 @@ import (
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 type StartGRPCServerOption func(srv *grpc.Server)
@@ -78,9 +80,14 @@ func StartGRPCServer(jwksURL string, opts ...StartGRPCServerOption) (sock net.Li
 	// We also add our authentication middleware, because we usually add additional service later
 	srv = grpc.NewServer(
 		grpc_middleware.WithUnaryServerChain(
-			grpc_auth.UnaryServerInterceptor(authConfig.AuthFunc),
+			UnaryServerInterceptorWithFilter(grpc_auth.UnaryServerInterceptor(authConfig.AuthFunc), UnaryReflectionFilter),
+		),
+		grpc_middleware.WithStreamServerChain(
+			StreamServerInterceptorWithFilter(grpc_auth.StreamServerInterceptor(authConfig.AuthFunc), StreamReflectionFilter),
 		),
 	)
+
+	reflection.Register(srv)
 
 	for _, o := range opts {
 		o(srv)
@@ -92,4 +99,40 @@ func StartGRPCServer(jwksURL string, opts ...StartGRPCServerOption) (sock net.Li
 	}()
 
 	return sock, srv, nil
+}
+
+// UnaryServerInterceptorWithFilter wraps a grpc.UnaryServerInterceptor and only invokes the interceptor, if the filter
+// function does not return true.
+func UnaryServerInterceptorWithFilter(in grpc.UnaryServerInterceptor, filter func(info *grpc.UnaryServerInfo) bool) grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+		// If the filter evaluates to true, we directly return the handler and ignore the interceptor
+		if filter(info) {
+			return handler(ctx, req)
+		}
+
+		return in(ctx, req, info, handler)
+	}
+}
+
+// StreamServerInterceptorWithFilter wraps a grpc.StreamServerInterceptor and only invokes the interceptor, if the
+// filter function does not return true.
+func StreamServerInterceptorWithFilter(in grpc.StreamServerInterceptor, filter func(info *grpc.StreamServerInfo) bool) grpc.StreamServerInterceptor {
+	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		// If the filter evaluates to true, we directly return the handler and ignore the interceptor
+		if filter(info) {
+			return handler(srv, ss)
+		}
+
+		return in(srv, ss, info, handler)
+	}
+}
+
+// UnaryReflectionFilter is a filter that ignores calls to the reflection endpoint
+func UnaryReflectionFilter(info *grpc.UnaryServerInfo) bool {
+	return info.FullMethod == "/grpc.reflection.v1alpha.ServerReflection/ServerReflectionInfo"
+}
+
+// StreamReflectionFilter is a filter that ignores calls to the reflection endpoint
+func StreamReflectionFilter(info *grpc.StreamServerInfo) bool {
+	return info.FullMethod == "/grpc.reflection.v1alpha.ServerReflection/ServerReflectionInfo"
 }

@@ -30,7 +30,12 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/service"
 )
 
 // LoadRequirements loads requirements definitions from a JSON file.
@@ -54,10 +59,43 @@ func LoadRequirements(file string) (requirements []*orchestrator.Requirement, er
 	return requirements, nil
 }
 
+func (svc *Service) loadRequirements() (err error) {
+	// Load requirements if nothing was specified
+	if svc.requirements == nil {
+		if svc.requirements, err = LoadRequirements(DefaultRequirementsFile); err != nil {
+			// Transparently return the error here to avoid uncessary wrapping
+			return err
+		}
+	}
+
+	// Persist requirements in storage backend
+	err = svc.storage.Save(svc.requirements)
+	if err != nil {
+		return fmt.Errorf("could not save requirements to storage: %w", err)
+	}
+
+	return
+}
+
 // ListRequirements is a method implementation of the OrchestratorServer interface,
 // returning a list of requirements
-func (svc *Service) ListRequirements(_ context.Context, _ *orchestrator.ListRequirementsRequest) (response *orchestrator.ListRequirementsResponse, err error) {
-	return &orchestrator.ListRequirementsResponse{
-		Requirements: svc.requirements,
-	}, nil
+func (svc *Service) ListRequirements(_ context.Context, req *orchestrator.ListRequirementsRequest) (res *orchestrator.ListRequirementsResponse, err error) {
+	res = new(orchestrator.ListRequirementsResponse)
+
+	// Validate the request
+	if err = api.ValidateListRequest[*orchestrator.Requirement](req); err != nil {
+		err = fmt.Errorf("invalid request: %w", err)
+		log.Error(err)
+		err = status.Errorf(codes.InvalidArgument, "%v", err)
+		return
+	}
+
+	// Paginate the requirements according to the request
+	res.Requirements, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Requirement](req, svc.storage,
+		service.DefaultPaginationOpts)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not paginate requirements: %v", err)
+	}
+
+	return
 }

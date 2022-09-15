@@ -80,7 +80,7 @@ func TestNewListCommand(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
-	assert.NotEmpty(t, response.Results.Values)
+	assert.NotEmpty(t, response.Results)
 }
 
 // Mocking code below is copied from clouditor.io/service/discovery
@@ -149,7 +149,11 @@ type mockIsCloudResource struct {
 }
 
 func (mockIsCloudResource) GetID() voc.ResourceID {
-	return "MockResourceId"
+	return "MockResourceID"
+}
+
+func (mockIsCloudResource) GetServiceID() string {
+	return "MockServiceID"
 }
 
 func (mockIsCloudResource) GetName() string {

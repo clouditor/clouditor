@@ -7,10 +7,20 @@ default compliant = false
 
 default applicable = false
 
+algorithm := endpoint.transportEncryption.algorithm
+
 applicable {
+<<<<<<< HEAD
 	enc
 }
 
 compliant {
 	compare(data.operator, data.target_value, enc.algorithm)
+=======
+	algorithm != null
+}
+
+compliant {
+	compare(data.operator, data.target_value, algorithm)
+>>>>>>> main
 }

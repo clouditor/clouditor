@@ -37,6 +37,7 @@ import (
 
 type IsCloudResource interface {
 	GetID() ResourceID
+	GetServiceID() string
 	GetName() string
 	GetType() []string
 	HasType(string) bool
@@ -48,9 +49,11 @@ type ResourceID string
 
 // Resource file from Ontology currently not used. How do we merge this file with the 'Resource Ontology file'
 type Resource struct {
-	ID           ResourceID `json:"id"`
-	Name         string     `json:"name"`
-	CreationTime int64      `json:"creationTime"` // is set to 0 if no creation time is available
+	ID ResourceID `json:"id"`
+	// ServiceID contains the ID of the cloud service to which this resource belongs
+	ServiceID    string `json:"serviceId"`
+	Name         string `json:"name"`
+	CreationTime int64  `json:"creationTime"` // is set to 0 if no creation time is available
 	// The resource type. It is an array, because a type can be derived from another
 	Type        []string          `json:"type"`
 	GeoLocation GeoLocation       `json:"geoLocation"`
@@ -59,6 +62,10 @@ type Resource struct {
 
 func (r *Resource) GetID() ResourceID {
 	return r.ID
+}
+
+func (r *Resource) GetServiceID() string {
+	return r.ServiceID
 }
 
 func (r *Resource) GetName() string {

@@ -1,5 +1,5 @@
 # Generated with protoc-gen-openapi
-# https://github.com/google/gnostic/tree/master/apps/protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
 
 openapi: 3.0.3
 info:
@@ -13,6 +13,28 @@ paths:
                 - Orchestrator
             description: List all assessment results. Part of the public API, also exposed as REST.
             operationId: Orchestrator_ListAssessmentResults
+            parameters:
+                - name: filteredServiceId
+                  in: query
+                  schema:
+                    type: string
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
             responses:
                 "200":
                     description: OK
@@ -20,6 +42,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListAssessmentResultsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
         post:
             tags:
                 - Orchestrator
@@ -38,6 +66,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/StoreAssessmentResultResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/assessment_tools:
         get:
             tags:
@@ -52,6 +86,23 @@ paths:
                   description: filter tools by metric id
                   schema:
                     type: string
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
             responses:
                 "200":
                     description: OK
@@ -59,6 +110,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListAssessmentToolsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
         post:
             tags:
                 - Orchestrator
@@ -77,6 +134,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/AssessmentTool'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/assessment_tools/{toolId}:
         get:
             tags:
@@ -96,6 +159,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/AssessmentTool'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
         put:
             tags:
                 - Orchestrator
@@ -120,6 +189,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/AssessmentTool'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
         delete:
             tags:
                 - Orchestrator
@@ -137,12 +212,173 @@ paths:
                 "200":
                     description: OK
                     content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/certificates:
+        get:
+            tags:
+                - Orchestrator
+            description: Lists all target certificates
+            operationId: Orchestrator_ListCertificates
+            parameters:
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListCertificatesResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        post:
+            tags:
+                - Orchestrator
+            description: Creates a new certificate
+            operationId: Orchestrator_CreateCertificate
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Certificate'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Certificate'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/certificates/{certificateId}:
+        get:
+            tags:
+                - Orchestrator
+            description: Retrieves a certificate
+            operationId: Orchestrator_GetCertificate
+            parameters:
+                - name: certificateId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Certificate'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        put:
+            tags:
+                - Orchestrator
+            description: Updates an existing certificate
+            operationId: Orchestrator_UpdateCertificate
+            parameters:
+                - name: certificateId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Certificate'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Certificate'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        delete:
+            tags:
+                - Orchestrator
+            description: Removes a certificate
+            operationId: Orchestrator_RemoveCertificate
+            parameters:
+                - name: certificateId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/cloud_services:
         get:
             tags:
                 - Orchestrator
             description: Lists all target cloud services
             operationId: Orchestrator_ListCloudServices
+            parameters:
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
             responses:
                 "200":
                     description: OK
@@ -150,6 +386,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListCloudServicesResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
         post:
             tags:
                 - Orchestrator
@@ -168,6 +410,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/CloudService'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/cloud_services/{serviceId}:
         get:
             tags:
@@ -187,6 +435,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/CloudService'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
         put:
             tags:
                 - Orchestrator
@@ -211,6 +465,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/CloudService'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
         delete:
             tags:
                 - Orchestrator
@@ -226,6 +486,12 @@ paths:
                 "200":
                     description: OK
                     content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/cloud_services/{serviceId}/metric_configurations:
         get:
             tags:
@@ -247,6 +513,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListMetricConfigurationResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/cloud_services/{serviceId}/metric_configurations/{metricId}:
         get:
             tags:
@@ -273,6 +545,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/MetricConfiguration'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
         put:
             tags:
                 - Orchestrator
@@ -304,12 +582,36 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/MetricConfiguration'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/metrics:
         get:
             tags:
                 - Orchestrator
             description: List all metrics provided by the metric catalog
             operationId: Orchestrator_ListMetrics
+            parameters:
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
             responses:
                 "200":
                     description: OK
@@ -317,6 +619,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListMetricsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
         post:
             tags:
                 - Orchestrator
@@ -335,6 +643,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Metric'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/metrics/{metricId}:
         get:
             tags:
@@ -354,6 +668,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Metric'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
         put:
             tags:
                 - Orchestrator
@@ -378,6 +698,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Metric'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/metrics/{metricId}/implementation:
         get:
             tags:
@@ -390,6 +716,10 @@ paths:
                   required: true
                   schema:
                     type: string
+                - name: lang
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
@@ -397,6 +727,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/MetricImplementation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
         put:
             tags:
                 - Orchestrator
@@ -421,11 +757,35 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/MetricImplementation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/requirements:
         get:
             tags:
                 - Orchestrator
             operationId: Orchestrator_ListRequirements
+            parameters:
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
             responses:
                 "200":
                     description: OK
@@ -433,6 +793,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListRequirementsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
     schemas:
         AllowedValues:
@@ -441,7 +807,7 @@ components:
                 values:
                     type: array
                     items:
-                        $ref: '#/components/schemas/Value'
+                        $ref: '#/components/schemas/GoogleProtobufValue'
             description: Defines a range
         AssessmentResult:
             type: object
@@ -452,7 +818,7 @@ components:
                 timestamp:
                     type: string
                     description: Time of assessment
-                    format: RFC3339
+                    format: date-time
                 metricId:
                     type: string
                     description: Reference to the metric the assessment was based on
@@ -467,9 +833,17 @@ components:
                 resourceId:
                     type: string
                     description: Reference to the resource of the assessed evidence
+                resourceTypes:
+                    type: array
+                    items:
+                        type: string
+                    description: Resource types
                 nonComplianceComments:
                     type: string
                     description: Some comments on the reason for non-compliance
+                serviceId:
+                    type: string
+                    description: The cloud service which this assessment result belongs to
             description: A result resource, representing the result after assessing the cloud resource with id resource_id.
         AssessmentTool:
             type: object
@@ -485,7 +859,34 @@ components:
                     items:
                         type: string
                     description: a list of metrics that this tool can assess, referred by their ids
-            description: Represents an external tool or service that offers assessments according to certain metrics
+            description: Represents an external tool or service that offers assessments according to certain metrics.
+        Certificate:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                serviceId:
+                    type: string
+                issueDate:
+                    type: string
+                expirationDate:
+                    type: string
+                standard:
+                    type: string
+                assuranceLevel:
+                    type: string
+                cab:
+                    type: string
+                description:
+                    type: string
+                states:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/State'
+                    description: A list of states at specific times
+            description: An ISO17021-based certificate
         CloudService:
             type: object
             properties:
@@ -497,6 +898,10 @@ components:
                     type: string
                 requirements:
                     $ref: '#/components/schemas/CloudService_Requirements'
+                metricConfigurations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/MetricConfiguration'
         CloudService_Requirements:
             type: object
             properties:
@@ -504,6 +909,16 @@ components:
                     type: array
                     items:
                         type: string
+        GoogleProtobufAny:
+            type: object
+            properties:
+                '@type':
+                    type: string
+                    description: The type of the serialized message.
+            additionalProperties: true
+            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        GoogleProtobufValue:
+            description: Represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values.
         ListAssessmentResultsResponse:
             type: object
             properties:
@@ -511,6 +926,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/AssessmentResult'
+                nextPageToken:
+                    type: string
         ListAssessmentToolsResponse:
             type: object
             properties:
@@ -518,6 +935,17 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/AssessmentTool'
+                nextPageToken:
+                    type: string
+        ListCertificatesResponse:
+            type: object
+            properties:
+                certificates:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Certificate'
+                nextPageToken:
+                    type: string
         ListCloudServicesResponse:
             type: object
             properties:
@@ -525,6 +953,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/CloudService'
+                nextPageToken:
+                    type: string
         ListMetricConfigurationResponse:
             type: object
             properties:
@@ -540,6 +970,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Metric'
+                nextPageToken:
+                    type: string
         ListRequirementsResponse:
             type: object
             properties:
@@ -547,15 +979,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Requirement'
-        ListValue:
-            type: object
-            properties:
-                values:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/Value'
-                    description: Repeated field of dynamically typed values.
-            description: '`ListValue` is a wrapper around a repeated field of values. The JSON representation for `ListValue` is JSON array.'
+                nextPageToken:
+                    type: string
         Metric:
             type: object
             properties:
@@ -572,11 +997,20 @@ components:
                     type: string
                     description: The reference to control catalog category or domain
                 scale:
-                    type: integer
+                    enum:
+                        - SCALE_UNSPECIFIED
+                        - NOMINAL
+                        - ORDINAL
+                        - METRIC
+                    type: string
                     description: The scale of this metric, e.g. categories, ranked data or metric values.
                     format: enum
                 range:
                     $ref: '#/components/schemas/Range'
+                interval:
+                    type: integer
+                    description: The interval in seconds the evidences must be collected for the respective metric. For now, we are not able to use google.protobuf.Duration because it is converted to a custom object in OpenAPI (https://github.com/google/gnostic/issues/351)
+                    format: int64
             description: A metric resource
         MetricConfiguration:
             type: object
@@ -585,21 +1019,41 @@ components:
                     type: string
                     description: The operator to compare the metric, such as == or >
                 targetValue:
-                    $ref: '#/components/schemas/Value'
+                    $ref: '#/components/schemas/GoogleProtobufValue'
                 isDefault:
                     type: boolean
                     description: Whether this configuration is a default configuration
+                updatedAt:
+                    type: string
+                    description: The last time of update
+                    format: date-time
+                metricId:
+                    type: string
+                    description: The metric this configuration belongs to
+                serviceId:
+                    type: string
+                    description: The service this configuration belongs to
             description: Defines the operator and a target value for an individual metric
         MetricImplementation:
             type: object
             properties:
-                language:
-                    type: integer
+                metricId:
+                    type: string
+                    description: The metric which is implemented
+                lang:
+                    enum:
+                        - LANGUAGE_UNSPECIFIED
+                        - REGO
+                    type: string
                     description: The language this metric is implemented in
                     format: enum
                 code:
                     type: string
                     description: The actual implementation
+                updatedAt:
+                    type: string
+                    description: The last time of update
+                    format: date-time
             description: MetricImplementation defines the implementation of an individual metric.
         MinMax:
             type: object
@@ -619,7 +1073,7 @@ components:
                 values:
                     type: array
                     items:
-                        $ref: '#/components/schemas/Value'
+                        $ref: '#/components/schemas/GoogleProtobufValue'
             description: Defines a range of values in a pre-defined order from the lowest to the highest.
         Range:
             type: object
@@ -640,11 +1094,47 @@ components:
                     type: string
                 description:
                     type: string
-                metricIds:
+                metrics:
                     type: array
                     items:
-                        type: string
+                        $ref: '#/components/schemas/Metric'
+                    description: metrics contains either a list of reference to metrics - in this case only the id field of the metric is populated - or a list of populated metric meta-data, most likely returned by the database.
+                category:
+                    type: string
+                    description: category can be used to categorize requirements, e.g., according to a specific security catalog or something that groups requirements together, e.g., a security control.
             description: Requirement represents a certain requirement that needs to be fulfilled. It could be a control in a certification catalog.
+        State:
+            type: object
+            properties:
+                id:
+                    type: string
+                state:
+                    type: string
+                    description: An EUCS-defined state, e.g. `new`, `suspended` or `withdrawn`
+                treeId:
+                    type: string
+                timestamp:
+                    type: string
+                certificateId:
+                    type: string
+                    description: Reference to the certificate
+            description: A state of a certificate at a given time
+        Status:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
+                    format: int32
+                message:
+                    type: string
+                    description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
+                details:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GoogleProtobufAny'
+                    description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
+            description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
         StoreAssessmentResultResponse:
             type: object
             properties:
@@ -652,28 +1142,5 @@ components:
                     type: boolean
                 statusMessage:
                     type: string
-        Value:
-            type: object
-            properties:
-                nullValue:
-                    type: integer
-                    description: Represents a null value.
-                    format: enum
-                numberValue:
-                    type: number
-                    description: Represents a double value.
-                    format: double
-                stringValue:
-                    type: string
-                    description: Represents a string value.
-                boolValue:
-                    type: boolean
-                    description: Represents a boolean value.
-                structValue:
-                    type: object
-                    description: Represents a structured value.
-                listValue:
-                    $ref: '#/components/schemas/ListValue'
-            description: '`Value` represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values. A producer of value is expected to set one of that variants, absence of any variant indicates an error. The JSON representation for `Value` is JSON value.'
 tags:
     - name: Orchestrator

@@ -29,28 +29,31 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
+	"sort"
+	"sync"
 	"time"
 
 	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/service/discovery/aws"
-	"clouditor.io/clouditor/service/discovery/azure"
-	"clouditor.io/clouditor/service/discovery/k8s"
-	"golang.org/x/oauth2/clientcredentials"
-	"google.golang.org/protobuf/types/known/timestamppb"
-
-	"github.com/google/uuid"
-
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/service"
+	"clouditor.io/clouditor/service/discovery/aws"
+	"clouditor.io/clouditor/service/discovery/azure"
+	"clouditor.io/clouditor/service/discovery/k8s"
 	"clouditor.io/clouditor/voc"
+
 	"github.com/go-co-op/gocron"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/exp/maps"
+	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
+	_ "k8s.io/client-go/plugin/pkg/client/auth/azure"
 )
 
 const (
@@ -61,6 +64,11 @@ const (
 
 var log *logrus.Entry
 
+type grpcTarget struct {
+	target string
+	opts   []grpc.DialOption
+}
+
 // Service is an implementation of the Clouditor Discovery service.
 // It should not be used directly, but rather the NewService constructor
 // should be used.
@@ -69,8 +77,8 @@ type Service struct {
 
 	configurations map[discovery.Discoverer]*Configuration
 
-	assessmentStream  assessment.Assessment_AssessEvidencesClient
-	assessmentAddress string
+	assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
+	assessmentAddress grpcTarget
 
 	resources map[string]voc.IsCloudResource
 	scheduler *gocron.Scheduler
@@ -78,6 +86,9 @@ type Service struct {
 	authorizer api.Authorizer
 
 	providers []string
+
+	// Mutex for resources
+	resourceMutex sync.RWMutex
 }
 
 type Configuration struct {
@@ -97,9 +108,12 @@ const (
 type ServiceOption func(*Service)
 
 // WithAssessmentAddress is an option to configure the assessment service gRPC address.
-func WithAssessmentAddress(address string) ServiceOption {
+func WithAssessmentAddress(address string, opts ...grpc.DialOption) ServiceOption {
 	return func(s *Service) {
-		s.assessmentAddress = address
+		s.assessmentAddress = grpcTarget{
+			target: address,
+			opts:   opts,
+		}
 	}
 }
 
@@ -124,10 +138,13 @@ func WithProviders(providersList []string) ServiceOption {
 
 func NewService(opts ...ServiceOption) *Service {
 	s := &Service{
-		assessmentAddress: DefaultAssessmentAddress,
-		resources:         make(map[string]voc.IsCloudResource),
-		scheduler:         gocron.NewScheduler(time.UTC),
-		configurations:    make(map[discovery.Discoverer]*Configuration),
+		assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
+		assessmentAddress: grpcTarget{
+			target: DefaultAssessmentAddress,
+		},
+		resources:      make(map[string]voc.IsCloudResource),
+		scheduler:      gocron.NewScheduler(time.UTC),
+		configurations: make(map[discovery.Discoverer]*Configuration),
 	}
 
 	// Apply any options
@@ -139,79 +156,53 @@ func NewService(opts ...ServiceOption) *Service {
 }
 
 // SetAuthorizer implements UsesAuthorizer.
-func (s *Service) SetAuthorizer(auth api.Authorizer) {
-	s.authorizer = auth
+func (svc *Service) SetAuthorizer(auth api.Authorizer) {
+	svc.authorizer = auth
 }
 
 // Authorizer implements UsesAuthorizer.
-func (s *Service) Authorizer() api.Authorizer {
-	return s.authorizer
+func (svc *Service) Authorizer() api.Authorizer {
+	return svc.authorizer
 }
 
 // initAssessmentStream initializes the stream that is used to send evidences to the assessment service.
 // If configured, it uses the Authorizer of the discovery service to authenticate requests to the assessment.
-func (s *Service) initAssessmentStream(additionalOpts ...grpc.DialOption) error {
-	log.Infof("Trying to establish a connection to assessment service @ %v", s.assessmentAddress)
+func (svc *Service) initAssessmentStream(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
+	log.Infof("Trying to establish a connection to assessment service @ %v", target)
 
 	// Establish connection to assessment gRPC service
-	conn, err := grpc.Dial(s.assessmentAddress,
-		api.DefaultGrpcDialOptions(s, additionalOpts...)...,
+	conn, err := grpc.Dial(target,
+		api.DefaultGrpcDialOptions(target, svc, additionalOpts...)...,
 	)
 	if err != nil {
-		return fmt.Errorf("could not connect to assessment service: %w", err)
+		return nil, fmt.Errorf("could not connect to assessment service: %w", err)
 	}
 
 	client := assessment.NewAssessmentClient(conn)
 
 	// Set up the stream and store it in our service struct, so we can access it later to actually
 	// send the evidence data
-	s.assessmentStream, err = client.AssessEvidences(context.Background())
+	stream, err = client.AssessEvidences(context.Background())
 	if err != nil {
-		return fmt.Errorf("could not set up stream for assessing evidences: %w", err)
+		return nil, fmt.Errorf("could not set up stream for assessing evidences: %w", err)
 	}
-
-	// Receive responses from Assessment
-	// Currently we do not process the responses
-	go func() {
-		for {
-			_, err := s.assessmentStream.Recv()
-			if errors.Is(err, io.EOF) {
-				log.Debugf("no more requests in assessment stream available")
-				break
-			}
-
-			if err != nil {
-				log.Errorf("error receiving response from assessment stream: %+v", err)
-				break
-			}
-		}
-	}()
 
 	log.Infof("Connected to Assessment")
 
-	return nil
+	return
 }
 
 // Start starts discovery
-func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
+func (svc *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
 	resp = &discovery.StartDiscoveryResponse{Successful: true}
 
 	log.Infof("Starting discovery...")
-	s.scheduler.TagsUnique()
-
-	// Establish connection to assessment component
-	if s.assessmentStream == nil {
-		err = s.initAssessmentStream()
-		if err != nil {
-			log.Errorf("Could not initialize stream to Assessment: %v", err)
-			return nil, status.Error(codes.Internal, "could not initialize stream to Assessment")
-		}
-	}
+	svc.scheduler.TagsUnique()
 
 	var discoverer []discovery.Discoverer
 
 	// Configure discoverers for given providers
-	for _, provider := range s.providers {
+	for _, provider := range svc.providers {
 		switch {
 		case provider == ProviderAzure:
 			authorizer, err := azure.NewAuthorizer()
@@ -220,7 +211,8 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
 			}
 			discoverer = append(discoverer,
-				azure.NewAzureARMTemplateDiscovery(azure.WithAuthorizer(authorizer)),
+				// For now, we do not want to discover the ARM template
+				// azure.NewAzureARMTemplateDiscovery(azure.WithAuthorizer(authorizer)),
 				azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
 				azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
 				azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)))
@@ -232,7 +224,8 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 			}
 			discoverer = append(discoverer,
 				k8s.NewKubernetesComputeDiscovery(k8sClient),
-				k8s.NewKubernetesNetworkDiscovery(k8sClient))
+				k8s.NewKubernetesNetworkDiscovery(k8sClient),
+				k8s.NewKubernetesStorageDiscovery(k8sClient))
 		case provider == ProviderAWS:
 			awsClient, err := aws.NewClient()
 			if err != nil {
@@ -250,32 +243,32 @@ func (s *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (
 	}
 
 	for _, v := range discoverer {
-		s.configurations[v] = &Configuration{
+		svc.configurations[v] = &Configuration{
 			Interval: 5 * time.Minute,
 		}
 
 		log.Infof("Scheduling {%s} to execute every 5 minutes...", v.Name())
 
-		_, err = s.scheduler.
+		_, err = svc.scheduler.
 			Every(5).
 			Minute().
 			Tag(v.Name()).
-			Do(s.StartDiscovery, v)
+			Do(svc.StartDiscovery, v)
 		if err != nil {
 			log.Errorf("Could not schedule job for {%s}: %v", v.Name(), err)
 		}
 	}
 
-	s.scheduler.StartAsync()
+	svc.scheduler.StartAsync()
 
 	return resp, nil
 }
 
-func (s *Service) Shutdown() {
-	s.scheduler.Stop()
+func (svc *Service) Shutdown() {
+	svc.scheduler.Stop()
 }
 
-func (s *Service) StartDiscovery(discoverer discovery.Discoverer) {
+func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	var (
 		err  error
 		list []voc.IsCloudResource
@@ -289,7 +282,9 @@ func (s *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}
 
 	for _, resource := range list {
-		s.resources[string(resource.GetID())] = resource
+		svc.resourceMutex.Lock()
+		svc.resources[string(resource.GetID())] = resource
+		svc.resourceMutex.Unlock()
 
 		var (
 			v *structpb.Value
@@ -303,6 +298,7 @@ func (s *Service) StartDiscovery(discoverer discovery.Discoverer) {
 		// TODO(all): What is the raw type in our case?
 		e := &evidence.Evidence{
 			Id:                 uuid.New().String(),
+			ServiceId:          resource.GetServiceID(),
 			Timestamp:          timestamppb.Now(),
 			ToolId:             "Clouditor Evidences Collection",
 			Raw:                "",
@@ -310,29 +306,45 @@ func (s *Service) StartDiscovery(discoverer discovery.Discoverer) {
 			RelatedResourceIds: resource.Related(),
 		}
 
-		if s.assessmentStream == nil {
-			log.Warnf("Evidence stream to Assessment component not available")
+		// Get Evidence Store stream
+		channel, err := svc.assessmentStreams.GetStream(svc.assessmentAddress.target, "Assessment", svc.initAssessmentStream, svc.assessmentAddress.opts...)
+		if err != nil {
+			err = fmt.Errorf("could not get stream to assessment service (%s): %w", svc.assessmentAddress.target, err)
+			log.Error(err)
 			continue
 		}
 
-		if err = s.assessmentStream.Send(&assessment.AssessEvidenceRequest{Evidence: e}); err != nil {
-			log.WithError(handleError(err, "Assessment"))
-		}
+		channel.Send(&assessment.AssessEvidenceRequest{Evidence: e})
 	}
 }
 
-func (s *Service) Query(_ context.Context, request *discovery.QueryRequest) (response *discovery.QueryResponse, err error) {
+func (svc *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *discovery.QueryResponse, err error) {
 	var r []*structpb.Value
+	var resources []voc.IsCloudResource
 
 	var filteredType = ""
-	if request != nil {
-		filteredType = request.FilteredType
+	if req != nil {
+		filteredType = req.FilteredType
 	}
 
-	for _, v := range s.resources {
+	var filteredServiceId = ""
+	if req != nil {
+		filteredServiceId = req.FilteredServiceId
+	}
+
+	resources = maps.Values(svc.resources)
+	sort.Slice(resources, func(i, j int) bool {
+		return resources[i].GetID() < resources[j].GetID()
+	})
+
+	for _, v := range resources {
 		var resource *structpb.Value
 
 		if filteredType != "" && !v.HasType(filteredType) {
+			continue
+		}
+
+		if filteredServiceId != "" && v.GetServiceID() != filteredServiceId {
 			continue
 		}
 
@@ -345,9 +357,23 @@ func (s *Service) Query(_ context.Context, request *discovery.QueryRequest) (res
 		r = append(r, resource)
 	}
 
-	return &discovery.QueryResponse{
-		Results: &structpb.ListValue{Values: r},
-	}, nil
+	res = new(discovery.QueryResponse)
+
+	// Paginate the evidences according to the request
+	r, res.NextPageToken, err = service.PaginateSlice(req, r, func(a *structpb.Value, b *structpb.Value) bool {
+		if req.OrderBy == "creation_time" {
+			return a.GetStructValue().Fields["creation_time"].GetNumberValue() < b.GetStructValue().Fields["creation_time"].GetNumberValue()
+		} else {
+			return a.GetStructValue().Fields["id"].GetStringValue() < b.GetStructValue().Fields["b"].GetStringValue()
+		}
+	}, service.DefaultPaginationOpts)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
+	}
+
+	res.Results = r
+
+	return
 }
 
 // handleError prints out the error according to the status code

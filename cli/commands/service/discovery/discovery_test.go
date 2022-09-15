@@ -65,21 +65,6 @@ func TestAddCommands(t *testing.T) {
 	t.Errorf("No query command was added")
 }
 
-// TestNewStartDiscoveryCommand currently tests only the error case
-// For more tests mock stream to assessment
-func TestNewStartDiscoveryCommand(t *testing.T) {
-	var err error
-
-	cmd := NewStartDiscoveryCommand()
-	err = cmd.RunE(nil, []string{})
-	assert.Error(t, err)
-
-	var response = &discovery.StartDiscoveryResponse{}
-	assert.NotNil(t, response)
-	assert.False(t, response.Successful)
-
-}
-
 func TestNewQueryDiscoveryCommand(t *testing.T) {
 	var err error
 	var b bytes.Buffer
@@ -95,7 +80,7 @@ func TestNewQueryDiscoveryCommand(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
-	assert.NotEmpty(t, response.Results.Values)
+	assert.NotEmpty(t, response.Results)
 }
 
 // Mocking code below is copied from clouditor.io/service/discovery
@@ -164,7 +149,11 @@ type mockIsCloudResource struct {
 }
 
 func (mockIsCloudResource) GetID() voc.ResourceID {
-	return "MockResourceId"
+	return "MockResourceID"
+}
+
+func (mockIsCloudResource) GetServiceID() string {
+	return "MockServiceID"
 }
 
 func (mockIsCloudResource) GetName() string {

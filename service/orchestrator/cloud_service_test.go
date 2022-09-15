@@ -29,6 +29,7 @@ import (
 	"context"
 	"testing"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
 
 	"github.com/stretchr/testify/assert"
@@ -120,6 +121,14 @@ func TestService_ListCloudServices(t *testing.T) {
 	assert.NotNil(t, listCloudServicesResponse.Services)
 	assert.NotEmpty(t, listCloudServicesResponse.Services)
 	assert.Equal(t, len(listCloudServicesResponse.Services), 1)
+
+	// 3rd case: Invalid request
+	_, err = orchestratorService.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{
+		OrderBy: "not a field",
+	})
+	assert.Equal(t, codes.InvalidArgument, status.Code(err))
+	assert.Contains(t, err.Error(), api.ErrInvalidColumnName.Error())
+
 }
 
 func TestGetCloudService(t *testing.T) {
@@ -133,7 +142,7 @@ func TestGetCloudService(t *testing.T) {
 			"invalid request",
 			nil,
 			nil,
-			status.Error(codes.InvalidArgument, orchestrator.ErrRequestIsNil.Error()),
+			status.Error(codes.InvalidArgument, api.ErrRequestIsNil.Error()),
 		},
 		{
 			"cloud service not found",

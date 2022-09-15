@@ -1,13 +1,19 @@
 package gorm
 
 import (
-	"clouditor.io/clouditor/api/orchestrator"
 	"fmt"
 	"testing"
+	"time"
 
-	"clouditor.io/clouditor/api/auth"
-	"clouditor.io/clouditor/persistence"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/auth"
+	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/testutil/orchestratortest"
+	"clouditor.io/clouditor/persistence"
 )
 
 func TestStorageOptions(t *testing.T) {
@@ -39,11 +45,11 @@ func TestStorageOptions(t *testing.T) {
 			name: "postgres with option - invalid port",
 			args: args{
 				opts: []StorageOption{
-					WithPostgres("", 0),
+					WithPostgres("", 0, "", "", "", ""),
 				},
 			},
 			wantDialectorType: "",
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+			wantErr: func(tt assert.TestingT, err error, i ...any) bool {
 				return assert.Contains(t, err.Error(), "invalid port")
 			},
 		},
@@ -80,6 +86,26 @@ func TestStorageOptions(t *testing.T) {
 			assert.Equal(t, userInput, userOutput)
 		})
 	}
+}
+
+func Test_storage_Create(t *testing.T) {
+	var (
+		err    error
+		s      persistence.Storage
+		metric *assessment.Metric
+	)
+
+	metric = &assessment.Metric{Id: "Test"}
+
+	// Create storage
+	s, err = NewStorage()
+	assert.NoError(t, err)
+
+	err = s.Create(metric)
+	assert.NoError(t, err)
+
+	err = s.Create(metric)
+	assert.Error(t, err)
 }
 
 func Test_storage_Get(t *testing.T) {
@@ -126,6 +152,35 @@ func Test_storage_Get(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, user, gotUser3)
 
+	var metric *assessment.Metric = &assessment.Metric{
+		Id:    "test",
+		Range: &assessment.Range{Range: &assessment.Range_MinMax{MinMax: &assessment.MinMax{Min: 1, Max: 2}}},
+	}
+
+	// Create metric
+	err = s.Create(metric)
+	assert.NoError(t, err)
+
+	// Get metric via Id
+	gotMetric := &assessment.Metric{}
+	err = s.Get(gotMetric, "id = ?", "test")
+	assert.NoError(t, err)
+	assert.Equal(t, metric, gotMetric)
+
+	var impl = &assessment.MetricImplementation{
+		MetricId:  "1",
+		UpdatedAt: timestamppb.New(time.Date(2000, 1, 1, 1, 1, 1, 1, time.UTC)),
+	}
+
+	// Create metric implementation
+	err = s.Create(impl)
+	assert.NoError(t, err)
+
+	// Get metric implementation via Id
+	gotImpl := &assessment.MetricImplementation{}
+	err = s.Get(gotImpl, "metric_id = ?", "1")
+	assert.NoError(t, err)
+	assert.Equal(t, impl, gotImpl)
 }
 
 func Test_storage_List(t *testing.T) {
@@ -136,6 +191,12 @@ func Test_storage_List(t *testing.T) {
 		user2 *auth.User
 		users []auth.User
 	)
+
+	// Create storage
+	s, err = NewStorage()
+	assert.NoError(t, err)
+
+	// Test user
 
 	user1 = &auth.User{
 		Username: "SomeName",
@@ -151,12 +212,8 @@ func Test_storage_List(t *testing.T) {
 		FullName: "SomeFullName2",
 	}
 
-	// Create storage
-	s, err = NewStorage()
-	assert.NoError(t, err)
-
 	// List should return empty list since no users are in DB yet
-	err = s.List(&users)
+	err = s.List(&users, "", true, 0, -1)
 	assert.ErrorIs(t, err, nil)
 	assert.Empty(t, users)
 
@@ -165,18 +222,51 @@ func Test_storage_List(t *testing.T) {
 	assert.NoError(t, err)
 	err = s.Create(user2)
 	assert.NoError(t, err)
-	err = s.List(&users)
+	err = s.List(&users, "", true, 0, -1)
 	assert.ErrorIs(t, err, nil)
 	assert.Equal(t, len(users), 2)
 
-	// Check if user with name "SomeName" (user1) is in the list
-	for i := range users {
-		if users[i].Username == user1.Username {
+	// Test with certificates (associations included via states)
+	var (
+		certificate1 *orchestrator.Certificate
+		certificate2 *orchestrator.Certificate
+		certificates []*orchestrator.Certificate
+	)
+
+	// List should return empty list since no certificates are in DB yet
+	err = s.List(&certificates, "", true, 0, 0)
+	assert.ErrorIs(t, err, nil)
+	assert.Empty(t, certificates)
+
+	// Create two certificates
+	certificate1 = orchestratortest.NewCertificate()
+	certificate1.Id = "0"
+	certificate2 = orchestratortest.NewCertificate()
+	certificate2.Id = "1"
+	err = s.Create(certificate1)
+	assert.NoError(t, err)
+	err = s.Create(certificate2)
+	assert.NoError(t, err)
+
+	// List should return list of 2 certificates with associated states
+	err = s.List(&certificates, "id", false, 0, 0)
+	assert.ErrorIs(t, err, nil)
+	assert.Equal(t, len(certificates), 2)
+	// Check ordering
+	assert.Equal(t, certificate2.Id, certificates[0].Id)
+
+	fmt.Println(certificates)
+
+	// Check if certificate with id "1" (certificate2) is in the list and if states are included (association)
+	for i := range certificates {
+		if certificates[i].Id == certificate2.Id {
+			fmt.Println("Certificate:", certificates[i])
+			assert.NotEmpty(t, certificates[i].States)
 			return
 		}
 	}
 	// If not, let the test fail
-	assert.FailNow(t, "user1 is not listed but should be.")
+	assert.FailNow(t, "%s is not listed but should be.", certificate1.Id)
 
 }
 
@@ -232,17 +322,22 @@ func Test_storage_Count(t *testing.T) {
 	// Calling s.Count() with unsupported record type should throw "unsupported" error
 	_, err = s.Count(nil)
 	assert.Error(t, err)
-	fmt.Println(err)
 	assert.Contains(t, err.Error(), "unsupported data type")
 }
 
 func Test_storage_Save(t *testing.T) {
+	type MyTest struct {
+		ID   int
+		Name string
+	}
+
 	var (
 		err     error
 		s       persistence.Storage
 		user    *auth.User
 		newUser *auth.User
 		gotUser *auth.User
+		myVar   MyTest
 	)
 	user = &auth.User{
 		Username: "SomeName",
@@ -252,7 +347,7 @@ func Test_storage_Save(t *testing.T) {
 	}
 
 	// Create storage
-	s, err = NewStorage()
+	s, err = NewStorage(WithAdditionalAutoMigration(&MyTest{}))
 	assert.NoError(t, err)
 
 	// Create user
@@ -284,6 +379,10 @@ func Test_storage_Save(t *testing.T) {
 	// Email should be zero
 	assert.Equal(t, "", gotUser.Email)
 
+	// Save MyTest
+	myVar = MyTest{ID: 1, Name: "Test"}
+	err = s.Save(&myVar)
+	assert.NoError(t, err)
 }
 
 func Test_storage_Update(t *testing.T) {
@@ -303,6 +402,7 @@ func Test_storage_Update(t *testing.T) {
 	s, err = NewStorage()
 	assert.NoError(t, err)
 
+	// Testing user
 	// Create user
 	err = s.Create(user)
 	assert.NoError(t, err)
@@ -325,13 +425,20 @@ func Test_storage_Update(t *testing.T) {
 	assert.Equal(t, user.Password, gotUser.Password)
 	assert.Equal(t, user.Email, gotUser.Email)
 
-	// Testing cloud service (A table test now would be better, probably)
-
-	// Create user
+	// Testing cloud service
+	// Create cloud service
 	cloudService := orchestrator.CloudService{
 		Id:          "SomeId",
 		Name:        "SomeName",
 		Description: "SomeDescription",
+		MetricConfigurations: []*assessment.MetricConfiguration{
+			{
+				ServiceId:   "SomeId",
+				MetricId:    "SomeMetric",
+				Operator:    "==",
+				TargetValue: structpb.NewBoolValue(true),
+			},
+		},
 	}
 	err = s.Create(&cloudService)
 	assert.NoError(t, err)
@@ -351,6 +458,7 @@ func Test_storage_Update(t *testing.T) {
 	// Other properties should stay the same
 	assert.Equal(t, cloudService.Id, gotCloudService.Id)
 	assert.Equal(t, cloudService.Description, gotCloudService.Description)
+	assert.Equal(t, len(cloudService.MetricConfigurations), len(gotCloudService.MetricConfigurations))
 }
 
 func Test_storage_Delete(t *testing.T) {

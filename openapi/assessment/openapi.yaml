@@ -1,5 +1,5 @@
 # Generated with protoc-gen-openapi
-# https://github.com/google/gnostic/tree/master/apps/protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
 
 openapi: 3.0.3
 info:
@@ -30,12 +30,40 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/AssessEvidenceResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/assessment/results:
         get:
             tags:
                 - Assessment
             description: List all assessment results. Part of the public API, also exposed as REST.
             operationId: Assessment_ListAssessmentResults
+            parameters:
+                - name: filteredServiceId
+                  in: query
+                  schema:
+                    type: string
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
             responses:
                 "200":
                     description: OK
@@ -43,6 +71,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListAssessmentResultsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/assessment/statistics:
         get:
             tags:
@@ -58,13 +92,24 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListStatisticsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
     schemas:
         AssessEvidenceResponse:
             type: object
             properties:
                 status:
-                    type: integer
+                    enum:
+                        - ASSESSMENT_STATUS_UNSPECIFIED
+                        - WAITING_FOR_RELATED
+                        - ASSESSED
+                        - FAILED
+                    type: string
                     format: enum
                 statusMessage:
                     type: string
@@ -77,7 +122,7 @@ components:
                 timestamp:
                     type: string
                     description: Time of assessment
-                    format: RFC3339
+                    format: date-time
                 metricId:
                     type: string
                     description: Reference to the metric the assessment was based on
@@ -92,9 +137,17 @@ components:
                 resourceId:
                     type: string
                     description: Reference to the resource of the assessed evidence
+                resourceTypes:
+                    type: array
+                    items:
+                        type: string
+                    description: Resource types
                 nonComplianceComments:
                     type: string
                     description: Some comments on the reason for non-compliance
+                serviceId:
+                    type: string
+                    description: The cloud service which this assessment result belongs to
             description: A result resource, representing the result after assessing the cloud resource with id resource_id.
         Evidence:
             type: object
@@ -105,7 +158,7 @@ components:
                 timestamp:
                     type: string
                     description: time of evidence creation
-                    format: RFC3339
+                    format: date-time
                 serviceId:
                     type: string
                     description: Reference to a service this evidence was gathered from
@@ -116,13 +169,23 @@ components:
                     type: string
                     description: Contains the evidence in its original form without following a defined schema, e.g. the raw JSON
                 resource:
-                    $ref: '#/components/schemas/Value'
+                    $ref: '#/components/schemas/GoogleProtobufValue'
                 relatedResourceIds:
                     type: array
                     items:
                         type: string
                     description: Related resource IDs. The assessment will wait until all evidences for related resource have arrived in the assessment and are recent enough
             description: An evidence resource
+        GoogleProtobufAny:
+            type: object
+            properties:
+                '@type':
+                    type: string
+                    description: The type of the serialized message.
+            additionalProperties: true
+            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        GoogleProtobufValue:
+            description: Represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values.
         ListAssessmentResultsResponse:
             type: object
             properties:
@@ -130,6 +193,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/AssessmentResult'
+                nextPageToken:
+                    type: string
         ListStatisticsResponse:
             type: object
             properties:
@@ -142,15 +207,6 @@ components:
                 averageWaitingTime:
                     type: number
                     format: float
-        ListValue:
-            type: object
-            properties:
-                values:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/Value'
-                    description: Repeated field of dynamically typed values.
-            description: '`ListValue` is a wrapper around a repeated field of values. The JSON representation for `ListValue` is JSON array.'
         MetricConfiguration:
             type: object
             properties:
@@ -158,33 +214,36 @@ components:
                     type: string
                     description: The operator to compare the metric, such as == or >
                 targetValue:
-                    $ref: '#/components/schemas/Value'
+                    $ref: '#/components/schemas/GoogleProtobufValue'
                 isDefault:
                     type: boolean
                     description: Whether this configuration is a default configuration
+                updatedAt:
+                    type: string
+                    description: The last time of update
+                    format: date-time
+                metricId:
+                    type: string
+                    description: The metric this configuration belongs to
+                serviceId:
+                    type: string
+                    description: The service this configuration belongs to
             description: Defines the operator and a target value for an individual metric
-        Value:
+        Status:
             type: object
             properties:
-                nullValue:
+                code:
                     type: integer
-                    description: Represents a null value.
-                    format: enum
-                numberValue:
-                    type: number
-                    description: Represents a double value.
-                    format: double
-                stringValue:
+                    description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
+                    format: int32
+                message:
                     type: string
-                    description: Represents a string value.
-                boolValue:
-                    type: boolean
-                    description: Represents a boolean value.
-                structValue:
-                    type: object
-                    description: Represents a structured value.
-                listValue:
-                    $ref: '#/components/schemas/ListValue'
-            description: '`Value` represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values. A producer of value is expected to set one of that variants, absence of any variant indicates an error. The JSON representation for `Value` is JSON value.'
+                    description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
+                details:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GoogleProtobufAny'
+                    description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
+            description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
 tags:
     - name: Assessment

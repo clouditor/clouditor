@@ -85,16 +85,17 @@ func (d k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
 }
 
 func (k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwork {
-	var ports []int16
+	var ports []uint16
 
 	for _, v := range service.Spec.Ports {
-		ports = append(ports, int16(v.Port))
+		ports = append(ports, uint16(v.Port))
 	}
 
 	return &voc.NetworkService{
 		Networking: &voc.Networking{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(getNetworkServiceResourceID(service)),
+				ServiceID:    discovery.DefaultCloudServiceID,
 				Name:         service.Name,
 				CreationTime: service.CreationTimestamp.Unix(),
 				Type:         []string{"NetworkService", "Resource"},
@@ -103,6 +104,7 @@ func (k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwork 
 				},
 			},
 		},
+
 		Ips:   service.Spec.ClusterIPs,
 		Ports: ports,
 	}
@@ -118,6 +120,7 @@ func (k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 			Networking: &voc.Networking{
 				Resource: &voc.Resource{
 					ID:           voc.ResourceID(getLoadBalancerResourceID(ingress)),
+					ServiceID:    discovery.DefaultCloudServiceID,
 					Name:         ingress.Name,
 					CreationTime: ingress.CreationTimestamp.Unix(),
 					Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
@@ -127,7 +130,7 @@ func (k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 				},
 			},
 			Ips:   nil, // TODO (oxisto): fill out IPs
-			Ports: []int16{80, 443},
+			Ports: []uint16{80, 443},
 		},
 		// TODO(oxisto): fill out access restrictions
 		AccessRestrictions: &[]voc.AccessRestriction{},

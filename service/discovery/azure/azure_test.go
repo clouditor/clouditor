@@ -27,14 +27,17 @@ package azure
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/httputil"
 	"testing"
 
-	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -62,10 +65,10 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 
 type mockAuthorizer struct{}
 
-func (mockAuthorizer) WithAuthorization() autorest.PrepareDecorator {
-	return func(p autorest.Preparer) autorest.Preparer {
-		return p
-	}
+func (c *mockAuthorizer) GetToken(_ context.Context, _ policy.TokenRequestOptions) (azcore.AccessToken, error) {
+	var token azcore.AccessToken
+
+	return token, nil
 }
 
 func createResponse(object map[string]interface{}, statusCode int) (res *http.Response, err error) {
@@ -84,93 +87,127 @@ func createResponse(object map[string]interface{}, statusCode int) (res *http.Re
 	}, nil
 }
 
-func LogRequest() autorest.PrepareDecorator {
-	return func(p autorest.Preparer) autorest.Preparer {
-		return autorest.PreparerFunc(func(r *http.Request) (*http.Request, error) {
-			r, err := p.Prepare(r)
-
-			if err != nil {
-				log.Println(err)
-			}
-
-			dump, _ := httputil.DumpRequestOut(r, true)
-			log.Println(string(dump))
-
-			return r, err
-		})
-	}
-}
-
-func LogResponse() autorest.RespondDecorator {
-	return func(p autorest.Responder) autorest.Responder {
-		return autorest.ResponderFunc(func(r *http.Response) error {
-			err := p.Respond(r)
-
-			if err != nil {
-				log.Println(err)
-			}
-
-			dump, _ := httputil.DumpResponse(r, true)
-			log.Println(string(dump))
-
-			return err
-		})
-	}
-}
-
 func TestGetResourceGroupName(t *testing.T) {
 	accountId := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account3"
-	result := getResourceGroupName(accountId)
+	result := resourceGroupName(accountId)
 
 	assert.Equal(t, "res1", result)
 }
 
-func TestApply(t *testing.T) {
+func Test_labels(t *testing.T) {
 
-	// Test senderOption
-	so := senderOption{
-		sender: mockStorageSender{},
+	testValue1 := "testValue1"
+	testValue2 := "testValue2"
+	testValue3 := "testValue3"
+
+	type args struct {
+		tags map[string]*string
 	}
-
-	client := autorest.Client{}
-	so.apply(&client)
-	assert.Equal(t, so.sender, client.Sender)
-
-	// Test authorizerOption
-	ao := authorizerOption{
-		authorizer: mockAuthorizer{},
-	}
-
-	ao.apply(&client)
-	assert.Equal(t, ao.authorizer, client.Authorizer)
-
-	// Test azureDiscovery
-	ad := azureDiscovery{
-		authOption: &authorizerOption{
-			authorizer: mockAuthorizer{},
+	tests := []struct {
+		name string
+		args args
+		want map[string]string
+	}{
+		{
+			name: "Empty map of tags",
+			args: args{
+				tags: map[string]*string{},
+			},
+			want: map[string]string{},
+		},
+		{
+			name: "Tags are nil",
+			args: args{},
+			want: map[string]string{},
+		},
+		{
+			name: "Valid tags",
+			args: args{
+				tags: map[string]*string{
+					"testTag1": &testValue1,
+					"testTag2": &testValue2,
+					"testTag3": &testValue3,
+				},
+			},
+			want: map[string]string{
+				"testTag1": testValue1,
+				"testTag2": testValue2,
+				"testTag3": testValue3,
+			},
 		},
 	}
-
-	ad.apply(&client)
-	assert.Equal(t, ad.authOption.authorizer, client.Authorizer)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, labels(tt.args.tags), "labels(%v)", tt.args.tags)
+		})
+	}
 }
 
-func TestWithSender(t *testing.T) {
-	expected := &senderOption{
-		sender: mockStorageSender{},
+func Test_azureDiscovery_authorize(t *testing.T) {
+	type fields struct {
+		isAuthorized  bool
+		sub           armsubscription.Subscription
+		cred          azcore.TokenCredential
+		clientOptions arm.ClientOptions
 	}
-
-	resp := WithSender(mockStorageSender{})
-
-	assert.Equal(t, expected, resp)
-}
-
-func TestWithAuthorizer(t *testing.T) {
-	expected := &authorizerOption{
-		authorizer: mockAuthorizer{},
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Is authorized",
+			fields: fields{
+				isAuthorized: true,
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, nil, err)
+			},
+		},
+		{
+			name: "No credentials configured",
+			fields: fields{
+				isAuthorized: false,
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, ErrNoCredentialsConfigured)
+			},
+		},
+		{
+			name: "Error getting subscriptions",
+			fields: fields{
+				isAuthorized: false,
+				cred:         &mockAuthorizer{},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrCouldNotGetSubscriptions.Error())
+			},
+		},
+		{
+			name: "Without errors",
+			fields: fields{
+				isAuthorized: false,
+				cred:         &mockAuthorizer{},
+				clientOptions: arm.ClientOptions{
+					ClientOptions: policy.ClientOptions{
+						Transport: mockSender{},
+					},
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.NoError(t, err)
+			},
+		},
 	}
-
-	resp := WithAuthorizer(mockAuthorizer{})
-
-	assert.Equal(t, expected, resp)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := &azureDiscovery{
+				isAuthorized:  tt.fields.isAuthorized,
+				sub:           tt.fields.sub,
+				cred:          tt.fields.cred,
+				clientOptions: tt.fields.clientOptions,
+			}
+			tt.wantErr(t, a.authorize())
+		})
+	}
 }

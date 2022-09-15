@@ -32,16 +32,17 @@ import (
 	"reflect"
 	"testing"
 
-	"clouditor.io/clouditor/internal/testutil"
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/oauth2/clientcredentials"
+
+	"clouditor.io/clouditor/internal/testutil"
 )
 
 func Test_oauthAuthorizer_Token(t *testing.T) {
 	var (
 		srv  *oauth2.AuthorizationServer
-		port int
+		port uint16
 		err  error
 	)
 	srv, port, err = testutil.StartAuthenticationServer()

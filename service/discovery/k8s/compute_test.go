@@ -29,6 +29,7 @@ import (
 	"context"
 	"testing"
 
+	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
@@ -37,10 +38,40 @@ import (
 )
 
 func TestListPods(t *testing.T) {
+
+	var (
+		volumeName      = "my-volume"
+		diskName        = "my-disk"
+		podCreationTime = metav1.Now()
+		podName         = "my-pod"
+		podID           = "/namespaces/my-namespace/containers/my-pod"
+		podNamespace    = "my-namespace"
+		podLabel        = map[string]string{"my": "label"}
+	)
+
 	client := fake.NewSimpleClientset()
 
-	p := &corev1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "my-pod", CreationTimestamp: metav1.Now()}}
-	_, err := client.CoreV1().Pods("my-namespace").Create(context.TODO(), p, metav1.CreateOptions{})
+	// Create an Pod with name, creationTimestamp and a AzureDisk volume
+	p := &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              podName,
+			CreationTimestamp: podCreationTime,
+			Labels:            podLabel,
+		},
+		Spec: corev1.PodSpec{
+			Volumes: []corev1.Volume{
+				{
+					Name: volumeName,
+					VolumeSource: corev1.VolumeSource{
+						AzureDisk: &corev1.AzureDiskVolumeSource{
+							DiskName: diskName,
+						},
+					},
+				},
+			},
+		},
+	}
+	_, err := client.CoreV1().Pods(podNamespace).Create(context.TODO(), p, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatalf("error injecting pod add: %v", err)
 	}
@@ -52,9 +83,48 @@ func TestListPods(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
 
+	// Check container
 	container, ok := list[0].(*voc.Container)
 
+	// Create expected voc.Container
+	expectedContainer := &voc.Container{
+		Compute: &voc.Compute{
+			Resource: &voc.Resource{
+				ID:           voc.ResourceID(podID),
+				ServiceID:    discovery.DefaultCloudServiceID,
+				Name:         podName,
+				CreationTime: podCreationTime.Unix(),
+				Type:         []string{"Container", "Compute", "Resource"},
+				Labels:       podLabel,
+			},
+			NetworkInterface: []voc.ResourceID{
+				voc.ResourceID(podNamespace),
+			},
+		},
+	}
+
 	assert.True(t, ok)
-	assert.Equal(t, "my-pod", container.Name)
-	assert.Equal(t, "/namespaces/my-namespace/containers/my-pod", string(container.ID))
+	assert.Equal(t, expectedContainer, container)
+
+	// Check volume
+	volume, ok := list[1].(*voc.BlockStorage)
+	// Create expected voc.BlockStorage
+	expectedVolume := &voc.BlockStorage{
+		Storage: &voc.Storage{
+			Resource: &voc.Resource{
+				ID:           voc.ResourceID(volumeName),
+				ServiceID:    discovery.DefaultCloudServiceID,
+				Name:         volumeName,
+				CreationTime: 0,
+				Type:         []string{"BlockStorage", "Storage", "Resource"},
+				GeoLocation: voc.GeoLocation{
+					Region: "",
+				},
+			},
+			AtRestEncryption: &voc.AtRestEncryption{},
+		},
+	}
+
+	assert.True(t, ok)
+	assert.Equal(t, expectedVolume, volume)
 }

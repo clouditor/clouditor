@@ -27,13 +27,19 @@ package azure
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
+
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
-	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/compute/mgmt/compute"
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/web/mgmt/web"
-	"github.com/Azure/go-autorest/autorest/to"
+)
+
+var (
+	ErrEmptyVirtualMachine = errors.New("virtual machine is empty")
 )
 
 type azureComputeDiscovery struct {
@@ -41,14 +47,15 @@ type azureComputeDiscovery struct {
 }
 
 func NewAzureComputeDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
-	d := &azureComputeDiscovery{}
+	d := &azureComputeDiscovery{
+		azureDiscovery{
+			discovererComponent: ComputeComponent,
+		},
+	}
 
+	// Apply options
 	for _, opt := range opts {
-		if auth, ok := opt.(*authorizerOption); ok {
-			d.authOption = auth
-		} else {
-			d.options = append(d.options, opt)
-		}
+		opt(&d.azureDiscovery)
 	}
 
 	return d
@@ -65,8 +72,10 @@ func (*azureComputeDiscovery) Description() string {
 // List compute resources
 func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 	if err = d.authorize(); err != nil {
-		return nil, fmt.Errorf("could not authorize Azure account: %w", err)
+		return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
 	}
+
+	log.Info("Discover Azure compute resources")
 
 	// Discover virtual machines
 	virtualMachines, err := d.discoverVirtualMachines()
@@ -76,7 +85,7 @@ func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 	list = append(list, virtualMachines...)
 
 	// Discover functions
-	function, err := d.discoverFunction()
+	function, err := d.discoverFunctions()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover functions: %w", err)
 	}
@@ -86,39 +95,62 @@ func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 }
 
 // Discover function
-func (d *azureComputeDiscovery) discoverFunction() ([]voc.IsCloudResource, error) {
+func (d *azureComputeDiscovery) discoverFunctions() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
-	client := web.NewAppsClient(to.String(d.sub.SubscriptionID))
-	d.apply(&client.Client)
-
-	result, err := client.ListComplete(context.Background())
+	client, err := armappservice.NewWebAppsClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
-		return nil, fmt.Errorf("could not list functions: %w", err)
+		err = fmt.Errorf("could not get new web apps client: %w", err)
 	}
 
-	functionApp := *result.Response().Value
-	for i := range functionApp {
-		functionResource := d.handleFunction(&functionApp[i])
-		list = append(list, functionResource)
+	// List functions
+	listPager := client.NewListPager(&armappservice.WebAppsClientListOptions{})
+	functionApps := make([]*armappservice.Site, 0)
+	for listPager.More() {
+		pageResponse, err := listPager.NextPage(context.TODO())
+		if err != nil {
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
+			return nil, err
+		}
+		functionApps = append(functionApps, pageResponse.Value...)
+	}
+
+	// functionApp := *result.Response().Value
+	for i := range functionApps {
+		r := d.handleFunction(functionApps[i])
+
+		log.Infof("Adding function %+v", r)
+
+		list = append(list, r)
 	}
 
 	return list, err
 }
 
-func (*azureComputeDiscovery) handleFunction(function *web.Site) voc.IsCompute {
+func (*azureComputeDiscovery) handleFunction(function *armappservice.Site) voc.IsCompute {
+
+	// If a mandatory field is empty, the whole function is empty
+	if function == nil || function.ID == nil {
+		return nil
+	}
+
 	return &voc.Function{
 		Compute: &voc.Compute{
 			Resource: &voc.Resource{
-				ID:           voc.ResourceID(to.String(function.ID)),
-				Name:         to.String(function.Name),
+				ID:           voc.ResourceID(util.Deref(function.ID)),
+				ServiceID:    discovery.DefaultCloudServiceID,
+				Name:         util.Deref(function.Name),
 				CreationTime: 0, // No creation time available
 				Type:         []string{"Function", "Compute", "Resource"},
 				GeoLocation: voc.GeoLocation{
-					Region: *function.Location,
+					Region: util.Deref(function.Location),
 				},
+				Labels: labels(function.Tags),
 			},
+			NetworkInterface: []voc.ResourceID{},
 		},
+		RuntimeLanguage: "",
+		RuntimeVersion:  "",
 	}
 }
 
@@ -126,93 +158,128 @@ func (*azureComputeDiscovery) handleFunction(function *web.Site) voc.IsCompute {
 func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
-	client := compute.NewVirtualMachinesClient(to.String(d.sub.SubscriptionID))
-	d.apply(&client.Client)
-
-	result, err := client.ListAllComplete(context.Background(), "true")
+	// Create VM client
+	client, err := armcompute.NewVirtualMachinesClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
-		return nil, fmt.Errorf("could not list virtual machines: %w", err)
+		err = fmt.Errorf("could not get new virtual machines client: %w", err)
+		return nil, err
 	}
 
-	vms := *result.Response().Value
+	// List all VMs across all resource groups
+	listPager := client.NewListAllPager(&armcompute.VirtualMachinesClientListAllOptions{})
+	vms := make([]*armcompute.VirtualMachine, 0)
+	for listPager.More() {
+		pageResponse, err := listPager.NextPage(context.TODO())
+		if err != nil {
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
+			return nil, err
+		}
+		vms = append(vms, pageResponse.Value...)
+	}
+
 	for i := range vms {
-		s, err := d.handleVirtualMachines(&vms[i])
+		r, err := d.handleVirtualMachines(vms[i])
 		if err != nil {
 			return nil, fmt.Errorf("could not handle virtual machine: %w", err)
 		}
 
-		log.Infof("Adding virtual machine %+v", s)
+		log.Infof("Adding virtual machine %+v", r)
 
-		list = append(list, s)
+		list = append(list, r)
 	}
 
 	return list, err
 }
 
-func (d *azureComputeDiscovery) handleVirtualMachines(vm *compute.VirtualMachine) (voc.IsCompute, error) {
+func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {
+	var bootLogging = []voc.ResourceID{}
+	var osLogging = []voc.ResourceID{}
+
+	// If a mandatory field is empty, the whole disk is empty
+	if vm == nil || vm.ID == nil {
+		return nil, ErrEmptyVirtualMachine
+	}
+
+	if bootLogOutput(vm) != "" {
+		bootLogging = []voc.ResourceID{voc.ResourceID(bootLogOutput(vm))}
+	}
 
 	r := &voc.VirtualMachine{
 		Compute: &voc.Compute{
 			Resource: &voc.Resource{
-				ID:           voc.ResourceID(to.String(vm.ID)),
-				Name:         to.String(vm.Name),
-				CreationTime: 0, // No creation time available
+				ID:           voc.ResourceID(util.Deref(vm.ID)),
+				ServiceID:    discovery.DefaultCloudServiceID,
+				Name:         util.Deref(vm.Name),
+				CreationTime: util.SafeTimestamp(vm.Properties.TimeCreated),
 				Type:         []string{"VirtualMachine", "Compute", "Resource"},
 				GeoLocation: voc.GeoLocation{
-					Region: *vm.Location,
+					Region: util.Deref(vm.Location),
 				},
-			}},
-		BootLogging: &voc.BootLogging{Logging: &voc.Logging{
-			Enabled:         isBootDiagnosticEnabled(vm),
-			LoggingService:  []voc.ResourceID{voc.ResourceID(bootLogOutput(vm))},
-			RetentionPeriod: 0, // Currently, configuring the retention period for Managed Boot Diagnostics is not available. The logs will be overwritten after 1gb of space according to https://github.com/MicrosoftDocs/azure-docs/issues/69953
-		}},
-		OSLogging:    &voc.OSLogging{}, // TODO(garuppel): Add OSLogging
-		BlockStorage: []voc.ResourceID{},
-	}
-
-	vmExtended, err := d.extendedVirtualMachine(vm)
-	if err != nil {
-		return nil, fmt.Errorf("could not get virtual machine with extended information: %w", err)
+				Labels: labels(vm.Tags),
+			},
+			NetworkInterface: []voc.ResourceID{},
+		},
+		BlockStorage:      []voc.ResourceID{},
+		MalwareProtection: &voc.MalwareProtection{},
+		BootLogging: &voc.BootLogging{
+			Logging: &voc.Logging{
+				Enabled:         isBootDiagnosticEnabled(vm),
+				LoggingService:  bootLogging,
+				RetentionPeriod: 0, // Currently, configuring the retention period for Managed Boot Diagnostics is not available. The logs will be overwritten after 1gb of space according to https://github.com/MicrosoftDocs/azure-docs/issues/69953
+				Auditing: &voc.Auditing{
+					SecurityFeature: &voc.SecurityFeature{},
+				},
+			},
+		},
+		OSLogging: &voc.OSLogging{
+			Logging: &voc.Logging{
+				Enabled:         false,
+				RetentionPeriod: 0,
+				LoggingService:  osLogging,
+				Auditing: &voc.Auditing{
+					SecurityFeature: &voc.SecurityFeature{},
+				},
+			},
+		},
 	}
 
 	// Reference to networkInterfaces
-	for _, networkInterfaces := range *vmExtended.VirtualMachineProperties.NetworkProfile.NetworkInterfaces {
-		r.NetworkInterface = append(r.NetworkInterface, voc.ResourceID(to.String(networkInterfaces.ID)))
+	if vm.Properties.NetworkProfile != nil {
+		for _, networkInterfaces := range vm.Properties.NetworkProfile.NetworkInterfaces {
+			r.NetworkInterface = append(r.NetworkInterface, voc.ResourceID(util.Deref(networkInterfaces.ID)))
+		}
 	}
 
 	// Reference to blockstorage
-	r.BlockStorage = append(r.BlockStorage, voc.ResourceID(*vmExtended.StorageProfile.OsDisk.ManagedDisk.ID))
-	for _, blockstorage := range *vmExtended.StorageProfile.DataDisks {
-		r.BlockStorage = append(r.BlockStorage, voc.ResourceID(*blockstorage.ManagedDisk.ID))
+	if vm.Properties.StorageProfile != nil && vm.Properties.StorageProfile.OSDisk != nil && vm.Properties.StorageProfile.OSDisk.ManagedDisk != nil {
+		r.BlockStorage = append(r.BlockStorage, voc.ResourceID(util.Deref(vm.Properties.StorageProfile.OSDisk.ManagedDisk.ID)))
+	}
+
+	if vm.Properties.StorageProfile != nil && vm.Properties.StorageProfile.DataDisks != nil {
+		for _, blockstorage := range vm.Properties.StorageProfile.DataDisks {
+			r.BlockStorage = append(r.BlockStorage, voc.ResourceID(util.Deref(blockstorage.ManagedDisk.ID)))
+		}
 	}
 
 	return r, nil
 }
 
-// extendedVirtualMachine gets virtual machine with extended information, e.g., managed disk ID, network interface ID
-func (d *azureComputeDiscovery) extendedVirtualMachine(vm *compute.VirtualMachine) (*compute.VirtualMachine, error) {
-	client := compute.NewVirtualMachinesClient(to.String(d.sub.SubscriptionID))
-	d.apply(&client.Client)
-
-	vmExtended, err := client.Get(context.Background(), getResourceGroupName(*vm.ID), *vm.Name, "")
-	if err != nil {
-		return nil, fmt.Errorf("could not get virtual machine: %w", err)
-	}
-	return &vmExtended, nil
-}
-
-func isBootDiagnosticEnabled(vm *compute.VirtualMachine) bool {
-	if vm.DiagnosticsProfile == nil {
+func isBootDiagnosticEnabled(vm *armcompute.VirtualMachine) bool {
+	if vm == nil || vm.Properties == nil || vm.Properties.DiagnosticsProfile == nil || vm.Properties.DiagnosticsProfile.BootDiagnostics == nil {
 		return false
 	} else {
-		return to.Bool(vm.DiagnosticsProfile.BootDiagnostics.Enabled)
+		return util.Deref(vm.Properties.DiagnosticsProfile.BootDiagnostics.Enabled)
 	}
 }
 
-func bootLogOutput(vm *compute.VirtualMachine) string {
+func bootLogOutput(vm *armcompute.VirtualMachine) string {
 	if isBootDiagnosticEnabled(vm) {
-		return *vm.DiagnosticsProfile.BootDiagnostics.StorageURI
+		// If storageUri is not specified while enabling boot diagnostics, managed storage will be used.
+		if vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI != nil {
+			return util.Deref(vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI)
+		}
+
+		return ""
 	}
 	return ""
 }

@@ -26,16 +26,20 @@
 package orchestrator
 
 import (
+	"context"
 	"database/sql/driver"
 	"errors"
 	"strings"
 )
 
+type CloudServiceHookFunc func(ctx context.Context, cld *CloudService, err error)
+
 var (
-	ErrRequestIsNil  = errors.New("request is empty")
-	ErrServiceIsNil  = errors.New("service is empty")
-	ErrNameIsMissing = errors.New("service name is empty")
-	ErrIDIsMissing   = errors.New("service ID is empty")
+	ErrCertificateIsNil = errors.New("certificate is empty")
+	ErrServiceIsNil     = errors.New("service is empty")
+	ErrNameIsMissing    = errors.New("service name is empty")
+	ErrIDIsMissing      = errors.New("service ID is empty")
+	ErrCertIDIsMissing  = errors.New("certificate ID is empty")
 )
 
 // Value implements https://pkg.go.dev/database/sql/driver#Valuer to indicate

@@ -283,6 +283,7 @@ func createVMEvidences(n int, m int, b *testing.B) {
 		wg   sync.WaitGroup
 		err  error
 		sock net.Listener
+		port uint16
 	)
 
 	logrus.SetLevel(logrus.PanicLevel)
@@ -312,7 +313,9 @@ func createVMEvidences(n int, m int, b *testing.B) {
 
 	var count int64 = 0
 
-	addr := fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).Port)
+	port = sock.Addr().(*net.TCPAddr).AddrPort().Port()
+
+	addr := fmt.Sprintf("localhost:%d", port)
 
 	svc := NewService(WithOrchestratorAddress(addr), WithEvidenceStoreAddress(addr))
 

@@ -29,144 +29,130 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	autorest_azure "github.com/Azure/go-autorest/autorest/azure"
-	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/resources/mgmt/subscriptions"
-	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
+
 	"github.com/sirupsen/logrus"
+
+	"clouditor.io/clouditor/internal/util"
+)
+
+const (
+	StorageComponent = "storage"
+	ComputeComponent = "compute"
+	NetworkComponent = "network"
 )
 
 var (
 	log *logrus.Entry
 
-	ErrCouldNotAuthenticate = errors.New("could not authenticate to Azure with any authorizer " +
-		"(from environment, file, or CLI)")
+	ErrCouldNotAuthenticate     = errors.New("could not authenticate to Azure")
+	ErrCouldNotGetSubscriptions = errors.New("could not get azure subscription")
+	ErrNoCredentialsConfigured  = errors.New("no credentials were configured")
+	ErrGettingNextPage          = errors.New("error getting next page")
 )
 
-type DiscoveryOption interface {
-	apply(*autorest.Client)
+type DiscoveryOption func(a *azureDiscovery)
+
+func WithSender(sender policy.Transporter) DiscoveryOption {
+	return func(a *azureDiscovery) {
+		a.clientOptions.Transport = sender
+	}
 }
 
-type senderOption struct {
-	sender autorest.Sender
-}
-
-func (o senderOption) apply(client *autorest.Client) {
-	client.Sender = o.sender
-}
-
-func WithSender(sender autorest.Sender) DiscoveryOption {
-	return &senderOption{sender}
-}
-
-type authorizerOption struct {
-	authorizer autorest.Authorizer
-}
-
-func WithAuthorizer(authorizer autorest.Authorizer) DiscoveryOption {
-	return &authorizerOption{authorizer: authorizer}
+func WithAuthorizer(authorizer azcore.TokenCredential) DiscoveryOption {
+	return func(a *azureDiscovery) {
+		a.cred = authorizer
+	}
 }
 
 func init() {
 	log = logrus.WithField("component", "azure-discovery")
 }
 
-func (a authorizerOption) apply(client *autorest.Client) {
-	client.Authorizer = a.authorizer
-}
-
 type azureDiscovery struct {
-	authOption *authorizerOption
-	sub        subscriptions.Subscription
-
 	isAuthorized bool
 
-	options []DiscoveryOption
+	sub                 armsubscription.Subscription
+	cred                azcore.TokenCredential
+	clientOptions       arm.ClientOptions
+	discovererComponent string
 }
 
 func (a *azureDiscovery) authorize() (err error) {
-	if a.authOption == nil {
-		return errors.New("no authorized was available")
-	}
-
-	// If using NewAuthorizerFromFile() in discovery file, we do not need to re-authorize.
-	// If using NewAuthorizerFromCLI() in discovery file, the token expires after 75 minutes.
 	if a.isAuthorized {
 		return
 	}
 
-	subClient := subscriptions.NewClient()
-	a.apply(&subClient.Client)
+	if a.cred == nil {
+		return ErrNoCredentialsConfigured
+	}
 
-	// get subscriptions
-	page, err := subClient.List(context.Background())
+	// Create new subscriptions client
+	subClient, err := armsubscription.NewSubscriptionsClient(a.cred, &a.clientOptions)
 	if err != nil {
-		err = fmt.Errorf("could not get azure subscription: %v", err)
-		return
+		err = fmt.Errorf("could not get new subscription client: %w", err)
+		return err
+	}
+
+	// Get subscriptions
+	subPager := subClient.NewListPager(nil)
+	subList := make([]*armsubscription.Subscription, 0)
+	for subPager.More() {
+		pageResponse, err := subPager.NextPage(context.TODO())
+		if err != nil {
+			err = fmt.Errorf("%s: %w", ErrCouldNotGetSubscriptions, err)
+			log.Error(err)
+			return err
+		}
+		subList = append(subList, pageResponse.ListResult.Value...)
 	}
 
 	// check if list of subscriptions is empty
-	if len(page.Values()) == 0 {
+	if len(subList) == 0 {
 		err = errors.New("list of subscriptions is empty")
 		return
 	}
 
 	// get first subscription
-	a.sub = page.Values()[0]
+	a.sub = *subList[0]
 
-	log.Infof("Using %s as subscription", *a.sub.SubscriptionID)
+	log.Infof("Azure %s discoverer uses %s as subscription", a.discovererComponent, *a.sub.SubscriptionID)
 
 	a.isAuthorized = true
 
 	return nil
 }
 
-func (a *azureDiscovery) apply(client *autorest.Client) {
-	if a.authOption != nil {
-		a.authOption.apply(client)
+// NewAuthorizer returns the Azure credential using one of the following authentication types (in the following order):
+//  EnvironmentCredential
+//  ManagedIdentityCredential
+//  AzureCLICredential
+func NewAuthorizer() (*azidentity.DefaultAzureCredential, error) {
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		log.Fatalf("%s: %+v", ErrCouldNotAuthenticate, err)
 	}
 
-	for _, v := range a.options {
-		v.apply(client)
-	}
+	return cred, nil
 }
 
-// NewAuthorizer creates an authorizer for connecting to Azure using a custom credential chain (from ENV, file and CLI)
-func NewAuthorizer() (authorizer autorest.Authorizer, err error) {
-	// First, try to create authorizer via credentials from the environment
-	authorizer, err = auth.NewAuthorizerFromEnvironment()
-	if err == nil {
-		log.Infof("Using authorizer from environment")
-		return
-	}
-	log.Infof("Could not authenticate to Azure with authorizer from environment: %v", err)
-	log.Infof("Fallback to authorizer from file")
-
-	// Create authorizer from file
-	authorizer, err = auth.NewAuthorizerFromFile(autorest_azure.PublicCloud.ResourceManagerEndpoint)
-	if err == nil {
-		log.Infof("Using authorizer from file")
-		return
-	}
-	log.Infof("Could not authenticate to Azure with authorizer from file: %v", err)
-	log.Infof("Fallback to authorizer from CLI.")
-
-	// Create authorizer from CLI
-	authorizer, err = auth.NewAuthorizerFromCLI()
-	if err == nil {
-		// if authorizer is from CLI, the access token expires after 75 minutes
-		log.Info("Using authorizer from CLI. The discovery times out after 1 hour.")
-		return
-	}
-	log.Infof("Could not authenticate to Azure with authorizer from CLI: %v", err)
-
-	// Authorizer couldn't be created
-	log.Error(ErrCouldNotAuthenticate)
-	return nil, ErrCouldNotAuthenticate
-}
-
-func getResourceGroupName(id string) string {
+func resourceGroupName(id string) string {
 	return strings.Split(id, "/")[4]
+}
+
+// labels converts the resource tags to the vocabulary label
+func labels(tags map[string]*string) map[string]string {
+	l := make(map[string]string)
+
+	for tag, i := range tags {
+		l[tag] = util.Deref(i)
+	}
+
+	return l
 }
