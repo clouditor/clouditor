@@ -26,6 +26,7 @@
 package assessment
 
 import (
+	"context"
 	"fmt"
 
 	"clouditor.io/clouditor/api"
