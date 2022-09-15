@@ -261,7 +261,7 @@ func Test_RemoveCatalog(t *testing.T) {
 	)
 	orchestratorService := NewService()
 
-	// 1st case: Empty certificate ID error
+	// 1st case: Empty catalog ID error
 	_, err = orchestratorService.RemoveCatalog(context.Background(), &orchestrator.RemoveCatalogRequest{CatalogId: ""})
 	assert.Error(t, err)
 	assert.Equal(t, status.Code(err), codes.InvalidArgument)

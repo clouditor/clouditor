@@ -86,6 +86,7 @@ func Test_CreateTargetOfEvaluation(t *testing.T) {
 
 				// We want to assert that certain things happened in our database
 				var toes []*orchestrator.TargetOfEvaluation
+				// for join tables, do not use preload (which is the default)
 				err := svc.storage.List(&toes, "", false, 0, -1, gorm.WithoutPreload())
 				if !assert.NoError(t, err) {
 					return false
@@ -275,9 +276,17 @@ func Test_UpdateTargetOfEvaluation(t *testing.T) {
 		err error
 	)
 	orchestratorService := NewService()
+	err = orchestratorService.storage.Create(&orchestrator.CloudService{Id: "MyService"})
+	assert.NoError(t, err)
+	err = orchestratorService.storage.Create(orchestratortest.NewCatalog())
+	assert.NoError(t, err)
 
 	// 1st case: ToE is nil
-	_, err = orchestratorService.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{})
+	_, err = orchestratorService.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{
+		CloudServiceId: "0000",
+		CatalogId:      "0000",
+		Toe:            nil,
+	})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
 
 	// 2nd case: Ids are empty
@@ -289,32 +298,29 @@ func Test_UpdateTargetOfEvaluation(t *testing.T) {
 
 	// 3rd case: ToE not found since there are no ToEs
 	_, err = orchestratorService.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{
-		Toe: &orchestrator.TargetOfEvaluation{
-			CloudServiceId: "MyService",
-			CatalogId:      "Cat1234",
-		},
+		CloudServiceId: "MyService",
+		CatalogId:      "Cat1234",
+		Toe:            orchestratortest.NewTargetOfEvaluation(),
 	})
 	assert.Equal(t, codes.NotFound, status.Code(err))
 
 	// 4th case: ToE updated successfully
-	err = orchestratorService.storage.Create(&orchestrator.TargetOfEvaluation{
-		CloudServiceId: orchestratortest.MockServiceID,
-		CatalogId:      orchestratortest.MockCatalogID,
-		AssuranceLevel: &AssuranceLevelHigh,
-	})
+	err = orchestratorService.storage.Create(orchestratortest.NewTargetOfEvaluation())
 	assert.NoError(t, err)
 
 	// update the toe's assurance level and send the update request
 	toe, err = orchestratorService.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{
+		CloudServiceId: "MyService",
+		CatalogId:      "Cat1234",
 		Toe: &orchestrator.TargetOfEvaluation{
-			CloudServiceId: orchestratortest.MockServiceID,
-			CatalogId:      orchestratortest.MockCatalogID,
+			CloudServiceId: "MyService",
+			CatalogId:      "Cat1234",
 			AssuranceLevel: &AssuranceLevelMedium,
 		},
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, toe)
-	assert.Equal(t, "new assurance level", toe.AssuranceLevel)
+	assert.Equal(t, &AssuranceLevelMedium, toe.AssuranceLevel)
 }
 
 func Test_RemoveTargetOfEvaluation(t *testing.T) {
@@ -323,11 +329,15 @@ func Test_RemoveTargetOfEvaluation(t *testing.T) {
 		listTargetsOfEvaluationResponse *orchestrator.ListTargetsOfEvaluationResponse
 	)
 	orchestratorService := NewService()
+	err = orchestratorService.storage.Create(&orchestrator.CloudService{Id: "MyService"})
+	assert.NoError(t, err)
+	err = orchestratorService.storage.Create(orchestratortest.NewCatalog())
+	assert.NoError(t, err)
 
-	// 1st case: Empty ToE ID error
+	// 1st case: Empty ID error
 	_, err = orchestratorService.RemoveTargetOfEvaluation(context.Background(), &orchestrator.RemoveTargetOfEvaluationRequest{
-		CloudServiceId: "MyService",
-		CatalogId:      "Cat1234",
+		CloudServiceId: "",
+		CatalogId:      "",
 	})
 	assert.Error(t, err)
 	assert.Equal(t, status.Code(err), codes.InvalidArgument)
@@ -341,17 +351,14 @@ func Test_RemoveTargetOfEvaluation(t *testing.T) {
 	assert.Equal(t, status.Code(err), codes.NotFound)
 
 	// 3rd case: Record removed successfully
-	err = orchestratorService.storage.Create(&orchestrator.TargetOfEvaluation{
-		CloudServiceId: orchestratortest.MockServiceID,
-		CatalogId:      orchestratortest.MockCatalogID,
-		AssuranceLevel: &AssuranceLevelHigh,
-	})
+	err = orchestratorService.storage.Create(orchestratortest.NewTargetOfEvaluation())
 	assert.NoError(t, err)
 
-	// There is a record for ToE in the DB
+	// Verify that there is a record for ToE in the DB
 	listTargetsOfEvaluationResponse, err = orchestratorService.ListTargetsOfEvaluation(context.Background(), &orchestrator.ListTargetsOfEvaluationRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listTargetsOfEvaluationResponse.Toes)
+	assert.Equal(t, 1, len(listTargetsOfEvaluationResponse.Toes))
 
 	// Remove record
 	_, err = orchestratorService.RemoveTargetOfEvaluation(context.Background(), &orchestrator.RemoveTargetOfEvaluationRequest{
@@ -363,5 +370,5 @@ func Test_RemoveTargetOfEvaluation(t *testing.T) {
 	// There is no record for ToE in the DB
 	listTargetsOfEvaluationResponse, err = orchestratorService.ListTargetsOfEvaluation(context.Background(), &orchestrator.ListTargetsOfEvaluationRequest{})
 	assert.NoError(t, err)
-	assert.Nil(t, listTargetsOfEvaluationResponse.Toes)
+	assert.Equal(t, 0, len(listTargetsOfEvaluationResponse.Toes))
 }

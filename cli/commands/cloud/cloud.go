@@ -219,7 +219,6 @@ func NewUpdateCloudServiceCommand() *cobra.Command {
 	cmd.PersistentFlags().String("id", "", "the cloud service id to update")
 	cmd.PersistentFlags().StringP("name", "n", "", "the name of the service")
 	cmd.PersistentFlags().StringP("description", "d", "", "an optional description")
-	cmd.PersistentFlags().StringSliceP("control-ids", "r", nil, "a list of controls this cloud service should satisfy")
 
 	_ = cmd.MarkPersistentFlagRequired("id")
 	_ = cmd.MarkPersistentFlagRequired("name")

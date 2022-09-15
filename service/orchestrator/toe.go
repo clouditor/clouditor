@@ -34,7 +34,6 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
-	"clouditor.io/clouditor/service"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -81,9 +80,7 @@ func (svc *Service) ListTargetsOfEvaluation(_ context.Context, req *orchestrator
 	}
 
 	res = new(orchestrator.ListTargetsOfEvaluationResponse)
-
-	res.Toes, res.NextPageToken, err = service.PaginateStorage[*orchestrator.TargetOfEvaluation](req, svc.storage,
-		service.DefaultPaginationOpts)
+	err = svc.storage.List(&res.Toes, "", false, 0, -1, gorm.WithoutPreload())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
@@ -92,7 +89,7 @@ func (svc *Service) ListTargetsOfEvaluation(_ context.Context, req *orchestrator
 
 // UpdateTargetOfEvaluation implements method for updating an existing TargetOfEvaluation
 func (svc *Service) UpdateTargetOfEvaluation(_ context.Context, req *orchestrator.UpdateTargetOfEvaluationRequest) (res *orchestrator.TargetOfEvaluation, err error) {
-	if req.Toe.CloudServiceId == "" || req.Toe.CatalogId == "" {
+	if req.CloudServiceId == "" || req.CatalogId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "id is empty")
 	}
 
@@ -120,7 +117,7 @@ func (svc *Service) RemoveTargetOfEvaluation(_ context.Context, req *orchestrato
 		return nil, status.Errorf(codes.InvalidArgument, "ToE id is empty")
 	}
 
-	err = svc.storage.Delete(&orchestrator.TargetOfEvaluation{}, "service_id = ? AND catalog_id", req.CloudServiceId, req.CatalogId)
+	err = svc.storage.Delete(&orchestrator.TargetOfEvaluation{}, "cloud_service_id = ? AND catalog_id = ?", req.CloudServiceId, req.CatalogId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "ToE not found")
 	} else if err != nil {
