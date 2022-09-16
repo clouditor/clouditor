@@ -38,7 +38,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func TestRegisterCloudService(t *testing.T) {
+func TestService_RegisterCloudService(t *testing.T) {
 	tests := []struct {
 		name string
 		req  *orchestrator.RegisterCloudServiceRequest

@@ -71,7 +71,7 @@ func TestNewService(t *testing.T) {
 }
 
 // TestStoreEvidence tests StoreEvidence
-func TestStoreEvidence(t *testing.T) {
+func TestService_StoreEvidence(t *testing.T) {
 	type args struct {
 		in0 context.Context
 		req *evidence.StoreEvidenceRequest
@@ -153,7 +153,7 @@ func TestStoreEvidence(t *testing.T) {
 }
 
 // TestStoreEvidences tests StoreEvidences
-func TestStoreEvidences(t *testing.T) {
+func TestService_StoreEvidences(t *testing.T) {
 	type fields struct {
 		count int
 	}
@@ -267,7 +267,7 @@ func TestStoreEvidences(t *testing.T) {
 }
 
 // TestListEvidences tests List req
-func TestListEvidences(t *testing.T) {
+func TestService_ListEvidences(t *testing.T) {
 	s := NewService()
 	s.evidences["MockEvidenceId-1"] = &evidence.Evidence{
 		Id:             "MockEvidenceId-1",
@@ -289,7 +289,7 @@ func TestListEvidences(t *testing.T) {
 	assert.Equal(t, 2, len(resp.Evidences))
 }
 
-func TestEvidenceHook(t *testing.T) {
+func TestService_EvidenceHook(t *testing.T) {
 	var (
 		hookCallCounter = 0
 		wg              sync.WaitGroup

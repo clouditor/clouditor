@@ -165,7 +165,7 @@ func TestNewService(t *testing.T) {
 }
 
 // TestAssessEvidence tests AssessEvidence
-func TestAssessEvidence(t *testing.T) {
+func TestService_AssessEvidence(t *testing.T) {
 	type args struct {
 		in0      context.Context
 		evidence *evidence.Evidence
@@ -292,7 +292,7 @@ func TestAssessEvidence(t *testing.T) {
 }
 
 // TestAssessEvidences tests AssessEvidences
-func TestAssessEvidences(t *testing.T) {
+func TestService_AssessEvidences(t *testing.T) {
 	type fields struct {
 		ResultHooks                   []assessment.ResultHookFunc
 		results                       map[string]*assessment.AssessmentResult
@@ -431,7 +431,7 @@ func TestAssessEvidences(t *testing.T) {
 	}
 }
 
-func TestAssessmentResultHooks(t *testing.T) {
+func TestService_AssessmentResultHooks(t *testing.T) {
 	var (
 		hookCallCounter = 0
 		wg              sync.WaitGroup
@@ -945,7 +945,7 @@ func TestConvertTargetValue(t *testing.T) {
 	}
 }
 
-func TestHandleEvidence(t *testing.T) {
+func TestService_HandleEvidence(t *testing.T) {
 	type fields struct {
 		hasEvidenceStoreStream bool
 		hasOrchestratorStream  bool

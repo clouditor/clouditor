@@ -34,6 +34,7 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
+	"clouditor.io/clouditor/service"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -80,7 +81,7 @@ func (svc *Service) ListTargetsOfEvaluation(_ context.Context, req *orchestrator
 	}
 
 	res = new(orchestrator.ListTargetsOfEvaluationResponse)
-	err = svc.storage.List(&res.Toes, "", false, 0, -1, gorm.WithoutPreload())
+	res.Toes, res.NextPageToken, err = service.PaginateStorage[*orchestrator.TargetOfEvaluation](req, svc.storage, service.DefaultPaginationOpts, gorm.WithoutPreload())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}

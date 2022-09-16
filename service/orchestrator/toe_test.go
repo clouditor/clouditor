@@ -45,7 +45,7 @@ import (
 var AssuranceLevelHigh = "high"
 var AssuranceLevelMedium = "medium"
 
-func Test_CreateTargetOfEvaluation(t *testing.T) {
+func TestService_CreateTargetOfEvaluation(t *testing.T) {
 	type fields struct {
 		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
 		results               map[string]*assessment.AssessmentResult
@@ -132,7 +132,7 @@ func Test_CreateTargetOfEvaluation(t *testing.T) {
 	}
 }
 
-func Test_GetTargetOfEvaluation(t *testing.T) {
+func TestService_GetTargetOfEvaluation(t *testing.T) {
 	type fields struct {
 		storage persistence.Storage
 	}
@@ -235,7 +235,7 @@ func Test_GetTargetOfEvaluation(t *testing.T) {
 	}
 }
 
-func Test_ListTargetsOfEvaluation(t *testing.T) {
+func TestService_ListTargetsOfEvaluation(t *testing.T) {
 	var (
 		listTargetsOfEvaluationResponse *orchestrator.ListTargetsOfEvaluationResponse
 		err                             error
@@ -270,7 +270,7 @@ func Test_ListTargetsOfEvaluation(t *testing.T) {
 	assert.Contains(t, err.Error(), api.ErrInvalidColumnName.Error())
 }
 
-func Test_UpdateTargetOfEvaluation(t *testing.T) {
+func TestService_UpdateTargetOfEvaluation(t *testing.T) {
 	var (
 		toe *orchestrator.TargetOfEvaluation
 		err error
@@ -323,7 +323,7 @@ func Test_UpdateTargetOfEvaluation(t *testing.T) {
 	assert.Equal(t, &AssuranceLevelMedium, toe.AssuranceLevel)
 }
 
-func Test_RemoveTargetOfEvaluation(t *testing.T) {
+func TestService_RemoveTargetOfEvaluation(t *testing.T) {
 	var (
 		err                             error
 		listTargetsOfEvaluationResponse *orchestrator.ListTargetsOfEvaluationResponse

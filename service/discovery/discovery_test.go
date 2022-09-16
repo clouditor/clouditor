@@ -102,7 +102,7 @@ func TestNewService(t *testing.T) {
 	}
 }
 
-func TestStartDiscovery(t *testing.T) {
+func TestService_StartDiscovery(t *testing.T) {
 	type fields struct {
 		discoverer discovery.Discoverer
 	}
@@ -172,7 +172,7 @@ func TestStartDiscovery(t *testing.T) {
 	}
 }
 
-func TestQuery(t *testing.T) {
+func TestService_Query(t *testing.T) {
 	s := NewService(WithAssessmentAddress("bufnet", grpc.WithContextDialer(bufConnDialer)))
 	s.StartDiscovery(mockDiscoverer{testCase: 2})
 
@@ -229,7 +229,7 @@ func TestQuery(t *testing.T) {
 	}
 }
 
-func TestStart(t *testing.T) {
+func TestService_Start(t *testing.T) {
 
 	type envVariable struct {
 		hasEnvVariable   bool
@@ -362,7 +362,7 @@ func TestStart(t *testing.T) {
 	}
 }
 
-func TestShutdown(t *testing.T) {
+func TestService_Shutdown(t *testing.T) {
 	service := NewService()
 	service.Shutdown()
 

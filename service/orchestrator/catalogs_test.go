@@ -19,7 +19,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-func Test_CreateCatalog(t *testing.T) {
+func TestService_CreateCatalog(t *testing.T) {
 	// Mock catalogs
 	mockCatalog := orchestratortest.NewCatalog()
 	mockCatalogWithoutID := orchestratortest.NewCatalog()
@@ -105,7 +105,7 @@ func Test_CreateCatalog(t *testing.T) {
 	}
 }
 
-func Test_GetCatalog(t *testing.T) {
+func TestService_GetCatalog(t *testing.T) {
 	type fields struct {
 		storage persistence.Storage
 	}
@@ -178,7 +178,7 @@ func Test_GetCatalog(t *testing.T) {
 	}
 }
 
-func Test_ListCatalogs(t *testing.T) {
+func TestService_ListCatalogs(t *testing.T) {
 	var (
 		listCatalogsResponse *orchestrator.ListCatalogsResponse
 		err                  error
@@ -209,7 +209,7 @@ func Test_ListCatalogs(t *testing.T) {
 	assert.Contains(t, err.Error(), api.ErrInvalidColumnName.Error())
 }
 
-func Test_UpdateCatalog(t *testing.T) {
+func TestService_UpdateCatalog(t *testing.T) {
 	var (
 		catalog *orchestrator.Catalog
 		err     error
@@ -254,7 +254,7 @@ func Test_UpdateCatalog(t *testing.T) {
 	assert.Equal(t, "new description", catalog.Description)
 }
 
-func Test_RemoveCatalog(t *testing.T) {
+func TestService_RemoveCatalog(t *testing.T) {
 	var (
 		err                  error
 		listCatalogsResponse *orchestrator.ListCatalogsResponse
@@ -293,7 +293,7 @@ func Test_RemoveCatalog(t *testing.T) {
 	assert.Equal(t, 1, len(listCatalogsResponse.Catalogs))
 }
 
-func Test_GetCategory(t *testing.T) {
+func TestService_GetCategory(t *testing.T) {
 	type fields struct {
 		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
 		results               map[string]*assessment.AssessmentResult
@@ -369,7 +369,7 @@ func Test_GetCategory(t *testing.T) {
 	}
 }
 
-func Test_GetControl(t *testing.T) {
+func TestService_GetControl(t *testing.T) {
 	type fields struct {
 		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
 		results               map[string]*assessment.AssessmentResult
@@ -456,7 +456,7 @@ func Test_GetControl(t *testing.T) {
 	}
 }
 
-func Test_ListControls(t *testing.T) {
+func TestService_ListControls(t *testing.T) {
 	var (
 		listControlsResponse *orchestrator.ListControlsResponse
 		err                  error
