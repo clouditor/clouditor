@@ -364,7 +364,7 @@ service Orchestrator {
   rpc GetControl(GetControlRequest) returns (Control) {
     option (google.api.http) = {
       get : "/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/"
-            "controls/{control_short_name}"
+            "controls/{control_id}"
     };
   }
 
@@ -564,8 +564,8 @@ message Category {
 // requirement in the EUCS terminology, e.g., is represented as the lowest
 // sub-control.
 message Control {
-  // The short name, e.g. OPS-01, is also called the "Control ID"
-  string short_name = 1 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
+  // A short name of the control, e.g. OPS-01, as used in OSCAL; it is not a unique ID!
+  string id = 1 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
   string category_name = 2 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
   string category_catalog_id = 3 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
 
@@ -579,9 +579,9 @@ message Control {
   //     this is in accordance with the OSCAL model.
   repeated Control controls = 6
       [ (tagger.tags) =
-            "gorm:\"foreignKey:parent_control_short_name,parent_control_"
-            "category_name,parent_control_category_catalog_id;references=short_"
-            "name,category_name;category_catalog_id\"" ];
+            "gorm:\"foreignKey:parent_control_id,parent_control_"
+            "category_name,parent_control_category_catalog_id;"
+            "references=id,category_name;category_catalog_id\"" ];
   // metrics contains either a list of reference to metrics - in this case only
   // the id field of the metric is populated - or a list of populated metric
   // meta-data, most likely returned by the database.
@@ -591,7 +591,7 @@ message Control {
 
   // Reference to the parent category this control belongs to.
 
-  optional string parent_control_short_name = 8;
+  optional string parent_control_id = 8;
   optional string parent_control_category_name = 9;
   optional string parent_control_category_catalog_id = 10;
 }
@@ -693,7 +693,7 @@ message GetCategoryRequest {
 message GetControlRequest {
   string catalog_id = 1;
   string category_name = 2;
-  string control_short_name = 3;
+  string control_id = 3;
 }
 
 message ListControlsRequest {

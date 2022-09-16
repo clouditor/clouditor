@@ -183,7 +183,7 @@ func TestNewGetControlCommand(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response)
-	assert.Equal(t, orchestratortest.MockControlID, response.ShortName)
+	assert.Equal(t, orchestratortest.MockControlID, response.Id)
 }
 
 func toStruct(f float32) (s *structpb.Value) {

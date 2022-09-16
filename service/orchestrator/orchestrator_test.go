@@ -307,7 +307,7 @@ func TestStoreAssessmentResults(t *testing.T) {
 			},
 		},
 		{
-			name: "Error in stream to server - Recv()-wantErr",
+			name: "Error in stream to server - Recv()-err",
 			fields: fields{
 				countElementsInMock:    count1,
 				countElementsInResults: 0,
@@ -317,7 +317,7 @@ func TestStoreAssessmentResults(t *testing.T) {
 			wantErrMessage: "rpc error: code = Unknown desc = cannot receive stream request",
 		},
 		{
-			name: "Error in stream to client - Send()-wantErr",
+			name: "Error in stream to client - Send()-err",
 			fields: fields{
 				countElementsInMock:    count1,
 				countElementsInResults: 0,
@@ -474,7 +474,7 @@ type mockStreamerWithSendErr struct {
 }
 
 func (mockStreamerWithSendErr) Send(*orchestrator.StoreAssessmentResultResponse) error {
-	return errors.New("Send()-wantErr")
+	return errors.New("Send()-err")
 }
 
 func (m mockStreamerWithSendErr) Recv() (*orchestrator.StoreAssessmentResultRequest, error) {

@@ -330,7 +330,7 @@ func TestService_GetCategory(t *testing.T) {
 				Description: "test",
 				CatalogId:   "Cat1234",
 				Controls: []*orchestrator.Control{{
-					ShortName:         "Cont1234",
+					Id:                "Cont1234",
 					Name:              "Mock Control",
 					Description:       "This is a mock control",
 					CategoryName:      "My name",
@@ -397,9 +397,9 @@ func TestService_GetControl(t *testing.T) {
 					// Create Catalog
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 				})},
-			args: args{req: &orchestrator.GetControlRequest{CatalogId: "Cat1234", CategoryName: "My name", ControlShortName: "Cont1234"}},
+			args: args{req: &orchestrator.GetControlRequest{CatalogId: "Cat1234", CategoryName: "My name", ControlId: "Cont1234"}},
 			wantRes: &orchestrator.Control{
-				ShortName:         "Cont1234",
+				Id:                "Cont1234",
 				CategoryName:      "My name",
 				CategoryCatalogId: "Cat1234",
 				Name:              "Mock Control",
@@ -417,13 +417,13 @@ func TestService_GetControl(t *testing.T) {
 							}}}},
 				}},
 				Controls: []*orchestrator.Control{{
-					ShortName:                      "Cont1234.1",
+					Id:                             "Cont1234.1",
 					Name:                           "Mock Sub-Control",
 					Description:                    "This is a mock sub-control",
 					Metrics:                        []*assessment.Metric{},
 					CategoryName:                   "My name",
 					CategoryCatalogId:              "Cat1234",
-					ParentControlShortName:         &orchestratortest.MockControlID,
+					ParentControlId:                &orchestratortest.MockControlID,
 					ParentControlCategoryCatalogId: &orchestratortest.MockCatalogID,
 					ParentControlCategoryName:      &orchestratortest.MockCategoryName,
 				}},

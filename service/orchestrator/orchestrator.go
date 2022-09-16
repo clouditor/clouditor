@@ -401,7 +401,7 @@ func (svc *Service) RemoveCertificate(_ context.Context, req *orchestrator.Remov
 	return &emptypb.Empty{}, nil
 }
 
-// LoadControls loads controls definitions from a JSON file.
+// LoadCatalogs loads catalog definitions from a JSON file.
 func (svc *Service) loadCatalogs() (err error) {
 	var (
 		b        []byte

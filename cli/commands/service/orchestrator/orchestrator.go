@@ -207,9 +207,9 @@ func NewGetControlCommand() *cobra.Command {
 
 			catalogID := args[0]
 			categoryName := args[1]
-			controlShortName := args[2]
+			controlID := args[2]
 
-			res, err = client.GetControl(context.Background(), &orchestrator.GetControlRequest{CatalogId: catalogID, CategoryName: categoryName, ControlShortName: controlShortName})
+			res, err = client.GetControl(context.Background(), &orchestrator.GetControlRequest{CatalogId: catalogID, CategoryName: categoryName, ControlId: controlID})
 
 			return session.HandleResponse(res, err)
 		},

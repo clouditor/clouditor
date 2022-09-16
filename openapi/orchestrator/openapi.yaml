@@ -355,7 +355,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/catalogs/{catalogId}/categories/{categoryName}/controls/{controlShortName}:
+    /v1/orchestrator/catalogs/{catalogId}/categories/{categoryName}/controls/{controlId}:
         get:
             tags:
                 - Orchestrator
@@ -372,7 +372,7 @@ paths:
                   required: true
                   schema:
                     type: string
-                - name: controlShortName
+                - name: controlId
                   in: path
                   required: true
                   schema:
@@ -1308,9 +1308,9 @@ components:
         Control:
             type: object
             properties:
-                shortName:
+                id:
                     type: string
-                    description: The short name, e.g. OPS-01, is also called the "Control ID"
+                    description: A short name of the control, e.g. OPS-01, as used in OSCAL; it is not a unique ID!
                 categoryName:
                     type: string
                 categoryCatalogId:
@@ -1331,7 +1331,7 @@ components:
                     items:
                         $ref: '#/components/schemas/Metric'
                     description: metrics contains either a list of reference to metrics - in this case only the id field of the metric is populated - or a list of populated metric meta-data, most likely returned by the database.
-                parentControlShortName:
+                parentControlId:
                     type: string
                 parentControlCategoryName:
                     type: string

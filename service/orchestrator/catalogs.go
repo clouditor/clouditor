@@ -52,7 +52,7 @@ func (svc *Service) GetCatalog(_ context.Context, req *orchestrator.GetCatalogRe
 	}
 
 	response = new(orchestrator.Catalog)
-	err = svc.storage.Get(response, gorm.WithPreload("Categories.Controls", "parent_control_short_name IS NULL"), "Id = ?", req.CatalogId)
+	err = svc.storage.Get(response, gorm.WithPreload("Categories.Controls", "parent_control_id IS NULL"), "Id = ?", req.CatalogId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "catalog not found")
 	} else if err != nil {
@@ -122,7 +122,7 @@ func (svc *Service) RemoveCatalog(_ context.Context, req *orchestrator.RemoveCat
 
 func (srv *Service) GetCategory(ctx context.Context, req *orchestrator.GetCategoryRequest) (res *orchestrator.Category, err error) {
 	res = new(orchestrator.Category)
-	err = srv.storage.Get(&res, gorm.WithPreload("Controls", "parent_control_short_name IS NULL"), "name = ? AND catalog_id = ?", req.CategoryName, req.CatalogId)
+	err = srv.storage.Get(&res, gorm.WithPreload("Controls", "parent_control_id IS NULL"), "name = ? AND catalog_id = ?", req.CategoryName, req.CatalogId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "category not found")
 	} else if err != nil {
@@ -134,7 +134,7 @@ func (srv *Service) GetCategory(ctx context.Context, req *orchestrator.GetCatego
 
 func (srv *Service) GetControl(ctx context.Context, req *orchestrator.GetControlRequest) (res *orchestrator.Control, err error) {
 	res = new(orchestrator.Control)
-	err = srv.storage.Get(&res, "short_name = ? AND category_name = ? AND category_catalog_id = ?", req.ControlShortName, req.CategoryName, req.CatalogId)
+	err = srv.storage.Get(&res, "Id = ? AND category_name = ? AND category_catalog_id = ?", req.ControlId, req.CategoryName, req.CatalogId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "control not found")
 	} else if err != nil {

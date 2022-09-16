@@ -106,14 +106,12 @@
         ]
       }
     },
-    "controls_id": [
-      "CKM-02.2"
-    ]
+    "category": "CKM"
   },
   {
     "id": "TransportEncryptionAlgorithm",
     "name": "Transport Encryption: Protocol Version",
-    "description": "This metric describes, whether a up-to-date transport encryption protocol version is used",
+    "description": "This metric describes, whether an up-to-date transport encryption protocol version is used",
     "scale": 1,
     "range": {
       "order": {
@@ -125,9 +123,7 @@
         ]
       }
     },
-    "controls_id": [
-      "CKM-02.2"
-    ]
+    "category": "CKM"
   },
   {
     "id": "TransportEncryptionEnforced"

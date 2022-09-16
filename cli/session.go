@@ -425,7 +425,7 @@ func getControls(catalogID string, categoryName string, _ string) []string {
 
 	var output []string
 	for _, v := range res.Controls {
-		output = append(output, fmt.Sprintf("%s\t%s: %s", v.ShortName, v.Name, v.Description))
+		output = append(output, fmt.Sprintf("%s\t%s: %s", v.Id, v.Name, v.Description))
 	}
 
 	return output
