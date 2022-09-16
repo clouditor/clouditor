@@ -110,6 +110,13 @@ func WithExternalMetrics(f func() ([]*assessment.Metric, error)) ServiceOption {
 	}
 }
 
+// WithCatalogsFile can be used to load a different catalogs file
+func WithCatalogsFile(file string) ServiceOption {
+	return func(s *Service) {
+		s.catalogsFile = file
+	}
+}
+
 // WithStorage is an option to set the storage. If not set, NewService will use inmemory storage.
 func WithStorage(storage persistence.Storage) ServiceOption {
 	return func(s *Service) {
