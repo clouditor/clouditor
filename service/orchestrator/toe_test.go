@@ -54,6 +54,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
 		catalogsFile          string
+		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 		events                chan *orchestrator.MetricChangeEvent
 	}
 	type args struct {
@@ -116,6 +117,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 				metricsFile:           tt.fields.metricsFile,
 				loadMetricsFunc:       tt.fields.loadMetricsFunc,
 				catalogsFile:          tt.fields.catalogsFile,
+				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
 				events:                tt.fields.events,
 			}
 

@@ -58,6 +58,7 @@ func TestService_loadMetrics(t *testing.T) {
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
 		catalogsFile          string
+		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 		events                chan *orchestrator.MetricChangeEvent
 	}
 	tests := []struct {
@@ -106,6 +107,7 @@ func TestService_loadMetrics(t *testing.T) {
 				metricsFile:           tt.fields.metricsFile,
 				loadMetricsFunc:       tt.fields.loadMetricsFunc,
 				catalogsFile:          tt.fields.catalogsFile,
+				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
 				events:                tt.fields.events,
 			}
 
@@ -850,6 +852,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
 		catalogsFile          string
+		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 		events                chan *orchestrator.MetricChangeEvent
 	}
 	type args struct {
@@ -973,6 +976,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 				metricsFile:           tt.fields.metricsFile,
 				loadMetricsFunc:       tt.fields.loadMetricsFunc,
 				catalogsFile:          tt.fields.catalogsFile,
+				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
 				events:                tt.fields.events,
 			}
 			gotRes, err := svc.UpdateMetricConfiguration(tt.args.in0, tt.args.req)

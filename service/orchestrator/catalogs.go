@@ -2,6 +2,7 @@ package orchestrator
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -166,6 +167,58 @@ func (srv *Service) ListControls(ctx context.Context, req *orchestrator.ListCont
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
+	}
+	return
+}
+
+// LoadCatalogs loads catalog definitions from a JSON file.
+func (svc *Service) loadCatalogs() (err error) {
+	var catalogs []*orchestrator.Catalog
+
+	log.Infof("Loading catalogs from %s", svc.catalogsFile)
+
+	// Default to loading catalogs from our embedded file system
+	if svc.loadCatalogsFunc == nil {
+		svc.loadCatalogsFunc = svc.loadEmbeddedCatalogs
+	}
+
+	// Execute our catalogs loading function
+	catalogs, err = svc.loadCatalogsFunc()
+	if err != nil {
+		return fmt.Errorf("could not load catalogs: %w", err)
+	}
+
+	err = svc.storage.Save(catalogs)
+	if err != nil {
+		log.Errorf("Error while saving catalog %v", err)
+	}
+
+	return
+}
+
+func (svc *Service) loadEmbeddedCatalogs() (catalogs []*orchestrator.Catalog, err error) {
+	var b []byte
+
+	b, err = f.ReadFile(svc.catalogsFile)
+	if err != nil {
+		return nil, fmt.Errorf("error while loading %s: %w", svc.catalogsFile, err)
+	}
+
+	err = json.Unmarshal(b, &catalogs)
+	if err != nil {
+		return nil, fmt.Errorf("error in JSON marshal: %w", err)
+	}
+
+	// We need to make sure that sub-controls have the category_name and category_catalog_id of their parents set, otherwise we are failing a constraint.
+	for _, catalog := range catalogs {
+		for _, category := range catalog.Categories {
+			for _, control := range category.Controls {
+				for _, sub := range control.Controls {
+					sub.CategoryName = category.Name
+					sub.CategoryCatalogId = catalog.Id
+				}
+			}
+		}
 	}
 	return
 }

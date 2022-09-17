@@ -3,6 +3,7 @@ package orchestrator
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 
 	"clouditor.io/clouditor/api"
@@ -302,6 +303,7 @@ func TestService_GetCategory(t *testing.T) {
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
 		catalogsFile          string
+		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 		events                chan *orchestrator.MetricChangeEvent
 	}
 	type args struct {
@@ -355,6 +357,7 @@ func TestService_GetCategory(t *testing.T) {
 				metricsFile:           tt.fields.metricsFile,
 				loadMetricsFunc:       tt.fields.loadMetricsFunc,
 				catalogsFile:          tt.fields.catalogsFile,
+				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
 				events:                tt.fields.events,
 			}
 			gotRes, err := srv.GetCategory(tt.args.ctx, tt.args.req)
@@ -378,6 +381,7 @@ func TestService_GetControl(t *testing.T) {
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
 		catalogsFile          string
+		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 	}
 	type args struct {
 		ctx context.Context
@@ -442,6 +446,7 @@ func TestService_GetControl(t *testing.T) {
 				metricsFile:           tt.fields.metricsFile,
 				loadMetricsFunc:       tt.fields.loadMetricsFunc,
 				catalogsFile:          tt.fields.catalogsFile,
+				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
 			}
 			gotRes, err := srv.GetControl(tt.args.ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
@@ -493,4 +498,73 @@ func TestService_ListControls(t *testing.T) {
 		&orchestrator.ListControlsRequest{OrderBy: "not a field"})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
 	assert.Contains(t, err.Error(), api.ErrInvalidColumnName.Error())
+}
+
+func TestService_loadCatalogs(t *testing.T) {
+	type fields struct {
+		results               map[string]*assessment.AssessmentResult
+		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		storage               persistence.Storage
+		metricsFile           string
+		loadMetricsFunc       func() ([]*assessment.Metric, error)
+		catalogsFile          string
+		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
+		events                chan *orchestrator.MetricChangeEvent
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "json not found",
+			fields: fields{
+				metricsFile: "notfound.json",
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, os.ErrNotExist)
+			},
+		},
+		{
+			name: "storage error",
+			fields: fields{
+				catalogsFile: "catalogs.json",
+				storage:      &testutil.StorageWithError{SaveErr: ErrSomeError},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, ErrSomeError)
+			},
+		},
+		{
+			name: "custom loading function with error",
+			fields: fields{
+				loadCatalogsFunc: func() ([]*orchestrator.Catalog, error) {
+					return nil, ErrSomeError
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, ErrSomeError)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				results:               tt.fields.results,
+				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
+				storage:               tt.fields.storage,
+				metricsFile:           tt.fields.metricsFile,
+				loadMetricsFunc:       tt.fields.loadMetricsFunc,
+				catalogsFile:          tt.fields.catalogsFile,
+				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
+				events:                tt.fields.events,
+			}
+
+			err := svc.loadCatalogs()
+			if tt.wantErr != nil {
+				tt.wantErr(t, err)
+			}
+		})
+	}
 }

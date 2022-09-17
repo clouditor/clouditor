@@ -28,7 +28,6 @@ package orchestrator
 import (
 	"context"
 	"embed"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -86,6 +85,9 @@ type Service struct {
 
 	catalogsFile string
 
+	// loadCatalogsFunc is a function that is used to initially load catalogs at the start of the orchestrator
+	loadCatalogsFunc func() ([]*orchestrator.Catalog, error)
+
 	events chan *orchestrator.MetricChangeEvent
 }
 
@@ -114,6 +116,13 @@ func WithExternalMetrics(f func() ([]*assessment.Metric, error)) ServiceOption {
 func WithCatalogsFile(file string) ServiceOption {
 	return func(s *Service) {
 		s.catalogsFile = file
+	}
+}
+
+// WithExternalCatalogs can be used to load catalog definitions from an external source
+func WithExternalCatalogs(f func() ([]*orchestrator.Catalog, error)) ServiceOption {
+	return func(s *Service) {
+		s.loadCatalogsFunc = f
 	}
 }
 
@@ -406,43 +415,4 @@ func (svc *Service) RemoveCertificate(_ context.Context, req *orchestrator.Remov
 	}
 
 	return &emptypb.Empty{}, nil
-}
-
-// LoadCatalogs loads catalog definitions from a JSON file.
-func (svc *Service) loadCatalogs() (err error) {
-	var (
-		b        []byte
-		catalogs []*orchestrator.Catalog
-	)
-
-	log.Infof("Loading catalogs from %s", svc.catalogsFile)
-
-	b, err = f.ReadFile(svc.catalogsFile)
-	if err != nil {
-		return fmt.Errorf("error while loading %s: %w", svc.catalogsFile, err)
-	}
-
-	err = json.Unmarshal(b, &catalogs)
-	if err != nil {
-		return fmt.Errorf("error in JSON marshal: %w", err)
-	}
-
-	// We need to make sure that sub-controls have the category_name and category_catalog_id of their parents set, otherwise we are failing a constraint.
-	for _, catalog := range catalogs {
-		for _, category := range catalog.Categories {
-			for _, control := range category.Controls {
-				for _, sub := range control.Controls {
-					sub.CategoryName = category.Name
-					sub.CategoryCatalogId = catalog.Id
-				}
-			}
-		}
-	}
-
-	err = svc.storage.Save(catalogs)
-	if err != nil {
-		log.Errorf("Error while saving catalog %v", err)
-	}
-
-	return nil
 }
