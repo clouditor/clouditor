@@ -170,7 +170,9 @@ type Metric struct {
 	// metric. For now, we are not able to use google.protobuf.Duration because it
 	// is converted to a custom object in OpenAPI
 	// (https://github.com/google/gnostic/issues/351)
-	Interval       int64                 `protobuf:"varint,7,opt,name=interval,proto3" json:"interval,omitempty"`
+	Interval int64 `protobuf:"varint,7,opt,name=interval,proto3" json:"interval,omitempty"`
+	// The implementation of this metric. This ensures that we are modelling an
+	// association between a Metric and its MetricImplementation.
 	Implementation *MetricImplementation `protobuf:"bytes,8,opt,name=implementation,proto3,oneof" json:"implementation,omitempty"`
 }
 

@@ -76,7 +76,7 @@ components:
             properties:
                 filteredType:
                     type: string
-                filteredServiceId:
+                filteredCloudServiceId:
                     type: string
                 pageSize:
                     type: integer

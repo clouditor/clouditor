@@ -67,7 +67,9 @@ var DefaultTypes = []any{
 	&assessment.Metric{},
 	&orchestrator.Certificate{},
 	&orchestrator.State{},
-	&orchestrator.Requirement{},
+	&orchestrator.Catalog{},
+	&orchestrator.Category{},
+	&orchestrator.Control{},
 }
 
 // StorageOption is a functional option type to configure the GORM storage. E.g. WithInMemory or WithPostgres
@@ -148,6 +150,11 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 
 	schema.RegisterSerializer("timestamppb", &TimestampSerializer{})
 	schema.RegisterSerializer("anypb", &AnySerializer{})
+
+	if err = g.db.SetupJoinTable(&orchestrator.CloudService{}, "CatalogsInScope", &orchestrator.TargetOfEvaluation{}); err != nil {
+		err = fmt.Errorf("error during join-table: %w", err)
+		return
+	}
 
 	if err = g.db.SetupJoinTable(orchestrator.CloudService{}, "ConfiguredMetrics", assessment.MetricConfiguration{}); err != nil {
 		err = fmt.Errorf("error during join-table: %w", err)

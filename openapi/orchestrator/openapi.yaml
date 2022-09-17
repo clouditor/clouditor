@@ -14,7 +14,7 @@ paths:
             description: List all assessment results. Part of the public API, also exposed as REST.
             operationId: Orchestrator_ListAssessmentResults
             parameters:
-                - name: filteredServiceId
+                - name: filteredCloudServiceId
                   in: query
                   schema:
                     type: string
@@ -212,6 +212,208 @@ paths:
                 "200":
                     description: OK
                     content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/catalogs:
+        get:
+            tags:
+                - Orchestrator
+            description: Lists all target catalogs
+            operationId: Orchestrator_ListCatalogs
+            parameters:
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListCatalogsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        post:
+            tags:
+                - Orchestrator
+            description: Creates a new catalog
+            operationId: Orchestrator_CreateCatalog
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Catalog'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Catalog'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/catalogs/{catalogId}:
+        get:
+            tags:
+                - Orchestrator
+            description: Retrieves a catalog
+            operationId: Orchestrator_GetCatalog
+            parameters:
+                - name: catalogId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Catalog'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        put:
+            tags:
+                - Orchestrator
+            description: Updates an existing certificate
+            operationId: Orchestrator_UpdateCatalog
+            parameters:
+                - name: catalogId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Catalog'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Catalog'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        delete:
+            tags:
+                - Orchestrator
+            description: Removes a catalog
+            operationId: Orchestrator_RemoveCatalog
+            parameters:
+                - name: catalogId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/catalogs/{catalogId}/categories/{categoryName}/controls/{controlId}:
+        get:
+            tags:
+                - Orchestrator
+            description: Retrieves a Control
+            operationId: Orchestrator_GetControl
+            parameters:
+                - name: catalogId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: categoryName
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: controlId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Control'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/catalogs/{catalogId}/category/{categoryName}:
+        get:
+            tags:
+                - Orchestrator
+            description: Retrieves a Category
+            operationId: Orchestrator_GetCategory
+            parameters:
+                - name: catalogId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: categoryName
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Category'
                 default:
                     description: Default error response
                     content:
@@ -416,14 +618,14 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/cloud_services/{serviceId}:
+    /v1/orchestrator/cloud_services/{cloudServiceId}:
         get:
             tags:
                 - Orchestrator
             description: Retrieves a target cloud service
             operationId: Orchestrator_GetCloudService
             parameters:
-                - name: serviceId
+                - name: cloudServiceId
                   in: path
                   required: true
                   schema:
@@ -447,7 +649,7 @@ paths:
             description: Registers a new target cloud service
             operationId: Orchestrator_UpdateCloudService
             parameters:
-                - name: serviceId
+                - name: cloudServiceId
                   in: path
                   required: true
                   schema:
@@ -477,7 +679,7 @@ paths:
             description: Removes a target cloud service
             operationId: Orchestrator_RemoveCloudService
             parameters:
-                - name: serviceId
+                - name: cloudServiceId
                   in: path
                   required: true
                   schema:
@@ -492,7 +694,98 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/cloud_services/{serviceId}/metric_configurations:
+    /v1/orchestrator/cloud_services/{cloudServiceId}/catalogs/{catalogId}/toes:
+        get:
+            tags:
+                - Orchestrator
+            description: Retrieves a Target of Evaluation
+            operationId: Orchestrator_GetTargetOfEvaluation
+            parameters:
+                - name: cloudServiceId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: catalogId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/TargetOfEvaluation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        put:
+            tags:
+                - Orchestrator
+            description: Updates an existing Target of Evaluation
+            operationId: Orchestrator_UpdateTargetOfEvaluation
+            parameters:
+                - name: cloudServiceId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: catalogId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/TargetOfEvaluation'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/TargetOfEvaluation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        delete:
+            tags:
+                - Orchestrator
+            description: Removes a Target of Evaluation
+            operationId: Orchestrator_RemoveTargetOfEvaluation
+            parameters:
+                - name: cloudServiceId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: catalogId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/cloud_services/{cloudServiceId}/metric_configurations:
         get:
             tags:
                 - Orchestrator
@@ -501,7 +794,7 @@ paths:
                  specific service ID
             operationId: Orchestrator_ListMetricConfigurations
             parameters:
-                - name: serviceId
+                - name: cloudServiceId
                   in: path
                   required: true
                   schema:
@@ -519,7 +812,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/cloud_services/{serviceId}/metric_configurations/{metricId}:
+    /v1/orchestrator/cloud_services/{cloudServiceId}/metric_configurations/{metricId}:
         get:
             tags:
                 - Orchestrator
@@ -528,7 +821,7 @@ paths:
                  service and metric ID
             operationId: Orchestrator_GetMetricConfiguration
             parameters:
-                - name: serviceId
+                - name: cloudServiceId
                   in: path
                   required: true
                   schema:
@@ -559,7 +852,7 @@ paths:
                  service and metric ID
             operationId: Orchestrator_UpdateMetricConfiguration
             parameters:
-                - name: serviceId
+                - name: cloudServiceId
                   in: path
                   required: true
                   schema:
@@ -582,6 +875,52 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/MetricConfiguration'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/controls:
+        get:
+            tags:
+                - Orchestrator
+            description: Lists all Controls (optionally only controls related to a certain category)
+            operationId: Orchestrator_ListControls
+            parameters:
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
+                - name: catalogId
+                  in: query
+                  description: return either all controls or only the controls of the specified category
+                  schema:
+                    type: string
+                - name: categoryName
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListControlsResponse'
                 default:
                     description: Default error response
                     content:
@@ -763,11 +1102,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/requirements:
+    /v1/orchestrator/toes:
         get:
             tags:
                 - Orchestrator
-            operationId: Orchestrator_ListRequirements
+            description: Lists all Targets of Evaluation
+            operationId: Orchestrator_ListTargetsOfEvaluation
             parameters:
                 - name: pageSize
                   in: query
@@ -786,13 +1126,47 @@ paths:
                   in: query
                   schema:
                     type: boolean
+                - name: cloudServiceId
+                  in: query
+                  description: We cannot create additional bindings when the parameter is optional so we check for != "" in the method to see if it is set when the service is specified, return all ToEs that evaluate the given service for any catalog
+                  schema:
+                    type: string
+                - name: catalogId
+                  in: query
+                  description: when the catalog is specified, return all ToEs that evaluate the given catalog for any service
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/ListRequirementsResponse'
+                                $ref: '#/components/schemas/ListTargetsOfEvaluationResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        post:
+            tags:
+                - Orchestrator
+            description: Creates a new Target of Evaluation
+            operationId: Orchestrator_CreateTargetOfEvaluation
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/TargetOfEvaluation'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/TargetOfEvaluation'
                 default:
                     description: Default error response
                     content:
@@ -841,7 +1215,7 @@ components:
                 nonComplianceComments:
                     type: string
                     description: Some comments on the reason for non-compliance
-                serviceId:
+                cloudServiceId:
                     type: string
                     description: The cloud service which this assessment result belongs to
             description: A result resource, representing the result after assessing the cloud resource with id resource_id.
@@ -860,6 +1234,33 @@ components:
                         type: string
                     description: a list of metrics that this tool can assess, referred by their ids
             description: Represents an external tool or service that offers assessments according to certain metrics.
+        Catalog:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                description:
+                    type: string
+                categories:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Category'
+        Category:
+            type: object
+            properties:
+                name:
+                    type: string
+                catalogId:
+                    type: string
+                    description: Reference to the catalog this category belongs to.
+                description:
+                    type: string
+                controls:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Control'
         Certificate:
             type: object
             properties:
@@ -867,7 +1268,7 @@ components:
                     type: string
                 name:
                     type: string
-                serviceId:
+                cloudServiceId:
                     type: string
                 issueDate:
                     type: string
@@ -896,19 +1297,47 @@ components:
                     type: string
                 description:
                     type: string
-                requirements:
-                    $ref: '#/components/schemas/CloudService_Requirements'
+                catalogsInScope:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Catalog'
                 configuredMetrics:
                     type: array
                     items:
                         $ref: '#/components/schemas/Metric'
-        CloudService_Requirements:
+        Control:
             type: object
             properties:
-                requirementIds:
+                id:
+                    type: string
+                    description: A short name of the control, e.g. OPS-01, as used in OSCAL; it is not a unique ID!
+                categoryName:
+                    type: string
+                categoryCatalogId:
+                    type: string
+                name:
+                    type: string
+                    description: Human-readable name of the control
+                description:
+                    type: string
+                    description: Description of the control
+                controls:
                     type: array
                     items:
-                        type: string
+                        $ref: '#/components/schemas/Control'
+                    description: List of sub - controls -     this is in accordance with the OSCAL model.
+                metrics:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Metric'
+                    description: metrics contains either a list of reference to metrics - in this case only the id field of the metric is populated - or a list of populated metric meta-data, most likely returned by the database.
+                parentControlId:
+                    type: string
+                parentControlCategoryName:
+                    type: string
+                parentControlCategoryCatalogId:
+                    type: string
+            description: Control represents a certain Control that needs to be fulfilled. It could be a Control in a certification catalog. It follows the OSCAL model. A requirement in the EUCS terminology, e.g., is represented as the lowest sub-control.
         GoogleProtobufAny:
             type: object
             properties:
@@ -937,6 +1366,15 @@ components:
                         $ref: '#/components/schemas/AssessmentTool'
                 nextPageToken:
                     type: string
+        ListCatalogsResponse:
+            type: object
+            properties:
+                catalogs:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Catalog'
+                nextPageToken:
+                    type: string
         ListCertificatesResponse:
             type: object
             properties:
@@ -953,6 +1391,15 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/CloudService'
+                nextPageToken:
+                    type: string
+        ListControlsResponse:
+            type: object
+            properties:
+                controls:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Control'
                 nextPageToken:
                     type: string
         ListMetricConfigurationResponse:
@@ -972,13 +1419,13 @@ components:
                         $ref: '#/components/schemas/Metric'
                 nextPageToken:
                     type: string
-        ListRequirementsResponse:
+        ListTargetsOfEvaluationResponse:
             type: object
             properties:
-                requirements:
+                toes:
                     type: array
                     items:
-                        $ref: '#/components/schemas/Requirement'
+                        $ref: '#/components/schemas/TargetOfEvaluation'
                 nextPageToken:
                     type: string
         Metric:
@@ -1087,24 +1534,6 @@ components:
                 minMax:
                     $ref: '#/components/schemas/MinMax'
             description: A range resource representing the range of values
-        Requirement:
-            type: object
-            properties:
-                id:
-                    type: string
-                name:
-                    type: string
-                description:
-                    type: string
-                metrics:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/Metric'
-                    description: metrics contains either a list of reference to metrics - in this case only the id field of the metric is populated - or a list of populated metric meta-data, most likely returned by the database.
-                category:
-                    type: string
-                    description: category can be used to categorize requirements, e.g., according to a specific security catalog or something that groups requirements together, e.g., a security control.
-            description: Requirement represents a certain requirement that needs to be fulfilled. It could be a control in a certification catalog.
         State:
             type: object
             properties:
@@ -1144,5 +1573,16 @@ components:
                     type: boolean
                 statusMessage:
                     type: string
+        TargetOfEvaluation:
+            type: object
+            properties:
+                cloudServiceId:
+                    type: string
+                catalogId:
+                    type: string
+                assuranceLevel:
+                    type: string
+                    description: an assurance level is not offered by every catalog, therefore it is optional
+            description: A Target of Evaluation binds a cloud service to a catalog, so the service is evaluated regarding this catalog's controls
 tags:
     - name: Orchestrator

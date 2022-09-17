@@ -23,28 +23,28 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package requirement
+package catalog
 
 import (
 	"clouditor.io/clouditor/cli/commands/service/orchestrator"
 	"github.com/spf13/cobra"
 )
 
-// NewListRequirementsCommand returns a cobra command for the `list` subcommand
-func NewListRequirementsCommand() *cobra.Command {
+// NewListCatalogsCommand returns a cobra command for the `list` subcommand
+func NewListCatalogsCommand() *cobra.Command {
 	// Use Orchestrator's function for listing requirements
-	cmd := orchestrator.NewListRequirementsCommand()
+	cmd := orchestrator.NewListCatalogsCommand()
 
 	// Change use for better readability
 	cmd.Use = "list"
 	return cmd
 }
 
-// NewRequirementCommand returns a cobra command for `requirement` subcommands
-func NewRequirementCommand() *cobra.Command {
+// NewCatalogCommand returns a cobra command for `catalog` subcommands
+func NewCatalogCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "requirement",
-		Short: "Requirement commands",
+		Use:   "catalog",
+		Short: "Catalog commands",
 	}
 
 	AddCommands(cmd)
@@ -55,6 +55,6 @@ func NewRequirementCommand() *cobra.Command {
 // AddCommands adds all subcommands
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
-		NewListRequirementsCommand(),
+		NewListCatalogsCommand(),
 	)
 }

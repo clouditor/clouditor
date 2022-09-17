@@ -37,13 +37,6 @@ import (
 	"sync"
 	"testing"
 
-	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/internal/testutil/orchestratortest"
-	"clouditor.io/clouditor/persistence/inmemory"
-
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -54,6 +47,13 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"clouditor.io/clouditor/api"
+	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/internal/testutil/orchestratortest"
+	"clouditor.io/clouditor/persistence/inmemory"
 )
 
 const (
@@ -876,14 +876,11 @@ func TestCloudServiceHooks(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				serviceUpdate: &orchestrator.UpdateCloudServiceRequest{
-					ServiceId: "00000000-0000-0000-000000000000",
+					CloudServiceId: "00000000-0000-0000-000000000000",
 					Service: &orchestrator.CloudService{
 						Id:          "00000000-0000-0000-000000000000",
 						Name:        "test service",
 						Description: "test service",
-						Requirements: &orchestrator.CloudService_Requirements{
-							RequirementIds: []string{"1", "2", "3"},
-						},
 					},
 				},
 				cloudServiceHooks: []orchestrator.CloudServiceHookFunc{firstHookFunction, secondHookFunction},
@@ -893,9 +890,6 @@ func TestCloudServiceHooks(t *testing.T) {
 				Id:          "00000000-0000-0000-000000000000",
 				Name:        "test service",
 				Description: "test service",
-				Requirements: &orchestrator.CloudService_Requirements{
-					RequirementIds: []string{"1", "2", "3"},
-				},
 			},
 		},
 	}

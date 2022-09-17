@@ -54,7 +54,8 @@ var defaultMetricConfigurations map[string]*assessment.MetricConfiguration
 var log *logrus.Entry
 
 var DefaultMetricsFile = "metrics.json"
-var DefaultRequirementsFile = "requirements.json"
+
+var DefaultCatalogsFile = "catalogs.json"
 
 // Service is an implementation of the Clouditor Orchestrator service
 type Service struct {
@@ -82,7 +83,10 @@ type Service struct {
 	// loadMetricsFunc is a function that is used to initially load metrics at the start of the orchestrator
 	loadMetricsFunc func() ([]*assessment.Metric, error)
 
-	requirements []*orchestrator.Requirement
+	catalogsFile string
+
+	// loadCatalogsFunc is a function that is used to initially load catalogs at the start of the orchestrator
+	loadCatalogsFunc func() ([]*orchestrator.Catalog, error)
 
 	events chan *orchestrator.MetricChangeEvent
 }
@@ -108,9 +112,17 @@ func WithExternalMetrics(f func() ([]*assessment.Metric, error)) ServiceOption {
 	}
 }
 
-func WithRequirements(r []*orchestrator.Requirement) ServiceOption {
+// WithCatalogsFile can be used to load a different catalogs file
+func WithCatalogsFile(file string) ServiceOption {
 	return func(s *Service) {
-		s.requirements = r
+		s.catalogsFile = file
+	}
+}
+
+// WithExternalCatalogs can be used to load catalog definitions from an external source
+func WithExternalCatalogs(f func() ([]*orchestrator.Catalog, error)) ServiceOption {
+	return func(s *Service) {
+		s.loadCatalogsFunc = f
 	}
 }
 
@@ -125,9 +137,10 @@ func WithStorage(storage persistence.Storage) ServiceOption {
 func NewService(opts ...ServiceOption) *Service {
 	var err error
 	s := Service{
-		results:     make(map[string]*assessment.AssessmentResult),
-		metricsFile: DefaultMetricsFile,
-		events:      make(chan *orchestrator.MetricChangeEvent, 1000),
+		results:      make(map[string]*assessment.AssessmentResult),
+		metricsFile:  DefaultMetricsFile,
+		catalogsFile: DefaultCatalogsFile,
+		events:       make(chan *orchestrator.MetricChangeEvent, 1000),
 	}
 
 	// Apply service options
@@ -143,12 +156,12 @@ func NewService(opts ...ServiceOption) *Service {
 		}
 	}
 
-	if err = s.loadRequirements(); err != nil {
-		log.Errorf("Could not load embedded requirements. Will continue with empty requirements list: %v", err)
-	}
-
 	if err = s.loadMetrics(); err != nil {
 		log.Errorf("Could not load embedded metrics. Will continue with empty metric list: %v", err)
+	}
+
+	if err = s.loadCatalogs(); err != nil {
+		log.Errorf("Could not load embedded catalogs: %v", err)
 	}
 
 	return &s
@@ -256,7 +269,7 @@ func (svc *Service) ListAssessmentResults(_ context.Context, req *assessment.Lis
 	var filtered []*assessment.AssessmentResult
 
 	for _, v := range values {
-		if req.FilteredServiceId != "" && v.ServiceId != req.FilteredServiceId {
+		if req.FilteredCloudServiceId != "" && v.CloudServiceId != req.FilteredCloudServiceId {
 			continue
 		}
 

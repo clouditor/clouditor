@@ -376,10 +376,10 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 		}
 
 		result := &assessment.AssessmentResult{
-			Id:        uuid.NewString(),
-			Timestamp: timestamppb.Now(),
-			ServiceId: ev.ServiceId,
-			MetricId:  metricID,
+			Id:             uuid.NewString(),
+			Timestamp:      timestamppb.Now(),
+			CloudServiceId: ev.CloudServiceId,
+			MetricId:       metricID,
 			MetricConfiguration: &assessment.MetricConfiguration{
 				TargetValue: convertedTargetValue,
 				Operator:    data.Operator,
@@ -525,23 +525,6 @@ func (svc *Service) Metrics() (metrics []*assessment.Metric, err error) {
 	return res.Metrics, nil
 }
 
-// Requirements implements RequirementsSource by retrieving the requirement list from the orchestrator.
-func (svc *Service) Requirements() (requirements []*orchestrator.Requirement, err error) {
-	var res *orchestrator.ListRequirementsResponse
-
-	err = svc.initOrchestratorClient()
-	if err != nil {
-		return nil, fmt.Errorf("could not init orchestrator client")
-	}
-
-	res, err = svc.orchestratorClient.ListRequirements(context.Background(), &orchestrator.ListRequirementsRequest{})
-	if err != nil {
-		return nil, fmt.Errorf("could not retrieve metric list from orchestrator: %w", err)
-	}
-
-	return res.Requirements, nil
-}
-
 // MetricImplementation implements MetricsSource by retrieving the metric implementation
 // from the orchestrator.
 func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (impl *assessment.MetricImplementation, err error) {
@@ -568,7 +551,7 @@ func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_La
 
 // MetricConfiguration implements MetricsSource by getting the corresponding metric configuration for the
 // default target cloud service
-func (svc *Service) MetricConfiguration(serviceID, metricID string) (config *assessment.MetricConfiguration, err error) {
+func (svc *Service) MetricConfiguration(cloudServiceID, metricID string) (config *assessment.MetricConfiguration, err error) {
 	var (
 		ok    bool
 		cache cachedConfiguration
@@ -576,7 +559,7 @@ func (svc *Service) MetricConfiguration(serviceID, metricID string) (config *ass
 	)
 
 	// Calculate the cache key
-	key = fmt.Sprintf("%s-%s", serviceID, metricID)
+	key = fmt.Sprintf("%s-%s", cloudServiceID, metricID)
 
 	// Retrieve our cached entry
 	svc.confMutex.Lock()
@@ -591,8 +574,8 @@ func (svc *Service) MetricConfiguration(serviceID, metricID string) (config *ass
 	// Check if entry is not there or is expired
 	if !ok || cache.cachedAt.After(time.Now().Add(EvictionTime)) {
 		config, err = svc.orchestratorClient.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{
-			ServiceId: serviceID,
-			MetricId:  metricID,
+			CloudServiceId: cloudServiceID,
+			MetricId:       metricID,
 		})
 
 		if err != nil {
@@ -647,7 +630,7 @@ func (svc *Service) handleMetricEvent(event *orchestrator.MetricChangeEvent) {
 		svc.confMutex.Lock()
 
 		// Calculate the cache key
-		key = fmt.Sprintf("%s-%s", event.ServiceId, event.MetricId)
+		key = fmt.Sprintf("%s-%s", event.CloudServiceId, event.MetricId)
 
 		delete(svc.cachedConfigurations, key)
 		svc.confMutex.Unlock()
