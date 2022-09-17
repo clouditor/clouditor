@@ -171,7 +171,7 @@ func (srv *Service) ListControls(ctx context.Context, req *orchestrator.ListCont
 	return
 }
 
-// LoadCatalogs loads catalog definitions from a JSON file.
+// loadCatalogs loads catalog definitions from a JSON file.
 func (svc *Service) loadCatalogs() (err error) {
 	var catalogs []*orchestrator.Catalog
 
