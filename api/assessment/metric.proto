@@ -68,6 +68,8 @@ message Metric {
   // (https://github.com/google/gnostic/issues/351)
   int64 interval = 7;
 
+  // The implementation of this metric. This ensures that we are modelling an
+  // association between a Metric and its MetricImplementation.
   optional MetricImplementation implementation = 8;
 }
 

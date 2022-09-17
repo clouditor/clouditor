@@ -411,6 +411,9 @@ func Test_storage_Update(t *testing.T) {
 	err = s.Get(&auth.User{}, "username = ?", user.Username)
 	assert.NoError(t, err)
 
+	err = s.Update(&auth.User{FullName: "SomeNewName"}, "username = ?", "SomeOtherUser")
+	assert.ErrorIs(t, err, persistence.ErrRecordNotFound)
+
 	err = s.Update(&auth.User{FullName: "SomeNewName"}, "username = ?", user.Username)
 	assert.NoError(t, err)
 

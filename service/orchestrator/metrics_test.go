@@ -864,7 +864,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 		fields  fields
 		args    args
 		want    assert.ValueAssertionFunc
-		wantErr bool
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name:   "metric does not exist",
@@ -876,7 +876,9 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 					Configuration:  &assessment.MetricConfiguration{},
 				},
 			},
-			wantErr: true,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "metric or service does not exist")
+			},
 		},
 		{
 			name: "service does not exist",
@@ -892,7 +894,9 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 					Configuration:  &assessment.MetricConfiguration{},
 				},
 			},
-			wantErr: true,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "metric or service does not exist")
+			},
 		},
 		{
 			name: "append metric configuration",
@@ -913,7 +917,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 					},
 				},
 			},
-			wantErr: false,
+			wantErr: nil,
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				svc := i2[0].(*Service)
 
@@ -952,7 +956,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 					},
 				},
 			},
-			wantErr: false,
+			wantErr: nil,
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				svc := i2[0].(*Service)
 
@@ -980,9 +984,10 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 				events:                tt.fields.events,
 			}
 			gotRes, err := svc.UpdateMetricConfiguration(tt.args.in0, tt.args.req)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.UpdateMetricConfiguration() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			if tt.wantErr != nil {
+				tt.wantErr(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
 
 			if tt.want != nil {

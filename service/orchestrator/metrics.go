@@ -333,7 +333,7 @@ func (svc *Service) UpdateMetricConfiguration(_ context.Context, req *orchestrat
 	req.Configuration.MetricId = req.MetricId
 
 	err = svc.storage.Save(&req.Configuration)
-	if err != nil && errors.Is(err, persistence.ErrConstaintFailed) {
+	if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
 		return nil, status.Errorf(codes.NotFound, "metric or service does not exist")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)

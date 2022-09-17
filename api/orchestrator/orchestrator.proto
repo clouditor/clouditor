@@ -207,7 +207,8 @@ service Orchestrator {
   rpc ListMetricConfigurations(ListMetricConfigurationRequest)
       returns (ListMetricConfigurationResponse) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/cloud_services/{cloud_service_id}/metric_configurations"
+      get : "/v1/orchestrator/cloud_services/{cloud_service_id}/"
+            "metric_configurations"
     };
   }
 
@@ -320,7 +321,8 @@ service Orchestrator {
   rpc GetTargetOfEvaluation(GetTargetOfEvaluationRequest)
       returns (TargetOfEvaluation) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/{catalog_id}/toes"
+      get : "/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/"
+            "{catalog_id}/toes"
     };
   }
 
@@ -340,7 +342,8 @@ service Orchestrator {
   rpc UpdateTargetOfEvaluation(UpdateTargetOfEvaluationRequest)
       returns (TargetOfEvaluation) {
     option (google.api.http) = {
-      put : "/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/{catalog_id}/toes"
+      put : "/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/"
+            "{catalog_id}/toes"
       body : "toe"
     };
   }
@@ -349,7 +352,8 @@ service Orchestrator {
   rpc RemoveTargetOfEvaluation(RemoveTargetOfEvaluationRequest)
       returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      delete : "/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/{catalog_id}/toes"
+      delete : "/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/"
+               "{catalog_id}/toes"
     };
   }
 
@@ -564,7 +568,8 @@ message Category {
 // requirement in the EUCS terminology, e.g., is represented as the lowest
 // sub-control.
 message Control {
-  // A short name of the control, e.g. OPS-01, as used in OSCAL; it is not a unique ID!
+  // A short name of the control, e.g. OPS-01, as used in OSCAL; it is not a
+  // unique ID!
   string id = 1 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
   string category_name = 2 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
   string category_catalog_id = 3 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
@@ -578,10 +583,9 @@ message Control {
   // List of sub - controls -
   //     this is in accordance with the OSCAL model.
   repeated Control controls = 6
-      [ (tagger.tags) =
-            "gorm:\"foreignKey:parent_control_id,parent_control_"
-            "category_name,parent_control_category_catalog_id;"
-            "references=id,category_name;category_catalog_id\"" ];
+      [ (tagger.tags) = "gorm:\"foreignKey:parent_control_id,parent_control_"
+                        "category_name,parent_control_category_catalog_id;"
+                        "references=id,category_name;category_catalog_id\"" ];
   // metrics contains either a list of reference to metrics - in this case only
   // the id field of the metric is populated - or a list of populated metric
   // meta-data, most likely returned by the database.
@@ -609,12 +613,12 @@ message TargetOfEvaluation {
 
 message CreateTargetOfEvaluationRequest { TargetOfEvaluation toe = 1; }
 
-message RemoveTargetOfEvaluationRequest { 
+message RemoveTargetOfEvaluationRequest {
   string cloud_service_id = 1;
   string catalog_id = 2;
 }
 
-message GetTargetOfEvaluationRequest { 
+message GetTargetOfEvaluationRequest {
   string cloud_service_id = 1;
   string catalog_id = 2;
 }

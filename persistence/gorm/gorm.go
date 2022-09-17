@@ -180,10 +180,13 @@ type preload struct {
 	args  []any
 }
 
+// WithPreload allows the customization of Gorm's preload feature with the specified query and arguments.
 func WithPreload(query string, args ...any) *preload {
 	return &preload{query: query, args: args}
 }
 
+// WithoutPreload disables any kind of preloading of Gorm. This is necessary, if custom join tables are used, otherwise
+// Gorm will throws errors.
 func WithoutPreload() *preload {
 	return &preload{query: ""}
 }
@@ -201,6 +204,10 @@ func (s *storage) Get(r any, conds ...any) (err error) {
 	return
 }
 
+// applyWhere applies the conditional arguments to db.Where. We now basically distinguish between three cases:
+//   - an empty conditions list means no db.Where function is called
+//   - one condition specified means that it is takes as the query parameter. This will query for the specified primary key
+//   - otherwise, the first condition will be taken as the query parameter and all others will be taken as additional args.
 func applyWhere(db *gorm.DB, conds ...any) *gorm.DB {
 	if len(conds) == 0 {
 		return db
@@ -263,7 +270,7 @@ func (s *storage) Save(r any, conds ...any) error {
 	err := tx.Error
 
 	if err != nil && strings.Contains(err.Error(), "constraint failed") {
-		return persistence.ErrConstaintFailed
+		return persistence.ErrConstraintFailed
 	}
 
 	return err
@@ -271,17 +278,18 @@ func (s *storage) Save(r any, conds ...any) error {
 
 // Update will update the record with non-zero fields. Note that to get the entire updated record you have to call Get
 func (s *storage) Update(r any, conds ...any) error {
-	db := s.db.Session(&gorm.Session{FullSaveAssociations: true}).Model(r)
-	db = applyWhere(db, conds...)
-
-	db = db.Updates(r)
+	tx := s.db.Session(&gorm.Session{FullSaveAssociations: true}).Model(r)
+	tx = applyWhere(tx, conds...).Updates(r)
+	if err := tx.Error; err != nil { // db error
+		return err
+	}
 
 	// No record with given ID found
-	if db.RowsAffected == 0 {
+	if tx.RowsAffected == 0 {
 		return persistence.ErrRecordNotFound
 	}
 
-	return db.Error
+	return nil
 }
 
 // Delete deletes record with given id. If no record was found, returns ErrRecordNotFound
@@ -291,6 +299,7 @@ func (s *storage) Delete(r any, conds ...any) error {
 	if err := tx.Error; err != nil { // db error
 		return err
 	}
+
 	// No record with given ID found
 	if tx.RowsAffected == 0 {
 		return persistence.ErrRecordNotFound
