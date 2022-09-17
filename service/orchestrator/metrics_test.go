@@ -31,6 +31,7 @@ import (
 	"os"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
@@ -593,7 +594,7 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 		name     string
 		fields   fields
 		args     args
-		wantImpl *assessment.MetricImplementation
+		wantImpl assert.ValueAssertionFunc
 		wantErr  bool
 	}{
 		{
@@ -642,10 +643,13 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 					},
 				},
 			},
-			wantImpl: &assessment.MetricImplementation{
-				MetricId: "TransportEncryptionEnabled",
-				Lang:     assessment.MetricImplementation_REGO,
-				Code:     "package example",
+			wantImpl: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				var impl = i1.(*assessment.MetricImplementation)
+
+				return assert.Equal(t, "TransportEncryptionEnabled", impl.MetricId) &&
+					assert.Equal(t, assessment.MetricImplementation_REGO, impl.Lang) &&
+					assert.Equal(t, "package example", impl.Code) &&
+					assert.True(t, impl.UpdatedAt.AsTime().Before(time.Now()))
 			},
 		},
 	}
@@ -665,8 +669,9 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 				t.Errorf("Service.UpdateMetricImplementation() error = %v, wantErrMessage %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(gotImpl, tt.wantImpl) {
-				t.Errorf("Service.UpdateMetricImplementation() = %v, want %v", gotImpl, tt.wantImpl)
+
+			if tt.wantImpl != nil {
+				tt.wantImpl(t, gotImpl)
 			}
 		})
 	}

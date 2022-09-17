@@ -42,6 +42,7 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // loadMetrics takes care of loading the metric definitions from the (embedded) metrics.json as
@@ -69,15 +70,24 @@ func (svc *Service) loadMetrics() (err error) {
 	// we intentionally do not have the implementation, because they are assess outside the Clouditor toolset, but we
 	// still need to be aware of the particular metric.
 	for _, m := range metrics {
+		// Somehow, we first need to save the metric, otherwise we are running into weird constraint issues.
+		err = svc.storage.Save(m, "id = ?", m.Id)
+		if err != nil {
+			log.Errorf("Error while saving metrics: %v", err)
+			continue
+		}
+
 		err = svc.prepareMetric(m)
 		if err != nil {
 			log.Warnf("Could not prepare implementation or default configuration for metric %s: %v", m.Id, err)
+			continue
 		}
-	}
 
-	err = svc.storage.Save(metrics)
-	if err != nil {
-		log.Errorf("Error while saving metrics: %v", err)
+		err = svc.storage.Save(m.Implementation, "metric_id = ?", m.Id)
+		if err != nil {
+			log.Errorf("Error while saving metrics: %v", err)
+			continue
+		}
 	}
 
 	return
@@ -145,9 +155,10 @@ func loadMetricImplementation(metricID, file string) (impl *assessment.MetricImp
 	}
 
 	impl = &assessment.MetricImplementation{
-		MetricId: metricID,
-		Lang:     assessment.MetricImplementation_REGO,
-		Code:     string(b),
+		MetricId:  metricID,
+		Lang:      assessment.MetricImplementation_REGO,
+		Code:      string(b),
+		UpdatedAt: timestamppb.Now(),
 	}
 
 	return
@@ -255,6 +266,7 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 	// Update implementation
 	impl = req.Implementation
 	impl.MetricId = req.MetricId
+	impl.UpdatedAt = timestamppb.Now()
 
 	// Store it in the database
 	err = svc.storage.Save(impl, "metric_id = ?", impl.MetricId)

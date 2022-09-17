@@ -18,7 +18,7 @@
                                 "name": "The CSP shall use an up-to-date TLS version in all data transmissions",
                                 "metrics": [
                                     {
-                                        "id": "TlsVersion"
+                                        "id": "TLSVersion"
                                     }
                                 ],
                                 "parent_control_id": "CommSec-01",
