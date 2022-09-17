@@ -190,7 +190,7 @@ func TestService_ListCatalogs(t *testing.T) {
 	listCatalogsResponse, err = orchestratorService.ListCatalogs(context.Background(), &orchestrator.ListCatalogsRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listCatalogsResponse.Catalogs)
-	assert.Equal(t, len(listCatalogsResponse.Catalogs), 2)
+	assert.Equal(t, len(listCatalogsResponse.Catalogs), 1)
 
 	// 2nd case: Invalid request
 	_, err = orchestratorService.ListCatalogs(context.Background(),
@@ -266,11 +266,11 @@ func TestService_RemoveCatalog(t *testing.T) {
 	err = orchestratorService.storage.Create(mockCatalog)
 	assert.NoError(t, err)
 
-	// There are three catalogs in the db now (two default plus NewCatalog)
+	// There are two catalogs in the db now (one default plus NewCatalog)
 	listCatalogsResponse, err = orchestratorService.ListCatalogs(context.Background(), &orchestrator.ListCatalogsRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listCatalogsResponse.Catalogs)
-	assert.Equal(t, 3, len(listCatalogsResponse.Catalogs))
+	assert.Equal(t, 2, len(listCatalogsResponse.Catalogs))
 
 	// Remove record
 	_, err = orchestratorService.RemoveCatalog(context.Background(), &orchestrator.RemoveCatalogRequest{CatalogId: mockCatalog.Id})
@@ -280,7 +280,7 @@ func TestService_RemoveCatalog(t *testing.T) {
 	listCatalogsResponse, err = orchestratorService.ListCatalogs(context.Background(), &orchestrator.ListCatalogsRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listCatalogsResponse.Catalogs)
-	assert.Equal(t, 2, len(listCatalogsResponse.Catalogs))
+	assert.Equal(t, 1, len(listCatalogsResponse.Catalogs))
 }
 
 func TestService_GetCategory(t *testing.T) {
@@ -468,8 +468,8 @@ func TestService_ListControls(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, listControlsResponse.Controls)
 	assert.NotEmpty(t, listControlsResponse.Controls)
-	// there are four default controls
-	assert.Equal(t, len(listControlsResponse.Controls), 4)
+	// there are two default controls
+	assert.Equal(t, len(listControlsResponse.Controls), 2)
 
 	// 3rd case: List controls for a specific catalog; first, create a new catalog with two controls, but only request controls for one of the existing catalogs
 	orchestratortest.NewCatalog()
@@ -479,8 +479,8 @@ func TestService_ListControls(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, listControlsResponse.Controls)
 	assert.NotEmpty(t, listControlsResponse.Controls)
-	// there are the four default controls
-	assert.Equal(t, len(listControlsResponse.Controls), 4)
+	// there are the two default controls
+	assert.Equal(t, len(listControlsResponse.Controls), 2)
 
 	// 4th case: Invalid request
 	_, err = orchestratorService.ListControls(context.Background(),
