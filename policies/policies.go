@@ -69,9 +69,9 @@ type MetricsSource interface {
 	MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (*assessment.MetricImplementation, error)
 }
 
-// RequirementsSource is used to retrieve a list of requirements
-type RequirementsSource interface {
-	Requirements() ([]*orchestrator.Requirement, error)
+// ControlsSource is used to retrieve a list of controls
+type ControlsSource interface {
+	Controls() ([]*orchestrator.Control, error)
 }
 
 // createKey creates a key by concatenating toolID and all types

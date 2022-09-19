@@ -51,7 +51,6 @@ type OrchestratorClient interface {
 	GetMetric(ctx context.Context, in *GetMetricRequest, opts ...grpc.CallOption) (*assessment.Metric, error)
 	// List all metrics provided by the metric catalog
 	ListMetrics(ctx context.Context, in *ListMetricsRequest, opts ...grpc.CallOption) (*ListMetricsResponse, error)
-	ListRequirements(ctx context.Context, in *ListRequirementsRequest, opts ...grpc.CallOption) (*ListRequirementsResponse, error)
 	// Registers a new target cloud service
 	RegisterCloudService(ctx context.Context, in *RegisterCloudServiceRequest, opts ...grpc.CallOption) (*CloudService, error)
 	// Registers a new target cloud service
@@ -86,6 +85,32 @@ type OrchestratorClient interface {
 	UpdateCertificate(ctx context.Context, in *UpdateCertificateRequest, opts ...grpc.CallOption) (*Certificate, error)
 	// Removes a certificate
 	RemoveCertificate(ctx context.Context, in *RemoveCertificateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Creates a new catalog
+	CreateCatalog(ctx context.Context, in *CreateCatalogRequest, opts ...grpc.CallOption) (*Catalog, error)
+	// Retrieves a catalog
+	GetCatalog(ctx context.Context, in *GetCatalogRequest, opts ...grpc.CallOption) (*Catalog, error)
+	// Lists all target catalogs
+	ListCatalogs(ctx context.Context, in *ListCatalogsRequest, opts ...grpc.CallOption) (*ListCatalogsResponse, error)
+	// Updates an existing certificate
+	UpdateCatalog(ctx context.Context, in *UpdateCatalogRequest, opts ...grpc.CallOption) (*Catalog, error)
+	// Removes a catalog
+	RemoveCatalog(ctx context.Context, in *RemoveCatalogRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Creates a new Target of Evaluation
+	CreateTargetOfEvaluation(ctx context.Context, in *CreateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
+	// Retrieves a Target of Evaluation
+	GetTargetOfEvaluation(ctx context.Context, in *GetTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
+	// Lists all Targets of Evaluation
+	ListTargetsOfEvaluation(ctx context.Context, in *ListTargetsOfEvaluationRequest, opts ...grpc.CallOption) (*ListTargetsOfEvaluationResponse, error)
+	// Updates an existing Target of Evaluation
+	UpdateTargetOfEvaluation(ctx context.Context, in *UpdateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
+	// Removes a Target of Evaluation
+	RemoveTargetOfEvaluation(ctx context.Context, in *RemoveTargetOfEvaluationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Retrieves a Category
+	GetCategory(ctx context.Context, in *GetCategoryRequest, opts ...grpc.CallOption) (*Category, error)
+	// Retrieves a Control
+	GetControl(ctx context.Context, in *GetControlRequest, opts ...grpc.CallOption) (*Control, error)
+	// Lists all Controls (optionally only controls related to a certain category)
+	ListControls(ctx context.Context, in *ListControlsRequest, opts ...grpc.CallOption) (*ListControlsResponse, error)
 }
 
 type orchestratorClient struct {
@@ -220,15 +245,6 @@ func (c *orchestratorClient) GetMetric(ctx context.Context, in *GetMetricRequest
 func (c *orchestratorClient) ListMetrics(ctx context.Context, in *ListMetricsRequest, opts ...grpc.CallOption) (*ListMetricsResponse, error) {
 	out := new(ListMetricsResponse)
 	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/ListMetrics", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *orchestratorClient) ListRequirements(ctx context.Context, in *ListRequirementsRequest, opts ...grpc.CallOption) (*ListRequirementsResponse, error) {
-	out := new(ListRequirementsResponse)
-	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/ListRequirements", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -402,6 +418,123 @@ func (c *orchestratorClient) RemoveCertificate(ctx context.Context, in *RemoveCe
 	return out, nil
 }
 
+func (c *orchestratorClient) CreateCatalog(ctx context.Context, in *CreateCatalogRequest, opts ...grpc.CallOption) (*Catalog, error) {
+	out := new(Catalog)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/CreateCatalog", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orchestratorClient) GetCatalog(ctx context.Context, in *GetCatalogRequest, opts ...grpc.CallOption) (*Catalog, error) {
+	out := new(Catalog)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/GetCatalog", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orchestratorClient) ListCatalogs(ctx context.Context, in *ListCatalogsRequest, opts ...grpc.CallOption) (*ListCatalogsResponse, error) {
+	out := new(ListCatalogsResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/ListCatalogs", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orchestratorClient) UpdateCatalog(ctx context.Context, in *UpdateCatalogRequest, opts ...grpc.CallOption) (*Catalog, error) {
+	out := new(Catalog)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/UpdateCatalog", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orchestratorClient) RemoveCatalog(ctx context.Context, in *RemoveCatalogRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/RemoveCatalog", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orchestratorClient) CreateTargetOfEvaluation(ctx context.Context, in *CreateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error) {
+	out := new(TargetOfEvaluation)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/CreateTargetOfEvaluation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orchestratorClient) GetTargetOfEvaluation(ctx context.Context, in *GetTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error) {
+	out := new(TargetOfEvaluation)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/GetTargetOfEvaluation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orchestratorClient) ListTargetsOfEvaluation(ctx context.Context, in *ListTargetsOfEvaluationRequest, opts ...grpc.CallOption) (*ListTargetsOfEvaluationResponse, error) {
+	out := new(ListTargetsOfEvaluationResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/ListTargetsOfEvaluation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orchestratorClient) UpdateTargetOfEvaluation(ctx context.Context, in *UpdateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error) {
+	out := new(TargetOfEvaluation)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/UpdateTargetOfEvaluation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orchestratorClient) RemoveTargetOfEvaluation(ctx context.Context, in *RemoveTargetOfEvaluationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/RemoveTargetOfEvaluation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orchestratorClient) GetCategory(ctx context.Context, in *GetCategoryRequest, opts ...grpc.CallOption) (*Category, error) {
+	out := new(Category)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/GetCategory", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orchestratorClient) GetControl(ctx context.Context, in *GetControlRequest, opts ...grpc.CallOption) (*Control, error) {
+	out := new(Control)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/GetControl", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orchestratorClient) ListControls(ctx context.Context, in *ListControlsRequest, opts ...grpc.CallOption) (*ListControlsResponse, error) {
+	out := new(ListControlsResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.Orchestrator/ListControls", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OrchestratorServer is the server API for Orchestrator service.
 // All implementations must embed UnimplementedOrchestratorServer
 // for forward compatibility
@@ -433,7 +566,6 @@ type OrchestratorServer interface {
 	GetMetric(context.Context, *GetMetricRequest) (*assessment.Metric, error)
 	// List all metrics provided by the metric catalog
 	ListMetrics(context.Context, *ListMetricsRequest) (*ListMetricsResponse, error)
-	ListRequirements(context.Context, *ListRequirementsRequest) (*ListRequirementsResponse, error)
 	// Registers a new target cloud service
 	RegisterCloudService(context.Context, *RegisterCloudServiceRequest) (*CloudService, error)
 	// Registers a new target cloud service
@@ -468,6 +600,32 @@ type OrchestratorServer interface {
 	UpdateCertificate(context.Context, *UpdateCertificateRequest) (*Certificate, error)
 	// Removes a certificate
 	RemoveCertificate(context.Context, *RemoveCertificateRequest) (*emptypb.Empty, error)
+	// Creates a new catalog
+	CreateCatalog(context.Context, *CreateCatalogRequest) (*Catalog, error)
+	// Retrieves a catalog
+	GetCatalog(context.Context, *GetCatalogRequest) (*Catalog, error)
+	// Lists all target catalogs
+	ListCatalogs(context.Context, *ListCatalogsRequest) (*ListCatalogsResponse, error)
+	// Updates an existing certificate
+	UpdateCatalog(context.Context, *UpdateCatalogRequest) (*Catalog, error)
+	// Removes a catalog
+	RemoveCatalog(context.Context, *RemoveCatalogRequest) (*emptypb.Empty, error)
+	// Creates a new Target of Evaluation
+	CreateTargetOfEvaluation(context.Context, *CreateTargetOfEvaluationRequest) (*TargetOfEvaluation, error)
+	// Retrieves a Target of Evaluation
+	GetTargetOfEvaluation(context.Context, *GetTargetOfEvaluationRequest) (*TargetOfEvaluation, error)
+	// Lists all Targets of Evaluation
+	ListTargetsOfEvaluation(context.Context, *ListTargetsOfEvaluationRequest) (*ListTargetsOfEvaluationResponse, error)
+	// Updates an existing Target of Evaluation
+	UpdateTargetOfEvaluation(context.Context, *UpdateTargetOfEvaluationRequest) (*TargetOfEvaluation, error)
+	// Removes a Target of Evaluation
+	RemoveTargetOfEvaluation(context.Context, *RemoveTargetOfEvaluationRequest) (*emptypb.Empty, error)
+	// Retrieves a Category
+	GetCategory(context.Context, *GetCategoryRequest) (*Category, error)
+	// Retrieves a Control
+	GetControl(context.Context, *GetControlRequest) (*Control, error)
+	// Lists all Controls (optionally only controls related to a certain category)
+	ListControls(context.Context, *ListControlsRequest) (*ListControlsResponse, error)
 	mustEmbedUnimplementedOrchestratorServer()
 }
 
@@ -510,9 +668,6 @@ func (UnimplementedOrchestratorServer) GetMetric(context.Context, *GetMetricRequ
 }
 func (UnimplementedOrchestratorServer) ListMetrics(context.Context, *ListMetricsRequest) (*ListMetricsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListMetrics not implemented")
-}
-func (UnimplementedOrchestratorServer) ListRequirements(context.Context, *ListRequirementsRequest) (*ListRequirementsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListRequirements not implemented")
 }
 func (UnimplementedOrchestratorServer) RegisterCloudService(context.Context, *RegisterCloudServiceRequest) (*CloudService, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterCloudService not implemented")
@@ -561,6 +716,45 @@ func (UnimplementedOrchestratorServer) UpdateCertificate(context.Context, *Updat
 }
 func (UnimplementedOrchestratorServer) RemoveCertificate(context.Context, *RemoveCertificateRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveCertificate not implemented")
+}
+func (UnimplementedOrchestratorServer) CreateCatalog(context.Context, *CreateCatalogRequest) (*Catalog, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateCatalog not implemented")
+}
+func (UnimplementedOrchestratorServer) GetCatalog(context.Context, *GetCatalogRequest) (*Catalog, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCatalog not implemented")
+}
+func (UnimplementedOrchestratorServer) ListCatalogs(context.Context, *ListCatalogsRequest) (*ListCatalogsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListCatalogs not implemented")
+}
+func (UnimplementedOrchestratorServer) UpdateCatalog(context.Context, *UpdateCatalogRequest) (*Catalog, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateCatalog not implemented")
+}
+func (UnimplementedOrchestratorServer) RemoveCatalog(context.Context, *RemoveCatalogRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveCatalog not implemented")
+}
+func (UnimplementedOrchestratorServer) CreateTargetOfEvaluation(context.Context, *CreateTargetOfEvaluationRequest) (*TargetOfEvaluation, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateTargetOfEvaluation not implemented")
+}
+func (UnimplementedOrchestratorServer) GetTargetOfEvaluation(context.Context, *GetTargetOfEvaluationRequest) (*TargetOfEvaluation, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTargetOfEvaluation not implemented")
+}
+func (UnimplementedOrchestratorServer) ListTargetsOfEvaluation(context.Context, *ListTargetsOfEvaluationRequest) (*ListTargetsOfEvaluationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListTargetsOfEvaluation not implemented")
+}
+func (UnimplementedOrchestratorServer) UpdateTargetOfEvaluation(context.Context, *UpdateTargetOfEvaluationRequest) (*TargetOfEvaluation, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateTargetOfEvaluation not implemented")
+}
+func (UnimplementedOrchestratorServer) RemoveTargetOfEvaluation(context.Context, *RemoveTargetOfEvaluationRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveTargetOfEvaluation not implemented")
+}
+func (UnimplementedOrchestratorServer) GetCategory(context.Context, *GetCategoryRequest) (*Category, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCategory not implemented")
+}
+func (UnimplementedOrchestratorServer) GetControl(context.Context, *GetControlRequest) (*Control, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetControl not implemented")
+}
+func (UnimplementedOrchestratorServer) ListControls(context.Context, *ListControlsRequest) (*ListControlsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListControls not implemented")
 }
 func (UnimplementedOrchestratorServer) mustEmbedUnimplementedOrchestratorServer() {}
 
@@ -795,24 +989,6 @@ func _Orchestrator_ListMetrics_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).ListMetrics(ctx, req.(*ListMetricsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Orchestrator_ListRequirements_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListRequirementsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(OrchestratorServer).ListRequirements(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/clouditor.Orchestrator/ListRequirements",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).ListRequirements(ctx, req.(*ListRequirementsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1108,6 +1284,240 @@ func _Orchestrator_RemoveCertificate_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Orchestrator_CreateCatalog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateCatalogRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).CreateCatalog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/CreateCatalog",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).CreateCatalog(ctx, req.(*CreateCatalogRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Orchestrator_GetCatalog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCatalogRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).GetCatalog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/GetCatalog",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).GetCatalog(ctx, req.(*GetCatalogRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Orchestrator_ListCatalogs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListCatalogsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).ListCatalogs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/ListCatalogs",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).ListCatalogs(ctx, req.(*ListCatalogsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Orchestrator_UpdateCatalog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateCatalogRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).UpdateCatalog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/UpdateCatalog",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).UpdateCatalog(ctx, req.(*UpdateCatalogRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Orchestrator_RemoveCatalog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveCatalogRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).RemoveCatalog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/RemoveCatalog",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).RemoveCatalog(ctx, req.(*RemoveCatalogRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Orchestrator_CreateTargetOfEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateTargetOfEvaluationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).CreateTargetOfEvaluation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/CreateTargetOfEvaluation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).CreateTargetOfEvaluation(ctx, req.(*CreateTargetOfEvaluationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Orchestrator_GetTargetOfEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTargetOfEvaluationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).GetTargetOfEvaluation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/GetTargetOfEvaluation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).GetTargetOfEvaluation(ctx, req.(*GetTargetOfEvaluationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Orchestrator_ListTargetsOfEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListTargetsOfEvaluationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).ListTargetsOfEvaluation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/ListTargetsOfEvaluation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).ListTargetsOfEvaluation(ctx, req.(*ListTargetsOfEvaluationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Orchestrator_UpdateTargetOfEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateTargetOfEvaluationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).UpdateTargetOfEvaluation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/UpdateTargetOfEvaluation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).UpdateTargetOfEvaluation(ctx, req.(*UpdateTargetOfEvaluationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Orchestrator_RemoveTargetOfEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveTargetOfEvaluationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).RemoveTargetOfEvaluation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/RemoveTargetOfEvaluation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).RemoveTargetOfEvaluation(ctx, req.(*RemoveTargetOfEvaluationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Orchestrator_GetCategory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCategoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).GetCategory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/GetCategory",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).GetCategory(ctx, req.(*GetCategoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Orchestrator_GetControl_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetControlRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).GetControl(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/GetControl",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).GetControl(ctx, req.(*GetControlRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Orchestrator_ListControls_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListControlsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).ListControls(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Orchestrator/ListControls",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).ListControls(ctx, req.(*ListControlsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Orchestrator_ServiceDesc is the grpc.ServiceDesc for Orchestrator service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1158,10 +1568,6 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListMetrics",
 			Handler:    _Orchestrator_ListMetrics_Handler,
-		},
-		{
-			MethodName: "ListRequirements",
-			Handler:    _Orchestrator_ListRequirements_Handler,
 		},
 		{
 			MethodName: "RegisterCloudService",
@@ -1222,6 +1628,58 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemoveCertificate",
 			Handler:    _Orchestrator_RemoveCertificate_Handler,
+		},
+		{
+			MethodName: "CreateCatalog",
+			Handler:    _Orchestrator_CreateCatalog_Handler,
+		},
+		{
+			MethodName: "GetCatalog",
+			Handler:    _Orchestrator_GetCatalog_Handler,
+		},
+		{
+			MethodName: "ListCatalogs",
+			Handler:    _Orchestrator_ListCatalogs_Handler,
+		},
+		{
+			MethodName: "UpdateCatalog",
+			Handler:    _Orchestrator_UpdateCatalog_Handler,
+		},
+		{
+			MethodName: "RemoveCatalog",
+			Handler:    _Orchestrator_RemoveCatalog_Handler,
+		},
+		{
+			MethodName: "CreateTargetOfEvaluation",
+			Handler:    _Orchestrator_CreateTargetOfEvaluation_Handler,
+		},
+		{
+			MethodName: "GetTargetOfEvaluation",
+			Handler:    _Orchestrator_GetTargetOfEvaluation_Handler,
+		},
+		{
+			MethodName: "ListTargetsOfEvaluation",
+			Handler:    _Orchestrator_ListTargetsOfEvaluation_Handler,
+		},
+		{
+			MethodName: "UpdateTargetOfEvaluation",
+			Handler:    _Orchestrator_UpdateTargetOfEvaluation_Handler,
+		},
+		{
+			MethodName: "RemoveTargetOfEvaluation",
+			Handler:    _Orchestrator_RemoveTargetOfEvaluation_Handler,
+		},
+		{
+			MethodName: "GetCategory",
+			Handler:    _Orchestrator_GetCategory_Handler,
+		},
+		{
+			MethodName: "GetControl",
+			Handler:    _Orchestrator_GetControl_Handler,
+		},
+		{
+			MethodName: "ListControls",
+			Handler:    _Orchestrator_ListControls_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

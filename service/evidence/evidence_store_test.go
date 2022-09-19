@@ -71,7 +71,7 @@ func TestNewService(t *testing.T) {
 }
 
 // TestStoreEvidence tests StoreEvidence
-func TestStoreEvidence(t *testing.T) {
+func TestService_StoreEvidence(t *testing.T) {
 	type args struct {
 		in0 context.Context
 		req *evidence.StoreEvidenceRequest
@@ -88,11 +88,11 @@ func TestStoreEvidence(t *testing.T) {
 				in0: context.TODO(),
 				req: &evidence.StoreEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:        "11111111-1111-1111-1111-111111111111",
-						ServiceId: "MockServiceId",
-						ToolId:    "MockTool",
-						Timestamp: timestamppb.Now(),
-						Raw:       "",
+						Id:             "11111111-1111-1111-1111-111111111111",
+						CloudServiceId: "MockCloudServiceId",
+						ToolId:         "MockTool",
+						Timestamp:      timestamppb.Now(),
+						Raw:            "",
 						Resource: toStruct(voc.VirtualMachine{
 							Compute: &voc.Compute{Resource: &voc.Resource{
 								ID: "mock-id",
@@ -109,10 +109,10 @@ func TestStoreEvidence(t *testing.T) {
 				in0: context.TODO(),
 				req: &evidence.StoreEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:        "MockEvidenceId-1",
-						ServiceId: "MockServiceId-1",
-						Timestamp: timestamppb.Now(),
-						Raw:       "",
+						Id:             "MockEvidenceId-1",
+						CloudServiceId: "MockCloudServiceId-1",
+						Timestamp:      timestamppb.Now(),
+						Raw:            "",
 						Resource: toStruct(voc.VirtualMachine{
 							Compute: &voc.Compute{
 								Resource: &voc.Resource{
@@ -153,7 +153,7 @@ func TestStoreEvidence(t *testing.T) {
 }
 
 // TestStoreEvidences tests StoreEvidences
-func TestStoreEvidences(t *testing.T) {
+func TestService_StoreEvidences(t *testing.T) {
 	type fields struct {
 		count int
 	}
@@ -199,10 +199,10 @@ func TestStoreEvidences(t *testing.T) {
 				streamToServer: createMockStream([]*evidence.StoreEvidenceRequest{
 					{
 						Evidence: &evidence.Evidence{
-							Id:        uuid.NewString(),
-							ServiceId: "MockServiceId",
-							Timestamp: timestamppb.Now(),
-							Raw:       "",
+							Id:             uuid.NewString(),
+							CloudServiceId: "MockCloudServiceId",
+							Timestamp:      timestamppb.Now(),
+							Raw:            "",
 							Resource: toStructWithoutTest(voc.VirtualMachine{
 								Compute: &voc.Compute{
 									Resource: &voc.Resource{
@@ -267,21 +267,21 @@ func TestStoreEvidences(t *testing.T) {
 }
 
 // TestListEvidences tests List req
-func TestListEvidences(t *testing.T) {
+func TestService_ListEvidences(t *testing.T) {
 	s := NewService()
 	s.evidences["MockEvidenceId-1"] = &evidence.Evidence{
-		Id:        "MockEvidenceId-1",
-		ServiceId: "MockServiceId-1",
-		Timestamp: timestamppb.Now(),
-		Raw:       "",
-		Resource:  nil,
+		Id:             "MockEvidenceId-1",
+		CloudServiceId: "MockCloudServiceId-1",
+		Timestamp:      timestamppb.Now(),
+		Raw:            "",
+		Resource:       nil,
 	}
 	s.evidences["MockEvidenceId-2"] = &evidence.Evidence{
-		Id:        "MockEvidenceId-2",
-		ServiceId: "MockServiceId-2",
-		Timestamp: timestamppb.Now(),
-		Raw:       "",
-		Resource:  nil,
+		Id:             "MockEvidenceId-2",
+		CloudServiceId: "MockCloudServiceId-2",
+		Timestamp:      timestamppb.Now(),
+		Raw:            "",
+		Resource:       nil,
 	}
 
 	resp, err := s.ListEvidences(context.TODO(), &evidence.ListEvidencesRequest{})
@@ -289,7 +289,7 @@ func TestListEvidences(t *testing.T) {
 	assert.Equal(t, 2, len(resp.Evidences))
 }
 
-func TestEvidenceHook(t *testing.T) {
+func TestService_EvidenceHook(t *testing.T) {
 	var (
 		hookCallCounter = 0
 		wg              sync.WaitGroup
@@ -340,11 +340,11 @@ func TestEvidenceHook(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
-					Id:        "11111111-1111-1111-1111-111111111111",
-					ServiceId: "MockServiceId-1",
-					Timestamp: timestamppb.Now(),
-					Raw:       "",
-					ToolId:    "mockToolId-1",
+					Id:             "11111111-1111-1111-1111-111111111111",
+					CloudServiceId: "MockCloudServiceId-1",
+					Timestamp:      timestamppb.Now(),
+					Raw:            "",
+					ToolId:         "mockToolId-1",
 					Resource: toStruct(voc.VirtualMachine{
 						Compute: &voc.Compute{
 							Resource: &voc.Resource{
@@ -392,11 +392,11 @@ func createStoreEvidenceRequestMocks(count int) []*evidence.StoreEvidenceRequest
 	for i := 0; i < count; i++ {
 		evidenceRequest := &evidence.StoreEvidenceRequest{
 			Evidence: &evidence.Evidence{
-				Id:        uuid.NewString(),
-				ToolId:    fmt.Sprintf("MockToolId-%d", i),
-				ServiceId: fmt.Sprintf("MockServiceId-%d", i),
-				Timestamp: timestamppb.Now(),
-				Raw:       "",
+				Id:             uuid.NewString(),
+				ToolId:         fmt.Sprintf("MockToolId-%d", i),
+				CloudServiceId: fmt.Sprintf("MockCloudServiceId-%d", i),
+				Timestamp:      timestamppb.Now(),
+				Raw:            "",
 				Resource: toStructWithoutTest(voc.VirtualMachine{
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{

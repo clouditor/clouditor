@@ -35,6 +35,7 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/internal/testutil/orchestratortest"
 	"clouditor.io/clouditor/service"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
@@ -57,6 +58,11 @@ func TestMain(m *testing.M) {
 
 	svc = service_orchestrator.NewService()
 	_, err = svc.CreateDefaultTargetCloudService()
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = svc.CreateCatalog(context.TODO(), &orchestrator.CreateCatalogRequest{Catalog: orchestratortest.NewCatalog()})
 	if err != nil {
 		panic(err)
 	}
@@ -169,7 +175,7 @@ func TestValidArgsGetMetrics(t *testing.T) {
 	}
 }
 
-func TestValidArgsGetRequirements(t *testing.T) {
+func TestValidArgsGetCatalogs(t *testing.T) {
 	type args struct {
 		in0        *cobra.Command
 		args       []string
@@ -182,12 +188,23 @@ func TestValidArgsGetRequirements(t *testing.T) {
 		want1 cobra.ShellCompDirective
 	}{
 		{
-			name: "some requirements",
+			name: "some catalogs",
 			args: args{
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.NotNil(tt, i1)
+				return assert.Contains(t, i1, "Cat1234\tMockCatalog: This is a mock catalog")
+			},
+			want1: cobra.ShellCompDirectiveNoFileComp,
+		},
+		{
+			name: "all args - return nothing",
+			args: args{
+				args:       []string{orchestratortest.MockCatalogID},
+				toComplete: "",
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				return assert.Empty(t, i1)
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
@@ -195,14 +212,147 @@ func TestValidArgsGetRequirements(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := cli.ValidArgsGetRequirements(tt.args.in0, tt.args.args, tt.args.toComplete)
+			got, got1 := cli.ValidArgsGetCatalogs(tt.args.in0, tt.args.args, tt.args.toComplete)
 
 			if tt.want != nil {
 				tt.want(t, got)
 			}
 
 			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("ValidArgsGetRequirements() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("ValidArgsGetCatalogs() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func TestValidArgsGetCategory(t *testing.T) {
+	type args struct {
+		in0        *cobra.Command
+		args       []string
+		toComplete string
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  assert.ValueAssertionFunc
+		want1 cobra.ShellCompDirective
+	}{
+		{
+			name: "no arg - return catalog",
+			args: args{
+				toComplete: "",
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				return assert.Contains(t, i1, "Cat1234\tMockCatalog: This is a mock catalog")
+			},
+			want1: cobra.ShellCompDirectiveNoFileComp,
+		},
+		{
+			name: "one arg - return category",
+			args: args{
+				args:       []string{orchestratortest.MockCatalogID},
+				toComplete: "",
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				return assert.Contains(t, i1, "My name\ttest")
+			},
+			want1: cobra.ShellCompDirectiveNoFileComp,
+		},
+		{
+			name: "all args - return nothing",
+			args: args{
+				args:       []string{orchestratortest.MockCatalogID, orchestratortest.MockCategoryName},
+				toComplete: "",
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				return assert.Empty(t, i1)
+			},
+			want1: cobra.ShellCompDirectiveNoFileComp,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := cli.ValidArgsGetCategory(tt.args.in0, tt.args.args, tt.args.toComplete)
+
+			if tt.want != nil {
+				tt.want(t, got)
+			}
+
+			if !reflect.DeepEqual(got1, tt.want1) {
+				t.Errorf("ValidArgsGetCatalogs() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func TestValidArgsGetControls(t *testing.T) {
+	type args struct {
+		in0        *cobra.Command
+		args       []string
+		toComplete string
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  assert.ValueAssertionFunc
+		want1 cobra.ShellCompDirective
+	}{
+		{
+			name: "no arg - return catalog",
+			args: args{
+				toComplete: "",
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				return assert.Contains(t, i1, "Cat1234\tMockCatalog: This is a mock catalog")
+			},
+			want1: cobra.ShellCompDirectiveNoFileComp,
+		},
+		{
+			name: "one arg - return category",
+			args: args{
+				args:       []string{orchestratortest.MockCatalogID},
+				toComplete: "",
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				return assert.Contains(t, i1, "My name\ttest")
+			},
+			want1: cobra.ShellCompDirectiveNoFileComp,
+		},
+		{
+			name: "two args - return category",
+			args: args{
+				args:       []string{orchestratortest.MockCatalogID, orchestratortest.MockCategoryName},
+				toComplete: "",
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				return assert.Contains(t, i1, "Cont1234\tMock Control: This is a mock control")
+			},
+			want1: cobra.ShellCompDirectiveNoFileComp,
+		},
+		{
+			name: "all args - return nothing",
+			args: args{
+				args:       []string{orchestratortest.MockCatalogID, orchestratortest.MockCategoryName, orchestratortest.MockControlID},
+				toComplete: "",
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				return assert.Empty(t, i1)
+			},
+			want1: cobra.ShellCompDirectiveNoFileComp,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := cli.ValidArgsGetControls(tt.args.in0, tt.args.args, tt.args.toComplete)
+
+			if tt.want != nil {
+				tt.want(t, got)
+			}
+
+			if !reflect.DeepEqual(got1, tt.want1) {
+				t.Errorf("ValidArgsGetCatalogs() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}

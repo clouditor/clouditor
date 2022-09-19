@@ -28,6 +28,7 @@ package gorm
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/auth"
@@ -61,13 +62,14 @@ type storage struct {
 // DefaultTypes contains a list of internal types that need to be migrated by default
 var DefaultTypes = []any{
 	&auth.User{},
-	&assessment.MetricConfiguration{},
 	&orchestrator.CloudService{},
 	&assessment.MetricImplementation{},
 	&assessment.Metric{},
 	&orchestrator.Certificate{},
 	&orchestrator.State{},
-	&orchestrator.Requirement{},
+	&orchestrator.Catalog{},
+	&orchestrator.Category{},
+	&orchestrator.Control{},
 }
 
 // StorageOption is a functional option type to configure the GORM storage. E.g. WithInMemory or WithPostgres
@@ -149,6 +151,16 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	schema.RegisterSerializer("timestamppb", &TimestampSerializer{})
 	schema.RegisterSerializer("anypb", &AnySerializer{})
 
+	if err = g.db.SetupJoinTable(&orchestrator.CloudService{}, "CatalogsInScope", &orchestrator.TargetOfEvaluation{}); err != nil {
+		err = fmt.Errorf("error during join-table: %w", err)
+		return
+	}
+
+	if err = g.db.SetupJoinTable(orchestrator.CloudService{}, "ConfiguredMetrics", assessment.MetricConfiguration{}); err != nil {
+		err = fmt.Errorf("error during join-table: %w", err)
+		return
+	}
+
 	// After successful DB initialization, migrate the schema
 	if err = g.db.AutoMigrate(g.types...); err != nil {
 		err = fmt.Errorf("error during auto-migration: %w", err)
@@ -163,14 +175,63 @@ func (s *storage) Create(r any) error {
 	return s.db.Create(r).Error
 }
 
+type preload struct {
+	query string
+	args  []any
+}
+
+// WithPreload allows the customization of Gorm's preload feature with the specified query and arguments.
+func WithPreload(query string, args ...any) *preload {
+	return &preload{query: query, args: args}
+}
+
+// WithoutPreload disables any kind of preloading of Gorm. This is necessary, if custom join tables are used, otherwise
+// Gorm will throws errors.
+func WithoutPreload() *preload {
+	return &preload{query: ""}
+}
+
 func (s *storage) Get(r any, conds ...any) (err error) {
-	// Preload all associations for r being filled with all items (including relationships)
-	err = s.db.Preload(clause.Associations).First(r, conds...).Error
+	// Preload all associations of r if necessary
+	db, conds := applyPreload(s.db, conds...)
+
+	err = db.First(r, conds...).Error
+
 	// if record is not found, use the error message defined in the persistence package
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		err = persistence.ErrRecordNotFound
 	}
 	return
+}
+
+// applyWhere applies the conditional arguments to db.Where. We now basically distinguish between three cases:
+//   - an empty conditions list means no db.Where function is called
+//   - one condition specified means that it is takes as the query parameter. This will query for the specified primary key
+//   - otherwise, the first condition will be taken as the query parameter and all others will be taken as additional args.
+func applyWhere(db *gorm.DB, conds ...any) *gorm.DB {
+	if len(conds) == 0 {
+		return db
+	} else if len(conds) == 1 {
+		return db.Where(conds[0])
+	} else {
+		return db.Where(conds[0], conds[1:]...)
+	}
+}
+
+// applyPreload checks for any preload options and prepends them to the DB query. If no extra option is specified,
+// "clause.Associations" is used as the default preload.
+func applyPreload(db *gorm.DB, conds ...any) (*gorm.DB, []any) {
+	if len(conds) > 0 {
+		if preload, ok := conds[0].(*preload); ok {
+			if preload.query != "" {
+				return db.Preload(preload.query, preload.args...), conds[1:]
+			} else {
+				return db, conds[1:]
+			}
+		}
+	}
+
+	return db.Preload(clause.Associations), conds
 }
 
 func (s *storage) List(r any, orderBy string, asc bool, offset int, limit int, conds ...any) error {
@@ -191,21 +252,44 @@ func (s *storage) List(r any, orderBy string, asc bool, offset int, limit int, c
 		orderStmt = ""
 	}
 
-	return query.Offset(offset).Preload(clause.Associations).Order(orderStmt).Find(r, conds...).Error
+	// Preload all associations of r if necessary
+	query, conds = applyPreload(query.Offset(offset), conds...)
+
+	return query.Order(orderStmt).Find(r, conds...).Error
 }
 
 func (s *storage) Count(r any, conds ...any) (count int64, err error) {
-	err = s.db.Model(r).Where(conds).Count(&count).Error
+	db := applyWhere(s.db.Model(r), conds...)
+
+	err = db.Count(&count).Error
 	return
 }
 
 func (s *storage) Save(r any, conds ...any) error {
-	return s.db.Where(conds).Save(r).Error
+	tx := applyWhere(s.db, conds...).Save(r)
+	err := tx.Error
+
+	if err != nil && strings.Contains(err.Error(), "constraint failed") {
+		return persistence.ErrConstraintFailed
+	}
+
+	return err
 }
 
 // Update will update the record with non-zero fields. Note that to get the entire updated record you have to call Get
-func (s *storage) Update(r any, query any, args ...any) error {
-	return s.db.Model(r).Where(query, args).Updates(r).Error
+func (s *storage) Update(r any, conds ...any) error {
+	tx := s.db.Session(&gorm.Session{FullSaveAssociations: true}).Model(r)
+	tx = applyWhere(tx, conds...).Updates(r)
+	if err := tx.Error; err != nil { // db error
+		return err
+	}
+
+	// No record with given ID found
+	if tx.RowsAffected == 0 {
+		return persistence.ErrRecordNotFound
+	}
+
+	return nil
 }
 
 // Delete deletes record with given id. If no record was found, returns ErrRecordNotFound
@@ -215,6 +299,7 @@ func (s *storage) Delete(r any, conds ...any) error {
 	if err := tx.Error; err != nil { // db error
 		return err
 	}
+
 	// No record with given ID found
 	if tx.RowsAffected == 0 {
 		return persistence.ErrRecordNotFound

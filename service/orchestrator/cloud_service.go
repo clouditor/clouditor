@@ -102,12 +102,12 @@ func (s *Service) GetCloudService(_ context.Context, req *orchestrator.GetCloudS
 	if req == nil {
 		return nil, status.Errorf(codes.InvalidArgument, api.ErrRequestIsNil.Error())
 	}
-	if req.ServiceId == "" {
+	if req.CloudServiceId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrIDIsMissing.Error())
 	}
 
 	response = new(orchestrator.CloudService)
-	err = s.storage.Get(response, "Id = ?", req.ServiceId)
+	err = s.storage.Get(response, "Id = ?", req.CloudServiceId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "service not found")
 	} else if err != nil {
@@ -123,11 +123,11 @@ func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.Upda
 		return nil, status.Errorf(codes.InvalidArgument, "service is empty")
 	}
 
-	if req.ServiceId == "" {
+	if req.CloudServiceId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
 	}
 
-	count, err := s.storage.Count(req.Service, "Id = ?", req.ServiceId)
+	count, err := s.storage.Count(req.Service, "id = ?", req.CloudServiceId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -138,10 +138,10 @@ func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.Upda
 
 	// Add id to response because otherwise it will overwrite ID with empty string
 	response = req.Service
-	response.Id = req.ServiceId
+	response.Id = req.CloudServiceId
 
 	// Since UpdateCloudService is a PUT method, we use storage.Save
-	err = s.storage.Save(response, "Id = ?", req.ServiceId)
+	err = s.storage.Save(response, "Id = ?", req.CloudServiceId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
@@ -151,11 +151,11 @@ func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.Upda
 
 // RemoveCloudService implements method for OrchestratorServer interface for removing a cloud service
 func (s *Service) RemoveCloudService(_ context.Context, req *orchestrator.RemoveCloudServiceRequest) (response *emptypb.Empty, err error) {
-	if req.ServiceId == "" {
+	if req.CloudServiceId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
 	}
 
-	err = s.storage.Delete(&orchestrator.CloudService{Id: req.ServiceId})
+	err = s.storage.Delete(&orchestrator.CloudService{Id: req.CloudServiceId})
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "service not found")
 	} else if err != nil {

@@ -83,7 +83,7 @@ components:
                     type: string
                     description: time of evidence creation
                     format: date-time
-                serviceId:
+                cloudServiceId:
                     type: string
                     description: Reference to a service this evidence was gathered from
                 toolId:
