@@ -876,9 +876,9 @@ func TestCloudServiceHooks(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				serviceUpdate: &orchestrator.UpdateCloudServiceRequest{
-					CloudServiceId: "00000000-0000-0000-000000000000",
+					CloudServiceId: "00000000-0000-0000-0000-000000000000",
 					Service: &orchestrator.CloudService{
-						Id:          "00000000-0000-0000-000000000000",
+						Id:          "00000000-0000-0000-0000-000000000000",
 						Name:        "test service",
 						Description: "test service",
 					},
@@ -887,7 +887,7 @@ func TestCloudServiceHooks(t *testing.T) {
 			},
 			wantErr: false,
 			wantResp: &orchestrator.CloudService{
-				Id:          "00000000-0000-0000-000000000000",
+				Id:          "00000000-0000-0000-0000-000000000000",
 				Name:        "test service",
 				Description: "test service",
 			},
@@ -916,9 +916,6 @@ func TestCloudServiceHooks(t *testing.T) {
 			// To test the hooks we have to call a function that calls the hook function
 			gotResp, err := s.UpdateCloudService(tt.args.in0, tt.args.serviceUpdate)
 
-			// wait for all hooks (2 services * 2 hooks)
-			wg.Wait()
-
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UpdateCloudService() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -927,8 +924,12 @@ func TestCloudServiceHooks(t *testing.T) {
 				t.Errorf("UpdateCloudService() gotResp = %v, want %v", gotResp, tt.wantResp)
 			}
 
+			// wait for all hooks (2 services * 2 hooks)
+			wg.Wait()
+
 			assert.Equal(t, tt.wantResp, gotResp)
 			assert.Equal(t, hookCounts, hookCallCounter)
+
 		})
 	}
 }

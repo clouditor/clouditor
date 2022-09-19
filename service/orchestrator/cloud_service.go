@@ -127,22 +127,15 @@ func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.Upda
 		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
 	}
 
-	count, err := s.storage.Count(req.Service, "id = ?", req.CloudServiceId)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %s", err)
-	}
-
-	if count == 0 {
-		return nil, status.Error(codes.NotFound, "service not found")
-	}
-
 	// Add id to response because otherwise it will overwrite ID with empty string
 	response = req.Service
 	response.Id = req.CloudServiceId
 
 	// Since UpdateCloudService is a PUT method, we use storage.Save
-	err = s.storage.Save(response, "Id = ?", req.CloudServiceId)
-	if err != nil {
+	err = s.storage.Update(response, "Id = ?", req.CloudServiceId)
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Errorf(codes.NotFound, "service not found")
+	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 	go s.informHooks(ctx, response, nil)
