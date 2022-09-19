@@ -27,6 +27,7 @@ package policies
 
 import (
 	"testing"
+	"time"
 
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/internal/testutil"
@@ -55,7 +56,7 @@ func Test_regoEval_Eval(t *testing.T) {
 		fields     fields
 		args       args
 		applicable bool
-		compliant  bool
+		compliant  map[string]bool
 		wantErr    bool
 	}{
 		{
@@ -86,8 +87,13 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			args:       args{src: &mockMetricsSource{t: t}},
 			applicable: true,
-			compliant:  true,
-			wantErr:    false,
+			compliant: map[string]bool{
+				"AtRestEncryptionAlgorithm": true,
+				"AtRestEncryptionEnabled":   true,
+				"CustomerKeyEncryption":     true,
+				"ResourceInventory":         true,
+			},
+			wantErr: false,
 		}, {
 			name: "ObjectStorage: Non-Compliant Case with no Encryption at rest",
 			fields: fields{
@@ -113,8 +119,13 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			args:       args{src: &mockMetricsSource{t: t}},
 			applicable: true,
-			compliant:  false,
-			wantErr:    false,
+			compliant: map[string]bool{
+				"AtRestEncryptionAlgorithm": false,
+				"AtRestEncryptionEnabled":   false,
+				"CustomerKeyEncryption":     false,
+				"ResourceInventory":         true,
+			},
+			wantErr: false,
 		},
 		{
 			name: "ObjectStorage: Non-Compliant Case 2 with no customer managed key",
@@ -144,8 +155,13 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			args:       args{src: &mockMetricsSource{t: t}},
 			applicable: true,
-			compliant:  false,
-			wantErr:    false,
+			compliant: map[string]bool{
+				"AtRestEncryptionAlgorithm": false,
+				"AtRestEncryptionEnabled":   false,
+				"CustomerKeyEncryption":     false,
+				"ResourceInventory":         true,
+			},
+			wantErr: false,
 		},
 		{
 			name: "VM: Compliant Case",
@@ -161,14 +177,14 @@ func Test_regoEval_Eval(t *testing.T) {
 						Logging: &voc.Logging{
 							LoggingService:  []voc.ResourceID{"SomeResourceId1", "SomeResourceId2"},
 							Enabled:         true,
-							RetentionPeriod: 36,
+							RetentionPeriod: 36 * time.Hour * 24,
 						},
 					},
 					OSLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
 							LoggingService:  []voc.ResourceID{"SomeResourceId2"},
 							Enabled:         true,
-							RetentionPeriod: 36,
+							RetentionPeriod: 36 * time.Hour * 24,
 						},
 					},
 					MalwareProtection: &voc.MalwareProtection{
@@ -192,8 +208,17 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			args:       args{src: &mockMetricsSource{t: t}},
 			applicable: true,
-			compliant:  true,
-			wantErr:    false,
+			compliant: map[string]bool{
+				"BootLoggingEnabled":               true,
+				"BootLoggingRetention":             true,
+				"BootLoggingSecureTransport":       true,
+				"MalwareProtectionEnabled":         true,
+				"MalwareProtectionSecureTransport": true,
+				"OSLoggingRetention":               true,
+				"OSLoggingSecureTransport":         true,
+				"ResourceInventory":                true,
+			},
+			wantErr: false,
 		},
 		{
 			name: "VM: Non-Compliant Case",
@@ -209,14 +234,14 @@ func Test_regoEval_Eval(t *testing.T) {
 						Logging: &voc.Logging{
 							LoggingService:  []voc.ResourceID{},
 							Enabled:         false,
-							RetentionPeriod: 1,
+							RetentionPeriod: 1 * time.Hour * 24,
 						},
 					},
 					OSLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
 							LoggingService:  []voc.ResourceID{"SomeResourceId3"},
 							Enabled:         false,
-							RetentionPeriod: 1,
+							RetentionPeriod: 1 * time.Hour * 24,
 						},
 					},
 				},
@@ -228,8 +253,14 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			args:       args{src: &mockMetricsSource{t: t}},
 			applicable: true,
-			compliant:  false,
-			wantErr:    false,
+			compliant: map[string]bool{
+				"BootLoggingEnabled":       false,
+				"BootLoggingRetention":     false,
+				"OSLoggingRetention":       false,
+				"OSLoggingSecureTransport": true, // this should actually be not applicable but somehow it is
+				"ResourceInventory":        true,
+			},
+			wantErr: false,
 		},
 	}
 
@@ -253,10 +284,16 @@ func Test_regoEval_Eval(t *testing.T) {
 			}
 
 			assert.NotEmpty(t, results)
+
+			var compliants = map[string]bool{}
+
 			for _, result := range results {
-				assert.Equal(t, tt.applicable, result.Applicable)
-				assert.Equal(t, tt.compliant, result.Compliant)
+				if result.Applicable {
+					compliants[result.MetricId] = result.Compliant
+				}
 			}
+
+			assert.Equal(t, compliants, tt.compliant)
 		})
 	}
 }
