@@ -876,9 +876,9 @@ func TestCloudServiceHooks(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				serviceUpdate: &orchestrator.UpdateCloudServiceRequest{
-					CloudServiceId: "00000000-0000-0000-000000000000",
+					CloudServiceId: "00000000-0000-0000-0000-000000000000",
 					Service: &orchestrator.CloudService{
-						Id:          "00000000-0000-0000-000000000000",
+						Id:          "00000000-0000-0000-0000-000000000000",
 						Name:        "test service",
 						Description: "test service",
 					},
@@ -887,7 +887,7 @@ func TestCloudServiceHooks(t *testing.T) {
 			},
 			wantErr: false,
 			wantResp: &orchestrator.CloudService{
-				Id:          "00000000-0000-0000-000000000000",
+				Id:          "00000000-0000-0000-0000-000000000000",
 				Name:        "test service",
 				Description: "test service",
 			},
