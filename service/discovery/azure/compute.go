@@ -138,6 +138,7 @@ func (*azureComputeDiscovery) handleFunction(function *armappservice.Site) voc.I
 		Compute: &voc.Compute{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(util.Deref(function.ID)),
+				ServiceID:    discovery.DefaultCloudServiceID,
 				Name:         util.Deref(function.Name),
 				CreationTime: 0, // No creation time available
 				Type:         []string{"Function", "Compute", "Resource"},
@@ -207,6 +208,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 		Compute: &voc.Compute{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(util.Deref(vm.ID)),
+				ServiceID:    discovery.DefaultCloudServiceID,
 				Name:         util.Deref(vm.Name),
 				CreationTime: util.SafeTimestamp(vm.Properties.TimeCreated),
 				Type:         []string{"VirtualMachine", "Compute", "Resource"},

@@ -31,17 +31,18 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // loadMetrics takes care of loading the metric definitions from the (embedded) metrics.json as
@@ -66,17 +67,25 @@ func (svc *Service) loadMetrics() (err error) {
 
 	// Try to prepare the (initial) metric implementations and configurations. We can still continue if they should
 	// fail, since they can still be updated later during runtime. Also, this makes it possible to load metrics of which
-	// we intentially do not have the implementation, because they are assess outside the Clouditor toolset, but we
+	// we intentionally do not have the implementation, because they are assess outside the Clouditor toolset, but we
 	// still need to be aware of the particular metric.
 	for _, m := range metrics {
+		// Somehow, we first need to save the metric, otherwise we are running into weird constraint issues.
+		err = svc.storage.Save(m, "id = ?", m.Id)
+		if err != nil {
+			log.Errorf("Error while saving metrics: %v", err)
+			continue
+		}
+
 		err = svc.prepareMetric(m)
 		if err != nil {
 			log.Warnf("Could not prepare implementation or default configuration for metric %s: %v", m.Id, err)
+			continue
 		}
 
-		err = svc.storage.Save(m)
+		err = svc.storage.Save(m.Implementation, "metric_id = ?", m.Id)
 		if err != nil {
-			log.Errorf("Error while saving metric %s: %v. Ignoring metric", m.Id, err)
+			log.Errorf("Error while saving metrics: %v", err)
 			continue
 		}
 	}
@@ -88,28 +97,21 @@ func (svc *Service) loadMetrics() (err error) {
 // metric and storing them into the service.
 func (svc *Service) prepareMetric(m *assessment.Metric) (err error) {
 	var (
-		impl   *assessment.MetricImplementation
 		config *assessment.MetricConfiguration
 	)
 
 	// Load the Rego file
 	file := fmt.Sprintf("policies/bundles/%s/metric.rego", m.Id)
-	impl, err = loadMetricImplementation(m.Id, file)
+	m.Implementation, err = loadMetricImplementation(m.Id, file)
 	if err != nil {
 		return fmt.Errorf("could not load metric implementation: %w", err)
-	}
-
-	// Save our metric implementation
-	err = svc.storage.Save(impl, "metric_id = ?", m.Id)
-	if err != nil {
-		return fmt.Errorf("could not save metric implementation: %w", err)
 	}
 
 	// Look for the data.json to include default metric configurations
 	fileName := fmt.Sprintf("policies/bundles/%s/data.json", m.Id)
 
 	// Load the default configuration file
-	b, err := ioutil.ReadFile(fileName)
+	b, err := os.ReadFile(fileName)
 	if err != nil {
 		return fmt.Errorf("could not retrieve default configuration for metric %s: %w", m.Id, err)
 	}
@@ -153,9 +155,10 @@ func loadMetricImplementation(metricID, file string) (impl *assessment.MetricImp
 	}
 
 	impl = &assessment.MetricImplementation{
-		MetricId: metricID,
-		Lang:     assessment.MetricImplementation_REGO,
-		Code:     string(b),
+		MetricId:  metricID,
+		Lang:      assessment.MetricImplementation_REGO,
+		Code:      string(b),
+		UpdatedAt: timestamppb.Now(),
 	}
 
 	return
@@ -174,7 +177,7 @@ func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetr
 	}
 
 	// Check, if metric id already exists
-	count, err = svc.storage.Count(metric, "Id = ?", req.Metric.Id)
+	count, err = svc.storage.Count(metric, "id = ?", req.Metric.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -263,6 +266,7 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 	// Update implementation
 	impl = req.Implementation
 	impl.MetricId = req.MetricId
+	impl.UpdatedAt = timestamppb.Now()
 
 	// Store it in the database
 	err = svc.storage.Save(impl, "metric_id = ?", impl.MetricId)
@@ -315,71 +319,49 @@ func (svc *Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequ
 	return
 }
 
-func (svc *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.GetMetricConfigurationRequest) (response *assessment.MetricConfiguration, err error) {
-	// Lock metrics mutex
-	svc.mm.Lock()
-	defer svc.mm.Unlock()
+func (svc *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.GetMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
+	res = new(assessment.MetricConfiguration)
+	err = svc.storage.Get(res, gorm.WithoutPreload(), "cloud_service_id = ? AND metric_id = ?", req.CloudServiceId, req.MetricId)
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		// Otherwise, fall back to our default configuration
+		if config, ok := defaultMetricConfigurations[req.MetricId]; ok {
+			return config, nil
+		}
 
-	// Check, if we have a specific configuration for the metric
-	if config, ok := svc.metricConfigurations[req.ServiceId][req.MetricId]; ok {
-		return config, nil
+		return nil, status.Errorf(codes.NotFound, "metric configuration not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
 
-	// Otherwise, fall back to our default configuration
-	if config, ok := defaultMetricConfigurations[req.MetricId]; ok {
-		return config, nil
-	}
-
-	return nil, status.Errorf(codes.NotFound, "%v", err)
+	return
 }
 
 // UpdateMetricConfiguration updates the configuration for a metric, specified by the identifier in req.MetricId.
 func (svc *Service) UpdateMetricConfiguration(_ context.Context, req *orchestrator.UpdateMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
-	var (
-		ok     bool
-		metric assessment.Metric
-		cld    orchestrator.CloudService
-	)
+	// TODO(oxisto): Validate the request
 
-	// TODO(oxisto): Validate the metric configuration request
+	// Make sure that the configuration also has metric/service ID set
+	req.Configuration.CloudServiceId = req.CloudServiceId
+	req.Configuration.MetricId = req.MetricId
 
-	// Lock metrics mutex
-	svc.mm.Lock()
-	defer svc.mm.Unlock()
-
-	// Check, if metric exists according to req.MetricId
-	err = svc.storage.Get(&metric, "id = ?", req.MetricId)
-	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Error(codes.NotFound, "metric not found")
+	err = svc.storage.Save(&req.Configuration)
+	if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
+		return nil, status.Errorf(codes.NotFound, "metric or service does not exist")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
-
-	err = svc.storage.Get(&cld, "Id = ?", req.ServiceId)
-	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Errorf(codes.NotFound, "service not found")
-	} else if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %s", err)
-	}
-
-	// Update config
-	res = req.Configuration
-
-	// Make sure, that metric configuration exists for the service
-	if _, ok = svc.metricConfigurations[req.ServiceId]; !ok {
-		svc.metricConfigurations[req.ServiceId] = make(map[string]*assessment.MetricConfiguration)
-	}
-
-	// Store it
-	svc.metricConfigurations[req.ServiceId][req.MetricId] = res
 
 	// Notify event listeners
 	go func() {
 		svc.events <- &orchestrator.MetricChangeEvent{
-			Type:     orchestrator.MetricChangeEvent_CONFIG_CHANGED,
-			MetricId: req.MetricId,
+			Type:           orchestrator.MetricChangeEvent_CONFIG_CHANGED,
+			CloudServiceId: req.CloudServiceId,
+			MetricId:       req.MetricId,
 		}
 	}()
+
+	// Update response
+	res = req.Configuration
 
 	return
 }
@@ -403,7 +385,7 @@ func (svc *Service) ListMetricConfigurations(ctx context.Context, req *orchestra
 
 	// TODO(oxisto): This is not very efficient, we should do this once at startup so that we can just return the map
 	for _, metric := range metrics {
-		config, err := svc.GetMetricConfiguration(ctx, &orchestrator.GetMetricConfigurationRequest{ServiceId: req.ServiceId, MetricId: metric.Id})
+		config, err := svc.GetMetricConfiguration(ctx, &orchestrator.GetMetricConfigurationRequest{CloudServiceId: req.CloudServiceId, MetricId: metric.Id})
 		if err == nil {
 			response.Configurations[metric.Id] = config
 		}

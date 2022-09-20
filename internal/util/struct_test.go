@@ -51,10 +51,10 @@ func TestGetFieldNames(t *testing.T) {
 	// Successful
 	fieldnames = GetFieldNames[*orchestrator.Certificate]()
 	assert.Equal(t, reflect.ValueOf(orchestrator.Certificate{}).NumField()-3, len(fieldnames))
-	assert.Equal(t, []string{"id", "name", "service_id", "issue_date", "expiration_date", "standard", "assurance_level", "cab", "description", "states"}, fieldnames)
+	assert.Equal(t, []string{"id", "name", "cloud_service_id", "issue_date", "expiration_date", "standard", "assurance_level", "cab", "description", "states"}, fieldnames)
 
 	// Successful
 	fieldnames = GetFieldNames[*evidence.Evidence]()
 	assert.Equal(t, reflect.ValueOf(evidence.Evidence{}).NumField()-3, len(fieldnames))
-	assert.Equal(t, []string{"id", "timestamp", "service_id", "tool_id", "raw", "resource"}, fieldnames)
+	assert.Equal(t, []string{"id", "timestamp", "cloud_service_id", "tool_id", "raw", "resource"}, fieldnames)
 }

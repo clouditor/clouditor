@@ -28,12 +28,12 @@ package commands
 import (
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/cli/commands/assessmentresult"
+	"clouditor.io/clouditor/cli/commands/catalog"
 	"clouditor.io/clouditor/cli/commands/cloud"
 	"clouditor.io/clouditor/cli/commands/completion"
 	"clouditor.io/clouditor/cli/commands/evidence"
 	"clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/cli/commands/metric"
-	"clouditor.io/clouditor/cli/commands/requirement"
 	"clouditor.io/clouditor/cli/commands/resource"
 	"clouditor.io/clouditor/cli/commands/service"
 	"clouditor.io/clouditor/cli/commands/tool"
@@ -47,8 +47,8 @@ func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		// commands for resources
 		login.NewLoginCommand(),
+		catalog.NewCatalogCommand(),
 		metric.NewMetricCommand(),
-		requirement.NewRequirementCommand(),
 		tool.NewToolCommand(),
 		resource.NewResourceCommand(),
 		evidence.NewEvidenceCommand(),

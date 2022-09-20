@@ -39,6 +39,7 @@ import (
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/inmemory"
 	"clouditor.io/clouditor/service"
+	"golang.org/x/exp/maps"
 
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -53,21 +54,17 @@ var defaultMetricConfigurations map[string]*assessment.MetricConfiguration
 var log *logrus.Entry
 
 var DefaultMetricsFile = "metrics.json"
-var DefaultRequirementsFile = "requirements.json"
+
+var DefaultCatalogsFile = "catalogs.json"
 
 // Service is an implementation of the Clouditor Orchestrator service
 type Service struct {
 	orchestrator.UnimplementedOrchestratorServer
 
-	// metricConfigurations holds a double-map of metric configurations associated first by service ID and then metric ID
-	metricConfigurations map[string]map[string]*assessment.MetricConfiguration
-
-	// mm is a mutex for metric related maps
-	mm sync.Mutex
-
 	// cloudServiceHooks is a list of hook functions that can be used to inform
 	// about updated CloudServices
 	cloudServiceHooks []orchestrator.CloudServiceHookFunc
+
 	// hookMutex is used for (un)locking hook calls
 	hookMutex sync.RWMutex
 
@@ -86,7 +83,10 @@ type Service struct {
 	// loadMetricsFunc is a function that is used to initially load metrics at the start of the orchestrator
 	loadMetricsFunc func() ([]*assessment.Metric, error)
 
-	requirements []*orchestrator.Requirement
+	catalogsFile string
+
+	// loadCatalogsFunc is a function that is used to initially load catalogs at the start of the orchestrator
+	loadCatalogsFunc func() ([]*orchestrator.Catalog, error)
 
 	events chan *orchestrator.MetricChangeEvent
 }
@@ -112,9 +112,17 @@ func WithExternalMetrics(f func() ([]*assessment.Metric, error)) ServiceOption {
 	}
 }
 
-func WithRequirements(r []*orchestrator.Requirement) ServiceOption {
+// WithCatalogsFile can be used to load a different catalogs file
+func WithCatalogsFile(file string) ServiceOption {
 	return func(s *Service) {
-		s.requirements = r
+		s.catalogsFile = file
+	}
+}
+
+// WithExternalCatalogs can be used to load catalog definitions from an external source
+func WithExternalCatalogs(f func() ([]*orchestrator.Catalog, error)) ServiceOption {
+	return func(s *Service) {
+		s.loadCatalogsFunc = f
 	}
 }
 
@@ -129,10 +137,10 @@ func WithStorage(storage persistence.Storage) ServiceOption {
 func NewService(opts ...ServiceOption) *Service {
 	var err error
 	s := Service{
-		results:              make(map[string]*assessment.AssessmentResult),
-		metricConfigurations: make(map[string]map[string]*assessment.MetricConfiguration),
-		metricsFile:          DefaultMetricsFile,
-		events:               make(chan *orchestrator.MetricChangeEvent, 1000),
+		results:      make(map[string]*assessment.AssessmentResult),
+		metricsFile:  DefaultMetricsFile,
+		catalogsFile: DefaultCatalogsFile,
+		events:       make(chan *orchestrator.MetricChangeEvent, 1000),
 	}
 
 	// Apply service options
@@ -148,12 +156,12 @@ func NewService(opts ...ServiceOption) *Service {
 		}
 	}
 
-	if err = s.loadRequirements(); err != nil {
-		log.Errorf("Could not load embedded requirements. Will continue with empty requirements list: %v", err)
-	}
-
 	if err = s.loadMetrics(); err != nil {
 		log.Errorf("Could not load embedded metrics. Will continue with empty metric list: %v", err)
+	}
+
+	if err = s.loadCatalogs(); err != nil {
+		log.Errorf("Could not load embedded catalogs: %v", err)
 	}
 
 	return &s
@@ -257,8 +265,19 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 func (svc *Service) ListAssessmentResults(_ context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
 	res = new(assessment.ListAssessmentResultsResponse)
 
+	var values = maps.Values(svc.results)
+	var filtered []*assessment.AssessmentResult
+
+	for _, v := range values {
+		if req.FilteredCloudServiceId != "" && v.CloudServiceId != req.FilteredCloudServiceId {
+			continue
+		}
+
+		filtered = append(filtered, v)
+	}
+
 	// Paginate the results according to the request
-	res.Results, res.NextPageToken, err = service.PaginateMapValues(req, svc.results, func(a *assessment.AssessmentResult, b *assessment.AssessmentResult) bool {
+	res.Results, res.NextPageToken, err = service.PaginateSlice(req, filtered, func(a *assessment.AssessmentResult, b *assessment.AssessmentResult) bool {
 		return a.Timestamp.AsTime().After(b.Timestamp.AsTime())
 	}, service.DefaultPaginationOpts)
 	if err != nil {
@@ -363,7 +382,7 @@ func (svc *Service) UpdateCertificate(_ context.Context, req *orchestrator.Updat
 		return nil, status.Errorf(codes.InvalidArgument, "certificate is empty")
 	}
 
-	count, err := svc.storage.Count(req.Certificate, "Certificate_id = ?", req.CertificateId)
+	count, err := svc.storage.Count(req.Certificate, req.CertificateId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}

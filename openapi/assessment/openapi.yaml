@@ -43,6 +43,10 @@ paths:
             description: List all assessment results. Part of the public API, also exposed as REST.
             operationId: Assessment_ListAssessmentResults
             parameters:
+                - name: filteredCloudServiceId
+                  in: query
+                  schema:
+                    type: string
                 - name: pageSize
                   in: query
                   schema:
@@ -120,6 +124,9 @@ components:
                 nonComplianceComments:
                     type: string
                     description: Some comments on the reason for non-compliance
+                cloudServiceId:
+                    type: string
+                    description: The cloud service which this assessment result belongs to
             description: A result resource, representing the result after assessing the cloud resource with id resource_id.
         Evidence:
             type: object
@@ -131,7 +138,7 @@ components:
                     type: string
                     description: time of evidence creation
                     format: date-time
-                serviceId:
+                cloudServiceId:
                     type: string
                     description: Reference to a service this evidence was gathered from
                 toolId:
@@ -177,6 +184,12 @@ components:
                     type: string
                     description: The last time of update
                     format: date-time
+                metricId:
+                    type: string
+                    description: The metric this configuration belongs to
+                cloudServiceId:
+                    type: string
+                    description: The service this configuration belongs to
             description: Defines the operator and a target value for an individual metric
         Status:
             type: object

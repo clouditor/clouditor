@@ -15,6 +15,8 @@ import (
 	"clouditor.io/clouditor/persistence"
 )
 
+var MockMetricID = "MyMetric"
+
 func TestStorageOptions(t *testing.T) {
 	type args struct {
 		opts []StorageOption
@@ -94,7 +96,7 @@ func Test_storage_Create(t *testing.T) {
 		metric *assessment.Metric
 	)
 
-	metric = &assessment.Metric{Id: "Test"}
+	metric = &assessment.Metric{Id: MockMetricID}
 
 	// Create storage
 	s, err = NewStorage()
@@ -152,7 +154,7 @@ func Test_storage_Get(t *testing.T) {
 	assert.Equal(t, user, gotUser3)
 
 	var metric *assessment.Metric = &assessment.Metric{
-		Id:    "test",
+		Id:    MockMetricID,
 		Range: &assessment.Range{Range: &assessment.Range_MinMax{MinMax: &assessment.MinMax{Min: 1, Max: 2}}},
 	}
 
@@ -162,12 +164,12 @@ func Test_storage_Get(t *testing.T) {
 
 	// Get metric via Id
 	gotMetric := &assessment.Metric{}
-	err = s.Get(gotMetric, "id = ?", "test")
+	err = s.Get(gotMetric, "id = ?", MockMetricID)
 	assert.NoError(t, err)
 	assert.Equal(t, metric, gotMetric)
 
 	var impl = &assessment.MetricImplementation{
-		MetricId:  "1",
+		MetricId:  MockMetricID,
 		UpdatedAt: timestamppb.New(time.Date(2000, 1, 1, 1, 1, 1, 1, time.UTC)),
 	}
 
@@ -177,7 +179,7 @@ func Test_storage_Get(t *testing.T) {
 
 	// Get metric implementation via Id
 	gotImpl := &assessment.MetricImplementation{}
-	err = s.Get(gotImpl, "metric_id = ?", "1")
+	err = s.Get(gotImpl, "metric_id = ?", MockMetricID)
 	assert.NoError(t, err)
 	assert.Equal(t, impl, gotImpl)
 }
@@ -314,12 +316,12 @@ func Test_storage_Count(t *testing.T) {
 	assert.Equal(t, int(count), 2)
 
 	// Count of users with ID "SomeName2" should be 1
-	count, err = s.Count(&auth.User{}, "Id = ?", "SomeName2")
+	count, err = s.Count(&auth.User{}, "username = ?", "SomeName2")
 	assert.NoError(t, err)
 	assert.Equal(t, int(count), 1)
 
 	// Calling s.Count() with unsupported record type should throw "unsupported" error
-	_, err = s.Count(nil)
+	_, err = s.Count(nil, nil)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "unsupported data type")
 }
@@ -409,6 +411,9 @@ func Test_storage_Update(t *testing.T) {
 	err = s.Get(&auth.User{}, "username = ?", user.Username)
 	assert.NoError(t, err)
 
+	err = s.Update(&auth.User{FullName: "SomeNewName"}, "username = ?", "SomeOtherUser")
+	assert.ErrorIs(t, err, persistence.ErrRecordNotFound)
+
 	err = s.Update(&auth.User{FullName: "SomeNewName"}, "username = ?", user.Username)
 	assert.NoError(t, err)
 
@@ -430,6 +435,11 @@ func Test_storage_Update(t *testing.T) {
 		Id:          "SomeId",
 		Name:        "SomeName",
 		Description: "SomeDescription",
+		ConfiguredMetrics: []*assessment.Metric{
+			{
+				Id: "SomeId",
+			},
+		},
 	}
 	err = s.Create(&cloudService)
 	assert.NoError(t, err)
@@ -449,6 +459,7 @@ func Test_storage_Update(t *testing.T) {
 	// Other properties should stay the same
 	assert.Equal(t, cloudService.Id, gotCloudService.Id)
 	assert.Equal(t, cloudService.Description, gotCloudService.Description)
+	assert.Equal(t, len(cloudService.ConfiguredMetrics), len(gotCloudService.ConfiguredMetrics))
 }
 
 func Test_storage_Delete(t *testing.T) {

@@ -162,6 +162,7 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) 
 			Networking: &voc.Networking{
 				Resource: &voc.Resource{
 					ID:           voc.ResourceID(util.Deref(lb.ID)),
+					ServiceID:    discovery.DefaultCloudServiceID,
 					Name:         util.Deref(lb.Name),
 					CreationTime: 0, // No creation time available
 					Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
@@ -186,6 +187,7 @@ func (*azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface) 
 		Networking: &voc.Networking{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(util.Deref(ni.ID)),
+				ServiceID:    discovery.DefaultCloudServiceID,
 				Name:         util.Deref(ni.Name),
 				CreationTime: 0, // No creation time available
 				Type:         []string{"NetworkInterface", "Compute", "Resource"},

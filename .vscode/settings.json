@@ -17,6 +17,7 @@
         "gorm",
         "Infof",
         "inmemory",
+        "inmem",
         "jwks",
         "JWKSURL",
         "Kube",
@@ -28,6 +29,7 @@
         "Rego",
         "stretchr",
         "structpb",
+        "testutil",
         "timestamppb",
         "unmarshalling",
         "Warnf"

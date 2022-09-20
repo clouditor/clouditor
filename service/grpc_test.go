@@ -23,46 +23,58 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package requirement
+package service_test
 
 import (
-	"bytes"
+	"context"
 	"os"
 	"testing"
 
+	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/service"
-
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/cli"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
-
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
 )
 
 func TestMain(m *testing.M) {
-	clitest.AutoChdir()
+	svc := service_orchestrator.NewService()
 
-	os.Exit(clitest.RunCLITest(m, service.WithOrchestrator(service_orchestrator.NewService())))
+	os.Exit(clitest.RunCLITest(m, service.WithOrchestrator(svc)))
 }
 
-func TestListRequirements(t *testing.T) {
-	var err error
-	var b bytes.Buffer
+func TestReflectionNoAuth(t *testing.T) {
+	var (
+		session *cli.Session
+		conn    *grpc.ClientConn
+		client  grpc_reflection_v1alpha.ServerReflectionClient
+		sclient grpc_reflection_v1alpha.ServerReflection_ServerReflectionInfoClient
+		res     *grpc_reflection_v1alpha.ServerReflectionResponse
+		err     error
+	)
 
-	cli.Output = &b
-
-	cmd := NewListRequirementsCommand()
-	err = cmd.RunE(nil, []string{})
-
+	session, err = cli.ContinueSession()
 	assert.NoError(t, err)
 
-	var response *orchestrator.ListRequirementsResponse = &orchestrator.ListRequirementsResponse{}
-
-	err = protojson.Unmarshal(b.Bytes(), response)
-
+	// Only use the host from the session, but not the (authentication) connection, since we want to test, whether we
+	// can access the reflection without authentication
+	conn, err = grpc.Dial(session.URL, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	assert.NoError(t, err)
-	assert.NotNil(t, response)
-	assert.NotEmpty(t, response.Requirements)
+
+	client = grpc_reflection_v1alpha.NewServerReflectionClient(conn)
+	sclient, err = client.ServerReflectionInfo(context.TODO())
+	assert.NoError(t, err)
+
+	err = sclient.Send(&grpc_reflection_v1alpha.ServerReflectionRequest{
+		Host:           "localhost",
+		MessageRequest: &grpc_reflection_v1alpha.ServerReflectionRequest_ListServices{},
+	})
+	assert.NoError(t, err)
+
+	res, err = sclient.Recv()
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
 }

@@ -297,11 +297,12 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 
 		// TODO(all): What is the raw type in our case?
 		e := &evidence.Evidence{
-			Id:        uuid.New().String(),
-			Timestamp: timestamppb.Now(),
-			ToolId:    "Clouditor Evidences Collection",
-			Raw:       "",
-			Resource:  v,
+			Id:             uuid.New().String(),
+			CloudServiceId: resource.GetServiceID(),
+			Timestamp:      timestamppb.Now(),
+			ToolId:         "Clouditor Evidences Collection",
+			Raw:            "",
+			Resource:       v,
 		}
 
 		// Get Evidence Store stream
@@ -325,6 +326,11 @@ func (svc *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *
 		filteredType = req.FilteredType
 	}
 
+	var filteredServiceId = ""
+	if req != nil {
+		filteredServiceId = req.FilteredCloudServiceId
+	}
+
 	resources = maps.Values(svc.resources)
 	sort.Slice(resources, func(i, j int) bool {
 		return resources[i].GetID() < resources[j].GetID()
@@ -334,6 +340,10 @@ func (svc *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *
 		var resource *structpb.Value
 
 		if filteredType != "" && !v.HasType(filteredType) {
+			continue
+		}
+
+		if filteredServiceId != "" && v.GetServiceID() != filteredServiceId {
 			continue
 		}
 
@@ -349,7 +359,13 @@ func (svc *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *
 	res = new(discovery.QueryResponse)
 
 	// Paginate the evidences according to the request
-	r, res.NextPageToken, err = service.PaginateSlice(req, r, service.DefaultPaginationOpts)
+	r, res.NextPageToken, err = service.PaginateSlice(req, r, func(a *structpb.Value, b *structpb.Value) bool {
+		if req.OrderBy == "creation_time" {
+			return a.GetStructValue().Fields["creation_time"].GetNumberValue() < b.GetStructValue().Fields["creation_time"].GetNumberValue()
+		} else {
+			return a.GetStructValue().Fields["id"].GetStringValue() < b.GetStructValue().Fields["b"].GetStringValue()
+		}
+	}, service.DefaultPaginationOpts)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
