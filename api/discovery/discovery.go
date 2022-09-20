@@ -30,7 +30,7 @@ import "clouditor.io/clouditor/voc"
 // DefaultCloudServiceID is the default service ID. Currently, our discoverers have no way to differentiate between different
 // services, but we need this feature in the future. This serves as a default to already prepare the necessary
 // structures for this feature.
-const DefaultCloudServiceID = "00000000-0000-0000-000000000000"
+const DefaultCloudServiceID = "00000000-0000-0000-0000-000000000000"
 
 type Discoverer interface {
 	Name() string
