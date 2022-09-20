@@ -11,6 +11,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      -
+        name: Print event name
+        run: echo ${{github.event.release }}
       - name: Checkout
         uses: actions/checkout@v2
       - name: Setup Go
@@ -53,9 +56,6 @@ jobs:
         with:
           name: build
           path: build
-      -
-        name: Print event name
-        run: echo ${{github.event.push }}
       - name: Log in to Docker Hub
         if: github.event_name == 'pull_request' # TODO(lebogg): Change to Release
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
