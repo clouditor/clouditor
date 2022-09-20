@@ -1,8 +1,8 @@
 name: Publish Docker image
 
-on: # TODO(lebogg): Change to Release if tagging is right
-  pull_request:
-    types: [opened, synchronize, reopened]
+on:
+  release:
+    types: [published]
 
 jobs:
   push_to_registries:
@@ -29,8 +29,8 @@ jobs:
         with:
           images: |
             clouditor/engine
-          #tags: type=semver,pattern={{version}}
-          #tags: type=semver,pattern={{major}}.{{minor}}
+          # If tag is not right, try this: 
+          # tags: type=semver,pattern={{major}}.{{minor}}
       -
         name: Build and push to both registries (ghcr and docker hub)
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
