@@ -44,7 +44,7 @@ func createVMWithMalwareProtection(numCloudServices int, numAccounts int, numVMs
 
 	srv := grpc.NewServer()
 
-	logrus.SetLevel(logrus.PanicLevel)
+	logrus.SetLevel(logrus.DebugLevel)
 
 	orchestratorService := service_orchestrator.NewService()
 	orchestrator.RegisterOrchestratorServer(srv, orchestratorService)
@@ -286,7 +286,7 @@ func createVMEvidences(n int, m int, b *testing.B) {
 		port uint16
 	)
 
-	logrus.SetLevel(logrus.PanicLevel)
+	logrus.SetLevel(logrus.DebugLevel)
 
 	srv := grpc.NewServer()
 
@@ -361,7 +361,7 @@ func createIdentityEvidences(n int, m int, b *testing.B) {
 		sock net.Listener
 	)
 
-	logrus.SetLevel(logrus.PanicLevel)
+	logrus.SetLevel(logrus.DebugLevel)
 
 	srv := grpc.NewServer()
 
@@ -435,7 +435,7 @@ func createFunctionEvidences(n int, m int, b *testing.B) {
 		sock net.Listener
 	)
 
-	logrus.SetLevel(logrus.PanicLevel)
+	logrus.SetLevel(logrus.DebugLevel)
 
 	srv := grpc.NewServer()
 
@@ -507,7 +507,7 @@ func createServiceEvidences(n int, m int, b *testing.B) {
 		sock net.Listener
 	)
 
-	logrus.SetLevel(logrus.PanicLevel)
+	logrus.SetLevel(logrus.DebugLevel)
 
 	srv := grpc.NewServer()
 
@@ -583,7 +583,7 @@ func createLoggingServiceEvidences(n int, m int, b *testing.B) {
 		sock net.Listener
 	)
 
-	logrus.SetLevel(logrus.PanicLevel)
+	logrus.SetLevel(logrus.DebugLevel)
 
 	srv := grpc.NewServer()
 
@@ -682,7 +682,7 @@ func createStorageEvidences(n int, m int, b *testing.B) {
 		sock net.Listener
 	)
 
-	logrus.SetLevel(logrus.PanicLevel)
+	logrus.SetLevel(logrus.DebugLevel)
 
 	srv := grpc.NewServer()
 
@@ -726,9 +726,9 @@ func createStorageEvidences(n int, m int, b *testing.B) {
 		go func() {
 			// Create evidences for n (1 resource per )
 			for i := 0; i < n; i++ {
-				if i%100 == 0 {
-					log.Infof("Currently @ %v - stats: %+v", i, svc.stats)
-				}
+				//if i%100 == 0 {
+				log.Infof("Currently @ %v - stats: %+v", i, svc.stats)
+				//}
 
 				vm := voc.BlockStorage{
 					Storage: &voc.Storage{
@@ -736,6 +736,8 @@ func createStorageEvidences(n int, m int, b *testing.B) {
 							ID:   voc.ResourceID(fmt.Sprintf("%d-%d-storage", j, i)),
 							Type: []string{"BlockStorage", "Storage", "Resource"},
 						},
+						// Must not be empty (not sure if that makes sense)
+						AtRestEncryption: voc.AtRestEncryption{},
 					},
 				}
 
