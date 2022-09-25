@@ -343,7 +343,10 @@ func createVMEvidences(n int, m int, b *testing.B) {
 							Type: []string{"VirtualMachine", "Compute", "Resource"},
 						},
 					},
-					BlockStorage: nil,
+					BlockStorage:      nil,
+					BootLogging:       &voc.BootLogging{},
+					MalwareProtection: &voc.MalwareProtection{},
+					OSLogging:         &voc.OSLogging{},
 				}
 
 				assess(svc, vm, b)

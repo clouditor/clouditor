@@ -1,20 +1,19 @@
 package clouditor.metrics.os_logging_retention
 
 import data.clouditor.compare
+import input.osLogging as logging
 
 default applicable = false
 
 default compliant = false
 
-retentionPeriod := input.osLogging.retentionPeriod
-
 applicable {
-	retentionPeriod != null
+	logging
 }
 
 compliant {
 	# time.Duration is nanoseconds, we want to convert this to hours
-	days := retentionPeriod / (((1000 * 1000) * 1000) * 3600)
+	days := logging.retentionPeriod / (((1000 * 1000) * 1000) * 3600)
 
 	compare(data.operator, data.target_value, days)
 }

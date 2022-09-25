@@ -7,13 +7,9 @@ default applicable = false
 
 default compliant = false
 
-interval := input.automaticUpdates.interval
-
 applicable {
-	interval != null
+	am
 }
-
-tv := data.target_value
 
 compliant {
 	# time.Duration is nanoseconds, we want to convert this to hours
