@@ -77,6 +77,8 @@ type grpcTarget struct {
 	opts   []grpc.DialOption
 }
 
+type AssessmentEvent struct{}
+
 // Service is an implementation of the Clouditor Assessment service. It should not be used directly,
 // but rather the NewService constructor should be used. It implements the AssessmentServer interface.
 type Service struct {
@@ -136,6 +138,8 @@ type Service struct {
 
 	// evalPkg specifies the package used for the evaluation engine
 	evalPkg string
+
+	Events chan *AssessmentEvent
 }
 
 // leftOverRequest contains all information of an evidence request that still waits for

@@ -167,25 +167,24 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 
 	// List all VMs across all resource groups
 	listPager := client.NewListAllPager(&armcompute.VirtualMachinesClientListAllOptions{})
-	vms := make([]*armcompute.VirtualMachine, 0)
+
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
 			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
 			return nil, err
 		}
-		vms = append(vms, pageResponse.Value...)
-	}
 
-	for i := range vms {
-		r, err := d.handleVirtualMachines(vms[i])
-		if err != nil {
-			return nil, fmt.Errorf("could not handle virtual machine: %w", err)
+		for _, vm := range pageResponse.Value {
+			r, err := d.handleVirtualMachines(vm)
+			if err != nil {
+				return nil, fmt.Errorf("could not handle virtual machine: %w", err)
+			}
+
+			log.Infof("Adding virtual machine '%s'", r.GetName())
+
+			list = append(list, r)
 		}
-
-		log.Infof("Adding virtual machine '%s'", r.GetName())
-
-		list = append(list, r)
 	}
 
 	return list, err
