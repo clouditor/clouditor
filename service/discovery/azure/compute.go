@@ -183,7 +183,7 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 			return nil, fmt.Errorf("could not handle virtual machine: %w", err)
 		}
 
-		log.Infof("Adding virtual machine %+v", r)
+		log.Infof("Adding virtual machine '%s'", r.GetName())
 
 		list = append(list, r)
 	}

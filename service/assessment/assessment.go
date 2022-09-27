@@ -31,6 +31,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -159,8 +160,9 @@ func (l *leftOverRequest) WaitAndHandle() {
 		// Wait for an incoming resource
 		resource := <-l.newResources
 
-		// Check, if the incoming resource is of interest for us
-		delete(l.waitingFor, resource)
+		// Check, if the incoming resource is of interest for us. There seems to be a problem with case sensitivity in
+		// azure, to work around that we just use toLower here
+		delete(l.waitingFor, voc.ResourceID(strings.ToLower(string(resource))))
 
 		// Are we ready to assess?
 		if len(l.waitingFor) == 0 {
@@ -355,7 +357,8 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 		// but we need to add it to our waitingFor slice
 		if _, ok := svc.evidenceResourceMap[r]; !ok {
 			canHandle = false
-			waitingFor[voc.ResourceID(r)] = true
+			// There seems to be a problem with case insensitivty in Azure, we work around that here for now
+			waitingFor[voc.ResourceID(strings.ToLower(r))] = true
 		}
 	}
 	svc.em.RUnlock()
@@ -832,4 +835,8 @@ func (svc *Service) initOrchestratorClient() error {
 	svc.orchestratorClient = orchestrator.NewOrchestratorClient(conn)
 
 	return nil
+}
+
+func (svc *Service) LeftOvers() map[string]leftOverRequest {
+	return svc.requests
 }

@@ -174,7 +174,7 @@ func (d *azureStorageDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, 
 		if err != nil {
 			return nil, fmt.Errorf("could not handle block storage: %w", err)
 		}
-		log.Infof("Adding block storage %+v", blockStorages)
+		log.Infof("Adding block storage '%s'", blockStorages.Name)
 
 		list = append(list, blockStorages)
 	}
@@ -210,7 +210,7 @@ func (d *azureStorageDiscovery) discoverFileStorages(account *armstorage.Account
 			return nil, fmt.Errorf("could not handle file storage: %w", err)
 		}
 
-		log.Infof("Adding file storage %+v", fileStorages)
+		log.Infof("Adding file storage '%s", fileStorages.Name)
 
 		list = append(list, fileStorages)
 	}
@@ -245,7 +245,7 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 		if err != nil {
 			return nil, fmt.Errorf("could not handle object storage: %w", err)
 		}
-		log.Infof("Adding object storage %+v", objectStorages)
+		log.Infof("Adding object storage '%s'", objectStorages.Name)
 
 		list = append(list, objectStorages)
 	}

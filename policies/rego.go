@@ -178,8 +178,11 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource, related
 				return nil, err
 			}
 
-			runMap.MetricId = metric
-			data = append(data, runMap)
+			// It could be not applicable any more
+			if runMap != nil {
+				runMap.MetricId = metric
+				data = append(data, runMap)
+			}
 		}
 	}
 

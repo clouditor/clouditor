@@ -69,6 +69,16 @@ type grpcTarget struct {
 	opts   []grpc.DialOption
 }
 
+const DiscoveryEventTypeDiscovererStart = 0
+const DiscoveryEventTypeDiscovererFinished = 1
+
+type DiscoveryEvent struct {
+	Type     int
+	Extra    string
+	ExtraInt int
+	Time     time.Time
+}
+
 // Service is an implementation of the Clouditor Discovery service.
 // It should not be used directly, but rather the NewService constructor
 // should be used.
@@ -89,6 +99,8 @@ type Service struct {
 
 	// Mutex for resources
 	resourceMutex sync.RWMutex
+
+	Events chan *DiscoveryEvent
 }
 
 type Configuration struct {
@@ -145,6 +157,7 @@ func NewService(opts ...ServiceOption) *Service {
 		resources:      make(map[string]voc.IsCloudResource),
 		scheduler:      gocron.NewScheduler(time.UTC),
 		configurations: make(map[discovery.Discoverer]*Configuration),
+		Events:         make(chan *DiscoveryEvent),
 	}
 
 	// Apply any options
@@ -274,12 +287,30 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 		list []voc.IsCloudResource
 	)
 
+	go func() {
+		svc.Events <- &DiscoveryEvent{
+			Type:  DiscoveryEventTypeDiscovererStart,
+			Extra: discoverer.Name(),
+			Time:  time.Now(),
+		}
+	}()
+
 	list, err = discoverer.List()
 
 	if err != nil {
 		log.Errorf("Could not retrieve resources from discoverer '%s': %v", discoverer.Name(), err)
 		return
 	}
+
+	// Notify event listeners that the discoverer is finished
+	go func() {
+		svc.Events <- &DiscoveryEvent{
+			Type:     DiscoveryEventTypeDiscovererFinished,
+			Extra:    discoverer.Name(),
+			ExtraInt: len(list),
+			Time:     time.Now(),
+		}
+	}()
 
 	for _, resource := range list {
 		svc.resourceMutex.Lock()
