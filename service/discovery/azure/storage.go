@@ -101,40 +101,38 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 
 	// List all storage accounts accross all resource groups
 	listPager := client.NewListPager(&armstorage.AccountsClientListOptions{})
-	accounts := make([]*armstorage.Account, 0)
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
 			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
 			return nil, err
 		}
-		accounts = append(accounts, pageResponse.Value...)
-	}
 
-	// Discover object and file storages
-	for _, account := range accounts {
-		// Discover object storages
-		objectStorages, err := d.discoverObjectStorages(account)
-		if err != nil {
-			return nil, fmt.Errorf("could not handle object storages: %w", err)
+		// Discover object and file storages
+		for _, account := range pageResponse.Value {
+			// Discover object storages
+			objectStorages, err := d.discoverObjectStorages(account)
+			if err != nil {
+				return nil, fmt.Errorf("could not handle object storages: %w", err)
+			}
+
+			// Discover file storages
+			fileStorages, err := d.discoverFileStorages(account)
+			if err != nil {
+				return nil, fmt.Errorf("could not handle file storages: %w", err)
+			}
+
+			storageResourcesList = append(storageResourcesList, objectStorages...)
+			storageResourcesList = append(storageResourcesList, fileStorages...)
+
+			// Create storage service for all storage account resources
+			storageService, err := d.handleStorageAccount(account, storageResourcesList)
+			if err != nil {
+				return nil, fmt.Errorf("could not create storage service: %w", err)
+			}
+
+			storageResourcesList = append(storageResourcesList, storageService)
 		}
-
-		// Discover file storages
-		fileStorages, err := d.discoverFileStorages(account)
-		if err != nil {
-			return nil, fmt.Errorf("could not handle file storages: %w", err)
-		}
-
-		storageResourcesList = append(storageResourcesList, objectStorages...)
-		storageResourcesList = append(storageResourcesList, fileStorages...)
-
-		// Create storage service for all storage account resources
-		storageService, err := d.handleStorageAccount(account, storageResourcesList)
-		if err != nil {
-			return nil, fmt.Errorf("could not create storage service: %w", err)
-		}
-
-		storageResourcesList = append(storageResourcesList, storageService)
 	}
 
 	// Discover block storages
@@ -159,24 +157,22 @@ func (d *azureStorageDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, 
 
 	// List all disks across all resource groups
 	listPager := client.NewListPager(&armcompute.DisksClientListOptions{})
-	disks := make([]*armcompute.Disk, 0)
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
 			err = fmt.Errorf("%s: %w", ErrGettingNextPage, err)
 			return nil, err
 		}
-		disks = append(disks, pageResponse.Value...)
-	}
 
-	for _, disk := range disks {
-		blockStorages, err := d.handleBlockStorage(disk)
-		if err != nil {
-			return nil, fmt.Errorf("could not handle block storage: %w", err)
+		for _, disk := range pageResponse.Value {
+			blockStorages, err := d.handleBlockStorage(disk)
+			if err != nil {
+				return nil, fmt.Errorf("could not handle block storage: %w", err)
+			}
+			log.Infof("Adding block storage '%s'", blockStorages.Name)
+
+			list = append(list, blockStorages)
 		}
-		log.Infof("Adding block storage '%s'", blockStorages.Name)
-
-		list = append(list, blockStorages)
 	}
 
 	return list, nil
@@ -194,25 +190,23 @@ func (d *azureStorageDiscovery) discoverFileStorages(account *armstorage.Account
 
 	// List all file shares in the specified resource group
 	listPager := client.NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.FileSharesClientListOptions{})
-	fs := make([]*armstorage.FileShareItem, 0)
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
 			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
 			return nil, err
 		}
-		fs = append(fs, pageResponse.Value...)
-	}
 
-	for _, value := range fs {
-		fileStorages, err := handleFileStorage(account, value)
-		if err != nil {
-			return nil, fmt.Errorf("could not handle file storage: %w", err)
+		for _, value := range pageResponse.Value {
+			fileStorages, err := handleFileStorage(account, value)
+			if err != nil {
+				return nil, fmt.Errorf("could not handle file storage: %w", err)
+			}
+
+			log.Infof("Adding file storage '%s", fileStorages.Name)
+
+			list = append(list, fileStorages)
 		}
-
-		log.Infof("Adding file storage '%s", fileStorages.Name)
-
-		list = append(list, fileStorages)
 	}
 
 	return list, nil
@@ -230,24 +224,22 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 
 	// List all file shares in the specified resource group
 	listPager := client.NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.BlobContainersClientListOptions{})
-	bc := make([]*armstorage.ListContainerItem, 0)
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
 			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
 			return nil, err
 		}
-		bc = append(bc, pageResponse.Value...)
-	}
 
-	for _, value := range bc {
-		objectStorages, err := handleObjectStorage(account, value)
-		if err != nil {
-			return nil, fmt.Errorf("could not handle object storage: %w", err)
+		for _, value := range pageResponse.Value {
+			objectStorages, err := handleObjectStorage(account, value)
+			if err != nil {
+				return nil, fmt.Errorf("could not handle object storage: %w", err)
+			}
+			log.Infof("Adding object storage '%s'", objectStorages.Name)
+
+			list = append(list, objectStorages)
 		}
-		log.Infof("Adding object storage '%s'", objectStorages.Name)
-
-		list = append(list, objectStorages)
 	}
 
 	return list, nil

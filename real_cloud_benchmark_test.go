@@ -45,7 +45,7 @@ func assessAzure() {
 	target := fmt.Sprintf("localhost:%d", port)
 
 	discoveryService := service_disovery.NewService(
-		service_disovery.WithProviders([]string{"azure"}),
+		service_disovery.WithProviders([]string{"azure", "aws"}),
 		service_disovery.WithAssessmentAddress(target),
 	)
 	discovery.RegisterDiscoveryServer(srv, discoveryService)
@@ -65,9 +65,9 @@ func assessAzure() {
 	go srv.Serve(lis)
 	wg := sync.WaitGroup{}
 
-	log.Info("Waiting for 3 discoverers to finish")
+	log.Info("Waiting for 5 discoverers to finish")
 
-	wg.Add(3)
+	wg.Add(5)
 
 	totalResources := 0
 	assessmentResults := 0
@@ -113,6 +113,10 @@ func assessAzure() {
 			wg.Done()
 
 			leftOvers := assessmentService.LeftOvers()
+
+			if len(evidenceMap) == 143 {
+				log.Infof("where are my 4")
+			}
 
 			log.Infof("Got assessment for evidence %s, %d in total, expecting %d, waiting: %d", result.EvidenceId, len(evidenceMap), totalResources, len(leftOvers))
 		}
