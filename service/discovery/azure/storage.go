@@ -304,6 +304,9 @@ func handleObjectStorage(account *armstorage.Account, container *armstorage.List
 				Labels: labels(account.Tags), // the storage account labels the object storage belongs to
 			},
 			AtRestEncryption: enc,
+			Immutability: &voc.Immutability{
+				Enabled: util.Deref(container.Properties.HasImmutabilityPolicy),
+			},
 		},
 		PublicAccess: util.Deref(container.Properties.PublicAccess) != armstorage.PublicAccessNone,
 	}, nil
