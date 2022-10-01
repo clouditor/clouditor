@@ -27,4 +27,10 @@ package voc
 
 type ObjectStorage struct {
 	*Storage
+	// TODO(oxisto): This is a little bit of a hack. We actually want to use
+	// Authenticity for determining public access, but this is currently not
+	// possible since Authenticity is only on the StorageService. But in Azure,
+	// a StorageService is only created for the storage account, not the
+	// individual container.
+	PublicAccess bool `json:"publicAccess"`
 }

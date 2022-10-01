@@ -151,5 +151,8 @@
   },
   {
     "id": "ResourceInventory"
+  },
+  {
+    "id": "ObjectStoragePublicAccessDisabled"
   }
 ]

@@ -31,6 +31,14 @@ type benchmark struct {
 	ProcessedItems int
 }
 
+func (b *benchmark) TimePerItem() time.Duration {
+	if b.ProcessedItems == 0 {
+		return 0
+	}
+
+	return b.Finish.Sub(b.Start) / time.Duration(b.ProcessedItems)
+}
+
 func assessAzure() {
 	b := map[string]*benchmark{}
 
@@ -45,7 +53,7 @@ func assessAzure() {
 	target := fmt.Sprintf("localhost:%d", port)
 
 	discoveryService := service_disovery.NewService(
-		service_disovery.WithProviders([]string{"azure", "aws"}),
+		service_disovery.WithProviders([]string{"azure"}),
 		service_disovery.WithAssessmentAddress(target),
 	)
 	discovery.RegisterDiscoveryServer(srv, discoveryService)
@@ -63,11 +71,13 @@ func assessAzure() {
 	evidence.RegisterEvidenceStoreServer(srv, evidenceService)
 
 	go srv.Serve(lis)
-	wg := sync.WaitGroup{}
+	wgDiscovery := sync.WaitGroup{}
+	wgResources := sync.WaitGroup{}
 
 	log.Info("Waiting for 5 discoverers to finish")
 
-	wg.Add(5)
+	//wg.Add(5)
+	wgDiscovery.Add(3)
 
 	totalResources := 0
 	assessmentResults := 0
@@ -79,10 +89,10 @@ func assessAzure() {
 			e := <-discoveryService.Events
 			if e.Type == service_disovery.DiscoveryEventTypeDiscovererFinished {
 				log.Infof("Discoverer %s finished", e.Extra)
-				wg.Done()
+				wgDiscovery.Done()
 
 				// Add the amount of discovered resources to the wait group
-				wg.Add(e.ExtraInt)
+				wgResources.Add(e.ExtraInt)
 				totalResources += e.ExtraInt
 				log.Infof("Waiting for %d resources of the discoverer. %d in total", e.ExtraInt, totalResources)
 
@@ -110,7 +120,7 @@ func assessAzure() {
 
 		if _, ok := evidenceMap[result.EvidenceId]; !ok {
 			evidenceMap[result.EvidenceId] = true
-			wg.Done()
+			wgResources.Done()
 
 			leftOvers := assessmentService.LeftOvers()
 
@@ -140,7 +150,8 @@ func assessAzure() {
 	// Start collecting from our provider
 	discoveryService.Start(context.Background(), &discovery.StartDiscoveryRequest{})
 
-	wg.Wait()
+	wgDiscovery.Wait()
+	wgResources.Wait()
 
 	log.Infof("Received %d assessment results. Expected %d evidences", assessmentResults, totalResources)
 
@@ -158,7 +169,7 @@ func assessAzure() {
 			benchy.Finish.Format("15:04:05.00"),
 			benchy.Finish.Sub(benchy.Start),
 			benchy.ProcessedItems,
-			benchy.Finish.Sub(benchy.Start)/time.Duration(benchy.ProcessedItems),
+			benchy.TimePerItem(),
 		)
 	}
 
@@ -172,7 +183,7 @@ func assessAzure() {
 			benchy.Finish.Format("15:04:05.00"),
 			benchy.Finish.Sub(benchy.Start),
 			benchy.ProcessedItems,
-			benchy.Finish.Sub(benchy.Start)/time.Duration(benchy.ProcessedItems),
+			benchy.TimePerItem(),
 		)
 	}
 }

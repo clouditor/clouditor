@@ -32,7 +32,7 @@ var NumFunctionsMetrics = 2
 var NumVMMetrics = 13
 var NumLoggingServiceMetrics = 7
 var NumBlockStorageMetrics = 4
-var NumObjectStorageMetrics = 4
+var NumObjectStorageMetrics = 5
 var NumIdentityMetrics = 5
 
 func createVMWithMalwareProtection(numCloudServices int, numAccounts int, numVMs, numFunction int, b *testing.B) {

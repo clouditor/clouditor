@@ -99,7 +99,7 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 		return nil, err
 	}
 
-	// List all storage accounts accross all resource groups
+	// List all storage accounts across all resource groups
 	listPager := client.NewListPager(&armstorage.AccountsClientListOptions{})
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
@@ -216,13 +216,14 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 	var list []voc.IsCloudResource
 
 	// Create blob containers client
+	// TODO(oxisto): do not re-create client
 	client, err := armstorage.NewBlobContainersClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("could not get new virtual machines client: %w", err)
 		return nil, err
 	}
 
-	// List all file shares in the specified resource group
+	// List all blob containers in the specified resource group
 	listPager := client.NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.BlobContainersClientListOptions{})
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
@@ -304,6 +305,7 @@ func handleObjectStorage(account *armstorage.Account, container *armstorage.List
 			},
 			AtRestEncryption: enc,
 		},
+		PublicAccess: util.Deref(container.Properties.PublicAccess) != armstorage.PublicAccessNone,
 	}, nil
 }
 
