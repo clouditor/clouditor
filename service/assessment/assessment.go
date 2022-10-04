@@ -340,6 +340,17 @@ func (svc *Service) Authorizer() api.Authorizer {
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
 func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
+	types, _ := req.Evidence.ResourceTypes()
+
+	// Emit event that we are starting to assess a specific evidence
+	go func() {
+		svc.Events <- &AssessmentEvent{
+			EvidenceID:   req.Evidence.Id,
+			Type:         AssessmentEventTypeEvidenceStarted,
+			ResourceType: types[0],
+			Time:         time.Now(),
+		}
+	}()
 
 	// Validate evidence
 	resourceId, err := req.Evidence.Validate()
@@ -531,16 +542,6 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string, rel
 	if err != nil {
 		return fmt.Errorf("could not extract resource types from evidence: %w", err)
 	}
-
-	// Emit event that we are starting to assess a specific evidence
-	go func() {
-		svc.Events <- &AssessmentEvent{
-			EvidenceID:   ev.Id,
-			Type:         AssessmentEventTypeEvidenceStarted,
-			ResourceType: types[0],
-			Time:         time.Now(),
-		}
-	}()
 
 	log.Debugf("Evaluating evidence %s (%s) collected by %s at %s", ev.Id, resourceId, ev.ToolId, ev.Timestamp.AsTime())
 	log.Tracef("Evidence: %+v", ev)
