@@ -501,6 +501,32 @@ func (svc *Service) informLeftOverRequests(resourceId string) {
 func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string, related map[string]*structpb.Value) (err error) {
 	var types []string
 
+	// Send evidence via Evidence Store stream if sending evidences is not disabled
+	if !svc.isEvidenceStoreDisabled {
+		// Get Evidence Store stream
+		channelEvidenceStore, err := svc.evidenceStoreStreams.GetStream(svc.evidenceStoreAddress.target, "Evidence Store", svc.initEvidenceStoreStream, svc.evidenceStoreAddress.opts...)
+		if err != nil {
+			err = fmt.Errorf("could not get stream to evidence store (%s): %w", svc.evidenceStoreAddress.target, err)
+			log.Error(err)
+
+			go svc.informHooks(nil, err)
+
+			return err
+		}
+		channelEvidenceStore.Send(&evidence.StoreEvidenceRequest{Evidence: ev})
+	}
+
+	// Get Orchestrator stream
+	channelOrchestrator, err := svc.orchestratorStreams.GetStream(svc.orchestratorAddress.target, "Orchestrator", svc.initOrchestratorStream, svc.orchestratorAddress.opts...)
+	if err != nil {
+		err = fmt.Errorf("could not get stream to orchestrator (%s): %w", svc.orchestratorAddress.target, err)
+		log.Error(err)
+
+		go svc.informHooks(nil, err)
+
+		return err
+	}
+
 	types, err = ev.ResourceTypes()
 	if err != nil {
 		return fmt.Errorf("could not extract resource types from evidence: %w", err)
@@ -529,32 +555,6 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string, rel
 		go svc.informHooks(nil, newError)
 
 		return newError
-	}
-
-	// Send evidence via Evidence Store stream if sending evidences is not disabled
-	if !svc.isEvidenceStoreDisabled {
-		// Get Evidence Store stream
-		channelEvidenceStore, err := svc.evidenceStoreStreams.GetStream(svc.evidenceStoreAddress.target, "Evidence Store", svc.initEvidenceStoreStream, svc.evidenceStoreAddress.opts...)
-		if err != nil {
-			err = fmt.Errorf("could not get stream to evidence store (%s): %w", svc.evidenceStoreAddress.target, err)
-			log.Error(err)
-
-			go svc.informHooks(nil, err)
-
-			return err
-		}
-		channelEvidenceStore.Send(&evidence.StoreEvidenceRequest{Evidence: ev})
-	}
-
-	// Get Orchestrator stream
-	channelOrchestrator, err := svc.orchestratorStreams.GetStream(svc.orchestratorAddress.target, "Orchestrator", svc.initOrchestratorStream, svc.orchestratorAddress.opts...)
-	if err != nil {
-		err = fmt.Errorf("could not get stream to orchestrator (%s): %w", svc.orchestratorAddress.target, err)
-		log.Error(err)
-
-		go svc.informHooks(nil, err)
-
-		return err
 	}
 
 	for i, data := range evaluations {

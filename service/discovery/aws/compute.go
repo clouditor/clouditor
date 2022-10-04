@@ -165,7 +165,7 @@ func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
 					ServiceID:    discovery.DefaultCloudServiceID,
 					Name:         d.getNameOfVolume(volume),
 					CreationTime: volume.CreateTime.Unix(),
-					Type:         []string{"Block Storage", "Storage", "Resource"},
+					Type:         []string{"BlockStorage", "Storage", "Resource"},
 					GeoLocation: voc.GeoLocation{
 						Region: d.awsConfig.cfg.Region,
 					},
