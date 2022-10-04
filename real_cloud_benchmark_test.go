@@ -17,6 +17,8 @@ import (
 	service_evidence "clouditor.io/clouditor/service/evidence"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/exp/maps"
+	"golang.org/x/exp/slices"
 	"google.golang.org/grpc"
 )
 
@@ -53,7 +55,7 @@ func assessAzure() {
 	target := fmt.Sprintf("localhost:%d", port)
 
 	discoveryService := service_disovery.NewService(
-		service_disovery.WithProviders([]string{"azure"}),
+		service_disovery.WithProviders([]string{"azure", "aws"}),
 		service_disovery.WithAssessmentAddress(target),
 	)
 	discovery.RegisterDiscoveryServer(srv, discoveryService)
@@ -76,8 +78,8 @@ func assessAzure() {
 
 	log.Info("Waiting for 5 discoverers to finish")
 
-	//wg.Add(5)
-	wgDiscovery.Add(3)
+	wgDiscovery.Add(5)
+	//wgDiscovery.Add(3)
 
 	totalResources := 0
 	assessmentResults := 0
@@ -157,7 +159,13 @@ func assessAzure() {
 
 	fmt.Println("===== STATISTICS ====")
 
-	fmt.Printf("Step\t\t\t\t\tStart\tFinish\tDuration\t#\tsec/#\n")
+	values := maps.Values(b)
+	slices.SortFunc(values, func(a *benchmark, b *benchmark) bool {
+		return a.Start.Before(b.Start)
+	})
+	startTime := values[0].Start
+
+	fmt.Printf("Step\t\t\t\t\tStart [t+ms]\tFinish [t+ms]\tDuration [ms]\t#\t1/# [ms]\n")
 	for _, benchy := range b {
 		if benchy.Type != BenchmarkTypeDiscovery {
 			continue
@@ -165,9 +173,9 @@ func assessAzure() {
 
 		fmt.Printf("Discovery %s\t\t\t%v\t%v\t%v\t%v\t%v\n",
 			benchy.Key,
-			benchy.Start.Format("15:04:05.00"),
-			benchy.Finish.Format("15:04:05.00"),
-			benchy.Finish.Sub(benchy.Start),
+			relative(startTime, benchy.Start).Milliseconds(),
+			relative(startTime, benchy.Finish).Milliseconds(),
+			benchy.Finish.Sub(benchy.Start).Milliseconds(),
 			benchy.ProcessedItems,
 			benchy.TimePerItem(),
 		)
@@ -179,13 +187,18 @@ func assessAzure() {
 		}
 
 		fmt.Printf("%s\t\t\t\t%v\t%v\t%v\t%v\t%v\n",
-			benchy.Key, benchy.Start.Format("15:04:05.00"),
-			benchy.Finish.Format("15:04:05.00"),
-			benchy.Finish.Sub(benchy.Start),
+			benchy.Key,
+			relative(startTime, benchy.Start).Milliseconds(),
+			relative(startTime, benchy.Finish).Milliseconds(),
+			benchy.Finish.Sub(benchy.Start).Milliseconds(),
 			benchy.ProcessedItems,
 			benchy.TimePerItem(),
 		)
 	}
+}
+
+func relative(startTime time.Time, time time.Time) time.Duration {
+	return time.Sub(startTime)
 }
 
 func BenchmarkAzure(b *testing.B) {
