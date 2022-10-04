@@ -77,7 +77,16 @@ type grpcTarget struct {
 	opts   []grpc.DialOption
 }
 
-type AssessmentEvent struct{}
+var AssessmentEventTypeEvidenceStarted = 0
+var AssessmentEventTypeEvidenceFinished = 1
+
+type AssessmentEvent struct {
+	Type           int
+	EvidenceID     string
+	ResourceType   string
+	NumAssessments int
+	Time           time.Time
+}
 
 // Service is an implementation of the Clouditor Assessment service. It should not be used directly,
 // but rather the NewService constructor should be used. It implements the AssessmentServer interface.
@@ -286,6 +295,7 @@ func NewService(opts ...service.Option[Service]) *Service {
 		orchestratorStreams:  api.NewStreamsOf(api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest](log)),
 		evidenceResourceMap:  make(map[string]*evidence.Evidence),
 		cachedConfigurations: make(map[string]cachedConfiguration),
+		Events:               make(chan *AssessmentEvent),
 	}
 
 	// Apply any options
@@ -491,6 +501,21 @@ func (svc *Service) informLeftOverRequests(resourceId string) {
 func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string, related map[string]*structpb.Value) (err error) {
 	var types []string
 
+	types, err = ev.ResourceTypes()
+	if err != nil {
+		return fmt.Errorf("could not extract resource types from evidence: %w", err)
+	}
+
+	// Emit event that we are starting to assess a specific evidence
+	go func() {
+		svc.Events <- &AssessmentEvent{
+			EvidenceID:   ev.Id,
+			Type:         AssessmentEventTypeEvidenceStarted,
+			ResourceType: types[0],
+			Time:         time.Now(),
+		}
+	}()
+
 	log.Debugf("Evaluating evidence %s (%s) collected by %s at %s", ev.Id, resourceId, ev.ToolId, ev.Timestamp.AsTime())
 	log.Tracef("Evidence: %+v", ev)
 
@@ -542,11 +567,6 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string, rel
 			return fmt.Errorf("could not convert target value: %w", err)
 		}
 
-		types, err = ev.ResourceTypes()
-		if err != nil {
-			return fmt.Errorf("could not extract resource types from evidence: %w", err)
-		}
-
 		result := &assessment.AssessmentResult{
 			Id:             uuid.NewString(),
 			Timestamp:      timestamppb.Now(),
@@ -574,6 +594,17 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string, rel
 		// Send assessment result in orchestratorChannel
 		channelOrchestrator.Send(&orchestrator.StoreAssessmentResultRequest{Result: result})
 	}
+
+	// Emit event that we are finished assessing a specific evidence and sent all results to the orchestrator
+	go func() {
+		svc.Events <- &AssessmentEvent{
+			EvidenceID:     ev.Id,
+			Type:           AssessmentEventTypeEvidenceFinished,
+			ResourceType:   types[0],
+			NumAssessments: len(evaluations),
+			Time:           time.Now(),
+		}
+	}()
 
 	return nil
 }

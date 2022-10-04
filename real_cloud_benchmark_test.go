@@ -24,6 +24,7 @@ import (
 
 var BenchmarkTypeDiscovery int = 0
 var BenchmarkTypeAssessment int = 1
+var BenchmarkTypeAssessmentDetail int = 2
 
 type benchmark struct {
 	Type           int
@@ -85,7 +86,7 @@ func assessAzure() {
 	assessmentResults := 0
 
 	evidenceMap := map[string]bool{}
-	var mutex sync.Mutex
+	//var mutex sync.Mutex
 	go func() {
 		for {
 			e := <-discoveryService.Events
@@ -116,7 +117,51 @@ func assessAzure() {
 		}
 	}()
 
-	assessmentService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
+	benchyPerResourceType := map[string][]*benchmark{}
+	go func() {
+		for {
+			e := <-assessmentService.Events
+			if e.Type == service_assessment.AssessmentEventTypeEvidenceFinished {
+				// Look for the benchmark
+				if benchy, ok := b[e.EvidenceID]; ok {
+					benchy.ProcessedItems = e.NumAssessments
+					benchy.Finish = e.Time
+
+					benchyPerResourceType[e.ResourceType] = append(benchyPerResourceType[e.ResourceType], benchy)
+				}
+
+				leftOvers := assessmentService.LeftOvers()
+				assessmentResults += e.NumAssessments
+				evidenceMap[e.EvidenceID] = true
+				wgResources.Done()
+				log.Infof("Got all assessments for evidence %s, %d in total, expecting %d, waiting: %d", e.EvidenceID, len(evidenceMap), totalResources, len(leftOvers))
+
+				// Rather "simple" way of calculating the length of the assessment
+				if benchy, ok := b["Assessment"]; !ok {
+					b["Assessment"] = &benchmark{
+						Type:           BenchmarkTypeAssessment,
+						Key:            "Assessment",
+						Start:          e.Time,
+						ProcessedItems: 1,
+					}
+				} else {
+					benchy.ProcessedItems = assessmentResults
+					benchy.Finish = e.Time
+				}
+			} else if e.Type == service_assessment.AssessmentEventTypeEvidenceStarted {
+				// Create new benchmark
+				benchy := &benchmark{
+					Type:  BenchmarkTypeAssessmentDetail,
+					Key:   e.EvidenceID,
+					Start: e.Time,
+				}
+
+				b[benchy.Key] = benchy
+			}
+		}
+	}()
+
+	/*assessmentService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
 		mutex.Lock()
 		defer mutex.Unlock()
 
@@ -133,7 +178,7 @@ func assessAzure() {
 			log.Infof("Got assessment for evidence %s, %d in total, expecting %d, waiting: %d", result.EvidenceId, len(evidenceMap), totalResources, len(leftOvers))
 		}
 
-		assessmentResults++
+		ssessmentResults++
 
 		// Rather "simple" way of calculating the length of the assessment
 		if benchy, ok := b["Assessment"]; !ok {
@@ -147,7 +192,7 @@ func assessAzure() {
 			benchy.ProcessedItems = assessmentResults
 			benchy.Finish = result.Timestamp.AsTime().Local()
 		}
-	})
+	})*/
 
 	// Start collecting from our provider
 	discoveryService.Start(context.Background(), &discovery.StartDiscoveryRequest{})
@@ -194,6 +239,18 @@ func assessAzure() {
 			benchy.ProcessedItems,
 			benchy.TimePerItem(),
 		)
+	}
+
+	fmt.Println("===== STATISTICS per Resource Type ====")
+	fmt.Println("Resource Type\t\tTotal Time [ms]\t#\t1/# [ms]\t#policies")
+
+	for typ, groupedValues := range benchyPerResourceType {
+		var totalTime time.Duration
+		for _, value := range groupedValues {
+			totalTime += value.Finish.Sub(value.Start)
+		}
+
+		fmt.Printf("%s\t\t%v\t\t%v\t%v\t%v\n", typ, totalTime.Milliseconds(), len(groupedValues), (totalTime / time.Duration(len(groupedValues))), groupedValues[0].ProcessedItems)
 	}
 }
 
