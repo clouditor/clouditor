@@ -34,6 +34,10 @@ type benchmark struct {
 	ProcessedItems int
 }
 
+func (b *benchmark) RunTime() time.Duration {
+	return b.Finish.Sub(b.Start)
+}
+
 func (b *benchmark) TimePerItem() time.Duration {
 	if b.ProcessedItems == 0 {
 		return 0
@@ -136,20 +140,13 @@ func assessAzure() {
 				wgResources.Done()
 				log.Infof("Got all assessments for evidence %s, %d in total, expecting %d, waiting: %d", e.EvidenceID, len(evidenceMap), totalResources, len(leftOvers))
 
-				// Rather "simple" way of calculating the length of the assessment
-				if benchy, ok := b["Assessment"]; !ok {
-					b["Assessment"] = &benchmark{
-						Type:           BenchmarkTypeAssessment,
-						Key:            "Assessment",
-						Start:          e.Time,
-						ProcessedItems: 1,
-					}
-				} else {
-					benchy.ProcessedItems = assessmentResults
+				// Update our single assessment benchmark with the current one
+				if benchy, ok := b["Assessment"]; ok {
+					benchy.ProcessedItems = len(evidenceMap)
 					benchy.Finish = e.Time
 				}
 			} else if e.Type == service_assessment.AssessmentEventTypeEvidenceStarted {
-				// Create new benchmark
+				// Create new benchmark for detail
 				benchy := &benchmark{
 					Type:  BenchmarkTypeAssessmentDetail,
 					Key:   e.EvidenceID,
@@ -157,6 +154,16 @@ func assessAzure() {
 				}
 
 				b[benchy.Key] = benchy
+
+				// Rather "simple" way of calculating the length of the assessment
+				if _, ok := b["Assessment"]; !ok {
+					b["Assessment"] = &benchmark{
+						Type:           BenchmarkTypeAssessment,
+						Key:            "Assessment",
+						Start:          e.Time,
+						ProcessedItems: 1,
+					}
+				}
 			}
 		}
 	}()
@@ -216,7 +223,7 @@ func assessAzure() {
 			continue
 		}
 
-		fmt.Printf("Discovery %s\t\t\t%v\t%v\t%v\t%v\t%v\n",
+		fmt.Printf("Discovery %s\t\t\t& %v\t& %v\t& %v\t& %v\t& %v\\\\\n",
 			benchy.Key,
 			relative(startTime, benchy.Start).Milliseconds(),
 			relative(startTime, benchy.Finish).Milliseconds(),
@@ -231,7 +238,7 @@ func assessAzure() {
 			continue
 		}
 
-		fmt.Printf("%s\t\t\t\t%v\t%v\t%v\t%v\t%v\n",
+		fmt.Printf("%s\t\t\t& %v\t& %v\t& %v\t& %v\t& %v\\\\\n",
 			benchy.Key,
 			relative(startTime, benchy.Start).Milliseconds(),
 			relative(startTime, benchy.Finish).Milliseconds(),
@@ -240,6 +247,21 @@ func assessAzure() {
 			benchy.TimePerItem(),
 		)
 	}
+
+	fmt.Println("\n===== STATISTICS DETAIL FOR ASSESSMENT ====")
+	fmt.Printf("min\tmax\tavg\tmedian\n")
+
+	// TODO: min, max, median, avg for a better overview
+	assessmentValues := []*benchmark{}
+	for _, value := range b {
+		if value.Type == BenchmarkTypeAssessmentDetail {
+			assessmentValues = append(assessmentValues, value)
+		}
+	}
+
+	// retrieve some detailed statistics of it
+	min, max, avg, median := statistics(assessmentValues)
+	fmt.Printf("%v\t%v\t%v\t%v\t\n\n", min, max, avg, median)
 
 	fmt.Println("===== STATISTICS per Resource Type ====")
 	fmt.Println("Resource Type\t\tTotal Time [ms]\t#\t1/# [ms]\t#policies")
@@ -252,6 +274,35 @@ func assessAzure() {
 
 		fmt.Printf("%s\t\t%v\t\t%v\t%v\t%v\n", typ, totalTime.Milliseconds(), len(groupedValues), (totalTime / time.Duration(len(groupedValues))), groupedValues[0].ProcessedItems)
 	}
+}
+
+func statistics(values []*benchmark) (min time.Duration, max time.Duration, avg time.Duration, median time.Duration) {
+	// We need to sort the values according to their runtime, so we can easily get min/max/median
+	slices.SortFunc(values, func(a, b *benchmark) bool {
+		return a.RunTime() < b.RunTime()
+	})
+
+	// min is the first entry, max the last
+	min = values[0].RunTime()
+	max = values[len(values)-1].RunTime()
+
+	// median is the one in the middle
+	if len(values)%2 == 0 {
+		value1 := values[len(values)/2-1].RunTime()
+		value2 := values[len(values)/2].RunTime()
+		median = (value1 + value2) / 2
+	} else {
+		median = values[(len(values)-1)/2].RunTime()
+	}
+
+	var totalTime time.Duration
+	for _, value := range values {
+		totalTime += value.RunTime()
+	}
+
+	avg = totalTime / time.Duration(len(values))
+
+	return
 }
 
 func relative(startTime time.Time, time time.Time) time.Duration {
