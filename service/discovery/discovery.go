@@ -226,8 +226,8 @@ func (svc *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest)
 			discoverer = append(discoverer,
 				// For now, we do not want to discover the ARM template
 				// azure.NewAzureARMTemplateDiscovery(azure.WithAuthorizer(authorizer)),
-				azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
 				azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
+				azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
 				azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)))
 		case provider == ProviderK8S:
 			k8sClient, err := k8s.AuthFromKubeConfig()

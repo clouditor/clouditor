@@ -380,7 +380,7 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 	for _, r := range req.Evidence.RelatedResourceIds {
 		// If any of the related resource is not available, we cannot handle them immediately,
 		// but we need to add it to our waitingFor slice
-		if _, ok := svc.evidenceResourceMap[r]; !ok {
+		if _, ok := svc.evidenceResourceMap[strings.ToLower(r)]; !ok {
 			canHandle = false
 			// There seems to be a problem with case insensitivty in Azure, we work around that here for now
 			waitingFor[voc.ResourceID(strings.ToLower(r))] = true
@@ -390,7 +390,7 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 
 	svc.em.Lock()
 	// Update our evidence cache
-	svc.evidenceResourceMap[resourceId] = req.Evidence
+	svc.evidenceResourceMap[strings.ToLower(resourceId)] = req.Evidence
 	svc.em.Unlock()
 
 	// Inform any other left over evidences that might be waiting

@@ -60,7 +60,7 @@ func assessAzure() {
 	target := fmt.Sprintf("localhost:%d", port)
 
 	discoveryService := service_disovery.NewService(
-		service_disovery.WithProviders([]string{"azure", "aws"}),
+		service_disovery.WithProviders([]string{"azure"}),
 		service_disovery.WithAssessmentAddress(target),
 	)
 	discovery.RegisterDiscoveryServer(srv, discoveryService)
@@ -83,8 +83,8 @@ func assessAzure() {
 
 	log.Info("Waiting for 5 discoverers to finish")
 
-	wgDiscovery.Add(5)
-	//wgDiscovery.Add(3)
+	//wgDiscovery.Add(2)
+	wgDiscovery.Add(3)
 
 	totalResources := 0
 	assessmentResults := 0
@@ -144,6 +144,10 @@ func assessAzure() {
 				if benchy, ok := b["Assessment"]; ok {
 					benchy.ProcessedItems = len(evidenceMap)
 					benchy.Finish = e.Time
+				}
+
+				if len(leftOvers) == 6 {
+					log.Infof("why?")
 				}
 			} else if e.Type == service_assessment.AssessmentEventTypeEvidenceStarted {
 				// Create new benchmark for detail
