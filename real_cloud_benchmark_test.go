@@ -23,8 +23,9 @@ import (
 )
 
 var BenchmarkTypeDiscovery int = 0
-var BenchmarkTypeAssessment int = 1
-var BenchmarkTypeAssessmentDetail int = 2
+var BenchmarkTypeOE int = 1
+var BenchmarkTypeAssessment int = 2
+var BenchmarkTypeAssessmentDetail int = 3
 
 type benchmark struct {
 	Type           int
@@ -65,7 +66,9 @@ func assessAzure() {
 	)
 	discovery.RegisterDiscoveryServer(srv, discoveryService)
 
-	orchestratorService := service_orchestrator.NewService()
+	orchestratorService := service_orchestrator.NewService(
+		service_orchestrator.WithCatalogsFile("paper.json"),
+	)
 	orchestrator.RegisterOrchestratorServer(srv, orchestratorService)
 
 	assessmentService := service_assessment.NewService(
@@ -210,6 +213,28 @@ func assessAzure() {
 
 	log.Infof("Received %d assessment results. Expected %d evidences", assessmentResults, totalResources)
 
+	// Once all results are in the database, we can calculate the OE for each control. In the future, this would be triggered
+	// directly by the orchestrator
+	benchy := &benchmark{
+		Key:   "Aggregation and OE",
+		Type:  BenchmarkTypeOE,
+		Start: time.Now(),
+	}
+
+	controls, err := orchestratorService.ListControls(context.TODO(), &orchestrator.ListControlsRequest{})
+	if err != nil {
+		panic(err)
+	}
+
+	for _, control := range controls.Controls {
+		f, _ := orchestratorService.CalculateOEForRequirement(control)
+		benchy.ProcessedItems++
+		log.Infof("control %v has OE %f", control.Id, f)
+	}
+
+	benchy.Finish = time.Now()
+	b[benchy.Key] = benchy
+
 	fmt.Println("===== STATISTICS ====")
 
 	values := maps.Values(b)
@@ -236,6 +261,21 @@ func assessAzure() {
 
 	for _, benchy := range b {
 		if benchy.Type != BenchmarkTypeAssessment {
+			continue
+		}
+
+		fmt.Printf("%s\t\t\t& %v\t& %v\t& %v\t& %v\t& %v\\\\\n",
+			benchy.Key,
+			relative(startTime, benchy.Start).Milliseconds(),
+			relative(startTime, benchy.Finish).Milliseconds(),
+			benchy.Finish.Sub(benchy.Start).Milliseconds(),
+			benchy.ProcessedItems,
+			benchy.TimePerItem().Microseconds()/1000,
+		)
+	}
+
+	for _, benchy := range b {
+		if benchy.Type != BenchmarkTypeOE {
 			continue
 		}
 

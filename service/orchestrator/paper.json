@@ -1,0 +1,482 @@
+[
+    {
+        "id": "EUCS",
+        "name": "EUCS for the paper",
+        "categories": [
+            {
+                "name": "Information Security",
+                "controls": [
+                    {
+                        "id": "OIS-02.4",
+                        "metrics": [
+                            {
+                                "id": "AdminMixedDuties"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Asset Management",
+                "controls": [
+                    {
+                        "id": "AM-01.6",
+                        "metrics": [
+                            {
+                                "id": "ResourceInventory"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Identity and Access Management",
+                "controls": [
+                    {
+                        "id": "IAM-01.1",
+                        "metrics": [
+                            {
+                                "id": "RoleBroadAssignments"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "IAM-03.1",
+                        "metrics": [
+                            {
+                                "id": "IdentityRecentActivity"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "IAM-03.11",
+                        "metrics": [
+                            {
+                                "id": "IdentityRecentActivity"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "IAM-06.7",
+                        "metrics": [
+                            {
+                                "id": "AdminMFAEnabled"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "IAM-06.8",
+                        "metrics": [
+                            {
+                                "id": "AdminMFAEnabled"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "IAM-07.1",
+                        "metrics": [
+                            {
+                                "id": "IdentityPasswordPolicy"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Operational Security",
+                "controls": [
+                    {
+                        "id": "OPS-05.1",
+                        "metrics": [
+                            {
+                                "id": "MalwareProtectionEnabled"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "OPS-05.3",
+                        "metrics": [
+                            {
+                                "id": "MalwareProtectionEnabled"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "OPS-13.1",
+                        "metrics": [
+                            {
+                                "id": "LoggingServiceEncryptedStorage"
+                            },
+                            {
+                                "id": "LoggingServiceImmutableStorage"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "OPS-13.2",
+                        "metrics": [
+                            {
+                                "id": "BootLoggingRetention"
+                            },
+                            {
+                                "id": "OSLoggingRetention"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "OPS-13.4",
+                        "metrics": [
+                            {
+                                "id": "BootLoggingSecureTransport"
+                            },
+                            {
+                                "id": "OSLoggingSecureTransport"
+                            },
+                            {
+                                "id": "MalwareProtectionSecureTransport"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "OPS-13.5",
+                        "metrics": [
+                            {
+                                "id": "BootLoggingRetention"
+                            },
+                            {
+                                "id": "OSLoggingRetention"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "OPS-13.7",
+                        "metrics": [
+                            {
+                                "id": "BootLoggingRetention"
+                            },
+                            {
+                                "id": "OSLoggingRetention"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "OPS-21.3",
+                        "metrics": [
+                            {
+                                "id": "TransportEncrytionEnabled"
+                            },
+                            {
+                                "id": "TransportEncryptionEnforced"
+                            },
+                            {
+                                "id": "TransportEncryptionAlgorithm"
+                            },
+                            {
+                                "id": "TLSVersion"
+                            },
+                            {
+                                "id": "AtRestEncryptionEnabled"
+                            },
+                            {
+                                "id": "AtRestEncryptionAlgorithm"
+                            },
+                            {
+                                "id": "OSLoggingEnabled"
+                            },
+                            {
+                                "id": "MalwareProtectionEnabled"
+                            },
+                            {
+                                "id": "VirtualMachineDiskEncryptionEnabled"
+                            },
+                            {
+                                "id": "AutomaticUpdatesEnabled"
+                            },
+                            {
+                                "id": "AutomaticUpdatesSecurityOnly"
+                            },
+                            {
+                                "id": "AutomaticUpdatesInterval"
+                            },
+                            {
+                                "id": "RuntimeVersion"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Cryptography",
+                "controls": [
+                    {
+                        "id": "CKM-01.3",
+                        "metrics": [
+                            {
+                                "id": "TransportEncryptionAlgorithm"
+                            },
+                            {
+                                "id": "TLSVersion"
+                            },
+                            {
+                                "id": "AtRestEncryptionAlgorithm"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "CKM-02.1",
+                        "metrics": [
+                            {
+                                "id": "TransportEncrytionEnabled"
+                            },
+                            {
+                                "id": "TransportEncryptionEnforced"
+                            },
+                            {
+                                "id": "TransportEncryptionAlgorithm"
+                            },
+                            {
+                                "id": "TLSVersion"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "CKM-02.2",
+                        "metrics": [
+                            {
+                                "id": "TransportEncrytionEnabled"
+                            },
+                            {
+                                "id": "TransportEncryptionEnforced"
+                            },
+                            {
+                                "id": "TransportEncryptionAlgorithm"
+                            },
+                            {
+                                "id": "TLSVersion"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "CKM-03.1",
+                        "metrics": [
+                            {
+                                "id": "AtRestEncryptionEnabled"
+                            },
+                            {
+                                "id": "AtRestEncryptionAlgorithm"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "CKM-03.2",
+                        "metrics": [
+                            {
+                                "id": "CustomerKeyEncryption"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "CCM",
+        "name": "CCM for the paper",
+        "categories": [
+            {
+                "name": "Datacenter Security",
+                "controls": [
+                    {
+                        "id": "DSC-06",
+                        "metrics": [
+                            {
+                                "id": "ResourceInventory"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Identity and Access Management",
+                "controls": [
+                    {
+                        "id": "IAM-02",
+                        "metrics": [
+                            {
+                                "id": "IdentityPasswordPolicy"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "IAM-04",
+                        "metrics": [
+                            {
+                                "id": "AdminMixedDuties"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "IAM-05",
+                        "metrics": [
+                            {
+                                "id": "RoleBroadAssignments"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "IAM-08",
+                        "metrics": [
+                            {
+                                "id": "AdminMixedDuties"
+                            },
+                            {
+                                "id": "RoleBroadAssignments"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "IAM-14",
+                        "metrics": [
+                            {
+                                "id": "AdminMFAEnabled"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Infrastructure and Virtualization",
+                "controls": [
+                    {
+                        "id": "IVS-03",
+                        "metrics": [
+                            {
+                                "id": "OSLoggingSecureTransport"
+                            },
+                            {
+                                "id": "BootLoggingSecureTransport"
+                            },
+                            {
+                                "id": "MalwareProtectionSecureTransport"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "IVS-04",
+                        "metrics": [
+                            {
+                                "id": "VirtualMachineDiskEncryptionEnabled"
+                            },
+                            {
+                                "id": "AutomaticUpdatesEnabled"
+                            },
+                            {
+                                "id": "AutomaticUpdatesSecurityOnly"
+                            },
+                            {
+                                "id": "AutomaticUpdatesInterval"
+                            },
+                            {
+                                "id": "RuntimeVersion"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Logging",
+                "controls": [
+                    {
+                        "id": "LOG-02",
+                        "metrics": [
+                            {
+                                "id": "LoggingServiceImmutableStorage"
+                            },
+                            {
+                                "id": "LoggingServiceEncryptedStorage"
+                            },
+                            {
+                                "id": "BootLoggingRetention"
+                            },
+                            {
+                                "id": "BootLoggingSecureTransport"
+                            },
+                            {
+                                "id": "OSLoggingRetention"
+                            },
+                            {
+                                "id": "OSLoggingSecureTransport"
+                            },
+                            {
+                                "id": "MalwareProtectionSecureTransport"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "LOG-03",
+                        "metrics": [
+                            {
+                                "id": "OSLoggingEnabled"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "LOG-09",
+                        "metrics": [
+                            {
+                                "id": "LoggingServiceImmutableStorage"
+                            },
+                            {
+                                "id": "LoggingServiceEncryptedStorage"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Cryptography",
+                "controls": [
+                    {
+                        "id": "CEK-03",
+                        "metrics": [
+                            {
+                                "id": "TransportEncryptionEnabled"
+                            },
+                            {
+                                "id": "TransportEncryptionEnforced"
+                            },
+                            {
+                                "id": "TransportEncryptionAlgorithm"
+                            },
+                            {
+                                "id": "TLSVersion"
+                            },
+                            {
+                                "id": "AtRestEncryptionEnabled"
+                            },
+                            {
+                                "id": "AtRestEncryptionAlgorithm"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "CEK-04",
+                        "metrics": [
+                            {
+                                "id": "TransportEncryptionAlgorithm"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "CEK-08",
+                        "metrics": [
+                            {
+                                "id": "CustomerKeyEncryption"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]
