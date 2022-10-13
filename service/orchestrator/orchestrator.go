@@ -71,6 +71,7 @@ type Service struct {
 
 	// Currently only in-memory
 	results map[string]*assessment.AssessmentResult
+	resmu   sync.Mutex
 
 	// Hook
 	AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
@@ -226,6 +227,8 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 		return resp, status.Errorf(codes.InvalidArgument, "%v", newError)
 	}
 
+	s.resmu.Lock()
+	defer s.resmu.Unlock()
 	s.results[req.Result.Id] = req.Result
 
 	go s.informHook(req.Result, nil)

@@ -49,6 +49,9 @@ type Service struct {
 	// evidenceHooks is a list of hook functions that can be used if one wants to be
 	// informed about each evidence
 	evidenceHooks []evidence.EvidenceHookFunc
+
+	evmu sync.Mutex
+
 	// mu is used for (un)locking result hook calls
 	mu sync.Mutex
 
@@ -83,6 +86,8 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 		return resp, status.Errorf(codes.InvalidArgument, "%v", newError)
 	}
 
+	s.evmu.Lock()
+	defer s.evmu.Unlock()
 	s.evidences[req.Evidence.Id] = req.Evidence
 	go s.informHooks(req.Evidence, nil)
 

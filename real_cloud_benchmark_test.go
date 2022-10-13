@@ -60,7 +60,7 @@ func assessAzure() {
 	target := fmt.Sprintf("localhost:%d", port)
 
 	discoveryService := service_disovery.NewService(
-		service_disovery.WithProviders([]string{"azure"}),
+		service_disovery.WithProviders([]string{"azure", "aws", "k8s"}),
 		service_disovery.WithAssessmentAddress(target),
 	)
 	discovery.RegisterDiscoveryServer(srv, discoveryService)
@@ -84,7 +84,7 @@ func assessAzure() {
 	log.Info("Waiting for 5 discoverers to finish")
 
 	//wgDiscovery.Add(2)
-	wgDiscovery.Add(3)
+	wgDiscovery.Add(3 + 2 + 3)
 
 	totalResources := 0
 	assessmentResults := 0
@@ -137,7 +137,6 @@ func assessAzure() {
 				leftOvers := assessmentService.LeftOvers()
 				assessmentResults += e.NumAssessments
 				evidenceMap[e.EvidenceID] = true
-				wgResources.Done()
 				log.Infof("Got all assessments for evidence %s, %d in total, expecting %d, waiting: %d", e.EvidenceID, len(evidenceMap), totalResources, len(leftOvers))
 
 				// Update our single assessment benchmark with the current one
@@ -146,9 +145,7 @@ func assessAzure() {
 					benchy.Finish = e.Time
 				}
 
-				if len(leftOvers) == 6 {
-					log.Infof("why?")
-				}
+				wgResources.Done()
 			} else if e.Type == service_assessment.AssessmentEventTypeEvidenceStarted {
 				// Create new benchmark for detail
 				benchy := &benchmark{
@@ -233,7 +230,7 @@ func assessAzure() {
 			relative(startTime, benchy.Finish).Milliseconds(),
 			benchy.Finish.Sub(benchy.Start).Milliseconds(),
 			benchy.ProcessedItems,
-			benchy.TimePerItem(),
+			benchy.TimePerItem().Microseconds(),
 		)
 	}
 
@@ -248,7 +245,7 @@ func assessAzure() {
 			relative(startTime, benchy.Finish).Milliseconds(),
 			benchy.Finish.Sub(benchy.Start).Milliseconds(),
 			benchy.ProcessedItems,
-			benchy.TimePerItem(),
+			benchy.TimePerItem().Microseconds()/1000,
 		)
 	}
 
@@ -259,25 +256,43 @@ func assessAzure() {
 	assessmentValues := []*benchmark{}
 	for _, value := range b {
 		if value.Type == BenchmarkTypeAssessmentDetail {
+			// Somehow. some resources do not finish. not sure why
+			if value.Finish.IsZero() {
+				fmt.Printf("Skipped %s because not finished\n", value.Key)
+				continue
+			}
 			assessmentValues = append(assessmentValues, value)
 		}
 	}
 
-	// retrieve some detailed statistics of it
-	min, max, avg, median := statistics(assessmentValues)
-	fmt.Printf("%v\t%v\t%v\t%v\t\n\n", min, max, avg, median)
-
 	fmt.Println("===== STATISTICS per Resource Type ====")
-	fmt.Println("Resource Type\t\tTotal Time [ms]\t#\t1/# [ms]\t#policies")
+	fmt.Println("Resource Type\t& \\#policies\t& min\t& max\t& avg\t& median\\\\\\hline\\hline")
 
 	for typ, groupedValues := range benchyPerResourceType {
+		min, max, avg, median := statistics(groupedValues)
 		var totalTime time.Duration
 		for _, value := range groupedValues {
 			totalTime += value.Finish.Sub(value.Start)
 		}
 
-		fmt.Printf("%s\t\t%v\t\t%v\t%v\t%v\n", typ, totalTime.Milliseconds(), len(groupedValues), (totalTime / time.Duration(len(groupedValues))), groupedValues[0].ProcessedItems)
+		fmt.Printf("%s\t\t& %v\t\t& %.03f\t& %.03f\t& %.03f\t& %.03f\\\\\n", typ, groupedValues[0].ProcessedItems,
+			float64(min.Microseconds())/1000.0,
+			float64(max.Microseconds())/1000.0,
+			float64(avg.Microseconds())/1000.0,
+			float64(median.Microseconds())/1000.0,
+		)
 	}
+
+	fmt.Println("\\hline")
+
+	// retrieve some detailed statistics of it
+	min, max, avg, median := statistics(assessmentValues)
+	fmt.Printf("%s\t\t& %v\t\t& %.03f\t& %.03f\t& %.03f\t& %.03f\\\\\n", "Overall", "-",
+		float64(min.Microseconds())/1000.0,
+		float64(max.Microseconds())/1000.0,
+		float64(avg.Microseconds())/1000.0,
+		float64(median.Microseconds())/1000.0,
+	)
 }
 
 func statistics(values []*benchmark) (min time.Duration, max time.Duration, avg time.Duration, median time.Duration) {
@@ -285,6 +300,10 @@ func statistics(values []*benchmark) (min time.Duration, max time.Duration, avg 
 	slices.SortFunc(values, func(a, b *benchmark) bool {
 		return a.RunTime() < b.RunTime()
 	})
+
+	// for _, value := range values {
+	// 	fmt.Printf("%v\n", value.RunTime())
+	// }
 
 	// min is the first entry, max the last
 	min = values[0].RunTime()

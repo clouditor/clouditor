@@ -44,7 +44,7 @@ func createVMWithMalwareProtection(numCloudServices int, numAccounts int, numVMs
 
 	srv := grpc.NewServer()
 
-	logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	orchestratorService := service_orchestrator.NewService()
 	orchestrator.RegisterOrchestratorServer(srv, orchestratorService)
@@ -286,7 +286,7 @@ func createVMEvidences(n int, m int, b *testing.B) {
 		port uint16
 	)
 
-	logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	srv := grpc.NewServer()
 
@@ -364,7 +364,7 @@ func createIdentityEvidences(n int, m int, b *testing.B) {
 		sock net.Listener
 	)
 
-	logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	srv := grpc.NewServer()
 
@@ -438,7 +438,7 @@ func createFunctionEvidences(n int, m int, b *testing.B) {
 		sock net.Listener
 	)
 
-	logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	srv := grpc.NewServer()
 
@@ -510,7 +510,7 @@ func createServiceEvidences(n int, m int, b *testing.B) {
 		sock net.Listener
 	)
 
-	logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	srv := grpc.NewServer()
 
@@ -586,7 +586,7 @@ func createLoggingServiceEvidences(n int, m int, b *testing.B) {
 		sock net.Listener
 	)
 
-	logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	srv := grpc.NewServer()
 
@@ -685,7 +685,7 @@ func createStorageEvidences(n int, m int, b *testing.B) {
 		sock net.Listener
 	)
 
-	logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	srv := grpc.NewServer()
 
