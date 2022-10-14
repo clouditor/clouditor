@@ -307,7 +307,7 @@ func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetrics
 	return res, nil
 }
 
-// GetMetric retrieves a metric specified by req.MetridId
+// GetMetric retrieves a metric specified by req.MetricId.
 func (svc *Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequest) (metric *assessment.Metric, err error) {
 	err = svc.storage.Get(&metric, "id = ?", req.MetricId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
@@ -319,6 +319,7 @@ func (svc *Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequ
 	return
 }
 
+// GetMetricConfiguration retrieves a metric configuration specified by req.MetricId for a specified req.CloudServiceId. If no CloudServiceId is specified the default metric configuration is retrieved.
 func (svc *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.GetMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
 	res = new(assessment.MetricConfiguration)
 	err = svc.storage.Get(res, gorm.WithoutPreload(), "cloud_service_id = ? AND metric_id = ?", req.CloudServiceId, req.MetricId)
@@ -394,6 +395,7 @@ func (svc *Service) ListMetricConfigurations(ctx context.Context, req *orchestra
 	return
 }
 
+// GetMetricImplementation retrieves a metric implementation specified by req.MetricId.
 func (svc *Service) GetMetricImplementation(_ context.Context, req *orchestrator.GetMetricImplementationRequest) (res *assessment.MetricImplementation, err error) {
 	res = new(assessment.MetricImplementation)
 
