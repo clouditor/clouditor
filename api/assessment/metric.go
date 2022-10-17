@@ -142,6 +142,29 @@ func (m *Metric) Validate(opts ...MetricValidationOption) (err error) {
 	return nil
 }
 
+// Validate validates the metric configuration
+func (c *MetricConfiguration) Validate() (err error) {
+
+	// isDefault does not need to be checked.
+	// UpdatedAt does not need to be checked.
+	// MetricId does not need to be checked.
+	// CloudServiceId does not need to be checked.
+
+	if c == nil {
+		return ErrMetricConfigurationMissing
+	}
+
+	if c.Operator == "" {
+		return ErrMetricConfigurationOperatorMissing
+	}
+
+	if c.TargetValue == nil {
+		return ErrMetricConfigurationTargetValueMissing
+	}
+
+	return
+}
+
 // Hash provides a simple string based hash for this metric configuration. It can be used
 // to provide a key for a map or a cache.
 func (x *MetricConfiguration) Hash() string {
