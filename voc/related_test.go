@@ -68,3 +68,34 @@ func TestVirtualMachine_Related(t *testing.T) {
 		})
 	}
 }
+
+func TestLoggingService_Related(t *testing.T) {
+	type fields struct {
+		NetworkService *NetworkService
+		Storage        []ResourceID
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   []string
+	}{
+		{
+			name: "Related LoggingService resources",
+			fields: fields{
+				Storage: []ResourceID{"1"},
+			},
+			want: []string{"1"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var v IsCloudResource = LoggingService{
+				NetworkService: tt.fields.NetworkService,
+				Storage:        tt.fields.Storage,
+			}
+			if got := v.Related(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("VirtualMachine.Related() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
