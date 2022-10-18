@@ -31,16 +31,68 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAuthenticyInterface(t *testing.T) {
-	var a IsAuthenticity = &SingleSignOn{}
-	var sso *SingleSignOn = a.(*SingleSignOn)
+func TestAuthenticityInterface(t *testing.T) {
+	tests := []struct {
+		isAuthenticity IsAuthenticity
+		typ            string
+	}{
+		{
+			isAuthenticity: &NoAuthentication{},
+			typ:            "NoAuthentication",
+		},
+		{
+			isAuthenticity: &SingleSignOn{},
+			typ:            "SingleSignOn",
+		},
+		{
+			isAuthenticity: &OTPBasedAuthentication{},
+			typ:            "OTPBasedAuthentication",
+		},
+		{
+			isAuthenticity: &PasswordBasedAuthentication{},
+			typ:            "PasswordBasedAuthentication",
+		},
+		{
+			isAuthenticity: &JwtBasedAuthentication{},
+			typ:            "JwtBasedAuthentication",
+		},
+		{
+			isAuthenticity: &TokenBasedAuthentication{},
+			typ:            "TokenBasedAuthentication",
+		},
+	}
 
-	assert.Same(t, a, sso)
+	for _, tt := range tests {
+		t.Run(tt.typ, func(t *testing.T) {
+			var isa = tt.isAuthenticity
+			assert.Equal(t, tt.typ, isa.Type())
+		})
+	}
 }
 
 func TestAuthorizationInterface(t *testing.T) {
-	var a IsAuthorization = &RBAC{}
-	var rbac *RBAC = a.(*RBAC)
+	tests := []struct {
+		isAuthorization IsAuthorization
+		typ             string
+	}{
+		{
+			isAuthorization: &AccessRestriction{},
+			typ:             "AccessRestriction",
+		},
+		{
+			isAuthorization: &ABAC{},
+			typ:             "ABAC",
+		},
+		{
+			isAuthorization: &RBAC{},
+			typ:             "RBAC",
+		},
+	}
 
-	assert.Same(t, a, rbac)
+	for _, tt := range tests {
+		t.Run(tt.typ, func(t *testing.T) {
+			var isa = tt.isAuthorization
+			assert.Equal(t, tt.typ, isa.Type())
+		})
+	}
 }

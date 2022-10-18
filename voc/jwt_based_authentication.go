@@ -29,3 +29,7 @@ type JwtBasedAuthentication struct {
 	*Authenticity
 	Enforced bool `json:"enforced"`
 }
+
+func (j *JwtBasedAuthentication) Type() string {
+	return "JwtBasedAuthentication"
+}

@@ -28,3 +28,7 @@ package voc
 type ABAC struct {
 	*Authorization
 }
+
+func (a *ABAC) Type() string {
+	return "ABAC"
+}

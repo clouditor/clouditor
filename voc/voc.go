@@ -45,6 +45,10 @@ type IsCloudResource interface {
 	Related() []string
 }
 
+type IsSecurityFeature interface {
+	Type() string
+}
+
 type ResourceID string
 
 // Resource file from Ontology currently not used. How do we merge this file with the 'Resource Ontology file'
@@ -123,16 +127,19 @@ type IsStorage interface {
 }
 
 type IsAtRestEncryption interface {
+	IsSecurityFeature
 	atRestEncryption()
 }
 
 type IsAuthorization interface {
+	IsSecurityFeature
 	authorization()
 }
 
 func (a *Authorization) authorization() {}
 
 type IsAuthenticity interface {
+	IsSecurityFeature
 	authenticity()
 }
 
@@ -141,8 +148,6 @@ func (a *Authenticity) authenticity() {}
 type HasHttpEndpoint interface {
 	GetHttpEndpoint() *HttpEndpoint
 }
-
-func (s *Storage) atRestEncryption() {}
 
 type IsCompute interface {
 	IsCloudResource

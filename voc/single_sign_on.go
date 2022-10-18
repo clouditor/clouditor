@@ -28,3 +28,7 @@ package voc
 type SingleSignOn struct {
 	*Authenticity
 }
+
+func (s *SingleSignOn) Type() string {
+	return "SingleSignOn"
+}
