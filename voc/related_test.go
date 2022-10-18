@@ -1,4 +1,4 @@
-// Copyright 2021 Fraunhofer AISEC
+// Copyright 2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,15 +25,46 @@
 
 package voc
 
-type PasswordBasedAuthentication struct {
-	*Authenticity
-	Activated bool `json:"activated"`
-}
+import (
+	"reflect"
+	"testing"
+)
 
-func (p *PasswordBasedAuthentication) GetAuthenticity() *Authenticity {
-	return p.Authenticity
-}
-
-func (o PasswordBasedAuthentication) Type() string {
-	return "PasswordBasedAuthentication"
+func TestVirtualMachine_Related(t *testing.T) {
+	type fields struct {
+		Compute          *Compute
+		BlockStorage     []ResourceID
+		NetworkInterface []ResourceID
+		BootLogging      *BootLogging
+		OSLogging        *OSLogging
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   []string
+	}{
+		{
+			name: "Related VM resources",
+			fields: fields{
+				BlockStorage: []ResourceID{"1"},
+				Compute: &Compute{
+					NetworkInterface: []ResourceID{"2"},
+				},
+			},
+			want: []string{"1", "2"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var v IsCloudResource = VirtualMachine{
+				Compute:      tt.fields.Compute,
+				BlockStorage: tt.fields.BlockStorage,
+				BootLogging:  tt.fields.BootLogging,
+				OSLogging:    tt.fields.OSLogging,
+			}
+			if got := v.Related(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("VirtualMachine.Related() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

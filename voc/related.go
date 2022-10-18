@@ -1,4 +1,4 @@
-// Copyright 2021 Fraunhofer AISEC
+// Copyright 2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,15 +25,26 @@
 
 package voc
 
-type PasswordBasedAuthentication struct {
-	*Authenticity
-	Activated bool `json:"activated"`
+func (v VirtualMachine) Related() []string {
+	list := make([]string, 0)
+
+	for _, b := range v.BlockStorage {
+		list = append(list, string(b))
+	}
+
+	for _, n := range v.NetworkInterface {
+		list = append(list, string(n))
+	}
+
+	return list
 }
 
-func (p *PasswordBasedAuthentication) GetAuthenticity() *Authenticity {
-	return p.Authenticity
-}
+func (l LoggingService) Related() []string {
+	list := make([]string, 0)
 
-func (o PasswordBasedAuthentication) Type() string {
-	return "PasswordBasedAuthentication"
+	for _, s := range l.Storage {
+		list = append(list, string(s))
+	}
+
+	return list
 }

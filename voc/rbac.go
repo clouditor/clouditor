@@ -30,3 +30,7 @@ type RBAC struct {
 	MixedDuties      float32 `json:"mixedDuties"`
 	BroadAssignments float32 `json:"broadAssignments"`
 }
+
+func (r RBAC) hasAuthorization() {
+
+}

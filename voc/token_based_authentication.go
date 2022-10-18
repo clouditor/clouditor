@@ -25,15 +25,16 @@
 
 package voc
 
-type PasswordBasedAuthentication struct {
+type TokenBasedAuthentication struct {
 	*Authenticity
+	Enforced  bool `json:"enforced"`
 	Activated bool `json:"activated"`
 }
 
-func (p *PasswordBasedAuthentication) GetAuthenticity() *Authenticity {
-	return p.Authenticity
+func (j *TokenBasedAuthentication) GetAuthenticity() *Authenticity {
+	return j.Authenticity
 }
 
-func (o PasswordBasedAuthentication) Type() string {
-	return "PasswordBasedAuthentication"
+func (j *TokenBasedAuthentication) Type() string {
+	return "TokenBasedAuthentication"
 }

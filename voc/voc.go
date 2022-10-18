@@ -42,6 +42,7 @@ type IsCloudResource interface {
 	GetType() []string
 	HasType(string) bool
 	GetCreationTime() *time.Time
+	Related() []string
 }
 
 type ResourceID string
@@ -92,6 +93,10 @@ func (r *Resource) GetCreationTime() *time.Time {
 	return &t
 }
 
+func (*Resource) Related() []string {
+	return []string{}
+}
+
 func ToStruct(r IsCloudResource) (s *structpb.Value, err error) {
 	var b []byte
 
@@ -120,6 +125,15 @@ type IsStorage interface {
 
 type HasAtRestEncryption interface {
 	GetAtRestEncryption() *AtRestEncryption
+}
+
+type HasAuthenticity interface {
+	GetAuthenticity() *Authenticity
+	Type() string
+}
+
+type HasAuthorization interface {
+	hasAuthorization()
 }
 
 type HasHttpEndpoint interface {

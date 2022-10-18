@@ -25,8 +25,14 @@
 
 package voc
 
+import "time"
+
 type Identity struct {
-	*IdentityManagement
-	OTPBasedAuthentication      *OTPBasedAuthentication      `json:"oTPBasedAuthentication"`
-	PasswordBasedAuthentication *PasswordBasedAuthentication `json:"passwordBasedAuthentication"`
+	*Identifiable
+
+	Authenticity          []HasAuthenticity `json:"authenticity"`
+	Privileged            bool              `json:"privileged"`
+	DisablePasswordPolicy bool              `json:"disablePasswordPolicy"`
+	Activated             bool              `json:"activated"`
+	LastActivity          time.Time         `json:"lastActivity"`
 }

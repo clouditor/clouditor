@@ -25,15 +25,8 @@
 
 package voc
 
-type PasswordBasedAuthentication struct {
-	*Authenticity
-	Activated bool `json:"activated"`
-}
-
-func (p *PasswordBasedAuthentication) GetAuthenticity() *Authenticity {
-	return p.Authenticity
-}
-
-func (o PasswordBasedAuthentication) Type() string {
-	return "PasswordBasedAuthentication"
+type Identifiable struct {
+	*Resource
+	Authenticity  Authenticity     `json:"authenticity"`
+	Authorization HasAuthorization `json:"authorization"`
 }
