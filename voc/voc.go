@@ -129,6 +129,12 @@ type IsStorage interface {
 type IsAtRestEncryption interface {
 	IsSecurityFeature
 	atRestEncryption()
+	IsEnabled() bool
+}
+
+func (a *AtRestEncryption) atRestEncryption() {}
+func (a *AtRestEncryption) IsEnabled() bool {
+	return a.Enabled
 }
 
 type IsAuthorization interface {

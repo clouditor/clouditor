@@ -30,6 +30,6 @@ type CustomerKeyEncryption struct {
 	KeyUrl string `json:"keyUrl"`
 }
 
-func (c CustomerKeyEncryption) GetAtRestEncryption() *AtRestEncryption {
-	return c.AtRestEncryption
+func (c *CustomerKeyEncryption) Type() string {
+	return "CustomerKeyEncryption"
 }

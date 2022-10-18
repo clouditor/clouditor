@@ -246,12 +246,12 @@ func (d *awsS3Discovery) getEncryptionAtRest(bucket *bucket) (e voc.IsAtRestEncr
 	}
 
 	if alg := resp.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm; alg == types.ServerSideEncryptionAes256 {
-		e = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
+		e = &voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
 			Algorithm: string(alg),
 			Enabled:   true,
 		}}
 	} else {
-		e = voc.CustomerKeyEncryption{
+		e = &voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
 				Algorithm: "", // not available
 				Enabled:   true,

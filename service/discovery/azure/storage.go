@@ -411,7 +411,7 @@ func handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileSh
 
 // blockStorageAtRestEncryption takes encryption properties of an armcompute.Disk and converts it into our respective
 // ontology object.
-func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk *armcompute.Disk) (enc voc.HasAtRestEncryption, err error) {
+func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk *armcompute.Disk) (enc voc.IsAtRestEncryption, err error) {
 	var (
 		diskEncryptionSetID string
 		keyUrl              string
@@ -424,7 +424,7 @@ func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk *armcompute.Di
 	if disk.Properties.Encryption.Type == nil {
 		return enc, errors.New("error getting atRestEncryption properties of blockStorage")
 	} else if *disk.Properties.Encryption.Type == armcompute.EncryptionTypeEncryptionAtRestWithPlatformKey {
-		enc = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
+		enc = &voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
 			Algorithm: "AES256",
 			Enabled:   true,
 		}}
@@ -436,7 +436,7 @@ func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk *armcompute.Di
 			return nil, fmt.Errorf("could not get keyVaultID: %w", err)
 		}
 
-		enc = voc.CustomerKeyEncryption{
+		enc = &voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
 				Algorithm: "", // TODO(garuppel): TBD
 				Enabled:   true,
@@ -450,7 +450,7 @@ func (d *azureStorageDiscovery) blockStorageAtRestEncryption(disk *armcompute.Di
 
 // storageAtRestEncryption takes encryption properties of an armstorage.Account and converts it into our respective
 // ontology object.
-func storageAtRestEncryption(account *armstorage.Account) (enc voc.HasAtRestEncryption, err error) {
+func storageAtRestEncryption(account *armstorage.Account) (enc voc.IsAtRestEncryption, err error) {
 	if account == nil {
 		return enc, ErrEmptyStorageAccount
 	}
@@ -458,14 +458,14 @@ func storageAtRestEncryption(account *armstorage.Account) (enc voc.HasAtRestEncr
 	if account.Properties == nil || account.Properties.Encryption.KeySource == nil {
 		return enc, errors.New("keySource is empty")
 	} else if *account.Properties.Encryption.KeySource == armstorage.KeySourceMicrosoftStorage {
-		enc = voc.ManagedKeyEncryption{
+		enc = &voc.ManagedKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
 				Algorithm: "AES256",
 				Enabled:   true,
 			},
 		}
 	} else if *account.Properties.Encryption.KeySource == armstorage.KeySourceMicrosoftKeyvault {
-		enc = voc.CustomerKeyEncryption{
+		enc = &voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
 				Algorithm: "", // TODO(garuppel): TBD
 				Enabled:   true,

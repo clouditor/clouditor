@@ -31,6 +31,6 @@ type AtRestEncryption struct {
 	Enabled   bool   `json:"enabled"`
 }
 
-func (a AtRestEncryption) GetAtRestEncryption() *AtRestEncryption {
-	return &a
+func (a *AtRestEncryption) Type() string {
+	return "AtRestEncryption"
 }

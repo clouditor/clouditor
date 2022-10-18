@@ -335,9 +335,9 @@ func TestAwsS3Discovery_getBuckets(t *testing.T) {
 // TestGetEncryptionAtRest tests the getEncryptionAtRest method
 func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 	var (
-		encryptionAtRest   voc.HasAtRestEncryption
-		managedEncryption  voc.ManagedKeyEncryption
-		customerEncryption voc.CustomerKeyEncryption
+		encryptionAtRest   voc.IsAtRestEncryption
+		managedEncryption  *voc.ManagedKeyEncryption
+		customerEncryption *voc.CustomerKeyEncryption
 
 		ok            bool
 		err           error
@@ -356,14 +356,14 @@ func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 	// First case: SSE-S3 encryption
 	encryptionAtRest, err = d.getEncryptionAtRest(&bucket{name: mockBucket1})
 	assert.NoError(t, err)
-	managedEncryption, ok = encryptionAtRest.(voc.ManagedKeyEncryption)
+	managedEncryption, ok = encryptionAtRest.(*voc.ManagedKeyEncryption)
 	assert.True(t, ok)
 	assert.True(t, managedEncryption.Enabled)
 	assert.Equal(t, "AES256", managedEncryption.Algorithm)
 
 	// Second case: SSE-KMS encryption
 	encryptionAtRest, err = d.getEncryptionAtRest(&bucket{name: mockBucket2, region: mockBucket2Region})
-	customerEncryption, ok = encryptionAtRest.(voc.CustomerKeyEncryption)
+	customerEncryption, ok = encryptionAtRest.(*voc.CustomerKeyEncryption)
 	assert.True(t, ok)
 	assert.NoError(t, err)
 	assert.True(t, customerEncryption.Enabled)
@@ -373,7 +373,7 @@ func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 	// Third case: No encryption
 	encryptionAtRest, err = d.getEncryptionAtRest(&bucket{name: "mockbucket3"})
 	assert.NoError(t, err)
-	assert.False(t, encryptionAtRest.GetAtRestEncryption().Enabled)
+	assert.False(t, encryptionAtRest.IsEnabled())
 
 	// 4th case: Connection error
 	d = awsS3Discovery{
