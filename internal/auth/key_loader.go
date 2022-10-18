@@ -31,7 +31,6 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -56,7 +55,10 @@ const (
 	DefaultApiKeyPassword = "changeme"
 
 	// DefaultApiKeyPath is the default path for the API private key
-	DefaultApiKeyPath = "~/.clouditor/api.key"
+	DefaultApiKeyPath = DefaultConfigDirectory + "/api.key"
+
+	// DefaultConfigDirectory is the default path for the clouditor configuration, such as keys
+	DefaultConfigDirectory = "~/.clouditor"
 )
 
 // UserClaims extend jwt.StandardClaims with more detailed claims about a user
@@ -114,6 +116,13 @@ func (l *keyLoader) recoverFromLoadApiKeyError(err error, defaultPath bool) (key
 		log.Infof("API key does not exist at the default location yet. We will create a new one")
 
 		if l.saveOnCreate {
+			// Also make sure that default config path exists
+			err = ensureConfigFolderExistence()
+			// Error while error handling, meh
+			if err != nil {
+				log.Errorf("Error while saving the new API key: %v", err)
+			}
+
 			// Also save the key in this case, so we can load it next time
 			err = saveKeyToFile(key, l.path, l.password)
 
@@ -146,20 +155,9 @@ func loadKeyFromFile(path string, password []byte) (key *ecdsa.PrivateKey, err e
 	}
 
 	// Check, if we already have a persisted API key
-	f, err := os.OpenFile(keyFile, os.O_RDONLY, 0600)
+	data, err := os.ReadFile(keyFile)
 	if err != nil {
-		return nil, fmt.Errorf("error while opening the file: %w", err)
-	}
-	defer func() {
-		err := f.Close()
-		if err != nil {
-			log.Errorf("Error while closing file: %v", err)
-		}
-	}()
-
-	data, err := ioutil.ReadAll(f)
-	if err != nil {
-		return nil, fmt.Errorf("error while reading file content: %w", err)
+		return nil, fmt.Errorf("error while reading key: %w", err)
 	}
 
 	key, err = ParseECPrivateKeyFromPEMWithPassword(data, password)
@@ -224,4 +222,28 @@ func expandPath(path string) (out string, err error) {
 	}
 
 	return path, nil
+}
+
+// ensureConfigesFolderExistence ensures that the config folder exists.
+func ensureConfigFolderExistence() (err error) {
+	var configPath string
+
+	// Expand the config directory, if it contains any ~ characters.
+	configPath, err = expandPath(DefaultConfigDirectory)
+	if err != nil {
+		// Directly return the error here, no need for additional wrapping
+		return err
+	}
+
+	// Create the directory, if it not exists
+	_, err = os.Stat(configPath)
+	if errors.Is(err, os.ErrNotExist) {
+		err = os.Mkdir(configPath, os.ModePerm)
+		if err != nil {
+			// Directly return the error here, no need for additional wrapping
+			return err
+		}
+	}
+
+	return
 }
