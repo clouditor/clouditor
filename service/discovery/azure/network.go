@@ -114,7 +114,7 @@ func (d *azureNetworkDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResour
 	for i := range ni {
 		s := d.handleNetworkInterfaces(ni[i])
 
-		log.Infof("Adding network interfaces %+v", s)
+		log.Infof("Adding network interface '%s'", s.GetName())
 
 		list = append(list, s)
 	}

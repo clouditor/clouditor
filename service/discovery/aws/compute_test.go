@@ -184,8 +184,40 @@ func (mockEC2API) DescribeInstances(_ context.Context, _ *ec2.DescribeInstancesI
 	return output, nil
 }
 
+// DescribeVolumes is the method implementation of the EC2API interface
+func (mockEC2API) DescribeVolumes(_ context.Context, _ *ec2.DescribeVolumesInput, _ ...func(options *ec2.Options)) (*ec2.DescribeVolumesOutput, error) {
+	output := &ec2.DescribeVolumesOutput{}
+
+	return output, nil
+}
+
+// DescribeNetworkInterfaces is the method implementation of the EC2API interface
+func (mockEC2API) DescribeNetworkInterfaces(_ context.Context, _ *ec2.DescribeNetworkInterfacesInput, _ ...func(options *ec2.Options)) (*ec2.DescribeNetworkInterfacesOutput, error) {
+	output := &ec2.DescribeNetworkInterfacesOutput{}
+
+	return output, nil
+}
+
 // DescribeInstances is the method implementation of the EC2API interface
 func (mockEC2APIWithErrors) DescribeInstances(_ context.Context, _ *ec2.DescribeInstancesInput, _ ...func(options *ec2.Options)) (*ec2.DescribeInstancesOutput, error) {
+	err := &smithy.GenericAPIError{
+		Code:    "ConnectionError",
+		Message: "Couldn't resolve host. Bad connection?",
+	}
+	return nil, err
+}
+
+// DescribeVolumes is the method implementation of the EC2API interface
+func (mockEC2APIWithErrors) DescribeVolumes(_ context.Context, _ *ec2.DescribeVolumesInput, _ ...func(options *ec2.Options)) (*ec2.DescribeVolumesOutput, error) {
+	err := &smithy.GenericAPIError{
+		Code:    "ConnectionError",
+		Message: "Couldn't resolve host. Bad connection?",
+	}
+	return nil, err
+}
+
+// DescribeNetworkInterfaces is the method implementation of the EC2API interface
+func (mockEC2APIWithErrors) DescribeNetworkInterfaces(_ context.Context, _ *ec2.DescribeNetworkInterfacesInput, _ ...func(options *ec2.Options)) (*ec2.DescribeNetworkInterfacesOutput, error) {
 	err := &smithy.GenericAPIError{
 		Code:    "ConnectionError",
 		Message: "Couldn't resolve host. Bad connection?",

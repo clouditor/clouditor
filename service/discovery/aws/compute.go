@@ -55,6 +55,14 @@ type EC2API interface {
 	DescribeInstances(ctx context.Context,
 		params *ec2.DescribeInstancesInput,
 		optFns ...func(options *ec2.Options)) (*ec2.DescribeInstancesOutput, error)
+
+	DescribeVolumes(ctx context.Context,
+		params *ec2.DescribeVolumesInput,
+		optFns ...func(options *ec2.Options)) (*ec2.DescribeVolumesOutput, error)
+
+	DescribeNetworkInterfaces(ctx context.Context,
+		params *ec2.DescribeNetworkInterfacesInput,
+		optFns ...func(options *ec2.Options)) (*ec2.DescribeNetworkInterfacesOutput, error)
 }
 
 // LambdaAPI describes the lambda api interface which is implemented by the official AWS client and mock clients in tests
@@ -87,6 +95,25 @@ func (*computeDiscovery) Name() string {
 // List is the method implementation defined in the discovery.Discoverer interface
 func (d computeDiscovery) List() (resources []voc.IsCloudResource, err error) {
 	log.Infof("Collecting evidences in %s", d.Name())
+
+	// Even though technically volumes are "storage", they are part of the EC2 API and therefore discovered here
+	volumes, err := d.discoverVolumes()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover volumes: %w", err)
+	}
+	for _, volume := range volumes {
+		resources = append(resources, volume)
+	}
+
+	// Even though technically network interfaces are "network", they are part of the EC2 API and therefore discovered here
+	ifcs, err := d.discoverNetworkInterfaces()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover volumes: %w", err)
+	}
+	for _, ifc := range ifcs {
+		resources = append(resources, ifc)
+	}
+
 	listOfVMs, err := d.discoverVirtualMachines()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover virtual machines: %w", err)
@@ -106,6 +133,86 @@ func (d computeDiscovery) List() (resources []voc.IsCloudResource, err error) {
 	return
 }
 
+// discoverVolumes discoveres all volumes (in the current region)
+func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
+	res, err := d.virtualMachineAPI.DescribeVolumes(context.TODO(), &ec2.DescribeVolumesInput{})
+	// TODO(oxisto): this error handling function seems to occur a lot
+	if err != nil {
+		var ae smithy.APIError
+		if errors.As(err, &ae) {
+			err = formatError(ae)
+		}
+		return nil, err
+	}
+
+	var blocks []*voc.BlockStorage
+	for i := range res.Volumes {
+		volume := &res.Volumes[i]
+
+		atRest := &voc.AtRestEncryption{
+			Enabled: *volume.Encrypted,
+		}
+
+		// AWS uses a fixed algorithm, if enabled
+		if atRest.Enabled {
+			atRest.Algorithm = "AES-256"
+		}
+
+		blocks = append(blocks, &voc.BlockStorage{
+			Storage: &voc.Storage{
+				Resource: &voc.Resource{
+					ID:           d.arnify("volume", volume.VolumeId),
+					ServiceID:    discovery.DefaultCloudServiceID,
+					Name:         d.getNameOfVolume(volume),
+					CreationTime: volume.CreateTime.Unix(),
+					Type:         []string{"BlockStorage", "Storage", "Resource"},
+					GeoLocation: voc.GeoLocation{
+						Region: d.awsConfig.cfg.Region,
+					},
+				},
+				AtRestEncryption: atRest,
+			},
+		})
+	}
+
+	return blocks, nil
+}
+
+// discoverVolumes discoveres all volumes (in the current region)
+func (d *computeDiscovery) discoverNetworkInterfaces() ([]voc.NetworkInterface, error) {
+	res, err := d.virtualMachineAPI.DescribeNetworkInterfaces(context.TODO(), &ec2.DescribeNetworkInterfacesInput{})
+	// TODO(oxisto): this error handling function seems to occur a lot
+	if err != nil {
+		var ae smithy.APIError
+		if errors.As(err, &ae) {
+			err = formatError(ae)
+		}
+		return nil, err
+	}
+
+	var ifcs []voc.NetworkInterface
+	for i := range res.NetworkInterfaces {
+		ifc := &res.NetworkInterfaces[i]
+
+		ifcs = append(ifcs, voc.NetworkInterface{
+			Networking: &voc.Networking{
+				Resource: &voc.Resource{
+					ID:           d.arnify("network-interface", ifc.NetworkInterfaceId),
+					ServiceID:    discovery.DefaultCloudServiceID,
+					Name:         d.nameOrID(ifc.TagSet, ifc.NetworkInterfaceId),
+					CreationTime: 0,
+					Type:         []string{"NetworkInterface", "Networking", "Resource"},
+					GeoLocation: voc.GeoLocation{
+						Region: d.awsConfig.cfg.Region,
+					},
+				},
+			},
+		})
+	}
+
+	return ifcs, nil
+}
+
 // discoverVirtualMachines discovers all VMs (in the current region)
 func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachine, error) {
 	resp, err := d.virtualMachineAPI.DescribeInstances(context.TODO(), &ec2.DescribeInstancesInput{})
@@ -122,7 +229,7 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachine, erro
 			vm := &reservation.Instances[i]
 			computeResource := &voc.Compute{
 				Resource: &voc.Resource{
-					ID:           d.addARNToVM(vm),
+					ID:           d.arnify("instance", vm.InstanceId),
 					ServiceID:    discovery.DefaultCloudServiceID,
 					Name:         d.getNameOfVM(vm),
 					CreationTime: 0,
@@ -221,23 +328,23 @@ func (*computeDiscovery) getOSLog(_ *typesEC2.Instance) (l *voc.OSLogging) {
 }
 
 // mapBlockStorageIDsOfVM returns block storages IDs by iterating the VMs block storages
-func (*computeDiscovery) mapBlockStorageIDsOfVM(vm *typesEC2.Instance) (blockStorageIDs []voc.ResourceID) {
+func (d *computeDiscovery) mapBlockStorageIDsOfVM(vm *typesEC2.Instance) (blockStorageIDs []voc.ResourceID) {
 	// Loop through mappings using an index, since BlockDeviceMappings is an array of a struct
 	// and not of a pointer; otherwise we would copy a lot of data
 	for i := range vm.BlockDeviceMappings {
 		mapping := &vm.BlockDeviceMappings[i]
-		blockStorageIDs = append(blockStorageIDs, voc.ResourceID(aws.ToString(mapping.Ebs.VolumeId)))
+		blockStorageIDs = append(blockStorageIDs, d.arnify("volume", mapping.Ebs.VolumeId))
 	}
 	return
 }
 
 // getNetworkInterfacesOfVM returns the network interface IDs by iterating the VMs network interfaces
-func (*computeDiscovery) getNetworkInterfacesOfVM(vm *typesEC2.Instance) (networkInterfaceIDs []voc.ResourceID) {
+func (d *computeDiscovery) getNetworkInterfacesOfVM(vm *typesEC2.Instance) (networkInterfaceIDs []voc.ResourceID) {
 	// Loop through mappings using an index, since is NetworkInterfaces an array of a struct
 	// and not of a pointer; otherwise we would copy a lot of data
 	for i := range vm.NetworkInterfaces {
 		ifc := &vm.NetworkInterfaces[i]
-		networkInterfaceIDs = append(networkInterfaceIDs, voc.ResourceID(aws.ToString(ifc.NetworkInterfaceId)))
+		networkInterfaceIDs = append(networkInterfaceIDs, d.arnify("network-interface", ifc.NetworkInterfaceId))
 	}
 	return
 }
@@ -253,11 +360,35 @@ func (*computeDiscovery) getNameOfVM(vm *typesEC2.Instance) string {
 	return aws.ToString(vm.InstanceId)
 }
 
-// addARNToVM generates the ARN of a VM instance
-func (d computeDiscovery) addARNToVM(vm *typesEC2.Instance) voc.ResourceID {
+// getNameOfVolume returns the name if exists (i.e. a tag with key 'name' exists), otherwise instance ID is used
+func (*computeDiscovery) getNameOfVolume(vm *typesEC2.Volume) string {
+	for _, tag := range vm.Tags {
+		if aws.ToString(tag.Key) == "Name" {
+			return aws.ToString(tag.Value)
+		}
+	}
+
+	// If no tag with 'name' was found, return instanceId instead
+	return aws.ToString(vm.VolumeId)
+}
+
+// getNameOfVolume returns the name if exists (i.e. a tag with key 'name' exists), otherwise instance ID is used
+func (*computeDiscovery) nameOrID(tags []typesEC2.Tag, ID *string) string {
+	for _, tag := range tags {
+		if aws.ToString(tag.Key) == "Name" {
+			return aws.ToString(tag.Value)
+		}
+	}
+
+	// If no tag with 'name' was found, return ID instead
+	return aws.ToString(ID)
+}
+
+// addARNToVolume generates the ARN of a volumne instance
+func (d computeDiscovery) arnify(typ string, ID *string) voc.ResourceID {
 	return voc.ResourceID("arn:aws:ec2:" +
 		d.awsConfig.cfg.Region + ":" +
 		aws.ToString(d.awsConfig.accountID) +
-		":instance/" +
-		aws.ToString(vm.InstanceId))
+		":" + typ + "/" +
+		aws.ToString(ID))
 }
