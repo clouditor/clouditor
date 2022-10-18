@@ -7,12 +7,10 @@ default compliant = false
 
 default applicable = false
 
-enabled := input.httpEndpoint.transportEncryption.enabled
-
 applicable {
-	enabled != null
+	enc
 }
 
 compliant {
-	compare(data.operator, data.target_value, enabled)
+	compare(data.operator, data.target_value, enc.enabled)
 }

@@ -7,12 +7,10 @@ default applicable = false
 
 default compliant = false
 
-enabled := enc.enabled
-
 applicable {
-	enabled != null
+	enc
 }
 
 compliant {
-	compare(data.operator, data.target_value, enabled)
+	compare(data.operator, data.target_value, enc.enabled)
 }

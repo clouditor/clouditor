@@ -25,6 +25,7 @@
 
 package voc
 
+// Related returns related resources for the virtual machine, e.g., its attached storage and network interfaces.
 func (v VirtualMachine) Related() []string {
 	list := make([]string, 0)
 
@@ -39,6 +40,7 @@ func (v VirtualMachine) Related() []string {
 	return list
 }
 
+// LoggingService returns related resources for the logging service, e.g., its storage.
 func (l LoggingService) Related() []string {
 	list := make([]string, 0)
 

@@ -10,4 +10,4 @@ applicable = true
 
 compliant = true
 
-# all resources are automatically compliant once we registered an evicende for them
+# all resources are automatically compliant once we registered an evidence for them
