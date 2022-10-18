@@ -25,11 +25,22 @@
 
 package voc
 
-type NetworkService struct {
-	*Networking
-	Compute             []ResourceID         `json:"compute"`
-	Authenticity        IsAuthenticity       `json:"authenticity"`
-	TransportEncryption *TransportEncryption `json:"transportEncryption"`
-	Ips                 []string             `json:"ips"`
-	Ports               []uint16             `json:"ports"`
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestAuthenticyInterface(t *testing.T) {
+	var a IsAuthenticity = &SingleSignOn{}
+	var sso *SingleSignOn = a.(*SingleSignOn)
+
+	assert.Same(t, a, sso)
+}
+
+func TestAuthorizationInterface(t *testing.T) {
+	var a IsAuthorization = &RBAC{}
+	var rbac *RBAC = a.(*RBAC)
+
+	assert.Same(t, a, rbac)
 }

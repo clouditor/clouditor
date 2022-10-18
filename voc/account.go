@@ -30,9 +30,9 @@ import "time"
 type Account struct {
 	*Resource
 
-	Authenticity          []HasAuthenticity `json:"authenticity"`
-	IsAdmin               bool              `json:"isAdmin"`
-	DisablePasswordPolicy bool              `json:"disablePasswordPolicy"`
-	Activated             bool              `json:"activated"`
-	LastActivity          time.Time         `json:"lastActivity"`
+	Authenticity          []IsAuthenticity `json:"authenticity"`
+	IsAdmin               bool             `json:"isAdmin"`
+	DisablePasswordPolicy bool             `json:"disablePasswordPolicy"`
+	Activated             bool             `json:"activated"`
+	LastActivity          time.Time        `json:"lastActivity"`
 }

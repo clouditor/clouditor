@@ -30,9 +30,9 @@ import "time"
 type Identity struct {
 	*Identifiable
 
-	Authenticity          []HasAuthenticity `json:"authenticity"`
-	Privileged            bool              `json:"privileged"`
-	DisablePasswordPolicy bool              `json:"disablePasswordPolicy"`
-	Activated             bool              `json:"activated"`
-	LastActivity          time.Time         `json:"lastActivity"`
+	Authenticity          []IsAuthenticity `json:"authenticity"`
+	Privileged            bool             `json:"privileged"`
+	DisablePasswordPolicy bool             `json:"disablePasswordPolicy"`
+	Activated             bool             `json:"activated"`
+	LastActivity          time.Time        `json:"lastActivity"`
 }

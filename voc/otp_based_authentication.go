@@ -30,9 +30,7 @@ type OTPBasedAuthentication struct {
 	Activated bool `json:"activated"`
 }
 
-func (o *OTPBasedAuthentication) GetAuthenticity() *Authenticity {
-	return o.Authenticity
-}
+func (o *OTPBasedAuthentication) authenticity() {}
 
 func (o OTPBasedAuthentication) Type() string {
 	return "OTPBasedAuthentication"

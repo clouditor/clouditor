@@ -119,30 +119,30 @@ func ToStruct(r IsCloudResource) (s *structpb.Value, err error) {
 
 type IsStorage interface {
 	IsCloudResource
-
-	HasAtRestEncryption
+	IsAtRestEncryption
 }
 
-type HasAtRestEncryption interface {
-	GetAtRestEncryption() *AtRestEncryption
+type IsAtRestEncryption interface {
+	atRestEncryption()
 }
 
-type HasAuthenticity interface {
-	GetAuthenticity() *Authenticity
-	Type() string
+type IsAuthorization interface {
+	authorization()
 }
 
-type HasAuthorization interface {
-	hasAuthorization()
+func (a *Authorization) authorization() {}
+
+type IsAuthenticity interface {
+	authenticity()
 }
+
+func (a *Authenticity) authenticity() {}
 
 type HasHttpEndpoint interface {
 	GetHttpEndpoint() *HttpEndpoint
 }
 
-func (s *Storage) GetAtRestEncryption() *HasAtRestEncryption {
-	return &s.AtRestEncryption
-}
+func (s *Storage) atRestEncryption() {}
 
 type IsCompute interface {
 	IsCloudResource

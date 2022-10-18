@@ -31,9 +31,7 @@ type TokenBasedAuthentication struct {
 	Activated bool `json:"activated"`
 }
 
-func (j *TokenBasedAuthentication) GetAuthenticity() *Authenticity {
-	return j.Authenticity
-}
+func (j *TokenBasedAuthentication) authenticity() {}
 
 func (j *TokenBasedAuthentication) Type() string {
 	return "TokenBasedAuthentication"
