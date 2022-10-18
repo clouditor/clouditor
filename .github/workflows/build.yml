@@ -42,7 +42,8 @@ jobs:
           go build -o build ./...
       - name: Test
         run: |
-          go test -v -coverprofile=coverage.cov -coverpkg ./... -covermode=atomic ./...
+          go install github.com/mfridman/tparse@latest
+          go test -v -coverprofile=coverage.cov -coverpkg ./... -covermode=atomic ./...  -json | tparse -follow
       - uses: codecov/codecov-action@v2.1.0
         with:
           files: coverage.cov
