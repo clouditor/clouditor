@@ -1,6 +1,7 @@
 package clouditor.metrics.transport_encryption_enforced
 
 import data.clouditor.compare
+import input.transportEncryption as enc
 
 default compliant = false
 

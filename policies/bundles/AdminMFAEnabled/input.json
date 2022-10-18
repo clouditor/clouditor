@@ -1,0 +1,17 @@
+{
+    "privileged": true,
+    "type": [
+        "Identity",
+        "Resource"
+    ],
+    "authenticity": [
+        {
+            "type": "OTPBasedAuthentication",
+            "activated": true
+        },
+        {
+            "type": "PasswordBasedAuthentication",
+            "activated": true
+        }
+    ]
+}

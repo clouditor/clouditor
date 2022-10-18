@@ -2,6 +2,7 @@ package clouditor.metrics.tls_version
 
 import data.clouditor.compare
 import data.clouditor.isIn
+import input.transportEncryption as enc
 
 default compliant = false
 
