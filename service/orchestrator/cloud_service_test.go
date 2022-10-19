@@ -108,40 +108,6 @@ func TestService_RegisterCloudService(t *testing.T) {
 	}
 }
 
-func TestService_ListCloudServicesOld(t *testing.T) {
-	var (
-		listCloudServicesResponse *orchestrator.ListCloudServicesResponse
-		cloudService              *orchestrator.CloudService
-		err                       error
-	)
-
-	orchestratorService := NewService()
-	// 1st case: No services stored
-	listCloudServicesResponse, err = orchestratorService.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{})
-	assert.NoError(t, err)
-	assert.NotNil(t, listCloudServicesResponse.Services)
-	assert.Empty(t, listCloudServicesResponse.Services)
-
-	// 2nd case: One service stored
-	cloudService, err = orchestratorService.CreateDefaultTargetCloudService()
-	assert.NoError(t, err)
-	assert.NotNil(t, cloudService)
-
-	listCloudServicesResponse, err = orchestratorService.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{})
-	assert.NoError(t, err)
-	assert.NotNil(t, listCloudServicesResponse.Services)
-	assert.NotEmpty(t, listCloudServicesResponse.Services)
-	assert.Equal(t, len(listCloudServicesResponse.Services), 1)
-
-	// 3rd case: Invalid request
-	_, err = orchestratorService.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{
-		OrderBy: "not a field",
-	})
-	assert.Equal(t, codes.InvalidArgument, status.Code(err))
-	assert.Contains(t, err.Error(), api.ErrInvalidColumnName.Error())
-
-}
-
 func TestGetCloudService(t *testing.T) {
 	tests := []struct {
 		name string
@@ -345,7 +311,7 @@ func TestService_ListCloudServices(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "no services stored",
+			name: "retrieve empty list",
 			args: args{req: &orchestrator.ListCloudServicesRequest{}},
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
@@ -355,7 +321,7 @@ func TestService_ListCloudServices(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "one service stored",
+			name: "list with one item",
 			args: args{req: &orchestrator.ListCloudServicesRequest{}},
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
@@ -397,16 +363,17 @@ func TestService_ListCloudServices(t *testing.T) {
 			},
 		},
 		{
-			name: "only allowed cloud services",
+			name: "retrieve only allowed cloud services",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					// Store two cloud services, of which only one we are allowed to retrieve in the test
 					_ = s.Create(&orchestrator.CloudService{Id: "11111111-1111-1111-1111-111111111111"})
 					_ = s.Create(&orchestrator.CloudService{Id: "22222222-2222-2222-2222-222222222222"})
 				}),
 				authz: &service.AuthorizationStrategyJWT{Key: mockCustomClaims},
 			},
 			args: args{
-				// only allows 11111....
+				// Only allows 11111....
 				ctx: metadata.NewIncomingContext(context.Background(), metadata.New(mockAuthorizationHeader)),
 				req: &orchestrator.ListCloudServicesRequest{},
 			},
