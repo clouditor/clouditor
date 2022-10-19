@@ -31,9 +31,11 @@ import (
 
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/service"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 )
@@ -134,24 +136,32 @@ func TestService_ListCloudServices(t *testing.T) {
 func TestGetCloudService(t *testing.T) {
 	tests := []struct {
 		name string
+		svc  *Service
+		ctx  context.Context
 		req  *orchestrator.GetCloudServiceRequest
 		res  *orchestrator.CloudService
 		err  error
 	}{
 		{
 			"invalid request",
+			NewService(),
+			context.Background(),
 			nil,
 			nil,
 			status.Error(codes.InvalidArgument, api.ErrRequestIsNil.Error()),
 		},
 		{
 			"cloud service not found",
+			NewService(),
+			context.Background(),
 			&orchestrator.GetCloudServiceRequest{CloudServiceId: "does-not-exist"},
 			nil,
 			status.Error(codes.NotFound, "service not found"),
 		},
 		{
 			"valid",
+			NewService(),
+			context.Background(),
 			&orchestrator.GetCloudServiceRequest{CloudServiceId: DefaultTargetCloudServiceId},
 			&orchestrator.CloudService{
 				Id:          DefaultTargetCloudServiceId,
@@ -160,16 +170,27 @@ func TestGetCloudService(t *testing.T) {
 			},
 			nil,
 		},
+		{
+			"permission denied",
+			NewService(WithAuthorizationStrategyJWT("cloudserviceid")),
+			metadata.NewIncomingContext(context.Background(),
+				metadata.New(map[string]string{
+					// JWT that only allows access to cloud service ID 11111111-1111-1111-1111-111111111111
+					"authorization": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJjbG91ZHNlcnZpY2VpZCI6WyIxMTExMTExMS0xMTExLTExMTEtMTExMS0xMTExMTExMTExMTEiXX0.h6_p6UPFuEuM1cYxk4F3d2sZUgUNAjE6aWW9rrVrcQU",
+				})),
+			&orchestrator.GetCloudServiceRequest{CloudServiceId: DefaultTargetCloudServiceId},
+			nil,
+			service.ErrPermissionDenied,
+		},
 	}
-	orchestratorService := NewService()
-
-	cloudService, err := orchestratorService.CreateDefaultTargetCloudService()
-	assert.NoError(t, err)
-	assert.NotNil(t, cloudService)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := orchestratorService.GetCloudService(context.Background(), tt.req)
+			cloudService, err := tt.svc.CreateDefaultTargetCloudService()
+			assert.NoError(t, err)
+			assert.NotNil(t, cloudService)
+
+			res, err := tt.svc.GetCloudService(tt.ctx, tt.req)
 
 			if tt.err == nil {
 				assert.Equal(t, tt.err, err)
