@@ -77,8 +77,6 @@ func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.Regi
 // ListCloudServices implements method for OrchestratorServer interface for listing all cloud services
 func (svc *Service) ListCloudServices(ctx context.Context, req *orchestrator.ListCloudServicesRequest) (
 	res *orchestrator.ListCloudServicesResponse, err error) {
-	res = new(orchestrator.ListCloudServicesResponse)
-
 	// Validate tne request
 	if err = api.ValidateListRequest[*orchestrator.CloudService](req); err != nil {
 		err = fmt.Errorf("invalid request: %w", err)
@@ -87,9 +85,11 @@ func (svc *Service) ListCloudServices(ctx context.Context, req *orchestrator.Lis
 		return
 	}
 
+	res = new(orchestrator.ListCloudServicesResponse)
+
 	all, list := svc.authz.AllowedCloudServices(ctx)
 
-	if !all {
+	if all {
 		// Paginate the cloud services according to the request
 		res.Services, res.NextPageToken, err = service.PaginateStorage[*orchestrator.CloudService](req, svc.storage,
 			service.DefaultPaginationOpts)

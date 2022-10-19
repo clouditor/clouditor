@@ -42,6 +42,13 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+var mockAuthorizationHeader = map[string]string{
+	// JWT that only allows access to cloud service ID 11111111-1111-1111-1111-111111111111
+	"authorization": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJjbG91ZHNlcnZpY2VpZCI6WyIxMTExMTExMS0xMTExLTExMTEtMTExMS0xMTExMTExMTExMTEiXX0.h6_p6UPFuEuM1cYxk4F3d2sZUgUNAjE6aWW9rrVrcQU",
+}
+
+var mockCustomClaims = "cloudserviceid"
+
 func TestService_RegisterCloudService(t *testing.T) {
 	tests := []struct {
 		name string
@@ -174,12 +181,9 @@ func TestGetCloudService(t *testing.T) {
 		},
 		{
 			"permission denied",
-			NewService(WithAuthorizationStrategyJWT("cloudserviceid")),
-			metadata.NewIncomingContext(context.Background(),
-				metadata.New(map[string]string{
-					// JWT that only allows access to cloud service ID 11111111-1111-1111-1111-111111111111
-					"authorization": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJjbG91ZHNlcnZpY2VpZCI6WyIxMTExMTExMS0xMTExLTExMTEtMTExMS0xMTExMTExMTExMTEiXX0.h6_p6UPFuEuM1cYxk4F3d2sZUgUNAjE6aWW9rrVrcQU",
-				})),
+			NewService(WithAuthorizationStrategyJWT(mockCustomClaims)),
+			// only allows 11111....
+			metadata.NewIncomingContext(context.Background(), metadata.New(mockAuthorizationHeader)),
 			&orchestrator.GetCloudServiceRequest{CloudServiceId: DefaultTargetCloudServiceId},
 			nil,
 			service.ErrPermissionDenied,
@@ -338,7 +342,7 @@ func TestService_ListCloudServices(t *testing.T) {
 		fields  fields
 		args    args
 		wantRes *orchestrator.ListCloudServicesResponse
-		wantErr bool
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "no services stored",
@@ -348,7 +352,7 @@ func TestService_ListCloudServices(t *testing.T) {
 				authz:   &service.AuthorizationStrategyAllowAll{},
 			},
 			wantRes: &orchestrator.ListCloudServicesResponse{},
-			wantErr: false,
+			wantErr: assert.NoError,
 		},
 		{
 			name: "one service stored",
@@ -374,7 +378,7 @@ func TestService_ListCloudServices(t *testing.T) {
 					},
 				},
 			},
-			wantErr: false,
+			wantErr: assert.NoError,
 		},
 		{
 			name: "invalid request",
@@ -387,24 +391,32 @@ func TestService_ListCloudServices(t *testing.T) {
 					OrderBy: "not a field",
 				},
 			},
+			wantRes: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, api.ErrInvalidColumnName.Error())
+			},
+		},
+		{
+			name: "only allowed cloud services",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					_ = s.Create(&orchestrator.CloudService{Id: "11111111-1111-1111-1111-111111111111"})
+					_ = s.Create(&orchestrator.CloudService{Id: "22222222-2222-2222-2222-222222222222"})
+				}),
+				authz: &service.AuthorizationStrategyJWT{Key: mockCustomClaims},
+			},
+			args: args{
+				// only allows 11111....
+				ctx: metadata.NewIncomingContext(context.Background(), metadata.New(mockAuthorizationHeader)),
+				req: &orchestrator.ListCloudServicesRequest{},
+			},
 			wantRes: &orchestrator.ListCloudServicesResponse{
 				Services: []*orchestrator.CloudService{
-					{
-						Id:          DefaultTargetCloudServiceId,
-						Name:        DefaultTargetCloudServiceName,
-						Description: DefaultTargetCloudServiceDescription,
-					},
+					{Id: "11111111-1111-1111-1111-111111111111"},
 				},
 			},
-			wantErr: false,
+			wantErr: assert.NoError,
 		},
-		/*
-			// 3rd case: Invalid request
-			_, err = orchestratorService.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{
-				OrderBy: "not a field",
-			})
-			assert.Equal(t, codes.InvalidArgument, status.Code(err))
-			assert.Contains(t, err.Error(), api.ErrInvalidColumnName.Error())*/
 	}
 
 	for _, tt := range tests {
@@ -422,10 +434,7 @@ func TestService_ListCloudServices(t *testing.T) {
 			}
 
 			gotRes, err := svc.ListCloudServices(tt.args.ctx, tt.args.req)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.ListCloudServices() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			tt.wantErr(t, err, tt.args)
 
 			if !proto.Equal(gotRes, tt.wantRes) {
 				t.Errorf("Service.ListCloudServices() = %v, want %v", gotRes, tt.wantRes)

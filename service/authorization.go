@@ -79,12 +79,14 @@ func (a *AuthorizationStrategyJWT) AllowedCloudServices(ctx context.Context) (al
 
 	// We need to re-parse the already validiated claim to get a specific key from the claims map.
 	parser := jwt.NewParser()
-	_, _, err = parser.ParseUnverified(token, claims)
+	_, _, err = parser.ParseUnverified(token, &claims)
 	if err != nil {
 		return false, nil
 	}
 
-	list = claims[a.Key].([]string)
+	for _, item := range claims[a.Key].([]interface{}) {
+		list = append(list, item.(string))
+	}
 
 	return false, list
 }
