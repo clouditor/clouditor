@@ -42,10 +42,11 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-var mockAuthorizationHeader = map[string]string{
-	// JWT that only allows access to cloud service ID 11111111-1111-1111-1111-111111111111
+// mockContextOnly11111 is an incoming context with a JWT that only allows access to cloud service ID
+// 11111111-1111-1111-1111-111111111111
+var mockContextOnly11111 = metadata.NewIncomingContext(context.Background(), metadata.New(map[string]string{
 	"authorization": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJjbG91ZHNlcnZpY2VpZCI6WyIxMTExMTExMS0xMTExLTExMTEtMTExMS0xMTExMTExMTExMTEiXX0.h6_p6UPFuEuM1cYxk4F3d2sZUgUNAjE6aWW9rrVrcQU",
-}
+}))
 
 var mockCustomClaims = "cloudserviceid"
 
@@ -148,8 +149,7 @@ func TestGetCloudService(t *testing.T) {
 		{
 			"permission denied",
 			NewService(WithAuthorizationStrategyJWT(mockCustomClaims)),
-			// only allows 11111....
-			metadata.NewIncomingContext(context.Background(), metadata.New(mockAuthorizationHeader)),
+			mockContextOnly11111,
 			&orchestrator.GetCloudServiceRequest{CloudServiceId: DefaultTargetCloudServiceId},
 			nil,
 			service.ErrPermissionDenied,
@@ -373,8 +373,7 @@ func TestService_ListCloudServices(t *testing.T) {
 				authz: &service.AuthorizationStrategyJWT{Key: mockCustomClaims},
 			},
 			args: args{
-				// Only allows 11111....
-				ctx: metadata.NewIncomingContext(context.Background(), metadata.New(mockAuthorizationHeader)),
+				ctx: mockContextOnly11111,
 				req: &orchestrator.ListCloudServicesRequest{},
 			},
 			wantRes: &orchestrator.ListCloudServicesResponse{

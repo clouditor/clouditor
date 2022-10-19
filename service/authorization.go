@@ -53,8 +53,8 @@ type AuthorizationStrategy interface {
 	AllowedCloudServices(ctx context.Context) (all bool, IDs []string)
 }
 
-// AuthorizationStrategyJWT is an AuthorizationStrategy that expects the cloud service ID to be in a specific JWT claim
-// key.
+// AuthorizationStrategyJWT is an AuthorizationStrategy that expects a list of cloud service IDs to be in a specific JWT
+// claim key.
 type AuthorizationStrategyJWT struct {
 	Key string
 }
@@ -66,6 +66,7 @@ func (a *AuthorizationStrategyJWT) CheckAccess(ctx context.Context, typ RequestT
 	return slices.Contains(list, req.GetCloudServiceId())
 }
 
+// AllowedCloudServices retrieves a list of allowed cloud service IDs according to the current access strategy.
 func (a *AuthorizationStrategyJWT) AllowedCloudServices(ctx context.Context) (all bool, list []string) {
 	var err error
 	var token string
@@ -91,7 +92,7 @@ func (a *AuthorizationStrategyJWT) AllowedCloudServices(ctx context.Context) (al
 	return false, list
 }
 
-// AuthorizationStrategyJWT is an AuthorizationStrategy that allows all requests
+// AuthorizationStrategyJWT is an AuthorizationStrategy that allows all requests.
 type AuthorizationStrategyAllowAll struct{}
 
 // CheckAccess checks whether the current request can be fulfilled using the current access strategy.
@@ -99,8 +100,10 @@ func (a *AuthorizationStrategyAllowAll) CheckAccess(ctx context.Context, typ Req
 	return true
 }
 
+// AllowedCloudServices retrieves a list of allowed cloud service IDs according to the current access strategy.
 func (a *AuthorizationStrategyAllowAll) AllowedCloudServices(ctx context.Context) (bool, []string) {
 	return true, nil
 }
 
+// ErrPermissionDenied represents an error, where permission to fulfill the request is denied.
 var ErrPermissionDenied = status.Errorf(codes.PermissionDenied, "access denied")

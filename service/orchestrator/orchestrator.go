@@ -40,6 +40,7 @@ import (
 	"clouditor.io/clouditor/persistence/inmemory"
 	"clouditor.io/clouditor/service"
 	"golang.org/x/exp/maps"
+	"golang.org/x/exp/slices"
 
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -276,11 +277,20 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 }
 
 // ListAssessmentResults is a method implementation of the orchestrator interface
-func (svc *Service) ListAssessmentResults(_ context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
-	res = new(assessment.ListAssessmentResultsResponse)
-
+func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
 	var values = maps.Values(svc.results)
 	var filtered []*assessment.AssessmentResult
+	var allowed []string
+	var all bool
+
+	// Check, if the current filter is valid according to the authorization strategy. Omitting the cloud service ID is
+	// only allowed, if one can access all the cloud services. Furthermore, the content of the filtered cloud service ID
+	// must be in the list of allowed cloud service IDs.
+	all, allowed = svc.authz.AllowedCloudServices(ctx)
+	if (req.FilteredCloudServiceId == "" && !all) ||
+		(req.FilteredCloudServiceId != "" && !slices.Contains(allowed, req.FilteredCloudServiceId)) {
+		return nil, service.ErrPermissionDenied
+	}
 
 	for _, v := range values {
 		if req.FilteredCloudServiceId != "" && v.CloudServiceId != req.FilteredCloudServiceId {
@@ -289,6 +299,8 @@ func (svc *Service) ListAssessmentResults(_ context.Context, req *assessment.Lis
 
 		filtered = append(filtered, v)
 	}
+
+	res = new(assessment.ListAssessmentResultsResponse)
 
 	// Paginate the results according to the request
 	res.Results, res.NextPageToken, err = service.PaginateSlice(req, filtered, func(a *assessment.AssessmentResult, b *assessment.AssessmentResult) bool {
