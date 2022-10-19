@@ -36,16 +36,13 @@ import (
 	"runtime"
 	"sync"
 	"testing"
-	"time"
 
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
-	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/inmemory"
-	"clouditor.io/clouditor/service"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -931,78 +928,6 @@ func TestCloudServiceHooks(t *testing.T) {
 
 			assert.Equal(t, tt.wantResp, gotResp)
 			assert.Equal(t, hookCounts, hookCallCounter)
-		})
-	}
-}
-
-func TestService_ListAssessmentResults(t *testing.T) {
-	type fields struct {
-		results map[string]*assessment.AssessmentResult
-		storage persistence.Storage
-		authz   service.AuthorizationStrategy
-	}
-	type args struct {
-		ctx context.Context
-		req *assessment.ListAssessmentResultsRequest
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantRes *assessment.ListAssessmentResultsResponse
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "list all with allow all",
-			fields: fields{
-				results: map[string]*assessment.AssessmentResult{
-					"1": {Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0))},
-					"2": {Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0))},
-				},
-				authz: &service.AuthorizationStrategyAllowAll{},
-			},
-			args: args{req: &assessment.ListAssessmentResultsRequest{}},
-			wantRes: &assessment.ListAssessmentResultsResponse{
-				Results: []*assessment.AssessmentResult{
-					{Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0))},
-					{Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0))},
-				},
-			},
-			wantErr: assert.NoError,
-		},
-		{
-			name: "list all denied",
-			fields: fields{
-				results: map[string]*assessment.AssessmentResult{
-					"1": {Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0))},
-					"2": {Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0))},
-				},
-				authz: &service.AuthorizationStrategyJWT{Key: mockCustomClaims},
-			},
-			args: args{
-				ctx: mockContextOnly11111,
-				req: &assessment.ListAssessmentResultsRequest{},
-			},
-			wantRes: nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.Equal(t, err, service.ErrPermissionDenied)
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			svc := &Service{
-				results: tt.fields.results,
-				storage: tt.fields.storage,
-				authz:   tt.fields.authz,
-			}
-			gotRes, err := svc.ListAssessmentResults(tt.args.ctx, tt.args.req)
-			tt.wantErr(t, err)
-
-			if !proto.Equal(gotRes, tt.wantRes) {
-				t.Errorf("Service.ListAssessmentResults() = %v, want %v", gotRes, tt.wantRes)
-			}
 		})
 	}
 }
