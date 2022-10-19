@@ -4,10 +4,10 @@ default applicable = false
 
 default compliant = false
 
-enc := input.atRestEncryption
+import input.atRestEncryption as enc
 
 applicable {
-	enc != null
+	enc
 }
 
 compliant {

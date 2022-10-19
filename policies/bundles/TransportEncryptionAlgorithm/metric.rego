@@ -7,10 +7,9 @@ default compliant = false
 
 default applicable = false
 
-algorithm := enc.algorithm
 
 applicable {
-	algorithm != null
+	enc
 }
 
 compliant {
