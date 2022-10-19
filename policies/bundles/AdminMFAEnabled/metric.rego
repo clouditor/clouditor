@@ -15,7 +15,7 @@ applicable {
 
 compliant {
 	# count the number of "factors"
-	compare(data.operator, data.target_value, identity.authenticity)
+	compare(data.operator, data.target_value, count(identity.authenticity))
 
 	# also make sure, that we do not have any "NoAuthentication" in the factor and all are activated
 	every factor in identity.authenticity {
