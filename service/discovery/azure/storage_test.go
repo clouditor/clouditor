@@ -225,35 +225,6 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 		return createResponse(map[string]interface{}{
 			"value": &[]map[string]interface{}{},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1" {
-		return createResponse(map[string]interface{}{
-			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault1",
-			"type":     "Microsoft.Compute/diskEncryptionSets",
-			"name":     "encryptionkeyvault1",
-			"location": "germanywestcentral",
-			"properties": map[string]interface{}{
-				"activeKey": map[string]interface{}{
-					"sourceVault": map[string]interface{}{
-						"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.KeyVault/vaults/keyvault1",
-					},
-					"keyUrl": "https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382",
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault2" {
-		return createResponse(map[string]interface{}{
-			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault2",
-			"type":     "Microsoft.Compute/diskEncryptionSets",
-			"name":     "encryptionkeyvault2",
-			"location": "germanywestcentral",
-			"properties": map[string]interface{}{
-				"activeKey": map[string]interface{}{
-					"sourceVault": map[string]interface{}{
-						"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.KeyVault/vaults/keyvault2",
-					},
-				},
-			},
-		}, 200)
 	}
 
 	return m.mockSender.Do(req)
@@ -653,10 +624,6 @@ func TestStorageMethodsWhenInputIsInvalid(t *testing.T) {
 		fmt.Println("error getting mocked storage account object: %w", err)
 	}
 
-	// Test method diskEncryptionSetName
-	discEncryptionSetID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1"
-	assert.Equal(t, "encryptionkeyvault1", diskEncryptionSetName(discEncryptionSetID))
-
 	// Test method storageAtRestEncryption
 	atRestEncryption, err := storageAtRestEncryption(mockedStorageAccountObject)
 	assert.NoError(t, err)
@@ -718,37 +685,6 @@ func Test_accountName(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equal(t, tt.want, accountName(tt.args.id))
-		})
-	}
-}
-
-func Test_diskEncryptionSetName(t *testing.T) {
-	type args struct {
-		diskEncryptionSetID string
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{
-			name: "Correct ID",
-			args: args{
-				diskEncryptionSetID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1",
-			},
-			want: "encryptionkeyvault1",
-		},
-		{
-			name: "Empty ID",
-			args: args{
-				diskEncryptionSetID: "",
-			},
-			want: "",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, diskEncryptionSetName(tt.args.diskEncryptionSetID))
 		})
 	}
 }

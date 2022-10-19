@@ -94,6 +94,8 @@ func TestNewService(t *testing.T) {
 			assert.NotEmpty(t, got.scheduler)
 			got.scheduler = nil
 			tt.want.scheduler = nil
+			got.Events = nil
+			tt.want.Events = nil
 
 			// we cannot compare the assessment streams, so we first check if it is not empty and then nil it
 			assert.NotEmpty(t, got.assessmentStreams)

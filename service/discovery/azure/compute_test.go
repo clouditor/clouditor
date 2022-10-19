@@ -322,7 +322,7 @@ func TestCompute(t *testing.T) {
 	assert.NotEmpty(t, d.Name())
 }
 
-func TestVirtualMachine(t *testing.T) {
+func TestDiscoverer_List(t *testing.T) {
 	d := NewAzureComputeDiscovery(
 		WithSender(&mockComputeSender{}),
 		WithAuthorizer(&mockAuthorizer{}),
@@ -1808,6 +1808,37 @@ func Test_azureComputeDiscovery_keyURL(t *testing.T) {
 				return
 			}
 			assert.Equalf(t, tt.want, got, "keyURL(%v)", tt.args.diskEncryptionSetID)
+		})
+	}
+}
+
+func Test_diskEncryptionSetName(t *testing.T) {
+	type args struct {
+		diskEncryptionSetID string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "Correct ID",
+			args: args{
+				diskEncryptionSetID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1",
+			},
+			want: "encryptionkeyvault1",
+		},
+		{
+			name: "Empty ID",
+			args: args{
+				diskEncryptionSetID: "",
+			},
+			want: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, diskEncryptionSetName(tt.args.diskEncryptionSetID))
 		})
 	}
 }

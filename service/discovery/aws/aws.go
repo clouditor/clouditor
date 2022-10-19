@@ -96,7 +96,3 @@ func loadSTSClient(cfg aws.Config) STSAPI {
 	client := sts.NewFromConfig(cfg)
 	return client
 }
-
-func labels(tags []aws.Tag) {
-
-}
