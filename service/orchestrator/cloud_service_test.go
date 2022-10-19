@@ -30,9 +30,11 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api"
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
-
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -99,7 +101,7 @@ func TestService_RegisterCloudService(t *testing.T) {
 	}
 }
 
-func TestService_ListCloudServices(t *testing.T) {
+func TestService_ListCloudServicesOld(t *testing.T) {
 	var (
 		listCloudServicesResponse *orchestrator.ListCloudServicesResponse
 		cloudService              *orchestrator.CloudService
@@ -313,4 +315,121 @@ func TestService_CreateDefaultTargetCloudService(t *testing.T) {
 	cloudServiceResponse, err = orchestratorService.CreateDefaultTargetCloudService()
 	assert.NoError(t, err)
 	assert.Nil(t, cloudServiceResponse)
+}
+
+func TestService_ListCloudServices(t *testing.T) {
+	type fields struct {
+		results               map[string]*assessment.AssessmentResult
+		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		storage               persistence.Storage
+		metricsFile           string
+		loadMetricsFunc       func() ([]*assessment.Metric, error)
+		catalogsFile          string
+		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
+		events                chan *orchestrator.MetricChangeEvent
+		authz                 service.AuthorizationStrategy
+	}
+	type args struct {
+		ctx context.Context
+		req *orchestrator.ListCloudServicesRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes *orchestrator.ListCloudServicesResponse
+		wantErr bool
+	}{
+		{
+			name: "no services stored",
+			args: args{req: &orchestrator.ListCloudServicesRequest{}},
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			wantRes: &orchestrator.ListCloudServicesResponse{},
+			wantErr: false,
+		},
+		{
+			name: "one service stored",
+			args: args{req: &orchestrator.ListCloudServicesRequest{}},
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					service := &orchestrator.CloudService{
+						Id:          DefaultTargetCloudServiceId,
+						Name:        DefaultTargetCloudServiceName,
+						Description: DefaultTargetCloudServiceDescription,
+					}
+
+					_ = s.Create(service)
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
+			wantRes: &orchestrator.ListCloudServicesResponse{
+				Services: []*orchestrator.CloudService{
+					{
+						Id:          DefaultTargetCloudServiceId,
+						Name:        DefaultTargetCloudServiceName,
+						Description: DefaultTargetCloudServiceDescription,
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid request",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &orchestrator.ListCloudServicesRequest{
+					OrderBy: "not a field",
+				},
+			},
+			wantRes: &orchestrator.ListCloudServicesResponse{
+				Services: []*orchestrator.CloudService{
+					{
+						Id:          DefaultTargetCloudServiceId,
+						Name:        DefaultTargetCloudServiceName,
+						Description: DefaultTargetCloudServiceDescription,
+					},
+				},
+			},
+			wantErr: false,
+		},
+		/*
+			// 3rd case: Invalid request
+			_, err = orchestratorService.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{
+				OrderBy: "not a field",
+			})
+			assert.Equal(t, codes.InvalidArgument, status.Code(err))
+			assert.Contains(t, err.Error(), api.ErrInvalidColumnName.Error())*/
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				results:               tt.fields.results,
+				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
+				storage:               tt.fields.storage,
+				metricsFile:           tt.fields.metricsFile,
+				loadMetricsFunc:       tt.fields.loadMetricsFunc,
+				catalogsFile:          tt.fields.catalogsFile,
+				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
+				events:                tt.fields.events,
+				authz:                 tt.fields.authz,
+			}
+
+			gotRes, err := svc.ListCloudServices(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.ListCloudServices() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if !proto.Equal(gotRes, tt.wantRes) {
+				t.Errorf("Service.ListCloudServices() = %v, want %v", gotRes, tt.wantRes)
+			}
+		})
+	}
 }
