@@ -31,6 +31,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
@@ -94,4 +95,8 @@ func formatError(ae smithy.APIError) error {
 func loadSTSClient(cfg aws.Config) STSAPI {
 	client := sts.NewFromConfig(cfg)
 	return client
+}
+
+func labels(tags []aws.Tag) {
+
 }

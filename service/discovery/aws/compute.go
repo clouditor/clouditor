@@ -169,6 +169,7 @@ func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
 					GeoLocation: voc.GeoLocation{
 						Region: d.awsConfig.cfg.Region,
 					},
+					Labels: d.labels(volume.Tags),
 				},
 				AtRestEncryption: atRest,
 			},
@@ -205,6 +206,7 @@ func (d *computeDiscovery) discoverNetworkInterfaces() ([]voc.NetworkInterface, 
 					GeoLocation: voc.GeoLocation{
 						Region: d.awsConfig.cfg.Region,
 					},
+					Labels: d.labels(ifc.TagSet),
 				},
 			},
 		})
@@ -237,6 +239,7 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachine, erro
 					GeoLocation: voc.GeoLocation{
 						Region: d.awsConfig.cfg.Region,
 					},
+					Labels: d.labels(vm.Tags),
 				},
 				NetworkInterface: d.getNetworkInterfacesOfVM(vm),
 			}
@@ -382,6 +385,16 @@ func (*computeDiscovery) nameOrID(tags []typesEC2.Tag, ID *string) string {
 
 	// If no tag with 'name' was found, return ID instead
 	return aws.ToString(ID)
+}
+
+func (*computeDiscovery) labels(tags []typesEC2.Tag) (labels map[string]string) {
+	labels = map[string]string{}
+
+	for _, tag := range tags {
+		labels[aws.ToString(tag.Key)] = aws.ToString(tag.Value)
+	}
+
+	return
 }
 
 // addARNToVolume generates the ARN of a volumne instance
