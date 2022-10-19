@@ -33,6 +33,5 @@ type Identity struct {
 	Authenticity          []IsAuthenticity `json:"authenticity"`
 	Privileged            bool             `json:"privileged"`
 	DisablePasswordPolicy bool             `json:"disablePasswordPolicy"`
-	Activated             bool             `json:"activated"`
 	LastActivity          time.Time        `json:"lastActivity"`
 }

@@ -7,11 +7,10 @@ default compliant = false
 
 default applicable = false
 
-
 applicable {
 	enc
 }
 
 compliant {
-	compare(data.operator, data.target_value, algorithm)
+	compare(data.operator, data.target_value, enc.algorithm)
 }
