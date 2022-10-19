@@ -90,7 +90,7 @@ type Service struct {
 
 	events chan *orchestrator.MetricChangeEvent
 
-	authz AuthorizationStrategy
+	authz service.AuthorizationStrategy
 }
 
 func init() {
@@ -135,6 +135,13 @@ func WithStorage(storage persistence.Storage) ServiceOption {
 	}
 }
 
+// WithAuthorizationStrategyJWT is an option that configures an JWT-based authorization strategy using a specific claim key.
+func WithAuthorizationStrategyJWT(key string) ServiceOption {
+	return func(s *Service) {
+		s.authz = &service.AuthorizationStrategyJWT{Key: key}
+	}
+}
+
 // NewService creates a new Orchestrator service
 func NewService(opts ...ServiceOption) *Service {
 	var err error
@@ -160,7 +167,7 @@ func NewService(opts ...ServiceOption) *Service {
 
 	// Default to an allow-all authorization strategy
 	if s.authz == nil {
-		s.authz = &AuthorizationStrategyAllowAll{}
+		s.authz = &service.AuthorizationStrategyAllowAll{}
 	}
 
 	if err = s.loadMetrics(); err != nil {

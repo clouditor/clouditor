@@ -75,7 +75,7 @@ func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.Regi
 }
 
 // ListCloudServices implements method for OrchestratorServer interface for listing all cloud services
-func (svc *Service) ListCloudServices(_ context.Context, req *orchestrator.ListCloudServicesRequest) (
+func (svc *Service) ListCloudServices(ctx context.Context, req *orchestrator.ListCloudServicesRequest) (
 	res *orchestrator.ListCloudServicesResponse, err error) {
 	res = new(orchestrator.ListCloudServicesResponse)
 
@@ -87,23 +87,38 @@ func (svc *Service) ListCloudServices(_ context.Context, req *orchestrator.ListC
 		return
 	}
 
-	// Paginate the cloud services according to the request
-	res.Services, res.NextPageToken, err = service.PaginateStorage[*orchestrator.CloudService](req, svc.storage,
-		service.DefaultPaginationOpts)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
+	all, list := svc.authz.AllowedCloudServices(ctx)
+
+	if !all {
+		// Paginate the cloud services according to the request
+		res.Services, res.NextPageToken, err = service.PaginateStorage[*orchestrator.CloudService](req, svc.storage,
+			service.DefaultPaginationOpts)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
+		}
+	} else {
+		// Paginate the cloud services according to the request
+		res.Services, res.NextPageToken, err = service.PaginateStorage[*orchestrator.CloudService](req, svc.storage,
+			service.DefaultPaginationOpts, list)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
+		}
 	}
 
 	return
 }
 
 // GetCloudService implements method for OrchestratorServer interface for getting a cloud service with provided id
-func (s *Service) GetCloudService(_ context.Context, req *orchestrator.GetCloudServiceRequest) (response *orchestrator.CloudService, err error) {
+func (s *Service) GetCloudService(ctx context.Context, req *orchestrator.GetCloudServiceRequest) (response *orchestrator.CloudService, err error) {
 	if req == nil {
 		return nil, status.Errorf(codes.InvalidArgument, api.ErrRequestIsNil.Error())
 	}
 	if req.CloudServiceId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrIDIsMissing.Error())
+	}
+
+	if !s.authz.CheckAccess(ctx, req) {
+		return nil, service.ErrPermissionDenied
 	}
 
 	response = new(orchestrator.CloudService)
@@ -125,6 +140,10 @@ func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.Upda
 
 	if req.CloudServiceId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
+	}
+
+	if !s.authz.CheckAccess(ctx, req) {
+		return nil, service.ErrPermissionDenied
 	}
 
 	count, err := s.storage.Count(req.Service, "id = ?", req.CloudServiceId)
@@ -150,9 +169,13 @@ func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.Upda
 }
 
 // RemoveCloudService implements method for OrchestratorServer interface for removing a cloud service
-func (s *Service) RemoveCloudService(_ context.Context, req *orchestrator.RemoveCloudServiceRequest) (response *emptypb.Empty, err error) {
+func (s *Service) RemoveCloudService(ctx context.Context, req *orchestrator.RemoveCloudServiceRequest) (response *emptypb.Empty, err error) {
 	if req.CloudServiceId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
+	}
+
+	if !s.authz.CheckAccess(ctx, req) {
+		return nil, service.ErrPermissionDenied
 	}
 
 	err = s.storage.Delete(&orchestrator.CloudService{Id: req.CloudServiceId})
