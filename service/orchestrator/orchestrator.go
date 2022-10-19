@@ -89,6 +89,8 @@ type Service struct {
 	loadCatalogsFunc func() ([]*orchestrator.Catalog, error)
 
 	events chan *orchestrator.MetricChangeEvent
+
+	authz AuthorizationStrategy
 }
 
 func init() {
@@ -154,6 +156,11 @@ func NewService(opts ...ServiceOption) *Service {
 		if err != nil {
 			log.Errorf("Could not initialize the storage: %v", err)
 		}
+	}
+
+	// Default to an allow-all authorization strategy
+	if s.authz == nil {
+		s.authz = &AuthorizationStrategyAllowAll{}
 	}
 
 	if err = s.loadMetrics(); err != nil {
