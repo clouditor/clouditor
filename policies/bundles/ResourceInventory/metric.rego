@@ -6,7 +6,7 @@ default compliant = false
 
 applicable = true
 
-# all resources all applicable
+# all resources are applicable
 
 compliant = true
 

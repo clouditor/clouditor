@@ -24,5 +24,5 @@ compliant {
 	window := ((((data.target_value * 24) * 3600) * 1000) * 1000) * 1000
 
 	#now - ts <= window
-	compare(data.operator, window, now - ts)
+	compare(data.operator, now - ts, window)
 }
