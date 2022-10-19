@@ -27,6 +27,9 @@ package voc
 
 type Identifiable struct {
 	*Resource
-	Authenticity  Authenticity    `json:"authenticity"`
+
+	Authenticity  IsAuthenticity  `json:"authenticity"`
 	Authorization IsAuthorization `json:"authorization"`
+
+	Activated bool `json:"activated"`
 }

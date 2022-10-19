@@ -53,10 +53,6 @@ func TestAuthenticityInterface(t *testing.T) {
 			typ:            "PasswordBasedAuthentication",
 		},
 		{
-			isAuthenticity: &JwtBasedAuthentication{},
-			typ:            "JwtBasedAuthentication",
-		},
-		{
 			isAuthenticity: &TokenBasedAuthentication{},
 			typ:            "TokenBasedAuthentication",
 		},
