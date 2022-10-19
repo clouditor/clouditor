@@ -28,3 +28,7 @@ package voc
 type CertificateBasedAuthentication struct {
 	*Authenticity
 }
+
+func (c *CertificateBasedAuthentication) Type() string {
+	return "CertificateBasedAuthentication"
+}

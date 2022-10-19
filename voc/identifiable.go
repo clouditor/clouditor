@@ -25,8 +25,11 @@
 
 package voc
 
-type IdentityManagement struct {
+type Identifiable struct {
 	*Resource
-	Authenticity  *Authenticity  `json:"authenticity"`
-	Authorization *Authorization `json:"authorization"`
+
+	Authenticity  IsAuthenticity  `json:"authenticity"`
+	Authorization IsAuthorization `json:"authorization"`
+
+	Activated bool `json:"activated"`
 }

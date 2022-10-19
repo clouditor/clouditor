@@ -27,7 +27,8 @@ package voc
 
 type NetworkService struct {
 	*Networking
-	Compute             []ResourceID         `json:"compute"`
+	Compute             ResourceID           `json:"compute"`
+	Authenticity        IsAuthenticity       `json:"authenticity"`
 	TransportEncryption *TransportEncryption `json:"transportEncryption"`
 	Ips                 []string             `json:"ips"`
 	Ports               []uint16             `json:"ports"`

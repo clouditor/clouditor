@@ -1,17 +1,16 @@
 package clouditor.metrics.transport_encryption_enforced
 
 import data.clouditor.compare
+import input.transportEncryption as enc
 
 default compliant = false
 
 default applicable = false
 
-enforced := input.httpEndpoint.transportEncryption.enforced
-
 applicable {
-	enforced != null
+	enc
 }
 
 compliant {
-	compare(data.operator, data.target_value, enforced)
+	compare(data.operator, data.target_value, enc.enforced)
 }

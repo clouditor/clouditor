@@ -424,7 +424,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								Region: "eastus",
 							},
 						},
-						AtRestEncryption: voc.ManagedKeyEncryption{
+						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
@@ -445,7 +445,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								Region: "eastus",
 							},
 						},
-						AtRestEncryption: voc.ManagedKeyEncryption{
+						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
@@ -466,7 +466,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								Region: "eastus",
 							},
 						},
-						AtRestEncryption: voc.ManagedKeyEncryption{
+						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
@@ -487,7 +487,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								Region: "eastus",
 							},
 						},
-						AtRestEncryption: voc.ManagedKeyEncryption{
+						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
@@ -546,7 +546,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								Region: "eastus",
 							},
 						},
-						AtRestEncryption: voc.CustomerKeyEncryption{
+						AtRestEncryption: &voc.CustomerKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "",
 								Enabled:   true,
@@ -568,7 +568,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								Region: "eastus",
 							},
 						},
-						AtRestEncryption: voc.CustomerKeyEncryption{
+						AtRestEncryption: &voc.CustomerKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "",
 								Enabled:   true,
@@ -627,7 +627,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							Type:   []string{"BlockStorage", "Storage", "Resource"},
 						},
 
-						AtRestEncryption: voc.ManagedKeyEncryption{
+						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
@@ -648,7 +648,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							Labels: map[string]string{},
 							Type:   []string{"BlockStorage", "Storage", "Resource"},
 						},
-						AtRestEncryption: voc.CustomerKeyEncryption{
+						AtRestEncryption: &voc.CustomerKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "",
 								Enabled:   true,
@@ -721,9 +721,8 @@ func TestStorageMethodsWhenInputIsInvalid(t *testing.T) {
 	atRestEncryption, err := storageAtRestEncryption(mockedStorageAccountObject)
 	assert.NoError(t, err)
 
-	managedKeyEncryption := voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{Algorithm: "AES256", Enabled: true}}
+	managedKeyEncryption := &voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{Algorithm: "AES256", Enabled: true}}
 	assert.Equal(t, managedKeyEncryption, atRestEncryption)
-
 }
 
 func TestStorageDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
@@ -1027,7 +1026,7 @@ func Test_azureStorageDiscovery_handleBlockStorage(t *testing.T) {
 						Labels: map[string]string{},
 					},
 
-					AtRestEncryption: voc.CustomerKeyEncryption{
+					AtRestEncryption: &voc.CustomerKeyEncryption{
 						AtRestEncryption: &voc.AtRestEncryption{
 							Algorithm: "",
 							Enabled:   true,
@@ -1063,7 +1062,7 @@ func Test_storageAtRestEncryption(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    voc.HasAtRestEncryption
+		want    voc.IsAtRestEncryption
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -1099,7 +1098,7 @@ func Test_storageAtRestEncryption(t *testing.T) {
 					},
 				},
 			},
-			want: voc.ManagedKeyEncryption{
+			want: &voc.ManagedKeyEncryption{
 				AtRestEncryption: &voc.AtRestEncryption{
 					Algorithm: "AES256",
 					Enabled:   true,
@@ -1235,7 +1234,7 @@ func Test_azureStorageDiscovery_blockStorageAtRestEncryption(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    voc.HasAtRestEncryption
+		want    voc.IsAtRestEncryption
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -1302,7 +1301,7 @@ func Test_azureStorageDiscovery_blockStorageAtRestEncryption(t *testing.T) {
 					},
 				},
 			},
-			want: voc.CustomerKeyEncryption{
+			want: &voc.CustomerKeyEncryption{
 				AtRestEncryption: &voc.AtRestEncryption{
 					Algorithm: "",
 					Enabled:   true,
@@ -1409,7 +1408,7 @@ func Test_handleFileStorage(t *testing.T) {
 						Labels: map[string]string{},
 						Type:   []string{"FileStorage", "Storage", "Resource"},
 					},
-					AtRestEncryption: voc.ManagedKeyEncryption{
+					AtRestEncryption: &voc.ManagedKeyEncryption{
 						AtRestEncryption: &voc.AtRestEncryption{
 							Algorithm: "AES256",
 							Enabled:   true,
@@ -1641,7 +1640,7 @@ func Test_handleObjectStorage(t *testing.T) {
 						Labels: map[string]string{},
 						Type:   []string{"ObjectStorage", "Storage", "Resource"},
 					},
-					AtRestEncryption: voc.ManagedKeyEncryption{
+					AtRestEncryption: &voc.ManagedKeyEncryption{
 						AtRestEncryption: &voc.AtRestEncryption{
 							Algorithm: "AES256",
 							Enabled:   true,
@@ -1719,7 +1718,7 @@ func Test_azureStorageDiscovery_discoverBlockStorages(t *testing.T) {
 							Labels: map[string]string{},
 						},
 
-						AtRestEncryption: voc.ManagedKeyEncryption{
+						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
@@ -1740,7 +1739,7 @@ func Test_azureStorageDiscovery_discoverBlockStorages(t *testing.T) {
 							Type:   []string{"BlockStorage", "Storage", "Resource"},
 							Labels: map[string]string{},
 						},
-						AtRestEncryption: voc.CustomerKeyEncryption{
+						AtRestEncryption: &voc.CustomerKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "",
 								Enabled:   true,
@@ -1849,7 +1848,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 								Region: "eastus",
 							},
 						},
-						AtRestEncryption: voc.ManagedKeyEncryption{
+						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
@@ -1870,7 +1869,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 								Region: "eastus",
 							},
 						},
-						AtRestEncryption: voc.ManagedKeyEncryption{
+						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
@@ -1978,7 +1977,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 								Region: "eastus",
 							},
 						},
-						AtRestEncryption: voc.ManagedKeyEncryption{
+						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
@@ -1999,7 +1998,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 								Region: "eastus",
 							},
 						},
-						AtRestEncryption: voc.ManagedKeyEncryption{
+						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,

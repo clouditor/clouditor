@@ -27,7 +27,7 @@ package voc
 
 type HttpEndpoint struct {
 	*Functionality
-	Authenticity        *Authenticity        `json:"authenticity"`
+	Authenticity        IsAuthenticity       `json:"authenticity"`
 	TransportEncryption *TransportEncryption `json:"transportEncryption"`
 	Url                 string               `json:"url"`
 	Method              string               `json:"method"`
