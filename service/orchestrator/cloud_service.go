@@ -117,7 +117,7 @@ func (s *Service) GetCloudService(ctx context.Context, req *orchestrator.GetClou
 		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrIDIsMissing.Error())
 	}
 
-	if !s.authz.CheckAccess(ctx, req) {
+	if !s.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied
 	}
 
@@ -142,7 +142,7 @@ func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.Upda
 		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
 	}
 
-	if !s.authz.CheckAccess(ctx, req) {
+	if !s.authz.CheckAccess(ctx, service.AccessUpdate, req) {
 		return nil, service.ErrPermissionDenied
 	}
 
@@ -174,7 +174,7 @@ func (s *Service) RemoveCloudService(ctx context.Context, req *orchestrator.Remo
 		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
 	}
 
-	if !s.authz.CheckAccess(ctx, req) {
+	if !s.authz.CheckAccess(ctx, service.AccessDelete, req) {
 		return nil, service.ErrPermissionDenied
 	}
 

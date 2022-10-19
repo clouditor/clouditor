@@ -37,10 +37,19 @@ import (
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 )
 
+type RequestType int
+
+const (
+	AccessCreate RequestType = iota
+	AccessRead
+	AccessUpdate
+	AccessDelete
+)
+
 // AuthorizationStrategy is an interface that implements a function which whether the current cloud service request can
 // be fulfilled using the current access strategy.
 type AuthorizationStrategy interface {
-	CheckAccess(ctx context.Context, req orchestrator.CloudServiceRequest) bool
+	CheckAccess(ctx context.Context, typ RequestType, req orchestrator.CloudServiceRequest) bool
 	AllowedCloudServices(ctx context.Context) (all bool, IDs []string)
 }
 
@@ -51,7 +60,7 @@ type AuthorizationStrategyJWT struct {
 }
 
 // CheckAccess checks whether the current request can be fulfilled using the current access strategy.
-func (a *AuthorizationStrategyJWT) CheckAccess(ctx context.Context, req orchestrator.CloudServiceRequest) bool {
+func (a *AuthorizationStrategyJWT) CheckAccess(ctx context.Context, typ RequestType, req orchestrator.CloudServiceRequest) bool {
 	var list []string
 
 	return slices.Contains(list, req.GetCloudServiceId())
@@ -84,7 +93,7 @@ func (a *AuthorizationStrategyJWT) AllowedCloudServices(ctx context.Context) (al
 type AuthorizationStrategyAllowAll struct{}
 
 // CheckAccess checks whether the current request can be fulfilled using the current access strategy.
-func (a *AuthorizationStrategyAllowAll) CheckAccess(ctx context.Context, req orchestrator.CloudServiceRequest) bool {
+func (a *AuthorizationStrategyAllowAll) CheckAccess(ctx context.Context, typ RequestType, req orchestrator.CloudServiceRequest) bool {
 	return true
 }
 
