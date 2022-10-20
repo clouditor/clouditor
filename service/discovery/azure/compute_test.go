@@ -1559,7 +1559,7 @@ func Test_azureComputeDiscovery_handleBlockStorage(t *testing.T) {
 					sub:  *sub,
 					clientOptions: arm.ClientOptions{
 						ClientOptions: policy.ClientOptions{
-							Transport: mockStorageSender{},
+							Transport: mockComputeSender{},
 						},
 					},
 				},
@@ -1647,7 +1647,7 @@ func Test_azureComputeDiscovery_blockStorageAtRestEncryption(t *testing.T) {
 					sub:  sub,
 					clientOptions: arm.ClientOptions{
 						ClientOptions: policy.ClientOptions{
-							Transport: mockStorageSender{},
+							Transport: mockComputeSender{},
 						},
 					},
 				},
@@ -1676,7 +1676,7 @@ func Test_azureComputeDiscovery_blockStorageAtRestEncryption(t *testing.T) {
 					sub:  sub,
 					clientOptions: arm.ClientOptions{
 						ClientOptions: policy.ClientOptions{
-							Transport: mockStorageSender{},
+							Transport: mockComputeSender{},
 						},
 					},
 				},
@@ -1767,7 +1767,7 @@ func Test_azureComputeDiscovery_keyURL(t *testing.T) {
 					cred: &mockAuthorizer{},
 					clientOptions: arm.ClientOptions{
 						ClientOptions: policy.ClientOptions{
-							Transport: mockStorageSender{},
+							Transport: mockComputeSender{},
 						},
 					},
 					sub: sub,
@@ -1788,7 +1788,7 @@ func Test_azureComputeDiscovery_keyURL(t *testing.T) {
 					cred: &mockAuthorizer{},
 					clientOptions: arm.ClientOptions{
 						ClientOptions: policy.ClientOptions{
-							Transport: mockStorageSender{},
+							Transport: mockComputeSender{},
 						},
 					},
 					sub: sub,
