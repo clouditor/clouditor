@@ -35,6 +35,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 
 	"github.com/sirupsen/logrus"
@@ -51,10 +52,12 @@ const (
 var (
 	log *logrus.Entry
 
-	ErrCouldNotAuthenticate     = errors.New("could not authenticate to Azure")
-	ErrCouldNotGetSubscriptions = errors.New("could not get azure subscription")
-	ErrNoCredentialsConfigured  = errors.New("no credentials were configured")
-	ErrGettingNextPage          = errors.New("error getting next page")
+	ErrCouldNotAuthenticate           = errors.New("could not authenticate to Azure")
+	ErrCouldNotGetSubscriptions       = errors.New("could not get azure subscription")
+	ErrCouldNotGetBlobContainerClient = errors.New("could not get blob container client")
+	ErrCouldNotGetFileStorageClient   = errors.New("could not get file storage client")
+	ErrNoCredentialsConfigured        = errors.New("no credentials were configured")
+	ErrGettingNextPage                = errors.New("error getting next page")
 )
 
 type DiscoveryOption func(a *azureDiscovery)
@@ -82,6 +85,12 @@ type azureDiscovery struct {
 	cred                azcore.TokenCredential
 	clientOptions       arm.ClientOptions
 	discovererComponent string
+	client              client
+}
+
+type client struct {
+	blobContainerClient *armstorage.BlobContainersClient
+	fileStorageClient   *armstorage.FileSharesClient
 }
 
 func (a *azureDiscovery) authorize() (err error) {
@@ -130,9 +139,10 @@ func (a *azureDiscovery) authorize() (err error) {
 }
 
 // NewAuthorizer returns the Azure credential using one of the following authentication types (in the following order):
-//  EnvironmentCredential
-//  ManagedIdentityCredential
-//  AzureCLICredential
+//
+//	EnvironmentCredential
+//	ManagedIdentityCredential
+//	AzureCLICredential
 func NewAuthorizer() (*azidentity.DefaultAzureCredential, error) {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {

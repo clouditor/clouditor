@@ -75,6 +75,7 @@ func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 		return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
 	}
 
+	log.Info("Discover Azure block storage")
 	// Discover block storage
 	storage, err := d.discoverBlockStorages()
 	if err != nil {
@@ -83,7 +84,6 @@ func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 	list = append(list, storage...)
 
 	log.Info("Discover Azure compute resources")
-
 	// Discover virtual machines
 	virtualMachines, err := d.discoverVirtualMachines()
 	if err != nil {

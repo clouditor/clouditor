@@ -49,7 +49,7 @@ type azureStorageDiscovery struct {
 
 func NewAzureStorageDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureStorageDiscovery{
-		azureDiscovery{
+		azureDiscovery: azureDiscovery{
 			discovererComponent: StorageComponent,
 		},
 	}
@@ -98,6 +98,16 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 		return nil, err
 	}
 
+	// initialize blob container client
+	if err = d.initializeBlobContainerClient(); err != nil {
+		return nil, fmt.Errorf("%s: %w", ErrCouldNotGetBlobContainerClient, err)
+	}
+
+	// initialize file share client
+	if err = d.initializeFileStorageClient(); err != nil {
+		return nil, fmt.Errorf("%s: %w", ErrCouldNotGetFileStorageClient, err)
+	}
+
 	// List all storage accounts across all resource groups
 	listPager := client.NewListPager(&armstorage.AccountsClientListOptions{})
 	for listPager.More() {
@@ -140,15 +150,8 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 func (d *azureStorageDiscovery) discoverFileStorages(account *armstorage.Account) ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
-	// Create file shares client
-	client, err := armstorage.NewFileSharesClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
-	if err != nil {
-		err = fmt.Errorf("could not get new virtual machines client: %w", err)
-		return nil, err
-	}
-
 	// List all file shares in the specified resource group
-	listPager := client.NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.FileSharesClientListOptions{})
+	listPager := d.client.fileStorageClient.NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.FileSharesClientListOptions{})
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
@@ -174,16 +177,8 @@ func (d *azureStorageDiscovery) discoverFileStorages(account *armstorage.Account
 func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Account) ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
-	// Create blob containers client
-	// TODO(oxisto): do not re-create client
-	client, err := armstorage.NewBlobContainersClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
-	if err != nil {
-		err = fmt.Errorf("could not get new virtual machines client: %w", err)
-		return nil, err
-	}
-
 	// List all blob containers in the specified resource group
-	listPager := client.NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.BlobContainersClientListOptions{})
+	listPager := d.client.blobContainerClient.NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.BlobContainersClientListOptions{})
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
@@ -382,4 +377,36 @@ func accountName(id string) string {
 
 	splitName := strings.Split(id, "/")
 	return splitName[8]
+}
+
+// initializeBlobContainerClient creates the client if not already exists
+func (d *azureStorageDiscovery) initializeBlobContainerClient() (err error) {
+	if d.client.blobContainerClient != nil {
+		return
+	}
+
+	d.client.blobContainerClient, err = armstorage.NewBlobContainersClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	if err != nil {
+		err = fmt.Errorf("could not get new blob containers client: %w", err)
+		log.Debug(err)
+		return err
+	}
+
+	return
+}
+
+// initializeFileStorageClient creates the client if not already exists
+func (d *azureStorageDiscovery) initializeFileStorageClient() (err error) {
+	if d.client.fileStorageClient != nil {
+		return
+	}
+
+	d.client.fileStorageClient, err = armstorage.NewFileSharesClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	if err != nil {
+		err = fmt.Errorf("could not get new file storage client: %w", err)
+		log.Debug(err)
+		return err
+	}
+
+	return
 }
