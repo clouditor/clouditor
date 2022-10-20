@@ -89,6 +89,8 @@ type Service struct {
 
 	events chan *orchestrator.MetricChangeEvent
 
+	// authz defines our authorization strategy, e.g., which user can access which cloud service and associated
+	// resources, such as evidences and assessment results.
 	authz service.AuthorizationStrategy
 }
 

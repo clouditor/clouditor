@@ -319,8 +319,14 @@ func (svc *Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequ
 	return
 }
 
-func (svc *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.GetMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
+func (svc *Service) GetMetricConfiguration(ctx context.Context, req *orchestrator.GetMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+		return nil, service.ErrPermissionDenied
+	}
+
 	res = new(assessment.MetricConfiguration)
+
 	err = svc.storage.Get(res, gorm.WithoutPreload(), "cloud_service_id = ? AND metric_id = ?", req.CloudServiceId, req.MetricId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		// Otherwise, fall back to our default configuration
@@ -337,8 +343,13 @@ func (svc *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.
 }
 
 // UpdateMetricConfiguration updates the configuration for a metric, specified by the identifier in req.MetricId.
-func (svc *Service) UpdateMetricConfiguration(_ context.Context, req *orchestrator.UpdateMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
+func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestrator.UpdateMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
 	// TODO(oxisto): Validate the request
+
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+		return nil, service.ErrPermissionDenied
+	}
 
 	// Make sure that the configuration also has metric/service ID set
 	req.Configuration.CloudServiceId = req.CloudServiceId
@@ -373,6 +384,11 @@ func (svc *Service) UpdateMetricConfiguration(_ context.Context, req *orchestrat
 // configuration for a particular metric within the service, the default metric configuration is
 // inserted into the list.
 func (svc *Service) ListMetricConfigurations(ctx context.Context, req *orchestrator.ListMetricConfigurationRequest) (response *orchestrator.ListMetricConfigurationResponse, err error) {
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+		return nil, service.ErrPermissionDenied
+	}
+
 	response = &orchestrator.ListMetricConfigurationResponse{
 		Configurations: make(map[string]*assessment.MetricConfiguration),
 	}
