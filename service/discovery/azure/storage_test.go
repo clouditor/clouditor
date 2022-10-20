@@ -167,11 +167,19 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
 					"name": "container1",
 					"type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+					"properties": map[string]interface{}{
+						"hasImmutabilityPolicy": false,
+						"publicAccess":          armstorage.PublicAccessContainer,
+					},
 				},
 				{
 					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2",
 					"name": "container2",
 					"type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+					"properties": map[string]interface{}{
+						"hasImmutabilityPolicy": false,
+						"publicAccess":          armstorage.PublicAccessContainer,
+					},
 				},
 			},
 		}, 200)
@@ -182,11 +190,19 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container3",
 					"name": "container3",
 					"type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+					"properties": map[string]interface{}{
+						"hasImmutabilityPolicy": false,
+						"publicAccess":          armstorage.PublicAccessNone,
+					},
 				},
 				{
 					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container4",
 					"name": "container4",
 					"type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+					"properties": map[string]interface{}{
+						"hasImmutabilityPolicy": false,
+						"publicAccess":          armstorage.PublicAccessNone,
+					},
 				},
 			},
 		}, 200)
@@ -208,37 +224,6 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/fileServices/default/shares" {
 		return createResponse(map[string]interface{}{
 			"value": &[]map[string]interface{}{},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/disks" {
-		return createResponse(map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
-					"name":     "disk1",
-					"type":     "Microsoft.Compute/disks",
-					"location": "eastus",
-					"properties": map[string]interface{}{
-						"timeCreated": "2017-05-24T13:28:53.4540398Z",
-						"encryption": map[string]interface{}{
-							"diskEncryptionSetId": "",
-							"type":                "EncryptionAtRestWithPlatformKey",
-						},
-					},
-				},
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2",
-					"name":     "disk2",
-					"type":     "Microsoft.Compute/disks",
-					"location": "eastus",
-					"properties": map[string]interface{}{
-						"timeCreated": "2017-05-24T13:28:53.4540398Z",
-						"encryption": map[string]interface{}{
-							"diskEncryptionSetId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1",
-							"type":                "EncryptionAtRestWithCustomerKey",
-						},
-					},
-				},
-			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1" {
 		return createResponse(map[string]interface{}{
@@ -289,7 +274,7 @@ func TestNewAzureStorageDiscovery(t *testing.T) {
 				opts: nil,
 			},
 			want: &azureStorageDiscovery{
-				azureDiscovery{
+				azureDiscovery: azureDiscovery{
 					discovererComponent: StorageComponent,
 				},
 			},
@@ -300,7 +285,7 @@ func TestNewAzureStorageDiscovery(t *testing.T) {
 				opts: []DiscoveryOption{WithSender(mockStorageSender{})},
 			},
 			want: &azureStorageDiscovery{
-				azureDiscovery{
+				azureDiscovery: azureDiscovery{
 					clientOptions: arm.ClientOptions{
 						ClientOptions: policy.ClientOptions{
 							Transport: mockStorageSender{},
@@ -316,7 +301,7 @@ func TestNewAzureStorageDiscovery(t *testing.T) {
 				opts: []DiscoveryOption{WithAuthorizer(&mockAuthorizer{})},
 			},
 			want: &azureStorageDiscovery{
-				azureDiscovery{
+				azureDiscovery: azureDiscovery{
 					cred:                &mockAuthorizer{},
 					discovererComponent: StorageComponent,
 				},
@@ -352,7 +337,7 @@ func TestStorage(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 10, len(list))
+	assert.Equal(t, 8, len(list))
 	assert.NotEmpty(t, d.Name())
 }
 
@@ -429,7 +414,9 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								Enabled:   true,
 							},
 						},
+						Immutability: &voc.Immutability{Enabled: false},
 					},
+					PublicAccess: true,
 				},
 				&voc.ObjectStorage{
 					Storage: &voc.Storage{
@@ -450,7 +437,9 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								Enabled:   true,
 							},
 						},
+						Immutability: &voc.Immutability{Enabled: false},
 					},
+					PublicAccess: true,
 				},
 				&voc.FileStorage{
 					Storage: &voc.Storage{
@@ -552,7 +541,9 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							},
 							KeyUrl: "https://testvault.vault.azure.net/keys/testkey/123456",
 						},
+						Immutability: &voc.Immutability{Enabled: false},
 					},
+					PublicAccess: false,
 				},
 				&voc.ObjectStorage{
 					Storage: &voc.Storage{
@@ -574,7 +565,9 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							},
 							KeyUrl: "https://testvault.vault.azure.net/keys/testkey/123456",
 						},
+						Immutability: &voc.Immutability{Enabled: false},
 					},
+					PublicAccess: false,
 				},
 				&voc.StorageService{
 					Storages: []voc.ResourceID{
@@ -609,50 +602,6 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							Enabled:    true,
 							TlsVersion: "TLS1_2",
 							Algorithm:  "TLS",
-						},
-					},
-				},
-				&voc.BlockStorage{
-					Storage: &voc.Storage{
-						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
-							ServiceID:    discovery.DefaultCloudServiceID,
-							Name:         "disk1",
-							CreationTime: util.SafeTimestamp(&creationTime),
-							GeoLocation: voc.GeoLocation{
-								Region: "eastus",
-							},
-							Labels: map[string]string{},
-							Type:   []string{"BlockStorage", "Storage", "Resource"},
-						},
-
-						AtRestEncryption: &voc.ManagedKeyEncryption{
-							AtRestEncryption: &voc.AtRestEncryption{
-								Algorithm: "AES256",
-								Enabled:   true,
-							},
-						},
-					},
-				},
-				&voc.BlockStorage{
-					Storage: &voc.Storage{
-						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2",
-							ServiceID:    discovery.DefaultCloudServiceID,
-							Name:         "disk2",
-							CreationTime: util.SafeTimestamp(&creationTime),
-							GeoLocation: voc.GeoLocation{
-								Region: "eastus",
-							},
-							Labels: map[string]string{},
-							Type:   []string{"BlockStorage", "Storage", "Resource"},
-						},
-						AtRestEncryption: &voc.CustomerKeyEncryption{
-							AtRestEncryption: &voc.AtRestEncryption{
-								Algorithm: "",
-								Enabled:   true,
-							},
-							KeyUrl: "https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382",
 						},
 					},
 				},
@@ -895,7 +844,7 @@ func Test_azureStorageDiscovery_discoverStorageAccounts(t *testing.T) {
 				}
 			} else {
 				assert.Nil(t, err)
-				assert.Equal(t, 10, len(got))
+				assert.Equal(t, 8, len(got))
 			}
 		})
 	}
@@ -1200,12 +1149,14 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 }
 
 func Test_handleObjectStorage(t *testing.T) {
-	accountID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"
+	// accountID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"
 	accountRegion := "eastus"
 	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
 	keySource := armstorage.KeySourceMicrosoftStorage
 	containerID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1"
 	containerName := "container1"
+	immutability := false
+	publicAccess := armstorage.PublicAccessNone
 
 	type args struct {
 		account   *armstorage.Account
@@ -1217,40 +1168,40 @@ func Test_handleObjectStorage(t *testing.T) {
 		want    *voc.ObjectStorage
 		wantErr assert.ErrorAssertionFunc
 	}{
-		{
-			name: "Account is empty",
-			want: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrEmptyStorageAccount)
-			},
-		},
-		{
-			name: "Container is empty",
-			args: args{
-				account: &armstorage.Account{
-					ID: &accountID,
-				},
-			},
-			want: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "container is nil")
-			},
-		},
-		{
-			name: "Error getting atRestEncryption properties",
-			args: args{
-				account: &armstorage.Account{
-					ID: &accountID,
-				},
-				container: &armstorage.ListContainerItem{
-					ID: &containerID,
-				},
-			},
-			want: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not get object storage properties for the atRestEncryption:")
-			},
-		},
+		// {
+		// 	name: "Account is empty",
+		// 	want: nil,
+		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+		// 		return assert.ErrorIs(t, err, ErrEmptyStorageAccount)
+		// 	},
+		// },
+		// {
+		// 	name: "Container is empty",
+		// 	args: args{
+		// 		account: &armstorage.Account{
+		// 			ID: &accountID,
+		// 		},
+		// 	},
+		// 	want: nil,
+		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+		// 		return assert.ErrorContains(t, err, "container is nil")
+		// 	},
+		// },
+		// {
+		// 	name: "Error getting atRestEncryption properties",
+		// 	args: args{
+		// 		account: &armstorage.Account{
+		// 			ID: &accountID,
+		// 		},
+		// 		container: &armstorage.ListContainerItem{
+		// 			ID: &containerID,
+		// 		},
+		// 	},
+		// 	want: nil,
+		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+		// 		return assert.ErrorContains(t, err, "could not get object storage properties for the atRestEncryption:")
+		// 	},
+		// },
 		{
 			name: "No error",
 			args: args{
@@ -1266,6 +1217,10 @@ func Test_handleObjectStorage(t *testing.T) {
 				container: &armstorage.ListContainerItem{
 					ID:   &containerID,
 					Name: &containerName,
+					Properties: &armstorage.ContainerProperties{
+						HasImmutabilityPolicy: &immutability,
+						PublicAccess:          &publicAccess,
+					},
 				},
 			},
 			want: &voc.ObjectStorage{
@@ -1287,7 +1242,9 @@ func Test_handleObjectStorage(t *testing.T) {
 							Enabled:   true,
 						},
 					},
+					Immutability: &voc.Immutability{Enabled: false},
 				},
+				PublicAccess: false,
 			},
 			wantErr: assert.NoError,
 		},
@@ -1423,6 +1380,9 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 			d := &azureStorageDiscovery{
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
+			// initialize file share client
+			_ = d.initializeFileStorageClient()
+
 			got, err := d.discoverFileStorages(tt.args.account)
 			if !tt.wantErr(t, err) {
 				return
@@ -1520,7 +1480,9 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 								Enabled:   true,
 							},
 						},
+						Immutability: &voc.Immutability{Enabled: false},
 					},
+					PublicAccess: true,
 				},
 				&voc.ObjectStorage{
 					Storage: &voc.Storage{
@@ -1541,7 +1503,9 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 								Enabled:   true,
 							},
 						},
+						Immutability: &voc.Immutability{Enabled: false},
 					},
+					PublicAccess: true,
 				},
 			},
 			wantErr: assert.NoError,
@@ -1552,6 +1516,10 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 			d := &azureStorageDiscovery{
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
+
+			// initialize blob container client
+			_ = d.initializeBlobContainerClient()
+
 			got, err := d.discoverObjectStorages(tt.args.account)
 			if !tt.wantErr(t, err) {
 				return
