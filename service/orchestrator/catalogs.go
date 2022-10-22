@@ -159,7 +159,7 @@ func (srv *Service) ListControls(ctx context.Context, req *orchestrator.ListCont
 	// If the category name is set (additional binding), forward it as a condition to the pagination method
 	if req.CategoryName != "" && req.CatalogId != "" {
 		res.Controls, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Control](req, srv.storage,
-			service.DefaultPaginationOpts, "category_name = ? AND catalog_id = ?", req.CategoryName, req.CatalogId)
+			service.DefaultPaginationOpts, "category_name = ? AND category_catalog_id = ?", req.CategoryName, req.CatalogId)
 	} else {
 		res.Controls, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Control](req, srv.storage,
 			service.DefaultPaginationOpts)
