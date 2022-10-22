@@ -33,6 +33,7 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -150,7 +151,7 @@ func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
 		volume := &res.Volumes[i]
 
 		atRest := &voc.AtRestEncryption{
-			Enabled: *volume.Encrypted,
+			Enabled: util.Deref(volume.Encrypted),
 		}
 
 		// AWS uses a fixed algorithm, if enabled
@@ -179,7 +180,7 @@ func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
 	return blocks, nil
 }
 
-// discoverVolumes discoveres all volumes (in the current region)
+// discoverNetworkInterfaces discovers all network interfaces (in the current region)
 func (d *computeDiscovery) discoverNetworkInterfaces() ([]voc.NetworkInterface, error) {
 	res, err := d.virtualMachineAPI.DescribeNetworkInterfaces(context.TODO(), &ec2.DescribeNetworkInterfacesInput{})
 	// TODO(oxisto): this error handling function seems to occur a lot

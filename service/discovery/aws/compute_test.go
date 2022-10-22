@@ -186,14 +186,41 @@ func (mockEC2API) DescribeInstances(_ context.Context, _ *ec2.DescribeInstancesI
 
 // DescribeVolumes is the method implementation of the EC2API interface
 func (mockEC2API) DescribeVolumes(_ context.Context, _ *ec2.DescribeVolumesInput, _ ...func(options *ec2.Options)) (*ec2.DescribeVolumesOutput, error) {
-	output := &ec2.DescribeVolumesOutput{}
+	output := &ec2.DescribeVolumesOutput{
+		NextToken: nil,
+		Volumes: []types.Volume{
+			{
+				VolumeId:   aws.String(blockVolumeId),
+				CreateTime: aws.Time(time.Now()),
+				Tags: []types.Tag{
+					{Key: aws.String("Name"), Value: aws.String("My Volume")},
+				},
+			},
+			{
+				VolumeId:   aws.String("othervolume"),
+				CreateTime: aws.Time(time.Now()),
+			},
+		},
+		ResultMetadata: middleware.Metadata{},
+	}
 
 	return output, nil
 }
 
 // DescribeNetworkInterfaces is the method implementation of the EC2API interface
 func (mockEC2API) DescribeNetworkInterfaces(_ context.Context, _ *ec2.DescribeNetworkInterfacesInput, _ ...func(options *ec2.Options)) (*ec2.DescribeNetworkInterfacesOutput, error) {
-	output := &ec2.DescribeNetworkInterfacesOutput{}
+	output := &ec2.DescribeNetworkInterfacesOutput{
+		NextToken: nil,
+		NetworkInterfaces: []types.NetworkInterface{
+			{
+				NetworkInterfaceId: aws.String(networkInterfaceId),
+				TagSet: []types.Tag{
+					{Key: aws.String("Name"), Value: aws.String("My Network Interface")},
+				},
+			},
+		},
+		ResultMetadata: middleware.Metadata{},
+	}
 
 	return output, nil
 }
