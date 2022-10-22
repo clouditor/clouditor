@@ -28,6 +28,8 @@ jobs:
         if: github.ref != 'refs/heads/main'
       - name: Install Protoc
         uses: arduino/setup-protoc@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Generate
         run: |
           go install google.golang.org/protobuf/cmd/protoc-gen-go \
