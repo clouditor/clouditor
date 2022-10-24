@@ -379,48 +379,18 @@ func accountName(id string) string {
 
 // initAccountsClient creates the client if not already exists
 func (d *azureStorageDiscovery) initAccountsClient() (err error) {
-	if d.clients.accountsClient != nil {
-		return
-	}
-
-	d.clients.accountsClient, err = armstorage.NewAccountsClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
-	if err != nil {
-		err = fmt.Errorf("%w: %s", ErrCouldNotGetAccountsClient, err)
-		log.Debug(err)
-		return err
-	}
-
+	d.clients.accountsClient, err = initClient(d.clients.accountsClient, &d.azureDiscovery, armstorage.NewAccountsClient, ErrCouldNotGetAccountsClient)
 	return
 }
 
 // initBlobContainerClient creates the client if not already exists
 func (d *azureStorageDiscovery) initBlobContainerClient() (err error) {
-	if d.clients.blobContainerClient != nil {
-		return
-	}
-
-	d.clients.blobContainerClient, err = armstorage.NewBlobContainersClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
-	if err != nil {
-		err = fmt.Errorf("%w: %s", ErrCouldNotGetBlobContainerClient, err)
-		log.Debug(err)
-		return err
-	}
-
+	d.clients.blobContainerClient, err = initClient(d.clients.blobContainerClient, &d.azureDiscovery, armstorage.NewBlobContainersClient, ErrCouldNotGetBlobContainerClient)
 	return
 }
 
 // initFileStorageClient creates the client if not already exists
 func (d *azureStorageDiscovery) initFileStorageClient() (err error) {
-	if d.clients.fileStorageClient != nil {
-		return
-	}
-
-	d.clients.fileStorageClient, err = armstorage.NewFileSharesClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
-	if err != nil {
-		err = fmt.Errorf("%w: %s", ErrCouldNotGetFileStorageClient, err)
-		log.Debug(err)
-		return err
-	}
-
+	d.clients.fileStorageClient, err = initClient(d.clients.fileStorageClient, &d.azureDiscovery, armstorage.NewFileSharesClient, ErrCouldNotGetFileStorageClient)
 	return
 }

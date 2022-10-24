@@ -183,3 +183,22 @@ func labels(tags map[string]*string) map[string]string {
 
 	return l
 }
+
+// ClientCreateFunc is a type that describes a function to create a new Azure SDK client.
+type ClientCreateFunc[T any] func(subscriptionID string, credential azcore.TokenCredential, options *arm.ClientOptions) (*T, error)
+
+// initClient creates an Azure client if not already exists
+func initClient[T any](existingClient *T, d *azureDiscovery, fun ClientCreateFunc[T], inErr error) (client *T, err error) {
+	if existingClient != nil {
+		return existingClient, nil
+	}
+
+	client, err = fun(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	if err != nil {
+		err = fmt.Errorf("%w: %s", inErr, err)
+		log.Debug(err)
+		return nil, err
+	}
+
+	return
+}

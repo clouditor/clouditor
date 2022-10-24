@@ -289,32 +289,12 @@ func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *armnetwork.L
 
 // initNetworkInterfacesClient creates the client if not already exists
 func (d *azureNetworkDiscovery) initNetworkInterfacesClient() (err error) {
-	if d.clients.fileStorageClient != nil {
-		return
-	}
-
-	d.clients.networkInterfacesClient, err = armnetwork.NewInterfacesClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
-	if err != nil {
-		err = fmt.Errorf("%w: %s", ErrCouldNotGetNetworkInterfacesClient, err)
-		log.Debug(err)
-		return err
-	}
-
+	d.clients.networkInterfacesClient, err = initClient(d.clients.networkInterfacesClient, &d.azureDiscovery, armnetwork.NewInterfacesClient, ErrCouldNotGetNetworkInterfacesClient)
 	return
 }
 
 // initLoadBalancersClient creates the client if not already exists
 func (d *azureNetworkDiscovery) initLoadBalancersClient() (err error) {
-	if d.clients.fileStorageClient != nil {
-		return
-	}
-
-	d.clients.loadBalancerClient, err = armnetwork.NewLoadBalancersClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
-	if err != nil {
-		err = fmt.Errorf("%w: %s", ErrCouldNotGetLoadBalancerClient, err)
-		log.Debug(err)
-		return err
-	}
-
+	d.clients.loadBalancerClient, err = initClient(d.clients.loadBalancerClient, &d.azureDiscovery, armnetwork.NewLoadBalancersClient, ErrCouldNotGetLoadBalancerClient)
 	return
 }
