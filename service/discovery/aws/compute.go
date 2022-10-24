@@ -29,7 +29,6 @@ package aws
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"clouditor.io/clouditor/api/discovery"
@@ -40,7 +39,6 @@ import (
 	typesEC2 "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	typesLambda "github.com/aws/aws-sdk-go-v2/service/lambda/types"
-	"github.com/aws/smithy-go"
 )
 
 // computeDiscovery handles the AWS API requests regarding the computing services (EC2 and Lambda)
@@ -137,13 +135,8 @@ func (d computeDiscovery) List() (resources []voc.IsCloudResource, err error) {
 // discoverVolumes discoveres all volumes (in the current region)
 func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
 	res, err := d.virtualMachineAPI.DescribeVolumes(context.TODO(), &ec2.DescribeVolumesInput{})
-	// TODO(oxisto): this error handling function seems to occur a lot
 	if err != nil {
-		var ae smithy.APIError
-		if errors.As(err, &ae) {
-			err = formatError(ae)
-		}
-		return nil, err
+		return nil, prettyError(err)
 	}
 
 	var blocks []*voc.BlockStorage
@@ -183,13 +176,8 @@ func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
 // discoverNetworkInterfaces discovers all network interfaces (in the current region)
 func (d *computeDiscovery) discoverNetworkInterfaces() ([]voc.NetworkInterface, error) {
 	res, err := d.virtualMachineAPI.DescribeNetworkInterfaces(context.TODO(), &ec2.DescribeNetworkInterfacesInput{})
-	// TODO(oxisto): this error handling function seems to occur a lot
 	if err != nil {
-		var ae smithy.APIError
-		if errors.As(err, &ae) {
-			err = formatError(ae)
-		}
-		return nil, err
+		return nil, prettyError(err)
 	}
 
 	var ifcs []voc.NetworkInterface
@@ -220,11 +208,7 @@ func (d *computeDiscovery) discoverNetworkInterfaces() ([]voc.NetworkInterface, 
 func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachine, error) {
 	resp, err := d.virtualMachineAPI.DescribeInstances(context.TODO(), &ec2.DescribeInstancesInput{})
 	if err != nil {
-		var ae smithy.APIError
-		if errors.As(err, &ae) {
-			err = formatError(ae)
-		}
-		return nil, err
+		return nil, prettyError(err)
 	}
 	var resources []voc.VirtualMachine
 	for _, reservation := range resp.Reservations {
@@ -266,11 +250,7 @@ func (d *computeDiscovery) discoverFunctions() (resources []voc.Function, err er
 			Marker: nextMarker,
 		})
 		if err != nil {
-			var ae smithy.APIError
-			if errors.As(err, &ae) {
-				err = formatError(ae)
-			}
-			return nil, err
+			return nil, prettyError(err)
 		}
 		resources = append(resources, d.mapFunctionResources(resp.Functions)...)
 

@@ -188,11 +188,7 @@ func (d *awsS3Discovery) getBuckets() (buckets []bucket, err error) {
 	var resp *s3.ListBucketsOutput
 	resp, err = d.storageAPI.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
 	if err != nil {
-		var ae smithy.APIError
-		if errors.As(err, &ae) {
-			err = formatError(ae)
-		}
-		return
+		return nil, prettyError(err)
 	}
 	var region string
 	for _, b := range resp.Buckets {
@@ -217,7 +213,6 @@ func (d *awsS3Discovery) getBuckets() (buckets []bucket, err error) {
 
 // getEncryptionAtRest gets the bucket's encryption configuration
 func (d *awsS3Discovery) getEncryptionAtRest(bucket *bucket) (e voc.IsAtRestEncryption, err error) {
-
 	input := s3.GetBucketEncryptionInput{
 		Bucket:              aws.String(bucket.name),
 		ExpectedBucketOwner: nil,

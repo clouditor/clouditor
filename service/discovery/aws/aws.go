@@ -75,11 +75,7 @@ func NewClient() (*Client, error) {
 	stsClient := newFromConfigSTS(cfg)
 	resp, err := stsClient.GetCallerIdentity(context.TODO(), &sts.GetCallerIdentityInput{})
 	if err != nil {
-		var ae smithy.APIError
-		if errors.As(err, &ae) {
-			err = formatError(ae)
-		}
-		return nil, err
+		return nil, prettyError(err)
 	}
 	c.accountID = resp.Account
 
@@ -89,6 +85,15 @@ func NewClient() (*Client, error) {
 // formatError returns AWS API specific error code transformed into the default error type
 func formatError(ae smithy.APIError) error {
 	return fmt.Errorf("code: %v, fault: %v, message: %v", ae.ErrorCode(), ae.ErrorFault(), ae.ErrorMessage())
+}
+
+// prettyError returns an AWS API specific error code if it is an AWS error (using [formatError]), otherwise, just the error itself.
+func prettyError(err error) error {
+	var ae smithy.APIError
+	if errors.As(err, &ae) {
+		err = formatError(ae)
+	}
+	return err
 }
 
 // loadSTSClient creates the STS client using the STS api interface (for mock testing)
