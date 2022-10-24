@@ -46,7 +46,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.63.1
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.24.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.29.0
-	github.com/aws/aws-sdk-go-v2/service/sts v1.16.13
+	github.com/aws/aws-sdk-go-v2/service/sts v1.17.0
 	github.com/aws/smithy-go v1.13.3
 )
 
