@@ -164,7 +164,7 @@ func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
 				Resource: &voc.Resource{
 					ID:           d.arnify("volume", volume.VolumeId),
 					ServiceID:    discovery.DefaultCloudServiceID,
-					Name:         d.getNameOfVolume(volume),
+					Name:         d.nameOrID(volume.Tags, volume.VolumeId),
 					CreationTime: volume.CreateTime.Unix(),
 					Type:         []string{"BlockStorage", "Storage", "Resource"},
 					GeoLocation: voc.GeoLocation{
@@ -364,19 +364,7 @@ func (*computeDiscovery) getNameOfVM(vm *typesEC2.Instance) string {
 	return aws.ToString(vm.InstanceId)
 }
 
-// getNameOfVolume returns the name if exists (i.e. a tag with key 'name' exists), otherwise instance ID is used
-func (*computeDiscovery) getNameOfVolume(vm *typesEC2.Volume) string {
-	for _, tag := range vm.Tags {
-		if aws.ToString(tag.Key) == "Name" {
-			return aws.ToString(tag.Value)
-		}
-	}
-
-	// If no tag with 'name' was found, return instanceId instead
-	return aws.ToString(vm.VolumeId)
-}
-
-// getNameOfVolume returns the name if exists (i.e. a tag with key 'name' exists), otherwise instance ID is used
+// nameOrID returns the name if exists (i.e. a tag with key 'name' exists), otherwise instance ID is used
 func (*computeDiscovery) nameOrID(tags []typesEC2.Tag, ID *string) string {
 	for _, tag := range tags {
 		if aws.ToString(tag.Key) == "Name" {

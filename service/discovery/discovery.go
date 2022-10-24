@@ -69,14 +69,24 @@ type grpcTarget struct {
 	opts   []grpc.DialOption
 }
 
-const DiscoveryEventTypeDiscovererStart = 0
-const DiscoveryEventTypeDiscovererFinished = 1
+// DiscoveryEventType defines the event types for [DiscoveryEvent].
+type DiscoveryEventType int
 
+const (
+	// DiscovererStart is emmited at the start of a discovery run.
+	DiscovererStart DiscoveryEventType = iota
+	// DiscovererFinished is emmited at the end of a discovery run.
+	DiscovererFinished
+)
+
+// DiscoveryEvent represents an event that is ommited if certain situations happen in the discoverer (defined by
+// [DiscoveryEventType]). Examples would be the start or the end of the discovery. We will potentially expand this in
+// the future.
 type DiscoveryEvent struct {
-	Type     int
-	Extra    string
-	ExtraInt int
-	Time     time.Time
+	Type            DiscoveryEventType
+	DiscovererName  string
+	DiscoveredItems int
+	Time            time.Time
 }
 
 // Service is an implementation of the Clouditor Discovery service.
@@ -289,9 +299,9 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 
 	go func() {
 		svc.Events <- &DiscoveryEvent{
-			Type:  DiscoveryEventTypeDiscovererStart,
-			Extra: discoverer.Name(),
-			Time:  time.Now(),
+			Type:           DiscovererStart,
+			DiscovererName: discoverer.Name(),
+			Time:           time.Now(),
 		}
 	}()
 
@@ -305,10 +315,10 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	// Notify event listeners that the discoverer is finished
 	go func() {
 		svc.Events <- &DiscoveryEvent{
-			Type:     DiscoveryEventTypeDiscovererFinished,
-			Extra:    discoverer.Name(),
-			ExtraInt: len(list),
-			Time:     time.Now(),
+			Type:            DiscovererFinished,
+			DiscovererName:  discoverer.Name(),
+			DiscoveredItems: len(list),
+			Time:            time.Now(),
 		}
 	}()
 
