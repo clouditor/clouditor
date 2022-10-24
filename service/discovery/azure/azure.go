@@ -55,19 +55,10 @@ const (
 var (
 	log *logrus.Entry
 
-	ErrCouldNotAuthenticate               = errors.New("could not authenticate to Azure")
-	ErrCouldNotGetSubscriptions           = errors.New("could not get azure subscription")
-	ErrCouldNotGetAccountsClient          = errors.New("could not get account client")
-	ErrCouldNotGetBlobContainerClient     = errors.New("could not get blob container client")
-	ErrCouldNotGetFileStorageClient       = errors.New("could not get file storage client")
-	ErrCouldNotGetNetworkInterfacesClient = errors.New("could not get network interfaces client")
-	ErrCouldNotGetLoadBalancerClient      = errors.New("could not get load balancer client")
-	ErrCouldNotGetFunctionsClient         = errors.New("could not get functions client")
-	ErrCouldNotGetVirtualMachinesClient   = errors.New("could not get virtual machines client")
-	ErrCouldNotGetBlockStoragesClient     = errors.New("could not get block storages client")
-	ErrCouldNotGetDiskEncSetClient        = errors.New("could not get disk encryption set client")
-	ErrNoCredentialsConfigured            = errors.New("no credentials were configured")
-	ErrGettingNextPage                    = errors.New("error getting next page")
+	ErrCouldNotAuthenticate     = errors.New("could not authenticate to Azure")
+	ErrCouldNotGetSubscriptions = errors.New("could not get azure subscription")
+	ErrNoCredentialsConfigured  = errors.New("no credentials were configured")
+	ErrGettingNextPage          = errors.New("error getting next page")
 )
 
 type DiscoveryOption func(a *azureDiscovery)
@@ -188,14 +179,14 @@ func labels(tags map[string]*string) map[string]string {
 type ClientCreateFunc[T any] func(subscriptionID string, credential azcore.TokenCredential, options *arm.ClientOptions) (*T, error)
 
 // initClient creates an Azure client if not already exists
-func initClient[T any](existingClient *T, d *azureDiscovery, fun ClientCreateFunc[T], inErr error) (client *T, err error) {
+func initClient[T any](existingClient *T, d *azureDiscovery, fun ClientCreateFunc[T]) (client *T, err error) {
 	if existingClient != nil {
 		return existingClient, nil
 	}
 
 	client, err = fun(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
-		err = fmt.Errorf("%w: %s", inErr, err)
+		err = fmt.Errorf("could not get %T client: %w", new(T), err)
 		log.Debug(err)
 		return nil, err
 	}

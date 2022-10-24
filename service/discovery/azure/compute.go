@@ -414,64 +414,24 @@ func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, erro
 
 // initFunctionsClient creates the client if not already exists
 func (d *azureComputeDiscovery) initFunctionsClient() (err error) {
-	if d.clients.fileStorageClient != nil {
-		return
-	}
-
-	d.clients.functionsClient, err = armappservice.NewWebAppsClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
-	if err != nil {
-		err = fmt.Errorf("%w: %s", ErrCouldNotGetFunctionsClient, err)
-		log.Debug(err)
-		return err
-	}
-
+	d.clients.functionsClient, err = initClient(d.clients.functionsClient, &d.azureDiscovery, armappservice.NewWebAppsClient)
 	return
 }
 
 // initVirtualMachinesClient creates the client if not already exists
 func (d *azureComputeDiscovery) initVirtualMachinesClient() (err error) {
-	if d.clients.fileStorageClient != nil {
-		return
-	}
-
-	d.clients.virtualMachinesClient, err = armcompute.NewVirtualMachinesClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
-	if err != nil {
-		err = fmt.Errorf("%w: %s", ErrCouldNotGetVirtualMachinesClient, err)
-		log.Debug(err)
-		return err
-	}
-
+	d.clients.virtualMachinesClient, err = initClient(d.clients.virtualMachinesClient, &d.azureDiscovery, armcompute.NewVirtualMachinesClient)
 	return
 }
 
 // initBlockStoragesClient creates the client if not already exists
 func (d *azureComputeDiscovery) initBlockStoragesClient() (err error) {
-	if d.clients.fileStorageClient != nil {
-		return
-	}
-
-	d.clients.blockStorageClient, err = armcompute.NewDisksClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
-	if err != nil {
-		err = fmt.Errorf("%w: %s", ErrCouldNotGetBlockStoragesClient, err)
-		log.Debug(err)
-		return err
-	}
-
+	d.clients.blockStorageClient, err = initClient(d.clients.blockStorageClient, &d.azureDiscovery, armcompute.NewDisksClient)
 	return
 }
 
 // initBlockStoragesClient creates the client if not already exists
 func (d *azureComputeDiscovery) initDiskEncryptonSetClient() (err error) {
-	if d.clients.fileStorageClient != nil {
-		return
-	}
-
-	d.clients.diskEncSetClient, err = armcompute.NewDiskEncryptionSetsClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
-	if err != nil {
-		err = fmt.Errorf("%w: %s", ErrCouldNotGetDiskEncSetClient, err)
-		log.Debug(err)
-		return err
-	}
-
+	d.clients.diskEncSetClient, err = initClient(d.clients.diskEncSetClient, &d.azureDiscovery, armcompute.NewDiskEncryptionSetsClient)
 	return
 }

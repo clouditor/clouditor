@@ -32,7 +32,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 
 	"github.com/stretchr/testify/assert"
 
@@ -660,118 +659,6 @@ func Test_azureNetworkDiscovery_publicIPAddressFromLoadBalancer(t *testing.T) {
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
 			assert.Equal(t, tt.want, d.publicIPAddressFromLoadBalancer(tt.args.lb))
-		})
-	}
-}
-
-func Test_azureStorageDiscovery_initNetworkInterfacesClient(t *testing.T) {
-	var subID = "00000000-0000-0000-0000-000000000000"
-	sub := armsubscription.Subscription{
-		SubscriptionID: &subID,
-	}
-
-	type fields struct {
-		azureDiscovery azureDiscovery
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		wantErr assert.ErrorAssertionFunc
-	}{
-		// TODO(all): How does I get the error?
-		// {
-		// 	name: "Error creating client",
-		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-		// 		return assert.ErrorContains(t, err, ErrCouldNotGetNetworkInterfacesClient.Error())
-		// 	},
-		// },
-		{
-			name:    "No error, client does not exist",
-			wantErr: assert.NoError,
-		},
-		{
-			name: "No error, client already exists",
-			fields: fields{
-				azureDiscovery: azureDiscovery{
-					cred: &mockAuthorizer{},
-					sub:  sub,
-					clientOptions: arm.ClientOptions{
-						ClientOptions: policy.ClientOptions{
-							Transport: mockNetworkSender{},
-						},
-					},
-				},
-			},
-			wantErr: assert.NoError,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			d := &azureNetworkDiscovery{
-				azureDiscovery: tt.fields.azureDiscovery,
-			}
-
-			err := d.initNetworkInterfacesClient()
-			if tt.wantErr(t, err) {
-				assert.NotEmpty(t, d.clients.networkInterfacesClient)
-				return
-			}
-		})
-	}
-}
-
-func Test_azureStorageDiscovery_initLoadBalancersClient(t *testing.T) {
-	var subID = "00000000-0000-0000-0000-000000000000"
-	sub := armsubscription.Subscription{
-		SubscriptionID: &subID,
-	}
-
-	type fields struct {
-		azureDiscovery azureDiscovery
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		wantErr assert.ErrorAssertionFunc
-	}{
-		// TODO(all): How does I get the error?
-		// {
-		// 	name: "Error creating client",
-		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-		// 		return assert.ErrorContains(t, err, ErrCouldNotGetLoadBalancerClient.Error())
-		// 	},
-		// },
-		{
-			name:    "No error, client does not exist",
-			wantErr: assert.NoError,
-		},
-		{
-			name: "No error, client already exists",
-			fields: fields{
-				azureDiscovery: azureDiscovery{
-					cred: &mockAuthorizer{},
-					sub:  sub,
-					clientOptions: arm.ClientOptions{
-						ClientOptions: policy.ClientOptions{
-							Transport: mockNetworkSender{},
-						},
-					},
-				},
-			},
-			wantErr: assert.NoError,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			d := &azureNetworkDiscovery{
-				azureDiscovery: tt.fields.azureDiscovery,
-			}
-
-			err := d.initLoadBalancersClient()
-			if tt.wantErr(t, err) {
-				assert.NotEmpty(t, d.clients.loadBalancerClient)
-				return
-			}
 		})
 	}
 }

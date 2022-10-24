@@ -289,12 +289,12 @@ func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *armnetwork.L
 
 // initNetworkInterfacesClient creates the client if not already exists
 func (d *azureNetworkDiscovery) initNetworkInterfacesClient() (err error) {
-	d.clients.networkInterfacesClient, err = initClient(d.clients.networkInterfacesClient, &d.azureDiscovery, armnetwork.NewInterfacesClient, ErrCouldNotGetNetworkInterfacesClient)
+	d.clients.networkInterfacesClient, err = initClient(d.clients.networkInterfacesClient, &d.azureDiscovery, armnetwork.NewInterfacesClient)
 	return
 }
 
 // initLoadBalancersClient creates the client if not already exists
 func (d *azureNetworkDiscovery) initLoadBalancersClient() (err error) {
-	d.clients.loadBalancerClient, err = initClient(d.clients.loadBalancerClient, &d.azureDiscovery, armnetwork.NewLoadBalancersClient, ErrCouldNotGetLoadBalancerClient)
+	d.clients.loadBalancerClient, err = initClient(d.clients.loadBalancerClient, &d.azureDiscovery, armnetwork.NewLoadBalancersClient)
 	return
 }
