@@ -69,6 +69,26 @@ type grpcTarget struct {
 	opts   []grpc.DialOption
 }
 
+// DiscoveryEventType defines the event types for [DiscoveryEvent].
+type DiscoveryEventType int
+
+const (
+	// DiscovererStart is emmited at the start of a discovery run.
+	DiscovererStart DiscoveryEventType = iota
+	// DiscovererFinished is emmited at the end of a discovery run.
+	DiscovererFinished
+)
+
+// DiscoveryEvent represents an event that is ommited if certain situations happen in the discoverer (defined by
+// [DiscoveryEventType]). Examples would be the start or the end of the discovery. We will potentially expand this in
+// the future.
+type DiscoveryEvent struct {
+	Type            DiscoveryEventType
+	DiscovererName  string
+	DiscoveredItems int
+	Time            time.Time
+}
+
 // Service is an implementation of the Clouditor Discovery service.
 // It should not be used directly, but rather the NewService constructor
 // should be used.
@@ -89,6 +109,8 @@ type Service struct {
 
 	// Mutex for resources
 	resourceMutex sync.RWMutex
+
+	Events chan *DiscoveryEvent
 }
 
 type Configuration struct {
@@ -145,6 +167,7 @@ func NewService(opts ...ServiceOption) *Service {
 		resources:      make(map[string]voc.IsCloudResource),
 		scheduler:      gocron.NewScheduler(time.UTC),
 		configurations: make(map[discovery.Discoverer]*Configuration),
+		Events:         make(chan *DiscoveryEvent),
 	}
 
 	// Apply any options
@@ -213,8 +236,8 @@ func (svc *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest)
 			discoverer = append(discoverer,
 				// For now, we do not want to discover the ARM template
 				// azure.NewAzureARMTemplateDiscovery(azure.WithAuthorizer(authorizer)),
-				azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
 				azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
+				azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
 				azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)))
 		case provider == ProviderK8S:
 			k8sClient, err := k8s.AuthFromKubeConfig()
@@ -274,12 +297,30 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 		list []voc.IsCloudResource
 	)
 
+	go func() {
+		svc.Events <- &DiscoveryEvent{
+			Type:           DiscovererStart,
+			DiscovererName: discoverer.Name(),
+			Time:           time.Now(),
+		}
+	}()
+
 	list, err = discoverer.List()
 
 	if err != nil {
 		log.Errorf("Could not retrieve resources from discoverer '%s': %v", discoverer.Name(), err)
 		return
 	}
+
+	// Notify event listeners that the discoverer is finished
+	go func() {
+		svc.Events <- &DiscoveryEvent{
+			Type:            DiscovererFinished,
+			DiscovererName:  discoverer.Name(),
+			DiscoveredItems: len(list),
+			Time:            time.Now(),
+		}
+	}()
 
 	for _, resource := range list {
 		svc.resourceMutex.Lock()
