@@ -98,7 +98,7 @@ func (d *azureNetworkDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResour
 	}
 
 	// List all network interfaces accross all resource groups
-	listPager := d.client.networkInterfacesClient.NewListAllPager(&armnetwork.InterfacesClientListAllOptions{})
+	listPager := d.clients.networkInterfacesClient.NewListAllPager(&armnetwork.InterfacesClientListAllOptions{})
 	ni := make([]*armnetwork.Interface, 0)
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
@@ -130,7 +130,7 @@ func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, e
 	}
 
 	// List all load balancers accross all resource groups
-	listPager := d.client.loadBalancerClient.NewListAllPager(&armnetwork.LoadBalancersClientListAllOptions{})
+	listPager := d.clients.loadBalancerClient.NewListAllPager(&armnetwork.LoadBalancersClientListAllOptions{})
 	lbs := make([]*armnetwork.LoadBalancer, 0)
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
@@ -289,11 +289,11 @@ func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *armnetwork.L
 
 // initNetworkInterfacesClient creates the client if not already exists
 func (d *azureNetworkDiscovery) initNetworkInterfacesClient() (err error) {
-	if d.client.fileStorageClient != nil {
+	if d.clients.fileStorageClient != nil {
 		return
 	}
 
-	d.client.networkInterfacesClient, err = armnetwork.NewInterfacesClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	d.clients.networkInterfacesClient, err = armnetwork.NewInterfacesClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("%w: %s", ErrCouldNotGetNetworkInterfacesClient, err)
 		log.Debug(err)
@@ -305,11 +305,11 @@ func (d *azureNetworkDiscovery) initNetworkInterfacesClient() (err error) {
 
 // initLoadBalancersClient creates the client if not already exists
 func (d *azureNetworkDiscovery) initLoadBalancersClient() (err error) {
-	if d.client.fileStorageClient != nil {
+	if d.clients.fileStorageClient != nil {
 		return
 	}
 
-	d.client.loadBalancerClient, err = armnetwork.NewLoadBalancersClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	d.clients.loadBalancerClient, err = armnetwork.NewLoadBalancersClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("%w: %s", ErrCouldNotGetLoadBalancerClient, err)
 		log.Debug(err)

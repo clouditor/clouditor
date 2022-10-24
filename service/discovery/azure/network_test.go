@@ -713,7 +713,7 @@ func Test_azureStorageDiscovery_initNetworkInterfacesClient(t *testing.T) {
 
 			err := d.initNetworkInterfacesClient()
 			if tt.wantErr(t, err) {
-				assert.NotEmpty(t, d.client.networkInterfacesClient)
+				assert.NotEmpty(t, d.clients.networkInterfacesClient)
 				return
 			}
 		})
@@ -769,7 +769,7 @@ func Test_azureStorageDiscovery_initLoadBalancersClient(t *testing.T) {
 
 			err := d.initLoadBalancersClient()
 			if tt.wantErr(t, err) {
-				assert.NotEmpty(t, d.client.loadBalancerClient)
+				assert.NotEmpty(t, d.clients.loadBalancerClient)
 				return
 			}
 		})

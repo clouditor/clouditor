@@ -111,7 +111,7 @@ func (d *azureComputeDiscovery) discoverFunctions() ([]voc.IsCloudResource, erro
 	}
 
 	// List functions
-	listPager := d.client.functionsClient.NewListPager(&armappservice.WebAppsClientListOptions{})
+	listPager := d.clients.functionsClient.NewListPager(&armappservice.WebAppsClientListOptions{})
 	functionApps := make([]*armappservice.Site, 0)
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
@@ -171,7 +171,7 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 	}
 
 	// List all VMs across all resource groups
-	listPager := d.client.virtualMachinesClient.NewListAllPager(&armcompute.VirtualMachinesClientListAllOptions{})
+	listPager := d.clients.virtualMachinesClient.NewListAllPager(&armcompute.VirtualMachinesClientListAllOptions{})
 
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
@@ -297,7 +297,7 @@ func (d *azureComputeDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, 
 	}
 
 	// List all disks across all resource groups
-	listPager := d.client.blockStorageClient.NewListPager(&armcompute.DisksClientListOptions{})
+	listPager := d.clients.blockStorageClient.NewListPager(&armcompute.DisksClientListOptions{})
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
@@ -397,7 +397,7 @@ func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, erro
 	}
 
 	// Get disk encryption set
-	kv, err := d.client.diskEncSetClient.Get(context.TODO(), resourceGroupName(diskEncryptionSetID), diskEncryptionSetName(diskEncryptionSetID), &armcompute.DiskEncryptionSetsClientGetOptions{})
+	kv, err := d.clients.diskEncSetClient.Get(context.TODO(), resourceGroupName(diskEncryptionSetID), diskEncryptionSetName(diskEncryptionSetID), &armcompute.DiskEncryptionSetsClientGetOptions{})
 	if err != nil {
 		err = fmt.Errorf("could not get key vault: %w", err)
 		return "", err
@@ -414,11 +414,11 @@ func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, erro
 
 // initFunctionsClient creates the client if not already exists
 func (d *azureComputeDiscovery) initFunctionsClient() (err error) {
-	if d.client.fileStorageClient != nil {
+	if d.clients.fileStorageClient != nil {
 		return
 	}
 
-	d.client.functionsClient, err = armappservice.NewWebAppsClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	d.clients.functionsClient, err = armappservice.NewWebAppsClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("%w: %s", ErrCouldNotGetFunctionsClient, err)
 		log.Debug(err)
@@ -430,11 +430,11 @@ func (d *azureComputeDiscovery) initFunctionsClient() (err error) {
 
 // initVirtualMachinesClient creates the client if not already exists
 func (d *azureComputeDiscovery) initVirtualMachinesClient() (err error) {
-	if d.client.fileStorageClient != nil {
+	if d.clients.fileStorageClient != nil {
 		return
 	}
 
-	d.client.virtualMachinesClient, err = armcompute.NewVirtualMachinesClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	d.clients.virtualMachinesClient, err = armcompute.NewVirtualMachinesClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("%w: %s", ErrCouldNotGetVirtualMachinesClient, err)
 		log.Debug(err)
@@ -446,11 +446,11 @@ func (d *azureComputeDiscovery) initVirtualMachinesClient() (err error) {
 
 // initBlockStoragesClient creates the client if not already exists
 func (d *azureComputeDiscovery) initBlockStoragesClient() (err error) {
-	if d.client.fileStorageClient != nil {
+	if d.clients.fileStorageClient != nil {
 		return
 	}
 
-	d.client.blockStorageClient, err = armcompute.NewDisksClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	d.clients.blockStorageClient, err = armcompute.NewDisksClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("%w: %s", ErrCouldNotGetBlockStoragesClient, err)
 		log.Debug(err)
@@ -462,11 +462,11 @@ func (d *azureComputeDiscovery) initBlockStoragesClient() (err error) {
 
 // initBlockStoragesClient creates the client if not already exists
 func (d *azureComputeDiscovery) initDiskEncryptonSetClient() (err error) {
-	if d.client.fileStorageClient != nil {
+	if d.clients.fileStorageClient != nil {
 		return
 	}
 
-	d.client.diskEncSetClient, err = armcompute.NewDiskEncryptionSetsClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	d.clients.diskEncSetClient, err = armcompute.NewDiskEncryptionSetsClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("%w: %s", ErrCouldNotGetDiskEncSetClient, err)
 		log.Debug(err)

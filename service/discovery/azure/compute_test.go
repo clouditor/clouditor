@@ -1892,7 +1892,7 @@ func Test_azureStorageDiscovery_initVirtualMachinesClient(t *testing.T) {
 
 			err := d.initVirtualMachinesClient()
 			if tt.wantErr(t, err) {
-				assert.NotEmpty(t, d.client.virtualMachinesClient)
+				assert.NotEmpty(t, d.clients.virtualMachinesClient)
 				return
 			}
 		})
@@ -1948,7 +1948,7 @@ func Test_azureStorageDiscovery_initBlockStoragesClient(t *testing.T) {
 
 			err := d.initBlockStoragesClient()
 			if tt.wantErr(t, err) {
-				assert.NotEmpty(t, d.client.blockStorageClient)
+				assert.NotEmpty(t, d.clients.blockStorageClient)
 				return
 			}
 		})
@@ -2004,7 +2004,7 @@ func Test_azureStorageDiscovery_initDiskEncryptonSetClient(t *testing.T) {
 
 			err := d.initDiskEncryptonSetClient()
 			if tt.wantErr(t, err) {
-				assert.NotEmpty(t, d.client.diskEncSetClient)
+				assert.NotEmpty(t, d.clients.diskEncSetClient)
 				return
 			}
 		})

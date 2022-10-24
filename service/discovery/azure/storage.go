@@ -107,7 +107,7 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 	}
 
 	// List all storage accounts across all resource groups
-	listPager := d.client.accountsClient.NewListPager(&armstorage.AccountsClientListOptions{})
+	listPager := d.clients.accountsClient.NewListPager(&armstorage.AccountsClientListOptions{})
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
@@ -149,7 +149,7 @@ func (d *azureStorageDiscovery) discoverFileStorages(account *armstorage.Account
 	var list []voc.IsCloudResource
 
 	// List all file shares in the specified resource group
-	listPager := d.client.fileStorageClient.NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.FileSharesClientListOptions{})
+	listPager := d.clients.fileStorageClient.NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.FileSharesClientListOptions{})
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
@@ -176,7 +176,7 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 	var list []voc.IsCloudResource
 
 	// List all blob containers in the specified resource group
-	listPager := d.client.blobContainerClient.NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.BlobContainersClientListOptions{})
+	listPager := d.clients.blobContainerClient.NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.BlobContainersClientListOptions{})
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
@@ -379,11 +379,11 @@ func accountName(id string) string {
 
 // initAccountsClient creates the client if not already exists
 func (d *azureStorageDiscovery) initAccountsClient() (err error) {
-	if d.client.accountsClient != nil {
+	if d.clients.accountsClient != nil {
 		return
 	}
 
-	d.client.accountsClient, err = armstorage.NewAccountsClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	d.clients.accountsClient, err = armstorage.NewAccountsClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("%w: %s", ErrCouldNotGetAccountsClient, err)
 		log.Debug(err)
@@ -395,11 +395,11 @@ func (d *azureStorageDiscovery) initAccountsClient() (err error) {
 
 // initBlobContainerClient creates the client if not already exists
 func (d *azureStorageDiscovery) initBlobContainerClient() (err error) {
-	if d.client.blobContainerClient != nil {
+	if d.clients.blobContainerClient != nil {
 		return
 	}
 
-	d.client.blobContainerClient, err = armstorage.NewBlobContainersClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	d.clients.blobContainerClient, err = armstorage.NewBlobContainersClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("%w: %s", ErrCouldNotGetBlobContainerClient, err)
 		log.Debug(err)
@@ -411,11 +411,11 @@ func (d *azureStorageDiscovery) initBlobContainerClient() (err error) {
 
 // initFileStorageClient creates the client if not already exists
 func (d *azureStorageDiscovery) initFileStorageClient() (err error) {
-	if d.client.fileStorageClient != nil {
+	if d.clients.fileStorageClient != nil {
 		return
 	}
 
-	d.client.fileStorageClient, err = armstorage.NewFileSharesClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	d.clients.fileStorageClient, err = armstorage.NewFileSharesClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("%w: %s", ErrCouldNotGetFileStorageClient, err)
 		log.Debug(err)

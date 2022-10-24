@@ -1512,7 +1512,7 @@ func Test_azureStorageDiscovery_initAccountsClient(t *testing.T) {
 
 			err := d.initAccountsClient()
 			if tt.wantErr(t, err) {
-				assert.NotEmpty(t, d.client.accountsClient)
+				assert.NotEmpty(t, d.clients.accountsClient)
 				return
 			}
 		})
@@ -1568,7 +1568,7 @@ func Test_azureStorageDiscovery_initBlobContainerClient(t *testing.T) {
 
 			err := d.initBlobContainerClient()
 			if tt.wantErr(t, err) {
-				assert.NotEmpty(t, d.client.blobContainerClient)
+				assert.NotEmpty(t, d.clients.blobContainerClient)
 				return
 			}
 		})
@@ -1624,7 +1624,7 @@ func Test_azureStorageDiscovery_initFileStorageClient(t *testing.T) {
 
 			err := d.initFileStorageClient()
 			if tt.wantErr(t, err) {
-				assert.NotEmpty(t, d.client.fileStorageClient)
+				assert.NotEmpty(t, d.clients.fileStorageClient)
 				return
 			}
 		})

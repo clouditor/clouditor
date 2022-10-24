@@ -95,10 +95,10 @@ type azureDiscovery struct {
 	cred                azcore.TokenCredential
 	clientOptions       arm.ClientOptions
 	discovererComponent string
-	client              client
+	clients             clients
 }
 
-type client struct {
+type clients struct {
 	blobContainerClient     *armstorage.BlobContainersClient
 	fileStorageClient       *armstorage.FileSharesClient
 	accountsClient          *armstorage.AccountsClient
