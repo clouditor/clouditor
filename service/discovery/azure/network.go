@@ -92,15 +92,13 @@ func (d *azureNetworkDiscovery) List() (list []voc.IsCloudResource, err error) {
 func (d *azureNetworkDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
-	// Create network client
-	client, err := armnetwork.NewInterfacesClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
-	if err != nil {
-		err = fmt.Errorf("could not get new virtual machines client: %w", err)
+	// initialize network interfaces client
+	if err := d.initNetworkInterfacesClient(); err != nil {
 		return nil, err
 	}
 
 	// List all network interfaces accross all resource groups
-	listPager := client.NewListAllPager(&armnetwork.InterfacesClientListAllOptions{})
+	listPager := d.client.networkInterfacesClient.NewListAllPager(&armnetwork.InterfacesClientListAllOptions{})
 	ni := make([]*armnetwork.Interface, 0)
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
@@ -119,22 +117,20 @@ func (d *azureNetworkDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResour
 		list = append(list, s)
 	}
 
-	return list, err
+	return list, nil
 }
 
 // Discover load balancer
 func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
-	// Create load balancer client
-	client, err := armnetwork.NewLoadBalancersClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
-	if err != nil {
-		err = fmt.Errorf("could not get new load balancers client: %w", err)
+	// initialize load balancers client
+	if err := d.initLoadBalancersClient(); err != nil {
 		return nil, err
 	}
 
 	// List all load balancers accross all resource groups
-	listPager := client.NewListAllPager(&armnetwork.LoadBalancersClientListAllOptions{})
+	listPager := d.client.loadBalancerClient.NewListAllPager(&armnetwork.LoadBalancersClientListAllOptions{})
 	lbs := make([]*armnetwork.LoadBalancer, 0)
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
@@ -153,7 +149,7 @@ func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, e
 		list = append(list, s)
 	}
 
-	return list, err
+	return list, nil
 }
 
 func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) voc.IsNetwork {
@@ -289,4 +285,36 @@ func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *armnetwork.L
 	}
 
 	return publicIPAddresses
+}
+
+// initNetworkInterfacesClient creates the client if not already exists
+func (d *azureNetworkDiscovery) initNetworkInterfacesClient() (err error) {
+	if d.client.fileStorageClient != nil {
+		return
+	}
+
+	d.client.networkInterfacesClient, err = armnetwork.NewInterfacesClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	if err != nil {
+		err = fmt.Errorf("%w: %s", ErrCouldNotGetNetworkInterfacesClient, err)
+		log.Debug(err)
+		return err
+	}
+
+	return
+}
+
+// initLoadBalancersClient creates the client if not already exists
+func (d *azureNetworkDiscovery) initLoadBalancersClient() (err error) {
+	if d.client.fileStorageClient != nil {
+		return
+	}
+
+	d.client.loadBalancerClient, err = armnetwork.NewLoadBalancersClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	if err != nil {
+		err = fmt.Errorf("%w: %s", ErrCouldNotGetLoadBalancerClient, err)
+		log.Debug(err)
+		return err
+	}
+
+	return
 }

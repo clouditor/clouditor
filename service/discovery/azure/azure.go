@@ -35,6 +35,9 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 
@@ -52,12 +55,19 @@ const (
 var (
 	log *logrus.Entry
 
-	ErrCouldNotAuthenticate           = errors.New("could not authenticate to Azure")
-	ErrCouldNotGetSubscriptions       = errors.New("could not get azure subscription")
-	ErrCouldNotGetBlobContainerClient = errors.New("could not get blob container client")
-	ErrCouldNotGetFileStorageClient   = errors.New("could not get file storage client")
-	ErrNoCredentialsConfigured        = errors.New("no credentials were configured")
-	ErrGettingNextPage                = errors.New("error getting next page")
+	ErrCouldNotAuthenticate               = errors.New("could not authenticate to Azure")
+	ErrCouldNotGetSubscriptions           = errors.New("could not get azure subscription")
+	ErrCouldNotGetAccountsClient          = errors.New("could not get account client")
+	ErrCouldNotGetBlobContainerClient     = errors.New("could not get blob container client")
+	ErrCouldNotGetFileStorageClient       = errors.New("could not get file storage client")
+	ErrCouldNotGetNetworkInterfacesClient = errors.New("could not get network interfaces client")
+	ErrCouldNotGetLoadBalancerClient      = errors.New("could not get load balancer client")
+	ErrCouldNotGetFunctionsClient         = errors.New("could not get functions client")
+	ErrCouldNotGetVirtualMachinesClient   = errors.New("could not get virtual machines client")
+	ErrCouldNotGetBlockStoragesClient     = errors.New("could not get block storages client")
+	ErrCouldNotGetDiskEncSetClient        = errors.New("could not get disk encryption set client")
+	ErrNoCredentialsConfigured            = errors.New("no credentials were configured")
+	ErrGettingNextPage                    = errors.New("error getting next page")
 )
 
 type DiscoveryOption func(a *azureDiscovery)
@@ -89,8 +99,15 @@ type azureDiscovery struct {
 }
 
 type client struct {
-	blobContainerClient *armstorage.BlobContainersClient
-	fileStorageClient   *armstorage.FileSharesClient
+	blobContainerClient     *armstorage.BlobContainersClient
+	fileStorageClient       *armstorage.FileSharesClient
+	accountsClient          *armstorage.AccountsClient
+	networkInterfacesClient *armnetwork.InterfacesClient
+	loadBalancerClient      *armnetwork.LoadBalancersClient
+	functionsClient         *armappservice.WebAppsClient
+	virtualMachinesClient   *armcompute.VirtualMachinesClient
+	blockStorageClient      *armcompute.DisksClient
+	diskEncSetClient        *armcompute.DiskEncryptionSetsClient
 }
 
 func (a *azureDiscovery) authorize() (err error) {

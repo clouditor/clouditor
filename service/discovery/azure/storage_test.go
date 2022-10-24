@@ -1317,7 +1317,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
 			// initialize file share client
-			_ = d.initializeFileStorageClient()
+			_ = d.initFileStorageClient()
 
 			got, err := d.discoverFileStorages(tt.args.account)
 			if !tt.wantErr(t, err) {
@@ -1454,7 +1454,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 			}
 
 			// initialize blob container client
-			_ = d.initializeBlobContainerClient()
+			_ = d.initBlobContainerClient()
 
 			got, err := d.discoverObjectStorages(tt.args.account)
 			if !tt.wantErr(t, err) {
