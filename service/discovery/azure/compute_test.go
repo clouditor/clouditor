@@ -1842,3 +1842,171 @@ func Test_diskEncryptionSetName(t *testing.T) {
 		})
 	}
 }
+
+func Test_azureStorageDiscovery_initVirtualMachinesClient(t *testing.T) {
+	var subID = "00000000-0000-0000-0000-000000000000"
+	sub := armsubscription.Subscription{
+		SubscriptionID: &subID,
+	}
+
+	type fields struct {
+		azureDiscovery azureDiscovery
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr assert.ErrorAssertionFunc
+	}{
+		// TODO(all): How does I get the error?
+		// {
+		// 	name: "Error creating client",
+		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+		// 		return assert.ErrorContains(t, err, ErrCouldNotGetVirtualMachinesClient.Error())
+		// 	},
+		// },
+		{
+			name:    "No error, client does not exist",
+			wantErr: assert.NoError,
+		},
+		{
+			name: "No error, client already exists",
+			fields: fields{
+				azureDiscovery: azureDiscovery{
+					cred: &mockAuthorizer{},
+					sub:  sub,
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{
+							Transport: mockComputeSender{},
+						},
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureComputeDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+			}
+
+			err := d.initVirtualMachinesClient()
+			if tt.wantErr(t, err) {
+				assert.NotEmpty(t, d.client.virtualMachinesClient)
+				return
+			}
+		})
+	}
+}
+
+func Test_azureStorageDiscovery_initBlockStoragesClient(t *testing.T) {
+	var subID = "00000000-0000-0000-0000-000000000000"
+	sub := armsubscription.Subscription{
+		SubscriptionID: &subID,
+	}
+
+	type fields struct {
+		azureDiscovery azureDiscovery
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr assert.ErrorAssertionFunc
+	}{
+		// TODO(all): How does I get the error?
+		// {
+		// 	name: "Error creating client",
+		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+		// 		return assert.ErrorContains(t, err, ErrCouldNotGetBlockStoragesClient.Error())
+		// 	},
+		// },
+		{
+			name:    "No error, client does not exist",
+			wantErr: assert.NoError,
+		},
+		{
+			name: "No error, client already exists",
+			fields: fields{
+				azureDiscovery: azureDiscovery{
+					cred: &mockAuthorizer{},
+					sub:  sub,
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{
+							Transport: mockComputeSender{},
+						},
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureComputeDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+			}
+
+			err := d.initBlockStoragesClient()
+			if tt.wantErr(t, err) {
+				assert.NotEmpty(t, d.client.blockStorageClient)
+				return
+			}
+		})
+	}
+}
+
+func Test_azureStorageDiscovery_initDiskEncryptonSetClient(t *testing.T) {
+	var subID = "00000000-0000-0000-0000-000000000000"
+	sub := armsubscription.Subscription{
+		SubscriptionID: &subID,
+	}
+
+	type fields struct {
+		azureDiscovery azureDiscovery
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr assert.ErrorAssertionFunc
+	}{
+		// TODO(all): How does I get the error?
+		// {
+		// 	name: "Error creating client",
+		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+		// 		return assert.ErrorContains(t, err, ErrCouldNotGetDiskEncSetClient.Error())
+		// 	},
+		// },
+		{
+			name:    "No error, client does not exist",
+			wantErr: assert.NoError,
+		},
+		{
+			name: "No error, client already exists",
+			fields: fields{
+				azureDiscovery: azureDiscovery{
+					cred: &mockAuthorizer{},
+					sub:  sub,
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{
+							Transport: mockComputeSender{},
+						},
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureComputeDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+			}
+
+			err := d.initDiskEncryptonSetClient()
+			if tt.wantErr(t, err) {
+				assert.NotEmpty(t, d.client.diskEncSetClient)
+				return
+			}
+		})
+	}
+}

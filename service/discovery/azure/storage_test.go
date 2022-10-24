@@ -32,17 +32,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
-	"k8s.io/apimachinery/pkg/util/json"
-
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
-
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/stretchr/testify/assert"
+	"k8s.io/apimachinery/pkg/util/json"
 )
 
 type mockStorageSender struct {
@@ -1461,6 +1459,174 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 				return
 			}
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func Test_azureStorageDiscovery_initAccountsClient(t *testing.T) {
+	var subID = "00000000-0000-0000-0000-000000000000"
+	sub := armsubscription.Subscription{
+		SubscriptionID: &subID,
+	}
+
+	type fields struct {
+		azureDiscovery azureDiscovery
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr assert.ErrorAssertionFunc
+	}{
+		// TODO(all): How does I get the error?
+		// {
+		// 	name: "Error creating client",
+		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+		// 		return assert.ErrorContains(t, err, ErrCouldNotGetAccountsClient.Error())
+		// 	},
+		// },
+		{
+			name:    "No error, client does not exist",
+			wantErr: assert.NoError,
+		},
+		{
+			name: "No error, client already exists",
+			fields: fields{
+				azureDiscovery: azureDiscovery{
+					cred: &mockAuthorizer{},
+					sub:  sub,
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{
+							Transport: mockStorageSender{},
+						},
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureStorageDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+			}
+
+			err := d.initAccountsClient()
+			if tt.wantErr(t, err) {
+				assert.NotEmpty(t, d.client.accountsClient)
+				return
+			}
+		})
+	}
+}
+
+func Test_azureStorageDiscovery_initBlobContainerClient(t *testing.T) {
+	var subID = "00000000-0000-0000-0000-000000000000"
+	sub := armsubscription.Subscription{
+		SubscriptionID: &subID,
+	}
+
+	type fields struct {
+		azureDiscovery azureDiscovery
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr assert.ErrorAssertionFunc
+	}{
+		// TODO(all): How does I get the error?
+		// {
+		// 	name: "Error creating client",
+		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+		// 		return assert.ErrorContains(t, err, ErrCouldNotGetBlobContainerClient.Error())
+		// 	},
+		// },
+		{
+			name:    "No error, client does not exist",
+			wantErr: assert.NoError,
+		},
+		{
+			name: "No error, client already exists",
+			fields: fields{
+				azureDiscovery: azureDiscovery{
+					cred: &mockAuthorizer{},
+					sub:  sub,
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{
+							Transport: mockStorageSender{},
+						},
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureStorageDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+			}
+
+			err := d.initBlobContainerClient()
+			if tt.wantErr(t, err) {
+				assert.NotEmpty(t, d.client.blobContainerClient)
+				return
+			}
+		})
+	}
+}
+
+func Test_azureStorageDiscovery_initFileStorageClient(t *testing.T) {
+	var subID = "00000000-0000-0000-0000-000000000000"
+	sub := armsubscription.Subscription{
+		SubscriptionID: &subID,
+	}
+
+	type fields struct {
+		azureDiscovery azureDiscovery
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr assert.ErrorAssertionFunc
+	}{
+		// TODO(all): How does I get the error?
+		// {
+		// 	name: "Error creating client",
+		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+		// 		return assert.ErrorContains(t, err, ErrCouldNotGetFileStorageClient.Error())
+		// 	},
+		// },
+		{
+			name:    "No error, client does not exist",
+			wantErr: assert.NoError,
+		},
+		{
+			name: "No error, client already exists",
+			fields: fields{
+				azureDiscovery: azureDiscovery{
+					cred: &mockAuthorizer{},
+					sub:  sub,
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{
+							Transport: mockStorageSender{},
+						},
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureStorageDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+			}
+
+			err := d.initFileStorageClient()
+			if tt.wantErr(t, err) {
+				assert.NotEmpty(t, d.client.fileStorageClient)
+				return
+			}
 		})
 	}
 }
