@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/golang-jwt/jwt/v4"
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/oxisto/oauth2go/login"
 	"golang.org/x/oauth2/clientcredentials"
@@ -24,16 +25,46 @@ const (
 	TestCloudService2 = "22222222-2222-2222-2222-222222222222"
 )
 
-// TestContextOnlyService1 is an incoming context with a JWT that only allows access to cloud service ID
-// 11111111-1111-1111-1111-111111111111
-var TestContextOnlyService1 = metadata.NewIncomingContext(context.Background(), metadata.New(map[string]string{
-	"authorization": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJjbG91ZHNlcnZpY2VpZCI6WyIxMTExMTExMS0xMTExLTExMTEtMTExMS0xMTExMTExMTExMTEiXSwib3RoZXIiOlsxLDJdfQ.A4_2-yRcoPui-udHifvQxB6SJj7fR1EPjBnFs0Nl80k",
-}))
+var (
+	// TestContextOnlyService1 is an incoming context with a JWT that only allows access to cloud service ID
+	// 11111111-1111-1111-1111-111111111111
+	TestContextOnlyService1 context.Context
 
-// TestBrokenContext contains an invalid JWT
-var TestBrokenContext = metadata.NewIncomingContext(context.Background(), metadata.New(map[string]string{
-	"authorization": "bearer what",
-}))
+	// TestBrokenContext contains an invalid JWT
+	TestBrokenContext = metadata.NewIncomingContext(context.Background(), metadata.New(map[string]string{
+		"authorization": "bearer what",
+	}))
+
+	// TestClaimsOnlyService1 contains claims that authorize the user for the cloud service
+	// 11111111-1111-1111-1111-111111111111.
+	TestClaimsOnlyService1 = jwt.MapClaims{
+		"sub": "me",
+		"cloudserviceid": []string{
+			TestCloudService1,
+		},
+		"other": []int{1, 2},
+	}
+)
+
+func init() {
+	var (
+		err   error
+		token *jwt.Token
+		t     string
+	)
+
+	// Create a new token instead of hard-coding one
+	token = jwt.NewWithClaims(jwt.SigningMethodHS256, &TestClaimsOnlyService1)
+	t, err = token.SignedString([]byte("mykey"))
+	if err != nil {
+		panic(err)
+	}
+
+	// Create a context containing our token
+	TestContextOnlyService1 = metadata.NewIncomingContext(context.Background(), metadata.New(map[string]string{
+		"authorization": "bearer " + t,
+	}))
+}
 
 // StartAuthenticationServer starts an authentication server on a random port with
 // users and clients specified in the TestAuthUser and TestAuthClientID constants.
