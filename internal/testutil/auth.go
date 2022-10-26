@@ -1,6 +1,7 @@
 package testutil
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/oxisto/oauth2go/login"
 	"golang.org/x/oauth2/clientcredentials"
+	"google.golang.org/grpc/metadata"
 )
 
 const (
@@ -17,6 +19,21 @@ const (
 	TestAuthClientID     = "client"
 	TestAuthClientSecret = "secret"
 )
+
+// TestContextOnlyService1 is an incoming context with a JWT that only allows access to cloud service ID
+// 11111111-1111-1111-1111-111111111111
+var TestContextOnlyService1 = metadata.NewIncomingContext(context.Background(), metadata.New(map[string]string{
+	"authorization": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJjbG91ZHNlcnZpY2VpZCI6WyIxMTExMTExMS0xMTExLTExMTEtMTExMS0xMTExMTExMTExMTEiXX0.h6_p6UPFuEuM1cYxk4F3d2sZUgUNAjE6aWW9rrVrcQU",
+}))
+
+// TestBrokenContext contains an invalid JWT
+var TestBrokenContext = metadata.NewIncomingContext(context.Background(), metadata.New(map[string]string{
+	"authorization": "bearer what",
+}))
+
+var TestCustomClaims = "cloudserviceid"
+var TestCloudService1 = "11111111-1111-1111-1111-111111111111"
+var TestCloudService2 = "22222222-2222-2222-2222-222222222222"
 
 // StartAuthenticationServer starts an authentication server on a random port with
 // users and clients specified in the TestAuthUser and TestAuthClientID constants.

@@ -63,6 +63,10 @@ type AuthorizationStrategyJWT struct {
 func (a *AuthorizationStrategyJWT) CheckAccess(ctx context.Context, typ RequestType, req orchestrator.CloudServiceRequest) bool {
 	var list []string
 
+	// Retrieve the list of allowed cloud services. we never allow to retrieve
+	// "all" services with the token strategy.
+	_, list = a.AllowedCloudServices(ctx)
+
 	return slices.Contains(list, req.GetCloudServiceId())
 }
 
@@ -78,7 +82,7 @@ func (a *AuthorizationStrategyJWT) AllowedCloudServices(ctx context.Context) (al
 		return false, nil
 	}
 
-	// We need to re-parse the already validiated claim to get a specific key from the claims map.
+	// We need to re-parse the already validated claim to get a specific key from the claims map.
 	parser := jwt.NewParser()
 	_, _, err = parser.ParseUnverified(token, &claims)
 	if err != nil {
@@ -101,7 +105,7 @@ func (a *AuthorizationStrategyAllowAll) CheckAccess(ctx context.Context, typ Req
 }
 
 // AllowedCloudServices retrieves a list of allowed cloud service IDs according to the current access strategy.
-func (a *AuthorizationStrategyAllowAll) AllowedCloudServices(ctx context.Context) (bool, []string) {
+func (a *AuthorizationStrategyAllowAll) AllowedCloudServices(ctx context.Context) (all bool, list []string) {
 	return true, nil
 }
 
