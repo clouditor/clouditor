@@ -37,18 +37,9 @@ import (
 	"clouditor.io/clouditor/service"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 )
-
-// mockContextOnly11111 is an incoming context with a JWT that only allows access to cloud service ID
-// 11111111-1111-1111-1111-111111111111
-var mockContextOnly11111 = metadata.NewIncomingContext(context.Background(), metadata.New(map[string]string{
-	"authorization": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJjbG91ZHNlcnZpY2VpZCI6WyIxMTExMTExMS0xMTExLTExMTEtMTExMS0xMTExMTExMTExMTEiXX0.h6_p6UPFuEuM1cYxk4F3d2sZUgUNAjE6aWW9rrVrcQU",
-}))
-
-var mockCustomClaims = "cloudserviceid"
 
 func TestService_RegisterCloudService(t *testing.T) {
 	tests := []struct {
@@ -109,7 +100,7 @@ func TestService_RegisterCloudService(t *testing.T) {
 	}
 }
 
-func TestGetCloudService(t *testing.T) {
+func TestService_GetCloudService(t *testing.T) {
 	tests := []struct {
 		name string
 		svc  *Service
@@ -148,19 +139,34 @@ func TestGetCloudService(t *testing.T) {
 		},
 		{
 			"permission denied",
-			NewService(WithAuthorizationStrategyJWT(mockCustomClaims)),
-			mockContextOnly11111,
+			NewService(WithAuthorizationStrategyJWT(testutil.TestCustomClaims)),
+			testutil.TestContextOnlyService1,
 			&orchestrator.GetCloudServiceRequest{CloudServiceId: DefaultTargetCloudServiceId},
 			nil,
 			service.ErrPermissionDenied,
+		},
+		{
+			"permission granted",
+			NewService(WithAuthorizationStrategyJWT(testutil.TestCustomClaims), WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+				_ = s.Create(&orchestrator.CloudService{
+					Id:   testutil.TestCloudService1,
+					Name: "service1",
+				})
+			}))),
+			testutil.TestContextOnlyService1,
+			&orchestrator.GetCloudServiceRequest{CloudServiceId: testutil.TestCloudService1},
+			&orchestrator.CloudService{
+				Id:   testutil.TestCloudService1,
+				Name: "service1",
+			},
+			nil,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cloudService, err := tt.svc.CreateDefaultTargetCloudService()
+			_, err := tt.svc.CreateDefaultTargetCloudService()
 			assert.NoError(t, err)
-			assert.NotNil(t, cloudService)
 
 			res, err := tt.svc.GetCloudService(tt.ctx, tt.req)
 
@@ -370,10 +376,10 @@ func TestService_ListCloudServices(t *testing.T) {
 					_ = s.Create(&orchestrator.CloudService{Id: "11111111-1111-1111-1111-111111111111"})
 					_ = s.Create(&orchestrator.CloudService{Id: "22222222-2222-2222-2222-222222222222"})
 				}),
-				authz: &service.AuthorizationStrategyJWT{Key: mockCustomClaims},
+				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
 			},
 			args: args{
-				ctx: mockContextOnly11111,
+				ctx: testutil.TestContextOnlyService1,
 				req: &orchestrator.ListCloudServicesRequest{},
 			},
 			wantRes: &orchestrator.ListCloudServicesResponse{

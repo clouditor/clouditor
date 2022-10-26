@@ -129,6 +129,30 @@ func TestAuthorizationStrategyJWT_CheckAccess(t *testing.T) {
 			want: true,
 		},
 		{
+			name: "valid context, wrong claim",
+			fields: fields{
+				Key: "sub",
+			},
+			args: args{
+				ctx: testutil.TestContextOnlyService1,
+				typ: AccessRead,
+				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testutil.TestCloudService1},
+			},
+			want: false,
+		},
+		{
+			name: "valid context, ignore non-string",
+			fields: fields{
+				Key: "other",
+			},
+			args: args{
+				ctx: testutil.TestContextOnlyService1,
+				typ: AccessRead,
+				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testutil.TestCloudService1},
+			},
+			want: false,
+		},
+		{
 			name: "missing token",
 			fields: fields{
 				Key: testutil.TestCustomClaims,

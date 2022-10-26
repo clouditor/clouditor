@@ -37,6 +37,7 @@ import (
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 )
 
+// RequestType specifies the type of request, usually CRUD.
 type RequestType int
 
 const (
@@ -46,8 +47,12 @@ const (
 	AccessDelete
 )
 
-// AuthorizationStrategy is an interface that implements a function which whether the current cloud service request can
-// be fulfilled using the current access strategy.
+// ErrPermissionDenied represents an error, where permission to fulfill the request is denied.
+var ErrPermissionDenied = status.Errorf(codes.PermissionDenied, "access denied")
+
+// AuthorizationStrategy is an interface that implements a function which
+// checkers whether the current cloud service request can be fulfilled using the
+// supplied context (e.g., based on the authenticated user).
 type AuthorizationStrategy interface {
 	CheckAccess(ctx context.Context, typ RequestType, req orchestrator.CloudServiceRequest) bool
 	AllowedCloudServices(ctx context.Context) (all bool, IDs []string)
@@ -72,13 +77,19 @@ func (a *AuthorizationStrategyJWT) CheckAccess(ctx context.Context, typ RequestT
 
 // AllowedCloudServices retrieves a list of allowed cloud service IDs according to the current access strategy.
 func (a *AuthorizationStrategyJWT) AllowedCloudServices(ctx context.Context) (all bool, list []string) {
-	var err error
-	var token string
-	var claims jwt.MapClaims
+	var (
+		err    error
+		ok     bool
+		token  string
+		claims jwt.MapClaims
+		l      []interface{}
+		s      string
+	)
 
 	// Retrieve the raw token from the context
 	token, err = grpc_auth.AuthFromMD(ctx, "bearer")
 	if err != nil {
+		log.Debugf("Retrieving allowed cloud services from token failed: %v", err)
 		return false, nil
 	}
 
@@ -86,11 +97,23 @@ func (a *AuthorizationStrategyJWT) AllowedCloudServices(ctx context.Context) (al
 	parser := jwt.NewParser()
 	_, _, err = parser.ParseUnverified(token, &claims)
 	if err != nil {
+		log.Debugf("Retrieving allowed cloud services from token failed: %v", err)
 		return false, nil
 	}
 
-	for _, item := range claims[a.Key].([]interface{}) {
-		list = append(list, item.(string))
+	// We are looking for an array claim
+	if l, ok = claims[a.Key].([]interface{}); !ok {
+		log.Debug("Retrieving allowed cloud services from token failed: specified claims key is not an array", err)
+		return false, nil
+	}
+
+	// Loop through the array claim and add all string values to our list
+	for _, item := range l {
+		if s, ok = item.(string); !ok {
+			continue
+		}
+
+		list = append(list, s)
 	}
 
 	return false, list
@@ -108,6 +131,3 @@ func (a *AuthorizationStrategyAllowAll) CheckAccess(ctx context.Context, typ Req
 func (a *AuthorizationStrategyAllowAll) AllowedCloudServices(ctx context.Context) (all bool, list []string) {
 	return true, nil
 }
-
-// ErrPermissionDenied represents an error, where permission to fulfill the request is denied.
-var ErrPermissionDenied = status.Errorf(codes.PermissionDenied, "access denied")

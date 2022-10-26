@@ -31,6 +31,7 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
 	"github.com/stretchr/testify/assert"
@@ -80,10 +81,10 @@ func TestService_ListAssessmentResults(t *testing.T) {
 					"1": {Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0))},
 					"2": {Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0))},
 				},
-				authz: &service.AuthorizationStrategyJWT{Key: mockCustomClaims},
+				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
 			},
 			args: args{
-				ctx: mockContextOnly11111,
+				ctx: testutil.TestContextOnlyService1,
 				req: &assessment.ListAssessmentResultsRequest{},
 			},
 			wantRes: nil,
