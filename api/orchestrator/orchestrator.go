@@ -42,3 +42,7 @@ var (
 	ErrCatalogIDIsMissing = errors.New("catalog ID is empty")
 	ErrToEIDIsMissing     = errors.New("toe ID is empty")
 )
+
+type CloudServiceRequest interface {
+	GetCloudServiceId() string
+}
