@@ -25,7 +25,12 @@
 
 package voc
 
-type JwtBasedAuthentication struct {
+type TokenBasedAuthentication struct {
 	*Authenticity
-	Enforced bool `json:"enforced"`
+	Enforced  bool `json:"enforced"`
+	Activated bool `json:"activated"`
+}
+
+func (j *TokenBasedAuthentication) Type() string {
+	return "TokenBasedAuthentication"
 }

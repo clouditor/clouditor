@@ -28,3 +28,7 @@ package voc
 type AccessRestriction struct {
 	*Authorization
 }
+
+func (a *AccessRestriction) Type() string {
+	return "AccessRestriction"
+}

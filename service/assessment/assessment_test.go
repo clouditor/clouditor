@@ -435,7 +435,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 	var (
 		hookCallCounter = 0
 		wg              sync.WaitGroup
-		hookCounts      = 16
+		hookCounts      = 18
 	)
 
 	wg.Add(hookCounts)

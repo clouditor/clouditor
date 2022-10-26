@@ -42,6 +42,11 @@ type IsCloudResource interface {
 	GetType() []string
 	HasType(string) bool
 	GetCreationTime() *time.Time
+	Related() []string
+}
+
+type IsSecurityFeature interface {
+	Type() string
 }
 
 type ResourceID string
@@ -92,6 +97,10 @@ func (r *Resource) GetCreationTime() *time.Time {
 	return &t
 }
 
+func (*Resource) Related() []string {
+	return []string{}
+}
+
 func ToStruct(r IsCloudResource) (s *structpb.Value, err error) {
 	var b []byte
 
@@ -114,20 +123,36 @@ func ToStruct(r IsCloudResource) (s *structpb.Value, err error) {
 
 type IsStorage interface {
 	IsCloudResource
-
-	HasAtRestEncryption
+	IsAtRestEncryption
 }
 
-type HasAtRestEncryption interface {
-	GetAtRestEncryption() *AtRestEncryption
+type IsAtRestEncryption interface {
+	IsSecurityFeature
+	atRestEncryption()
+	IsEnabled() bool
 }
+
+func (a *AtRestEncryption) atRestEncryption() {}
+func (a *AtRestEncryption) IsEnabled() bool {
+	return a.Enabled
+}
+
+type IsAuthorization interface {
+	IsSecurityFeature
+	authorization()
+}
+
+func (a *Authorization) authorization() {}
+
+type IsAuthenticity interface {
+	IsSecurityFeature
+	authenticity()
+}
+
+func (a *Authenticity) authenticity() {}
 
 type HasHttpEndpoint interface {
 	GetHttpEndpoint() *HttpEndpoint
-}
-
-func (s *Storage) GetAtRestEncryption() *HasAtRestEncryption {
-	return &s.AtRestEncryption
 }
 
 type IsCompute interface {

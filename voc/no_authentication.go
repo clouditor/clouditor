@@ -28,3 +28,7 @@ package voc
 type NoAuthentication struct {
 	*Authenticity
 }
+
+func (n *NoAuthentication) Type() string {
+	return "NoAuthentication"
+}

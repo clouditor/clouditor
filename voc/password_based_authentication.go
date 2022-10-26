@@ -29,3 +29,7 @@ type PasswordBasedAuthentication struct {
 	*Authenticity
 	Activated bool `json:"activated"`
 }
+
+func (o PasswordBasedAuthentication) Type() string {
+	return "PasswordBasedAuthentication"
+}
