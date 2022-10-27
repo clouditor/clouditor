@@ -197,8 +197,9 @@ func RunServer(ctx context.Context, grpcPort uint16, httpPort uint16, serverOpts
 	}
 
 	srv = &http.Server{
-		Addr:    fmt.Sprintf(":%d", httpPort),
-		Handler: handleCORS(mux),
+		Addr:              fmt.Sprintf(":%d", httpPort),
+		Handler:           handleCORS(mux),
+		ReadHeaderTimeout: 2 * time.Second,
 	}
 
 	// graceful shutdown

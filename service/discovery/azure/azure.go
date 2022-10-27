@@ -154,7 +154,8 @@ func (a *azureDiscovery) authorize() (err error) {
 func NewAuthorizer() (*azidentity.DefaultAzureCredential, error) {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
-		log.Fatalf("%s: %+v", ErrCouldNotAuthenticate, err)
+		log.Errorf("%s: %+v", ErrCouldNotAuthenticate, err)
+		return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
 	}
 
 	return cred, nil

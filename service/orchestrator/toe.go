@@ -70,7 +70,7 @@ func (svc *Service) GetTargetOfEvaluation(_ context.Context, req *orchestrator.G
 	return response, nil
 }
 
-// ListTargetOfEvaluation implements method for getting a TargetOfEvaluation
+// ListTargetsOfEvaluation implements method for getting a TargetOfEvaluation
 func (svc *Service) ListTargetsOfEvaluation(_ context.Context, req *orchestrator.ListTargetsOfEvaluationRequest) (res *orchestrator.ListTargetsOfEvaluationResponse, err error) {
 	// Validate the request
 	if err = api.ValidateListRequest[*orchestrator.TargetOfEvaluation](req); err != nil {

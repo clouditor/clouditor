@@ -392,7 +392,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    []voc.Function
+		want    []*voc.Function
 		wantErr bool
 	}{
 		// Test cases
@@ -403,7 +403,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 				awsConfig:   mockClient,
 			},
 			//args: args{client: mockClient},
-			[]voc.Function{
+			[]*voc.Function{
 				{Compute: &voc.Compute{
 					Resource: &voc.Resource{
 						ID:           mockFunction1ID,

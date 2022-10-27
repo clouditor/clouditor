@@ -119,7 +119,7 @@ func (a *AuthorizationStrategyJWT) AllowedCloudServices(ctx context.Context) (al
 	return false, list
 }
 
-// AuthorizationStrategyJWT is an AuthorizationStrategy that allows all requests.
+// AuthorizationStrategyAllowAll is an AuthorizationStrategy that allows all requests.
 type AuthorizationStrategyAllowAll struct{}
 
 // CheckAccess checks whether the current request can be fulfilled using the current access strategy.
