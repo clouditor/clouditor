@@ -86,6 +86,20 @@ func TestNewService(t *testing.T) {
 				csi:               discovery.DefaultCloudServiceID,
 			},
 		},
+		{
+			name: "Create service with option 'WithDefaultCloudServiceID'",
+			args: args{
+				opts: []ServiceOption{
+					WithCloudServiceID(testutil.TestCloudService1),
+				},
+			},
+			want: &Service{
+				assessmentAddress: grpcTarget{target: DefaultAssessmentAddress},
+				resources:         make(map[string]voc.IsCloudResource),
+				configurations:    make(map[discovery.Discoverer]*Configuration),
+				csi:               testutil.TestCloudService1,
+			},
+		},
 	}
 
 	for _, tt := range tests {
