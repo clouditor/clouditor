@@ -155,8 +155,8 @@ func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
 		blocks = append(blocks, &voc.BlockStorage{
 			Storage: &voc.Storage{
 				Resource: &voc.Resource{
-					ID:           d.arnify("volume", volume.VolumeId),
-					ServiceID:    discovery.DefaultCloudServiceID,
+					ID: d.arnify("volume", volume.VolumeId),
+					//ServiceID:    discovery.DefaultCloudServiceID,
 					Name:         d.nameOrID(volume.Tags, volume.VolumeId),
 					CreationTime: volume.CreateTime.Unix(),
 					Type:         []string{"BlockStorage", "Storage", "Resource"},

@@ -135,7 +135,6 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 				Storage: &voc.Storage{
 					Resource: &voc.Resource{
 						ID:           voc.ResourceID(b.arn),
-						ServiceID:    discovery.DefaultCloudServiceID,
 						Name:         b.name,
 						CreationTime: b.creationTime.Unix(),
 						Type:         []string{"ObjectStorage", "Storage", "Resource"},
@@ -154,7 +153,6 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
 								ID:           voc.ResourceID(b.arn),
-								ServiceID:    discovery.DefaultCloudServiceID,
 								CreationTime: b.creationTime.Unix(),
 								Name:         b.name,
 								GeoLocation:  voc.GeoLocation{Region: b.region},

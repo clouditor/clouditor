@@ -83,7 +83,6 @@ func (k8sComputeDiscovery) handlePod(pod *v1.Pod) *voc.Container {
 		Compute: &voc.Compute{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(getContainerResourceID(pod)),
-				ServiceID:    discovery.DefaultCloudServiceID,
 				Name:         pod.Name,
 				CreationTime: pod.CreationTimestamp.Unix(),
 				Type:         []string{"Container", "Compute", "Resource"},
@@ -118,7 +117,6 @@ func (k8sComputeDiscovery) handlePodVolume(pod *v1.Pod) []voc.IsCloudResource {
 		s := &voc.Storage{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(vol.Name), // The ID we have to get directly from the related storage
-				ServiceID:    discovery.DefaultCloudServiceID,
 				Name:         vol.Name,
 				CreationTime: 0, // The CreationTime we have to get directly from the related storage
 				Type:         []string{"BlockStorage", "Storage", "Resource"},

@@ -158,6 +158,10 @@ func (mockIsCloudResource) GetServiceID() string {
 	return "MockServiceID"
 }
 
+func (mockIsCloudResource) SetServiceID(ID string) {
+
+}
+
 func (mockIsCloudResource) GetName() string {
 	return ""
 }

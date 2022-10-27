@@ -38,6 +38,7 @@ import (
 type IsCloudResource interface {
 	GetID() ResourceID
 	GetServiceID() string
+	SetServiceID(ID string)
 	GetName() string
 	GetType() []string
 	HasType(string) bool
@@ -54,7 +55,8 @@ type ResourceID string
 // Resource file from Ontology currently not used. How do we merge this file with the 'Resource Ontology file'
 type Resource struct {
 	ID ResourceID `json:"id"`
-	// ServiceID contains the ID of the cloud service to which this resource belongs
+	// ServiceID contains the ID of the cloud service to which this resource belongs. When creating new resources in a
+	// discoverer, this can be left out as this will be filled by the discovery service later in the StartDiscovery method.
 	ServiceID    string `json:"serviceId"`
 	Name         string `json:"name"`
 	CreationTime int64  `json:"creationTime"` // is set to 0 if no creation time is available
@@ -70,6 +72,10 @@ func (r *Resource) GetID() ResourceID {
 
 func (r *Resource) GetServiceID() string {
 	return r.ServiceID
+}
+
+func (r *Resource) SetServiceID(ID string) {
+	r.ServiceID = ID
 }
 
 func (r *Resource) GetName() string {

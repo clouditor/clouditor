@@ -82,6 +82,7 @@ func TestNewService(t *testing.T) {
 				assessmentAddress: grpcTarget{target: "localhost:9091"},
 				resources:         make(map[string]voc.IsCloudResource),
 				configurations:    make(map[discovery.Discoverer]*Configuration),
+				csi:               discovery.DefaultCloudServiceID,
 			},
 		},
 	}
@@ -574,6 +575,10 @@ func (mockIsCloudResource) GetID() voc.ResourceID {
 
 func (mockIsCloudResource) GetServiceID() string {
 	return "MockServiceId"
+}
+
+func (mockIsCloudResource) SetServiceID(ID string) {
+
 }
 
 func (mockIsCloudResource) GetName() string {

@@ -145,7 +145,6 @@ func (*azureComputeDiscovery) handleFunction(function *armappservice.Site) voc.I
 		Compute: &voc.Compute{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(util.Deref(function.ID)),
-				ServiceID:    discovery.DefaultCloudServiceID,
 				Name:         util.Deref(function.Name),
 				CreationTime: 0, // No creation time available
 				Type:         []string{"Function", "Compute", "Resource"},
@@ -212,7 +211,6 @@ func (*azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachin
 		Compute: &voc.Compute{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(util.Deref(vm.ID)),
-				ServiceID:    discovery.DefaultCloudServiceID,
 				Name:         util.Deref(vm.Name),
 				CreationTime: util.SafeTimestamp(vm.Properties.TimeCreated),
 				Type:         []string{"VirtualMachine", "Compute", "Resource"},
@@ -334,7 +332,6 @@ func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 		Storage: &voc.Storage{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(util.Deref(disk.ID)),
-				ServiceID:    discovery.DefaultCloudServiceID,
 				Name:         util.Deref(disk.Name),
 				CreationTime: disk.Properties.TimeCreated.Unix(),
 				Type:         []string{"BlockStorage", "Storage", "Resource"},

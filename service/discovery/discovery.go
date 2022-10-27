@@ -111,6 +111,9 @@ type Service struct {
 	resourceMutex sync.RWMutex
 
 	Events chan *DiscoveryEvent
+
+	// csi is the cloud service ID for which we are gathering resources.
+	csi string
 }
 
 type Configuration struct {
@@ -136,6 +139,13 @@ func WithAssessmentAddress(address string, opts ...grpc.DialOption) ServiceOptio
 			target: address,
 			opts:   opts,
 		}
+	}
+}
+
+// WithCloudServiceID is an option to configure the cloud service ID for which resources will be discovered.
+func WithCloudServiceID(ID string) ServiceOption {
+	return func(svc *Service) {
+		svc.csi = ID
 	}
 }
 
@@ -168,6 +178,7 @@ func NewService(opts ...ServiceOption) *Service {
 		scheduler:      gocron.NewScheduler(time.UTC),
 		configurations: make(map[discovery.Discoverer]*Configuration),
 		Events:         make(chan *DiscoveryEvent),
+		csi:            discovery.DefaultCloudServiceID,
 	}
 
 	// Apply any options
@@ -323,6 +334,9 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}()
 
 	for _, resource := range list {
+		// Set the cloud service ID to the one of the discoverer
+		resource.SetServiceID(svc.csi)
+
 		svc.resourceMutex.Lock()
 		svc.resources[string(resource.GetID())] = resource
 		svc.resourceMutex.Unlock()

@@ -259,9 +259,9 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 				&voc.NetworkInterface{
 					Networking: &voc.Networking{
 						Resource: &voc.Resource{
-							ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
-							ServiceID: discovery.DefaultCloudServiceID,
-							Name:      "iface1",
+							ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
+							// ServiceID: discovery.DefaultCloudServiceID,
+							Name: "iface1",
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
@@ -275,9 +275,9 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 					NetworkService: &voc.NetworkService{
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
-								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1",
-								ServiceID: discovery.DefaultCloudServiceID,
-								Name:      "lb1",
+								ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1",
+								// ServiceID: discovery.DefaultCloudServiceID,
+								Name: "lb1",
 								GeoLocation: voc.GeoLocation{
 									Region: "eastus",
 								},
@@ -295,9 +295,9 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 					NetworkService: &voc.NetworkService{
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
-								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb2",
-								ServiceID: discovery.DefaultCloudServiceID,
-								Name:      "lb2",
+								ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb2",
+								// ServiceID: discovery.DefaultCloudServiceID,
+								Name: "lb2",
 								GeoLocation: voc.GeoLocation{
 									Region: "eastus",
 								},
@@ -315,9 +315,9 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 					NetworkService: &voc.NetworkService{
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
-								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3",
-								ServiceID: discovery.DefaultCloudServiceID,
-								Name:      "lb3",
+								ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3",
+								// ServiceID: discovery.DefaultCloudServiceID,
+								Name: "lb3",
 								GeoLocation: voc.GeoLocation{
 									Region: "eastus",
 								},

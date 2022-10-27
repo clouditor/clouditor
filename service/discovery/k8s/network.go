@@ -95,7 +95,6 @@ func (k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwork 
 		Networking: &voc.Networking{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(getNetworkServiceResourceID(service)),
-				ServiceID:    discovery.DefaultCloudServiceID,
 				Name:         service.Name,
 				CreationTime: service.CreationTimestamp.Unix(),
 				Type:         []string{"NetworkService", "Resource"},
@@ -121,7 +120,6 @@ func (k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 			Networking: &voc.Networking{
 				Resource: &voc.Resource{
 					ID:           voc.ResourceID(getLoadBalancerResourceID(ingress)),
-					ServiceID:    discovery.DefaultCloudServiceID,
 					Name:         ingress.Name,
 					CreationTime: ingress.CreationTimestamp.Unix(),
 					Type:         []string{"LoadBalancer", "NetworkService", "Resource"},

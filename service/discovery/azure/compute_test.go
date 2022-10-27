@@ -520,8 +520,8 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 				&voc.BlockStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
-							ServiceID:    discovery.DefaultCloudServiceID,
+							ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
+							// ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "disk1",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							GeoLocation: voc.GeoLocation{
@@ -542,8 +542,8 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 				&voc.BlockStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2",
-							ServiceID:    discovery.DefaultCloudServiceID,
+							ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2",
+							// ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "disk2",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							GeoLocation: voc.GeoLocation{
@@ -564,8 +564,8 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 				&voc.VirtualMachine{
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
-							ServiceID:    discovery.DefaultCloudServiceID,
+							ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
+							// ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "vm1",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
@@ -602,8 +602,8 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 				&voc.VirtualMachine{
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2",
-							ServiceID:    discovery.DefaultCloudServiceID,
+							ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2",
+							// ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "vm2",
 							CreationTime: util.SafeTimestamp(&time.Time{}),
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
@@ -640,8 +640,8 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 				&voc.VirtualMachine{
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm3",
-							ServiceID:    discovery.DefaultCloudServiceID,
+							ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm3",
+							// ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "vm3",
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
 							CreationTime: util.SafeTimestamp(&time.Time{}),
@@ -678,8 +678,8 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 				&voc.Function{
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
-							ServiceID:    discovery.DefaultCloudServiceID,
+							ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
+							// ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "function1",
 							CreationTime: util.SafeTimestamp(&time.Time{}),
 							Type:         []string{"Function", "Compute", "Resource"},
@@ -758,8 +758,8 @@ func Test_azureComputeDiscovery_discoverFunctions(t *testing.T) {
 				&voc.Function{
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
-							ServiceID:    discovery.DefaultCloudServiceID,
+							ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
+							// ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "function1",
 							CreationTime: util.SafeTimestamp(&time.Time{}),
 							Type:         []string{"Function", "Compute", "Resource"},
@@ -843,8 +843,8 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 			want: &voc.Function{
 				Compute: &voc.Compute{
 					Resource: &voc.Resource{
-						ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
-						ServiceID:    discovery.DefaultCloudServiceID,
+						ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
+						// ServiceID:    discovery.DefaultCloudServiceID,
 						Name:         "function1",
 						CreationTime: util.SafeTimestamp(&time.Time{}),
 						Type:         []string{"Function", "Compute", "Resource"},
@@ -918,8 +918,8 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 				&voc.VirtualMachine{
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
-							ServiceID:    discovery.DefaultCloudServiceID,
+							ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
+							// ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "vm1",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
@@ -956,8 +956,8 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 				&voc.VirtualMachine{
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2",
-							ServiceID:    discovery.DefaultCloudServiceID,
+							ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2",
+							//ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "vm2",
 							CreationTime: util.SafeTimestamp(&time.Time{}),
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
@@ -994,8 +994,8 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 				&voc.VirtualMachine{
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm3",
-							ServiceID:    discovery.DefaultCloudServiceID,
+							ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm3",
+							//ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "vm3",
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
 							CreationTime: util.SafeTimestamp(&time.Time{}),
@@ -1132,8 +1132,8 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 			want: &voc.VirtualMachine{
 				Compute: &voc.Compute{
 					Resource: &voc.Resource{
-						ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
-						ServiceID:    discovery.DefaultCloudServiceID,
+						ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
+						// ServiceID:    discovery.DefaultCloudServiceID,
 						Name:         "vm1",
 						CreationTime: util.SafeTimestamp(&creationTime),
 						Type:         []string{"VirtualMachine", "Compute", "Resource"},
@@ -1408,8 +1408,8 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 				&voc.BlockStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
-							ServiceID:    discovery.DefaultCloudServiceID,
+							ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
+							// ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "disk1",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							GeoLocation: voc.GeoLocation{
@@ -1430,8 +1430,8 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 				&voc.BlockStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2",
-							ServiceID:    discovery.DefaultCloudServiceID,
+							ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2",
+							// ServiceID:    discovery.DefaultCloudServiceID,
 							Name:         "disk2",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							GeoLocation: voc.GeoLocation{
@@ -1567,8 +1567,8 @@ func Test_azureComputeDiscovery_handleBlockStorage(t *testing.T) {
 			want: &voc.BlockStorage{
 				Storage: &voc.Storage{
 					Resource: &voc.Resource{
-						ID:           voc.ResourceID(diskID),
-						ServiceID:    discovery.DefaultCloudServiceID,
+						ID: voc.ResourceID(diskID),
+						// ServiceID:    discovery.DefaultCloudServiceID,
 						Name:         "disk1",
 						CreationTime: util.SafeTimestamp(&creationTime),
 						Type:         []string{"BlockStorage", "Storage", "Resource"},
