@@ -485,7 +485,7 @@ func Test_azureNetworkDiscovery_discoverLoadBalancer(t *testing.T) {
 	}
 }
 
-func Test_azureNetworkDiscovery_publicIPAddressFromLoadBalancer(t *testing.T) {
+func Test_publicIPAddressFromLoadBalancer(t *testing.T) {
 	id := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3"
 	name := "lb3"
 	location := "eastus"
@@ -565,17 +565,13 @@ func Test_azureNetworkDiscovery_publicIPAddressFromLoadBalancer(t *testing.T) {
 		},
 	}
 
-	type fields struct {
-		azureDiscovery azureDiscovery
-	}
 	type args struct {
 		lb *armnetwork.LoadBalancer
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   []string
+		name string
+		args args
+		want []string
 	}{
 
 		{
@@ -597,22 +593,12 @@ func Test_azureNetworkDiscovery_publicIPAddressFromLoadBalancer(t *testing.T) {
 					},
 				},
 			},
-			fields: fields{
-				azureDiscovery: azureDiscovery{
-					cred: &mockAuthorizer{},
-				},
-			},
 			want: []string{},
 		},
 		{
 			name: "Empty PublicIPAddress",
 			args: args{
 				lb: lbWithoutPublicIPAddress,
-			},
-			fields: fields{
-				azureDiscovery: azureDiscovery{
-					cred: &mockAuthorizer{},
-				},
 			},
 			want: []string{},
 		},
@@ -621,22 +607,12 @@ func Test_azureNetworkDiscovery_publicIPAddressFromLoadBalancer(t *testing.T) {
 			args: args{
 				lb: lbWithoutIPAddress,
 			},
-			fields: fields{
-				azureDiscovery: azureDiscovery{
-					cred: &mockAuthorizer{},
-				},
-			},
 			want: []string{},
 		},
 		{
 			name: "Empty IPAddress string",
 			args: args{
 				lb: lbWithEmptyIPAddress,
-			},
-			fields: fields{
-				azureDiscovery: azureDiscovery{
-					cred: &mockAuthorizer{},
-				},
 			},
 			want: []string{},
 		},
@@ -645,20 +621,12 @@ func Test_azureNetworkDiscovery_publicIPAddressFromLoadBalancer(t *testing.T) {
 			args: args{
 				lb: lbComplete,
 			},
-			fields: fields{
-				azureDiscovery: azureDiscovery{
-					cred: &mockAuthorizer{},
-				},
-			},
 			want: []string{publicIPAddress},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &azureNetworkDiscovery{
-				azureDiscovery: tt.fields.azureDiscovery,
-			}
-			assert.Equal(t, tt.want, d.publicIPAddressFromLoadBalancer(tt.args.lb))
+			assert.Equal(t, tt.want, publicIPAddressFromLoadBalancer(tt.args.lb))
 		})
 	}
 }

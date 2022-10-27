@@ -195,7 +195,7 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 	return list, nil
 }
 
-func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {
+func (*azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {
 	var bootLogging = []voc.ResourceID{}
 	var osLogging = []voc.ResourceID{}
 

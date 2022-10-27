@@ -29,6 +29,6 @@ type ABAC struct {
 	*Authorization
 }
 
-func (a *ABAC) Type() string {
+func (*ABAC) Type() string {
 	return "ABAC"
 }

@@ -31,6 +31,6 @@ type RBAC struct {
 	BroadAssignments float32 `json:"broadAssignments"`
 }
 
-func (r *RBAC) Type() string {
+func (*RBAC) Type() string {
 	return "RBAC"
 }

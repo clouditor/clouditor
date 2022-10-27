@@ -219,7 +219,7 @@ func (mockClientStream) CloseSend() error {
 	return nil
 }
 
-func (m *mockClientStream) Recv() (req *assessment.AssessEvidenceRequest, err error) {
+func (mockClientStream) Recv() (req *assessment.AssessEvidenceRequest, err error) {
 	return nil, nil
 }
 

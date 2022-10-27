@@ -3,7 +3,6 @@ package clitest
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 	"testing"
@@ -29,7 +28,7 @@ func PrepareSession(authPort uint16, authSrv *oauth2.AuthorizationServer, grpcUR
 	)
 
 	// Create a temporary folder
-	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
+	dir, err = os.MkdirTemp(os.TempDir(), ".clouditor")
 	if err != nil {
 		return "", err
 	}

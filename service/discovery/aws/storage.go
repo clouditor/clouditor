@@ -104,7 +104,7 @@ type Bool struct {
 }
 
 // Name is the method implementation defined in the discovery.Discoverer interface
-func (d *awsS3Discovery) Name() string {
+func (*awsS3Discovery) Name() string {
 	return "AWS Blob Storage"
 }
 

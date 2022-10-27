@@ -132,7 +132,7 @@ type IsAtRestEncryption interface {
 	IsEnabled() bool
 }
 
-func (a *AtRestEncryption) atRestEncryption() {}
+func (*AtRestEncryption) atRestEncryption() {}
 func (a *AtRestEncryption) IsEnabled() bool {
 	return a.Enabled
 }
@@ -142,14 +142,14 @@ type IsAuthorization interface {
 	authorization()
 }
 
-func (a *Authorization) authorization() {}
+func (*Authorization) authorization() {}
 
 type IsAuthenticity interface {
 	IsSecurityFeature
 	authenticity()
 }
 
-func (a *Authenticity) authenticity() {}
+func (*Authenticity) authenticity() {}
 
 type HasHttpEndpoint interface {
 	GetHttpEndpoint() *HttpEndpoint

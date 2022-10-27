@@ -31,6 +31,6 @@ type SingleSignOn struct {
 	Enabled bool `json:"enabled"`
 }
 
-func (s *SingleSignOn) Type() string {
+func (*SingleSignOn) Type() string {
 	return "SingleSignOn"
 }

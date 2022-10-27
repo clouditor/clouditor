@@ -40,7 +40,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestrator.CreateTargetOfEvaluationRequest) (res *orchestrator.TargetOfEvaluation, err error) {
+func (svc *Service) CreateTargetOfEvaluation(_ context.Context, req *orchestrator.CreateTargetOfEvaluationRequest) (res *orchestrator.TargetOfEvaluation, err error) {
 	err = svc.storage.Create(&req.Toe)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
