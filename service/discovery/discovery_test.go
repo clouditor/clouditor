@@ -40,6 +40,7 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/voc"
 
@@ -118,6 +119,7 @@ func TestNewService(t *testing.T) {
 func TestService_StartDiscovery(t *testing.T) {
 	type fields struct {
 		discoverer discovery.Discoverer
+		csi        string
 	}
 
 	tests := []struct {
@@ -129,18 +131,29 @@ func TestService_StartDiscovery(t *testing.T) {
 			name: "Err in discoverer",
 			fields: fields{
 				discoverer: mockDiscoverer{testCase: 0},
+				csi:        discovery.DefaultCloudServiceID,
 			},
 		},
 		{
 			name: "Err in marshaling the resource containing circular dependencies",
 			fields: fields{
 				discoverer: mockDiscoverer{testCase: 1},
+				csi:        discovery.DefaultCloudServiceID,
 			},
 		},
 		{
-			name: "No err",
+			name: "No err with default cloud service ID",
 			fields: fields{
 				discoverer: mockDiscoverer{testCase: 2},
+				csi:        discovery.DefaultCloudServiceID,
+			},
+			checkEvidence: true,
+		},
+		{
+			name: "No err with custom cloud service ID",
+			fields: fields{
+				discoverer: mockDiscoverer{testCase: 2},
+				csi:        testutil.TestCloudService1,
 			},
 			checkEvidence: true,
 		},
@@ -152,6 +165,7 @@ func TestService_StartDiscovery(t *testing.T) {
 			mockStream.Prepare()
 
 			svc := NewService()
+			svc.csi = tt.fields.csi
 			svc.assessmentStreams = api.NewStreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]()
 			_, _ = svc.assessmentStreams.GetStream("mock", "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
 				return mockStream, nil
@@ -180,6 +194,10 @@ func TestService_StartDiscovery(t *testing.T) {
 
 				// Only the last element sent can be checked
 				assert.Equal(t, string(want[len(want)-1].GetID()), e.Resource.GetStructValue().AsMap()["id"].(string))
+
+				// Assert cloud service ID
+				assert.Equal(t, tt.fields.csi, e.CloudServiceId)
+				assert.Equal(t, tt.fields.csi, e.Resource.GetStructValue().AsMap()["serviceId"].(string))
 			}
 		})
 	}
