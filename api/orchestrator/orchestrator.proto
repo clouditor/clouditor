@@ -372,7 +372,7 @@ service Orchestrator {
     };
   }
 
-  // Lists all Controls (optionally only controls related to a certain category) with the second controls level.
+  // Lists all Controls (optionally only controls related to a certain category) with the second control level.
   rpc ListControls(ListControlsRequest) returns (ListControlsResponse) {
     option (google.api.http) = {
       get : "/v1/orchestrator/controls"
