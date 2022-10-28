@@ -1,4 +1,6 @@
-// Copyright 2021 Fraunhofer AISEC
+// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
+
+// Copyright 2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,6 +27,8 @@
 
 package voc
 
-type BootLog struct {
-	*Log
+type Metric struct {
+
+	Measures	*SecurityFeature 	`json:"measures"`
 }
+

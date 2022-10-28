@@ -1,4 +1,6 @@
-// Copyright 2021 Fraunhofer AISEC
+// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
+
+// Copyright 2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,7 +27,9 @@
 
 package voc
 
+// A WAF is a L7 firewall that includes L3 capabilities
 type WebApplicationFirewall struct {
 	*AccessRestriction
-	Enabled bool `json:"enabled"`
+	Enabled	bool	`json:"enabled"`
 }
+

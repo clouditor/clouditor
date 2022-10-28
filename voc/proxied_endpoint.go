@@ -1,4 +1,6 @@
-// Copyright 2021 Fraunhofer AISEC
+// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
+
+// Copyright 2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,7 +27,9 @@
 
 package voc
 
+// An HTTP endpoint, that is routed through a (reverse) proxy, e.g. a load balancer.
 type ProxiedEndpoint struct {
 	*HttpEndpoint
-	ProxyTarget *HttpEndpoint `json:"proxyTarget"`
+	ProxyTarget	*HttpEndpoint 	`json:"proxyTarget"`
 }
+
