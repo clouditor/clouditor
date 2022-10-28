@@ -279,14 +279,14 @@ service Orchestrator {
     };
   }
 
-  // Retrieves a catalog
+  // Retrieves a catalog with the category and the first control level
   rpc GetCatalog(GetCatalogRequest) returns (Catalog) {
     option (google.api.http) = {
       get : "/v1/orchestrator/catalogs/{catalog_id}"
     };
   }
 
-  // Lists all target catalogs
+  // Lists all target catalogs with the category level
   rpc ListCatalogs(ListCatalogsRequest) returns (ListCatalogsResponse) {
     option (google.api.http) = {
       get : "/v1/orchestrator/catalogs"
@@ -357,14 +357,14 @@ service Orchestrator {
     };
   }
 
-  // Retrieves a Category
+  // Retrieves a Category with the first control level.
   rpc GetCategory(GetCategoryRequest) returns (Category) {
     option (google.api.http) = {
       get : "/v1/orchestrator/catalogs/{catalog_id}/category/{category_name}"
     };
   }
 
-  // Retrieves a Control
+  // Retrieves a Control with the corresponding metrics.
   rpc GetControl(GetControlRequest) returns (Control) {
     option (google.api.http) = {
       get : "/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/"
@@ -372,7 +372,7 @@ service Orchestrator {
     };
   }
 
-  // Lists all Controls (optionally only controls related to a certain category)
+  // Lists all Controls (optionally only controls related to a certain category) with the second controls level.
   rpc ListControls(ListControlsRequest) returns (ListControlsResponse) {
     option (google.api.http) = {
       get : "/v1/orchestrator/controls"
