@@ -305,7 +305,7 @@ func TestComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 	testMachine := machines[0]
 	assert.Equal(t, mockVM1, testMachine.Name)
 	assert.Equal(t, voc.ResourceID("arn:aws:ec2:eu-central-1:MockAccountID1234:instance/mockVM1ID"), testMachine.ID)
-	assert.NotEmpty(t, testMachine.BlockStorage)
+	assert.NotEmpty(t, testMachine.BlockStorages)
 	assert.False(t, testMachine.BootLogging.Enabled)
 	assert.False(t, testMachine.OsLogging.Enabled)
 	assert.Equal(t, int64(0), testMachine.CreationTime)

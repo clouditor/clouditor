@@ -274,10 +274,6 @@ func (*azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, 
 			},
 			TransportEncryption: te,
 		},
-		HttpEndpoint: &voc.HttpEndpoint{
-			Url:                 generalizeURL(util.Deref(account.Properties.PrimaryEndpoints.Blob)),
-			TransportEncryption: te,
-		},
 	}
 
 	return storageService, nil

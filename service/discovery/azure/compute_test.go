@@ -336,11 +336,11 @@ func TestDiscoverer_List(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1", string(virtualMachine.ID))
 	assert.Equal(t, "vm1", virtualMachine.Name)
-	assert.Equal(t, 2, len(virtualMachine.NetworkInterface))
-	assert.Equal(t, 3, len(virtualMachine.BlockStorage))
+	assert.Equal(t, 2, len(virtualMachine.NetworkInterfaces))
+	assert.Equal(t, 3, len(virtualMachine.BlockStorages))
 
-	assert.Equal(t, "data_disk_1", string(virtualMachine.BlockStorage[1]))
-	assert.Equal(t, "123", string(virtualMachine.NetworkInterface[0]))
+	assert.Equal(t, "data_disk_1", string(virtualMachine.BlockStorages[1]))
+	assert.Equal(t, "123", string(virtualMachine.NetworkInterfaces[0]))
 	assert.Equal(t, "eastus", virtualMachine.GeoLocation.Region)
 	assert.Equal(t, true, virtualMachine.BootLogging.Enabled)
 	assert.Equal(t, voc.ResourceID("https://logstoragevm1.blob.core.windows.net/"), virtualMachine.BootLogging.LoggingService[0])
@@ -352,8 +352,8 @@ func TestDiscoverer_List(t *testing.T) {
 
 	virtualMachine3, ok := list[4].(*voc.VirtualMachine)
 	assert.True(t, ok)
-	assert.Equal(t, []voc.ResourceID{}, virtualMachine3.BlockStorage)
-	assert.Equal(t, []voc.ResourceID{}, virtualMachine3.NetworkInterface)
+	assert.Equal(t, []voc.ResourceID{}, virtualMachine3.BlockStorages)
+	assert.Equal(t, []voc.ResourceID{}, virtualMachine3.NetworkInterfaces)
 
 }
 
@@ -574,9 +574,9 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 								Region: "eastus",
 							},
 						},
-						NetworkInterface: []voc.ResourceID{"123", "234"},
+						NetworkInterfaces: []voc.ResourceID{"123", "234"},
 					},
-					BlockStorage: []voc.ResourceID{"os_test_disk", "data_disk_1", "data_disk_2"},
+					BlockStorages: []voc.ResourceID{"os_test_disk", "data_disk_1", "data_disk_2"},
 					BootLogging: &voc.BootLogging{
 						Logging: &voc.Logging{
 							Enabled:        true,
@@ -612,9 +612,9 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 								Region: "eastus",
 							},
 						},
-						NetworkInterface: []voc.ResourceID{"987", "654"},
+						NetworkInterfaces: []voc.ResourceID{"987", "654"},
 					},
-					BlockStorage: []voc.ResourceID{"os_test_disk", "data_disk_2", "data_disk_3"},
+					BlockStorages: []voc.ResourceID{"os_test_disk", "data_disk_2", "data_disk_3"},
 					BootLogging: &voc.BootLogging{
 						Logging: &voc.Logging{
 							Enabled:        true,
@@ -650,9 +650,9 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 								Region: "eastus",
 							},
 						},
-						NetworkInterface: []voc.ResourceID{},
+						NetworkInterfaces: []voc.ResourceID{},
 					},
-					BlockStorage: []voc.ResourceID{},
+					BlockStorages: []voc.ResourceID{},
 					BootLogging: &voc.BootLogging{
 						Logging: &voc.Logging{
 							Enabled:         false,
@@ -691,7 +691,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 								Region: "West Europe",
 							},
 						},
-						NetworkInterface: []voc.ResourceID{},
+						NetworkInterfaces: []voc.ResourceID{},
 					},
 				},
 			},
@@ -771,7 +771,7 @@ func Test_azureComputeDiscovery_discoverFunctions(t *testing.T) {
 								Region: "West Europe",
 							},
 						},
-						NetworkInterface: []voc.ResourceID{},
+						NetworkInterfaces: []voc.ResourceID{},
 					},
 				},
 			},
@@ -856,7 +856,7 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 							Region: "West Europe",
 						},
 					},
-					NetworkInterface: []voc.ResourceID{},
+					NetworkInterfaces: []voc.ResourceID{},
 				},
 			},
 		},
@@ -928,9 +928,9 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 								Region: "eastus",
 							},
 						},
-						NetworkInterface: []voc.ResourceID{"123", "234"},
+						NetworkInterfaces: []voc.ResourceID{"123", "234"},
 					},
-					BlockStorage: []voc.ResourceID{"os_test_disk", "data_disk_1", "data_disk_2"},
+					BlockStorages: []voc.ResourceID{"os_test_disk", "data_disk_1", "data_disk_2"},
 					BootLogging: &voc.BootLogging{
 						Logging: &voc.Logging{
 							Enabled:        true,
@@ -966,9 +966,9 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 								Region: "eastus",
 							},
 						},
-						NetworkInterface: []voc.ResourceID{"987", "654"},
+						NetworkInterfaces: []voc.ResourceID{"987", "654"},
 					},
-					BlockStorage: []voc.ResourceID{"os_test_disk", "data_disk_2", "data_disk_3"},
+					BlockStorages: []voc.ResourceID{"os_test_disk", "data_disk_2", "data_disk_3"},
 					BootLogging: &voc.BootLogging{
 						Logging: &voc.Logging{
 							Enabled:        true,
@@ -1004,9 +1004,9 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 								Region: "eastus",
 							},
 						},
-						NetworkInterface: []voc.ResourceID{},
+						NetworkInterfaces: []voc.ResourceID{},
 					},
-					BlockStorage: []voc.ResourceID{},
+					BlockStorages: []voc.ResourceID{},
 					BootLogging: &voc.BootLogging{
 						Logging: &voc.Logging{
 							Enabled:         false,
@@ -1142,9 +1142,9 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 							Region: "eastus",
 						},
 					},
-					NetworkInterface: []voc.ResourceID{"123", "234"},
+					NetworkInterfaces: []voc.ResourceID{"123", "234"},
 				},
-				BlockStorage: []voc.ResourceID{"os_test_disk", "data_disk_1", "data_disk_2"},
+				BlockStorages: []voc.ResourceID{"os_test_disk", "data_disk_1", "data_disk_2"},
 				BootLogging: &voc.BootLogging{
 					Logging: &voc.Logging{
 						Enabled:        true,
@@ -1353,7 +1353,7 @@ func Test_bootLogOutput(t *testing.T) {
 	}
 }
 
-func TestBlockStorageHandleMethodsWhenInputIsInvalid(t *testing.T) {
+func TestBlockStoragesHandleMethodsWhenInputIsInvalid(t *testing.T) {
 	d := azureComputeDiscovery{}
 
 	// Test method handleBlockStorage

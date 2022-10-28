@@ -29,11 +29,11 @@ package voc
 func (v VirtualMachine) Related() []string {
 	list := make([]string, 0)
 
-	for _, b := range v.BlockStorage {
+	for _, b := range v.BlockStorages {
 		list = append(list, string(b))
 	}
 
-	for _, n := range v.NetworkInterface {
+	for _, n := range v.NetworkInterfaces {
 		list = append(list, string(n))
 	}
 

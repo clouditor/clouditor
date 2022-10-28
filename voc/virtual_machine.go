@@ -29,7 +29,7 @@ package voc
 
 type VirtualMachine struct {
 	*Compute
-	BlockStorage	ResourceID	`json:"blockStorage"`
+	BlockStorages	[]ResourceID	`json:"blockStorages"`
 	AutomaticUpdates	*AutomaticUpdates 	`json:"automaticUpdates"`
 	BootLogging	*BootLogging 	`json:"bootLogging"`
 	MalwareProtection	*MalwareProtection 	`json:"malwareProtection"`

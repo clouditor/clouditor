@@ -154,7 +154,7 @@ func (*azureComputeDiscovery) handleFunction(function *armappservice.Site) voc.I
 				},
 				Labels: labels(function.Tags),
 			},
-			NetworkInterface: []voc.ResourceID{},
+			NetworkInterfaces: []voc.ResourceID{},
 		},
 		RuntimeLanguage: "",
 		RuntimeVersion:  "",
@@ -221,9 +221,9 @@ func (*azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachin
 				},
 				Labels: labels(vm.Tags),
 			},
-			NetworkInterface: []voc.ResourceID{},
+			NetworkInterfaces: []voc.ResourceID{},
 		},
-		BlockStorage:      []voc.ResourceID{},
+		BlockStorages:     []voc.ResourceID{},
 		MalwareProtection: &voc.MalwareProtection{},
 		BootLogging: &voc.BootLogging{
 			Logging: &voc.Logging{
@@ -250,18 +250,18 @@ func (*azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachin
 	// Reference to networkInterfaces
 	if vm.Properties.NetworkProfile != nil {
 		for _, networkInterfaces := range vm.Properties.NetworkProfile.NetworkInterfaces {
-			r.NetworkInterface = append(r.NetworkInterface, voc.ResourceID(util.Deref(networkInterfaces.ID)))
+			r.NetworkInterfaces = append(r.NetworkInterfaces, voc.ResourceID(util.Deref(networkInterfaces.ID)))
 		}
 	}
 
 	// Reference to blockstorage
 	if vm.Properties.StorageProfile != nil && vm.Properties.StorageProfile.OSDisk != nil && vm.Properties.StorageProfile.OSDisk.ManagedDisk != nil {
-		r.BlockStorage = append(r.BlockStorage, voc.ResourceID(util.Deref(vm.Properties.StorageProfile.OSDisk.ManagedDisk.ID)))
+		r.BlockStorages = append(r.BlockStorages, voc.ResourceID(util.Deref(vm.Properties.StorageProfile.OSDisk.ManagedDisk.ID)))
 	}
 
 	if vm.Properties.StorageProfile != nil && vm.Properties.StorageProfile.DataDisks != nil {
-		for _, blockstorage := range vm.Properties.StorageProfile.DataDisks {
-			r.BlockStorage = append(r.BlockStorage, voc.ResourceID(util.Deref(blockstorage.ManagedDisk.ID)))
+		for _, blockstorages := range vm.Properties.StorageProfile.DataDisks {
+			r.BlockStorages = append(r.BlockStorages, voc.ResourceID(util.Deref(blockstorages.ManagedDisk.ID)))
 		}
 	}
 

@@ -182,7 +182,7 @@ func Test_regoEval_Eval(t *testing.T) {
 							ID:   mockVM1ResourceID,
 							Type: []string{"Virtual Machine", "Compute", "Resource"},
 						}},
-					BlockStorage: voc.ResourceID(""),
+					BlockStorages: []voc.ResourceID{},
 					BootLogging: &voc.BootLogging{
 						Logging: &voc.Logging{
 							LoggingService:  []voc.ResourceID{"SomeResourceId1", "SomeResourceId2"},
@@ -240,7 +240,7 @@ func Test_regoEval_Eval(t *testing.T) {
 							ID:   mockVM2ResourceID,
 							Type: []string{"Compute", "Virtual Machine", "Resource"},
 						}},
-					BlockStorage: voc.ResourceID(""),
+					BlockStorages: []voc.ResourceID{},
 					BootLogging: &voc.BootLogging{
 						Logging: &voc.Logging{
 							LoggingService:  []voc.ResourceID{},
