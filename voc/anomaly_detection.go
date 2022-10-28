@@ -27,7 +27,7 @@
 
 package voc
 
-// analyzes the activity of a NetworkService (which includes DatabaseServices)
+// AnomalyDetection: analyzes the activity of a NetworkService (which includes DatabaseServices)
 type AnomalyDetection struct {
 	*Auditing
 	ApplicationLogging	*ApplicationLogging 	`json:"applicationLogging"`

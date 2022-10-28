@@ -27,7 +27,7 @@
 
 package voc
 
-// This class represents a database service. For example, a postgres SQL server would be modelled as a database service (with a host and IP) and the individual tables or collections would be modelled as a DatabaseStorage entity.
+// DatabaseService: This class represents a database service. For example, a postgres SQL server would be modelled as a database service (with a host and IP) and the individual tables or collections would be modelled as a DatabaseStorage entity.
 type DatabaseService struct {
 	*StorageService
 }

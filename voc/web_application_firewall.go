@@ -27,7 +27,7 @@
 
 package voc
 
-// A WAF is a L7 firewall that includes L3 capabilities
+// WebApplicationFirewall: A WAF is a L7 firewall that includes L3 capabilities
 type WebApplicationFirewall struct {
 	*AccessRestriction
 	Enabled	bool	`json:"enabled"`

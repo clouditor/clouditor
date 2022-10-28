@@ -27,7 +27,7 @@
 
 package voc
 
-// This represents the cloud account as a whole, e.g., an Azure subscription.
+// Account: This represents the cloud account as a whole, e.g., an Azure subscription.
 type Account struct {
 	*Resource
 }

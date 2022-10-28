@@ -27,7 +27,7 @@
 
 package voc
 
-// A logging-as-a-service offering, e.g. for analyzing logs; has a Storage resource that stores the logs
+// LoggingService: A logging-as-a-service offering, e.g. for analyzing logs; has a Storage resource that stores the logs
 type LoggingService struct {
 	*NetworkService
 	Storage	ResourceID	`json:"storage"`

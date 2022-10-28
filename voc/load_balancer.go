@@ -27,7 +27,7 @@
 
 package voc
 
-// A Load Balancer may have multiple access restriction features, e.g. a L3 firewall and a WAF
+// LoadBalancer: A Load Balancer may have multiple access restriction features, e.g. a L3 firewall and a WAF
 type LoadBalancer struct {
 	*NetworkService
 	AccessRestrictions	*[]AccessRestriction 	`json:"accessRestrictions"`

@@ -27,7 +27,7 @@
 
 package voc
 
-// enabled means the resource _can_ be reached via https, while enforced means it _can only_ be reached via https (or http traffic is redirected)
+// TransportEncryption: enabled means the resource _can_ be reached via https, while enforced means it _can only_ be reached via https (or http traffic is redirected)
 type TransportEncryption struct {
 	*Confidentiality
 	Enforced	bool	`json:"enforced"`

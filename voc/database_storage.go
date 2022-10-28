@@ -27,7 +27,7 @@
 
 package voc
 
-// describes the actual database or a table in a database
+// DatabaseStorage: describes the actual database or a table in a database
 type DatabaseStorage struct {
 	*Storage
 	Parent	[]ResourceID	`json:"parent"`

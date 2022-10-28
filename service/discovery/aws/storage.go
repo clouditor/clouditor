@@ -146,7 +146,7 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 					AtRestEncryption: encryptionAtRest,
 				},
 			},
-			// Add StorageService
+			// Add ObjectStorageService
 			&voc.ObjectStorageService{
 				StorageService: &voc.StorageService{
 					Storages: []voc.ResourceID{voc.ResourceID(b.arn)},

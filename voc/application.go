@@ -27,7 +27,7 @@
 
 package voc
 
-// This encapsulates the whole (source) code of an application.
+// Application: This encapsulates the whole (source) code of an application.
 type Application struct {
 
 	Functionalities	*[]Functionality 	`json:"functionalities"`

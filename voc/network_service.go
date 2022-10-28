@@ -27,7 +27,7 @@
 
 package voc
 
-// A NetworkService is an application (on the network layer) running on a Compute resource. It provides access to a resource
+// NetworkService: A NetworkService is an application (on the network layer) running on a Compute resource. It provides access to a resource
 type NetworkService struct {
 	*Networking
 	Authenticity	IsAuthenticity 	`json:"authenticity"`
