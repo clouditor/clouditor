@@ -359,7 +359,7 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Retrieves a Control with the corresponding metrics.
+            description: Retrieves a Control with the second control lavel and metrics.
             operationId: Orchestrator_GetControl
             parameters:
                 - name: catalogId

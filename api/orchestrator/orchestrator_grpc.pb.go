@@ -107,7 +107,7 @@ type OrchestratorClient interface {
 	RemoveTargetOfEvaluation(ctx context.Context, in *RemoveTargetOfEvaluationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Retrieves a Category with the first control level.
 	GetCategory(ctx context.Context, in *GetCategoryRequest, opts ...grpc.CallOption) (*Category, error)
-	// Retrieves a Control with the corresponding metrics.
+	// Retrieves a Control with the second control lavel and metrics.
 	GetControl(ctx context.Context, in *GetControlRequest, opts ...grpc.CallOption) (*Control, error)
 	// Lists all Controls (optionally only controls related to a certain category) with the second controls level.
 	ListControls(ctx context.Context, in *ListControlsRequest, opts ...grpc.CallOption) (*ListControlsResponse, error)
@@ -622,7 +622,7 @@ type OrchestratorServer interface {
 	RemoveTargetOfEvaluation(context.Context, *RemoveTargetOfEvaluationRequest) (*emptypb.Empty, error)
 	// Retrieves a Category with the first control level.
 	GetCategory(context.Context, *GetCategoryRequest) (*Category, error)
-	// Retrieves a Control with the corresponding metrics.
+	// Retrieves a Control with the second control lavel and metrics.
 	GetControl(context.Context, *GetControlRequest) (*Control, error)
 	// Lists all Controls (optionally only controls related to a certain category) with the second controls level.
 	ListControls(context.Context, *ListControlsRequest) (*ListControlsResponse, error)
