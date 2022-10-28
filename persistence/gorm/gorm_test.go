@@ -153,7 +153,7 @@ func Test_storage_Get(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, user, gotUser3)
 
-	var metric *assessment.Metric = &assessment.Metric{
+	var metric = &assessment.Metric{
 		Id:    MockMetricID,
 		Range: &assessment.Range{Range: &assessment.Range_MinMax{MinMax: &assessment.MinMax{Min: 1, Max: 2}}},
 	}

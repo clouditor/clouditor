@@ -152,7 +152,7 @@ func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, e
 	return list, nil
 }
 
-func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) voc.IsNetwork {
+func (*azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) voc.IsNetwork {
 	return &voc.LoadBalancer{
 		NetworkService: &voc.NetworkService{
 			Networking: &voc.Networking{
@@ -168,7 +168,7 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) 
 					Labels: labels(lb.Tags),
 				},
 			},
-			Ips:   d.publicIPAddressFromLoadBalancer(lb),
+			Ips:   publicIPAddressFromLoadBalancer(lb),
 			Ports: LoadBalancerPorts(lb),
 		},
 		// TODO(all): do we need the AccessRestriction for load balancers?
@@ -259,8 +259,7 @@ func LoadBalancerPorts(lb *armnetwork.LoadBalancer) (loadBalancerPorts []uint16)
 //     return list
 // }
 
-func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *armnetwork.LoadBalancer) []string {
-
+func publicIPAddressFromLoadBalancer(lb *armnetwork.LoadBalancer) []string {
 	var publicIPAddresses = []string{}
 
 	if lb == nil || lb.Properties == nil || lb.Properties.FrontendIPConfigurations == nil {

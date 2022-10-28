@@ -40,7 +40,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestrator.CreateTargetOfEvaluationRequest) (res *orchestrator.TargetOfEvaluation, err error) {
+func (svc *Service) CreateTargetOfEvaluation(_ context.Context, req *orchestrator.CreateTargetOfEvaluationRequest) (res *orchestrator.TargetOfEvaluation, err error) {
 	err = svc.storage.Create(&req.Toe)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
@@ -70,7 +70,7 @@ func (svc *Service) GetTargetOfEvaluation(_ context.Context, req *orchestrator.G
 	return response, nil
 }
 
-// ListTargetOfEvaluation implements method for getting a TargetOfEvaluation
+// ListTargetsOfEvaluation implements method for getting a TargetOfEvaluation
 func (svc *Service) ListTargetsOfEvaluation(_ context.Context, req *orchestrator.ListTargetsOfEvaluationRequest) (res *orchestrator.ListTargetsOfEvaluationResponse, err error) {
 	// Validate the request
 	if err = api.ValidateListRequest[*orchestrator.TargetOfEvaluation](req); err != nil {

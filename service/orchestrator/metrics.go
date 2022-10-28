@@ -77,7 +77,7 @@ func (svc *Service) loadMetrics() (err error) {
 			continue
 		}
 
-		err = svc.prepareMetric(m)
+		err = prepareMetric(m)
 		if err != nil {
 			log.Warnf("Could not prepare implementation or default configuration for metric %s: %v", m.Id, err)
 			continue
@@ -95,7 +95,7 @@ func (svc *Service) loadMetrics() (err error) {
 
 // prepareMetric takes care of the heavy lifting of loading the default implementation and configuration of a particular
 // metric and storing them into the service.
-func (svc *Service) prepareMetric(m *assessment.Metric) (err error) {
+func prepareMetric(m *assessment.Metric) (err error) {
 	var (
 		config *assessment.MetricConfiguration
 	)

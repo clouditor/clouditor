@@ -31,6 +31,6 @@ type TokenBasedAuthentication struct {
 	Activated bool `json:"activated"`
 }
 
-func (j *TokenBasedAuthentication) Type() string {
+func (*TokenBasedAuthentication) Type() string {
 	return "TokenBasedAuthentication"
 }

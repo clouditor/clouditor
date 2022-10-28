@@ -29,6 +29,6 @@ type CertificateBasedAuthentication struct {
 	*Authenticity
 }
 
-func (c *CertificateBasedAuthentication) Type() string {
+func (*CertificateBasedAuthentication) Type() string {
 	return "CertificateBasedAuthentication"
 }

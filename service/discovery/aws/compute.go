@@ -118,7 +118,7 @@ func (d computeDiscovery) List() (resources []voc.IsCloudResource, err error) {
 		return nil, fmt.Errorf("could not discover virtual machines: %w", err)
 	}
 	for _, machine := range listOfVMs {
-		resources = append(resources, &machine)
+		resources = append(resources, machine)
 	}
 
 	listOfFunctions, err := d.discoverFunctions()
@@ -126,7 +126,7 @@ func (d computeDiscovery) List() (resources []voc.IsCloudResource, err error) {
 		return nil, fmt.Errorf("could not discover functions: %w", err)
 	}
 	for _, function := range listOfFunctions {
-		resources = append(resources, &function)
+		resources = append(resources, function)
 	}
 
 	return
@@ -205,12 +205,12 @@ func (d *computeDiscovery) discoverNetworkInterfaces() ([]voc.NetworkInterface, 
 }
 
 // discoverVirtualMachines discovers all VMs (in the current region)
-func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachine, error) {
+func (d *computeDiscovery) discoverVirtualMachines() ([]*voc.VirtualMachine, error) {
 	resp, err := d.virtualMachineAPI.DescribeInstances(context.TODO(), &ec2.DescribeInstancesInput{})
 	if err != nil {
 		return nil, prettyError(err)
 	}
-	var resources []voc.VirtualMachine
+	var resources []*voc.VirtualMachine
 	for _, reservation := range resp.Reservations {
 		for i := range reservation.Instances {
 			vm := &reservation.Instances[i]
@@ -229,7 +229,7 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachine, erro
 				NetworkInterface: d.getNetworkInterfacesOfVM(vm),
 			}
 
-			resources = append(resources, voc.VirtualMachine{
+			resources = append(resources, &voc.VirtualMachine{
 				Compute:      computeResource,
 				BlockStorage: d.mapBlockStorageIDsOfVM(vm),
 				BootLogging:  d.getBootLog(vm),
@@ -241,7 +241,7 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]voc.VirtualMachine, erro
 }
 
 // discoverFunctions discovers all lambda functions
-func (d *computeDiscovery) discoverFunctions() (resources []voc.Function, err error) {
+func (d *computeDiscovery) discoverFunctions() (resources []*voc.Function, err error) {
 	// 'listFunctions' discovers up to 50 Lambda functions per execution -> loop through when response has nextMarker set
 	var resp *lambda.ListFunctionsOutput
 	var nextMarker *string
@@ -263,10 +263,10 @@ func (d *computeDiscovery) discoverFunctions() (resources []voc.Function, err er
 }
 
 // mapFunctionResources iterates functionConfigurations and returns a list of corresponding FunctionResources
-func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.FunctionConfiguration) (resources []voc.Function) {
+func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.FunctionConfiguration) (resources []*voc.Function) {
 	for i := range functions {
 		function := &functions[i]
-		resources = append(resources, voc.Function{
+		resources = append(resources, &voc.Function{
 			Compute: &voc.Compute{
 				Resource: &voc.Resource{
 					ID:           voc.ResourceID(aws.ToString(function.FunctionArn)),

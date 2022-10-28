@@ -120,48 +120,48 @@ func BenchmarkAssessEvidence(b *testing.B) {
 	}
 }
 
-func benchmarkAssessEvidence(i int, m int, b *testing.B) {
+func benchmarkAssessEvidenceInternal(i int, m int, b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		createEvidences(i, m, b)
 	}
 }
 
 func BenchmarkAssessEvidence1(b *testing.B) {
-	benchmarkAssessEvidence(1, 1, b)
+	benchmarkAssessEvidenceInternal(1, 1, b)
 }
 
 func BenchmarkAssessEvidence2(b *testing.B) {
-	benchmarkAssessEvidence(2, 1, b)
+	benchmarkAssessEvidenceInternal(2, 1, b)
 }
 
 func BenchmarkAssessEvidence10(b *testing.B) {
-	benchmarkAssessEvidence(10, 1, b)
+	benchmarkAssessEvidenceInternal(10, 1, b)
 }
 
 func BenchmarkAssessEvidence10x2(b *testing.B) {
-	benchmarkAssessEvidence(10, 2, b)
+	benchmarkAssessEvidenceInternal(10, 2, b)
 }
 
 func BenchmarkAssessEvidence100(b *testing.B) {
-	benchmarkAssessEvidence(100, 1, b)
+	benchmarkAssessEvidenceInternal(100, 1, b)
 }
 
 func BenchmarkAssessEvidence1000(b *testing.B) {
-	benchmarkAssessEvidence(1000, 1, b)
+	benchmarkAssessEvidenceInternal(1000, 1, b)
 }
 
 func BenchmarkAssessEvidence1000x2(b *testing.B) {
-	benchmarkAssessEvidence(1000, 2, b)
+	benchmarkAssessEvidenceInternal(1000, 2, b)
 }
 
 func BenchmarkAssessEvidence1000x10(b *testing.B) {
-	benchmarkAssessEvidence(1000, 10, b)
+	benchmarkAssessEvidenceInternal(1000, 10, b)
 }
 
 func BenchmarkAssessEvidence3000(b *testing.B) {
-	benchmarkAssessEvidence(3000, 1, b)
+	benchmarkAssessEvidenceInternal(3000, 1, b)
 }
 
 func BenchmarkAssessEvidence10000(b *testing.B) {
-	benchmarkAssessEvidence(10000, 1, b)
+	benchmarkAssessEvidenceInternal(10000, 1, b)
 }

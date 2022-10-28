@@ -119,15 +119,15 @@ func (a *AuthorizationStrategyJWT) AllowedCloudServices(ctx context.Context) (al
 	return false, list
 }
 
-// AuthorizationStrategyJWT is an AuthorizationStrategy that allows all requests.
+// AuthorizationStrategyAllowAll is an AuthorizationStrategy that allows all requests.
 type AuthorizationStrategyAllowAll struct{}
 
 // CheckAccess checks whether the current request can be fulfilled using the current access strategy.
-func (a *AuthorizationStrategyAllowAll) CheckAccess(_ context.Context, _ RequestType, _ orchestrator.CloudServiceRequest) bool {
+func (*AuthorizationStrategyAllowAll) CheckAccess(_ context.Context, _ RequestType, _ orchestrator.CloudServiceRequest) bool {
 	return true
 }
 
 // AllowedCloudServices retrieves a list of allowed cloud service IDs according to the current access strategy.
-func (a *AuthorizationStrategyAllowAll) AllowedCloudServices(_ context.Context) (all bool, list []string) {
+func (*AuthorizationStrategyAllowAll) AllowedCloudServices(_ context.Context) (all bool, list []string) {
 	return true, nil
 }

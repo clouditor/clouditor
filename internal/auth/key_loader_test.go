@@ -29,7 +29,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
-	"io/ioutil"
+	"io"
 	"os"
 	"reflect"
 	"testing"
@@ -38,7 +38,7 @@ import (
 )
 
 func Test_keyLoader_recoverFromLoadApiKeyError(t *testing.T) {
-	var tmpFile, _ = ioutil.TempFile("", "api.key")
+	var tmpFile, _ = os.CreateTemp("", "api.key")
 	// Close it immediately , since we want to write to it
 	tmpFile.Close()
 
@@ -100,7 +100,7 @@ func Test_keyLoader_recoverFromLoadApiKeyError(t *testing.T) {
 				}
 
 				// Our tmp file should also contain something now
-				data, err := ioutil.ReadAll(f)
+				data, err := io.ReadAll(f)
 				if !assert.ErrorIs(tt, err, nil) {
 					return false
 				}
@@ -127,7 +127,7 @@ func Test_keyLoader_recoverFromLoadApiKeyError(t *testing.T) {
 
 func TestService_loadKeyFromFile(t *testing.T) {
 	// Prepare a tmp file that contains a new temporary private key
-	var tmpFile, _ = ioutil.TempFile("", "api.key")
+	var tmpFile, _ = os.CreateTemp("", "api.key")
 	tmpFile.Close()
 
 	// Create a new temporary key

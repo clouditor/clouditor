@@ -121,7 +121,7 @@ func (svc *Service) RemoveCatalog(_ context.Context, req *orchestrator.RemoveCat
 	return &emptypb.Empty{}, nil
 }
 
-func (srv *Service) GetCategory(ctx context.Context, req *orchestrator.GetCategoryRequest) (res *orchestrator.Category, err error) {
+func (srv *Service) GetCategory(_ context.Context, req *orchestrator.GetCategoryRequest) (res *orchestrator.Category, err error) {
 	res = new(orchestrator.Category)
 	err = srv.storage.Get(&res, gorm.WithPreload("Controls", "parent_control_id IS NULL"), "name = ? AND catalog_id = ?", req.CategoryName, req.CatalogId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
@@ -133,7 +133,7 @@ func (srv *Service) GetCategory(ctx context.Context, req *orchestrator.GetCatego
 	return res, nil
 }
 
-func (srv *Service) GetControl(ctx context.Context, req *orchestrator.GetControlRequest) (res *orchestrator.Control, err error) {
+func (srv *Service) GetControl(_ context.Context, req *orchestrator.GetControlRequest) (res *orchestrator.Control, err error) {
 	res = new(orchestrator.Control)
 	err = srv.storage.Get(&res, "Id = ? AND category_name = ? AND category_catalog_id = ?", req.ControlId, req.CategoryName, req.CatalogId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
@@ -145,7 +145,7 @@ func (srv *Service) GetControl(ctx context.Context, req *orchestrator.GetControl
 	return res, nil
 }
 
-func (srv *Service) ListControls(ctx context.Context, req *orchestrator.ListControlsRequest) (res *orchestrator.ListControlsResponse, err error) {
+func (srv *Service) ListControls(_ context.Context, req *orchestrator.ListControlsRequest) (res *orchestrator.ListControlsResponse, err error) {
 	// Validate the request
 	if err = api.ValidateListRequest[*orchestrator.Control](req); err != nil {
 		err = fmt.Errorf("invalid request: %w", err)

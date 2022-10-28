@@ -30,7 +30,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -207,7 +206,7 @@ func TestREST(t *testing.T) {
 					return assert.True(tt, ok)
 				}
 
-				content, err := ioutil.ReadAll(resp.Body)
+				content, err := io.ReadAll(resp.Body)
 				if !assert.ErrorIs(tt, err, nil) {
 					return false
 				}

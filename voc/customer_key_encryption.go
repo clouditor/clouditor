@@ -30,6 +30,6 @@ type CustomerKeyEncryption struct {
 	KeyUrl string `json:"keyUrl"`
 }
 
-func (c *CustomerKeyEncryption) Type() string {
+func (*CustomerKeyEncryption) Type() string {
 	return "CustomerKeyEncryption"
 }

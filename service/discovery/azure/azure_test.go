@@ -67,7 +67,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 
 type mockAuthorizer struct{}
 
-func (c *mockAuthorizer) GetToken(_ context.Context, _ policy.TokenRequestOptions) (azcore.AccessToken, error) {
+func (*mockAuthorizer) GetToken(_ context.Context, _ policy.TokenRequestOptions) (azcore.AccessToken, error) {
 	var token azcore.AccessToken
 
 	return token, nil

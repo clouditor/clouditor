@@ -29,6 +29,6 @@ type NoAuthentication struct {
 	*Authenticity
 }
 
-func (n *NoAuthentication) Type() string {
+func (*NoAuthentication) Type() string {
 	return "NoAuthentication"
 }

@@ -27,7 +27,6 @@ package login
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -76,7 +75,7 @@ func TestLogin(t *testing.T) {
 	defer sock.Close()
 	defer server.Stop()
 
-	dir, err = ioutil.TempDir(os.TempDir(), ".clouditor")
+	dir, err = os.MkdirTemp(os.TempDir(), ".clouditor")
 	assert.NoError(t, err)
 	assert.NotEmpty(t, dir)
 
