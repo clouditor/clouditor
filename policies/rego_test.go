@@ -182,7 +182,7 @@ func Test_regoEval_Eval(t *testing.T) {
 							ID:   mockVM1ResourceID,
 							Type: []string{"Virtual Machine", "Compute", "Resource"},
 						}},
-					BlockStorage: nil,
+					BlockStorage: voc.ResourceID(""),
 					BootLogging: &voc.BootLogging{
 						Logging: &voc.Logging{
 							LoggingService:  []voc.ResourceID{"SomeResourceId1", "SomeResourceId2"},
@@ -190,7 +190,7 @@ func Test_regoEval_Eval(t *testing.T) {
 							RetentionPeriod: 36 * time.Hour * 24,
 						},
 					},
-					OSLogging: &voc.OSLogging{
+					OsLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
 							LoggingService:  []voc.ResourceID{"SomeResourceId2"},
 							Enabled:         true,
@@ -240,7 +240,7 @@ func Test_regoEval_Eval(t *testing.T) {
 							ID:   mockVM2ResourceID,
 							Type: []string{"Compute", "Virtual Machine", "Resource"},
 						}},
-					BlockStorage: nil,
+					BlockStorage: voc.ResourceID(""),
 					BootLogging: &voc.BootLogging{
 						Logging: &voc.Logging{
 							LoggingService:  []voc.ResourceID{},
@@ -248,7 +248,7 @@ func Test_regoEval_Eval(t *testing.T) {
 							RetentionPeriod: 1 * time.Hour * 24,
 						},
 					},
-					OSLogging: &voc.OSLogging{
+					OsLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
 							LoggingService:  []voc.ResourceID{"SomeResourceId3"},
 							Enabled:         false,

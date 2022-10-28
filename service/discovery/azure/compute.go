@@ -235,7 +235,7 @@ func (*azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachin
 				},
 			},
 		},
-		OSLogging: &voc.OSLogging{
+		OsLogging: &voc.OSLogging{
 			Logging: &voc.Logging{
 				Enabled:         false,
 				RetentionPeriod: 0,

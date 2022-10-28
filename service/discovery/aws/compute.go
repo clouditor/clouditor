@@ -233,7 +233,7 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]*voc.VirtualMachine, err
 				Compute:      computeResource,
 				BlockStorage: d.mapBlockStorageIDsOfVM(vm),
 				BootLogging:  d.getBootLog(vm),
-				OSLogging:    d.getOSLog(vm),
+				OsLogging:    d.getOSLog(vm),
 			})
 		}
 	}

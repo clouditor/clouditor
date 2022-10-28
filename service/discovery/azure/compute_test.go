@@ -587,7 +587,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							RetentionPeriod: 0,
 						},
 					},
-					OSLogging: &voc.OSLogging{
+					OsLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
 							Enabled:         false,
 							LoggingService:  []voc.ResourceID{},
@@ -625,7 +625,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							RetentionPeriod: 0,
 						},
 					},
-					OSLogging: &voc.OSLogging{
+					OsLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
 							Enabled:         false,
 							LoggingService:  []voc.ResourceID{},
@@ -663,7 +663,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							},
 						},
 					},
-					OSLogging: &voc.OSLogging{
+					OsLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
 							Enabled:         false,
 							LoggingService:  []voc.ResourceID{},
@@ -941,7 +941,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 							RetentionPeriod: 0,
 						},
 					},
-					OSLogging: &voc.OSLogging{
+					OsLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
 							Enabled:         false,
 							LoggingService:  []voc.ResourceID{},
@@ -979,7 +979,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 							RetentionPeriod: 0,
 						},
 					},
-					OSLogging: &voc.OSLogging{
+					OsLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
 							Enabled:         false,
 							LoggingService:  []voc.ResourceID{},
@@ -1017,7 +1017,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 							},
 						},
 					},
-					OSLogging: &voc.OSLogging{
+					OsLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
 							Enabled:         false,
 							LoggingService:  []voc.ResourceID{},
@@ -1155,7 +1155,7 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 						RetentionPeriod: 0,
 					},
 				},
-				OSLogging: &voc.OSLogging{
+				OsLogging: &voc.OSLogging{
 					Logging: &voc.Logging{
 						Enabled:         false,
 						LoggingService:  []voc.ResourceID{},

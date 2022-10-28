@@ -60,7 +60,7 @@ func TestVirtualMachine_Related(t *testing.T) {
 				Compute:      tt.fields.Compute,
 				BlockStorage: tt.fields.BlockStorage,
 				BootLogging:  tt.fields.BootLogging,
-				OSLogging:    tt.fields.OSLogging,
+				OsLogging:    tt.fields.OSLogging,
 			}
 			if got := v.Related(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("VirtualMachine.Related() = %v, want %v", got, tt.want)
