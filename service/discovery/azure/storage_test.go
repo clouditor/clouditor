@@ -452,36 +452,38 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 						},
 					},
 				},
-				&voc.StorageService{
-					Storages: []voc.ResourceID{
-						"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
-						"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2",
-						"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1",
-						"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2",
+				&voc.ObjectStorageService{
+					StorageService: &voc.StorageService{
+						Storages: []voc.ResourceID{
+							"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
+							"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2",
+							"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1",
+							"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2",
+						},
+						NetworkService: &voc.NetworkService{
+							Networking: &voc.Networking{
+								Resource: &voc.Resource{
+									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
+									ServiceID:    discovery.DefaultCloudServiceID,
+									Name:         "account1",
+									Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
+									CreationTime: util.SafeTimestamp(&creationTime),
+									Labels:       map[string]string{},
+									GeoLocation: voc.GeoLocation{
+										Region: "eastus",
+									},
+								},
+							},
+							TransportEncryption: &voc.TransportEncryption{
+								Enforced:   true,
+								Enabled:    true,
+								TlsVersion: "TLS1_2",
+								Algorithm:  "TLS",
+							},
+						},
 					},
 					HttpEndpoint: &voc.HttpEndpoint{
 						Url: "https://account1.[file,blob].core.windows.net/",
-						TransportEncryption: &voc.TransportEncryption{
-							Enforced:   true,
-							Enabled:    true,
-							TlsVersion: "TLS1_2",
-							Algorithm:  "TLS",
-						},
-					},
-					NetworkService: &voc.NetworkService{
-						Networking: &voc.Networking{
-							Resource: &voc.Resource{
-								ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
-								ServiceID:    discovery.DefaultCloudServiceID,
-								Name:         "account1",
-								Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
-								CreationTime: util.SafeTimestamp(&creationTime),
-								Labels:       map[string]string{},
-								GeoLocation: voc.GeoLocation{
-									Region: "eastus",
-								},
-							},
-						},
 						TransportEncryption: &voc.TransportEncryption{
 							Enforced:   true,
 							Enabled:    true,
@@ -538,34 +540,36 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 					},
 					PublicAccess: false,
 				},
-				&voc.StorageService{
-					Storages: []voc.ResourceID{
-						"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container3",
-						"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container4",
+				&voc.ObjectStorageService{
+					StorageService: &voc.StorageService{
+						Storages: []voc.ResourceID{
+							"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container3",
+							"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container4",
+						},
+						NetworkService: &voc.NetworkService{
+							Networking: &voc.Networking{
+								Resource: &voc.Resource{
+									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2",
+									ServiceID:    discovery.DefaultCloudServiceID,
+									Name:         "account2",
+									Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
+									CreationTime: util.SafeTimestamp(&creationTime),
+									Labels:       map[string]string{},
+									GeoLocation: voc.GeoLocation{
+										Region: "eastus",
+									},
+								},
+							},
+							TransportEncryption: &voc.TransportEncryption{
+								Enforced:   true,
+								Enabled:    true,
+								TlsVersion: "TLS1_2",
+								Algorithm:  "TLS",
+							},
+						},
 					},
 					HttpEndpoint: &voc.HttpEndpoint{
 						Url: "https://account1.[file,blob].core.windows.net/",
-						TransportEncryption: &voc.TransportEncryption{
-							Enforced:   true,
-							Enabled:    true,
-							TlsVersion: "TLS1_2",
-							Algorithm:  "TLS",
-						},
-					},
-					NetworkService: &voc.NetworkService{
-						Networking: &voc.Networking{
-							Resource: &voc.Resource{
-								ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2",
-								ServiceID:    discovery.DefaultCloudServiceID,
-								Name:         "account2",
-								Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
-								CreationTime: util.SafeTimestamp(&creationTime),
-								Labels:       map[string]string{},
-								GeoLocation: voc.GeoLocation{
-									Region: "eastus",
-								},
-							},
-						},
 						TransportEncryption: &voc.TransportEncryption{
 							Enforced:   true,
 							Enabled:    true,
@@ -1003,7 +1007,7 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    *voc.StorageService
+		want    *voc.ObjectStorageService
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -1033,26 +1037,28 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 					Location: &accountRegion,
 				},
 			},
-			want: &voc.StorageService{
-				NetworkService: &voc.NetworkService{
-					Networking: &voc.Networking{
-						Resource: &voc.Resource{
-							ID:           voc.ResourceID(accountID),
-							ServiceID:    discovery.DefaultCloudServiceID,
-							Name:         accountName,
-							CreationTime: util.SafeTimestamp(&creationTime),
-							Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
-							GeoLocation: voc.GeoLocation{
-								Region: accountRegion,
+			want: &voc.ObjectStorageService{
+				StorageService: &voc.StorageService{
+					NetworkService: &voc.NetworkService{
+						Networking: &voc.Networking{
+							Resource: &voc.Resource{
+								ID:           voc.ResourceID(accountID),
+								ServiceID:    discovery.DefaultCloudServiceID,
+								Name:         accountName,
+								CreationTime: util.SafeTimestamp(&creationTime),
+								Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
+								GeoLocation: voc.GeoLocation{
+									Region: accountRegion,
+								},
+								Labels: map[string]string{},
 							},
-							Labels: map[string]string{},
 						},
-					},
-					TransportEncryption: &voc.TransportEncryption{
-						Enforced:   true,
-						Enabled:    true,
-						TlsVersion: "TLS1_2",
-						Algorithm:  "TLS",
+						TransportEncryption: &voc.TransportEncryption{
+							Enforced:   true,
+							Enabled:    true,
+							TlsVersion: "TLS1_2",
+							Algorithm:  "TLS",
+						},
 					},
 				},
 				HttpEndpoint: &voc.HttpEndpoint{

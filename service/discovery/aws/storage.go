@@ -147,20 +147,22 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 				},
 			},
 			// Add StorageService
-			&voc.StorageService{
-				Storages: []voc.ResourceID{voc.ResourceID(b.arn)},
-				NetworkService: &voc.NetworkService{
-					Networking: &voc.Networking{
-						Resource: &voc.Resource{
-							ID:           voc.ResourceID(b.arn),
-							ServiceID:    discovery.DefaultCloudServiceID,
-							CreationTime: b.creationTime.Unix(),
-							Name:         b.name,
-							GeoLocation:  voc.GeoLocation{Region: b.region},
-							Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
+			&voc.ObjectStorageService{
+				StorageService: &voc.StorageService{
+					Storages: []voc.ResourceID{voc.ResourceID(b.arn)},
+					NetworkService: &voc.NetworkService{
+						Networking: &voc.Networking{
+							Resource: &voc.Resource{
+								ID:           voc.ResourceID(b.arn),
+								ServiceID:    discovery.DefaultCloudServiceID,
+								CreationTime: b.creationTime.Unix(),
+								Name:         b.name,
+								GeoLocation:  voc.GeoLocation{Region: b.region},
+								Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
+							},
 						},
+						TransportEncryption: encryptionAtTransmit,
 					},
-					TransportEncryption: encryptionAtTransmit,
 				},
 				HttpEndpoint: &voc.HttpEndpoint{
 					Url:                 b.endpoint,
