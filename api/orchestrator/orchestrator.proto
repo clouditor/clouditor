@@ -364,7 +364,7 @@ service Orchestrator {
     };
   }
 
-  // Retrieves a Control with the second control lavel and metrics.
+  // Retrieves a Control with the second control level and metrics.
   rpc GetControl(GetControlRequest) returns (Control) {
     option (google.api.http) = {
       get : "/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/"
