@@ -27,7 +27,7 @@
 
 package voc
 
-// ProxiedEndpoint: An HTTP endpoint, that is routed through a (reverse) proxy, e.g. a load balancer.
+// ProxiedEndpoint An HTTP endpoint, that is routed through a (reverse) proxy, e.g. a load balancer.
 type ProxiedEndpoint struct {
 	*HttpEndpoint
 	ProxyTarget	*HttpEndpoint 	`json:"proxyTarget"`

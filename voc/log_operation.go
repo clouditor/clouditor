@@ -27,7 +27,7 @@
 
 package voc
 
-// LogOperation: A LogOperation is used by an application
+// LogOperation A LogOperation is used by an application
 type LogOperation struct {
 	*Operation
 	Logging	*Logging 	`json:"logging"`

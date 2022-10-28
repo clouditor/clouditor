@@ -29,12 +29,12 @@ package voc
 
 import "time"
 
-// AutomaticUpdates: This feature is, e.g., available on some VM services to automatically update their software. It ensures that a resource is protected from tampering with its state.
+// AutomaticUpdates This feature is, e.g., available on some VM services to automatically update their software. It ensures that a resource is protected from tampering with its state.
 type AutomaticUpdates struct {
 	*Integrity
 	Enabled	bool	`json:"enabled"`
+	SecurityOnly	bool	`json:"securityOnly"`
 	// The interval refers to the update interval in days.
 	Interval	time.Duration	`json:"interval"`
-	SecurityOnly	bool	`json:"securityOnly"`
 }
 

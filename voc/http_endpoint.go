@@ -27,7 +27,7 @@
 
 package voc
 
-// HttpEndpoint: Via the Authenticity relationship, the access type can be specified, e.g. public access (no authentication), password-based, etc.
+// HttpEndpoint Via the Authenticity relationship, the access type can be specified, e.g. public access (no authentication), password-based, etc.
 type HttpEndpoint struct {
 	*Functionality
 	Authenticity	IsAuthenticity 	`json:"authenticity"`
