@@ -110,14 +110,16 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 					},
 				},
 			},
-			&voc.StorageService{
-				Storages: []voc.ResourceID{"some-id"},
-				NetworkService: &voc.NetworkService{
-					Networking: &voc.Networking{
-						Resource: &voc.Resource{
-							ID:   "some-storage-service-id",
-							Name: "some-storage-service-name",
-							Type: []string{"StorageService", "NetworkService", "Networking", "Resource"},
+			&voc.ObjectStorageService{
+				StorageService: &voc.StorageService{
+					Storage: []voc.ResourceID{"some-id"},
+					NetworkService: &voc.NetworkService{
+						Networking: &voc.Networking{
+							Resource: &voc.Resource{
+								ID:   "some-storage-service-id",
+								Name: "some-storage-service-name",
+								Type: []string{"StorageService", "NetworkService", "Networking", "Resource"},
+							},
 						},
 					},
 				},
@@ -170,4 +172,8 @@ func (mockIsCloudResource) HasType(_ string) bool {
 
 func (mockIsCloudResource) GetCreationTime() *time.Time {
 	return nil
+}
+
+func (mockIsCloudResource) Related() []string {
+	return []string{}
 }

@@ -104,13 +104,13 @@ type Bool struct {
 }
 
 // Name is the method implementation defined in the discovery.Discoverer interface
-func (d *awsS3Discovery) Name() string {
+func (*awsS3Discovery) Name() string {
 	return "AWS Blob Storage"
 }
 
 // List is the method implementation defined in the discovery.Discoverer interface
 func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
-	var encryptionAtRest voc.HasAtRestEncryption
+	var encryptionAtRest voc.IsAtRestEncryption
 	var encryptionAtTransmit *voc.TransportEncryption
 
 	log.Infof("Collecting evidences in %s", d.Name())
@@ -146,21 +146,23 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 					AtRestEncryption: encryptionAtRest,
 				},
 			},
-			// Add StorageService
-			&voc.StorageService{
-				Storages: []voc.ResourceID{voc.ResourceID(b.arn)},
-				NetworkService: &voc.NetworkService{
-					Networking: &voc.Networking{
-						Resource: &voc.Resource{
-							ID:           voc.ResourceID(b.arn),
-							ServiceID:    discovery.DefaultCloudServiceID,
-							CreationTime: b.creationTime.Unix(),
-							Name:         b.name,
-							GeoLocation:  voc.GeoLocation{Region: b.region},
-							Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
+			// Add ObjectStorageService
+			&voc.ObjectStorageService{
+				StorageService: &voc.StorageService{
+					Storage: []voc.ResourceID{voc.ResourceID(b.arn)},
+					NetworkService: &voc.NetworkService{
+						Networking: &voc.Networking{
+							Resource: &voc.Resource{
+								ID:           voc.ResourceID(b.arn),
+								ServiceID:    discovery.DefaultCloudServiceID,
+								CreationTime: b.creationTime.Unix(),
+								Name:         b.name,
+								GeoLocation:  voc.GeoLocation{Region: b.region},
+								Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
+							},
 						},
+						TransportEncryption: encryptionAtTransmit,
 					},
-					TransportEncryption: encryptionAtTransmit,
 				},
 				HttpEndpoint: &voc.HttpEndpoint{
 					Url:                 b.endpoint,
@@ -188,11 +190,7 @@ func (d *awsS3Discovery) getBuckets() (buckets []bucket, err error) {
 	var resp *s3.ListBucketsOutput
 	resp, err = d.storageAPI.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
 	if err != nil {
-		var ae smithy.APIError
-		if errors.As(err, &ae) {
-			err = formatError(ae)
-		}
-		return
+		return nil, prettyError(err)
 	}
 	var region string
 	for _, b := range resp.Buckets {
@@ -216,8 +214,7 @@ func (d *awsS3Discovery) getBuckets() (buckets []bucket, err error) {
 }
 
 // getEncryptionAtRest gets the bucket's encryption configuration
-func (d *awsS3Discovery) getEncryptionAtRest(bucket *bucket) (e voc.HasAtRestEncryption, err error) {
-
+func (d *awsS3Discovery) getEncryptionAtRest(bucket *bucket) (e voc.IsAtRestEncryption, err error) {
 	input := s3.GetBucketEncryptionInput{
 		Bucket:              aws.String(bucket.name),
 		ExpectedBucketOwner: nil,
@@ -246,12 +243,12 @@ func (d *awsS3Discovery) getEncryptionAtRest(bucket *bucket) (e voc.HasAtRestEnc
 	}
 
 	if alg := resp.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm; alg == types.ServerSideEncryptionAes256 {
-		e = voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
+		e = &voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
 			Algorithm: string(alg),
 			Enabled:   true,
 		}}
 	} else {
-		e = voc.CustomerKeyEncryption{
+		e = &voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
 				Algorithm: "", // not available
 				Enabled:   true,

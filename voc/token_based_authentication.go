@@ -1,4 +1,6 @@
-// Copyright 2021 Fraunhofer AISEC
+// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
+
+// Copyright 2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,9 +27,12 @@
 
 package voc
 
-type LogOutput struct {
-	*Functionality
-	Logging []ResourceID `json:"logging"`
-	Call    string       `json:"call"`
-	Value   string       `json:"value"`
+type TokenBasedAuthentication struct {
+	*Authenticity
+	Enforced  bool `json:"enforced"`
+	Activated bool `json:"activated"`
+}
+
+func (*TokenBasedAuthentication) Type() string {
+	return "TokenBasedAuthentication"
 }

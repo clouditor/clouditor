@@ -102,6 +102,7 @@ func (k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwork 
 				GeoLocation: voc.GeoLocation{
 					Region: "", // TODO(all)
 				},
+				Labels: service.Labels,
 			},
 		},
 
@@ -127,6 +128,7 @@ func (k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 					GeoLocation: voc.GeoLocation{
 						Region: "", // TODO(all)
 					},
+					Labels: ingress.Labels,
 				},
 			},
 			Ips:   nil, // TODO (oxisto): fill out IPs

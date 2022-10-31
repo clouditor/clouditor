@@ -322,7 +322,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	// enable reflection, primary for testing in early stages
 	reflection.Register(server)
 
-	var opts []rest.ServerConfigOption = []rest.ServerConfigOption{
+	var opts = []rest.ServerConfigOption{
 		rest.WithAllowedOrigins(viper.GetStringSlice(APICORSAllowedOriginsFlags)),
 		rest.WithAllowedHeaders(viper.GetStringSlice(APICORSAllowedHeadersFlags)),
 		rest.WithAllowedMethods(viper.GetStringSlice(APICORSAllowedMethodsFlags)),

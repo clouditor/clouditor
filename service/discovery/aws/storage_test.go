@@ -58,7 +58,7 @@ const (
 
 type mockS3APINew struct{}
 
-func (m mockS3APINew) ListBuckets(_ context.Context,
+func (mockS3APINew) ListBuckets(_ context.Context,
 	_ *s3.ListBucketsInput,
 	_ ...func(*s3.Options)) (*s3.ListBucketsOutput, error) {
 	creationDate1, err := time.Parse(time.RFC3339, mockBucket1CreationTime)
@@ -80,7 +80,7 @@ func (m mockS3APINew) ListBuckets(_ context.Context,
 	return output, nil
 }
 
-func (m mockS3APINew) GetBucketEncryption(_ context.Context,
+func (mockS3APINew) GetBucketEncryption(_ context.Context,
 	params *s3.GetBucketEncryptionInput,
 	_ ...func(*s3.Options)) (*s3.GetBucketEncryptionOutput, error) {
 	switch aws.ToString(params.Bucket) {
@@ -123,7 +123,7 @@ func (m mockS3APINew) GetBucketEncryption(_ context.Context,
 	}
 }
 
-func (m mockS3APINew) GetBucketPolicy(_ context.Context,
+func (mockS3APINew) GetBucketPolicy(_ context.Context,
 	params *s3.GetBucketPolicyInput,
 	_ ...func(*s3.Options)) (output *s3.GetBucketPolicyOutput, err error) {
 	switch aws.ToString(params.Bucket) {
@@ -179,7 +179,7 @@ func (m mockS3APINew) GetBucketPolicy(_ context.Context,
 	return
 }
 
-func (m mockS3APINew) GetBucketLocation(_ context.Context,
+func (mockS3APINew) GetBucketLocation(_ context.Context,
 	params *s3.GetBucketLocationInput,
 	_ ...func(*s3.Options)) (output *s3.GetBucketLocationOutput, err error) {
 	switch aws.ToString(params.Bucket) {
@@ -204,19 +204,19 @@ func (m mockS3APINew) GetBucketLocation(_ context.Context,
 	return
 }
 
-func (m mockS3APINew) GetPublicAccessBlock(_ context.Context,
+func (mockS3APINew) GetPublicAccessBlock(_ context.Context,
 	_ *s3.GetPublicAccessBlockInput,
 	_ ...func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error) {
 	panic("implement me")
 }
 
-func (m mockS3APINew) GetBucketReplication(_ context.Context,
+func (mockS3APINew) GetBucketReplication(_ context.Context,
 	_ *s3.GetBucketReplicationInput,
 	_ ...func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 	panic("implement me")
 }
 
-func (m mockS3APINew) GetBucketLifecycleConfiguration(_ context.Context,
+func (mockS3APINew) GetBucketLifecycleConfiguration(_ context.Context,
 	_ *s3.GetBucketLifecycleConfigurationInput,
 	_ ...func(*s3.Options)) (*s3.GetBucketLifecycleConfigurationOutput, error) {
 	panic("implement me")
@@ -224,7 +224,7 @@ func (m mockS3APINew) GetBucketLifecycleConfiguration(_ context.Context,
 
 type mockS3APIWitHErrors struct{}
 
-func (m mockS3APIWitHErrors) ListBuckets(_ context.Context,
+func (mockS3APIWitHErrors) ListBuckets(_ context.Context,
 	_ *s3.ListBucketsInput,
 	_ ...func(*s3.Options)) (o *s3.ListBucketsOutput, e error) {
 	oe := &smithy.OperationError{
@@ -235,21 +235,21 @@ func (m mockS3APIWitHErrors) ListBuckets(_ context.Context,
 	return nil, oe
 }
 
-func (m mockS3APIWitHErrors) GetBucketEncryption(_ context.Context, _ *s3.GetBucketEncryptionInput, _ ...func(*s3.Options)) (*s3.GetBucketEncryptionOutput, error) {
+func (mockS3APIWitHErrors) GetBucketEncryption(_ context.Context, _ *s3.GetBucketEncryptionInput, _ ...func(*s3.Options)) (*s3.GetBucketEncryptionOutput, error) {
 	ae := &smithy.GenericAPIError{
 		Message: "failed to resolve service endpoint",
 	}
 	return nil, ae
 }
 
-func (m mockS3APIWitHErrors) GetBucketPolicy(_ context.Context, _ *s3.GetBucketPolicyInput, _ ...func(*s3.Options)) (*s3.GetBucketPolicyOutput, error) {
+func (mockS3APIWitHErrors) GetBucketPolicy(_ context.Context, _ *s3.GetBucketPolicyInput, _ ...func(*s3.Options)) (*s3.GetBucketPolicyOutput, error) {
 	ae := &smithy.GenericAPIError{
 		Message: "failed to resolve service endpoint",
 	}
 	return nil, ae
 }
 
-func (m mockS3APIWitHErrors) GetBucketLocation(_ context.Context, _ *s3.GetBucketLocationInput, _ ...func(*s3.Options)) (*s3.GetBucketLocationOutput, error) {
+func (mockS3APIWitHErrors) GetBucketLocation(_ context.Context, _ *s3.GetBucketLocationInput, _ ...func(*s3.Options)) (*s3.GetBucketLocationOutput, error) {
 	oe := &smithy.OperationError{
 		ServiceID:     "MockS3API",
 		OperationName: "GetBucketLocation",
@@ -258,7 +258,7 @@ func (m mockS3APIWitHErrors) GetBucketLocation(_ context.Context, _ *s3.GetBucke
 	return nil, oe
 }
 
-func (m mockS3APIWitHErrors) GetPublicAccessBlock(_ context.Context, _ *s3.GetPublicAccessBlockInput, _ ...func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error) {
+func (mockS3APIWitHErrors) GetPublicAccessBlock(_ context.Context, _ *s3.GetPublicAccessBlockInput, _ ...func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error) {
 	oe := &smithy.OperationError{
 		ServiceID:     "MockS3API",
 		OperationName: "GetPublicAccessBlock",
@@ -267,7 +267,7 @@ func (m mockS3APIWitHErrors) GetPublicAccessBlock(_ context.Context, _ *s3.GetPu
 	return nil, oe
 }
 
-func (m mockS3APIWitHErrors) GetBucketReplication(_ context.Context, _ *s3.GetBucketReplicationInput, _ ...func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
+func (mockS3APIWitHErrors) GetBucketReplication(_ context.Context, _ *s3.GetBucketReplicationInput, _ ...func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
 	oe := &smithy.OperationError{
 		ServiceID:     "MockS3API",
 		OperationName: "GetBucketReplication",
@@ -276,7 +276,7 @@ func (m mockS3APIWitHErrors) GetBucketReplication(_ context.Context, _ *s3.GetBu
 	return nil, oe
 }
 
-func (m mockS3APIWitHErrors) GetBucketLifecycleConfiguration(_ context.Context, _ *s3.GetBucketLifecycleConfigurationInput, _ ...func(*s3.Options)) (*s3.GetBucketLifecycleConfigurationOutput, error) {
+func (mockS3APIWitHErrors) GetBucketLifecycleConfiguration(_ context.Context, _ *s3.GetBucketLifecycleConfigurationInput, _ ...func(*s3.Options)) (*s3.GetBucketLifecycleConfigurationOutput, error) {
 	oe := &smithy.OperationError{
 		ServiceID:     "MockS3API",
 		OperationName: "GetBucketLifecycleConfiguration",
@@ -335,9 +335,9 @@ func TestAwsS3Discovery_getBuckets(t *testing.T) {
 // TestGetEncryptionAtRest tests the getEncryptionAtRest method
 func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 	var (
-		encryptionAtRest   voc.HasAtRestEncryption
-		managedEncryption  voc.ManagedKeyEncryption
-		customerEncryption voc.CustomerKeyEncryption
+		encryptionAtRest   voc.IsAtRestEncryption
+		managedEncryption  *voc.ManagedKeyEncryption
+		customerEncryption *voc.CustomerKeyEncryption
 
 		ok            bool
 		err           error
@@ -356,14 +356,14 @@ func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 	// First case: SSE-S3 encryption
 	encryptionAtRest, err = d.getEncryptionAtRest(&bucket{name: mockBucket1})
 	assert.NoError(t, err)
-	managedEncryption, ok = encryptionAtRest.(voc.ManagedKeyEncryption)
+	managedEncryption, ok = encryptionAtRest.(*voc.ManagedKeyEncryption)
 	assert.True(t, ok)
 	assert.True(t, managedEncryption.Enabled)
 	assert.Equal(t, "AES256", managedEncryption.Algorithm)
 
 	// Second case: SSE-KMS encryption
 	encryptionAtRest, err = d.getEncryptionAtRest(&bucket{name: mockBucket2, region: mockBucket2Region})
-	customerEncryption, ok = encryptionAtRest.(voc.CustomerKeyEncryption)
+	customerEncryption, ok = encryptionAtRest.(*voc.CustomerKeyEncryption)
 	assert.True(t, ok)
 	assert.NoError(t, err)
 	assert.True(t, customerEncryption.Enabled)
@@ -373,7 +373,7 @@ func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 	// Third case: No encryption
 	encryptionAtRest, err = d.getEncryptionAtRest(&bucket{name: "mockbucket3"})
 	assert.NoError(t, err)
-	assert.False(t, encryptionAtRest.GetAtRestEncryption().Enabled)
+	assert.False(t, encryptionAtRest.IsEnabled())
 
 	// 4th case: Connection error
 	d = awsS3Discovery{

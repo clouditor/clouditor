@@ -184,8 +184,67 @@ func (mockEC2API) DescribeInstances(_ context.Context, _ *ec2.DescribeInstancesI
 	return output, nil
 }
 
+// DescribeVolumes is the method implementation of the EC2API interface
+func (mockEC2API) DescribeVolumes(_ context.Context, _ *ec2.DescribeVolumesInput, _ ...func(options *ec2.Options)) (*ec2.DescribeVolumesOutput, error) {
+	output := &ec2.DescribeVolumesOutput{
+		NextToken: nil,
+		Volumes: []types.Volume{
+			{
+				VolumeId:   aws.String(blockVolumeId),
+				CreateTime: aws.Time(time.Now()),
+				Tags: []types.Tag{
+					{Key: aws.String("Name"), Value: aws.String("My Volume")},
+				},
+			},
+			{
+				VolumeId:   aws.String("othervolume"),
+				CreateTime: aws.Time(time.Now()),
+			},
+		},
+		ResultMetadata: middleware.Metadata{},
+	}
+
+	return output, nil
+}
+
+// DescribeNetworkInterfaces is the method implementation of the EC2API interface
+func (mockEC2API) DescribeNetworkInterfaces(_ context.Context, _ *ec2.DescribeNetworkInterfacesInput, _ ...func(options *ec2.Options)) (*ec2.DescribeNetworkInterfacesOutput, error) {
+	output := &ec2.DescribeNetworkInterfacesOutput{
+		NextToken: nil,
+		NetworkInterfaces: []types.NetworkInterface{
+			{
+				NetworkInterfaceId: aws.String(networkInterfaceId),
+				TagSet: []types.Tag{
+					{Key: aws.String("Name"), Value: aws.String("My Network Interface")},
+				},
+			},
+		},
+		ResultMetadata: middleware.Metadata{},
+	}
+
+	return output, nil
+}
+
 // DescribeInstances is the method implementation of the EC2API interface
 func (mockEC2APIWithErrors) DescribeInstances(_ context.Context, _ *ec2.DescribeInstancesInput, _ ...func(options *ec2.Options)) (*ec2.DescribeInstancesOutput, error) {
+	err := &smithy.GenericAPIError{
+		Code:    "ConnectionError",
+		Message: "Couldn't resolve host. Bad connection?",
+	}
+	return nil, err
+}
+
+// DescribeVolumes is the method implementation of the EC2API interface
+func (mockEC2APIWithErrors) DescribeVolumes(_ context.Context, _ *ec2.DescribeVolumesInput, _ ...func(options *ec2.Options)) (*ec2.DescribeVolumesOutput, error) {
+	err := &smithy.GenericAPIError{
+		Code:    "ConnectionError",
+		Message: "Couldn't resolve host. Bad connection?",
+	}
+	return nil, err
+}
+
+// DescribeNetworkInterfaces is the method implementation of the EC2API interface
+func (mockEC2APIWithErrors) DescribeNetworkInterfaces(_ context.Context, _ *ec2.DescribeNetworkInterfacesInput, _ ...func(options *ec2.Options)) (*ec2.DescribeNetworkInterfacesOutput, error) {
 	err := &smithy.GenericAPIError{
 		Code:    "ConnectionError",
 		Message: "Couldn't resolve host. Bad connection?",
@@ -248,7 +307,7 @@ func TestComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 	assert.Equal(t, voc.ResourceID("arn:aws:ec2:eu-central-1:MockAccountID1234:instance/mockVM1ID"), testMachine.ID)
 	assert.NotEmpty(t, testMachine.BlockStorage)
 	assert.False(t, testMachine.BootLogging.Enabled)
-	assert.False(t, testMachine.OSLogging.Enabled)
+	assert.False(t, testMachine.OsLogging.Enabled)
 	assert.Equal(t, int64(0), testMachine.CreationTime)
 	assert.Equal(t, mockFunction1Region, testMachine.GeoLocation.Region)
 
@@ -333,7 +392,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    []voc.Function
+		want    []*voc.Function
 		wantErr bool
 	}{
 		// Test cases
@@ -344,7 +403,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 				awsConfig:   mockClient,
 			},
 			//args: args{client: mockClient},
-			[]voc.Function{
+			[]*voc.Function{
 				{Compute: &voc.Compute{
 					Resource: &voc.Resource{
 						ID:           mockFunction1ID,

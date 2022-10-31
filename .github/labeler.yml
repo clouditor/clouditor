@@ -33,3 +33,6 @@
 
 "internal":
   - internal/**/*
+
+"voc":
+  - voc/**/*

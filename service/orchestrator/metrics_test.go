@@ -45,6 +45,7 @@ import (
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
+	"clouditor.io/clouditor/service"
 )
 
 var ErrSomeError = errors.New("some error")
@@ -685,6 +686,7 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 		metricsFile           string
 		catalogsFile          string
 		events                chan *orchestrator.MetricChangeEvent
+		authz                 service.AuthorizationStrategy
 	}
 	type args struct {
 		in0 context.Context
@@ -710,7 +712,9 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 						CloudServiceId: DefaultTargetCloudServiceId,
 						Operator:       "==",
 					})
-				})},
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
 			args: args{
 				req: &orchestrator.GetMetricConfigurationRequest{
 					MetricId:       MockMetricID,
@@ -728,6 +732,7 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 			name: "metric not found",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{
 				req: &orchestrator.GetMetricConfigurationRequest{
@@ -753,6 +758,7 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 				metricsFile:           tt.fields.metricsFile,
 				catalogsFile:          tt.fields.catalogsFile,
 				events:                tt.fields.events,
+				authz:                 tt.fields.authz,
 			}
 			gotResponse, err := s.GetMetricConfiguration(tt.args.in0, tt.args.req)
 			if tt.wantErr != nil {
@@ -773,6 +779,7 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 		metricsFile           string
 		catalogsFile          string
 		events                chan *orchestrator.MetricChangeEvent
+		authz                 service.AuthorizationStrategy
 	}
 	type args struct {
 		ctx context.Context
@@ -789,6 +796,7 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 			name: "error",
 			fields: fields{
 				storage: &testutil.StorageWithError{ListErr: ErrSomeError},
+				authz:   &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{
 				req: &orchestrator.ListMetricConfigurationRequest{},
@@ -809,6 +817,7 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 						Operator:       "==",
 					})
 				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{
 				req: &orchestrator.ListMetricConfigurationRequest{
@@ -836,6 +845,7 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 				metricsFile:           tt.fields.metricsFile,
 				catalogsFile:          tt.fields.catalogsFile,
 				events:                tt.fields.events,
+				authz:                 tt.fields.authz,
 			}
 			gotResponse, err := svc.ListMetricConfigurations(tt.args.ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
@@ -859,6 +869,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 		catalogsFile          string
 		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 		events                chan *orchestrator.MetricChangeEvent
+		authz                 service.AuthorizationStrategy
 	}
 	type args struct {
 		in0 context.Context
@@ -872,8 +883,11 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name:   "metric does not exist",
-			fields: fields{storage: testutil.NewInMemoryStorage(t)},
+			name: "metric does not exist",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
 			args: args{
 				req: &orchestrator.UpdateMetricConfigurationRequest{
 					CloudServiceId: DefaultTargetCloudServiceId,
@@ -891,6 +905,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					_ = s.Create(assessment.Metric{Id: "MyMetric"})
 				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricConfigurationRequest{
@@ -910,6 +925,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 					_ = s.Create(assessment.Metric{Id: MockMetricID})
 					_ = s.Create(&orchestrator.CloudService{Id: DefaultTargetCloudServiceId})
 				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricConfigurationRequest{
@@ -949,6 +965,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 						Operator:       ">",
 					})
 				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricConfigurationRequest{
@@ -987,6 +1004,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 				catalogsFile:          tt.fields.catalogsFile,
 				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
 				events:                tt.fields.events,
+				authz:                 tt.fields.authz,
 			}
 			gotRes, err := svc.UpdateMetricConfiguration(tt.args.in0, tt.args.req)
 			if tt.wantErr != nil {

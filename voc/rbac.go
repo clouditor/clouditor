@@ -1,4 +1,6 @@
-// Copyright 2021 Fraunhofer AISEC
+// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
+
+// Copyright 2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,6 +29,12 @@ package voc
 
 type RBAC struct {
 	*Authorization
-	MixedDuties      float32 `json:"mixedDuties"`
+	// see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)
+	MixedDuties float32 `json:"mixedDuties"`
+	// see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)
 	BroadAssignments float32 `json:"broadAssignments"`
+}
+
+func (*RBAC) Type() string {
+	return "RBAC"
 }

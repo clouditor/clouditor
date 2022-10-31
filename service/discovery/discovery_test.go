@@ -79,7 +79,6 @@ func TestNewService(t *testing.T) {
 				},
 			},
 			want: &Service{
-				assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
 				assessmentAddress: grpcTarget{target: "localhost:9091"},
 				resources:         make(map[string]voc.IsCloudResource),
 				configurations:    make(map[discovery.Discoverer]*Configuration),
@@ -91,9 +90,22 @@ func TestNewService(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewService(tt.args.opts...)
 
-			// we cannot compare the scheduler, so we need to nil it
+			// we cannot compare the scheduler, so we first check if it is not empty and then nil it
+			assert.NotEmpty(t, got.scheduler)
 			got.scheduler = nil
 			tt.want.scheduler = nil
+			got.Events = nil
+			tt.want.Events = nil
+
+			// we cannot compare the assessment streams, so we first check if it is not empty and then nil it
+			assert.NotEmpty(t, got.assessmentStreams)
+			got.assessmentStreams = nil
+			tt.want.assessmentStreams = nil
+
+			// we cannot compare the Events, so we first check if it is not empty and then nil it
+			assert.Empty(t, got.Events)
+			got.Events = nil
+			tt.want.Events = nil
 
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewService() = %v, want %v", got, tt.want)
@@ -439,14 +451,16 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 					},
 				},
 			},
-			&voc.StorageService{
-				Storages: []voc.ResourceID{"some-id"},
-				NetworkService: &voc.NetworkService{
-					Networking: &voc.Networking{
-						Resource: &voc.Resource{
-							ID:   "some-storage-account-id",
-							Name: "some-storage-account-name",
-							Type: []string{"StorageService", "NetworkService", "Networking", "Resource"},
+			&voc.ObjectStorageService{
+				StorageService: &voc.StorageService{
+					Storage: []voc.ResourceID{"some-id"},
+					NetworkService: &voc.NetworkService{
+						Networking: &voc.Networking{
+							Resource: &voc.Resource{
+								ID:   "some-storage-account-id",
+								Name: "some-storage-account-name",
+								Type: []string{"StorageService", "NetworkService", "Networking", "Resource"},
+							},
 						},
 					},
 				},
@@ -576,4 +590,8 @@ func (mockIsCloudResource) HasType(_ string) bool {
 
 func (mockIsCloudResource) GetCreationTime() *time.Time {
 	return nil
+}
+
+func (mockIsCloudResource) Related() []string {
+	return []string{}
 }

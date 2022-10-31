@@ -35,6 +35,10 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 
 	"github.com/sirupsen/logrus"
@@ -82,6 +86,19 @@ type azureDiscovery struct {
 	cred                azcore.TokenCredential
 	clientOptions       arm.ClientOptions
 	discovererComponent string
+	clients             clients
+}
+
+type clients struct {
+	blobContainerClient     *armstorage.BlobContainersClient
+	fileStorageClient       *armstorage.FileSharesClient
+	accountsClient          *armstorage.AccountsClient
+	networkInterfacesClient *armnetwork.InterfacesClient
+	loadBalancerClient      *armnetwork.LoadBalancersClient
+	functionsClient         *armappservice.WebAppsClient
+	virtualMachinesClient   *armcompute.VirtualMachinesClient
+	blockStorageClient      *armcompute.DisksClient
+	diskEncSetClient        *armcompute.DiskEncryptionSetsClient
 }
 
 func (a *azureDiscovery) authorize() (err error) {
@@ -130,13 +147,15 @@ func (a *azureDiscovery) authorize() (err error) {
 }
 
 // NewAuthorizer returns the Azure credential using one of the following authentication types (in the following order):
-//  EnvironmentCredential
-//  ManagedIdentityCredential
-//  AzureCLICredential
+//
+//	EnvironmentCredential
+//	ManagedIdentityCredential
+//	AzureCLICredential
 func NewAuthorizer() (*azidentity.DefaultAzureCredential, error) {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
-		log.Fatalf("%s: %+v", ErrCouldNotAuthenticate, err)
+		log.Errorf("%s: %+v", ErrCouldNotAuthenticate, err)
+		return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
 	}
 
 	return cred, nil
@@ -155,4 +174,23 @@ func labels(tags map[string]*string) map[string]string {
 	}
 
 	return l
+}
+
+// ClientCreateFunc is a type that describes a function to create a new Azure SDK client.
+type ClientCreateFunc[T any] func(subscriptionID string, credential azcore.TokenCredential, options *arm.ClientOptions) (*T, error)
+
+// initClient creates an Azure client if not already exists
+func initClient[T any](existingClient *T, d *azureDiscovery, fun ClientCreateFunc[T]) (client *T, err error) {
+	if existingClient != nil {
+		return existingClient, nil
+	}
+
+	client, err = fun(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	if err != nil {
+		err = fmt.Errorf("could not get %T client: %w", new(T), err)
+		log.Debug(err)
+		return nil, err
+	}
+
+	return
 }

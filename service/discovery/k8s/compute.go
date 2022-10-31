@@ -95,7 +95,7 @@ func (k8sComputeDiscovery) handlePod(pod *v1.Pod) *voc.Container {
 		},
 	}
 
-	r.NetworkInterface = append(r.NetworkInterface, voc.ResourceID(pod.Namespace))
+	r.NetworkInterfaces = append(r.NetworkInterfaces, voc.ResourceID(pod.Namespace))
 
 	return r
 
@@ -122,6 +122,7 @@ func (k8sComputeDiscovery) handlePodVolume(pod *v1.Pod) []voc.IsCloudResource {
 				Name:         vol.Name,
 				CreationTime: 0, // The CreationTime we have to get directly from the related storage
 				Type:         []string{"BlockStorage", "Storage", "Resource"},
+				Labels:       nil, // anatheka: As I understand it, there are no labels for the volume here, we have to get that from the related storage directly. But we could take the pod labels to which the volume is assigned. I think that makes more sense.
 			},
 			AtRestEncryption: &voc.AtRestEncryption{}, // Not able to get the AtRestEncryption information, that must be retrieved directly from the storage
 		}

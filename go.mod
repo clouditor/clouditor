@@ -4,7 +4,7 @@ go 1.19
 
 // runtime dependencies (core)
 require (
-	github.com/MicahParks/keyfunc v1.4.0
+	github.com/MicahParks/keyfunc v1.5.1
 	github.com/glebarez/sqlite v1.4.6
 	github.com/go-co-op/gocron v1.17.0
 	github.com/golang-jwt/jwt/v4 v4.4.2
@@ -12,19 +12,19 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.0
 	github.com/logrusorgru/aurora/v3 v3.0.0
-	github.com/open-policy-agent/opa v0.44.0
+	github.com/open-policy-agent/opa v0.45.0
 	github.com/oxisto/oauth2go v0.5.12
 	github.com/sirupsen/logrus v1.9.0
-	github.com/spf13/cobra v1.5.0
+	github.com/spf13/cobra v1.6.0
 	github.com/spf13/viper v1.13.0
 	github.com/stretchr/testify v1.8.0
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e
 	golang.org/x/oauth2 v0.0.0-20220722155238-128564f6959c
 	google.golang.org/genproto v0.0.0-20220725144611-272f38e5d71b
-	google.golang.org/grpc v1.49.0
+	google.golang.org/grpc v1.50.1
 	google.golang.org/protobuf v1.28.1
-	gorm.io/driver/postgres v1.3.1
+	gorm.io/driver/postgres v1.4.4
 	gorm.io/gorm v1.23.8
 )
 
@@ -41,12 +41,12 @@ require (
 
 // runtime dependencies (AWS)
 require (
-	github.com/aws/aws-sdk-go-v2 v1.16.16
+	github.com/aws/aws-sdk-go-v2 v1.17.0
 	github.com/aws/aws-sdk-go-v2/config v1.17.0
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.60.0
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.63.1
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.24.0
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.27.1
-	github.com/aws/aws-sdk-go-v2/service/sts v1.16.13
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.29.0
+	github.com/aws/aws-sdk-go-v2/service/sts v1.17.0
 	github.com/aws/smithy-go v1.13.3
 )
 
@@ -79,17 +79,17 @@ require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
-	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.3 // indirect
+	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.8 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.12.13 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.12.12 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.23 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.17 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.24 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.18 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.3.19 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/v4a v1.0.5 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.9.3 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.1.9 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.17 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.13.8 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/v4a v1.0.15 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.9.9 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.1.19 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.18 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.13.18 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.11.16 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -110,15 +110,15 @@ require (
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
-	github.com/jackc/pgconn v1.10.1 // indirect
+	github.com/jackc/pgconn v1.13.0 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
-	github.com/jackc/pgproto3/v2 v2.2.0 // indirect
+	github.com/jackc/pgproto3/v2 v2.3.1 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
-	github.com/jackc/pgtype v1.9.1 // indirect
-	github.com/jackc/pgx/v4 v4.14.1 // indirect
+	github.com/jackc/pgtype v1.12.0 // indirect
+	github.com/jackc/pgx/v4 v4.17.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.4 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
@@ -150,9 +150,9 @@ require (
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/yashtewari/glob-intersection v0.1.0 // indirect
-	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
+	golang.org/x/net v0.0.0-20220909164309-bea034e7d591 // indirect
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f // indirect
-	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
+	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
