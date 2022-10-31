@@ -258,7 +258,7 @@ func (*azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, 
 
 	storageService := &voc.ObjectStorageService{
 		StorageService: &voc.StorageService{
-			Storages: storageResourceIDs,
+			Storage: storageResourceIDs,
 			NetworkService: &voc.NetworkService{
 				Networking: &voc.Networking{
 					Resource: &voc.Resource{

@@ -33,7 +33,7 @@ import (
 func TestVirtualMachine_Related(t *testing.T) {
 	type fields struct {
 		Compute           *Compute
-		BlockStorages     []ResourceID
+		BlockStorage      []ResourceID
 		NetworkInterfaces []ResourceID
 		BootLogging       *BootLogging
 		OSLogging         *OSLogging
@@ -46,7 +46,7 @@ func TestVirtualMachine_Related(t *testing.T) {
 		{
 			name: "Related VM resources",
 			fields: fields{
-				BlockStorages: []ResourceID{"1"},
+				BlockStorage: []ResourceID{"1"},
 				Compute: &Compute{
 					NetworkInterfaces: []ResourceID{"2"},
 				},
@@ -57,10 +57,10 @@ func TestVirtualMachine_Related(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var v IsCloudResource = VirtualMachine{
-				Compute:       tt.fields.Compute,
-				BlockStorages: tt.fields.BlockStorages,
-				BootLogging:   tt.fields.BootLogging,
-				OsLogging:     tt.fields.OSLogging,
+				Compute:      tt.fields.Compute,
+				BlockStorage: tt.fields.BlockStorage,
+				BootLogging:  tt.fields.BootLogging,
+				OsLogging:    tt.fields.OSLogging,
 			}
 			if got := v.Related(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("VirtualMachine.Related() = %v, want %v", got, tt.want)
@@ -72,7 +72,7 @@ func TestVirtualMachine_Related(t *testing.T) {
 func TestLoggingService_Related(t *testing.T) {
 	type fields struct {
 		NetworkService *NetworkService
-		Storage        ResourceID
+		Storage        []ResourceID
 	}
 	tests := []struct {
 		name   string
@@ -82,7 +82,7 @@ func TestLoggingService_Related(t *testing.T) {
 		{
 			name: "Related LoggingService resources",
 			fields: fields{
-				Storage: ResourceID("1"),
+				Storage: []ResourceID{"1"},
 			},
 			want: []string{"1"},
 		},

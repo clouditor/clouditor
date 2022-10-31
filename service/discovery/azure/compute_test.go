@@ -337,9 +337,9 @@ func TestDiscoverer_List(t *testing.T) {
 	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1", string(virtualMachine.ID))
 	assert.Equal(t, "vm1", virtualMachine.Name)
 	assert.Equal(t, 2, len(virtualMachine.NetworkInterfaces))
-	assert.Equal(t, 3, len(virtualMachine.BlockStorages))
+	assert.Equal(t, 3, len(virtualMachine.BlockStorage))
 
-	assert.Equal(t, "data_disk_1", string(virtualMachine.BlockStorages[1]))
+	assert.Equal(t, "data_disk_1", string(virtualMachine.BlockStorage[1]))
 	assert.Equal(t, "123", string(virtualMachine.NetworkInterfaces[0]))
 	assert.Equal(t, "eastus", virtualMachine.GeoLocation.Region)
 	assert.Equal(t, true, virtualMachine.BootLogging.Enabled)
@@ -352,7 +352,7 @@ func TestDiscoverer_List(t *testing.T) {
 
 	virtualMachine3, ok := list[4].(*voc.VirtualMachine)
 	assert.True(t, ok)
-	assert.Equal(t, []voc.ResourceID{}, virtualMachine3.BlockStorages)
+	assert.Equal(t, []voc.ResourceID{}, virtualMachine3.BlockStorage)
 	assert.Equal(t, []voc.ResourceID{}, virtualMachine3.NetworkInterfaces)
 
 }
@@ -576,7 +576,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 						},
 						NetworkInterfaces: []voc.ResourceID{"123", "234"},
 					},
-					BlockStorages: []voc.ResourceID{"os_test_disk", "data_disk_1", "data_disk_2"},
+					BlockStorage: []voc.ResourceID{"os_test_disk", "data_disk_1", "data_disk_2"},
 					BootLogging: &voc.BootLogging{
 						Logging: &voc.Logging{
 							Enabled:        true,
@@ -614,7 +614,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 						},
 						NetworkInterfaces: []voc.ResourceID{"987", "654"},
 					},
-					BlockStorages: []voc.ResourceID{"os_test_disk", "data_disk_2", "data_disk_3"},
+					BlockStorage: []voc.ResourceID{"os_test_disk", "data_disk_2", "data_disk_3"},
 					BootLogging: &voc.BootLogging{
 						Logging: &voc.Logging{
 							Enabled:        true,
@@ -652,7 +652,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 						},
 						NetworkInterfaces: []voc.ResourceID{},
 					},
-					BlockStorages: []voc.ResourceID{},
+					BlockStorage: []voc.ResourceID{},
 					BootLogging: &voc.BootLogging{
 						Logging: &voc.Logging{
 							Enabled:         false,
@@ -930,7 +930,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 						},
 						NetworkInterfaces: []voc.ResourceID{"123", "234"},
 					},
-					BlockStorages: []voc.ResourceID{"os_test_disk", "data_disk_1", "data_disk_2"},
+					BlockStorage: []voc.ResourceID{"os_test_disk", "data_disk_1", "data_disk_2"},
 					BootLogging: &voc.BootLogging{
 						Logging: &voc.Logging{
 							Enabled:        true,
@@ -968,7 +968,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 						},
 						NetworkInterfaces: []voc.ResourceID{"987", "654"},
 					},
-					BlockStorages: []voc.ResourceID{"os_test_disk", "data_disk_2", "data_disk_3"},
+					BlockStorage: []voc.ResourceID{"os_test_disk", "data_disk_2", "data_disk_3"},
 					BootLogging: &voc.BootLogging{
 						Logging: &voc.Logging{
 							Enabled:        true,
@@ -1006,7 +1006,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 						},
 						NetworkInterfaces: []voc.ResourceID{},
 					},
-					BlockStorages: []voc.ResourceID{},
+					BlockStorage: []voc.ResourceID{},
 					BootLogging: &voc.BootLogging{
 						Logging: &voc.Logging{
 							Enabled:         false,
@@ -1144,7 +1144,7 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 					},
 					NetworkInterfaces: []voc.ResourceID{"123", "234"},
 				},
-				BlockStorages: []voc.ResourceID{"os_test_disk", "data_disk_1", "data_disk_2"},
+				BlockStorage: []voc.ResourceID{"os_test_disk", "data_disk_1", "data_disk_2"},
 				BootLogging: &voc.BootLogging{
 					Logging: &voc.Logging{
 						Enabled:        true,
@@ -1363,7 +1363,7 @@ func TestBlockStoragesHandleMethodsWhenInputIsInvalid(t *testing.T) {
 	assert.Nil(t, handleBlockStorageResponse)
 }
 
-func Test_azureComputeDiscovery_discoverBlockStorages(t *testing.T) {
+func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 	var subID = "00000000-0000-0000-0000-000000000000"
 	sub := armsubscription.Subscription{
 		SubscriptionID: &subID,

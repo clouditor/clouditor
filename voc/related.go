@@ -29,7 +29,7 @@ package voc
 func (v VirtualMachine) Related() []string {
 	list := make([]string, 0)
 
-	for _, b := range v.BlockStorages {
+	for _, b := range v.BlockStorage {
 		list = append(list, string(b))
 	}
 

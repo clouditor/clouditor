@@ -149,7 +149,7 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 			// Add ObjectStorageService
 			&voc.ObjectStorageService{
 				StorageService: &voc.StorageService{
-					Storages: []voc.ResourceID{voc.ResourceID(b.arn)},
+					Storage: []voc.ResourceID{voc.ResourceID(b.arn)},
 					NetworkService: &voc.NetworkService{
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{

@@ -454,7 +454,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 				},
 				&voc.ObjectStorageService{
 					StorageService: &voc.StorageService{
-						Storages: []voc.ResourceID{
+						Storage: []voc.ResourceID{
 							"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
 							"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2",
 							"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1",
@@ -542,7 +542,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 				},
 				&voc.ObjectStorageService{
 					StorageService: &voc.StorageService{
-						Storages: []voc.ResourceID{
+						Storage: []voc.ResourceID{
 							"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container3",
 							"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container4",
 						},

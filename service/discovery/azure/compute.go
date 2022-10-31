@@ -223,7 +223,7 @@ func (*azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachin
 			},
 			NetworkInterfaces: []voc.ResourceID{},
 		},
-		BlockStorages:     []voc.ResourceID{},
+		BlockStorage:      []voc.ResourceID{},
 		MalwareProtection: &voc.MalwareProtection{},
 		BootLogging: &voc.BootLogging{
 			Logging: &voc.Logging{
@@ -256,12 +256,12 @@ func (*azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachin
 
 	// Reference to blockstorage
 	if vm.Properties.StorageProfile != nil && vm.Properties.StorageProfile.OSDisk != nil && vm.Properties.StorageProfile.OSDisk.ManagedDisk != nil {
-		r.BlockStorages = append(r.BlockStorages, voc.ResourceID(util.Deref(vm.Properties.StorageProfile.OSDisk.ManagedDisk.ID)))
+		r.BlockStorage = append(r.BlockStorage, voc.ResourceID(util.Deref(vm.Properties.StorageProfile.OSDisk.ManagedDisk.ID)))
 	}
 
 	if vm.Properties.StorageProfile != nil && vm.Properties.StorageProfile.DataDisks != nil {
-		for _, blockstorages := range vm.Properties.StorageProfile.DataDisks {
-			r.BlockStorages = append(r.BlockStorages, voc.ResourceID(util.Deref(blockstorages.ManagedDisk.ID)))
+		for _, blockstorage := range vm.Properties.StorageProfile.DataDisks {
+			r.BlockStorage = append(r.BlockStorage, voc.ResourceID(util.Deref(blockstorage.ManagedDisk.ID)))
 		}
 	}
 
