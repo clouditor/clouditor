@@ -892,7 +892,10 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 				req: &orchestrator.UpdateMetricConfigurationRequest{
 					CloudServiceId: DefaultTargetCloudServiceId,
 					MetricId:       "MyMetric",
-					Configuration:  &assessment.MetricConfiguration{},
+					Configuration: &assessment.MetricConfiguration{
+						Operator:    "<",
+						TargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
+					},
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -909,9 +912,12 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricConfigurationRequest{
-					CloudServiceId: "MyService",
+					CloudServiceId: "00000000-0000-0000-0000-000000000001",
 					MetricId:       "MyMetric",
-					Configuration:  &assessment.MetricConfiguration{},
+					Configuration: &assessment.MetricConfiguration{
+						Operator:    "<",
+						TargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
+					},
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -935,6 +941,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 						CloudServiceId: DefaultTargetCloudServiceId,
 						MetricId:       MockMetricID,
 						Operator:       "<",
+						TargetValue:    &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
 					},
 				},
 			},
@@ -975,6 +982,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 						CloudServiceId: DefaultTargetCloudServiceId,
 						MetricId:       MockMetricID,
 						Operator:       "<",
+						TargetValue:    &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
 					},
 				},
 			},

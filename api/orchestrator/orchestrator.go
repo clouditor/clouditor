@@ -47,7 +47,7 @@ var (
 	ErrCloudServiceIDIsMissing = errors.New("cloud service id is missing")
 	ErrMetricIDIsMissing       = errors.New("metric id is missing")
 	ErrCloudServiceIDIsInvalid = errors.New("cloud service id is invalid")
-	ErrRequestCloudServiceID   = errors.New("cloud service id in request is invalid")
+	ErrRequestCloudServiceID   = errors.New("error in cloud service id")
 )
 
 // Validate validates the UpdateMetricConfigurationRequest
@@ -79,4 +79,8 @@ func checkServiceID(serviceID string) error {
 	}
 
 	return nil
+}
+
+type CloudServiceRequest interface {
+	GetCloudServiceId() string
 }
