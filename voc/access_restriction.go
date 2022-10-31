@@ -31,6 +31,6 @@ type AccessRestriction struct {
 	*Authorization
 }
 
-func (a *AccessRestriction) Type() string {
+func (*AccessRestriction) Type() string {
 	return "AccessRestriction"
 }

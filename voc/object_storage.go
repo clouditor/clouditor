@@ -29,6 +29,5 @@ package voc
 
 type ObjectStorage struct {
 	*Storage
-	PublicAccess	bool	`json:"publicAccess"`
+	PublicAccess bool `json:"publicAccess"`
 }
-

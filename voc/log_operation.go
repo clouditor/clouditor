@@ -27,11 +27,10 @@
 
 package voc
 
-// LogOperation A LogOperation is used by an application
+// LogOperation is an entity in our Cloud ontology. A LogOperation is used by an application
 type LogOperation struct {
 	*Operation
-	Logging	*Logging 	`json:"logging"`
-	Call	string	`json:"call"`
-	Value	string	`json:"value"`
+	Logging *Logging `json:"logging"`
+	Call    string   `json:"call"`
+	Value   string   `json:"value"`
 }
-

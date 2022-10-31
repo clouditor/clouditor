@@ -29,9 +29,9 @@ package voc
 
 type CustomerKeyEncryption struct {
 	*AtRestEncryption
-	KeyUrl	string	`json:"keyUrl"`
+	KeyUrl string `json:"keyUrl"`
 }
 
-func (c *CustomerKeyEncryption) Type() string {
+func (*CustomerKeyEncryption) Type() string {
 	return "CustomerKeyEncryption"
 }

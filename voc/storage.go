@@ -29,7 +29,6 @@ package voc
 
 type Storage struct {
 	*Resource
-	AtRestEncryption	IsAtRestEncryption 	`json:"atRestEncryption"`
-	Immutability	*Immutability 	`json:"immutability"`
+	AtRestEncryption IsAtRestEncryption `json:"atRestEncryption"`
+	Immutability     *Immutability      `json:"immutability"`
 }
-

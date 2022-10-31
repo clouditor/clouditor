@@ -27,9 +27,8 @@
 
 package voc
 
-// DatabaseStorage describes the actual database or a table in a database
+// DatabaseStorage is an entity in our Cloud ontology. describes the actual database or a table in a database
 type DatabaseStorage struct {
 	*Storage
-	Parent	[]ResourceID	`json:"parent"`
+	Parent []ResourceID `json:"parent"`
 }
-

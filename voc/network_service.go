@@ -27,13 +27,12 @@
 
 package voc
 
-// NetworkService A NetworkService is an application (on the network layer) running on a Compute resource. It provides access to a resource
+// NetworkService is an entity in our Cloud ontology. A NetworkService is an application (on the network layer) running on a Compute resource. It provides access to a resource
 type NetworkService struct {
 	*Networking
-	Authenticity	IsAuthenticity 	`json:"authenticity"`
-	Compute	ResourceID	`json:"compute"`
-	TransportEncryption	*TransportEncryption 	`json:"transportEncryption"`
-	Ips	[]string	`json:"ips"`
-	Ports	[]uint16	`json:"ports"`
+	Authenticity        IsAuthenticity       `json:"authenticity"`
+	Compute             ResourceID           `json:"compute"`
+	TransportEncryption *TransportEncryption `json:"transportEncryption"`
+	Ips                 []string             `json:"ips"`
+	Ports               []uint16             `json:"ports"`
 }
-

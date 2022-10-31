@@ -30,4 +30,3 @@ package voc
 type Networking struct {
 	*Resource
 }
-

@@ -29,9 +29,9 @@ package voc
 
 type CertificateBasedAuthentication struct {
 	*Authenticity
-	Enabled	bool	`json:"enabled"`
+	Enabled bool `json:"enabled"`
 }
 
-func (c *CertificateBasedAuthentication) Type() string {
+func (*CertificateBasedAuthentication) Type() string {
 	return "CertificateBasedAuthentication"
 }

@@ -27,14 +27,13 @@
 
 package voc
 
-// HttpEndpoint Via the Authenticity relationship, the access type can be specified, e.g. public access (no authentication), password-based, etc.
+// HttpEndpoint is an entity in our Cloud ontology. Via the Authenticity relationship, the access type can be specified, e.g. public access (no authentication), password-based, etc.
 type HttpEndpoint struct {
 	*Functionality
-	Authenticity	IsAuthenticity 	`json:"authenticity"`
-	TransportEncryption	*TransportEncryption 	`json:"transportEncryption"`
-	Url	string	`json:"url"`
-	Method	string	`json:"method"`
-	Handler	string	`json:"handler"`
-	Path	string	`json:"path"`
+	Authenticity        IsAuthenticity       `json:"authenticity"`
+	TransportEncryption *TransportEncryption `json:"transportEncryption"`
+	Url                 string               `json:"url"`
+	Method              string               `json:"method"`
+	Handler             string               `json:"handler"`
+	Path                string               `json:"path"`
 }
-

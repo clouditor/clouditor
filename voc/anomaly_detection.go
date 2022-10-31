@@ -27,10 +27,9 @@
 
 package voc
 
-// AnomalyDetection analyzes the activity of a NetworkService (which includes DatabaseServices)
+// AnomalyDetection is an entity in our Cloud ontology. analyzes the activity of a NetworkService (which includes DatabaseServices)
 type AnomalyDetection struct {
 	*Auditing
-	ApplicationLogging	*ApplicationLogging 	`json:"applicationLogging"`
-	Enabled	bool	`json:"enabled"`
+	ApplicationLogging *ApplicationLogging `json:"applicationLogging"`
+	Enabled            bool                `json:"enabled"`
 }
-

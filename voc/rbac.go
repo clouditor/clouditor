@@ -30,11 +30,11 @@ package voc
 type RBAC struct {
 	*Authorization
 	// see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)
-	MixedDuties	float32	`json:"mixedDuties"`
+	MixedDuties float32 `json:"mixedDuties"`
 	// see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)
-	BroadAssignments	float32	`json:"broadAssignments"`
+	BroadAssignments float32 `json:"broadAssignments"`
 }
 
-func (r *RBAC) Type() string {
+func (*RBAC) Type() string {
 	return "RBAC"
 }

@@ -28,7 +28,5 @@
 package voc
 
 type RequirementCatalog struct {
-
-	Requirements	*[]Requirement 	`json:"requirements"`
+	Requirements *[]Requirement `json:"requirements"`
 }
-

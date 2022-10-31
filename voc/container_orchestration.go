@@ -29,8 +29,7 @@ package voc
 
 type ContainerOrchestration struct {
 	*Resource
-	ResourceLogging	*ResourceLogging 	`json:"resourceLogging"`
-	Containers	[]ResourceID	`json:"containers"`
-	ManagementUrl	string	`json:"managementUrl"`
+	ResourceLogging *ResourceLogging `json:"resourceLogging"`
+	Containers      []ResourceID     `json:"containers"`
+	ManagementUrl   string           `json:"managementUrl"`
 }
-

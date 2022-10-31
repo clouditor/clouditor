@@ -27,15 +27,15 @@
 
 package voc
 
-// TransportEncryption enabled means the resource _can_ be reached via https, while enforced means it _can only_ be reached via https (or http traffic is redirected)
+// TransportEncryption is an entity in our Cloud ontology. enabled means the resource _can_ be reached via https, while enforced means it _can only_ be reached via https (or http traffic is redirected)
 type TransportEncryption struct {
 	*Confidentiality
-	Enforced	bool	`json:"enforced"`
-	Enabled	bool	`json:"enabled"`
-	TlsVersion	string	`json:"tlsVersion"`
-	Algorithm	string	`json:"algorithm"`
+	Enforced   bool   `json:"enforced"`
+	Enabled    bool   `json:"enabled"`
+	TlsVersion string `json:"tlsVersion"`
+	Algorithm  string `json:"algorithm"`
 }
 
-func (t *TransportEncryption) Type() string {
+func (*TransportEncryption) Type() string {
 	return "TransportEncryption"
 }

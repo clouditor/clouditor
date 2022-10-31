@@ -29,9 +29,9 @@ package voc
 
 type SingleSignOn struct {
 	*Authenticity
-	Enabled	bool	`json:"enabled"`
+	Enabled bool `json:"enabled"`
 }
 
-func (s *SingleSignOn) Type() string {
+func (*SingleSignOn) Type() string {
 	return "SingleSignOn"
 }

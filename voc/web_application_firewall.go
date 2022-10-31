@@ -27,9 +27,8 @@
 
 package voc
 
-// WebApplicationFirewall A WAF is a L7 firewall that includes L3 capabilities
+// WebApplicationFirewall is an entity in our Cloud ontology. A WAF is a L7 firewall that includes L3 capabilities
 type WebApplicationFirewall struct {
 	*AccessRestriction
-	Enabled	bool	`json:"enabled"`
+	Enabled bool `json:"enabled"`
 }
-

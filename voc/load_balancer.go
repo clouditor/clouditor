@@ -27,12 +27,11 @@
 
 package voc
 
-// LoadBalancer A Load Balancer may have multiple access restriction features, e.g. a L3 firewall and a WAF
+// LoadBalancer is an entity in our Cloud ontology. A Load Balancer may have multiple access restriction features, e.g. a L3 firewall and a WAF
 type LoadBalancer struct {
 	*NetworkService
-	AccessRestrictions	*[]AccessRestriction 	`json:"accessRestrictions"`
-	HttpEndpoints	*[]HttpEndpoint 	`json:"httpEndpoints"`
-	NetworkServices	[]ResourceID	`json:"networkServices"`
-	Url	string	`json:"url"`
+	AccessRestrictions *[]AccessRestriction `json:"accessRestrictions"`
+	HttpEndpoints      *[]HttpEndpoint      `json:"httpEndpoints"`
+	NetworkServices    []ResourceID         `json:"networkServices"`
+	Url                string               `json:"url"`
 }
-

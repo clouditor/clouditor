@@ -30,4 +30,3 @@ package voc
 type PasswordPolicy struct {
 	*Resource
 }
-

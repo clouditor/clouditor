@@ -28,7 +28,5 @@
 package voc
 
 type Evidence struct {
-
-	Resource	*Resource 	`json:"resource"`
+	Resource *Resource `json:"resource"`
 }
-

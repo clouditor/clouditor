@@ -29,10 +29,10 @@ package voc
 
 type TokenBasedAuthentication struct {
 	*Authenticity
-	Enforced	bool	`json:"enforced"`
-	Activated	bool	`json:"activated"`
+	Enforced  bool `json:"enforced"`
+	Activated bool `json:"activated"`
 }
 
-func (t *TokenBasedAuthentication) Type() string {
+func (*TokenBasedAuthentication) Type() string {
 	return "TokenBasedAuthentication"
 }

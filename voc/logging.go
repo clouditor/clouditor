@@ -31,8 +31,7 @@ import "time"
 
 type Logging struct {
 	*Auditing
-	LoggingService	[]ResourceID	`json:"loggingService"`
-	Enabled	bool	`json:"enabled"`
-	RetentionPeriod	time.Duration	`json:"retentionPeriod"`
+	LoggingService  []ResourceID  `json:"loggingService"`
+	Enabled         bool          `json:"enabled"`
+	RetentionPeriod time.Duration `json:"retentionPeriod"`
 }
-

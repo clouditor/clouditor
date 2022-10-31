@@ -30,4 +30,3 @@ package voc
 type RoleAssignment struct {
 	*Identifiable
 }
-

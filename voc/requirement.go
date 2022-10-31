@@ -28,7 +28,5 @@
 package voc
 
 type Requirement struct {
-
-	Metrics	*[]Metric 	`json:"metrics"`
+	Metrics *[]Metric `json:"metrics"`
 }
-

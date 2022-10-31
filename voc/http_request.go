@@ -29,8 +29,7 @@ package voc
 
 type HttpRequest struct {
 	*Operation
-	HttpEndpoint	*HttpEndpoint 	`json:"httpEndpoint"`
-	Call	string	`json:"call"`
-	ReqBody	string	`json:"reqBody"`
+	HttpEndpoint *HttpEndpoint `json:"httpEndpoint"`
+	Call         string        `json:"call"`
+	ReqBody      string        `json:"reqBody"`
 }
-

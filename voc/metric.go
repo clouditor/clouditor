@@ -28,7 +28,5 @@
 package voc
 
 type Metric struct {
-
-	Measures	*SecurityFeature 	`json:"measures"`
+	Measures *SecurityFeature `json:"measures"`
 }
-

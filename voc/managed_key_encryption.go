@@ -31,6 +31,6 @@ type ManagedKeyEncryption struct {
 	*AtRestEncryption
 }
 
-func (m *ManagedKeyEncryption) Type() string {
+func (*ManagedKeyEncryption) Type() string {
 	return "ManagedKeyEncryption"
 }

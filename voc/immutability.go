@@ -29,6 +29,5 @@ package voc
 
 type Immutability struct {
 	*Integrity
-	Enabled	bool	`json:"enabled"`
+	Enabled bool `json:"enabled"`
 }
-

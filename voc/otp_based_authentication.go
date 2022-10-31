@@ -29,9 +29,9 @@ package voc
 
 type OTPBasedAuthentication struct {
 	*Authenticity
-	Activated	bool	`json:"activated"`
+	Activated bool `json:"activated"`
 }
 
-func (o *OTPBasedAuthentication) Type() string {
+func (*OTPBasedAuthentication) Type() string {
 	return "OTPBasedAuthentication"
 }

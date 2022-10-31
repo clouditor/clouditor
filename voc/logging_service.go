@@ -27,9 +27,8 @@
 
 package voc
 
-// LoggingService A logging-as-a-service offering, e.g. for analyzing logs; has a Storage resource that stores the logs
+// LoggingService is an entity in our Cloud ontology. A logging-as-a-service offering, e.g. for analyzing logs; has a Storage resource that stores the logs
 type LoggingService struct {
 	*NetworkService
-	Storage	ResourceID	`json:"storage"`
+	Storage []ResourceID `json:"storage"`
 }
-
