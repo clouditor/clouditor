@@ -43,7 +43,7 @@ func (svc *Service) CreateCatalog(_ context.Context, req *orchestrator.CreateCat
 	return req.Catalog, nil
 }
 
-// GetCatalog implements method for getting a catalog, e.g. to show its state in the UI
+// GetCatalog implements method for getting a catalog until the first control level, e.g. to show its state in the UI.
 func (svc *Service) GetCatalog(_ context.Context, req *orchestrator.GetCatalogRequest) (response *orchestrator.Catalog, err error) {
 	if req == nil {
 		return nil, status.Errorf(codes.InvalidArgument, api.ErrRequestIsNil.Error())
@@ -62,7 +62,7 @@ func (svc *Service) GetCatalog(_ context.Context, req *orchestrator.GetCatalogRe
 	return response, nil
 }
 
-// ListCatalogs implements method for getting a catalog, e.g. to show its state in the UI
+// ListCatalogs implements method for getting all target catalogs until the category level, e.g. to show its state in the UI.
 func (svc *Service) ListCatalogs(_ context.Context, req *orchestrator.ListCatalogsRequest) (res *orchestrator.ListCatalogsResponse, err error) {
 	// Validate the request
 	if err = api.ValidateListRequest[*orchestrator.Catalog](req); err != nil {
@@ -121,6 +121,7 @@ func (svc *Service) RemoveCatalog(_ context.Context, req *orchestrator.RemoveCat
 	return &emptypb.Empty{}, nil
 }
 
+// GetCategory implements method for getting a category until the first control level, e.g. to show its state in the UI.
 func (srv *Service) GetCategory(_ context.Context, req *orchestrator.GetCategoryRequest) (res *orchestrator.Category, err error) {
 	res = new(orchestrator.Category)
 	err = srv.storage.Get(&res, gorm.WithPreload("Controls", "parent_control_id IS NULL"), "name = ? AND catalog_id = ?", req.CategoryName, req.CatalogId)
@@ -133,6 +134,7 @@ func (srv *Service) GetCategory(_ context.Context, req *orchestrator.GetCategory
 	return res, nil
 }
 
+// GetControl implements method for getting a control until the metrics level, e.g. to show its state in the UI.
 func (srv *Service) GetControl(_ context.Context, req *orchestrator.GetControlRequest) (res *orchestrator.Control, err error) {
 	res = new(orchestrator.Control)
 	err = srv.storage.Get(&res, "Id = ? AND category_name = ? AND category_catalog_id = ?", req.ControlId, req.CategoryName, req.CatalogId)
@@ -145,6 +147,7 @@ func (srv *Service) GetControl(_ context.Context, req *orchestrator.GetControlRe
 	return res, nil
 }
 
+// ListControls implements method for getting all controls until the second control level, e.g. to show its state in the UI.
 func (srv *Service) ListControls(_ context.Context, req *orchestrator.ListControlsRequest) (res *orchestrator.ListControlsResponse, err error) {
 	// Validate the request
 	if err = api.ValidateListRequest[*orchestrator.Control](req); err != nil {
