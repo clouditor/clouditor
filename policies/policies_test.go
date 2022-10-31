@@ -59,7 +59,7 @@ type mockMetricsSource struct {
 	t *testing.T
 }
 
-func (m *mockMetricsSource) Metrics() (metrics []*assessment.Metric, err error) {
+func (*mockMetricsSource) Metrics() (metrics []*assessment.Metric, err error) {
 	var (
 		b           []byte
 		metricsFile = "service/orchestrator/metrics.json"

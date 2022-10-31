@@ -95,7 +95,7 @@ func (k8sComputeDiscovery) handlePod(pod *v1.Pod) *voc.Container {
 		},
 	}
 
-	r.NetworkInterface = append(r.NetworkInterface, voc.ResourceID(pod.Namespace))
+	r.NetworkInterfaces = append(r.NetworkInterfaces, voc.ResourceID(pod.Namespace))
 
 	return r
 

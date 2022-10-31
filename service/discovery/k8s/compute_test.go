@@ -97,7 +97,7 @@ func TestListPods(t *testing.T) {
 				Type:         []string{"Container", "Compute", "Resource"},
 				Labels:       podLabel,
 			},
-			NetworkInterface: []voc.ResourceID{
+			NetworkInterfaces: []voc.ResourceID{
 				voc.ResourceID(podNamespace),
 			},
 		},

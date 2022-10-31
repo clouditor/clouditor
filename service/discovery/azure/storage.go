@@ -235,7 +235,7 @@ func handleObjectStorage(account *armstorage.Account, container *armstorage.List
 	}, nil
 }
 
-func (*azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, storagesList []voc.IsCloudResource) (*voc.StorageService, error) {
+func (*azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, storagesList []voc.IsCloudResource) (*voc.ObjectStorageService, error) {
 	var storageResourceIDs []voc.ResourceID
 
 	if account == nil {
@@ -256,23 +256,25 @@ func (*azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, 
 		Algorithm:  "TLS",
 	}
 
-	storageService := &voc.StorageService{
-		Storages: storageResourceIDs,
-		NetworkService: &voc.NetworkService{
-			Networking: &voc.Networking{
-				Resource: &voc.Resource{
-					ID:           voc.ResourceID(util.Deref(account.ID)),
-					ServiceID:    discovery.DefaultCloudServiceID,
-					Name:         util.Deref(account.Name),
-					CreationTime: account.Properties.CreationTime.Unix(),
-					Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
-					GeoLocation: voc.GeoLocation{
-						Region: util.Deref(account.Location),
+	storageService := &voc.ObjectStorageService{
+		StorageService: &voc.StorageService{
+			Storage: storageResourceIDs,
+			NetworkService: &voc.NetworkService{
+				Networking: &voc.Networking{
+					Resource: &voc.Resource{
+						ID:           voc.ResourceID(util.Deref(account.ID)),
+						ServiceID:    discovery.DefaultCloudServiceID,
+						Name:         util.Deref(account.Name),
+						CreationTime: account.Properties.CreationTime.Unix(),
+						Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
+						GeoLocation: voc.GeoLocation{
+							Region: util.Deref(account.Location),
+						},
+						Labels: labels(account.Tags),
 					},
-					Labels: labels(account.Tags),
 				},
+				TransportEncryption: te,
 			},
-			TransportEncryption: te,
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
 			Url:                 generalizeURL(util.Deref(account.Properties.PrimaryEndpoints.Blob)),

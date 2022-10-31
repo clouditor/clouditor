@@ -39,7 +39,6 @@ import (
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/inmemory"
 	"clouditor.io/clouditor/service"
-	"golang.org/x/exp/maps"
 
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -89,6 +88,10 @@ type Service struct {
 	loadCatalogsFunc func() ([]*orchestrator.Catalog, error)
 
 	events chan *orchestrator.MetricChangeEvent
+
+	// authz defines our authorization strategy, e.g., which user can access which cloud service and associated
+	// resources, such as evidences and assessment results.
+	authz service.AuthorizationStrategy
 }
 
 func init() {
@@ -133,6 +136,13 @@ func WithStorage(storage persistence.Storage) ServiceOption {
 	}
 }
 
+// WithAuthorizationStrategyJWT is an option that configures an JWT-based authorization strategy using a specific claim key.
+func WithAuthorizationStrategyJWT(key string) ServiceOption {
+	return func(s *Service) {
+		s.authz = &service.AuthorizationStrategyJWT{Key: key}
+	}
+}
+
 // NewService creates a new Orchestrator service
 func NewService(opts ...ServiceOption) *Service {
 	var err error
@@ -154,6 +164,11 @@ func NewService(opts ...ServiceOption) *Service {
 		if err != nil {
 			log.Errorf("Could not initialize the storage: %v", err)
 		}
+	}
+
+	// Default to an allow-all authorization strategy
+	if s.authz == nil {
+		s.authz = &service.AuthorizationStrategyAllowAll{}
 	}
 
 	if err = s.loadMetrics(); err != nil {
@@ -259,32 +274,6 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 			return status.Errorf(codes.Unknown, "%v", newError.Error())
 		}
 	}
-}
-
-// ListAssessmentResults is a method implementation of the orchestrator interface
-func (svc *Service) ListAssessmentResults(_ context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
-	res = new(assessment.ListAssessmentResultsResponse)
-
-	var values = maps.Values(svc.results)
-	var filtered []*assessment.AssessmentResult
-
-	for _, v := range values {
-		if req.FilteredCloudServiceId != "" && v.CloudServiceId != req.FilteredCloudServiceId {
-			continue
-		}
-
-		filtered = append(filtered, v)
-	}
-
-	// Paginate the results according to the request
-	res.Results, res.NextPageToken, err = service.PaginateSlice(req, filtered, func(a *assessment.AssessmentResult, b *assessment.AssessmentResult) bool {
-		return a.Timestamp.AsTime().After(b.Timestamp.AsTime())
-	}, service.DefaultPaginationOpts)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
-	}
-
-	return
 }
 
 func (s *Service) RegisterAssessmentResultHook(hook func(result *assessment.AssessmentResult, err error)) {

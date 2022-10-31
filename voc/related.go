@@ -33,14 +33,14 @@ func (v VirtualMachine) Related() []string {
 		list = append(list, string(b))
 	}
 
-	for _, n := range v.NetworkInterface {
+	for _, n := range v.NetworkInterfaces {
 		list = append(list, string(n))
 	}
 
 	return list
 }
 
-// LoggingService returns related resources for the logging service, e.g., its storage.
+// Related returns related resources for the logging service, e.g., its storage.
 func (l LoggingService) Related() []string {
 	list := make([]string, 0)
 

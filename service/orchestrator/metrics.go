@@ -78,7 +78,7 @@ func (svc *Service) loadMetrics() (err error) {
 			continue
 		}
 
-		err = svc.prepareMetric(m)
+		err = prepareMetric(m)
 		if err != nil {
 			log.Warnf("Could not prepare implementation or default configuration for metric %s: %v", m.Id, err)
 			continue
@@ -96,7 +96,7 @@ func (svc *Service) loadMetrics() (err error) {
 
 // prepareMetric takes care of the heavy lifting of loading the default implementation and configuration of a particular
 // metric and storing them into the service.
-func (svc *Service) prepareMetric(m *assessment.Metric) (err error) {
+func prepareMetric(m *assessment.Metric) (err error) {
 	var (
 		config *assessment.MetricConfiguration
 	)
@@ -320,9 +320,14 @@ func (svc *Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequ
 	return
 }
 
-// GetMetricConfiguration retrieves a metric configuration specified by req.MetricId for a specified req.CloudServiceId. If no CloudServiceId is specified the default metric configuration is retrieved.
-func (svc *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.GetMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
+func (svc *Service) GetMetricConfiguration(ctx context.Context, req *orchestrator.GetMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+		return nil, service.ErrPermissionDenied
+	}
+
 	res = new(assessment.MetricConfiguration)
+
 	err = svc.storage.Get(res, gorm.WithoutPreload(), "cloud_service_id = ? AND metric_id = ?", req.CloudServiceId, req.MetricId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		// Otherwise, fall back to our default configuration
@@ -339,7 +344,7 @@ func (svc *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.
 }
 
 // UpdateMetricConfiguration updates the configuration for a metric, specified by the identifier in req.MetricId.
-func (svc *Service) UpdateMetricConfiguration(_ context.Context, req *orchestrator.UpdateMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
+func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestrator.UpdateMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
 	// TODO(oxisto): Validate the request
 	err = req.Configuration.Validate()
 	if err != nil {
@@ -351,6 +356,11 @@ func (svc *Service) UpdateMetricConfiguration(_ context.Context, req *orchestrat
 	}
 	if _, err = uuid.Parse(req.CloudServiceId); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "cloud service id is missing or in wrong format")
+	}
+
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+		return nil, service.ErrPermissionDenied
 	}
 
 	// Make sure that the configuration also has metric/service ID set
@@ -386,6 +396,11 @@ func (svc *Service) UpdateMetricConfiguration(_ context.Context, req *orchestrat
 // configuration for a particular metric within the service, the default metric configuration is
 // inserted into the list.
 func (svc *Service) ListMetricConfigurations(ctx context.Context, req *orchestrator.ListMetricConfigurationRequest) (response *orchestrator.ListMetricConfigurationResponse, err error) {
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+		return nil, service.ErrPermissionDenied
+	}
+
 	response = &orchestrator.ListMetricConfigurationResponse{
 		Configurations: make(map[string]*assessment.MetricConfiguration),
 	}

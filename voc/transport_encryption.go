@@ -1,4 +1,6 @@
-// Copyright 2021 Fraunhofer AISEC
+// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
+
+// Copyright 2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,10 +27,15 @@
 
 package voc
 
+// TransportEncryption is an entity in our Cloud ontology. enabled means the resource _can_ be reached via https, while enforced means it _can only_ be reached via https (or http traffic is redirected)
 type TransportEncryption struct {
 	*Confidentiality
 	Enforced   bool   `json:"enforced"`
 	Enabled    bool   `json:"enabled"`
 	TlsVersion string `json:"tlsVersion"`
 	Algorithm  string `json:"algorithm"`
+}
+
+func (*TransportEncryption) Type() string {
+	return "TransportEncryption"
 }

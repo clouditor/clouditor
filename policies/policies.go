@@ -46,7 +46,7 @@ type metricsCache struct {
 	m map[string][]string
 }
 
-// TODO(oxisto): Rename to AssessmentEngine or something?
+// PolicyEval is an interface for the policy evaluation engine
 type PolicyEval interface {
 	Eval(evidence *evidence.Evidence, src MetricsSource) (data []*Result, err error)
 	HandleMetricEvent(event *orchestrator.MetricChangeEvent) (err error)

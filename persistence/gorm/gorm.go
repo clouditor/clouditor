@@ -180,14 +180,16 @@ type preload struct {
 	args  []any
 }
 
+type QueryOption interface{}
+
 // WithPreload allows the customization of Gorm's preload feature with the specified query and arguments.
-func WithPreload(query string, args ...any) *preload {
+func WithPreload(query string, args ...any) QueryOption {
 	return &preload{query: query, args: args}
 }
 
 // WithoutPreload disables any kind of preloading of Gorm. This is necessary, if custom join tables are used, otherwise
 // Gorm will throws errors.
-func WithoutPreload() *preload {
+func WithoutPreload() QueryOption {
 	return &preload{query: ""}
 }
 
