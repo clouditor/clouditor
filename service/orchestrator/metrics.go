@@ -39,7 +39,6 @@ import (
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
-	"github.com/google/uuid"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -340,17 +339,15 @@ func (svc *Service) GetMetricConfiguration(_ context.Context, req *orchestrator.
 
 // UpdateMetricConfiguration updates the configuration for a metric, specified by the identifier in req.MetricId.
 func (svc *Service) UpdateMetricConfiguration(_ context.Context, req *orchestrator.UpdateMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
-	// TODO(oxisto): Validate the request
+	// Validate request
+	if err = req.Validate(); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "%s", err)
+	}
+
+	// Validate request configuration
 	err = req.Configuration.Validate()
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "%s", err)
-	}
-	// Check if metric/service ID is set
-	if req.MetricId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "metric id is missing")
-	}
-	if _, err = uuid.Parse(req.CloudServiceId); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "cloud service id is missing or in wrong format")
 	}
 
 	// Make sure that the configuration also has metric/service ID set
