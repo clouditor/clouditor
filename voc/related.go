@@ -33,7 +33,7 @@ func (v VirtualMachine) Related() []string {
 		list = append(list, string(b))
 	}
 
-	for _, n := range v.NetworkInterface {
+	for _, n := range v.NetworkInterfaces {
 		list = append(list, string(n))
 	}
 

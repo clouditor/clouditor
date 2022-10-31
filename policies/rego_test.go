@@ -190,7 +190,7 @@ func Test_regoEval_Eval(t *testing.T) {
 							RetentionPeriod: 36 * time.Hour * 24,
 						},
 					},
-					OSLogging: &voc.OSLogging{
+					OsLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
 							LoggingService:  []voc.ResourceID{"SomeResourceId2"},
 							Enabled:         true,
@@ -248,7 +248,7 @@ func Test_regoEval_Eval(t *testing.T) {
 							RetentionPeriod: 1 * time.Hour * 24,
 						},
 					},
-					OSLogging: &voc.OSLogging{
+					OsLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
 							LoggingService:  []voc.ResourceID{"SomeResourceId3"},
 							Enabled:         false,

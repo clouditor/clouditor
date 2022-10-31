@@ -485,7 +485,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 									RetentionPeriod: 36,
 								},
 							},
-							OSLogging: &voc.OSLogging{
+							OsLogging: &voc.OSLogging{
 								Logging: &voc.Logging{
 									LoggingService:  []voc.ResourceID{"SomeResourceId2"},
 									Enabled:         true,
