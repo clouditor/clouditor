@@ -16,9 +16,10 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-// CreateCatalog implements method for creating a new catalog
+// CreateCatalog implements a method for creating a new catalog.
 func (svc *Service) CreateCatalog(_ context.Context, req *orchestrator.CreateCatalogRequest) (
 	*orchestrator.Catalog, error) {
+	// TODO(oxisto): extract to validate method
 	// Validate request
 	if req == nil {
 		return nil,
@@ -43,7 +44,9 @@ func (svc *Service) CreateCatalog(_ context.Context, req *orchestrator.CreateCat
 	return req.Catalog, nil
 }
 
-// GetCatalog implements method for getting a catalog until the first control level, e.g. to show its state in the UI.
+// GetCatalog retrieves a control specified by the catalog ID, the control's category
+// name and the control ID. If present, it also includes a list of sub-controls and any metrics associated to any
+// controls.
 func (svc *Service) GetCatalog(_ context.Context, req *orchestrator.GetCatalogRequest) (response *orchestrator.Catalog, err error) {
 	if req == nil {
 		return nil, status.Errorf(codes.InvalidArgument, api.ErrRequestIsNil.Error())
@@ -53,7 +56,12 @@ func (svc *Service) GetCatalog(_ context.Context, req *orchestrator.GetCatalogRe
 	}
 
 	response = new(orchestrator.Catalog)
-	err = svc.storage.Get(response, gorm.WithPreload("Categories.Controls", "parent_control_id IS NULL"), "Id = ?", req.CatalogId)
+	err = svc.storage.Get(response,
+		// Preload fills in associated entities, in this case controls. We want to only select those controls which do
+		// not have a parent, e.g., the top-level
+		gorm.WithPreload("Categories.Controls", "parent_control_id IS NULL"),
+		// Select catalog by ID
+		"Id = ?", req.CatalogId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "catalog not found")
 	} else if err != nil {
@@ -62,7 +70,8 @@ func (svc *Service) GetCatalog(_ context.Context, req *orchestrator.GetCatalogRe
 	return response, nil
 }
 
-// ListCatalogs implements method for getting all target catalogs until the category level, e.g. to show its state in the UI.
+// ListCatalogs Lists all security controls catalogs. Each catalog includes a list of its
+// categories but no additional sub-resources.
 func (svc *Service) ListCatalogs(_ context.Context, req *orchestrator.ListCatalogsRequest) (res *orchestrator.ListCatalogsResponse, err error) {
 	// Validate the request
 	if err = api.ValidateListRequest[*orchestrator.Catalog](req); err != nil {
@@ -73,7 +82,6 @@ func (svc *Service) ListCatalogs(_ context.Context, req *orchestrator.ListCatalo
 	}
 
 	res = new(orchestrator.ListCatalogsResponse)
-
 	res.Catalogs, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Catalog](req, svc.storage,
 		service.DefaultPaginationOpts)
 	if err != nil {
@@ -82,7 +90,7 @@ func (svc *Service) ListCatalogs(_ context.Context, req *orchestrator.ListCatalo
 	return
 }
 
-// UpdateCatalog implements method for updating an existing catalog
+// UpdateCatalog implements a method for updating an existing catalog
 func (svc *Service) UpdateCatalog(_ context.Context, req *orchestrator.UpdateCatalogRequest) (res *orchestrator.Catalog, err error) {
 	if req.CatalogId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "catalog id is empty")
@@ -105,7 +113,7 @@ func (svc *Service) UpdateCatalog(_ context.Context, req *orchestrator.UpdateCat
 	return
 }
 
-// RemoveCatalog implements method for removing a catalog
+// RemoveCatalog implements a method for removing a catalog
 func (svc *Service) RemoveCatalog(_ context.Context, req *orchestrator.RemoveCatalogRequest) (response *emptypb.Empty, err error) {
 	if req.CatalogId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "catalog id is empty")
@@ -121,10 +129,16 @@ func (svc *Service) RemoveCatalog(_ context.Context, req *orchestrator.RemoveCat
 	return &emptypb.Empty{}, nil
 }
 
-// GetCategory implements method for getting a category until the first control level, e.g. to show its state in the UI.
+// GetCategory retrieves a category of a catalog specified by the catalog ID and the category name. It includes the
+// first level of controls within each category.
 func (srv *Service) GetCategory(_ context.Context, req *orchestrator.GetCategoryRequest) (res *orchestrator.Category, err error) {
 	res = new(orchestrator.Category)
-	err = srv.storage.Get(&res, gorm.WithPreload("Controls", "parent_control_id IS NULL"), "name = ? AND catalog_id = ?", req.CategoryName, req.CatalogId)
+	err = srv.storage.Get(&res,
+		// Preload fills in associated entities, in this case controls. We want to only select those controls which do
+		// not have a parent, e.g., the top-level
+		gorm.WithPreload("Controls", "parent_control_id IS NULL"),
+		// Select the category by name and catalog ID
+		"name = ? AND catalog_id = ?", req.CategoryName, req.CatalogId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "category not found")
 	} else if err != nil {
@@ -134,10 +148,18 @@ func (srv *Service) GetCategory(_ context.Context, req *orchestrator.GetCategory
 	return res, nil
 }
 
-// GetControl implements method for getting a control until the metrics level, e.g. to show its state in the UI.
+// GetControl retrieves a control specified by the catalog ID, the control's category name and the control ID. If
+// present, it also includes a list of sub-controls and any metrics associated to any controls.
 func (srv *Service) GetControl(_ context.Context, req *orchestrator.GetControlRequest) (res *orchestrator.Control, err error) {
+	// TODO(oxisto): Validate request parameters
+
 	res = new(orchestrator.Control)
-	err = srv.storage.Get(&res, "Id = ? AND category_name = ? AND category_catalog_id = ?", req.ControlId, req.CategoryName, req.CatalogId)
+	err = srv.storage.Get(&res,
+		// Preload fills in associated entities, in this case metrics. We want to return any metrics associated to any
+		// level of control for convienence
+		gorm.WithPreload("Controls.Metrics"),
+		// We only want to select controls for the specified category and catalog
+		"Id = ? AND category_name = ? AND category_catalog_id = ?", req.ControlId, req.CategoryName, req.CatalogId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "control not found")
 	} else if err != nil {
@@ -147,7 +169,8 @@ func (srv *Service) GetControl(_ context.Context, req *orchestrator.GetControlRe
 	return res, nil
 }
 
-// ListControls implements method for getting all controls until the second control level, e.g. to show its state in the UI.
+// ListControls lists controls. If no additional parameters are specified, this lists all controls. If a
+// catalog ID and a category name is specified, then only controls containing in this category are returned.
 func (srv *Service) ListControls(_ context.Context, req *orchestrator.ListControlsRequest) (res *orchestrator.ListControlsResponse, err error) {
 	// Validate the request
 	if err = api.ValidateListRequest[*orchestrator.Control](req); err != nil {
