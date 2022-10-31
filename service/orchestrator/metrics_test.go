@@ -883,6 +883,38 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
+			name: "request is invalid",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					CloudServiceId: DefaultTargetCloudServiceId,
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, orchestrator.ErrMetricIDIsMissing.Error())
+			},
+		},
+		{
+			name: "request configuration is invalid",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					CloudServiceId: DefaultTargetCloudServiceId,
+					MetricId:       "MyMetric",
+					Configuration:  &assessment.MetricConfiguration{},
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, assessment.ErrMetricConfigurationMissing.Error())
+			},
+		},
+		{
 			name: "metric does not exist",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
