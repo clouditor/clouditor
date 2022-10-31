@@ -28,10 +28,10 @@ package orchestrator
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func TestListCertificatesRequest_Validate(t *testing.T) {
@@ -199,6 +199,84 @@ func TestListMetricsRequest_Validate(t *testing.T) {
 				Asc:       tt.fields.Asc,
 			}
 			tt.wantErr(t, api.ValidateListRequest[*assessment.Metric](req), "Validate()")
+		})
+	}
+}
+
+func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
+	type fields struct {
+		Request *UpdateMetricConfigurationRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Missing CloudServiceId",
+			fields: fields{
+				Request: &UpdateMetricConfigurationRequest{
+					MetricId: "TestMetric",
+					Configuration: &assessment.MetricConfiguration{
+						Operator:    "<",
+						TargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "11111"}},
+					},
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrRequestCloudServiceID.Error())
+			},
+		},
+		{
+			name: "Wrong CloudServiceId",
+			fields: fields{
+				Request: &UpdateMetricConfigurationRequest{
+					MetricId:       "TestMetric",
+					CloudServiceId: "00000000000000000000",
+					Configuration: &assessment.MetricConfiguration{
+						Operator:    "<",
+						TargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "11111"}},
+					},
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrRequestCloudServiceID.Error())
+			},
+		},
+		{
+			name: "Missing MetricId",
+			fields: fields{
+				Request: &UpdateMetricConfigurationRequest{
+					CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					Configuration: &assessment.MetricConfiguration{
+						Operator:    "<",
+						TargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "11111"}},
+					},
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrMetricIDIsMissing.Error())
+			},
+		},
+		{
+			name: "Without error",
+			fields: fields{
+				Request: &UpdateMetricConfigurationRequest{
+					MetricId:       "TestMetric",
+					CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					Configuration: &assessment.MetricConfiguration{
+						Operator:    "<",
+						TargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "11111"}},
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := tt.fields.Request
+			tt.wantErr(t, req.Validate())
 		})
 	}
 }
