@@ -154,7 +154,7 @@ func (*azureComputeDiscovery) handleFunction(function *armappservice.Site) voc.I
 				},
 				Labels: labels(function.Tags),
 			},
-			NetworkInterface: []voc.ResourceID{},
+			NetworkInterfaces: []voc.ResourceID{},
 		},
 		RuntimeLanguage: "",
 		RuntimeVersion:  "",
@@ -221,7 +221,7 @@ func (*azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachin
 				},
 				Labels: labels(vm.Tags),
 			},
-			NetworkInterface: []voc.ResourceID{},
+			NetworkInterfaces: []voc.ResourceID{},
 		},
 		BlockStorage:      []voc.ResourceID{},
 		MalwareProtection: &voc.MalwareProtection{},
@@ -235,7 +235,7 @@ func (*azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachin
 				},
 			},
 		},
-		OSLogging: &voc.OSLogging{
+		OsLogging: &voc.OSLogging{
 			Logging: &voc.Logging{
 				Enabled:         false,
 				RetentionPeriod: 0,
@@ -250,7 +250,7 @@ func (*azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachin
 	// Reference to networkInterfaces
 	if vm.Properties.NetworkProfile != nil {
 		for _, networkInterfaces := range vm.Properties.NetworkProfile.NetworkInterfaces {
-			r.NetworkInterface = append(r.NetworkInterface, voc.ResourceID(util.Deref(networkInterfaces.ID)))
+			r.NetworkInterfaces = append(r.NetworkInterfaces, voc.ResourceID(util.Deref(networkInterfaces.ID)))
 		}
 	}
 

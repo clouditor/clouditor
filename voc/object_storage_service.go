@@ -1,4 +1,6 @@
-// Copyright 2021 Fraunhofer AISEC
+// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
+
+// Copyright 2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,6 +27,8 @@
 
 package voc
 
-type RelationalDB struct {
-	*RelationalDatabaseService
+// ObjectStorageService is an entity in our Cloud ontology. An object storage service represents the network service that is used to access a list of object storage containers. The storage itself is modelled as a ObjectStorage. The service has an http endpoint.
+type ObjectStorageService struct {
+	*StorageService
+	HttpEndpoint *HttpEndpoint `json:"httpEndpoint"`
 }

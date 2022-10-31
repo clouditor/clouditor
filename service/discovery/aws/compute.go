@@ -226,14 +226,14 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]*voc.VirtualMachine, err
 					},
 					Labels: d.labels(vm.Tags),
 				},
-				NetworkInterface: d.getNetworkInterfacesOfVM(vm),
+				NetworkInterfaces: d.getNetworkInterfacesOfVM(vm),
 			}
 
 			resources = append(resources, &voc.VirtualMachine{
 				Compute:      computeResource,
 				BlockStorage: d.mapBlockStorageIDsOfVM(vm),
 				BootLogging:  d.getBootLog(vm),
-				OSLogging:    d.getOSLog(vm),
+				OsLogging:    d.getOSLog(vm),
 			})
 		}
 	}

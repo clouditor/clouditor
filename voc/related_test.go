@@ -32,11 +32,11 @@ import (
 
 func TestVirtualMachine_Related(t *testing.T) {
 	type fields struct {
-		Compute          *Compute
-		BlockStorage     []ResourceID
-		NetworkInterface []ResourceID
-		BootLogging      *BootLogging
-		OSLogging        *OSLogging
+		Compute           *Compute
+		BlockStorage      []ResourceID
+		NetworkInterfaces []ResourceID
+		BootLogging       *BootLogging
+		OSLogging         *OSLogging
 	}
 	tests := []struct {
 		name   string
@@ -48,7 +48,7 @@ func TestVirtualMachine_Related(t *testing.T) {
 			fields: fields{
 				BlockStorage: []ResourceID{"1"},
 				Compute: &Compute{
-					NetworkInterface: []ResourceID{"2"},
+					NetworkInterfaces: []ResourceID{"2"},
 				},
 			},
 			want: []string{"1", "2"},
@@ -60,7 +60,7 @@ func TestVirtualMachine_Related(t *testing.T) {
 				Compute:      tt.fields.Compute,
 				BlockStorage: tt.fields.BlockStorage,
 				BootLogging:  tt.fields.BootLogging,
-				OSLogging:    tt.fields.OSLogging,
+				OsLogging:    tt.fields.OSLogging,
 			}
 			if got := v.Related(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("VirtualMachine.Related() = %v, want %v", got, tt.want)
