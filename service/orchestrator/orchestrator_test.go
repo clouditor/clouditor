@@ -573,6 +573,34 @@ func TestNewService(t *testing.T) {
 				return assert.Equal(tt, myStorage, service.storage)
 			},
 		},
+		{
+			name: "New service with catalogs file",
+			args: args{
+				opts: []ServiceOption{WithCatalogsFile("catalogsfile.json")},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				service, ok := i1.(*Service)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				return assert.Equal(tt, "catalogsfile.json", service.catalogsFile)
+			},
+		},
+		{
+			name: "New service with metrics file",
+			args: args{
+				opts: []ServiceOption{WithMetricsFile("metricsfile.json")},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				service, ok := i1.(*Service)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				return assert.Equal(tt, "metricsfile.json", service.metricsFile)
+			},
+		},
 	}
 
 	for _, tt := range tests {
