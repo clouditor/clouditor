@@ -51,7 +51,7 @@ func (*k8sNetworkDiscovery) Description() string {
 	return "Discover Kubernetes network resources."
 }
 
-func (d k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
+func (d *k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
 	services, err := d.intf.CoreV1().Services("").List(context.TODO(), metav1.ListOptions{})
@@ -84,7 +84,7 @@ func (d k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
 	return list, nil
 }
 
-func (k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwork {
+func (d *k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwork {
 	var ports []uint16
 
 	for _, v := range service.Spec.Ports {
@@ -95,6 +95,7 @@ func (k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwork 
 		Networking: &voc.Networking{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(getNetworkServiceResourceID(service)),
+				ServiceID:    d.CloudServiceID(),
 				Name:         service.Name,
 				CreationTime: service.CreationTimestamp.Unix(),
 				Type:         []string{"NetworkService", "Resource"},
@@ -114,12 +115,13 @@ func getNetworkServiceResourceID(service *corev1.Service) string {
 	return fmt.Sprintf("/namespaces/%s/services/%s", service.Namespace, service.Name)
 }
 
-func (k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
+func (d *k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 	lb := &voc.LoadBalancer{
 		NetworkService: &voc.NetworkService{
 			Networking: &voc.Networking{
 				Resource: &voc.Resource{
 					ID:           voc.ResourceID(getLoadBalancerResourceID(ingress)),
+					ServiceID:    d.CloudServiceID(),
 					Name:         ingress.Name,
 					CreationTime: ingress.CreationTimestamp.Unix(),
 					Type:         []string{"LoadBalancer", "NetworkService", "Resource"},

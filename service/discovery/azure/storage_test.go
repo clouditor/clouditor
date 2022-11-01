@@ -39,7 +39,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/util/json"
 )
@@ -244,7 +243,7 @@ func TestNewAzureStorageDiscovery(t *testing.T) {
 				opts: nil,
 			},
 			want: &azureStorageDiscovery{
-				azureDiscovery: azureDiscovery{
+				azureDiscovery: &azureDiscovery{
 					discovererComponent: StorageComponent,
 				},
 			},
@@ -255,7 +254,7 @@ func TestNewAzureStorageDiscovery(t *testing.T) {
 				opts: []DiscoveryOption{WithSender(mockStorageSender{})},
 			},
 			want: &azureStorageDiscovery{
-				azureDiscovery: azureDiscovery{
+				azureDiscovery: &azureDiscovery{
 					clientOptions: arm.ClientOptions{
 						ClientOptions: policy.ClientOptions{
 							Transport: mockStorageSender{},
@@ -271,7 +270,7 @@ func TestNewAzureStorageDiscovery(t *testing.T) {
 				opts: []DiscoveryOption{WithAuthorizer(&mockAuthorizer{})},
 			},
 			want: &azureStorageDiscovery{
-				azureDiscovery: azureDiscovery{
+				azureDiscovery: &azureDiscovery{
 					cred:                &mockAuthorizer{},
 					discovererComponent: StorageComponent,
 				},
@@ -315,7 +314,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
 
 	type fields struct {
-		azureDiscovery azureDiscovery
+		azureDiscovery *azureDiscovery
 	}
 	tests := []struct {
 		name     string
@@ -326,7 +325,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 		{
 			name: "Authorize error",
 			fields: fields{
-				azureDiscovery: azureDiscovery{
+				azureDiscovery: &azureDiscovery{
 					cred: nil,
 				},
 			},
@@ -338,14 +337,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 		{
 			name: "Discovery error",
 			fields: fields{
-				azureDiscovery: azureDiscovery{
-					cred: &mockAuthorizer{},
-					clientOptions: arm.ClientOptions{
-						ClientOptions: policy.ClientOptions{
-							Transport: &mockNetworkSender{},
-						},
-					},
-				},
+				azureDiscovery: NewMockAzureDiscovery(newMockNetworkSender()),
 			},
 			wantList: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -355,21 +347,14 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 		{
 			name: "Without errors",
 			fields: fields{
-				azureDiscovery: azureDiscovery{
-					cred: &mockAuthorizer{},
-					clientOptions: arm.ClientOptions{
-						ClientOptions: policy.ClientOptions{
-							Transport: &mockStorageSender{},
-						},
-					},
-				},
+				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
 			},
 			wantList: []voc.IsCloudResource{
 				&voc.ObjectStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
-							// ServiceID:    discovery.DefaultCloudServiceID,
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
+							ServiceID:    testutil.TestCloudService1,
 							Name:         "container1",
 							Type:         []string{"ObjectStorage", "Storage", "Resource"},
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -391,8 +376,8 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 				&voc.ObjectStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2",
-							// ServiceID:    discovery.DefaultCloudServiceID,
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2",
+							ServiceID:    testutil.TestCloudService1,
 							Name:         "container2",
 							Type:         []string{"ObjectStorage", "Storage", "Resource"},
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -414,8 +399,8 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 				&voc.FileStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1",
-							// ServiceID:    discovery.DefaultCloudServiceID,
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1",
+							ServiceID:    testutil.TestCloudService1,
 							Name:         "fileshare1",
 							Type:         []string{"FileStorage", "Storage", "Resource"},
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -435,8 +420,8 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 				&voc.FileStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2",
-							// ServiceID:    discovery.DefaultCloudServiceID,
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2",
+							ServiceID:    testutil.TestCloudService1,
 							Name:         "fileshare2",
 							Type:         []string{"FileStorage", "Storage", "Resource"},
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -465,6 +450,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							Networking: &voc.Networking{
 								Resource: &voc.Resource{
 									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
+									ServiceID:    testutil.TestCloudService1,
 									Name:         "account1",
 									Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
 									CreationTime: util.SafeTimestamp(&creationTime),
@@ -495,8 +481,8 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 				&voc.ObjectStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container3",
-							// ServiceID:    discovery.DefaultCloudServiceID,
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container3",
+							ServiceID:    testutil.TestCloudService1,
 							Name:         "container3",
 							Type:         []string{"ObjectStorage", "Storage", "Resource"},
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -519,8 +505,8 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 				&voc.ObjectStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container4",
-							// ServiceID:    discovery.DefaultCloudServiceID,
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container4",
+							ServiceID:    testutil.TestCloudService1,
 							Name:         "container4",
 							Type:         []string{"ObjectStorage", "Storage", "Resource"},
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -549,8 +535,8 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 						NetworkService: &voc.NetworkService{
 							Networking: &voc.Networking{
 								Resource: &voc.Resource{
-									ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2",
-									// ServiceID:    discovery.DefaultCloudServiceID,
+									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2",
+									ServiceID:    testutil.TestCloudService1,
 									Name:         "account2",
 									Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
 									CreationTime: util.SafeTimestamp(&creationTime),
@@ -598,7 +584,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 }
 
 func TestStorageHandleMethodsWhenInputIsInvalid(t *testing.T) {
-	d := azureStorageDiscovery{azureDiscovery{csi: testutil.TestCloudService1}}
+	d := azureStorageDiscovery{&azureDiscovery{csi: testutil.TestCloudService1}}
 
 	// Get mocked armstorage.Account
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"
@@ -637,7 +623,7 @@ func TestStorageMethodsWhenInputIsInvalid(t *testing.T) {
 }
 
 func TestStorageDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
-	d := azureStorageDiscovery{}
+	d := azureStorageDiscovery{&azureDiscovery{}}
 
 	// Get mocked armstorage.Account
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"
@@ -728,13 +714,8 @@ func mockedStorageAccount(reqUrl string) (storageAccount *armstorage.Account, er
 }
 
 func Test_azureStorageDiscovery_discoverStorageAccounts(t *testing.T) {
-	var subID = "00000000-0000-0000-0000-000000000000"
-	sub := armsubscription.Subscription{
-		SubscriptionID: &subID,
-	}
-
 	type fields struct {
-		azureDiscovery azureDiscovery
+		azureDiscovery *azureDiscovery
 	}
 	tests := []struct {
 		name    string
@@ -745,7 +726,7 @@ func Test_azureStorageDiscovery_discoverStorageAccounts(t *testing.T) {
 		{
 			name: "Error list pages",
 			fields: fields{
-				azureDiscovery: azureDiscovery{
+				azureDiscovery: &azureDiscovery{
 					cred: nil,
 				},
 			},
@@ -757,15 +738,7 @@ func Test_azureStorageDiscovery_discoverStorageAccounts(t *testing.T) {
 		{
 			name: "No error",
 			fields: fields{
-				azureDiscovery: azureDiscovery{
-					cred: &mockAuthorizer{},
-					sub:  sub,
-					clientOptions: arm.ClientOptions{
-						ClientOptions: policy.ClientOptions{
-							Transport: mockStorageSender{},
-						},
-					},
-				},
+				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
 			},
 
 			want:    nil,
@@ -864,7 +837,7 @@ func Test_handleFileStorage(t *testing.T) {
 	keySource := armstorage.KeySourceMicrosoftStorage
 
 	type fields struct {
-		azureDiscovery azureDiscovery
+		azureDiscovery *azureDiscovery
 	}
 	type args struct {
 		account   *armstorage.Account
@@ -914,6 +887,9 @@ func Test_handleFileStorage(t *testing.T) {
 		},
 		{
 			name: "No error",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+			},
 			args: args{
 				account: &armstorage.Account{
 					Properties: &armstorage.AccountProperties{
@@ -932,8 +908,8 @@ func Test_handleFileStorage(t *testing.T) {
 			want: &voc.FileStorage{
 				Storage: &voc.Storage{
 					Resource: &voc.Resource{
-						ID: voc.ResourceID(fileShareID),
-						// ServiceID:    discovery.DefaultCloudServiceID,
+						ID:           voc.ResourceID(fileShareID),
+						ServiceID:    testutil.TestCloudService1,
 						Name:         fileShareName,
 						CreationTime: util.SafeTimestamp(&creationTime),
 						GeoLocation: voc.GeoLocation{
@@ -1007,7 +983,7 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 	httpsOnly := true
 
 	type fields struct {
-		azureDiscovery azureDiscovery
+		azureDiscovery *azureDiscovery
 	}
 	type args struct {
 		account      *armstorage.Account
@@ -1029,6 +1005,9 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 		},
 		{
 			name: "No error",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+			},
 			args: args{
 				account: &armstorage.Account{
 					ID:   &accountID,
@@ -1052,8 +1031,8 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 					NetworkService: &voc.NetworkService{
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
-								ID: voc.ResourceID(accountID),
-								// ServiceID:    discovery.DefaultCloudServiceID,
+								ID:           voc.ResourceID(accountID),
+								ServiceID:    testutil.TestCloudService1,
 								Name:         accountName,
 								CreationTime: util.SafeTimestamp(&creationTime),
 								Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
@@ -1109,7 +1088,7 @@ func Test_handleObjectStorage(t *testing.T) {
 	publicAccess := armstorage.PublicAccessNone
 
 	type fields struct {
-		azureDiscovery azureDiscovery
+		azureDiscovery *azureDiscovery
 	}
 	type args struct {
 		account   *armstorage.Account
@@ -1158,6 +1137,9 @@ func Test_handleObjectStorage(t *testing.T) {
 		// },
 		{
 			name: "No error",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+			},
 			args: args{
 				account: &armstorage.Account{
 					Properties: &armstorage.AccountProperties{
@@ -1180,8 +1162,8 @@ func Test_handleObjectStorage(t *testing.T) {
 			want: &voc.ObjectStorage{
 				Storage: &voc.Storage{
 					Resource: &voc.Resource{
-						ID: voc.ResourceID(containerID),
-						// ServiceID:    discovery.DefaultCloudServiceID,
+						ID:           voc.ResourceID(containerID),
+						ServiceID:    testutil.TestCloudService1,
 						Name:         containerName,
 						CreationTime: util.SafeTimestamp(&creationTime),
 						GeoLocation: voc.GeoLocation{
@@ -1219,10 +1201,6 @@ func Test_handleObjectStorage(t *testing.T) {
 }
 
 func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
-	var subID = "00000000-0000-0000-0000-000000000000"
-	sub := armsubscription.Subscription{
-		SubscriptionID: &subID,
-	}
 	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
 	accountID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"
 	accountName := "account1"
@@ -1230,7 +1208,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 	keySource := armstorage.KeySourceMicrosoftStorage
 
 	type fields struct {
-		azureDiscovery azureDiscovery
+		azureDiscovery *azureDiscovery
 	}
 	type args struct {
 		account *armstorage.Account
@@ -1245,9 +1223,8 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 		{
 			name: "Error list pages",
 			fields: fields{
-				azureDiscovery: azureDiscovery{
+				azureDiscovery: &azureDiscovery{
 					cred: nil,
-					sub:  sub,
 				},
 			},
 			args: args{
@@ -1263,15 +1240,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 		{
 			name: "No error",
 			fields: fields{
-				azureDiscovery: azureDiscovery{
-					cred: &mockAuthorizer{},
-					sub:  sub,
-					clientOptions: arm.ClientOptions{
-						ClientOptions: policy.ClientOptions{
-							Transport: mockStorageSender{},
-						},
-					},
-				},
+				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
 			},
 			args: args{
 				account: &armstorage.Account{
@@ -1290,8 +1259,8 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 				&voc.FileStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1",
-							// ServiceID:    discovery.DefaultCloudServiceID,
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1",
+							ServiceID:    testutil.TestCloudService1,
 							Name:         "fileshare1",
 							Type:         []string{"FileStorage", "Storage", "Resource"},
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -1311,8 +1280,8 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 				&voc.FileStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2",
-							// ServiceID:    discovery.DefaultCloudServiceID,
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2",
+							ServiceID:    testutil.TestCloudService1,
 							Name:         "fileshare2",
 							Type:         []string{"FileStorage", "Storage", "Resource"},
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -1351,10 +1320,6 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 }
 
 func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
-	var subID = "00000000-0000-0000-0000-000000000000"
-	sub := armsubscription.Subscription{
-		SubscriptionID: &subID,
-	}
 	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
 	accountID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"
 	accountName := "account1"
@@ -1362,7 +1327,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 	keySource := armstorage.KeySourceMicrosoftStorage
 
 	type fields struct {
-		azureDiscovery azureDiscovery
+		azureDiscovery *azureDiscovery
 	}
 	type args struct {
 		account *armstorage.Account
@@ -1377,9 +1342,8 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 		{
 			name: "Error list pages",
 			fields: fields{
-				azureDiscovery: azureDiscovery{
+				azureDiscovery: &azureDiscovery{
 					cred: nil,
-					sub:  sub,
 				},
 			},
 			args: args{
@@ -1395,15 +1359,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 		{
 			name: "No error",
 			fields: fields{
-				azureDiscovery: azureDiscovery{
-					cred: &mockAuthorizer{},
-					sub:  sub,
-					clientOptions: arm.ClientOptions{
-						ClientOptions: policy.ClientOptions{
-							Transport: mockStorageSender{},
-						},
-					},
-				},
+				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
 			},
 			args: args{
 				account: &armstorage.Account{
@@ -1422,8 +1378,8 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 				&voc.ObjectStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
-							// ServiceID:    discovery.DefaultCloudServiceID,
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
+							ServiceID:    testutil.TestCloudService1,
 							Name:         "container1",
 							Type:         []string{"ObjectStorage", "Storage", "Resource"},
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -1445,8 +1401,8 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 				&voc.ObjectStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2",
-							// ServiceID:    discovery.DefaultCloudServiceID,
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2",
+							ServiceID:    testutil.TestCloudService1,
 							Name:         "container2",
 							Type:         []string{"ObjectStorage", "Storage", "Resource"},
 							CreationTime: util.SafeTimestamp(&creationTime),

@@ -78,11 +78,12 @@ func (d k8sComputeDiscovery) List() ([]voc.IsCloudResource, error) {
 }
 
 // handlePod returns all existing pods
-func (k8sComputeDiscovery) handlePod(pod *v1.Pod) *voc.Container {
+func (d *k8sComputeDiscovery) handlePod(pod *v1.Pod) *voc.Container {
 	r := &voc.Container{
 		Compute: &voc.Compute{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(getContainerResourceID(pod)),
+				ServiceID:    d.CloudServiceID(),
 				Name:         pod.Name,
 				CreationTime: pod.CreationTimestamp.Unix(),
 				Type:         []string{"Container", "Compute", "Resource"},
@@ -104,8 +105,7 @@ func getContainerResourceID(pod *v1.Pod) string {
 }
 
 // handleVolume returns all volumes connected to a pod
-func (k8sComputeDiscovery) handlePodVolume(pod *v1.Pod) []voc.IsCloudResource {
-
+func (d *k8sComputeDiscovery) handlePodVolume(pod *v1.Pod) []voc.IsCloudResource {
 	var (
 		volumes []voc.IsCloudResource
 	)
@@ -116,6 +116,7 @@ func (k8sComputeDiscovery) handlePodVolume(pod *v1.Pod) []voc.IsCloudResource {
 		s := &voc.Storage{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(vol.Name), // The ID we have to get directly from the related storage
+				ServiceID:    d.CloudServiceID(),
 				Name:         vol.Name,
 				CreationTime: 0, // The CreationTime we have to get directly from the related storage
 				Type:         []string{"BlockStorage", "Storage", "Resource"},

@@ -44,19 +44,19 @@ var (
 )
 
 type azureStorageDiscovery struct {
-	azureDiscovery
+	*azureDiscovery
 }
 
 func NewAzureStorageDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureStorageDiscovery{
-		azureDiscovery: azureDiscovery{
+		&azureDiscovery{
 			discovererComponent: StorageComponent,
 		},
 	}
 
 	// Apply options
 	for _, opt := range opts {
-		opt(&d.azureDiscovery)
+		opt(d.azureDiscovery)
 	}
 
 	return d
@@ -384,18 +384,18 @@ func accountName(id string) string {
 
 // initAccountsClient creates the client if not already exists
 func (d *azureStorageDiscovery) initAccountsClient() (err error) {
-	d.clients.accountsClient, err = initClient(d.clients.accountsClient, &d.azureDiscovery, armstorage.NewAccountsClient)
+	d.clients.accountsClient, err = initClient(d.clients.accountsClient, d.azureDiscovery, armstorage.NewAccountsClient)
 	return
 }
 
 // initBlobContainerClient creates the client if not already exists
 func (d *azureStorageDiscovery) initBlobContainerClient() (err error) {
-	d.clients.blobContainerClient, err = initClient(d.clients.blobContainerClient, &d.azureDiscovery, armstorage.NewBlobContainersClient)
+	d.clients.blobContainerClient, err = initClient(d.clients.blobContainerClient, d.azureDiscovery, armstorage.NewBlobContainersClient)
 	return
 }
 
 // initFileStorageClient creates the client if not already exists
 func (d *azureStorageDiscovery) initFileStorageClient() (err error) {
-	d.clients.fileStorageClient, err = initClient(d.clients.fileStorageClient, &d.azureDiscovery, armstorage.NewFileSharesClient)
+	d.clients.fileStorageClient, err = initClient(d.clients.fileStorageClient, d.azureDiscovery, armstorage.NewFileSharesClient)
 	return
 }

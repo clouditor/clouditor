@@ -43,12 +43,12 @@ var (
 )
 
 type azureComputeDiscovery struct {
-	azureDiscovery
+	*azureDiscovery
 }
 
 func NewAzureComputeDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureComputeDiscovery{
-		azureDiscovery{
+		&azureDiscovery{
 			discovererComponent: ComputeComponent,
 			csi:                 discovery.DefaultCloudServiceID,
 		},
@@ -56,7 +56,7 @@ func NewAzureComputeDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 
 	// Apply options
 	for _, opt := range opts {
-		opt(&d.azureDiscovery)
+		opt(d.azureDiscovery)
 	}
 
 	return d
@@ -412,24 +412,24 @@ func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, erro
 
 // initFunctionsClient creates the client if not already exists
 func (d *azureComputeDiscovery) initFunctionsClient() (err error) {
-	d.clients.functionsClient, err = initClient(d.clients.functionsClient, &d.azureDiscovery, armappservice.NewWebAppsClient)
+	d.clients.functionsClient, err = initClient(d.clients.functionsClient, d.azureDiscovery, armappservice.NewWebAppsClient)
 	return
 }
 
 // initVirtualMachinesClient creates the client if not already exists
 func (d *azureComputeDiscovery) initVirtualMachinesClient() (err error) {
-	d.clients.virtualMachinesClient, err = initClient(d.clients.virtualMachinesClient, &d.azureDiscovery, armcompute.NewVirtualMachinesClient)
+	d.clients.virtualMachinesClient, err = initClient(d.clients.virtualMachinesClient, d.azureDiscovery, armcompute.NewVirtualMachinesClient)
 	return
 }
 
 // initBlockStoragesClient creates the client if not already exists
 func (d *azureComputeDiscovery) initBlockStoragesClient() (err error) {
-	d.clients.blockStorageClient, err = initClient(d.clients.blockStorageClient, &d.azureDiscovery, armcompute.NewDisksClient)
+	d.clients.blockStorageClient, err = initClient(d.clients.blockStorageClient, d.azureDiscovery, armcompute.NewDisksClient)
 	return
 }
 
 // initBlockStoragesClient creates the client if not already exists
 func (d *azureComputeDiscovery) initDiskEncryptonSetClient() (err error) {
-	d.clients.diskEncSetClient, err = initClient(d.clients.diskEncSetClient, &d.azureDiscovery, armcompute.NewDiskEncryptionSetsClient)
+	d.clients.diskEncSetClient, err = initClient(d.clients.diskEncSetClient, d.azureDiscovery, armcompute.NewDiskEncryptionSetsClient)
 	return
 }

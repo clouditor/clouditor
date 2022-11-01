@@ -37,19 +37,19 @@ import (
 )
 
 type azureNetworkDiscovery struct {
-	azureDiscovery
+	*azureDiscovery
 }
 
 func NewAzureNetworkDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureNetworkDiscovery{
-		azureDiscovery{
+		&azureDiscovery{
 			discovererComponent: NetworkComponent,
 		},
 	}
 
 	// Apply options
 	for _, opt := range opts {
-		opt(&d.azureDiscovery)
+		opt(d.azureDiscovery)
 	}
 
 	return d
@@ -288,12 +288,12 @@ func publicIPAddressFromLoadBalancer(lb *armnetwork.LoadBalancer) []string {
 
 // initNetworkInterfacesClient creates the client if not already exists
 func (d *azureNetworkDiscovery) initNetworkInterfacesClient() (err error) {
-	d.clients.networkInterfacesClient, err = initClient(d.clients.networkInterfacesClient, &d.azureDiscovery, armnetwork.NewInterfacesClient)
+	d.clients.networkInterfacesClient, err = initClient(d.clients.networkInterfacesClient, d.azureDiscovery, armnetwork.NewInterfacesClient)
 	return
 }
 
 // initLoadBalancersClient creates the client if not already exists
 func (d *azureNetworkDiscovery) initLoadBalancersClient() (err error) {
-	d.clients.loadBalancerClient, err = initClient(d.clients.loadBalancerClient, &d.azureDiscovery, armnetwork.NewLoadBalancersClient)
+	d.clients.loadBalancerClient, err = initClient(d.clients.loadBalancerClient, d.azureDiscovery, armnetwork.NewLoadBalancersClient)
 	return
 }

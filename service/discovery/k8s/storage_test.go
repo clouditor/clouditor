@@ -85,8 +85,8 @@ func Test_k8sStorageDiscovery_List(t *testing.T) {
 	expectedVolume := &voc.BlockStorage{
 		Storage: &voc.Storage{
 			Resource: &voc.Resource{
-				ID: voc.ResourceID(volumeUID),
-				//ServiceID:    discovery.DefaultCloudServiceID,
+				ID:           voc.ResourceID(volumeUID),
+				ServiceID:    testutil.TestCloudService1,
 				Name:         volumeName,
 				CreationTime: volume.CreationTime,
 				Type:         []string{"BlockStorage", "Storage", "Resource"},

@@ -35,6 +35,7 @@ import (
 	"net/http"
 	"testing"
 
+	"clouditor.io/clouditor/internal/testutil"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
@@ -306,5 +307,23 @@ func Test_initClient(t *testing.T) {
 			tt.wantErr(t, err)
 			tt.wantClient(t, gotClient)
 		})
+	}
+}
+
+func NewMockAzureDiscovery(transport policy.Transporter) *azureDiscovery {
+	var subID = "00000000-0000-0000-0000-000000000000"
+	sub := armsubscription.Subscription{
+		SubscriptionID: &subID,
+	}
+
+	return &azureDiscovery{
+		cred: &mockAuthorizer{},
+		sub:  sub,
+		clientOptions: arm.ClientOptions{
+			ClientOptions: policy.ClientOptions{
+				Transport: transport,
+			},
+		},
+		csi: testutil.TestCloudService1,
 	}
 }

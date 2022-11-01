@@ -38,7 +38,6 @@ import (
 )
 
 func TestListPods(t *testing.T) {
-
 	var (
 		volumeName      = "my-volume"
 		diskName        = "my-disk"
@@ -90,8 +89,8 @@ func TestListPods(t *testing.T) {
 	expectedContainer := &voc.Container{
 		Compute: &voc.Compute{
 			Resource: &voc.Resource{
-				ID: voc.ResourceID(podID),
-				//ServiceID:    discovery.DefaultCloudServiceID,
+				ID:           voc.ResourceID(podID),
+				ServiceID:    testutil.TestCloudService1,
 				Name:         podName,
 				CreationTime: podCreationTime.Unix(),
 				Type:         []string{"Container", "Compute", "Resource"},
@@ -112,8 +111,8 @@ func TestListPods(t *testing.T) {
 	expectedVolume := &voc.BlockStorage{
 		Storage: &voc.Storage{
 			Resource: &voc.Resource{
-				ID: voc.ResourceID(volumeName),
-				// ServiceID:    discovery.DefaultCloudServiceID,
+				ID:           voc.ResourceID(volumeName),
+				ServiceID:    testutil.TestCloudService1,
 				Name:         volumeName,
 				CreationTime: 0,
 				Type:         []string{"BlockStorage", "Storage", "Resource"},

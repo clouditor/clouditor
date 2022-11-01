@@ -34,6 +34,7 @@ import (
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/cli"
+	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/service"
 	service_discovery "clouditor.io/clouditor/service/discovery"
@@ -135,6 +136,10 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 	default:
 		return nil, nil
 	}
+}
+
+func (mockDiscoverer) CloudServiceID() string {
+	return testutil.TestCloudService1
 }
 
 func wrongFormattedResource() voc.IsCloudResource {
