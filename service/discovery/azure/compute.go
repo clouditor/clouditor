@@ -50,6 +50,7 @@ func NewAzureComputeDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureComputeDiscovery{
 		azureDiscovery{
 			discovererComponent: ComputeComponent,
+			csi:                 discovery.DefaultCloudServiceID,
 		},
 	}
 
@@ -134,8 +135,7 @@ func (d *azureComputeDiscovery) discoverFunctions() ([]voc.IsCloudResource, erro
 	return list, nil
 }
 
-func (*azureComputeDiscovery) handleFunction(function *armappservice.Site) voc.IsCompute {
-
+func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc.IsCompute {
 	// If a mandatory field is empty, the whole function is empty
 	if function == nil || function.ID == nil {
 		return nil
@@ -143,16 +143,17 @@ func (*azureComputeDiscovery) handleFunction(function *armappservice.Site) voc.I
 
 	return &voc.Function{
 		Compute: &voc.Compute{
-			Resource: &voc.Resource{
-				ID:           voc.ResourceID(util.Deref(function.ID)),
-				Name:         util.Deref(function.Name),
-				CreationTime: 0, // No creation time available
-				Type:         []string{"Function", "Compute", "Resource"},
-				GeoLocation: voc.GeoLocation{
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(util.Deref(function.ID)),
+				util.Deref(function.Name),
+				// No creation time available
+				nil,
+				voc.GeoLocation{
 					Region: util.Deref(function.Location),
 				},
-				Labels: labels(function.Tags),
-			},
+				labels(function.Tags),
+				voc.FunctionType,
+			),
 			NetworkInterfaces: []voc.ResourceID{},
 		},
 		RuntimeLanguage: "",
@@ -194,7 +195,7 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 	return list, nil
 }
 
-func (*azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {
+func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {
 	var bootLogging = []voc.ResourceID{}
 	var osLogging = []voc.ResourceID{}
 
@@ -209,16 +210,16 @@ func (*azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachin
 
 	r := &voc.VirtualMachine{
 		Compute: &voc.Compute{
-			Resource: &voc.Resource{
-				ID:           voc.ResourceID(util.Deref(vm.ID)),
-				Name:         util.Deref(vm.Name),
-				CreationTime: util.SafeTimestamp(vm.Properties.TimeCreated),
-				Type:         []string{"VirtualMachine", "Compute", "Resource"},
-				GeoLocation: voc.GeoLocation{
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(util.Deref(vm.ID)),
+				util.Deref(vm.Name),
+				vm.Properties.TimeCreated,
+				voc.GeoLocation{
 					Region: util.Deref(vm.Location),
 				},
-				Labels: labels(vm.Tags),
-			},
+				labels(vm.Tags),
+				voc.VirtualMachineType,
+			),
 			NetworkInterfaces: []voc.ResourceID{},
 		},
 		BlockStorage:      []voc.ResourceID{},
@@ -330,16 +331,16 @@ func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 
 	return &voc.BlockStorage{
 		Storage: &voc.Storage{
-			Resource: &voc.Resource{
-				ID:           voc.ResourceID(util.Deref(disk.ID)),
-				Name:         util.Deref(disk.Name),
-				CreationTime: disk.Properties.TimeCreated.Unix(),
-				Type:         []string{"BlockStorage", "Storage", "Resource"},
-				GeoLocation: voc.GeoLocation{
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(util.Deref(disk.ID)),
+				util.Deref(disk.Name),
+				disk.Properties.TimeCreated,
+				voc.GeoLocation{
 					Region: util.Deref(disk.Location),
 				},
-				Labels: labels(disk.Tags),
-			},
+				labels(disk.Tags),
+				voc.BlockStorageType,
+			),
 			AtRestEncryption: enc,
 		},
 	}, nil

@@ -38,8 +38,8 @@ import (
 
 type k8sComputeDiscovery struct{ k8sDiscovery }
 
-func NewKubernetesComputeDiscovery(intf kubernetes.Interface) discovery.Discoverer {
-	return &k8sComputeDiscovery{k8sDiscovery{intf}}
+func NewKubernetesComputeDiscovery(intf kubernetes.Interface, cloudServiceID string) discovery.Discoverer {
+	return &k8sComputeDiscovery{k8sDiscovery{intf, cloudServiceID}}
 }
 
 func (*k8sComputeDiscovery) Name() string {
@@ -97,7 +97,6 @@ func (k8sComputeDiscovery) handlePod(pod *v1.Pod) *voc.Container {
 	r.NetworkInterfaces = append(r.NetworkInterfaces, voc.ResourceID(pod.Namespace))
 
 	return r
-
 }
 
 func getContainerResourceID(pod *v1.Pod) string {

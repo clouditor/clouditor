@@ -511,6 +511,10 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 	}
 }
 
+func (mockDiscoverer) CloudServiceID() string {
+	return testutil.TestCloudService1
+}
+
 func wrongFormattedResource() voc.IsCloudResource {
 	res1 := mockIsCloudResource{Another: nil}
 	res2 := mockIsCloudResource{Another: &res1}
@@ -609,7 +613,7 @@ func (mockIsCloudResource) GetServiceID() string {
 	return "MockServiceId"
 }
 
-func (mockIsCloudResource) SetServiceID(ID string) {
+func (mockIsCloudResource) SetServiceID(_ string) {
 
 }
 

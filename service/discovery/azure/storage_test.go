@@ -33,6 +33,7 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
@@ -597,6 +598,8 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 }
 
 func TestStorageHandleMethodsWhenInputIsInvalid(t *testing.T) {
+	d := azureStorageDiscovery{azureDiscovery{csi: testutil.TestCloudService1}}
+
 	// Get mocked armstorage.Account
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"
 	mockedStorageAccountObject, err := mockedStorageAccount(reqURL)
@@ -606,13 +609,13 @@ func TestStorageHandleMethodsWhenInputIsInvalid(t *testing.T) {
 
 	// Test method handleObjectStorage
 	containerItem := armstorage.ListContainerItem{}
-	handleObjectStorageRespone, err := handleObjectStorage(mockedStorageAccountObject, &containerItem)
+	handleObjectStorageRespone, err := d.handleObjectStorage(mockedStorageAccountObject, &containerItem)
 	assert.Error(t, err)
 	assert.Nil(t, handleObjectStorageRespone)
 
 	// Test method handleFileStorage
 	fileShare := &armstorage.FileShareItem{}
-	handleFileStorageRespone, err := handleFileStorage(mockedStorageAccountObject, fileShare)
+	handleFileStorageRespone, err := d.handleFileStorage(mockedStorageAccountObject, fileShare)
 	assert.Error(t, err)
 	assert.Nil(t, handleFileStorageRespone)
 }
@@ -860,12 +863,16 @@ func Test_handleFileStorage(t *testing.T) {
 	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
 	keySource := armstorage.KeySourceMicrosoftStorage
 
+	type fields struct {
+		azureDiscovery azureDiscovery
+	}
 	type args struct {
 		account   *armstorage.Account
 		fileshare *armstorage.FileShareItem
 	}
 	tests := []struct {
 		name    string
+		fields  fields
 		args    args
 		want    *voc.FileStorage
 		wantErr assert.ErrorAssertionFunc
@@ -948,7 +955,11 @@ func Test_handleFileStorage(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := handleFileStorage(tt.args.account, tt.args.fileshare)
+			d := &azureStorageDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+			}
+
+			got, err := d.handleFileStorage(tt.args.account, tt.args.fileshare)
 			if !tt.wantErr(t, err, fmt.Sprintf("handleFileStorage(%v, %v)", tt.args.account, tt.args.fileshare)) {
 				return
 			}
@@ -1097,12 +1108,16 @@ func Test_handleObjectStorage(t *testing.T) {
 	immutability := false
 	publicAccess := armstorage.PublicAccessNone
 
+	type fields struct {
+		azureDiscovery azureDiscovery
+	}
 	type args struct {
 		account   *armstorage.Account
 		container *armstorage.ListContainerItem
 	}
 	tests := []struct {
 		name    string
+		fields  fields
 		args    args
 		want    *voc.ObjectStorage
 		wantErr assert.ErrorAssertionFunc
@@ -1190,7 +1205,11 @@ func Test_handleObjectStorage(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := handleObjectStorage(tt.args.account, tt.args.container)
+			d := &azureStorageDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+			}
+
+			got, err := d.handleObjectStorage(tt.args.account, tt.args.container)
 			if !tt.wantErr(t, err, fmt.Sprintf("handleObjectStorage(%v, %v)", tt.args.account, tt.args.container)) {
 				return
 			}

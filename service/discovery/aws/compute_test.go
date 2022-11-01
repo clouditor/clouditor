@@ -474,6 +474,7 @@ func TestComputeDiscovery_NewComputeDiscovery(t *testing.T) {
 
 	type args struct {
 		client *Client
+		csi    string
 	}
 	mockClient := &Client{
 		cfg: aws.Config{
@@ -487,7 +488,7 @@ func TestComputeDiscovery_NewComputeDiscovery(t *testing.T) {
 		want discovery.Discoverer
 	}{
 		{
-			args: args{client: mockClient},
+			args: args{client: mockClient, csi: discovery.DefaultCloudServiceID},
 			want: &computeDiscovery{
 				virtualMachineAPI: &ec2.Client{},
 				functionAPI:       &lambda.Client{},
@@ -498,7 +499,7 @@ func TestComputeDiscovery_NewComputeDiscovery(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewAwsComputeDiscovery(tt.args.client); !reflect.DeepEqual(got, tt.want) {
+			if got := NewAwsComputeDiscovery(tt.args.client, tt.args.csi); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewAwsComputeDiscovery() = %v, want %v", got, tt.want)
 			}
 		})

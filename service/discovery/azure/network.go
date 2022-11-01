@@ -152,20 +152,21 @@ func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, e
 	return list, nil
 }
 
-func (*azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) voc.IsNetwork {
+func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) voc.IsNetwork {
 	return &voc.LoadBalancer{
 		NetworkService: &voc.NetworkService{
 			Networking: &voc.Networking{
-				Resource: &voc.Resource{
-					ID:           voc.ResourceID(util.Deref(lb.ID)),
-					Name:         util.Deref(lb.Name),
-					CreationTime: 0, // No creation time available
-					Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
-					GeoLocation: voc.GeoLocation{
+				Resource: discovery.NewResource(d,
+					voc.ResourceID(util.Deref(lb.ID)),
+					util.Deref(lb.Name),
+					// No creation time available
+					nil,
+					voc.GeoLocation{
 						Region: util.Deref(lb.Location),
 					},
-					Labels: labels(lb.Tags),
-				},
+					labels(lb.Tags),
+					voc.LoadBalancerType,
+				),
 			},
 			Ips:   publicIPAddressFromLoadBalancer(lb),
 			Ports: LoadBalancerPorts(lb),
@@ -177,19 +178,20 @@ func (*azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) vo
 	}
 }
 
-func (*azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface) voc.IsNetwork {
+func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface) voc.IsNetwork {
 	return &voc.NetworkInterface{
 		Networking: &voc.Networking{
-			Resource: &voc.Resource{
-				ID:           voc.ResourceID(util.Deref(ni.ID)),
-				Name:         util.Deref(ni.Name),
-				CreationTime: 0, // No creation time available
-				Type:         []string{"NetworkInterface", "Compute", "Resource"},
-				GeoLocation: voc.GeoLocation{
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(util.Deref(ni.ID)),
+				util.Deref(ni.Name),
+				// No creation time available
+				nil,
+				voc.GeoLocation{
 					Region: util.Deref(ni.Location),
 				},
-				Labels: labels(ni.Tags),
-			},
+				labels(ni.Tags),
+				voc.NetworkInterfaceType,
+			),
 		},
 
 		// AccessRestriction: &voc.AccessRestriction{

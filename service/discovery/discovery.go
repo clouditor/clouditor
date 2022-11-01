@@ -247,9 +247,9 @@ func (svc *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest)
 			discoverer = append(discoverer,
 				// For now, we do not want to discover the ARM template
 				// azure.NewAzureARMTemplateDiscovery(azure.WithAuthorizer(authorizer)),
-				azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
-				azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
-				azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)))
+				azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csi)),
+				azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csi)),
+				azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csi)))
 		case provider == ProviderK8S:
 			k8sClient, err := k8s.AuthFromKubeConfig()
 			if err != nil {
@@ -257,9 +257,9 @@ func (svc *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest)
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Kubernetes: %v", err)
 			}
 			discoverer = append(discoverer,
-				k8s.NewKubernetesComputeDiscovery(k8sClient),
-				k8s.NewKubernetesNetworkDiscovery(k8sClient),
-				k8s.NewKubernetesStorageDiscovery(k8sClient))
+				k8s.NewKubernetesComputeDiscovery(k8sClient, svc.csi),
+				k8s.NewKubernetesNetworkDiscovery(k8sClient, svc.csi),
+				k8s.NewKubernetesStorageDiscovery(k8sClient, svc.csi))
 		case provider == ProviderAWS:
 			awsClient, err := aws.NewClient()
 			if err != nil {
@@ -267,8 +267,8 @@ func (svc *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest)
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to AWS: %v", err)
 			}
 			discoverer = append(discoverer,
-				aws.NewAwsStorageDiscovery(awsClient),
-				aws.NewAwsComputeDiscovery(awsClient))
+				aws.NewAwsStorageDiscovery(awsClient, svc.csi),
+				aws.NewAwsComputeDiscovery(awsClient, svc.csi))
 		default:
 			newError := fmt.Errorf("provider %s not known", provider)
 			log.Error(newError)

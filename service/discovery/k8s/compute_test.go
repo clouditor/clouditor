@@ -29,6 +29,7 @@ import (
 	"context"
 	"testing"
 
+	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
@@ -75,7 +76,7 @@ func TestListPods(t *testing.T) {
 		t.Fatalf("error injecting pod add: %v", err)
 	}
 
-	d := NewKubernetesComputeDiscovery(client)
+	d := NewKubernetesComputeDiscovery(client, testutil.TestCloudService1)
 
 	list, err := d.List()
 

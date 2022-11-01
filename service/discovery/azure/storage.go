@@ -158,7 +158,7 @@ func (d *azureStorageDiscovery) discoverFileStorages(account *armstorage.Account
 		}
 
 		for _, value := range pageResponse.Value {
-			fileStorages, err := handleFileStorage(account, value)
+			fileStorages, err := d.handleFileStorage(account, value)
 			if err != nil {
 				return nil, fmt.Errorf("could not handle file storage: %w", err)
 			}
@@ -185,7 +185,7 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 		}
 
 		for _, value := range pageResponse.Value {
-			objectStorages, err := handleObjectStorage(account, value)
+			objectStorages, err := d.handleObjectStorage(account, value)
 			if err != nil {
 				return nil, fmt.Errorf("could not handle object storage: %w", err)
 			}
@@ -198,7 +198,7 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 	return list, nil
 }
 
-func handleObjectStorage(account *armstorage.Account, container *armstorage.ListContainerItem) (*voc.ObjectStorage, error) {
+func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account, container *armstorage.ListContainerItem) (*voc.ObjectStorage, error) {
 	if account == nil {
 		return nil, ErrEmptyStorageAccount
 	}
@@ -215,16 +215,19 @@ func handleObjectStorage(account *armstorage.Account, container *armstorage.List
 
 	return &voc.ObjectStorage{
 		Storage: &voc.Storage{
-			Resource: &voc.Resource{
-				ID:           voc.ResourceID(util.Deref(container.ID)),
-				Name:         util.Deref(container.Name),
-				CreationTime: account.Properties.CreationTime.Unix(),
-				Type:         []string{"ObjectStorage", "Storage", "Resource"},
-				GeoLocation: voc.GeoLocation{
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(util.Deref(container.ID)),
+				util.Deref(container.Name),
+				// We only have the creation time of the storage account the object storage belongs to
+				account.Properties.CreationTime,
+				voc.GeoLocation{
+					// The location is the same as the storage account
 					Region: util.Deref(account.Location),
 				},
-				Labels: labels(account.Tags), // the storage account labels the object storage belongs to
-			},
+				// The storage account labels the object storage belongs to
+				labels(account.Tags),
+				voc.ObjectStorageType,
+			),
 			AtRestEncryption: enc,
 			Immutability: &voc.Immutability{
 				Enabled: util.Deref(container.Properties.HasImmutabilityPolicy),
@@ -234,7 +237,7 @@ func handleObjectStorage(account *armstorage.Account, container *armstorage.List
 	}, nil
 }
 
-func (*azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, storagesList []voc.IsCloudResource) (*voc.ObjectStorageService, error) {
+func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, storagesList []voc.IsCloudResource) (*voc.ObjectStorageService, error) {
 	var storageResourceIDs []voc.ResourceID
 
 	if account == nil {
@@ -260,16 +263,16 @@ func (*azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, 
 			Storage: storageResourceIDs,
 			NetworkService: &voc.NetworkService{
 				Networking: &voc.Networking{
-					Resource: &voc.Resource{
-						ID:           voc.ResourceID(util.Deref(account.ID)),
-						Name:         util.Deref(account.Name),
-						CreationTime: account.Properties.CreationTime.Unix(),
-						Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
-						GeoLocation: voc.GeoLocation{
+					Resource: discovery.NewResource(d,
+						voc.ResourceID(util.Deref(account.ID)),
+						util.Deref(account.Name),
+						account.Properties.CreationTime,
+						voc.GeoLocation{
 							Region: util.Deref(account.Location),
 						},
-						Labels: labels(account.Tags),
-					},
+						labels(account.Tags),
+						voc.StorageServiceType,
+					),
 				},
 				TransportEncryption: te,
 			},
@@ -296,7 +299,7 @@ func generalizeURL(url string) string {
 	return newURL
 }
 
-func handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileShareItem) (*voc.FileStorage, error) {
+func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileShareItem) (*voc.FileStorage, error) {
 	if account == nil {
 		return nil, ErrEmptyStorageAccount
 	}
@@ -313,16 +316,19 @@ func handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileSh
 
 	return &voc.FileStorage{
 		Storage: &voc.Storage{
-			Resource: &voc.Resource{
-				ID:           voc.ResourceID(util.Deref(fileshare.ID)),
-				Name:         util.Deref(fileshare.Name),
-				CreationTime: account.Properties.CreationTime.Unix(),
-				Type:         []string{"FileStorage", "Storage", "Resource"},
-				GeoLocation: voc.GeoLocation{
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(util.Deref(fileshare.ID)),
+				util.Deref(fileshare.Name),
+				// We only have the creation time of the storage account the file storage belongs to
+				account.Properties.CreationTime,
+				voc.GeoLocation{
+					// The location is the same as the storage account
 					Region: util.Deref(account.Location),
 				},
-				Labels: labels(account.Tags), // the storage account labels the file storage belongs to
-			},
+				// The storage account labels the file storage belongs to
+				labels(account.Tags),
+				voc.FileStorageType,
+			),
 			AtRestEncryption: enc,
 		},
 	}, nil

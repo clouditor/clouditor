@@ -75,6 +75,12 @@ func WithAuthorizer(authorizer azcore.TokenCredential) DiscoveryOption {
 	}
 }
 
+func WithCloudServiceID(csi string) DiscoveryOption {
+	return func(a *azureDiscovery) {
+		a.csi = csi
+	}
+}
+
 func init() {
 	log = logrus.WithField("component", "azure-discovery")
 }
@@ -87,6 +93,7 @@ type azureDiscovery struct {
 	clientOptions       arm.ClientOptions
 	discovererComponent string
 	clients             clients
+	csi                 string
 }
 
 type clients struct {
@@ -99,6 +106,10 @@ type clients struct {
 	virtualMachinesClient   *armcompute.VirtualMachinesClient
 	blockStorageClient      *armcompute.DisksClient
 	diskEncSetClient        *armcompute.DiskEncryptionSetsClient
+}
+
+func (a *azureDiscovery) CloudServiceID() string {
+	return a.csi
 }
 
 func (a *azureDiscovery) authorize() (err error) {
