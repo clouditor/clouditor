@@ -58,11 +58,12 @@ func TestMain(m *testing.M) {
 	// Store an assessment result so that output of CMD 'list' is not empty
 	_, err = svc.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
 		Result: &assessment.AssessmentResult{
-			Id:         "11111111-1111-1111-1111-111111111111",
-			MetricId:   "assessmentResultMetricID",
-			EvidenceId: "11111111-1111-1111-1111-111111111111",
-			Timestamp:  timestamppb.Now(),
-			ResourceId: "myResource",
+			Id:            "11111111-1111-1111-1111-111111111111",
+			MetricId:      "assessmentResultMetricID",
+			EvidenceId:    "11111111-1111-1111-1111-111111111111",
+			Timestamp:     timestamppb.Now(),
+			ResourceId:    "myResource",
+			ResourceTypes: []string{"ResourceType"},
 			MetricConfiguration: &assessment.MetricConfiguration{
 				TargetValue: toStruct(1.0),
 				Operator:    "operator",
