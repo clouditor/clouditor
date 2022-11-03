@@ -356,7 +356,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
 							ServiceID:    testutil.TestCloudService1,
 							Name:         "container1",
-							Type:         []string{"ObjectStorage", "Storage", "Resource"},
+							Type:         voc.ObjectStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
 							Labels:       map[string]string{},
 							GeoLocation: voc.GeoLocation{
@@ -379,7 +379,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2",
 							ServiceID:    testutil.TestCloudService1,
 							Name:         "container2",
-							Type:         []string{"ObjectStorage", "Storage", "Resource"},
+							Type:         voc.ObjectStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
 							Labels:       map[string]string{},
 							GeoLocation: voc.GeoLocation{
@@ -402,7 +402,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1",
 							ServiceID:    testutil.TestCloudService1,
 							Name:         "fileshare1",
-							Type:         []string{"FileStorage", "Storage", "Resource"},
+							Type:         voc.FileStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
 							Labels:       map[string]string{},
 							GeoLocation: voc.GeoLocation{
@@ -423,7 +423,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2",
 							ServiceID:    testutil.TestCloudService1,
 							Name:         "fileshare2",
-							Type:         []string{"FileStorage", "Storage", "Resource"},
+							Type:         voc.FileStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
 							Labels:       map[string]string{},
 							GeoLocation: voc.GeoLocation{
@@ -452,7 +452,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
 									ServiceID:    testutil.TestCloudService1,
 									Name:         "account1",
-									Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
+									Type:         voc.StorageServiceType,
 									CreationTime: util.SafeTimestamp(&creationTime),
 									Labels:       map[string]string{},
 									GeoLocation: voc.GeoLocation{
@@ -484,7 +484,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container3",
 							ServiceID:    testutil.TestCloudService1,
 							Name:         "container3",
-							Type:         []string{"ObjectStorage", "Storage", "Resource"},
+							Type:         voc.ObjectStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
 							Labels:       map[string]string{},
 							GeoLocation: voc.GeoLocation{
@@ -508,7 +508,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container4",
 							ServiceID:    testutil.TestCloudService1,
 							Name:         "container4",
-							Type:         []string{"ObjectStorage", "Storage", "Resource"},
+							Type:         voc.ObjectStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
 							Labels:       map[string]string{},
 							GeoLocation: voc.GeoLocation{
@@ -538,7 +538,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2",
 									ServiceID:    testutil.TestCloudService1,
 									Name:         "account2",
-									Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
+									Type:         voc.StorageServiceType,
 									CreationTime: util.SafeTimestamp(&creationTime),
 									Labels:       map[string]string{},
 									GeoLocation: voc.GeoLocation{
@@ -916,7 +916,7 @@ func Test_handleFileStorage(t *testing.T) {
 							Region: accountRegion,
 						},
 						Labels: map[string]string{},
-						Type:   []string{"FileStorage", "Storage", "Resource"},
+						Type:   voc.FileStorageType,
 					},
 					AtRestEncryption: &voc.ManagedKeyEncryption{
 						AtRestEncryption: &voc.AtRestEncryption{
@@ -1035,7 +1035,7 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 								ServiceID:    testutil.TestCloudService1,
 								Name:         accountName,
 								CreationTime: util.SafeTimestamp(&creationTime),
-								Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
+								Type:         voc.StorageServiceType,
 								GeoLocation: voc.GeoLocation{
 									Region: accountRegion,
 								},
@@ -1170,7 +1170,7 @@ func Test_handleObjectStorage(t *testing.T) {
 							Region: accountRegion,
 						},
 						Labels: map[string]string{},
-						Type:   []string{"ObjectStorage", "Storage", "Resource"},
+						Type:   voc.ObjectStorageType,
 					},
 					AtRestEncryption: &voc.ManagedKeyEncryption{
 						AtRestEncryption: &voc.AtRestEncryption{
@@ -1262,7 +1262,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1",
 							ServiceID:    testutil.TestCloudService1,
 							Name:         "fileshare1",
-							Type:         []string{"FileStorage", "Storage", "Resource"},
+							Type:         voc.FileStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
 							Labels:       map[string]string{},
 							GeoLocation: voc.GeoLocation{
@@ -1283,7 +1283,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2",
 							ServiceID:    testutil.TestCloudService1,
 							Name:         "fileshare2",
-							Type:         []string{"FileStorage", "Storage", "Resource"},
+							Type:         voc.FileStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
 							Labels:       map[string]string{},
 							GeoLocation: voc.GeoLocation{
@@ -1381,7 +1381,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
 							ServiceID:    testutil.TestCloudService1,
 							Name:         "container1",
-							Type:         []string{"ObjectStorage", "Storage", "Resource"},
+							Type:         voc.ObjectStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
 							Labels:       map[string]string{},
 							GeoLocation: voc.GeoLocation{
@@ -1404,7 +1404,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2",
 							ServiceID:    testutil.TestCloudService1,
 							Name:         "container2",
-							Type:         []string{"ObjectStorage", "Storage", "Resource"},
+							Type:         voc.ObjectStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
 							Labels:       map[string]string{},
 							GeoLocation: voc.GeoLocation{

@@ -168,14 +168,3 @@ type IsCompute interface {
 type IsNetwork interface {
 	IsCloudResource
 }
-
-// TODO: auto-generate those
-var BlockStorageType = []string{"BlockStorage", "Storage", "Resource"}
-var ObjectStorageType = []string{"ObjectStorage", "Storage", "Resource"}
-var FileStorageType = []string{"FileStorage", "Storage", "Resource"}
-var VirtualMachineType = []string{"VirtualMachine", "Compute", "Resource"}
-var FunctionType = []string{"Function", "Compute", "Resource"}
-var StorageServiceType = []string{"StorageService", "NetworkService", "Networking", "Resource"}
-var ObjectStorageServiceType = []string{"StorageService", "NetworkService", "Networking", "Resource"}
-var LoadBalancerType = []string{"LoadBalancer", "NetworkService", "Networking", "Resource"}
-var NetworkInterfaceType = []string{"NetworkInterface", "Networking", "Resource"}

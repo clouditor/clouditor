@@ -27,7 +27,7 @@
 
 package voc
 
-var ObjectStorageType = []string{"BlockStorage", "Storage", "Resource"}
+var ObjectStorageType = []string{"ObjectStorage", "Storage", "Resource"}
 
 type ObjectStorage struct {
 	*Storage
