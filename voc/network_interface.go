@@ -27,6 +27,8 @@
 
 package voc
 
+var NetworkInterface = []string{"NetworkInterface", "Compute", "Resource"}
+
 type NetworkInterface struct {
 	*Networking
 	NetworkService    ResourceID         `json:"networkService"`

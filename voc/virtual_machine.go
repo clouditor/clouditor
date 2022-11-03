@@ -27,6 +27,8 @@
 
 package voc
 
+var VirtualMachineType = []string{"VirtualMachine", "Compute", "Resource"}
+
 type VirtualMachine struct {
 	*Compute
 	BlockStorage      []ResourceID       `json:"blockStorage"`

@@ -27,6 +27,8 @@
 
 package voc
 
+var ObjectStorageType = []string{"BlockStorage", "Storage", "Resource"}
+
 type ObjectStorage struct {
 	*Storage
 	// TODO(oxisto): This is a little bit of a hack. We actually want to use
@@ -34,5 +36,6 @@ type ObjectStorage struct {
 	// possible since Authenticity is only on the StorageService. But in Azure,
 	// a StorageService is only created for the storage account, not the
 	// individual container.
+
 	PublicAccess bool `json:"publicAccess"`
 }

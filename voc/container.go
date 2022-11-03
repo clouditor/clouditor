@@ -27,6 +27,8 @@
 
 package voc
 
+var ContainerType = []string{"Container", "Compute", "Resource"}
+
 type Container struct {
 	*Compute
 	Image ResourceID `json:"image"`
