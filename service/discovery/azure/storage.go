@@ -271,7 +271,7 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 							Region: util.Deref(account.Location),
 						},
 						labels(account.Tags),
-						voc.StorageServiceType,
+						voc.ObjectStorageServiceType,
 					),
 				},
 				TransportEncryption: te,

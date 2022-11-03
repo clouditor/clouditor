@@ -491,9 +491,9 @@ func TestAwsS3Discovery_List(t *testing.T) {
 	log.Println("Testing type of resource", 1)
 	assert.True(t, resources[0].HasType("ObjectStorage"))
 
-	// Check second element: voc.StorageService
+	// Check second element: voc.ObjectStorageService
 	log.Println("Testing name for resource (bucket)", 2)
 	assert.Equal(t, expectedResourceNames[0], resources[1].GetName())
 	log.Println("Testing type of resource", 2)
-	assert.True(t, resources[1].HasType("StorageService"))
+	assert.True(t, resources[1].HasType("ObjectStorageService"))
 }

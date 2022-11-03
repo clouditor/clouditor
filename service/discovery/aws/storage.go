@@ -158,7 +158,7 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 								&b.creationTime,
 								voc.GeoLocation{Region: b.region},
 								nil,
-								voc.StorageServiceType,
+								voc.ObjectStorageServiceType,
 							),
 						},
 						TransportEncryption: encryptionAtTransmit,

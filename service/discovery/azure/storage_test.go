@@ -452,7 +452,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
 									ServiceID:    testutil.TestCloudService1,
 									Name:         "account1",
-									Type:         voc.StorageServiceType,
+									Type:         voc.ObjectStorageServiceType,
 									CreationTime: util.SafeTimestamp(&creationTime),
 									Labels:       map[string]string{},
 									GeoLocation: voc.GeoLocation{
@@ -538,7 +538,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2",
 									ServiceID:    testutil.TestCloudService1,
 									Name:         "account2",
-									Type:         voc.StorageServiceType,
+									Type:         voc.ObjectStorageServiceType,
 									CreationTime: util.SafeTimestamp(&creationTime),
 									Labels:       map[string]string{},
 									GeoLocation: voc.GeoLocation{
@@ -1035,7 +1035,7 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 								ServiceID:    testutil.TestCloudService1,
 								Name:         accountName,
 								CreationTime: util.SafeTimestamp(&creationTime),
-								Type:         voc.StorageServiceType,
+								Type:         voc.ObjectStorageServiceType,
 								GeoLocation: voc.GeoLocation{
 									Region: accountRegion,
 								},
