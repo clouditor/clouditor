@@ -27,6 +27,8 @@
 
 package voc
 
+var RoleAssignmentType = []string{"RoleAssignment", "Identifiable", "Resource"}
+
 type RoleAssignment struct {
 	*Identifiable
 }

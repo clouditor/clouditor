@@ -27,6 +27,8 @@
 
 package voc
 
+var NetworkSecurityGroupType = []string{"NetworkSecurityGroup", "Networking", "Resource"}
+
 type NetworkSecurityGroup struct {
 	*Networking
 }

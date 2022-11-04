@@ -27,7 +27,7 @@
 
 package voc
 
-var LoadBalancerType = []string{"LoadBalancer", "NetworkService", "Resource"}
+var LoadBalancerType = []string{"LoadBalancer", "NetworkService", "Networking", "Resource"}
 
 // LoadBalancer is an entity in our Cloud ontology. A Load Balancer may have multiple access restriction features, e.g. a L3 firewall and a WAF
 type LoadBalancer struct {

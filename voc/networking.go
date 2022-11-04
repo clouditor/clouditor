@@ -27,6 +27,8 @@
 
 package voc
 
+var NetworkingType = []string{"Networking", "Resource"}
+
 type Networking struct {
 	*Resource
 }

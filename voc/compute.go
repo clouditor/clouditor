@@ -27,6 +27,8 @@
 
 package voc
 
+var ComputeType = []string{"Compute", "Resource"}
+
 type Compute struct {
 	*Resource
 	NetworkInterfaces []ResourceID `json:"networkInterfaces"`

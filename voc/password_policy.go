@@ -27,6 +27,8 @@
 
 package voc
 
+var PasswordPolicyType = []string{"PasswordPolicy", "Resource"}
+
 type PasswordPolicy struct {
 	*Resource
 }

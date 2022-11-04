@@ -27,7 +27,7 @@
 
 package voc
 
-var NetworkInterfaceType = []string{"NetworkInterface", "Compute", "Resource"}
+var NetworkInterfaceType = []string{"NetworkInterface", "Networking", "Resource"}
 
 type NetworkInterface struct {
 	*Networking

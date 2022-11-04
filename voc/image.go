@@ -27,6 +27,8 @@
 
 package voc
 
+var ImageType = []string{"Image", "Resource"}
+
 type Image struct {
 	*Resource
 	Application *Application `json:"application"`

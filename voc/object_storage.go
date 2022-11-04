@@ -36,6 +36,5 @@ type ObjectStorage struct {
 	// possible since Authenticity is only on the StorageService. But in Azure,
 	// a StorageService is only created for the storage account, not the
 	// individual container.
-
 	PublicAccess bool `json:"publicAccess"`
 }

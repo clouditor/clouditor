@@ -27,6 +27,8 @@
 
 package voc
 
+var ContainerImageType = []string{"Container Image", "Image", "Resource"}
+
 type ContainerImage struct {
 	*Image
 }

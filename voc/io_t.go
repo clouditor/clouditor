@@ -27,6 +27,8 @@
 
 package voc
 
+var IoTType = []string{"IoT", "Resource"}
+
 type IoT struct {
 	*Resource
 }
