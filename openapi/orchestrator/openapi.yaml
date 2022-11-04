@@ -222,7 +222,7 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Lists all target catalogs
+            description: Lists all target catalogs with the category level
             operationId: Orchestrator_ListCatalogs
             parameters:
                 - name: pageSize
@@ -283,7 +283,7 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Retrieves a catalog
+            description: Retrieves a catalog with the category and the first control level
             operationId: Orchestrator_GetCatalog
             parameters:
                 - name: catalogId
@@ -359,7 +359,7 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Retrieves a Control
+            description: Retrieves a Control with the second control lavel and metrics.
             operationId: Orchestrator_GetControl
             parameters:
                 - name: catalogId
@@ -394,7 +394,7 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Retrieves a Category
+            description: Retrieves a Category with the first control level.
             operationId: Orchestrator_GetCategory
             parameters:
                 - name: catalogId
@@ -885,7 +885,7 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Lists all Controls (optionally only controls related to a certain category)
+            description: Lists all Controls (optionally only controls related to a certain category) with the second controls level.
             operationId: Orchestrator_ListControls
             parameters:
                 - name: pageSize
