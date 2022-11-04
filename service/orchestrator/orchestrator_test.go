@@ -129,6 +129,7 @@ func TestAssessmentResultHook(t *testing.T) {
 						NonComplianceComments: "non_compliance_comment",
 						Compliant:             true,
 						ResourceId:            "resourceID",
+						ResourceTypes:         []string{"ResourceType"},
 					},
 				},
 			},
@@ -190,6 +191,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 						NonComplianceComments: "non_compliance_comment",
 						Compliant:             true,
 						ResourceId:            "resourceID",
+						ResourceTypes:         []string{"ResourceType"},
 					},
 				},
 			},
@@ -215,6 +217,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 						NonComplianceComments: "non_compliance_comment",
 						Compliant:             true,
 						ResourceId:            "resourceID",
+						ResourceTypes:         []string{"ResourceType"},
 					},
 				},
 			},
@@ -394,6 +397,7 @@ func createStoreAssessmentResultRequestsMock(count int) []*orchestrator.StoreAss
 				NonComplianceComments: "non_compliance_comment",
 				Compliant:             true,
 				ResourceId:            "resourceID",
+				ResourceTypes:         []string{"ResourceType"},
 			},
 		}
 
