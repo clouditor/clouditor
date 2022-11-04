@@ -81,17 +81,15 @@ func (d k8sComputeDiscovery) List() ([]voc.IsCloudResource, error) {
 func (d *k8sComputeDiscovery) handlePod(pod *v1.Pod) *voc.Container {
 	r := &voc.Container{
 		Compute: &voc.Compute{
-			Resource: &voc.Resource{
-				ID:           voc.ResourceID(getContainerResourceID(pod)),
-				ServiceID:    d.CloudServiceID(),
-				Name:         pod.Name,
-				CreationTime: pod.CreationTimestamp.Unix(),
-				Type:         []string{"Container", "Compute", "Resource"},
-				GeoLocation: voc.GeoLocation{
-					Region: "", // TODO(all) Add region to k8s container
-				},
-				Labels: pod.Labels,
-			},
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(getContainerResourceID(pod)),
+				pod.Name,
+				&pod.CreationTimestamp.Time,
+				// TODO(all): Add region to k8s container
+				voc.GeoLocation{},
+				pod.Labels,
+				voc.ContainerType,
+			),
 		},
 	}
 
@@ -114,14 +112,14 @@ func (d *k8sComputeDiscovery) handlePodVolume(pod *v1.Pod) []voc.IsCloudResource
 	// TODO(all): The ID, region, label and atRestEncryption information we have to get directly from the related storage, but I think we do not have credentials for the other providers in Clouditor?
 	for _, vol := range pod.Spec.Volumes {
 		s := &voc.Storage{
-			Resource: &voc.Resource{
-				ID:           voc.ResourceID(vol.Name), // The ID we have to get directly from the related storage
-				ServiceID:    d.CloudServiceID(),
-				Name:         vol.Name,
-				CreationTime: 0, // The CreationTime we have to get directly from the related storage
-				Type:         []string{"BlockStorage", "Storage", "Resource"},
-				Labels:       nil, // anatheka: As I understand it, there are no labels for the volume here, we have to get that from the related storage directly. But we could take the pod labels to which the volume is assigned. I think that makes more sense.
-			},
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(vol.Name), // The ID we have to get directly from the related storage
+				vol.Name,
+				nil, // The CreationTime we have to get directly from the related storage
+				voc.GeoLocation{},
+				nil, // anatheka: As I understand it, there are no labels for the volume here, we have to get that from the related storage directly. But we could take the pod labels to which the volume is assigned. I think that makes more sense.
+				voc.BlockStorageType,
+			),
 			AtRestEncryption: &voc.AtRestEncryption{}, // Not able to get the AtRestEncryption information, that must be retrieved directly from the storage
 		}
 

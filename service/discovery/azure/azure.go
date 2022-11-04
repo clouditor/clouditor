@@ -75,9 +75,9 @@ func WithAuthorizer(authorizer azcore.TokenCredential) DiscoveryOption {
 	}
 }
 
-func WithCloudServiceID(csi string) DiscoveryOption {
+func WithCloudServiceID(csID string) DiscoveryOption {
 	return func(a *azureDiscovery) {
-		a.csi = csi
+		a.csID = csID
 	}
 }
 
@@ -93,7 +93,7 @@ type azureDiscovery struct {
 	clientOptions       arm.ClientOptions
 	discovererComponent string
 	clients             clients
-	csi                 string
+	csID                string
 }
 
 type clients struct {
@@ -109,7 +109,7 @@ type clients struct {
 }
 
 func (a *azureDiscovery) CloudServiceID() string {
-	return a.csi
+	return a.csID
 }
 
 func (a *azureDiscovery) authorize() (err error) {

@@ -44,6 +44,7 @@ func NewAzureNetworkDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureNetworkDiscovery{
 		&azureDiscovery{
 			discovererComponent: NetworkComponent,
+			csID:                discovery.DefaultCloudServiceID,
 		},
 	}
 

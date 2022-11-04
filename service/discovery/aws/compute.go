@@ -47,7 +47,7 @@ type computeDiscovery struct {
 	functionAPI       LambdaAPI
 	isDiscovering     bool
 	awsConfig         *Client
-	csi               string
+	csID              string
 }
 
 // EC2API describes the EC2 api interface which is implemented by the official AWS client and mock clients in tests
@@ -84,7 +84,7 @@ func NewAwsComputeDiscovery(client *Client, cloudServiceID string) discovery.Dis
 		functionAPI:       newFromConfigLambda(client.cfg),
 		isDiscovering:     true,
 		awsConfig:         client,
-		csi:               cloudServiceID,
+		csID:              cloudServiceID,
 	}
 }
 
@@ -135,7 +135,7 @@ func (d computeDiscovery) List() (resources []voc.IsCloudResource, err error) {
 }
 
 func (d *computeDiscovery) CloudServiceID() string {
-	return d.csi
+	return d.csID
 }
 
 // discoverVolumes discoveres all volumes (in the current region)

@@ -50,7 +50,7 @@ func NewAzureComputeDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureComputeDiscovery{
 		&azureDiscovery{
 			discovererComponent: ComputeComponent,
-			csi:                 discovery.DefaultCloudServiceID,
+			csID:                discovery.DefaultCloudServiceID,
 		},
 	}
 

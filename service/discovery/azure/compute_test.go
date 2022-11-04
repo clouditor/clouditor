@@ -257,7 +257,7 @@ func TestNewAzureComputeDiscovery(t *testing.T) {
 			want: &azureComputeDiscovery{
 				&azureDiscovery{
 					discovererComponent: ComputeComponent,
-					csi:                 discovery.DefaultCloudServiceID,
+					csID:                discovery.DefaultCloudServiceID,
 				},
 			},
 		},
@@ -274,7 +274,7 @@ func TestNewAzureComputeDiscovery(t *testing.T) {
 						},
 					},
 					discovererComponent: ComputeComponent,
-					csi:                 discovery.DefaultCloudServiceID,
+					csID:                discovery.DefaultCloudServiceID,
 				},
 			},
 		},
@@ -287,7 +287,7 @@ func TestNewAzureComputeDiscovery(t *testing.T) {
 				&azureDiscovery{
 					cred:                &mockAuthorizer{},
 					discovererComponent: ComputeComponent,
-					csi:                 discovery.DefaultCloudServiceID,
+					csID:                discovery.DefaultCloudServiceID,
 				},
 			},
 		},
@@ -299,7 +299,7 @@ func TestNewAzureComputeDiscovery(t *testing.T) {
 			want: &azureComputeDiscovery{
 				&azureDiscovery{
 					discovererComponent: ComputeComponent,
-					csi:                 testutil.TestCloudService1,
+					csID:                testutil.TestCloudService1,
 				},
 			},
 		},

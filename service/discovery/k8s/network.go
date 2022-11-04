@@ -93,17 +93,15 @@ func (d *k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwo
 
 	return &voc.NetworkService{
 		Networking: &voc.Networking{
-			Resource: &voc.Resource{
-				ID:           voc.ResourceID(getNetworkServiceResourceID(service)),
-				ServiceID:    d.CloudServiceID(),
-				Name:         service.Name,
-				CreationTime: service.CreationTimestamp.Unix(),
-				Type:         []string{"NetworkService", "Resource"},
-				GeoLocation: voc.GeoLocation{
-					Region: "", // TODO(all)
-				},
-				Labels: service.Labels,
-			},
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(getNetworkServiceResourceID(service)),
+				service.Name,
+				&service.CreationTimestamp.Time,
+				// TODO(all): Add region
+				voc.GeoLocation{},
+				service.Labels,
+				voc.NetworkServiceType,
+			),
 		},
 
 		Ips:   service.Spec.ClusterIPs,
@@ -119,17 +117,15 @@ func (d *k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 	lb := &voc.LoadBalancer{
 		NetworkService: &voc.NetworkService{
 			Networking: &voc.Networking{
-				Resource: &voc.Resource{
-					ID:           voc.ResourceID(getLoadBalancerResourceID(ingress)),
-					ServiceID:    d.CloudServiceID(),
-					Name:         ingress.Name,
-					CreationTime: ingress.CreationTimestamp.Unix(),
-					Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
-					GeoLocation: voc.GeoLocation{
-						Region: "", // TODO(all)
-					},
-					Labels: ingress.Labels,
-				},
+				Resource: discovery.NewResource(d,
+					voc.ResourceID(getLoadBalancerResourceID(ingress)),
+					ingress.Name,
+					&ingress.CreationTimestamp.Time,
+					// TODO(all): Add region
+					voc.GeoLocation{},
+					ingress.Labels,
+					voc.LoadBalancerType,
+				),
 			},
 			Ips:   nil, // TODO (oxisto): fill out IPs
 			Ports: []uint16{80, 443},

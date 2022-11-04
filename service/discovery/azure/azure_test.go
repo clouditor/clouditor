@@ -324,6 +324,6 @@ func NewMockAzureDiscovery(transport policy.Transporter) *azureDiscovery {
 				Transport: transport,
 			},
 		},
-		csi: testutil.TestCloudService1,
+		csID: testutil.TestCloudService1,
 	}
 }

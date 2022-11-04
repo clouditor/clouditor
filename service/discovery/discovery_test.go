@@ -83,7 +83,7 @@ func TestNewService(t *testing.T) {
 				assessmentAddress: grpcTarget{target: "localhost:9091"},
 				resources:         make(map[string]voc.IsCloudResource),
 				configurations:    make(map[discovery.Discoverer]*Configuration),
-				csi:               discovery.DefaultCloudServiceID,
+				csID:              discovery.DefaultCloudServiceID,
 			},
 		},
 		{
@@ -97,7 +97,7 @@ func TestNewService(t *testing.T) {
 				assessmentAddress: grpcTarget{target: DefaultAssessmentAddress},
 				resources:         make(map[string]voc.IsCloudResource),
 				configurations:    make(map[discovery.Discoverer]*Configuration),
-				csi:               testutil.TestCloudService1,
+				csID:              testutil.TestCloudService1,
 			},
 		},
 	}
@@ -133,7 +133,7 @@ func TestNewService(t *testing.T) {
 func TestService_StartDiscovery(t *testing.T) {
 	type fields struct {
 		discoverer discovery.Discoverer
-		csi        string
+		csID       string
 	}
 
 	tests := []struct {
@@ -145,21 +145,21 @@ func TestService_StartDiscovery(t *testing.T) {
 			name: "Err in discoverer",
 			fields: fields{
 				discoverer: mockDiscoverer{testCase: 0},
-				csi:        discovery.DefaultCloudServiceID,
+				csID:       discovery.DefaultCloudServiceID,
 			},
 		},
 		{
 			name: "Err in marshaling the resource containing circular dependencies",
 			fields: fields{
 				discoverer: mockDiscoverer{testCase: 1},
-				csi:        discovery.DefaultCloudServiceID,
+				csID:       discovery.DefaultCloudServiceID,
 			},
 		},
 		{
 			name: "No err with default cloud service ID",
 			fields: fields{
 				discoverer: mockDiscoverer{testCase: 2},
-				csi:        discovery.DefaultCloudServiceID,
+				csID:       discovery.DefaultCloudServiceID,
 			},
 			checkEvidence: true,
 		},
@@ -167,7 +167,7 @@ func TestService_StartDiscovery(t *testing.T) {
 			name: "No err with custom cloud service ID",
 			fields: fields{
 				discoverer: mockDiscoverer{testCase: 2},
-				csi:        testutil.TestCloudService1,
+				csID:       testutil.TestCloudService1,
 			},
 			checkEvidence: true,
 		},
@@ -179,7 +179,7 @@ func TestService_StartDiscovery(t *testing.T) {
 			mockStream.Prepare()
 
 			svc := NewService()
-			svc.csi = tt.fields.csi
+			svc.csID = tt.fields.csID
 			svc.assessmentStreams = api.NewStreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]()
 			_, _ = svc.assessmentStreams.GetStream("mock", "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
 				return mockStream, nil
@@ -210,8 +210,8 @@ func TestService_StartDiscovery(t *testing.T) {
 				assert.Equal(t, string(want[len(want)-1].GetID()), e.Resource.GetStructValue().AsMap()["id"].(string))
 
 				// Assert cloud service ID
-				assert.Equal(t, tt.fields.csi, e.CloudServiceId)
-				assert.Equal(t, tt.fields.csi, e.Resource.GetStructValue().AsMap()["serviceId"].(string))
+				assert.Equal(t, tt.fields.csID, e.CloudServiceId)
+				assert.Equal(t, tt.fields.csID, e.Resource.GetStructValue().AsMap()["serviceId"].(string))
 			}
 		})
 	}

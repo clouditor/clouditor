@@ -51,6 +51,7 @@ func NewAzureStorageDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureStorageDiscovery{
 		&azureDiscovery{
 			discovererComponent: StorageComponent,
+			csID:                discovery.DefaultCloudServiceID,
 		},
 	}
 

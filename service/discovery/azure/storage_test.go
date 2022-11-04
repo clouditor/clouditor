@@ -245,6 +245,7 @@ func TestNewAzureStorageDiscovery(t *testing.T) {
 			want: &azureStorageDiscovery{
 				azureDiscovery: &azureDiscovery{
 					discovererComponent: StorageComponent,
+					csID:                discovery.DefaultCloudServiceID,
 				},
 			},
 		},
@@ -261,6 +262,7 @@ func TestNewAzureStorageDiscovery(t *testing.T) {
 						},
 					},
 					discovererComponent: StorageComponent,
+					csID:                discovery.DefaultCloudServiceID,
 				},
 			},
 		},
@@ -273,6 +275,7 @@ func TestNewAzureStorageDiscovery(t *testing.T) {
 				azureDiscovery: &azureDiscovery{
 					cred:                &mockAuthorizer{},
 					discovererComponent: StorageComponent,
+					csID:                discovery.DefaultCloudServiceID,
 				},
 			},
 		},
@@ -584,7 +587,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 }
 
 func TestStorageHandleMethodsWhenInputIsInvalid(t *testing.T) {
-	d := azureStorageDiscovery{&azureDiscovery{csi: testutil.TestCloudService1}}
+	d := azureStorageDiscovery{&azureDiscovery{csID: testutil.TestCloudService1}}
 
 	// Get mocked armstorage.Account
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"

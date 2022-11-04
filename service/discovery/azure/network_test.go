@@ -362,6 +362,7 @@ func TestNewAzureNetworkDiscovery(t *testing.T) {
 			want: &azureNetworkDiscovery{
 				&azureDiscovery{
 					discovererComponent: NetworkComponent,
+					csID:                discovery.DefaultCloudServiceID,
 				},
 			},
 		},
@@ -378,6 +379,7 @@ func TestNewAzureNetworkDiscovery(t *testing.T) {
 						},
 					},
 					discovererComponent: NetworkComponent,
+					csID:                discovery.DefaultCloudServiceID,
 				},
 			},
 		},
@@ -390,6 +392,7 @@ func TestNewAzureNetworkDiscovery(t *testing.T) {
 				&azureDiscovery{
 					cred:                &mockAuthorizer{},
 					discovererComponent: NetworkComponent,
+					csID:                discovery.DefaultCloudServiceID,
 				},
 			},
 		},

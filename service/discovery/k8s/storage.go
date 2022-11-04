@@ -78,14 +78,15 @@ func (d k8sStorageDiscovery) List() ([]voc.IsCloudResource, error) {
 // handlePVC returns all PersistentVolumes
 func (d *k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) voc.IsCloudResource {
 	s := &voc.Storage{
-		Resource: &voc.Resource{
-			ID:           voc.ResourceID(pv.UID),
-			ServiceID:    d.CloudServiceID(),
-			Name:         pv.Name,
-			CreationTime: pv.CreationTimestamp.Unix(),
-			Type:         []string{"BlockStorage", "Storage", "Resource"},
-			Labels:       pv.GetLabels(),
-		},
+		Resource: discovery.NewResource(d,
+			voc.ResourceID(pv.UID),
+			pv.Name,
+			&pv.CreationTimestamp.Time,
+			// TODO(all) Add region
+			voc.GeoLocation{},
+			pv.Labels,
+			voc.BlockStorageType,
+		),
 		AtRestEncryption: &voc.AtRestEncryption{},
 	}
 

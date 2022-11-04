@@ -44,11 +44,11 @@ func init() {
 
 type k8sDiscovery struct {
 	intf kubernetes.Interface
-	csi  string
+	csID string
 }
 
 func (d *k8sDiscovery) CloudServiceID() string {
-	return d.csi
+	return d.csID
 }
 
 func AuthFromKubeConfig() (intf kubernetes.Interface, err error) {
