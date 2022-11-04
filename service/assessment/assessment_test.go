@@ -233,10 +233,11 @@ func TestService_AssessEvidence(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
-					Id:        "11111111-1111-1111-1111-111111111111",
-					ToolId:    "mock",
-					Timestamp: timestamppb.Now(),
-					Resource:  toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+					Id:             "11111111-1111-1111-1111-111111111111",
+					ToolId:         "mock",
+					Timestamp:      timestamppb.Now(),
+					Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+					CloudServiceId: "00000000-0000-0000-0000-000000000000",
 				},
 			},
 			hasRPCConnection: true,

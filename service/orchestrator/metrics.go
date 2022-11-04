@@ -320,6 +320,11 @@ func (svc *Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequ
 }
 
 func (svc *Service) GetMetricConfiguration(ctx context.Context, req *orchestrator.GetMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
+	// Validate request
+	if err = req.Validate(); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "%s", err)
+	}
+
 	// Check, if this request has access to the cloud service according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied

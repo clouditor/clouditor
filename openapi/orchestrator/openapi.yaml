@@ -818,7 +818,7 @@ paths:
                 - Orchestrator
             description: |-
                 Retrieves a metric configuration (target value and operator) for a specific
-                 service and metric ID
+                 service and metric ID.
             operationId: Orchestrator_GetMetricConfiguration
             parameters:
                 - name: cloudServiceId

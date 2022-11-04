@@ -30,52 +30,50 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/google/uuid"
+	"clouditor.io/clouditor/api/assessment"
 )
 
 type CloudServiceHookFunc func(ctx context.Context, cld *CloudService, err error)
 
 var (
-	ErrCertificateIsNil        = errors.New("certificate is empty")
-	ErrServiceIsNil            = errors.New("service is empty")
-	ErrNameIsMissing           = errors.New("service name is empty")
-	ErrIDIsMissing             = errors.New("service ID is empty")
-	ErrCertIDIsMissing         = errors.New("certificate ID is empty")
-	ErrCatalogIsNil            = errors.New("catalog is empty")
-	ErrCatalogIDIsMissing      = errors.New("catalog ID is empty")
-	ErrToEIDIsMissing          = errors.New("toe ID is empty")
-	ErrCloudServiceIDIsMissing = errors.New("cloud service id is missing")
-	ErrMetricIDIsMissing       = errors.New("metric id is missing")
-	ErrCloudServiceIDIsInvalid = errors.New("cloud service id is invalid")
-	ErrRequestCloudServiceID   = errors.New("error in cloud service id")
+	ErrCertificateIsNil      = errors.New("certificate is empty")
+	ErrServiceIsNil          = errors.New("service is empty")
+	ErrNameIsMissing         = errors.New("service name is empty")
+	ErrIDIsMissing           = errors.New("service ID is empty")
+	ErrCertIDIsMissing       = errors.New("certificate ID is empty")
+	ErrCatalogIsNil          = errors.New("catalog is empty")
+	ErrCatalogIDIsMissing    = errors.New("catalog ID is empty")
+	ErrToEIDIsMissing        = errors.New("toe ID is empty")
+	ErrRequestCloudServiceID = errors.New("error in cloud service id")
 )
 
 // Validate validates the UpdateMetricConfigurationRequest
 func (req *UpdateMetricConfigurationRequest) Validate() error {
 	// Check cloud service ID
-	err := checkServiceID(req.CloudServiceId)
+	err := assessment.CheckCloudServiceID(req.CloudServiceId)
 	if err != nil {
 		return fmt.Errorf("%s: %w", ErrRequestCloudServiceID, err)
 	}
 
 	// Check metric ID
 	if req.MetricId == "" {
-		return fmt.Errorf("%s: %w", ErrMetricIDIsMissing, err)
+		return fmt.Errorf("%s: %w", assessment.ErrMetricIdMissing, err)
 	}
 
 	return nil
 }
 
-// checkServiceID checks if serviceID is available and in the valid UUID format.
-func checkServiceID(serviceID string) error {
-	// Check if ServiceId is missing
-	if serviceID == "" {
-		return ErrCloudServiceIDIsMissing
+// Validate validates the GetMetricConfigurationRequest
+func (req *GetMetricConfigurationRequest) Validate() error {
+	// Check cloud service ID
+	err := assessment.CheckCloudServiceID(req.CloudServiceId)
+	if err != nil {
+		return fmt.Errorf("%s: %w", ErrRequestCloudServiceID, err)
 	}
 
-	// Check if ServiceId is valid
-	if _, err := uuid.Parse(serviceID); err != nil {
-		return ErrCloudServiceIDIsInvalid
+	// Check metric ID
+	if req.MetricId == "" {
+		return fmt.Errorf("%s: %w", assessment.ErrMetricIdMissing, err)
 	}
 
 	return nil

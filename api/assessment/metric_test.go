@@ -161,7 +161,9 @@ func TestMetricConfiguration_Validate(t *testing.T) {
 							StringValue: "1111",
 						},
 					},
-					Operator: "TestOperator",
+					Operator:       "TestOperator",
+					MetricId:       "TestMetric",
+					CloudServiceId: "00000000-0000-0000-0000-000000000000",
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {

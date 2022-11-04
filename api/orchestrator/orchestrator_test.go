@@ -255,7 +255,7 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, ErrMetricIDIsMissing.Error())
+				return assert.ErrorContains(t, err, assessment.ErrMetricIdMissing.Error())
 			},
 		},
 		{

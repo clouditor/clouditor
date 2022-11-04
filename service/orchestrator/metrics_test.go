@@ -736,7 +736,8 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 			},
 			args: args{
 				req: &orchestrator.GetMetricConfigurationRequest{
-					MetricId: "NotExists",
+					MetricId:       "NotExists",
+					CloudServiceId: "00000000-0000-0000-0000-000000000000",
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -894,7 +895,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, orchestrator.ErrMetricIDIsMissing.Error())
+				return assert.ErrorContains(t, err, assessment.ErrMetricIdMissing.Error())
 			},
 		},
 		{
@@ -931,7 +932,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "metric or service does not exist")
+				return assert.ErrorContains(t, err, assessment.ErrMetricIdMissing.Error())
 			},
 		},
 		{
@@ -947,8 +948,10 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 					CloudServiceId: "00000000-0000-0000-0000-000000000001",
 					MetricId:       "MyMetric",
 					Configuration: &assessment.MetricConfiguration{
-						Operator:    "<",
-						TargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
+						Operator:       "<",
+						TargetValue:    &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
+						MetricId:       "MyMetric",
+						CloudServiceId: "00000000-0000-0000-0000-000000000001",
 					},
 				},
 			},

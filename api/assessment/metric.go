@@ -33,11 +33,14 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/persistence"
+	"github.com/google/uuid"
 )
 
 var (
-	ErrMetricNameMissing = errors.New("metric name is missing")
-	ErrMetricEmpty       = errors.New("metric is missing or empty")
+	ErrMetricNameMissing       = errors.New("metric name is missing")
+	ErrMetricEmpty             = errors.New("metric is missing or empty")
+	ErrCloudServiceIDIsMissing = errors.New("cloud service id is missing")
+	ErrCloudServiceIDIsInvalid = errors.New("cloud service id is invalid")
 )
 
 func (r *Range) UnmarshalJSON(b []byte) (err error) {
@@ -172,8 +175,6 @@ func (c *MetricConfiguration) Validate() (err error) {
 
 	// isDefault does not need to be checked.
 	// UpdatedAt does not need to be checked.
-	// MetricId does not need to be checked.
-	// CloudServiceId does not need to be checked.
 
 	if c == nil {
 		return ErrMetricConfigurationMissing
@@ -187,6 +188,15 @@ func (c *MetricConfiguration) Validate() (err error) {
 		return ErrMetricConfigurationTargetValueMissing
 	}
 
+	if c.MetricId == "" {
+		return ErrMetricIdMissing
+	}
+
+	err = CheckCloudServiceID(c.CloudServiceId)
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
 	return
 }
 
@@ -194,4 +204,19 @@ func (c *MetricConfiguration) Validate() (err error) {
 // to provide a key for a map or a cache.
 func (x *MetricConfiguration) Hash() string {
 	return base64.RawURLEncoding.EncodeToString([]byte(fmt.Sprintf("%v-%v", x.Operator, x.TargetValue)))
+}
+
+// CheckCloudServiceID checks if serviceID is available and in the valid UUID format.
+func CheckCloudServiceID(serviceID string) error {
+	// Check if ServiceId is missing
+	if serviceID == "" {
+		return ErrCloudServiceIDIsMissing
+	}
+
+	// Check if ServiceId is valid
+	if _, err := uuid.Parse(serviceID); err != nil {
+		return ErrCloudServiceIDIsInvalid
+	}
+
+	return nil
 }
