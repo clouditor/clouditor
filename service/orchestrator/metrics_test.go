@@ -860,6 +860,7 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 	}
 }
 
+// TODO(anatheka): Update all tests here
 func TestService_UpdateMetricConfiguration(t *testing.T) {
 	type fields struct {
 		results               map[string]*assessment.AssessmentResult
