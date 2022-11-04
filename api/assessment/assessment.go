@@ -39,9 +39,10 @@ var (
 	ErrTimestampMissing                      = errors.New("timestamp in assessment result is missing")
 	ErrResourceIdMissing                     = errors.New("resource id in assessment result is missing")
 	ErrMetricIdMissing                       = errors.New("metric id is missing")
-	ErrMetricConfigurationMissing            = errors.New("metric configuration is missing")
-	ErrMetricConfigurationOperatorMissing    = errors.New("operator in metric configuration is missing")
-	ErrMetricConfigurationTargetValueMissing = errors.New("target value in metric configuration is missing")
+	ErrResourceTypesMissing                  = errors.New("resource types in assessment result is missing")
+	ErrMetricConfigurationMissing            = errors.New("metric configuration in assessment result is missing")
+	ErrMetricConfigurationOperatorMissing    = errors.New("operator in metric data is missing")
+	ErrMetricConfigurationTargetValueMissing = errors.New("target value in metric data is missing")
 )
 
 // Validate validates the assessment result according to several required fields
@@ -78,5 +79,8 @@ func (result *AssessmentResult) Validate() (resourceId string, err error) {
 		return "", ErrResourceIdMissing
 	}
 
+	if len(result.ResourceTypes) == 0 {
+		return "", ErrResourceTypesMissing
+	}
 	return
 }
