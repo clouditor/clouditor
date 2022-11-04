@@ -149,15 +149,12 @@ func (srv *Service) GetCategory(_ context.Context, req *orchestrator.GetCategory
 }
 
 // GetControl retrieves a control specified by the catalog ID, the control's category name and the control ID. If
-// present, it also includes a list of sub-controls and any metrics associated to any controls.
+// present, it also includes a list of sub-controls and any metrics associated to the control.
 func (srv *Service) GetControl(_ context.Context, req *orchestrator.GetControlRequest) (res *orchestrator.Control, err error) {
 	// TODO(oxisto): Validate request parameters
 
 	res = new(orchestrator.Control)
 	err = srv.storage.Get(&res,
-		// Preload fills in associated entities, in this case metrics. We want to return any metrics associated to any
-		// level of control for convienence
-		gorm.WithPreload("Controls.Metrics"),
 		// We only want to select controls for the specified category and catalog
 		"Id = ? AND category_name = ? AND category_catalog_id = ?", req.ControlId, req.CategoryName, req.CatalogId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
