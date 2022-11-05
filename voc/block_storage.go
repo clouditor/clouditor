@@ -27,6 +27,8 @@
 
 package voc
 
+var BlockStorageType = []string{"BlockStorage", "Storage", "Resource"}
+
 type BlockStorage struct {
 	*Storage
 }

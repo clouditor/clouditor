@@ -27,6 +27,8 @@
 
 package voc
 
+var WorkflowType = []string{"Workflow", "CI/CD Service", "Resource"}
+
 type Workflow struct {
 	*CICDService
 }

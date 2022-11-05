@@ -37,19 +37,20 @@ import (
 )
 
 type azureNetworkDiscovery struct {
-	azureDiscovery
+	*azureDiscovery
 }
 
 func NewAzureNetworkDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureNetworkDiscovery{
-		azureDiscovery{
+		&azureDiscovery{
 			discovererComponent: NetworkComponent,
+			csID:                discovery.DefaultCloudServiceID,
 		},
 	}
 
 	// Apply options
 	for _, opt := range opts {
-		opt(&d.azureDiscovery)
+		opt(d.azureDiscovery)
 	}
 
 	return d
@@ -152,21 +153,21 @@ func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, e
 	return list, nil
 }
 
-func (*azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) voc.IsNetwork {
+func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) voc.IsNetwork {
 	return &voc.LoadBalancer{
 		NetworkService: &voc.NetworkService{
 			Networking: &voc.Networking{
-				Resource: &voc.Resource{
-					ID:           voc.ResourceID(util.Deref(lb.ID)),
-					ServiceID:    discovery.DefaultCloudServiceID,
-					Name:         util.Deref(lb.Name),
-					CreationTime: 0, // No creation time available
-					Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
-					GeoLocation: voc.GeoLocation{
+				Resource: discovery.NewResource(d,
+					voc.ResourceID(util.Deref(lb.ID)),
+					util.Deref(lb.Name),
+					// No creation time available
+					nil,
+					voc.GeoLocation{
 						Region: util.Deref(lb.Location),
 					},
-					Labels: labels(lb.Tags),
-				},
+					labels(lb.Tags),
+					voc.LoadBalancerType,
+				),
 			},
 			Ips:   publicIPAddressFromLoadBalancer(lb),
 			Ports: LoadBalancerPorts(lb),
@@ -178,20 +179,20 @@ func (*azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) vo
 	}
 }
 
-func (*azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface) voc.IsNetwork {
+func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface) voc.IsNetwork {
 	return &voc.NetworkInterface{
 		Networking: &voc.Networking{
-			Resource: &voc.Resource{
-				ID:           voc.ResourceID(util.Deref(ni.ID)),
-				ServiceID:    discovery.DefaultCloudServiceID,
-				Name:         util.Deref(ni.Name),
-				CreationTime: 0, // No creation time available
-				Type:         []string{"NetworkInterface", "Compute", "Resource"},
-				GeoLocation: voc.GeoLocation{
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(util.Deref(ni.ID)),
+				util.Deref(ni.Name),
+				// No creation time available
+				nil,
+				voc.GeoLocation{
 					Region: util.Deref(ni.Location),
 				},
-				Labels: labels(ni.Tags),
-			},
+				labels(ni.Tags),
+				voc.NetworkInterfaceType,
+			),
 		},
 
 		// AccessRestriction: &voc.AccessRestriction{
@@ -288,12 +289,12 @@ func publicIPAddressFromLoadBalancer(lb *armnetwork.LoadBalancer) []string {
 
 // initNetworkInterfacesClient creates the client if not already exists
 func (d *azureNetworkDiscovery) initNetworkInterfacesClient() (err error) {
-	d.clients.networkInterfacesClient, err = initClient(d.clients.networkInterfacesClient, &d.azureDiscovery, armnetwork.NewInterfacesClient)
+	d.clients.networkInterfacesClient, err = initClient(d.clients.networkInterfacesClient, d.azureDiscovery, armnetwork.NewInterfacesClient)
 	return
 }
 
 // initLoadBalancersClient creates the client if not already exists
 func (d *azureNetworkDiscovery) initLoadBalancersClient() (err error) {
-	d.clients.loadBalancerClient, err = initClient(d.clients.loadBalancerClient, &d.azureDiscovery, armnetwork.NewLoadBalancersClient)
+	d.clients.loadBalancerClient, err = initClient(d.clients.loadBalancerClient, d.azureDiscovery, armnetwork.NewLoadBalancersClient)
 	return
 }

@@ -27,6 +27,8 @@
 
 package voc
 
+var StorageType = []string{"Storage", "Resource"}
+
 type Storage struct {
 	*Resource
 	AtRestEncryption IsAtRestEncryption `json:"atRestEncryption"`

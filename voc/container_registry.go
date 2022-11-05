@@ -27,6 +27,8 @@
 
 package voc
 
+var ContainerRegistryType = []string{"ContainerRegistry", "Resource"}
+
 type ContainerRegistry struct {
 	*Resource
 }

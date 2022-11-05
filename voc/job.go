@@ -27,6 +27,8 @@
 
 package voc
 
+var JobType = []string{"Job", "CI/CD Service", "Resource"}
+
 type Job struct {
 	*CICDService
 }

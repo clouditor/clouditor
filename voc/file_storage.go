@@ -27,6 +27,8 @@
 
 package voc
 
+var FileStorageType = []string{"FileStorage", "Storage", "Resource"}
+
 type FileStorage struct {
 	*Storage
 }

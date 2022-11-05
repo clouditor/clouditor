@@ -27,6 +27,8 @@
 
 package voc
 
+var VirtualSubNetworkType = []string{"VirtualSubNetwork", "Networking", "Resource"}
+
 type VirtualSubNetwork struct {
 	*Networking
 }

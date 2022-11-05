@@ -44,6 +44,11 @@ func init() {
 
 type k8sDiscovery struct {
 	intf kubernetes.Interface
+	csID string
+}
+
+func (d *k8sDiscovery) CloudServiceID() string {
+	return d.csID
 }
 
 func AuthFromKubeConfig() (intf kubernetes.Interface, err error) {

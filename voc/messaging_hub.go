@@ -27,6 +27,8 @@
 
 package voc
 
+var MessagingHubType = []string{"MessagingHub", "IoT", "Resource"}
+
 type MessagingHub struct {
 	*IoT
 }

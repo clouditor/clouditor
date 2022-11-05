@@ -34,6 +34,7 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/voc"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -474,6 +475,7 @@ func TestComputeDiscovery_NewComputeDiscovery(t *testing.T) {
 
 	type args struct {
 		client *Client
+		csID   string
 	}
 	mockClient := &Client{
 		cfg: aws.Config{
@@ -487,18 +489,19 @@ func TestComputeDiscovery_NewComputeDiscovery(t *testing.T) {
 		want discovery.Discoverer
 	}{
 		{
-			args: args{client: mockClient},
+			args: args{client: mockClient, csID: testutil.TestCloudService1},
 			want: &computeDiscovery{
 				virtualMachineAPI: &ec2.Client{},
 				functionAPI:       &lambda.Client{},
 				isDiscovering:     true,
 				awsConfig:         mockClient,
+				csID:              testutil.TestCloudService1,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewAwsComputeDiscovery(tt.args.client); !reflect.DeepEqual(got, tt.want) {
+			if got := NewAwsComputeDiscovery(tt.args.client, tt.args.csID); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewAwsComputeDiscovery() = %v, want %v", got, tt.want)
 			}
 		})

@@ -32,8 +32,8 @@ import "time"
 // AutomaticUpdates is an entity in our Cloud ontology. This feature is, e.g., available on some VM services to automatically update their software. It ensures that a resource is protected from tampering with its state.
 type AutomaticUpdates struct {
 	*Integrity
-	Enabled bool `json:"enabled"`
+	Enabled      bool `json:"enabled"`
+	SecurityOnly bool `json:"securityOnly"`
 	// The interval refers to the update interval in days.
-	Interval     time.Duration `json:"interval"`
-	SecurityOnly bool          `json:"securityOnly"`
+	Interval time.Duration `json:"interval"`
 }

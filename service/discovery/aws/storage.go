@@ -48,6 +48,7 @@ type awsS3Discovery struct {
 	storageAPI    S3API
 	isDiscovering bool
 	awsConfig     *Client
+	csID          string
 }
 
 // bucket contains metadata about a S3 bucket
@@ -133,16 +134,15 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 			// Add ObjectStorage
 			&voc.ObjectStorage{
 				Storage: &voc.Storage{
-					Resource: &voc.Resource{
-						ID:           voc.ResourceID(b.arn),
-						ServiceID:    discovery.DefaultCloudServiceID,
-						Name:         b.name,
-						CreationTime: b.creationTime.Unix(),
-						Type:         []string{"ObjectStorage", "Storage", "Resource"},
-						GeoLocation: voc.GeoLocation{
+					Resource: discovery.NewResource(d,
+						voc.ResourceID(b.arn),
+						b.name,
+						&b.creationTime,
+						voc.GeoLocation{
 							Region: b.region,
 						},
-					},
+						nil,
+						voc.ObjectStorageType),
 					AtRestEncryption: encryptionAtRest,
 				},
 			},
@@ -152,14 +152,14 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 					Storage: []voc.ResourceID{voc.ResourceID(b.arn)},
 					NetworkService: &voc.NetworkService{
 						Networking: &voc.Networking{
-							Resource: &voc.Resource{
-								ID:           voc.ResourceID(b.arn),
-								ServiceID:    discovery.DefaultCloudServiceID,
-								CreationTime: b.creationTime.Unix(),
-								Name:         b.name,
-								GeoLocation:  voc.GeoLocation{Region: b.region},
-								Type:         []string{"StorageService", "NetworkService", "Networking", "Resource"},
-							},
+							Resource: discovery.NewResource(d,
+								voc.ResourceID(b.arn),
+								b.name,
+								&b.creationTime,
+								voc.GeoLocation{Region: b.region},
+								nil,
+								voc.ObjectStorageServiceType,
+							),
 						},
 						TransportEncryption: encryptionAtTransmit,
 					},
@@ -172,16 +172,22 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 	}
 	return
 }
+
+func (d *awsS3Discovery) CloudServiceID() string {
+	return d.csID
+}
+
 func (b *bucket) String() string {
 	return fmt.Sprintf("[ARN: %v, Name: %v, Creation Time: %v]", b.arn, b.name, b.creationTime)
 }
 
 // NewAwsStorageDiscovery constructs a new awsS3Discovery initializing the s3-api and isDiscovering with true
-func NewAwsStorageDiscovery(client *Client) discovery.Discoverer {
+func NewAwsStorageDiscovery(client *Client, cloudServiceID string) discovery.Discoverer {
 	return &awsS3Discovery{
 		storageAPI:    s3.NewFromConfig(client.cfg),
 		isDiscovering: true,
 		awsConfig:     client,
+		csID:          cloudServiceID,
 	}
 }
 

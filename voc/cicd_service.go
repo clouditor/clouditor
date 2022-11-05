@@ -27,6 +27,8 @@
 
 package voc
 
+var CICDServiceType = []string{"CI/CD Service", "Resource"}
+
 type CICDService struct {
 	*Resource
 }
