@@ -27,6 +27,8 @@
 
 package voc
 
+var DeviceProvisioningServiceType = []string{"DeviceProvisioningService", "IoT", "Resource"}
+
 type DeviceProvisioningService struct {
 	*IoT
 }

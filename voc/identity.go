@@ -29,6 +29,8 @@ package voc
 
 import "time"
 
+var IdentityType = []string{"Identity", "Identifiable", "Resource"}
+
 type Identity struct {
 	*Identifiable
 	Authenticities        []IsAuthenticity `json:"authenticities"`

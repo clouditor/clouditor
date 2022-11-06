@@ -27,6 +27,8 @@
 
 package voc
 
+var DocumentDatabaseServiceType = []string{"DocumentDatabaseService", "DatabaseService", "StorageService", "NetworkService", "Networking", "Resource"}
+
 type DocumentDatabaseService struct {
 	*DatabaseService
 }

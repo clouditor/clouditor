@@ -111,6 +111,9 @@ type Service struct {
 	resourceMutex sync.RWMutex
 
 	Events chan *DiscoveryEvent
+
+	// csID is the cloud service ID for which we are gathering resources.
+	csID string
 }
 
 type Configuration struct {
@@ -136,6 +139,13 @@ func WithAssessmentAddress(address string, opts ...grpc.DialOption) ServiceOptio
 			target: address,
 			opts:   opts,
 		}
+	}
+}
+
+// WithCloudServiceID is an option to configure the cloud service ID for which resources will be discovered.
+func WithCloudServiceID(ID string) ServiceOption {
+	return func(svc *Service) {
+		svc.csID = ID
 	}
 }
 
@@ -168,6 +178,7 @@ func NewService(opts ...ServiceOption) *Service {
 		scheduler:      gocron.NewScheduler(time.UTC),
 		configurations: make(map[discovery.Discoverer]*Configuration),
 		Events:         make(chan *DiscoveryEvent),
+		csID:           discovery.DefaultCloudServiceID,
 	}
 
 	// Apply any options
@@ -236,9 +247,9 @@ func (svc *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest)
 			discoverer = append(discoverer,
 				// For now, we do not want to discover the ARM template
 				// azure.NewAzureARMTemplateDiscovery(azure.WithAuthorizer(authorizer)),
-				azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
-				azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
-				azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)))
+				azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csID)),
+				azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csID)),
+				azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csID)))
 		case provider == ProviderK8S:
 			k8sClient, err := k8s.AuthFromKubeConfig()
 			if err != nil {
@@ -246,9 +257,9 @@ func (svc *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest)
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Kubernetes: %v", err)
 			}
 			discoverer = append(discoverer,
-				k8s.NewKubernetesComputeDiscovery(k8sClient),
-				k8s.NewKubernetesNetworkDiscovery(k8sClient),
-				k8s.NewKubernetesStorageDiscovery(k8sClient))
+				k8s.NewKubernetesComputeDiscovery(k8sClient, svc.csID),
+				k8s.NewKubernetesNetworkDiscovery(k8sClient, svc.csID),
+				k8s.NewKubernetesStorageDiscovery(k8sClient, svc.csID))
 		case provider == ProviderAWS:
 			awsClient, err := aws.NewClient()
 			if err != nil {
@@ -256,8 +267,8 @@ func (svc *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest)
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to AWS: %v", err)
 			}
 			discoverer = append(discoverer,
-				aws.NewAwsStorageDiscovery(awsClient),
-				aws.NewAwsComputeDiscovery(awsClient))
+				aws.NewAwsStorageDiscovery(awsClient, svc.csID),
+				aws.NewAwsComputeDiscovery(awsClient, svc.csID))
 		default:
 			newError := fmt.Errorf("provider %s not known", provider)
 			log.Error(newError)
@@ -323,6 +334,9 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}()
 
 	for _, resource := range list {
+		// Set the cloud service ID to the one of the discoverer
+		resource.SetServiceID(svc.csID)
+
 		svc.resourceMutex.Lock()
 		svc.resources[string(resource.GetID())] = resource
 		svc.resourceMutex.Unlock()

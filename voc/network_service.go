@@ -27,6 +27,8 @@
 
 package voc
 
+var NetworkServiceType = []string{"NetworkService", "Networking", "Resource"}
+
 // NetworkService is an entity in our Cloud ontology. A NetworkService is an application (on the network layer) running on a Compute resource. It provides access to a resource
 type NetworkService struct {
 	*Networking

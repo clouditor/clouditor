@@ -36,11 +36,17 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/voc"
 )
 
 type mockNetworkSender struct {
 	mockSender
+}
+
+func newMockNetworkSender() *mockNetworkSender {
+	m := &mockNetworkSender{}
+	return m
 }
 
 func (m mockNetworkSender) Do(req *http.Request) (res *http.Response, err error) {
@@ -206,7 +212,7 @@ func TestAzureNetworkAuthorizer(t *testing.T) {
 
 func Test_azureNetworkDiscovery_List(t *testing.T) {
 	type fields struct {
-		azureDiscovery azureDiscovery
+		azureDiscovery *azureDiscovery
 	}
 	tests := []struct {
 		name     string
@@ -217,7 +223,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 		{
 			name: "Authorize error",
 			fields: fields{
-				azureDiscovery: azureDiscovery{
+				azureDiscovery: &azureDiscovery{
 					cred: nil,
 				},
 			},
@@ -229,14 +235,8 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 		{
 			name: "Discovery error",
 			fields: fields{
-				azureDiscovery: azureDiscovery{
-					cred: &mockAuthorizer{},
-					clientOptions: arm.ClientOptions{
-						ClientOptions: policy.ClientOptions{
-							Transport: &mockStorageSender{},
-						},
-					},
-				},
+				// Intentionally use wrong sender
+				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
 			},
 			wantList: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -246,26 +246,19 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 		{
 			name: "Without errors",
 			fields: fields{
-				azureDiscovery: azureDiscovery{
-					cred: &mockAuthorizer{},
-					clientOptions: arm.ClientOptions{
-						ClientOptions: policy.ClientOptions{
-							Transport: &mockNetworkSender{},
-						},
-					},
-				},
+				azureDiscovery: NewMockAzureDiscovery(newMockNetworkSender()),
 			},
 			wantList: []voc.IsCloudResource{
 				&voc.NetworkInterface{
 					Networking: &voc.Networking{
 						Resource: &voc.Resource{
 							ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
-							ServiceID: discovery.DefaultCloudServiceID,
+							ServiceID: testutil.TestCloudService1,
 							Name:      "iface1",
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
-							Type:   []string{"NetworkInterface", "Compute", "Resource"},
+							Type:   voc.NetworkInterfaceType,
 							Labels: map[string]string{},
 						},
 					},
@@ -276,12 +269,12 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
 								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1",
-								ServiceID: discovery.DefaultCloudServiceID,
+								ServiceID: testutil.TestCloudService1,
 								Name:      "lb1",
 								GeoLocation: voc.GeoLocation{
 									Region: "eastus",
 								},
-								Type:   []string{"LoadBalancer", "NetworkService", "Resource"},
+								Type:   voc.LoadBalancerType,
 								Labels: map[string]string{},
 							},
 						},
@@ -296,12 +289,12 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
 								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb2",
-								ServiceID: discovery.DefaultCloudServiceID,
+								ServiceID: testutil.TestCloudService1,
 								Name:      "lb2",
 								GeoLocation: voc.GeoLocation{
 									Region: "eastus",
 								},
-								Type:   []string{"LoadBalancer", "NetworkService", "Resource"},
+								Type:   voc.LoadBalancerType,
 								Labels: map[string]string{},
 							},
 						},
@@ -316,12 +309,12 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
 								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3",
-								ServiceID: discovery.DefaultCloudServiceID,
+								ServiceID: testutil.TestCloudService1,
 								Name:      "lb3",
 								GeoLocation: voc.GeoLocation{
 									Region: "eastus",
 								},
-								Type:   []string{"LoadBalancer", "NetworkService", "Resource"},
+								Type:   voc.LoadBalancerType,
 								Labels: map[string]string{},
 							},
 						},
@@ -367,8 +360,9 @@ func TestNewAzureNetworkDiscovery(t *testing.T) {
 				opts: nil,
 			},
 			want: &azureNetworkDiscovery{
-				azureDiscovery{
+				&azureDiscovery{
 					discovererComponent: NetworkComponent,
+					csID:                discovery.DefaultCloudServiceID,
 				},
 			},
 		},
@@ -378,13 +372,14 @@ func TestNewAzureNetworkDiscovery(t *testing.T) {
 				opts: []DiscoveryOption{WithSender(mockNetworkSender{})},
 			},
 			want: &azureNetworkDiscovery{
-				azureDiscovery{
+				&azureDiscovery{
 					clientOptions: arm.ClientOptions{
 						ClientOptions: policy.ClientOptions{
 							Transport: mockNetworkSender{},
 						},
 					},
 					discovererComponent: NetworkComponent,
+					csID:                discovery.DefaultCloudServiceID,
 				},
 			},
 		},
@@ -394,9 +389,10 @@ func TestNewAzureNetworkDiscovery(t *testing.T) {
 				opts: []DiscoveryOption{WithAuthorizer(&mockAuthorizer{})},
 			},
 			want: &azureNetworkDiscovery{
-				azureDiscovery{
+				&azureDiscovery{
 					cred:                &mockAuthorizer{},
 					discovererComponent: NetworkComponent,
+					csID:                discovery.DefaultCloudServiceID,
 				},
 			},
 		},
@@ -413,7 +409,7 @@ func TestNewAzureNetworkDiscovery(t *testing.T) {
 
 func Test_azureNetworkDiscovery_discoverNetworkInterfaces(t *testing.T) {
 	type fields struct {
-		azureDiscovery azureDiscovery
+		azureDiscovery *azureDiscovery
 	}
 	tests := []struct {
 		name    string
@@ -424,7 +420,7 @@ func Test_azureNetworkDiscovery_discoverNetworkInterfaces(t *testing.T) {
 		{
 			name: "Error list pages",
 			fields: fields{
-				azureDiscovery: azureDiscovery{
+				azureDiscovery: &azureDiscovery{
 					cred: nil,
 				},
 			},
@@ -450,7 +446,7 @@ func Test_azureNetworkDiscovery_discoverNetworkInterfaces(t *testing.T) {
 
 func Test_azureNetworkDiscovery_discoverLoadBalancer(t *testing.T) {
 	type fields struct {
-		azureDiscovery azureDiscovery
+		azureDiscovery *azureDiscovery
 	}
 	tests := []struct {
 		name    string
@@ -461,7 +457,7 @@ func Test_azureNetworkDiscovery_discoverLoadBalancer(t *testing.T) {
 		{
 			name: "Error list pages",
 			fields: fields{
-				azureDiscovery: azureDiscovery{
+				azureDiscovery: &azureDiscovery{
 					cred: nil,
 				},
 			},

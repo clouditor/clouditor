@@ -47,6 +47,7 @@ type computeDiscovery struct {
 	functionAPI       LambdaAPI
 	isDiscovering     bool
 	awsConfig         *Client
+	csID              string
 }
 
 // EC2API describes the EC2 api interface which is implemented by the official AWS client and mock clients in tests
@@ -77,12 +78,13 @@ var newFromConfigEC2 = ec2.NewFromConfig
 var newFromConfigLambda = lambda.NewFromConfig
 
 // NewAwsComputeDiscovery constructs a new awsS3Discovery initializing the s3-virtualMachineAPI and isDiscovering with true
-func NewAwsComputeDiscovery(client *Client) discovery.Discoverer {
+func NewAwsComputeDiscovery(client *Client, cloudServiceID string) discovery.Discoverer {
 	return &computeDiscovery{
 		virtualMachineAPI: newFromConfigEC2(client.cfg),
 		functionAPI:       newFromConfigLambda(client.cfg),
 		isDiscovering:     true,
 		awsConfig:         client,
+		csID:              cloudServiceID,
 	}
 }
 
@@ -132,6 +134,10 @@ func (d computeDiscovery) List() (resources []voc.IsCloudResource, err error) {
 	return
 }
 
+func (d *computeDiscovery) CloudServiceID() string {
+	return d.csID
+}
+
 // discoverVolumes discoveres all volumes (in the current region)
 func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
 	res, err := d.virtualMachineAPI.DescribeVolumes(context.TODO(), &ec2.DescribeVolumesInput{})
@@ -154,17 +160,16 @@ func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
 
 		blocks = append(blocks, &voc.BlockStorage{
 			Storage: &voc.Storage{
-				Resource: &voc.Resource{
-					ID:           d.arnify("volume", volume.VolumeId),
-					ServiceID:    discovery.DefaultCloudServiceID,
-					Name:         d.nameOrID(volume.Tags, volume.VolumeId),
-					CreationTime: volume.CreateTime.Unix(),
-					Type:         []string{"BlockStorage", "Storage", "Resource"},
-					GeoLocation: voc.GeoLocation{
+				Resource: discovery.NewResource(d,
+					d.arnify("volume", volume.VolumeId),
+					d.nameOrID(volume.Tags, volume.VolumeId),
+					volume.CreateTime,
+					voc.GeoLocation{
 						Region: d.awsConfig.cfg.Region,
 					},
-					Labels: d.labels(volume.Tags),
-				},
+					d.labels(volume.Tags),
+					voc.BlockStorageType,
+				),
 				AtRestEncryption: atRest,
 			},
 		})

@@ -27,6 +27,8 @@
 
 package voc
 
+var VMImageType = []string{"VM Image", "Image", "Resource"}
+
 type VMImage struct {
 	*Image
 }

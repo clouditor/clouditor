@@ -27,6 +27,8 @@
 
 package voc
 
+var IdentifiableType = []string{"Identifiable", "Resource"}
+
 type Identifiable struct {
 	*Resource
 	Authenticity  IsAuthenticity  `json:"authenticity"`

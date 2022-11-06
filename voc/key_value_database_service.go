@@ -27,6 +27,8 @@
 
 package voc
 
+var KeyValueDatabaseServiceType = []string{"KeyValueDatabaseService", "DatabaseService", "StorageService", "NetworkService", "Networking", "Resource"}
+
 type KeyValueDatabaseService struct {
 	*DatabaseService
 }

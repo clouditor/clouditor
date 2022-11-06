@@ -27,6 +27,8 @@
 
 package voc
 
+var LoggingServiceType = []string{"LoggingService", "NetworkService", "Networking", "Resource"}
+
 // LoggingService is an entity in our Cloud ontology. A logging-as-a-service offering, e.g. for analyzing logs; has a Storage resource that stores the logs
 type LoggingService struct {
 	*NetworkService

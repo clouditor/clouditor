@@ -271,7 +271,7 @@ service Orchestrator {
     };
   }
 
-  // Creates a new catalog
+  // Creates a new security controls catalog
   rpc CreateCatalog(CreateCatalogRequest) returns (Catalog) {
     option (google.api.http) = {
       post : "/v1/orchestrator/catalogs"
@@ -279,17 +279,26 @@ service Orchestrator {
     };
   }
 
-  // Retrieves a catalog
+  // Lists all security controls catalogs. Each catalog includes a list of its
+  // categories but no additional sub-resources.
+  rpc ListCatalogs(ListCatalogsRequest) returns (ListCatalogsResponse) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/catalogs"
+    };
+  }
+
+  // Retrieves a specific catalog by it's ID. The catalog includes a list of all
+  // of it categories as well as the first level of controls in each category.
   rpc GetCatalog(GetCatalogRequest) returns (Catalog) {
     option (google.api.http) = {
       get : "/v1/orchestrator/catalogs/{catalog_id}"
     };
   }
 
-  // Lists all target catalogs
-  rpc ListCatalogs(ListCatalogsRequest) returns (ListCatalogsResponse) {
+  // Removes a catalog
+  rpc RemoveCatalog(RemoveCatalogRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/catalogs"
+      delete : "/v1/orchestrator/catalogs/{catalog_id}"
     };
   }
 
@@ -301,10 +310,35 @@ service Orchestrator {
     };
   }
 
-  // Removes a catalog
-  rpc RemoveCatalog(RemoveCatalogRequest) returns (google.protobuf.Empty) {
+  // Retrieves a category of a catalog specified by the catalog ID and the
+  // category name. It includes the first level of controls within each
+  // category.
+  rpc GetCategory(GetCategoryRequest) returns (Category) {
     option (google.api.http) = {
-      delete : "/v1/orchestrator/catalogs/{catalog_id}"
+      get : "/v1/orchestrator/catalogs/{catalog_id}/category/{category_name}"
+    };
+  }
+
+  // If no additional parameters are specified, this lists all controls. If a
+  // catalog ID and a category name is specified, then only controls containing
+  // in this category are returned.
+  rpc ListControls(ListControlsRequest) returns (ListControlsResponse) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/controls"
+      additional_bindings {
+        get : "/v1/orchestrator/catalogs/{catalog_id}/categories/"
+              "{category_name}/controls"
+      }
+    };
+  }
+
+  // Retrieves a control specified by the catalog ID, the control's category
+  // name and the control ID. If present, it also includes a list of
+  // sub-controls and any metrics associated to the control.
+  rpc GetControl(GetControlRequest) returns (Control) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/"
+            "controls/{control_id}"
     };
   }
 
@@ -354,32 +388,6 @@ service Orchestrator {
     option (google.api.http) = {
       delete : "/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/"
                "{catalog_id}/toes"
-    };
-  }
-
-  // Retrieves a Category
-  rpc GetCategory(GetCategoryRequest) returns (Category) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/catalogs/{catalog_id}/category/{category_name}"
-    };
-  }
-
-  // Retrieves a Control
-  rpc GetControl(GetControlRequest) returns (Control) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/"
-            "controls/{control_id}"
-    };
-  }
-
-  // Lists all Controls (optionally only controls related to a certain category)
-  rpc ListControls(ListControlsRequest) returns (ListControlsResponse) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/controls"
-      additional_bindings {
-        get : "/v1/orchestrator/catalogs/{catalog_id}/categories/"
-              "{category_name}/controls"
-      }
     };
   }
 }

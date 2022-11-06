@@ -27,6 +27,8 @@
 
 package voc
 
+var FunctionType = []string{"Function", "Compute", "Resource"}
+
 type Function struct {
 	*Compute
 	RuntimeVersion  string `json:"runtimeVersion"`

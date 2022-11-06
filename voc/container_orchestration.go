@@ -27,6 +27,8 @@
 
 package voc
 
+var ContainerOrchestrationType = []string{"ContainerOrchestration", "Resource"}
+
 type ContainerOrchestration struct {
 	*Resource
 	ResourceLogging *ResourceLogging `json:"resourceLogging"`

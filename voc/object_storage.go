@@ -27,6 +27,8 @@
 
 package voc
 
+var ObjectStorageType = []string{"ObjectStorage", "Storage", "Resource"}
+
 type ObjectStorage struct {
 	*Storage
 	// TODO(oxisto): This is a little bit of a hack. We actually want to use

@@ -27,6 +27,8 @@
 
 package voc
 
+var RelationalDatabaseServiceType = []string{"RelationalDatabaseService", "DatabaseService", "StorageService", "NetworkService", "Networking", "Resource"}
+
 type RelationalDatabaseService struct {
 	*DatabaseService
 }
