@@ -737,7 +737,7 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 			args: args{
 				req: &orchestrator.GetMetricConfigurationRequest{
 					MetricId:       "NotExists",
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					CloudServiceId: DefaultTargetCloudServiceId,
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -885,7 +885,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "request is invalid",
+			name: "metricId is missing in request",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
 				authz:   &service.AuthorizationStrategyAllowAll{},
@@ -893,42 +893,11 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			args: args{
 				req: &orchestrator.UpdateMetricConfigurationRequest{
 					CloudServiceId: DefaultTargetCloudServiceId,
-				},
-			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, assessment.ErrMetricIdMissing.Error())
-			},
-		},
-		{
-			name: "request configuration is invalid",
-			fields: fields{
-				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
-			},
-			args: args{
-				req: &orchestrator.UpdateMetricConfigurationRequest{
-					CloudServiceId: DefaultTargetCloudServiceId,
-					MetricId:       "MyMetric",
-					Configuration:  &assessment.MetricConfiguration{},
-				},
-			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, assessment.ErrMetricConfigurationMissing.Error())
-			},
-		},
-		{
-			name: "metric does not exist",
-			fields: fields{
-				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
-			},
-			args: args{
-				req: &orchestrator.UpdateMetricConfigurationRequest{
-					CloudServiceId: DefaultTargetCloudServiceId,
-					MetricId:       "MyMetric",
 					Configuration: &assessment.MetricConfiguration{
-						Operator:    "<",
-						TargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
+						Operator:       "<",
+						TargetValue:    &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
+						MetricId:       "MyMetric",
+						CloudServiceId: DefaultTargetCloudServiceId,
 					},
 				},
 			},
@@ -937,7 +906,152 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			},
 		},
 		{
-			name: "service does not exist",
+			name: "cloudServiceID is missing in request",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					MetricId: "MyMetric",
+					Configuration: &assessment.MetricConfiguration{
+						Operator:       "<",
+						TargetValue:    &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
+						MetricId:       "MyMetric",
+						CloudServiceId: DefaultTargetCloudServiceId,
+					},
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, assessment.ErrCloudServiceIDIsMissing.Error())
+			},
+		},
+		{
+			name: "cloudServiceID is invalid in request",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					CloudServiceId: "00000000-000000000000",
+					MetricId:       "MyMetric",
+					Configuration: &assessment.MetricConfiguration{
+						Operator:       "<",
+						TargetValue:    &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
+						MetricId:       "MyMetric",
+						CloudServiceId: DefaultTargetCloudServiceId,
+					},
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, assessment.ErrCloudServiceIDIsInvalid.Error())
+			},
+		},
+		{
+			name: "configuration is missing in request",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					MetricId:       "MyMetric",
+					CloudServiceId: DefaultTargetCloudServiceId,
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, assessment.ErrMetricConfigurationMissing.Error())
+			},
+		},
+		{
+			name: "metricId is missing in configuration",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					MetricId:       "MyMetric",
+					CloudServiceId: DefaultTargetCloudServiceId,
+					Configuration: &assessment.MetricConfiguration{
+						Operator:       "<",
+						TargetValue:    &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
+						CloudServiceId: DefaultTargetCloudServiceId,
+					},
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, assessment.ErrMetricIdMissing.Error())
+			},
+		},
+		{
+			name: "cloudServiceId is missing in configuration",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					MetricId:       "MyMetric",
+					CloudServiceId: DefaultTargetCloudServiceId,
+					Configuration: &assessment.MetricConfiguration{
+						Operator:    "<",
+						TargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
+						MetricId:    "MyMetric",
+					},
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, assessment.ErrCloudServiceIDIsMissing.Error())
+			},
+		},
+		{
+			name: "cloudServiceId is invalid in configuration",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					MetricId:       "MyMetric",
+					CloudServiceId: DefaultTargetCloudServiceId,
+					Configuration: &assessment.MetricConfiguration{
+						Operator:       "<",
+						TargetValue:    &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
+						MetricId:       "MyMetric",
+						CloudServiceId: "00000000-000000000000",
+					},
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, assessment.ErrCloudServiceIDIsInvalid.Error())
+			},
+		},
+		{
+			name: "metric does not exist in storage",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					CloudServiceId: DefaultTargetCloudServiceId,
+					MetricId:       "MyMetric",
+					Configuration: &assessment.MetricConfiguration{
+						Operator:       "<",
+						TargetValue:    &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
+						MetricId:       "MyMetric",
+						CloudServiceId: DefaultTargetCloudServiceId,
+					},
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "metric or service does not exist")
+			},
+		},
+		{
+			name: "cloudService does not exist in storage",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					_ = s.Create(assessment.Metric{Id: "MyMetric"})
@@ -946,13 +1060,13 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricConfigurationRequest{
-					CloudServiceId: "00000000-0000-0000-0000-000000000001",
+					CloudServiceId: DefaultTargetCloudServiceId,
 					MetricId:       "MyMetric",
 					Configuration: &assessment.MetricConfiguration{
 						Operator:       "<",
 						TargetValue:    &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
 						MetricId:       "MyMetric",
-						CloudServiceId: "00000000-0000-0000-0000-000000000001",
+						CloudServiceId: DefaultTargetCloudServiceId,
 					},
 				},
 			},
