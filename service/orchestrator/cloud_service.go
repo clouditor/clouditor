@@ -136,24 +136,29 @@ func (s *Service) GetCloudService(ctx context.Context, req *orchestrator.GetClou
 // UpdateCloudService implements method for OrchestratorServer interface for updating a cloud service
 func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.UpdateCloudServiceRequest) (response *orchestrator.CloudService, err error) {
 	if req.Service == nil {
+		go s.informHooks(ctx, response, err)
 		return nil, status.Errorf(codes.InvalidArgument, "service is empty")
 	}
 
 	if req.CloudServiceId == "" {
+		go s.informHooks(ctx, response, err)
 		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
 	}
 
 	// Check, if this request has access to the cloud service according to our authorization strategy.
 	if !s.authz.CheckAccess(ctx, service.AccessUpdate, req) {
+		go s.informHooks(ctx, response, err)
 		return nil, service.ErrPermissionDenied
 	}
 
 	count, err := s.storage.Count(req.Service, "id = ?", req.CloudServiceId)
 	if err != nil {
+		go s.informHooks(ctx, response, err)
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
 
 	if count == 0 {
+		go s.informHooks(ctx, response, errors.New("count == 0"))
 		return nil, status.Error(codes.NotFound, "service not found")
 	}
 
@@ -164,6 +169,7 @@ func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.Upda
 	// Since UpdateCloudService is a PUT method, we use storage.Save
 	err = s.storage.Save(response, "Id = ?", req.CloudServiceId)
 	if err != nil {
+		go s.informHooks(ctx, response, err)
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 	go s.informHooks(ctx, response, nil)
