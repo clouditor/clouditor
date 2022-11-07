@@ -192,7 +192,7 @@ service Orchestrator {
   }
 
   // Retrieves a metric configuration (target value and operator) for a specific
-  // service and metric ID
+  // service and metric ID.
   rpc GetMetricConfiguration(GetMetricConfigurationRequest)
       returns (MetricConfiguration) {
     option (google.api.http) = {

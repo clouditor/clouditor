@@ -122,9 +122,11 @@ func TestAssessmentResultHook(t *testing.T) {
 						EvidenceId: "11111111-1111-1111-1111-111111111111",
 						Timestamp:  timestamppb.Now(),
 						MetricConfiguration: &assessment.MetricConfiguration{
-							TargetValue: toStruct(1.0),
-							Operator:    "operator",
-							IsDefault:   true,
+							TargetValue:    toStruct(1.0),
+							Operator:       "operator",
+							IsDefault:      true,
+							CloudServiceId: "00000000-0000-0000-0000-000000000000",
+							MetricId:       "TestMetric",
 						},
 						NonComplianceComments: "non_compliance_comment",
 						Compliant:             true,
@@ -184,9 +186,11 @@ func TestStoreAssessmentResult(t *testing.T) {
 						EvidenceId: "11111111-1111-1111-1111-111111111111",
 						Timestamp:  timestamppb.Now(),
 						MetricConfiguration: &assessment.MetricConfiguration{
-							TargetValue: toStruct(1.0),
-							Operator:    "operator",
-							IsDefault:   true,
+							TargetValue:    toStruct(1.0),
+							Operator:       "operator",
+							IsDefault:      true,
+							CloudServiceId: "00000000-0000-0000-0000-000000000000",
+							MetricId:       "TestMetric",
 						},
 						NonComplianceComments: "non_compliance_comment",
 						Compliant:             true,
@@ -210,9 +214,11 @@ func TestStoreAssessmentResult(t *testing.T) {
 						EvidenceId: "11111111-1111-1111-1111-111111111111",
 						Timestamp:  timestamppb.Now(),
 						MetricConfiguration: &assessment.MetricConfiguration{
-							TargetValue: toStruct(1.0),
-							Operator:    "operator",
-							IsDefault:   true,
+							TargetValue:    toStruct(1.0),
+							Operator:       "operator",
+							IsDefault:      true,
+							CloudServiceId: "00000000-0000-0000-0000-000000000000",
+							MetricId:       "TestMetric",
 						},
 						NonComplianceComments: "non_compliance_comment",
 						Compliant:             true,
@@ -390,9 +396,11 @@ func createStoreAssessmentResultRequestsMock(count int) []*orchestrator.StoreAss
 				EvidenceId: "11111111-1111-1111-1111-111111111111",
 				Timestamp:  timestamppb.Now(),
 				MetricConfiguration: &assessment.MetricConfiguration{
-					TargetValue: toStruct(1.0),
-					Operator:    fmt.Sprintf("operator%d", i),
-					IsDefault:   true,
+					TargetValue:    toStruct(1.0),
+					Operator:       fmt.Sprintf("operator%d", i),
+					IsDefault:      true,
+					CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					MetricId:       "TestMetric",
 				},
 				NonComplianceComments: "non_compliance_comment",
 				Compliant:             true,
@@ -575,6 +583,34 @@ func TestNewService(t *testing.T) {
 				}
 
 				return assert.Equal(tt, myStorage, service.storage)
+			},
+		},
+		{
+			name: "New service with catalogs file",
+			args: args{
+				opts: []ServiceOption{WithCatalogsFile("catalogsfile.json")},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				service, ok := i1.(*Service)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				return assert.Equal(tt, "catalogsfile.json", service.catalogsFile)
+			},
+		},
+		{
+			name: "New service with metrics file",
+			args: args{
+				opts: []ServiceOption{WithMetricsFile("metricsfile.json")},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				service, ok := i1.(*Service)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				return assert.Equal(tt, "metricsfile.json", service.metricsFile)
 			},
 		},
 	}
