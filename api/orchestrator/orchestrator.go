@@ -28,6 +28,8 @@ package orchestrator
 import (
 	"context"
 	"errors"
+
+	"clouditor.io/clouditor/api/assessment"
 )
 
 type CloudServiceHookFunc func(ctx context.Context, cld *CloudService, err error)
@@ -42,6 +44,38 @@ var (
 	ErrCatalogIDIsMissing = errors.New("catalog ID is empty")
 	ErrToEIDIsMissing     = errors.New("toe ID is empty")
 )
+
+// Validate validates the UpdateMetricConfigurationRequest
+func (req *UpdateMetricConfigurationRequest) Validate() error {
+	// Check cloud service ID
+	err := assessment.CheckCloudServiceID(req.CloudServiceId)
+	if err != nil {
+		return err
+	}
+
+	// Check metric ID
+	if req.MetricId == "" {
+		return assessment.ErrMetricIdMissing
+	}
+
+	return nil
+}
+
+// Validate validates the GetMetricConfigurationRequest
+func (req *GetMetricConfigurationRequest) Validate() error {
+	// Check cloud service ID
+	err := assessment.CheckCloudServiceID(req.CloudServiceId)
+	if err != nil {
+		return err
+	}
+
+	// Check metric ID
+	if req.MetricId == "" {
+		return assessment.ErrMetricIdMissing
+	}
+
+	return nil
+}
 
 type CloudServiceRequest interface {
 	GetCloudServiceId() string

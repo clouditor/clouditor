@@ -65,7 +65,7 @@ type OrchestratorClient interface {
 	// service and metric ID
 	UpdateMetricConfiguration(ctx context.Context, in *UpdateMetricConfigurationRequest, opts ...grpc.CallOption) (*assessment.MetricConfiguration, error)
 	// Retrieves a metric configuration (target value and operator) for a specific
-	// service and metric ID
+	// service and metric ID.
 	GetMetricConfiguration(ctx context.Context, in *GetMetricConfigurationRequest, opts ...grpc.CallOption) (*assessment.MetricConfiguration, error)
 	// Lists all a metric configurations (target value and operator) for a
 	// specific service ID
@@ -580,7 +580,7 @@ type OrchestratorServer interface {
 	// service and metric ID
 	UpdateMetricConfiguration(context.Context, *UpdateMetricConfigurationRequest) (*assessment.MetricConfiguration, error)
 	// Retrieves a metric configuration (target value and operator) for a specific
-	// service and metric ID
+	// service and metric ID.
 	GetMetricConfiguration(context.Context, *GetMetricConfigurationRequest) (*assessment.MetricConfiguration, error)
 	// Lists all a metric configurations (target value and operator) for a
 	// specific service ID

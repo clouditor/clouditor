@@ -307,7 +307,7 @@ func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetrics
 	return res, nil
 }
 
-// GetMetric retrieves a metric specified by req.MetridId
+// GetMetric retrieves a metric specified by req.MetricId.
 func (svc *Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequest) (metric *assessment.Metric, err error) {
 	err = svc.storage.Get(&metric, "id = ?", req.MetricId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
@@ -320,6 +320,11 @@ func (svc *Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequ
 }
 
 func (svc *Service) GetMetricConfiguration(ctx context.Context, req *orchestrator.GetMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
+	// Validate request
+	if err = req.Validate(); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "%s", err)
+	}
+
 	// Check, if this request has access to the cloud service according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied
@@ -344,7 +349,16 @@ func (svc *Service) GetMetricConfiguration(ctx context.Context, req *orchestrato
 
 // UpdateMetricConfiguration updates the configuration for a metric, specified by the identifier in req.MetricId.
 func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestrator.UpdateMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
-	// TODO(oxisto): Validate the request
+	// Validate request
+	if err = req.Validate(); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "%s", err)
+	}
+
+	// Validate request configuration
+	err = req.Configuration.Validate()
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "%s", err)
+	}
 
 	// Check, if this request has access to the cloud service according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
@@ -410,6 +424,7 @@ func (svc *Service) ListMetricConfigurations(ctx context.Context, req *orchestra
 	return
 }
 
+// GetMetricImplementation retrieves a metric implementation specified by req.MetricId.
 func (svc *Service) GetMetricImplementation(_ context.Context, req *orchestrator.GetMetricImplementationRequest) (res *assessment.MetricImplementation, err error) {
 	res = new(assessment.MetricImplementation)
 
