@@ -224,7 +224,7 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, ErrRequestCloudServiceID.Error())
+				return assert.ErrorContains(t, err, assessment.ErrCloudServiceIDIsMissing.Error())
 			},
 		},
 		{
@@ -240,7 +240,7 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, ErrRequestCloudServiceID.Error())
+				return assert.ErrorContains(t, err, assessment.ErrCloudServiceIDIsInvalid.Error())
 			},
 		},
 		{
@@ -268,6 +268,68 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 						Operator:    "<",
 						TargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "11111"}},
 					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := tt.fields.Request
+			tt.wantErr(t, req.Validate())
+		})
+	}
+}
+
+func TestGetMetricConfigurationRequest_Validate(t *testing.T) {
+	type fields struct {
+		Request *GetMetricConfigurationRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Missing CloudServiceId",
+			fields: fields{
+				Request: &GetMetricConfigurationRequest{
+					MetricId: "TestMetric",
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, assessment.ErrCloudServiceIDIsMissing.Error())
+			},
+		},
+		{
+			name: "Wrong CloudServiceId",
+			fields: fields{
+				Request: &GetMetricConfigurationRequest{
+					MetricId:       "TestMetric",
+					CloudServiceId: "00000000000000000000",
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, assessment.ErrCloudServiceIDIsInvalid.Error())
+			},
+		},
+		{
+			name: "Missing MetricId",
+			fields: fields{
+				Request: &GetMetricConfigurationRequest{
+					CloudServiceId: "00000000-0000-0000-0000-000000000000",
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, assessment.ErrMetricIdMissing.Error())
+			},
+		},
+		{
+			name: "Without error",
+			fields: fields{
+				Request: &GetMetricConfigurationRequest{
+					MetricId:       "TestMetric",
+					CloudServiceId: "00000000-0000-0000-0000-000000000000",
 				},
 			},
 			wantErr: assert.NoError,

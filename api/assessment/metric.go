@@ -194,7 +194,7 @@ func (c *MetricConfiguration) Validate() (err error) {
 
 	err = CheckCloudServiceID(c.CloudServiceId)
 	if err != nil {
-		return fmt.Errorf("%w", err)
+		return err
 	}
 
 	return
