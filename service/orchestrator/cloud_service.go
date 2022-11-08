@@ -47,7 +47,7 @@ const (
 	DefaultTargetCloudServiceDescription = "The default target cloud service"
 )
 
-func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.RegisterCloudServiceRequest) (service *orchestrator.CloudService, err error) {
+func (s *Service) RegisterCloudService(ctx context.Context, req *orchestrator.RegisterCloudServiceRequest) (service *orchestrator.CloudService, err error) {
 	if req == nil {
 		return nil, status.Errorf(codes.InvalidArgument, api.ErrRequestIsNil.Error())
 	}
@@ -71,6 +71,7 @@ func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.Regi
 		return nil, status.Errorf(codes.Internal, "could not add cloud service to the database: %v", err)
 	}
 
+	go s.informHooks(ctx, service, nil)
 	return
 }
 
@@ -166,6 +167,7 @@ func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.Upda
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
+
 	go s.informHooks(ctx, response, nil)
 	return
 }
@@ -188,6 +190,7 @@ func (s *Service) RemoveCloudService(ctx context.Context, req *orchestrator.Remo
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
 
+	go s.informHooks(ctx, nil, nil)
 	return &emptypb.Empty{}, nil
 }
 
