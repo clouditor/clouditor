@@ -175,7 +175,7 @@ func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.Upda
 // RemoveCloudService implements method for OrchestratorServer interface for removing a cloud service
 func (s *Service) RemoveCloudService(ctx context.Context, req *orchestrator.RemoveCloudServiceRequest) (response *emptypb.Empty, err error) {
 	if req.CloudServiceId == "" {
-		go s.informHooks(ctx, nil, errors.New(codes.InvalidArgument.String()))
+		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
 	}
 
 	// Check, if this request has access to the cloud service according to our authorization strategy.
