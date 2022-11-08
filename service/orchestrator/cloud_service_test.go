@@ -49,6 +49,12 @@ func TestService_RegisterCloudService(t *testing.T) {
 		err  error
 	}{
 		{
+			"missing request",
+			nil,
+			nil,
+			status.Error(codes.InvalidArgument, api.ErrRequestIsNil.Error()),
+		},
+		{
 			"missing service",
 			&orchestrator.RegisterCloudServiceRequest{},
 			nil,
@@ -211,6 +217,7 @@ func TestService_UpdateCloudService(t *testing.T) {
 		CloudServiceId: DefaultTargetCloudServiceId,
 	})
 	assert.Equal(t, codes.NotFound, status.Code(err))
+
 	// 4th case: Service updated successfully
 	_, err = orchestratorService.CreateDefaultTargetCloudService()
 	assert.NoError(t, err)
