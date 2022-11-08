@@ -40,12 +40,13 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (svc *Service) CreateTargetOfEvaluation(_ context.Context, req *orchestrator.CreateTargetOfEvaluationRequest) (res *orchestrator.TargetOfEvaluation, err error) {
+func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestrator.CreateTargetOfEvaluationRequest) (res *orchestrator.TargetOfEvaluation, err error) {
 	err = svc.storage.Create(&req.Toe)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
+	go svc.informToeHooks(ctx, req.Toe, nil)
 	res = req.Toe
 
 	return
@@ -89,7 +90,7 @@ func (svc *Service) ListTargetsOfEvaluation(_ context.Context, req *orchestrator
 }
 
 // UpdateTargetOfEvaluation implements method for updating an existing TargetOfEvaluation
-func (svc *Service) UpdateTargetOfEvaluation(_ context.Context, req *orchestrator.UpdateTargetOfEvaluationRequest) (res *orchestrator.TargetOfEvaluation, err error) {
+func (svc *Service) UpdateTargetOfEvaluation(ctx context.Context, req *orchestrator.UpdateTargetOfEvaluationRequest) (res *orchestrator.TargetOfEvaluation, err error) {
 	if req.CloudServiceId == "" || req.CatalogId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "id is empty")
 	}
@@ -109,11 +110,13 @@ func (svc *Service) UpdateTargetOfEvaluation(_ context.Context, req *orchestrato
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
+
+	go svc.informToeHooks(ctx, req.Toe, nil)
 	return
 }
 
 // RemoveTargetOfEvaluation implements method for removing a TargetOfEvaluation
-func (svc *Service) RemoveTargetOfEvaluation(_ context.Context, req *orchestrator.RemoveTargetOfEvaluationRequest) (response *emptypb.Empty, err error) {
+func (svc *Service) RemoveTargetOfEvaluation(ctx context.Context, req *orchestrator.RemoveTargetOfEvaluationRequest) (response *emptypb.Empty, err error) {
 	if req.CloudServiceId == "" || req.CatalogId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "ToE id is empty")
 	}
@@ -125,5 +128,21 @@ func (svc *Service) RemoveTargetOfEvaluation(_ context.Context, req *orchestrato
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
+	go svc.informToeHooks(ctx, nil, nil)
 	return &emptypb.Empty{}, nil
+}
+
+// informToeHooks informs the registered hook functions about an update of the Target of Evaluation
+func (s *Service) informToeHooks(ctx context.Context, toe *orchestrator.TargetOfEvaluation, err error) {
+	s.hookMutex.RLock()
+	hooks := s.toeHooks
+	defer s.hookMutex.RUnlock()
+
+	// Inform our hook, if we have any
+	if len(hooks) > 0 {
+		for _, hook := range hooks {
+			// We could do hook concurrent again (assuming different hooks don't interfere with each other)
+			hook(ctx, toe, err)
+		}
+	}
 }
