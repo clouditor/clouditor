@@ -146,3 +146,10 @@ func (s *Service) informToeHooks(ctx context.Context, toe *orchestrator.TargetOf
 		}
 	}
 }
+
+// RegisterToeHook registers the Target of Evaluation hook function
+func (s *Service) RegisterToeHook(hook orchestrator.ToeHookFunc) {
+	s.hookMutex.Lock()
+	defer s.hookMutex.Unlock()
+	s.toeHooks = append(s.toeHooks, hook)
+}

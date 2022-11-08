@@ -28,6 +28,9 @@ package orchestrator
 import (
 	"context"
 	"fmt"
+	"reflect"
+	"runtime"
+	"sync"
 	"testing"
 
 	"clouditor.io/clouditor/api"
@@ -373,4 +376,105 @@ func TestService_RemoveTargetOfEvaluation(t *testing.T) {
 	listTargetsOfEvaluationResponse, err = orchestratorService.ListTargetsOfEvaluation(context.Background(), &orchestrator.ListTargetsOfEvaluationRequest{})
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(listTargetsOfEvaluationResponse.Toes))
+}
+
+func TestToeHook(t *testing.T) {
+	var (
+		hookCallCounter = 0
+		wg              sync.WaitGroup
+	)
+	wg.Add(2)
+
+	firstHookFunction := func(ctx context.Context, toe *orchestrator.TargetOfEvaluation, err error) {
+		hookCallCounter++
+		log.Println("Hello from inside the first toe hook function")
+
+		wg.Done()
+	}
+
+	secondHookFunction := func(ctx context.Context, toe *orchestrator.TargetOfEvaluation, err error) {
+		hookCallCounter++
+		log.Println("Hello from inside the second toe hook function")
+
+		wg.Done()
+	}
+
+	service := NewService()
+	service.RegisterToeHook(firstHookFunction)
+	service.RegisterToeHook(secondHookFunction)
+
+	// Check if first hook is registered
+	funcName1 := runtime.FuncForPC(reflect.ValueOf(service.toeHooks[0]).Pointer()).Name()
+	funcName2 := runtime.FuncForPC(reflect.ValueOf(firstHookFunction).Pointer()).Name()
+	assert.Equal(t, funcName1, funcName2)
+
+	// Check if second hook is registered
+	funcName1 = runtime.FuncForPC(reflect.ValueOf(service.toeHooks[1]).Pointer()).Name()
+	funcName2 = runtime.FuncForPC(reflect.ValueOf(secondHookFunction).Pointer()).Name()
+	assert.Equal(t, funcName1, funcName2)
+
+	type args struct {
+		ctx context.Context
+		req *orchestrator.UpdateTargetOfEvaluationRequest
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantResp *orchestrator.TargetOfEvaluation
+		wantErr  bool
+	}{
+		{
+			name: "Store first assessment result to the map",
+			args: args{
+				ctx: context.TODO(),
+				req: &orchestrator.UpdateTargetOfEvaluationRequest{
+					CloudServiceId: orchestratortest.MockServiceID,
+					CatalogId:      orchestratortest.MockCatalogID,
+					Toe: &orchestrator.TargetOfEvaluation{
+						CloudServiceId: orchestratortest.MockServiceID,
+						CatalogId:      orchestratortest.MockCatalogID,
+						AssuranceLevel: &AssuranceLevelMedium,
+					},
+				},
+			},
+			wantErr: false,
+			wantResp: &orchestrator.TargetOfEvaluation{
+				CloudServiceId: orchestratortest.MockServiceID,
+				CatalogId:      orchestratortest.MockCatalogID,
+				AssuranceLevel: &AssuranceLevelMedium,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			hookCallCounter = 0
+
+			// Create service
+			s := service
+			err := s.storage.Create(&orchestrator.CloudService{Id: "MyService"})
+			assert.NoError(t, err)
+
+			// Create catalog
+			err = s.storage.Create(orchestratortest.NewCatalog())
+			assert.NoError(t, err)
+
+			// Create new ToE
+			err = s.storage.Create(orchestratortest.NewTargetOfEvaluation())
+			assert.NoError(t, err)
+
+			gotResp, err := s.UpdateTargetOfEvaluation(tt.args.ctx, tt.args.req)
+
+			// wait for all hooks (2 hooks)
+			wg.Wait()
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("UpdateTargetOfEvaluation() error = %v, wantErrMessage %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotResp, tt.wantResp) {
+				t.Errorf("UpdateTargetOfEvaluation() gotResp = %v, want %v", gotResp, tt.wantResp)
+			}
+			assert.Equal(t, 2, hookCallCounter)
+		})
+	}
 }
