@@ -30,19 +30,21 @@ import (
 	"errors"
 
 	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/internal/util"
 )
 
 type CloudServiceHookFunc func(ctx context.Context, cld *CloudService, err error)
 
 var (
-	ErrCertificateIsNil   = errors.New("certificate is empty")
-	ErrServiceIsNil       = errors.New("service is empty")
-	ErrNameIsMissing      = errors.New("service name is empty")
-	ErrIDIsMissing        = errors.New("service ID is empty")
-	ErrCertIDIsMissing    = errors.New("certificate ID is empty")
-	ErrCatalogIsNil       = errors.New("catalog is empty")
-	ErrCatalogIDIsMissing = errors.New("catalog ID is empty")
-	ErrToEIDIsMissing     = errors.New("toe ID is empty")
+	ErrCertificateIsNil        = errors.New("certificate is empty")
+	ErrServiceIsNil            = errors.New("service is empty")
+	ErrNameIsMissing           = errors.New("service name is empty")
+	ErrIDIsMissing             = errors.New("service ID is empty")
+	ErrCertIDIsMissing         = errors.New("certificate ID is empty")
+	ErrCatalogIsNil            = errors.New("catalog is empty")
+	ErrCatalogIDIsMissing      = errors.New("catalog ID is empty")
+	ErrToEIDIsMissing          = errors.New("toe ID is empty")
+	ErrAssuranceLevelIsMissing = errors.New("assurance level is missing")
 )
 
 // Validate validates the UpdateMetricConfigurationRequest
@@ -75,6 +77,26 @@ func (req *GetMetricConfigurationRequest) Validate() error {
 	}
 
 	return nil
+}
+
+// TODO(anatheka): Add tests
+// Validate validates the TargetOfEvaluation
+func (t *TargetOfEvaluation) Validate() (err error) {
+	if util.Deref(t.AssuranceLevel) == "" {
+		return ErrAssuranceLevelIsMissing
+	}
+
+	if t.CatalogId == "" {
+		return ErrCatalogIDIsMissing
+	}
+
+	// Check cloud service ID
+	err = assessment.CheckCloudServiceID(t.CloudServiceId)
+	if err != nil {
+		return err
+	}
+
+	return
 }
 
 type CloudServiceRequest interface {
