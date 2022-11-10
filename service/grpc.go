@@ -31,6 +31,7 @@ import (
 	"net"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/evaluation"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -56,6 +57,12 @@ func WithEvidenceStore(svc evidence.EvidenceStoreServer) StartGRPCServerOption {
 func WithDiscovery(svc discovery.DiscoveryServer) StartGRPCServerOption {
 	return func(srv *grpc.Server) {
 		discovery.RegisterDiscoveryServer(srv, svc)
+	}
+}
+
+func WithEvaluation(svc evaluation.EvaluationServer) StartGRPCServerOption {
+	return func(srv *grpc.Server) {
+		evaluation.RegisterEvaluationServer(srv, svc)
 	}
 }
 

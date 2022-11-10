@@ -36,6 +36,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/evaluation"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	commands_login "clouditor.io/clouditor/cli/commands/login"
@@ -48,6 +49,7 @@ import (
 	"clouditor.io/clouditor/service"
 	service_assessment "clouditor.io/clouditor/service/assessment"
 	service_discovery "clouditor.io/clouditor/service/discovery"
+	service_evaluation "clouditor.io/clouditor/service/evaluation"
 	service_evidenceStore "clouditor.io/clouditor/service/evidence"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
@@ -120,6 +122,7 @@ var (
 	orchestratorService  *service_orchestrator.Service
 	assessmentService    assessment.AssessmentServer
 	evidenceStoreService evidence.EvidenceStoreServer
+	evaluationService    evaluation.EvaluationServer
 	db                   persistence.Storage
 	providers            []string
 
@@ -253,7 +256,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			}),
 	)
 
-	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db))
+	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db), service_orchestrator.WithCatalogsFile("eucs_catalogs.json"))
 
 	assessmentService = service_assessment.NewService(
 		service_assessment.WithOAuth2Authorizer(
@@ -265,7 +268,10 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			},
 		),
 	)
+
 	evidenceStoreService = service_evidenceStore.NewService()
+
+	evaluationService = service_evaluation.NewService()
 
 	// It is possible to register hook functions for the orchestrator, evidenceStore and assessment service.
 	// The hook functions in orchestrator are implemented in StoreAssessmentResult(s)
@@ -318,6 +324,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
 	assessment.RegisterAssessmentServer(server, assessmentService)
 	evidence.RegisterEvidenceStoreServer(server, evidenceStoreService)
+	evaluation.RegisterEvaluationServer(server, evaluationService)
 
 	// enable reflection, primary for testing in early stages
 	reflection.Register(server)

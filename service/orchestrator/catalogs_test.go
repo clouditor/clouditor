@@ -517,7 +517,7 @@ func TestService_loadCatalogs(t *testing.T) {
 		{
 			name: "storage error",
 			fields: fields{
-				catalogsFile: "catalogs.json",
+				catalogsFile: "demo_catalogs.json",
 				storage:      &testutil.StorageWithError{SaveErr: ErrSomeError},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {

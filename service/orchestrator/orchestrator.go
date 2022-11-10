@@ -54,7 +54,7 @@ var log *logrus.Entry
 
 var DefaultMetricsFile = "metrics.json"
 
-var DefaultCatalogsFile = "catalogs.json"
+var DefaultCatalogsFile = "demo_catalogs.json"
 
 // Service is an implementation of the Clouditor Orchestrator service
 type Service struct {
