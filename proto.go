@@ -27,6 +27,7 @@
 
 package clouditor
 
+//go:generate protoc -I . -I third_party internal/testutil/prototest/prototest.proto --go_out=paths=source_relative:.
 //go:generate protoc -I . -I third_party api/page_token.proto --go_out=paths=source_relative:.
 //go:generate protoc -I . -I third_party api/assessment/metric.proto --go_out=paths=source_relative:.
 //go:generate protoc -I . -I third_party api/evidence/evidence.proto --go_out=paths=source_relative:.
