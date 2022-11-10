@@ -23,38 +23,15 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package util
+syntax = "proto3";
+package prototest;
 
-import (
-	"reflect"
-	"testing"
+option go_package = "clouditor.io/clouditor/internal/testutil/prototest";
 
-	"github.com/stretchr/testify/assert"
-
-	"clouditor.io/clouditor/api/auth"
-	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/internal/testutil/prototest"
-)
-
-// Not the most sophisticated tests. They will probably fail at some point when these proto messages change. Mocking
-// a proto.Message (and thus implementing ProtoReflect() as well) would be ideal...
-func TestGetFieldNames(t *testing.T) {
-	var (
-		fieldnames []string
-	)
-
-	// Successful
-	fieldnames = GetFieldNames[*auth.User]()
-	assert.Equal(t, []string{"username", "password", "email", "full_name", "shadow"}, fieldnames)
-	assert.Equal(t, reflect.ValueOf(auth.User{}).NumField()-3, len(fieldnames))
-
-	// Successful
-	fieldnames = GetFieldNames[*prototest.TestStruct]()
-	assert.Equal(t, reflect.ValueOf(prototest.TestStruct{}).NumField()-3, len(fieldnames))
-	assert.Equal(t, []string{"test_name", "test_id", "test_description"}, fieldnames)
-
-	// Successful
-	fieldnames = GetFieldNames[*evidence.Evidence]()
-	assert.Equal(t, reflect.ValueOf(evidence.Evidence{}).NumField()-3, len(fieldnames))
-	assert.Equal(t, []string{"id", "timestamp", "cloud_service_id", "tool_id", "raw", "resource"}, fieldnames)
+// This is a test message. If a test needs a proto message, that one can be used. 
+// This has been created because of import cycles in the package util.
+message TestStruct {
+	string test_name = 1;       
+	string test_id = 2; 
+	string test_description = 3; 
 }
