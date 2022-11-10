@@ -173,4 +173,6 @@ require (
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
 
+require github.com/kisielk/godepgraph v0.0.0-20220719222756-573dc89cecc8 // indirect
+
 retract v1.4.7

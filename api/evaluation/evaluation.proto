@@ -1,0 +1,94 @@
+/*
+ * Copyright 2022 Fraunhofer AISEC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *           $$\                           $$\ $$\   $$\
+ *           $$ |                          $$ |\__|  $$ |
+ *  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+ * $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+ * $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
+ * $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+ * \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+ *  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+ *
+ * This file is part of Clouditor Community Edition.
+ */
+ syntax = "proto3";
+
+ package clouditor;
+
+ import "google/api/annotations.proto";
+ import "google/protobuf/timestamp.proto";
+ import "api/assessment/assessment.proto";
+ import "api/orchestrator/orchestrator.proto";
+ import "tagger/tagger.proto";
+
+
+ option go_package = "clouditor.io/clouditor/api/evaluation";
+
+ // TODO(anatheka): Delete
+ // A Target of Evaluation binds a cloud service to a catalog, so the service is
+// evaluated regarding this catalog's controls
+
+ // Evaluates all assessment results of an service based on its Target of Evaluation (binding of a cloud service to a catalog). The assessment results are evaluated regarding all mapped catalog contols.
+ service Evaluation {
+    rpc Evaluate(EvaluateRequest) returns (EvaluateResponse) {
+    option (google.api.http) = {
+        post : "/v1/evaluation/evaluate/{control_id}"
+        body : "toe"
+      };
+     } 
+}
+
+message EvaluateRequest {
+    string control_id = 1; 
+    TargetOfEvaluation toe = 2;
+}
+
+message EvaluateResponse {
+    bool status = 1; 
+    string status_message = 2; 
+}
+ 
+// A evaluation result resource, representing the result after evaluating the cloud service with a specific control
+message EvaluationResult {
+    // Evaluation result id
+    string id = 1; 
+
+    enum EvaluationStatus {
+        STATUS_UNSPECIFIED = 0;
+        COMPLIANT = 1;
+        NOT_COMPLIANT = 2;
+        PENDING = 3;
+    }
+    
+    // Evaluation status
+    EvaluationStatus status = 2;
+    
+    // Reference to the control the evaluation was based on
+    string control_id = 3;
+
+    // Time of evaluation
+    google.protobuf.Timestamp timestamp = 4
+      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
+
+    // The cloud service this evaluation result belongs to
+    string cloud_service_id = 5;
+
+    // Reference to the target of evaluation the evaluation was based on
+    string target_of_evaluation = 6;
+
+    // List of assessment results because of which the evaluation status is not 'compliant'
+    repeated AssessmentResult failing_assessment_results = 7;
+}
