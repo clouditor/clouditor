@@ -189,7 +189,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 			wantResponse: assert.Nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.NotFound, status.Code(err))
-				return assert.ErrorContains(t, err, "toe ID is empty")
+				return assert.ErrorContains(t, err, orchestrator.ErrToEIDIsMissing.Error())
 			},
 		},
 		{
