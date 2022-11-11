@@ -142,7 +142,6 @@ func TestService_StartEvaluation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
 			s.StartEvaluation(tt.args.req)
-
 		})
 	}
 }
