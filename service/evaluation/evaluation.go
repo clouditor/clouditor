@@ -87,7 +87,7 @@ func (s *Service) Evaluate(_ context.Context, req *evaluation.EvaluateRequest) (
 		Every(5).
 		Minute().
 		Tag(req.Toe.CloudServiceId).
-		Do(s.StartEvaluation)
+		Do(s.StartEvaluation, req)
 
 	return
 }
