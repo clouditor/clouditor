@@ -92,7 +92,7 @@ func (s *Service) Evaluate(_ context.Context, req *evaluation.EvaluateRequest) (
 	return
 }
 
-func (s *Service) StartEvaluation(req *evaluation.EvaluateRequest) {
+func (*Service) StartEvaluation(req *evaluation.EvaluateRequest) {
 	log.Infof("Started evaluation for Cloud Service '%s' and Catalog ID '%s'", req.Toe.CloudServiceId, req.Toe.CatalogId)
 }
 
