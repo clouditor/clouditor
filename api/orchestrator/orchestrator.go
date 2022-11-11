@@ -45,8 +45,7 @@ var (
 	ErrCatalogIDIsMissing      = errors.New("catalog ID is empty")
 	ErrToEIsMissing            = errors.New("target of evaluation is missing ")
 	ErrToEIDIsMissing          = errors.New("target of evaluation ID is empty")
-	ErrAssuranceLevelIsMissing = errors.New("assurance level is missing")
-	ErrAssuranceLevelIsEmpty   = errors.New("assurance level is empty")
+	ErrAssuranceLevelIsMissing = errors.New("assurance level is empty")
 )
 
 // Validate validates the UpdateMetricConfigurationRequest
@@ -81,15 +80,15 @@ func (req *GetMetricConfigurationRequest) Validate() error {
 	return nil
 }
 
-// TODO(anatheka): Add tests
 // Validate validates the TargetOfEvaluation
+// TODO(anatheka): Add tests
 func (t *TargetOfEvaluation) Validate() (err error) {
 	if t == nil {
 		return ErrToEIsMissing
 	}
 
 	if util.Deref(t.AssuranceLevel) == "" {
-		return ErrAssuranceLevelIsEmpty
+		return ErrAssuranceLevelIsMissing
 	}
 
 	if t.CatalogId == "" {
