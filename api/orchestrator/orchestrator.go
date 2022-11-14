@@ -81,7 +81,6 @@ func (req *GetMetricConfigurationRequest) Validate() error {
 }
 
 // Validate validates the TargetOfEvaluation
-// TODO(anatheka): Add tests
 func (t *TargetOfEvaluation) Validate() (err error) {
 	if t == nil {
 		return ErrToEIsMissing

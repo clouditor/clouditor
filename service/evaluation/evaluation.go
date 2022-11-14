@@ -29,7 +29,12 @@ import (
 	"context"
 	"time"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/evaluation"
+	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/service"
+	"golang.org/x/oauth2/clientcredentials"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -39,10 +44,20 @@ import (
 
 var log *logrus.Entry
 
+type grpcTarget struct {
+	target string
+	opts   []grpc.DialOption
+}
+
 // Service is an implementation of the Clouditor Evaluation service
 type Service struct {
 	evaluation.UnimplementedEvaluationServer
-	scheduler *gocron.Scheduler
+	scheduler           *gocron.Scheduler
+	orchestratorClient  orchestrator.OrchestratorClient
+	orchestratorAddress grpcTarget
+	authorizer          api.Authorizer
+	// csID is the cloud service ID for which we start the evaluation
+	csID string
 }
 
 func init() {
@@ -51,6 +66,20 @@ func init() {
 
 // ServiceOption is a function-style option to configure the Evaluation Service
 type ServiceOption func(*Service)
+
+// WithOAuth2Authorizer is an option to use an OAuth 2.0 authorizer
+func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[Service] {
+	return func(s *Service) {
+		s.SetAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(config))
+	}
+}
+
+// WithAuthorizer is an option to use a pre-created authorizer
+func WithAuthorizer(auth api.Authorizer) service.Option[Service] {
+	return func(s *Service) {
+		s.SetAuthorizer(auth)
+	}
+}
 
 // NewService creates a new Evaluation service
 func NewService(opts ...ServiceOption) *Service {
@@ -64,6 +93,16 @@ func NewService(opts ...ServiceOption) *Service {
 	}
 
 	return &s
+}
+
+// SetAuthorizer implements UsesAuthorizer
+func (svc *Service) SetAuthorizer(auth api.Authorizer) {
+	svc.authorizer = auth
+}
+
+// Authorizer implements UsesAuthorizer
+func (svc *Service) Authorizer() api.Authorizer {
+	return svc.authorizer
 }
 
 // Evaluate is a method implementation of the evaluation interface: It starts the evaluation for a cloud service
@@ -92,10 +131,34 @@ func (s *Service) Evaluate(_ context.Context, req *evaluation.EvaluateRequest) (
 	return
 }
 
-func (*Service) StartEvaluation(req *evaluation.EvaluateRequest) {
+func (s *Service) StartEvaluation(req *evaluation.EvaluateRequest) {
 	log.Infof("Started evaluation for Cloud Service '%s' and Catalog ID '%s'", req.Toe.CloudServiceId, req.Toe.CatalogId)
+
+	// Find associated metrics for control
+	// ControlId
+	// ToE
+	// * catalog_id
+	// * cloud_service_id
+	// * assurance_level
+
+	// Establish connection to orchestrator gRPC service
+	conn, err := grpc.Dial(s.orchestratorAddress.target,
+		api.DefaultGrpcDialOptions(s.orchestratorAddress.target, s, s.orchestratorAddress.opts...)...)
+	if err != nil {
+		log.Errorf("could not connect to orchestrator service: %v", err)
+	}
+
+	s.orchestratorClient = orchestrator.NewOrchestratorClient(conn)
+	catalog, err := s.orchestratorClient.GetCatalog(context.Background(), &orchestrator.GetCatalogRequest{CatalogId: req.Toe.CatalogId})
+	if err != nil {
+		log.Errorf("Could not get catalog '%s' from Orchestrator", req.Toe.CatalogId)
+	}
+
+	log.Infof("Catalog: %v", catalog)
+
 }
 
 func (s *Service) Shutdown() {
+	log.Debug(s.)
 	s.scheduler.Stop()
 }
