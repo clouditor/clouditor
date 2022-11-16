@@ -46,7 +46,7 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	go svc.informToeHooks(ctx, req.Toe, orchestrator.ToeStatus_TOE_REMOVE, nil)
+	go svc.informToeHooks(ctx, req.Toe, orchestrator.ToeStatus_TOE_CREATE, nil)
 	res = req.Toe
 
 	return
