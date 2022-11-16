@@ -33,7 +33,7 @@ import (
 )
 
 type CloudServiceHookFunc func(ctx context.Context, cld *CloudService, err error)
-type ToeHookFunc func(ctx context.Context, toe *TargetOfEvaluation, err error)
+type ToeHookFunc func(ctx context.Context, toe *TargetOfEvaluation, status string, err error)
 
 var (
 	ErrCertificateIsNil   = errors.New("certificate is empty")
