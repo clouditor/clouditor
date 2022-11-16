@@ -222,7 +222,9 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Lists all target catalogs with the category level
+            description: |-
+                Lists all security controls catalogs. Each catalog includes a list of its
+                 categories but no additional sub-resources.
             operationId: Orchestrator_ListCatalogs
             parameters:
                 - name: pageSize
@@ -258,7 +260,7 @@ paths:
         post:
             tags:
                 - Orchestrator
-            description: Creates a new catalog
+            description: Creates a new security controls catalog
             operationId: Orchestrator_CreateCatalog
             requestBody:
                 content:
@@ -283,7 +285,9 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Retrieves a catalog with the category and the first control level
+            description: |-
+                Retrieves a specific catalog by it's ID. The catalog includes a list of all
+                 of it categories as well as the first level of controls in each category.
             operationId: Orchestrator_GetCatalog
             parameters:
                 - name: catalogId
@@ -359,7 +363,10 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Retrieves a Control with the second control lavel and metrics.
+            description: |-
+                Retrieves a control specified by the catalog ID, the control's category
+                 name and the control ID. If present, it also includes a list of
+                 sub-controls and any metrics associated to the control.
             operationId: Orchestrator_GetControl
             parameters:
                 - name: catalogId
@@ -394,7 +401,10 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Retrieves a Category with the first control level.
+            description: |-
+                Retrieves a category of a catalog specified by the catalog ID and the
+                 category name. It includes the first level of controls within each
+                 category.
             operationId: Orchestrator_GetCategory
             parameters:
                 - name: catalogId
@@ -885,7 +895,10 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Lists all Controls (optionally only controls related to a certain category) with the second controls level.
+            description: |-
+                If no additional parameters are specified, this lists all controls. If a
+                 catalog ID and a category name is specified, then only controls containing
+                 in this category are returned.
             operationId: Orchestrator_ListControls
             parameters:
                 - name: pageSize
