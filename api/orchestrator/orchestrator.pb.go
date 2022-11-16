@@ -3581,7 +3581,8 @@ func (x *State) GetCertificateId() string {
 	return ""
 }
 
-// The status of an Target of Evaluation for a hook function, e.g., create, update or remove. With that status, the ToE hook function can be informed about the reason it is called.
+// ToeStatus represents the status of the Target of Evaluation.
+// With that status the ToE hook function can be informed about the reason of its call.
 type ToeStatus struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

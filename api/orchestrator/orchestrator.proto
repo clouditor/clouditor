@@ -755,7 +755,11 @@ message State {
   string certificate_id = 5;
 }
 
-// The status of an Target of Evaluation for a hook function, e.g., create, update or remove. With that status, the ToE hook function can be informed about the reason it is called. 
+// MetricChangeEvent represents a change of either a metric configuration or
+// implementation.
+
+// ToeStatus represents the status of the Target of Evaluation. 
+// With that status the ToE hook function can be informed about the reason of its call. 
 message ToeStatus {
   enum Status {
     TOE_CREATE = 0;
