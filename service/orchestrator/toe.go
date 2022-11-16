@@ -148,7 +148,7 @@ func (s *Service) informToeHooks(ctx context.Context, toe *orchestrator.TargetOf
 	if len(hooks) > 0 {
 		for _, hook := range hooks {
 			// We could do hook concurrent again (assuming different hooks don't interfere with each other)
-			hook(ctx, toe, err)
+			hook(ctx, toe, status, err)
 		}
 	}
 }
