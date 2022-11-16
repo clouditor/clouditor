@@ -385,14 +385,20 @@ func TestToeHook(t *testing.T) {
 	)
 	wg.Add(2)
 
-	firstHookFunction := func(ctx context.Context, toe *orchestrator.TargetOfEvaluation, err error) {
+	firstHookFunction := func(ctx context.Context, toe *orchestrator.TargetOfEvaluation, status orchestrator.ToeStatus_Status, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the first toe hook function")
+
+		// Checking the status
+		// UpdateTargetOfEvaluation is called, so the status must be TOE_UPDATE
+		if status != orchestrator.ToeStatus_TOE_UPDATE {
+			return
+		}
 
 		wg.Done()
 	}
 
-	secondHookFunction := func(ctx context.Context, toe *orchestrator.TargetOfEvaluation, err error) {
+	secondHookFunction := func(ctx context.Context, toe *orchestrator.TargetOfEvaluation, status orchestrator.ToeStatus_Status, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the second toe hook function")
 

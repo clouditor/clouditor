@@ -754,3 +754,13 @@ message State {
   // Reference to the certificate
   string certificate_id = 5;
 }
+
+// The status of an Target of Evaluation for a hook function, e.g., create, update or remove. With that status, the ToE hook function can be informed about the reason it is called. 
+message ToeStatus {
+  enum Status {
+    TOE_CREATE = 0;
+    TOE_UPDATE = 1;
+    TOE_REMOVE = 2;
+  }
+  Status status = 1;
+}
