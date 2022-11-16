@@ -40,13 +40,19 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+const (
+	create = "create"
+	update = "update"
+	remove = "remove"
+)
+
 func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestrator.CreateTargetOfEvaluationRequest) (res *orchestrator.TargetOfEvaluation, err error) {
 	err = svc.storage.Create(&req.Toe)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	go svc.informToeHooks(ctx, req.Toe, nil)
+	go svc.informToeHooks(ctx, req.Toe, create, nil)
 	res = req.Toe
 
 	return
@@ -111,7 +117,7 @@ func (svc *Service) UpdateTargetOfEvaluation(ctx context.Context, req *orchestra
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	go svc.informToeHooks(ctx, req.Toe, nil)
+	go svc.informToeHooks(ctx, req.Toe, update, nil)
 	return
 }
 
@@ -128,12 +134,12 @@ func (svc *Service) RemoveTargetOfEvaluation(ctx context.Context, req *orchestra
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	go svc.informToeHooks(ctx, nil, nil)
+	go svc.informToeHooks(ctx, nil, remove, nil)
 	return &emptypb.Empty{}, nil
 }
 
-// informToeHooks informs the registered hook functions about an update of the Target of Evaluation
-func (s *Service) informToeHooks(ctx context.Context, toe *orchestrator.TargetOfEvaluation, err error) {
+// informToeHooks informs the registered hook functions about create, update or remove of the Target of Evaluation
+func (s *Service) informToeHooks(ctx context.Context, toe *orchestrator.TargetOfEvaluation, status string, err error) {
 	s.hookMutex.RLock()
 	hooks := s.toeHooks
 	defer s.hookMutex.RUnlock()
