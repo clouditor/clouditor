@@ -755,9 +755,6 @@ message State {
   string certificate_id = 5;
 }
 
-// MetricChangeEvent represents a change of either a metric configuration or
-// implementation.
-
 // ToeStatus represents the status of the Target of Evaluation. 
 // With that status the ToE hook function can be informed about the reason of its call. 
 message ToeStatus {
