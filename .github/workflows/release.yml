@@ -27,6 +27,7 @@ jobs:
         with:
           images: |
             clouditor/engine
+            ghcr.io/clouditor/engine
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
