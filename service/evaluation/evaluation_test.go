@@ -52,7 +52,12 @@ func TestNewService(t *testing.T) {
 			args: args{
 				opts: []ServiceOption{},
 			},
-			want: &Service{},
+			want: &Service{
+				orchestratorAddress: grpcTarget{
+					target: "localhost:9090",
+				},
+				evaluation: make(map[string]*EvaluationScheduler),
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -71,30 +76,31 @@ func TestNewService(t *testing.T) {
 	}
 }
 
-func TestService_Evaluate(t *testing.T) {
+func TestService_StartEvaluation(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		req *evaluation.EvaluateRequest
+		req *evaluation.StartEvaluationRequest
 	}
 	tests := []struct {
 		name     string
 		args     args
-		wantResp *evaluation.EvaluateResponse
+		wantResp *evaluation.StartEvaluationResponse
 		wantErr  assert.ErrorAssertionFunc
 	}{
 		{
 			name: "Missing Control ID in request",
 			args: args{
 				ctx: context.Background(),
-				req: &evaluation.EvaluateRequest{
+				req: &evaluation.StartEvaluationRequest{
 					Toe: &orchestrator.TargetOfEvaluation{
 						CloudServiceId: defaults.DefaultTargetCloudServiceID,
 						CatalogId:      defaults.DefaultCatalogID,
 						AssuranceLevel: &defaults.AssuranceLevelHigh,
 					},
+					CategoryName: defaults.DefaultEUCSCategoryName,
 				},
 			},
-			wantResp: &evaluation.EvaluateResponse{
+			wantResp: &evaluation.StartEvaluationResponse{
 				Status:        false,
 				StatusMessage: fmt.Sprintf(codes.InvalidArgument.String(), evaluation.ErrControlIDIsMissing.Error()),
 			},
@@ -103,23 +109,24 @@ func TestService_Evaluate(t *testing.T) {
 			name: "Happy path",
 			args: args{
 				ctx: context.Background(),
-				req: &evaluation.EvaluateRequest{
+				req: &evaluation.StartEvaluationRequest{
 					Toe: &orchestrator.TargetOfEvaluation{
 						CloudServiceId: defaults.DefaultTargetCloudServiceID,
 						CatalogId:      defaults.DefaultCatalogID,
 						AssuranceLevel: &defaults.AssuranceLevelHigh,
 					},
-					ControlId: defaults.DefaultEUCSControl,
+					ControlId:    defaults.DefaultEUCSControl,
+					CategoryName: defaults.DefaultEUCSCategoryName,
 				},
 			},
-			wantResp: &evaluation.EvaluateResponse{},
+			wantResp: &evaluation.StartEvaluationResponse{},
 			wantErr:  assert.NoError,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
-			gotResp, err := s.Evaluate(tt.args.ctx, tt.args.req)
+			gotResp, err := s.StartEvaluation(tt.args.ctx, tt.args.req)
 			if tt.wantErr != nil {
 				tt.wantErr(t, err)
 				assert.Equal(t, gotResp, tt.wantResp)
@@ -128,9 +135,9 @@ func TestService_Evaluate(t *testing.T) {
 	}
 }
 
-func TestService_StartEvaluation(t *testing.T) {
+func TestService_Evaluate(t *testing.T) {
 	type args struct {
-		req *evaluation.EvaluateRequest
+		req *evaluation.StartEvaluationRequest
 	}
 	tests := []struct {
 		name string
@@ -141,7 +148,7 @@ func TestService_StartEvaluation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
-			s.StartEvaluation(tt.args.req)
+			s.StartEvaluation(context.Background(), tt.args.req)
 		})
 	}
 }
