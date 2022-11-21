@@ -50,6 +50,16 @@ func request_Evaluation_Evaluate_0(ctx context.Context, marshaler runtime.Marsha
 		_   = err
 	)
 
+	val, ok = pathParams["category_name"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "category_name")
+	}
+
+	protoReq.CategoryName, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "category_name", err)
+	}
+
 	val, ok = pathParams["control_id"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "control_id")
@@ -84,6 +94,16 @@ func local_request_Evaluation_Evaluate_0(ctx context.Context, marshaler runtime.
 		_   = err
 	)
 
+	val, ok = pathParams["category_name"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "category_name")
+	}
+
+	protoReq.CategoryName, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "category_name", err)
+	}
+
 	val, ok = pathParams["control_id"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "control_id")
@@ -112,7 +132,7 @@ func RegisterEvaluationHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Evaluation/Evaluate", runtime.WithHTTPPathPattern("/v1/evaluation/evaluate/{control_id}"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Evaluation/Evaluate", runtime.WithHTTPPathPattern("/v1/evaluation/evaluate/{category_name}/{control_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -175,7 +195,7 @@ func RegisterEvaluationHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Evaluation/Evaluate", runtime.WithHTTPPathPattern("/v1/evaluation/evaluate/{control_id}"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Evaluation/Evaluate", runtime.WithHTTPPathPattern("/v1/evaluation/evaluate/{category_name}/{control_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -195,7 +215,7 @@ func RegisterEvaluationHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 }
 
 var (
-	pattern_Evaluation_Evaluate_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "evaluation", "evaluate", "control_id"}, ""))
+	pattern_Evaluation_Evaluate_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"v1", "evaluation", "evaluate", "category_name", "control_id"}, ""))
 )
 
 var (

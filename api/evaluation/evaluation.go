@@ -30,8 +30,9 @@ import (
 )
 
 var (
-	ErrControlIDIsMissing = errors.New("control id is missing")
-	ErrToeIsInvalid       = errors.New("target of evaluation is not valid")
+	ErrControlIDIsMissing    = errors.New("control id is missing")
+	ErrCategoryNameIsMissing = errors.New("category name is missing")
+	ErrToeIsInvalid          = errors.New("target of evaluation is not valid")
 )
 
 // Validate validates the evaluate request
@@ -39,6 +40,10 @@ func (c *EvaluateRequest) Validate() (err error) {
 
 	if c.ControlId == "" {
 		return ErrControlIDIsMissing
+	}
+
+	if c.CategoryName == "" {
+		return ErrCategoryNameIsMissing
 	}
 
 	if err = c.Toe.Validate(); err != nil {

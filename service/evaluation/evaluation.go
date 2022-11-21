@@ -30,6 +30,7 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/api"
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evaluation"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/service"
@@ -49,6 +50,11 @@ type grpcTarget struct {
 	opts   []grpc.DialOption
 }
 
+type mappingResultMetric struct {
+	metricName string
+	results    []*assessment.AssessmentResult
+}
+
 // Service is an implementation of the Clouditor Evaluation service
 type Service struct {
 	evaluation.UnimplementedEvaluationServer
@@ -56,13 +62,17 @@ type Service struct {
 	orchestratorClient  orchestrator.OrchestratorClient
 	orchestratorAddress grpcTarget
 	authorizer          api.Authorizer
-	// csID is the cloud service ID for which we start the evaluation
-	csID string
 }
 
 func init() {
 	log = logrus.WithField("component", "orchestrator")
 }
+
+const (
+	// DefaultOrchestratorAddress specifies the default gRPC address of the orchestrator service.
+	DefaultOrchestratorAddress = "localhost:9090"
+	DefaultAssessmentAddress   = "localhost:9090"
+)
 
 // ServiceOption is a function-style option to configure the Evaluation Service
 type ServiceOption func(*Service)
@@ -81,10 +91,23 @@ func WithAuthorizer(auth api.Authorizer) service.Option[Service] {
 	}
 }
 
+// WithOrchestratorAddress is an option to configure the orchestrator service gRPC address.
+func WithOrchestratorAddress(address string, opts ...grpc.DialOption) ServiceOption {
+	return func(s *Service) {
+		s.orchestratorAddress = grpcTarget{
+			target: address,
+			opts:   opts,
+		}
+	}
+}
+
 // NewService creates a new Evaluation service
 func NewService(opts ...ServiceOption) *Service {
 	s := Service{
 		scheduler: gocron.NewScheduler(time.UTC),
+		orchestratorAddress: grpcTarget{
+			target: DefaultOrchestratorAddress,
+		},
 	}
 
 	// Apply service options
@@ -128,18 +151,16 @@ func (s *Service) Evaluate(_ context.Context, req *evaluation.EvaluateRequest) (
 		Tag(req.Toe.CloudServiceId).
 		Do(s.StartEvaluation, req)
 
+	s.scheduler.StartAsync()
+
 	return
 }
 
 func (s *Service) StartEvaluation(req *evaluation.EvaluateRequest) {
-	log.Infof("Started evaluation for Cloud Service '%s' and Catalog ID '%s'", req.Toe.CloudServiceId, req.Toe.CatalogId)
+	log.Infof("Started evaluation for Cloud Service '%s',  Catalog ID '%s' and Control '%s'", req.Toe.CloudServiceId, req.Toe.CatalogId, req.ControlId)
 
-	// Find associated metrics for control
-	// ControlId
-	// ToE
-	// * catalog_id
-	// * cloud_service_id
-	// * assurance_level
+	// Verify that monitoring of this service and controls hasn't started already
+	// TODO(anatheka)
 
 	// Establish connection to orchestrator gRPC service
 	conn, err := grpc.Dial(s.orchestratorAddress.target,
@@ -148,17 +169,61 @@ func (s *Service) StartEvaluation(req *evaluation.EvaluateRequest) {
 		log.Errorf("could not connect to orchestrator service: %v", err)
 	}
 
+	// Find associated metrics to control
+	// For each metric, find all assessment results for the target cloud service
+	// If at least one assessment result is non-compliant --> evaluation = fail; otherwise --> evaluation = ok
+	// Optional: Add failing assessment results to list of failing assessment results
+
+	// Create orchestrator client
 	s.orchestratorClient = orchestrator.NewOrchestratorClient(conn)
-	catalog, err := s.orchestratorClient.GetCatalog(context.Background(), &orchestrator.GetCatalogRequest{CatalogId: req.Toe.CatalogId})
+
+	// Get control and the associated metrics
+	control, err := s.orchestratorClient.GetControl(context.Background(), &orchestrator.GetControlRequest{
+		CatalogId:    req.Toe.CatalogId,
+		CategoryName: req.CategoryName,
+		ControlId:    req.ControlId,
+	})
 	if err != nil {
-		log.Errorf("Could not get catalog '%s' from Orchestrator", req.Toe.CatalogId)
+		log.Errorf("Could not get control '%s' from Orchestrator: %v", req.ControlId, err)
+		// TODO(anatheka): Do we need that?
+		s.Shutdown()
+		return
+	}
+	metrics := control.Metrics
+
+	// Get assessment results for the target cloud service
+	// TODO(anatheka): The filtered_cloud_service_id option does not work: access denied
+	// TODO(anatheka): Get all results, not only the first page.
+	results, err := s.orchestratorClient.ListAssessmentResults(context.Background(), &assessment.ListAssessmentResultsRequest{
+		// FilteredCloudServiceId: req.Toe.CloudServiceId,
+	})
+	if err != nil {
+		log.Errorf("Could not get assessment results for Cloud Serivce '%s' from Orchestrator", req.Toe.CloudServiceId)
+		// TODO(anatheka): Do we need that?
+		s.Shutdown()
+		return
 	}
 
-	log.Infof("Catalog: %v", catalog)
+	// For each metric, find all assessment results for the target cloud service
+	var mappingList []mappingResultMetric
+	for _, metric := range metrics {
+		var mapping mappingResultMetric
+		var resultList []*assessment.AssessmentResult
+		for _, result := range results.Results {
+			if result.MetricId == metric.Id {
+				resultList = append(resultList, result)
+			}
+		}
+		mapping.metricName = metric.Name
+		mapping.results = resultList
+		mappingList = append(mappingList, mapping)
+	}
+
+	log.Debugf("Found %d metrics.", len(mappingList))
+	// Do evaluation and find all non-comüpliant assessment results
 
 }
 
 func (s *Service) Shutdown() {
-	log.Debug(s.)
 	s.scheduler.Stop()
 }

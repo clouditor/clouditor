@@ -37,23 +37,22 @@
 
  option go_package = "clouditor.io/clouditor/api/evaluation";
 
- // TODO(anatheka): Delete
- // A Target of Evaluation binds a cloud service to a catalog, so the service is
-// evaluated regarding this catalog's controls
-
  // Evaluates all assessment results of an service based on its Target of Evaluation (binding of a cloud service to a catalog). The assessment results are evaluated regarding all mapped catalog contols.
  service Evaluation {
     rpc Evaluate(EvaluateRequest) returns (EvaluateResponse) {
     option (google.api.http) = {
-        post : "/v1/evaluation/evaluate/{control_id}"
+        post : "/v1/evaluation/evaluate/{category_name}/{control_id}"
         body : "toe"
       };
      } 
 }
 
 message EvaluateRequest {
-    string control_id = 1; 
-    TargetOfEvaluation toe = 2;
+    TargetOfEvaluation toe = 1;
+    // The catalog ID the control belongs to 
+    string category_name = 3; 
+    // The catalogs control ID
+    string control_id = 4; 
 }
 
 message EvaluateResponse {
@@ -77,7 +76,7 @@ message EvaluationResult {
     EvaluationStatus status = 2;
     
     // Reference to the control the evaluation was based on
-    string control_id = 3;
+    string control = 3;
 
     // Time of evaluation
     google.protobuf.Timestamp timestamp = 4

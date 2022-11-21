@@ -109,7 +109,7 @@ func TestService_Evaluate(t *testing.T) {
 						CatalogId:      defaults.DefaultCatalogID,
 						AssuranceLevel: &defaults.AssuranceLevelHigh,
 					},
-					ControlId: defaults.DefaultControlId,
+					ControlId: defaults.DefaultEUCSControl,
 				},
 			},
 			wantResp: &evaluation.EvaluateResponse{},
