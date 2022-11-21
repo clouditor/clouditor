@@ -198,8 +198,6 @@ func (srv *Service) ListControls(_ context.Context, req *orchestrator.ListContro
 func (svc *Service) loadCatalogs() (err error) {
 	var catalogs []*orchestrator.Catalog
 
-	log.Infof("Loading catalogs from %s", svc.catalogsFile)
-
 	// Default to loading catalogs from our embedded file system
 	if svc.loadCatalogsFunc == nil {
 		svc.loadCatalogsFunc = svc.loadEmbeddedCatalogs
@@ -222,6 +220,7 @@ func (svc *Service) loadCatalogs() (err error) {
 func (svc *Service) loadEmbeddedCatalogs() (catalogs []*orchestrator.Catalog, err error) {
 	var b []byte
 
+	log.Infof("Loading catalogs from %s", svc.catalogsFile)
 	b, err = f.ReadFile(svc.catalogsFile)
 	if err != nil {
 		return nil, fmt.Errorf("error while loading %s: %w", svc.catalogsFile, err)
