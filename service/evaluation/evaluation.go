@@ -62,6 +62,8 @@ type Service struct {
 	orchestratorClient  orchestrator.OrchestratorClient
 	orchestratorAddress grpcTarget
 	authorizer          api.Authorizer
+	// evaluation contains lists of controls (value) per target cloud service (key) that are currently evaluated
+	evaluation map[string]*EvaluationScheduler
 }
 
 func init() {
@@ -76,6 +78,11 @@ const (
 
 // ServiceOption is a function-style option to configure the Evaluation Service
 type ServiceOption func(*Service)
+
+type EvaluationScheduler struct {
+	scheduler           *gocron.Scheduler
+	evaluatedControlIDs []string
+}
 
 // WithOAuth2Authorizer is an option to use an OAuth 2.0 authorizer
 func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[Service] {
@@ -108,6 +115,7 @@ func NewService(opts ...ServiceOption) *Service {
 		orchestratorAddress: grpcTarget{
 			target: DefaultOrchestratorAddress,
 		},
+		evaluation: make(map[string]*EvaluationScheduler),
 	}
 
 	// Apply service options
@@ -128,17 +136,24 @@ func (svc *Service) Authorizer() api.Authorizer {
 	return svc.authorizer
 }
 
-// Evaluate is a method implementation of the evaluation interface: It starts the evaluation for a cloud service
-func (s *Service) Evaluate(_ context.Context, req *evaluation.EvaluateRequest) (resp *evaluation.EvaluateResponse, err error) {
-	resp = &evaluation.EvaluateResponse{}
+// Evaluate is a method implementation of the evaluation interface: It starts the evaluation for a cloud service and a given Control (e.g., EUCS OPS-13.2)
+func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvaluationRequest) (resp *evaluation.StartEvaluationResponse, err error) {
+	resp = &evaluation.StartEvaluationResponse{}
 
 	err = req.Validate()
 	if err != nil {
-		resp = &evaluation.EvaluateResponse{
+		resp = &evaluation.StartEvaluationResponse{
 			Status:        false,
 			StatusMessage: err.Error(),
 		}
 		return resp, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	// Verify that evaluating of this service and control hasn't started already
+	// TODO(anatheka): Extend for one schedule per control or do we have to stop it and add with several control IDs?
+	if m := s.evaluation[req.Toe.CloudServiceId]; m != nil && /*slices.Contains(s.evaluation[req.Toe.CloudServiceId].evaluatedControlIDs, req.ControlId) &&*/ m.scheduler != nil && m.scheduler.IsRunning() {
+		err = status.Errorf(codes.AlreadyExists, "Service %s is being evaluated with Control %s already.", req.Toe.CloudServiceId, req.ControlId)
+		return
 	}
 
 	log.Info("Starting evaluation ...")
@@ -148,21 +163,28 @@ func (s *Service) Evaluate(_ context.Context, req *evaluation.EvaluateRequest) (
 	_, err = s.scheduler.
 		Every(5).
 		Minute().
-		Tag(req.Toe.CloudServiceId).
-		Do(s.StartEvaluation, req)
+		Tag(req.Toe.CloudServiceId, req.ControlId).
+		Do(s.Evaluate, req)
+
+	// Add map entry for target cloud service id or if already exists add new control ID
+	if s.evaluation[req.Toe.CloudServiceId] == nil {
+		s.evaluation[req.Toe.CloudServiceId] = new(EvaluationScheduler)
+		s.evaluation[req.Toe.CloudServiceId].scheduler = s.scheduler
+		s.evaluation[req.Toe.CloudServiceId].evaluatedControlIDs = []string{req.ControlId}
+	} else {
+		s.evaluation[req.Toe.CloudServiceId].evaluatedControlIDs = append(s.evaluation[req.Toe.CloudServiceId].evaluatedControlIDs, req.ControlId)
+	}
 
 	s.scheduler.StartAsync()
 
 	return
 }
 
-func (s *Service) StartEvaluation(req *evaluation.EvaluateRequest) {
+func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 	log.Infof("Started evaluation for Cloud Service '%s',  Catalog ID '%s' and Control '%s'", req.Toe.CloudServiceId, req.Toe.CatalogId, req.ControlId)
 
-	// Verify that monitoring of this service and controls hasn't started already
-	// TODO(anatheka)
-
 	// Establish connection to orchestrator gRPC service
+	// TODO (anatheka): Use getOrchestratorClient method or something similiar. Do we have already a method for that?
 	conn, err := grpc.Dial(s.orchestratorAddress.target,
 		api.DefaultGrpcDialOptions(s.orchestratorAddress.target, s, s.orchestratorAddress.opts...)...)
 	if err != nil {
@@ -178,18 +200,13 @@ func (s *Service) StartEvaluation(req *evaluation.EvaluateRequest) {
 	s.orchestratorClient = orchestrator.NewOrchestratorClient(conn)
 
 	// Get control and the associated metrics
-	control, err := s.orchestratorClient.GetControl(context.Background(), &orchestrator.GetControlRequest{
-		CatalogId:    req.Toe.CatalogId,
-		CategoryName: req.CategoryName,
-		ControlId:    req.ControlId,
-	})
+	metrics, err := s.getMetricFromControl(req, req.CategoryName)
 	if err != nil {
-		log.Errorf("Could not get control '%s' from Orchestrator: %v", req.ControlId, err)
+		log.Errorf("Could not get metrics for control ID '%s' from Orchestrator: %v", req.ControlId, err)
 		// TODO(anatheka): Do we need that?
 		s.Shutdown()
 		return
 	}
-	metrics := control.Metrics
 
 	// Get assessment results for the target cloud service
 	// TODO(anatheka): The filtered_cloud_service_id option does not work: access denied
@@ -222,6 +239,19 @@ func (s *Service) StartEvaluation(req *evaluation.EvaluateRequest) {
 	log.Debugf("Found %d metrics.", len(mappingList))
 	// Do evaluation and find all non-comüpliant assessment results
 
+}
+
+// getMetricFromControl return a list of metrics for the given control ID. For now it is only possible to get the metrics for the lowest control level.
+func (s *Service) getMetricFromControl(req *evaluation.StartEvaluationRequest, categoryName string) (metrics []*assessment.Metric, err error) {
+	control, err := s.orchestratorClient.GetControl(context.Background(), &orchestrator.GetControlRequest{
+		CatalogId:    req.Toe.CatalogId,
+		CategoryName: req.CategoryName,
+		ControlId:    req.ControlId,
+	})
+
+	metrics = control.Metrics
+
+	return
 }
 
 func (s *Service) Shutdown() {

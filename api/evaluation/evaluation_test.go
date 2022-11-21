@@ -33,9 +33,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestEvaluateRequest_Validate(t *testing.T) {
+func TestStartEvaluationRequest_Validate(t *testing.T) {
 	type fields struct {
-		Request *EvaluateRequest
+		Request *StartEvaluationRequest
 	}
 	tests := []struct {
 		name    string
@@ -45,7 +45,7 @@ func TestEvaluateRequest_Validate(t *testing.T) {
 		{
 			name: "Missing ControlID in request",
 			fields: fields{
-				Request: &EvaluateRequest{
+				Request: &StartEvaluationRequest{
 					CategoryName: defaults.DefaultEUCSCategoryName,
 					Toe: &orchestrator.TargetOfEvaluation{
 						CloudServiceId: defaults.DefaultTargetCloudServiceID,
@@ -61,7 +61,7 @@ func TestEvaluateRequest_Validate(t *testing.T) {
 		{
 			name: "Missing CategoryName in request",
 			fields: fields{
-				Request: &EvaluateRequest{
+				Request: &StartEvaluationRequest{
 					Toe: &orchestrator.TargetOfEvaluation{
 						CloudServiceId: defaults.DefaultTargetCloudServiceID,
 						CatalogId:      defaults.DefaultCatalogID,
@@ -76,7 +76,7 @@ func TestEvaluateRequest_Validate(t *testing.T) {
 		{
 			name: "ToE is missing in request",
 			fields: fields{
-				Request: &EvaluateRequest{
+				Request: &StartEvaluationRequest{
 					ControlId:    defaults.DefaultEUCSControl,
 					CategoryName: defaults.DefaultEUCSCategoryName,
 				},
@@ -88,7 +88,7 @@ func TestEvaluateRequest_Validate(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				Request: &EvaluateRequest{
+				Request: &StartEvaluationRequest{
 					ControlId: defaults.DefaultEUCSControl,
 					Toe: &orchestrator.TargetOfEvaluation{
 						CloudServiceId: defaults.DefaultTargetCloudServiceID,

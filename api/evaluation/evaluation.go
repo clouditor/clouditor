@@ -36,7 +36,7 @@ var (
 )
 
 // Validate validates the evaluate request
-func (c *EvaluateRequest) Validate() (err error) {
+func (c *StartEvaluationRequest) Validate() (err error) {
 
 	if c.ControlId == "" {
 		return ErrControlIDIsMissing
