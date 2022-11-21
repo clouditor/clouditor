@@ -67,10 +67,11 @@ func TestStartEvaluationRequest_Validate(t *testing.T) {
 						CatalogId:      defaults.DefaultCatalogID,
 						AssuranceLevel: &defaults.AssuranceLevelHigh,
 					},
+					ControlId: defaults.DefaultCatalogID,
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, ErrControlIDIsMissing.Error())
+				return assert.ErrorContains(t, err, ErrCategoryNameIsMissing.Error())
 			},
 		},
 		{
@@ -95,6 +96,84 @@ func TestStartEvaluationRequest_Validate(t *testing.T) {
 						CatalogId:      defaults.DefaultCatalogID,
 						AssuranceLevel: &defaults.AssuranceLevelHigh,
 					},
+					CategoryName: defaults.DefaultEUCSCategoryName,
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := tt.fields.Request
+			tt.wantErr(t, req.Validate())
+		})
+	}
+}
+
+func TestStopEvaluationRequest_Validate(t *testing.T) {
+	type fields struct {
+		Request *StopEvaluationRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Missing ControlID in request",
+			fields: fields{
+				Request: &StopEvaluationRequest{
+					CategoryName: defaults.DefaultEUCSCategoryName,
+					Toe: &orchestrator.TargetOfEvaluation{
+						CloudServiceId: defaults.DefaultTargetCloudServiceID,
+						CatalogId:      defaults.DefaultCatalogID,
+						AssuranceLevel: &defaults.AssuranceLevelHigh,
+					},
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrControlIDIsMissing.Error())
+			},
+		},
+		{
+			name: "Missing CategoryName in request",
+			fields: fields{
+				Request: &StopEvaluationRequest{
+					Toe: &orchestrator.TargetOfEvaluation{
+						CloudServiceId: defaults.DefaultTargetCloudServiceID,
+						CatalogId:      defaults.DefaultCatalogID,
+						AssuranceLevel: &defaults.AssuranceLevelHigh,
+					},
+					ControlId: defaults.DefaultEUCSControl,
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrCategoryNameIsMissing.Error())
+			},
+		},
+		{
+			name: "ToE is missing in request",
+			fields: fields{
+				Request: &StopEvaluationRequest{
+					ControlId:    defaults.DefaultEUCSControl,
+					CategoryName: defaults.DefaultEUCSCategoryName,
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, orchestrator.ErrToEIsMissing.Error())
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				Request: &StopEvaluationRequest{
+					ControlId: defaults.DefaultEUCSControl,
+					Toe: &orchestrator.TargetOfEvaluation{
+						CloudServiceId: defaults.DefaultTargetCloudServiceID,
+						CatalogId:      defaults.DefaultCatalogID,
+						AssuranceLevel: &defaults.AssuranceLevelHigh,
+					},
+					CategoryName: defaults.DefaultEUCSCategoryName,
 				},
 			},
 			wantErr: assert.NoError,

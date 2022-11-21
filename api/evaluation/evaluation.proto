@@ -37,21 +37,30 @@
 
  option go_package = "clouditor.io/clouditor/api/evaluation";
 
- // Evaluation evaluates all assessment results of an service based on its Target of Evaluation (binding of a cloud service to a catalog). The assessment results are evaluated regarding the contol ID.
+ // This service represents the Evaluation Interface
  service Evaluation {
+    // StartEvaluation evaluates all assessment results of an service based on its Target of Evaluation (binding of a cloud service to a catalog). The assessment results are evaluated regarding the contol ID.
     rpc StartEvaluation(StartEvaluationRequest) returns (StartEvaluationResponse) {
     option (google.api.http) = {
-        post : "/v1/evaluation/evaluate/{category_name}/{control_id}"
+        post : "/v1/evaluation/evaluate/{category_name}/{control_id}/start"
         body : "toe"
       };
      } 
+
+     // StopEvaluation stop the evaluation for the given Cloud Service
+    rpc StopEvaluation(StopEvaluationRequest) returns (StopEvaluationResponse) {
+    option (google.api.http) = {
+        post : "/v1/evaluation/evaluate/{category_name}/{control_id}/stop"
+        body : "toe"
+        };
+    } 
 }
 
 message StartEvaluationRequest {
     TargetOfEvaluation toe = 1;
-    // The catalog ID the control belongs to 
+    // The category the control ID belongs to 
     string category_name = 3; 
-    // The catalogs control ID
+    // The control ID
     string control_id = 4; 
 }
 
@@ -59,6 +68,16 @@ message StartEvaluationResponse {
     bool status = 1; 
     string status_message = 2; 
 }
+
+message StopEvaluationRequest {
+    TargetOfEvaluation toe = 1; 
+    // The category the control ID belongs to 
+    string category_name = 2; 
+    // The control ID
+    string control_id = 3;
+}
+
+message StopEvaluationResponse {}
  
 // A evaluation result resource, representing the result after evaluating the cloud service with a specific control
 message EvaluationResult {
