@@ -52,3 +52,21 @@ func (c *StartEvaluationRequest) Validate() (err error) {
 
 	return
 }
+
+// Validate validates the evaluate request
+func (c *StopEvaluationRequest) Validate() (err error) {
+
+	if c.ControlId == "" {
+		return ErrControlIDIsMissing
+	}
+
+	if c.CategoryName == "" {
+		return ErrCategoryNameIsMissing
+	}
+
+	if err = c.Toe.Validate(); err != nil {
+		return err
+	}
+
+	return
+}

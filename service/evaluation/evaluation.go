@@ -27,6 +27,7 @@ package evaluation
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"clouditor.io/clouditor/api"
@@ -63,7 +64,8 @@ type Service struct {
 	orchestratorAddress grpcTarget
 	authorizer          api.Authorizer
 	// evaluation contains lists of controls (value) per target cloud service (key) that are currently evaluated
-	evaluation map[string]*EvaluationScheduler
+	evaluation      map[string]*EvaluationScheduler
+	evaluationMutex sync.RWMutex
 }
 
 func init() {
@@ -136,7 +138,7 @@ func (svc *Service) Authorizer() api.Authorizer {
 	return svc.authorizer
 }
 
-// Evaluate is a method implementation of the evaluation interface: It starts the evaluation for a cloud service and a given Control (e.g., EUCS OPS-13.2)
+// StartEvaluation is a method implementation of the evaluation interface: It starts the evaluation for a cloud service and a given Control (e.g., EUCS OPS-13.2)
 func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvaluationRequest) (resp *evaluation.StartEvaluationResponse, err error) {
 	resp = &evaluation.StartEvaluationResponse{}
 
@@ -151,10 +153,12 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 
 	// Verify that evaluating of this service and control hasn't started already
 	// TODO(anatheka): Extend for one schedule per control or do we have to stop it and add with several control IDs?
+	s.evaluationMutex.Lock()
 	if m := s.evaluation[req.Toe.CloudServiceId]; m != nil && /*slices.Contains(s.evaluation[req.Toe.CloudServiceId].evaluatedControlIDs, req.ControlId) &&*/ m.scheduler != nil && m.scheduler.IsRunning() {
 		err = status.Errorf(codes.AlreadyExists, "Service %s is being evaluated with Control %s already.", req.Toe.CloudServiceId, req.ControlId)
 		return
 	}
+	s.evaluationMutex.Unlock()
 
 	log.Info("Starting evaluation ...")
 	s.scheduler.TagsUnique()
@@ -163,10 +167,11 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 	_, err = s.scheduler.
 		Every(5).
 		Minute().
-		Tag(req.Toe.CloudServiceId, req.ControlId).
+		Tag(req.Toe.CloudServiceId).
 		Do(s.Evaluate, req)
 
 	// Add map entry for target cloud service id or if already exists add new control ID
+	s.evaluationMutex.Lock()
 	if s.evaluation[req.Toe.CloudServiceId] == nil {
 		s.evaluation[req.Toe.CloudServiceId] = new(EvaluationScheduler)
 		s.evaluation[req.Toe.CloudServiceId].scheduler = s.scheduler
@@ -174,6 +179,7 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 	} else {
 		s.evaluation[req.Toe.CloudServiceId].evaluatedControlIDs = append(s.evaluation[req.Toe.CloudServiceId].evaluatedControlIDs, req.ControlId)
 	}
+	s.evaluationMutex.Unlock()
 
 	s.scheduler.StartAsync()
 
@@ -239,6 +245,38 @@ func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 	log.Debugf("Found %d metrics.", len(mappingList))
 	// Do evaluation and find all non-comüpliant assessment results
 
+}
+
+// StopEvaluation is a method implementation of the evaluation interface: It starts the evaluation for a cloud service and a given Control (e.g., EUCS OPS-13.2)
+func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluationRequest) (res *evaluation.StopEvaluationResponse, err error) {
+	err = req.Validate()
+	if err != nil {
+		err = status.Errorf(codes.InvalidArgument, "%v", err)
+		return
+	}
+
+	// Verify that the service is evaluated currently
+	if s.evaluation[req.Toe.CloudServiceId] == nil {
+		err = status.Errorf(codes.NotFound, "Evaluation of cloud service %s has not been started yet.", req.Toe.CloudServiceId)
+		return
+	}
+
+	// Verify if scheduler is running
+	if !s.evaluation[req.Toe.CloudServiceId].scheduler.IsRunning() {
+		err = status.Errorf(codes.NotFound, "Evaluation of cloud service %s has been stopped already", req.Toe.CloudServiceId)
+		return
+	}
+
+	// Stop scheduler
+	s.evaluationMutex.Lock()
+	s.evaluation[req.Toe.CloudServiceId].scheduler.RemoveByTag(req.Toe.CloudServiceId)
+	// Delete entry for given Cloud Service ID
+	delete(s.evaluation, req.Toe.CloudServiceId)
+	s.evaluationMutex.Unlock()
+
+	res = &evaluation.StopEvaluationResponse{}
+
+	return
 }
 
 // getMetricFromControl return a list of metrics for the given control ID. For now it is only possible to get the metrics for the lowest control level.

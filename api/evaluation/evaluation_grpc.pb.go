@@ -22,7 +22,10 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type EvaluationClient interface {
+	// StartEvaluation evaluates all assessment results of an service based on its Target of Evaluation (binding of a cloud service to a catalog). The assessment results are evaluated regarding the contol ID.
 	StartEvaluation(ctx context.Context, in *StartEvaluationRequest, opts ...grpc.CallOption) (*StartEvaluationResponse, error)
+	// StopEvaluation stop the evaluation for the given Cloud Service
+	StopEvaluation(ctx context.Context, in *StopEvaluationRequest, opts ...grpc.CallOption) (*StopEvaluationResponse, error)
 }
 
 type evaluationClient struct {
@@ -42,11 +45,23 @@ func (c *evaluationClient) StartEvaluation(ctx context.Context, in *StartEvaluat
 	return out, nil
 }
 
+func (c *evaluationClient) StopEvaluation(ctx context.Context, in *StopEvaluationRequest, opts ...grpc.CallOption) (*StopEvaluationResponse, error) {
+	out := new(StopEvaluationResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.Evaluation/StopEvaluation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EvaluationServer is the server API for Evaluation service.
 // All implementations must embed UnimplementedEvaluationServer
 // for forward compatibility
 type EvaluationServer interface {
+	// StartEvaluation evaluates all assessment results of an service based on its Target of Evaluation (binding of a cloud service to a catalog). The assessment results are evaluated regarding the contol ID.
 	StartEvaluation(context.Context, *StartEvaluationRequest) (*StartEvaluationResponse, error)
+	// StopEvaluation stop the evaluation for the given Cloud Service
+	StopEvaluation(context.Context, *StopEvaluationRequest) (*StopEvaluationResponse, error)
 	mustEmbedUnimplementedEvaluationServer()
 }
 
@@ -56,6 +71,9 @@ type UnimplementedEvaluationServer struct {
 
 func (UnimplementedEvaluationServer) StartEvaluation(context.Context, *StartEvaluationRequest) (*StartEvaluationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartEvaluation not implemented")
+}
+func (UnimplementedEvaluationServer) StopEvaluation(context.Context, *StopEvaluationRequest) (*StopEvaluationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StopEvaluation not implemented")
 }
 func (UnimplementedEvaluationServer) mustEmbedUnimplementedEvaluationServer() {}
 
@@ -88,6 +106,24 @@ func _Evaluation_StartEvaluation_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Evaluation_StopEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StopEvaluationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EvaluationServer).StopEvaluation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.Evaluation/StopEvaluation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EvaluationServer).StopEvaluation(ctx, req.(*StopEvaluationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Evaluation_ServiceDesc is the grpc.ServiceDesc for Evaluation service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -98,6 +134,10 @@ var Evaluation_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StartEvaluation",
 			Handler:    _Evaluation_StartEvaluation_Handler,
+		},
+		{
+			MethodName: "StopEvaluation",
+			Handler:    _Evaluation_StopEvaluation_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
