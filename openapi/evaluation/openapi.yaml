@@ -7,14 +7,21 @@ info:
     description: Evaluates all assessment results of an service based on its Target of Evaluation (binding of a cloud service to a catalog). The assessment results are evaluated regarding all mapped catalog contols.
     version: 0.0.1
 paths:
-    /v1/evaluation/evaluate/{controlId}:
+    /v1/evaluation/evaluate/{categoryName}/{controlId}:
         post:
             tags:
                 - Evaluation
             operationId: Evaluation_Evaluate
             parameters:
+                - name: categoryName
+                  in: path
+                  description: The catalog ID the control belongs to
+                  required: true
+                  schema:
+                    type: string
                 - name: controlId
                   in: path
+                  description: The catalogs control ID
                   required: true
                   schema:
                     type: string

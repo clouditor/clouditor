@@ -46,6 +46,22 @@ func TestEvaluateRequest_Validate(t *testing.T) {
 			name: "Missing ControlID in request",
 			fields: fields{
 				Request: &EvaluateRequest{
+					CategoryName: defaults.DefaultEUCSCategoryName,
+					Toe: &orchestrator.TargetOfEvaluation{
+						CloudServiceId: defaults.DefaultTargetCloudServiceID,
+						CatalogId:      defaults.DefaultCatalogID,
+						AssuranceLevel: &defaults.AssuranceLevelHigh,
+					},
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrControlIDIsMissing.Error())
+			},
+		},
+		{
+			name: "Missing CategoryName in request",
+			fields: fields{
+				Request: &EvaluateRequest{
 					Toe: &orchestrator.TargetOfEvaluation{
 						CloudServiceId: defaults.DefaultTargetCloudServiceID,
 						CatalogId:      defaults.DefaultCatalogID,
@@ -61,7 +77,8 @@ func TestEvaluateRequest_Validate(t *testing.T) {
 			name: "ToE is missing in request",
 			fields: fields{
 				Request: &EvaluateRequest{
-					ControlId: defaults.DefaultControlId,
+					ControlId:    defaults.DefaultEUCSControl,
+					CategoryName: defaults.DefaultEUCSCategoryName,
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -72,7 +89,7 @@ func TestEvaluateRequest_Validate(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				Request: &EvaluateRequest{
-					ControlId: defaults.DefaultControlId,
+					ControlId: defaults.DefaultEUCSControl,
 					Toe: &orchestrator.TargetOfEvaluation{
 						CloudServiceId: defaults.DefaultTargetCloudServiceID,
 						CatalogId:      defaults.DefaultCatalogID,
