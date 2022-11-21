@@ -4,14 +4,14 @@
 openapi: 3.0.3
 info:
     title: Evaluation API
-    description: Evaluates all assessment results of an service based on its Target of Evaluation (binding of a cloud service to a catalog). The assessment results are evaluated regarding all mapped catalog contols.
+    description: Evaluation evaluates all assessment results of an service based on its Target of Evaluation (binding of a cloud service to a catalog). The assessment results are evaluated regarding the contol ID.
     version: 0.0.1
 paths:
     /v1/evaluation/evaluate/{categoryName}/{controlId}:
         post:
             tags:
                 - Evaluation
-            operationId: Evaluation_Evaluate
+            operationId: Evaluation_StartEvaluation
             parameters:
                 - name: categoryName
                   in: path
@@ -37,7 +37,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/EvaluateResponse'
+                                $ref: '#/components/schemas/StartEvaluationResponse'
                 default:
                     description: Default error response
                     content:
@@ -46,13 +46,6 @@ paths:
                                 $ref: '#/components/schemas/Status'
 components:
     schemas:
-        EvaluateResponse:
-            type: object
-            properties:
-                status:
-                    type: boolean
-                statusMessage:
-                    type: string
         GoogleProtobufAny:
             type: object
             properties:
@@ -61,6 +54,13 @@ components:
                     description: The type of the serialized message.
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        StartEvaluationResponse:
+            type: object
+            properties:
+                status:
+                    type: boolean
+                statusMessage:
+                    type: string
         Status:
             type: object
             properties:

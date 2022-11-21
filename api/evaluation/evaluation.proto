@@ -37,9 +37,9 @@
 
  option go_package = "clouditor.io/clouditor/api/evaluation";
 
- // Evaluates all assessment results of an service based on its Target of Evaluation (binding of a cloud service to a catalog). The assessment results are evaluated regarding all mapped catalog contols.
+ // Evaluation evaluates all assessment results of an service based on its Target of Evaluation (binding of a cloud service to a catalog). The assessment results are evaluated regarding the contol ID.
  service Evaluation {
-    rpc Evaluate(EvaluateRequest) returns (EvaluateResponse) {
+    rpc StartEvaluation(StartEvaluationRequest) returns (StartEvaluationResponse) {
     option (google.api.http) = {
         post : "/v1/evaluation/evaluate/{category_name}/{control_id}"
         body : "toe"
@@ -47,7 +47,7 @@
      } 
 }
 
-message EvaluateRequest {
+message StartEvaluationRequest {
     TargetOfEvaluation toe = 1;
     // The catalog ID the control belongs to 
     string category_name = 3; 
@@ -55,7 +55,7 @@ message EvaluateRequest {
     string control_id = 4; 
 }
 
-message EvaluateResponse {
+message StartEvaluationResponse {
     bool status = 1; 
     string status_message = 2; 
 }

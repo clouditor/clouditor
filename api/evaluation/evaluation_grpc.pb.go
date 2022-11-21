@@ -22,7 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type EvaluationClient interface {
-	Evaluate(ctx context.Context, in *EvaluateRequest, opts ...grpc.CallOption) (*EvaluateResponse, error)
+	StartEvaluation(ctx context.Context, in *StartEvaluationRequest, opts ...grpc.CallOption) (*StartEvaluationResponse, error)
 }
 
 type evaluationClient struct {
@@ -33,9 +33,9 @@ func NewEvaluationClient(cc grpc.ClientConnInterface) EvaluationClient {
 	return &evaluationClient{cc}
 }
 
-func (c *evaluationClient) Evaluate(ctx context.Context, in *EvaluateRequest, opts ...grpc.CallOption) (*EvaluateResponse, error) {
-	out := new(EvaluateResponse)
-	err := c.cc.Invoke(ctx, "/clouditor.Evaluation/Evaluate", in, out, opts...)
+func (c *evaluationClient) StartEvaluation(ctx context.Context, in *StartEvaluationRequest, opts ...grpc.CallOption) (*StartEvaluationResponse, error) {
+	out := new(StartEvaluationResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.Evaluation/StartEvaluation", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (c *evaluationClient) Evaluate(ctx context.Context, in *EvaluateRequest, op
 // All implementations must embed UnimplementedEvaluationServer
 // for forward compatibility
 type EvaluationServer interface {
-	Evaluate(context.Context, *EvaluateRequest) (*EvaluateResponse, error)
+	StartEvaluation(context.Context, *StartEvaluationRequest) (*StartEvaluationResponse, error)
 	mustEmbedUnimplementedEvaluationServer()
 }
 
@@ -54,8 +54,8 @@ type EvaluationServer interface {
 type UnimplementedEvaluationServer struct {
 }
 
-func (UnimplementedEvaluationServer) Evaluate(context.Context, *EvaluateRequest) (*EvaluateResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Evaluate not implemented")
+func (UnimplementedEvaluationServer) StartEvaluation(context.Context, *StartEvaluationRequest) (*StartEvaluationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartEvaluation not implemented")
 }
 func (UnimplementedEvaluationServer) mustEmbedUnimplementedEvaluationServer() {}
 
@@ -70,20 +70,20 @@ func RegisterEvaluationServer(s grpc.ServiceRegistrar, srv EvaluationServer) {
 	s.RegisterService(&Evaluation_ServiceDesc, srv)
 }
 
-func _Evaluation_Evaluate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EvaluateRequest)
+func _Evaluation_StartEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StartEvaluationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(EvaluationServer).Evaluate(ctx, in)
+		return srv.(EvaluationServer).StartEvaluation(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.Evaluation/Evaluate",
+		FullMethod: "/clouditor.Evaluation/StartEvaluation",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EvaluationServer).Evaluate(ctx, req.(*EvaluateRequest))
+		return srv.(EvaluationServer).StartEvaluation(ctx, req.(*StartEvaluationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -96,8 +96,8 @@ var Evaluation_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*EvaluationServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Evaluate",
-			Handler:    _Evaluation_Evaluate_Handler,
+			MethodName: "StartEvaluation",
+			Handler:    _Evaluation_StartEvaluation_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
