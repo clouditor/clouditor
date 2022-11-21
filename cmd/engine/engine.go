@@ -341,7 +341,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	// to configure the external server, the flags ServiceOAuth2EndpointFlag and APIJWKSURLFlag
 	// can be used.
 	if viper.GetBool(APIStartEmbeddedOAuth2ServerFlag) {
-		opts = []rest.ServerConfigOption{
+		opts = append(opts,
 			rest.WithEmbeddedOAuth2Server(
 				viper.GetString(APIKeyPathFlag),
 				viper.GetString(APIKeyPasswordFlag),
@@ -373,7 +373,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 					login.WithBaseURL("/v1/auth"),
 				),
 			),
-		}
+		)
 	}
 
 	// start the gRPC-HTTP gateway

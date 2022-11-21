@@ -216,6 +216,12 @@ func RunServer(ctx context.Context, grpcPort uint16, httpPort uint16, serverOpts
 
 	log.Printf("Starting REST gateway on :%d", httpPort)
 
+	log.WithFields(logrus.Fields{
+		"allowed-origins": cors.allowedOrigins,
+		"allowed-methods": cors.allowedMethods,
+		"allowed-headers": cors.allowedHeaders,
+	}).Info("Applying CORS configuration...")
+
 	sock, err = net.Listen("tcp", srv.Addr)
 	if err != nil {
 		return err
