@@ -334,7 +334,7 @@ service Orchestrator {
 
   // Retrieves a control specified by the catalog ID, the control's category
   // name and the control ID. If present, it also includes a list of
-  // sub-controls.
+  // sub-controls if present or a list of metrics if no sub-controls but metrics are present.
   rpc GetControl(GetControlRequest) returns (Control) {
     option (google.api.http) = {
       get : "/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/"
