@@ -83,8 +83,119 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/evaluation/results:
+        get:
+            tags:
+                - Evaluation
+            description: List all evaluation results. Part of the public API, also exposed as REST.
+            operationId: Evaluation_ListEvaluationResults
+            parameters:
+                - name: filteredCloudServiceId
+                  in: query
+                  schema:
+                    type: string
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListEvaluationResultsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
     schemas:
+        AssessmentResult:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: Assessment result id
+                timestamp:
+                    type: string
+                    description: Time of assessment
+                    format: date-time
+                metricId:
+                    type: string
+                    description: Reference to the metric the assessment was based on
+                metricConfiguration:
+                    $ref: '#/components/schemas/MetricConfiguration'
+                compliant:
+                    type: boolean
+                    description: 'Compliant case: true or false'
+                evidenceId:
+                    type: string
+                    description: Reference to the assessed evidence
+                resourceId:
+                    type: string
+                    description: Reference to the resource of the assessed evidence
+                resourceTypes:
+                    type: array
+                    items:
+                        type: string
+                    description: Resource types
+                nonComplianceComments:
+                    type: string
+                    description: Some comments on the reason for non-compliance
+                cloudServiceId:
+                    type: string
+                    description: The cloud service which this assessment result belongs to
+            description: A result resource, representing the result after assessing the cloud resource with id resource_id.
+        EvaluationResult:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: Evaluation result id
+                status:
+                    enum:
+                        - STATUS_UNSPECIFIED
+                        - COMPLIANT
+                        - NOT_COMPLIANT
+                        - PENDING
+                    type: string
+                    description: Evaluation status
+                    format: enum
+                control:
+                    type: string
+                    description: Reference to the control the evaluation was based on
+                timestamp:
+                    type: string
+                    description: Time of evaluation
+                    format: date-time
+                cloudServiceId:
+                    type: string
+                    description: The cloud service this evaluation result belongs to
+                targetOfEvaluation:
+                    type: string
+                    description: Reference to the target of evaluation the evaluation was based on
+                failingAssessmentResults:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/AssessmentResult'
+                    description: List of assessment results because of which the evaluation status is not 'compliant'
+            description: A evaluation result resource, representing the result after evaluating the cloud service with a specific control
         GoogleProtobufAny:
             type: object
             properties:
@@ -93,6 +204,39 @@ components:
                     description: The type of the serialized message.
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        GoogleProtobufValue:
+            description: Represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values.
+        ListEvaluationResultsResponse:
+            type: object
+            properties:
+                results:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/EvaluationResult'
+                nextPageToken:
+                    type: string
+        MetricConfiguration:
+            type: object
+            properties:
+                operator:
+                    type: string
+                    description: The operator to compare the metric, such as == or >
+                targetValue:
+                    $ref: '#/components/schemas/GoogleProtobufValue'
+                isDefault:
+                    type: boolean
+                    description: Whether this configuration is a default configuration
+                updatedAt:
+                    type: string
+                    description: The last time of update
+                    format: date-time
+                metricId:
+                    type: string
+                    description: The metric this configuration belongs to
+                cloudServiceId:
+                    type: string
+                    description: The service this configuration belongs to
+            description: Defines the operator and a target value for an individual metric
         StartEvaluationResponse:
             type: object
             properties:
