@@ -401,8 +401,7 @@ func getMapping(results []*assessment.AssessmentResult, metrics []*assessment.Me
 	// For each metric, find all assessment results related to it
 	for _, metric := range metrics {
 		var mapping *mappingResultMetric
-		var resultList []*assessment.AssessmentResult
-
+		resultList := []*assessment.AssessmentResult{}
 		// Find all assessment results for the metric ID
 		for _, result := range results {
 			if result.MetricId == metric.Id {
