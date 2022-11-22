@@ -32,83 +32,6 @@ import (
 	"clouditor.io/clouditor/internal/testutil/prototest"
 )
 
-// func TestRemoveIndexFromSlice(t *testing.T) {
-// 	inputValue := []*prototest.TestStruct{
-// 		{
-// 			TestName:        "testName_1",
-// 			TestId:          "testId_1",
-// 			TestDescription: "testDescription_1",
-// 		},
-// 		{
-// 			TestName:        "testName_2",
-// 			TestId:          "testId_2",
-// 			TestDescription: "testDescription_2",
-// 		},
-// 		{
-// 			TestName:        "testName_3",
-// 			TestId:          "testId_3",
-// 			TestDescription: "testDescription_3",
-// 		},
-// 	}
-// 	outputValueRemoveFirstElement := []*prototest.TestStruct{
-// 		{
-// 			TestName:        "testName_2",
-// 			TestId:          "testId_2",
-// 			TestDescription: "testDescription_2",
-// 		},
-// 		{
-// 			TestName:        "testName_3",
-// 			TestId:          "testId_3",
-// 			TestDescription: "testDescription_3",
-// 		},
-// 	}
-
-// 	outputValueRemoveSecondElement := []*prototest.TestStruct{
-// 		{
-// 			TestName:        "testName_1",
-// 			TestId:          "testId_1",
-// 			TestDescription: "testDescription_1",
-// 		},
-// 		{
-// 			TestName:        "testName_3",
-// 			TestId:          "testId_3",
-// 			TestDescription: "testDescription_3",
-// 		},
-// 	}
-
-// 	outputValueRemoveLastElement := []*prototest.TestStruct{
-// 		{
-// 			TestName:        "testName_1",
-// 			TestId:          "testId_1",
-// 			TestDescription: "testDescription_1",
-// 		},
-// 		{
-// 			TestName:        "testName_2",
-// 			TestId:          "testId_2",
-// 			TestDescription: "testDescription_2",
-// 		},
-// 	}
-
-// 	emptyValue := []*prototest.TestStruct{}
-
-// 	// Remove first element from inputValue
-// 	assert.Equal(t, outputValueRemoveFirstElement, RemoveIndexFromSlice(inputValue, 0))
-
-// 	// Remove second element from inputValue
-// 	result := RemoveIndexFromSlice(inputValue, 1)
-// 	assert.Equal(t, outputValueRemoveSecondElement, result)
-
-// 	// Remove last element from inputValue
-// 	assert.Equal(t, outputValueRemoveLastElement, RemoveIndexFromSlice(inputValue, 2))
-
-// 	// Remove n+1 element from inputValue
-// 	assert.Equal(t, inputValue, RemoveIndexFromSlice(inputValue, 3))
-
-// 	// Remove second element from empty inputValue
-// 	assert.Equal(t, emptyValue, RemoveIndexFromSlice(emptyValue, 1))
-
-// }
-
 func TestRemoveIndexFromSlice(t *testing.T) {
 	type args struct {
 		slice []*prototest.TestStruct
@@ -127,16 +50,19 @@ func TestRemoveIndexFromSlice(t *testing.T) {
 						TestName:        "testName_1",
 						TestId:          "testId_1",
 						TestDescription: "testDescription_1",
+						TestStatus:      prototest.TestStruct_COMPLIANT,
 					},
 					{
 						TestName:        "testName_2",
 						TestId:          "testId_2",
 						TestDescription: "testDescription_2",
+						TestStatus:      prototest.TestStruct_NOT_COMPLIANT,
 					},
 					{
 						TestName:        "testName_3",
 						TestId:          "testId_3",
 						TestDescription: "testDescription_3",
+						TestStatus:      prototest.TestStruct_COMPLIANT,
 					},
 				},
 				index: 0,
@@ -146,11 +72,13 @@ func TestRemoveIndexFromSlice(t *testing.T) {
 					TestName:        "testName_2",
 					TestId:          "testId_2",
 					TestDescription: "testDescription_2",
+					TestStatus:      prototest.TestStruct_NOT_COMPLIANT,
 				},
 				{
 					TestName:        "testName_3",
 					TestId:          "testId_3",
 					TestDescription: "testDescription_3",
+					TestStatus:      prototest.TestStruct_COMPLIANT,
 				},
 			},
 		},
@@ -162,16 +90,19 @@ func TestRemoveIndexFromSlice(t *testing.T) {
 						TestName:        "testName_1",
 						TestId:          "testId_1",
 						TestDescription: "testDescription_1",
+						TestStatus:      prototest.TestStruct_COMPLIANT,
 					},
 					{
 						TestName:        "testName_2",
 						TestId:          "testId_2",
 						TestDescription: "testDescription_2",
+						TestStatus:      prototest.TestStruct_NOT_COMPLIANT,
 					},
 					{
 						TestName:        "testName_3",
 						TestId:          "testId_3",
 						TestDescription: "testDescription_3",
+						TestStatus:      prototest.TestStruct_COMPLIANT,
 					},
 				},
 				index: 1,
@@ -181,11 +112,13 @@ func TestRemoveIndexFromSlice(t *testing.T) {
 					TestName:        "testName_1",
 					TestId:          "testId_1",
 					TestDescription: "testDescription_1",
+					TestStatus:      prototest.TestStruct_COMPLIANT,
 				},
 				{
 					TestName:        "testName_3",
 					TestId:          "testId_3",
 					TestDescription: "testDescription_3",
+					TestStatus:      prototest.TestStruct_COMPLIANT,
 				},
 			},
 		},
@@ -197,16 +130,19 @@ func TestRemoveIndexFromSlice(t *testing.T) {
 						TestName:        "testName_1",
 						TestId:          "testId_1",
 						TestDescription: "testDescription_1",
+						TestStatus:      prototest.TestStruct_COMPLIANT,
 					},
 					{
 						TestName:        "testName_2",
 						TestId:          "testId_2",
 						TestDescription: "testDescription_2",
+						TestStatus:      prototest.TestStruct_NOT_COMPLIANT,
 					},
 					{
 						TestName:        "testName_3",
 						TestId:          "testId_3",
 						TestDescription: "testDescription_3",
+						TestStatus:      prototest.TestStruct_COMPLIANT,
 					},
 				},
 				index: 2,
@@ -216,11 +152,13 @@ func TestRemoveIndexFromSlice(t *testing.T) {
 					TestName:        "testName_1",
 					TestId:          "testId_1",
 					TestDescription: "testDescription_1",
+					TestStatus:      prototest.TestStruct_COMPLIANT,
 				},
 				{
 					TestName:        "testName_2",
 					TestId:          "testId_2",
 					TestDescription: "testDescription_2",
+					TestStatus:      prototest.TestStruct_NOT_COMPLIANT,
 				},
 			},
 		},
@@ -232,16 +170,19 @@ func TestRemoveIndexFromSlice(t *testing.T) {
 						TestName:        "testName_1",
 						TestId:          "testId_1",
 						TestDescription: "testDescription_1",
+						TestStatus:      prototest.TestStruct_COMPLIANT,
 					},
 					{
 						TestName:        "testName_2",
 						TestId:          "testId_2",
 						TestDescription: "testDescription_2",
+						TestStatus:      prototest.TestStruct_NOT_COMPLIANT,
 					},
 					{
 						TestName:        "testName_3",
 						TestId:          "testId_3",
 						TestDescription: "testDescription_3",
+						TestStatus:      prototest.TestStruct_COMPLIANT,
 					},
 				},
 				index: 3,
@@ -251,16 +192,19 @@ func TestRemoveIndexFromSlice(t *testing.T) {
 					TestName:        "testName_1",
 					TestId:          "testId_1",
 					TestDescription: "testDescription_1",
+					TestStatus:      prototest.TestStruct_COMPLIANT,
 				},
 				{
 					TestName:        "testName_2",
 					TestId:          "testId_2",
 					TestDescription: "testDescription_2",
+					TestStatus:      prototest.TestStruct_NOT_COMPLIANT,
 				},
 				{
 					TestName:        "testName_3",
 					TestId:          "testId_3",
 					TestDescription: "testDescription_3",
+					TestStatus:      prototest.TestStruct_COMPLIANT,
 				},
 			},
 		},
