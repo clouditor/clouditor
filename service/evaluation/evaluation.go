@@ -39,8 +39,10 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/go-co-op/gocron"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -63,9 +65,14 @@ type Service struct {
 	orchestratorClient  orchestrator.OrchestratorClient
 	orchestratorAddress grpcTarget
 	authorizer          api.Authorizer
+
 	// evaluation contains lists of controls (value) per target cloud service (key) that are currently evaluated
 	evaluation      map[string]*EvaluationScheduler
 	evaluationMutex sync.RWMutex
+
+	// Currently, evaluation results are just stored as a map (=in-memory). In the future, we will use a DB.
+	results     []*evaluation.EvaluationResult
+	resultMutex sync.Mutex
 }
 
 func init() {
@@ -197,11 +204,6 @@ func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 		log.Errorf("could not connect to orchestrator service: %v", err)
 	}
 
-	// Find associated metrics to control
-	// For each metric, find all assessment results for the target cloud service
-	// If at least one assessment result is non-compliant --> evaluation = fail; otherwise --> evaluation = ok
-	// Optional: Add failing assessment results to list of failing assessment results
-
 	// Create orchestrator client
 	s.orchestratorClient = orchestrator.NewOrchestratorClient(conn)
 
@@ -209,42 +211,78 @@ func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 	metrics, err := s.getMetricFromControl(req, req.CategoryName)
 	if err != nil {
 		log.Errorf("Could not get metrics for control ID '%s' from Orchestrator: %v", req.ControlId, err)
+
 		// TODO(anatheka): Do we need that?
-		s.Shutdown()
+		// Delete evaluation entry, it is not longer needed
+		s.evaluationMutex.Lock()
+		delete(s.evaluation, req.Toe.CloudServiceId)
+		s.evaluationMutex.Unlock()
+
 		return
 	}
 
 	// Get assessment results for the target cloud service
 	// TODO(anatheka): The filtered_cloud_service_id option does not work: access denied
-	// TODO(anatheka): Get all results, not only the first page.
-	results, err := s.orchestratorClient.ListAssessmentResults(context.Background(), &assessment.ListAssessmentResultsRequest{
-		// FilteredCloudServiceId: req.Toe.CloudServiceId,
+	assessmentResults, err := api.ListAllPaginated(&assessment.ListAssessmentResultsRequest{ /*FilteredCloudServiceId: req.Toe.CloudServiceId*/ }, s.orchestratorClient.ListAssessmentResults, func(res *assessment.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
+		return res.Results
 	})
 	if err != nil {
 		log.Errorf("Could not get assessment results for Cloud Serivce '%s' from Orchestrator", req.Toe.CloudServiceId)
+
 		// TODO(anatheka): Do we need that?
-		s.Shutdown()
+		// Delete evaluation entry, it is no longer needed if we don't get the assessment results from the orchestrator
+		s.evaluationMutex.Lock()
+		delete(s.evaluation, req.Toe.CloudServiceId)
+		s.evaluationMutex.Unlock()
 		return
 	}
 
 	// For each metric, find all assessment results for the target cloud service
 	var mappingList []mappingResultMetric
 	for _, metric := range metrics {
+		log.Debugf("Metric with ID '%s'", metric.Id)
 		var mapping mappingResultMetric
 		var resultList []*assessment.AssessmentResult
-		for _, result := range results.Results {
+		for _, result := range assessmentResults {
+			log.Debugf("Assessment result with metric ID '%s'", result.MetricId)
+
 			if result.MetricId == metric.Id {
 				resultList = append(resultList, result)
 			}
 		}
-		mapping.metricName = metric.Name
+		mapping.metricName = metric.Id
 		mapping.results = resultList
 		mappingList = append(mappingList, mapping)
 	}
 
-	log.Debugf("Found %d metrics.", len(mappingList))
-	// Do evaluation and find all non-comüpliant assessment results
+	// Do evaluation and find all non-compliant assessment results
+	var nonCompliantAssessmentResults []*assessment.AssessmentResult
+	status := evaluation.EvaluationResult_PENDING
+	for _, item := range mappingList {
+		for _, elem := range item.results {
+			if !elem.Compliant {
+				nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, elem)
+				status = evaluation.EvaluationResult_NOT_COMPLIANT
+			}
+		}
+	}
 
+	// Create evaluation result
+	// TODO(all): Store in DB
+	s.resultMutex.Lock()
+	result := &evaluation.EvaluationResult{
+		Id:                       uuid.NewString(),
+		Timestamp:                timestamppb.Now(),
+		Control:                  req.ControlId,
+		CloudServiceId:           req.Toe.CloudServiceId,
+		TargetOfEvaluation:       req.Toe.String(),
+		Status:                   status,
+		FailingAssessmentResults: nonCompliantAssessmentResults,
+	}
+	s.results = append(s.results, result)
+	s.resultMutex.Unlock()
+
+	log.Infof("Evaluation result with ID %s stored.", result.Id)
 }
 
 // StopEvaluation is a method implementation of the evaluation interface: It starts the evaluation for a cloud service and a given Control (e.g., EUCS OPS-13.2)
