@@ -215,19 +215,14 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 	log.Infof("Started evaluation for Cloud Service '%s',  Catalog ID '%s' and Control '%s'", req.Toe.CloudServiceId, req.Toe.CatalogId, req.ControlId)
 
-	// Establish connection to orchestrator gRPC service
-	// TODO (anatheka): Use getOrchestratorClient method or something similiar. Do we have already a method for that?
-	conn, err := grpc.Dial(s.orchestratorAddress.target,
-		api.DefaultGrpcDialOptions(s.orchestratorAddress.target, s, s.orchestratorAddress.opts...)...)
+	// Get orchestrator client
+	err := s.initOrchestratorClient()
 	if err != nil {
-		log.Errorf("could not connect to orchestrator service: %v", err)
+		log.Errorf("could not set orchestrator client: %v", err)
+		return
 	}
-
-	// Create orchestrator client
-	s.orchestratorClient = orchestrator.NewOrchestratorClient(conn)
-
 	// Get control and the associated metrics
-	metrics, err := s.getMetricFromControl(req)
+	metrics, err := s.getMetricsFromControl(req)
 	if err != nil {
 		log.Errorf("Could not get metrics for control ID '%s' from Orchestrator: %v", req.ControlId, err)
 
@@ -256,23 +251,8 @@ func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 		return
 	}
 
-	// For each metric, find all assessment results for the target cloud service
-	var mappingList []mappingResultMetric
-	for _, metric := range metrics {
-		log.Debugf("Metric with ID '%s'", metric.Id)
-		var mapping mappingResultMetric
-		var resultList []*assessment.AssessmentResult
-		for _, result := range assessmentResults {
-			log.Debugf("Assessment result with metric ID '%s'", result.MetricId)
-
-			if result.MetricId == metric.Id {
-				resultList = append(resultList, result)
-			}
-		}
-		mapping.metricName = metric.Id
-		mapping.results = resultList
-		mappingList = append(mappingList, mapping)
-	}
+	// Get mapping assessment results related to the metric
+	mappingList := getMapping(assessmentResults, metrics)
 
 	// Do evaluation and find all non-compliant assessment results
 	var nonCompliantAssessmentResults []*assessment.AssessmentResult
@@ -284,6 +264,11 @@ func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 				status = evaluation.EvaluationResult_NOT_COMPLIANT
 			}
 		}
+	}
+
+	// If no assessment results are available for the metric, the evaluation status is set to compliant
+	if status == evaluation.EvaluationResult_PENDING {
+		status = evaluation.EvaluationResult_COMPLIANT
 	}
 
 	// Create evaluation result
@@ -336,8 +321,8 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 	return
 }
 
-// getMetricFromControl return a list of metrics for the given control ID. For now it is only possible to get the metrics for the lowest control level.
-func (s *Service) getMetricFromControl(req *evaluation.StartEvaluationRequest) (metrics []*assessment.Metric, err error) {
+// getMetricsFromControl return a list of metrics for the given control ID. For now it is only possible to get the metrics for the lowest control level.
+func (s *Service) getMetricsFromControl(req *evaluation.StartEvaluationRequest) (metrics []*assessment.Metric, err error) {
 	control, err := s.orchestratorClient.GetControl(context.Background(), &orchestrator.GetControlRequest{
 		CatalogId:    req.Toe.CatalogId,
 		CategoryName: req.CategoryName,
@@ -357,6 +342,53 @@ func createSchedulerTag(cloudServiceId, controlId string) string {
 		return ""
 	}
 	return fmt.Sprintf("%s-%s", cloudServiceId, controlId)
+}
+
+// TODO(all): Make a generic method for that in folger internal
+// initOrchestratorClient set the orchestrator client
+func (s *Service) initOrchestratorClient() error {
+	if s.orchestratorClient != nil {
+		return nil
+	}
+
+	// Establish connection to orchestrator gRPC service
+	conn, err := grpc.Dial(s.orchestratorAddress.target,
+		api.DefaultGrpcDialOptions(s.orchestratorAddress.target, s, s.orchestratorAddress.opts...)...,
+	)
+	if err != nil {
+		return fmt.Errorf("could not connect to orchestrator service: %w", err)
+	}
+
+	s.orchestratorClient = orchestrator.NewOrchestratorClient(conn)
+
+	return nil
+}
+
+// getMapping returns a mapping of the assessment results to the metric
+func getMapping(results []*assessment.AssessmentResult, metrics []*assessment.Metric) (mappingList []*mappingResultMetric) {
+	// For each metric, find all assessment results related to it
+	for _, metric := range metrics {
+		var mapping *mappingResultMetric
+		var resultList []*assessment.AssessmentResult
+
+		// Find all assessment results for the metric ID
+		for _, result := range results {
+			if result.MetricId == metric.Id {
+				resultList = append(resultList, result)
+			}
+		}
+
+		// Add assessment results and metric ID
+		mapping = &mappingResultMetric{
+			metricName: metric.Id,
+			results:    resultList,
+		}
+
+		// Store mapping in list
+		mappingList = append(mappingList, mapping)
+	}
+
+	return
 }
 
 func (s *Service) Shutdown() {
