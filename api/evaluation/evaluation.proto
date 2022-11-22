@@ -47,14 +47,35 @@
       };
      } 
 
-     // StopEvaluation stop the evaluation for the given Cloud Service
+    // StopEvaluation stop the evaluation for the given Cloud Service
     rpc StopEvaluation(StopEvaluationRequest) returns (StopEvaluationResponse) {
     option (google.api.http) = {
         post : "/v1/evaluation/evaluate/{category_name}/{control_id}/stop"
         body : "toe"
         };
     } 
+
+    // List all evaluation results. Part of the public API, also exposed as REST.
+    rpc ListEvaluationResults(ListEvaluationResultsRequest)
+        returns (ListEvaluationResultsResponse) {
+        option (google.api.http) = {
+            get : "/v1/evaluation/results"
+        };
+    }
 }
+
+message ListEvaluationResultsRequest {
+    string filtered_cloud_service_id = 1;
+  
+    int32 page_size = 10;
+    string page_token = 11;
+    string order_by = 12;
+    bool asc = 13;
+  }
+  message ListEvaluationResultsResponse {
+    repeated EvaluationResult results = 1;
+    string next_page_token = 2;
+  }
 
 message StartEvaluationRequest {
     TargetOfEvaluation toe = 1;

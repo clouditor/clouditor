@@ -27,6 +27,7 @@ package evaluation
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -73,7 +74,7 @@ type Service struct {
 	evaluationMutex sync.RWMutex
 
 	// Currently, evaluation results are just stored as a map (=in-memory). In the future, we will use a DB.
-	results     []*evaluation.EvaluationResult
+	results     map[string]*evaluation.EvaluationResult
 	resultMutex sync.Mutex
 
 	storage persistence.Storage
@@ -136,6 +137,7 @@ func NewService(opts ...ServiceOption) *Service {
 			target: DefaultOrchestratorAddress,
 		},
 		evaluation: make(map[string]*EvaluationScheduler),
+		results:    make(map[string]*evaluation.EvaluationResult),
 	}
 
 	// Apply service options
@@ -195,6 +197,11 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 		Minute().
 		Tag(createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)).
 		Do(s.Evaluate, req)
+	if err != nil {
+		err = fmt.Errorf("error starting scheduler: %v", err)
+		log.Error(err)
+		return
+	}
 
 	// Add map entry for target cloud service id or if already exists add new control ID
 	s.evaluationMutex.Lock()
@@ -283,7 +290,7 @@ func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 		Status:                   status,
 		FailingAssessmentResults: nonCompliantAssessmentResults,
 	}
-	s.results = append(s.results, result)
+	s.results[result.Id] = result
 	s.resultMutex.Unlock()
 
 	log.Infof("Evaluation result with ID %s stored.", result.Id)
@@ -305,18 +312,40 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 
 	// Verify if scheduler is running
 	if !s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)].scheduler.IsRunning() {
-		err = status.Errorf(codes.NotFound, "Evaluation of cloud service %s has been stopped already", req.Toe.CloudServiceId)
+		err = errors.New("evaluation of cloud service %s has been stopped already")
+		log.Error(err)
+		err = status.Errorf(codes.NotFound, err.Error(), req.Toe.CloudServiceId)
 		return
 	}
 
 	// Stop scheduler
 	s.evaluationMutex.Lock()
-	s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)].scheduler.RemoveByTag(createSchedulerTag(req.Toe.CloudServiceId, req.ControlId))
+	err = s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)].scheduler.RemoveByTag(createSchedulerTag(req.Toe.CloudServiceId, req.ControlId))
+	if err != nil {
+		err = fmt.Errorf("error in removing scheduler: %v", err)
+		log.Error(err)
+		err = status.Errorf(codes.Internal, "error at stopping scheduler")
+	}
 	// Delete entry for given Cloud Service ID
 	delete(s.evaluation, createSchedulerTag(req.Toe.CloudServiceId, req.ControlId))
 	s.evaluationMutex.Unlock()
 
 	res = &evaluation.StopEvaluationResponse{}
+
+	return
+}
+
+// ListEvaluationResults is a method implementation of the assessment interface
+func (s *Service) ListEvaluationResults(_ context.Context, req *evaluation.ListEvaluationResultsRequest) (res *evaluation.ListEvaluationResultsResponse, err error) {
+	res = new(evaluation.ListEvaluationResultsResponse)
+
+	// Paginate the results according to the request
+	res.Results, res.NextPageToken, err = service.PaginateMapValues(req, s.results, func(a *evaluation.EvaluationResult, b *evaluation.EvaluationResult) bool {
+		return a.Id < b.Id
+	}, service.DefaultPaginationOpts)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not paginate evaluation results: %v", err)
+	}
 
 	return
 }
