@@ -94,8 +94,8 @@ const (
 type ServiceOption func(*Service)
 
 type EvaluationScheduler struct {
-	scheduler           *gocron.Scheduler
-	evaluatedControlIDs []string
+	scheduler          *gocron.Scheduler
+	evaluatedControlID string
 }
 
 // WithStorage is an option to set the storage. If not set, NewService will use inmemory storage.
@@ -157,18 +157,19 @@ func NewService(opts ...ServiceOption) *Service {
 }
 
 // SetAuthorizer implements UsesAuthorizer
-func (svc *Service) SetAuthorizer(auth api.Authorizer) {
-	svc.authorizer = auth
+func (s *Service) SetAuthorizer(auth api.Authorizer) {
+	s.authorizer = auth
 }
 
 // Authorizer implements UsesAuthorizer
-func (svc *Service) Authorizer() api.Authorizer {
-	return svc.authorizer
+func (s *Service) Authorizer() api.Authorizer {
+	return s.authorizer
 }
 
 // StartEvaluation is a method implementation of the evaluation interface: It starts the evaluation for a cloud service and a given Control (e.g., EUCS OPS-13.2)
 func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvaluationRequest) (resp *evaluation.StartEvaluationResponse, err error) {
 	resp = &evaluation.StartEvaluationResponse{}
+	var schedulerTag string
 
 	err = req.Validate()
 	if err != nil {
@@ -179,11 +180,15 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 		return resp, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
+	// Set scheduler tag
+	schedulerTag = createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)
+
 	// Verify that evaluating of this service and control hasn't started already
 	// TODO(anatheka): Extend for one schedule per control or do we have to stop it and add with several control IDs?
 	s.evaluationMutex.Lock()
-	if m := s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)]; m != nil && /*slices.Contains(s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)].evaluatedControlIDs, req.ControlId) &&*/ m.scheduler != nil && m.scheduler.IsRunning() {
-		err = status.Errorf(codes.AlreadyExists, "Service %s is being evaluated with Control %s already.", req.Toe.CloudServiceId, req.ControlId)
+	if m := s.evaluation[schedulerTag]; m != nil && /*slices.Contains(s.evaluation[schedulerTag].evaluatedControlIDs, req.ControlId) &&*/ m.scheduler != nil && m.scheduler.IsRunning() {
+		err = status.Errorf(codes.AlreadyExists, "Cloud Service '%s' is being evaluated with Control %s already.", req.Toe.CloudServiceId, req.ControlId)
+		log.Error(err)
 		return
 	}
 	s.evaluationMutex.Unlock()
@@ -195,22 +200,20 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 	_, err = s.scheduler.
 		Every(5).
 		Minute().
-		Tag(createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)).
+		Tag(schedulerTag).
 		Do(s.Evaluate, req)
 	if err != nil {
-		err = fmt.Errorf("error starting scheduler: %v", err)
+		err = status.Errorf(codes.Internal, "Evaluation for Cloud Service '%s' and Control ID '%s' cannot be scheduled.", req.Toe.CloudServiceId, req.ControlId)
 		log.Error(err)
 		return
 	}
 
-	// Add map entry for target cloud service id or if already exists add new control ID
+	// Add map entry for target cloud service id and control id
 	s.evaluationMutex.Lock()
-	if s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)] == nil {
-		s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)] = new(EvaluationScheduler)
-		s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)].scheduler = s.scheduler
-		s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)].evaluatedControlIDs = []string{req.ControlId}
-	} else {
-		s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)].evaluatedControlIDs = append(s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)].evaluatedControlIDs, req.ControlId)
+	if s.evaluation[schedulerTag] == nil {
+		s.evaluation[schedulerTag] = new(EvaluationScheduler)
+		s.evaluation[schedulerTag].scheduler = s.scheduler
+		s.evaluation[schedulerTag].evaluatedControlID = req.ControlId
 	}
 	s.evaluationMutex.Unlock()
 

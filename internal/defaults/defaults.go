@@ -32,7 +32,7 @@ const (
 	DefaultCatalogID                     = "EUCS"
 	DefaultEUCSControlID                 = "OPS-13.7"
 	DefaultEUCSCategoryName              = "Operational Security"
-	DefaultOrchestratorAddress           = "locahost:9090"
+	DefaultOrchestratorAddress           = "localhost:9090"
 )
 
 var (
