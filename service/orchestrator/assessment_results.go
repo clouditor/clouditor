@@ -28,12 +28,13 @@ package orchestrator
 import (
 	"context"
 
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/service"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/service"
 )
 
 // ListAssessmentResults is a method implementation of the orchestrator interface
@@ -47,8 +48,8 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.L
 	// only allowed, if one can access all the cloud services. Furthermore, the content of the filtered cloud service ID
 	// must be in the list of allowed cloud service IDs.
 	all, allowed = svc.authz.AllowedCloudServices(ctx)
-	if (req.FilteredCloudServiceId == "" && !all) ||
-		(req.FilteredCloudServiceId != "" && !slices.Contains(allowed, req.FilteredCloudServiceId)) {
+	if !all && (req.FilteredCloudServiceId == "" ||
+		(req.FilteredCloudServiceId != "" && !slices.Contains(allowed, req.FilteredCloudServiceId))) {
 		return nil, service.ErrPermissionDenied
 	}
 
