@@ -309,7 +309,9 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 
 	// Verify that the service is evaluated currently
 	if s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)] == nil {
-		err = status.Errorf(codes.NotFound, "Evaluation of cloud service %s has not been started yet.", req.Toe.CloudServiceId)
+		err = fmt.Errorf("evaluation of cloud service %s has not been started yet", req.Toe.CloudServiceId)
+		log.Error(err)
+		err = status.Errorf(codes.NotFound, "%s", err)
 		return
 	}
 

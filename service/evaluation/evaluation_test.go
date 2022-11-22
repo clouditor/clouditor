@@ -682,3 +682,83 @@ func TestService_ListEvaluationResults(t *testing.T) {
 		})
 	}
 }
+
+func TestService_StopEvaluation(t *testing.T) {
+	type fields struct {
+		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
+		scheduler                     *gocron.Scheduler
+		orchestratorClient            orchestrator.OrchestratorClient
+		orchestratorAddress           grpcTarget
+		authorizer                    api.Authorizer
+		evaluation                    map[string]*EvaluationScheduler
+		results                       map[string]*evaluation.EvaluationResult
+		storage                       persistence.Storage
+	}
+	type args struct {
+		in0 context.Context
+		req *evaluation.StopEvaluationRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes *evaluation.StopEvaluationResponse
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Control Id in request is missing",
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.StopEvaluationRequest{},
+			},
+			wantRes: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, evaluation.ErrControlIDIsMissing.Error())
+			},
+		},
+		{
+			name: "Evaluation for service not running",
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.StopEvaluationRequest{
+					Toe: &orchestrator.TargetOfEvaluation{
+						CloudServiceId: defaults.DefaultTargetCloudServiceID,
+						CatalogId:      defaults.DefaultCatalogID,
+						AssuranceLevel: &defaults.AssuranceLevelHigh,
+					},
+					ControlId:    defaults.DefaultEUCSControlID,
+					CategoryName: defaults.DefaultEUCSCategoryName,
+				},
+			},
+			wantRes: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, fmt.Sprintf("evaluation of cloud service %s has not been started yet", defaults.DefaultTargetCloudServiceID))
+			},
+		},
+		// TODO(anatheka): Add more tests, but how to mock the scheduler?
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{
+				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
+				scheduler:                     tt.fields.scheduler,
+				orchestratorClient:            tt.fields.orchestratorClient,
+				orchestratorAddress:           tt.fields.orchestratorAddress,
+				authorizer:                    tt.fields.authorizer,
+				evaluation:                    tt.fields.evaluation,
+				results:                       tt.fields.results,
+				storage:                       tt.fields.storage,
+			}
+
+			if tt.fields.scheduler != nil {
+				s.scheduler.StartAsync()
+			}
+
+			gotRes, err := s.StopEvaluation(tt.args.in0, tt.args.req)
+			if tt.wantErr != nil {
+				tt.wantErr(t, err)
+				assert.Equal(t, gotRes, tt.wantRes)
+			}
+		})
+	}
+}
