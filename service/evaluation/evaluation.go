@@ -27,6 +27,7 @@ package evaluation
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -34,6 +35,7 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evaluation"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
@@ -73,6 +75,8 @@ type Service struct {
 	// Currently, evaluation results are just stored as a map (=in-memory). In the future, we will use a DB.
 	results     []*evaluation.EvaluationResult
 	resultMutex sync.Mutex
+
+	storage persistence.Storage
 }
 
 func init() {
@@ -91,6 +95,13 @@ type ServiceOption func(*Service)
 type EvaluationScheduler struct {
 	scheduler           *gocron.Scheduler
 	evaluatedControlIDs []string
+}
+
+// WithStorage is an option to set the storage. If not set, NewService will use inmemory storage.
+func WithStorage(storage persistence.Storage) ServiceOption {
+	return func(s *Service) {
+		s.storage = storage
+	}
 }
 
 // WithOAuth2Authorizer is an option to use an OAuth 2.0 authorizer
@@ -132,6 +143,14 @@ func NewService(opts ...ServiceOption) *Service {
 		o(&s)
 	}
 
+	// // Default to an in-memory storage, if nothing was explicitly set
+	// if s.storage == nil {
+	// 	s.storage, err = inmemory.NewStorage()
+	// 	if err != nil {
+	// 		log.Errorf("Could not initialize the storage: %v", err)
+	// 	}
+	// }
+
 	return &s
 }
 
@@ -161,7 +180,7 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 	// Verify that evaluating of this service and control hasn't started already
 	// TODO(anatheka): Extend for one schedule per control or do we have to stop it and add with several control IDs?
 	s.evaluationMutex.Lock()
-	if m := s.evaluation[req.Toe.CloudServiceId]; m != nil && /*slices.Contains(s.evaluation[req.Toe.CloudServiceId].evaluatedControlIDs, req.ControlId) &&*/ m.scheduler != nil && m.scheduler.IsRunning() {
+	if m := s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)]; m != nil && /*slices.Contains(s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)].evaluatedControlIDs, req.ControlId) &&*/ m.scheduler != nil && m.scheduler.IsRunning() {
 		err = status.Errorf(codes.AlreadyExists, "Service %s is being evaluated with Control %s already.", req.Toe.CloudServiceId, req.ControlId)
 		return
 	}
@@ -170,21 +189,21 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 	log.Info("Starting evaluation ...")
 	s.scheduler.TagsUnique()
 
-	log.Infof("Evaluate Cloud Service {%s} every 5 minutes...", req.Toe.CloudServiceId)
+	log.Infof("Evaluate Cloud Service '%s' for Control ID '%s' every 5 minutes...", req.Toe.CloudServiceId, req.ControlId)
 	_, err = s.scheduler.
 		Every(5).
 		Minute().
-		Tag(req.Toe.CloudServiceId).
+		Tag(createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)).
 		Do(s.Evaluate, req)
 
 	// Add map entry for target cloud service id or if already exists add new control ID
 	s.evaluationMutex.Lock()
-	if s.evaluation[req.Toe.CloudServiceId] == nil {
-		s.evaluation[req.Toe.CloudServiceId] = new(EvaluationScheduler)
-		s.evaluation[req.Toe.CloudServiceId].scheduler = s.scheduler
-		s.evaluation[req.Toe.CloudServiceId].evaluatedControlIDs = []string{req.ControlId}
+	if s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)] == nil {
+		s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)] = new(EvaluationScheduler)
+		s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)].scheduler = s.scheduler
+		s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)].evaluatedControlIDs = []string{req.ControlId}
 	} else {
-		s.evaluation[req.Toe.CloudServiceId].evaluatedControlIDs = append(s.evaluation[req.Toe.CloudServiceId].evaluatedControlIDs, req.ControlId)
+		s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)].evaluatedControlIDs = append(s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)].evaluatedControlIDs, req.ControlId)
 	}
 	s.evaluationMutex.Unlock()
 
@@ -208,14 +227,14 @@ func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 	s.orchestratorClient = orchestrator.NewOrchestratorClient(conn)
 
 	// Get control and the associated metrics
-	metrics, err := s.getMetricFromControl(req, req.CategoryName)
+	metrics, err := s.getMetricFromControl(req)
 	if err != nil {
 		log.Errorf("Could not get metrics for control ID '%s' from Orchestrator: %v", req.ControlId, err)
 
 		// TODO(anatheka): Do we need that?
 		// Delete evaluation entry, it is not longer needed
 		s.evaluationMutex.Lock()
-		delete(s.evaluation, req.Toe.CloudServiceId)
+		delete(s.evaluation, createSchedulerTag(req.Toe.CloudServiceId, req.ControlId))
 		s.evaluationMutex.Unlock()
 
 		return
@@ -232,7 +251,7 @@ func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 		// TODO(anatheka): Do we need that?
 		// Delete evaluation entry, it is no longer needed if we don't get the assessment results from the orchestrator
 		s.evaluationMutex.Lock()
-		delete(s.evaluation, req.Toe.CloudServiceId)
+		delete(s.evaluation, createSchedulerTag(req.Toe.CloudServiceId, req.ControlId))
 		s.evaluationMutex.Unlock()
 		return
 	}
@@ -294,22 +313,22 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 	}
 
 	// Verify that the service is evaluated currently
-	if s.evaluation[req.Toe.CloudServiceId] == nil {
+	if s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)] == nil {
 		err = status.Errorf(codes.NotFound, "Evaluation of cloud service %s has not been started yet.", req.Toe.CloudServiceId)
 		return
 	}
 
 	// Verify if scheduler is running
-	if !s.evaluation[req.Toe.CloudServiceId].scheduler.IsRunning() {
+	if !s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)].scheduler.IsRunning() {
 		err = status.Errorf(codes.NotFound, "Evaluation of cloud service %s has been stopped already", req.Toe.CloudServiceId)
 		return
 	}
 
 	// Stop scheduler
 	s.evaluationMutex.Lock()
-	s.evaluation[req.Toe.CloudServiceId].scheduler.RemoveByTag(req.Toe.CloudServiceId)
+	s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)].scheduler.RemoveByTag(createSchedulerTag(req.Toe.CloudServiceId, req.ControlId))
 	// Delete entry for given Cloud Service ID
-	delete(s.evaluation, req.Toe.CloudServiceId)
+	delete(s.evaluation, createSchedulerTag(req.Toe.CloudServiceId, req.ControlId))
 	s.evaluationMutex.Unlock()
 
 	res = &evaluation.StopEvaluationResponse{}
@@ -318,16 +337,26 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 }
 
 // getMetricFromControl return a list of metrics for the given control ID. For now it is only possible to get the metrics for the lowest control level.
-func (s *Service) getMetricFromControl(req *evaluation.StartEvaluationRequest, categoryName string) (metrics []*assessment.Metric, err error) {
+func (s *Service) getMetricFromControl(req *evaluation.StartEvaluationRequest) (metrics []*assessment.Metric, err error) {
 	control, err := s.orchestratorClient.GetControl(context.Background(), &orchestrator.GetControlRequest{
 		CatalogId:    req.Toe.CatalogId,
 		CategoryName: req.CategoryName,
 		ControlId:    req.ControlId,
 	})
+	if err != nil {
+		return
+	}
 
 	metrics = control.Metrics
 
 	return
+}
+
+func createSchedulerTag(cloudServiceId, controlId string) string {
+	if cloudServiceId == "" || controlId == "" {
+		return ""
+	}
+	return fmt.Sprintf("%s-%s", cloudServiceId, controlId)
 }
 
 func (s *Service) Shutdown() {
