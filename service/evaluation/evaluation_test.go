@@ -27,20 +27,24 @@ package evaluation
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"testing"
 	"time"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/evaluation"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/defaults"
+	"clouditor.io/clouditor/persistence/inmemory"
 	"github.com/go-co-op/gocron"
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc/codes"
+	"golang.org/x/oauth2/clientcredentials"
 )
 
 func TestNewService(t *testing.T) {
+	var myStorage, err = inmemory.NewStorage()
+	assert.NoError(t, err)
+
 	type args struct {
 		opts []ServiceOption
 	}
@@ -50,15 +54,76 @@ func TestNewService(t *testing.T) {
 		want *Service
 	}{
 		{
+			name: "WithOrchestratorAddress",
+			args: args{
+				opts: []ServiceOption{ServiceOption(WithStorage(myStorage))},
+			},
+			want: &Service{
+				scheduler: gocron.NewScheduler(time.UTC),
+				orchestratorAddress: grpcTarget{
+					target: defaults.DefaultOrchestratorAddress,
+				},
+				evaluation: make(map[string]*EvaluationScheduler),
+				results:    make(map[string]*evaluation.EvaluationResult),
+				storage:    myStorage,
+			},
+		},
+		{
+			name: "WithOrchestratorAddress",
+			args: args{
+				opts: []ServiceOption{ServiceOption(WithOrchestratorAddress(defaults.DefaultOrchestratorAddress))},
+			},
+			want: &Service{
+				scheduler: gocron.NewScheduler(time.UTC),
+				orchestratorAddress: grpcTarget{
+					target: defaults.DefaultOrchestratorAddress,
+				},
+				evaluation: make(map[string]*EvaluationScheduler),
+				results:    make(map[string]*evaluation.EvaluationResult),
+			},
+		},
+		{
+			name: "WithOAuth2Authorizer",
+			args: args{
+				opts: []ServiceOption{ServiceOption(WithOAuth2Authorizer(&clientcredentials.Config{}))},
+			},
+			want: &Service{
+				scheduler: gocron.NewScheduler(time.UTC),
+				orchestratorAddress: grpcTarget{
+					target: "localhost:9090",
+				},
+				evaluation: make(map[string]*EvaluationScheduler),
+				results:    make(map[string]*evaluation.EvaluationResult),
+				authorizer: api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}),
+			},
+		},
+		{
+			name: "WithAuthorizer",
+			args: args{
+				opts: []ServiceOption{ServiceOption(WithAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{})))},
+			},
+			want: &Service{
+				scheduler: gocron.NewScheduler(time.UTC),
+				orchestratorAddress: grpcTarget{
+					target: "localhost:9090",
+				},
+				evaluation: make(map[string]*EvaluationScheduler),
+				results:    make(map[string]*evaluation.EvaluationResult),
+				authorizer: api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}),
+			},
+		},
+		{
 			name: "Happy path",
 			args: args{
 				opts: []ServiceOption{},
 			},
 			want: &Service{
+				scheduler: gocron.NewScheduler(time.UTC),
 				orchestratorAddress: grpcTarget{
 					target: "localhost:9090",
 				},
 				evaluation: make(map[string]*EvaluationScheduler),
+				results:    make(map[string]*evaluation.EvaluationResult),
 			},
 		},
 	}
@@ -80,8 +145,10 @@ func TestNewService(t *testing.T) {
 
 func TestService_StartEvaluation(t *testing.T) {
 	type fields struct {
-		scheduler  *gocron.Scheduler
-		evaluation map[string]*EvaluationScheduler
+		scheduler           *gocron.Scheduler
+		evaluation          map[string]*EvaluationScheduler
+		results             map[string]*evaluation.EvaluationResult
+		orchestratorAddress grpcTarget
 	}
 	type args struct {
 		ctx context.Context
@@ -94,30 +161,6 @@ func TestService_StartEvaluation(t *testing.T) {
 		wantResp *evaluation.StartEvaluationResponse
 		wantErr  assert.ErrorAssertionFunc
 	}{
-		// {
-		// 	name: "Evaluation already started for cloud service",
-		// 	fields: fields{
-		// 		scheduler: gocron.NewScheduler(time.UTC),
-		// 		evaluation: map[string]*EvaluationScheduler{defaults.DefaultTargetCloudServiceID: {
-		// 			scheduler:           gocron.NewScheduler(time.UTC),
-		// 			evaluatedControlIDs: []string{defaults.DefaultEUCSControlID},
-		// 		}},
-		// 	},
-		// 	args: args{
-		// 		ctx: context.Background(),
-		// 		req: &evaluation.StartEvaluationRequest{
-		// 			Toe: &orchestrator.TargetOfEvaluation{
-		// 				CloudServiceId: defaults.DefaultTargetCloudServiceID,
-		// 				CatalogId:      defaults.DefaultCatalogID,
-		// 				AssuranceLevel: &defaults.AssuranceLevelHigh,
-		// 			},
-		// 			ControlId:    defaults.DefaultEUCSControlID,
-		// 			CategoryName: defaults.DefaultEUCSCategoryName,
-		// 		},
-		// 	},
-		// 	wantResp: &evaluation.StartEvaluationResponse{},
-		// 	wantErr:  assert.NoError,
-		// },
 		{
 			name: "Missing Control ID in request",
 			args: args{
@@ -133,17 +176,21 @@ func TestService_StartEvaluation(t *testing.T) {
 			},
 			wantResp: &evaluation.StartEvaluationResponse{
 				Status:        false,
-				StatusMessage: fmt.Sprintf(codes.InvalidArgument.String(), evaluation.ErrControlIDIsMissing.Error()),
+				StatusMessage: evaluation.ErrControlIDIsMissing.Error(),
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, evaluation.ErrControlIDIsMissing.Error())
 			},
 		},
 		{
 			name: "Happy path",
 			fields: fields{
-				scheduler: gocron.NewScheduler(time.UTC),
-				// evaluation: map[string]*EvaluationScheduler{defaults.DefaultTargetCloudServiceID: {
-				// 	scheduler:           gocron.NewScheduler(time.UTC),
-				// 	evaluatedControlIDs: []string{defaults.DefaultEUCSControlID},
-				// }},
+				scheduler:  gocron.NewScheduler(time.UTC),
+				evaluation: make(map[string]*EvaluationScheduler),
+				results:    make(map[string]*evaluation.EvaluationResult),
+				orchestratorAddress: grpcTarget{
+					target: defaults.DefaultOrchestratorAddress,
+				},
 			},
 			args: args{
 				ctx: context.Background(),
@@ -202,4 +249,68 @@ func TestService_Shutdown(t *testing.T) {
 	service.Shutdown()
 
 	assert.False(t, service.scheduler.IsRunning())
+}
+
+func TestService_SetAuthorizer(t *testing.T) {
+
+	type args struct {
+		auth api.Authorizer
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "Happy path",
+			args: args{
+				auth: api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := NewService()
+			assert.Empty(t, s.authorizer)
+			s.SetAuthorizer(tt.args.auth)
+			assert.NotEmpty(t, s.authorizer)
+		})
+	}
+}
+
+func TestService_Authorizer(t *testing.T) {
+
+	type fields struct {
+		authorizer api.Authorizer
+	}
+
+	tests := []struct {
+		name   string
+		fields fields
+		want   api.Authorizer
+	}{
+		{
+			name: "No authorizer set",
+			fields: fields{
+				authorizer: nil,
+			},
+			want: nil,
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				authorizer: api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}),
+			},
+			want: api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{
+				authorizer: tt.fields.authorizer,
+			}
+			if got := s.Authorizer(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Service.Authorizer() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
