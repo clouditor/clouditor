@@ -546,3 +546,139 @@ func Test_getMapping(t *testing.T) {
 		})
 	}
 }
+
+func TestService_ListEvaluationResults(t *testing.T) {
+	type fields struct {
+		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
+		scheduler                     *gocron.Scheduler
+		orchestratorClient            orchestrator.OrchestratorClient
+		orchestratorAddress           grpcTarget
+		authorizer                    api.Authorizer
+		evaluation                    map[string]*EvaluationScheduler
+		results                       map[string]*evaluation.EvaluationResult
+		storage                       persistence.Storage
+	}
+	type args struct {
+		in0 context.Context
+		req *evaluation.ListEvaluationResultsRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes *evaluation.ListEvaluationResultsResponse
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "multiple page result - first page",
+			fields: fields{results: map[string]*evaluation.EvaluationResult{
+				"11111111-1111-1111-1111-111111111111": {Id: "11111111-1111-1111-1111-111111111111"},
+				"22222222-2222-2222-2222-222222222222": {Id: "22222222-2222-2222-2222-222222222222"},
+				"33333333-3333-3333-3333-333333333333": {Id: "33333333-3333-3333-3333-333333333333"},
+				"44444444-4444-4444-4444-444444444444": {Id: "44444444-4444-4444-4444-444444444444"},
+			}},
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.ListEvaluationResultsRequest{
+					PageSize: 2,
+				},
+			},
+			wantRes: &evaluation.ListEvaluationResultsResponse{
+				Results: []*evaluation.EvaluationResult{
+					{
+						Id: "11111111-1111-1111-1111-111111111111",
+					},
+					{
+						Id: "22222222-2222-2222-2222-222222222222",
+					},
+				},
+				NextPageToken: func() string {
+					token, _ := (&api.PageToken{Start: 2, Size: 2}).Encode()
+					return token
+				}(),
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "multiple page result - second page",
+			fields: fields{results: map[string]*evaluation.EvaluationResult{
+				"11111111-1111-1111-1111-111111111111": {Id: "11111111-1111-1111-1111-111111111111"},
+				"22222222-2222-2222-2222-222222222222": {Id: "22222222-2222-2222-2222-222222222222"},
+				"33333333-3333-3333-3333-333333333333": {Id: "33333333-3333-3333-3333-333333333333"},
+				"44444444-4444-4444-4444-444444444444": {Id: "44444444-4444-4444-4444-444444444444"},
+			}},
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.ListEvaluationResultsRequest{
+					PageSize: 2,
+					PageToken: func() string {
+						token, _ := (&api.PageToken{Start: 2, Size: 2}).Encode()
+						return token
+					}(),
+				},
+			},
+			wantRes: &evaluation.ListEvaluationResultsResponse{
+				Results: []*evaluation.EvaluationResult{
+					{
+						Id: "33333333-3333-3333-3333-333333333333",
+					},
+					{
+						Id: "44444444-4444-4444-4444-444444444444",
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				results: map[string]*evaluation.EvaluationResult{
+					"11111111-1111-1111-1111-111111111111": {Id: "11111111-1111-1111-1111-111111111111"},
+					"22222222-2222-2222-2222-222222222222": {Id: "22222222-2222-2222-2222-222222222222"},
+					"33333333-3333-3333-3333-333333333333": {Id: "33333333-3333-3333-3333-333333333333"},
+					"44444444-4444-4444-4444-444444444444": {Id: "44444444-4444-4444-4444-444444444444"},
+				},
+			},
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.ListEvaluationResultsRequest{},
+			},
+			wantRes: &evaluation.ListEvaluationResultsResponse{
+				Results: []*evaluation.EvaluationResult{
+					{
+						Id: "11111111-1111-1111-1111-111111111111",
+					},
+					{
+						Id: "22222222-2222-2222-2222-222222222222",
+					},
+					{
+						Id: "33333333-3333-3333-3333-333333333333",
+					},
+					{
+						Id: "44444444-4444-4444-4444-444444444444",
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{
+				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
+				scheduler:                     tt.fields.scheduler,
+				orchestratorClient:            tt.fields.orchestratorClient,
+				orchestratorAddress:           tt.fields.orchestratorAddress,
+				authorizer:                    tt.fields.authorizer,
+				evaluation:                    tt.fields.evaluation,
+				results:                       tt.fields.results,
+				storage:                       tt.fields.storage,
+			}
+			gotRes, err := s.ListEvaluationResults(tt.args.in0, tt.args.req)
+			if tt.wantErr != nil {
+				tt.wantErr(t, err)
+				assert.Equal(t, gotRes, tt.wantRes)
+			}
+		})
+	}
+}
