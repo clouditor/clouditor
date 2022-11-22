@@ -78,7 +78,7 @@ func TestStartEvaluationRequest_Validate(t *testing.T) {
 			name: "ToE is missing in request",
 			fields: fields{
 				Request: &StartEvaluationRequest{
-					ControlId:    defaults.DefaultEUCSControl,
+					ControlId:    defaults.DefaultEUCSControlID,
 					CategoryName: defaults.DefaultEUCSCategoryName,
 				},
 			},
@@ -90,7 +90,7 @@ func TestStartEvaluationRequest_Validate(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				Request: &StartEvaluationRequest{
-					ControlId: defaults.DefaultEUCSControl,
+					ControlId: defaults.DefaultEUCSControlID,
 					Toe: &orchestrator.TargetOfEvaluation{
 						CloudServiceId: defaults.DefaultTargetCloudServiceID,
 						CatalogId:      defaults.DefaultCatalogID,
@@ -144,7 +144,7 @@ func TestStopEvaluationRequest_Validate(t *testing.T) {
 						CatalogId:      defaults.DefaultCatalogID,
 						AssuranceLevel: &defaults.AssuranceLevelHigh,
 					},
-					ControlId: defaults.DefaultEUCSControl,
+					ControlId: defaults.DefaultEUCSControlID,
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -155,7 +155,7 @@ func TestStopEvaluationRequest_Validate(t *testing.T) {
 			name: "ToE is missing in request",
 			fields: fields{
 				Request: &StopEvaluationRequest{
-					ControlId:    defaults.DefaultEUCSControl,
+					ControlId:    defaults.DefaultEUCSControlID,
 					CategoryName: defaults.DefaultEUCSCategoryName,
 				},
 			},
@@ -167,7 +167,7 @@ func TestStopEvaluationRequest_Validate(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				Request: &StopEvaluationRequest{
-					ControlId: defaults.DefaultEUCSControl,
+					ControlId: defaults.DefaultEUCSControlID,
 					Toe: &orchestrator.TargetOfEvaluation{
 						CloudServiceId: defaults.DefaultTargetCloudServiceID,
 						CatalogId:      defaults.DefaultCatalogID,

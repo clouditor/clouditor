@@ -30,10 +30,12 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	"clouditor.io/clouditor/api/evaluation"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/defaults"
+	"github.com/go-co-op/gocron"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 )
@@ -77,16 +79,45 @@ func TestNewService(t *testing.T) {
 }
 
 func TestService_StartEvaluation(t *testing.T) {
+	type fields struct {
+		scheduler  *gocron.Scheduler
+		evaluation map[string]*EvaluationScheduler
+	}
 	type args struct {
 		ctx context.Context
 		req *evaluation.StartEvaluationRequest
 	}
 	tests := []struct {
 		name     string
+		fields   fields
 		args     args
 		wantResp *evaluation.StartEvaluationResponse
 		wantErr  assert.ErrorAssertionFunc
 	}{
+		// {
+		// 	name: "Evaluation already started for cloud service",
+		// 	fields: fields{
+		// 		scheduler: gocron.NewScheduler(time.UTC),
+		// 		evaluation: map[string]*EvaluationScheduler{defaults.DefaultTargetCloudServiceID: {
+		// 			scheduler:           gocron.NewScheduler(time.UTC),
+		// 			evaluatedControlIDs: []string{defaults.DefaultEUCSControlID},
+		// 		}},
+		// 	},
+		// 	args: args{
+		// 		ctx: context.Background(),
+		// 		req: &evaluation.StartEvaluationRequest{
+		// 			Toe: &orchestrator.TargetOfEvaluation{
+		// 				CloudServiceId: defaults.DefaultTargetCloudServiceID,
+		// 				CatalogId:      defaults.DefaultCatalogID,
+		// 				AssuranceLevel: &defaults.AssuranceLevelHigh,
+		// 			},
+		// 			ControlId:    defaults.DefaultEUCSControlID,
+		// 			CategoryName: defaults.DefaultEUCSCategoryName,
+		// 		},
+		// 	},
+		// 	wantResp: &evaluation.StartEvaluationResponse{},
+		// 	wantErr:  assert.NoError,
+		// },
 		{
 			name: "Missing Control ID in request",
 			args: args{
@@ -107,6 +138,13 @@ func TestService_StartEvaluation(t *testing.T) {
 		},
 		{
 			name: "Happy path",
+			fields: fields{
+				scheduler: gocron.NewScheduler(time.UTC),
+				// evaluation: map[string]*EvaluationScheduler{defaults.DefaultTargetCloudServiceID: {
+				// 	scheduler:           gocron.NewScheduler(time.UTC),
+				// 	evaluatedControlIDs: []string{defaults.DefaultEUCSControlID},
+				// }},
+			},
 			args: args{
 				ctx: context.Background(),
 				req: &evaluation.StartEvaluationRequest{
@@ -115,7 +153,7 @@ func TestService_StartEvaluation(t *testing.T) {
 						CatalogId:      defaults.DefaultCatalogID,
 						AssuranceLevel: &defaults.AssuranceLevelHigh,
 					},
-					ControlId:    defaults.DefaultEUCSControl,
+					ControlId:    defaults.DefaultEUCSControlID,
 					CategoryName: defaults.DefaultEUCSCategoryName,
 				},
 			},
@@ -125,7 +163,13 @@ func TestService_StartEvaluation(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService()
+			s := &Service{
+				orchestratorAddress: grpcTarget{
+					target: DefaultOrchestratorAddress,
+				},
+				scheduler:  tt.fields.scheduler,
+				evaluation: tt.fields.evaluation,
+			}
 			gotResp, err := s.StartEvaluation(tt.args.ctx, tt.args.req)
 			if tt.wantErr != nil {
 				tt.wantErr(t, err)

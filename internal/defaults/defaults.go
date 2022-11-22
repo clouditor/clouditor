@@ -30,8 +30,9 @@ const (
 	DefaultTargetCloudServiceName        = "default"
 	DefaultTargetCloudServiceDescription = "The default target cloud service"
 	DefaultCatalogID                     = "EUCS"
-	DefaultEUCSControl                   = "OPS-13.7"
+	DefaultEUCSControlID                 = "OPS-13.7"
 	DefaultEUCSCategoryName              = "Operational Security"
+	DefaultOrchestratorAddress           = "locahost:9090"
 )
 
 var (
