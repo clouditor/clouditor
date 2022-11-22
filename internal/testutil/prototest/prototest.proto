@@ -40,5 +40,5 @@ message TestStruct {
         NOT_COMPLIANT = 2;
         PENDING = 3;
     }
-	EvaluationStatus status = 4;
+	EvaluationStatus test_status = 4;
 }

@@ -51,7 +51,7 @@ func TestGetFieldNames(t *testing.T) {
 	// Successful
 	fieldnames = GetFieldNames[*prototest.TestStruct]()
 	assert.Equal(t, reflect.ValueOf(prototest.TestStruct{}).NumField()-3, len(fieldnames))
-	assert.Equal(t, []string{"test_name", "test_id", "test_description"}, fieldnames)
+	assert.Equal(t, []string{"test_name", "test_id", "test_description", "test_status"}, fieldnames)
 
 	// Successful
 	fieldnames = GetFieldNames[*evidence.Evidence]()

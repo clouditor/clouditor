@@ -42,6 +42,7 @@ import (
 	"github.com/go-co-op/gocron"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/oauth2/clientcredentials"
+	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -758,6 +759,63 @@ func TestService_StopEvaluation(t *testing.T) {
 			if tt.wantErr != nil {
 				tt.wantErr(t, err)
 				assert.Equal(t, gotRes, tt.wantRes)
+			}
+		})
+	}
+}
+
+func TestService_initOrchestratorClient(t *testing.T) {
+	type fields struct {
+		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
+		scheduler                     *gocron.Scheduler
+		orchestratorClient            orchestrator.OrchestratorClient
+		orchestratorAddress           grpcTarget
+		authorizer                    api.Authorizer
+		evaluation                    map[string]*EvaluationScheduler
+		results                       map[string]*evaluation.EvaluationResult
+		storage                       persistence.Storage
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "OrchestratorClient already exists",
+			fields: fields{
+				orchestratorClient: orchestrator.NewOrchestratorClient(&grpc.ClientConn{}),
+				orchestratorAddress: grpcTarget{
+					target: defaults.DefaultOrchestratorAddress,
+				},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				orchestratorAddress: grpcTarget{
+					target: defaults.DefaultOrchestratorAddress,
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{
+				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
+				scheduler:                     tt.fields.scheduler,
+				orchestratorClient:            tt.fields.orchestratorClient,
+				orchestratorAddress:           tt.fields.orchestratorAddress,
+				authorizer:                    tt.fields.authorizer,
+				evaluation:                    tt.fields.evaluation,
+				results:                       tt.fields.results,
+				storage:                       tt.fields.storage,
+			}
+
+			err := s.initOrchestratorClient()
+			if tt.wantErr != nil {
+				tt.wantErr(t, err)
 			}
 		})
 	}
