@@ -23,22 +23,16 @@
 //
 // This file is part of Clouditor Community Edition.
 
-syntax = "proto3";
-package prototest;
+package util
 
-option go_package = "clouditor.io/clouditor/internal/testutil/prototest";
+func RemoveIndexFromSlice[T any](slice []T, index int) []T {
+	if slice == nil {
+		return slice
+	} else if len(slice) == 0 {
+		return slice
+	} else if len(slice) <= index {
+		return slice
+	}
 
-// This is a test message. If a test needs a proto message, that one can be used. 
-// This has been created because of import cycles in the package util.
-message TestStruct {
-	string test_name = 1;       
-	string test_id = 2; 
-	string test_description = 3; 
-	enum EvaluationStatus {
-        STATUS_UNSPECIFIED = 0;
-        COMPLIANT = 1;
-        NOT_COMPLIANT = 2;
-        PENDING = 3;
-    }
-	EvaluationStatus status = 4;
+	return append(slice[:index], slice[index+1:]...)
 }

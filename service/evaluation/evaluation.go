@@ -186,7 +186,7 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 	// Verify that evaluating of this service and control hasn't started already
 	// TODO(anatheka): Extend for one schedule per control or do we have to stop it and add with several control IDs?
 	s.evaluationMutex.Lock()
-	if m := s.evaluation[schedulerTag]; m != nil && /*slices.Contains(s.evaluation[schedulerTag].evaluatedControlIDs, req.ControlId) &&*/ m.scheduler != nil && m.scheduler.IsRunning() {
+	if m := s.evaluation[schedulerTag]; m != nil && m.scheduler != nil && m.scheduler.IsRunning() {
 		err = status.Errorf(codes.AlreadyExists, "Cloud Service '%s' is being evaluated with Control %s already.", req.Toe.CloudServiceId, req.ControlId)
 		log.Error(err)
 		return
@@ -203,7 +203,9 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 		Tag(schedulerTag).
 		Do(s.Evaluate, req)
 	if err != nil {
-		err = status.Errorf(codes.Internal, "Evaluation for Cloud Service '%s' and Control ID '%s' cannot be scheduled.", req.Toe.CloudServiceId, req.ControlId)
+		err = fmt.Errorf("evaluation for Cloud Service '%s' and Control ID '%s' cannot be scheduled", req.Toe.CloudServiceId, req.ControlId)
+		log.Error(err)
+		err = status.Errorf(codes.Internal, "%s", err)
 		log.Error(err)
 		return
 	}
@@ -236,7 +238,7 @@ func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 	if err != nil {
 		log.Errorf("Could not get metrics for control ID '%s' from Orchestrator: %v", req.ControlId, err)
 
-		// TODO(anatheka): Do we need that?
+		// TODO(anatheka): Do we need that? Or do we let it running?
 		// Delete evaluation entry, it is not longer needed
 		s.evaluationMutex.Lock()
 		delete(s.evaluation, createSchedulerTag(req.Toe.CloudServiceId, req.ControlId))
@@ -253,7 +255,7 @@ func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 	if err != nil {
 		log.Errorf("Could not get assessment results for Cloud Serivce '%s' from Orchestrator", req.Toe.CloudServiceId)
 
-		// TODO(anatheka): Do we need that?
+		// TODO(anatheka): Do we need that? Or do we let it running?
 		// Delete evaluation entry, it is no longer needed if we don't get the assessment results from the orchestrator
 		s.evaluationMutex.Lock()
 		delete(s.evaluation, createSchedulerTag(req.Toe.CloudServiceId, req.ControlId))
@@ -378,7 +380,7 @@ func createSchedulerTag(cloudServiceId, controlId string) string {
 	return fmt.Sprintf("%s-%s", cloudServiceId, controlId)
 }
 
-// TODO(all): Make a generic method for that in folger internal
+// TODO(all): Make a generic method for that in folder internal?
 // initOrchestratorClient set the orchestrator client
 func (s *Service) initOrchestratorClient() error {
 	if s.orchestratorClient != nil {
