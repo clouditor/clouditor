@@ -27,7 +27,6 @@ package evaluation
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -319,9 +318,9 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 
 	// Verify if scheduler is running
 	if !s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)].scheduler.IsRunning() {
-		err = errors.New("evaluation of cloud service %s has been stopped already")
+		err = fmt.Errorf("evaluation of cloud service %s has been stopped already", req.Toe.CloudServiceId)
 		log.Error(err)
-		err = status.Errorf(codes.NotFound, err.Error(), req.Toe.CloudServiceId)
+		err = status.Errorf(codes.NotFound, err.Error())
 		return
 	}
 
