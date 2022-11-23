@@ -180,13 +180,13 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 	}
 
 	// Set scheduler tag
-	schedulerTag = createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)
+	schedulerTag = createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId)
 
 	// Verify that evaluating of this service and control hasn't started already
 	// TODO(anatheka): Extend for one schedule per control or do we have to stop it and add with several control IDs?
 	s.evaluationMutex.Lock()
 	if m := s.evaluation[schedulerTag]; m != nil && m.scheduler != nil && m.scheduler.IsRunning() {
-		err = status.Errorf(codes.AlreadyExists, "Cloud Service '%s' is being evaluated with Control %s already.", req.Toe.CloudServiceId, req.ControlId)
+		err = status.Errorf(codes.AlreadyExists, "Cloud Service '%s' is being evaluated with Control %s already.", req.TargetOfEvaluation.CloudServiceId, req.ControlId)
 		log.Error(err)
 		return
 	}
@@ -195,14 +195,14 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 	log.Info("Starting evaluation ...")
 	s.scheduler.TagsUnique()
 
-	log.Infof("Evaluate Cloud Service '%s' for Control ID '%s' every 5 minutes...", req.Toe.CloudServiceId, req.ControlId)
+	log.Infof("Evaluate Cloud Service '%s' for Control ID '%s' every 5 minutes...", req.TargetOfEvaluation.CloudServiceId, req.ControlId)
 	_, err = s.scheduler.
 		Every(5).
 		Minute().
 		Tag(schedulerTag).
 		Do(s.Evaluate, req)
 	if err != nil {
-		err = fmt.Errorf("evaluation for Cloud Service '%s' and Control ID '%s' cannot be scheduled", req.Toe.CloudServiceId, req.ControlId)
+		err = fmt.Errorf("evaluation for Cloud Service '%s' and Control ID '%s' cannot be scheduled", req.TargetOfEvaluation.CloudServiceId, req.ControlId)
 		log.Error(err)
 		err = status.Errorf(codes.Internal, "%s", err)
 		log.Error(err)
@@ -224,7 +224,7 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 }
 
 func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
-	log.Infof("Started evaluation for Cloud Service '%s',  Catalog ID '%s' and Control '%s'", req.Toe.CloudServiceId, req.Toe.CatalogId, req.ControlId)
+	log.Infof("Started evaluation for Cloud Service '%s',  Catalog ID '%s' and Control '%s'", req.TargetOfEvaluation.CloudServiceId, req.TargetOfEvaluation.CatalogId, req.ControlId)
 
 	// Get orchestrator client
 	err := s.initOrchestratorClient()
@@ -240,23 +240,23 @@ func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 		// TODO(anatheka): Do we need that? Or do we let it running?
 		// Delete evaluation entry, it is not longer needed
 		s.evaluationMutex.Lock()
-		delete(s.evaluation, createSchedulerTag(req.Toe.CloudServiceId, req.ControlId))
+		delete(s.evaluation, createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId))
 		s.evaluationMutex.Unlock()
 
 		return
 	}
 
 	// Get assessment results for the target cloud service
-	assessmentResults, err := api.ListAllPaginated(&assessment.ListAssessmentResultsRequest{FilteredCloudServiceId: req.Toe.CloudServiceId}, s.orchestratorClient.ListAssessmentResults, func(res *assessment.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
+	assessmentResults, err := api.ListAllPaginated(&assessment.ListAssessmentResultsRequest{FilteredCloudServiceId: req.TargetOfEvaluation.CloudServiceId}, s.orchestratorClient.ListAssessmentResults, func(res *assessment.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
 		return res.Results
 	})
 	if err != nil {
-		log.Errorf("Could not get assessment results for Cloud Serivce '%s' from Orchestrator", req.Toe.CloudServiceId)
+		log.Errorf("Could not get assessment results for Cloud Serivce '%s' from Orchestrator", req.TargetOfEvaluation.CloudServiceId)
 
 		// TODO(anatheka): Do we need that? Or do we let it running?
 		// Delete evaluation entry, it is no longer needed if we don't get the assessment results from the orchestrator
 		s.evaluationMutex.Lock()
-		delete(s.evaluation, createSchedulerTag(req.Toe.CloudServiceId, req.ControlId))
+		delete(s.evaluation, createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId))
 		s.evaluationMutex.Unlock()
 		return
 	}
@@ -288,7 +288,7 @@ func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 		Id:                       uuid.NewString(),
 		Timestamp:                timestamppb.Now(),
 		Control:                  req.ControlId,
-		TargetOfEvaluation:       req.Toe,
+		TargetOfEvaluation:       req.TargetOfEvaluation,
 		Status:                   status,
 		FailingAssessmentResults: nonCompliantAssessmentResults,
 	}
@@ -307,16 +307,16 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 	}
 
 	// Verify that the service is evaluated currently
-	if s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)] == nil {
-		err = fmt.Errorf("evaluation of cloud service %s has not been started yet", req.Toe.CloudServiceId)
+	if s.evaluation[createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId)] == nil {
+		err = fmt.Errorf("evaluation of cloud service %s has not been started yet", req.TargetOfEvaluation.CloudServiceId)
 		log.Error(err)
 		err = status.Errorf(codes.NotFound, "%s", err)
 		return
 	}
 
 	// Verify if scheduler is running
-	if !s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)].scheduler.IsRunning() {
-		err = fmt.Errorf("evaluation of cloud service %s has been stopped already", req.Toe.CloudServiceId)
+	if !s.evaluation[createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId)].scheduler.IsRunning() {
+		err = fmt.Errorf("evaluation of cloud service %s has been stopped already", req.TargetOfEvaluation.CloudServiceId)
 		log.Error(err)
 		err = status.Errorf(codes.NotFound, err.Error())
 		return
@@ -324,14 +324,14 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 
 	// Stop scheduler
 	s.evaluationMutex.Lock()
-	err = s.evaluation[createSchedulerTag(req.Toe.CloudServiceId, req.ControlId)].scheduler.RemoveByTag(createSchedulerTag(req.Toe.CloudServiceId, req.ControlId))
+	err = s.evaluation[createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId)].scheduler.RemoveByTag(createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId))
 	if err != nil {
 		err = fmt.Errorf("error in removing scheduler: %v", err)
 		log.Error(err)
 		err = status.Errorf(codes.Internal, "error at stopping scheduler")
 	}
 	// Delete entry for given Cloud Service ID
-	delete(s.evaluation, createSchedulerTag(req.Toe.CloudServiceId, req.ControlId))
+	delete(s.evaluation, createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId))
 	s.evaluationMutex.Unlock()
 
 	res = &evaluation.StopEvaluationResponse{}
@@ -357,7 +357,7 @@ func (s *Service) ListEvaluationResults(_ context.Context, req *evaluation.ListE
 // getMetricsFromControl return a list of metrics for the given control ID. For now it is only possible to get the metrics for the lowest control level.
 func (s *Service) getMetricsFromControl(req *evaluation.StartEvaluationRequest) (metrics []*assessment.Metric, err error) {
 	control, err := s.orchestratorClient.GetControl(context.Background(), &orchestrator.GetControlRequest{
-		CatalogId:    req.Toe.CatalogId,
+		CatalogId:    req.TargetOfEvaluation.CatalogId,
 		CategoryName: req.CategoryName,
 		ControlId:    req.ControlId,
 	})

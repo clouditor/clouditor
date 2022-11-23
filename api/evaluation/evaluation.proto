@@ -43,7 +43,7 @@
     rpc StartEvaluation(StartEvaluationRequest) returns (StartEvaluationResponse) {
     option (google.api.http) = {
         post : "/v1/evaluation/evaluate/{category_name}/{control_id}/start"
-        body : "toe"
+        body : "target_of_evaluation"
       };
      } 
 
@@ -51,7 +51,7 @@
     rpc StopEvaluation(StopEvaluationRequest) returns (StopEvaluationResponse) {
     option (google.api.http) = {
         post : "/v1/evaluation/evaluate/{category_name}/{control_id}/stop"
-        body : "toe"
+        body : "target_of_evaluation"
         };
     } 
 
@@ -78,7 +78,7 @@ message ListEvaluationResultsRequest {
   }
 
 message StartEvaluationRequest {
-    TargetOfEvaluation toe = 1;
+    TargetOfEvaluation target_of_evaluation = 1;
     // The category the control ID belongs to 
     string category_name = 3; 
     // The control ID
@@ -91,7 +91,7 @@ message StartEvaluationResponse {
 }
 
 message StopEvaluationRequest {
-    TargetOfEvaluation toe = 1; 
+    TargetOfEvaluation target_of_evaluation = 1; 
     // The category the control ID belongs to 
     string category_name = 2; 
     // The control ID

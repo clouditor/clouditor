@@ -171,7 +171,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				req: &evaluation.StartEvaluationRequest{
-					Toe: &orchestrator.TargetOfEvaluation{
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 						CloudServiceId: defaults.DefaultTargetCloudServiceID,
 						CatalogId:      defaults.DefaultCatalogID,
 						AssuranceLevel: &defaults.AssuranceLevelHigh,
@@ -200,7 +200,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				req: &evaluation.StartEvaluationRequest{
-					Toe: &orchestrator.TargetOfEvaluation{
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 						CloudServiceId: defaults.DefaultTargetCloudServiceID,
 						CatalogId:      defaults.DefaultCatalogID,
 						AssuranceLevel: &defaults.AssuranceLevelHigh,
@@ -255,7 +255,7 @@ func TestService_Evaluate(t *testing.T) {
 			name: "Error getting metrics from control",
 			args: args{
 				req: &evaluation.StartEvaluationRequest{
-					Toe: &orchestrator.TargetOfEvaluation{
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 						CloudServiceId: defaults.DefaultTargetCloudServiceID,
 						CatalogId:      defaults.DefaultCatalogID,
 						AssuranceLevel: &defaults.AssuranceLevelHigh,
@@ -722,7 +722,7 @@ func TestService_StopEvaluation(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StopEvaluationRequest{
-					Toe: &orchestrator.TargetOfEvaluation{
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 						CloudServiceId: defaults.DefaultTargetCloudServiceID,
 						CatalogId:      defaults.DefaultCatalogID,
 						AssuranceLevel: &defaults.AssuranceLevelHigh,

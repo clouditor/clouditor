@@ -47,7 +47,7 @@ func TestStartEvaluationRequest_Validate(t *testing.T) {
 			fields: fields{
 				Request: &StartEvaluationRequest{
 					CategoryName: defaults.DefaultEUCSCategoryName,
-					Toe: &orchestrator.TargetOfEvaluation{
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 						CloudServiceId: defaults.DefaultTargetCloudServiceID,
 						CatalogId:      defaults.DefaultCatalogID,
 						AssuranceLevel: &defaults.AssuranceLevelHigh,
@@ -62,7 +62,7 @@ func TestStartEvaluationRequest_Validate(t *testing.T) {
 			name: "Missing CategoryName in request",
 			fields: fields{
 				Request: &StartEvaluationRequest{
-					Toe: &orchestrator.TargetOfEvaluation{
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 						CloudServiceId: defaults.DefaultTargetCloudServiceID,
 						CatalogId:      defaults.DefaultCatalogID,
 						AssuranceLevel: &defaults.AssuranceLevelHigh,
@@ -91,7 +91,7 @@ func TestStartEvaluationRequest_Validate(t *testing.T) {
 			fields: fields{
 				Request: &StartEvaluationRequest{
 					ControlId: defaults.DefaultEUCSControlID,
-					Toe: &orchestrator.TargetOfEvaluation{
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 						CloudServiceId: defaults.DefaultTargetCloudServiceID,
 						CatalogId:      defaults.DefaultCatalogID,
 						AssuranceLevel: &defaults.AssuranceLevelHigh,
@@ -124,7 +124,7 @@ func TestStopEvaluationRequest_Validate(t *testing.T) {
 			fields: fields{
 				Request: &StopEvaluationRequest{
 					CategoryName: defaults.DefaultEUCSCategoryName,
-					Toe: &orchestrator.TargetOfEvaluation{
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 						CloudServiceId: defaults.DefaultTargetCloudServiceID,
 						CatalogId:      defaults.DefaultCatalogID,
 						AssuranceLevel: &defaults.AssuranceLevelHigh,
@@ -139,7 +139,7 @@ func TestStopEvaluationRequest_Validate(t *testing.T) {
 			name: "Missing CategoryName in request",
 			fields: fields{
 				Request: &StopEvaluationRequest{
-					Toe: &orchestrator.TargetOfEvaluation{
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 						CloudServiceId: defaults.DefaultTargetCloudServiceID,
 						CatalogId:      defaults.DefaultCatalogID,
 						AssuranceLevel: &defaults.AssuranceLevelHigh,
@@ -168,7 +168,7 @@ func TestStopEvaluationRequest_Validate(t *testing.T) {
 			fields: fields{
 				Request: &StopEvaluationRequest{
 					ControlId: defaults.DefaultEUCSControlID,
-					Toe: &orchestrator.TargetOfEvaluation{
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 						CloudServiceId: defaults.DefaultTargetCloudServiceID,
 						CatalogId:      defaults.DefaultCatalogID,
 						AssuranceLevel: &defaults.AssuranceLevelHigh,
