@@ -28,13 +28,13 @@ package service
 import (
 	"context"
 
-	"clouditor.io/clouditor/api/orchestrator"
+	"github.com/golang-jwt/jwt/v4"
+	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/golang-jwt/jwt/v4"
-	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
+	"clouditor.io/clouditor/api/orchestrator"
 )
 
 // RequestType specifies the type of request, usually CRUD.
@@ -122,12 +122,14 @@ func (a *AuthorizationStrategyJWT) AllowedCloudServices(ctx context.Context) (al
 // AuthorizationStrategyAllowAll is an AuthorizationStrategy that allows all requests.
 type AuthorizationStrategyAllowAll struct{}
 
-// CheckAccess checks whether the current request can be fulfilled using the current access strategy.
+// CheckAccess checks whether the current request can be fulfilled using the current access strategy. Returns true since
+// strategy is `AuthorizationStrategyAllowAll`
 func (*AuthorizationStrategyAllowAll) CheckAccess(_ context.Context, _ RequestType, _ orchestrator.CloudServiceRequest) bool {
 	return true
 }
 
-// AllowedCloudServices retrieves a list of allowed cloud service IDs according to the current access strategy.
+// AllowedCloudServices retrieves a list of allowed cloud service IDs according to the current access strategy. Returns
+// `all = true` since strategy is `AuthorizationStrategyAllowAll`
 func (*AuthorizationStrategyAllowAll) AllowedCloudServices(_ context.Context) (all bool, list []string) {
 	return true, nil
 }
