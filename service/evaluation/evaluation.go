@@ -247,8 +247,7 @@ func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 	}
 
 	// Get assessment results for the target cloud service
-	// TODO(anatheka): The filtered_cloud_service_id option does not work: access denied
-	assessmentResults, err := api.ListAllPaginated(&assessment.ListAssessmentResultsRequest{ /*FilteredCloudServiceId: req.Toe.CloudServiceId*/ }, s.orchestratorClient.ListAssessmentResults, func(res *assessment.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
+	assessmentResults, err := api.ListAllPaginated(&assessment.ListAssessmentResultsRequest{FilteredCloudServiceId: req.Toe.CloudServiceId}, s.orchestratorClient.ListAssessmentResults, func(res *assessment.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
 		return res.Results
 	})
 	if err != nil {
@@ -290,7 +289,7 @@ func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 		Timestamp:                timestamppb.Now(),
 		Control:                  req.ControlId,
 		CloudServiceId:           req.Toe.CloudServiceId,
-		TargetOfEvaluation:       req.Toe.String(),
+		TargetOfEvaluation:       req.Toe,
 		Status:                   status,
 		FailingAssessmentResults: nonCompliantAssessmentResults,
 	}

@@ -188,8 +188,7 @@ components:
                     type: string
                     description: The cloud service this evaluation result belongs to
                 targetOfEvaluation:
-                    type: string
-                    description: Reference to the target of evaluation the evaluation was based on
+                    $ref: '#/components/schemas/TargetOfEvaluation'
                 failingAssessmentResults:
                     type: array
                     items:

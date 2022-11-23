@@ -126,7 +126,7 @@ message EvaluationResult {
     string cloud_service_id = 5;
 
     // Reference to the target of evaluation the evaluation was based on
-    string target_of_evaluation = 6;
+    TargetOfEvaluation target_of_evaluation = 6;
 
     // List of assessment results because of which the evaluation status is not 'compliant'
     repeated AssessmentResult failing_assessment_results = 7;
