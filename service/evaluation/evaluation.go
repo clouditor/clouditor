@@ -288,7 +288,6 @@ func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 		Id:                       uuid.NewString(),
 		Timestamp:                timestamppb.Now(),
 		Control:                  req.ControlId,
-		CloudServiceId:           req.Toe.CloudServiceId,
 		TargetOfEvaluation:       req.Toe,
 		Status:                   status,
 		FailingAssessmentResults: nonCompliantAssessmentResults,

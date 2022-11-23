@@ -122,9 +122,6 @@ message EvaluationResult {
     google.protobuf.Timestamp timestamp = 4
       [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
 
-    // The cloud service this evaluation result belongs to
-    string cloud_service_id = 5;
-
     // Reference to the target of evaluation the evaluation was based on
     TargetOfEvaluation target_of_evaluation = 6;
 

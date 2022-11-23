@@ -184,9 +184,6 @@ components:
                     type: string
                     description: Time of evaluation
                     format: date-time
-                cloudServiceId:
-                    type: string
-                    description: The cloud service this evaluation result belongs to
                 targetOfEvaluation:
                     $ref: '#/components/schemas/TargetOfEvaluation'
                 failingAssessmentResults:
