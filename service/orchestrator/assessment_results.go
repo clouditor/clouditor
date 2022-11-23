@@ -45,11 +45,15 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.L
 	var all bool
 
 	// Check, if the current filter is valid according to the authorization strategy. Omitting the cloud service ID is
-	// only allowed, if one can access all the cloud services. Furthermore, the content of the filtered cloud service ID
-	// must be in the list of allowed cloud service IDs.
+	// only allowed, if one can access *all* the cloud services.
 	all, allowed = svc.authz.AllowedCloudServices(ctx)
-	if !all && (req.FilteredCloudServiceId == "" ||
-		(req.FilteredCloudServiceId != "" && !slices.Contains(allowed, req.FilteredCloudServiceId))) {
+	if !all && req.FilteredCloudServiceId == "" {
+		return nil, service.ErrPermissionDenied
+	}
+
+	// Furthermore, the content of the filtered cloud service ID must be in the list of allowed cloud service IDs,
+	// unless one can access *all* the cloud services.
+	if !all && req.FilteredCloudServiceId != "" && !slices.Contains(allowed, req.FilteredCloudServiceId) {
 		return nil, service.ErrPermissionDenied
 	}
 
