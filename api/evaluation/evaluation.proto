@@ -115,11 +115,14 @@ message EvaluationResult {
     // Evaluation status
     EvaluationStatus status = 2;
     
+    // The category the control belongs to 
+    string category_name = 3; 
+
     // Reference to the control the evaluation was based on
-    string control = 3;
+    string control = 4;
 
     // Time of evaluation
-    google.protobuf.Timestamp timestamp = 4
+    google.protobuf.Timestamp timestamp = 5
       [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
 
     // Reference to the target of evaluation the evaluation was based on

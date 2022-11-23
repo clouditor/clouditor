@@ -177,6 +177,9 @@ components:
                     type: string
                     description: Evaluation status
                     format: enum
+                categoryName:
+                    type: string
+                    description: The category the control belongs to
                 control:
                     type: string
                     description: Reference to the control the evaluation was based on

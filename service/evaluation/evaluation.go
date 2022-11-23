@@ -287,6 +287,7 @@ func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 	result := &evaluation.EvaluationResult{
 		Id:                       uuid.NewString(),
 		Timestamp:                timestamppb.Now(),
+		CategoryName:             req.CategoryName,
 		Control:                  req.ControlId,
 		TargetOfEvaluation:       req.TargetOfEvaluation,
 		Status:                   status,
