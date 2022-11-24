@@ -246,7 +246,7 @@ func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 	assessmentResults, err := api.ListAllPaginated(&assessment.ListAssessmentResultsRequest{FilteredCloudServiceId: req.TargetOfEvaluation.CloudServiceId}, s.orchestratorClient.ListAssessmentResults, func(res *assessment.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
 		return res.Results
 	})
-	if err != nil {
+	if err != nil || len(assessmentResults) == 0 {
 		log.Errorf("Could not get assessment results for Cloud Serivce '%s' from Orchestrator: %v", req.TargetOfEvaluation.CloudServiceId, err)
 
 		// TODO(anatheka): Do we need that? Or do we let it running?
@@ -261,6 +261,7 @@ func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 	mappingList := getMapping(assessmentResults, metrics)
 
 	// Do evaluation and find all non-compliant assessment results
+	// TODO(anatheka): Do we want the whole assessment result in evaluationResult.FailingAssessmentResults or only the ID?
 	var nonCompliantAssessmentResults []*assessment.AssessmentResult
 	status := evaluation.EvaluationResult_PENDING
 	for _, item := range mappingList {
@@ -365,7 +366,7 @@ func (s *Service) getMetrics(catalogId, categoryName, controlId string) (metrics
 	}
 
 	// Add metric of control to the metrics list
-	metrics = append(metrics, subControlMetrics...)
+	metrics = append(metrics, control.Metrics...)
 
 	// Add sub-control metrics to the metric list if exist
 	if len(control.Controls) != 0 {
