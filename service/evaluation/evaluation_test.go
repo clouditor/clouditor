@@ -820,3 +820,61 @@ func TestService_initOrchestratorClient(t *testing.T) {
 		})
 	}
 }
+
+func TestService_getMetricsFromSubControls(t *testing.T) {
+	type fields struct {
+		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
+		scheduler                     *gocron.Scheduler
+		orchestratorClient            orchestrator.OrchestratorClient
+		orchestratorAddress           grpcTarget
+		authorizer                    api.Authorizer
+		evaluation                    map[string]*EvaluationScheduler
+		results                       map[string]*evaluation.EvaluationResult
+		storage                       persistence.Storage
+	}
+	type args struct {
+		control *orchestrator.Control
+	}
+	tests := []struct {
+		name        string
+		fields      fields
+		args        args
+		wantMetrics []*assessment.Metric
+		wantErr     assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Sub-control level and metrics missing",
+			args: args{
+				control: &orchestrator.Control{
+					Id:                "testId",
+					CategoryName:      defaults.DefaultEUCSCategoryName,
+					CategoryCatalogId: defaults.DefaultEUCSControlID,
+					Name:              "testId",
+					Controls:          nil,
+					Metrics:           nil,
+				},
+			},
+			wantMetrics: nil,
+			wantErr:     assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{
+				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
+				scheduler:                     tt.fields.scheduler,
+				orchestratorClient:            tt.fields.orchestratorClient,
+				orchestratorAddress:           tt.fields.orchestratorAddress,
+				authorizer:                    tt.fields.authorizer,
+				evaluation:                    tt.fields.evaluation,
+				results:                       tt.fields.results,
+				storage:                       tt.fields.storage,
+			}
+			gotMetrics, err := s.getMetricsFromSubControls(tt.args.control)
+			if tt.wantErr != nil {
+				tt.wantErr(t, err)
+			}
+			assert.Equal(t, tt.wantMetrics, gotMetrics)
+		})
+	}
+}

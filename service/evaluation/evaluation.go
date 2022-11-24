@@ -226,23 +226,19 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 	log.Infof("Started evaluation for Cloud Service '%s',  Catalog ID '%s' and Control '%s'", req.TargetOfEvaluation.CloudServiceId, req.TargetOfEvaluation.CatalogId, req.ControlId)
 
+	var metrics []*assessment.Metric
+
 	// Get orchestrator client
 	err := s.initOrchestratorClient()
 	if err != nil {
 		log.Errorf("could not set orchestrator client: %v", err)
 		return
 	}
-	// Get control and the associated metrics
-	metrics, err := s.getMetricsFromControl(req)
+
+	// Get metrics from control and sub-controls
+	metrics, err = s.getMetrics(req.TargetOfEvaluation.CatalogId, req.CategoryName, req.ControlId)
 	if err != nil {
-		log.Errorf("Could not get metrics for control ID '%s' from Orchestrator: %v", req.ControlId, err)
-
-		// TODO(anatheka): Do we need that? Or do we let it running?
-		// Delete evaluation entry, it is not longer needed
-		s.evaluationMutex.Lock()
-		delete(s.evaluation, createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId))
-		s.evaluationMutex.Unlock()
-
+		log.Errorf("Could not get metrics from control and sub-controlsfor Cloud Serivce '%s' from Orchestrator: %v", req.TargetOfEvaluation.CloudServiceId, err)
 		return
 	}
 
@@ -251,7 +247,7 @@ func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 		return res.Results
 	})
 	if err != nil {
-		log.Errorf("Could not get assessment results for Cloud Serivce '%s' from Orchestrator", req.TargetOfEvaluation.CloudServiceId)
+		log.Errorf("Could not get assessment results for Cloud Serivce '%s' from Orchestrator: %v", req.TargetOfEvaluation.CloudServiceId, err)
 
 		// TODO(anatheka): Do we need that? Or do we let it running?
 		// Delete evaluation entry, it is no longer needed if we don't get the assessment results from the orchestrator
@@ -355,18 +351,61 @@ func (s *Service) ListEvaluationResults(_ context.Context, req *evaluation.ListE
 	return
 }
 
-// getMetricsFromControl return a list of metrics for the given control ID. For now it is only possible to get the metrics for the lowest control level.
-func (s *Service) getMetricsFromControl(req *evaluation.StartEvaluationRequest) (metrics []*assessment.Metric, err error) {
-	control, err := s.orchestratorClient.GetControl(context.Background(), &orchestrator.GetControlRequest{
-		CatalogId:    req.TargetOfEvaluation.CatalogId,
-		CategoryName: req.CategoryName,
-		ControlId:    req.ControlId,
-	})
+// getMetrics return the metrics from a given controlId
+// For now a control has either sub-controls or metrics. If the control has sub-controls, get all metrics from the sub-controls.
+// TODO(anatheka): Is it possible that a control has sub-controls and metrics?
+func (s *Service) getMetrics(catalogId, categoryName, controlId string) (metrics []*assessment.Metric, err error) {
+	var subControlMetrics []*assessment.Metric
+
+	control, err := s.getControl(catalogId, categoryName, controlId)
 	if err != nil {
+		err = fmt.Errorf("could not get control for control id {%s}: %v", controlId, err)
+		log.Error(err)
 		return
 	}
 
-	metrics = control.Metrics
+	// Add metric of control to the metrics list
+	metrics = append(metrics, subControlMetrics...)
+
+	// Add sub-control metrics to the metric list if exist
+	if len(control.Controls) != 0 {
+		// Get the metrics from the next sub-control level
+		subControlMetrics, err = s.getMetricsFromSubControls(control)
+		if err != nil {
+			err = fmt.Errorf("error getting metrics from sub-controls: %v", err)
+			log.Error(err)
+			return
+		}
+
+		metrics = append(metrics, subControlMetrics...)
+	}
+
+	return
+}
+
+// getMetricsFromSubControls returns a list of metrics from the sub-controls
+func (s *Service) getMetricsFromSubControls(control *orchestrator.Control) (metrics []*assessment.Metric, err error) {
+	var subcontrol *orchestrator.Control
+
+	for _, control := range control.Controls {
+		subcontrol, err = s.getControl(control.CategoryCatalogId, control.CategoryName, control.Id)
+		if err != nil {
+			return
+		}
+
+		metrics = append(metrics, subcontrol.Metrics...)
+	}
+
+	return
+}
+
+// getControl return the control for the given control ID.
+func (s *Service) getControl(catalogId, categoryName, controlId string) (control *orchestrator.Control, err error) {
+	control, err = s.orchestratorClient.GetControl(context.Background(), &orchestrator.GetControlRequest{
+		CatalogId:    catalogId,
+		CategoryName: categoryName,
+		ControlId:    controlId,
+	})
 
 	return
 }
