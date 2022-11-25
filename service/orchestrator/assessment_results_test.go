@@ -92,6 +92,48 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				return assert.Equal(t, err, service.ErrPermissionDenied)
 			},
 		},
+		{
+			name: "specify filtered cloud service ID which is not allowed",
+			fields: fields{
+				results: map[string]*assessment.AssessmentResult{
+					"1": {Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0)), CloudServiceId: testutil.TestCloudService1},
+					"2": {Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2},
+				},
+				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+			},
+			args: args{
+				ctx: testutil.TestContextOnlyService1,
+				req: &assessment.ListAssessmentResultsRequest{
+					FilteredCloudServiceId: testutil.TestCloudService2,
+				},
+			},
+			wantRes: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Equal(t, err, service.ErrPermissionDenied)
+			},
+		},
+		{
+			name: "return filtered cloud service ID",
+			fields: fields{
+				results: map[string]*assessment.AssessmentResult{
+					"1": {Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0)), CloudServiceId: testutil.TestCloudService1},
+					"2": {Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2},
+				},
+				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+			},
+			args: args{
+				ctx: testutil.TestContextOnlyService1,
+				req: &assessment.ListAssessmentResultsRequest{
+					FilteredCloudServiceId: testutil.TestCloudService1,
+				},
+			},
+			wantRes: &assessment.ListAssessmentResultsResponse{
+				Results: []*assessment.AssessmentResult{
+					{Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0)), CloudServiceId: testutil.TestCloudService1},
+				},
+			},
+			wantErr: assert.NoError,
+		},
 	}
 
 	for _, tt := range tests {
