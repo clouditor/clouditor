@@ -366,7 +366,7 @@ paths:
             description: |-
                 Retrieves a control specified by the catalog ID, the control's category
                  name and the control ID. If present, it also includes a list of
-                 sub-controls and any metrics associated to the control.
+                 sub-controls if present or a list of metrics if no sub-controls but metrics are present.
             operationId: Orchestrator_GetControl
             parameters:
                 - name: catalogId
