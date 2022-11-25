@@ -32,6 +32,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
 	"github.com/stretchr/testify/assert"
@@ -104,7 +105,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
 				req: &assessment.ListAssessmentResultsRequest{
-					FilteredCloudServiceId: testutil.TestCloudService2,
+					FilteredCloudServiceId: util.Ref(testutil.TestCloudService2),
 				},
 			},
 			wantRes: nil,
@@ -124,7 +125,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
 				req: &assessment.ListAssessmentResultsRequest{
-					FilteredCloudServiceId: testutil.TestCloudService1,
+					FilteredCloudServiceId: util.Ref(testutil.TestCloudService1),
 				},
 			},
 			wantRes: &assessment.ListAssessmentResultsResponse{
@@ -148,8 +149,8 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
 				req: &assessment.ListAssessmentResultsRequest{
-					FilteredCloudServiceId: testutil.TestCloudService1,
-					FilteredCompliant:      assessment.ListAssessmentResultsRequest_COMPLIANT_TRUE,
+					FilteredCloudServiceId: util.Ref(testutil.TestCloudService1),
+					FilteredCompliant:      util.Ref(true),
 				},
 			},
 			wantRes: &assessment.ListAssessmentResultsResponse{
@@ -173,8 +174,8 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
 				req: &assessment.ListAssessmentResultsRequest{
-					FilteredCloudServiceId: testutil.TestCloudService1,
-					FilteredCompliant:      assessment.ListAssessmentResultsRequest_COMPLIANT_FALSE,
+					FilteredCloudServiceId: util.Ref(testutil.TestCloudService1),
+					FilteredCompliant:      util.Ref(false),
 				},
 			},
 			wantRes: &assessment.ListAssessmentResultsResponse{
@@ -198,7 +199,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
 				req: &assessment.ListAssessmentResultsRequest{
-					FilteredCompliant: assessment.ListAssessmentResultsRequest_COMPLIANT_TRUE,
+					FilteredCompliant: util.Ref(true),
 				},
 			},
 			wantRes: &assessment.ListAssessmentResultsResponse{
@@ -223,7 +224,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
 				req: &assessment.ListAssessmentResultsRequest{
-					FilteredCompliant: assessment.ListAssessmentResultsRequest_COMPLIANT_FALSE,
+					FilteredCompliant: util.Ref(false),
 				},
 			},
 			wantRes: &assessment.ListAssessmentResultsResponse{

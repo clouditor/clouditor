@@ -34,6 +34,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/service"
 )
 
@@ -47,24 +48,24 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.L
 	// Check, if the current filter is valid according to the authorization strategy. Omitting the cloud service ID is
 	// only allowed, if one can access *all* the cloud services.
 	all, allowed = svc.authz.AllowedCloudServices(ctx)
-	if !all && req.FilteredCloudServiceId == "" {
+	if !all && util.Deref(req.FilteredCloudServiceId) == "" {
 		return nil, service.ErrPermissionDenied
 	}
 
 	// Furthermore, the content of the filtered cloud service ID must be in the list of allowed cloud service IDs,
 	// unless one can access *all* the cloud services.
-	if !all && req.FilteredCloudServiceId != "" && !slices.Contains(allowed, req.FilteredCloudServiceId) {
+	if !all && util.Deref(req.FilteredCloudServiceId) != "" && !slices.Contains(allowed, util.Deref(req.FilteredCloudServiceId)) {
 		return nil, service.ErrPermissionDenied
 	}
 
 	for _, v := range values {
 		// Check for filtered cloud service ID
-		if req.FilteredCloudServiceId != "" && v.CloudServiceId != req.FilteredCloudServiceId {
+		if util.Deref(req.FilteredCloudServiceId) != "" && v.CloudServiceId != util.Deref(req.FilteredCloudServiceId) {
 			continue
 		}
 
-		// Check for filter compliance
-		if req.FilteredCompliant == assessment.ListAssessmentResultsRequest_COMPLIANT_FALSE && v.Compliant || req.FilteredCompliant == assessment.ListAssessmentResultsRequest_COMPLIANT_TRUE && !v.Compliant {
+		// Check for filter compliant
+		if req.FilteredCompliant != nil && util.Deref(req.FilteredCompliant) != v.Compliant {
 			continue
 		}
 

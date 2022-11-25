@@ -23,12 +23,7 @@ paths:
                   in: query
                   description: Optionally, a filter for the compliant field in the assessment result.
                   schema:
-                    enum:
-                        - COMPLIANT_UNSPECIFIED
-                        - COMPLIANT_TRUE
-                        - COMPLIANT_FALSE
-                    type: string
-                    format: enum
+                    type: boolean
                 - name: pageSize
                   in: query
                   schema:

@@ -71,15 +71,9 @@ service Assessment {
 
 message ListAssessmentResultsRequest {
   // Optionally, a filter for the cloud service id.  
-  string filtered_cloud_service_id = 1;
-
-  enum Compliant {
-    COMPLIANT_UNSPECIFIED = 0;
-    COMPLIANT_TRUE = 1;
-    COMPLIANT_FALSE = 2;
-  }
+  optional string filtered_cloud_service_id = 1;
   // Optionally, a filter for the compliant field in the assessment result.   
-  Compliant filtered_compliant = 2;
+  optional bool filtered_compliant = 2;
 
   int32 page_size = 10;
   string page_token = 11;
