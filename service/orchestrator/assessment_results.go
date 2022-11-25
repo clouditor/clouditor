@@ -40,7 +40,7 @@ import (
 // ListAssessmentResults is a method implementation of the orchestrator interface
 func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
 	var values = maps.Values(svc.results)
-	var filtered []*assessment.AssessmentResult
+	var filtered_values []*assessment.AssessmentResult
 	var allowed []string
 	var all bool
 
@@ -58,17 +58,23 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.L
 	}
 
 	for _, v := range values {
+		// Check for filtered cloud service ID
 		if req.FilteredCloudServiceId != "" && v.CloudServiceId != req.FilteredCloudServiceId {
 			continue
 		}
 
-		filtered = append(filtered, v)
+		// Check for filter compliance
+		if req.FilteredCompliant == assessment.ListAssessmentResultsRequest_COMPLIANT_FALSE && v.Compliant || req.FilteredCompliant == assessment.ListAssessmentResultsRequest_COMPLIANT_TRUE && !v.Compliant {
+			continue
+		}
+
+		filtered_values = append(filtered_values, v)
 	}
 
 	res = new(assessment.ListAssessmentResultsResponse)
 
 	// Paginate the results according to the request
-	res.Results, res.NextPageToken, err = service.PaginateSlice(req, filtered, func(a *assessment.AssessmentResult, b *assessment.AssessmentResult) bool {
+	res.Results, res.NextPageToken, err = service.PaginateSlice(req, filtered_values, func(a *assessment.AssessmentResult, b *assessment.AssessmentResult) bool {
 		return a.Timestamp.AsTime().After(b.Timestamp.AsTime())
 	}, service.DefaultPaginationOpts)
 	if err != nil {

@@ -134,6 +134,106 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			wantErr: assert.NoError,
 		},
+		{
+			name: "return filtered cloud service ID and only compliant assessment results",
+			fields: fields{
+				results: map[string]*assessment.AssessmentResult{
+					"1": {Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0)), CloudServiceId: testutil.TestCloudService1, Compliant: true},
+					"2": {Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: true},
+					"3": {Id: "1", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: false},
+					"4": {Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: false},
+				},
+				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+			},
+			args: args{
+				ctx: testutil.TestContextOnlyService1,
+				req: &assessment.ListAssessmentResultsRequest{
+					FilteredCloudServiceId: testutil.TestCloudService1,
+					FilteredCompliant:      assessment.ListAssessmentResultsRequest_COMPLIANT_TRUE,
+				},
+			},
+			wantRes: &assessment.ListAssessmentResultsResponse{
+				Results: []*assessment.AssessmentResult{
+					{Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0)), CloudServiceId: testutil.TestCloudService1, Compliant: true},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "return filtered cloud service ID and only non-compliant assessment results",
+			fields: fields{
+				results: map[string]*assessment.AssessmentResult{
+					"1": {Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0)), CloudServiceId: testutil.TestCloudService1, Compliant: true},
+					"2": {Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: true},
+					"3": {Id: "1", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService1, Compliant: false},
+					"4": {Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: false},
+				},
+				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+			},
+			args: args{
+				ctx: testutil.TestContextOnlyService1,
+				req: &assessment.ListAssessmentResultsRequest{
+					FilteredCloudServiceId: testutil.TestCloudService1,
+					FilteredCompliant:      assessment.ListAssessmentResultsRequest_COMPLIANT_FALSE,
+				},
+			},
+			wantRes: &assessment.ListAssessmentResultsResponse{
+				Results: []*assessment.AssessmentResult{
+					{Id: "1", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService1, Compliant: false},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "return only compliant assessment results",
+			fields: fields{
+				results: map[string]*assessment.AssessmentResult{
+					"1": {Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0)), CloudServiceId: testutil.TestCloudService1, Compliant: true},
+					"2": {Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: true},
+					"3": {Id: "1", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService1, Compliant: false},
+					"4": {Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: false},
+				},
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				ctx: testutil.TestContextOnlyService1,
+				req: &assessment.ListAssessmentResultsRequest{
+					FilteredCompliant: assessment.ListAssessmentResultsRequest_COMPLIANT_TRUE,
+				},
+			},
+			wantRes: &assessment.ListAssessmentResultsResponse{
+				Results: []*assessment.AssessmentResult{
+					{Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0)), CloudServiceId: testutil.TestCloudService1, Compliant: true},
+					{Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: true},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "return only non-compliant assessment results",
+			fields: fields{
+				results: map[string]*assessment.AssessmentResult{
+					"1": {Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0)), CloudServiceId: testutil.TestCloudService1, Compliant: true},
+					"2": {Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: true},
+					"3": {Id: "1", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService1, Compliant: false},
+					"4": {Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: false},
+				},
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				ctx: testutil.TestContextOnlyService1,
+				req: &assessment.ListAssessmentResultsRequest{
+					FilteredCompliant: assessment.ListAssessmentResultsRequest_COMPLIANT_FALSE,
+				},
+			},
+			wantRes: &assessment.ListAssessmentResultsResponse{
+				Results: []*assessment.AssessmentResult{
+					{Id: "1", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService1, Compliant: false},
+					{Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: false},
+				},
+			},
+			wantErr: assert.NoError,
+		},
 	}
 
 	for _, tt := range tests {

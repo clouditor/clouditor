@@ -45,8 +45,19 @@ paths:
             parameters:
                 - name: filteredCloudServiceId
                   in: query
+                  description: Optionally, a filter for the cloud service id.
                   schema:
                     type: string
+                - name: filteredCompliant
+                  in: query
+                  description: Optionally, a filter for the compliant field in the assessment result.
+                  schema:
+                    enum:
+                        - COMPLIANT_UNSPECIFIED
+                        - COMPLIANT_TRUE
+                        - COMPLIANT_FALSE
+                    type: string
+                    format: enum
                 - name: pageSize
                   in: query
                   schema:
