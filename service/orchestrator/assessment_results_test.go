@@ -140,8 +140,8 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				results: map[string]*assessment.AssessmentResult{
 					"1": {Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0)), CloudServiceId: testutil.TestCloudService1, Compliant: true},
 					"2": {Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: true},
-					"3": {Id: "1", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: false},
-					"4": {Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: false},
+					"3": {Id: "3", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: false},
+					"4": {Id: "4", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: false},
 				},
 				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
 			},
@@ -165,8 +165,8 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				results: map[string]*assessment.AssessmentResult{
 					"1": {Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0)), CloudServiceId: testutil.TestCloudService1, Compliant: true},
 					"2": {Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: true},
-					"3": {Id: "1", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService1, Compliant: false},
-					"4": {Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: false},
+					"3": {Id: "3", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService1, Compliant: false},
+					"4": {Id: "4", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: false},
 				},
 				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
 			},
@@ -179,7 +179,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			wantRes: &assessment.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
-					{Id: "1", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService1, Compliant: false},
+					{Id: "3", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService1, Compliant: false},
 				},
 			},
 			wantErr: assert.NoError,
@@ -190,8 +190,8 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				results: map[string]*assessment.AssessmentResult{
 					"1": {Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0)), CloudServiceId: testutil.TestCloudService1, Compliant: true},
 					"2": {Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: true},
-					"3": {Id: "1", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService1, Compliant: false},
-					"4": {Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: false},
+					"3": {Id: "3", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService1, Compliant: false},
+					"4": {Id: "4", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: false},
 				},
 				authz: &service.AuthorizationStrategyAllowAll{},
 			},
@@ -215,8 +215,8 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				results: map[string]*assessment.AssessmentResult{
 					"1": {Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0)), CloudServiceId: testutil.TestCloudService1, Compliant: true},
 					"2": {Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: true},
-					"3": {Id: "1", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService1, Compliant: false},
-					"4": {Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: false},
+					"3": {Id: "3", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService1, Compliant: false},
+					"4": {Id: "4", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: false},
 				},
 				authz: &service.AuthorizationStrategyAllowAll{},
 			},
@@ -228,8 +228,8 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			wantRes: &assessment.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
-					{Id: "1", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService1, Compliant: false},
-					{Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: false},
+					{Id: "3", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService1, Compliant: false},
+					{Id: "4", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2, Compliant: false},
 				},
 			},
 			wantErr: assert.NoError,
