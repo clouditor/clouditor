@@ -29,8 +29,6 @@ COPY --from=builder /build/engine .
 COPY --from=builder /build/cl .
 COPY --from=builder /build/policies ./policies
 COPY --from=builder /build/service/orchestrator/metrics.json .
-# TODO: Can be removed after https://github.com/clouditor/clouditor/issues/786 is fixed
-RUN mkdir "/root/.clouditor"
 
 # Expose port fer rest gateway (For OAuth to work you also should publish this port when running the container image)
 EXPOSE 8080
