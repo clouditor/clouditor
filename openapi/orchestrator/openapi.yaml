@@ -24,6 +24,11 @@ paths:
                   description: Optionally, a filter for the compliant field in the assessment result.
                   schema:
                     type: boolean
+                - name: filteredMetricId
+                  in: query
+                  description: Optionally, a filter for the metric id field in the assessment result.
+                  schema:
+                    type: string
                 - name: pageSize
                   in: query
                   schema:

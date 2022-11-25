@@ -69,6 +69,11 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.L
 			continue
 		}
 
+		// Check for filter metric ID
+		if req.FilteredMetricId != nil && util.Deref(req.FilteredMetricId) != v.MetricId {
+			continue
+		}
+
 		filtered_values = append(filtered_values, v)
 	}
 
