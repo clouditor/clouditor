@@ -107,7 +107,7 @@ type OrchestratorClient interface {
 	ListControls(ctx context.Context, in *ListControlsRequest, opts ...grpc.CallOption) (*ListControlsResponse, error)
 	// Retrieves a control specified by the catalog ID, the control's category
 	// name and the control ID. If present, it also includes a list of
-	// sub-controls and any metrics associated to the control.
+	// sub-controls if present or a list of metrics if no sub-controls but metrics are present.
 	GetControl(ctx context.Context, in *GetControlRequest, opts ...grpc.CallOption) (*Control, error)
 	// Creates a new Target of Evaluation
 	CreateTargetOfEvaluation(ctx context.Context, in *CreateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
@@ -630,7 +630,7 @@ type OrchestratorServer interface {
 	ListControls(context.Context, *ListControlsRequest) (*ListControlsResponse, error)
 	// Retrieves a control specified by the catalog ID, the control's category
 	// name and the control ID. If present, it also includes a list of
-	// sub-controls and any metrics associated to the control.
+	// sub-controls if present or a list of metrics if no sub-controls but metrics are present.
 	GetControl(context.Context, *GetControlRequest) (*Control, error)
 	// Creates a new Target of Evaluation
 	CreateTargetOfEvaluation(context.Context, *CreateTargetOfEvaluationRequest) (*TargetOfEvaluation, error)
