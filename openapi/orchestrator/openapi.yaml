@@ -1610,6 +1610,16 @@ components:
                 assuranceLevel:
                     type: string
                     description: an assurance level is not offered by every catalog, therefore it is optional
+                continuousMonitoredControls:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Control'
+                    description: 'References to controls that are under continuous monitoring. Note: that all controls that are neither in the continuous_monitored_controls list nor in manually_monitored_controls are regarded as "delegated".'
+                manuallyMonitoredControls:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Control'
+                    description: 'References to controls that are under manual monitoring. Note: that all controls that are neither in the continuous_monitored_controls list nor in manually_monitored_controls are regarded as "delegated".'
             description: A Target of Evaluation binds a cloud service to a catalog, so the service is evaluated regarding this catalog's controls
 tags:
     - name: Orchestrator

@@ -46,6 +46,8 @@ import (
 
 var log *logrus.Entry
 
+type DB = gorm.DB
+
 type storage struct {
 	db *gorm.DB
 	// for options: (set default when not in opts)
