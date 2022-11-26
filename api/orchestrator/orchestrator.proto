@@ -352,8 +352,16 @@ service Orchestrator {
   rpc GetTargetOfEvaluation(GetTargetOfEvaluationRequest)
       returns (TargetOfEvaluation) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/"
-            "{catalog_id}/toes"
+      get : "/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/toes/"
+            "{catalog_id}"
+    };
+  }
+
+  rpc ListControlMonitoringStatus(ListControlMonitoringStatusRequest)
+      returns (ListControlMonitoringStatusResponse) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/toes/"
+            "{catalog_id}/monitoring_status"
     };
   }
 
@@ -617,18 +625,33 @@ message TargetOfEvaluation {
   // optional
   optional string assurance_level = 3;
 
-  // References to controls that are under continuous monitoring. Note: that all
-  // controls that are neither in the continuous_monitored_controls list nor in
-  // manually_monitored_controls are regarded as "delegated".
-  repeated Control continuous_monitored_controls = 4
-      [ (tagger.tags) =
-            "gorm:\"many2many:toe_continuous_monitored_controls\"" ];
+  repeated Control selected_controls = 4
+      [ (tagger.tags) = "gorm:\"many2many:control_monitoring_statuses\"" ];
+}
 
-  // References to controls that are under manual monitoring. Note: that all
-  // controls that are neither in the continuous_monitored_controls list nor in
-  // manually_monitored_controls are regarded as "delegated".
-  repeated Control manually_monitored_controls = 5
-      [ (tagger.tags) = "gorm:\"many2many:toe_manually_monitored_controls\"" ];
+message ListControlMonitoringStatusRequest {
+  string cloud_service_id = 1;
+  string catalog_id = 2;
+}
+
+message ListControlMonitoringStatusResponse {
+  repeated ControlMonitoringStatus status = 1;
+}
+
+message ControlMonitoringStatus {
+  string target_of_evaluation_cloud_service_id = 1;
+  string target_of_evaluation_catalog_id = 2;
+
+  string control_id = 3;
+  string control_category_name = 4;
+  string control_category_catalog_id = 5;
+
+  enum Status {
+    STATUS_UNSPECIFIED = 0;
+    STATUS_CONTINUOUSLY_MONITORED = 1;
+    STATUS_MANUALLY_MONITORED = 2;
+    STATUS_DELEGATED = 3;
+  }
 }
 
 message CreateTargetOfEvaluationRequest { TargetOfEvaluation toe = 1; }

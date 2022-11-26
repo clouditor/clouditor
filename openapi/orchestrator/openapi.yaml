@@ -718,7 +718,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/cloud_services/{cloudServiceId}/catalogs/{catalogId}/toes:
+    /v1/orchestrator/cloud_services/{cloudServiceId}/catalogs/toes/{catalogId}:
         get:
             tags:
                 - Orchestrator
@@ -748,6 +748,36 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/orchestrator/cloud_services/{cloudServiceId}/catalogs/toes/{catalogId}/monitoring_status:
+        get:
+            tags:
+                - Orchestrator
+            operationId: Orchestrator_ListControlMonitoringStatus
+            parameters:
+                - name: cloudServiceId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: catalogId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListControlMonitoringStatusResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/cloud_services/{cloudServiceId}/catalogs/{catalogId}/toes:
         put:
             tags:
                 - Orchestrator
@@ -1365,6 +1395,19 @@ components:
                 parentControlCategoryCatalogId:
                     type: string
             description: Control represents a certain Control that needs to be fulfilled. It could be a Control in a certification catalog. It follows the OSCAL model. A requirement in the EUCS terminology, e.g., is represented as the lowest sub-control.
+        ControlMonitoringStatus:
+            type: object
+            properties:
+                targetOfEvaluationCloudServiceId:
+                    type: string
+                targetOfEvaluationCatalogId:
+                    type: string
+                controlId:
+                    type: string
+                controlCategoryName:
+                    type: string
+                controlCategoryCatalogId:
+                    type: string
         GoogleProtobufAny:
             type: object
             properties:
@@ -1420,6 +1463,13 @@ components:
                         $ref: '#/components/schemas/CloudService'
                 nextPageToken:
                     type: string
+        ListControlMonitoringStatusResponse:
+            type: object
+            properties:
+                status:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ControlMonitoringStatus'
         ListControlsResponse:
             type: object
             properties:
@@ -1610,16 +1660,10 @@ components:
                 assuranceLevel:
                     type: string
                     description: an assurance level is not offered by every catalog, therefore it is optional
-                continuousMonitoredControls:
+                selectedControls:
                     type: array
                     items:
                         $ref: '#/components/schemas/Control'
-                    description: 'References to controls that are under continuous monitoring. Note: that all controls that are neither in the continuous_monitored_controls list nor in manually_monitored_controls are regarded as "delegated".'
-                manuallyMonitoredControls:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/Control'
-                    description: 'References to controls that are under manual monitoring. Note: that all controls that are neither in the continuous_monitored_controls list nor in manually_monitored_controls are regarded as "delegated".'
             description: A Target of Evaluation binds a cloud service to a catalog, so the service is evaluated regarding this catalog's controls
 tags:
     - name: Orchestrator

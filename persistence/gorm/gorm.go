@@ -163,6 +163,11 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 		return
 	}
 
+	if err = g.db.SetupJoinTable(orchestrator.TargetOfEvaluation{}, "SelectedControls", orchestrator.ControlMonitoringStatus{}); err != nil {
+		err = fmt.Errorf("error during join-table: %w", err)
+		return
+	}
+
 	// After successful DB initialization, migrate the schema
 	if err = g.db.AutoMigrate(g.types...); err != nil {
 		err = fmt.Errorf("error during auto-migration: %w", err)

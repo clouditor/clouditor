@@ -114,6 +114,7 @@ type OrchestratorClient interface {
 	CreateTargetOfEvaluation(ctx context.Context, in *CreateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
 	// Retrieves a Target of Evaluation
 	GetTargetOfEvaluation(ctx context.Context, in *GetTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
+	ListControlMonitoringStatus(ctx context.Context, in *ListControlMonitoringStatusRequest, opts ...grpc.CallOption) (*ListControlMonitoringStatusResponse, error)
 	// Lists all Targets of Evaluation
 	ListTargetsOfEvaluation(ctx context.Context, in *ListTargetsOfEvaluationRequest, opts ...grpc.CallOption) (*ListTargetsOfEvaluationResponse, error)
 	// Updates an existing Target of Evaluation
@@ -517,6 +518,15 @@ func (c *orchestratorClient) GetTargetOfEvaluation(ctx context.Context, in *GetT
 	return out, nil
 }
 
+func (c *orchestratorClient) ListControlMonitoringStatus(ctx context.Context, in *ListControlMonitoringStatusRequest, opts ...grpc.CallOption) (*ListControlMonitoringStatusResponse, error) {
+	out := new(ListControlMonitoringStatusResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/ListControlMonitoringStatus", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *orchestratorClient) ListTargetsOfEvaluation(ctx context.Context, in *ListTargetsOfEvaluationRequest, opts ...grpc.CallOption) (*ListTargetsOfEvaluationResponse, error) {
 	out := new(ListTargetsOfEvaluationResponse)
 	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/ListTargetsOfEvaluation", in, out, opts...)
@@ -638,6 +648,7 @@ type OrchestratorServer interface {
 	CreateTargetOfEvaluation(context.Context, *CreateTargetOfEvaluationRequest) (*TargetOfEvaluation, error)
 	// Retrieves a Target of Evaluation
 	GetTargetOfEvaluation(context.Context, *GetTargetOfEvaluationRequest) (*TargetOfEvaluation, error)
+	ListControlMonitoringStatus(context.Context, *ListControlMonitoringStatusRequest) (*ListControlMonitoringStatusResponse, error)
 	// Lists all Targets of Evaluation
 	ListTargetsOfEvaluation(context.Context, *ListTargetsOfEvaluationRequest) (*ListTargetsOfEvaluationResponse, error)
 	// Updates an existing Target of Evaluation
@@ -764,6 +775,9 @@ func (UnimplementedOrchestratorServer) CreateTargetOfEvaluation(context.Context,
 }
 func (UnimplementedOrchestratorServer) GetTargetOfEvaluation(context.Context, *GetTargetOfEvaluationRequest) (*TargetOfEvaluation, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTargetOfEvaluation not implemented")
+}
+func (UnimplementedOrchestratorServer) ListControlMonitoringStatus(context.Context, *ListControlMonitoringStatusRequest) (*ListControlMonitoringStatusResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListControlMonitoringStatus not implemented")
 }
 func (UnimplementedOrchestratorServer) ListTargetsOfEvaluation(context.Context, *ListTargetsOfEvaluationRequest) (*ListTargetsOfEvaluationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListTargetsOfEvaluation not implemented")
@@ -1482,6 +1496,24 @@ func _Orchestrator_GetTargetOfEvaluation_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Orchestrator_ListControlMonitoringStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListControlMonitoringStatusRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).ListControlMonitoringStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/ListControlMonitoringStatus",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).ListControlMonitoringStatus(ctx, req.(*ListControlMonitoringStatusRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Orchestrator_ListTargetsOfEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListTargetsOfEvaluationRequest)
 	if err := dec(in); err != nil {
@@ -1686,6 +1718,10 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTargetOfEvaluation",
 			Handler:    _Orchestrator_GetTargetOfEvaluation_Handler,
+		},
+		{
+			MethodName: "ListControlMonitoringStatus",
+			Handler:    _Orchestrator_ListControlMonitoringStatus_Handler,
 		},
 		{
 			MethodName: "ListTargetsOfEvaluation",
