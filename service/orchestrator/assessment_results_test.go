@@ -36,7 +36,6 @@ import (
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -321,8 +320,15 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			gotRes, err := svc.ListAssessmentResults(tt.args.ctx, tt.args.req)
 			tt.wantErr(t, err)
 
-			if !proto.Equal(gotRes, tt.wantRes) {
-				t.Errorf("Service.ListAssessmentResults() = %v, want %v", gotRes, tt.wantRes)
+			if tt.wantRes == nil {
+				assert.Nil(t, gotRes)
+			} else {
+				for _, elem := range gotRes.Results {
+					assert.Contains(t, tt.wantRes.Results, elem)
+				}
+
+				assert.Equal(t, len(gotRes.Results), len(tt.wantRes.Results))
+
 			}
 		})
 	}
