@@ -63,7 +63,6 @@ type mappingResultMetric struct {
 // Service is an implementation of the Clouditor Evaluation service
 type Service struct {
 	evaluation.UnimplementedEvaluationServer
-	scheduler           *gocron.Scheduler
 	orchestratorClient  orchestrator.OrchestratorClient
 	orchestratorAddress grpcTarget
 	authorizer          api.Authorizer
@@ -131,7 +130,6 @@ func WithOrchestratorAddress(address string, opts ...grpc.DialOption) ServiceOpt
 // NewService creates a new Evaluation service
 func NewService(opts ...ServiceOption) *Service {
 	s := Service{
-		scheduler: gocron.NewScheduler(time.UTC),
 		orchestratorAddress: grpcTarget{
 			target: DefaultOrchestratorAddress,
 		},
@@ -185,6 +183,8 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 	// Verify that evaluating of this service and control hasn't started already
 	// TODO(anatheka): Extend for one schedule per control or do we have to stop it and add with several control IDs?
 	s.evaluationMutex.Lock()
+	m := s.evaluation[schedulerTag]
+	log.Debug(m)
 	if m := s.evaluation[schedulerTag]; m != nil && m.scheduler != nil && m.scheduler.IsRunning() {
 		err = status.Errorf(codes.AlreadyExists, "Cloud Service '%s' is being evaluated with Control %s already.", req.TargetOfEvaluation.CloudServiceId, req.ControlId)
 		log.Error(err)
@@ -193,10 +193,13 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 	s.evaluationMutex.Unlock()
 
 	log.Info("Starting evaluation ...")
-	s.scheduler.TagsUnique()
+	s.evaluation[schedulerTag] = &EvaluationScheduler{
+		scheduler: gocron.NewScheduler(time.UTC),
+	}
+	s.evaluation[schedulerTag].scheduler.TagsUnique()
 
 	log.Infof("Evaluate Cloud Service '%s' for Control ID '%s' every 5 minutes...", req.TargetOfEvaluation.CloudServiceId, req.ControlId)
-	_, err = s.scheduler.
+	_, err = s.evaluation[schedulerTag].scheduler.
 		Every(5).
 		Minute().
 		Tag(schedulerTag).
@@ -211,14 +214,10 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 
 	// Add map entry for target cloud service id and control id
 	s.evaluationMutex.Lock()
-	if s.evaluation[schedulerTag] == nil {
-		s.evaluation[schedulerTag] = new(EvaluationScheduler)
-		s.evaluation[schedulerTag].scheduler = s.scheduler
-		s.evaluation[schedulerTag].evaluatedControlID = req.ControlId
-	}
+	s.evaluation[schedulerTag].evaluatedControlID = req.ControlId
 	s.evaluationMutex.Unlock()
 
-	s.scheduler.StartAsync()
+	s.evaluation[schedulerTag].scheduler.StartAsync()
 
 	return
 }
@@ -304,17 +303,9 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 		return
 	}
 
-	// Verify that the service is evaluated currently
-	if s.evaluation[createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId)] == nil {
-		err = fmt.Errorf("evaluation of cloud service %s has not been started yet", req.TargetOfEvaluation.CloudServiceId)
-		log.Error(err)
-		err = status.Errorf(codes.NotFound, "%s", err)
-		return
-	}
-
 	// Verify if scheduler is running
-	if !s.evaluation[createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId)].scheduler.IsRunning() {
-		err = fmt.Errorf("evaluation of cloud service %s has been stopped already", req.TargetOfEvaluation.CloudServiceId)
+	if s.evaluation[createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId)] == nil || !s.evaluation[createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId)].scheduler.IsRunning() {
+		err = fmt.Errorf("evaluation of cloud service %s not running", req.TargetOfEvaluation.CloudServiceId)
 		log.Error(err)
 		err = status.Errorf(codes.NotFound, err.Error())
 		return
@@ -327,6 +318,7 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 		err = fmt.Errorf("error in removing scheduler: %v", err)
 		log.Error(err)
 		err = status.Errorf(codes.Internal, "error at stopping scheduler")
+		return
 	}
 	// Delete entry for given Cloud Service ID
 	delete(s.evaluation, createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId))
@@ -465,5 +457,6 @@ func getMapping(results []*assessment.AssessmentResult, metrics []*assessment.Me
 }
 
 func (s *Service) Shutdown() {
-	s.scheduler.Stop()
+	// TODO(anatheka): TBD
+	// s.evaluation[schedulerTag].scheduler.Stop()
 }
