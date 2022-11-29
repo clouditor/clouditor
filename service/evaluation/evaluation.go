@@ -313,6 +313,7 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 
 	// Stop scheduler
 	s.evaluationMutex.Lock()
+	s.evaluation[createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId)].scheduler.Stop()
 	err = s.evaluation[createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId)].scheduler.RemoveByTag(createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId))
 	if err != nil {
 		err = fmt.Errorf("error in removing scheduler: %v", err)
@@ -454,9 +455,4 @@ func getMapping(results []*assessment.AssessmentResult, metrics []*assessment.Me
 	}
 
 	return
-}
-
-func (s *Service) Shutdown() {
-	// TODO(anatheka): TBD
-	// s.evaluation[schedulerTag].scheduler.Stop()
 }

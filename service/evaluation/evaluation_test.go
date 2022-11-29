@@ -329,13 +329,6 @@ func TestService_Evaluate(t *testing.T) {
 	}
 }
 
-func TestService_Shutdown(t *testing.T) {
-	service := NewService()
-	service.Shutdown()
-
-	// assert.False(t, service.scheduler.IsRunning())
-}
-
 func TestService_SetAuthorizer(t *testing.T) {
 
 	type args struct {
@@ -665,7 +658,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Happy path",
+			name: "List all results",
 			fields: fields{
 				results: map[string]*evaluation.EvaluationResult{
 					"11111111-1111-1111-1111-111111111111": {Id: "11111111-1111-1111-1111-111111111111"},
