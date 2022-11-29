@@ -142,6 +142,7 @@ func NewService(opts ...ServiceOption) *Service {
 		o(&s)
 	}
 
+	// TODO(lebogg): Implement persistence storage
 	// // Default to an in-memory storage, if nothing was explicitly set
 	// if s.storage == nil {
 	// 	s.storage, err = inmemory.NewStorage()
@@ -250,10 +251,11 @@ func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 
 		// TODO(anatheka): Do we need that? Or do we let it running?
 		// Delete evaluation entry, it is no longer needed if we don't get the assessment results from the orchestrator
-		s.evaluationMutex.Lock()
-		delete(s.evaluation, createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId))
-		s.evaluationMutex.Unlock()
-		return
+		// s.evaluationMutex.Lock()
+		// s.evaluation[createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId)].scheduler.Stop()
+		// delete(s.evaluation, createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId))
+		// s.evaluationMutex.Unlock()
+		// return
 	}
 
 	// Get mapping assessment results related to the metric
