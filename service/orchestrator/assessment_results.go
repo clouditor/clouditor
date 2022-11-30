@@ -81,7 +81,7 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.L
 		}
 
 		// Check for filter metric ID
-		if req.FilteredMetricId != nil && util.Deref(req.FilteredMetricId) != v.MetricId {
+		if req.FilteredMetricId != nil && !slices.Contains(req.FilteredMetricId, v.MetricId) {
 			continue
 		}
 

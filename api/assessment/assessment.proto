@@ -74,8 +74,8 @@ message ListAssessmentResultsRequest {
   optional string filtered_cloud_service_id = 1;
   // Optionally, a filter for the compliant field in the assessment result.   
   optional bool filtered_compliant = 2;
-  // Optionally, a filter for the metric id field in the assessment result.   
-  optional string filtered_metric_id = 3;
+  // Optionally, a filter for a list of metric ids field in the assessment result.   
+  repeated string filtered_metric_id = 3;
 
   int32 page_size = 10;
   string page_token = 11;

@@ -135,7 +135,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "return filtered cloud service ID and only compliant assessment results",
+			name: "return filtered cloud service ID and filtered compliant assessment results",
 			fields: fields{
 				results: getAssessmentResults(),
 				authz:   &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
@@ -161,7 +161,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "return filtered cloud service ID and only non-compliant assessment results",
+			name: "return filtered cloud service ID and filtered non-compliant assessment results",
 			fields: fields{
 				results: getAssessmentResults(),
 				authz:   &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
@@ -187,7 +187,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "return only compliant assessment results",
+			name: "return filtered compliant assessment results",
 			fields: fields{
 				results: getAssessmentResults(),
 				authz:   &service.AuthorizationStrategyAllowAll{},
@@ -219,7 +219,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "return only non-compliant assessment results",
+			name: "return filtered non-compliant assessment results",
 			fields: fields{
 				results: getAssessmentResults(),
 				authz:   &service.AuthorizationStrategyAllowAll{},
@@ -251,7 +251,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "return filtered cloud service ID and filtered metric ID",
+			name: "return filtered cloud service ID and one filtered metric ID",
 			fields: fields{
 				results: getAssessmentResults(),
 				authz:   &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
@@ -260,7 +260,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				ctx: testutil.TestContextOnlyService1,
 				req: &assessment.ListAssessmentResultsRequest{
 					FilteredCloudServiceId: util.Ref(testutil.TestCloudService1),
-					FilteredMetricId:       util.Ref("TestMetricID-1"),
+					FilteredMetricId:       []string{"TestMetricID-1"},
 				},
 			},
 			wantRes: &assessment.ListAssessmentResultsResponse{
@@ -277,7 +277,40 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "return filtered metric ID",
+			name: "return filtered cloud service ID and two filtered metric IDs",
+			fields: fields{
+				results: getAssessmentResults(),
+				authz:   &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+			},
+			args: args{
+				ctx: testutil.TestContextOnlyService1,
+				req: &assessment.ListAssessmentResultsRequest{
+					FilteredCloudServiceId: util.Ref(testutil.TestCloudService1),
+					FilteredMetricId:       []string{"TestMetricID-1", "TestMetricID-2"},
+				},
+			},
+			wantRes: &assessment.ListAssessmentResultsResponse{
+				Results: []*assessment.AssessmentResult{
+					{
+						Id:             "1",
+						Timestamp:      timestamppb.New(time.Unix(1, 0)),
+						MetricId:       "TestMetricID-1",
+						Compliant:      true,
+						CloudServiceId: testutil.TestCloudService1,
+					},
+					{
+						Id:             "3",
+						Timestamp:      timestamppb.New(time.Unix(1, 0)),
+						MetricId:       "TestMetricID-2",
+						Compliant:      false,
+						CloudServiceId: testutil.TestCloudService1,
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "return one filtered metric ID",
 			fields: fields{
 				results: getAssessmentResults(),
 				authz:   &service.AuthorizationStrategyAllowAll{},
@@ -285,7 +318,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
 				req: &assessment.ListAssessmentResultsRequest{
-					FilteredMetricId: util.Ref("TestMetricID-1"),
+					FilteredMetricId: []string{"TestMetricID-1"},
 				},
 			},
 			wantRes: &assessment.ListAssessmentResultsResponse{

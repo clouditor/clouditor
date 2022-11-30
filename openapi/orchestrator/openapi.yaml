@@ -26,9 +26,11 @@ paths:
                     type: boolean
                 - name: filteredMetricId
                   in: query
-                  description: Optionally, a filter for the metric id field in the assessment result.
+                  description: Optionally, a filter for a list of metric ids field in the assessment result.
                   schema:
-                    type: string
+                    type: array
+                    items:
+                        type: string
                 - name: pageSize
                   in: query
                   schema:
