@@ -224,6 +224,7 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 }
 
 func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
+	// TODO(anatheka): Refactor for the upper control level. If the request contains a OPS-13, do a evaluation check for all lower control levels.
 	log.Infof("Started evaluation for Cloud Service '%s',  Catalog ID '%s' and Control '%s'", req.TargetOfEvaluation.CloudServiceId, req.TargetOfEvaluation.CatalogId, req.ControlId)
 
 	var metrics []*assessment.Metric
@@ -247,21 +248,17 @@ func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 		return res.Results
 	})
 	if err != nil || len(assessmentResults) == 0 {
-		log.Errorf("Could not get assessment results for Cloud Serivce '%s' from Orchestrator: %v", req.TargetOfEvaluation.CloudServiceId, err)
+		// TODO(anatheka): Let we the scheduler running or do we want to stop it if we do not get assessment results from the orchestrator?
+		// We let the scheduler running if we do not get the assessment results from the orchestrator, maybe it is only a temporary network problem
+		log.Errorf("Could not get assessment results for Cloud Service ID '%s' from Orchestrator: %v", req.TargetOfEvaluation.CloudServiceId, err)
 
-		// TODO(anatheka): Do we need that? Or do we let it running?
-		// Delete evaluation entry, it is no longer needed if we don't get the assessment results from the orchestrator
-		// s.evaluationMutex.Lock()
-		// s.evaluation[createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId)].scheduler.Stop()
-		// delete(s.evaluation, createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId))
-		// s.evaluationMutex.Unlock()
-		// return
+		return
 	}
 
 	// Get mapping assessment results related to the metric
 	mappingList := getMapping(assessmentResults, metrics)
 
-	// Do evaluation and find all non-compliant assessment results
+	// Here the actual evaluation takes place. We check if all asssessment results are compliant or not. If at least one assessment result is not compliant the whole evaluation status is set to NOT_COMPLIANT. Furthermore, all non-compliant assessment results are stored in a separate list.
 	// TODO(anatheka): Do we want the whole assessment result in evaluationResult.FailingAssessmentResults or only the ID?
 	var nonCompliantAssessmentResults []*assessment.AssessmentResult
 	status := evaluation.EvaluationResult_PENDING
@@ -275,6 +272,7 @@ func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 	}
 
 	// If no assessment results are available for the metric, the evaluation status is set to compliant
+	// TODO(anatheka): Or should we set it to UNSPECIFIED? What does it mean if we have no assessment results?
 	if status == evaluation.EvaluationResult_PENDING {
 		status = evaluation.EvaluationResult_COMPLIANT
 	}
