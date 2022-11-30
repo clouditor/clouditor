@@ -223,8 +223,8 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 	return
 }
 
+// Evaluate evaluates for a specifiv Target of Evaluation the assessment results
 func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
-	// TODO(anatheka): Refactor for the upper control level. If the request contains a OPS-13, do a evaluation check for all lower control levels.
 	log.Infof("Started evaluation for Cloud Service '%s',  Catalog ID '%s' and Control '%s'", req.TargetOfEvaluation.CloudServiceId, req.TargetOfEvaluation.CatalogId, req.ControlId)
 
 	var metrics []*assessment.Metric
@@ -244,7 +244,9 @@ func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 	}
 
 	// Get assessment results for the target cloud service
-	assessmentResults, err := api.ListAllPaginated(&assessment.ListAssessmentResultsRequest{FilteredCloudServiceId: req.TargetOfEvaluation.CloudServiceId}, s.orchestratorClient.ListAssessmentResults, func(res *assessment.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
+	// TODO(anatheka): Add FilterMetricId when PR#877 is ready
+	assessmentResults, err := api.ListAllPaginated(&assessment.ListAssessmentResultsRequest{
+		FilteredCloudServiceId: req.TargetOfEvaluation.CloudServiceId}, s.orchestratorClient.ListAssessmentResults, func(res *assessment.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
 		return res.Results
 	})
 	if err != nil || len(assessmentResults) == 0 {
@@ -257,42 +259,12 @@ func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
 
 	// Get mapping assessment results related to the metric
 	mappingList := getMapping(assessmentResults, metrics)
+	evaluationResult := s.evaluationResultForLowerControlLevel(req, mappingList)
 
-	// Here the actual evaluation takes place. We check if all asssessment results are compliant or not. If at least one assessment result is not compliant the whole evaluation status is set to NOT_COMPLIANT. Furthermore, all non-compliant assessment results are stored in a separate list.
-	// TODO(anatheka): Do we want the whole assessment result in evaluationResult.FailingAssessmentResults or only the ID?
-	var nonCompliantAssessmentResults []*assessment.AssessmentResult
-	status := evaluation.EvaluationResult_PENDING
-	for _, item := range mappingList {
-		for _, elem := range item.results {
-			if !elem.Compliant {
-				nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, elem)
-				status = evaluation.EvaluationResult_NOT_COMPLIANT
-			}
-		}
-	}
-
-	// If no assessment results are available for the metric, the evaluation status is set to compliant
-	// TODO(anatheka): Or should we set it to UNSPECIFIED? What does it mean if we have no assessment results?
-	if status == evaluation.EvaluationResult_PENDING {
-		status = evaluation.EvaluationResult_COMPLIANT
-	}
-
-	// Create evaluation result
-	// TODO(all): Store in DB
-	s.resultMutex.Lock()
-	result := &evaluation.EvaluationResult{
-		Id:                       uuid.NewString(),
-		Timestamp:                timestamppb.Now(),
-		CategoryName:             req.CategoryName,
-		Control:                  req.ControlId,
-		TargetOfEvaluation:       req.TargetOfEvaluation,
-		Status:                   status,
-		FailingAssessmentResults: nonCompliantAssessmentResults,
-	}
-	s.results[result.Id] = result
+	s.results[evaluationResult.Id] = evaluationResult
 	s.resultMutex.Unlock()
 
-	log.Infof("Evaluation result with ID %s stored.", result.Id)
+	log.Infof("Evaluation result with ID %s stored.", evaluationResult.Id)
 }
 
 // StopEvaluation is a method implementation of the evaluation interface: It starts the evaluation for a cloud service and a given Control (e.g., EUCS OPS-13.2)
@@ -343,6 +315,44 @@ func (s *Service) ListEvaluationResults(_ context.Context, req *evaluation.ListE
 	}
 
 	return
+}
+
+// evaluationResultForLowerControlLevel return the evaluation result for the lower control level, e.g. OPS-13.7
+func (s *Service) evaluationResultForLowerControlLevel(req *evaluation.StartEvaluationRequest, mappingList []*mappingResultMetric) *evaluation.EvaluationResult {
+
+	// Here the actual evaluation takes place. We check if all asssessment results are compliant or not. If at least one assessment result is not compliant the whole evaluation status is set to NOT_COMPLIANT. Furthermore, all non-compliant assessment results are stored in a separate list.
+	// TODO(anatheka): Do we want the whole assessment result in evaluationResult.FailingAssessmentResults or only the ID?
+	var nonCompliantAssessmentResults []*assessment.AssessmentResult
+	status := evaluation.EvaluationResult_PENDING
+	for _, item := range mappingList {
+		for _, elem := range item.results {
+			if !elem.Compliant {
+				nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, elem)
+				status = evaluation.EvaluationResult_NOT_COMPLIANT
+			}
+		}
+	}
+
+	// If no assessment results are available for the metric, the evaluation status is set to compliant
+	// TODO(anatheka): Or should we set it to UNSPECIFIED? What does it mean if we have no assessment results?
+	if status == evaluation.EvaluationResult_PENDING {
+		status = evaluation.EvaluationResult_COMPLIANT
+	}
+
+	// Create evaluation result
+	// TODO(all): Store in DB
+	s.resultMutex.Lock()
+	result := &evaluation.EvaluationResult{
+		Id:                       uuid.NewString(),
+		Timestamp:                timestamppb.Now(),
+		CategoryName:             req.CategoryName,
+		Control:                  req.ControlId,
+		TargetOfEvaluation:       req.TargetOfEvaluation,
+		Status:                   status,
+		FailingAssessmentResults: nonCompliantAssessmentResults,
+	}
+
+	return result
 }
 
 // getMetrics return the metrics from a given controlId
