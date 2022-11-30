@@ -54,22 +54,24 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.L
 		return nil, status.Errorf(codes.InvalidArgument, "%s", err)
 	}
 
+	filteredCloudServiceId := util.Deref(req.FilteredCloudServiceId)
+
 	// Check, if the current filter is valid according to the authorization strategy. Omitting the cloud service ID is
 	// only allowed, if one can access *all* the cloud services.
 	all, allowed = svc.authz.AllowedCloudServices(ctx)
-	if !all && util.Deref(req.FilteredCloudServiceId) == "" {
+	if !all && filteredCloudServiceId == "" {
 		return nil, service.ErrPermissionDenied
 	}
 
 	// Furthermore, the content of the filtered cloud service ID must be in the list of allowed cloud service IDs,
 	// unless one can access *all* the cloud services.
-	if !all && util.Deref(req.FilteredCloudServiceId) != "" && !slices.Contains(allowed, util.Deref(req.FilteredCloudServiceId)) {
+	if !all && filteredCloudServiceId != "" && !slices.Contains(allowed, filteredCloudServiceId) {
 		return nil, service.ErrPermissionDenied
 	}
 
 	for _, v := range values {
 		// Check for filtered cloud service ID
-		if util.Deref(req.FilteredCloudServiceId) != "" && v.CloudServiceId != util.Deref(req.FilteredCloudServiceId) {
+		if filteredCloudServiceId != "" && v.CloudServiceId != filteredCloudServiceId {
 			continue
 		}
 
