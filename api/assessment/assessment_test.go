@@ -266,6 +266,29 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			wantErr:       true,
 		},
 		{
+			name: "Missing assessment result resource id",
+			args: args{
+				&AssessmentResult{
+					Id:        assessmentResultID,
+					Timestamp: timestamppb.Now(),
+					MetricId:  "MockMetricID",
+					MetricConfiguration: &MetricConfiguration{
+						Operator: "MockOperator",
+						TargetValue: &structpb.Value{
+							Kind: &structpb.Value_StringValue{
+								StringValue: "MockTargetValue",
+							},
+						},
+					},
+					EvidenceId:    mockEvidenceID,
+					ResourceTypes: []string{"Resource"},
+				},
+			},
+			wantResp:      "",
+			wantRespError: ErrResourceIdMissing,
+			wantErr:       true,
+		},
+		{
 			name: "Valid assessment result",
 			args: args{
 				&AssessmentResult{
