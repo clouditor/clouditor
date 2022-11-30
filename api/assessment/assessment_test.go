@@ -29,6 +29,7 @@ import (
 	"reflect"
 	"testing"
 
+	"clouditor.io/clouditor/internal/util"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -306,6 +307,52 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			if err != nil {
 				assert.ErrorIs(t, err, tt.wantRespError)
 			}
+		})
+	}
+}
+
+func TestListAssessmentResultsRequest_Validate(t *testing.T) {
+	type fields struct {
+		req *ListAssessmentResultsRequest
+	}
+
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Invalid cloud service id",
+			fields: fields{
+				req: &ListAssessmentResultsRequest{
+					FilteredCloudServiceId: util.Ref("invalidCloudServiceId"),
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrCloudServiceIDIsInvalid.Error())
+			},
+		},
+		{
+			name: "No filtered cloud service id",
+			fields: fields{
+				req: &ListAssessmentResultsRequest{},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				req: &ListAssessmentResultsRequest{
+					FilteredCloudServiceId: util.Ref("00000000-0000-0000-0000-000000000000"),
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.fields.req.Validate()
+			tt.wantErr(t, err)
 		})
 	}
 }

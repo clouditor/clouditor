@@ -28,6 +28,7 @@ package assessment
 import (
 	"errors"
 
+	"clouditor.io/clouditor/internal/util"
 	"github.com/google/uuid"
 )
 
@@ -83,4 +84,18 @@ func (result *AssessmentResult) Validate() (resourceId string, err error) {
 		return "", ErrResourceTypesMissing
 	}
 	return
+}
+
+// Validate validates the UpdateMetricConfigurationRequest
+func (req *ListAssessmentResultsRequest) Validate() error {
+
+	if req.FilteredCloudServiceId != nil {
+		// Check cloud service id format
+		err := CheckCloudServiceID(util.Deref(req.FilteredCloudServiceId))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

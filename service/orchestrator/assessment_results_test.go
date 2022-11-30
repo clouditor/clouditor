@@ -308,6 +308,23 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			wantErr: assert.NoError,
 		},
+		{
+			name: "Invalid cloud service id request",
+			fields: fields{
+				results: getAssessmentResults(),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				ctx: testutil.TestContextOnlyService1,
+				req: &assessment.ListAssessmentResultsRequest{
+					FilteredCloudServiceId: util.Ref("testCloudServiceID"),
+				},
+			},
+			wantRes: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, assessment.ErrCloudServiceIDIsInvalid.Error())
+			},
+		},
 	}
 
 	for _, tt := range tests {
