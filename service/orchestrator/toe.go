@@ -127,3 +127,56 @@ func (svc *Service) RemoveTargetOfEvaluation(_ context.Context, req *orchestrato
 
 	return &emptypb.Empty{}, nil
 }
+
+func (svc *Service) ListControlMonitoringStatus(ctx context.Context, req *orchestrator.ListControlMonitoringStatusRequest) (res *orchestrator.ListControlMonitoringStatusResponse, err error) {
+	var statuses []*orchestrator.ControlMonitoringStatus
+	var controls []*orchestrator.Control
+
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+		return nil, service.ErrPermissionDenied
+	}
+
+	// We can retrieve the monitoring status for a list of controls based on the cloud service ID. However, the join
+	// table only contains values if the status is explicitly set. The rest of controls is not contained in the list and
+	// is set to "delegated", so we need to manually "fill up" the list of controls.
+	// TODO: because of this indirection, we cannot use the orderby etc. from the request
+	err = svc.storage.List(statuses, "", true, 0, -1, "target_of_evaluation_cloud_service_id = ? AND target_of_evaluation_catalog_id = ?", req.CloudServiceId, req.CatalogId)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+	}
+
+	// Retrieve all the controls of the catalog and append them in the "delegated" state.
+	// TODO: We could probably do this with a JOIN in a better way
+	err = svc.storage.List(controls, "", true, 0, 0, "catalog_id = ?", req.CatalogId)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+	}
+
+	for _, control := range controls {
+		if !controlExists(statuses, control) {
+			statuses = append(statuses, &orchestrator.ControlMonitoringStatus{
+				TargetOfEvaluationCloudServiceId: req.CloudServiceId,
+				TargetOfEvaluationCatalogId:      req.CatalogId,
+				ControlId:                        control.Id,
+				ControlCategoryName:              control.CategoryName,
+				ControlCategoryCatalogId:         control.CategoryCatalogId,
+				Status:                           orchestrator.ControlMonitoringStatus_STATUS_DELEGATED,
+			})
+		}
+	}
+
+	return
+}
+
+func controlExists(statuses []*orchestrator.ControlMonitoringStatus, control *orchestrator.Control) bool {
+	for _, status := range statuses {
+		if status.ControlId == control.Id &&
+			status.ControlCategoryName == control.CategoryName &&
+			status.ControlCategoryCatalogId == control.CategoryCatalogId {
+			return true
+		}
+	}
+
+	return false
+}

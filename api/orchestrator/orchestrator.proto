@@ -652,6 +652,8 @@ message ControlMonitoringStatus {
     STATUS_MANUALLY_MONITORED = 2;
     STATUS_DELEGATED = 3;
   }
+
+  Status status = 6;
 }
 
 message CreateTargetOfEvaluationRequest { TargetOfEvaluation toe = 1; }

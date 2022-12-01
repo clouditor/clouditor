@@ -1408,6 +1408,14 @@ components:
                     type: string
                 controlCategoryCatalogId:
                     type: string
+                status:
+                    enum:
+                        - STATUS_UNSPECIFIED
+                        - STATUS_CONTINUOUSLY_MONITORED
+                        - STATUS_MANUALLY_MONITORED
+                        - STATUS_DELEGATED
+                    type: string
+                    format: enum
         GoogleProtobufAny:
             type: object
             properties:
