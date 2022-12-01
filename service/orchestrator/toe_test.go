@@ -37,9 +37,11 @@ import (
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
+	"clouditor.io/clouditor/service"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 )
 
 var AssuranceLevelHigh = "high"
@@ -373,4 +375,125 @@ func TestService_RemoveTargetOfEvaluation(t *testing.T) {
 	listTargetsOfEvaluationResponse, err = orchestratorService.ListTargetsOfEvaluation(context.Background(), &orchestrator.ListTargetsOfEvaluationRequest{})
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(listTargetsOfEvaluationResponse.Toes))
+}
+
+func TestService_ListControlMonitoringStatus(t *testing.T) {
+	type fields struct {
+		storage persistence.Storage
+		authz   service.AuthorizationStrategy
+	}
+	type args struct {
+		ctx context.Context
+		req *orchestrator.ListControlMonitoringStatusRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes *orchestrator.ListControlMonitoringStatusResponse
+		wantErr bool
+	}{
+		{
+			name: "no controls explicitly selected - all controls delegated",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					_ = s.Create(orchestratortest.NewCatalog())
+					_ = s.Create(orchestratortest.MockServiceID)
+					_ = s.Create(orchestratortest.NewTargetOfEvaluation())
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				ctx: context.TODO(),
+				req: &orchestrator.ListControlMonitoringStatusRequest{
+					CloudServiceId: orchestratortest.MockServiceID,
+					CatalogId:      orchestratortest.MockCatalogID,
+				},
+			},
+			wantRes: &orchestrator.ListControlMonitoringStatusResponse{
+				Status: []*orchestrator.ControlMonitoringStatus{
+					{
+						ControlId:                        orchestratortest.MockControlID,
+						ControlCategoryName:              orchestratortest.MockCategoryName,
+						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
+						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
+						Status:                           orchestrator.ControlMonitoringStatus_STATUS_DELEGATED,
+					},
+					{
+						ControlId:                        orchestratortest.MockSubControlID,
+						ControlCategoryName:              orchestratortest.MockCategoryName,
+						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
+						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
+						Status:                           orchestrator.ControlMonitoringStatus_STATUS_DELEGATED,
+					},
+				},
+			},
+		},
+		{
+			name: "one control explicitly set to continuously monitored",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+					assert.NoError(t, s.Create(orchestrator.CloudService{Id: orchestratortest.MockServiceID}))
+					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation()))
+					assert.NoError(t, s.Create(orchestrator.ControlMonitoringStatus{
+						ControlId:                        orchestratortest.MockControlID,
+						ControlCategoryName:              orchestratortest.MockCategoryName,
+						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
+						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
+						Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
+					}))
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				ctx: context.TODO(),
+				req: &orchestrator.ListControlMonitoringStatusRequest{
+					CloudServiceId: orchestratortest.MockServiceID,
+					CatalogId:      orchestratortest.MockCatalogID,
+				},
+			},
+			wantRes: &orchestrator.ListControlMonitoringStatusResponse{
+				Status: []*orchestrator.ControlMonitoringStatus{
+					{
+						ControlId:                        orchestratortest.MockControlID,
+						ControlCategoryName:              orchestratortest.MockCategoryName,
+						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
+						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
+						Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
+					},
+					{
+						ControlId:                        orchestratortest.MockSubControlID,
+						ControlCategoryName:              orchestratortest.MockCategoryName,
+						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
+						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
+						Status:                           orchestrator.ControlMonitoringStatus_STATUS_DELEGATED,
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				storage: tt.fields.storage,
+				authz:   tt.fields.authz,
+			}
+
+			gotRes, err := svc.ListControlMonitoringStatus(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.ListControlMonitoringStatus() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if !proto.Equal(gotRes, tt.wantRes) {
+				t.Errorf("Service.ListControlMonitoringStatus() = %v, want %v", gotRes, tt.wantRes)
+			}
+		})
+	}
 }
