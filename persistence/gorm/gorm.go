@@ -290,7 +290,11 @@ func (s *storage) Update(r any, conds ...any) error {
 	tx := s.db.Session(&gorm.Session{FullSaveAssociations: true}).Model(r)
 	tx = applyWhere(tx, conds...).Updates(r)
 	if err := tx.Error; err != nil { // db error
-		return err
+		if strings.Contains(err.Error(), "constraint failed") {
+			return persistence.ErrConstraintFailed
+		} else {
+			return err
+		}
 	}
 
 	// No record with given ID found

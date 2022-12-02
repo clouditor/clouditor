@@ -132,6 +132,8 @@ func (svc *Service) UpdateTargetOfEvaluation(_ context.Context, req *orchestrato
 
 	if err != nil && errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Error(codes.NotFound, "ToE not found")
+	} else if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
+		return nil, status.Error(codes.NotFound, "ToE not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
