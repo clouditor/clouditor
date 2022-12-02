@@ -214,26 +214,19 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 			return
 		}
 
-		// TODO(all): Refactor the following to ifs
-		// Store current control if it is a second level control
-		if len(control.Controls) == 0 {
-			eval := &Evaluator{
-				categoryName: control.CategoryName,
-				controlId:    control.Id,
-				firstLevel:   false,
-			}
-			evaluator = append(evaluator, eval)
+		// Store current control
+		eval := &Evaluator{
+			categoryName: control.CategoryName,
+			controlId:    control.Id,
+			firstLevel:   false,
 		}
+		evaluator = append(evaluator, eval)
 
 		// Check if the control is a first level control and has further sub-controls
-		if len(control.Controls) != 0 { // Control from an upper control level, we have to get the lower controls
-			// Store current control, it is a first level control
-			eval := &Evaluator{
-				categoryName: control.CategoryName,
-				controlId:    control.Id,
-				firstLevel:   true,
-			}
-			evaluator = append(evaluator, eval)
+		if len(control.Controls) != 0 { // Second level control without further sub-controls
+			// Control is a first level control with further sub-controls
+			// Change firstLevel to true
+			evaluator[0].firstLevel = true
 
 			// Store the sub-level controls
 			for _, elem := range control.Controls {
@@ -385,8 +378,6 @@ func (s *Service) evaluateSecondLevelControl(toe *orchestrator.TargetOfEvaluatio
 func (s *Service) evaluateFirstLevelControl(toe *orchestrator.TargetOfEvaluation, categoryName, controlId string) {
 	// TODO(anatheka): TBD How should we evaluate the first level control(OPS-13)? It should be compliant if all sub-controls are compliant
 	// Suggestion: We get all sub-control results and calculate it. But then we should start that job a bit later. Then we must start the scheduler in SingletonMode
-
-	return
 }
 
 // ListEvaluationResults is a method implementation of the assessment interface
