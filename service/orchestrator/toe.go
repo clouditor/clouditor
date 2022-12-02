@@ -40,7 +40,33 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (svc *Service) CreateTargetOfEvaluation(_ context.Context, req *orchestrator.CreateTargetOfEvaluationRequest) (res *orchestrator.TargetOfEvaluation, err error) {
+func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestrator.CreateTargetOfEvaluationRequest) (res *orchestrator.TargetOfEvaluation, err error) {
+	var (
+		c     *orchestrator.Catalog
+		lcres *orchestrator.ListControlsResponse
+	)
+
+	// We need to retrieve some additional meta-data about the security catalog, so we need to query it as well
+	c, err = svc.GetCatalog(ctx, &orchestrator.GetCatalogRequest{CatalogId: res.CatalogId})
+	if err != nil {
+		// The error is already a gRPC error, so we can just return it
+		return nil, err
+	}
+
+	// Certain catalogs do not allow scoping, in this case we need to pre-populate all controls into the scope.
+	if c.AllInScope {
+		lcres, err = svc.ListControls(ctx, &orchestrator.ListControlsRequest{CatalogId: res.CatalogId})
+		if err != nil {
+			// The error is already a gRPC error, so we can just return it
+			return nil, err
+		}
+
+		// Make all controls in scope
+		// TODO: Certain catalogs differentiate between assurance levels
+		req.Toe.ControlsInScope = lcres.Controls
+	}
+
+	// Create the ToE
 	err = svc.storage.Create(&req.Toe)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
@@ -129,42 +155,15 @@ func (svc *Service) RemoveTargetOfEvaluation(_ context.Context, req *orchestrato
 }
 
 func (svc *Service) ListControlMonitoringStatus(ctx context.Context, req *orchestrator.ListControlMonitoringStatusRequest) (res *orchestrator.ListControlMonitoringStatusResponse, err error) {
-	var controls []*orchestrator.Control
-
 	// Check, if this request has access to the cloud service according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied
 	}
 
 	res = new(orchestrator.ListControlMonitoringStatusResponse)
-
-	// We can retrieve the monitoring status for a list of controls based on the cloud service ID. However, the join
-	// table only contains values if the status is explicitly set. The rest of controls is not contained in the list and
-	// is set to "delegated", so we need to manually "fill up" the list of controls.
-	// TODO: because of this indirection, we cannot use the orderby etc. from the request
-	err = svc.storage.List(&res.Status, "", true, 0, -1, gorm.WithoutPreload(), "target_of_evaluation_cloud_service_id = ? AND target_of_evaluation_catalog_id = ?", req.CloudServiceId, req.CatalogId)
+	res.Status, res.NextPageToken, err = service.PaginateStorage[*orchestrator.ControlMonitoringStatus](req, svc.storage, service.DefaultPaginationOpts, gorm.WithoutPreload())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
-	}
-
-	// Retrieve all the controls of the catalog and append them in the "delegated" state.
-	// TODO: We could probably do this with a JOIN in a better way
-	err = svc.storage.List(&controls, "", true, 0, 0, "category_catalog_id = ?", req.CatalogId)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %v", err)
-	}
-
-	for _, control := range controls {
-		if !controlExists(res.Status, control) {
-			res.Status = append(res.Status, &orchestrator.ControlMonitoringStatus{
-				TargetOfEvaluationCloudServiceId: req.CloudServiceId,
-				TargetOfEvaluationCatalogId:      req.CatalogId,
-				ControlId:                        control.Id,
-				ControlCategoryName:              control.CategoryName,
-				ControlCategoryCatalogId:         control.CategoryCatalogId,
-				Status:                           orchestrator.ControlMonitoringStatus_STATUS_DELEGATED,
-			})
-		}
 	}
 
 	return

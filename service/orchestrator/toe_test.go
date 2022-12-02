@@ -394,12 +394,12 @@ func TestService_ListControlMonitoringStatus(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "no controls explicitly selected - all controls delegated",
+			name: "no controls explicitly selected - all controls status unspecified",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Create(orchestratortest.NewCatalog())
-					_ = s.Create(orchestratortest.MockServiceID)
-					_ = s.Create(orchestratortest.NewTargetOfEvaluation())
+					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+					assert.NoError(t, s.Create(orchestrator.CloudService{Id: orchestratortest.MockServiceID}))
+					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation()))
 				}),
 				authz: &service.AuthorizationStrategyAllowAll{},
 			},
@@ -418,7 +418,7 @@ func TestService_ListControlMonitoringStatus(t *testing.T) {
 						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
 						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-						Status:                           orchestrator.ControlMonitoringStatus_STATUS_DELEGATED,
+						Status:                           orchestrator.ControlMonitoringStatus_STATUS_UNSPECIFIED,
 					},
 					{
 						ControlId:                        orchestratortest.MockSubControlID,
@@ -426,7 +426,7 @@ func TestService_ListControlMonitoringStatus(t *testing.T) {
 						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
 						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-						Status:                           orchestrator.ControlMonitoringStatus_STATUS_DELEGATED,
+						Status:                           orchestrator.ControlMonitoringStatus_STATUS_UNSPECIFIED,
 					},
 				},
 			},
@@ -438,13 +438,19 @@ func TestService_ListControlMonitoringStatus(t *testing.T) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 					assert.NoError(t, s.Create(orchestrator.CloudService{Id: orchestratortest.MockServiceID}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation()))
-					assert.NoError(t, s.Create(orchestrator.ControlMonitoringStatus{
+					assert.NoError(t, s.Update(orchestrator.ControlMonitoringStatus{
 						ControlId:                        orchestratortest.MockControlID,
 						ControlCategoryName:              orchestratortest.MockCategoryName,
 						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
 						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
 						Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
+					}, orchestrator.ControlMonitoringStatus{
+						ControlId:                        orchestratortest.MockControlID,
+						ControlCategoryName:              orchestratortest.MockCategoryName,
+						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
+						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
 					}))
 				}),
 				authz: &service.AuthorizationStrategyAllowAll{},
@@ -472,7 +478,7 @@ func TestService_ListControlMonitoringStatus(t *testing.T) {
 						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
 						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-						Status:                           orchestrator.ControlMonitoringStatus_STATUS_DELEGATED,
+						Status:                           orchestrator.ControlMonitoringStatus_STATUS_UNSPECIFIED,
 					},
 				},
 			},

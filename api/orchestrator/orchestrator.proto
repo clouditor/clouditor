@@ -561,6 +561,11 @@ message Catalog {
 
   repeated Category categories = 4
       [ (tagger.tags) = "gorm:\"constraint:OnDelete:CASCADE\"" ];
+
+  // Certain security catalogs do not allow to select the scope of the controls,
+  // but all controls are automatically "in scope", however they can be set to a
+  // DELEGATED status.
+  bool all_in_scope = 5;
 }
 
 message Category {
@@ -625,17 +630,27 @@ message TargetOfEvaluation {
   // optional
   optional string assurance_level = 3;
 
-  repeated Control selected_controls = 4
+  // the controls that are in scope of this ToE. Note: For some security
+  // catalogs, e.g., the EUCS, a specific set of controls (in the "worst case":
+  // all) are automatically in scope. In this case, this list needs auto-filled
+  // at an appropriate time, e.g,. in CreateTargetOfEvaluation.
+  repeated Control controls_in_scope = 4
       [ (tagger.tags) = "gorm:\"many2many:control_monitoring_statuses\"" ];
 }
 
 message ListControlMonitoringStatusRequest {
-  string cloud_service_id = 1;
-  string catalog_id = 2;
+  int32 page_size = 1;
+  string page_token = 2;
+  string order_by = 3;
+  bool asc = 4;
+
+  string cloud_service_id = 10;
+  string catalog_id = 11;
 }
 
 message ListControlMonitoringStatusResponse {
   repeated ControlMonitoringStatus status = 1;
+  string next_page_token = 2;
 }
 
 message ControlMonitoringStatus {

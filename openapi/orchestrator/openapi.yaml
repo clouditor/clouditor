@@ -764,6 +764,23 @@ paths:
                   required: true
                   schema:
                     type: string
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
             responses:
                 "200":
                     description: OK
@@ -1304,6 +1321,9 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Category'
+                allInScope:
+                    type: boolean
+                    description: Certain security catalogs do not allow to select the scope of the controls, but all controls are automatically "in scope", however they can be set to a DELEGATED status.
         Category:
             type: object
             properties:
@@ -1478,6 +1498,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/ControlMonitoringStatus'
+                nextPageToken:
+                    type: string
         ListControlsResponse:
             type: object
             properties:
@@ -1668,10 +1690,11 @@ components:
                 assuranceLevel:
                     type: string
                     description: an assurance level is not offered by every catalog, therefore it is optional
-                selectedControls:
+                controlsInScope:
                     type: array
                     items:
                         $ref: '#/components/schemas/Control'
+                    description: 'the controls that are in scope of this ToE. Note: For some security catalogs, e.g., the EUCS, a specific set of controls (in the "worst case": all) are automatically in scope. In this case, this list needs auto-filled at an appropriate time, e.g,. in CreateTargetOfEvaluation.'
             description: A Target of Evaluation binds a cloud service to a catalog, so the service is evaluated regarding this catalog's controls
 tags:
     - name: Orchestrator
