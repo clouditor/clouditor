@@ -47,7 +47,7 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 	)
 
 	// We need to retrieve some additional meta-data about the security catalog, so we need to query it as well
-	c, err = svc.GetCatalog(ctx, &orchestrator.GetCatalogRequest{CatalogId: res.CatalogId})
+	c, err = svc.GetCatalog(ctx, &orchestrator.GetCatalogRequest{CatalogId: req.Toe.CatalogId})
 	if err != nil {
 		// The error is already a gRPC error, so we can just return it
 		return nil, err
@@ -55,7 +55,7 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 
 	// Certain catalogs do not allow scoping, in this case we need to pre-populate all controls into the scope.
 	if c.AllInScope {
-		lcres, err = svc.ListControls(ctx, &orchestrator.ListControlsRequest{CatalogId: res.CatalogId})
+		lcres, err = svc.ListControls(ctx, &orchestrator.ListControlsRequest{CatalogId: req.Toe.CatalogId})
 		if err != nil {
 			// The error is already a gRPC error, so we can just return it
 			return nil, err
