@@ -352,16 +352,29 @@ service Orchestrator {
   rpc GetTargetOfEvaluation(GetTargetOfEvaluationRequest)
       returns (TargetOfEvaluation) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/toes/"
+      get : "/v1/orchestrator/cloud_services/{cloud_service_id}/toes/"
             "{catalog_id}"
     };
   }
 
+  // Lists all control monitoring statuses
   rpc ListControlMonitoringStatus(ListControlMonitoringStatusRequest)
       returns (ListControlMonitoringStatusResponse) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/toes/"
+      get : "/v1/orchestrator/cloud_services/{cloud_service_id}/toes/"
             "{catalog_id}/monitoring_status"
+    };
+  }
+
+  // Updates a particular control monitoring status
+  rpc UpdateControlMonitoringStatus(UpdateControlMonitoringStatusRequest)
+      returns (ControlMonitoringStatus) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/cloud_services/"
+            "{status.target_of_evaluation_cloud_service_id}/toes/"
+            "{status.target_of_evaluation_catalog_id}/monitoring_status/"
+            "categories/{status.control_category_name}/"
+            "controls/{status.control_id}"
     };
   }
 
@@ -381,8 +394,8 @@ service Orchestrator {
   rpc UpdateTargetOfEvaluation(UpdateTargetOfEvaluationRequest)
       returns (TargetOfEvaluation) {
     option (google.api.http) = {
-      put : "/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/"
-            "{catalog_id}/toes"
+      put : "/v1/orchestrator/cloud_services/{cloud_service_id}/toes/"
+            "{catalog_id}"
       body : "toe"
     };
   }
@@ -391,8 +404,8 @@ service Orchestrator {
   rpc RemoveTargetOfEvaluation(RemoveTargetOfEvaluationRequest)
       returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      delete : "/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/"
-               "{catalog_id}/toes"
+      delete : "/v1/orchestrator/cloud_services/{cloud_service_id}/toes/"
+               "{catalog_id}"
     };
   }
 }
@@ -652,6 +665,10 @@ message ListControlMonitoringStatusRequest {
 message ListControlMonitoringStatusResponse {
   repeated ControlMonitoringStatus status = 1;
   string next_page_token = 2;
+}
+
+message UpdateControlMonitoringStatusRequest {
+  ControlMonitoringStatus status = 1;
 }
 
 message ControlMonitoringStatus {

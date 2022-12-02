@@ -171,16 +171,25 @@ func (svc *Service) ListControlMonitoringStatus(ctx context.Context, req *orches
 	return
 }
 
-// controlExists is quick shortcut to identify a [orchestrator.Control] in a
-// list of control statuses.
-func controlExists(statuses []*orchestrator.ControlMonitoringStatus, control *orchestrator.Control) bool {
-	for _, status := range statuses {
-		if status.ControlId == control.Id &&
-			status.ControlCategoryName == control.CategoryName &&
-			status.ControlCategoryCatalogId == control.CategoryCatalogId {
-			return true
-		}
+func (svc *Service) UpdateControlMonitoringStatus(_ context.Context, req *orchestrator.UpdateControlMonitoringStatusRequest) (res *orchestrator.ControlMonitoringStatus, err error) {
+	err = svc.storage.Update(req.Status,
+		"target_of_evaluation_cloud_service_id = ? AND "+
+			"target_of_evaluation_catalog_id = ? AND "+
+			"control_category_catalog_id = ? AND "+
+			"control_category_name = ? AND "+
+			"control_id = ?",
+		req.Status.TargetOfEvaluationCloudServiceId,
+		req.Status.TargetOfEvaluationCatalogId,
+		req.Status.ControlCategoryCatalogId,
+		req.Status.ControlCategoryName,
+		req.Status.ControlId)
+	if err != nil && errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Error(codes.NotFound, "ToE not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	return false
+	res = req.Status
+
+	return
 }
