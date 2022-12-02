@@ -7,30 +7,17 @@ info:
     description: This service represents the Evaluation Interface
     version: 0.0.1
 paths:
-    /v1/evaluation/evaluate/{categoryName}/{controlId}/start:
+    /v1/evaluation/evaluate/start:
         post:
             tags:
                 - Evaluation
             description: StartEvaluation evaluates all assessment results of an service based on its Target of Evaluation (binding of a cloud service to a catalog). The assessment results are evaluated regarding the contol ID.
             operationId: Evaluation_StartEvaluation
-            parameters:
-                - name: categoryName
-                  in: path
-                  description: The category the control ID belongs to
-                  required: true
-                  schema:
-                    type: string
-                - name: controlId
-                  in: path
-                  description: The control ID
-                  required: true
-                  schema:
-                    type: string
             requestBody:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/TargetOfEvaluation'
+                            $ref: '#/components/schemas/StartEvaluationRequest'
                 required: true
             responses:
                 "200":
@@ -162,6 +149,16 @@ components:
                     type: string
                     description: The cloud service which this assessment result belongs to
             description: A result resource, representing the result after assessing the cloud resource with id resource_id.
+        EvalControl:
+            type: object
+            properties:
+                categoryName:
+                    type: string
+                    description: The category the control ID belongs to
+                controlId:
+                    type: string
+                    description: The control ID
+            description: 'TODO(anatheka): Delete if the ToE is updated'
         EvaluationResult:
             type: object
             properties:
@@ -236,6 +233,16 @@ components:
                     type: string
                     description: The service this configuration belongs to
             description: Defines the operator and a target value for an individual metric
+        StartEvaluationRequest:
+            type: object
+            properties:
+                targetOfEvaluation:
+                    $ref: '#/components/schemas/TargetOfEvaluation'
+                evalControl:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/EvalControl'
+                    description: The control to be checked
         StartEvaluationResponse:
             type: object
             properties:

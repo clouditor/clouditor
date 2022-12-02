@@ -27,7 +27,9 @@ package evaluation
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -60,16 +62,20 @@ type mappingResultMetric struct {
 	results    []*assessment.AssessmentResult
 }
 
+type Evaluator struct {
+	categoryName string
+	controlId    string
+	// firstLevel describes if the controlId is a first level controlId (e.g., OPS13) or a second level controlId (e.g., OPS-13.1)
+	firstLevel bool
+}
+
 // Service is an implementation of the Clouditor Evaluation service
 type Service struct {
 	evaluation.UnimplementedEvaluationServer
 	orchestratorClient  orchestrator.OrchestratorClient
 	orchestratorAddress grpcTarget
 	authorizer          api.Authorizer
-
-	// evaluation contains lists of controls (value) per target cloud service (key) that are currently evaluated
-	evaluation      map[string]*EvaluationScheduler
-	evaluationMutex sync.RWMutex
+	scheduler           *gocron.Scheduler
 
 	// Currently, evaluation results are just stored as a map (=in-memory). In the future, we will use a DB.
 	results     map[string]*evaluation.EvaluationResult
@@ -90,11 +96,6 @@ const (
 
 // ServiceOption is a function-style option to configure the Evaluation Service
 type ServiceOption func(*Service)
-
-type EvaluationScheduler struct {
-	scheduler          *gocron.Scheduler
-	evaluatedControlID string
-}
 
 // WithStorage is an option to set the storage. If not set, NewService will use inmemory storage.
 func WithStorage(storage persistence.Storage) ServiceOption {
@@ -133,8 +134,8 @@ func NewService(opts ...ServiceOption) *Service {
 		orchestratorAddress: grpcTarget{
 			target: DefaultOrchestratorAddress,
 		},
-		evaluation: make(map[string]*EvaluationScheduler),
-		results:    make(map[string]*evaluation.EvaluationResult),
+		results:   make(map[string]*evaluation.EvaluationResult),
+		scheduler: gocron.NewScheduler(time.UTC),
 	}
 
 	// Apply service options
@@ -164,11 +165,15 @@ func (s *Service) Authorizer() api.Authorizer {
 	return s.authorizer
 }
 
-// StartEvaluation is a method implementation of the evaluation interface: It starts the evaluation for a cloud service and a given Control (e.g., EUCS OPS-13.2)
+// StartEvaluation is a method implementation of the evaluation interface: It starts the evaluation for a cloud service and a given Target of Evaluation to be evaluated (e.g., EUCS OPS-13.2)
 func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvaluationRequest) (resp *evaluation.StartEvaluationResponse, err error) {
-	resp = &evaluation.StartEvaluationResponse{}
-	var schedulerTag string
+	var (
+		schedulerTag string
+		evaluator    []*Evaluator
+		control      *orchestrator.Control
+	)
 
+	// Validate request
 	err = req.Validate()
 	if err != nil {
 		resp = &evaluation.StartEvaluationResponse{
@@ -178,126 +183,208 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 		return resp, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	// Set scheduler tag
-	schedulerTag = createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId)
+	// Verify that evaluation of this service and control hasn't started already
+	for _, control := range req.EvalControl {
+		schedulerTag = createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, control.ControlId)
 
-	// Verify that evaluating of this service and control hasn't started already
-	// TODO(anatheka): Extend for one schedule per control or do we have to stop it and add with several control IDs?
-	s.evaluationMutex.Lock()
-	m := s.evaluation[schedulerTag]
-	log.Debug(m)
-	if m := s.evaluation[schedulerTag]; m != nil && m.scheduler != nil && m.scheduler.IsRunning() {
-		err = status.Errorf(codes.AlreadyExists, "Cloud Service '%s' is being evaluated with Control %s already.", req.TargetOfEvaluation.CloudServiceId, req.ControlId)
-		log.Error(err)
-		return
+		_, err := s.scheduler.FindJobsByTag(schedulerTag)
+		if err == nil {
+			err = status.Errorf(codes.AlreadyExists, "Evaluation for Cloud Service ID '%s' and Control ID %s started already.", req.TargetOfEvaluation.CloudServiceId, control.ControlId)
+			log.Error(err)
+			return nil, err
+		}
 	}
-	s.evaluationMutex.Unlock()
-
-	log.Info("Starting evaluation ...")
-	s.evaluation[schedulerTag] = &EvaluationScheduler{
-		scheduler: gocron.NewScheduler(time.UTC),
-	}
-	s.evaluation[schedulerTag].scheduler.TagsUnique()
-
-	log.Infof("Evaluate Cloud Service '%s' for Control ID '%s' every 5 minutes...", req.TargetOfEvaluation.CloudServiceId, req.ControlId)
-	_, err = s.evaluation[schedulerTag].scheduler.
-		Every(5).
-		Minute().
-		Tag(schedulerTag).
-		Do(s.Evaluate, req)
-	if err != nil {
-		err = fmt.Errorf("evaluation for Cloud Service '%s' and Control ID '%s' cannot be scheduled", req.TargetOfEvaluation.CloudServiceId, req.ControlId)
-		log.Error(err)
-		err = status.Errorf(codes.Internal, "%s", err)
-		log.Error(err)
-		return
-	}
-
-	// Add map entry for target cloud service id and control id
-	s.evaluationMutex.Lock()
-	s.evaluation[schedulerTag].evaluatedControlID = req.ControlId
-	s.evaluationMutex.Unlock()
-
-	s.evaluation[schedulerTag].scheduler.StartAsync()
-
-	return
-}
-
-// Evaluate evaluates for a specifiv Target of Evaluation the assessment results
-func (s *Service) Evaluate(req *evaluation.StartEvaluationRequest) {
-	log.Infof("Started evaluation for Cloud Service '%s',  Catalog ID '%s' and Control '%s'", req.TargetOfEvaluation.CloudServiceId, req.TargetOfEvaluation.CatalogId, req.ControlId)
-
-	var metrics []*assessment.Metric
 
 	// Get orchestrator client
-	err := s.initOrchestratorClient()
+	err = s.initOrchestratorClient()
 	if err != nil {
 		log.Errorf("could not set orchestrator client: %v", err)
 		return
 	}
 
-	// Get metrics from control and sub-controls
-	metrics, err = s.getMetrics(req.TargetOfEvaluation.CatalogId, req.CategoryName, req.ControlId)
-	if err != nil {
-		log.Errorf("Could not get metrics from control and sub-controlsfor Cloud Serivce '%s' from Orchestrator: %v", req.TargetOfEvaluation.CloudServiceId, err)
-		return
+	log.Info("Starting evaluation ...")
+
+	// Get all necessary information to start the scheduler for the given control IDs
+	for _, elem := range req.EvalControl {
+		// Get control and check if the control has further subcontrols
+		control, err = s.getControl(req.TargetOfEvaluation.CatalogId, elem.CategoryName, elem.ControlId)
+		if err != nil {
+			err = fmt.Errorf("could not get control for control id {%s}: %v", elem.ControlId, err)
+			log.Error(err)
+			return
+		}
+
+		// TODO(all): Refactor the following to ifs
+		// Store current control if it is a second level control
+		if len(control.Controls) == 0 {
+			eval := &Evaluator{
+				categoryName: control.CategoryName,
+				controlId:    control.Id,
+				firstLevel:   false,
+			}
+			evaluator = append(evaluator, eval)
+		}
+
+		// Check if the control is a first level control and has further sub-controls
+		if len(control.Controls) != 0 { // Control from an upper control level, we have to get the lower controls
+			// Store current control, it is a first level control
+			eval := &Evaluator{
+				categoryName: control.CategoryName,
+				controlId:    control.Id,
+				firstLevel:   true,
+			}
+			evaluator = append(evaluator, eval)
+
+			// Store the sub-level controls
+			for _, elem := range control.Controls {
+				control, err = s.getControl(req.TargetOfEvaluation.CatalogId, elem.CategoryName, elem.Id)
+				if err != nil {
+					err = fmt.Errorf("could not get control for control id {%s}: %v", control.Id, err)
+					log.Error(err)
+					return
+				}
+
+				eval := &Evaluator{
+					categoryName: control.CategoryName,
+					controlId:    control.Id,
+					firstLevel:   false,
+				}
+
+				evaluator = append(evaluator, eval)
+			}
+		}
 	}
 
-	// Get assessment results for the target cloud service
-	// TODO(anatheka): Add FilterMetricId when PR#877 is ready
-	assessmentResults, err := api.ListAllPaginated(&assessment.ListAssessmentResultsRequest{
-		FilteredCloudServiceId: req.TargetOfEvaluation.CloudServiceId}, s.orchestratorClient.ListAssessmentResults, func(res *assessment.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
-		return res.Results
-	})
-	if err != nil || len(assessmentResults) == 0 {
-		// TODO(anatheka): Let we the scheduler running or do we want to stop it if we do not get assessment results from the orchestrator?
-		// We let the scheduler running if we do not get the assessment results from the orchestrator, maybe it is only a temporary network problem
-		log.Errorf("Could not get assessment results for Cloud Service ID '%s' from Orchestrator: %v", req.TargetOfEvaluation.CloudServiceId, err)
+	s.scheduler.TagsUnique()
 
-		return
+	// Start scheduler jobs
+	for _, e := range evaluator {
+		log.Infof("Evaluate Cloud Service '%s' for Control ID '%s' every 5 minutes...", req.TargetOfEvaluation.CloudServiceId, e.controlId)
+
+		schedulerTag = createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, e.controlId)
+
+		// Regarding the control level the specific method is called
+		if e.firstLevel {
+			_, err = s.scheduler.
+				Every(5).
+				Minute().
+				Tag(schedulerTag).
+				Do(s.evaluateFirstLevelControl, req.TargetOfEvaluation, e.categoryName, e.controlId)
+		} else {
+			_, err = s.scheduler.
+				Every(5).
+				Minute().
+				Tag(schedulerTag).
+				Do(s.evaluateSecondLevelControl, req.TargetOfEvaluation, e.categoryName, e.controlId)
+		}
+		if err != nil {
+			newErr := fmt.Errorf("evaluation for Cloud Service '%s' and Control ID '%s' cannot be scheduled", req.TargetOfEvaluation.CloudServiceId, e.controlId)
+			log.Errorf("%s: %s", newErr, err)
+			err = status.Errorf(codes.Internal, "%s", newErr)
+			return
+		}
+
+		s.scheduler.StartAsync()
 	}
 
-	// Get mapping assessment results related to the metric
-	mappingList := getMapping(assessmentResults, metrics)
-	evaluationResult := s.evaluationResultForLowerControlLevel(req, mappingList)
+	resp = &evaluation.StartEvaluationResponse{}
 
-	s.results[evaluationResult.Id] = evaluationResult
-	s.resultMutex.Unlock()
-
-	log.Infof("Evaluation result with ID %s stored.", evaluationResult.Id)
+	return
 }
 
-// StopEvaluation is a method implementation of the evaluation interface: It starts the evaluation for a cloud service and a given Control (e.g., EUCS OPS-13.2)
+// StopEvaluation is a method implementation of the evaluation interface: It stop the evaluation for a cloud service and its given controls (e.g., EUCS OPS-13,OPS-13.2)
 func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluationRequest) (res *evaluation.StopEvaluationResponse, err error) {
+
+	var (
+		schedulerTag string
+		control      *orchestrator.Control
+		controlIds   = []string{}
+	)
+
 	err = req.Validate()
 	if err != nil {
 		err = status.Errorf(codes.InvalidArgument, "%v", err)
 		return
 	}
 
-	// Verify if scheduler is running
-	if s.evaluation[createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId)] == nil || !s.evaluation[createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId)].scheduler.IsRunning() {
-		err = fmt.Errorf("evaluation of cloud service %s not running", req.TargetOfEvaluation.CloudServiceId)
+	// Check if control has further sub-controls
+	control, err = s.getControl(req.TargetOfEvaluation.CatalogId, req.CategoryName, req.ControlId)
+	if err != nil {
+		err = fmt.Errorf("could not get control for control id {%s}: %v", req.ControlId, err)
 		log.Error(err)
-		err = status.Errorf(codes.NotFound, err.Error())
 		return
 	}
 
-	// Stop scheduler
-	s.evaluationMutex.Lock()
-	s.evaluation[createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId)].scheduler.Stop()
-	err = s.evaluation[createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId)].scheduler.RemoveByTag(createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId))
-	if err != nil {
-		err = fmt.Errorf("error in removing scheduler: %v", err)
-		log.Error(err)
-		err = status.Errorf(codes.Internal, "error at stopping scheduler")
-		return
+	// Get all control ids that need to be checked in the scheduler
+	controlIds = append(controlIds, control.Id)
+	for _, control := range control.Controls {
+		controlIds = append(controlIds, control.Id)
 	}
-	// Delete entry for given Cloud Service ID
-	delete(s.evaluation, createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId))
-	s.evaluationMutex.Unlock()
+
+	// Check for each control id a job is running
+	for _, controlId := range controlIds {
+		schedulerTag = createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, controlId)
+
+		// Verify if scheduler job exists for the control id
+		_, err = s.scheduler.FindJobsByTag(schedulerTag)
+
+		if err == nil {
+			// Delete the job from the scheduler
+			err = s.scheduler.RemoveByTag(schedulerTag)
+			if err != nil {
+				err = fmt.Errorf("error when removing job from scheduler: %v", err)
+				log.Error(err)
+				err = status.Errorf(codes.Internal, "error when stopping scheduler")
+				return
+			}
+		} else if strings.Contains(err.Error(), "no jobs found with given tag") {
+			err = fmt.Errorf("evaluation of cloud service '%s' with '%s' not running", req.TargetOfEvaluation.CloudServiceId, controlId)
+			log.Error(err)
+			err = status.Errorf(codes.NotFound, err.Error())
+		} else if err != nil {
+			shortErr := errors.New("error when stopping scheduler")
+			log.Errorf("%s: %v", shortErr, err)
+			err = status.Errorf(codes.Internal, "%v", &shortErr)
+			return
+		}
+	}
 
 	res = &evaluation.StopEvaluationResponse{}
+
+	return
+}
+
+// evaluateSecondLevelControl evaluates the second level controls, e.g., OPS-13.2
+func (s *Service) evaluateSecondLevelControl(toe *orchestrator.TargetOfEvaluation, categoryName, controlId string) {
+	log.Infof("Started evaluation for Cloud Service '%s',  Catalog ID '%s' and Controls '%s'", toe.CloudServiceId, toe.CatalogId, controlId)
+
+	var (
+		// metrics          []*assessment.Metric
+		result *evaluation.EvaluationResult
+		err    error
+	)
+
+	result, err = s.evaluationResultForLowerControlLevel(toe.CloudServiceId, toe.CatalogId, categoryName, controlId, toe)
+	if err != nil {
+		err = fmt.Errorf("error creating evaluation result: %v", err)
+		log.Error(err)
+		return
+	}
+	if result == nil {
+		log.Debug("No evaluation result created")
+		return
+	}
+
+	s.resultMutex.Lock()
+	s.results[result.Id] = result
+	s.resultMutex.Unlock()
+	log.Infof("Evaluation result with ID %s stored.", result.Id)
+}
+
+// evaluateFirstLevelControl evaluates first level control, e.g., OPS-13
+func (s *Service) evaluateFirstLevelControl(toe *orchestrator.TargetOfEvaluation, categoryName, controlId string) {
+	// TODO(anatheka): TBD How should we evaluate the first level control(OPS-13)? It should be compliant if all sub-controls are compliant
+	// Suggestion: We get all sub-control results and calculate it. But then we should start that job a bit later. Then we must start the scheduler in SingletonMode
 
 	return
 }
@@ -318,7 +405,33 @@ func (s *Service) ListEvaluationResults(_ context.Context, req *evaluation.ListE
 }
 
 // evaluationResultForLowerControlLevel return the evaluation result for the lower control level, e.g. OPS-13.7
-func (s *Service) evaluationResultForLowerControlLevel(req *evaluation.StartEvaluationRequest, mappingList []*mappingResultMetric) *evaluation.EvaluationResult {
+func (s *Service) evaluationResultForLowerControlLevel(cloudServiceId, catalogId, categoryName, controlId string, toe *orchestrator.TargetOfEvaluation) (result *evaluation.EvaluationResult, err error) {
+
+	// Get metrics from control and sub-controls
+	metrics, err := s.getMetrics(catalogId, categoryName, controlId)
+	if err != nil {
+		err = fmt.Errorf("could not get metrics from control and sub-controls for Cloud Serivce '%s' from Orchestrator: %v", cloudServiceId, err)
+		log.Error(err)
+		return
+	}
+
+	// Get assessment results for the target cloud service
+	// TODO(anatheka): Add FilterMetricId when PR#877 is ready
+	assessmentResults, err := api.ListAllPaginated(&assessment.ListAssessmentResultsRequest{
+		FilteredCloudServiceId: cloudServiceId}, s.orchestratorClient.ListAssessmentResults, func(res *assessment.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
+		return res.Results
+	})
+	if err != nil || len(assessmentResults) == 0 {
+		// TODO(anatheka): Let we the scheduler running or do we want to stop it if we do not get assessment results from the orchestrator?
+		// We let the scheduler running if we do not get the assessment results from the orchestrator, maybe it is only a temporary network problem
+		err = fmt.Errorf("could not get assessment results for Cloud Service ID '%s' from Orchestrator: %v", cloudServiceId, err)
+		log.Error(err)
+
+		return
+	}
+
+	// Get mapping assessment results related to the metric
+	mappingList := getMapping(assessmentResults, metrics)
 
 	// Here the actual evaluation takes place. We check if all asssessment results are compliant or not. If at least one assessment result is not compliant the whole evaluation status is set to NOT_COMPLIANT. Furthermore, all non-compliant assessment results are stored in a separate list.
 	// TODO(anatheka): Do we want the whole assessment result in evaluationResult.FailingAssessmentResults or only the ID?
@@ -341,18 +454,17 @@ func (s *Service) evaluationResultForLowerControlLevel(req *evaluation.StartEval
 
 	// Create evaluation result
 	// TODO(all): Store in DB
-	s.resultMutex.Lock()
-	result := &evaluation.EvaluationResult{
+	result = &evaluation.EvaluationResult{
 		Id:                       uuid.NewString(),
 		Timestamp:                timestamppb.Now(),
-		CategoryName:             req.CategoryName,
-		Control:                  req.ControlId,
-		TargetOfEvaluation:       req.TargetOfEvaluation,
+		CategoryName:             categoryName,
+		Control:                  controlId,
+		TargetOfEvaluation:       toe,
 		Status:                   status,
 		FailingAssessmentResults: nonCompliantAssessmentResults,
 	}
 
-	return result
+	return
 }
 
 // getMetrics return the metrics from a given controlId
@@ -465,4 +577,19 @@ func getMapping(results []*assessment.AssessmentResult, metrics []*assessment.Me
 	}
 
 	return
+}
+
+// getAllControlIdsFromControl returns a list with the control id and the sub-control ids
+func getAllControlIdsFromControl(control *orchestrator.Control) []string {
+	controlIds := []string{}
+
+	if control == nil {
+		return []string{}
+	}
+	controlIds = append(controlIds, control.Id)
+	for _, control := range control.Controls {
+		controlIds = append(controlIds, control.Id)
+	}
+
+	return controlIds
 }

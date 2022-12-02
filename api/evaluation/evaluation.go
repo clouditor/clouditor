@@ -32,27 +32,26 @@ import (
 var (
 	ErrControlIDIsMissing          = errors.New("control id is missing")
 	ErrCategoryNameIsMissing       = errors.New("category name is missing")
+	ErrEvalControlIsMissing        = errors.New("controlId and category name mapping is missing")
 	ErrTargetOfEvaluationIsInvalid = errors.New("target of evaluation is not valid")
 )
 
+// TODO(anatheka): Update if everything is ready
 // Validate validates the evaluate request
-func (c *StartEvaluationRequest) Validate() (err error) {
+func (r *StartEvaluationRequest) Validate() (err error) {
 
-	if c.ControlId == "" {
-		return ErrControlIDIsMissing
+	if r.EvalControl == nil {
+		return ErrEvalControlIsMissing
 	}
 
-	if c.CategoryName == "" {
-		return ErrCategoryNameIsMissing
-	}
-
-	if err = c.TargetOfEvaluation.Validate(); err != nil {
+	if err = r.TargetOfEvaluation.Validate(); err != nil {
 		return err
 	}
 
 	return
 }
 
+// TODO(anatheka): Update if everything is ready
 // Validate validates the evaluate request
 func (c *StopEvaluationRequest) Validate() (err error) {
 

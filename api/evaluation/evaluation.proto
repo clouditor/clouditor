@@ -42,8 +42,8 @@
     // StartEvaluation evaluates all assessment results of an service based on its Target of Evaluation (binding of a cloud service to a catalog). The assessment results are evaluated regarding the contol ID.
     rpc StartEvaluation(StartEvaluationRequest) returns (StartEvaluationResponse) {
     option (google.api.http) = {
-        post : "/v1/evaluation/evaluate/{category_name}/{control_id}/start"
-        body : "target_of_evaluation"
+        post : "/v1/evaluation/evaluate/start"
+        body : "*"
       };
      } 
 
@@ -79,10 +79,17 @@ message ListEvaluationResultsRequest {
 
 message StartEvaluationRequest {
     TargetOfEvaluation target_of_evaluation = 1;
+    
+    // The control to be checked
+    repeated evalControl eval_control = 2; 
+}
+
+// TODO(anatheka): Delete if the ToE is updated
+message evalControl {
     // The category the control ID belongs to 
-    string category_name = 3; 
+    string category_name = 1; 
     // The control ID
-    string control_id = 4; 
+     string control_id = 2; 
 }
 
 message StartEvaluationResponse {
