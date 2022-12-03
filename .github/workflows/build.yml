@@ -45,7 +45,9 @@ jobs:
       - name: Test
         run: |
           go install github.com/mfridman/tparse@latest
-          go test -v -coverprofile=coverage.cov -coverpkg ./... -covermode=atomic ./...  -json | tparse -follow
+
+          go test -v -coverprofile=coverage.cov -coverpkg ./... -covermode=atomic ./...  -json | tee output.json | tparse -follow -all || true
+          tparse -format markdown -file output.json -all > $GITHUB_STEP_SUMMARY
       - uses: codecov/codecov-action@v2.1.0
         with:
           files: coverage.cov
