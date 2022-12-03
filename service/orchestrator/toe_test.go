@@ -392,7 +392,7 @@ func TestService_ListControlMonitoringStatus(t *testing.T) {
 		fields  fields
 		args    args
 		wantRes *orchestrator.ListControlMonitoringStatusResponse
-		wantErr bool
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "no controls explicitly selected - all controls status unspecified",
@@ -484,6 +484,21 @@ func TestService_ListControlMonitoringStatus(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "permission denied",
+			fields: fields{
+				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+			},
+			args: args{
+				ctx: testutil.TestContextOnlyService1,
+				req: &orchestrator.ListControlMonitoringStatusRequest{
+					CloudServiceId: testutil.TestCloudService2,
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, service.ErrPermissionDenied)
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -493,9 +508,10 @@ func TestService_ListControlMonitoringStatus(t *testing.T) {
 			}
 
 			gotRes, err := svc.ListControlMonitoringStatus(tt.args.ctx, tt.args.req)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.ListControlMonitoringStatus() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			if tt.wantErr != nil {
+				tt.wantErr(t, err, tt.args)
+			} else {
+				assert.Nil(t, err)
 			}
 
 			if !proto.Equal(gotRes, tt.wantRes) {
@@ -519,7 +535,7 @@ func TestService_UpdateControlMonitoringStatus(t *testing.T) {
 		fields  fields
 		args    args
 		wantRes *orchestrator.ControlMonitoringStatus
-		wantErr bool
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "valid update",
@@ -553,6 +569,23 @@ func TestService_UpdateControlMonitoringStatus(t *testing.T) {
 				Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
 			},
 		},
+		{
+			name: "permission denied",
+			fields: fields{
+				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+			},
+			args: args{
+				in0: testutil.TestContextOnlyService1,
+				req: &orchestrator.UpdateControlMonitoringStatusRequest{
+					Status: &orchestrator.ControlMonitoringStatus{
+						TargetOfEvaluationCloudServiceId: testutil.TestCloudService2,
+					},
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, service.ErrPermissionDenied)
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -561,10 +594,12 @@ func TestService_UpdateControlMonitoringStatus(t *testing.T) {
 				authz:   tt.fields.authz,
 			}
 			gotRes, err := svc.UpdateControlMonitoringStatus(tt.args.in0, tt.args.req)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.UpdateControlMonitoringStatus() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			if tt.wantErr != nil {
+				tt.wantErr(t, err, tt.args)
+			} else {
+				assert.Nil(t, err)
 			}
+
 			if !reflect.DeepEqual(gotRes, tt.wantRes) {
 				t.Errorf("Service.UpdateControlMonitoringStatus() = %v, want %v", gotRes, tt.wantRes)
 			}

@@ -171,7 +171,12 @@ func (svc *Service) ListControlMonitoringStatus(ctx context.Context, req *orches
 	return
 }
 
-func (svc *Service) UpdateControlMonitoringStatus(_ context.Context, req *orchestrator.UpdateControlMonitoringStatusRequest) (res *orchestrator.ControlMonitoringStatus, err error) {
+func (svc *Service) UpdateControlMonitoringStatus(ctx context.Context, req *orchestrator.UpdateControlMonitoringStatusRequest) (res *orchestrator.ControlMonitoringStatus, err error) {
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+		return nil, service.ErrPermissionDenied
+	}
+
 	err = svc.storage.Update(req.Status,
 		"target_of_evaluation_cloud_service_id = ? AND "+
 			"target_of_evaluation_catalog_id = ? AND "+
