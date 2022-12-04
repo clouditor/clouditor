@@ -132,7 +132,7 @@ func NewOrchestratorClient(cc grpc.ClientConnInterface) OrchestratorClient {
 
 func (c *orchestratorClient) RegisterAssessmentTool(ctx context.Context, in *RegisterAssessmentToolRequest, opts ...grpc.CallOption) (*AssessmentTool, error) {
 	out := new(AssessmentTool)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/RegisterAssessmentTool", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/RegisterAssessmentTool", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +141,7 @@ func (c *orchestratorClient) RegisterAssessmentTool(ctx context.Context, in *Reg
 
 func (c *orchestratorClient) ListAssessmentTools(ctx context.Context, in *ListAssessmentToolsRequest, opts ...grpc.CallOption) (*ListAssessmentToolsResponse, error) {
 	out := new(ListAssessmentToolsResponse)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/ListAssessmentTools", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/ListAssessmentTools", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +150,7 @@ func (c *orchestratorClient) ListAssessmentTools(ctx context.Context, in *ListAs
 
 func (c *orchestratorClient) GetAssessmentTool(ctx context.Context, in *GetAssessmentToolRequest, opts ...grpc.CallOption) (*AssessmentTool, error) {
 	out := new(AssessmentTool)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/GetAssessmentTool", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/GetAssessmentTool", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +159,7 @@ func (c *orchestratorClient) GetAssessmentTool(ctx context.Context, in *GetAsses
 
 func (c *orchestratorClient) UpdateAssessmentTool(ctx context.Context, in *UpdateAssessmentToolRequest, opts ...grpc.CallOption) (*AssessmentTool, error) {
 	out := new(AssessmentTool)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/UpdateAssessmentTool", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/UpdateAssessmentTool", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +168,7 @@ func (c *orchestratorClient) UpdateAssessmentTool(ctx context.Context, in *Updat
 
 func (c *orchestratorClient) DeregisterAssessmentTool(ctx context.Context, in *DeregisterAssessmentToolRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/DeregisterAssessmentTool", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/DeregisterAssessmentTool", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +177,7 @@ func (c *orchestratorClient) DeregisterAssessmentTool(ctx context.Context, in *D
 
 func (c *orchestratorClient) StoreAssessmentResult(ctx context.Context, in *StoreAssessmentResultRequest, opts ...grpc.CallOption) (*StoreAssessmentResultResponse, error) {
 	out := new(StoreAssessmentResultResponse)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/StoreAssessmentResult", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/StoreAssessmentResult", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +185,7 @@ func (c *orchestratorClient) StoreAssessmentResult(ctx context.Context, in *Stor
 }
 
 func (c *orchestratorClient) StoreAssessmentResults(ctx context.Context, opts ...grpc.CallOption) (Orchestrator_StoreAssessmentResultsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Orchestrator_ServiceDesc.Streams[0], "/clouditor.orchestrator.Orchestrator/StoreAssessmentResults", opts...)
+	stream, err := c.cc.NewStream(ctx, &Orchestrator_ServiceDesc.Streams[0], "/clouditor.orchestrator.v1.Orchestrator/StoreAssessmentResults", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -217,7 +217,7 @@ func (x *orchestratorStoreAssessmentResultsClient) Recv() (*StoreAssessmentResul
 
 func (c *orchestratorClient) ListAssessmentResults(ctx context.Context, in *assessment.ListAssessmentResultsRequest, opts ...grpc.CallOption) (*assessment.ListAssessmentResultsResponse, error) {
 	out := new(assessment.ListAssessmentResultsResponse)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/ListAssessmentResults", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/ListAssessmentResults", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -226,7 +226,7 @@ func (c *orchestratorClient) ListAssessmentResults(ctx context.Context, in *asse
 
 func (c *orchestratorClient) CreateMetric(ctx context.Context, in *CreateMetricRequest, opts ...grpc.CallOption) (*assessment.Metric, error) {
 	out := new(assessment.Metric)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/CreateMetric", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/CreateMetric", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -235,7 +235,7 @@ func (c *orchestratorClient) CreateMetric(ctx context.Context, in *CreateMetricR
 
 func (c *orchestratorClient) UpdateMetric(ctx context.Context, in *UpdateMetricRequest, opts ...grpc.CallOption) (*assessment.Metric, error) {
 	out := new(assessment.Metric)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/UpdateMetric", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/UpdateMetric", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -244,7 +244,7 @@ func (c *orchestratorClient) UpdateMetric(ctx context.Context, in *UpdateMetricR
 
 func (c *orchestratorClient) GetMetric(ctx context.Context, in *GetMetricRequest, opts ...grpc.CallOption) (*assessment.Metric, error) {
 	out := new(assessment.Metric)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/GetMetric", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/GetMetric", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -253,7 +253,7 @@ func (c *orchestratorClient) GetMetric(ctx context.Context, in *GetMetricRequest
 
 func (c *orchestratorClient) ListMetrics(ctx context.Context, in *ListMetricsRequest, opts ...grpc.CallOption) (*ListMetricsResponse, error) {
 	out := new(ListMetricsResponse)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/ListMetrics", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/ListMetrics", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -262,7 +262,7 @@ func (c *orchestratorClient) ListMetrics(ctx context.Context, in *ListMetricsReq
 
 func (c *orchestratorClient) RegisterCloudService(ctx context.Context, in *RegisterCloudServiceRequest, opts ...grpc.CallOption) (*CloudService, error) {
 	out := new(CloudService)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/RegisterCloudService", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/RegisterCloudService", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -271,7 +271,7 @@ func (c *orchestratorClient) RegisterCloudService(ctx context.Context, in *Regis
 
 func (c *orchestratorClient) UpdateCloudService(ctx context.Context, in *UpdateCloudServiceRequest, opts ...grpc.CallOption) (*CloudService, error) {
 	out := new(CloudService)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/UpdateCloudService", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/UpdateCloudService", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -280,7 +280,7 @@ func (c *orchestratorClient) UpdateCloudService(ctx context.Context, in *UpdateC
 
 func (c *orchestratorClient) GetCloudService(ctx context.Context, in *GetCloudServiceRequest, opts ...grpc.CallOption) (*CloudService, error) {
 	out := new(CloudService)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/GetCloudService", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/GetCloudService", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -289,7 +289,7 @@ func (c *orchestratorClient) GetCloudService(ctx context.Context, in *GetCloudSe
 
 func (c *orchestratorClient) ListCloudServices(ctx context.Context, in *ListCloudServicesRequest, opts ...grpc.CallOption) (*ListCloudServicesResponse, error) {
 	out := new(ListCloudServicesResponse)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/ListCloudServices", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/ListCloudServices", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -298,7 +298,7 @@ func (c *orchestratorClient) ListCloudServices(ctx context.Context, in *ListClou
 
 func (c *orchestratorClient) RemoveCloudService(ctx context.Context, in *RemoveCloudServiceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/RemoveCloudService", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/RemoveCloudService", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -307,7 +307,7 @@ func (c *orchestratorClient) RemoveCloudService(ctx context.Context, in *RemoveC
 
 func (c *orchestratorClient) UpdateMetricConfiguration(ctx context.Context, in *UpdateMetricConfigurationRequest, opts ...grpc.CallOption) (*assessment.MetricConfiguration, error) {
 	out := new(assessment.MetricConfiguration)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/UpdateMetricConfiguration", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/UpdateMetricConfiguration", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -316,7 +316,7 @@ func (c *orchestratorClient) UpdateMetricConfiguration(ctx context.Context, in *
 
 func (c *orchestratorClient) GetMetricConfiguration(ctx context.Context, in *GetMetricConfigurationRequest, opts ...grpc.CallOption) (*assessment.MetricConfiguration, error) {
 	out := new(assessment.MetricConfiguration)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/GetMetricConfiguration", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/GetMetricConfiguration", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -325,7 +325,7 @@ func (c *orchestratorClient) GetMetricConfiguration(ctx context.Context, in *Get
 
 func (c *orchestratorClient) ListMetricConfigurations(ctx context.Context, in *ListMetricConfigurationRequest, opts ...grpc.CallOption) (*ListMetricConfigurationResponse, error) {
 	out := new(ListMetricConfigurationResponse)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/ListMetricConfigurations", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/ListMetricConfigurations", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -334,7 +334,7 @@ func (c *orchestratorClient) ListMetricConfigurations(ctx context.Context, in *L
 
 func (c *orchestratorClient) UpdateMetricImplementation(ctx context.Context, in *UpdateMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error) {
 	out := new(assessment.MetricImplementation)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/UpdateMetricImplementation", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/UpdateMetricImplementation", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -343,7 +343,7 @@ func (c *orchestratorClient) UpdateMetricImplementation(ctx context.Context, in 
 
 func (c *orchestratorClient) GetMetricImplementation(ctx context.Context, in *GetMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error) {
 	out := new(assessment.MetricImplementation)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/GetMetricImplementation", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/GetMetricImplementation", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -351,7 +351,7 @@ func (c *orchestratorClient) GetMetricImplementation(ctx context.Context, in *Ge
 }
 
 func (c *orchestratorClient) SubscribeMetricChangeEvents(ctx context.Context, in *SubscribeMetricChangeEventRequest, opts ...grpc.CallOption) (Orchestrator_SubscribeMetricChangeEventsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Orchestrator_ServiceDesc.Streams[1], "/clouditor.orchestrator.Orchestrator/SubscribeMetricChangeEvents", opts...)
+	stream, err := c.cc.NewStream(ctx, &Orchestrator_ServiceDesc.Streams[1], "/clouditor.orchestrator.v1.Orchestrator/SubscribeMetricChangeEvents", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -384,7 +384,7 @@ func (x *orchestratorSubscribeMetricChangeEventsClient) Recv() (*MetricChangeEve
 
 func (c *orchestratorClient) CreateCertificate(ctx context.Context, in *CreateCertificateRequest, opts ...grpc.CallOption) (*Certificate, error) {
 	out := new(Certificate)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/CreateCertificate", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/CreateCertificate", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -393,7 +393,7 @@ func (c *orchestratorClient) CreateCertificate(ctx context.Context, in *CreateCe
 
 func (c *orchestratorClient) GetCertificate(ctx context.Context, in *GetCertificateRequest, opts ...grpc.CallOption) (*Certificate, error) {
 	out := new(Certificate)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/GetCertificate", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/GetCertificate", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -402,7 +402,7 @@ func (c *orchestratorClient) GetCertificate(ctx context.Context, in *GetCertific
 
 func (c *orchestratorClient) ListCertificates(ctx context.Context, in *ListCertificatesRequest, opts ...grpc.CallOption) (*ListCertificatesResponse, error) {
 	out := new(ListCertificatesResponse)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/ListCertificates", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/ListCertificates", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -411,7 +411,7 @@ func (c *orchestratorClient) ListCertificates(ctx context.Context, in *ListCerti
 
 func (c *orchestratorClient) UpdateCertificate(ctx context.Context, in *UpdateCertificateRequest, opts ...grpc.CallOption) (*Certificate, error) {
 	out := new(Certificate)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/UpdateCertificate", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/UpdateCertificate", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -420,7 +420,7 @@ func (c *orchestratorClient) UpdateCertificate(ctx context.Context, in *UpdateCe
 
 func (c *orchestratorClient) RemoveCertificate(ctx context.Context, in *RemoveCertificateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/RemoveCertificate", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/RemoveCertificate", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -429,7 +429,7 @@ func (c *orchestratorClient) RemoveCertificate(ctx context.Context, in *RemoveCe
 
 func (c *orchestratorClient) CreateCatalog(ctx context.Context, in *CreateCatalogRequest, opts ...grpc.CallOption) (*Catalog, error) {
 	out := new(Catalog)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/CreateCatalog", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/CreateCatalog", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -438,7 +438,7 @@ func (c *orchestratorClient) CreateCatalog(ctx context.Context, in *CreateCatalo
 
 func (c *orchestratorClient) ListCatalogs(ctx context.Context, in *ListCatalogsRequest, opts ...grpc.CallOption) (*ListCatalogsResponse, error) {
 	out := new(ListCatalogsResponse)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/ListCatalogs", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/ListCatalogs", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -447,7 +447,7 @@ func (c *orchestratorClient) ListCatalogs(ctx context.Context, in *ListCatalogsR
 
 func (c *orchestratorClient) GetCatalog(ctx context.Context, in *GetCatalogRequest, opts ...grpc.CallOption) (*Catalog, error) {
 	out := new(Catalog)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/GetCatalog", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/GetCatalog", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -456,7 +456,7 @@ func (c *orchestratorClient) GetCatalog(ctx context.Context, in *GetCatalogReque
 
 func (c *orchestratorClient) RemoveCatalog(ctx context.Context, in *RemoveCatalogRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/RemoveCatalog", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/RemoveCatalog", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -465,7 +465,7 @@ func (c *orchestratorClient) RemoveCatalog(ctx context.Context, in *RemoveCatalo
 
 func (c *orchestratorClient) UpdateCatalog(ctx context.Context, in *UpdateCatalogRequest, opts ...grpc.CallOption) (*Catalog, error) {
 	out := new(Catalog)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/UpdateCatalog", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/UpdateCatalog", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -474,7 +474,7 @@ func (c *orchestratorClient) UpdateCatalog(ctx context.Context, in *UpdateCatalo
 
 func (c *orchestratorClient) GetCategory(ctx context.Context, in *GetCategoryRequest, opts ...grpc.CallOption) (*Category, error) {
 	out := new(Category)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/GetCategory", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/GetCategory", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -483,7 +483,7 @@ func (c *orchestratorClient) GetCategory(ctx context.Context, in *GetCategoryReq
 
 func (c *orchestratorClient) ListControls(ctx context.Context, in *ListControlsRequest, opts ...grpc.CallOption) (*ListControlsResponse, error) {
 	out := new(ListControlsResponse)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/ListControls", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/ListControls", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -492,7 +492,7 @@ func (c *orchestratorClient) ListControls(ctx context.Context, in *ListControlsR
 
 func (c *orchestratorClient) GetControl(ctx context.Context, in *GetControlRequest, opts ...grpc.CallOption) (*Control, error) {
 	out := new(Control)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/GetControl", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/GetControl", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -501,7 +501,7 @@ func (c *orchestratorClient) GetControl(ctx context.Context, in *GetControlReque
 
 func (c *orchestratorClient) CreateTargetOfEvaluation(ctx context.Context, in *CreateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error) {
 	out := new(TargetOfEvaluation)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/CreateTargetOfEvaluation", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/CreateTargetOfEvaluation", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -510,7 +510,7 @@ func (c *orchestratorClient) CreateTargetOfEvaluation(ctx context.Context, in *C
 
 func (c *orchestratorClient) GetTargetOfEvaluation(ctx context.Context, in *GetTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error) {
 	out := new(TargetOfEvaluation)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/GetTargetOfEvaluation", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/GetTargetOfEvaluation", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -519,7 +519,7 @@ func (c *orchestratorClient) GetTargetOfEvaluation(ctx context.Context, in *GetT
 
 func (c *orchestratorClient) ListTargetsOfEvaluation(ctx context.Context, in *ListTargetsOfEvaluationRequest, opts ...grpc.CallOption) (*ListTargetsOfEvaluationResponse, error) {
 	out := new(ListTargetsOfEvaluationResponse)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/ListTargetsOfEvaluation", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/ListTargetsOfEvaluation", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -528,7 +528,7 @@ func (c *orchestratorClient) ListTargetsOfEvaluation(ctx context.Context, in *Li
 
 func (c *orchestratorClient) UpdateTargetOfEvaluation(ctx context.Context, in *UpdateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error) {
 	out := new(TargetOfEvaluation)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/UpdateTargetOfEvaluation", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/UpdateTargetOfEvaluation", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -537,7 +537,7 @@ func (c *orchestratorClient) UpdateTargetOfEvaluation(ctx context.Context, in *U
 
 func (c *orchestratorClient) RemoveTargetOfEvaluation(ctx context.Context, in *RemoveTargetOfEvaluationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.Orchestrator/RemoveTargetOfEvaluation", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/RemoveTargetOfEvaluation", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -797,7 +797,7 @@ func _Orchestrator_RegisterAssessmentTool_Handler(srv interface{}, ctx context.C
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/RegisterAssessmentTool",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/RegisterAssessmentTool",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).RegisterAssessmentTool(ctx, req.(*RegisterAssessmentToolRequest))
@@ -815,7 +815,7 @@ func _Orchestrator_ListAssessmentTools_Handler(srv interface{}, ctx context.Cont
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/ListAssessmentTools",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/ListAssessmentTools",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).ListAssessmentTools(ctx, req.(*ListAssessmentToolsRequest))
@@ -833,7 +833,7 @@ func _Orchestrator_GetAssessmentTool_Handler(srv interface{}, ctx context.Contex
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/GetAssessmentTool",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/GetAssessmentTool",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).GetAssessmentTool(ctx, req.(*GetAssessmentToolRequest))
@@ -851,7 +851,7 @@ func _Orchestrator_UpdateAssessmentTool_Handler(srv interface{}, ctx context.Con
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/UpdateAssessmentTool",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/UpdateAssessmentTool",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).UpdateAssessmentTool(ctx, req.(*UpdateAssessmentToolRequest))
@@ -869,7 +869,7 @@ func _Orchestrator_DeregisterAssessmentTool_Handler(srv interface{}, ctx context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/DeregisterAssessmentTool",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/DeregisterAssessmentTool",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).DeregisterAssessmentTool(ctx, req.(*DeregisterAssessmentToolRequest))
@@ -887,7 +887,7 @@ func _Orchestrator_StoreAssessmentResult_Handler(srv interface{}, ctx context.Co
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/StoreAssessmentResult",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/StoreAssessmentResult",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).StoreAssessmentResult(ctx, req.(*StoreAssessmentResultRequest))
@@ -931,7 +931,7 @@ func _Orchestrator_ListAssessmentResults_Handler(srv interface{}, ctx context.Co
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/ListAssessmentResults",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/ListAssessmentResults",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).ListAssessmentResults(ctx, req.(*assessment.ListAssessmentResultsRequest))
@@ -949,7 +949,7 @@ func _Orchestrator_CreateMetric_Handler(srv interface{}, ctx context.Context, de
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/CreateMetric",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/CreateMetric",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).CreateMetric(ctx, req.(*CreateMetricRequest))
@@ -967,7 +967,7 @@ func _Orchestrator_UpdateMetric_Handler(srv interface{}, ctx context.Context, de
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/UpdateMetric",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/UpdateMetric",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).UpdateMetric(ctx, req.(*UpdateMetricRequest))
@@ -985,7 +985,7 @@ func _Orchestrator_GetMetric_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/GetMetric",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/GetMetric",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).GetMetric(ctx, req.(*GetMetricRequest))
@@ -1003,7 +1003,7 @@ func _Orchestrator_ListMetrics_Handler(srv interface{}, ctx context.Context, dec
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/ListMetrics",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/ListMetrics",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).ListMetrics(ctx, req.(*ListMetricsRequest))
@@ -1021,7 +1021,7 @@ func _Orchestrator_RegisterCloudService_Handler(srv interface{}, ctx context.Con
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/RegisterCloudService",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/RegisterCloudService",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).RegisterCloudService(ctx, req.(*RegisterCloudServiceRequest))
@@ -1039,7 +1039,7 @@ func _Orchestrator_UpdateCloudService_Handler(srv interface{}, ctx context.Conte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/UpdateCloudService",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/UpdateCloudService",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).UpdateCloudService(ctx, req.(*UpdateCloudServiceRequest))
@@ -1057,7 +1057,7 @@ func _Orchestrator_GetCloudService_Handler(srv interface{}, ctx context.Context,
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/GetCloudService",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/GetCloudService",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).GetCloudService(ctx, req.(*GetCloudServiceRequest))
@@ -1075,7 +1075,7 @@ func _Orchestrator_ListCloudServices_Handler(srv interface{}, ctx context.Contex
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/ListCloudServices",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/ListCloudServices",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).ListCloudServices(ctx, req.(*ListCloudServicesRequest))
@@ -1093,7 +1093,7 @@ func _Orchestrator_RemoveCloudService_Handler(srv interface{}, ctx context.Conte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/RemoveCloudService",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/RemoveCloudService",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).RemoveCloudService(ctx, req.(*RemoveCloudServiceRequest))
@@ -1111,7 +1111,7 @@ func _Orchestrator_UpdateMetricConfiguration_Handler(srv interface{}, ctx contex
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/UpdateMetricConfiguration",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/UpdateMetricConfiguration",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).UpdateMetricConfiguration(ctx, req.(*UpdateMetricConfigurationRequest))
@@ -1129,7 +1129,7 @@ func _Orchestrator_GetMetricConfiguration_Handler(srv interface{}, ctx context.C
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/GetMetricConfiguration",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/GetMetricConfiguration",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).GetMetricConfiguration(ctx, req.(*GetMetricConfigurationRequest))
@@ -1147,7 +1147,7 @@ func _Orchestrator_ListMetricConfigurations_Handler(srv interface{}, ctx context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/ListMetricConfigurations",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/ListMetricConfigurations",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).ListMetricConfigurations(ctx, req.(*ListMetricConfigurationRequest))
@@ -1165,7 +1165,7 @@ func _Orchestrator_UpdateMetricImplementation_Handler(srv interface{}, ctx conte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/UpdateMetricImplementation",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/UpdateMetricImplementation",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).UpdateMetricImplementation(ctx, req.(*UpdateMetricImplementationRequest))
@@ -1183,7 +1183,7 @@ func _Orchestrator_GetMetricImplementation_Handler(srv interface{}, ctx context.
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/GetMetricImplementation",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/GetMetricImplementation",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).GetMetricImplementation(ctx, req.(*GetMetricImplementationRequest))
@@ -1222,7 +1222,7 @@ func _Orchestrator_CreateCertificate_Handler(srv interface{}, ctx context.Contex
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/CreateCertificate",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/CreateCertificate",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).CreateCertificate(ctx, req.(*CreateCertificateRequest))
@@ -1240,7 +1240,7 @@ func _Orchestrator_GetCertificate_Handler(srv interface{}, ctx context.Context, 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/GetCertificate",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/GetCertificate",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).GetCertificate(ctx, req.(*GetCertificateRequest))
@@ -1258,7 +1258,7 @@ func _Orchestrator_ListCertificates_Handler(srv interface{}, ctx context.Context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/ListCertificates",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/ListCertificates",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).ListCertificates(ctx, req.(*ListCertificatesRequest))
@@ -1276,7 +1276,7 @@ func _Orchestrator_UpdateCertificate_Handler(srv interface{}, ctx context.Contex
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/UpdateCertificate",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/UpdateCertificate",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).UpdateCertificate(ctx, req.(*UpdateCertificateRequest))
@@ -1294,7 +1294,7 @@ func _Orchestrator_RemoveCertificate_Handler(srv interface{}, ctx context.Contex
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/RemoveCertificate",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/RemoveCertificate",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).RemoveCertificate(ctx, req.(*RemoveCertificateRequest))
@@ -1312,7 +1312,7 @@ func _Orchestrator_CreateCatalog_Handler(srv interface{}, ctx context.Context, d
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/CreateCatalog",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/CreateCatalog",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).CreateCatalog(ctx, req.(*CreateCatalogRequest))
@@ -1330,7 +1330,7 @@ func _Orchestrator_ListCatalogs_Handler(srv interface{}, ctx context.Context, de
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/ListCatalogs",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/ListCatalogs",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).ListCatalogs(ctx, req.(*ListCatalogsRequest))
@@ -1348,7 +1348,7 @@ func _Orchestrator_GetCatalog_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/GetCatalog",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/GetCatalog",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).GetCatalog(ctx, req.(*GetCatalogRequest))
@@ -1366,7 +1366,7 @@ func _Orchestrator_RemoveCatalog_Handler(srv interface{}, ctx context.Context, d
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/RemoveCatalog",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/RemoveCatalog",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).RemoveCatalog(ctx, req.(*RemoveCatalogRequest))
@@ -1384,7 +1384,7 @@ func _Orchestrator_UpdateCatalog_Handler(srv interface{}, ctx context.Context, d
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/UpdateCatalog",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/UpdateCatalog",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).UpdateCatalog(ctx, req.(*UpdateCatalogRequest))
@@ -1402,7 +1402,7 @@ func _Orchestrator_GetCategory_Handler(srv interface{}, ctx context.Context, dec
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/GetCategory",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/GetCategory",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).GetCategory(ctx, req.(*GetCategoryRequest))
@@ -1420,7 +1420,7 @@ func _Orchestrator_ListControls_Handler(srv interface{}, ctx context.Context, de
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/ListControls",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/ListControls",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).ListControls(ctx, req.(*ListControlsRequest))
@@ -1438,7 +1438,7 @@ func _Orchestrator_GetControl_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/GetControl",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/GetControl",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).GetControl(ctx, req.(*GetControlRequest))
@@ -1456,7 +1456,7 @@ func _Orchestrator_CreateTargetOfEvaluation_Handler(srv interface{}, ctx context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/CreateTargetOfEvaluation",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/CreateTargetOfEvaluation",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).CreateTargetOfEvaluation(ctx, req.(*CreateTargetOfEvaluationRequest))
@@ -1474,7 +1474,7 @@ func _Orchestrator_GetTargetOfEvaluation_Handler(srv interface{}, ctx context.Co
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/GetTargetOfEvaluation",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/GetTargetOfEvaluation",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).GetTargetOfEvaluation(ctx, req.(*GetTargetOfEvaluationRequest))
@@ -1492,7 +1492,7 @@ func _Orchestrator_ListTargetsOfEvaluation_Handler(srv interface{}, ctx context.
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/ListTargetsOfEvaluation",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/ListTargetsOfEvaluation",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).ListTargetsOfEvaluation(ctx, req.(*ListTargetsOfEvaluationRequest))
@@ -1510,7 +1510,7 @@ func _Orchestrator_UpdateTargetOfEvaluation_Handler(srv interface{}, ctx context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/UpdateTargetOfEvaluation",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/UpdateTargetOfEvaluation",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).UpdateTargetOfEvaluation(ctx, req.(*UpdateTargetOfEvaluationRequest))
@@ -1528,7 +1528,7 @@ func _Orchestrator_RemoveTargetOfEvaluation_Handler(srv interface{}, ctx context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.Orchestrator/RemoveTargetOfEvaluation",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/RemoveTargetOfEvaluation",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).RemoveTargetOfEvaluation(ctx, req.(*RemoveTargetOfEvaluationRequest))
@@ -1540,7 +1540,7 @@ func _Orchestrator_RemoveTargetOfEvaluation_Handler(srv interface{}, ctx context
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Orchestrator_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "clouditor.orchestrator.Orchestrator",
+	ServiceName: "clouditor.orchestrator.v1.Orchestrator",
 	HandlerType: (*OrchestratorServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

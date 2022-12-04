@@ -42,7 +42,7 @@ func NewEvidenceStoreClient(cc grpc.ClientConnInterface) EvidenceStoreClient {
 
 func (c *evidenceStoreClient) StoreEvidence(ctx context.Context, in *StoreEvidenceRequest, opts ...grpc.CallOption) (*StoreEvidenceResponse, error) {
 	out := new(StoreEvidenceResponse)
-	err := c.cc.Invoke(ctx, "/clouditor.evidence.EvidenceStore/StoreEvidence", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.evidence.v1.EvidenceStore/StoreEvidence", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +50,7 @@ func (c *evidenceStoreClient) StoreEvidence(ctx context.Context, in *StoreEviden
 }
 
 func (c *evidenceStoreClient) StoreEvidences(ctx context.Context, opts ...grpc.CallOption) (EvidenceStore_StoreEvidencesClient, error) {
-	stream, err := c.cc.NewStream(ctx, &EvidenceStore_ServiceDesc.Streams[0], "/clouditor.evidence.EvidenceStore/StoreEvidences", opts...)
+	stream, err := c.cc.NewStream(ctx, &EvidenceStore_ServiceDesc.Streams[0], "/clouditor.evidence.v1.EvidenceStore/StoreEvidences", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func (x *evidenceStoreStoreEvidencesClient) Recv() (*StoreEvidenceResponse, erro
 
 func (c *evidenceStoreClient) ListEvidences(ctx context.Context, in *ListEvidencesRequest, opts ...grpc.CallOption) (*ListEvidencesResponse, error) {
 	out := new(ListEvidencesResponse)
-	err := c.cc.Invoke(ctx, "/clouditor.evidence.EvidenceStore/ListEvidences", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.evidence.v1.EvidenceStore/ListEvidences", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +140,7 @@ func _EvidenceStore_StoreEvidence_Handler(srv interface{}, ctx context.Context, 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.evidence.EvidenceStore/StoreEvidence",
+		FullMethod: "/clouditor.evidence.v1.EvidenceStore/StoreEvidence",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EvidenceStoreServer).StoreEvidence(ctx, req.(*StoreEvidenceRequest))
@@ -184,7 +184,7 @@ func _EvidenceStore_ListEvidences_Handler(srv interface{}, ctx context.Context, 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.evidence.EvidenceStore/ListEvidences",
+		FullMethod: "/clouditor.evidence.v1.EvidenceStore/ListEvidences",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EvidenceStoreServer).ListEvidences(ctx, req.(*ListEvidencesRequest))
@@ -196,7 +196,7 @@ func _EvidenceStore_ListEvidences_Handler(srv interface{}, ctx context.Context, 
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var EvidenceStore_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "clouditor.evidence.EvidenceStore",
+	ServiceName: "clouditor.evidence.v1.EvidenceStore",
 	HandlerType: (*EvidenceStoreServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

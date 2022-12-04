@@ -46,7 +46,7 @@ func NewAssessmentClient(cc grpc.ClientConnInterface) AssessmentClient {
 
 func (c *assessmentClient) CalculateCompliance(ctx context.Context, in *CalculateComplianceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/clouditor.assessment.Assessment/CalculateCompliance", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.assessment.v1.Assessment/CalculateCompliance", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (c *assessmentClient) CalculateCompliance(ctx context.Context, in *Calculat
 
 func (c *assessmentClient) AssessEvidence(ctx context.Context, in *AssessEvidenceRequest, opts ...grpc.CallOption) (*AssessEvidenceResponse, error) {
 	out := new(AssessEvidenceResponse)
-	err := c.cc.Invoke(ctx, "/clouditor.assessment.Assessment/AssessEvidence", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.assessment.v1.Assessment/AssessEvidence", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (c *assessmentClient) AssessEvidence(ctx context.Context, in *AssessEvidenc
 }
 
 func (c *assessmentClient) AssessEvidences(ctx context.Context, opts ...grpc.CallOption) (Assessment_AssessEvidencesClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Assessment_ServiceDesc.Streams[0], "/clouditor.assessment.Assessment/AssessEvidences", opts...)
+	stream, err := c.cc.NewStream(ctx, &Assessment_ServiceDesc.Streams[0], "/clouditor.assessment.v1.Assessment/AssessEvidences", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func (x *assessmentAssessEvidencesClient) Recv() (*AssessEvidenceResponse, error
 
 func (c *assessmentClient) ListAssessmentResults(ctx context.Context, in *ListAssessmentResultsRequest, opts ...grpc.CallOption) (*ListAssessmentResultsResponse, error) {
 	out := new(ListAssessmentResultsResponse)
-	err := c.cc.Invoke(ctx, "/clouditor.assessment.Assessment/ListAssessmentResults", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.assessment.v1.Assessment/ListAssessmentResults", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +159,7 @@ func _Assessment_CalculateCompliance_Handler(srv interface{}, ctx context.Contex
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.assessment.Assessment/CalculateCompliance",
+		FullMethod: "/clouditor.assessment.v1.Assessment/CalculateCompliance",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AssessmentServer).CalculateCompliance(ctx, req.(*CalculateComplianceRequest))
@@ -177,7 +177,7 @@ func _Assessment_AssessEvidence_Handler(srv interface{}, ctx context.Context, de
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.assessment.Assessment/AssessEvidence",
+		FullMethod: "/clouditor.assessment.v1.Assessment/AssessEvidence",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AssessmentServer).AssessEvidence(ctx, req.(*AssessEvidenceRequest))
@@ -221,7 +221,7 @@ func _Assessment_ListAssessmentResults_Handler(srv interface{}, ctx context.Cont
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.assessment.Assessment/ListAssessmentResults",
+		FullMethod: "/clouditor.assessment.v1.Assessment/ListAssessmentResults",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AssessmentServer).ListAssessmentResults(ctx, req.(*ListAssessmentResultsRequest))
@@ -233,7 +233,7 @@ func _Assessment_ListAssessmentResults_Handler(srv interface{}, ctx context.Cont
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Assessment_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "clouditor.assessment.Assessment",
+	ServiceName: "clouditor.assessment.v1.Assessment",
 	HandlerType: (*AssessmentServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
