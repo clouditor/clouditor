@@ -2495,7 +2495,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/RegisterAssessmentTool", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_tools"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/RegisterAssessmentTool", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_tools"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2519,7 +2519,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/ListAssessmentTools", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_tools"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListAssessmentTools", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_tools"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2543,7 +2543,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/ListAssessmentTools", runtime.WithHTTPPathPattern("/v1/orchestrator/{metric_id}/assessment_tools"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListAssessmentTools", runtime.WithHTTPPathPattern("/v1/orchestrator/{metric_id}/assessment_tools"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2567,7 +2567,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/GetAssessmentTool", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_tools/{tool_id}"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/GetAssessmentTool", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_tools/{tool_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2591,7 +2591,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/UpdateAssessmentTool", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_tools/{tool_id}"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/UpdateAssessmentTool", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_tools/{tool_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2615,7 +2615,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/DeregisterAssessmentTool", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_tools/{tool_id}"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/DeregisterAssessmentTool", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_tools/{tool_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2639,7 +2639,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/StoreAssessmentResult", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_results"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/StoreAssessmentResult", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_results"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2663,7 +2663,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/ListAssessmentResults", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_results"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListAssessmentResults", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_results"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2687,7 +2687,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/ListAssessmentResults", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{filtered_cloud_service_id}/assessment_results"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListAssessmentResults", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{filtered_cloud_service_id}/assessment_results"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2711,7 +2711,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/CreateMetric", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/CreateMetric", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2735,7 +2735,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/UpdateMetric", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics/{metric_id}"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/UpdateMetric", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics/{metric_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2759,7 +2759,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/GetMetric", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics/{metric_id}"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/GetMetric", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics/{metric_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2783,7 +2783,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/ListMetrics", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListMetrics", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2807,7 +2807,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/RegisterCloudService", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/RegisterCloudService", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2831,7 +2831,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/UpdateCloudService", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/UpdateCloudService", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2855,7 +2855,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/GetCloudService", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/GetCloudService", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2879,7 +2879,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/ListCloudServices", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListCloudServices", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2903,7 +2903,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/RemoveCloudService", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/RemoveCloudService", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2927,7 +2927,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/UpdateMetricConfiguration", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/metric_configurations/{metric_id}"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/UpdateMetricConfiguration", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/metric_configurations/{metric_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2951,7 +2951,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/GetMetricConfiguration", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/metric_configurations/{metric_id}"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/GetMetricConfiguration", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/metric_configurations/{metric_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2975,7 +2975,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/ListMetricConfigurations", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/metric_configurations"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListMetricConfigurations", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/metric_configurations"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2999,7 +2999,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/UpdateMetricImplementation", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics/{metric_id}/implementation"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/UpdateMetricImplementation", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics/{metric_id}/implementation"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3023,7 +3023,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/GetMetricImplementation", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics/{metric_id}/implementation"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/GetMetricImplementation", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics/{metric_id}/implementation"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3047,7 +3047,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/CreateCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/CreateCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3071,7 +3071,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/GetCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates/{certificate_id}"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/GetCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates/{certificate_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3095,7 +3095,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/ListCertificates", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListCertificates", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3119,7 +3119,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/UpdateCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates/{certificate_id}"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/UpdateCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates/{certificate_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3143,7 +3143,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/RemoveCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates/{certificate_id}"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/RemoveCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates/{certificate_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3167,7 +3167,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/CreateCatalog", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/CreateCatalog", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3191,7 +3191,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/ListCatalogs", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListCatalogs", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3215,7 +3215,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/GetCatalog", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/GetCatalog", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3239,7 +3239,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/RemoveCatalog", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/RemoveCatalog", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3263,7 +3263,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/UpdateCatalog", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/UpdateCatalog", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3287,7 +3287,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/GetCategory", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}/category/{category_name}"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/GetCategory", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}/category/{category_name}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3311,7 +3311,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/ListControls", runtime.WithHTTPPathPattern("/v1/orchestrator/controls"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListControls", runtime.WithHTTPPathPattern("/v1/orchestrator/controls"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3335,7 +3335,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/ListControls", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/controls"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListControls", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/controls"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3359,7 +3359,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/GetControl", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/controls/{control_id}"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/GetControl", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/controls/{control_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3383,7 +3383,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/CreateTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/toes"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/CreateTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/toes"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3407,7 +3407,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/GetTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/{catalog_id}/toes"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/GetTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/{catalog_id}/toes"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3431,7 +3431,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/ListTargetsOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/toes"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListTargetsOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/toes"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3455,7 +3455,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/ListTargetsOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/toes"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListTargetsOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/toes"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3479,7 +3479,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/ListTargetsOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}/toes"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListTargetsOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}/toes"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3503,7 +3503,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/UpdateTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/{catalog_id}/toes"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/UpdateTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/{catalog_id}/toes"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3527,7 +3527,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Orchestrator/RemoveTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/{catalog_id}/toes"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/RemoveTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/{catalog_id}/toes"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3590,7 +3590,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/RegisterAssessmentTool", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_tools"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/RegisterAssessmentTool", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_tools"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3611,7 +3611,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/ListAssessmentTools", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_tools"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListAssessmentTools", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_tools"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3632,7 +3632,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/ListAssessmentTools", runtime.WithHTTPPathPattern("/v1/orchestrator/{metric_id}/assessment_tools"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListAssessmentTools", runtime.WithHTTPPathPattern("/v1/orchestrator/{metric_id}/assessment_tools"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3653,7 +3653,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/GetAssessmentTool", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_tools/{tool_id}"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/GetAssessmentTool", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_tools/{tool_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3674,7 +3674,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/UpdateAssessmentTool", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_tools/{tool_id}"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/UpdateAssessmentTool", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_tools/{tool_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3695,7 +3695,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/DeregisterAssessmentTool", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_tools/{tool_id}"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/DeregisterAssessmentTool", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_tools/{tool_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3716,7 +3716,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/StoreAssessmentResult", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_results"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/StoreAssessmentResult", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_results"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3737,7 +3737,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/ListAssessmentResults", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_results"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListAssessmentResults", runtime.WithHTTPPathPattern("/v1/orchestrator/assessment_results"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3758,7 +3758,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/ListAssessmentResults", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{filtered_cloud_service_id}/assessment_results"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListAssessmentResults", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{filtered_cloud_service_id}/assessment_results"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3779,7 +3779,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/CreateMetric", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/CreateMetric", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3800,7 +3800,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/UpdateMetric", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics/{metric_id}"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/UpdateMetric", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics/{metric_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3821,7 +3821,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/GetMetric", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics/{metric_id}"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/GetMetric", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics/{metric_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3842,7 +3842,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/ListMetrics", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListMetrics", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3863,7 +3863,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/RegisterCloudService", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/RegisterCloudService", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3884,7 +3884,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/UpdateCloudService", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/UpdateCloudService", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3905,7 +3905,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/GetCloudService", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/GetCloudService", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3926,7 +3926,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/ListCloudServices", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListCloudServices", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3947,7 +3947,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/RemoveCloudService", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/RemoveCloudService", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3968,7 +3968,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/UpdateMetricConfiguration", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/metric_configurations/{metric_id}"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/UpdateMetricConfiguration", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/metric_configurations/{metric_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3989,7 +3989,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/GetMetricConfiguration", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/metric_configurations/{metric_id}"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/GetMetricConfiguration", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/metric_configurations/{metric_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4010,7 +4010,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/ListMetricConfigurations", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/metric_configurations"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListMetricConfigurations", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/metric_configurations"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4031,7 +4031,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/UpdateMetricImplementation", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics/{metric_id}/implementation"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/UpdateMetricImplementation", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics/{metric_id}/implementation"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4052,7 +4052,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/GetMetricImplementation", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics/{metric_id}/implementation"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/GetMetricImplementation", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics/{metric_id}/implementation"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4073,7 +4073,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/CreateCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/CreateCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4094,7 +4094,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/GetCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates/{certificate_id}"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/GetCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates/{certificate_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4115,7 +4115,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/ListCertificates", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListCertificates", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4136,7 +4136,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/UpdateCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates/{certificate_id}"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/UpdateCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates/{certificate_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4157,7 +4157,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/RemoveCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates/{certificate_id}"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/RemoveCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates/{certificate_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4178,7 +4178,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/CreateCatalog", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/CreateCatalog", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4199,7 +4199,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/ListCatalogs", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListCatalogs", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4220,7 +4220,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/GetCatalog", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/GetCatalog", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4241,7 +4241,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/RemoveCatalog", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/RemoveCatalog", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4262,7 +4262,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/UpdateCatalog", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/UpdateCatalog", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4283,7 +4283,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/GetCategory", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}/category/{category_name}"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/GetCategory", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}/category/{category_name}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4304,7 +4304,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/ListControls", runtime.WithHTTPPathPattern("/v1/orchestrator/controls"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListControls", runtime.WithHTTPPathPattern("/v1/orchestrator/controls"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4325,7 +4325,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/ListControls", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/controls"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListControls", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/controls"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4346,7 +4346,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/GetControl", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/controls/{control_id}"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/GetControl", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/controls/{control_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4367,7 +4367,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/CreateTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/toes"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/CreateTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/toes"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4388,7 +4388,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/GetTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/{catalog_id}/toes"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/GetTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/{catalog_id}/toes"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4409,7 +4409,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/ListTargetsOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/toes"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListTargetsOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/toes"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4430,7 +4430,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/ListTargetsOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/toes"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListTargetsOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/toes"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4451,7 +4451,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/ListTargetsOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}/toes"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/ListTargetsOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}/toes"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4472,7 +4472,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/UpdateTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/{catalog_id}/toes"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/UpdateTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/{catalog_id}/toes"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4493,7 +4493,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Orchestrator/RemoveTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/{catalog_id}/toes"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.Orchestrator/RemoveTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/{catalog_id}/toes"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return

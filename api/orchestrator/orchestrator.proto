@@ -26,7 +26,7 @@
  */
 syntax = "proto3";
 
-package clouditor;
+package clouditor.orchestrator;
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
@@ -99,8 +99,8 @@ service Orchestrator {
       returns (stream StoreAssessmentResultResponse);
 
   // List all assessment results. Part of the public API, also exposed as REST.
-  rpc ListAssessmentResults(ListAssessmentResultsRequest)
-      returns (ListAssessmentResultsResponse) {
+  rpc ListAssessmentResults(clouditor.assessment.ListAssessmentResultsRequest)
+      returns (clouditor.assessment.ListAssessmentResultsResponse) {
     option (google.api.http) = {
       get : "/v1/orchestrator/assessment_results"
       additional_bindings {
@@ -111,7 +111,7 @@ service Orchestrator {
   }
 
   // Creates a new metric
-  rpc CreateMetric(CreateMetricRequest) returns (Metric) {
+  rpc CreateMetric(CreateMetricRequest) returns (clouditor.assessment.Metric) {
     option (google.api.http) = {
       post : "/v1/orchestrator/metrics"
       body : "metric"
@@ -119,7 +119,7 @@ service Orchestrator {
   }
 
   // Updates an existing metric
-  rpc UpdateMetric(UpdateMetricRequest) returns (Metric) {
+  rpc UpdateMetric(UpdateMetricRequest) returns (clouditor.assessment.Metric) {
     option (google.api.http) = {
       put : "/v1/orchestrator/metrics/{metric_id}"
       body : "metric"
@@ -127,7 +127,7 @@ service Orchestrator {
   }
 
   // Returns the metric with the passed metric id
-  rpc GetMetric(GetMetricRequest) returns (Metric) {
+  rpc GetMetric(GetMetricRequest) returns (clouditor.assessment.Metric) {
     option (google.api.http) = {
       get : "/v1/orchestrator/metrics/{metric_id}"
     };
@@ -182,7 +182,7 @@ service Orchestrator {
   // Updates a metric configuration (target value and operator) for a specific
   // service and metric ID
   rpc UpdateMetricConfiguration(UpdateMetricConfigurationRequest)
-      returns (MetricConfiguration) {
+      returns (clouditor.assessment.MetricConfiguration) {
     option (google.api.http) = {
       put : "/v1/orchestrator/cloud_services/{cloud_service_id}/"
             "metric_configurations/"
@@ -194,7 +194,7 @@ service Orchestrator {
   // Retrieves a metric configuration (target value and operator) for a specific
   // service and metric ID.
   rpc GetMetricConfiguration(GetMetricConfigurationRequest)
-      returns (MetricConfiguration) {
+      returns (clouditor.assessment.MetricConfiguration) {
     option (google.api.http) = {
       get : "/v1/orchestrator/cloud_services/{cloud_service_id}/"
             "metric_configurations/"
@@ -214,7 +214,7 @@ service Orchestrator {
 
   // Updates an existing metric implementation
   rpc UpdateMetricImplementation(UpdateMetricImplementationRequest)
-      returns (MetricImplementation) {
+      returns (clouditor.assessment.MetricImplementation) {
     option (google.api.http) = {
       put : "/v1/orchestrator/metrics/{metric_id}/implementation"
       body : "implementation"
@@ -223,7 +223,7 @@ service Orchestrator {
 
   // Returns the metric implementation of the passed metric id
   rpc GetMetricImplementation(GetMetricImplementationRequest)
-      returns (MetricImplementation) {
+      returns (clouditor.assessment.MetricImplementation) {
     option (google.api.http) = {
       get : "/v1/orchestrator/metrics/{metric_id}/implementation"
     };
@@ -417,17 +417,19 @@ message UpdateAssessmentToolRequest {
 
 message DeregisterAssessmentToolRequest { string tool_id = 1; }
 
-message StoreAssessmentResultRequest { AssessmentResult result = 1; }
+message StoreAssessmentResultRequest {
+  clouditor.assessment.AssessmentResult result = 1;
+}
 message StoreAssessmentResultResponse {
   bool status = 1;
   string status_message = 2;
 }
 
-message CreateMetricRequest { Metric metric = 1; }
+message CreateMetricRequest { clouditor.assessment.Metric metric = 1; }
 
 message UpdateMetricRequest {
   string metric_id = 1;
-  Metric metric = 2;
+  clouditor.assessment.Metric metric = 2;
 }
 
 message GetMetricRequest { string metric_id = 1; }
@@ -440,7 +442,7 @@ message ListMetricsRequest {
 }
 
 message ListMetricsResponse {
-  repeated Metric metrics = 1;
+  repeated clouditor.assessment.Metric metrics = 1;
   string next_page_token = 2;
 }
 
@@ -471,7 +473,7 @@ message UpdateMetricConfigurationRequest {
 
   string metric_id = 2;
 
-  MetricConfiguration configuration = 3;
+  clouditor.assessment.MetricConfiguration configuration = 3;
 }
 
 message GetMetricConfigurationRequest {
@@ -484,12 +486,12 @@ message ListMetricConfigurationRequest { string cloud_service_id = 1; }
 
 message ListMetricConfigurationResponse {
   // A map of metric configurations associated by their metric ID
-  map<string, MetricConfiguration> configurations = 1;
+  map<string, clouditor.assessment.MetricConfiguration> configurations = 1;
 }
 
 message UpdateMetricImplementationRequest {
   string metric_id = 1;
-  MetricImplementation implementation = 2;
+  clouditor.assessment.MetricImplementation implementation = 2;
 }
 
 message GetMetricImplementationRequest {
@@ -542,7 +544,7 @@ message CloudService {
   repeated Catalog catalogs_in_scope = 4
       [ (tagger.tags) = "gorm:\"many2many:target_of_evaluations\"" ];
 
-  repeated Metric configured_metrics = 5
+  repeated clouditor.assessment.Metric configured_metrics = 5
       [ (tagger.tags) = "gorm:\"many2many:metric_configurations\"" ];
 }
 
@@ -598,7 +600,7 @@ message Control {
   // metrics contains either a list of reference to metrics - in this case only
   // the id field of the metric is populated - or a list of populated metric
   // meta-data, most likely returned by the database.
-  repeated Metric metrics = 7
+  repeated clouditor.assessment.Metric metrics = 7
       [ (tagger.tags) =
             "gorm:\"many2many:control_metrics;constraint:OnDelete:CASCADE\"" ];
 

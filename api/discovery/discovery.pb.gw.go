@@ -112,7 +112,7 @@ func RegisterDiscoveryHandlerServer(ctx context.Context, mux *runtime.ServeMux, 
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Discovery/Start", runtime.WithHTTPPathPattern("/v1/discovery/start"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.discovery.Discovery/Start", runtime.WithHTTPPathPattern("/v1/discovery/start"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -136,7 +136,7 @@ func RegisterDiscoveryHandlerServer(ctx context.Context, mux *runtime.ServeMux, 
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.Discovery/Query", runtime.WithHTTPPathPattern("/v1/discovery/query"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.discovery.Discovery/Query", runtime.WithHTTPPathPattern("/v1/discovery/query"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -199,7 +199,7 @@ func RegisterDiscoveryHandlerClient(ctx context.Context, mux *runtime.ServeMux, 
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Discovery/Start", runtime.WithHTTPPathPattern("/v1/discovery/start"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.discovery.Discovery/Start", runtime.WithHTTPPathPattern("/v1/discovery/start"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -220,7 +220,7 @@ func RegisterDiscoveryHandlerClient(ctx context.Context, mux *runtime.ServeMux, 
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.Discovery/Query", runtime.WithHTTPPathPattern("/v1/discovery/query"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.discovery.Discovery/Query", runtime.WithHTTPPathPattern("/v1/discovery/query"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return

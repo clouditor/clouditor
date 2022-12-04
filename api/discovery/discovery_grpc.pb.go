@@ -38,7 +38,7 @@ func NewDiscoveryClient(cc grpc.ClientConnInterface) DiscoveryClient {
 
 func (c *discoveryClient) Start(ctx context.Context, in *StartDiscoveryRequest, opts ...grpc.CallOption) (*StartDiscoveryResponse, error) {
 	out := new(StartDiscoveryResponse)
-	err := c.cc.Invoke(ctx, "/clouditor.Discovery/Start", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.discovery.Discovery/Start", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (c *discoveryClient) Start(ctx context.Context, in *StartDiscoveryRequest, 
 
 func (c *discoveryClient) Query(ctx context.Context, in *QueryRequest, opts ...grpc.CallOption) (*QueryResponse, error) {
 	out := new(QueryResponse)
-	err := c.cc.Invoke(ctx, "/clouditor.Discovery/Query", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clouditor.discovery.Discovery/Query", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +98,7 @@ func _Discovery_Start_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.Discovery/Start",
+		FullMethod: "/clouditor.discovery.Discovery/Start",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DiscoveryServer).Start(ctx, req.(*StartDiscoveryRequest))
@@ -116,7 +116,7 @@ func _Discovery_Query_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.Discovery/Query",
+		FullMethod: "/clouditor.discovery.Discovery/Query",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DiscoveryServer).Query(ctx, req.(*QueryRequest))
@@ -128,7 +128,7 @@ func _Discovery_Query_Handler(srv interface{}, ctx context.Context, dec func(int
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Discovery_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "clouditor.Discovery",
+	ServiceName: "clouditor.discovery.Discovery",
 	HandlerType: (*DiscoveryServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

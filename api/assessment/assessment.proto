@@ -26,7 +26,7 @@
  */
 syntax = "proto3";
 
-package clouditor;
+package clouditor.assessment;
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
@@ -87,7 +87,7 @@ message ConfigureAssessmentResponse {}
 
 message CalculateComplianceRequest { string control_id = 1; }
 
-message AssessEvidenceRequest { Evidence evidence = 1; }
+message AssessEvidenceRequest { clouditor.evidence.Evidence evidence = 1; }
 message AssessEvidenceResponse {
   enum AssessmentStatus {
     ASSESSMENT_STATUS_UNSPECIFIED = 0;

@@ -26,7 +26,7 @@
  */
 syntax = "proto3";
 
-package clouditor;
+package clouditor.discovery;
 
 import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";
