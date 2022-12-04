@@ -8,3 +8,7 @@ plugins:
     out: .
     opt:
       - paths=source_relative
+  - plugin: grpc-gateway
+    out: .
+    opt:
+      - paths=source_relative
