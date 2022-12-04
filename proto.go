@@ -27,12 +27,5 @@
 
 package clouditor
 
-//go:generate protoc -I . -I third_party api/page_token.proto --go_out=paths=source_relative:.
-//go:generate protoc -I . -I third_party api/assessment/metric.proto --go_out=paths=source_relative:.
-//go:generate protoc -I . -I third_party api/evidence/evidence.proto --go_out=paths=source_relative:.
-//go:generate protoc -I . -I third_party api/assessment/assessment.proto --go_out=paths=source_relative:. --go-grpc_out=paths=source_relative:. --openapi_out=openapi/assessment --openapi_opt enum_type=string --grpc-gateway_out=paths=source_relative:. --grpc-gateway_opt logtostderr=true
-//go:generate protoc -I . -I third_party api/auth/auth.proto --go_out=paths=source_relative:. --go-grpc_out=paths=source_relative:. --grpc-gateway_out=paths=source_relative:. --grpc-gateway_opt logtostderr=true
-//go:generate protoc -I . -I third_party api/discovery/discovery.proto --go_out=paths=source_relative:. --go-grpc_out=paths=source_relative:. --openapi_out=openapi/discovery --openapi_opt enum_type=string --grpc-gateway_out=paths=source_relative:. --grpc-gateway_opt logtostderr=true
-//go:generate protoc -I . -I third_party api/evidence/evidence_store.proto --go_out=paths=source_relative:. --go-grpc_out=paths=source_relative:. --openapi_out=openapi/evidence --openapi_opt enum_type=string --grpc-gateway_out=paths=source_relative:. --grpc-gateway_opt logtostderr=true
-//go:generate protoc -I . -I third_party api/orchestrator/orchestrator.proto --go_out=paths=source_relative:. --go-grpc_out=paths=source_relative:. --openapi_out=openapi/orchestrator --openapi_opt enum_type=string --grpc-gateway_out=paths=source_relative:. --grpc-gateway_opt logtostderr=true
-//go:generate protoc -I . -I third_party --gotag_out=paths=source_relative:. --gotag_opt=Mapi/orchestrator/orchestrator.proto=clouditor.io/api/orchestrator api/orchestrator/orchestrator.proto --gotag_opt=Mapi/assessment/metric.proto=clouditor.io/api/assessment api/assessment/metric.proto --gotag_opt=Mapi/assessment/assessment.proto=clouditor.io/api/assessment api/assessment/assessment.proto
+//go:generate buf generate
+//go:generate buf generate --template buf.tag.gen.yaml
