@@ -76,7 +76,7 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.L
 		}
 
 		// Check for filter compliant
-		if req.FilteredCompliant != nil && util.Deref(req.FilteredCompliant) != v.Compliant {
+		if req.FilteredCompliant != nil && req.GetFilteredCompliant() != v.Compliant {
 			continue
 		}
 
