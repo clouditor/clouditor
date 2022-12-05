@@ -1,4 +1,4 @@
-name: build
+name: Build
 
 on:
   push:
@@ -12,28 +12,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Setup Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: 1.19
-      - uses: actions/cache@v2
+          cache: true
+      - name: Install buf
+        uses: bufbuild/buf-setup-action@v1.9.0
         with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-        if: github.ref != 'refs/heads/main'
+          github_token: ${{ github.token }}
       - name: Install Protoc
         uses: arduino/setup-protoc@v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Generate
         run: |
-          go install google.golang.org/protobuf/cmd/protoc-gen-go \
-          google.golang.org/grpc/cmd/protoc-gen-go-grpc \
+          go install \
           github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
           github.com/google/gnostic/cmd/protoc-gen-openapi \
           github.com/srikrsna/protoc-gen-gotag
@@ -45,14 +40,16 @@ jobs:
       - name: Test
         run: |
           go install github.com/mfridman/tparse@latest
-          go test -v -coverprofile=coverage.cov -coverpkg ./... -covermode=atomic ./...  -json | tparse -follow
+
+          go test -v -coverprofile=coverage.cov -coverpkg ./... -covermode=atomic ./...  -json | tee output.json | tparse -follow || true
+          tparse -format markdown -file output.json > $GITHUB_STEP_SUMMARY
       - uses: codecov/codecov-action@v2.1.0
         with:
           files: coverage.cov
           flags: unittests
           token: ${{ secrets.CODECOV_TOKEN }} # not needed, but seems to be more reliable
       - name: "Upload Artifact"
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: build
           path: build
@@ -60,11 +57,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Setup Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
-          go-version: 1.18
+          go-version: 1.19
+          cache: true
       - name: Lint
         uses: golangci/golangci-lint-action@v3.1.0
         with:
