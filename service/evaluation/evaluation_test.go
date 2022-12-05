@@ -29,7 +29,6 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-	"sync"
 	"testing"
 	"time"
 
@@ -700,48 +699,48 @@ func TestService_StopEvaluation(t *testing.T) {
 	}
 }
 
-func TestService_evaluateFirstLevelControl(t *testing.T) {
-	type fields struct {
-		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
-		orchestratorClient            orchestrator.OrchestratorClient
-		orchestratorAddress           grpcTarget
-		authorizer                    api.Authorizer
-		scheduler                     *gocron.Scheduler
-		results                       map[string]*evaluation.EvaluationResult
-		resultMutex                   sync.Mutex
-		storage                       persistence.Storage
-	}
-	type args struct {
-		toe          *orchestrator.TargetOfEvaluation
-		categoryName string
-		controlId    string
-	}
-	tests := []struct {
-		name        string
-		fields      fields
-		args        args
-		wantResults []*evaluation.EvaluationResult
-	}{
-		// TODO: TBD
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := &Service{
-				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
-				orchestratorClient:            tt.fields.orchestratorClient,
-				orchestratorAddress:           tt.fields.orchestratorAddress,
-				authorizer:                    tt.fields.authorizer,
-				scheduler:                     tt.fields.scheduler,
-				results:                       tt.fields.results,
-				resultMutex:                   tt.fields.resultMutex,
-				storage:                       tt.fields.storage,
-			}
-			s.evaluateFirstLevelControl(tt.args.toe, tt.args.categoryName, tt.args.controlId)
+// func TestService_evaluateFirstLevelControl(t *testing.T) {
+// 	type fields struct {
+// 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
+// 		orchestratorClient            orchestrator.OrchestratorClient
+// 		orchestratorAddress           grpcTarget
+// 		authorizer                    api.Authorizer
+// 		scheduler                     *gocron.Scheduler
+// 		results                       map[string]*evaluation.EvaluationResult
+// 		resultMutex                   sync.Mutex
+// 		storage                       persistence.Storage
+// 	}
+// 	type args struct {
+// 		toe          *orchestrator.TargetOfEvaluation
+// 		categoryName string
+// 		controlId    string
+// 	}
+// 	tests := []struct {
+// 		name        string
+// 		fields      fields
+// 		args        args
+// 		wantResults []*evaluation.EvaluationResult
+// 	}{
+// 		// TODO: TBD
+// 	}
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			s := &Service{
+// 				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
+// 				orchestratorClient:            tt.fields.orchestratorClient,
+// 				orchestratorAddress:           tt.fields.orchestratorAddress,
+// 				authorizer:                    tt.fields.authorizer,
+// 				scheduler:                     tt.fields.scheduler,
+// 				results:                       tt.fields.results,
+// 				resultMutex:                   tt.fields.resultMutex,
+// 				storage:                       tt.fields.storage,
+// 			}
+// 			s.evaluateFirstLevelControl(tt.args.toe, tt.args.categoryName, tt.args.controlId)
 
-			assert.Equal(t, tt.wantResults, s.results)
-		})
-	}
-}
+// 			assert.Equal(t, tt.wantResults, s.results)
+// 		})
+// 	}
+// }
 
 func Test_getAllControlIdsFromControl(t *testing.T) {
 	type args struct {
