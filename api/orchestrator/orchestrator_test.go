@@ -224,7 +224,7 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, assessment.ErrCloudServiceIDIsMissing.Error())
+				return assert.ErrorContains(t, err, "CloudServiceId: value must be a valid UUID")
 			},
 		},
 		{
@@ -240,7 +240,7 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, assessment.ErrCloudServiceIDIsInvalid.Error())
+				return assert.ErrorContains(t, err, "CloudServiceId: value must be a valid UUID")
 			},
 		},
 		{
@@ -255,7 +255,7 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, assessment.ErrMetricIdMissing.Error())
+				return assert.ErrorContains(t, err, "MetricId: value length must be at least 1 runes")
 			},
 		},
 		{
@@ -265,8 +265,10 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 					MetricId:       "TestMetric",
 					CloudServiceId: "00000000-0000-0000-0000-000000000000",
 					Configuration: &assessment.MetricConfiguration{
-						Operator:    "<",
-						TargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "11111"}},
+						Operator:       "<",
+						TargetValue:    &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "11111"}},
+						MetricId:       "TestMetric",
+						CloudServiceId: "00000000-0000-0000-0000-000000000000",
 					},
 				},
 			},
@@ -298,7 +300,7 @@ func TestGetMetricConfigurationRequest_Validate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, assessment.ErrCloudServiceIDIsMissing.Error())
+				return assert.ErrorContains(t, err, "CloudServiceId: value must be a valid UUID")
 			},
 		},
 		{
@@ -310,7 +312,7 @@ func TestGetMetricConfigurationRequest_Validate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, assessment.ErrCloudServiceIDIsInvalid.Error())
+				return assert.ErrorContains(t, err, "CloudServiceId: value must be a valid UUID")
 			},
 		},
 		{
@@ -321,7 +323,7 @@ func TestGetMetricConfigurationRequest_Validate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, assessment.ErrMetricIdMissing.Error())
+				return assert.ErrorContains(t, err, "MetricId: value length must be at least 1 runes")
 			},
 		},
 		{

@@ -27,86 +27,12 @@ package assessment
 
 import (
 	"database/sql/driver"
-	"fmt"
 	"testing"
 
 	"clouditor.io/clouditor/persistence"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/structpb"
 )
-
-func TestMetric_Validate(t *testing.T) {
-	type fields struct {
-		metric *Metric
-	}
-	type args struct {
-		opts []MetricValidationOption
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "Metric is nil",
-			fields: fields{
-				metric: nil,
-			},
-			args: args{opts: []MetricValidationOption{
-				WithMetricRequiresId(),
-			}},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, ErrMetricEmpty, err)
-			},
-		},
-		{
-			name: "Metric ID is empty",
-			fields: fields{
-				metric: &Metric{Id: ""},
-			},
-			args: args{opts: []MetricValidationOption{
-				WithMetricRequiresId(),
-			}},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, ErrMetricIdMissing, err)
-			},
-		},
-		{
-			name: "Metric Name is empty",
-			fields: fields{
-				metric: &Metric{Id: "123"},
-			},
-			args: args{opts: []MetricValidationOption{
-				WithMetricRequiresId(),
-			}},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, ErrMetricNameMissing, err)
-			},
-		},
-		{
-			name: "Successful Validation",
-			fields: fields{
-				metric: &Metric{
-					Id:   "SomeId",
-					Name: "SomeName1",
-				},
-			},
-			args: args{opts: []MetricValidationOption{
-				WithMetricRequiresId(),
-			}},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.NoError(t, err)
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			m := tt.fields.metric
-			tt.wantErr(t, m.Validate(tt.args.opts...), fmt.Sprintf("Validate(%v)", tt.args.opts))
-		})
-	}
-}
 
 func TestMetricConfiguration_Validate(t *testing.T) {
 	type fields struct {
@@ -117,15 +43,6 @@ func TestMetricConfiguration_Validate(t *testing.T) {
 		fields  fields
 		wantErr assert.ErrorAssertionFunc
 	}{
-		{
-			name: "MetricConfiguration is nil",
-			fields: fields{
-				MetricConfiguration: nil,
-			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, ErrMetricConfigurationMissing, err)
-			},
-		},
 		{
 			name: "MetricConfiguration Operator is empty",
 			fields: fields{
@@ -138,18 +55,18 @@ func TestMetricConfiguration_Validate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, ErrMetricConfigurationOperatorMissing, err)
+				return assert.ErrorContains(t, err, "MetricId: value length must be at least 1 runes")
 			},
 		},
 		{
 			name: "MetricConfiguration TargetValue is empty",
 			fields: fields{
 				MetricConfiguration: &MetricConfiguration{
-					Operator: "TestOperator",
+					Operator: "==",
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, ErrMetricConfigurationTargetValueMissing, err)
+				return assert.ErrorContains(t, err, "TargetValue: value is required")
 			},
 		},
 		{
@@ -161,14 +78,12 @@ func TestMetricConfiguration_Validate(t *testing.T) {
 							StringValue: "1111",
 						},
 					},
-					Operator:       "TestOperator",
+					Operator:       "==",
 					MetricId:       "TestMetric",
 					CloudServiceId: "00000000-0000-0000-0000-000000000000",
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.NoError(t, err)
-			},
+			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {

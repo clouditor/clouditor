@@ -171,7 +171,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 			wantResponse: assert.Nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
-				return assert.ErrorContains(t, err, api.ErrRequestIsNil.Error())
+				return assert.ErrorContains(t, err, "empty request")
 			},
 		},
 		{

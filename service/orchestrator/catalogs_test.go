@@ -44,7 +44,7 @@ func TestService_CreateCatalog(t *testing.T) {
 			},
 			nil,
 			func(tt assert.TestingT, err error, i ...interface{}) bool {
-				assert.ErrorContains(t, err, api.ErrRequestIsNil.Error())
+				assert.ErrorContains(t, err, "empty request")
 				return assert.Equal(t, status.Code(err), codes.InvalidArgument)
 			},
 		},
@@ -56,7 +56,7 @@ func TestService_CreateCatalog(t *testing.T) {
 			},
 			nil,
 			func(tt assert.TestingT, err error, i ...interface{}) bool {
-				assert.ErrorContains(t, err, orchestrator.ErrCatalogIsNil.Error())
+				assert.ErrorContains(t, err, "Catalog: value is required")
 				return assert.Equal(t, status.Code(err), codes.InvalidArgument)
 			},
 		},
@@ -70,7 +70,7 @@ func TestService_CreateCatalog(t *testing.T) {
 			},
 			nil,
 			func(tt assert.TestingT, err error, i ...interface{}) bool {
-				assert.ErrorContains(t, err, orchestrator.ErrCatalogIDIsMissing.Error())
+				assert.ErrorContains(t, err, "Catalog.Id: value must be at least 1 runes")
 				return assert.Equal(t, status.Code(err), codes.InvalidArgument)
 			},
 		},
@@ -129,7 +129,7 @@ func TestService_GetCatalog(t *testing.T) {
 			wantResponse: assert.Nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
-				return assert.ErrorContains(t, err, api.ErrRequestIsNil.Error())
+				return assert.ErrorContains(t, err, "empty request")
 			},
 		},
 		{

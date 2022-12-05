@@ -27,56 +27,10 @@ package orchestrator
 
 import (
 	"context"
-	"errors"
-
-	"clouditor.io/clouditor/api/assessment"
 )
 
 type CloudServiceHookFunc func(ctx context.Context, cld *CloudService, err error)
 type TargetOfEvaluationHookFunc func(ctx context.Context, event *TargetOfEvaluationChangeEvent, err error)
-
-var (
-	ErrCertificateIsNil   = errors.New("certificate is empty")
-	ErrServiceIsNil       = errors.New("service is empty")
-	ErrNameIsMissing      = errors.New("service name is empty")
-	ErrIDIsMissing        = errors.New("service ID is empty")
-	ErrCertIDIsMissing    = errors.New("certificate ID is empty")
-	ErrCatalogIsNil       = errors.New("catalog is empty")
-	ErrCatalogIDIsMissing = errors.New("catalog ID is empty")
-	ErrToEIDIsMissing     = errors.New("toe ID is empty")
-)
-
-// Validate validates the UpdateMetricConfigurationRequest
-func (req *UpdateMetricConfigurationRequest) Validate() error {
-	// Check cloud service ID
-	err := assessment.CheckCloudServiceID(req.CloudServiceId)
-	if err != nil {
-		return err
-	}
-
-	// Check metric ID
-	if req.MetricId == "" {
-		return assessment.ErrMetricIdMissing
-	}
-
-	return nil
-}
-
-// Validate validates the GetMetricConfigurationRequest
-func (req *GetMetricConfigurationRequest) Validate() error {
-	// Check cloud service ID
-	err := assessment.CheckCloudServiceID(req.CloudServiceId)
-	if err != nil {
-		return err
-	}
-
-	// Check metric ID
-	if req.MetricId == "" {
-		return assessment.ErrMetricIdMissing
-	}
-
-	return nil
-}
 
 // GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
 // the cloud service ID of the inner status object.

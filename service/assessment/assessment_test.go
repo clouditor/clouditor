@@ -191,7 +191,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			hasRPCConnection: true,
 			wantResp: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid evidence: " + evidence.ErrResourceIdFieldMissing.Error(),
+				StatusMessage: "invalid evidence: invalid Evidence.Id: value must be a valid UUID",
 			},
 			wantErr: true,
 		},
@@ -200,6 +200,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
+					Id:             "11111111-1111-1111-1111-111111111111",
 					Timestamp:      timestamppb.Now(),
 					CloudServiceId: "00000000-0000-0000-0000-000000000000",
 					Resource:       toStruct(voc.VirtualMachine{}, t),
@@ -208,7 +209,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			hasRPCConnection: true,
 			wantResp: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid evidence: " + evidence.ErrResourceIdFieldMissing.Error(),
+				StatusMessage: "invalid evidence: invalid Evidence.ToolId: value length must be at least 1 runes",
 			},
 			wantErr: true,
 		},
@@ -226,7 +227,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			hasRPCConnection: true,
 			wantResp: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid evidence: " + evidence.ErrTimestampMissing.Error(),
+				StatusMessage: "invalid evidence: invalid Evidence.Timestamp: value is required",
 			},
 			wantErr: true,
 		},
@@ -322,6 +323,7 @@ func TestService_AssessEvidences(t *testing.T) {
 			args: args{
 				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
+						Id:             "11111111-1111-1111-1111-111111111111",
 						Timestamp:      timestamppb.Now(),
 						CloudServiceId: "00000000-0000-0000-0000-000000000000",
 						Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
@@ -329,7 +331,7 @@ func TestService_AssessEvidences(t *testing.T) {
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid evidence: " + evidence.ErrToolIdMissing.Error(),
+				StatusMessage: "invalid evidence: invalid Evidence.ToolId: value length must be at least 1 runes",
 			},
 		},
 		{
@@ -347,7 +349,7 @@ func TestService_AssessEvidences(t *testing.T) {
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid evidence: " + evidence.ErrEvidenceIdInvalidFormat.Error(),
+				StatusMessage: "invalid evidence: invalid Evidence.Id: value must be a valid UUID",
 			},
 		},
 		{

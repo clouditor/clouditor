@@ -172,6 +172,11 @@ require (
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
 
-require github.com/aws/aws-sdk-go-v2/service/ssooidc v1.13.8 // indirect
+require github.com/envoyproxy/protoc-gen-validate v0.1.0
+
+require (
+	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.13.8 // indirect
+	github.com/iancoleman/strcase v0.2.0 // indirect
+)
 
 retract v1.4.7

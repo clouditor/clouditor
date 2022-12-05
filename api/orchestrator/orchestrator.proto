@@ -33,6 +33,7 @@ import "google/protobuf/empty.proto";
 import "api/assessment/metric.proto";
 import "api/assessment/assessment.proto";
 import "tagger/tagger.proto";
+import "validate/validate.proto";
 
 option go_package = "clouditor.io/clouditor/api/orchestrator";
 
@@ -485,20 +486,23 @@ message ListCloudServicesResponse {
 }
 
 message UpdateMetricConfigurationRequest {
-  string cloud_service_id = 1;
+  string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];
 
-  string metric_id = 2;
+  string metric_id = 2 [ (validate.rules).string.min_len = 1 ];
 
-  clouditor.assessment.v1.MetricConfiguration configuration = 3;
+  clouditor.assessment.v1.MetricConfiguration configuration = 3
+      [ (validate.rules).message.required = true ];
 }
 
 message GetMetricConfigurationRequest {
-  string cloud_service_id = 1;
+  string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];
 
-  string metric_id = 2;
+  string metric_id = 2 [ (validate.rules).string.min_len = 1 ];
 }
 
-message ListMetricConfigurationRequest { string cloud_service_id = 1; }
+message ListMetricConfigurationRequest {
+  string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];
+}
 
 message ListMetricConfigurationResponse {
   // A map of metric configurations associated by their metric ID

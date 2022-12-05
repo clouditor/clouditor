@@ -89,7 +89,7 @@ func TestService_StoreEvidence(t *testing.T) {
 				req: &evidence.StoreEvidenceRequest{
 					Evidence: &evidence.Evidence{
 						Id:             "11111111-1111-1111-1111-111111111111",
-						CloudServiceId: "MockCloudServiceId",
+						CloudServiceId: "00000000-0000-0000-0000-000000000000",
 						ToolId:         "MockTool",
 						Timestamp:      timestamppb.Now(),
 						Raw:            "",
@@ -109,8 +109,8 @@ func TestService_StoreEvidence(t *testing.T) {
 				in0: context.TODO(),
 				req: &evidence.StoreEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:             "MockEvidenceId-1",
-						CloudServiceId: "MockCloudServiceId-1",
+						Id:             "11111111-1111-1111-1111-111111111111",
+						CloudServiceId: "00000000-0000-0000-0000-000000000000",
 						Timestamp:      timestamppb.Now(),
 						Raw:            "",
 						Resource: toStruct(voc.VirtualMachine{
@@ -126,7 +126,7 @@ func TestService_StoreEvidence(t *testing.T) {
 			wantErr: true,
 			wantResp: &evidence.StoreEvidenceResponse{
 				Status:        false,
-				StatusMessage: "invalid evidence: tool id in evidence is missing",
+				StatusMessage: "invalid evidence: invalid Evidence.ToolId: value length must be at least 1 runes",
 			},
 		},
 	}
@@ -341,7 +341,7 @@ func TestService_EvidenceHook(t *testing.T) {
 				in0: context.TODO(),
 				evidence: &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
 					Id:             "11111111-1111-1111-1111-111111111111",
-					CloudServiceId: "MockCloudServiceId-1",
+					CloudServiceId: "11111111-1111-1111-1111-111111111111",
 					Timestamp:      timestamppb.Now(),
 					Raw:            "",
 					ToolId:         "mockToolId-1",

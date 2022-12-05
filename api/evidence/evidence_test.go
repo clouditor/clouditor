@@ -26,7 +26,6 @@
 package evidence
 
 import (
-	"reflect"
 	"testing"
 
 	"clouditor.io/clouditor/voc"
@@ -41,24 +40,25 @@ func Test_ValidateEvidence(t *testing.T) {
 	}
 
 	tests := []struct {
-		name          string
-		args          args
-		wantResp      string
-		wantRespError error
-		wantErr       bool
+		name     string
+		args     args
+		wantResp string
+		wantErr  assert.ErrorAssertionFunc
 	}{
 		{
 			name: "Missing resource",
 			args: args{
 				Evidence: &Evidence{
-					Id:        "11111111-1111-1111-1111-111111111111",
-					ToolId:    "mock",
-					Timestamp: timestamppb.Now(),
+					Id:             "11111111-1111-1111-1111-111111111111",
+					ToolId:         "mock",
+					Timestamp:      timestamppb.Now(),
+					CloudServiceId: "11111111-1111-1111-1111-111111111111",
 				},
 			},
-			wantResp:      "",
-			wantRespError: ErrNotValidResource,
-			wantErr:       true,
+			wantResp: "",
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "Resource: value is required")
+			},
 		},
 		{
 			name: "Resource is not a struct",
@@ -72,10 +72,12 @@ func Test_ValidateEvidence(t *testing.T) {
 							StringValue: "MockTargetValue",
 						},
 					},
+					CloudServiceId: "11111111-1111-1111-1111-111111111111",
 				}},
-			wantResp:      "",
-			wantRespError: ErrResourceNotStruct,
-			wantErr:       true,
+			wantResp: "",
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, ErrResourceNotStruct)
+			},
 		},
 		{
 			name: "Missing toolId",
@@ -90,10 +92,12 @@ func Test_ValidateEvidence(t *testing.T) {
 								Type: []string{"VirtualMachine"}},
 						},
 					}, t),
+					CloudServiceId: "11111111-1111-1111-1111-111111111111",
 				}},
-			wantResp:      "",
-			wantRespError: ErrToolIdMissing,
-			wantErr:       true,
+			wantResp: "",
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "ToolId: value length must be at least 1 runes")
+			},
 		},
 		{
 			name: "Missing timestamp",
@@ -109,9 +113,10 @@ func Test_ValidateEvidence(t *testing.T) {
 						},
 					}, t),
 				}},
-			wantResp:      "",
-			wantRespError: ErrTimestampMissing,
-			wantErr:       true,
+			wantResp: "",
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "Timestamp: value is required")
+			},
 		},
 		{
 			name: "Valid evidence",
@@ -127,25 +132,18 @@ func Test_ValidateEvidence(t *testing.T) {
 								Type: []string{"VirtualMachine"}},
 						},
 					}, t),
+					CloudServiceId: "11111111-1111-1111-1111-111111111111",
 				}},
-			wantResp:      "my-resource-id",
-			wantRespError: nil,
-			wantErr:       false,
+			wantResp: "my-resource-id",
+			wantErr:  assert.NoError,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			resourceId, err := tt.args.Evidence.Validate()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(resourceId, tt.wantResp) {
-				t.Errorf("Validate() gotResp = %v, want %v", resourceId, tt.wantResp)
-			}
-
+			_, err := tt.args.Evidence.ValidateResource()
+			tt.wantErr(t, err)
 		})
 	}
 }

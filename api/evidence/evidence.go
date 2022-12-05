@@ -29,7 +29,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -47,8 +46,13 @@ var (
 	ErrResourceIdFieldMissing  = errors.New("field id is missing")
 )
 
-// Validate validates the evidence according to several required fields
-func (evidence *Evidence) Validate() (resourceId string, err error) {
+// ValidateResource validates the evidence according to its resource
+func (evidence *Evidence) ValidateResource() (resourceId string, err error) {
+	err = evidence.Validate()
+	if err != nil {
+		return "", err
+	}
+
 	if evidence.Resource == nil {
 		return "", ErrNotValidResource
 	}
@@ -73,18 +77,6 @@ func (evidence *Evidence) Validate() (resourceId string, err error) {
 	resourceId, ok = field.(string)
 	if !ok {
 		return "", ErrResourceIdNotString
-	}
-
-	if evidence.ToolId == "" {
-		return "", ErrToolIdMissing
-	}
-
-	if evidence.Timestamp == nil {
-		return "", ErrTimestampMissing
-	}
-
-	if _, err = uuid.Parse(evidence.Id); err != nil {
-		return "", ErrEvidenceIdInvalidFormat
 	}
 
 	return

@@ -52,19 +52,19 @@ func TestService_RegisterCloudService(t *testing.T) {
 			"missing request",
 			nil,
 			nil,
-			status.Error(codes.InvalidArgument, api.ErrRequestIsNil.Error()),
+			status.Error(codes.InvalidArgument, "empty request"),
 		},
 		{
 			"missing service",
 			&orchestrator.RegisterCloudServiceRequest{},
 			nil,
-			status.Error(codes.InvalidArgument, orchestrator.ErrServiceIsNil.Error()),
+			status.Error(codes.InvalidArgument, "empty request"),
 		},
 		{
 			"missing service name",
 			&orchestrator.RegisterCloudServiceRequest{Service: &orchestrator.CloudService{}},
 			nil,
-			status.Error(codes.InvalidArgument, orchestrator.ErrNameIsMissing.Error()),
+			status.Error(codes.InvalidArgument, "empty request"),
 		},
 		{
 			"valid",
@@ -121,7 +121,7 @@ func TestService_GetCloudService(t *testing.T) {
 			context.Background(),
 			nil,
 			nil,
-			status.Error(codes.InvalidArgument, api.ErrRequestIsNil.Error()),
+			status.Error(codes.InvalidArgument, "empty request"),
 		},
 		{
 			"cloud service not found",

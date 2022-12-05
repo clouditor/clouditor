@@ -37,16 +37,9 @@ import (
 
 var (
 	ErrInvalidColumnName = errors.New("column name is invalid")
-	ErrRequestIsNil      = errors.New("request is empty")
 )
 
 func ValidateListRequest[T proto.Message](req PaginatedRequest) (err error) {
-	// req must be non-nil
-	if req == nil {
-		err = ErrRequestIsNil
-		return
-	}
-
 	// Avoid DB injections by whitelisting the valid orderBy statements
 	whitelist := createWhitelist[T]()
 	normalizedReq := strings.ToLower(req.GetOrderBy())

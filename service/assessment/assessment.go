@@ -232,9 +232,8 @@ func (svc *Service) Authorizer() api.Authorizer {
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
 func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
-
 	// Validate evidence
-	resourceId, err := req.Evidence.Validate()
+	resourceId, err := req.Evidence.ValidateResource()
 	if err != nil {
 		newError := fmt.Errorf("invalid evidence: %w", err)
 		log.Error(newError)

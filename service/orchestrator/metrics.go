@@ -169,11 +169,10 @@ func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetr
 	var count int64
 
 	// Validate the metric request
-	err = req.Metric.Validate(assessment.WithMetricRequiresId())
+	err = req.Metric.Validate()
 	if err != nil {
-		newError := errors.New("validation of metric failed")
-		log.Error(newError)
-		return nil, status.Errorf(codes.InvalidArgument, "%v", newError)
+		log.Error(err)
+		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	// Check, if metric id already exists
@@ -208,12 +207,10 @@ func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetr
 
 // UpdateMetric updates an existing metric, specified by the identifier in req.MetricId.
 func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetricRequest) (metric *assessment.Metric, err error) {
-	// Validate the metric request
-	err = req.Metric.Validate()
+	// Validate request
+	err = service.ValidateRequest(req)
 	if err != nil {
-		newError := fmt.Errorf("validation of metric failed: %w", err)
-		log.Error(newError)
-		return nil, status.Errorf(codes.InvalidArgument, "%v", newError)
+		return nil, err
 	}
 
 	// Check, if metric exists according to req.MetricId
@@ -253,7 +250,11 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 		metric *assessment.Metric
 	)
 
-	// TODO(oxisto): Validate the metric implementation request
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
 
 	// Check, if metric exists according to req.MetricId
 	err = svc.storage.Get(&metric, "id = ?", req.MetricId)
@@ -287,6 +288,12 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 
 // ListMetrics lists all available metrics.
 func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetricsRequest) (res *orchestrator.ListMetricsResponse, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
 	res = new(orchestrator.ListMetricsResponse)
 
 	// Validate the request
@@ -309,6 +316,12 @@ func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetrics
 
 // GetMetric retrieves a metric specified by req.MetricId.
 func (svc *Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequest) (metric *assessment.Metric, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
 	err = svc.storage.Get(&metric, "id = ?", req.MetricId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Error(codes.NotFound, "metric not found")
@@ -321,8 +334,9 @@ func (svc *Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequ
 
 func (svc *Service) GetMetricConfiguration(ctx context.Context, req *orchestrator.GetMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
 	// Validate request
-	if err = req.Validate(); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "%s", err)
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	// Check, if this request has access to the cloud service according to our authorization strategy.
@@ -350,8 +364,9 @@ func (svc *Service) GetMetricConfiguration(ctx context.Context, req *orchestrato
 // UpdateMetricConfiguration updates the configuration for a metric, specified by the identifier in req.MetricId.
 func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestrator.UpdateMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
 	// Validate request
-	if err = req.Validate(); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "%s", err)
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	// Validate request configuration
@@ -398,6 +413,12 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 // configuration for a particular metric within the service, the default metric configuration is
 // inserted into the list.
 func (svc *Service) ListMetricConfigurations(ctx context.Context, req *orchestrator.ListMetricConfigurationRequest) (response *orchestrator.ListMetricConfigurationResponse, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
 	// Check, if this request has access to the cloud service according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied
@@ -426,9 +447,14 @@ func (svc *Service) ListMetricConfigurations(ctx context.Context, req *orchestra
 
 // GetMetricImplementation retrieves a metric implementation specified by req.MetricId.
 func (svc *Service) GetMetricImplementation(_ context.Context, req *orchestrator.GetMetricImplementationRequest) (res *assessment.MetricImplementation, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
 	res = new(assessment.MetricImplementation)
 
-	// TODO(oxisto): Validate GetMetricImplementationRequest
 	err = svc.storage.Get(res, "metric_id = ?", req.MetricId)
 	if err == persistence.ErrRecordNotFound {
 		return nil, status.Error(codes.NotFound, "implementation for metric not found")

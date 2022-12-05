@@ -31,16 +31,17 @@ package clouditor.assessment.v1;
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "tagger/tagger.proto";
+import "validate/validate.proto";
 
-option go_package = "clouditor.io/clouditor/api/assessment;assessment";
+option go_package = "clouditor.io/clouditor/api/assessment";
 
 // A metric resource
 message Metric {
   // Required. The unique identifier of the metric.
-  string id = 1;
+  string id = 1 [ (validate.rules).string.min_len = 1 ];
 
   // Required. The human readable name of the metric.
-  string name = 2;
+  string name = 2 [ (validate.rules).string.min_len = 1 ];
 
   // The description of the metric
   string description = 3;
@@ -49,10 +50,10 @@ message Metric {
   string category = 4;
 
   // The scale of this metric, e.g. categories, ranked data or metric values.
-  Scale scale = 5;
+  Scale scale = 5 [ (validate.rules).enum.defined_only = true ];
 
   // The range of this metric. Depending on the scale.
-  Range range = 6;
+  Range range = 6 [ (validate.rules).message.required = true ];
 
   // The values a Scale accepts
   enum Scale {
@@ -106,11 +107,13 @@ message Order { repeated google.protobuf.Value values = 1; }
 // Defines the operator and a target value for an individual metric
 message MetricConfiguration {
   // The operator to compare the metric, such as == or >
-  string operator = 1;
+  string operator = 1 [ (validate.rules).string.pattern = "^(|<|>|<=|>=|==)$" ];
 
   // The target value
-  google.protobuf.Value target_value = 2
-      [ (tagger.tags) = "gorm:\"serializer:json\"" ];
+  google.protobuf.Value target_value = 2 [
+    (tagger.tags) = "gorm:\"serializer:json\"",
+    (validate.rules).message.required = true
+  ];
 
   // Whether this configuration is a default configuration
   bool is_default = 3;
@@ -120,10 +123,16 @@ message MetricConfiguration {
       [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
 
   // The metric this configuration belongs to
-  string metric_id = 5 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
+  string metric_id = 5 [
+    (tagger.tags) = "gorm:\"primaryKey\"",
+    (validate.rules).string.min_len = 1
+  ];
 
   // The service this configuration belongs to
-  string cloud_service_id = 6 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
+  string cloud_service_id = 6 [
+    (tagger.tags) = "gorm:\"primaryKey\"",
+    (validate.rules).string.uuid = true
+  ];
 }
 
 // MetricImplementation defines the implementation of an individual metric.
