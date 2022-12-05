@@ -86,7 +86,7 @@ func (result *AssessmentResult) Validate() (resourceId string, err error) {
 	return
 }
 
-// Validate validates the UpdateMetricConfigurationRequest
+// Validate validates the ListAssessmentResultsRequest
 func (req *ListAssessmentResultsRequest) Validate() error {
 
 	if req.FilteredCloudServiceId != nil {
