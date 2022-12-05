@@ -45,17 +45,17 @@ paths:
             parameters:
                 - name: filteredCloudServiceId
                   in: query
-                  description: Optionally, a filter for the cloud service id.
+                  description: Optional. List only assessment results of a specific cloud service.
                   schema:
                     type: string
                 - name: filteredCompliant
                   in: query
-                  description: Optionally, a filter for the compliant field in the assessment result.
+                  description: Optional. List only compliant assessment results.
                   schema:
                     type: boolean
                 - name: filteredMetricId
                   in: query
-                  description: Optionally, a filter for a list of metric ids field in the assessment result.
+                  description: Optional. List only assessment results of a specific metric id.
                   schema:
                     type: array
                     items:

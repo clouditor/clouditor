@@ -16,17 +16,17 @@ paths:
             parameters:
                 - name: filteredCloudServiceId
                   in: query
-                  description: Optionally, a filter for the cloud service id.
+                  description: Optional. List only assessment results of a specific cloud service.
                   schema:
                     type: string
                 - name: filteredCompliant
                   in: query
-                  description: Optionally, a filter for the compliant field in the assessment result.
+                  description: Optional. List only compliant assessment results.
                   schema:
                     type: boolean
                 - name: filteredMetricId
                   in: query
-                  description: Optionally, a filter for a list of metric ids field in the assessment result.
+                  description: Optional. List only assessment results of a specific metric id.
                   schema:
                     type: array
                     items:
@@ -379,7 +379,8 @@ paths:
             description: |-
                 Retrieves a control specified by the catalog ID, the control's category
                  name and the control ID. If present, it also includes a list of
-                 sub-controls if present or a list of metrics if no sub-controls but metrics are present.
+                 sub-controls if present or a list of metrics if no sub-controls but metrics
+                 are present.
             operationId: Orchestrator_GetControl
             parameters:
                 - name: catalogId

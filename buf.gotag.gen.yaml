@@ -1,0 +1,9 @@
+version: v1
+plugins:
+  - plugin: gotag
+    out: .
+    opt:
+      - paths=source_relative
+      - Mapi/orchestrator/orchestrator.proto=clouditor.io/api/orchestrator
+      - Mapi/assessment/metric.proto=clouditor.io/api/assessment
+      - Mapi/assessment/assessment.proto=clouditor.io/api/assessment

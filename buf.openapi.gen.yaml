@@ -1,0 +1,6 @@
+version: v1
+plugins:
+  - plugin: openapi
+    out: .
+    opt:
+      - enum_type=string
