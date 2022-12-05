@@ -26,7 +26,7 @@
  */
 syntax = "proto3";
 
-package clouditor;
+package clouditor.evidence.v1;
 
 import "api/evidence/evidence.proto";
 import "google/api/annotations.proto";
