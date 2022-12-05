@@ -30,6 +30,7 @@ import (
 )
 
 var (
+	ErrRequestIsEmpty              = errors.New("request is empty")
 	ErrControlIDIsMissing          = errors.New("control id is missing")
 	ErrCategoryNameIsMissing       = errors.New("category name is missing")
 	ErrEvalControlIsMissing        = errors.New("controlId and category name mapping is missing")
@@ -39,13 +40,12 @@ var (
 // TODO(anatheka): Update if everything is ready
 // Validate validates the evaluate request
 func (r *StartEvaluationRequest) Validate() (err error) {
+	if err = r.TargetOfEvaluation.Validate(); err != nil {
+		return err
+	}
 
 	if r.EvalControl == nil {
 		return ErrEvalControlIsMissing
-	}
-
-	if err = r.TargetOfEvaluation.Validate(); err != nil {
-		return err
 	}
 
 	return

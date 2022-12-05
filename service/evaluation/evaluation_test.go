@@ -29,6 +29,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"sync"
 	"testing"
 	"time"
 
@@ -38,7 +39,6 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/defaults"
 	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/persistence/inmemory"
 	"github.com/go-co-op/gocron"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -48,8 +48,6 @@ import (
 )
 
 func TestNewService(t *testing.T) {
-	var myStorage, err = inmemory.NewStorage()
-	assert.NoError(t, err)
 
 	type args struct {
 		opts []ServiceOption
@@ -62,28 +60,14 @@ func TestNewService(t *testing.T) {
 		{
 			name: "WithOrchestratorAddress",
 			args: args{
-				opts: []ServiceOption{ServiceOption(WithStorage(myStorage))},
-			},
-			want: &Service{
-				orchestratorAddress: grpcTarget{
-					target: defaults.DefaultOrchestratorAddress,
-				},
-				evaluation: make(map[string]*EvaluationScheduler),
-				results:    make(map[string]*evaluation.EvaluationResult),
-				storage:    myStorage,
-			},
-		},
-		{
-			name: "WithOrchestratorAddress",
-			args: args{
 				opts: []ServiceOption{ServiceOption(WithOrchestratorAddress(defaults.DefaultOrchestratorAddress))},
 			},
 			want: &Service{
 				orchestratorAddress: grpcTarget{
 					target: defaults.DefaultOrchestratorAddress,
 				},
-				evaluation: make(map[string]*EvaluationScheduler),
-				results:    make(map[string]*evaluation.EvaluationResult),
+				results:   make(map[string]*evaluation.EvaluationResult),
+				scheduler: gocron.NewScheduler(time.UTC),
 			},
 		},
 		{
@@ -95,8 +79,8 @@ func TestNewService(t *testing.T) {
 				orchestratorAddress: grpcTarget{
 					target: "localhost:9090",
 				},
-				evaluation: make(map[string]*EvaluationScheduler),
 				results:    make(map[string]*evaluation.EvaluationResult),
+				scheduler:  gocron.NewScheduler(time.UTC),
 				authorizer: api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}),
 			},
 		},
@@ -109,8 +93,8 @@ func TestNewService(t *testing.T) {
 				orchestratorAddress: grpcTarget{
 					target: "localhost:9090",
 				},
-				evaluation: make(map[string]*EvaluationScheduler),
 				results:    make(map[string]*evaluation.EvaluationResult),
+				scheduler:  gocron.NewScheduler(time.UTC),
 				authorizer: api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}),
 			},
 		},
@@ -123,8 +107,8 @@ func TestNewService(t *testing.T) {
 				orchestratorAddress: grpcTarget{
 					target: "localhost:9090",
 				},
-				evaluation: make(map[string]*EvaluationScheduler),
-				results:    make(map[string]*evaluation.EvaluationResult),
+				scheduler: gocron.NewScheduler(time.UTC),
+				results:   make(map[string]*evaluation.EvaluationResult),
 			},
 		},
 	}
@@ -132,199 +116,16 @@ func TestNewService(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewService(tt.args.opts...)
 
+			// Check if scheduler ist initialized and then remove
+			if tt.want.scheduler != nil {
+				assert.NotEmpty(t, tt.want.scheduler)
+				tt.want.scheduler = nil
+				got.scheduler = nil
+			}
+
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewService() = %v, want %v", got, tt.want)
 			}
-		})
-	}
-}
-
-func TestService_StartEvaluation(t *testing.T) {
-	schedulerTag := createSchedulerTag(defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSControlID)
-
-	type fields struct {
-		evaluation          map[string]*EvaluationScheduler
-		results             map[string]*evaluation.EvaluationResult
-		orchestratorAddress grpcTarget
-	}
-	type args struct {
-		ctx                context.Context
-		req                *evaluation.StartEvaluationRequest
-		schedulerTag       string
-		evaluatedControlID string
-	}
-	tests := []struct {
-		name     string
-		fields   fields
-		args     args
-		wantResp *evaluation.StartEvaluationResponse
-		wantErr  assert.ErrorAssertionFunc
-	}{
-		{
-			name: "Missing Control ID in request",
-			args: args{
-				ctx: context.Background(),
-				req: &evaluation.StartEvaluationRequest{
-					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: defaults.DefaultTargetCloudServiceID,
-						CatalogId:      defaults.DefaultCatalogID,
-						AssuranceLevel: &defaults.AssuranceLevelHigh,
-					},
-					CategoryName: defaults.DefaultEUCSCategoryName,
-				},
-			},
-			wantResp: &evaluation.StartEvaluationResponse{
-				Status:        false,
-				StatusMessage: evaluation.ErrControlIDIsMissing.Error(),
-			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, evaluation.ErrControlIDIsMissing.Error())
-			},
-		},
-		{
-			name: "Scheduler already running",
-			fields: fields{
-				evaluation: map[string]*EvaluationScheduler{
-					schedulerTag: {
-						scheduler:          gocron.NewScheduler(time.UTC),
-						evaluatedControlID: defaults.DefaultEUCSControlID,
-					},
-				},
-				results: make(map[string]*evaluation.EvaluationResult),
-				orchestratorAddress: grpcTarget{
-					target: defaults.DefaultOrchestratorAddress,
-				},
-			},
-			args: args{
-				ctx:          context.Background(),
-				schedulerTag: schedulerTag,
-				req: &evaluation.StartEvaluationRequest{
-					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: defaults.DefaultTargetCloudServiceID,
-						CatalogId:      defaults.DefaultCatalogID,
-						AssuranceLevel: &defaults.AssuranceLevelHigh,
-					},
-					ControlId:    defaults.DefaultEUCSControlID,
-					CategoryName: defaults.DefaultEUCSCategoryName,
-				},
-			},
-			wantResp: &evaluation.StartEvaluationResponse{},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, fmt.Sprintf("Cloud Service '%s' is being evaluated with Control %s already.", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSControlID))
-			},
-		},
-		{
-			name: "Happy path",
-			fields: fields{
-				evaluation: make(map[string]*EvaluationScheduler),
-				results:    make(map[string]*evaluation.EvaluationResult),
-				orchestratorAddress: grpcTarget{
-					target: defaults.DefaultOrchestratorAddress,
-				},
-			},
-			args: args{
-				ctx: context.Background(),
-				req: &evaluation.StartEvaluationRequest{
-					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: defaults.DefaultTargetCloudServiceID,
-						CatalogId:      defaults.DefaultCatalogID,
-						AssuranceLevel: &defaults.AssuranceLevelHigh,
-					},
-					ControlId:    defaults.DefaultEUCSControlID,
-					CategoryName: defaults.DefaultEUCSCategoryName,
-				},
-				schedulerTag:       schedulerTag,
-				evaluatedControlID: defaults.DefaultEUCSControlID,
-			},
-			wantResp: &evaluation.StartEvaluationResponse{},
-			wantErr:  assert.NoError,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := &Service{
-				orchestratorAddress: grpcTarget{
-					target: DefaultOrchestratorAddress,
-				},
-				evaluation: tt.fields.evaluation,
-			}
-
-			// Start the scheduler
-			if s.evaluation[tt.args.schedulerTag] != nil {
-				s.evaluation[tt.args.schedulerTag].scheduler.StartAsync()
-			}
-
-			gotResp, err := s.StartEvaluation(tt.args.ctx, tt.args.req)
-			tt.wantErr(t, err)
-			assert.Equal(t, gotResp, tt.wantResp)
-
-			if err == nil {
-				// We must check if the contol ID is stored
-				assert.Equal(t, s.evaluation[tt.args.schedulerTag].evaluatedControlID, tt.args.evaluatedControlID)
-
-				// We must check if the scheduler is running
-				assert.True(t, s.evaluation[tt.args.schedulerTag].scheduler.IsRunning())
-			}
-		})
-	}
-}
-
-func TestService_Evaluate(t *testing.T) {
-	type fields struct {
-		evaluation.UnimplementedEvaluationServer
-		orchestratorClient  orchestrator.OrchestratorClient
-		orchestratorAddress grpcTarget
-		authorizer          api.Authorizer
-		evaluation          map[string]*EvaluationScheduler
-		results             map[string]*evaluation.EvaluationResult
-		storage             persistence.Storage
-	}
-	type args struct {
-		req *evaluation.StartEvaluationRequest
-	}
-	tests := []struct {
-		name     string
-		fields   fields
-		args     args
-		wantFunc assert.ValueAssertionFunc
-	}{
-		{
-			name: "Error getting metrics from control",
-			args: args{
-				req: &evaluation.StartEvaluationRequest{
-					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: defaults.DefaultTargetCloudServiceID,
-						CatalogId:      defaults.DefaultCatalogID,
-						AssuranceLevel: &defaults.AssuranceLevelHigh,
-					},
-					CategoryName: defaults.DefaultEUCSCategoryName,
-					ControlId:    defaults.DefaultEUCSControlID,
-				},
-			},
-			wantFunc: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				service, ok := i1.(*Service)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				return assert.Empty(t, service.evaluation[createSchedulerTag(defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSControlID)])
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := &Service{
-				orchestratorClient:  tt.fields.orchestratorClient,
-				orchestratorAddress: tt.fields.orchestratorAddress,
-				authorizer:          tt.fields.authorizer,
-				evaluation:          tt.fields.evaluation,
-				results:             tt.fields.results,
-				storage:             tt.fields.storage,
-			}
-			s.Evaluate(tt.args.req)
-
-			tt.wantFunc(t, s)
-
 		})
 	}
 }
@@ -406,7 +207,7 @@ func Test_createSchedulerTag(t *testing.T) {
 		{
 			name: "Input controlId empty",
 			args: args{
-				controlId: defaults.DefaultEUCSControlID,
+				controlId: defaults.DefaultEUCSLowerLevelControlID137,
 			},
 			want: "",
 		},
@@ -421,9 +222,9 @@ func Test_createSchedulerTag(t *testing.T) {
 			name: "Happy path",
 			args: args{
 				cloudServiceId: defaults.DefaultTargetCloudServiceID,
-				controlId:      defaults.DefaultEUCSControlID,
+				controlId:      defaults.DefaultEUCSLowerLevelControlID137,
 			},
-			want: fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSControlID),
+			want: fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSLowerLevelControlID137),
 		},
 	}
 	for _, tt := range tests {
@@ -582,7 +383,6 @@ func TestService_ListEvaluationResults(t *testing.T) {
 		orchestratorClient            orchestrator.OrchestratorClient
 		orchestratorAddress           grpcTarget
 		authorizer                    api.Authorizer
-		evaluation                    map[string]*EvaluationScheduler
 		results                       map[string]*evaluation.EvaluationResult
 		storage                       persistence.Storage
 	}
@@ -697,7 +497,6 @@ func TestService_ListEvaluationResults(t *testing.T) {
 				orchestratorClient:            tt.fields.orchestratorClient,
 				orchestratorAddress:           tt.fields.orchestratorAddress,
 				authorizer:                    tt.fields.authorizer,
-				evaluation:                    tt.fields.evaluation,
 				results:                       tt.fields.results,
 				storage:                       tt.fields.storage,
 			}
@@ -710,189 +509,12 @@ func TestService_ListEvaluationResults(t *testing.T) {
 	}
 }
 
-func TestService_StopEvaluation(t *testing.T) {
-	type fields struct {
-		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
-		orchestratorClient            orchestrator.OrchestratorClient
-		orchestratorAddress           grpcTarget
-		authorizer                    api.Authorizer
-		evaluation                    map[string]*EvaluationScheduler
-		results                       map[string]*evaluation.EvaluationResult
-		storage                       persistence.Storage
-	}
-	type args struct {
-		in0          context.Context
-		req          *evaluation.StopEvaluationRequest
-		schedulerTag string
-		// schedulerRunning is a bool for starting the scheduler in the test
-		schedulerRunning bool
-		// tag is a bool for deciding if the scheduler job needs a tag
-		tag bool
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantRes *evaluation.StopEvaluationResponse
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "Control Id in request is missing",
-			args: args{
-				in0: context.Background(),
-				req: &evaluation.StopEvaluationRequest{},
-			},
-			wantRes: nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, evaluation.ErrControlIDIsMissing.Error())
-			},
-		},
-		{
-			name: "No entry for cloud service available in evaluation map",
-			args: args{
-				in0: context.Background(),
-				req: &evaluation.StopEvaluationRequest{
-					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: defaults.DefaultTargetCloudServiceID,
-						CatalogId:      defaults.DefaultCatalogID,
-						AssuranceLevel: &defaults.AssuranceLevelHigh,
-					},
-					ControlId:    defaults.DefaultEUCSControlID,
-					CategoryName: defaults.DefaultEUCSCategoryName,
-				},
-			},
-			wantRes: nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, fmt.Sprintf("evaluation of cloud service %s not running", defaults.DefaultTargetCloudServiceID))
-			},
-		},
-		{
-			name: "Evaluation for cloud service id is not running",
-			args: args{
-				in0: context.Background(),
-				req: &evaluation.StopEvaluationRequest{
-					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: defaults.DefaultTargetCloudServiceID,
-						CatalogId:      defaults.DefaultCatalogID,
-						AssuranceLevel: &defaults.AssuranceLevelHigh,
-					},
-					ControlId:    defaults.DefaultEUCSControlID,
-					CategoryName: defaults.DefaultEUCSCategoryName,
-				},
-				schedulerTag: createSchedulerTag(defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSControlID),
-			},
-			fields: fields{
-				evaluation: map[string]*EvaluationScheduler{
-					createSchedulerTag(defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSControlID): {
-						scheduler:          gocron.NewScheduler(time.UTC),
-						evaluatedControlID: defaults.DefaultEUCSControlID,
-					},
-				},
-			},
-			wantRes: nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, fmt.Sprintf("evaluation of cloud service %s not running", defaults.DefaultTargetCloudServiceID))
-			},
-		},
-		{
-			name: "Missing tag",
-			args: args{
-				in0: context.Background(),
-				req: &evaluation.StopEvaluationRequest{
-					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: defaults.DefaultTargetCloudServiceID,
-						CatalogId:      defaults.DefaultCatalogID,
-						AssuranceLevel: &defaults.AssuranceLevelHigh,
-					},
-					ControlId:    defaults.DefaultEUCSControlID,
-					CategoryName: defaults.DefaultEUCSCategoryName,
-				},
-				schedulerTag:     createSchedulerTag(defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSControlID),
-				schedulerRunning: true,
-			},
-			fields: fields{
-				evaluation: map[string]*EvaluationScheduler{
-					createSchedulerTag(defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSControlID): {
-						scheduler:          gocron.NewScheduler(time.UTC),
-						evaluatedControlID: defaults.DefaultEUCSControlID,
-					},
-				},
-			},
-			wantRes: nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "error at stopping scheduler")
-			},
-		},
-		{
-			name: "Happy path",
-			args: args{
-				in0: context.Background(),
-				req: &evaluation.StopEvaluationRequest{
-					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: defaults.DefaultTargetCloudServiceID,
-						CatalogId:      defaults.DefaultCatalogID,
-						AssuranceLevel: &defaults.AssuranceLevelHigh,
-					},
-					ControlId:    defaults.DefaultEUCSControlID,
-					CategoryName: defaults.DefaultEUCSCategoryName,
-				},
-				schedulerTag:     createSchedulerTag(defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSControlID),
-				schedulerRunning: true,
-				tag:              true,
-			},
-			fields: fields{
-				evaluation: map[string]*EvaluationScheduler{
-					createSchedulerTag(defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSControlID): {
-						scheduler:          gocron.NewScheduler(time.UTC),
-						evaluatedControlID: defaults.DefaultEUCSControlID,
-					},
-				},
-			},
-			wantRes: &evaluation.StopEvaluationResponse{},
-			wantErr: assert.NoError,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := &Service{
-				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
-				orchestratorClient:            tt.fields.orchestratorClient,
-				orchestratorAddress:           tt.fields.orchestratorAddress,
-				authorizer:                    tt.fields.authorizer,
-				evaluation:                    tt.fields.evaluation,
-				results:                       tt.fields.results,
-				storage:                       tt.fields.storage,
-			}
-
-			// Start the scheduler
-			if tt.args.schedulerRunning == true {
-				if tt.args.tag {
-					j, err := s.evaluation[tt.args.schedulerTag].scheduler.Every(1).Day().Tag(tt.args.schedulerTag).Do(func() { log.Debug("Scheduler") })
-					require.NoError(t, err)
-
-					s.evaluation[tt.args.schedulerTag].scheduler.Job(j)
-				}
-				s.evaluation[tt.args.schedulerTag].scheduler.StartAsync()
-			}
-
-			gotRes, err := s.StopEvaluation(tt.args.in0, tt.args.req)
-			tt.wantErr(t, err)
-			assert.Equal(t, tt.wantRes, gotRes)
-
-			if err == nil {
-				assert.Empty(t, s.evaluation[tt.args.schedulerTag])
-			}
-		})
-	}
-}
-
 func TestService_initOrchestratorClient(t *testing.T) {
 	type fields struct {
 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
 		orchestratorClient            orchestrator.OrchestratorClient
 		orchestratorAddress           grpcTarget
 		authorizer                    api.Authorizer
-		evaluation                    map[string]*EvaluationScheduler
 		results                       map[string]*evaluation.EvaluationResult
 		storage                       persistence.Storage
 	}
@@ -928,7 +550,6 @@ func TestService_initOrchestratorClient(t *testing.T) {
 				orchestratorClient:            tt.fields.orchestratorClient,
 				orchestratorAddress:           tt.fields.orchestratorAddress,
 				authorizer:                    tt.fields.authorizer,
-				evaluation:                    tt.fields.evaluation,
 				results:                       tt.fields.results,
 				storage:                       tt.fields.storage,
 			}
@@ -947,7 +568,6 @@ func TestService_getMetricsFromSubControls(t *testing.T) {
 		orchestratorClient            orchestrator.OrchestratorClient
 		orchestratorAddress           grpcTarget
 		authorizer                    api.Authorizer
-		evaluation                    map[string]*EvaluationScheduler
 		results                       map[string]*evaluation.EvaluationResult
 		storage                       persistence.Storage
 	}
@@ -967,7 +587,7 @@ func TestService_getMetricsFromSubControls(t *testing.T) {
 				control: &orchestrator.Control{
 					Id:                "testId",
 					CategoryName:      defaults.DefaultEUCSCategoryName,
-					CategoryCatalogId: defaults.DefaultEUCSControlID,
+					CategoryCatalogId: defaults.DefaultEUCSLowerLevelControlID137,
 					Name:              "testId",
 					Controls:          nil,
 					Metrics:           nil,
@@ -984,7 +604,6 @@ func TestService_getMetricsFromSubControls(t *testing.T) {
 				orchestratorClient:            tt.fields.orchestratorClient,
 				orchestratorAddress:           tt.fields.orchestratorAddress,
 				authorizer:                    tt.fields.authorizer,
-				evaluation:                    tt.fields.evaluation,
 				results:                       tt.fields.results,
 				storage:                       tt.fields.storage,
 			}
@@ -993,6 +612,323 @@ func TestService_getMetricsFromSubControls(t *testing.T) {
 				tt.wantErr(t, err)
 			}
 			assert.Equal(t, tt.wantMetrics, gotMetrics)
+		})
+	}
+}
+
+func TestService_StopEvaluation(t *testing.T) {
+	type fields struct {
+		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
+		orchestratorClient            orchestrator.OrchestratorClient
+		orchestratorAddress           grpcTarget
+		authorizer                    api.Authorizer
+		scheduler                     *gocron.Scheduler
+		results                       map[string]*evaluation.EvaluationResult
+		storage                       persistence.Storage
+	}
+	type args struct {
+		in0              context.Context
+		req              *evaluation.StopEvaluationRequest
+		schedulerTag     string
+		schedulerRunning bool
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes *evaluation.StopEvaluationResponse
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Control Id in request is missing",
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.StopEvaluationRequest{},
+			},
+			wantRes: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, evaluation.ErrControlIDIsMissing.Error())
+			},
+		},
+		// {
+		// 	name: "Happy path",
+		// 	args: args{
+		// 		in0: context.Background(),
+		// 		req: &evaluation.StopEvaluationRequest{
+		// 			TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+		// 				CloudServiceId: defaults.DefaultTargetCloudServiceID,
+		// 				CatalogId:      defaults.DefaultCatalogID,
+		// 				AssuranceLevel: &defaults.AssuranceLevelHigh,
+		// 			},
+		// 			ControlId:    defaults.DefaultEUCSLowerLevelControlID137,
+		// 			CategoryName: defaults.DefaultEUCSCategoryName,
+		// 		},
+		// 		schedulerTag:     createSchedulerTag(defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSLowerLevelControlID137),
+		// 		schedulerRunning: true,
+		// 	},
+		// 	fields: fields{
+		// 		scheduler: gocron.NewScheduler(time.UTC),
+		// 	},
+		// 	wantRes: &evaluation.StopEvaluationResponse{},
+		// 	wantErr: assert.NoError,
+		// },
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{
+				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
+				orchestratorClient:            tt.fields.orchestratorClient,
+				orchestratorAddress:           tt.fields.orchestratorAddress,
+				authorizer:                    tt.fields.authorizer,
+				scheduler:                     tt.fields.scheduler,
+				results:                       tt.fields.results,
+				storage:                       tt.fields.storage,
+			}
+
+			// Start the scheduler
+			if tt.args.schedulerRunning == true {
+				_, err := s.scheduler.Every(1).Day().Tag(tt.args.schedulerTag).Do(func() { fmt.Println("Scheduler") })
+				require.NoError(t, err)
+
+			}
+
+			gotRes, err := s.StopEvaluation(tt.args.in0, tt.args.req)
+
+			tt.wantErr(t, err)
+			assert.Equal(t, tt.wantRes, gotRes)
+		})
+	}
+}
+
+func TestService_evaluateFirstLevelControl(t *testing.T) {
+	type fields struct {
+		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
+		orchestratorClient            orchestrator.OrchestratorClient
+		orchestratorAddress           grpcTarget
+		authorizer                    api.Authorizer
+		scheduler                     *gocron.Scheduler
+		results                       map[string]*evaluation.EvaluationResult
+		resultMutex                   sync.Mutex
+		storage                       persistence.Storage
+	}
+	type args struct {
+		toe          *orchestrator.TargetOfEvaluation
+		categoryName string
+		controlId    string
+	}
+	tests := []struct {
+		name        string
+		fields      fields
+		args        args
+		wantResults []*evaluation.EvaluationResult
+	}{
+		// TODO: TBD
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{
+				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
+				orchestratorClient:            tt.fields.orchestratorClient,
+				orchestratorAddress:           tt.fields.orchestratorAddress,
+				authorizer:                    tt.fields.authorizer,
+				scheduler:                     tt.fields.scheduler,
+				results:                       tt.fields.results,
+				resultMutex:                   tt.fields.resultMutex,
+				storage:                       tt.fields.storage,
+			}
+			s.evaluateFirstLevelControl(tt.args.toe, tt.args.categoryName, tt.args.controlId)
+
+			assert.Equal(t, tt.wantResults, s.results)
+		})
+	}
+}
+
+func Test_getAllControlIdsFromControl(t *testing.T) {
+	type args struct {
+		control *orchestrator.Control
+	}
+	tests := []struct {
+		name           string
+		args           args
+		wantControlIds []string
+	}{
+		{
+			name:           "Control is missing",
+			wantControlIds: []string{},
+		},
+		{
+			name: "Control has no sub-controls",
+			args: args{
+				&orchestrator.Control{
+					Id:                "testId-1",
+					CategoryName:      defaults.DefaultEUCSCategoryName,
+					CategoryCatalogId: defaults.DefaultCatalogID,
+					Name:              "testId-1",
+					Description:       "test test test",
+					Controls:          []*orchestrator.Control{},
+				},
+			},
+			wantControlIds: []string{"testId-1"},
+		},
+		{
+			name: "Happy path",
+			args: args{
+				&orchestrator.Control{
+					Id:                "testId-1",
+					CategoryName:      defaults.DefaultEUCSCategoryName,
+					CategoryCatalogId: defaults.DefaultCatalogID,
+					Name:              "testId-1",
+					Description:       "test test test",
+					Controls: []*orchestrator.Control{
+						{
+							Id: "testId-1.1",
+						},
+						{
+							Id: "testId-1.2",
+						},
+						{
+							Id: "testId-1.3",
+						},
+					},
+				},
+			},
+			wantControlIds: []string{"testId-1", "testId-1.1", "testId-1.2", "testId-1.3"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if gotControlIds := getAllControlIdsFromControl(tt.args.control); !reflect.DeepEqual(gotControlIds, tt.wantControlIds) {
+				t.Errorf("getAllControlIdsFromControl() = %v, want %v", gotControlIds, tt.wantControlIds)
+			}
+		})
+	}
+}
+
+func TestService_StartEvaluation(t *testing.T) {
+	type fields struct {
+		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
+		orchestratorClient            orchestrator.OrchestratorClient
+		orchestratorAddress           grpcTarget
+		authorizer                    api.Authorizer
+		scheduler                     *gocron.Scheduler
+		results                       map[string]*evaluation.EvaluationResult
+		storage                       persistence.Storage
+	}
+	type args struct {
+		in0              context.Context
+		req              *evaluation.StartEvaluationRequest
+		schedulerTag     string
+		schedulerRunning bool
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		args     args
+		wantResp *evaluation.StartEvaluationResponse
+		wantErr  assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Error getting control",
+			fields: fields{
+				scheduler: gocron.NewScheduler(time.UTC),
+			},
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.StartEvaluationRequest{
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+						CloudServiceId: defaults.DefaultTargetCloudServiceID,
+						CatalogId:      defaults.DefaultCatalogID,
+						AssuranceLevel: &defaults.AssuranceLevelHigh,
+					},
+					EvalControl: []*evaluation.EvalControl{
+						{
+							CategoryName: defaults.DefaultEUCSCategoryName,
+							ControlId:    defaults.DefaultEUCSLowerLevelControlID137,
+						},
+					},
+				},
+				schedulerRunning: true,
+				schedulerTag:     createSchedulerTag(defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSLowerLevelControlID136),
+			},
+			wantResp: &evaluation.StartEvaluationResponse{
+				Status:        false,
+				StatusMessage: fmt.Sprintf("could not get control for control id '%s'", defaults.DefaultEUCSLowerLevelControlID137),
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, fmt.Sprintf("could not get control for control id '%s'", defaults.DefaultEUCSLowerLevelControlID137))
+			},
+		},
+		{
+			name: "Scheduler job for one control already running",
+			fields: fields{
+				scheduler: gocron.NewScheduler(time.UTC),
+			},
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.StartEvaluationRequest{
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+						CloudServiceId: defaults.DefaultTargetCloudServiceID,
+						CatalogId:      defaults.DefaultCatalogID,
+						AssuranceLevel: &defaults.AssuranceLevelHigh,
+					},
+					EvalControl: []*evaluation.EvalControl{
+						{
+							CategoryName: defaults.DefaultEUCSCategoryName,
+							ControlId:    defaults.DefaultEUCSLowerLevelControlID136,
+						},
+					},
+				},
+				schedulerRunning: true,
+				schedulerTag:     createSchedulerTag(defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSLowerLevelControlID136),
+			},
+			wantResp: &evaluation.StartEvaluationResponse{
+				Status:        false,
+				StatusMessage: "evaluation for Cloud Service ID '00000000-0000-0000-0000-000000000000' and Control ID 'OPS-13.6' started already.",
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, fmt.Sprintf("evaluation for Cloud Service ID '%s' and Control ID '%s' started already.", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSLowerLevelControlID136))
+			},
+		},
+		{
+			name: "ToE missing in request",
+			args: args{
+				in0:              context.Background(),
+				req:              &evaluation.StartEvaluationRequest{},
+				schedulerRunning: false,
+			},
+			wantResp: &evaluation.StartEvaluationResponse{
+				Status:        false,
+				StatusMessage: orchestrator.ErrToEIsMissing.Error(),
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, orchestrator.ErrToEIsMissing.Error())
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{
+				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
+				orchestratorClient:            tt.fields.orchestratorClient,
+				orchestratorAddress:           tt.fields.orchestratorAddress,
+				authorizer:                    tt.fields.authorizer,
+				scheduler:                     tt.fields.scheduler,
+				results:                       tt.fields.results,
+				storage:                       tt.fields.storage,
+			}
+
+			// Start the scheduler if needed
+			if tt.args.schedulerRunning {
+				_, err := s.scheduler.Every(1).Day().Tag(tt.args.schedulerTag).Do(func() { fmt.Println("Scheduler") })
+				require.NoError(t, err)
+			}
+
+			gotResp, err := s.StartEvaluation(tt.args.in0, tt.args.req)
+			tt.wantErr(t, err)
+
+			assert.NotEmpty(t, tt.wantResp)
+			assert.Contains(t, gotResp.StatusMessage, tt.wantResp.StatusMessage)
+			assert.Equal(t, tt.wantResp.Status, gotResp.Status)
 		})
 	}
 }

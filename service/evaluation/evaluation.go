@@ -183,23 +183,35 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 		return resp, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	// Verify that evaluation of this service and control hasn't started already
+	// TODO(anatheka): Delete after ToE PR is ready
 	for _, control := range req.EvalControl {
 		schedulerTag = createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, control.ControlId)
 
+		// Verify that evaluation of this service and control hasn't started already
 		_, err := s.scheduler.FindJobsByTag(schedulerTag)
 		if err == nil {
-			err = status.Errorf(codes.AlreadyExists, "Evaluation for Cloud Service ID '%s' and Control ID %s started already.", req.TargetOfEvaluation.CloudServiceId, control.ControlId)
+			shortErr := fmt.Sprintf("evaluation for Cloud Service ID '%s' and Control ID '%s' started already.", req.TargetOfEvaluation.CloudServiceId, control.ControlId)
+			err = fmt.Errorf("%v: %v", shortErr, err)
 			log.Error(err)
-			return nil, err
+			resp = &evaluation.StartEvaluationResponse{
+				Status:        false,
+				StatusMessage: fmt.Sprintf("%s: %s", shortErr, err.Error()),
+			}
+			return resp, status.Errorf(codes.AlreadyExists, "%s", shortErr)
 		}
 	}
 
 	// Get orchestrator client
 	err = s.initOrchestratorClient()
 	if err != nil {
-		log.Errorf("could not set orchestrator client: %v", err)
-		return
+		shortErr := errors.New("could not set orchestrator client")
+		err = fmt.Errorf("%v: %v", shortErr, err)
+		log.Error(err)
+		resp = &evaluation.StartEvaluationResponse{
+			Status:        false,
+			StatusMessage: err.Error(),
+		}
+		return resp, status.Errorf(codes.Internal, "%s", shortErr)
 	}
 
 	log.Info("Starting evaluation ...")
@@ -209,9 +221,14 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 		// Get control and check if the control has further subcontrols
 		control, err = s.getControl(req.TargetOfEvaluation.CatalogId, elem.CategoryName, elem.ControlId)
 		if err != nil {
-			err = fmt.Errorf("could not get control for control id {%s}: %v", elem.ControlId, err)
+			shortErr := fmt.Sprintf("could not get control for control id '%s'", elem.ControlId)
+			err = fmt.Errorf("%v: %v", shortErr, err)
 			log.Error(err)
-			return
+			resp = &evaluation.StartEvaluationResponse{
+				Status:        false,
+				StatusMessage: err.Error(),
+			}
+			return resp, status.Errorf(codes.Internal, "%s", shortErr)
 		}
 
 		// Store current control
@@ -271,10 +288,14 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 				Do(s.evaluateSecondLevelControl, req.TargetOfEvaluation, e.categoryName, e.controlId)
 		}
 		if err != nil {
-			newErr := fmt.Errorf("evaluation for Cloud Service '%s' and Control ID '%s' cannot be scheduled", req.TargetOfEvaluation.CloudServiceId, e.controlId)
-			log.Errorf("%s: %s", newErr, err)
-			err = status.Errorf(codes.Internal, "%s", newErr)
-			return
+			shortErr := fmt.Sprintf("evaluation for Cloud Service '%s' and Control ID '%s' cannot be scheduled", req.TargetOfEvaluation.CloudServiceId, e.controlId)
+			err = fmt.Errorf("%v: %v", shortErr, err)
+			log.Error(err)
+			resp = &evaluation.StartEvaluationResponse{
+				Status:        false,
+				StatusMessage: err.Error(),
+			}
+			return resp, status.Errorf(codes.Internal, "%s", shortErr)
 		}
 
 		s.scheduler.StartAsync()
@@ -309,10 +330,7 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 	}
 
 	// Get all control ids that need to be checked in the scheduler
-	controlIds = append(controlIds, control.Id)
-	for _, control := range control.Controls {
-		controlIds = append(controlIds, control.Id)
-	}
+	controlIds = getAllControlIdsFromControl(control)
 
 	// Check for each control id a job is running
 	for _, controlId := range controlIds {
