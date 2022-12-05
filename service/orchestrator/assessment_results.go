@@ -68,12 +68,16 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.L
 	res = new(assessment.ListAssessmentResultsResponse)
 
 	// Paginate the results according to the request
+	svc.resultsMutex.Lock()
 	res.Results, res.NextPageToken, err = service.PaginateSlice(req, filtered, func(a *assessment.AssessmentResult, b *assessment.AssessmentResult) bool {
 		return a.Timestamp.AsTime().After(b.Timestamp.AsTime())
 	}, service.DefaultPaginationOpts)
 	if err != nil {
+		svc.resultsMutex.Unlock()
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
+
+	svc.resultsMutex.Unlock()
 
 	return
 }
