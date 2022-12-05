@@ -57,13 +57,28 @@ func TestService_ListAssessmentResults(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name:    "request is missing",
-			fields:  fields{},
-			args:    args{req: &assessment.ListAssessmentResultsRequest{}},
+			name: "request is missing",
+			fields: fields{
+				results: map[string]*assessment.AssessmentResult{},
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args:    args{},
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.Equal(t, err, "invalid request")
+				return assert.ErrorContains(t, err, "invalid request")
 			},
+		},
+		{
+			name: "request is empty",
+			fields: fields{
+				results: map[string]*assessment.AssessmentResult{},
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &assessment.ListAssessmentResultsRequest{},
+			},
+			wantRes: &assessment.ListAssessmentResultsResponse{},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "list all with allow all",
