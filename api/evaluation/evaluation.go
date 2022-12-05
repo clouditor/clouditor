@@ -37,9 +37,13 @@ var (
 	ErrTargetOfEvaluationIsInvalid = errors.New("target of evaluation is not valid")
 )
 
-// TODO(anatheka): Update if everything is ready
 // Validate validates the evaluate request
+// TODO(anatheka): Update if everything is ready
 func (r *StartEvaluationRequest) Validate() (err error) {
+	if r == nil {
+		return ErrRequestIsEmpty
+	}
+
 	if err = r.TargetOfEvaluation.Validate(); err != nil {
 		return err
 	}
@@ -51,19 +55,22 @@ func (r *StartEvaluationRequest) Validate() (err error) {
 	return
 }
 
-// TODO(anatheka): Update if everything is ready
 // Validate validates the evaluate request
-func (c *StopEvaluationRequest) Validate() (err error) {
+// TODO(anatheka): Update if everything is ready
+func (r *StopEvaluationRequest) Validate() (err error) {
+	if r == nil {
+		return ErrRequestIsEmpty
+	}
 
-	if c.ControlId == "" {
+	if r.ControlId == "" {
 		return ErrControlIDIsMissing
 	}
 
-	if c.CategoryName == "" {
+	if r.CategoryName == "" {
 		return ErrCategoryNameIsMissing
 	}
 
-	if err = c.TargetOfEvaluation.Validate(); err != nil {
+	if err = r.TargetOfEvaluation.Validate(); err != nil {
 		return err
 	}
 

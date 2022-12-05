@@ -393,7 +393,7 @@ func (s *Service) evaluateSecondLevelControl(toe *orchestrator.TargetOfEvaluatio
 }
 
 // evaluateFirstLevelControl evaluates first level control, e.g., OPS-13
-func (s *Service) evaluateFirstLevelControl(toe *orchestrator.TargetOfEvaluation, categoryName, controlId string) {
+func (*Service) evaluateFirstLevelControl(toe *orchestrator.TargetOfEvaluation, categoryName, controlId string) {
 	// TODO(anatheka): TBD How should we evaluate the first level control(OPS-13)? It should be compliant if all sub-controls are compliant
 	// Suggestion: We get all sub-control results and calculate it. But then we should start that job a bit later. Then we must start the scheduler in SingletonMode
 }

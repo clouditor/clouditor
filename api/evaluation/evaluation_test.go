@@ -43,6 +43,13 @@ func TestStartEvaluationRequest_Validate(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
+			name:   "Request is empty",
+			fields: fields{},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrRequestIsEmpty.Error())
+			},
+		},
+		{
 			name: "ToE is missing in request",
 			fields: fields{
 				Request: &StartEvaluationRequest{
@@ -95,6 +102,13 @@ func TestStopEvaluationRequest_Validate(t *testing.T) {
 		fields  fields
 		wantErr assert.ErrorAssertionFunc
 	}{
+		{
+			name:   "Request is empty",
+			fields: fields{},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrRequestIsEmpty.Error())
+			},
+		},
 		{
 			name: "Missing ControlID in request",
 			fields: fields{
