@@ -70,11 +70,11 @@ service Assessment {
 };
 
 message ListAssessmentResultsRequest {
-  // Optionally, a filter for the cloud service id.  
+  // Optional. List only assessment results of a specific cloud service.  
   optional string filtered_cloud_service_id = 1;
-  // Optionally, a filter for the compliant field in the assessment result.   
+  // Optional. List only compliant assessment results.   
   optional bool filtered_compliant = 2;
-  // Optionally, a filter for a list of metric ids field in the assessment result.   
+  // Optional. List only assessment results of a specific metric id.   
   repeated string filtered_metric_id = 3;
 
   int32 page_size = 10;

@@ -506,7 +506,7 @@ message MetricChangeEvent {
   // The metric that is changing.
   string metric_id = 2;
 
-  // Optionally, the cloud service id that is affected by this change. Primarily
+  // Optional. The cloud service id that is affected by this change. Primarily
   // concerns metric configuration changes.
   string cloud_service_id = 3;
 }

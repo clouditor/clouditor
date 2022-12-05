@@ -50,6 +50,22 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 		wantErr       bool
 	}{
 		{
+			name:          "Missing request",
+			args:          args{},
+			wantResp:      "",
+			wantRespError: ErrAssessmentResultMissing,
+			wantErr:       true,
+		},
+		{
+			name: "Empty request",
+			args: args{
+				&AssessmentResult{},
+			},
+			wantResp:      "",
+			wantRespError: ErrIdInvalidFormat,
+			wantErr:       true,
+		},
+		{
 			name: "Missing assessment result id",
 			args: args{
 				&AssessmentResult{
@@ -344,6 +360,20 @@ func TestListAssessmentResultsRequest_Validate(t *testing.T) {
 		fields  fields
 		wantErr assert.ErrorAssertionFunc
 	}{
+		{
+			name:   "Request is missing",
+			fields: fields{},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrRequestMissing.Error())
+			},
+		},
+		{
+			name: "Request is empty",
+			fields: fields{
+				&ListAssessmentResultsRequest{},
+			},
+			wantErr: assert.NoError,
+		},
 		{
 			name: "Invalid cloud service id",
 			fields: fields{

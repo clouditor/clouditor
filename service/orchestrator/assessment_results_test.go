@@ -57,6 +57,15 @@ func TestService_ListAssessmentResults(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
+			name:    "request is missing",
+			fields:  fields{},
+			args:    args{req: &assessment.ListAssessmentResultsRequest{}},
+			wantRes: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Equal(t, err, "invalid request")
+			},
+		},
+		{
 			name: "list all with allow all",
 			fields: fields{
 				results: map[string]*assessment.AssessmentResult{
