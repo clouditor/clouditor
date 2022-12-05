@@ -39,6 +39,7 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
+	"golang.org/x/exp/slices"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -67,6 +68,8 @@ type Evaluator struct {
 	controlId    string
 	// firstLevel describes if the controlId is a first level controlId (e.g., OPS13) or a second level controlId (e.g., OPS-13.1)
 	firstLevel bool
+	// subControlList is a list of all sub-controls included in the first level control
+	subControlList []string
 }
 
 // Service is an implementation of the Clouditor Evaluation service
@@ -171,6 +174,7 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 		schedulerTag string
 		evaluator    []*Evaluator
 		control      *orchestrator.Control
+		wg           sync.WaitGroup
 	)
 
 	// Validate request
@@ -244,6 +248,7 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 			// Control is a first level control with further sub-controls
 			// Change firstLevel to true
 			evaluator[0].firstLevel = true
+			evaluator[0].subControlList = getAllSubControlIdsFromControl(control)
 
 			// Store the sub-level controls
 			for _, elem := range control.Controls {
@@ -275,17 +280,18 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 
 		// Regarding the control level the specific method is called
 		if e.firstLevel {
+			wg.Add(len(e.subControlList))
 			_, err = s.scheduler.
 				Every(5).
 				Minute().
 				Tag(schedulerTag).
-				Do(s.evaluateFirstLevelControl, req.TargetOfEvaluation, e.categoryName, e.controlId)
+				Do(s.evaluateFirstLevelControl, req.TargetOfEvaluation, e.categoryName, e.controlId, e.subControlList, &wg)
 		} else {
 			_, err = s.scheduler.
 				Every(5).
 				Minute().
 				Tag(schedulerTag).
-				Do(s.evaluateSecondLevelControl, req.TargetOfEvaluation, e.categoryName, e.controlId)
+				Do(s.evaluateSecondLevelControl, req.TargetOfEvaluation, e.categoryName, e.controlId, &wg)
 		}
 		if err != nil {
 			shortErr := fmt.Sprintf("evaluation for Cloud Service '%s' and Control ID '%s' cannot be scheduled", req.TargetOfEvaluation.CloudServiceId, e.controlId)
@@ -366,7 +372,7 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 }
 
 // evaluateSecondLevelControl evaluates the second level controls, e.g., OPS-13.2
-func (s *Service) evaluateSecondLevelControl(toe *orchestrator.TargetOfEvaluation, categoryName, controlId string) {
+func (s *Service) evaluateSecondLevelControl(toe *orchestrator.TargetOfEvaluation, categoryName, controlId string, wg *sync.WaitGroup) {
 	log.Infof("Started evaluation for Cloud Service '%s',  Catalog ID '%s' and Controls '%s'", toe.CloudServiceId, toe.CatalogId, controlId)
 
 	var (
@@ -375,7 +381,7 @@ func (s *Service) evaluateSecondLevelControl(toe *orchestrator.TargetOfEvaluatio
 		err    error
 	)
 
-	result, err = s.evaluationResultForLowerControlLevel(toe.CloudServiceId, toe.CatalogId, categoryName, controlId, toe)
+	result, err = s.evaluationResultForLowerControlLevel(toe.CloudServiceId, toe.CatalogId, categoryName, controlId, toe, wg)
 	if err != nil {
 		err = fmt.Errorf("error creating evaluation result: %v", err)
 		log.Error(err)
@@ -389,13 +395,62 @@ func (s *Service) evaluateSecondLevelControl(toe *orchestrator.TargetOfEvaluatio
 	s.resultMutex.Lock()
 	s.results[result.Id] = result
 	s.resultMutex.Unlock()
-	log.Infof("Evaluation result with ID %s stored.", result.Id)
+	log.Infof("Evaluation result for ControlID '%s' with ID '%s' stored.", controlId, result.Id)
 }
 
 // evaluateFirstLevelControl evaluates first level control, e.g., OPS-13
-func (*Service) evaluateFirstLevelControl(toe *orchestrator.TargetOfEvaluation, categoryName, controlId string) {
+// TODO(all): Note: That is a first try. I'm not convinced, but I can't think of anything better at the moment.
+func (s *Service) evaluateFirstLevelControl(toe *orchestrator.TargetOfEvaluation, categoryName, controlId string, subControls []string, wg *sync.WaitGroup) {
+	var (
+		status                        = evaluation.EvaluationResult_STATUS_UNSPECIFIED
+		nonCompliantAssessmentResults []*assessment.AssessmentResult
+		result                        *evaluation.EvaluationResult
+	)
 	// TODO(anatheka): TBD How should we evaluate the first level control(OPS-13)? It should be compliant if all sub-controls are compliant
 	// Suggestion: We get all sub-control results and calculate it. But then we should start that job a bit later. Then we must start the scheduler in SingletonMode
+
+	// Wait till all sub-control are evaluated
+	wg.Wait()
+	// Set wg again to the number of sub-controls for the next evaluation iteration
+	wg.Add(len(subControls))
+
+	// TODO(anatheka): Add filter to ListEvaluationsResults?
+	evaluations, err := s.ListEvaluationResults(context.Background(), &evaluation.ListEvaluationResultsRequest{
+		FilteredCloudServiceId: toe.CloudServiceId,
+	})
+	if err != nil {
+		err = fmt.Errorf("error list evaluation results: %v", err)
+		log.Error(err)
+		return
+	}
+
+	// Find all needed evaluation results and calculate compliant status and add non-compliant assessment results
+	for _, eval := range evaluations.Results {
+		if slices.Contains(subControls, eval.ControlId) && eval.Status == evaluation.EvaluationResult_COMPLIANT && status != evaluation.EvaluationResult_NOT_COMPLIANT {
+			status = evaluation.EvaluationResult_COMPLIANT
+		} else {
+			status = evaluation.EvaluationResult_NOT_COMPLIANT
+			nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, eval.FailingAssessmentResults...)
+		}
+	}
+
+	// Create evaluation result
+	// TODO(all): Store in DB
+	result = &evaluation.EvaluationResult{
+		Id:                       uuid.NewString(),
+		Timestamp:                timestamppb.Now(),
+		CategoryName:             categoryName,
+		ControlId:                controlId,
+		TargetOfEvaluation:       toe,
+		Status:                   status,
+		FailingAssessmentResults: nonCompliantAssessmentResults,
+	}
+
+	s.resultMutex.Lock()
+	s.results[result.Id] = result
+	s.resultMutex.Unlock()
+	log.Infof("Evaluation result for ControlID '%s' with ID '%s' stored.", controlId, result.Id)
+
 }
 
 // ListEvaluationResults is a method implementation of the assessment interface
@@ -407,20 +462,24 @@ func (s *Service) ListEvaluationResults(_ context.Context, req *evaluation.ListE
 		return a.Id < b.Id
 	}, service.DefaultPaginationOpts)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not paginate evaluation results: %v", err)
+		err = fmt.Errorf("could not paginate evaluation results: %v", err)
+		log.Error(err)
+		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
 
 	return
 }
 
 // evaluationResultForLowerControlLevel return the evaluation result for the lower control level, e.g. OPS-13.7
-func (s *Service) evaluationResultForLowerControlLevel(cloudServiceId, catalogId, categoryName, controlId string, toe *orchestrator.TargetOfEvaluation) (result *evaluation.EvaluationResult, err error) {
+func (s *Service) evaluationResultForLowerControlLevel(cloudServiceId, catalogId, categoryName, controlId string, toe *orchestrator.TargetOfEvaluation, wg *sync.WaitGroup) (result *evaluation.EvaluationResult, err error) {
 
 	// Get metrics from control and sub-controls
 	metrics, err := s.getMetrics(catalogId, categoryName, controlId)
 	if err != nil {
 		err = fmt.Errorf("could not get metrics from control and sub-controls for Cloud Serivce '%s' from Orchestrator: %v", cloudServiceId, err)
 		log.Error(err)
+		wg.Done()
+
 		return
 	}
 
@@ -435,6 +494,7 @@ func (s *Service) evaluationResultForLowerControlLevel(cloudServiceId, catalogId
 		// We let the scheduler running if we do not get the assessment results from the orchestrator, maybe it is only a temporary network problem
 		err = fmt.Errorf("could not get assessment results for Cloud Service ID '%s' from Orchestrator: %v", cloudServiceId, err)
 		log.Error(err)
+		wg.Done()
 
 		return
 	}
@@ -467,11 +527,13 @@ func (s *Service) evaluationResultForLowerControlLevel(cloudServiceId, catalogId
 		Id:                       uuid.NewString(),
 		Timestamp:                timestamppb.Now(),
 		CategoryName:             categoryName,
-		Control:                  controlId,
+		ControlId:                controlId,
 		TargetOfEvaluation:       toe,
 		Status:                   status,
 		FailingAssessmentResults: nonCompliantAssessmentResults,
 	}
+
+	wg.Done()
 
 	return
 }
@@ -596,6 +658,21 @@ func getAllControlIdsFromControl(control *orchestrator.Control) []string {
 		return []string{}
 	}
 	controlIds = append(controlIds, control.Id)
+	for _, control := range control.Controls {
+		controlIds = append(controlIds, control.Id)
+	}
+
+	return controlIds
+}
+
+// getAllSubControlIdsFromControl returns a list with all sub-control ids
+func getAllSubControlIdsFromControl(control *orchestrator.Control) []string {
+	controlIds := []string{}
+
+	if control == nil {
+		return []string{}
+	}
+
 	for _, control := range control.Controls {
 		controlIds = append(controlIds, control.Id)
 	}

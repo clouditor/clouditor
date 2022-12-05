@@ -177,9 +177,9 @@ components:
                 categoryName:
                     type: string
                     description: The category the control belongs to
-                control:
+                controlId:
                     type: string
-                    description: Reference to the control the evaluation was based on
+                    description: Reference to the control id the evaluation was based on
                 timestamp:
                     type: string
                     description: Time of evaluation

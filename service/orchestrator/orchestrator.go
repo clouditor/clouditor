@@ -68,7 +68,8 @@ type Service struct {
 	hookMutex sync.RWMutex
 
 	// Currently only in-memory
-	results map[string]*assessment.AssessmentResult
+	results      map[string]*assessment.AssessmentResult
+	resultsMutex sync.Mutex
 
 	// Hook
 	AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
@@ -221,7 +222,9 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 		return resp, status.Errorf(codes.InvalidArgument, "%v", newError)
 	}
 
+	s.resultsMutex.Lock()
 	s.results[req.Result.Id] = req.Result
+	s.resultsMutex.Unlock()
 
 	go s.informHook(req.Result, nil)
 

@@ -125,8 +125,8 @@ message EvaluationResult {
     // The category the control belongs to 
     string category_name = 3; 
 
-    // Reference to the control the evaluation was based on
-    string control = 4;
+    // Reference to the control id the evaluation was based on
+    string control_id = 4;
 
     // Time of evaluation
     google.protobuf.Timestamp timestamp = 5
