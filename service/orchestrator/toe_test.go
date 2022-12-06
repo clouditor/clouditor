@@ -570,6 +570,29 @@ func TestService_UpdateControlMonitoringStatus(t *testing.T) {
 			},
 		},
 		{
+			name: "ToE not found",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				in0: context.TODO(),
+				req: &orchestrator.UpdateControlMonitoringStatusRequest{
+					Status: &orchestrator.ControlMonitoringStatus{
+						ControlId:                        orchestratortest.MockControlID,
+						ControlCategoryName:              orchestratortest.MockCategoryName,
+						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
+						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
+						Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
+					},
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Equal(t, codes.NotFound, status.Code(err))
+			},
+		},
+		{
 			name: "permission denied",
 			fields: fields{
 				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
