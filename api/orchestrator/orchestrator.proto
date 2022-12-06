@@ -26,7 +26,7 @@
  */
 syntax = "proto3";
 
-package clouditor;
+package clouditor.orchestrator.v1;
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
@@ -53,9 +53,6 @@ service Orchestrator {
       returns (ListAssessmentToolsResponse) {
     option (google.api.http) = {
       get : "/v1/orchestrator/assessment_tools"
-      additional_bindings {
-        get : "/v1/orchestrator/{metric_id}/assessment_tools"
-      }
     };
   }
 
@@ -99,19 +96,17 @@ service Orchestrator {
       returns (stream StoreAssessmentResultResponse);
 
   // List all assessment results. Part of the public API, also exposed as REST.
-  rpc ListAssessmentResults(ListAssessmentResultsRequest)
-      returns (ListAssessmentResultsResponse) {
+  rpc ListAssessmentResults(
+      clouditor.assessment.v1.ListAssessmentResultsRequest)
+      returns (clouditor.assessment.v1.ListAssessmentResultsResponse) {
     option (google.api.http) = {
       get : "/v1/orchestrator/assessment_results"
-      additional_bindings {
-        get : "/v1/orchestrator/cloud_services/{filtered_cloud_service_id}/"
-              "assessment_results"
-      }
     };
   }
 
   // Creates a new metric
-  rpc CreateMetric(CreateMetricRequest) returns (Metric) {
+  rpc CreateMetric(CreateMetricRequest)
+      returns (clouditor.assessment.v1.Metric) {
     option (google.api.http) = {
       post : "/v1/orchestrator/metrics"
       body : "metric"
@@ -119,7 +114,8 @@ service Orchestrator {
   }
 
   // Updates an existing metric
-  rpc UpdateMetric(UpdateMetricRequest) returns (Metric) {
+  rpc UpdateMetric(UpdateMetricRequest)
+      returns (clouditor.assessment.v1.Metric) {
     option (google.api.http) = {
       put : "/v1/orchestrator/metrics/{metric_id}"
       body : "metric"
@@ -127,7 +123,7 @@ service Orchestrator {
   }
 
   // Returns the metric with the passed metric id
-  rpc GetMetric(GetMetricRequest) returns (Metric) {
+  rpc GetMetric(GetMetricRequest) returns (clouditor.assessment.v1.Metric) {
     option (google.api.http) = {
       get : "/v1/orchestrator/metrics/{metric_id}"
     };
@@ -182,7 +178,7 @@ service Orchestrator {
   // Updates a metric configuration (target value and operator) for a specific
   // service and metric ID
   rpc UpdateMetricConfiguration(UpdateMetricConfigurationRequest)
-      returns (MetricConfiguration) {
+      returns (clouditor.assessment.v1.MetricConfiguration) {
     option (google.api.http) = {
       put : "/v1/orchestrator/cloud_services/{cloud_service_id}/"
             "metric_configurations/"
@@ -194,7 +190,7 @@ service Orchestrator {
   // Retrieves a metric configuration (target value and operator) for a specific
   // service and metric ID.
   rpc GetMetricConfiguration(GetMetricConfigurationRequest)
-      returns (MetricConfiguration) {
+      returns (clouditor.assessment.v1.MetricConfiguration) {
     option (google.api.http) = {
       get : "/v1/orchestrator/cloud_services/{cloud_service_id}/"
             "metric_configurations/"
@@ -214,7 +210,7 @@ service Orchestrator {
 
   // Updates an existing metric implementation
   rpc UpdateMetricImplementation(UpdateMetricImplementationRequest)
-      returns (MetricImplementation) {
+      returns (clouditor.assessment.v1.MetricImplementation) {
     option (google.api.http) = {
       put : "/v1/orchestrator/metrics/{metric_id}/implementation"
       body : "implementation"
@@ -223,7 +219,7 @@ service Orchestrator {
 
   // Returns the metric implementation of the passed metric id
   rpc GetMetricImplementation(GetMetricImplementationRequest)
-      returns (MetricImplementation) {
+      returns (clouditor.assessment.v1.MetricImplementation) {
     option (google.api.http) = {
       get : "/v1/orchestrator/metrics/{metric_id}/implementation"
     };
@@ -334,7 +330,8 @@ service Orchestrator {
 
   // Retrieves a control specified by the catalog ID, the control's category
   // name and the control ID. If present, it also includes a list of
-  // sub-controls if present or a list of metrics if no sub-controls but metrics are present.
+  // sub-controls if present or a list of metrics if no sub-controls but metrics
+  // are present.
   rpc GetControl(GetControlRequest) returns (Control) {
     option (google.api.http) = {
       get : "/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/"
@@ -355,8 +352,29 @@ service Orchestrator {
   rpc GetTargetOfEvaluation(GetTargetOfEvaluationRequest)
       returns (TargetOfEvaluation) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/"
-            "{catalog_id}/toes"
+      get : "/v1/orchestrator/cloud_services/{cloud_service_id}/toes/"
+            "{catalog_id}"
+    };
+  }
+
+  // Lists all control monitoring statuses
+  rpc ListControlMonitoringStatus(ListControlMonitoringStatusRequest)
+      returns (ListControlMonitoringStatusResponse) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/cloud_services/{cloud_service_id}/toes/"
+            "{catalog_id}/monitoring_status"
+    };
+  }
+
+  // Updates a particular control monitoring status
+  rpc UpdateControlMonitoringStatus(UpdateControlMonitoringStatusRequest)
+      returns (ControlMonitoringStatus) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/cloud_services/"
+            "{status.target_of_evaluation_cloud_service_id}/toes/"
+            "{status.target_of_evaluation_catalog_id}/monitoring_status/"
+            "categories/{status.control_category_name}/"
+            "controls/{status.control_id}"
     };
   }
 
@@ -376,8 +394,8 @@ service Orchestrator {
   rpc UpdateTargetOfEvaluation(UpdateTargetOfEvaluationRequest)
       returns (TargetOfEvaluation) {
     option (google.api.http) = {
-      put : "/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/"
-            "{catalog_id}/toes"
+      put : "/v1/orchestrator/cloud_services/{cloud_service_id}/toes/"
+            "{catalog_id}"
       body : "toe"
     };
   }
@@ -386,8 +404,8 @@ service Orchestrator {
   rpc RemoveTargetOfEvaluation(RemoveTargetOfEvaluationRequest)
       returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      delete : "/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/"
-               "{catalog_id}/toes"
+      delete : "/v1/orchestrator/cloud_services/{cloud_service_id}/toes/"
+               "{catalog_id}"
     };
   }
 }
@@ -416,17 +434,19 @@ message UpdateAssessmentToolRequest {
 
 message DeregisterAssessmentToolRequest { string tool_id = 1; }
 
-message StoreAssessmentResultRequest { AssessmentResult result = 1; }
+message StoreAssessmentResultRequest {
+  clouditor.assessment.v1.AssessmentResult result = 1;
+}
 message StoreAssessmentResultResponse {
   bool status = 1;
   string status_message = 2;
 }
 
-message CreateMetricRequest { Metric metric = 1; }
+message CreateMetricRequest { clouditor.assessment.v1.Metric metric = 1; }
 
 message UpdateMetricRequest {
   string metric_id = 1;
-  Metric metric = 2;
+  clouditor.assessment.v1.Metric metric = 2;
 }
 
 message GetMetricRequest { string metric_id = 1; }
@@ -439,7 +459,7 @@ message ListMetricsRequest {
 }
 
 message ListMetricsResponse {
-  repeated Metric metrics = 1;
+  repeated clouditor.assessment.v1.Metric metrics = 1;
   string next_page_token = 2;
 }
 
@@ -470,7 +490,7 @@ message UpdateMetricConfigurationRequest {
 
   string metric_id = 2;
 
-  MetricConfiguration configuration = 3;
+  clouditor.assessment.v1.MetricConfiguration configuration = 3;
 }
 
 message GetMetricConfigurationRequest {
@@ -483,12 +503,12 @@ message ListMetricConfigurationRequest { string cloud_service_id = 1; }
 
 message ListMetricConfigurationResponse {
   // A map of metric configurations associated by their metric ID
-  map<string, MetricConfiguration> configurations = 1;
+  map<string, clouditor.assessment.v1.MetricConfiguration> configurations = 1;
 }
 
 message UpdateMetricImplementationRequest {
   string metric_id = 1;
-  MetricImplementation implementation = 2;
+  clouditor.assessment.v1.MetricImplementation implementation = 2;
 }
 
 message GetMetricImplementationRequest {
@@ -513,7 +533,7 @@ message MetricChangeEvent {
   // The metric that is changing.
   string metric_id = 2;
 
-  // Optionally, the service id that is affected by this change. Primarily
+  // Optional. The cloud service id that is affected by this change. Primarily
   // concerns metric configuration changes.
   string cloud_service_id = 3;
 }
@@ -541,7 +561,7 @@ message CloudService {
   repeated Catalog catalogs_in_scope = 4
       [ (tagger.tags) = "gorm:\"many2many:target_of_evaluations\"" ];
 
-  repeated Metric configured_metrics = 5
+  repeated clouditor.assessment.v1.Metric configured_metrics = 5
       [ (tagger.tags) = "gorm:\"many2many:metric_configurations\"" ];
 }
 
@@ -554,6 +574,11 @@ message Catalog {
 
   repeated Category categories = 4
       [ (tagger.tags) = "gorm:\"constraint:OnDelete:CASCADE\"" ];
+
+  // Certain security catalogs do not allow to select the scope of the controls,
+  // but all controls are automatically "in scope", however they can be set to a
+  // DELEGATED status.
+  bool all_in_scope = 5;
 }
 
 message Category {
@@ -597,7 +622,7 @@ message Control {
   // metrics contains either a list of reference to metrics - in this case only
   // the id field of the metric is populated - or a list of populated metric
   // meta-data, most likely returned by the database.
-  repeated Metric metrics = 7
+  repeated clouditor.assessment.v1.Metric metrics = 7
       [ (tagger.tags) =
             "gorm:\"many2many:control_metrics;constraint:OnDelete:CASCADE\"" ];
 
@@ -617,6 +642,51 @@ message TargetOfEvaluation {
   // an assurance level is not offered by every catalog, therefore it is
   // optional
   optional string assurance_level = 3;
+
+  // the controls that are in scope of this ToE. Note: For some security
+  // catalogs, e.g., the EUCS, a specific set of controls (in the "worst case":
+  // all) are automatically in scope. In this case, this list needs auto-filled
+  // at an appropriate time, e.g,. in CreateTargetOfEvaluation.
+  repeated Control controls_in_scope = 4
+      [ (tagger.tags) = "gorm:\"many2many:control_monitoring_statuses;"
+                        "constraint:OnDelete:CASCADE\"" ];
+}
+
+message ListControlMonitoringStatusRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string order_by = 3;
+  bool asc = 4;
+
+  string cloud_service_id = 10;
+  string catalog_id = 11;
+}
+
+message ListControlMonitoringStatusResponse {
+  repeated ControlMonitoringStatus status = 1;
+  string next_page_token = 2;
+}
+
+message UpdateControlMonitoringStatusRequest {
+  ControlMonitoringStatus status = 1;
+}
+
+message ControlMonitoringStatus {
+  string target_of_evaluation_cloud_service_id = 1;
+  string target_of_evaluation_catalog_id = 2;
+
+  string control_id = 3;
+  string control_category_name = 4;
+  string control_category_catalog_id = 5;
+
+  enum Status {
+    STATUS_UNSPECIFIED = 0;
+    STATUS_CONTINUOUSLY_MONITORED = 1;
+    STATUS_MANUALLY_MONITORED = 2;
+    STATUS_DELEGATED = 3;
+  }
+
+  Status status = 6;
 }
 
 message CreateTargetOfEvaluationRequest { TargetOfEvaluation toe = 1; }

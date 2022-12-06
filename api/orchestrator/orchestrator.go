@@ -78,6 +78,12 @@ func (req *GetMetricConfigurationRequest) Validate() error {
 	return nil
 }
 
+// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// the cloud service ID of the inner status object.
+func (req *UpdateControlMonitoringStatusRequest) GetCloudServiceId() string {
+	return req.Status.GetTargetOfEvaluationCloudServiceId()
+}
+
 type CloudServiceRequest interface {
 	GetCloudServiceId() string
 }
