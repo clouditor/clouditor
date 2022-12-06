@@ -26,7 +26,7 @@
  */
  syntax = "proto3";
 
- package clouditor;
+ package clouditor.evaluation.v1;
 
  import "google/api/annotations.proto";
  import "google/protobuf/timestamp.proto";
@@ -78,7 +78,7 @@ message ListEvaluationResultsRequest {
   }
 
 message StartEvaluationRequest {
-    TargetOfEvaluation target_of_evaluation = 1;
+    clouditor.orchestrator.v1.TargetOfEvaluation target_of_evaluation = 1;
     
     // The control to be checked
     repeated evalControl eval_control = 2; 
@@ -98,7 +98,7 @@ message StartEvaluationResponse {
 }
 
 message StopEvaluationRequest {
-    TargetOfEvaluation target_of_evaluation = 1; 
+    clouditor.orchestrator.v1.TargetOfEvaluation target_of_evaluation = 1; 
     // The category the control ID belongs to 
     string category_name = 2; 
     // The control ID
@@ -133,8 +133,8 @@ message EvaluationResult {
       [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
 
     // Reference to the target of evaluation the evaluation was based on
-    TargetOfEvaluation target_of_evaluation = 6;
+    clouditor.orchestrator.v1.TargetOfEvaluation target_of_evaluation = 6;
 
     // List of assessment results because of which the evaluation status is not 'compliant'
-    repeated AssessmentResult failing_assessment_results = 7;
+    repeated clouditor.assessment.v1.AssessmentResult failing_assessment_results = 7;
 }
