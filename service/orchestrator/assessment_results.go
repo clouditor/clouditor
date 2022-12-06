@@ -34,14 +34,14 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/service"
 )
 
 // ListAssessmentResults is a method implementation of the orchestrator interface
-func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
+func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessmentv1.ListAssessmentResultsRequest) (res *assessmentv1.ListAssessmentResultsResponse, err error) {
 	var values = maps.Values(svc.results)
-	var filtered_values []*assessment.AssessmentResult
+	var filtered_values []*assessmentv1.AssessmentResult
 	var allowed []string
 	var all bool
 
@@ -89,10 +89,10 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.L
 		filtered_values = append(filtered_values, v)
 	}
 
-	res = new(assessment.ListAssessmentResultsResponse)
+	res = new(assessmentv1.ListAssessmentResultsResponse)
 
 	// Paginate the results according to the request
-	res.Results, res.NextPageToken, err = service.PaginateSlice(req, filtered_values, func(a *assessment.AssessmentResult, b *assessment.AssessmentResult) bool {
+	res.Results, res.NextPageToken, err = service.PaginateSlice(req, filtered_values, func(a *assessmentv1.AssessmentResult, b *assessmentv1.AssessmentResult) bool {
 		return a.Timestamp.AsTime().After(b.Timestamp.AsTime())
 	}, service.DefaultPaginationOpts)
 	if err != nil {

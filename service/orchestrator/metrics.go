@@ -34,7 +34,7 @@ import (
 	"os"
 
 	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
@@ -49,7 +49,7 @@ import (
 // well as the default metric implementations from the Rego files.
 func (svc *Service) loadMetrics() (err error) {
 	var (
-		metrics []*assessment.Metric
+		metrics []*assessmentv1.Metric
 	)
 
 	// Default to loading metrics from our embedded file system
@@ -63,7 +63,7 @@ func (svc *Service) loadMetrics() (err error) {
 		return fmt.Errorf("could not load metrics: %w", err)
 	}
 
-	defaultMetricConfigurations = make(map[string]*assessment.MetricConfiguration)
+	defaultMetricConfigurations = make(map[string]*assessmentv1.MetricConfiguration)
 
 	// Try to prepare the (initial) metric implementations and configurations. We can still continue if they should
 	// fail, since they can still be updated later during runtime. Also, this makes it possible to load metrics of which
@@ -95,9 +95,9 @@ func (svc *Service) loadMetrics() (err error) {
 
 // prepareMetric takes care of the heavy lifting of loading the default implementation and configuration of a particular
 // metric and storing them into the service.
-func prepareMetric(m *assessment.Metric) (err error) {
+func prepareMetric(m *assessmentv1.Metric) (err error) {
 	var (
-		config *assessment.MetricConfiguration
+		config *assessmentv1.MetricConfiguration
 	)
 
 	// Load the Rego file
@@ -130,7 +130,7 @@ func prepareMetric(m *assessment.Metric) (err error) {
 
 // loadEmbeddedMetrics loads the metric definitions from the embedded file system using the path specified in
 // the service's metricsFile.
-func (svc *Service) loadEmbeddedMetrics() (metrics []*assessment.Metric, err error) {
+func (svc *Service) loadEmbeddedMetrics() (metrics []*assessmentv1.Metric, err error) {
 	var b []byte
 
 	b, err = f.ReadFile(svc.metricsFile)
@@ -147,16 +147,16 @@ func (svc *Service) loadEmbeddedMetrics() (metrics []*assessment.Metric, err err
 }
 
 // loadMetricImplementation loads a metric implementation from a Rego file on a filesystem.
-func loadMetricImplementation(metricID, file string) (impl *assessment.MetricImplementation, err error) {
+func loadMetricImplementation(metricID, file string) (impl *assessmentv1.MetricImplementation, err error) {
 	// Fetch the metric implementation directly from our file
 	b, err := os.ReadFile(file)
 	if err != nil {
 		return nil, fmt.Errorf("could not read file: %w", err)
 	}
 
-	impl = &assessment.MetricImplementation{
+	impl = &assessmentv1.MetricImplementation{
 		MetricId:  metricID,
-		Lang:      assessment.MetricImplementation_REGO,
+		Lang:      assessmentv1.MetricImplementation_REGO,
 		Code:      string(b),
 		UpdatedAt: timestamppb.Now(),
 	}
@@ -165,11 +165,11 @@ func loadMetricImplementation(metricID, file string) (impl *assessment.MetricImp
 }
 
 // CreateMetric creates a new metric in the database.
-func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetricRequest) (metric *assessment.Metric, err error) {
+func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetricRequest) (metric *assessmentv1.Metric, err error) {
 	var count int64
 
 	// Validate the metric request
-	err = req.Metric.Validate(assessment.WithMetricRequiresId())
+	err = req.Metric.Validate(assessmentv1.WithMetricRequiresId())
 	if err != nil {
 		newError := errors.New("validation of metric failed")
 		log.Error(newError)
@@ -207,7 +207,7 @@ func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetr
 }
 
 // UpdateMetric updates an existing metric, specified by the identifier in req.MetricId.
-func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetricRequest) (metric *assessment.Metric, err error) {
+func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetricRequest) (metric *assessmentv1.Metric, err error) {
 	// Validate the metric request
 	err = req.Metric.Validate()
 	if err != nil {
@@ -248,9 +248,9 @@ func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetr
 }
 
 // UpdateMetricImplementation updates an existing metric implementation, specified by the identifier in req.MetricId.
-func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestrator.UpdateMetricImplementationRequest) (impl *assessment.MetricImplementation, err error) {
+func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestrator.UpdateMetricImplementationRequest) (impl *assessmentv1.MetricImplementation, err error) {
 	var (
-		metric *assessment.Metric
+		metric *assessmentv1.Metric
 	)
 
 	// TODO(oxisto): Validate the metric implementation request
@@ -290,7 +290,7 @@ func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetrics
 	res = new(orchestrator.ListMetricsResponse)
 
 	// Validate the request
-	if err = api.ValidateListRequest[*assessment.Metric](req); err != nil {
+	if err = api.ValidateListRequest[*assessmentv1.Metric](req); err != nil {
 		err = fmt.Errorf("invalid request: %w", err)
 		log.Error(err)
 		err = status.Errorf(codes.InvalidArgument, "%v", err)
@@ -298,7 +298,7 @@ func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetrics
 	}
 
 	// Paginate the metrics according to the request
-	res.Metrics, res.NextPageToken, err = service.PaginateStorage[*assessment.Metric](req, svc.storage,
+	res.Metrics, res.NextPageToken, err = service.PaginateStorage[*assessmentv1.Metric](req, svc.storage,
 		service.DefaultPaginationOpts)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate metrics: %v", err)
@@ -308,7 +308,7 @@ func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetrics
 }
 
 // GetMetric retrieves a metric specified by req.MetricId.
-func (svc *Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequest) (metric *assessment.Metric, err error) {
+func (svc *Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequest) (metric *assessmentv1.Metric, err error) {
 	err = svc.storage.Get(&metric, "id = ?", req.MetricId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Error(codes.NotFound, "metric not found")
@@ -319,7 +319,7 @@ func (svc *Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequ
 	return
 }
 
-func (svc *Service) GetMetricConfiguration(ctx context.Context, req *orchestrator.GetMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
+func (svc *Service) GetMetricConfiguration(ctx context.Context, req *orchestrator.GetMetricConfigurationRequest) (res *assessmentv1.MetricConfiguration, err error) {
 	// Validate request
 	if err = req.Validate(); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "%s", err)
@@ -330,7 +330,7 @@ func (svc *Service) GetMetricConfiguration(ctx context.Context, req *orchestrato
 		return nil, service.ErrPermissionDenied
 	}
 
-	res = new(assessment.MetricConfiguration)
+	res = new(assessmentv1.MetricConfiguration)
 
 	err = svc.storage.Get(res, gorm.WithoutPreload(), "cloud_service_id = ? AND metric_id = ?", req.CloudServiceId, req.MetricId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
@@ -348,7 +348,7 @@ func (svc *Service) GetMetricConfiguration(ctx context.Context, req *orchestrato
 }
 
 // UpdateMetricConfiguration updates the configuration for a metric, specified by the identifier in req.MetricId.
-func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestrator.UpdateMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
+func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestrator.UpdateMetricConfigurationRequest) (res *assessmentv1.MetricConfiguration, err error) {
 	// Validate request
 	if err = req.Validate(); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "%s", err)
@@ -404,10 +404,10 @@ func (svc *Service) ListMetricConfigurations(ctx context.Context, req *orchestra
 	}
 
 	response = &orchestrator.ListMetricConfigurationResponse{
-		Configurations: make(map[string]*assessment.MetricConfiguration),
+		Configurations: make(map[string]*assessmentv1.MetricConfiguration),
 	}
 
-	var metrics []*assessment.Metric
+	var metrics []*assessmentv1.Metric
 	err = svc.storage.List(&metrics, "", true, 0, -1)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
@@ -425,8 +425,8 @@ func (svc *Service) ListMetricConfigurations(ctx context.Context, req *orchestra
 }
 
 // GetMetricImplementation retrieves a metric implementation specified by req.MetricId.
-func (svc *Service) GetMetricImplementation(_ context.Context, req *orchestrator.GetMetricImplementationRequest) (res *assessment.MetricImplementation, err error) {
-	res = new(assessment.MetricImplementation)
+func (svc *Service) GetMetricImplementation(_ context.Context, req *orchestrator.GetMetricImplementationRequest) (res *assessmentv1.MetricImplementation, err error) {
+	res = new(assessmentv1.MetricImplementation)
 
 	// TODO(oxisto): Validate GetMetricImplementationRequest
 	err = svc.storage.Get(res, "metric_id = ?", req.MetricId)

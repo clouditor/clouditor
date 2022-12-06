@@ -32,7 +32,7 @@ import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "tagger/tagger.proto";
 
-option go_package = "clouditor.io/clouditor/api/assessment;assessment";
+option go_package = "clouditor.io/clouditor/api/assessment/v1;assessmentv1";
 
 // A metric resource
 message Metric {

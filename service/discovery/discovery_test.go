@@ -37,7 +37,7 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/internal/testutil"
@@ -180,8 +180,8 @@ func TestService_StartDiscovery(t *testing.T) {
 
 			svc := NewService()
 			svc.csID = tt.fields.csID
-			svc.assessmentStreams = api.NewStreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]()
-			_, _ = svc.assessmentStreams.GetStream("mock", "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
+			svc.assessmentStreams = api.NewStreamsOf[assessmentv1.Assessment_AssessEvidencesClient, *assessmentv1.AssessEvidenceRequest]()
+			_, _ = svc.assessmentStreams.GetStream("mock", "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessmentv1.Assessment_AssessEvidencesClient, err error) {
 				return mockStream, nil
 			})
 			svc.assessmentAddress = grpcTarget{target: "mock"}
@@ -541,24 +541,24 @@ func (m *mockAssessmentStream) Wait() {
 	m.wg.Wait()
 }
 
-func (m *mockAssessmentStream) Recv() (*assessment.AssessEvidenceResponse, error) {
+func (m *mockAssessmentStream) Recv() (*assessmentv1.AssessEvidenceResponse, error) {
 	if m.counter == 0 {
 		m.counter++
-		return &assessment.AssessEvidenceResponse{
-			Status:        assessment.AssessEvidenceResponse_FAILED,
+		return &assessmentv1.AssessEvidenceResponse{
+			Status:        assessmentv1.AssessEvidenceResponse_FAILED,
 			StatusMessage: "mockError1",
 		}, nil
 	} else if m.counter == 1 {
 		m.counter++
-		return &assessment.AssessEvidenceResponse{
-			Status: assessment.AssessEvidenceResponse_ASSESSED,
+		return &assessmentv1.AssessEvidenceResponse{
+			Status: assessmentv1.AssessEvidenceResponse_ASSESSED,
 		}, nil
 	} else {
 		return nil, io.EOF
 	}
 }
 
-func (m *mockAssessmentStream) Send(req *assessment.AssessEvidenceRequest) (err error) {
+func (m *mockAssessmentStream) Send(req *assessmentv1.AssessEvidenceRequest) (err error) {
 	return m.SendMsg(req)
 }
 
@@ -583,7 +583,7 @@ func (*mockAssessmentStream) Context() context.Context {
 }
 
 func (m *mockAssessmentStream) SendMsg(req interface{}) (err error) {
-	e := req.(*assessment.AssessEvidenceRequest).Evidence
+	e := req.(*assessmentv1.AssessEvidenceRequest).Evidence
 	if m.connectionEstablished {
 		m.sentEvidences = append(m.sentEvidences, e)
 	} else {

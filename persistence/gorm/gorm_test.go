@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
@@ -93,10 +93,10 @@ func Test_storage_Create(t *testing.T) {
 	var (
 		err    error
 		s      persistence.Storage
-		metric *assessment.Metric
+		metric *assessmentv1.Metric
 	)
 
-	metric = &assessment.Metric{Id: MockMetricID}
+	metric = &assessmentv1.Metric{Id: MockMetricID}
 
 	// Create storage
 	s, err = NewStorage()
@@ -153,9 +153,9 @@ func Test_storage_Get(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, user, gotUser3)
 
-	var metric = &assessment.Metric{
+	var metric = &assessmentv1.Metric{
 		Id:    MockMetricID,
-		Range: &assessment.Range{Range: &assessment.Range_MinMax{MinMax: &assessment.MinMax{Min: 1, Max: 2}}},
+		Range: &assessmentv1.Range{Range: &assessmentv1.Range_MinMax{MinMax: &assessmentv1.MinMax{Min: 1, Max: 2}}},
 	}
 
 	// Create metric
@@ -163,12 +163,12 @@ func Test_storage_Get(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Get metric via Id
-	gotMetric := &assessment.Metric{}
+	gotMetric := &assessmentv1.Metric{}
 	err = s.Get(gotMetric, "id = ?", MockMetricID)
 	assert.NoError(t, err)
 	assert.Equal(t, metric, gotMetric)
 
-	var impl = &assessment.MetricImplementation{
+	var impl = &assessmentv1.MetricImplementation{
 		MetricId:  MockMetricID,
 		UpdatedAt: timestamppb.New(time.Date(2000, 1, 1, 1, 1, 1, 1, time.UTC)),
 	}
@@ -178,7 +178,7 @@ func Test_storage_Get(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Get metric implementation via Id
-	gotImpl := &assessment.MetricImplementation{}
+	gotImpl := &assessmentv1.MetricImplementation{}
 	err = s.Get(gotImpl, "metric_id = ?", MockMetricID)
 	assert.NoError(t, err)
 	assert.Equal(t, impl, gotImpl)
@@ -435,7 +435,7 @@ func Test_storage_Update(t *testing.T) {
 		Id:          "SomeId",
 		Name:        "SomeName",
 		Description: "SomeDescription",
-		ConfiguredMetrics: []*assessment.Metric{
+		ConfiguredMetrics: []*assessmentv1.Metric{
 			{
 				Id: "SomeId",
 			},

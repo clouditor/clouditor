@@ -10,7 +10,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	service_evidence "clouditor.io/clouditor/service/evidence"
@@ -63,7 +63,7 @@ func createEvidences(n int, m int, b *testing.B) int {
 
 	svc := NewService(WithOrchestratorAddress(addr), WithEvidenceStoreAddress(addr))
 
-	orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
+	orchestratorService.RegisterAssessmentResultHook(func(result *assessmentv1.AssessmentResult, err error) {
 		wg.Done()
 		current := atomic.AddInt64(&count, 1)
 		log.Debugf("Current count: %v", current)
@@ -90,7 +90,7 @@ func createEvidences(n int, m int, b *testing.B) int {
 					log.Infof("Currently @ %v", i)
 				}
 
-				_, err := svc.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{
+				_, err := svc.AssessEvidence(context.Background(), &assessmentv1.AssessEvidenceRequest{
 					Evidence: &e,
 				})
 				if err != nil {

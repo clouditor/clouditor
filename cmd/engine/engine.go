@@ -34,7 +34,7 @@ import (
 	"os"
 	"strings"
 
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
@@ -46,7 +46,7 @@ import (
 	"clouditor.io/clouditor/persistence/inmemory"
 	"clouditor.io/clouditor/rest"
 	"clouditor.io/clouditor/service"
-	service_assessment "clouditor.io/clouditor/service/assessment"
+	"clouditor.io/clouditor/service/assessment"
 	service_discovery "clouditor.io/clouditor/service/discovery"
 	service_evidenceStore "clouditor.io/clouditor/service/evidence"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
@@ -118,7 +118,7 @@ var (
 	server               *grpc.Server
 	discoveryService     discovery.DiscoveryServer
 	orchestratorService  *service_orchestrator.Service
-	assessmentService    assessment.AssessmentServer
+	assessmentService    assessmentv1.AssessmentServer
 	evidenceStoreService evidence.EvidenceStoreServer
 	db                   persistence.Storage
 	providers            []string
@@ -255,8 +255,8 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 
 	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db))
 
-	assessmentService = service_assessment.NewService(
-		service_assessment.WithOAuth2Authorizer(
+	assessmentService = assessment.NewService(
+		assessment.WithOAuth2Authorizer(
 			// Configure the OAuth 2.0 client credentials for this service
 			&clientcredentials.Config{
 				ClientID:     viper.GetString(ServiceOAuth2ClientIDFlag),
@@ -272,9 +272,9 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	// The hook functions in evidenceStore are implemented in StoreEvidence(s)
 	// The hook functions in assessment are implemented in AssessEvidence(s)
 
-	// orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {})
+	// orchestratorService.RegisterAssessmentResultHook(func(result *assessmentv1.AssessmentResult, err error) {})
 	// evidenceStoreService.RegisterEvidenceHook(func(result *evidence.Evidence, err error) {})
-	// assessmentService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {}
+	// assessmentService.RegisterAssessmentResultHook(func(result *assessmentv1.AssessmentResult, err error) {}
 
 	if viper.GetBool(CreateDefaultTarget) {
 		_, err := orchestratorService.CreateDefaultTargetCloudService()
@@ -316,7 +316,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		))
 	discovery.RegisterDiscoveryServer(server, discoveryService)
 	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
-	assessment.RegisterAssessmentServer(server, assessmentService)
+	assessmentv1.RegisterAssessmentServer(server, assessmentService)
 	evidence.RegisterEvidenceStoreServer(server, evidenceStoreService)
 
 	// enable reflection, primary for testing in early stages

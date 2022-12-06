@@ -37,7 +37,7 @@ import (
 	"strings"
 	"time"
 
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
@@ -184,7 +184,7 @@ func RunServer(ctx context.Context, grpcPort uint16, httpPort uint16, serverOpts
 		return fmt.Errorf("failed to connect to discovery gRPC service %w", err)
 	}
 
-	if err := assessment.RegisterAssessmentHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), opts); err != nil {
+	if err := assessmentv1.RegisterAssessmentHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), opts); err != nil {
 		return fmt.Errorf("failed to connect to assessment gRPC service %w", err)
 	}
 

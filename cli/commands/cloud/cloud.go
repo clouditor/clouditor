@@ -30,7 +30,7 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
@@ -246,7 +246,7 @@ func NewGetMetricConfigurationCommand() *cobra.Command {
 				err     error
 				session *cli.Session
 				client  orchestrator.OrchestratorClient
-				res     *assessment.MetricConfiguration
+				res     *assessmentv1.MetricConfiguration
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {

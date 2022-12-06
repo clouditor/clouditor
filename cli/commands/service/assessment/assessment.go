@@ -29,7 +29,7 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
 )
@@ -43,9 +43,9 @@ func NewListAssessmentResultsCommand() *cobra.Command {
 			var (
 				err     error
 				session *cli.Session
-				client  assessment.AssessmentClient
-				res     *assessment.ListAssessmentResultsResponse
-				results []*assessment.AssessmentResult
+				client  assessmentv1.AssessmentClient
+				res     *assessmentv1.ListAssessmentResultsResponse
+				results []*assessmentv1.AssessmentResult
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -53,14 +53,14 @@ func NewListAssessmentResultsCommand() *cobra.Command {
 				return nil
 			}
 
-			client = assessment.NewAssessmentClient(session)
+			client = assessmentv1.NewAssessmentClient(session)
 
-			results, err = api.ListAllPaginated(&assessment.ListAssessmentResultsRequest{}, client.ListAssessmentResults, func(res *assessment.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
+			results, err = api.ListAllPaginated(&assessmentv1.ListAssessmentResultsRequest{}, client.ListAssessmentResults, func(res *assessmentv1.ListAssessmentResultsResponse) []*assessmentv1.AssessmentResult {
 				return res.Results
 			})
 
 			// Build a response with all results
-			res = &assessment.ListAssessmentResultsResponse{
+			res = &assessmentv1.ListAssessmentResultsResponse{
 				Results: results,
 			}
 

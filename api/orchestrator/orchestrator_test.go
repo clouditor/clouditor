@@ -29,7 +29,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/structpb"
 )
@@ -198,7 +198,7 @@ func TestListMetricsRequest_Validate(t *testing.T) {
 				OrderBy:   tt.fields.OrderBy,
 				Asc:       tt.fields.Asc,
 			}
-			tt.wantErr(t, api.ValidateListRequest[*assessment.Metric](req), "Validate()")
+			tt.wantErr(t, api.ValidateListRequest[*assessmentv1.Metric](req), "Validate()")
 		})
 	}
 }
@@ -217,14 +217,14 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 			fields: fields{
 				Request: &UpdateMetricConfigurationRequest{
 					MetricId: "TestMetric",
-					Configuration: &assessment.MetricConfiguration{
+					Configuration: &assessmentv1.MetricConfiguration{
 						Operator:    "<",
 						TargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "11111"}},
 					},
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, assessment.ErrCloudServiceIDIsMissing.Error())
+				return assert.ErrorContains(t, err, assessmentv1.ErrCloudServiceIDIsMissing.Error())
 			},
 		},
 		{
@@ -233,14 +233,14 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 				Request: &UpdateMetricConfigurationRequest{
 					MetricId:       "TestMetric",
 					CloudServiceId: "00000000000000000000",
-					Configuration: &assessment.MetricConfiguration{
+					Configuration: &assessmentv1.MetricConfiguration{
 						Operator:    "<",
 						TargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "11111"}},
 					},
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, assessment.ErrCloudServiceIDIsInvalid.Error())
+				return assert.ErrorContains(t, err, assessmentv1.ErrCloudServiceIDIsInvalid.Error())
 			},
 		},
 		{
@@ -248,14 +248,14 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 			fields: fields{
 				Request: &UpdateMetricConfigurationRequest{
 					CloudServiceId: "00000000-0000-0000-0000-000000000000",
-					Configuration: &assessment.MetricConfiguration{
+					Configuration: &assessmentv1.MetricConfiguration{
 						Operator:    "<",
 						TargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "11111"}},
 					},
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, assessment.ErrMetricIdMissing.Error())
+				return assert.ErrorContains(t, err, assessmentv1.ErrMetricIdMissing.Error())
 			},
 		},
 		{
@@ -264,7 +264,7 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 				Request: &UpdateMetricConfigurationRequest{
 					MetricId:       "TestMetric",
 					CloudServiceId: "00000000-0000-0000-0000-000000000000",
-					Configuration: &assessment.MetricConfiguration{
+					Configuration: &assessmentv1.MetricConfiguration{
 						Operator:    "<",
 						TargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "11111"}},
 					},
@@ -298,7 +298,7 @@ func TestGetMetricConfigurationRequest_Validate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, assessment.ErrCloudServiceIDIsMissing.Error())
+				return assert.ErrorContains(t, err, assessmentv1.ErrCloudServiceIDIsMissing.Error())
 			},
 		},
 		{
@@ -310,7 +310,7 @@ func TestGetMetricConfigurationRequest_Validate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, assessment.ErrCloudServiceIDIsInvalid.Error())
+				return assert.ErrorContains(t, err, assessmentv1.ErrCloudServiceIDIsInvalid.Error())
 			},
 		},
 		{
@@ -321,7 +321,7 @@ func TestGetMetricConfigurationRequest_Validate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, assessment.ErrMetricIdMissing.Error())
+				return assert.ErrorContains(t, err, assessmentv1.ErrMetricIdMissing.Error())
 			},
 		},
 		{

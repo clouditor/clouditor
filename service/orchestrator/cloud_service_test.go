@@ -30,7 +30,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/persistence"
@@ -302,11 +302,11 @@ func TestService_CreateDefaultTargetCloudService(t *testing.T) {
 
 func TestService_ListCloudServices(t *testing.T) {
 	type fields struct {
-		results               map[string]*assessment.AssessmentResult
-		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		results               map[string]*assessmentv1.AssessmentResult
+		AssessmentResultHooks []func(result *assessmentv1.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
-		loadMetricsFunc       func() ([]*assessment.Metric, error)
+		loadMetricsFunc       func() ([]*assessmentv1.Metric, error)
 		catalogsFile          string
 		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 		events                chan *orchestrator.MetricChangeEvent

@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             (unknown)
-// source: api/assessment/assessment.proto
+// source: api/assessment/v1/assessment.proto
 
-package assessment
+package assessmentv1
 
 import (
 	context "context"
@@ -257,5 +257,5 @@ var Assessment_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 	},
-	Metadata: "api/assessment/assessment.proto",
+	Metadata: "api/assessment/v1/assessment.proto",
 }

@@ -30,8 +30,8 @@ package clouditor.orchestrator.v1;
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
-import "api/assessment/metric.proto";
-import "api/assessment/assessment.proto";
+import "api/assessment/v1/metric.proto";
+import "api/assessment/v1/assessment.proto";
 import "tagger/tagger.proto";
 
 option go_package = "clouditor.io/clouditor/api/orchestrator";

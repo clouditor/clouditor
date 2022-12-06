@@ -30,25 +30,25 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/api/orchestrator"
 
 	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
 )
 
-// NewListAssessmentResultsCommand returns a cobra command for the `list-assessment-results` subcommand
+// NewListAssessmentResultsCommand returns a cobra command for the `list-assessmentv1-results` subcommand
 func NewListAssessmentResultsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list-assessment-results",
-		Short: "Lists all assessment results stored in the Orchestrator service",
+		Short: "Lists all assessmentv1 results stored in the Orchestrator service",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err     error
 				session *cli.Session
 				client  orchestrator.OrchestratorClient
-				res     *assessment.ListAssessmentResultsResponse
-				results []*assessment.AssessmentResult
+				res     *assessmentv1.ListAssessmentResultsResponse
+				results []*assessmentv1.AssessmentResult
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -58,12 +58,12 @@ func NewListAssessmentResultsCommand() *cobra.Command {
 
 			client = orchestrator.NewOrchestratorClient(session)
 
-			results, err = api.ListAllPaginated(&assessment.ListAssessmentResultsRequest{}, client.ListAssessmentResults, func(res *assessment.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
+			results, err = api.ListAllPaginated(&assessmentv1.ListAssessmentResultsRequest{}, client.ListAssessmentResults, func(res *assessmentv1.ListAssessmentResultsResponse) []*assessmentv1.AssessmentResult {
 				return res.Results
 			})
 
 			// Build a response with all results
-			res = &assessment.ListAssessmentResultsResponse{
+			res = &assessmentv1.ListAssessmentResultsResponse{
 				Results: results,
 			}
 

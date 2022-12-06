@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package assessment
+package assessmentv1
 
 import (
 	"database/sql/driver"

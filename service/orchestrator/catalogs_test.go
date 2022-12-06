@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
@@ -286,11 +286,11 @@ func TestService_RemoveCatalog(t *testing.T) {
 func TestService_GetCategory(t *testing.T) {
 	type fields struct {
 		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
-		results               map[string]*assessment.AssessmentResult
-		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		results               map[string]*assessmentv1.AssessmentResult
+		AssessmentResultHooks []func(result *assessmentv1.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
-		loadMetricsFunc       func() ([]*assessment.Metric, error)
+		loadMetricsFunc       func() ([]*assessmentv1.Metric, error)
 		catalogsFile          string
 		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 		events                chan *orchestrator.MetricChangeEvent
@@ -327,7 +327,7 @@ func TestService_GetCategory(t *testing.T) {
 					CategoryName:      "My name",
 					CategoryCatalogId: "Cat1234",
 					// at this level, we will not have the metrics
-					Metrics: []*assessment.Metric{},
+					Metrics: []*assessmentv1.Metric{},
 					// at this level, we will not have the sub-controls
 					Controls: []*orchestrator.Control{},
 				}},
@@ -364,11 +364,11 @@ func TestService_GetCategory(t *testing.T) {
 func TestService_GetControl(t *testing.T) {
 	type fields struct {
 		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
-		results               map[string]*assessment.AssessmentResult
-		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		results               map[string]*assessmentv1.AssessmentResult
+		AssessmentResultHooks []func(result *assessmentv1.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
-		loadMetricsFunc       func() ([]*assessment.Metric, error)
+		loadMetricsFunc       func() ([]*assessmentv1.Metric, error)
 		catalogsFile          string
 		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 	}
@@ -397,13 +397,13 @@ func TestService_GetControl(t *testing.T) {
 				CategoryCatalogId: "Cat1234",
 				Name:              "Mock Control",
 				Description:       "This is a mock control",
-				Metrics: []*assessment.Metric{{
+				Metrics: []*assessmentv1.Metric{{
 					Id:          "MockMetric",
 					Name:        "A Mock Metric",
 					Description: "This Metric is a mock metric",
-					Scale:       assessment.Metric_ORDINAL,
-					Range: &assessment.Range{
-						Range: &assessment.Range_AllowedValues{AllowedValues: &assessment.AllowedValues{
+					Scale:       assessmentv1.Metric_ORDINAL,
+					Range: &assessmentv1.Range{
+						Range: &assessmentv1.Range_AllowedValues{AllowedValues: &assessmentv1.AllowedValues{
 							Values: []*structpb.Value{
 								structpb.NewBoolValue(false),
 								structpb.NewBoolValue(true),
@@ -413,7 +413,7 @@ func TestService_GetControl(t *testing.T) {
 					Id:                             "Cont1234.1",
 					Name:                           "Mock Sub-Control",
 					Description:                    "This is a mock sub-control",
-					Metrics:                        []*assessment.Metric{},
+					Metrics:                        []*assessmentv1.Metric{},
 					CategoryName:                   "My name",
 					CategoryCatalogId:              "Cat1234",
 					ParentControlId:                &orchestratortest.MockControlID,
@@ -491,11 +491,11 @@ func TestService_ListControls(t *testing.T) {
 
 func TestService_loadCatalogs(t *testing.T) {
 	type fields struct {
-		results               map[string]*assessment.AssessmentResult
-		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		results               map[string]*assessmentv1.AssessmentResult
+		AssessmentResultHooks []func(result *assessmentv1.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
-		loadMetricsFunc       func() ([]*assessment.Metric, error)
+		loadMetricsFunc       func() ([]*assessmentv1.Metric, error)
 		catalogsFile          string
 		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 		events                chan *orchestrator.MetricChangeEvent

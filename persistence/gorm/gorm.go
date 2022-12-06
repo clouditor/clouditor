@@ -30,7 +30,7 @@ import (
 	"fmt"
 	"strings"
 
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
@@ -65,8 +65,8 @@ type storage struct {
 var DefaultTypes = []any{
 	&auth.User{},
 	&orchestrator.CloudService{},
-	&assessment.MetricImplementation{},
-	&assessment.Metric{},
+	&assessmentv1.MetricImplementation{},
+	&assessmentv1.Metric{},
 	&orchestrator.Certificate{},
 	&orchestrator.State{},
 	&orchestrator.Catalog{},
@@ -158,7 +158,7 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 		return
 	}
 
-	if err = g.db.SetupJoinTable(orchestrator.CloudService{}, "ConfiguredMetrics", assessment.MetricConfiguration{}); err != nil {
+	if err = g.db.SetupJoinTable(orchestrator.CloudService{}, "ConfiguredMetrics", assessmentv1.MetricConfiguration{}); err != nil {
 		err = fmt.Errorf("error during join-table: %w", err)
 		return
 	}

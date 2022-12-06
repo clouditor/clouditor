@@ -29,8 +29,8 @@ import (
 	"context"
 	"net"
 
-	"clouditor.io/clouditor/api/assessment"
-	service_assessment "clouditor.io/clouditor/service/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
+	"clouditor.io/clouditor/service/assessment"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
@@ -49,13 +49,13 @@ func bufConnDialer(context.Context, string) (net.Conn, error) {
 // startBufConnServer starts an gRPC listening on a bufconn listener. It exposes
 // real functionality of the following services for testing purposes:
 // * Assessment Service
-func startBufConnServer() (*grpc.Server, *service_assessment.Service) {
+func startBufConnServer() (*grpc.Server, *assessment.Service) {
 	bufConnListener = bufconn.Listen(DefaultBufferSize)
 
 	server := grpc.NewServer()
 
-	assessmentService := service_assessment.NewService()
-	assessment.RegisterAssessmentServer(server, assessmentService)
+	assessmentService := assessment.NewService()
+	assessmentv1.RegisterAssessmentServer(server, assessmentService)
 
 	go func() {
 		if err := server.Serve(bufConnListener); err != nil {

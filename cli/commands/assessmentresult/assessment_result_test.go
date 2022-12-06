@@ -32,7 +32,7 @@ import (
 	"os"
 	"testing"
 
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/internal/testutil/clitest"
@@ -57,14 +57,14 @@ func TestMain(m *testing.M) {
 
 	// Store an assessment result so that output of CMD 'list' is not empty
 	_, err = svc.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
-		Result: &assessment.AssessmentResult{
+		Result: &assessmentv1.AssessmentResult{
 			Id:            "11111111-1111-1111-1111-111111111111",
 			MetricId:      "assessmentResultMetricID",
 			EvidenceId:    "11111111-1111-1111-1111-111111111111",
 			Timestamp:     timestamppb.Now(),
 			ResourceId:    "myResource",
 			ResourceTypes: []string{"ResourceType"},
-			MetricConfiguration: &assessment.MetricConfiguration{
+			MetricConfiguration: &assessmentv1.MetricConfiguration{
 				TargetValue: toStruct(1.0),
 				Operator:    "operator",
 				IsDefault:   true,
@@ -100,7 +100,7 @@ func TestNewListResultsCommand(t *testing.T) {
 	err := cmd.RunE(nil, []string{})
 	assert.NoError(t, err)
 
-	var response = &assessment.ListAssessmentResultsResponse{}
+	var response = &assessmentv1.ListAssessmentResultsResponse{}
 	err = protojson.Unmarshal(b.Bytes(), response)
 
 	assert.NoError(t, err)

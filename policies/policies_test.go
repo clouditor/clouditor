@@ -31,10 +31,10 @@ import (
 	"os"
 	"testing"
 
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"google.golang.org/protobuf/encoding/protojson"
 
-	"clouditor.io/clouditor/api/assessment"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -59,7 +59,7 @@ type mockMetricsSource struct {
 	t *testing.T
 }
 
-func (*mockMetricsSource) Metrics() (metrics []*assessment.Metric, err error) {
+func (*mockMetricsSource) Metrics() (metrics []*assessmentv1.Metric, err error) {
 	var (
 		b           []byte
 		metricsFile = "service/orchestrator/metrics.json"
@@ -78,30 +78,30 @@ func (*mockMetricsSource) Metrics() (metrics []*assessment.Metric, err error) {
 	return
 }
 
-func (m *mockMetricsSource) MetricConfiguration(serviceID, metricID string) (*assessment.MetricConfiguration, error) {
+func (m *mockMetricsSource) MetricConfiguration(serviceID, metricID string) (*assessmentv1.MetricConfiguration, error) {
 	// Fetch the metric configuration directly from our file
 	bundle := fmt.Sprintf("policies/bundles/%s/data.json", metricID)
 
 	b, err := os.ReadFile(bundle)
 	assert.NoError(m.t, err)
 
-	var config assessment.MetricConfiguration
+	var config assessmentv1.MetricConfiguration
 	err = protojson.Unmarshal(b, &config)
 	assert.NoError(m.t, err)
 
 	return &config, nil
 }
 
-func (m *mockMetricsSource) MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (*assessment.MetricImplementation, error) {
+func (m *mockMetricsSource) MetricImplementation(lang assessmentv1.MetricImplementation_Language, metric string) (*assessmentv1.MetricImplementation, error) {
 	// Fetch the metric implementation directly from our file
 	bundle := fmt.Sprintf("policies/bundles/%s/metric.rego", metric)
 
 	b, err := os.ReadFile(bundle)
 	assert.NoError(m.t, err)
 
-	var impl = &assessment.MetricImplementation{
+	var impl = &assessmentv1.MetricImplementation{
 		MetricId: metric,
-		Lang:     assessment.MetricImplementation_REGO,
+		Lang:     assessmentv1.MetricImplementation_REGO,
 		Code:     string(b),
 	}
 

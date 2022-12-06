@@ -37,7 +37,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/api/evidence"
 )
 
@@ -219,7 +219,7 @@ func (mockClientStream) CloseSend() error {
 	return nil
 }
 
-func (mockClientStream) Recv() (req *assessment.AssessEvidenceRequest, err error) {
+func (mockClientStream) Recv() (req *assessmentv1.AssessEvidenceRequest, err error) {
 	return nil, nil
 }
 
@@ -266,14 +266,14 @@ func Test_extractID(t *testing.T) {
 		{
 			name: "ID in response",
 			args: args{
-				msg: &assessment.AssessEvidenceRequest{Evidence: &evidence.Evidence{Id: "MyID"}},
+				msg: &assessmentv1.AssessEvidenceRequest{Evidence: &evidence.Evidence{Id: "MyID"}},
 			},
 			want: "MyID",
 		},
 		{
 			name: "No ID",
 			args: args{
-				msg: &assessment.MinMax{},
+				msg: &assessmentv1.MinMax{},
 			},
 			want: "",
 		},

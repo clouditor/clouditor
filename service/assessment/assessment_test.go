@@ -47,7 +47,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/api/evidence"
 	api_orchestrator "clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil"
@@ -86,7 +86,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "AssessmentServer created with empty results map",
 			want: &Service{
-				results: make(map[string]*assessment.AssessmentResult),
+				results: make(map[string]*assessmentv1.AssessmentResult),
 				evidenceStoreAddress: grpcTarget{
 					target: "localhost:9090",
 				},
@@ -108,7 +108,7 @@ func TestNewService(t *testing.T) {
 				},
 			},
 			want: &Service{
-				results: make(map[string]*assessment.AssessmentResult),
+				results: make(map[string]*assessmentv1.AssessmentResult),
 				evidenceStoreAddress: grpcTarget{
 					target: "localhost:9091",
 				},
@@ -129,7 +129,7 @@ func TestNewService(t *testing.T) {
 				},
 			},
 			want: &Service{
-				results:                 make(map[string]*assessment.AssessmentResult),
+				results:                 make(map[string]*assessmentv1.AssessmentResult),
 				isEvidenceStoreDisabled: true,
 				evidenceStoreAddress: grpcTarget{
 					target: DefaultEvidenceStoreAddress,
@@ -175,7 +175,7 @@ func TestService_AssessEvidence(t *testing.T) {
 		args args
 		// hasRPCConnection is true when connected to orchestrator and evidence store
 		hasRPCConnection bool
-		wantResp         *assessment.AssessEvidenceResponse
+		wantResp         *assessmentv1.AssessEvidenceResponse
 		wantErr          bool
 	}{
 		{
@@ -189,8 +189,8 @@ func TestService_AssessEvidence(t *testing.T) {
 				},
 			},
 			hasRPCConnection: true,
-			wantResp: &assessment.AssessEvidenceResponse{
-				Status:        assessment.AssessEvidenceResponse_FAILED,
+			wantResp: &assessmentv1.AssessEvidenceResponse{
+				Status:        assessmentv1.AssessEvidenceResponse_FAILED,
 				StatusMessage: "invalid evidence: " + evidence.ErrResourceIdFieldMissing.Error(),
 			},
 			wantErr: true,
@@ -206,8 +206,8 @@ func TestService_AssessEvidence(t *testing.T) {
 				},
 			},
 			hasRPCConnection: true,
-			wantResp: &assessment.AssessEvidenceResponse{
-				Status:        assessment.AssessEvidenceResponse_FAILED,
+			wantResp: &assessmentv1.AssessEvidenceResponse{
+				Status:        assessmentv1.AssessEvidenceResponse_FAILED,
 				StatusMessage: "invalid evidence: " + evidence.ErrResourceIdFieldMissing.Error(),
 			},
 			wantErr: true,
@@ -224,8 +224,8 @@ func TestService_AssessEvidence(t *testing.T) {
 				},
 			},
 			hasRPCConnection: true,
-			wantResp: &assessment.AssessEvidenceResponse{
-				Status:        assessment.AssessEvidenceResponse_FAILED,
+			wantResp: &assessmentv1.AssessEvidenceResponse{
+				Status:        assessmentv1.AssessEvidenceResponse_FAILED,
 				StatusMessage: "invalid evidence: " + evidence.ErrTimestampMissing.Error(),
 			},
 			wantErr: true,
@@ -243,8 +243,8 @@ func TestService_AssessEvidence(t *testing.T) {
 				},
 			},
 			hasRPCConnection: true,
-			wantResp: &assessment.AssessEvidenceResponse{
-				Status: assessment.AssessEvidenceResponse_ASSESSED,
+			wantResp: &assessmentv1.AssessEvidenceResponse{
+				Status: assessmentv1.AssessEvidenceResponse_ASSESSED,
 			},
 			wantErr: false,
 		},
@@ -261,8 +261,8 @@ func TestService_AssessEvidence(t *testing.T) {
 				},
 			},
 			hasRPCConnection: false,
-			wantResp: &assessment.AssessEvidenceResponse{
-				Status:        assessment.AssessEvidenceResponse_FAILED,
+			wantResp: &assessmentv1.AssessEvidenceResponse{
+				Status:        assessmentv1.AssessEvidenceResponse_FAILED,
 				StatusMessage: "could not evaluate evidence: could not retrieve metric definitions: could not retrieve metric list from orchestrator",
 			},
 			wantErr: true,
@@ -281,7 +281,7 @@ func TestService_AssessEvidence(t *testing.T) {
 				s.orchestratorAddress.target = ""
 			}
 
-			gotResp, err := s.AssessEvidence(tt.args.in0, &assessment.AssessEvidenceRequest{Evidence: tt.args.evidence})
+			gotResp, err := s.AssessEvidence(tt.args.in0, &assessmentv1.AssessEvidenceRequest{Evidence: tt.args.evidence})
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
@@ -298,9 +298,9 @@ func TestService_AssessEvidence(t *testing.T) {
 // TestAssessEvidences tests AssessEvidences
 func TestService_AssessEvidences(t *testing.T) {
 	type fields struct {
-		ResultHooks                   []assessment.ResultHookFunc
-		results                       map[string]*assessment.AssessmentResult
-		UnimplementedAssessmentServer assessment.UnimplementedAssessmentServer
+		ResultHooks                   []assessmentv1.ResultHookFunc
+		results                       map[string]*assessmentv1.AssessmentResult
+		UnimplementedAssessmentServer assessmentv1.UnimplementedAssessmentServer
 	}
 	type args struct {
 		streamToServer            *mockAssessmentServerStream
@@ -313,31 +313,31 @@ func TestService_AssessEvidences(t *testing.T) {
 		args            args
 		wantErr         bool
 		wantErrMessage  string
-		wantRespMessage *assessment.AssessEvidenceResponse
+		wantRespMessage *assessmentv1.AssessEvidenceResponse
 	}{
 		{
 			name: "Missing toolId",
 			fields: fields{
-				results: make(map[string]*assessment.AssessmentResult)},
+				results: make(map[string]*assessmentv1.AssessmentResult)},
 			args: args{
-				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
+				streamToServer: createMockAssessmentServerStream(&assessmentv1.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
 						Timestamp:      timestamppb.Now(),
 						CloudServiceId: "00000000-0000-0000-0000-000000000000",
 						Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
 			wantErr: false,
-			wantRespMessage: &assessment.AssessEvidenceResponse{
-				Status:        assessment.AssessEvidenceResponse_FAILED,
+			wantRespMessage: &assessmentv1.AssessEvidenceResponse{
+				Status:        assessmentv1.AssessEvidenceResponse_FAILED,
 				StatusMessage: "invalid evidence: " + evidence.ErrToolIdMissing.Error(),
 			},
 		},
 		{
 			name: "Missing evidenceID",
 			fields: fields{
-				results: make(map[string]*assessment.AssessmentResult)},
+				results: make(map[string]*assessmentv1.AssessmentResult)},
 			args: args{
-				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
+				streamToServer: createMockAssessmentServerStream(&assessmentv1.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
 						Timestamp:      timestamppb.Now(),
 						ToolId:         "2134",
@@ -345,17 +345,17 @@ func TestService_AssessEvidences(t *testing.T) {
 						Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
 			wantErr: false,
-			wantRespMessage: &assessment.AssessEvidenceResponse{
-				Status:        assessment.AssessEvidenceResponse_FAILED,
+			wantRespMessage: &assessmentv1.AssessEvidenceResponse{
+				Status:        assessmentv1.AssessEvidenceResponse_FAILED,
 				StatusMessage: "invalid evidence: " + evidence.ErrEvidenceIdInvalidFormat.Error(),
 			},
 		},
 		{
 			name: "Assess evidences",
 			fields: fields{
-				results: make(map[string]*assessment.AssessmentResult)},
+				results: make(map[string]*assessmentv1.AssessmentResult)},
 			args: args{
-				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
+				streamToServer: createMockAssessmentServerStream(&assessmentv1.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
 						Timestamp:      timestamppb.Now(),
 						ToolId:         "2134",
@@ -363,15 +363,15 @@ func TestService_AssessEvidences(t *testing.T) {
 						Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
 			wantErr: false,
-			wantRespMessage: &assessment.AssessEvidenceResponse{
-				Status: assessment.AssessEvidenceResponse_ASSESSED,
+			wantRespMessage: &assessmentv1.AssessEvidenceResponse{
+				Status: assessmentv1.AssessEvidenceResponse_ASSESSED,
 			},
 		},
 		{
 			name:   "Error in stream to client - Send()-err",
 			fields: fields{},
 			args: args{
-				streamToClientWithSendErr: createMockAssessmentServerStreamWithSendErr(&assessment.AssessEvidenceRequest{
+				streamToClientWithSendErr: createMockAssessmentServerStreamWithSendErr(&assessmentv1.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
 						Timestamp:      timestamppb.Now(),
 						ToolId:         "2134",
@@ -385,7 +385,7 @@ func TestService_AssessEvidences(t *testing.T) {
 			name:   "Error in stream to server - Recv()-err",
 			fields: fields{},
 			args: args{
-				streamToServerWithRecvErr: createMockAssessmentServerStreamWithRecvErr(&assessment.AssessEvidenceRequest{
+				streamToServerWithRecvErr: createMockAssessmentServerStreamWithRecvErr(&assessmentv1.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
 						Timestamp:      timestamppb.Now(),
 						ToolId:         "2134",
@@ -400,7 +400,7 @@ func TestService_AssessEvidences(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var (
 				err                error
-				responseFromServer *assessment.AssessEvidenceResponse
+				responseFromServer *assessmentv1.AssessEvidenceResponse
 			)
 			s := Service{
 				resultHooks:                   tt.fields.ResultHooks,
@@ -449,13 +449,13 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 
 	wg.Add(hookCounts)
 
-	firstHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
+	firstHookFunction := func(assessmentResult *assessmentv1.AssessmentResult, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the firstHookFunction")
 		wg.Done()
 	}
 
-	secondHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
+	secondHookFunction := func(assessmentResult *assessmentv1.AssessmentResult, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the secondHookFunction")
 		wg.Done()
@@ -463,20 +463,20 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 
 	type args struct {
 		in0         context.Context
-		evidence    *assessment.AssessEvidenceRequest
-		resultHooks []assessment.ResultHookFunc
+		evidence    *assessmentv1.AssessEvidenceRequest
+		resultHooks []assessmentv1.ResultHookFunc
 	}
 	tests := []struct {
 		name     string
 		args     args
-		wantResp *assessment.AssessEvidenceResponse
+		wantResp *assessmentv1.AssessEvidenceResponse
 		wantErr  bool
 	}{
 		{
 			name: "Store evidence to the map",
 			args: args{
 				in0: context.TODO(),
-				evidence: &assessment.AssessEvidenceRequest{
+				evidence: &assessmentv1.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
 						Id:             "11111111-1111-1111-1111-111111111111",
 						ToolId:         "mock",
@@ -516,10 +516,10 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 						}, t),
 					}},
 
-				resultHooks: []assessment.ResultHookFunc{firstHookFunction, secondHookFunction},
+				resultHooks: []assessmentv1.ResultHookFunc{firstHookFunction, secondHookFunction},
 			},
 			wantErr:  false,
-			wantResp: &assessment.AssessEvidenceResponse{Status: assessment.AssessEvidenceResponse_ASSESSED},
+			wantResp: &assessmentv1.AssessEvidenceResponse{Status: assessmentv1.AssessEvidenceResponse_ASSESSED},
 		},
 	}
 
@@ -566,8 +566,8 @@ func TestService_ListAssessmentResults(t *testing.T) {
 		orchestratorClient    api_orchestrator.OrchestratorClient
 		orchestratorAddress   string
 		metricEventStream     api_orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
-		resultHooks           []assessment.ResultHookFunc
-		results               map[string]*assessment.AssessmentResult
+		resultHooks           []assessmentv1.ResultHookFunc
+		results               map[string]*assessmentv1.AssessmentResult
 		cachedConfigurations  map[string]cachedConfiguration
 		authorizer            api.Authorizer
 		grpcOptsEvidenceStore []grpc.DialOption
@@ -576,30 +576,30 @@ func TestService_ListAssessmentResults(t *testing.T) {
 	}
 	type args struct {
 		in0 context.Context
-		req *assessment.ListAssessmentResultsRequest
+		req *assessmentv1.ListAssessmentResultsRequest
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		wantRes *assessment.ListAssessmentResultsResponse
+		wantRes *assessmentv1.ListAssessmentResultsResponse
 		wantErr bool
 	}{
 		{
 			name: "single page result",
 			fields: fields{
-				results: map[string]*assessment.AssessmentResult{
+				results: map[string]*assessmentv1.AssessmentResult{
 					"1": {
 						Id: "1",
 					},
 				},
 			},
 			args: args{
-				req: &assessment.ListAssessmentResultsRequest{},
+				req: &assessmentv1.ListAssessmentResultsRequest{},
 			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
+			wantRes: &assessmentv1.ListAssessmentResultsResponse{
 				NextPageToken: "",
-				Results: []*assessment.AssessmentResult{
+				Results: []*assessmentv1.AssessmentResult{
 					{
 						Id: "1",
 					},
@@ -609,7 +609,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 		{
 			name: "multiple page result - first page",
 			fields: fields{
-				results: map[string]*assessment.AssessmentResult{
+				results: map[string]*assessmentv1.AssessmentResult{
 					"11111111-1111-1111-1111-111111111111": {Id: "11111111-1111-1111-1111-111111111111"},
 					"22222222-2222-2222-2222-222222222222": {Id: "22222222-2222-2222-2222-222222222222"},
 					"33333333-3333-3333-3333-333333333333": {Id: "33333333-3333-3333-3333-333333333333"},
@@ -622,12 +622,12 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				},
 			},
 			args: args{
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &assessmentv1.ListAssessmentResultsRequest{
 					PageSize: 2,
 				},
 			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
-				Results: []*assessment.AssessmentResult{
+			wantRes: &assessmentv1.ListAssessmentResultsResponse{
+				Results: []*assessmentv1.AssessmentResult{
 					{Id: "11111111-1111-1111-1111-111111111111"}, {Id: "22222222-2222-2222-2222-222222222222"},
 				},
 				NextPageToken: func() string {
@@ -639,7 +639,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 		{
 			name: "multiple page result - second page",
 			fields: fields{
-				results: map[string]*assessment.AssessmentResult{
+				results: map[string]*assessmentv1.AssessmentResult{
 					"11111111-1111-1111-1111-111111111111": {Id: "11111111-1111-1111-1111-111111111111"},
 					"22222222-2222-2222-2222-222222222222": {Id: "22222222-2222-2222-2222-222222222222"},
 					"33333333-3333-3333-3333-333333333333": {Id: "33333333-3333-3333-3333-333333333333"},
@@ -652,7 +652,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				},
 			},
 			args: args{
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &assessmentv1.ListAssessmentResultsRequest{
 					PageSize: 2,
 					PageToken: func() string {
 						token, _ := (&api.PageToken{Start: 2, Size: 2}).Encode()
@@ -660,8 +660,8 @@ func TestService_ListAssessmentResults(t *testing.T) {
 					}(),
 				},
 			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
-				Results: []*assessment.AssessmentResult{
+			wantRes: &assessmentv1.ListAssessmentResultsResponse{
+				Results: []*assessmentv1.AssessmentResult{
 					{Id: "33333333-3333-3333-3333-333333333333"}, {Id: "44444444-4444-4444-4444-444444444444"},
 				},
 				NextPageToken: func() string {
@@ -673,7 +673,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 		{
 			name: "multiple page result - last page",
 			fields: fields{
-				results: map[string]*assessment.AssessmentResult{
+				results: map[string]*assessmentv1.AssessmentResult{
 					"11111111-1111-1111-1111-111111111111": {Id: "11111111-1111-1111-1111-111111111111"},
 					"22222222-2222-2222-2222-222222222222": {Id: "22222222-2222-2222-2222-222222222222"},
 					"33333333-3333-3333-3333-333333333333": {Id: "33333333-3333-3333-3333-333333333333"},
@@ -686,7 +686,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				},
 			},
 			args: args{
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &assessmentv1.ListAssessmentResultsRequest{
 					PageSize: 2,
 					PageToken: func() string {
 						token, _ := (&api.PageToken{Start: 8, Size: 2}).Encode()
@@ -694,8 +694,8 @@ func TestService_ListAssessmentResults(t *testing.T) {
 					}(),
 				},
 			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
-				Results: []*assessment.AssessmentResult{
+			wantRes: &assessmentv1.ListAssessmentResultsResponse{
+				Results: []*assessmentv1.AssessmentResult{
 					{Id: "99999999-9999-9999-9999-999999999999"},
 				},
 				NextPageToken: "",
@@ -748,25 +748,25 @@ func toStruct(r voc.IsCloudResource, t *testing.T) (s *structpb.Value) {
 // mockAssessmentServerStream implements Assessment_AssessEvidencesServer which is used to mock incoming evidences as a stream
 type mockAssessmentServerStream struct {
 	grpc.ServerStream
-	RecvToServer   chan *assessment.AssessEvidenceRequest
-	SentFromServer chan *assessment.AssessEvidenceResponse
+	RecvToServer   chan *assessmentv1.AssessEvidenceRequest
+	SentFromServer chan *assessmentv1.AssessEvidenceResponse
 }
 
 func (mockAssessmentServerStream) CloseSend() error {
 	panic("implement me")
 }
 
-func createMockAssessmentServerStream(r *assessment.AssessEvidenceRequest) *mockAssessmentServerStream {
+func createMockAssessmentServerStream(r *assessmentv1.AssessEvidenceRequest) *mockAssessmentServerStream {
 	m := &mockAssessmentServerStream{
-		RecvToServer: make(chan *assessment.AssessEvidenceRequest, 1),
+		RecvToServer: make(chan *assessmentv1.AssessEvidenceRequest, 1),
 	}
 	m.RecvToServer <- r
 
-	m.SentFromServer = make(chan *assessment.AssessEvidenceResponse, 1)
+	m.SentFromServer = make(chan *assessmentv1.AssessEvidenceResponse, 1)
 	return m
 }
 
-func (m mockAssessmentServerStream) Send(response *assessment.AssessEvidenceResponse) error {
+func (m mockAssessmentServerStream) Send(response *assessmentv1.AssessEvidenceResponse) error {
 	m.SentFromServer <- response
 	return nil
 }
@@ -777,7 +777,7 @@ func (mockAssessmentServerStream) SendAndClose() error {
 
 // Stop, if no more evidences exist
 // For now, just receive one evidence and directly stop the stream (EOF)
-func (m *mockAssessmentServerStream) Recv() (req *assessment.AssessEvidenceRequest, err error) {
+func (m *mockAssessmentServerStream) Recv() (req *assessmentv1.AssessEvidenceRequest, err error) {
 	if len(m.RecvToServer) == 0 {
 		return nil, io.EOF
 	}
@@ -812,30 +812,30 @@ func (mockAssessmentServerStream) RecvMsg(interface{}) error {
 	return nil
 }
 
-func createMockAssessmentServerStreamWithSendErr(r *assessment.AssessEvidenceRequest) *mockAssessmentServerStreamWithSendErr {
+func createMockAssessmentServerStreamWithSendErr(r *assessmentv1.AssessEvidenceRequest) *mockAssessmentServerStreamWithSendErr {
 	m := &mockAssessmentServerStreamWithSendErr{
-		RecvToServer: make(chan *assessment.AssessEvidenceRequest, 1),
+		RecvToServer: make(chan *assessmentv1.AssessEvidenceRequest, 1),
 	}
 	m.RecvToServer <- r
 
-	m.SentFromServer = make(chan *assessment.AssessEvidenceResponse, 1)
+	m.SentFromServer = make(chan *assessmentv1.AssessEvidenceResponse, 1)
 	return m
 }
 
 // mockAssessmentServerStreamWithSendErr implements Assessment_AssessEvidencesServer with error
 type mockAssessmentServerStreamWithSendErr struct {
 	grpc.ServerStream
-	RecvToServer   chan *assessment.AssessEvidenceRequest
-	SentFromServer chan *assessment.AssessEvidenceResponse
+	RecvToServer   chan *assessmentv1.AssessEvidenceRequest
+	SentFromServer chan *assessmentv1.AssessEvidenceResponse
 }
 
-func (*mockAssessmentServerStreamWithSendErr) Send(*assessment.AssessEvidenceResponse) error {
+func (*mockAssessmentServerStreamWithSendErr) Send(*assessmentv1.AssessEvidenceResponse) error {
 	return errors.New("error sending response to client")
 }
 
 // Stop, if no more evidences exist
 // For now, just receive one evidence and directly stop the stream (EOF)
-func (m *mockAssessmentServerStreamWithSendErr) Recv() (req *assessment.AssessEvidenceRequest, err error) {
+func (m *mockAssessmentServerStreamWithSendErr) Recv() (req *assessmentv1.AssessEvidenceRequest, err error) {
 	if len(m.RecvToServer) == 0 {
 		return nil, io.EOF
 	}
@@ -849,27 +849,27 @@ func (m *mockAssessmentServerStreamWithSendErr) Recv() (req *assessment.AssessEv
 
 type mockAssessmentServerStreamWithRecvErr struct {
 	grpc.ServerStream
-	RecvToServer   chan *assessment.AssessEvidenceRequest
-	SentFromServer chan *assessment.AssessEvidenceResponse
+	RecvToServer   chan *assessmentv1.AssessEvidenceRequest
+	SentFromServer chan *assessmentv1.AssessEvidenceResponse
 }
 
-func (mockAssessmentServerStreamWithRecvErr) Send(*assessment.AssessEvidenceResponse) error {
+func (mockAssessmentServerStreamWithRecvErr) Send(*assessmentv1.AssessEvidenceResponse) error {
 	panic("implement me")
 }
 
-func (mockAssessmentServerStreamWithRecvErr) Recv() (*assessment.AssessEvidenceRequest, error) {
+func (mockAssessmentServerStreamWithRecvErr) Recv() (*assessmentv1.AssessEvidenceRequest, error) {
 	err := errors.New("Recv()-error")
 
 	return nil, err
 }
 
-func createMockAssessmentServerStreamWithRecvErr(r *assessment.AssessEvidenceRequest) *mockAssessmentServerStreamWithRecvErr {
+func createMockAssessmentServerStreamWithRecvErr(r *assessmentv1.AssessEvidenceRequest) *mockAssessmentServerStreamWithRecvErr {
 	m := &mockAssessmentServerStreamWithRecvErr{
-		RecvToServer: make(chan *assessment.AssessEvidenceRequest, 1),
+		RecvToServer: make(chan *assessmentv1.AssessEvidenceRequest, 1),
 	}
 	m.RecvToServer <- r
 
-	m.SentFromServer = make(chan *assessment.AssessEvidenceResponse, 1)
+	m.SentFromServer = make(chan *assessmentv1.AssessEvidenceResponse, 1)
 	return m
 }
 
@@ -1168,8 +1168,8 @@ func TestService_recvEventsLoop(t *testing.T) {
 		orchestratorClient    api_orchestrator.OrchestratorClient
 		orchestratorAddress   string
 		metricEventStream     api_orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
-		resultHooks           []assessment.ResultHookFunc
-		results               map[string]*assessment.AssessmentResult
+		resultHooks           []assessmentv1.ResultHookFunc
+		results               map[string]*assessmentv1.AssessmentResult
 		cachedConfigurations  map[string]cachedConfiguration
 		authorizer            api.Authorizer
 		grpcOptsEvidenceStore []grpc.DialOption

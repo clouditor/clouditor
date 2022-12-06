@@ -7,7 +7,7 @@
 package orchestrator
 
 import (
-	assessment "clouditor.io/clouditor/api/assessment"
+	v1 "clouditor.io/clouditor/api/assessment/v1"
 	context "context"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
@@ -42,13 +42,13 @@ type OrchestratorClient interface {
 	// returns a response stream. Part of the public API, not exposed as REST.
 	StoreAssessmentResults(ctx context.Context, opts ...grpc.CallOption) (Orchestrator_StoreAssessmentResultsClient, error)
 	// List all assessment results. Part of the public API, also exposed as REST.
-	ListAssessmentResults(ctx context.Context, in *assessment.ListAssessmentResultsRequest, opts ...grpc.CallOption) (*assessment.ListAssessmentResultsResponse, error)
+	ListAssessmentResults(ctx context.Context, in *v1.ListAssessmentResultsRequest, opts ...grpc.CallOption) (*v1.ListAssessmentResultsResponse, error)
 	// Creates a new metric
-	CreateMetric(ctx context.Context, in *CreateMetricRequest, opts ...grpc.CallOption) (*assessment.Metric, error)
+	CreateMetric(ctx context.Context, in *CreateMetricRequest, opts ...grpc.CallOption) (*v1.Metric, error)
 	// Updates an existing metric
-	UpdateMetric(ctx context.Context, in *UpdateMetricRequest, opts ...grpc.CallOption) (*assessment.Metric, error)
+	UpdateMetric(ctx context.Context, in *UpdateMetricRequest, opts ...grpc.CallOption) (*v1.Metric, error)
 	// Returns the metric with the passed metric id
-	GetMetric(ctx context.Context, in *GetMetricRequest, opts ...grpc.CallOption) (*assessment.Metric, error)
+	GetMetric(ctx context.Context, in *GetMetricRequest, opts ...grpc.CallOption) (*v1.Metric, error)
 	// List all metrics provided by the metric catalog
 	ListMetrics(ctx context.Context, in *ListMetricsRequest, opts ...grpc.CallOption) (*ListMetricsResponse, error)
 	// Registers a new target cloud service
@@ -63,17 +63,17 @@ type OrchestratorClient interface {
 	RemoveCloudService(ctx context.Context, in *RemoveCloudServiceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Updates a metric configuration (target value and operator) for a specific
 	// service and metric ID
-	UpdateMetricConfiguration(ctx context.Context, in *UpdateMetricConfigurationRequest, opts ...grpc.CallOption) (*assessment.MetricConfiguration, error)
+	UpdateMetricConfiguration(ctx context.Context, in *UpdateMetricConfigurationRequest, opts ...grpc.CallOption) (*v1.MetricConfiguration, error)
 	// Retrieves a metric configuration (target value and operator) for a specific
 	// service and metric ID.
-	GetMetricConfiguration(ctx context.Context, in *GetMetricConfigurationRequest, opts ...grpc.CallOption) (*assessment.MetricConfiguration, error)
+	GetMetricConfiguration(ctx context.Context, in *GetMetricConfigurationRequest, opts ...grpc.CallOption) (*v1.MetricConfiguration, error)
 	// Lists all a metric configurations (target value and operator) for a
 	// specific service ID
 	ListMetricConfigurations(ctx context.Context, in *ListMetricConfigurationRequest, opts ...grpc.CallOption) (*ListMetricConfigurationResponse, error)
 	// Updates an existing metric implementation
-	UpdateMetricImplementation(ctx context.Context, in *UpdateMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error)
+	UpdateMetricImplementation(ctx context.Context, in *UpdateMetricImplementationRequest, opts ...grpc.CallOption) (*v1.MetricImplementation, error)
 	// Returns the metric implementation of the passed metric id
-	GetMetricImplementation(ctx context.Context, in *GetMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error)
+	GetMetricImplementation(ctx context.Context, in *GetMetricImplementationRequest, opts ...grpc.CallOption) (*v1.MetricImplementation, error)
 	SubscribeMetricChangeEvents(ctx context.Context, in *SubscribeMetricChangeEventRequest, opts ...grpc.CallOption) (Orchestrator_SubscribeMetricChangeEventsClient, error)
 	// Creates a new certificate
 	CreateCertificate(ctx context.Context, in *CreateCertificateRequest, opts ...grpc.CallOption) (*Certificate, error)
@@ -219,8 +219,8 @@ func (x *orchestratorStoreAssessmentResultsClient) Recv() (*StoreAssessmentResul
 	return m, nil
 }
 
-func (c *orchestratorClient) ListAssessmentResults(ctx context.Context, in *assessment.ListAssessmentResultsRequest, opts ...grpc.CallOption) (*assessment.ListAssessmentResultsResponse, error) {
-	out := new(assessment.ListAssessmentResultsResponse)
+func (c *orchestratorClient) ListAssessmentResults(ctx context.Context, in *v1.ListAssessmentResultsRequest, opts ...grpc.CallOption) (*v1.ListAssessmentResultsResponse, error) {
+	out := new(v1.ListAssessmentResultsResponse)
 	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/ListAssessmentResults", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -228,8 +228,8 @@ func (c *orchestratorClient) ListAssessmentResults(ctx context.Context, in *asse
 	return out, nil
 }
 
-func (c *orchestratorClient) CreateMetric(ctx context.Context, in *CreateMetricRequest, opts ...grpc.CallOption) (*assessment.Metric, error) {
-	out := new(assessment.Metric)
+func (c *orchestratorClient) CreateMetric(ctx context.Context, in *CreateMetricRequest, opts ...grpc.CallOption) (*v1.Metric, error) {
+	out := new(v1.Metric)
 	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/CreateMetric", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -237,8 +237,8 @@ func (c *orchestratorClient) CreateMetric(ctx context.Context, in *CreateMetricR
 	return out, nil
 }
 
-func (c *orchestratorClient) UpdateMetric(ctx context.Context, in *UpdateMetricRequest, opts ...grpc.CallOption) (*assessment.Metric, error) {
-	out := new(assessment.Metric)
+func (c *orchestratorClient) UpdateMetric(ctx context.Context, in *UpdateMetricRequest, opts ...grpc.CallOption) (*v1.Metric, error) {
+	out := new(v1.Metric)
 	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/UpdateMetric", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -246,8 +246,8 @@ func (c *orchestratorClient) UpdateMetric(ctx context.Context, in *UpdateMetricR
 	return out, nil
 }
 
-func (c *orchestratorClient) GetMetric(ctx context.Context, in *GetMetricRequest, opts ...grpc.CallOption) (*assessment.Metric, error) {
-	out := new(assessment.Metric)
+func (c *orchestratorClient) GetMetric(ctx context.Context, in *GetMetricRequest, opts ...grpc.CallOption) (*v1.Metric, error) {
+	out := new(v1.Metric)
 	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/GetMetric", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -309,8 +309,8 @@ func (c *orchestratorClient) RemoveCloudService(ctx context.Context, in *RemoveC
 	return out, nil
 }
 
-func (c *orchestratorClient) UpdateMetricConfiguration(ctx context.Context, in *UpdateMetricConfigurationRequest, opts ...grpc.CallOption) (*assessment.MetricConfiguration, error) {
-	out := new(assessment.MetricConfiguration)
+func (c *orchestratorClient) UpdateMetricConfiguration(ctx context.Context, in *UpdateMetricConfigurationRequest, opts ...grpc.CallOption) (*v1.MetricConfiguration, error) {
+	out := new(v1.MetricConfiguration)
 	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/UpdateMetricConfiguration", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -318,8 +318,8 @@ func (c *orchestratorClient) UpdateMetricConfiguration(ctx context.Context, in *
 	return out, nil
 }
 
-func (c *orchestratorClient) GetMetricConfiguration(ctx context.Context, in *GetMetricConfigurationRequest, opts ...grpc.CallOption) (*assessment.MetricConfiguration, error) {
-	out := new(assessment.MetricConfiguration)
+func (c *orchestratorClient) GetMetricConfiguration(ctx context.Context, in *GetMetricConfigurationRequest, opts ...grpc.CallOption) (*v1.MetricConfiguration, error) {
+	out := new(v1.MetricConfiguration)
 	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/GetMetricConfiguration", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -336,8 +336,8 @@ func (c *orchestratorClient) ListMetricConfigurations(ctx context.Context, in *L
 	return out, nil
 }
 
-func (c *orchestratorClient) UpdateMetricImplementation(ctx context.Context, in *UpdateMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error) {
-	out := new(assessment.MetricImplementation)
+func (c *orchestratorClient) UpdateMetricImplementation(ctx context.Context, in *UpdateMetricImplementationRequest, opts ...grpc.CallOption) (*v1.MetricImplementation, error) {
+	out := new(v1.MetricImplementation)
 	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/UpdateMetricImplementation", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -345,8 +345,8 @@ func (c *orchestratorClient) UpdateMetricImplementation(ctx context.Context, in 
 	return out, nil
 }
 
-func (c *orchestratorClient) GetMetricImplementation(ctx context.Context, in *GetMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error) {
-	out := new(assessment.MetricImplementation)
+func (c *orchestratorClient) GetMetricImplementation(ctx context.Context, in *GetMetricImplementationRequest, opts ...grpc.CallOption) (*v1.MetricImplementation, error) {
+	out := new(v1.MetricImplementation)
 	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/GetMetricImplementation", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -588,13 +588,13 @@ type OrchestratorServer interface {
 	// returns a response stream. Part of the public API, not exposed as REST.
 	StoreAssessmentResults(Orchestrator_StoreAssessmentResultsServer) error
 	// List all assessment results. Part of the public API, also exposed as REST.
-	ListAssessmentResults(context.Context, *assessment.ListAssessmentResultsRequest) (*assessment.ListAssessmentResultsResponse, error)
+	ListAssessmentResults(context.Context, *v1.ListAssessmentResultsRequest) (*v1.ListAssessmentResultsResponse, error)
 	// Creates a new metric
-	CreateMetric(context.Context, *CreateMetricRequest) (*assessment.Metric, error)
+	CreateMetric(context.Context, *CreateMetricRequest) (*v1.Metric, error)
 	// Updates an existing metric
-	UpdateMetric(context.Context, *UpdateMetricRequest) (*assessment.Metric, error)
+	UpdateMetric(context.Context, *UpdateMetricRequest) (*v1.Metric, error)
 	// Returns the metric with the passed metric id
-	GetMetric(context.Context, *GetMetricRequest) (*assessment.Metric, error)
+	GetMetric(context.Context, *GetMetricRequest) (*v1.Metric, error)
 	// List all metrics provided by the metric catalog
 	ListMetrics(context.Context, *ListMetricsRequest) (*ListMetricsResponse, error)
 	// Registers a new target cloud service
@@ -609,17 +609,17 @@ type OrchestratorServer interface {
 	RemoveCloudService(context.Context, *RemoveCloudServiceRequest) (*emptypb.Empty, error)
 	// Updates a metric configuration (target value and operator) for a specific
 	// service and metric ID
-	UpdateMetricConfiguration(context.Context, *UpdateMetricConfigurationRequest) (*assessment.MetricConfiguration, error)
+	UpdateMetricConfiguration(context.Context, *UpdateMetricConfigurationRequest) (*v1.MetricConfiguration, error)
 	// Retrieves a metric configuration (target value and operator) for a specific
 	// service and metric ID.
-	GetMetricConfiguration(context.Context, *GetMetricConfigurationRequest) (*assessment.MetricConfiguration, error)
+	GetMetricConfiguration(context.Context, *GetMetricConfigurationRequest) (*v1.MetricConfiguration, error)
 	// Lists all a metric configurations (target value and operator) for a
 	// specific service ID
 	ListMetricConfigurations(context.Context, *ListMetricConfigurationRequest) (*ListMetricConfigurationResponse, error)
 	// Updates an existing metric implementation
-	UpdateMetricImplementation(context.Context, *UpdateMetricImplementationRequest) (*assessment.MetricImplementation, error)
+	UpdateMetricImplementation(context.Context, *UpdateMetricImplementationRequest) (*v1.MetricImplementation, error)
 	// Returns the metric implementation of the passed metric id
-	GetMetricImplementation(context.Context, *GetMetricImplementationRequest) (*assessment.MetricImplementation, error)
+	GetMetricImplementation(context.Context, *GetMetricImplementationRequest) (*v1.MetricImplementation, error)
 	SubscribeMetricChangeEvents(*SubscribeMetricChangeEventRequest, Orchestrator_SubscribeMetricChangeEventsServer) error
 	// Creates a new certificate
 	CreateCertificate(context.Context, *CreateCertificateRequest) (*Certificate, error)
@@ -698,16 +698,16 @@ func (UnimplementedOrchestratorServer) StoreAssessmentResult(context.Context, *S
 func (UnimplementedOrchestratorServer) StoreAssessmentResults(Orchestrator_StoreAssessmentResultsServer) error {
 	return status.Errorf(codes.Unimplemented, "method StoreAssessmentResults not implemented")
 }
-func (UnimplementedOrchestratorServer) ListAssessmentResults(context.Context, *assessment.ListAssessmentResultsRequest) (*assessment.ListAssessmentResultsResponse, error) {
+func (UnimplementedOrchestratorServer) ListAssessmentResults(context.Context, *v1.ListAssessmentResultsRequest) (*v1.ListAssessmentResultsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListAssessmentResults not implemented")
 }
-func (UnimplementedOrchestratorServer) CreateMetric(context.Context, *CreateMetricRequest) (*assessment.Metric, error) {
+func (UnimplementedOrchestratorServer) CreateMetric(context.Context, *CreateMetricRequest) (*v1.Metric, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateMetric not implemented")
 }
-func (UnimplementedOrchestratorServer) UpdateMetric(context.Context, *UpdateMetricRequest) (*assessment.Metric, error) {
+func (UnimplementedOrchestratorServer) UpdateMetric(context.Context, *UpdateMetricRequest) (*v1.Metric, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateMetric not implemented")
 }
-func (UnimplementedOrchestratorServer) GetMetric(context.Context, *GetMetricRequest) (*assessment.Metric, error) {
+func (UnimplementedOrchestratorServer) GetMetric(context.Context, *GetMetricRequest) (*v1.Metric, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMetric not implemented")
 }
 func (UnimplementedOrchestratorServer) ListMetrics(context.Context, *ListMetricsRequest) (*ListMetricsResponse, error) {
@@ -728,19 +728,19 @@ func (UnimplementedOrchestratorServer) ListCloudServices(context.Context, *ListC
 func (UnimplementedOrchestratorServer) RemoveCloudService(context.Context, *RemoveCloudServiceRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveCloudService not implemented")
 }
-func (UnimplementedOrchestratorServer) UpdateMetricConfiguration(context.Context, *UpdateMetricConfigurationRequest) (*assessment.MetricConfiguration, error) {
+func (UnimplementedOrchestratorServer) UpdateMetricConfiguration(context.Context, *UpdateMetricConfigurationRequest) (*v1.MetricConfiguration, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateMetricConfiguration not implemented")
 }
-func (UnimplementedOrchestratorServer) GetMetricConfiguration(context.Context, *GetMetricConfigurationRequest) (*assessment.MetricConfiguration, error) {
+func (UnimplementedOrchestratorServer) GetMetricConfiguration(context.Context, *GetMetricConfigurationRequest) (*v1.MetricConfiguration, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMetricConfiguration not implemented")
 }
 func (UnimplementedOrchestratorServer) ListMetricConfigurations(context.Context, *ListMetricConfigurationRequest) (*ListMetricConfigurationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListMetricConfigurations not implemented")
 }
-func (UnimplementedOrchestratorServer) UpdateMetricImplementation(context.Context, *UpdateMetricImplementationRequest) (*assessment.MetricImplementation, error) {
+func (UnimplementedOrchestratorServer) UpdateMetricImplementation(context.Context, *UpdateMetricImplementationRequest) (*v1.MetricImplementation, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateMetricImplementation not implemented")
 }
-func (UnimplementedOrchestratorServer) GetMetricImplementation(context.Context, *GetMetricImplementationRequest) (*assessment.MetricImplementation, error) {
+func (UnimplementedOrchestratorServer) GetMetricImplementation(context.Context, *GetMetricImplementationRequest) (*v1.MetricImplementation, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMetricImplementation not implemented")
 }
 func (UnimplementedOrchestratorServer) SubscribeMetricChangeEvents(*SubscribeMetricChangeEventRequest, Orchestrator_SubscribeMetricChangeEventsServer) error {
@@ -954,7 +954,7 @@ func (x *orchestratorStoreAssessmentResultsServer) Recv() (*StoreAssessmentResul
 }
 
 func _Orchestrator_ListAssessmentResults_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(assessment.ListAssessmentResultsRequest)
+	in := new(v1.ListAssessmentResultsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -966,7 +966,7 @@ func _Orchestrator_ListAssessmentResults_Handler(srv interface{}, ctx context.Co
 		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/ListAssessmentResults",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).ListAssessmentResults(ctx, req.(*assessment.ListAssessmentResultsRequest))
+		return srv.(OrchestratorServer).ListAssessmentResults(ctx, req.(*v1.ListAssessmentResultsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

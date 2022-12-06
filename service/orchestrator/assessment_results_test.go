@@ -30,7 +30,7 @@ import (
 	"testing"
 	"time"
 
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
@@ -41,25 +41,25 @@ import (
 
 func TestService_ListAssessmentResults(t *testing.T) {
 	type fields struct {
-		results map[string]*assessment.AssessmentResult
+		results map[string]*assessmentv1.AssessmentResult
 		storage persistence.Storage
 		authz   service.AuthorizationStrategy
 	}
 	type args struct {
 		ctx context.Context
-		req *assessment.ListAssessmentResultsRequest
+		req *assessmentv1.ListAssessmentResultsRequest
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		wantRes *assessment.ListAssessmentResultsResponse
+		wantRes *assessmentv1.ListAssessmentResultsResponse
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "request is missing",
 			fields: fields{
-				results: map[string]*assessment.AssessmentResult{},
+				results: map[string]*assessmentv1.AssessmentResult{},
 				authz:   &service.AuthorizationStrategyAllowAll{},
 			},
 			args:    args{},
@@ -71,27 +71,27 @@ func TestService_ListAssessmentResults(t *testing.T) {
 		{
 			name: "request is empty",
 			fields: fields{
-				results: map[string]*assessment.AssessmentResult{},
+				results: map[string]*assessmentv1.AssessmentResult{},
 				authz:   &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{
-				req: &assessment.ListAssessmentResultsRequest{},
+				req: &assessmentv1.ListAssessmentResultsRequest{},
 			},
-			wantRes: &assessment.ListAssessmentResultsResponse{},
+			wantRes: &assessmentv1.ListAssessmentResultsResponse{},
 			wantErr: assert.NoError,
 		},
 		{
 			name: "list all with allow all",
 			fields: fields{
-				results: map[string]*assessment.AssessmentResult{
+				results: map[string]*assessmentv1.AssessmentResult{
 					"1": {Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0))},
 					"2": {Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0))},
 				},
 				authz: &service.AuthorizationStrategyAllowAll{},
 			},
-			args: args{req: &assessment.ListAssessmentResultsRequest{}},
-			wantRes: &assessment.ListAssessmentResultsResponse{
-				Results: []*assessment.AssessmentResult{
+			args: args{req: &assessmentv1.ListAssessmentResultsRequest{}},
+			wantRes: &assessmentv1.ListAssessmentResultsResponse{
+				Results: []*assessmentv1.AssessmentResult{
 					{Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0))},
 					{Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0))},
 				},
@@ -101,7 +101,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 		{
 			name: "list all denied",
 			fields: fields{
-				results: map[string]*assessment.AssessmentResult{
+				results: map[string]*assessmentv1.AssessmentResult{
 					"1": {Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0))},
 					"2": {Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0))},
 				},
@@ -109,7 +109,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
-				req: &assessment.ListAssessmentResultsRequest{},
+				req: &assessmentv1.ListAssessmentResultsRequest{},
 			},
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -119,7 +119,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 		{
 			name: "specify filtered cloud service ID which is not allowed",
 			fields: fields{
-				results: map[string]*assessment.AssessmentResult{
+				results: map[string]*assessmentv1.AssessmentResult{
 					"1": {Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0)), CloudServiceId: testutil.TestCloudService1},
 					"2": {Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2},
 				},
@@ -127,7 +127,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &assessmentv1.ListAssessmentResultsRequest{
 					FilteredCloudServiceId: util.Ref(testutil.TestCloudService2),
 				},
 			},
@@ -139,7 +139,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 		{
 			name: "return filtered cloud service ID",
 			fields: fields{
-				results: map[string]*assessment.AssessmentResult{
+				results: map[string]*assessmentv1.AssessmentResult{
 					"1": {Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0)), CloudServiceId: testutil.TestCloudService1},
 					"2": {Id: "2", Timestamp: timestamppb.New(time.Unix(0, 0)), CloudServiceId: testutil.TestCloudService2},
 				},
@@ -147,12 +147,12 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &assessmentv1.ListAssessmentResultsRequest{
 					FilteredCloudServiceId: util.Ref(testutil.TestCloudService1),
 				},
 			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
-				Results: []*assessment.AssessmentResult{
+			wantRes: &assessmentv1.ListAssessmentResultsResponse{
+				Results: []*assessmentv1.AssessmentResult{
 					{Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0)), CloudServiceId: testutil.TestCloudService1},
 				},
 			},
@@ -166,13 +166,13 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &assessmentv1.ListAssessmentResultsRequest{
 					FilteredCloudServiceId: util.Ref(testutil.TestCloudService1),
 					FilteredCompliant:      util.Ref(true),
 				},
 			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
-				Results: []*assessment.AssessmentResult{
+			wantRes: &assessmentv1.ListAssessmentResultsResponse{
+				Results: []*assessmentv1.AssessmentResult{
 					{
 						Id:             "1",
 						Timestamp:      timestamppb.New(time.Unix(1, 0)),
@@ -192,13 +192,13 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &assessmentv1.ListAssessmentResultsRequest{
 					FilteredCloudServiceId: util.Ref(testutil.TestCloudService1),
 					FilteredCompliant:      util.Ref(false),
 				},
 			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
-				Results: []*assessment.AssessmentResult{
+			wantRes: &assessmentv1.ListAssessmentResultsResponse{
+				Results: []*assessmentv1.AssessmentResult{
 					{
 						Id:             "3",
 						Timestamp:      timestamppb.New(time.Unix(1, 0)),
@@ -218,12 +218,12 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &assessmentv1.ListAssessmentResultsRequest{
 					FilteredCompliant: util.Ref(true),
 				},
 			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
-				Results: []*assessment.AssessmentResult{
+			wantRes: &assessmentv1.ListAssessmentResultsResponse{
+				Results: []*assessmentv1.AssessmentResult{
 					{
 						Id:             "1",
 						Timestamp:      timestamppb.New(time.Unix(1, 0)),
@@ -250,12 +250,12 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &assessmentv1.ListAssessmentResultsRequest{
 					FilteredCompliant: util.Ref(false),
 				},
 			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
-				Results: []*assessment.AssessmentResult{
+			wantRes: &assessmentv1.ListAssessmentResultsResponse{
+				Results: []*assessmentv1.AssessmentResult{
 					{
 						Id:             "3",
 						Timestamp:      timestamppb.New(time.Unix(1, 0)),
@@ -282,13 +282,13 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &assessmentv1.ListAssessmentResultsRequest{
 					FilteredCloudServiceId: util.Ref(testutil.TestCloudService1),
 					FilteredMetricId:       []string{"TestMetricID-1"},
 				},
 			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
-				Results: []*assessment.AssessmentResult{
+			wantRes: &assessmentv1.ListAssessmentResultsResponse{
+				Results: []*assessmentv1.AssessmentResult{
 					{
 						Id:             "1",
 						Timestamp:      timestamppb.New(time.Unix(1, 0)),
@@ -308,13 +308,13 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &assessmentv1.ListAssessmentResultsRequest{
 					FilteredCloudServiceId: util.Ref(testutil.TestCloudService1),
 					FilteredMetricId:       []string{"TestMetricID-1", "TestMetricID-2"},
 				},
 			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
-				Results: []*assessment.AssessmentResult{
+			wantRes: &assessmentv1.ListAssessmentResultsResponse{
+				Results: []*assessmentv1.AssessmentResult{
 					{
 						Id:             "1",
 						Timestamp:      timestamppb.New(time.Unix(1, 0)),
@@ -341,12 +341,12 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &assessmentv1.ListAssessmentResultsRequest{
 					FilteredMetricId: []string{"TestMetricID-1"},
 				},
 			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
-				Results: []*assessment.AssessmentResult{
+			wantRes: &assessmentv1.ListAssessmentResultsResponse{
+				Results: []*assessmentv1.AssessmentResult{
 					{
 						Id:             "1",
 						Timestamp:      timestamppb.New(time.Unix(1, 0)),
@@ -373,13 +373,13 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &assessmentv1.ListAssessmentResultsRequest{
 					FilteredCloudServiceId: util.Ref("testCloudServiceID"),
 				},
 			},
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, assessment.ErrCloudServiceIDIsInvalid.Error())
+				return assert.ErrorContains(t, err, assessmentv1.ErrCloudServiceIDIsInvalid.Error())
 			},
 		},
 	}
@@ -408,8 +408,8 @@ func TestService_ListAssessmentResults(t *testing.T) {
 	}
 }
 
-func getAssessmentResults() (results map[string]*assessment.AssessmentResult) {
-	results = map[string]*assessment.AssessmentResult{
+func getAssessmentResults() (results map[string]*assessmentv1.AssessmentResult) {
+	results = map[string]*assessmentv1.AssessmentResult{
 		"1": {
 			Id:             "1",
 			Timestamp:      timestamppb.New(time.Unix(1, 0)),

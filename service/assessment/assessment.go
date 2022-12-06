@@ -35,7 +35,7 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/policies"
@@ -66,7 +66,7 @@ const (
 
 type cachedConfiguration struct {
 	cachedAt time.Time
-	*assessment.MetricConfiguration
+	*assessmentv1.MetricConfiguration
 }
 
 type grpcTarget struct {
@@ -78,7 +78,7 @@ type grpcTarget struct {
 // but rather the NewService constructor should be used. It implements the AssessmentServer interface.
 type Service struct {
 	// Embedded for FWD compatibility
-	assessment.UnimplementedAssessmentServer
+	assessmentv1.UnimplementedAssessmentServer
 
 	// isEvidenceStoreDisabled specifies if evidences shall be discarded (when true).
 	isEvidenceStoreDisabled bool
@@ -94,12 +94,12 @@ type Service struct {
 
 	// resultHooks is a list of hook functions that can be used if one wants to be
 	// informed about each assessment result
-	resultHooks []assessment.ResultHookFunc
+	resultHooks []assessmentv1.ResultHookFunc
 	// hookMutex is used for (un)locking result hook calls
 	hookMutex sync.RWMutex
 
 	// Currently, results are just stored as a map (=in-memory). In the future, we will use a DB.
-	results     map[string]*assessment.AssessmentResult
+	results     map[string]*assessmentv1.AssessmentResult
 	resultMutex sync.Mutex
 
 	// cachedConfigurations holds cached metric configurations for faster access with key being the corresponding
@@ -184,7 +184,7 @@ func WithRegoPackageName(pkg string) service.Option[Service] {
 // NewService creates a new assessment service with default values.
 func NewService(opts ...service.Option[Service]) *Service {
 	s := &Service{
-		results:              make(map[string]*assessment.AssessmentResult),
+		results:              make(map[string]*assessmentv1.AssessmentResult),
 		evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 		orchestratorStreams:  api.NewStreamsOf(api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest](log)),
 		cachedConfigurations: make(map[string]cachedConfiguration),
@@ -231,7 +231,7 @@ func (svc *Service) Authorizer() api.Authorizer {
 }
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
-func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
+func (svc *Service) AssessEvidence(_ context.Context, req *assessmentv1.AssessEvidenceRequest) (res *assessmentv1.AssessEvidenceResponse, err error) {
 
 	// Validate evidence
 	resourceId, err := req.Evidence.Validate()
@@ -240,8 +240,8 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 		log.Error(newError)
 		svc.informHooks(nil, newError)
 
-		res = &assessment.AssessEvidenceResponse{
-			Status:        assessment.AssessEvidenceResponse_FAILED,
+		res = &assessmentv1.AssessEvidenceResponse{
+			Status:        assessmentv1.AssessEvidenceResponse_FAILED,
 			StatusMessage: newError.Error(),
 		}
 
@@ -251,8 +251,8 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 	// Assess evidence
 	err = svc.handleEvidence(req.Evidence, resourceId)
 	if err != nil {
-		res = &assessment.AssessEvidenceResponse{
-			Status:        assessment.AssessEvidenceResponse_FAILED,
+		res = &assessmentv1.AssessEvidenceResponse{
+			Status:        assessmentv1.AssessEvidenceResponse_FAILED,
 			StatusMessage: err.Error(),
 		}
 
@@ -263,18 +263,18 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 	}
 
 	// Create response
-	res = &assessment.AssessEvidenceResponse{
-		Status: assessment.AssessEvidenceResponse_ASSESSED,
+	res = &assessmentv1.AssessEvidenceResponse{
+		Status: assessmentv1.AssessEvidenceResponse_ASSESSED,
 	}
 
 	return res, nil
 }
 
 // AssessEvidences is a method implementation of the assessment interface: It assesses multiple evidences (stream) and responds with a stream.
-func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) (err error) {
+func (svc *Service) AssessEvidences(stream assessmentv1.Assessment_AssessEvidencesServer) (err error) {
 	var (
-		req *assessment.AssessEvidenceRequest
-		res *assessment.AssessEvidenceResponse
+		req *assessmentv1.AssessEvidenceRequest
+		res *assessmentv1.AssessEvidenceResponse
 	)
 
 	for {
@@ -292,7 +292,7 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 		}
 
 		// Call AssessEvidence for assessing a single evidence
-		assessEvidencesReq := &assessment.AssessEvidenceRequest{
+		assessEvidencesReq := &assessmentv1.AssessEvidenceRequest{
 			Evidence: req.Evidence,
 		}
 		res, err = svc.AssessEvidence(context.Background(), assessEvidencesReq)
@@ -375,12 +375,12 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 			return fmt.Errorf("could not extract resource types from evidence: %w", err)
 		}
 
-		result := &assessment.AssessmentResult{
+		result := &assessmentv1.AssessmentResult{
 			Id:             uuid.NewString(),
 			Timestamp:      timestamppb.Now(),
 			CloudServiceId: ev.CloudServiceId,
 			MetricId:       metricID,
-			MetricConfiguration: &assessment.MetricConfiguration{
+			MetricConfiguration: &assessmentv1.MetricConfiguration{
 				TargetValue: convertedTargetValue,
 				Operator:    data.Operator,
 			},
@@ -422,7 +422,7 @@ func convertTargetValue(v interface{}) (s *structpb.Value, err error) {
 }
 
 // informHooks informs the registered hook functions
-func (svc *Service) informHooks(result *assessment.AssessmentResult, err error) {
+func (svc *Service) informHooks(result *assessmentv1.AssessmentResult, err error) {
 	svc.hookMutex.RLock()
 	hooks := svc.resultHooks
 	defer svc.hookMutex.RUnlock()
@@ -437,11 +437,11 @@ func (svc *Service) informHooks(result *assessment.AssessmentResult, err error) 
 }
 
 // ListAssessmentResults is a method implementation of the assessment interface
-func (svc *Service) ListAssessmentResults(_ context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
-	res = new(assessment.ListAssessmentResultsResponse)
+func (svc *Service) ListAssessmentResults(_ context.Context, req *assessmentv1.ListAssessmentResultsRequest) (res *assessmentv1.ListAssessmentResultsResponse, err error) {
+	res = new(assessmentv1.ListAssessmentResultsResponse)
 
 	// Paginate the results according to the request
-	res.Results, res.NextPageToken, err = service.PaginateMapValues(req, svc.results, func(a *assessment.AssessmentResult, b *assessment.AssessmentResult) bool {
+	res.Results, res.NextPageToken, err = service.PaginateMapValues(req, svc.results, func(a *assessmentv1.AssessmentResult, b *assessmentv1.AssessmentResult) bool {
 		return a.Id < b.Id
 	}, service.DefaultPaginationOpts)
 	if err != nil {
@@ -451,7 +451,7 @@ func (svc *Service) ListAssessmentResults(_ context.Context, req *assessment.Lis
 	return
 }
 
-func (svc *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result *assessment.AssessmentResult, err error)) {
+func (svc *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result *assessmentv1.AssessmentResult, err error)) {
 	svc.hookMutex.Lock()
 	defer svc.hookMutex.Unlock()
 	svc.resultHooks = append(svc.resultHooks, assessmentResultsHook)
@@ -509,7 +509,7 @@ func (svc *Service) initOrchestratorStream(_ string, _ ...grpc.DialOption) (stre
 }
 
 // Metrics implements MetricsSource by retrieving the metric list from the orchestrator.
-func (svc *Service) Metrics() (metrics []*assessment.Metric, err error) {
+func (svc *Service) Metrics() (metrics []*assessmentv1.Metric, err error) {
 	var res *orchestrator.ListMetricsResponse
 
 	err = svc.initOrchestratorClient()
@@ -527,9 +527,9 @@ func (svc *Service) Metrics() (metrics []*assessment.Metric, err error) {
 
 // MetricImplementation implements MetricsSource by retrieving the metric implementation
 // from the orchestrator.
-func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (impl *assessment.MetricImplementation, err error) {
+func (svc *Service) MetricImplementation(lang assessmentv1.MetricImplementation_Language, metric string) (impl *assessmentv1.MetricImplementation, err error) {
 	// For now, the orchestrator only supports the Rego language.
-	if lang != assessment.MetricImplementation_REGO {
+	if lang != assessmentv1.MetricImplementation_REGO {
 		return nil, errors.New("unsupported language")
 	}
 
@@ -551,7 +551,7 @@ func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_La
 
 // MetricConfiguration implements MetricsSource by getting the corresponding metric configuration for the
 // default target cloud service
-func (svc *Service) MetricConfiguration(cloudServiceID, metricID string) (config *assessment.MetricConfiguration, err error) {
+func (svc *Service) MetricConfiguration(cloudServiceID, metricID string) (config *assessmentv1.MetricConfiguration, err error) {
 	var (
 		ok    bool
 		cache cachedConfiguration

@@ -34,7 +34,7 @@ import (
 	"sync"
 
 	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/inmemory"
@@ -49,7 +49,7 @@ import (
 //go:embed *.json
 var f embed.FS
 
-var defaultMetricConfigurations map[string]*assessment.MetricConfiguration
+var defaultMetricConfigurations map[string]*assessmentv1.MetricConfiguration
 var log *logrus.Entry
 
 var DefaultMetricsFile = "metrics.json"
@@ -68,10 +68,10 @@ type Service struct {
 	hookMutex sync.RWMutex
 
 	// Currently only in-memory
-	results map[string]*assessment.AssessmentResult
+	results map[string]*assessmentv1.AssessmentResult
 
 	// Hook
-	AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+	AssessmentResultHooks []func(result *assessmentv1.AssessmentResult, err error)
 	// mu is used for (un)locking result hook calls
 	mu sync.Mutex
 
@@ -80,7 +80,7 @@ type Service struct {
 	metricsFile string
 
 	// loadMetricsFunc is a function that is used to initially load metrics at the start of the orchestrator
-	loadMetricsFunc func() ([]*assessment.Metric, error)
+	loadMetricsFunc func() ([]*assessmentv1.Metric, error)
 
 	catalogsFile string
 
@@ -109,7 +109,7 @@ func WithMetricsFile(file string) ServiceOption {
 }
 
 // WithExternalMetrics can be used to load metric definitions from an external source
-func WithExternalMetrics(f func() ([]*assessment.Metric, error)) ServiceOption {
+func WithExternalMetrics(f func() ([]*assessmentv1.Metric, error)) ServiceOption {
 	return func(s *Service) {
 		s.loadMetricsFunc = f
 	}
@@ -147,7 +147,7 @@ func WithAuthorizationStrategyJWT(key string) ServiceOption {
 func NewService(opts ...ServiceOption) *Service {
 	var err error
 	s := Service{
-		results:      make(map[string]*assessment.AssessmentResult),
+		results:      make(map[string]*assessmentv1.AssessmentResult),
 		metricsFile:  DefaultMetricsFile,
 		catalogsFile: DefaultCatalogsFile,
 		events:       make(chan *orchestrator.MetricChangeEvent, 1000),
@@ -276,13 +276,13 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 	}
 }
 
-func (s *Service) RegisterAssessmentResultHook(hook func(result *assessment.AssessmentResult, err error)) {
+func (s *Service) RegisterAssessmentResultHook(hook func(result *assessmentv1.AssessmentResult, err error)) {
 	s.hookMutex.Lock()
 	defer s.hookMutex.Unlock()
 	s.AssessmentResultHooks = append(s.AssessmentResultHooks, hook)
 }
 
-func (s *Service) informHook(result *assessment.AssessmentResult, err error) {
+func (s *Service) informHook(result *assessmentv1.AssessmentResult, err error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	// Inform our hook, if we have any

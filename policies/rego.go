@@ -32,7 +32,7 @@ import (
 	"sync"
 
 	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/util"
@@ -212,7 +212,7 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 	query, err = re.qc.Get(key, func(key string) (*rego.PreparedEvalQuery, error) {
 		var (
 			tx   storage.Transaction
-			impl *assessment.MetricImplementation
+			impl *assessmentv1.MetricImplementation
 		)
 
 		// Create paths for bundle directory and utility functions file
@@ -237,7 +237,7 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 		// Convert camelCase metric in under_score_style for package name
 		pkg = util.CamelCaseToSnakeCase(metricID)
 
-		impl, err = src.MetricImplementation(assessment.MetricImplementation_REGO, metricID)
+		impl, err = src.MetricImplementation(assessmentv1.MetricImplementation_REGO, metricID)
 		if err != nil {
 			return nil, fmt.Errorf("could not fetch policy for metric %s: %w", metricID, err)
 		}

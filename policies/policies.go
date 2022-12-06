@@ -29,7 +29,7 @@ import (
 	"strings"
 	"sync"
 
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"github.com/sirupsen/logrus"
@@ -63,9 +63,9 @@ type Result struct {
 // MetricsSource is used to retrieve a list of metrics and to retrieve a metric
 // configuration as well as implementation for a particular metric (and target service)
 type MetricsSource interface {
-	Metrics() ([]*assessment.Metric, error)
-	MetricConfiguration(serviceID, metricID string) (*assessment.MetricConfiguration, error)
-	MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (*assessment.MetricImplementation, error)
+	Metrics() ([]*assessmentv1.Metric, error)
+	MetricConfiguration(serviceID, metricID string) (*assessmentv1.MetricConfiguration, error)
+	MetricImplementation(lang assessmentv1.MetricImplementation_Language, metric string) (*assessmentv1.MetricImplementation, error)
 }
 
 // ControlsSource is used to retrieve a list of controls

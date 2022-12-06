@@ -30,7 +30,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/persistence"
@@ -52,7 +52,7 @@ func TestPaginateSlice(t *testing.T) {
 		{
 			name: "first page",
 			args: args{
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &assessmentv1.ListAssessmentResultsRequest{
 					PageSize:  2,
 					PageToken: "",
 				},
@@ -65,7 +65,7 @@ func TestPaginateSlice(t *testing.T) {
 		{
 			name: "next page",
 			args: args{
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &assessmentv1.ListAssessmentResultsRequest{
 					PageSize:  2,
 					PageToken: "CAIQAg==",
 				},
@@ -78,7 +78,7 @@ func TestPaginateSlice(t *testing.T) {
 		{
 			name: "last page",
 			args: args{
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &assessmentv1.ListAssessmentResultsRequest{
 					PageSize:  2,
 					PageToken: "CAQQAg==",
 				},
@@ -124,7 +124,7 @@ func TestPaginateMapValues(t *testing.T) {
 		{
 			name: "first page",
 			args: args{
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &assessmentv1.ListAssessmentResultsRequest{
 					PageSize:  2,
 					PageToken: "",
 				},
@@ -187,8 +187,8 @@ func TestPaginateStorage(t *testing.T) {
 				opts: PaginationOpts{10, 10},
 			},
 			wantPage: []orchestrator.CloudService{
-				{Id: "1", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
-				{Id: "2", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
+				{Id: "1", ConfiguredMetrics: []*assessmentv1.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
+				{Id: "2", ConfiguredMetrics: []*assessmentv1.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
 			},
 			wantNbt: "CAIQAg==",
 		},
@@ -209,8 +209,8 @@ func TestPaginateStorage(t *testing.T) {
 				opts: PaginationOpts{10, 10},
 			},
 			wantPage: []orchestrator.CloudService{
-				{Id: "3", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
-				{Id: "4", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
+				{Id: "3", ConfiguredMetrics: []*assessmentv1.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
+				{Id: "4", ConfiguredMetrics: []*assessmentv1.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
 			},
 			wantNbt: "CAQQAg==",
 		},
@@ -230,7 +230,7 @@ func TestPaginateStorage(t *testing.T) {
 				}),
 				opts: PaginationOpts{10, 10},
 			},
-			wantPage: []orchestrator.CloudService{{Id: "5", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}}},
+			wantPage: []orchestrator.CloudService{{Id: "5", ConfiguredMetrics: []*assessmentv1.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}}},
 			wantNbt:  "",
 		},
 	}

@@ -29,7 +29,7 @@ import (
 	"context"
 	"errors"
 
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 )
 
 type CloudServiceHookFunc func(ctx context.Context, cld *CloudService, err error)
@@ -48,14 +48,14 @@ var (
 // Validate validates the UpdateMetricConfigurationRequest
 func (req *UpdateMetricConfigurationRequest) Validate() error {
 	// Check cloud service ID
-	err := assessment.CheckCloudServiceID(req.CloudServiceId)
+	err := assessmentv1.CheckCloudServiceID(req.CloudServiceId)
 	if err != nil {
 		return err
 	}
 
 	// Check metric ID
 	if req.MetricId == "" {
-		return assessment.ErrMetricIdMissing
+		return assessmentv1.ErrMetricIdMissing
 	}
 
 	return nil
@@ -64,14 +64,14 @@ func (req *UpdateMetricConfigurationRequest) Validate() error {
 // Validate validates the GetMetricConfigurationRequest
 func (req *GetMetricConfigurationRequest) Validate() error {
 	// Check cloud service ID
-	err := assessment.CheckCloudServiceID(req.CloudServiceId)
+	err := assessmentv1.CheckCloudServiceID(req.CloudServiceId)
 	if err != nil {
 		return err
 	}
 
 	// Check metric ID
 	if req.MetricId == "" {
-		return assessment.ErrMetricIdMissing
+		return assessmentv1.ErrMetricIdMissing
 	}
 
 	return nil

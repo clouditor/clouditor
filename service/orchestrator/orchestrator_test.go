@@ -38,7 +38,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
@@ -72,14 +72,14 @@ func TestAssessmentResultHook(t *testing.T) {
 	)
 	wg.Add(2)
 
-	firstHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
+	firstHookFunction := func(assessmentResult *assessmentv1.AssessmentResult, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the firstHookFunction")
 
 		wg.Done()
 	}
 
-	secondHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
+	secondHookFunction := func(assessmentResult *assessmentv1.AssessmentResult, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the secondHookFunction")
 
@@ -116,12 +116,12 @@ func TestAssessmentResultHook(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
-					Result: &assessment.AssessmentResult{
+					Result: &assessmentv1.AssessmentResult{
 						Id:         assessmentResultID1,
 						MetricId:   "assessmentResultMetricID",
 						EvidenceId: "11111111-1111-1111-1111-111111111111",
 						Timestamp:  timestamppb.Now(),
-						MetricConfiguration: &assessment.MetricConfiguration{
+						MetricConfiguration: &assessmentv1.MetricConfiguration{
 							TargetValue:    toStruct(1.0),
 							Operator:       "operator",
 							IsDefault:      true,
@@ -180,12 +180,12 @@ func TestStoreAssessmentResult(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
-					Result: &assessment.AssessmentResult{
+					Result: &assessmentv1.AssessmentResult{
 						Id:         assessmentResultID1,
 						MetricId:   "assessmentResultMetricID",
 						EvidenceId: "11111111-1111-1111-1111-111111111111",
 						Timestamp:  timestamppb.Now(),
-						MetricConfiguration: &assessment.MetricConfiguration{
+						MetricConfiguration: &assessmentv1.MetricConfiguration{
 							TargetValue:    toStruct(1.0),
 							Operator:       "operator",
 							IsDefault:      true,
@@ -209,11 +209,11 @@ func TestStoreAssessmentResult(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
-					Result: &assessment.AssessmentResult{
+					Result: &assessmentv1.AssessmentResult{
 						Id:         assessmentResultID1,
 						EvidenceId: "11111111-1111-1111-1111-111111111111",
 						Timestamp:  timestamppb.Now(),
-						MetricConfiguration: &assessment.MetricConfiguration{
+						MetricConfiguration: &assessmentv1.MetricConfiguration{
 							TargetValue:    toStruct(1.0),
 							Operator:       "operator",
 							IsDefault:      true,
@@ -310,7 +310,7 @@ func TestStoreAssessmentResults(t *testing.T) {
 			wantRespMessage: []orchestrator.StoreAssessmentResultResponse{
 				{
 					Status:        false,
-					StatusMessage: "invalid assessment result: " + assessment.ErrMetricIdMissing.Error(),
+					StatusMessage: "invalid assessment result: " + assessmentv1.ErrMetricIdMissing.Error(),
 				},
 			},
 		},
@@ -390,12 +390,12 @@ func createStoreAssessmentResultRequestsMock(count int) []*orchestrator.StoreAss
 
 	for i := 0; i < count; i++ {
 		storeAssessmentResultRequest := &orchestrator.StoreAssessmentResultRequest{
-			Result: &assessment.AssessmentResult{
+			Result: &assessmentv1.AssessmentResult{
 				Id:         uuid.NewString(),
 				MetricId:   fmt.Sprintf("assessmentResultMetricID-%d", i),
 				EvidenceId: "11111111-1111-1111-1111-111111111111",
 				Timestamp:  timestamppb.Now(),
-				MetricConfiguration: &assessment.MetricConfiguration{
+				MetricConfiguration: &assessmentv1.MetricConfiguration{
 					TargetValue:    toStruct(1.0),
 					Operator:       fmt.Sprintf("operator%d", i),
 					IsDefault:      true,

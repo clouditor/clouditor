@@ -32,10 +32,10 @@ import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "api/evidence/evidence.proto";
-import "api/assessment/metric.proto";
+import "api/assessment/v1/metric.proto";
 import "tagger/tagger.proto";
 
-option go_package = "clouditor.io/clouditor/api/assessment";
+option go_package = "clouditor.io/clouditor/api/assessment/v1;assessmentv1";
 
 // Representing the link between orchestrator and discovery: Assessing evidences
 // from discovery and sending results to orchestrator
@@ -70,11 +70,11 @@ service Assessment {
 };
 
 message ListAssessmentResultsRequest {
-  // Optional. List only assessment results of a specific cloud service.  
+  // Optional. List only assessment results of a specific cloud service.
   optional string filtered_cloud_service_id = 1;
-  // Optional. List only compliant assessment results.   
+  // Optional. List only compliant assessment results.
   optional bool filtered_compliant = 2;
-  // Optional. List only assessment results of a specific metric id.   
+  // Optional. List only assessment results of a specific metric id.
   repeated string filtered_metric_id = 3;
 
   int32 page_size = 10;

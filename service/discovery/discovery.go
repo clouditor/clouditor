@@ -34,7 +34,7 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/service"
@@ -97,7 +97,7 @@ type Service struct {
 
 	configurations map[discovery.Discoverer]*Configuration
 
-	assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
+	assessmentStreams *api.StreamsOf[assessmentv1.Assessment_AssessEvidencesClient, *assessmentv1.AssessEvidenceRequest]
 	assessmentAddress grpcTarget
 
 	resources map[string]voc.IsCloudResource
@@ -170,7 +170,7 @@ func WithProviders(providersList []string) ServiceOption {
 
 func NewService(opts ...ServiceOption) *Service {
 	s := &Service{
-		assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
+		assessmentStreams: api.NewStreamsOf(api.WithLogger[assessmentv1.Assessment_AssessEvidencesClient, *assessmentv1.AssessEvidenceRequest](log)),
 		assessmentAddress: grpcTarget{
 			target: DefaultAssessmentAddress,
 		},
@@ -200,8 +200,8 @@ func (svc *Service) Authorizer() api.Authorizer {
 }
 
 // initAssessmentStream initializes the stream that is used to send evidences to the assessment service.
-// If configured, it uses the Authorizer of the discovery service to authenticate requests to the assessment.
-func (svc *Service) initAssessmentStream(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
+// If configured, it uses the Authorizer of the discovery service to authenticate requests to the assessmentv1.
+func (svc *Service) initAssessmentStream(target string, additionalOpts ...grpc.DialOption) (stream assessmentv1.Assessment_AssessEvidencesClient, err error) {
 	log.Infof("Trying to establish a connection to assessment service @ %v", target)
 
 	// Establish connection to assessment gRPC service
@@ -212,7 +212,7 @@ func (svc *Service) initAssessmentStream(target string, additionalOpts ...grpc.D
 		return nil, fmt.Errorf("could not connect to assessment service: %w", err)
 	}
 
-	client := assessment.NewAssessmentClient(conn)
+	client := assessmentv1.NewAssessmentClient(conn)
 
 	// Set up the stream and store it in our service struct, so we can access it later to actually
 	// send the evidence data
@@ -368,7 +368,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 			continue
 		}
 
-		channel.Send(&assessment.AssessEvidenceRequest{Evidence: e})
+		channel.Send(&assessmentv1.AssessEvidenceRequest{Evidence: e})
 	}
 }
 

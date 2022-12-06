@@ -3,7 +3,7 @@ package orchestratortest
 import (
 	"time"
 
-	"clouditor.io/clouditor/api/assessment"
+	assessmentv1 "clouditor.io/clouditor/api/assessment/v1"
 	"clouditor.io/clouditor/api/orchestrator"
 	"google.golang.org/protobuf/types/known/structpb"
 )
@@ -56,13 +56,13 @@ func NewCatalog() *orchestrator.Catalog {
 				Id:          "Cont1234",
 				Name:        "Mock Control",
 				Description: "This is a mock control",
-				Metrics: []*assessment.Metric{{
+				Metrics: []*assessmentv1.Metric{{
 					Id:          "MockMetric",
 					Name:        "A Mock Metric",
 					Description: "This Metric is a mock metric",
-					Scale:       assessment.Metric_ORDINAL,
-					Range: &assessment.Range{
-						Range: &assessment.Range_AllowedValues{AllowedValues: &assessment.AllowedValues{
+					Scale:       assessmentv1.Metric_ORDINAL,
+					Range: &assessmentv1.Range{
+						Range: &assessmentv1.Range_AllowedValues{AllowedValues: &assessmentv1.AllowedValues{
 							Values: []*structpb.Value{
 								structpb.NewBoolValue(false),
 								structpb.NewBoolValue(true),
@@ -72,7 +72,7 @@ func NewCatalog() *orchestrator.Catalog {
 					Id:                "Cont1234.1",
 					Name:              "Mock Sub-Control",
 					Description:       "This is a mock sub-control",
-					Metrics:           []*assessment.Metric{},
+					Metrics:           []*assessmentv1.Metric{},
 					CategoryName:      "My name",
 					CategoryCatalogId: "Cat1234",
 				}},
