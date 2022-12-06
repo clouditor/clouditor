@@ -530,7 +530,7 @@ func (s *Service) evaluationResultForLowerControlLevel(cloudServiceId, catalogId
 	// Get assessment results for the target cloud service
 	// TODO(anatheka): Add FilterMetricId when PR#877 is ready
 	assessmentResults, err := api.ListAllPaginated(&assessment.ListAssessmentResultsRequest{
-		FilteredCloudServiceId: cloudServiceId}, s.orchestratorClient.ListAssessmentResults, func(res *assessment.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
+		FilteredCloudServiceId: &cloudServiceId}, s.orchestratorClient.ListAssessmentResults, func(res *assessment.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
 		return res.Results
 	})
 	if err != nil || len(assessmentResults) == 0 {
