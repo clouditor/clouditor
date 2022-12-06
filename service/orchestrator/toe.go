@@ -180,6 +180,7 @@ func (s *Service) RegisterToeHook(hook orchestrator.ToeHookFunc) {
 	s.hookMutex.Lock()
 	defer s.hookMutex.Unlock()
 	s.toeHooks = append(s.toeHooks, hook)
+}
 
 func (svc *Service) ListControlMonitoringStatus(ctx context.Context, req *orchestrator.ListControlMonitoringStatusRequest) (res *orchestrator.ListControlMonitoringStatusResponse, err error) {
 	// Check, if this request has access to the cloud service according to our authorization strategy.

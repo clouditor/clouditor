@@ -450,7 +450,42 @@ func TestToeHook(t *testing.T) {
 				CloudServiceId: orchestratortest.MockServiceID,
 				CatalogId:      orchestratortest.MockCatalogID,
 				AssuranceLevel: &AssuranceLevelMedium,
-=======
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			hookCallCounter = 0
+
+			// Create service
+			s := service
+			err := s.storage.Create(&orchestrator.CloudService{Id: "MyService"})
+			assert.NoError(t, err)
+
+			// Create catalog
+			err = s.storage.Create(orchestratortest.NewCatalog())
+			assert.NoError(t, err)
+
+			// Create new ToE
+			err = s.storage.Create(orchestratortest.NewTargetOfEvaluation())
+			assert.NoError(t, err)
+
+			gotResp, err := s.UpdateTargetOfEvaluation(tt.args.ctx, tt.args.req)
+
+			// wait for all hooks (2 hooks)
+			wg.Wait()
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("UpdateTargetOfEvaluation() error = %v, wantErrMessage %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotResp, tt.wantResp) {
+				t.Errorf("UpdateTargetOfEvaluation() gotResp = %v, want %v", gotResp, tt.wantResp)
+			}
+			assert.Equal(t, 2, hookCallCounter)
+		})
+	}
+}
 func TestService_ListControlMonitoringStatus(t *testing.T) {
 	type fields struct {
 		storage persistence.Storage
@@ -575,35 +610,6 @@ func TestService_ListControlMonitoringStatus(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			hookCallCounter = 0
-
-			// Create service
-			s := service
-			err := s.storage.Create(&orchestrator.CloudService{Id: "MyService"})
-			assert.NoError(t, err)
-
-			// Create catalog
-			err = s.storage.Create(orchestratortest.NewCatalog())
-			assert.NoError(t, err)
-
-			// Create new ToE
-			err = s.storage.Create(orchestratortest.NewTargetOfEvaluation())
-			assert.NoError(t, err)
-
-			gotResp, err := s.UpdateTargetOfEvaluation(tt.args.ctx, tt.args.req)
-
-			// wait for all hooks (2 hooks)
-			wg.Wait()
-
-			if (err != nil) != tt.wantErr {
-				t.Errorf("UpdateTargetOfEvaluation() error = %v, wantErrMessage %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(gotResp, tt.wantResp) {
-				t.Errorf("UpdateTargetOfEvaluation() gotResp = %v, want %v", gotResp, tt.wantResp)
-			}
-			assert.Equal(t, 2, hookCallCounter)
-=======
 			svc := &Service{
 				storage: tt.fields.storage,
 				authz:   tt.fields.authz,
