@@ -318,7 +318,7 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 	var (
 		schedulerTag string
 		control      *orchestrator.Control
-		controlIds   = []string{}
+		// controlIds   = []string{}
 	)
 
 	err = req.Validate()
@@ -335,16 +335,26 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 		return
 	}
 
-	// Get all control ids that need to be checked in the scheduler
-	controlIds = getAllControlIdsFromControl(control)
+	// TODO(anatheka): Refactor: Hier weitermachen!!!! Wir können mit ParentControlId checken ob es einen Parent control gibt
+	// We can only stop the evaluation for first level controls or sub-controls that are started individually
+	// Check if a parent control id exists and if control is started as a sub-level control
+	if control.ParentControlId != nil {
+		schedulerTag = createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, *control.ParentControlId)
+		_, err = s.scheduler.FindJobsByTag(schedulerTag)
+	}
 
-	// Check for each control id a job is running
-	for _, controlId := range controlIds {
-		schedulerTag = createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, controlId)
+	// Verify if scheduler job exists for the parent control id
+	if err == nil {
+		// Scheduler job can not be remove because the paren control is currently evaluated
+		err = fmt.Errorf("evaluation of control id '%s' for cloud service '%s' can not be stopped because the control is a sub-control of an evaluated control", req.ControlId, req.TargetOfEvaluation.CloudServiceId)
+		log.Error(err)
+		err = status.Errorf(codes.NotFound, err.Error())
+	} else if strings.Contains(err.Error(), "no jobs found with given tag") {
+		// Scheduler job can be removed because the parent control is currently not evaluated
+		schedulerTag = createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId)
 
 		// Verify if scheduler job exists for the control id
 		_, err = s.scheduler.FindJobsByTag(schedulerTag)
-
 		if err == nil {
 			// Delete the job from the scheduler
 			err = s.scheduler.RemoveByTag(schedulerTag)
@@ -355,7 +365,7 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 				return
 			}
 		} else if strings.Contains(err.Error(), "no jobs found with given tag") {
-			err = fmt.Errorf("evaluation of cloud service '%s' with '%s' not running", req.TargetOfEvaluation.CloudServiceId, controlId)
+			err = fmt.Errorf("evaluation of cloud service '%s' with '%s' not running", req.TargetOfEvaluation.CloudServiceId, req.ControlId)
 			log.Error(err)
 			err = status.Errorf(codes.NotFound, err.Error())
 		} else if err != nil {
@@ -365,6 +375,37 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 			return
 		}
 	}
+
+	// // Get all control ids that need to be checked in the scheduler
+	// controlIds = getAllControlIdsFromControl(control)
+
+	// // Check for each control id a job is running
+	// for _, controlId := range controlIds {
+	// 	schedulerTag = createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, controlId)
+
+	// 	// Verify if scheduler job exists for the control id
+	// 	_, err = s.scheduler.FindJobsByTag(schedulerTag)
+
+	// 	if err == nil {
+	// 		// Delete the job from the scheduler
+	// 		err = s.scheduler.RemoveByTag(schedulerTag)
+	// 		if err != nil {
+	// 			err = fmt.Errorf("error when removing job from scheduler: %v", err)
+	// 			log.Error(err)
+	// 			err = status.Errorf(codes.Internal, "error when stopping scheduler")
+	// 			return
+	// 		}
+	// 	} else if strings.Contains(err.Error(), "no jobs found with given tag") {
+	// 		err = fmt.Errorf("evaluation of cloud service '%s' with '%s' not running", req.TargetOfEvaluation.CloudServiceId, controlId)
+	// 		log.Error(err)
+	// 		err = status.Errorf(codes.NotFound, err.Error())
+	// 	} else if err != nil {
+	// 		shortErr := errors.New("error when stopping scheduler")
+	// 		log.Errorf("%s: %v", shortErr, err)
+	// 		err = status.Errorf(codes.Internal, "%v", &shortErr)
+	// 		return
+	// 	}
+	// }
 
 	res = &evaluation.StopEvaluationResponse{}
 
