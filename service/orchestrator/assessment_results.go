@@ -40,7 +40,9 @@ import (
 
 // ListAssessmentResults is a method implementation of the orchestrator interface
 func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
+	svc.resultsMutex.Lock()
 	var values = maps.Values(svc.results)
+	svc.resultsMutex.Unlock()
 	var filtered_values []*assessment.AssessmentResult
 	var allowed []string
 	var all bool
