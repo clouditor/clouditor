@@ -33,6 +33,4 @@ import (
 	_ "github.com/google/gnostic/cmd/protoc-gen-openapi"
 	_ "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway"
 	_ "github.com/srikrsna/protoc-gen-gotag"
-	_ "google.golang.org/grpc/cmd/protoc-gen-go-grpc"
-	_ "google.golang.org/protobuf/cmd/protoc-gen-go"
 )
