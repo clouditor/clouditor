@@ -53,18 +53,16 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.L
 		return nil, status.Errorf(codes.InvalidArgument, "%s", err)
 	}
 
-	filteredCloudServiceId := req.GetFilteredCloudServiceId()
-
 	// Check, if the cloud service ID filter is valid according to the authorization strategy. Omitting the cloud service ID is
 	// only allowed, if one can access *all* the cloud services.
 	all, allowed = svc.authz.AllowedCloudServices(ctx)
-	if !all && filteredCloudServiceId == "" {
+	if !all && req.FilteredCloudServiceId == nil {
 		return nil, service.ErrPermissionDenied
 	}
 
 	// Furthermore, the content of the filtered cloud service ID must be in the list of allowed cloud service IDs,
 	// unless one can access *all* the cloud services.
-	if !all && filteredCloudServiceId != "" && !slices.Contains(allowed, filteredCloudServiceId) {
+	if !all && req.FilteredCloudServiceId != nil && !slices.Contains(allowed, req.GetFilteredCloudServiceId()) {
 		return nil, service.ErrPermissionDenied
 	}
 
@@ -74,17 +72,17 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.L
 	// * metric ID
 	for _, v := range values {
 		// Check for filter cloud service ID
-		if filteredCloudServiceId != "" && v.CloudServiceId != filteredCloudServiceId {
+		if req.FilteredCloudServiceId != nil && v.GetCloudServiceId() != req.GetFilteredCloudServiceId() {
 			continue
 		}
 
 		// Check for filter compliant
-		if req.FilteredCompliant != nil && req.GetFilteredCompliant() != v.Compliant {
+		if req.FilteredCompliant != nil && req.GetFilteredCompliant() != v.GetCompliant() {
 			continue
 		}
 
 		// Check for filter metric ID
-		if req.FilteredMetricId != nil && !slices.Contains(req.FilteredMetricId, v.MetricId) {
+		if req.FilteredMetricId != nil && !slices.Contains(req.GetFilteredMetricId(), v.GetMetricId()) {
 			continue
 		}
 
