@@ -312,7 +312,7 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 	return
 }
 
-// StopEvaluation is a method implementation of the evaluation interface: It stop the evaluation for a cloud service and its given controls (e.g., EUCS OPS-13,OPS-13.2)
+// StopEvaluation is a method implementation of the evaluation interface: It stop the evaluation for a cloud service and its given control (e.g., EUCS OPS-13,OPS-13.2). Only first level controls (e.g., OPS-13) or individually started sub-controls (e.g., OPS-13.1) can be stopped. A sub-control with a running evaluation for the parent control cannot be stopped as it is needed for the parent control.
 func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluationRequest) (res *evaluation.StopEvaluationResponse, err error) {
 
 	var (
