@@ -46,6 +46,8 @@ import (
 
 var log *logrus.Entry
 
+type DB = gorm.DB
+
 type storage struct {
 	db *gorm.DB
 	// for options: (set default when not in opts)
@@ -157,6 +159,11 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	}
 
 	if err = g.db.SetupJoinTable(orchestrator.CloudService{}, "ConfiguredMetrics", assessment.MetricConfiguration{}); err != nil {
+		err = fmt.Errorf("error during join-table: %w", err)
+		return
+	}
+
+	if err = g.db.SetupJoinTable(orchestrator.TargetOfEvaluation{}, "ControlsInScope", orchestrator.ControlMonitoringStatus{}); err != nil {
 		err = fmt.Errorf("error during join-table: %w", err)
 		return
 	}
@@ -283,7 +290,11 @@ func (s *storage) Update(r any, conds ...any) error {
 	tx := s.db.Session(&gorm.Session{FullSaveAssociations: true}).Model(r)
 	tx = applyWhere(tx, conds...).Updates(r)
 	if err := tx.Error; err != nil { // db error
-		return err
+		if strings.Contains(err.Error(), "constraint failed") {
+			return persistence.ErrConstraintFailed
+		} else {
+			return err
+		}
 	}
 
 	// No record with given ID found

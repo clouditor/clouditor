@@ -40,7 +40,33 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (svc *Service) CreateTargetOfEvaluation(_ context.Context, req *orchestrator.CreateTargetOfEvaluationRequest) (res *orchestrator.TargetOfEvaluation, err error) {
+func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestrator.CreateTargetOfEvaluationRequest) (res *orchestrator.TargetOfEvaluation, err error) {
+	var (
+		c     *orchestrator.Catalog
+		lcres *orchestrator.ListControlsResponse
+	)
+
+	// We need to retrieve some additional meta-data about the security catalog, so we need to query it as well
+	c, err = svc.GetCatalog(ctx, &orchestrator.GetCatalogRequest{CatalogId: req.Toe.CatalogId})
+	if err != nil {
+		// The error is already a gRPC error, so we can just return it
+		return nil, err
+	}
+
+	// Certain catalogs do not allow scoping, in this case we need to pre-populate all controls into the scope.
+	if c.AllInScope {
+		lcres, err = svc.ListControls(ctx, &orchestrator.ListControlsRequest{CatalogId: req.Toe.CatalogId})
+		if err != nil {
+			// The error is already a gRPC error, so we can just return it
+			return nil, err
+		}
+
+		// Make all controls in scope
+		// TODO: Certain catalogs differentiate between assurance levels
+		req.Toe.ControlsInScope = lcres.Controls
+	}
+
+	// Create the ToE
 	err = svc.storage.Create(&req.Toe)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
@@ -106,6 +132,8 @@ func (svc *Service) UpdateTargetOfEvaluation(_ context.Context, req *orchestrato
 
 	if err != nil && errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Error(codes.NotFound, "ToE not found")
+	} else if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
+		return nil, status.Error(codes.NotFound, "ToE not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
@@ -126,4 +154,47 @@ func (svc *Service) RemoveTargetOfEvaluation(_ context.Context, req *orchestrato
 	}
 
 	return &emptypb.Empty{}, nil
+}
+
+func (svc *Service) ListControlMonitoringStatus(ctx context.Context, req *orchestrator.ListControlMonitoringStatusRequest) (res *orchestrator.ListControlMonitoringStatusResponse, err error) {
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+		return nil, service.ErrPermissionDenied
+	}
+
+	res = new(orchestrator.ListControlMonitoringStatusResponse)
+	res.Status, res.NextPageToken, err = service.PaginateStorage[*orchestrator.ControlMonitoringStatus](req, svc.storage, service.DefaultPaginationOpts, gorm.WithoutPreload())
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+	}
+
+	return
+}
+
+func (svc *Service) UpdateControlMonitoringStatus(ctx context.Context, req *orchestrator.UpdateControlMonitoringStatusRequest) (res *orchestrator.ControlMonitoringStatus, err error) {
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+		return nil, service.ErrPermissionDenied
+	}
+
+	err = svc.storage.Update(req.Status,
+		"target_of_evaluation_cloud_service_id = ? AND "+
+			"target_of_evaluation_catalog_id = ? AND "+
+			"control_category_catalog_id = ? AND "+
+			"control_category_name = ? AND "+
+			"control_id = ?",
+		req.Status.TargetOfEvaluationCloudServiceId,
+		req.Status.TargetOfEvaluationCatalogId,
+		req.Status.ControlCategoryCatalogId,
+		req.Status.ControlCategoryName,
+		req.Status.ControlId)
+	if err != nil && errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Error(codes.NotFound, "ToE not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+	}
+
+	res = req.Status
+
+	return
 }

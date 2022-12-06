@@ -28,6 +28,7 @@ package orchestrator
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"testing"
 
 	"clouditor.io/clouditor/api"
@@ -37,9 +38,11 @@ import (
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
+	"clouditor.io/clouditor/service"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 )
 
 var AssuranceLevelHigh = "high"
@@ -373,4 +376,256 @@ func TestService_RemoveTargetOfEvaluation(t *testing.T) {
 	listTargetsOfEvaluationResponse, err = orchestratorService.ListTargetsOfEvaluation(context.Background(), &orchestrator.ListTargetsOfEvaluationRequest{})
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(listTargetsOfEvaluationResponse.Toes))
+}
+
+func TestService_ListControlMonitoringStatus(t *testing.T) {
+	type fields struct {
+		storage persistence.Storage
+		authz   service.AuthorizationStrategy
+	}
+	type args struct {
+		ctx context.Context
+		req *orchestrator.ListControlMonitoringStatusRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes *orchestrator.ListControlMonitoringStatusResponse
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "no controls explicitly selected - all controls status unspecified",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+					assert.NoError(t, s.Create(orchestrator.CloudService{Id: orchestratortest.MockServiceID}))
+					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation()))
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				ctx: context.TODO(),
+				req: &orchestrator.ListControlMonitoringStatusRequest{
+					CloudServiceId: orchestratortest.MockServiceID,
+					CatalogId:      orchestratortest.MockCatalogID,
+				},
+			},
+			wantRes: &orchestrator.ListControlMonitoringStatusResponse{
+				Status: []*orchestrator.ControlMonitoringStatus{
+					{
+						ControlId:                        orchestratortest.MockControlID,
+						ControlCategoryName:              orchestratortest.MockCategoryName,
+						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
+						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
+						Status:                           orchestrator.ControlMonitoringStatus_STATUS_UNSPECIFIED,
+					},
+					{
+						ControlId:                        orchestratortest.MockSubControlID,
+						ControlCategoryName:              orchestratortest.MockCategoryName,
+						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
+						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
+						Status:                           orchestrator.ControlMonitoringStatus_STATUS_UNSPECIFIED,
+					},
+				},
+			},
+		},
+		{
+			name: "one control explicitly set to continuously monitored",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+					assert.NoError(t, s.Create(orchestrator.CloudService{Id: orchestratortest.MockServiceID}))
+					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation()))
+					assert.NoError(t, s.Update(orchestrator.ControlMonitoringStatus{
+						ControlId:                        orchestratortest.MockControlID,
+						ControlCategoryName:              orchestratortest.MockCategoryName,
+						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
+						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
+						Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
+					}, orchestrator.ControlMonitoringStatus{
+						ControlId:                        orchestratortest.MockControlID,
+						ControlCategoryName:              orchestratortest.MockCategoryName,
+						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
+						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
+					}))
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				ctx: context.TODO(),
+				req: &orchestrator.ListControlMonitoringStatusRequest{
+					CloudServiceId: orchestratortest.MockServiceID,
+					CatalogId:      orchestratortest.MockCatalogID,
+				},
+			},
+			wantRes: &orchestrator.ListControlMonitoringStatusResponse{
+				Status: []*orchestrator.ControlMonitoringStatus{
+					{
+						ControlId:                        orchestratortest.MockControlID,
+						ControlCategoryName:              orchestratortest.MockCategoryName,
+						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
+						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
+						Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
+					},
+					{
+						ControlId:                        orchestratortest.MockSubControlID,
+						ControlCategoryName:              orchestratortest.MockCategoryName,
+						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
+						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
+						Status:                           orchestrator.ControlMonitoringStatus_STATUS_UNSPECIFIED,
+					},
+				},
+			},
+		},
+		{
+			name: "permission denied",
+			fields: fields{
+				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+			},
+			args: args{
+				ctx: testutil.TestContextOnlyService1,
+				req: &orchestrator.ListControlMonitoringStatusRequest{
+					CloudServiceId: testutil.TestCloudService2,
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, service.ErrPermissionDenied)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				storage: tt.fields.storage,
+				authz:   tt.fields.authz,
+			}
+
+			gotRes, err := svc.ListControlMonitoringStatus(tt.args.ctx, tt.args.req)
+			if tt.wantErr != nil {
+				tt.wantErr(t, err, tt.args)
+			} else {
+				assert.Nil(t, err)
+			}
+
+			if !proto.Equal(gotRes, tt.wantRes) {
+				t.Errorf("Service.ListControlMonitoringStatus() = %v, want %v", gotRes, tt.wantRes)
+			}
+		})
+	}
+}
+
+func TestService_UpdateControlMonitoringStatus(t *testing.T) {
+	type fields struct {
+		storage persistence.Storage
+		authz   service.AuthorizationStrategy
+	}
+	type args struct {
+		in0 context.Context
+		req *orchestrator.UpdateControlMonitoringStatusRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes *orchestrator.ControlMonitoringStatus
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "valid update",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+					assert.NoError(t, s.Create(orchestrator.CloudService{Id: orchestratortest.MockServiceID}))
+					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation()))
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				in0: context.TODO(),
+				req: &orchestrator.UpdateControlMonitoringStatusRequest{
+					Status: &orchestrator.ControlMonitoringStatus{
+						ControlId:                        orchestratortest.MockControlID,
+						ControlCategoryName:              orchestratortest.MockCategoryName,
+						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
+						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
+						Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
+					},
+				},
+			},
+			wantRes: &orchestrator.ControlMonitoringStatus{
+				ControlId:                        orchestratortest.MockControlID,
+				ControlCategoryName:              orchestratortest.MockCategoryName,
+				ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
+				TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
+				TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
+				Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
+			},
+		},
+		{
+			name: "ToE not found",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				in0: context.TODO(),
+				req: &orchestrator.UpdateControlMonitoringStatusRequest{
+					Status: &orchestrator.ControlMonitoringStatus{
+						ControlId:                        orchestratortest.MockControlID,
+						ControlCategoryName:              orchestratortest.MockCategoryName,
+						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
+						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
+						Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
+					},
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Equal(t, codes.NotFound, status.Code(err))
+			},
+		},
+		{
+			name: "permission denied",
+			fields: fields{
+				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+			},
+			args: args{
+				in0: testutil.TestContextOnlyService1,
+				req: &orchestrator.UpdateControlMonitoringStatusRequest{
+					Status: &orchestrator.ControlMonitoringStatus{
+						TargetOfEvaluationCloudServiceId: testutil.TestCloudService2,
+					},
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, service.ErrPermissionDenied)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				storage: tt.fields.storage,
+				authz:   tt.fields.authz,
+			}
+			gotRes, err := svc.UpdateControlMonitoringStatus(tt.args.in0, tt.args.req)
+			if tt.wantErr != nil {
+				tt.wantErr(t, err, tt.args)
+			} else {
+				assert.Nil(t, err)
+			}
+
+			if !reflect.DeepEqual(gotRes, tt.wantRes) {
+				t.Errorf("Service.UpdateControlMonitoringStatus() = %v, want %v", gotRes, tt.wantRes)
+			}
+		})
+	}
 }
