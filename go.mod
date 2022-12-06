@@ -44,7 +44,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.17.2
 	github.com/aws/aws-sdk-go-v2/config v1.18.2
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.74.1
-	github.com/aws/aws-sdk-go-v2/service/lambda v1.24.0
+	github.com/aws/aws-sdk-go-v2/service/lambda v1.26.1
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.29.0
 	github.com/aws/aws-sdk-go-v2/service/sts v1.17.4
 	github.com/aws/smithy-go v1.13.5
@@ -62,7 +62,6 @@ require (
 	github.com/google/addlicense v1.1.0
 	github.com/google/gnostic v0.6.9
 	github.com/srikrsna/protoc-gen-gotag v0.6.2
-	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0
 )
 
 // indirect dependencies
