@@ -27,6 +27,7 @@ package orchestrator
 
 import (
 	"context"
+	"fmt"
 
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
@@ -40,36 +41,59 @@ import (
 // ListAssessmentResults is a method implementation of the orchestrator interface
 func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
 	var values = maps.Values(svc.results)
-	var filtered []*assessment.AssessmentResult
+	var filtered_values []*assessment.AssessmentResult
 	var allowed []string
 	var all bool
 
-	// Check, if the current filter is valid according to the authorization strategy. Omitting the cloud service ID is
+	// Validate request
+	err = req.Validate()
+	if err != nil {
+		err = fmt.Errorf("invalid request: %v", err)
+		log.Error(err)
+		return nil, status.Errorf(codes.InvalidArgument, "%s", err)
+	}
+
+	// Check, if the cloud service ID filter is valid according to the authorization strategy. Omitting the cloud service ID is
 	// only allowed, if one can access *all* the cloud services.
 	all, allowed = svc.authz.AllowedCloudServices(ctx)
-	if !all && req.FilteredCloudServiceId == "" {
+	if !all && req.FilteredCloudServiceId == nil {
 		return nil, service.ErrPermissionDenied
 	}
 
 	// Furthermore, the content of the filtered cloud service ID must be in the list of allowed cloud service IDs,
 	// unless one can access *all* the cloud services.
-	if !all && req.FilteredCloudServiceId != "" && !slices.Contains(allowed, req.FilteredCloudServiceId) {
+	if !all && req.FilteredCloudServiceId != nil && !slices.Contains(allowed, req.GetFilteredCloudServiceId()) {
 		return nil, service.ErrPermissionDenied
 	}
 
+	// Filtering the assessment results by
+	// * cloud service ID
+	// * compliant status
+	// * metric ID
 	for _, v := range values {
-		if req.FilteredCloudServiceId != "" && v.CloudServiceId != req.FilteredCloudServiceId {
+		// Check for filter cloud service ID
+		if req.FilteredCloudServiceId != nil && v.GetCloudServiceId() != req.GetFilteredCloudServiceId() {
 			continue
 		}
 
-		filtered = append(filtered, v)
+		// Check for filter compliant
+		if req.FilteredCompliant != nil && req.GetFilteredCompliant() != v.GetCompliant() {
+			continue
+		}
+
+		// Check for filter metric ID
+		if req.FilteredMetricId != nil && !slices.Contains(req.GetFilteredMetricId(), v.GetMetricId()) {
+			continue
+		}
+
+		filtered_values = append(filtered_values, v)
 	}
 
 	res = new(assessment.ListAssessmentResultsResponse)
 
 	// Paginate the results according to the request
 	svc.resultsMutex.Lock()
-	res.Results, res.NextPageToken, err = service.PaginateSlice(req, filtered, func(a *assessment.AssessmentResult, b *assessment.AssessmentResult) bool {
+	res.Results, res.NextPageToken, err = service.PaginateSlice(req, filtered_values, func(a *assessment.AssessmentResult, b *assessment.AssessmentResult) bool {
 		return a.Timestamp.AsTime().After(b.Timestamp.AsTime())
 	}, service.DefaultPaginationOpts)
 	if err != nil {

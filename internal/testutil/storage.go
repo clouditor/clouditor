@@ -14,7 +14,7 @@ func NewInMemoryStorage(t *testing.T, funcs ...func(s persistence.Storage)) (s p
 
 	s, err = inmemory.NewStorage()
 	if err != nil {
-		t.Errorf("Could not initialize in-memory db: %v", err)
+		t.Fatalf("Could not initialize in-memory db: %v", err)
 	}
 
 	for _, f := range funcs {

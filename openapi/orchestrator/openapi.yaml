@@ -16,8 +16,21 @@ paths:
             parameters:
                 - name: filteredCloudServiceId
                   in: query
+                  description: Optional. List only assessment results of a specific cloud service.
                   schema:
                     type: string
+                - name: filteredCompliant
+                  in: query
+                  description: Optional. List only compliant assessment results.
+                  schema:
+                    type: boolean
+                - name: filteredMetricId
+                  in: query
+                  description: Optional. List only assessment results of a specific metric id.
+                  schema:
+                    type: array
+                    items:
+                        type: string
                 - name: pageSize
                   in: query
                   schema:
@@ -705,97 +718,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/cloud_services/{cloudServiceId}/catalogs/{catalogId}/toes:
-        get:
-            tags:
-                - Orchestrator
-            description: Retrieves a Target of Evaluation
-            operationId: Orchestrator_GetTargetOfEvaluation
-            parameters:
-                - name: cloudServiceId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: catalogId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/TargetOfEvaluation'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-        put:
-            tags:
-                - Orchestrator
-            description: Updates an existing Target of Evaluation
-            operationId: Orchestrator_UpdateTargetOfEvaluation
-            parameters:
-                - name: cloudServiceId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: catalogId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/TargetOfEvaluation'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/TargetOfEvaluation'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-        delete:
-            tags:
-                - Orchestrator
-            description: Removes a Target of Evaluation
-            operationId: Orchestrator_RemoveTargetOfEvaluation
-            parameters:
-                - name: cloudServiceId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: catalogId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content: {}
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/cloud_services/{cloudServiceId}/metric_configurations:
         get:
             tags:
@@ -886,6 +808,214 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/MetricConfiguration'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/cloud_services/{cloudServiceId}/toes/{catalogId}:
+        get:
+            tags:
+                - Orchestrator
+            description: Retrieves a Target of Evaluation
+            operationId: Orchestrator_GetTargetOfEvaluation
+            parameters:
+                - name: cloudServiceId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: catalogId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/TargetOfEvaluation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        put:
+            tags:
+                - Orchestrator
+            description: Updates an existing Target of Evaluation
+            operationId: Orchestrator_UpdateTargetOfEvaluation
+            parameters:
+                - name: cloudServiceId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: catalogId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/TargetOfEvaluation'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/TargetOfEvaluation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        delete:
+            tags:
+                - Orchestrator
+            description: Removes a Target of Evaluation
+            operationId: Orchestrator_RemoveTargetOfEvaluation
+            parameters:
+                - name: cloudServiceId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: catalogId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/cloud_services/{cloudServiceId}/toes/{catalogId}/monitoring_status:
+        get:
+            tags:
+                - Orchestrator
+            description: Lists all control monitoring statuses
+            operationId: Orchestrator_ListControlMonitoringStatus
+            parameters:
+                - name: cloudServiceId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: catalogId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListControlMonitoringStatusResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    ? /v1/orchestrator/cloud_services/{status.target_of_evaluation_cloud_service_id}/toes/{status.target_of_evaluation_catalog_id}/monitoring_status/categories/{status.control_category_name}/controls/{status.control_id}
+    :   get:
+            tags:
+                - Orchestrator
+            description: Updates a particular control monitoring status
+            operationId: Orchestrator_UpdateControlMonitoringStatus
+            parameters:
+                - name: status.target_of_evaluation_cloud_service_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: status.target_of_evaluation_catalog_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: status.control_category_name
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: status.control_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: status.targetOfEvaluationCloudServiceId
+                  in: query
+                  schema:
+                    type: string
+                - name: status.targetOfEvaluationCatalogId
+                  in: query
+                  schema:
+                    type: string
+                - name: status.controlId
+                  in: query
+                  schema:
+                    type: string
+                - name: status.controlCategoryName
+                  in: query
+                  schema:
+                    type: string
+                - name: status.controlCategoryCatalogId
+                  in: query
+                  schema:
+                    type: string
+                - name: status.status
+                  in: query
+                  schema:
+                    enum:
+                        - STATUS_UNSPECIFIED
+                        - STATUS_CONTINUOUSLY_MONITORED
+                        - STATUS_MANUALLY_MONITORED
+                        - STATUS_DELEGATED
+                    type: string
+                    format: enum
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ControlMonitoringStatus'
                 default:
                     description: Default error response
                     content:
@@ -1261,6 +1391,9 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Category'
+                allInScope:
+                    type: boolean
+                    description: Certain security catalogs do not allow to select the scope of the controls, but all controls are automatically "in scope", however they can be set to a DELEGATED status.
         Category:
             type: object
             properties:
@@ -1352,6 +1485,27 @@ components:
                 parentControlCategoryCatalogId:
                     type: string
             description: Control represents a certain Control that needs to be fulfilled. It could be a Control in a certification catalog. It follows the OSCAL model. A requirement in the EUCS terminology, e.g., is represented as the lowest sub-control.
+        ControlMonitoringStatus:
+            type: object
+            properties:
+                targetOfEvaluationCloudServiceId:
+                    type: string
+                targetOfEvaluationCatalogId:
+                    type: string
+                controlId:
+                    type: string
+                controlCategoryName:
+                    type: string
+                controlCategoryCatalogId:
+                    type: string
+                status:
+                    enum:
+                        - STATUS_UNSPECIFIED
+                        - STATUS_CONTINUOUSLY_MONITORED
+                        - STATUS_MANUALLY_MONITORED
+                        - STATUS_DELEGATED
+                    type: string
+                    format: enum
         GoogleProtobufAny:
             type: object
             properties:
@@ -1405,6 +1559,15 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/CloudService'
+                nextPageToken:
+                    type: string
+        ListControlMonitoringStatusResponse:
+            type: object
+            properties:
+                status:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ControlMonitoringStatus'
                 nextPageToken:
                     type: string
         ListControlsResponse:
@@ -1597,6 +1760,11 @@ components:
                 assuranceLevel:
                     type: string
                     description: an assurance level is not offered by every catalog, therefore it is optional
+                controlsInScope:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Control'
+                    description: 'the controls that are in scope of this ToE. Note: For some security catalogs, e.g., the EUCS, a specific set of controls (in the "worst case": all) are automatically in scope. In this case, this list needs auto-filled at an appropriate time, e.g,. in CreateTargetOfEvaluation.'
             description: A Target of Evaluation binds a cloud service to a catalog, so the service is evaluated regarding this catalog's controls
 tags:
     - name: Orchestrator

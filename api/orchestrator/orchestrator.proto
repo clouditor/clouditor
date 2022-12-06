@@ -53,9 +53,6 @@ service Orchestrator {
       returns (ListAssessmentToolsResponse) {
     option (google.api.http) = {
       get : "/v1/orchestrator/assessment_tools"
-      additional_bindings {
-        get : "/v1/orchestrator/{metric_id}/assessment_tools"
-      }
     };
   }
 
@@ -104,10 +101,6 @@ service Orchestrator {
       returns (clouditor.assessment.v1.ListAssessmentResultsResponse) {
     option (google.api.http) = {
       get : "/v1/orchestrator/assessment_results"
-      additional_bindings {
-        get : "/v1/orchestrator/cloud_services/{filtered_cloud_service_id}/"
-              "assessment_results"
-      }
     };
   }
 
@@ -359,8 +352,29 @@ service Orchestrator {
   rpc GetTargetOfEvaluation(GetTargetOfEvaluationRequest)
       returns (TargetOfEvaluation) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/"
-            "{catalog_id}/toes"
+      get : "/v1/orchestrator/cloud_services/{cloud_service_id}/toes/"
+            "{catalog_id}"
+    };
+  }
+
+  // Lists all control monitoring statuses
+  rpc ListControlMonitoringStatus(ListControlMonitoringStatusRequest)
+      returns (ListControlMonitoringStatusResponse) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/cloud_services/{cloud_service_id}/toes/"
+            "{catalog_id}/monitoring_status"
+    };
+  }
+
+  // Updates a particular control monitoring status
+  rpc UpdateControlMonitoringStatus(UpdateControlMonitoringStatusRequest)
+      returns (ControlMonitoringStatus) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/cloud_services/"
+            "{status.target_of_evaluation_cloud_service_id}/toes/"
+            "{status.target_of_evaluation_catalog_id}/monitoring_status/"
+            "categories/{status.control_category_name}/"
+            "controls/{status.control_id}"
     };
   }
 
@@ -380,8 +394,8 @@ service Orchestrator {
   rpc UpdateTargetOfEvaluation(UpdateTargetOfEvaluationRequest)
       returns (TargetOfEvaluation) {
     option (google.api.http) = {
-      put : "/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/"
-            "{catalog_id}/toes"
+      put : "/v1/orchestrator/cloud_services/{cloud_service_id}/toes/"
+            "{catalog_id}"
       body : "toe"
     };
   }
@@ -390,8 +404,8 @@ service Orchestrator {
   rpc RemoveTargetOfEvaluation(RemoveTargetOfEvaluationRequest)
       returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      delete : "/v1/orchestrator/cloud_services/{cloud_service_id}/catalogs/"
-               "{catalog_id}/toes"
+      delete : "/v1/orchestrator/cloud_services/{cloud_service_id}/toes/"
+               "{catalog_id}"
     };
   }
 }
@@ -519,7 +533,7 @@ message MetricChangeEvent {
   // The metric that is changing.
   string metric_id = 2;
 
-  // Optionally, the service id that is affected by this change. Primarily
+  // Optional. The cloud service id that is affected by this change. Primarily
   // concerns metric configuration changes.
   string cloud_service_id = 3;
 }
@@ -560,6 +574,11 @@ message Catalog {
 
   repeated Category categories = 4
       [ (tagger.tags) = "gorm:\"constraint:OnDelete:CASCADE\"" ];
+
+  // Certain security catalogs do not allow to select the scope of the controls,
+  // but all controls are automatically "in scope", however they can be set to a
+  // DELEGATED status.
+  bool all_in_scope = 5;
 }
 
 message Category {
@@ -623,6 +642,51 @@ message TargetOfEvaluation {
   // an assurance level is not offered by every catalog, therefore it is
   // optional
   optional string assurance_level = 3;
+
+  // the controls that are in scope of this ToE. Note: For some security
+  // catalogs, e.g., the EUCS, a specific set of controls (in the "worst case":
+  // all) are automatically in scope. In this case, this list needs auto-filled
+  // at an appropriate time, e.g,. in CreateTargetOfEvaluation.
+  repeated Control controls_in_scope = 4
+      [ (tagger.tags) = "gorm:\"many2many:control_monitoring_statuses;"
+                        "constraint:OnDelete:CASCADE\"" ];
+}
+
+message ListControlMonitoringStatusRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string order_by = 3;
+  bool asc = 4;
+
+  string cloud_service_id = 10;
+  string catalog_id = 11;
+}
+
+message ListControlMonitoringStatusResponse {
+  repeated ControlMonitoringStatus status = 1;
+  string next_page_token = 2;
+}
+
+message UpdateControlMonitoringStatusRequest {
+  ControlMonitoringStatus status = 1;
+}
+
+message ControlMonitoringStatus {
+  string target_of_evaluation_cloud_service_id = 1;
+  string target_of_evaluation_catalog_id = 2;
+
+  string control_id = 3;
+  string control_category_name = 4;
+  string control_category_catalog_id = 5;
+
+  enum Status {
+    STATUS_UNSPECIFIED = 0;
+    STATUS_CONTINUOUSLY_MONITORED = 1;
+    STATUS_MANUALLY_MONITORED = 2;
+    STATUS_DELEGATED = 3;
+  }
+
+  Status status = 6;
 }
 
 message CreateTargetOfEvaluationRequest { TargetOfEvaluation toe = 1; }

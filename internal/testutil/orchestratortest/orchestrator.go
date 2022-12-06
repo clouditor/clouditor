@@ -47,6 +47,7 @@ func NewCatalog() *orchestrator.Catalog {
 		Name:        "MockCatalog",
 		Id:          "Cat1234",
 		Description: "This is a mock catalog",
+		AllInScope:  true,
 		Categories: []*orchestrator.Category{{
 			Name:        "My name",
 			Description: "test",
@@ -86,5 +87,17 @@ func NewTargetOfEvaluation() *orchestrator.TargetOfEvaluation {
 		CatalogId:      MockCatalogID,
 		AssuranceLevel: &AssuranceLevelHigh,
 	}
+
+	// Our test catalog does not allow scoping, so we need to emulate what we do in CreateTargetOfEvaluation
+	toe.ControlsInScope = []*orchestrator.Control{{
+		Id:                "Cont1234",
+		CategoryName:      "My name",
+		CategoryCatalogId: "Cat1234",
+	}, {
+		Id:                "Cont1234.1",
+		CategoryName:      "My name",
+		CategoryCatalogId: "Cat1234",
+	}}
+
 	return toe
 }

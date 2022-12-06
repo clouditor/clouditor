@@ -34,6 +34,8 @@ import (
 type ResultHookFunc func(result *AssessmentResult, err error)
 
 var (
+	ErrRequestMissing                        = errors.New("request is missing")
+	ErrAssessmentResultMissing               = errors.New("assessment result is missing")
 	ErrIdInvalidFormat                       = errors.New("assessment result id not in expected format (UUID) or missing")
 	ErrEvidenceIdInvalidFormat               = errors.New("evidence id not in expected format (UUID) or missing")
 	ErrTimestampMissing                      = errors.New("timestamp in assessment result is missing")
@@ -47,6 +49,10 @@ var (
 
 // Validate validates the assessment result according to several required fields
 func (result *AssessmentResult) Validate() (resourceId string, err error) {
+	if result == nil {
+		return "", ErrAssessmentResultMissing
+	}
+
 	if _, err = uuid.Parse(result.Id); err != nil {
 		return "", ErrIdInvalidFormat
 	}
@@ -83,4 +89,22 @@ func (result *AssessmentResult) Validate() (resourceId string, err error) {
 		return "", ErrResourceTypesMissing
 	}
 	return
+}
+
+// Validate validates the ListAssessmentResultsRequest
+func (req *ListAssessmentResultsRequest) Validate() error {
+	if req == nil {
+		return ErrRequestMissing
+	}
+
+	// FilteredCloudServiceId is an optional field to filter for the cloud service id. We only need to validate the cloud service id if it is set.
+	if req.FilteredCloudServiceId != nil {
+		// Check cloud service id format
+		err := CheckCloudServiceID(req.GetFilteredCloudServiceId())
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
