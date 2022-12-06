@@ -327,7 +327,7 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 		return
 	}
 
-	// Check if control has further sub-controls
+	// Get control
 	control, err = s.getControl(req.TargetOfEvaluation.CatalogId, req.CategoryName, req.ControlId)
 	if err != nil {
 		err = fmt.Errorf("could not get control for control id {%s}: %v", req.ControlId, err)
@@ -335,79 +335,82 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 		return
 	}
 
-	// TODO(anatheka): Refactor: Hier weitermachen!!!! Wir können mit ParentControlId checken ob es einen Parent control gibt
 	// We can only stop the evaluation for first level controls or sub-controls that are started individually
-	// Check if a parent control id exists and if control is started as a sub-level control
-	if control.ParentControlId != nil {
+	// Check if the control is a first level control
+	if control.ParentControlId == nil {
+		// Control is a first level control, stop the scheduler job for the control and all sub-controls
+		err = s.stopSchedulerJobs(getSchedulerTagsForControlIds(getAllControlIdsFromControl(control), req.GetTargetOfEvaluation().GetCloudServiceId())) //createSchedulerTag(req.GetTargetOfEvaluation().GetCloudServiceId(), control.GetId()))
+		if err != nil {
+			err = fmt.Errorf("error when stopping scheduler job for control id '%s'", control.GetId())
+			log.Error(err)
+			return
+		}
+		log.Infof("Evaluation stopped for Cloud Service ID '%s' with Control ID '%s'", req.GetTargetOfEvaluation().GetCloudServiceId(), control.GetId())
+	} else {
+		// Control is a second level control, check if the parent control is scheduled
 		schedulerTag = createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, *control.ParentControlId)
 		_, err = s.scheduler.FindJobsByTag(schedulerTag)
-	}
 
-	// Verify if scheduler job exists for the parent control id
-	if err == nil {
-		// Scheduler job can not be remove because the paren control is currently evaluated
-		err = fmt.Errorf("evaluation of control id '%s' for cloud service '%s' can not be stopped because the control is a sub-control of an evaluated control", req.ControlId, req.TargetOfEvaluation.CloudServiceId)
-		log.Error(err)
-		err = status.Errorf(codes.NotFound, err.Error())
-	} else if strings.Contains(err.Error(), "no jobs found with given tag") {
-		// Scheduler job can be removed because the parent control is currently not evaluated
-		schedulerTag = createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId)
-
-		// Verify if scheduler job exists for the control id
-		_, err = s.scheduler.FindJobsByTag(schedulerTag)
 		if err == nil {
-			// Delete the job from the scheduler
-			err = s.scheduler.RemoveByTag(schedulerTag)
-			if err != nil {
-				err = fmt.Errorf("error when removing job from scheduler: %v", err)
-				log.Error(err)
-				err = status.Errorf(codes.Internal, "error when stopping scheduler")
-				return
-			}
-		} else if strings.Contains(err.Error(), "no jobs found with given tag") {
-			err = fmt.Errorf("evaluation of cloud service '%s' with '%s' not running", req.TargetOfEvaluation.CloudServiceId, req.ControlId)
+			// Scheduler job for control id cannot be removed because parent control is currently evaluated
+			err = fmt.Errorf("evaluation of control id '%s' for cloud service '%s' can not be stopped because the control is a sub-control of the evaluated control '%s'", req.GetControlId(), req.GetTargetOfEvaluation().GetCloudServiceId(), control.GetParentControlId())
 			log.Error(err)
 			err = status.Errorf(codes.NotFound, err.Error())
-		} else if err != nil {
-			shortErr := errors.New("error when stopping scheduler")
-			log.Errorf("%s: %v", shortErr, err)
-			err = status.Errorf(codes.Internal, "%v", &shortErr)
-			return
+		} else if strings.Contains(err.Error(), "no jobs found with given tag") {
+			// Scheduler job can be removed because the parent control is currently not evaluated
+			schedulerTag = createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, req.ControlId)
+
+			// Verify if scheduler job exists for the control id
+			_, err = s.scheduler.FindJobsByTag(schedulerTag)
+			if err == nil {
+				err = s.stopSchedulerJob(schedulerTag)
+				if err != nil {
+					err = fmt.Errorf("error when stopping scheduler job for cloud service id '%s' with control id '%s'", req.GetTargetOfEvaluation().GetCloudServiceId(), req.GetControlId())
+					log.Error(err)
+					return
+				}
+				log.Debugf("Scheduler job for cloud service id '%s' with control id '%s'.", req.GetTargetOfEvaluation().GetCloudServiceId(), req.GetControlId())
+			} else if strings.Contains(err.Error(), "no jobs found with given tag") {
+				err = fmt.Errorf("evaluation for cloud service id '%s' with '%s' not running", req.GetTargetOfEvaluation().GetCloudServiceId(), req.GetControlId())
+				log.Error(err)
+				err = status.Errorf(codes.NotFound, err.Error())
+				return
+			} else if err != nil {
+				shortErr := fmt.Errorf("error when stopping scheduler job for cloud service id '%s' with '%s'", req.GetTargetOfEvaluation().GetCloudServiceId(), req.GetControlId())
+				log.Errorf("%s: %v", shortErr, err)
+				err = status.Errorf(codes.Internal, "%v", &shortErr)
+				return
+			}
 		}
 	}
 
-	// // Get all control ids that need to be checked in the scheduler
-	// controlIds = getAllControlIdsFromControl(control)
-
-	// // Check for each control id a job is running
-	// for _, controlId := range controlIds {
-	// 	schedulerTag = createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, controlId)
-
-	// 	// Verify if scheduler job exists for the control id
-	// 	_, err = s.scheduler.FindJobsByTag(schedulerTag)
-
-	// 	if err == nil {
-	// 		// Delete the job from the scheduler
-	// 		err = s.scheduler.RemoveByTag(schedulerTag)
-	// 		if err != nil {
-	// 			err = fmt.Errorf("error when removing job from scheduler: %v", err)
-	// 			log.Error(err)
-	// 			err = status.Errorf(codes.Internal, "error when stopping scheduler")
-	// 			return
-	// 		}
-	// 	} else if strings.Contains(err.Error(), "no jobs found with given tag") {
-	// 		err = fmt.Errorf("evaluation of cloud service '%s' with '%s' not running", req.TargetOfEvaluation.CloudServiceId, controlId)
-	// 		log.Error(err)
-	// 		err = status.Errorf(codes.NotFound, err.Error())
-	// 	} else if err != nil {
-	// 		shortErr := errors.New("error when stopping scheduler")
-	// 		log.Errorf("%s: %v", shortErr, err)
-	// 		err = status.Errorf(codes.Internal, "%v", &shortErr)
-	// 		return
-	// 	}
-	// }
-
 	res = &evaluation.StopEvaluationResponse{}
+
+	return
+}
+
+// stopSchedulerJob stops a scheduler job for the given scheduler tag
+func (s *Service) stopSchedulerJob(schedulerTag string) (err error) {
+	// Delete the job from the scheduler
+	err = s.scheduler.RemoveByTag(schedulerTag)
+	if err != nil {
+		err = fmt.Errorf("error when removing job for tag '%s' from scheduler: %v", schedulerTag, err)
+		log.Error(err)
+		return
+	}
+
+	return
+}
+
+// stopSchedulerJobs stops a scheduler job for the given scheduler tag
+func (s *Service) stopSchedulerJobs(controlIds []string) (err error) {
+	// Delete the job from the scheduler
+	for _, schedulerTag := range controlIds {
+		err = s.stopSchedulerJob(schedulerTag)
+		if err != nil {
+			return
+		}
+	}
 
 	return
 }
@@ -704,6 +707,15 @@ func getAllControlIdsFromControl(control *orchestrator.Control) []string {
 	}
 
 	return controlIds
+}
+
+// getSchedulerTagsForControlIds return for a given list of control ids the corresponding scheduler tags
+func getSchedulerTagsForControlIds(controlIds []string, cloudServiceId string) (schedulerTags []string) {
+	for _, controlId := range controlIds {
+		schedulerTags = append(schedulerTags, createSchedulerTag(cloudServiceId, controlId))
+	}
+
+	return
 }
 
 // getAllSubControlIdsFromControl returns a list with all sub-control ids
