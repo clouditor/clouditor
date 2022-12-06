@@ -16,8 +16,21 @@ paths:
             parameters:
                 - name: filteredCloudServiceId
                   in: query
+                  description: Optional. List only assessment results of a specific cloud service.
                   schema:
                     type: string
+                - name: filteredCompliant
+                  in: query
+                  description: Optional. List only compliant assessment results.
+                  schema:
+                    type: boolean
+                - name: filteredMetricId
+                  in: query
+                  description: Optional. List only assessment results of a specific metric id.
+                  schema:
+                    type: array
+                    items:
+                        type: string
                 - name: pageSize
                   in: query
                   schema:
