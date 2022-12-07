@@ -14,7 +14,7 @@ var (
 	MockControlID      = "Cont1234"
 	MockSubControlID   = "Cont1234.1"
 	AssuranceLevelHigh = "high"
-	MockServiceID      = "MyService"
+	MockServiceID      = "11111111-1111-1111-1111-111111111111"
 )
 
 // NewCertificate creates a mock certificate

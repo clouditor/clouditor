@@ -33,7 +33,6 @@ import (
 	"io"
 	"sync"
 
-	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
@@ -218,7 +217,7 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 			StatusMessage: err.Error(),
 		}
 
-		return nil, err
+		return resp, err
 	}
 
 	s.results[req.Result.Id] = req.Result
@@ -340,14 +339,6 @@ func (svc *Service) ListCertificates(_ context.Context, req *orchestrator.ListCe
 		return nil, err
 	}
 
-	// Validate the request
-	if err = api.ValidateListRequest[*orchestrator.Certificate](req); err != nil {
-		err = fmt.Errorf("invalid request: %w", err)
-		log.Error(err)
-		err = status.Errorf(codes.InvalidArgument, "%v", err)
-		return
-	}
-
 	res = new(orchestrator.ListCertificatesResponse)
 
 	res.Certificates, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Certificate](req, svc.storage,
@@ -366,7 +357,7 @@ func (svc *Service) UpdateCertificate(_ context.Context, req *orchestrator.Updat
 		return nil, err
 	}
 
-	count, err := svc.storage.Count(req.Certificate, req.CertificateId)
+	count, err := svc.storage.Count(req.Certificate, req.Certificate.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
@@ -376,7 +367,6 @@ func (svc *Service) UpdateCertificate(_ context.Context, req *orchestrator.Updat
 	}
 
 	response = req.Certificate
-	response.Id = req.CertificateId
 
 	err = svc.storage.Save(response, "Id = ?", response.Id)
 	if err != nil {

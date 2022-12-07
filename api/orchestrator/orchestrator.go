@@ -33,9 +33,15 @@ type CloudServiceHookFunc func(ctx context.Context, cld *CloudService, err error
 type TargetOfEvaluationHookFunc func(ctx context.Context, event *TargetOfEvaluationChangeEvent, err error)
 
 // GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
-// the cloud service ID of the inner status object.
+// the cloud service ID of the inner object.
 func (req *UpdateControlMonitoringStatusRequest) GetCloudServiceId() string {
 	return req.Status.GetTargetOfEvaluationCloudServiceId()
+}
+
+// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// the cloud service ID of the inner object.
+func (req *UpdateCloudServiceRequest) GetCloudServiceId() string {
+	return req.CloudService.GetId()
 }
 
 type CloudServiceRequest interface {

@@ -28,9 +28,7 @@ package orchestrator
 import (
 	"context"
 	"errors"
-	"fmt"
 
-	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
@@ -109,14 +107,6 @@ func (svc *Service) ListTargetsOfEvaluation(_ context.Context, req *orchestrator
 	err = service.ValidateRequest(req)
 	if err != nil {
 		return nil, err
-	}
-
-	// Validate the request
-	if err = api.ValidateListRequest[*orchestrator.TargetOfEvaluation](req); err != nil {
-		err = fmt.Errorf("invalid request: %w", err)
-		log.Error(err)
-		err = status.Errorf(codes.InvalidArgument, "%v", err)
-		return
 	}
 
 	res = new(orchestrator.ListTargetsOfEvaluationResponse)

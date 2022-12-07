@@ -263,7 +263,7 @@ func TestGetMetricConfiguration(t *testing.T) {
 	cli.Output = &b
 
 	// create a new target service
-	target, err = svc.RegisterCloudService(context.TODO(), &orchestrator.RegisterCloudServiceRequest{Service: &orchestrator.CloudService{Name: "myservice"}})
+	target, err = svc.RegisterCloudService(context.TODO(), &orchestrator.RegisterCloudServiceRequest{CloudService: &orchestrator.CloudService{Name: "myservice"}})
 
 	assert.NotNil(t, target)
 	assert.NoError(t, err)

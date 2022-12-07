@@ -86,7 +86,6 @@ func (svc *Service) UpdateCatalog(_ context.Context, req *orchestrator.UpdateCat
 	}
 
 	res = req.Catalog
-	res.Id = req.CatalogId
 
 	err = svc.storage.Update(res, "id = ?", res.Id)
 

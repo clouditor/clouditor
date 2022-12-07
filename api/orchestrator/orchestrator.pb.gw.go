@@ -397,14 +397,14 @@ func request_Orchestrator_UpdateMetric_0(ctx context.Context, marshaler runtime.
 		_   = err
 	)
 
-	val, ok = pathParams["metric_id"]
+	val, ok = pathParams["metric.id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "metric_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "metric.id")
 	}
 
-	protoReq.MetricId, err = runtime.String(val)
+	err = runtime.PopulateFieldFromPath(&protoReq, "metric.id", val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "metric_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "metric.id", err)
 	}
 
 	msg, err := client.UpdateMetric(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -431,14 +431,14 @@ func local_request_Orchestrator_UpdateMetric_0(ctx context.Context, marshaler ru
 		_   = err
 	)
 
-	val, ok = pathParams["metric_id"]
+	val, ok = pathParams["metric.id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "metric_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "metric.id")
 	}
 
-	protoReq.MetricId, err = runtime.String(val)
+	err = runtime.PopulateFieldFromPath(&protoReq, "metric.id", val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "metric_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "metric.id", err)
 	}
 
 	msg, err := server.UpdateMetric(ctx, &protoReq)
@@ -542,7 +542,7 @@ func request_Orchestrator_RegisterCloudService_0(ctx context.Context, marshaler 
 	if berr != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
 	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.Service); err != nil && err != io.EOF {
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.CloudService); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -559,7 +559,7 @@ func local_request_Orchestrator_RegisterCloudService_0(ctx context.Context, mars
 	if berr != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
 	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.Service); err != nil && err != io.EOF {
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.CloudService); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -576,7 +576,7 @@ func request_Orchestrator_UpdateCloudService_0(ctx context.Context, marshaler ru
 	if berr != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
 	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.Service); err != nil && err != io.EOF {
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.CloudService); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -587,14 +587,14 @@ func request_Orchestrator_UpdateCloudService_0(ctx context.Context, marshaler ru
 		_   = err
 	)
 
-	val, ok = pathParams["cloud_service_id"]
+	val, ok = pathParams["cloud_service.id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "cloud_service_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "cloud_service.id")
 	}
 
-	protoReq.CloudServiceId, err = runtime.String(val)
+	err = runtime.PopulateFieldFromPath(&protoReq, "cloud_service.id", val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "cloud_service_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "cloud_service.id", err)
 	}
 
 	msg, err := client.UpdateCloudService(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -610,7 +610,7 @@ func local_request_Orchestrator_UpdateCloudService_0(ctx context.Context, marsha
 	if berr != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
 	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.Service); err != nil && err != io.EOF {
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.CloudService); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -621,14 +621,14 @@ func local_request_Orchestrator_UpdateCloudService_0(ctx context.Context, marsha
 		_   = err
 	)
 
-	val, ok = pathParams["cloud_service_id"]
+	val, ok = pathParams["cloud_service.id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "cloud_service_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "cloud_service.id")
 	}
 
-	protoReq.CloudServiceId, err = runtime.String(val)
+	err = runtime.PopulateFieldFromPath(&protoReq, "cloud_service.id", val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "cloud_service_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "cloud_service.id", err)
 	}
 
 	msg, err := server.UpdateCloudService(ctx, &protoReq)
@@ -1267,14 +1267,14 @@ func request_Orchestrator_UpdateCertificate_0(ctx context.Context, marshaler run
 		_   = err
 	)
 
-	val, ok = pathParams["certificate_id"]
+	val, ok = pathParams["certificate.id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "certificate_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "certificate.id")
 	}
 
-	protoReq.CertificateId, err = runtime.String(val)
+	err = runtime.PopulateFieldFromPath(&protoReq, "certificate.id", val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "certificate_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "certificate.id", err)
 	}
 
 	msg, err := client.UpdateCertificate(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -1301,14 +1301,14 @@ func local_request_Orchestrator_UpdateCertificate_0(ctx context.Context, marshal
 		_   = err
 	)
 
-	val, ok = pathParams["certificate_id"]
+	val, ok = pathParams["certificate.id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "certificate_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "certificate.id")
 	}
 
-	protoReq.CertificateId, err = runtime.String(val)
+	err = runtime.PopulateFieldFromPath(&protoReq, "certificate.id", val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "certificate_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "certificate.id", err)
 	}
 
 	msg, err := server.UpdateCertificate(ctx, &protoReq)
@@ -1561,14 +1561,14 @@ func request_Orchestrator_UpdateCatalog_0(ctx context.Context, marshaler runtime
 		_   = err
 	)
 
-	val, ok = pathParams["catalog_id"]
+	val, ok = pathParams["catalog.id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "catalog_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "catalog.id")
 	}
 
-	protoReq.CatalogId, err = runtime.String(val)
+	err = runtime.PopulateFieldFromPath(&protoReq, "catalog.id", val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "catalog_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "catalog.id", err)
 	}
 
 	msg, err := client.UpdateCatalog(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -1595,14 +1595,14 @@ func local_request_Orchestrator_UpdateCatalog_0(ctx context.Context, marshaler r
 		_   = err
 	)
 
-	val, ok = pathParams["catalog_id"]
+	val, ok = pathParams["catalog.id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "catalog_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "catalog.id")
 	}
 
-	protoReq.CatalogId, err = runtime.String(val)
+	err = runtime.PopulateFieldFromPath(&protoReq, "catalog.id", val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "catalog_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "catalog.id", err)
 	}
 
 	msg, err := server.UpdateCatalog(ctx, &protoReq)
@@ -2414,6 +2414,36 @@ func request_Orchestrator_UpdateTargetOfEvaluation_0(ctx context.Context, marsha
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
+<<<<<<< HEAD
+=======
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["toe.cloud_service_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "toe.cloud_service_id")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "toe.cloud_service_id", val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "toe.cloud_service_id", err)
+	}
+
+	val, ok = pathParams["toe.catalog_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "toe.catalog_id")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "toe.catalog_id", val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "toe.catalog_id", err)
+	}
+
+>>>>>>> 6149cf73 (More validation)
 	msg, err := client.UpdateTargetOfEvaluation(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
@@ -2431,6 +2461,36 @@ func local_request_Orchestrator_UpdateTargetOfEvaluation_0(ctx context.Context, 
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
+<<<<<<< HEAD
+=======
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["toe.cloud_service_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "toe.cloud_service_id")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "toe.cloud_service_id", val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "toe.cloud_service_id", err)
+	}
+
+	val, ok = pathParams["toe.catalog_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "toe.catalog_id")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "toe.catalog_id", val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "toe.catalog_id", err)
+	}
+
+>>>>>>> 6149cf73 (More validation)
 	msg, err := server.UpdateTargetOfEvaluation(ctx, &protoReq)
 	return msg, metadata, err
 
@@ -2712,8 +2772,12 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+<<<<<<< HEAD
 		var err error
 		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateMetric", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics/{metric_id}"))
+=======
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateMetric", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics/{metric.id}"))
+>>>>>>> 6149cf73 (More validation)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2808,8 +2872,12 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+<<<<<<< HEAD
 		var err error
 		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateCloudService", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}"))
+=======
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateCloudService", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service.id}"))
+>>>>>>> 6149cf73 (More validation)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3096,8 +3164,12 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+<<<<<<< HEAD
 		var err error
 		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates/{certificate_id}"))
+=======
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates/{certificate.id}"))
+>>>>>>> 6149cf73 (More validation)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3240,8 +3312,12 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+<<<<<<< HEAD
 		var err error
 		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateCatalog", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}"))
+=======
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateCatalog", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog.id}"))
+>>>>>>> 6149cf73 (More validation)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3528,8 +3604,12 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+<<<<<<< HEAD
 		var err error
 		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/toes"))
+=======
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{toe.cloud_service_id}/toes/{toe.catalog_id}"))
+>>>>>>> 6149cf73 (More validation)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3783,8 +3863,12 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+<<<<<<< HEAD
 		var err error
 		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateMetric", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics/{metric_id}"))
+=======
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateMetric", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics/{metric.id}"))
+>>>>>>> 6149cf73 (More validation)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3867,8 +3951,12 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+<<<<<<< HEAD
 		var err error
 		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateCloudService", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}"))
+=======
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateCloudService", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service.id}"))
+>>>>>>> 6149cf73 (More validation)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4119,8 +4207,12 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+<<<<<<< HEAD
 		var err error
 		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates/{certificate_id}"))
+=======
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateCertificate", runtime.WithHTTPPathPattern("/v1/orchestrator/certificates/{certificate.id}"))
+>>>>>>> 6149cf73 (More validation)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4245,8 +4337,12 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+<<<<<<< HEAD
 		var err error
 		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateCatalog", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog_id}"))
+=======
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateCatalog", runtime.WithHTTPPathPattern("/v1/orchestrator/catalogs/{catalog.id}"))
+>>>>>>> 6149cf73 (More validation)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4497,8 +4593,12 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+<<<<<<< HEAD
 		var err error
 		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/toes"))
+=======
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{toe.cloud_service_id}/toes/{toe.catalog_id}"))
+>>>>>>> 6149cf73 (More validation)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4555,7 +4655,7 @@ var (
 
 	pattern_Orchestrator_CreateMetric_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "metrics"}, ""))
 
-	pattern_Orchestrator_UpdateMetric_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "metrics", "metric_id"}, ""))
+	pattern_Orchestrator_UpdateMetric_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "metrics", "metric.id"}, ""))
 
 	pattern_Orchestrator_GetMetric_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "metrics", "metric_id"}, ""))
 
@@ -4563,7 +4663,7 @@ var (
 
 	pattern_Orchestrator_RegisterCloudService_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "cloud_services"}, ""))
 
-	pattern_Orchestrator_UpdateCloudService_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "cloud_services", "cloud_service_id"}, ""))
+	pattern_Orchestrator_UpdateCloudService_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "cloud_services", "cloud_service.id"}, ""))
 
 	pattern_Orchestrator_GetCloudService_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "cloud_services", "cloud_service_id"}, ""))
 
@@ -4587,7 +4687,7 @@ var (
 
 	pattern_Orchestrator_ListCertificates_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "certificates"}, ""))
 
-	pattern_Orchestrator_UpdateCertificate_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "certificates", "certificate_id"}, ""))
+	pattern_Orchestrator_UpdateCertificate_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "certificates", "certificate.id"}, ""))
 
 	pattern_Orchestrator_RemoveCertificate_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "certificates", "certificate_id"}, ""))
 
@@ -4599,7 +4699,7 @@ var (
 
 	pattern_Orchestrator_RemoveCatalog_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "catalogs", "catalog_id"}, ""))
 
-	pattern_Orchestrator_UpdateCatalog_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "catalogs", "catalog_id"}, ""))
+	pattern_Orchestrator_UpdateCatalog_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "catalogs", "catalog.id"}, ""))
 
 	pattern_Orchestrator_GetCategory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "catalogs", "catalog_id", "category", "category_name"}, ""))
 
@@ -4623,7 +4723,11 @@ var (
 
 	pattern_Orchestrator_ListTargetsOfEvaluation_2 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "orchestrator", "catalogs", "catalog_id", "toes"}, ""))
 
+<<<<<<< HEAD
 	pattern_Orchestrator_UpdateTargetOfEvaluation_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"v1", "orchestrator", "cloud_services", "toes"}, ""))
+=======
+	pattern_Orchestrator_UpdateTargetOfEvaluation_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "cloud_services", "toe.cloud_service_id", "toes", "toe.catalog_id"}, ""))
+>>>>>>> 6149cf73 (More validation)
 
 	pattern_Orchestrator_RemoveTargetOfEvaluation_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "cloud_services", "cloud_service_id", "toes", "catalog_id"}, ""))
 )

@@ -57,8 +57,8 @@ func (s *Service) RegisterCloudService(ctx context.Context, req *orchestrator.Re
 
 	// Generate a new ID
 	res.Id = uuid.NewString()
-	res.Name = req.Service.Name
-	res.Description = req.Service.Description
+	res.Name = req.CloudService.Name
+	res.Description = req.CloudService.Description
 
 	// Persist the service in our database
 	err = s.storage.Create(res)
@@ -139,7 +139,7 @@ func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.Upda
 		return nil, service.ErrPermissionDenied
 	}
 
-	count, err := s.storage.Count(req.Service, "id = ?", req.CloudServiceId)
+	count, err := s.storage.Count(req.CloudService, "id = ?", req.CloudService.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -149,11 +149,10 @@ func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.Upda
 	}
 
 	// Add id to response because otherwise it will overwrite ID with empty string
-	response = req.Service
-	response.Id = req.CloudServiceId
+	response = req.CloudService
 
 	// Since UpdateCloudService is a PUT method, we use storage.Save
-	err = s.storage.Save(response, "Id = ?", req.CloudServiceId)
+	err = s.storage.Save(response, "Id = ?", req.CloudService.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}

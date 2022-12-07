@@ -320,7 +320,6 @@ func TestService_UpdateMetric(t *testing.T) {
 			args: args{
 				context.TODO(),
 				&orchestrator.UpdateMetricRequest{
-					MetricId: "TransportEncryptionEnabled",
 					Metric: &assessment.Metric{
 						Id:    "TransportEncryptionEnabled",
 						Name:  "A slightly updated metric",
@@ -345,9 +344,8 @@ func TestService_UpdateMetric(t *testing.T) {
 			args: args{
 				context.TODO(),
 				&orchestrator.UpdateMetricRequest{
-					MetricId: "DoesProbablyNotExist",
 					Metric: &assessment.Metric{
-						Id:    "UpdateMetricID",
+						Id:    "DoesProbablyNotExist",
 						Name:  "UpdateMetricName",
 						Scale: assessment.Metric_NOMINAL,
 						Range: &assessment.Range{Range: &assessment.Range_AllowedValues{}},
@@ -364,13 +362,14 @@ func TestService_UpdateMetric(t *testing.T) {
 			args: args{
 				context.TODO(),
 				&orchestrator.UpdateMetricRequest{
-					MetricId: "DoesProbablyNotExist",
-					Metric:   &assessment.Metric{},
+					Metric: &assessment.Metric{
+						Id: "DoesProbablyNotExist",
+					},
 				},
 			},
 			wantMetric: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "rpc error: code = InvalidArgument desc = validation of metric failed")
+				return assert.ErrorContains(t, err, "Name: value length must be at least 1 runes")
 			},
 		},
 	}

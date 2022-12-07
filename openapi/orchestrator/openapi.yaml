@@ -294,6 +294,37 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/orchestrator/catalogs/{catalog.id}:
+        put:
+            tags:
+                - Orchestrator
+            description: Updates an existing certificate
+            operationId: Orchestrator_UpdateCatalog
+            parameters:
+                - name: catalog.id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Catalog'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Catalog'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/catalogs/{catalogId}:
         get:
             tags:
@@ -308,36 +339,6 @@ paths:
                   required: true
                   schema:
                     type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Catalog'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-        put:
-            tags:
-                - Orchestrator
-            description: Updates an existing certificate
-            operationId: Orchestrator_UpdateCatalog
-            parameters:
-                - name: catalogId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/Catalog'
-                required: true
             responses:
                 "200":
                     description: OK
@@ -505,18 +506,24 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/certificates/{certificateId}:
-        get:
+    /v1/orchestrator/certificates/{certificate.id}:
+        put:
             tags:
                 - Orchestrator
-            description: Retrieves a certificate
-            operationId: Orchestrator_GetCertificate
+            description: Updates an existing certificate
+            operationId: Orchestrator_UpdateCertificate
             parameters:
-                - name: certificateId
+                - name: certificate.id
                   in: path
                   required: true
                   schema:
                     type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Certificate'
+                required: true
             responses:
                 "200":
                     description: OK
@@ -530,23 +537,18 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-        put:
+    /v1/orchestrator/certificates/{certificateId}:
+        get:
             tags:
                 - Orchestrator
-            description: Updates an existing certificate
-            operationId: Orchestrator_UpdateCertificate
+            description: Retrieves a certificate
+            operationId: Orchestrator_GetCertificate
             parameters:
                 - name: certificateId
                   in: path
                   required: true
                   schema:
                     type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/Certificate'
-                required: true
             responses:
                 "200":
                     description: OK
@@ -679,36 +681,6 @@ paths:
                   required: true
                   schema:
                     type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/CloudService'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-        put:
-            tags:
-                - Orchestrator
-            description: Registers a new target cloud service
-            operationId: Orchestrator_UpdateCloudService
-            parameters:
-                - name: cloudServiceId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/CloudService'
-                required: true
             responses:
                 "200":
                     description: OK
@@ -942,6 +914,37 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/orchestrator/cloud_services/{cloud_service.id}:
+        put:
+            tags:
+                - Orchestrator
+            description: Registers a new target cloud service
+            operationId: Orchestrator_UpdateCloudService
+            parameters:
+                - name: cloud_service.id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CloudService'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CloudService'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     ? /v1/orchestrator/cloud_services/{status.target_of_evaluation_cloud_service_id}/toes/{status.target_of_evaluation_catalog_id}/monitoring_status/categories/{status.control_category_name}/controls/{status.control_id}
     :   get:
             tags:
@@ -1006,6 +1009,42 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ControlMonitoringStatus'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/cloud_services/{toe.cloud_service_id}/toes/{toe.catalog_id}:
+        put:
+            tags:
+                - Orchestrator
+            description: Updates an existing Target of Evaluation
+            operationId: Orchestrator_UpdateTargetOfEvaluation
+            parameters:
+                - name: toe.cloud_service_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: toe.catalog_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/TargetOfEvaluation'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/TargetOfEvaluation'
                 default:
                     description: Default error response
                     content:
@@ -1122,18 +1161,24 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/metrics/{metricId}:
-        get:
+    /v1/orchestrator/metrics/{metric.id}:
+        put:
             tags:
                 - Orchestrator
-            description: Returns the metric with the passed metric id
-            operationId: Orchestrator_GetMetric
+            description: Updates an existing metric
+            operationId: Orchestrator_UpdateMetric
             parameters:
-                - name: metricId
+                - name: metric.id
                   in: path
                   required: true
                   schema:
                     type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Metric'
+                required: true
             responses:
                 "200":
                     description: OK
@@ -1147,23 +1192,18 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-        put:
+    /v1/orchestrator/metrics/{metricId}:
+        get:
             tags:
                 - Orchestrator
-            description: Updates an existing metric
-            operationId: Orchestrator_UpdateMetric
+            description: Returns the metric with the passed metric id
+            operationId: Orchestrator_GetMetric
             parameters:
                 - name: metricId
                   in: path
                   required: true
                   schema:
                     type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/Metric'
-                required: true
             responses:
                 "200":
                     description: OK

@@ -233,7 +233,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 			wantErr: true,
 			wantResp: &orchestrator.StoreAssessmentResultResponse{
 				Status:        false,
-				StatusMessage: "invalid assessment result: invalid AssessmentResult.MetricId: value length must be at least 1 runes",
+				StatusMessage: "rpc error: code = InvalidArgument desc = invalid request: invalid StoreAssessmentResultRequest.Result: embedded message failed validation | caused by: invalid AssessmentResult.MetricId: value length must be at least 1 runes",
 			},
 		},
 	}
@@ -312,7 +312,7 @@ func TestStoreAssessmentResults(t *testing.T) {
 			wantRespMessage: []orchestrator.StoreAssessmentResultResponse{
 				{
 					Status:        false,
-					StatusMessage: "invalid assessment result",
+					StatusMessage: "MetricId: value length must be at least 1 runes",
 				},
 			},
 		},
@@ -733,7 +733,6 @@ func Test_UpdateCertificate(t *testing.T) {
 		Certificate: &orchestrator.Certificate{
 			Id: "1234",
 		},
-		CertificateId: "1234",
 	})
 	assert.Equal(t, codes.NotFound, status.Code(err))
 
@@ -748,8 +747,7 @@ func Test_UpdateCertificate(t *testing.T) {
 	// update the certificate's description and send the update request
 	mockCertificate.Description = "new description"
 	certificate, err = orchestratorService.UpdateCertificate(context.Background(), &orchestrator.UpdateCertificateRequest{
-		CertificateId: "1234",
-		Certificate:   mockCertificate,
+		Certificate: mockCertificate,
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, certificate)
@@ -812,7 +810,7 @@ func Test_GetCertificate(t *testing.T) {
 			"certificate not found",
 			&orchestrator.GetCertificateRequest{CertificateId: ""},
 			nil,
-			status.Error(codes.NotFound, "certificate ID is empty"),
+			status.Error(codes.InvalidArgument, "invalid request: invalid GetCertificateRequest.CertificateId: value length must be at least 1 runes"),
 		},
 		{
 			"valid",
@@ -918,8 +916,7 @@ func TestCloudServiceHooks(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				serviceUpdate: &orchestrator.UpdateCloudServiceRequest{
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
-					Service: &orchestrator.CloudService{
+					CloudService: &orchestrator.CloudService{
 						Id:          "00000000-0000-0000-0000-000000000000",
 						Name:        "test service",
 						Description: "test service",

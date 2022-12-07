@@ -33,7 +33,6 @@ import (
 	"io"
 	"os"
 
-	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
@@ -213,8 +212,8 @@ func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetr
 		return nil, err
 	}
 
-	// Check, if metric exists according to req.MetricId
-	err = svc.storage.Get(&metric, "id = ?", req.MetricId)
+	// Check, if metric exists according to req.Metric.Id
+	err = svc.storage.Get(&metric, "id = ?", req.Metric.Id)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Error(codes.NotFound, "metric not found")
 	} else if err != nil {
@@ -295,14 +294,6 @@ func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetrics
 	}
 
 	res = new(orchestrator.ListMetricsResponse)
-
-	// Validate the request
-	if err = api.ValidateListRequest[*assessment.Metric](req); err != nil {
-		err = fmt.Errorf("invalid request: %w", err)
-		log.Error(err)
-		err = status.Errorf(codes.InvalidArgument, "%v", err)
-		return
-	}
 
 	// Paginate the metrics according to the request
 	res.Metrics, res.NextPageToken, err = service.PaginateStorage[*assessment.Metric](req, svc.storage,

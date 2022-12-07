@@ -786,6 +786,17 @@ func (m *StoreAssessmentResultRequest) validate(all bool) error {
 
 	var errors []error
 
+	if m.GetResult() == nil {
+		err := StoreAssessmentResultRequestValidationError{
+			field:  "Result",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if all {
 		switch v := interface{}(m.GetResult()).(type) {
 		case interface{ ValidateAll() error }:
@@ -1025,6 +1036,17 @@ func (m *CreateMetricRequest) validate(all bool) error {
 
 	var errors []error
 
+	if m.GetMetric() == nil {
+		err := CreateMetricRequestValidationError{
+			field:  "Metric",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if all {
 		switch v := interface{}(m.GetMetric()).(type) {
 		case interface{ ValidateAll() error }:
@@ -1156,7 +1178,16 @@ func (m *UpdateMetricRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for MetricId
+	if m.GetMetric() == nil {
+		err := UpdateMetricRequestValidationError{
+			field:  "Metric",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if all {
 		switch v := interface{}(m.GetMetric()).(type) {
@@ -1289,7 +1320,16 @@ func (m *GetMetricRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for MetricId
+	if utf8.RuneCountInString(m.GetMetricId()) < 1 {
+		err := GetMetricRequestValidationError{
+			field:  "MetricId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return GetMetricRequestMultiError(errors)
@@ -1639,10 +1679,28 @@ func (m *GetCloudServiceRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for CloudServiceId
+	if err := m._validateUuid(m.GetCloudServiceId()); err != nil {
+		err = GetCloudServiceRequestValidationError{
+			field:  "CloudServiceId",
+			reason: "value must be a valid UUID",
+			cause:  err,
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return GetCloudServiceRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+func (m *GetCloudServiceRequest) _validateUuid(uuid string) error {
+	if matched := _orchestrator_uuidPattern.MatchString(uuid); !matched {
+		return errors.New("invalid uuid format")
 	}
 
 	return nil
@@ -1743,12 +1801,23 @@ func (m *RegisterCloudServiceRequest) validate(all bool) error {
 
 	var errors []error
 
+	if m.GetCloudService() == nil {
+		err := RegisterCloudServiceRequestValidationError{
+			field:  "CloudService",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if all {
-		switch v := interface{}(m.GetService()).(type) {
+		switch v := interface{}(m.GetCloudService()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
 				errors = append(errors, RegisterCloudServiceRequestValidationError{
-					field:  "Service",
+					field:  "CloudService",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
@@ -1756,16 +1825,16 @@ func (m *RegisterCloudServiceRequest) validate(all bool) error {
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
 				errors = append(errors, RegisterCloudServiceRequestValidationError{
-					field:  "Service",
+					field:  "CloudService",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
 			}
 		}
-	} else if v, ok := interface{}(m.GetService()).(interface{ Validate() error }); ok {
+	} else if v, ok := interface{}(m.GetCloudService()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return RegisterCloudServiceRequestValidationError{
-				field:  "Service",
+				field:  "CloudService",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}
@@ -1875,14 +1944,23 @@ func (m *UpdateCloudServiceRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for CloudServiceId
+	if m.GetCloudService() == nil {
+		err := UpdateCloudServiceRequestValidationError{
+			field:  "CloudService",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if all {
-		switch v := interface{}(m.GetService()).(type) {
+		switch v := interface{}(m.GetCloudService()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
 				errors = append(errors, UpdateCloudServiceRequestValidationError{
-					field:  "Service",
+					field:  "CloudService",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
@@ -1890,16 +1968,16 @@ func (m *UpdateCloudServiceRequest) validate(all bool) error {
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
 				errors = append(errors, UpdateCloudServiceRequestValidationError{
-					field:  "Service",
+					field:  "CloudService",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
 			}
 		}
-	} else if v, ok := interface{}(m.GetService()).(interface{ Validate() error }); ok {
+	} else if v, ok := interface{}(m.GetCloudService()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return UpdateCloudServiceRequestValidationError{
-				field:  "Service",
+				field:  "CloudService",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}
@@ -2008,10 +2086,28 @@ func (m *RemoveCloudServiceRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for CloudServiceId
+	if err := m._validateUuid(m.GetCloudServiceId()); err != nil {
+		err = RemoveCloudServiceRequestValidationError{
+			field:  "CloudServiceId",
+			reason: "value must be a valid UUID",
+			cause:  err,
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return RemoveCloudServiceRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+func (m *RemoveCloudServiceRequest) _validateUuid(uuid string) error {
+	if matched := _orchestrator_uuidPattern.MatchString(uuid); !matched {
+		return errors.New("invalid uuid format")
 	}
 
 	return nil
@@ -3504,9 +3600,32 @@ func (m *CloudService) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Id
+	if m.GetId() != "" {
 
-	// no validation rules for Name
+		if err := m._validateUuid(m.GetId()); err != nil {
+			err = CloudServiceValidationError{
+				field:  "Id",
+				reason: "value must be a valid UUID",
+				cause:  err,
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if utf8.RuneCountInString(m.GetName()) < 1 {
+		err := CloudServiceValidationError{
+			field:  "Name",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for Description
 
@@ -3580,6 +3699,14 @@ func (m *CloudService) validate(all bool) error {
 
 	if len(errors) > 0 {
 		return CloudServiceMultiError(errors)
+	}
+
+	return nil
+}
+
+func (m *CloudService) _validateUuid(uuid string) error {
+	if matched := _orchestrator_uuidPattern.MatchString(uuid); !matched {
+		return errors.New("invalid uuid format")
 	}
 
 	return nil
@@ -3676,9 +3803,27 @@ func (m *Catalog) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Id
+	if utf8.RuneCountInString(m.GetId()) < 1 {
+		err := CatalogValidationError{
+			field:  "Id",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for Name
+	if utf8.RuneCountInString(m.GetName()) < 1 {
+		err := CatalogValidationError{
+			field:  "Name",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for Description
 
@@ -4144,9 +4289,28 @@ func (m *TargetOfEvaluation) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for CloudServiceId
+	if err := m._validateUuid(m.GetCloudServiceId()); err != nil {
+		err = TargetOfEvaluationValidationError{
+			field:  "CloudServiceId",
+			reason: "value must be a valid UUID",
+			cause:  err,
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for CatalogId
+	if utf8.RuneCountInString(m.GetCatalogId()) < 1 {
+		err := TargetOfEvaluationValidationError{
+			field:  "CatalogId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	for idx, item := range m.GetControlsInScope() {
 		_, _ = idx, item
@@ -4188,6 +4352,14 @@ func (m *TargetOfEvaluation) validate(all bool) error {
 
 	if len(errors) > 0 {
 		return TargetOfEvaluationMultiError(errors)
+	}
+
+	return nil
+}
+
+func (m *TargetOfEvaluation) _validateUuid(uuid string) error {
+	if matched := _orchestrator_uuidPattern.MatchString(uuid); !matched {
+		return errors.New("invalid uuid format")
 	}
 
 	return nil
@@ -4794,6 +4966,17 @@ func (m *CreateTargetOfEvaluationRequest) validate(all bool) error {
 
 	var errors []error
 
+	if m.GetToe() == nil {
+		err := CreateTargetOfEvaluationRequestValidationError{
+			field:  "Toe",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if all {
 		switch v := interface{}(m.GetToe()).(type) {
 		case interface{ ValidateAll() error }:
@@ -4926,12 +5109,39 @@ func (m *RemoveTargetOfEvaluationRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for CloudServiceId
+	if err := m._validateUuid(m.GetCloudServiceId()); err != nil {
+		err = RemoveTargetOfEvaluationRequestValidationError{
+			field:  "CloudServiceId",
+			reason: "value must be a valid UUID",
+			cause:  err,
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for CatalogId
+	if utf8.RuneCountInString(m.GetCatalogId()) < 1 {
+		err := RemoveTargetOfEvaluationRequestValidationError{
+			field:  "CatalogId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return RemoveTargetOfEvaluationRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+func (m *RemoveTargetOfEvaluationRequest) _validateUuid(uuid string) error {
+	if matched := _orchestrator_uuidPattern.MatchString(uuid); !matched {
+		return errors.New("invalid uuid format")
 	}
 
 	return nil
@@ -5033,12 +5243,39 @@ func (m *GetTargetOfEvaluationRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for CloudServiceId
+	if err := m._validateUuid(m.GetCloudServiceId()); err != nil {
+		err = GetTargetOfEvaluationRequestValidationError{
+			field:  "CloudServiceId",
+			reason: "value must be a valid UUID",
+			cause:  err,
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for CatalogId
+	if utf8.RuneCountInString(m.GetCatalogId()) < 1 {
+		err := GetTargetOfEvaluationRequestValidationError{
+			field:  "CatalogId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return GetTargetOfEvaluationRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+func (m *GetTargetOfEvaluationRequest) _validateUuid(uuid string) error {
+	if matched := _orchestrator_uuidPattern.MatchString(uuid); !matched {
+		return errors.New("invalid uuid format")
 	}
 
 	return nil
@@ -5394,9 +5631,16 @@ func (m *UpdateTargetOfEvaluationRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for CloudServiceId
-
-	// no validation rules for CatalogId
+	if m.GetToe() == nil {
+		err := UpdateTargetOfEvaluationRequestValidationError{
+			field:  "Toe",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if all {
 		switch v := interface{}(m.GetToe()).(type) {
@@ -5530,7 +5774,16 @@ func (m *GetCertificateRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for CertificateId
+	if utf8.RuneCountInString(m.GetCertificateId()) < 1 {
+		err := GetCertificateRequestValidationError{
+			field:  "CertificateId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return GetCertificateRequestMultiError(errors)
@@ -5882,7 +6135,16 @@ func (m *UpdateCertificateRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for CertificateId
+	if m.GetCertificate() == nil {
+		err := UpdateCertificateRequestValidationError{
+			field:  "Certificate",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if all {
 		switch v := interface{}(m.GetCertificate()).(type) {
@@ -6015,6 +6277,17 @@ func (m *CreateCatalogRequest) validate(all bool) error {
 
 	var errors []error
 
+	if m.GetCatalog() == nil {
+		err := CreateCatalogRequestValidationError{
+			field:  "Catalog",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if all {
 		switch v := interface{}(m.GetCatalog()).(type) {
 		case interface{ ValidateAll() error }:
@@ -6146,7 +6419,16 @@ func (m *RemoveCatalogRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for CatalogId
+	if utf8.RuneCountInString(m.GetCatalogId()) < 1 {
+		err := RemoveCatalogRequestValidationError{
+			field:  "CatalogId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return RemoveCatalogRequestMultiError(errors)
@@ -6250,7 +6532,16 @@ func (m *GetCatalogRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for CatalogId
+	if utf8.RuneCountInString(m.GetCatalogId()) < 1 {
+		err := GetCatalogRequestValidationError{
+			field:  "CatalogId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return GetCatalogRequestMultiError(errors)
@@ -6602,7 +6893,16 @@ func (m *UpdateCatalogRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for CatalogId
+	if m.GetCatalog() == nil {
+		err := UpdateCatalogRequestValidationError{
+			field:  "Catalog",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if all {
 		switch v := interface{}(m.GetCatalog()).(type) {
@@ -7201,6 +7501,17 @@ func (m *CreateCertificateRequest) validate(all bool) error {
 
 	var errors []error
 
+	if m.GetCertificate() == nil {
+		err := CreateCertificateRequestValidationError{
+			field:  "Certificate",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if all {
 		switch v := interface{}(m.GetCertificate()).(type) {
 		case interface{ ValidateAll() error }:
@@ -7332,7 +7643,16 @@ func (m *RemoveCertificateRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for CertificateId
+	if utf8.RuneCountInString(m.GetCertificateId()) < 1 {
+		err := RemoveCertificateRequestValidationError{
+			field:  "CertificateId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return RemoveCertificateRequestMultiError(errors)
