@@ -237,7 +237,7 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 		// Convert camelCase metric in under_score_style for package name
 		pkg = util.CamelCaseToSnakeCase(metricID)
 
-		impl, err = src.MetricImplementation(assessment.MetricImplementation_REGO, metricID)
+		impl, err = src.MetricImplementation(assessment.MetricImplementation_LANGUAGE_REGO, metricID)
 		if err != nil {
 			return nil, fmt.Errorf("could not fetch policy for metric %s: %w", metricID, err)
 		}

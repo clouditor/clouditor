@@ -233,7 +233,7 @@ func (svc *Service) Authorizer() api.Authorizer {
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
 func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
 	// Validate evidence
-	resourceId, err := req.Evidence.ValidateResource()
+	resourceId, err := req.Evidence.ValidateWithResource()
 	if err != nil {
 		newError := fmt.Errorf("invalid evidence: %w", err)
 		log.Error(newError)
@@ -528,7 +528,7 @@ func (svc *Service) Metrics() (metrics []*assessment.Metric, err error) {
 // from the orchestrator.
 func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (impl *assessment.MetricImplementation, err error) {
 	// For now, the orchestrator only supports the Rego language.
-	if lang != assessment.MetricImplementation_REGO {
+	if lang != assessment.MetricImplementation_LANGUAGE_REGO {
 		return nil, errors.New("unsupported language")
 	}
 

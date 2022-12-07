@@ -1007,14 +1007,14 @@ func request_Orchestrator_UpdateMetricImplementation_0(ctx context.Context, mars
 		_   = err
 	)
 
-	val, ok = pathParams["metric_id"]
+	val, ok = pathParams["implementation.metric_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "metric_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "implementation.metric_id")
 	}
 
-	protoReq.MetricId, err = runtime.String(val)
+	err = runtime.PopulateFieldFromPath(&protoReq, "implementation.metric_id", val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "metric_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "implementation.metric_id", err)
 	}
 
 	msg, err := client.UpdateMetricImplementation(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -1041,14 +1041,14 @@ func local_request_Orchestrator_UpdateMetricImplementation_0(ctx context.Context
 		_   = err
 	)
 
-	val, ok = pathParams["metric_id"]
+	val, ok = pathParams["implementation.metric_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "metric_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "implementation.metric_id")
 	}
 
-	protoReq.MetricId, err = runtime.String(val)
+	err = runtime.PopulateFieldFromPath(&protoReq, "implementation.metric_id", val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "metric_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "implementation.metric_id", err)
 	}
 
 	msg, err := server.UpdateMetricImplementation(ctx, &protoReq)
@@ -3011,7 +3011,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateMetricImplementation", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics/{metric_id}/implementation"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateMetricImplementation", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics/{implementation.metric_id}/implementation"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4005,7 +4005,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateMetricImplementation", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics/{metric_id}/implementation"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateMetricImplementation", runtime.WithHTTPPathPattern("/v1/orchestrator/metrics/{implementation.metric_id}/implementation"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4543,7 +4543,7 @@ var (
 
 	pattern_Orchestrator_ListMetricConfigurations_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "orchestrator", "cloud_services", "cloud_service_id", "metric_configurations"}, ""))
 
-	pattern_Orchestrator_UpdateMetricImplementation_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "orchestrator", "metrics", "metric_id", "implementation"}, ""))
+	pattern_Orchestrator_UpdateMetricImplementation_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "orchestrator", "metrics", "implementation.metric_id", "implementation"}, ""))
 
 	pattern_Orchestrator_GetMetricImplementation_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "orchestrator", "metrics", "metric_id", "implementation"}, ""))
 

@@ -155,7 +155,7 @@ func loadMetricImplementation(metricID, file string) (impl *assessment.MetricImp
 
 	impl = &assessment.MetricImplementation{
 		MetricId:  metricID,
-		Lang:      assessment.MetricImplementation_REGO,
+		Lang:      assessment.MetricImplementation_LANGUAGE_REGO,
 		Code:      string(b),
 		UpdatedAt: timestamppb.Now(),
 	}
@@ -255,8 +255,8 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 		return nil, err
 	}
 
-	// Check, if metric exists according to req.MetricId
-	err = svc.storage.Get(&metric, "id = ?", req.MetricId)
+	// Check, if metric exists according to the metric ID
+	err = svc.storage.Get(&metric, "id = ?", req.Implementation.MetricId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Error(codes.NotFound, "metric not found")
 	} else if err != nil {
@@ -265,7 +265,6 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 
 	// Update implementation
 	impl = req.Implementation
-	impl.MetricId = req.MetricId
 	impl.UpdatedAt = timestamppb.Now()
 
 	// Store it in the database

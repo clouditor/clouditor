@@ -101,7 +101,7 @@ func (m *mockMetricsSource) MetricImplementation(lang assessment.MetricImplement
 
 	var impl = &assessment.MetricImplementation{
 		MetricId: metric,
-		Lang:     assessment.MetricImplementation_REGO,
+		Lang:     assessment.MetricImplementation_LANGUAGE_REGO,
 		Code:     string(b),
 	}
 

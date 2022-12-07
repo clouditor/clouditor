@@ -3039,7 +3039,16 @@ func (m *UpdateMetricImplementationRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for MetricId
+	if m.GetImplementation() == nil {
+		err := UpdateMetricImplementationRequestValidationError{
+			field:  "Implementation",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if all {
 		switch v := interface{}(m.GetImplementation()).(type) {

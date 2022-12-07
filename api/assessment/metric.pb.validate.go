@@ -1081,11 +1081,38 @@ func (m *MetricImplementation) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for MetricId
+	if utf8.RuneCountInString(m.GetMetricId()) < 1 {
+		err := MetricImplementationValidationError{
+			field:  "MetricId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for Lang
+	if _, ok := MetricImplementation_Language_name[int32(m.GetLang())]; !ok {
+		err := MetricImplementationValidationError{
+			field:  "Lang",
+			reason: "value must be one of the defined enum values",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for Code
+	if utf8.RuneCountInString(m.GetCode()) < 1 {
+		err := MetricImplementationValidationError{
+			field:  "Code",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if all {
 		switch v := interface{}(m.GetUpdatedAt()).(type) {

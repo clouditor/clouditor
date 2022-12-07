@@ -213,7 +213,8 @@ service Orchestrator {
   rpc UpdateMetricImplementation(UpdateMetricImplementationRequest)
       returns (clouditor.assessment.v1.MetricImplementation) {
     option (google.api.http) = {
-      put : "/v1/orchestrator/metrics/{metric_id}/implementation"
+      put : "/v1/orchestrator/metrics/{implementation.metric_id}/"
+            "implementation"
       body : "implementation"
     };
   }
@@ -523,8 +524,8 @@ message ListMetricConfigurationResponse {
 }
 
 message UpdateMetricImplementationRequest {
-  string metric_id = 1;
-  clouditor.assessment.v1.MetricImplementation implementation = 2;
+  clouditor.assessment.v1.MetricImplementation implementation = 1
+      [ (validate.rules).message.required = true ];
 }
 
 message GetMetricImplementationRequest {

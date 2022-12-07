@@ -545,7 +545,7 @@ func TestService_GetMetricImplementation(t *testing.T) {
 					assert.NoError(t, err)
 					err = s.Save(&assessment.MetricImplementation{
 						MetricId: MockMetricID,
-						Lang:     assessment.MetricImplementation_REGO,
+						Lang:     assessment.MetricImplementation_LANGUAGE_REGO,
 						Code:     "package test",
 					}, "metric_id = ?", MockMetricID)
 					assert.NoError(t, err)
@@ -558,7 +558,7 @@ func TestService_GetMetricImplementation(t *testing.T) {
 			},
 			wantRes: &assessment.MetricImplementation{
 				MetricId: MockMetricID,
-				Lang:     assessment.MetricImplementation_REGO,
+				Lang:     assessment.MetricImplementation_LANGUAGE_REGO,
 				Code:     "package test",
 			},
 		},
@@ -615,7 +615,7 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricImplementationRequest{
-					MetricId: "notfound",
+					Implementation: &assessment.MetricImplementation{MetricId: "notfound"},
 				},
 			},
 			wantErr: true,
@@ -627,10 +627,10 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricImplementationRequest{
-					MetricId: "TransportEncryptionEnabled",
 					Implementation: &assessment.MetricImplementation{
-						Lang: assessment.MetricImplementation_REGO,
-						Code: "package example",
+						MetricId: "TransportEncryptionEnabled",
+						Lang:     assessment.MetricImplementation_LANGUAGE_REGO,
+						Code:     "package example",
 					},
 				},
 			},
@@ -646,10 +646,10 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricImplementationRequest{
-					MetricId: "TransportEncryptionEnabled",
 					Implementation: &assessment.MetricImplementation{
-						Lang: assessment.MetricImplementation_REGO,
-						Code: "package example",
+						MetricId: "TransportEncryptionEnabled",
+						Lang:     assessment.MetricImplementation_LANGUAGE_REGO,
+						Code:     "package example",
 					},
 				},
 			},
@@ -657,7 +657,7 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 				var impl = i1.(*assessment.MetricImplementation)
 
 				return assert.Equal(t, "TransportEncryptionEnabled", impl.MetricId) &&
-					assert.Equal(t, assessment.MetricImplementation_REGO, impl.Lang) &&
+					assert.Equal(t, assessment.MetricImplementation_LANGUAGE_REGO, impl.Lang) &&
 					assert.Equal(t, "package example", impl.Code) &&
 					assert.True(t, impl.UpdatedAt.AsTime().Before(time.Now()))
 			},

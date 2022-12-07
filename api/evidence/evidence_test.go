@@ -142,7 +142,7 @@ func Test_ValidateEvidence(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			_, err := tt.args.Evidence.ValidateResource()
+			_, err := tt.args.Evidence.ValidateWithResource()
 			tt.wantErr(t, err)
 		})
 	}
