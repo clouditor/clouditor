@@ -3939,17 +3939,16 @@ func (x *State) GetCertificateId() string {
 	return ""
 }
 
-// TargetOfEvaluationChangeEvent represents a change of either a Target of Evaluation or Control Monitoring Status.
-// With TargetOfEvaluationChangeEvent the TargetOfEvaluation hook function can be informed about the reason of its call.
+// TargetOfEvaluationChangeEvent represents a change of either a Target of Evaluation or Control Monitoring Status and the TargetOfEvaluation hook function can be informed about the reason of its call.
 type TargetOfEvaluationChangeEvent struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
 	Type TargetOfEvaluationChangeEvent_Type `protobuf:"varint,1,opt,name=type,proto3,enum=clouditor.orchestrator.v1.TargetOfEvaluationChangeEvent_Type" json:"type,omitempty"`
-	// If the type is one TargetOfEvaluation_* the target_of_evaluation must be set
+	// If the type is a TargetOfEvaluation_* the target_of_evaluation must be set
 	TargetOfEvaluation *TargetOfEvaluation `protobuf:"bytes,2,opt,name=target_of_evaluation,json=targetOfEvaluation,proto3" json:"target_of_evaluation,omitempty"`
-	// If the type is of ControlMonitoringStatus_* the control_monitoring_status must be set
+	// If the type is a ControlMonitoringStatus_* the control_monitoring_status must be set
 	ControlMonitoringStatus *ControlMonitoringStatus `protobuf:"bytes,3,opt,name=control_monitoring_status,json=controlMonitoringStatus,proto3" json:"control_monitoring_status,omitempty"`
 }
 
