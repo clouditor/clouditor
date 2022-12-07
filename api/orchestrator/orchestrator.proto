@@ -344,7 +344,7 @@ service Orchestrator {
       returns (TargetOfEvaluation) {
     option (google.api.http) = {
       post : "/v1/orchestrator/toes"
-      body : "toe"
+      body : "target_of_evaluation"
     };
   }
 
@@ -396,7 +396,7 @@ service Orchestrator {
     option (google.api.http) = {
       put : "/v1/orchestrator/cloud_services/{cloud_service_id}/toes/"
             "{catalog_id}"
-      body : "toe"
+      body : "target_of_evaluation"
     };
   }
 
@@ -689,7 +689,7 @@ message ControlMonitoringStatus {
   Status status = 6;
 }
 
-message CreateTargetOfEvaluationRequest { TargetOfEvaluation toe = 1; }
+message CreateTargetOfEvaluationRequest { TargetOfEvaluation target_of_evaluation = 1; }
 
 message RemoveTargetOfEvaluationRequest {
   string cloud_service_id = 1;
@@ -708,22 +708,22 @@ message ListTargetsOfEvaluationRequest {
   bool asc = 4;
   // We cannot create additional bindings when the parameter is optional so we
   // check for != "" in the method to see if it is set when the service is
-  // specified, return all ToEs that evaluate the given service for any catalog
+  // specified, return all Targets of Evaluation that evaluate the given service for any catalog
   string cloud_service_id = 5;
-  // when the catalog is specified, return all ToEs that evaluate the given
+  // when the catalog is specified, return all Targets of Evaluation that evaluate the given
   // catalog for any service
   string catalog_id = 6;
 }
 
 message ListTargetsOfEvaluationResponse {
-  repeated TargetOfEvaluation toes = 1;
+  repeated TargetOfEvaluation target_of_evaluation = 1;
   string next_page_token = 2;
 }
 
 message UpdateTargetOfEvaluationRequest {
   string cloud_service_id = 1;
   string catalog_id = 2;
-  TargetOfEvaluation toe = 3;
+  TargetOfEvaluation target_of_evaluation = 3;
 }
 
 message GetCertificateRequest { string certificate_id = 1; }
@@ -825,13 +825,25 @@ message State {
   string certificate_id = 5;
 }
 
-// ToeStatus represents the status of the Target of Evaluation. 
-// With that status the ToE hook function can be informed about the reason of its call. 
-message ToeStatus {
-  enum Status {
-    TOE_CREATE = 0;
-    TOE_UPDATE = 1;
-    TOE_REMOVE = 2;
+// TargetOfEvaluationChangeEvent represents a change of either a Target of Evaluation or Control Monitoring Status. 
+// With TargetOfEvaluationChangeEvent the TargetOfEvaluation hook function can be informed about the reason of its call. 
+message TargetOfEvaluationChangeEvent {
+  // Type represents the type of the change event. Type can be a change event regarding the Target of Evaluation or the Control Monitoring Status.
+  enum Type {
+    Type_UNSPECIFIED = 0;
+
+    TargetOfEvaluation_CREATED = 1;
+    TargetOfEvaluation_UPDATED = 2;
+    TargetOfEvaluation_REMOVED = 3;
+    
+    ControlMonitoringStatus_UPDATED = 4;
   }
-  Status status = 1;
+
+  Type type = 1;
+
+  // If the type is one TargetOfEvaluation_* the target_of_evaluation must be set
+  TargetOfEvaluation target_of_evaluation = 2;
+
+  // If the type is of ControlMonitoringStatus_* the control_monitoring_status must be set
+  ControlMonitoringStatus control_monitoring_status = 3;
 }

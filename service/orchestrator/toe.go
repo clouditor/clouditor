@@ -47,7 +47,7 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 	)
 
 	// We need to retrieve some additional meta-data about the security catalog, so we need to query it as well
-	c, err = svc.GetCatalog(ctx, &orchestrator.GetCatalogRequest{CatalogId: req.Toe.CatalogId})
+	c, err = svc.GetCatalog(ctx, &orchestrator.GetCatalogRequest{CatalogId: req.TargetOfEvaluation.CatalogId})
 	if err != nil {
 		// The error is already a gRPC error, so we can just return it
 		return nil, err
@@ -55,7 +55,7 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 
 	// Certain catalogs do not allow scoping, in this case we need to pre-populate all controls into the scope.
 	if c.AllInScope {
-		lcres, err = svc.ListControls(ctx, &orchestrator.ListControlsRequest{CatalogId: req.Toe.CatalogId})
+		lcres, err = svc.ListControls(ctx, &orchestrator.ListControlsRequest{CatalogId: req.TargetOfEvaluation.CatalogId})
 		if err != nil {
 			// The error is already a gRPC error, so we can just return it
 			return nil, err
@@ -63,17 +63,18 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 
 		// Make all controls in scope
 		// TODO: Certain catalogs differentiate between assurance levels
-		req.Toe.ControlsInScope = lcres.Controls
+		req.TargetOfEvaluation.ControlsInScope = lcres.Controls
 	}
 
 	// Create the ToE
-	err = svc.storage.Create(&req.Toe)
+	err = svc.storage.Create(&req.TargetOfEvaluation)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	go svc.informToeHooks(ctx, req.Toe, orchestrator.ToeStatus_TOE_CREATE, nil)
-	res = req.Toe
+	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TargetOfEvaluation_CREATED, TargetOfEvaluation: req.TargetOfEvaluation}, nil)
+
+	res = req.TargetOfEvaluation
 
 	return
 }
@@ -108,7 +109,7 @@ func (svc *Service) ListTargetsOfEvaluation(_ context.Context, req *orchestrator
 	}
 
 	res = new(orchestrator.ListTargetsOfEvaluationResponse)
-	res.Toes, res.NextPageToken, err = service.PaginateStorage[*orchestrator.TargetOfEvaluation](req, svc.storage, service.DefaultPaginationOpts, gorm.WithoutPreload())
+	res.TargetOfEvaluation, res.NextPageToken, err = service.PaginateStorage[*orchestrator.TargetOfEvaluation](req, svc.storage, service.DefaultPaginationOpts, gorm.WithoutPreload())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
@@ -121,13 +122,13 @@ func (svc *Service) UpdateTargetOfEvaluation(ctx context.Context, req *orchestra
 		return nil, status.Errorf(codes.InvalidArgument, "id is empty")
 	}
 
-	if req.Toe == nil {
+	if req.TargetOfEvaluation == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "ToE is empty")
 	}
 
-	res = req.Toe
-	res.CloudServiceId = req.Toe.CloudServiceId
-	res.CatalogId = req.Toe.CatalogId
+	res = req.TargetOfEvaluation
+	res.CloudServiceId = req.TargetOfEvaluation.CloudServiceId
+	res.CatalogId = req.TargetOfEvaluation.CatalogId
 
 	err = svc.storage.Update(res, "cloud_service_id = ? AND catalog_id = ?", res.CloudServiceId, res.CatalogId)
 
@@ -139,7 +140,8 @@ func (svc *Service) UpdateTargetOfEvaluation(ctx context.Context, req *orchestra
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	go svc.informToeHooks(ctx, req.Toe, orchestrator.ToeStatus_TOE_UPDATE, nil)
+	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TargetOfEvaluation_UPDATED, TargetOfEvaluation: req.TargetOfEvaluation}, nil)
+
 	return
 }
 
@@ -156,12 +158,17 @@ func (svc *Service) RemoveTargetOfEvaluation(ctx context.Context, req *orchestra
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	go svc.informToeHooks(ctx, nil, orchestrator.ToeStatus_TOE_REMOVE, nil)
+	// Since we don't have a TargetOfEvaluation object, we create one to be able to inform the hook about the deleted TargetOfEvaluation.
+	toe := &orchestrator.TargetOfEvaluation{
+		CloudServiceId: req.GetCloudServiceId(),
+		CatalogId:      req.GetCatalogId(),
+	}
+	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TargetOfEvaluation_REMOVED, TargetOfEvaluation: toe}, nil)
 	return &emptypb.Empty{}, nil
 }
 
-// informToeHooks informs the registered hook functions about create, update or remove of the Target of Evaluation
-func (s *Service) informToeHooks(ctx context.Context, toe *orchestrator.TargetOfEvaluation, status orchestrator.ToeStatus_Status, err error) {
+// informToeHooks informs the registered hook function either of a event change for the Target of Evaluation or Control Monitoring Status
+func (s *Service) informToeHooks(ctx context.Context, event *orchestrator.TargetOfEvaluationChangeEvent, err error) {
 	s.hookMutex.RLock()
 	hooks := s.toeHooks
 	defer s.hookMutex.RUnlock()
@@ -170,13 +177,13 @@ func (s *Service) informToeHooks(ctx context.Context, toe *orchestrator.TargetOf
 	if len(hooks) > 0 {
 		for _, hook := range hooks {
 			// We could do hook concurrent again (assuming different hooks don't interfere with each other)
-			hook(ctx, toe, status, err)
+			hook(ctx, event, err)
 		}
 	}
 }
 
 // RegisterToeHook registers the Target of Evaluation hook function
-func (s *Service) RegisterToeHook(hook orchestrator.ToeHookFunc) {
+func (s *Service) RegisterToeHook(hook orchestrator.TargetOfEvaluationHookFunc) {
 	s.hookMutex.Lock()
 	defer s.hookMutex.Unlock()
 	s.toeHooks = append(s.toeHooks, hook)

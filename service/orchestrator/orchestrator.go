@@ -65,7 +65,7 @@ type Service struct {
 	cloudServiceHooks []orchestrator.CloudServiceHookFunc
 
 	// toeHooks is a list of hook functions that can be used to inform about updated Target of Evaluations
-	toeHooks []orchestrator.ToeHookFunc
+	toeHooks []orchestrator.TargetOfEvaluationHookFunc
 
 	// hookMutex is used for (un)locking hook calls
 	hookMutex sync.RWMutex

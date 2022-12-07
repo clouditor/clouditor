@@ -1272,12 +1272,12 @@ paths:
                     type: boolean
                 - name: cloudServiceId
                   in: query
-                  description: We cannot create additional bindings when the parameter is optional so we check for != "" in the method to see if it is set when the service is specified, return all ToEs that evaluate the given service for any catalog
+                  description: We cannot create additional bindings when the parameter is optional so we check for != "" in the method to see if it is set when the service is specified, return all Targets of Evaluation that evaluate the given service for any catalog
                   schema:
                     type: string
                 - name: catalogId
                   in: query
-                  description: when the catalog is specified, return all ToEs that evaluate the given catalog for any service
+                  description: when the catalog is specified, return all Targets of Evaluation that evaluate the given catalog for any service
                   schema:
                     type: string
             responses:
@@ -1599,7 +1599,7 @@ components:
         ListTargetsOfEvaluationResponse:
             type: object
             properties:
-                toes:
+                targetOfEvaluation:
                     type: array
                     items:
                         $ref: '#/components/schemas/TargetOfEvaluation'
