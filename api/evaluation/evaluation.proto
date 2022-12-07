@@ -79,17 +79,6 @@ message ListEvaluationResultsRequest {
 
 message StartEvaluationRequest {
     clouditor.orchestrator.v1.TargetOfEvaluation target_of_evaluation = 1;
-    
-    // The control to be checked
-    repeated evalControl eval_control = 2; 
-}
-
-// TODO(anatheka): Delete if the ToE is updated
-message evalControl {
-    // The category the control ID belongs to 
-    string category_name = 1; 
-    // The control ID
-     string control_id = 2; 
 }
 
 message StartEvaluationResponse {

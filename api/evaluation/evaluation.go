@@ -38,7 +38,6 @@ var (
 )
 
 // Validate validates the evaluate request
-// TODO(anatheka): Update if everything is ready
 func (r *StartEvaluationRequest) Validate() (err error) {
 	if r == nil {
 		return ErrRequestIsEmpty
@@ -46,10 +45,6 @@ func (r *StartEvaluationRequest) Validate() (err error) {
 
 	if err = r.TargetOfEvaluation.Validate(); err != nil {
 		return err
-	}
-
-	if r.EvalControl == nil {
-		return ErrEvalControlIsMissing
 	}
 
 	return
@@ -60,14 +55,6 @@ func (r *StartEvaluationRequest) Validate() (err error) {
 func (r *StopEvaluationRequest) Validate() (err error) {
 	if r == nil {
 		return ErrRequestIsEmpty
-	}
-
-	if r.ControlId == "" {
-		return ErrControlIDIsMissing
-	}
-
-	if r.CategoryName == "" {
-		return ErrCategoryNameIsMissing
 	}
 
 	if err = r.TargetOfEvaluation.Validate(); err != nil {
