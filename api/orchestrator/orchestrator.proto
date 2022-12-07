@@ -836,7 +836,7 @@ message RemoveCertificateRequest {
 
 // An ISO17021-based certificate
 message Certificate {
-  string id = 1;
+  string id = 1 [ (validate.rules).string.min_len = 1 ];
   string name = 2;
   string cloud_service_id = 3;
   string issue_date = 4;

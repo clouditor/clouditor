@@ -644,31 +644,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/cloud_services/toes:
-        put:
-            tags:
-                - Orchestrator
-            description: Updates an existing Target of Evaluation
-            operationId: Orchestrator_UpdateTargetOfEvaluation
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/TargetOfEvaluation'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/TargetOfEvaluation'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/cloud_services/{cloudServiceId}:
         get:
             tags:
@@ -1015,19 +990,19 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/cloud_services/{toe.cloud_service_id}/toes/{toe.catalog_id}:
+    /v1/orchestrator/cloud_services/{target_of_evaluation.cloud_service_id}/toes/{target_of_evaluation.catalog_id}:
         put:
             tags:
                 - Orchestrator
             description: Updates an existing Target of Evaluation
             operationId: Orchestrator_UpdateTargetOfEvaluation
             parameters:
-                - name: toe.cloud_service_id
+                - name: target_of_evaluation.cloud_service_id
                   in: path
                   required: true
                   schema:
                     type: string
-                - name: toe.catalog_id
+                - name: target_of_evaluation.catalog_id
                   in: path
                   required: true
                   schema:

@@ -629,7 +629,7 @@ func TestNewService(t *testing.T) {
 	}
 }
 
-/*func Test_CreateCertificate(t *testing.T) {
+func Test_CreateCertificate(t *testing.T) {
 	// Mock certificates
 	mockCertificate := orchestratortest.NewCertificate()
 	mockCertificateWithoutID := orchestratortest.NewCertificate()
@@ -640,11 +640,10 @@ func TestNewService(t *testing.T) {
 		req *orchestrator.CreateCertificateRequest
 	}
 	var tests = []struct {
-		name           string
-		args           args
-		wantResponse   *orchestrator.Certificate
-		wantErrMessage error
-		wantErrCode    codes.Code
+		name         string
+		args         args
+		wantResponse *orchestrator.Certificate
+		wantErr      assert.ErrorAssertionFunc
 	}{
 		{
 			"missing request",
@@ -653,8 +652,10 @@ func TestNewService(t *testing.T) {
 				nil,
 			},
 			nil,
-			api.ErrRequestIsNil,
-			codes.InvalidArgument,
+			func(tt assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
+			},
 		},
 		{
 			"missing certificate",
@@ -663,8 +664,10 @@ func TestNewService(t *testing.T) {
 				&orchestrator.CreateCertificateRequest{},
 			},
 			nil,
-			orchestrator.ErrCertificateIsNil,
-			codes.InvalidArgument,
+			func(tt assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, "Certificate: value is required")
+			},
 		},
 		{
 			"missing certificate id",
@@ -675,8 +678,10 @@ func TestNewService(t *testing.T) {
 				},
 			},
 			nil,
-			orchestrator.ErrCertIDIsMissing,
-			codes.InvalidArgument,
+			func(tt assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, "Id: value length must be at least 1 runes")
+			},
 		},
 		{
 			"valid certificate",
@@ -687,29 +692,22 @@ func TestNewService(t *testing.T) {
 				},
 			},
 			mockCertificate,
-			nil,
-			// wantErrCode doesn't matter since error (message) is nil
-			0,
+			assert.NoError,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
 			gotResponse, err := s.CreateCertificate(tt.args.in0, tt.args.req)
-			// If error shouldn't be nil, check error message and code
-			// TODO(lebogg): This pattern we probably have quite often. Maybe extract it (to test utils)?
-			if tt.wantErrMessage != nil {
-				assert.Equal(t, status.Code(err), tt.wantErrCode)
-				assert.Contains(t, err.Error(), tt.wantErrMessage.Error())
-				return
-			}
+			tt.wantErr(t, err)
+
 			// If no error is wanted, check response
 			if !reflect.DeepEqual(gotResponse, tt.wantResponse) {
 				t.Errorf("Service.CreateCertificate() = %v, want %v", gotResponse, tt.wantResponse)
 			}
 		})
 	}
-}*/
+}
 
 func Test_UpdateCertificate(t *testing.T) {
 	var (
