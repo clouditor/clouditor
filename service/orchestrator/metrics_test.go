@@ -209,7 +209,7 @@ func TestService_CreateMetric(t *testing.T) {
 			},
 			wantMetric: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "rpc error: code = InvalidArgument desc = invalid Metric.Id: value length must be at least 1 runes")
+				return assert.ErrorContains(t, err, "invalid Metric.Id: value length must be at least 1 runes")
 			},
 		},
 		{

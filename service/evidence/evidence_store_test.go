@@ -126,7 +126,7 @@ func TestService_StoreEvidence(t *testing.T) {
 			wantErr: true,
 			wantResp: &evidence.StoreEvidenceResponse{
 				Status:        false,
-				StatusMessage: "invalid evidence: invalid Evidence.ToolId: value length must be at least 1 runes",
+				StatusMessage: "invalid evidence: rpc error: code = InvalidArgument desc = invalid request: invalid StoreEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.ToolId: value length must be at least 1 runes",
 			},
 		},
 	}

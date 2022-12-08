@@ -94,7 +94,10 @@ message ConfigureAssessmentResponse {}
 
 message CalculateComplianceRequest { string control_id = 1; }
 
-message AssessEvidenceRequest { clouditor.evidence.v1.Evidence evidence = 1; }
+message AssessEvidenceRequest {
+  clouditor.evidence.v1.Evidence evidence = 1
+      [ (validate.rules).message.required = true ];
+}
 message AssessEvidenceResponse {
   enum AssessmentStatus {
     ASSESSMENT_STATUS_UNSPECIFIED = 0;

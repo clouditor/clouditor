@@ -297,6 +297,7 @@ func TestService_Start(t *testing.T) {
 	}{
 		{
 			name:           "No Azure authorizer",
+			req:            &discovery.StartDiscoveryRequest{},
 			providers:      []string{ProviderAzure},
 			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
 			wantErr:        false,
@@ -325,6 +326,7 @@ func TestService_Start(t *testing.T) {
 					},
 				},
 			},
+			req:            &discovery.StartDiscoveryRequest{},
 			providers:      []string{ProviderAzure},
 			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
 			wantErr:        false,
@@ -342,6 +344,7 @@ func TestService_Start(t *testing.T) {
 					},
 				},
 			},
+			req:            &discovery.StartDiscoveryRequest{},
 			providers:      []string{ProviderK8S},
 			wantResp:       nil,
 			wantErr:        true,
@@ -359,6 +362,7 @@ func TestService_Start(t *testing.T) {
 					},
 				},
 			},
+			req:            &discovery.StartDiscoveryRequest{},
 			providers:      []string{"aws", "k8s"},
 			wantResp:       nil,
 			wantErr:        true,
@@ -367,6 +371,7 @@ func TestService_Start(t *testing.T) {
 		{
 			name:           "Empty request",
 			fields:         fields{},
+			req:            &discovery.StartDiscoveryRequest{},
 			providers:      []string{},
 			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
 			wantErr:        false,
@@ -375,6 +380,7 @@ func TestService_Start(t *testing.T) {
 		{
 			name:           "Request with wrong provider name",
 			fields:         fields{},
+			req:            &discovery.StartDiscoveryRequest{},
 			providers:      []string{"falseProvider"},
 			wantResp:       nil,
 			wantErr:        true,
@@ -392,7 +398,7 @@ func TestService_Start(t *testing.T) {
 				}
 			}
 
-			resp, err := s.Start(context.TODO(), nil)
+			resp, err := s.Start(context.TODO(), tt.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Got Start() error = %v, wantErr %v", err, tt.wantErr)
 				return

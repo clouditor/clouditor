@@ -67,7 +67,8 @@ func init() {
 
 // StoreEvidence is a method implementation of the evidenceServer interface: It receives a req and stores it
 func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRequest) (resp *evidence.StoreEvidenceResponse, err error) {
-	err = req.Evidence.Validate()
+	// Validate request
+	err = service.ValidateRequest(req)
 	if err != nil {
 		newError := fmt.Errorf("invalid evidence: %w", err)
 		log.Error(newError)
@@ -140,6 +141,12 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 
 // ListEvidences is a method implementation of the evidenceServer interface: It returns the evidences lying in the req storage
 func (s *Service) ListEvidences(_ context.Context, req *evidence.ListEvidencesRequest) (res *evidence.ListEvidencesResponse, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
 	res = new(evidence.ListEvidencesResponse)
 
 	// Paginate the evidences according to the request

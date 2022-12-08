@@ -167,11 +167,10 @@ func loadMetricImplementation(metricID, file string) (impl *assessment.MetricImp
 func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetricRequest) (metric *assessment.Metric, err error) {
 	var count int64
 
-	// Validate the metric request
-	err = req.Metric.Validate()
+	// Validate request
+	err = service.ValidateRequest(req)
 	if err != nil {
-		log.Error(err)
-		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
+		return nil, err
 	}
 
 	// Check, if metric id already exists

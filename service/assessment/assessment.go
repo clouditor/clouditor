@@ -437,6 +437,12 @@ func (svc *Service) informHooks(result *assessment.AssessmentResult, err error) 
 
 // ListAssessmentResults is a method implementation of the assessment interface
 func (svc *Service) ListAssessmentResults(_ context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
 	res = new(assessment.ListAssessmentResultsResponse)
 
 	// Paginate the results according to the request

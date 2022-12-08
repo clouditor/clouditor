@@ -227,7 +227,13 @@ func (svc *Service) initAssessmentStream(target string, additionalOpts ...grpc.D
 }
 
 // Start starts discovery
-func (svc *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
+func (svc *Service) Start(_ context.Context, req *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
 	resp = &discovery.StartDiscoveryResponse{Successful: true}
 
 	log.Infof("Starting discovery...")
@@ -375,6 +381,12 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 func (svc *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *discovery.QueryResponse, err error) {
 	var r []*structpb.Value
 	var resources []voc.IsCloudResource
+
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
 
 	var filteredType = ""
 	if req != nil {
