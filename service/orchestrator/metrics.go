@@ -195,7 +195,7 @@ func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetr
 	// Notify event listeners
 	go func() {
 		svc.events <- &orchestrator.MetricChangeEvent{
-			Type:     orchestrator.MetricChangeEvent_METADATA_CHANGED,
+			Type:     orchestrator.MetricChangeEvent_TYPE_METADATA_CHANGED,
 			MetricId: metric.Id,
 		}
 	}()
@@ -234,7 +234,7 @@ func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetr
 	// Notify event listeners
 	go func() {
 		svc.events <- &orchestrator.MetricChangeEvent{
-			Type:     orchestrator.MetricChangeEvent_METADATA_CHANGED,
+			Type:     orchestrator.MetricChangeEvent_TYPE_METADATA_CHANGED,
 			MetricId: metric.Id,
 		}
 	}()
@@ -275,7 +275,7 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 	// Notify event listeners
 	go func() {
 		svc.events <- &orchestrator.MetricChangeEvent{
-			Type:     orchestrator.MetricChangeEvent_IMPLEMENTATION_CHANGED,
+			Type:     orchestrator.MetricChangeEvent_TYPE_IMPLEMENTATION_CHANGED,
 			MetricId: metric.Id,
 		}
 	}()
@@ -383,7 +383,7 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 	// Notify event listeners
 	go func() {
 		svc.events <- &orchestrator.MetricChangeEvent{
-			Type:           orchestrator.MetricChangeEvent_CONFIG_CHANGED,
+			Type:           orchestrator.MetricChangeEvent_TYPE_CONFIG_CHANGED,
 			CloudServiceId: req.CloudServiceId,
 			MetricId:       req.MetricId,
 		}

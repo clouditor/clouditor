@@ -42,6 +42,7 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 
 	"github.com/stretchr/testify/assert"
@@ -244,7 +245,7 @@ func TestService_Query(t *testing.T) {
 		},
 		{
 			name:                     "Filter type",
-			fields:                   fields{queryRequest: &discovery.QueryRequest{FilteredType: "Compute"}},
+			fields:                   fields{queryRequest: &discovery.QueryRequest{FilteredType: util.Ref("Compute")}},
 			numberOfQueriedResources: 0,
 		},
 		{

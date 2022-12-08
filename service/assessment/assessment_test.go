@@ -1252,12 +1252,12 @@ func TestService_recvEventsLoop(t *testing.T) {
 			fields: fields{
 				metricEventStream: &testutil.ListRecvStreamerOf[*orchestrator.MetricChangeEvent]{Messages: []*orchestrator.MetricChangeEvent{
 					{
-						Type: orchestrator.MetricChangeEvent_CONFIG_CHANGED,
+						Type: orchestrator.MetricChangeEvent_TYPE_CONFIG_CHANGED,
 					},
 				}},
 			},
 			wantEvent: &orchestrator.MetricChangeEvent{
-				Type: orchestrator.MetricChangeEvent_CONFIG_CHANGED,
+				Type: orchestrator.MetricChangeEvent_TYPE_CONFIG_CHANGED,
 			},
 		},
 	}

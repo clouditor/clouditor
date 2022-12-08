@@ -68,7 +68,7 @@ service Orchestrator {
   rpc UpdateAssessmentTool(UpdateAssessmentToolRequest)
       returns (AssessmentTool) {
     option (google.api.http) = {
-      put : "/v1/orchestrator/assessment_tools/{tool_id}"
+      put : "/v1/orchestrator/assessment_tools/{tool.id}"
       body : "tool"
     };
   }
@@ -413,11 +413,14 @@ service Orchestrator {
   }
 }
 
-message RegisterAssessmentToolRequest { AssessmentTool tool = 1; }
+message RegisterAssessmentToolRequest {
+  AssessmentTool tool = 1 [ (validate.rules).message.required = true ];
+}
 
 message ListAssessmentToolsRequest {
   // filter tools by metric id
   string metric_id = 1;
+
   int32 page_size = 2;
   string page_token = 3;
   string order_by = 4;
@@ -428,14 +431,17 @@ message ListAssessmentToolsResponse {
   string next_page_token = 2;
 }
 
-message GetAssessmentToolRequest { string tool_id = 1; }
-
-message UpdateAssessmentToolRequest {
-  string tool_id = 1;
-  AssessmentTool tool = 2;
+message GetAssessmentToolRequest {
+  string tool_id = 1 [ (validate.rules).string.min_len = 1 ];
 }
 
-message DeregisterAssessmentToolRequest { string tool_id = 1; }
+message UpdateAssessmentToolRequest {
+  AssessmentTool tool = 2 [ (validate.rules).message.required = true ];
+}
+
+message DeregisterAssessmentToolRequest {
+  string tool_id = 1 [ (validate.rules).string.min_len = 1 ];
+}
 
 message StoreAssessmentResultRequest {
   clouditor.assessment.v1.AssessmentResult result = 1
@@ -529,8 +535,7 @@ message UpdateMetricImplementationRequest {
 }
 
 message GetMetricImplementationRequest {
-  string metric_id = 1;
-  string lang = 2;
+  string metric_id = 1 [ (validate.rules).string.min_len = 1 ];
 }
 
 message SubscribeMetricChangeEventRequest {}
@@ -540,9 +545,9 @@ message SubscribeMetricChangeEventRequest {}
 message MetricChangeEvent {
   enum Type {
     TYPE_UNSPECIFIED = 0;
-    CONFIG_CHANGED = 1;
-    IMPLEMENTATION_CHANGED = 2;
-    METADATA_CHANGED = 3;
+    TYPE_CONFIG_CHANGED = 1;
+    TYPE_IMPLEMENTATION_CHANGED = 2;
+    TYPE_METADATA_CHANGED = 3;
   }
 
   Type type = 1;

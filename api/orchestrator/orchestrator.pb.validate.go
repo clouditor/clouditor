@@ -60,6 +60,17 @@ func (m *RegisterAssessmentToolRequest) validate(all bool) error {
 
 	var errors []error
 
+	if m.GetTool() == nil {
+		err := RegisterAssessmentToolRequestValidationError{
+			field:  "Tool",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if all {
 		switch v := interface{}(m.GetTool()).(type) {
 		case interface{ ValidateAll() error }:
@@ -443,7 +454,16 @@ func (m *GetAssessmentToolRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for ToolId
+	if utf8.RuneCountInString(m.GetToolId()) < 1 {
+		err := GetAssessmentToolRequestValidationError{
+			field:  "ToolId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return GetAssessmentToolRequestMultiError(errors)
@@ -547,7 +567,16 @@ func (m *UpdateAssessmentToolRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for ToolId
+	if m.GetTool() == nil {
+		err := UpdateAssessmentToolRequestValidationError{
+			field:  "Tool",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if all {
 		switch v := interface{}(m.GetTool()).(type) {
@@ -681,7 +710,16 @@ func (m *DeregisterAssessmentToolRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for ToolId
+	if utf8.RuneCountInString(m.GetToolId()) < 1 {
+		err := DeregisterAssessmentToolRequestValidationError{
+			field:  "ToolId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return DeregisterAssessmentToolRequestMultiError(errors)
@@ -3183,9 +3221,16 @@ func (m *GetMetricImplementationRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for MetricId
-
-	// no validation rules for Lang
+	if utf8.RuneCountInString(m.GetMetricId()) < 1 {
+		err := GetMetricImplementationRequestValidationError{
+			field:  "MetricId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return GetMetricImplementationRequestMultiError(errors)

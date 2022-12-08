@@ -57,6 +57,17 @@ func (m *StoreEvidenceRequest) validate(all bool) error {
 
 	var errors []error
 
+	if m.GetEvidence() == nil {
+		err := StoreEvidenceRequestValidationError{
+			field:  "Evidence",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if all {
 		switch v := interface{}(m.GetEvidence()).(type) {
 		case interface{ ValidateAll() error }:

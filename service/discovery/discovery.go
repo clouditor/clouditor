@@ -388,16 +388,6 @@ func (svc *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *
 		return nil, err
 	}
 
-	var filteredType = ""
-	if req != nil {
-		filteredType = req.FilteredType
-	}
-
-	var filteredServiceId = ""
-	if req != nil {
-		filteredServiceId = req.FilteredCloudServiceId
-	}
-
 	resources = maps.Values(svc.resources)
 	sort.Slice(resources, func(i, j int) bool {
 		return resources[i].GetID() < resources[j].GetID()
@@ -406,11 +396,11 @@ func (svc *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *
 	for _, v := range resources {
 		var resource *structpb.Value
 
-		if filteredType != "" && !v.HasType(filteredType) {
+		if req.FilteredType != nil && !v.HasType(req.GetFilteredType()) {
 			continue
 		}
 
-		if filteredServiceId != "" && v.GetServiceID() != filteredServiceId {
+		if req.FilteredCloudServiceId != nil && v.GetServiceID() != req.GetFilteredCloudServiceId() {
 			continue
 		}
 

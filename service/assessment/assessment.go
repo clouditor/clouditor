@@ -630,7 +630,7 @@ func (svc *Service) handleMetricEvent(event *orchestrator.MetricChangeEvent) {
 	// In case the configuration has changed, we need to clear our configuration cache. Otherwise the policy evaluation
 	// will clear the Rego cache, but still refer to the old metric configuration (until it expires). Handle metric event in our policy
 	// evaluation
-	if event.GetType() == orchestrator.MetricChangeEvent_CONFIG_CHANGED {
+	if event.GetType() == orchestrator.MetricChangeEvent_TYPE_CONFIG_CHANGED {
 		// Evict the metric configuration from cache
 		svc.confMutex.Lock()
 

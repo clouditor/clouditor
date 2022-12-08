@@ -60,8 +60,8 @@ message StartDiscoveryRequest {}
 message StartDiscoveryResponse { bool successful = 1; }
 
 message QueryRequest {
-  string filtered_type = 1;
-  string filtered_cloud_service_id = 2;
+  optional string filtered_type = 1;
+  optional string filtered_cloud_service_id = 2;
 
   int32 page_size = 10;
   string page_token = 11;

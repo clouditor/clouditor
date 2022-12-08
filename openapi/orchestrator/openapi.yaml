@@ -153,18 +153,24 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/assessment_tools/{toolId}:
-        get:
+    /v1/orchestrator/assessment_tools/{tool.id}:
+        put:
             tags:
                 - Orchestrator
-            description: Returns assessment tool given by the passed tool id
-            operationId: Orchestrator_GetAssessmentTool
+            description: Updates the assessment tool given by the passed id
+            operationId: Orchestrator_UpdateAssessmentTool
             parameters:
-                - name: toolId
+                - name: tool.id
                   in: path
                   required: true
                   schema:
                     type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AssessmentTool'
+                required: true
             responses:
                 "200":
                     description: OK
@@ -178,23 +184,18 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-        put:
+    /v1/orchestrator/assessment_tools/{toolId}:
+        get:
             tags:
                 - Orchestrator
-            description: Updates the assessment tool given by the passed id
-            operationId: Orchestrator_UpdateAssessmentTool
+            description: Returns assessment tool given by the passed tool id
+            operationId: Orchestrator_GetAssessmentTool
             parameters:
                 - name: toolId
                   in: path
                   required: true
                   schema:
                     type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/AssessmentTool'
-                required: true
             responses:
                 "200":
                     description: OK
@@ -1233,10 +1234,6 @@ paths:
                 - name: metricId
                   in: path
                   required: true
-                  schema:
-                    type: string
-                - name: lang
-                  in: query
                   schema:
                     type: string
             responses:

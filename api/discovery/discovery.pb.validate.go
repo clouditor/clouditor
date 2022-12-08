@@ -263,10 +263,6 @@ func (m *QueryRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for FilteredType
-
-	// no validation rules for FilteredCloudServiceId
-
 	// no validation rules for PageSize
 
 	// no validation rules for PageToken
@@ -274,6 +270,14 @@ func (m *QueryRequest) validate(all bool) error {
 	// no validation rules for OrderBy
 
 	// no validation rules for Asc
+
+	if m.FilteredType != nil {
+		// no validation rules for FilteredType
+	}
+
+	if m.FilteredCloudServiceId != nil {
+		// no validation rules for FilteredCloudServiceId
+	}
 
 	if len(errors) > 0 {
 		return QueryRequestMultiError(errors)

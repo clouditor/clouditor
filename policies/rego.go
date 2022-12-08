@@ -179,9 +179,9 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 // HandleMetricEvent takes care of handling metric events, such as evicting cache entries for the
 // appropriate metrics.
 func (re *regoEval) HandleMetricEvent(event *orchestrator.MetricChangeEvent) (err error) {
-	if event.Type == orchestrator.MetricChangeEvent_IMPLEMENTATION_CHANGED {
+	if event.Type == orchestrator.MetricChangeEvent_TYPE_IMPLEMENTATION_CHANGED {
 		log.Infof("Implementation of %s has changed. Clearing cache for this metric", event.MetricId)
-	} else if event.Type == orchestrator.MetricChangeEvent_CONFIG_CHANGED {
+	} else if event.Type == orchestrator.MetricChangeEvent_TYPE_CONFIG_CHANGED {
 		log.Infof("Configuration of %s has changed. Clearing cache for this metric", event.MetricId)
 	}
 
