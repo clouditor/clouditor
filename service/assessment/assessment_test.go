@@ -41,7 +41,6 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
-	api_orchestrator "clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/policies"
@@ -630,10 +629,10 @@ func TestService_ListAssessmentResults(t *testing.T) {
 	type fields struct {
 		evidenceStoreStreams  *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
 		evidenceStoreAddress  string
-		orchestratorStreams   *api.StreamsOf[api_orchestrator.Orchestrator_StoreAssessmentResultsClient, *api_orchestrator.StoreAssessmentResultRequest]
-		orchestratorClient    api_orchestrator.OrchestratorClient
+		orchestratorStreams   *api.StreamsOf[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest]
+		orchestratorClient    orchestrator.OrchestratorClient
 		orchestratorAddress   string
-		metricEventStream     api_orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
+		metricEventStream     orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
 		resultHooks           []assessment.ResultHookFunc
 		results               map[string]*assessment.AssessmentResult
 		cachedConfigurations  map[string]cachedConfiguration
@@ -1232,10 +1231,10 @@ func TestService_recvEventsLoop(t *testing.T) {
 	type fields struct {
 		evidenceStoreStreams  *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
 		evidenceStoreAddress  string
-		orchestratorStreams   *api.StreamsOf[api_orchestrator.Orchestrator_StoreAssessmentResultsClient, *api_orchestrator.StoreAssessmentResultRequest]
-		orchestratorClient    api_orchestrator.OrchestratorClient
+		orchestratorStreams   *api.StreamsOf[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest]
+		orchestratorClient    orchestrator.OrchestratorClient
 		orchestratorAddress   string
-		metricEventStream     api_orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
+		metricEventStream     orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
 		resultHooks           []assessment.ResultHookFunc
 		results               map[string]*assessment.AssessmentResult
 		cachedConfigurations  map[string]cachedConfiguration
@@ -1246,19 +1245,19 @@ func TestService_recvEventsLoop(t *testing.T) {
 	tests := []struct {
 		name      string
 		fields    fields
-		wantEvent *api_orchestrator.MetricChangeEvent
+		wantEvent *orchestrator.MetricChangeEvent
 	}{
 		{
 			name: "Receive event",
 			fields: fields{
-				metricEventStream: &testutil.ListRecvStreamerOf[*api_orchestrator.MetricChangeEvent]{Messages: []*api_orchestrator.MetricChangeEvent{
+				metricEventStream: &testutil.ListRecvStreamerOf[*orchestrator.MetricChangeEvent]{Messages: []*orchestrator.MetricChangeEvent{
 					{
-						Type: api_orchestrator.MetricChangeEvent_CONFIG_CHANGED,
+						Type: orchestrator.MetricChangeEvent_CONFIG_CHANGED,
 					},
 				}},
 			},
-			wantEvent: &api_orchestrator.MetricChangeEvent{
-				Type: api_orchestrator.MetricChangeEvent_CONFIG_CHANGED,
+			wantEvent: &orchestrator.MetricChangeEvent{
+				Type: orchestrator.MetricChangeEvent_CONFIG_CHANGED,
 			},
 		},
 	}
@@ -1295,7 +1294,7 @@ func TestService_recvEventsLoop(t *testing.T) {
 }
 
 type eventRecorder struct {
-	event *api_orchestrator.MetricChangeEvent
+	event *orchestrator.MetricChangeEvent
 	done  bool
 }
 
@@ -1303,7 +1302,7 @@ func (*eventRecorder) Eval(_ *evidence.Evidence, _ policies.MetricsSource) (data
 	return nil, nil
 }
 
-func (e *eventRecorder) HandleMetricEvent(event *api_orchestrator.MetricChangeEvent) (err error) {
+func (e *eventRecorder) HandleMetricEvent(event *orchestrator.MetricChangeEvent) (err error) {
 	if e.done {
 		return nil
 	}
