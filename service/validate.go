@@ -42,7 +42,11 @@ import (
 //   - The request is validated according to the generated validation method
 //   - Lastly, if the request is a [api.PaginatedRequest], an additional check is performed to ensure only valid columns are listed
 func ValidateRequest(req IncomingRequest) (err error) {
-	// Check, if request is nil
+	// Check, if request is nil. We need to check whether the interface itself is nil (untyped nil); this happens if
+	// someone is directly setting nil to a variable of the interface IncomingRequest. Furthermore, we need to check,
+	// whether the *value* of the interface is nil. This can happen if nil is first assigned to a variable of a struct
+	// (pointer) that implements the interface. If this variable is then passed to the validate function, the req
+	// paramater is not nil, but the value of the interface representing it is.
 	if req == nil || reflect.ValueOf(req).IsNil() {
 		return status.Errorf(codes.InvalidArgument, "%s", api.ErrEmptyRequest)
 	}
