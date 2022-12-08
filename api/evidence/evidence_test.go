@@ -80,6 +80,69 @@ func Test_ValidateEvidence(t *testing.T) {
 			},
 		},
 		{
+			name: "Missing resource Id field",
+			args: args{
+				Evidence: &Evidence{
+					Id:        "11111111-1111-1111-1111-111111111111",
+					Timestamp: timestamppb.Now(),
+					ToolId:    "mock",
+					Resource: toStruct(voc.VirtualMachine{
+						Compute: &voc.Compute{
+							Resource: &voc.Resource{
+								Type: []string{"VirtualMachine"}},
+						},
+					}, t),
+					CloudServiceId: "11111111-1111-1111-1111-111111111111",
+				}},
+			wantResp: "",
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrResourceIdMissing.Error())
+			},
+		},
+		{
+			name: "Missing resource type field",
+			args: args{
+				Evidence: &Evidence{
+					Id:        "11111111-1111-1111-1111-111111111111",
+					Timestamp: timestamppb.Now(),
+					ToolId:    "mock",
+					Resource: toStruct(voc.VirtualMachine{
+						Compute: &voc.Compute{
+							Resource: &voc.Resource{
+								ID: "my-resource-id",
+							},
+						},
+					}, t),
+					CloudServiceId: "11111111-1111-1111-1111-111111111111",
+				}},
+			wantResp: "",
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrResourceTypeNotArrayOfStrings.Error())
+			},
+		},
+		{
+			name: "Missing resource type field is empty",
+			args: args{
+				Evidence: &Evidence{
+					Id:        "11111111-1111-1111-1111-111111111111",
+					Timestamp: timestamppb.Now(),
+					ToolId:    "mock",
+					Resource: toStruct(voc.VirtualMachine{
+						Compute: &voc.Compute{
+							Resource: &voc.Resource{
+								ID:   "my-resource-id",
+								Type: []string{},
+							},
+						},
+					}, t),
+					CloudServiceId: "11111111-1111-1111-1111-111111111111",
+				}},
+			wantResp: "",
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrResourceTypeEmpty.Error())
+			},
+		},
+		{
 			name: "Missing toolId",
 			args: args{
 				Evidence: &Evidence{
@@ -143,6 +206,76 @@ func Test_ValidateEvidence(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			_, err := tt.args.Evidence.ValidateWithResource()
+			tt.wantErr(t, err)
+		})
+	}
+}
+
+func TestEvidence_ResourceTypes(t *testing.T) {
+	type args struct {
+		Evidence *Evidence
+	}
+
+	tests := []struct {
+		name      string
+		args      args
+		wantTypes []string
+		wantErr   assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Missing resource",
+			args: args{
+				Evidence: &Evidence{
+					Id:             "11111111-1111-1111-1111-111111111111",
+					Timestamp:      timestamppb.Now(),
+					ToolId:         "mock",
+					CloudServiceId: "11111111-1111-1111-1111-111111111111",
+				}},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Missing resource types",
+			args: args{
+				Evidence: &Evidence{
+					Id:        "11111111-1111-1111-1111-111111111111",
+					Timestamp: timestamppb.Now(),
+					ToolId:    "mock",
+					Resource: toStruct(voc.VirtualMachine{
+						Compute: &voc.Compute{
+							Resource: &voc.Resource{
+								ID:   "my-resource-id",
+								Type: []string{}},
+						},
+					}, t),
+					CloudServiceId: "11111111-1111-1111-1111-111111111111",
+				}},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "list of types is empty")
+			},
+		},
+		{
+			name: "Valid resource types",
+			args: args{
+				Evidence: &Evidence{
+					Id:        "11111111-1111-1111-1111-111111111111",
+					Timestamp: timestamppb.Now(),
+					ToolId:    "mock",
+					Resource: toStruct(voc.VirtualMachine{
+						Compute: &voc.Compute{
+							Resource: &voc.Resource{
+								ID:   "my-resource-id",
+								Type: []string{"VirtualMachine"}},
+						},
+					}, t),
+					CloudServiceId: "11111111-1111-1111-1111-111111111111",
+				}},
+			wantErr: assert.NoError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := tt.args.Evidence.ResourceTypes()
 			tt.wantErr(t, err)
 		})
 	}
