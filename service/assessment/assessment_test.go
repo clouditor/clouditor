@@ -37,7 +37,18 @@ import (
 	"sync"
 	"testing"
 
+	"clouditor.io/clouditor/api"
+	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/orchestrator"
+	api_orchestrator "clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/policies"
+	"clouditor.io/clouditor/service"
+	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -45,16 +56,6 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-
-	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/evidence"
-	api_orchestrator "clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/internal/testutil"
-	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/policies"
-	"clouditor.io/clouditor/service"
-	"clouditor.io/clouditor/voc"
 )
 
 var (
@@ -83,6 +84,71 @@ func TestNewService(t *testing.T) {
 		args args
 		want *Service
 	}{
+		{
+			name: "AssessmentServer created with option rego package name",
+			args: args{
+				opts: []service.Option[Service]{
+					WithRegoPackageName("testPkg"),
+				},
+			},
+			want: &Service{
+				results: make(map[string]*assessment.AssessmentResult),
+				evidenceStoreAddress: grpcTarget{
+					target: "localhost:9090",
+				},
+				orchestratorAddress: grpcTarget{
+					target: "localhost:9090",
+				},
+				evidenceStoreStreams: nil,
+				orchestratorStreams:  nil,
+				cachedConfigurations: make(map[string]cachedConfiguration),
+				evalPkg:              "testPkg",
+			},
+		},
+		{
+			name: "AssessmentServer created with option authorizer",
+			args: args{
+				opts: []service.Option[Service]{
+					WithAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{})),
+				},
+			},
+			want: &Service{
+				results: make(map[string]*assessment.AssessmentResult),
+				evidenceStoreAddress: grpcTarget{
+					target: "localhost:9090",
+				},
+				orchestratorAddress: grpcTarget{
+					target: "localhost:9090",
+				},
+				evidenceStoreStreams: nil,
+				orchestratorStreams:  nil,
+				cachedConfigurations: make(map[string]cachedConfiguration),
+				evalPkg:              policies.DefaultRegoPackage,
+				authorizer:           api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}),
+			},
+		},
+		{
+			name: "AssessmentServer created with option authorizer",
+			args: args{
+				opts: []service.Option[Service]{
+					WithOAuth2Authorizer(&clientcredentials.Config{}),
+				},
+			},
+			want: &Service{
+				results: make(map[string]*assessment.AssessmentResult),
+				evidenceStoreAddress: grpcTarget{
+					target: "localhost:9090",
+				},
+				orchestratorAddress: grpcTarget{
+					target: "localhost:9090",
+				},
+				evidenceStoreStreams: nil,
+				orchestratorStreams:  nil,
+				cachedConfigurations: make(map[string]cachedConfiguration),
+				evalPkg:              policies.DefaultRegoPackage,
+				authorizer:           api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}),
+			},
+		},
 		{
 			name: "AssessmentServer created with empty results map",
 			want: &Service{
@@ -1246,4 +1312,69 @@ func (e *eventRecorder) HandleMetricEvent(event *api_orchestrator.MetricChangeEv
 	e.done = true
 
 	return nil
+}
+
+func TestService_MetricImplementation(t *testing.T) {
+	type fields struct {
+		UnimplementedAssessmentServer assessment.UnimplementedAssessmentServer
+		isEvidenceStoreDisabled       bool
+		evidenceStoreStreams          *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
+		evidenceStoreAddress          grpcTarget
+		orchestratorStreams           *api.StreamsOf[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest]
+		orchestratorClient            orchestrator.OrchestratorClient
+		orchestratorAddress           grpcTarget
+		metricEventStream             orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
+		resultHooks                   []assessment.ResultHookFunc
+		results                       map[string]*assessment.AssessmentResult
+		cachedConfigurations          map[string]cachedConfiguration
+		authorizer                    api.Authorizer
+		pe                            policies.PolicyEval
+		evalPkg                       string
+	}
+	type args struct {
+		lang   assessment.MetricImplementation_Language
+		metric string
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		args     args
+		wantImpl *assessment.MetricImplementation
+		wantErr  assert.ErrorAssertionFunc
+	}{
+
+		{
+			name: "Unspecified language",
+			args: args{
+				lang: assessment.MetricImplementation_LANGUAGE_UNSPECIFIED,
+			},
+			wantImpl: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "unsupported language")
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
+				isEvidenceStoreDisabled:       tt.fields.isEvidenceStoreDisabled,
+				evidenceStoreStreams:          tt.fields.evidenceStoreStreams,
+				evidenceStoreAddress:          tt.fields.evidenceStoreAddress,
+				orchestratorStreams:           tt.fields.orchestratorStreams,
+				orchestratorClient:            tt.fields.orchestratorClient,
+				orchestratorAddress:           tt.fields.orchestratorAddress,
+				metricEventStream:             tt.fields.metricEventStream,
+				resultHooks:                   tt.fields.resultHooks,
+				results:                       tt.fields.results,
+				cachedConfigurations:          tt.fields.cachedConfigurations,
+				authorizer:                    tt.fields.authorizer,
+				pe:                            tt.fields.pe,
+				evalPkg:                       tt.fields.evalPkg,
+			}
+			gotImpl, err := svc.MetricImplementation(tt.args.lang, tt.args.metric)
+			tt.wantErr(t, err)
+			assert.Equal(t, tt.wantImpl, gotImpl)
+		})
+	}
 }
