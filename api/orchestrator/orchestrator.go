@@ -33,6 +33,7 @@ import (
 )
 
 type CloudServiceHookFunc func(ctx context.Context, cld *CloudService, err error)
+type TargetOfEvaluationHookFunc func(ctx context.Context, event *TargetOfEvaluationChangeEvent, err error)
 
 var (
 	ErrCertificateIsNil   = errors.New("certificate is empty")

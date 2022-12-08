@@ -344,7 +344,7 @@ service Orchestrator {
       returns (TargetOfEvaluation) {
     option (google.api.http) = {
       post : "/v1/orchestrator/toes"
-      body : "toe"
+      body : "target_of_evaluation"
     };
   }
 
@@ -394,9 +394,8 @@ service Orchestrator {
   rpc UpdateTargetOfEvaluation(UpdateTargetOfEvaluationRequest)
       returns (TargetOfEvaluation) {
     option (google.api.http) = {
-      put : "/v1/orchestrator/cloud_services/{cloud_service_id}/toes/"
-            "{catalog_id}"
-      body : "toe"
+      put : "/v1/orchestrator/cloud_services/toes"
+      body : "target_of_evaluation"
     };
   }
 
@@ -689,7 +688,7 @@ message ControlMonitoringStatus {
   Status status = 6;
 }
 
-message CreateTargetOfEvaluationRequest { TargetOfEvaluation toe = 1; }
+message CreateTargetOfEvaluationRequest { TargetOfEvaluation target_of_evaluation = 1; }
 
 message RemoveTargetOfEvaluationRequest {
   string cloud_service_id = 1;
@@ -708,22 +707,20 @@ message ListTargetsOfEvaluationRequest {
   bool asc = 4;
   // We cannot create additional bindings when the parameter is optional so we
   // check for != "" in the method to see if it is set when the service is
-  // specified, return all ToEs that evaluate the given service for any catalog
+  // specified, return all Targets of Evaluation that evaluate the given service for any catalog
   string cloud_service_id = 5;
-  // when the catalog is specified, return all ToEs that evaluate the given
+  // when the catalog is specified, return all Targets of Evaluation that evaluate the given
   // catalog for any service
   string catalog_id = 6;
 }
 
 message ListTargetsOfEvaluationResponse {
-  repeated TargetOfEvaluation toes = 1;
+  repeated TargetOfEvaluation target_of_evaluation = 1;
   string next_page_token = 2;
 }
 
 message UpdateTargetOfEvaluationRequest {
-  string cloud_service_id = 1;
-  string catalog_id = 2;
-  TargetOfEvaluation toe = 3;
+  TargetOfEvaluation target_of_evaluation = 3;
 }
 
 message GetCertificateRequest { string certificate_id = 1; }
@@ -823,4 +820,26 @@ message State {
   string timestamp = 4;
   // Reference to the certificate
   string certificate_id = 5;
+}
+
+// TargetOfEvaluationChangeEvent represents a change of either a Target of Evaluation or Control Monitoring Status and the TargetOfEvaluation hook function can be informed about the reason of its call. 
+message TargetOfEvaluationChangeEvent {
+  // Type represents the type of the change event. Type can be a change event regarding the Target of Evaluation or the Control Monitoring Status.
+  enum Type {
+    TYPE_UNSPECIFIED = 0;
+
+    TYPE_TARGET_OF_EVALUATION_CREATED = 1;
+    TYPE_TARGET_OF_EVALUATION_UPDATED = 2;
+    TYPE_TARGET_OF_EVALUATION_REMOVED = 3;
+    
+    TYPE_CONTROL_MONITORING_STATUS_UPDATED = 4;
+  }
+
+  Type type = 1;
+
+  // If the type is a TargetOfEvaluation_* the target_of_evaluation must be set
+  TargetOfEvaluation target_of_evaluation = 2;
+
+  // If the type is a ControlMonitoringStatus_* the control_monitoring_status must be set
+  ControlMonitoringStatus control_monitoring_status = 3;
 }

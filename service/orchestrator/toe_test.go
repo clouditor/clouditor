@@ -29,6 +29,8 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"runtime"
+	"sync"
 	"testing"
 
 	"clouditor.io/clouditor/api"
@@ -83,7 +85,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 				}),
 			},
 			args: args{req: &orchestrator.CreateTargetOfEvaluationRequest{
-				Toe: orchestratortest.NewTargetOfEvaluation(),
+				TargetOfEvaluation: orchestratortest.NewTargetOfEvaluation(),
 			}},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				svc := i2[0].(*Service)
@@ -255,8 +257,8 @@ func TestService_ListTargetsOfEvaluation(t *testing.T) {
 	// 1st case: No ToEs stored
 	listTargetsOfEvaluationResponse, err = orchestratorService.ListTargetsOfEvaluation(context.Background(), &orchestrator.ListTargetsOfEvaluationRequest{})
 	assert.NoError(t, err)
-	assert.NotNil(t, listTargetsOfEvaluationResponse.Toes)
-	assert.Empty(t, listTargetsOfEvaluationResponse.Toes)
+	assert.NotNil(t, listTargetsOfEvaluationResponse.TargetOfEvaluation)
+	assert.Empty(t, listTargetsOfEvaluationResponse.TargetOfEvaluation)
 
 	// 2nd case: One ToE stored
 	err = orchestratorService.storage.Create(orchestratortest.NewTargetOfEvaluation())
@@ -264,9 +266,9 @@ func TestService_ListTargetsOfEvaluation(t *testing.T) {
 
 	listTargetsOfEvaluationResponse, err = orchestratorService.ListTargetsOfEvaluation(context.Background(), &orchestrator.ListTargetsOfEvaluationRequest{})
 	assert.NoError(t, err)
-	assert.NotNil(t, listTargetsOfEvaluationResponse.Toes)
-	assert.NotEmpty(t, listTargetsOfEvaluationResponse.Toes)
-	assert.Equal(t, 1, len(listTargetsOfEvaluationResponse.Toes))
+	assert.NotNil(t, listTargetsOfEvaluationResponse.TargetOfEvaluation)
+	assert.NotEmpty(t, listTargetsOfEvaluationResponse.TargetOfEvaluation)
+	assert.Equal(t, 1, len(listTargetsOfEvaluationResponse.TargetOfEvaluation))
 
 	// 3rd case: Invalid request
 	_, err = orchestratorService.ListTargetsOfEvaluation(context.Background(),
@@ -288,24 +290,17 @@ func TestService_UpdateTargetOfEvaluation(t *testing.T) {
 
 	// 1st case: ToE is nil
 	_, err = orchestratorService.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{
-		CloudServiceId: "0000",
-		CatalogId:      "0000",
-		Toe:            nil,
+		TargetOfEvaluation: nil,
 	})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
 
 	// 2nd case: Ids are empty
-	_, err = orchestratorService.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{
-		CloudServiceId: "",
-		CatalogId:      "",
-	})
+	_, err = orchestratorService.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
 
 	// 3rd case: ToE not found since there are no ToEs
 	_, err = orchestratorService.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{
-		CloudServiceId: "MyService",
-		CatalogId:      "Cat1234",
-		Toe:            orchestratortest.NewTargetOfEvaluation(),
+		TargetOfEvaluation: orchestratortest.NewTargetOfEvaluation(),
 	})
 	assert.Equal(t, codes.NotFound, status.Code(err))
 
@@ -315,9 +310,7 @@ func TestService_UpdateTargetOfEvaluation(t *testing.T) {
 
 	// update the toe's assurance level and send the update request
 	toe, err = orchestratorService.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{
-		CloudServiceId: "MyService",
-		CatalogId:      "Cat1234",
-		Toe: &orchestrator.TargetOfEvaluation{
+		TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 			CloudServiceId: "MyService",
 			CatalogId:      "Cat1234",
 			AssuranceLevel: &AssuranceLevelMedium,
@@ -362,8 +355,8 @@ func TestService_RemoveTargetOfEvaluation(t *testing.T) {
 	// Verify that there is a record for ToE in the DB
 	listTargetsOfEvaluationResponse, err = orchestratorService.ListTargetsOfEvaluation(context.Background(), &orchestrator.ListTargetsOfEvaluationRequest{})
 	assert.NoError(t, err)
-	assert.NotNil(t, listTargetsOfEvaluationResponse.Toes)
-	assert.Equal(t, 1, len(listTargetsOfEvaluationResponse.Toes))
+	assert.NotNil(t, listTargetsOfEvaluationResponse.TargetOfEvaluation)
+	assert.Equal(t, 1, len(listTargetsOfEvaluationResponse.TargetOfEvaluation))
 
 	// Remove record
 	_, err = orchestratorService.RemoveTargetOfEvaluation(context.Background(), &orchestrator.RemoveTargetOfEvaluationRequest{
@@ -375,9 +368,113 @@ func TestService_RemoveTargetOfEvaluation(t *testing.T) {
 	// There is no record for ToE in the DB
 	listTargetsOfEvaluationResponse, err = orchestratorService.ListTargetsOfEvaluation(context.Background(), &orchestrator.ListTargetsOfEvaluationRequest{})
 	assert.NoError(t, err)
-	assert.Equal(t, 0, len(listTargetsOfEvaluationResponse.Toes))
+	assert.Equal(t, 0, len(listTargetsOfEvaluationResponse.TargetOfEvaluation))
 }
 
+func TestToeHook(t *testing.T) {
+	var (
+		hookCallCounter = 0
+		wg              sync.WaitGroup
+	)
+	wg.Add(2)
+
+	firstHookFunction := func(ctx context.Context, event *orchestrator.TargetOfEvaluationChangeEvent, err error) {
+		hookCallCounter++
+		log.Println("Hello from inside the first toe hook function")
+
+		// Checking the status
+		// UpdateTargetOfEvaluation is called, so the status must be TOE_UPDATE
+		if *event.GetType().Enum() != orchestrator.TargetOfEvaluationChangeEvent_TYPE_TARGET_OF_EVALUATION_UPDATED {
+			return
+		}
+
+		wg.Done()
+	}
+
+	secondHookFunction := func(ctx context.Context, event *orchestrator.TargetOfEvaluationChangeEvent, err error) {
+		hookCallCounter++
+		log.Println("Hello from inside the second toe hook function")
+
+		wg.Done()
+	}
+
+	service := NewService()
+	service.RegisterToeHook(firstHookFunction)
+	service.RegisterToeHook(secondHookFunction)
+
+	// Check if first hook is registered
+	funcName1 := runtime.FuncForPC(reflect.ValueOf(service.toeHooks[0]).Pointer()).Name()
+	funcName2 := runtime.FuncForPC(reflect.ValueOf(firstHookFunction).Pointer()).Name()
+	assert.Equal(t, funcName1, funcName2)
+
+	// Check if second hook is registered
+	funcName1 = runtime.FuncForPC(reflect.ValueOf(service.toeHooks[1]).Pointer()).Name()
+	funcName2 = runtime.FuncForPC(reflect.ValueOf(secondHookFunction).Pointer()).Name()
+	assert.Equal(t, funcName1, funcName2)
+
+	type args struct {
+		ctx context.Context
+		req *orchestrator.UpdateTargetOfEvaluationRequest
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantResp *orchestrator.TargetOfEvaluation
+		wantErr  bool
+	}{
+		{
+			name: "Store first assessment result to the map",
+			args: args{
+				ctx: context.TODO(),
+				req: &orchestrator.UpdateTargetOfEvaluationRequest{
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+						CloudServiceId: orchestratortest.MockServiceID,
+						CatalogId:      orchestratortest.MockCatalogID,
+						AssuranceLevel: &AssuranceLevelMedium,
+					},
+				},
+			},
+			wantErr: false,
+			wantResp: &orchestrator.TargetOfEvaluation{
+				CloudServiceId: orchestratortest.MockServiceID,
+				CatalogId:      orchestratortest.MockCatalogID,
+				AssuranceLevel: &AssuranceLevelMedium,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			hookCallCounter = 0
+
+			// Create service
+			s := service
+			err := s.storage.Create(&orchestrator.CloudService{Id: "MyService"})
+			assert.NoError(t, err)
+
+			// Create catalog
+			err = s.storage.Create(orchestratortest.NewCatalog())
+			assert.NoError(t, err)
+
+			// Create new ToE
+			err = s.storage.Create(orchestratortest.NewTargetOfEvaluation())
+			assert.NoError(t, err)
+
+			gotResp, err := s.UpdateTargetOfEvaluation(tt.args.ctx, tt.args.req)
+
+			// wait for all hooks (2 hooks)
+			wg.Wait()
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("UpdateTargetOfEvaluation() error = %v, wantErrMessage %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotResp, tt.wantResp) {
+				t.Errorf("UpdateTargetOfEvaluation() gotResp = %v, want %v", gotResp, tt.wantResp)
+			}
+			assert.Equal(t, 2, hookCallCounter)
+		})
+	}
+}
 func TestService_ListControlMonitoringStatus(t *testing.T) {
 	type fields struct {
 		storage persistence.Storage
