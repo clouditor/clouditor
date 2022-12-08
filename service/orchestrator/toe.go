@@ -118,19 +118,17 @@ func (svc *Service) ListTargetsOfEvaluation(_ context.Context, req *orchestrator
 
 // UpdateTargetOfEvaluation implements method for updating an existing TargetOfEvaluation
 func (svc *Service) UpdateTargetOfEvaluation(ctx context.Context, req *orchestrator.UpdateTargetOfEvaluationRequest) (res *orchestrator.TargetOfEvaluation, err error) {
-	if req.CloudServiceId == "" || req.CatalogId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "id is empty")
-	}
-
 	if req.TargetOfEvaluation == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "ToE is empty")
 	}
 
-	res = req.TargetOfEvaluation
-	res.CloudServiceId = req.TargetOfEvaluation.CloudServiceId
-	res.CatalogId = req.TargetOfEvaluation.CatalogId
+	if req.TargetOfEvaluation.GetCloudServiceId() == "" || req.TargetOfEvaluation.GetCatalogId() == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "id is empty")
+	}
 
-	err = svc.storage.Update(res, "cloud_service_id = ? AND catalog_id = ?", res.CloudServiceId, res.CatalogId)
+	res = req.TargetOfEvaluation
+
+	err = svc.storage.Update(res, "cloud_service_id = ? AND catalog_id = ?", req.TargetOfEvaluation.GetCloudServiceId(), req.TargetOfEvaluation.GetCatalogId())
 
 	if err != nil && errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Error(codes.NotFound, "ToE not found")
