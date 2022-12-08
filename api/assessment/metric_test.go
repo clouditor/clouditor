@@ -31,7 +31,9 @@ import (
 
 	"clouditor.io/clouditor/persistence"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/runtime/protoimpl"
 	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func TestMetricConfiguration_Validate(t *testing.T) {
@@ -307,6 +309,91 @@ func TestRange_UnmarshalJSON(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			r := tt.fields.Range
 			tt.wantErr(t, r.UnmarshalJSON(tt.args.b))
+		})
+	}
+}
+
+func TestCheckCloudServiceID(t *testing.T) {
+	type args struct {
+		serviceID string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Missing serviceID",
+			args: args{},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrCloudServiceIDIsMissing.Error())
+			},
+		},
+		{
+			name: "Invalid serviceID",
+			args: args{
+				serviceID: "00000000-0000-0000-000000000000",
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrCloudServiceIDIsInvalid.Error())
+			},
+		},
+		{
+			name: "Happy path",
+			args: args{
+				serviceID: "00000000-0000-0000-0000-000000000000",
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := CheckCloudServiceID(tt.args.serviceID)
+			tt.wantErr(t, err)
+		})
+	}
+}
+
+func TestMetricConfiguration_Hash(t *testing.T) {
+	type fields struct {
+		sizeCache      protoimpl.SizeCache
+		unknownFields  protoimpl.UnknownFields
+		Operator       string
+		TargetValue    *structpb.Value
+		IsDefault      bool
+		UpdatedAt      *timestamppb.Timestamp
+		MetricId       string
+		CloudServiceId string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				Operator:    "<",
+				TargetValue: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: 5}},
+			},
+			want: "PC1udW1iZXJfdmFsdWU6NQ",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			x := &MetricConfiguration{
+				sizeCache:      tt.fields.sizeCache,
+				unknownFields:  tt.fields.unknownFields,
+				Operator:       tt.fields.Operator,
+				TargetValue:    tt.fields.TargetValue,
+				IsDefault:      tt.fields.IsDefault,
+				UpdatedAt:      tt.fields.UpdatedAt,
+				MetricId:       tt.fields.MetricId,
+				CloudServiceId: tt.fields.CloudServiceId,
+			}
+			if got := x.Hash(); got != tt.want {
+				t.Errorf("MetricConfiguration.Hash() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
