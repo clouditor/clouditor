@@ -296,32 +296,20 @@ func TestService_UpdateTargetOfEvaluation(t *testing.T) {
 
 	// 1st case: ToE is nil
 	_, err = orchestratorService.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{
-<<<<<<< HEAD
 		TargetOfEvaluation: nil,
-=======
-		Toe: nil,
->>>>>>> 6149cf73 (More validation)
 	})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
 
 	// 2nd case: Ids are empty
-<<<<<<< HEAD
-	_, err = orchestratorService.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{})
-=======
 	_, err = orchestratorService.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{
-		Toe: &orchestrator.TargetOfEvaluation{},
+		TargetOfEvaluation: &orchestrator.TargetOfEvaluation{},
 	})
->>>>>>> 6149cf73 (More validation)
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
 	assert.ErrorContains(t, err, "CloudServiceId: value must be a valid UUID")
 
 	// 3rd case: ToE not found since there are no ToEs
 	_, err = orchestratorService.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{
-<<<<<<< HEAD
 		TargetOfEvaluation: orchestratortest.NewTargetOfEvaluation(),
-=======
-		Toe: orchestratortest.NewTargetOfEvaluation(),
->>>>>>> 6149cf73 (More validation)
 	})
 	assert.Equal(t, codes.NotFound, status.Code(err))
 
@@ -331,15 +319,9 @@ func TestService_UpdateTargetOfEvaluation(t *testing.T) {
 
 	// update the toe's assurance level and send the update request
 	toe, err = orchestratorService.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{
-<<<<<<< HEAD
 		TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-			CloudServiceId: "MyService",
-			CatalogId:      "Cat1234",
-=======
-		Toe: &orchestrator.TargetOfEvaluation{
 			CloudServiceId: orchestratortest.MockServiceID,
 			CatalogId:      orchestratortest.MockCatalogID,
->>>>>>> 6149cf73 (More validation)
 			AssuranceLevel: &AssuranceLevelMedium,
 		},
 	})
@@ -475,7 +457,7 @@ func TestToeHook(t *testing.T) {
 
 			// Create service
 			s := service
-			err := s.storage.Create(&orchestrator.CloudService{Id: "MyService"})
+			err := s.storage.Create(&orchestrator.CloudService{Id: orchestratortest.MockServiceID})
 			assert.NoError(t, err)
 
 			// Create catalog
