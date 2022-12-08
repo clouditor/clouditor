@@ -74,6 +74,14 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 		wantErr bool
 	}{
 		{
+			name: "Invalid request",
+			args: args{
+				ctx: context.Background(),
+				req: &orchestrator.CreateTargetOfEvaluationRequest{},
+			},
+			wantErr: true,
+		},
+		{
 			name: "valid",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
@@ -501,6 +509,17 @@ func TestService_ListControlMonitoringStatus(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
+			name: "Invalid request",
+			args: args{
+				ctx: context.Background(),
+				req: nil,
+			},
+			wantRes: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Equal(t, codes.InvalidArgument, status.Code(err))
+			},
+		},
+		{
 			name: "no controls explicitly selected - all controls status unspecified",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
@@ -643,6 +662,16 @@ func TestService_UpdateControlMonitoringStatus(t *testing.T) {
 		wantRes *orchestrator.ControlMonitoringStatus
 		wantErr assert.ErrorAssertionFunc
 	}{
+		{
+			name: "Invalid request",
+			args: args{
+				req: nil,
+			},
+			wantRes: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Equal(t, codes.InvalidArgument, status.Code(err))
+			},
+		},
 		{
 			name: "valid update",
 			fields: fields{
