@@ -227,7 +227,7 @@ func (svc *Service) UpdateControlMonitoringStatus(ctx context.Context, req *orch
 
 	res = req.Status
 
-	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_Type(req.GetStatus().Status), ControlMonitoringStatus: req.Status}, nil)
+	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_CONTROL_MONITORING_STATUS_UPDATED, ControlMonitoringStatus: req.GetStatus()}, nil)
 
 	return
 }
