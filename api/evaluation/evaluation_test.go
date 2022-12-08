@@ -52,14 +52,7 @@ func TestStartEvaluationRequest_Validate(t *testing.T) {
 		{
 			name: "ToE is missing in request",
 			fields: fields{
-				Request: &StartEvaluationRequest{
-					EvalControl: []*EvalControl{
-						{
-							CategoryName: defaults.DefaultEUCSCategoryName,
-							ControlId:    defaults.DefaultEUCSLowerLevelControlID136,
-						},
-					},
-				},
+				Request: &StartEvaluationRequest{},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, orchestrator.ErrToEIsMissing.Error())
@@ -73,12 +66,6 @@ func TestStartEvaluationRequest_Validate(t *testing.T) {
 						CloudServiceId: defaults.DefaultTargetCloudServiceID,
 						CatalogId:      defaults.DefaultCatalogID,
 						AssuranceLevel: &defaults.AssuranceLevelHigh,
-					},
-					EvalControl: []*EvalControl{
-						{
-							CategoryName: defaults.DefaultEUCSCategoryName,
-							ControlId:    defaults.DefaultEUCSLowerLevelControlID136,
-						},
 					},
 				},
 			},

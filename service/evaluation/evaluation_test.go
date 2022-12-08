@@ -29,6 +29,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"sync"
 	"testing"
 	"time"
 
@@ -67,6 +68,7 @@ func TestNewService(t *testing.T) {
 				},
 				results:   make(map[string]*evaluation.EvaluationResult),
 				scheduler: gocron.NewScheduler(time.UTC),
+				wg:        make(map[string]*WaitGroup),
 			},
 		},
 		{
@@ -81,6 +83,7 @@ func TestNewService(t *testing.T) {
 				results:    make(map[string]*evaluation.EvaluationResult),
 				scheduler:  gocron.NewScheduler(time.UTC),
 				authorizer: api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}),
+				wg:         make(map[string]*WaitGroup),
 			},
 		},
 		{
@@ -95,6 +98,7 @@ func TestNewService(t *testing.T) {
 				results:    make(map[string]*evaluation.EvaluationResult),
 				scheduler:  gocron.NewScheduler(time.UTC),
 				authorizer: api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}),
+				wg:         make(map[string]*WaitGroup),
 			},
 		},
 		{
@@ -108,6 +112,7 @@ func TestNewService(t *testing.T) {
 				},
 				scheduler: gocron.NewScheduler(time.UTC),
 				results:   make(map[string]*evaluation.EvaluationResult),
+				wg:        make(map[string]*WaitGroup),
 			},
 		},
 	}
@@ -639,14 +644,14 @@ func TestService_StopEvaluation(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Control Id in request is missing",
+			name: "ToE in request is missing",
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StopEvaluationRequest{},
 			},
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, evaluation.ErrControlIDIsMissing.Error())
+				return assert.ErrorContains(t, err, orchestrator.ErrToEIsMissing.Error())
 			},
 		},
 		// {
@@ -812,6 +817,7 @@ func TestService_StartEvaluation(t *testing.T) {
 		scheduler                     *gocron.Scheduler
 		results                       map[string]*evaluation.EvaluationResult
 		storage                       persistence.Storage
+		wg                            map[string]*WaitGroup
 	}
 	type args struct {
 		in0              context.Context
@@ -827,9 +833,11 @@ func TestService_StartEvaluation(t *testing.T) {
 		wantErr  assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Error getting control",
+			name: "Start scheduler job for one control",
 			fields: fields{
 				scheduler: gocron.NewScheduler(time.UTC),
+				wg:        make(map[string]*WaitGroup),
+				results:   make(map[string]*evaluation.EvaluationResult),
 			},
 			args: args{
 				in0: context.Background(),
@@ -838,29 +846,33 @@ func TestService_StartEvaluation(t *testing.T) {
 						CloudServiceId: defaults.DefaultTargetCloudServiceID,
 						CatalogId:      defaults.DefaultCatalogID,
 						AssuranceLevel: &defaults.AssuranceLevelHigh,
-					},
-					EvalControl: []*evaluation.EvalControl{
-						{
-							CategoryName: defaults.DefaultEUCSCategoryName,
-							ControlId:    defaults.DefaultEUCSLowerLevelControlID137,
+						ControlsInScope: []*orchestrator.Control{
+							{
+								Id:                defaults.DefaultEUCSUpperLevelControlID13,
+								CategoryName:      defaults.DefaultEUCSCategoryName,
+								CategoryCatalogId: defaults.DefaultCatalogID,
+							},
 						},
 					},
 				},
-				schedulerRunning: true,
-				schedulerTag:     createSchedulerTag(defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSLowerLevelControlID136),
+				schedulerRunning: false,
+				schedulerTag:     createSchedulerTag(defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSUpperLevelControlID13),
 			},
-			wantResp: &evaluation.StartEvaluationResponse{
-				Status:        false,
-				StatusMessage: fmt.Sprintf("could not get control for control id '%s'", defaults.DefaultEUCSLowerLevelControlID137),
-			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, fmt.Sprintf("could not get control for control id '%s'", defaults.DefaultEUCSLowerLevelControlID137))
-			},
+			wantResp: &evaluation.StartEvaluationResponse{Status: true},
+			wantErr:  assert.NoError,
 		},
 		{
 			name: "Scheduler job for one control already running",
 			fields: fields{
 				scheduler: gocron.NewScheduler(time.UTC),
+				wg: map[string]*WaitGroup{
+					fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSUpperLevelControlID13): {
+						wg:      &sync.WaitGroup{},
+						wgMutex: sync.Mutex{},
+						count:   0,
+					},
+				},
+				results: make(map[string]*evaluation.EvaluationResult),
 			},
 			args: args{
 				in0: context.Background(),
@@ -869,23 +881,24 @@ func TestService_StartEvaluation(t *testing.T) {
 						CloudServiceId: defaults.DefaultTargetCloudServiceID,
 						CatalogId:      defaults.DefaultCatalogID,
 						AssuranceLevel: &defaults.AssuranceLevelHigh,
-					},
-					EvalControl: []*evaluation.EvalControl{
-						{
-							CategoryName: defaults.DefaultEUCSCategoryName,
-							ControlId:    defaults.DefaultEUCSLowerLevelControlID136,
+						ControlsInScope: []*orchestrator.Control{
+							{
+								Id:                defaults.DefaultEUCSUpperLevelControlID13,
+								CategoryName:      defaults.DefaultEUCSCategoryName,
+								CategoryCatalogId: defaults.DefaultCatalogID,
+							},
 						},
 					},
 				},
 				schedulerRunning: true,
-				schedulerTag:     createSchedulerTag(defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSLowerLevelControlID136),
+				schedulerTag:     createSchedulerTag(defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSUpperLevelControlID13),
 			},
 			wantResp: &evaluation.StartEvaluationResponse{
 				Status:        false,
-				StatusMessage: "evaluation for Cloud Service ID '00000000-0000-0000-0000-000000000000' and Control ID 'OPS-13.6' started already.",
+				StatusMessage: fmt.Sprintf("evaluation for cloud service id '%s' and control id '%s' already started", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSUpperLevelControlID13),
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, fmt.Sprintf("evaluation for Cloud Service ID '%s' and Control ID '%s' started already.", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSLowerLevelControlID136))
+				return assert.ErrorContains(t, err, fmt.Sprintf("evaluation for cloud service id '%s' and control id '%s' already started", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSUpperLevelControlID13))
 			},
 		},
 		{
@@ -914,6 +927,7 @@ func TestService_StartEvaluation(t *testing.T) {
 				scheduler:                     tt.fields.scheduler,
 				results:                       tt.fields.results,
 				storage:                       tt.fields.storage,
+				wg:                            tt.fields.wg,
 			}
 
 			// Start the scheduler if needed
@@ -926,7 +940,11 @@ func TestService_StartEvaluation(t *testing.T) {
 			tt.wantErr(t, err)
 
 			assert.NotEmpty(t, tt.wantResp)
-			assert.Contains(t, gotResp.StatusMessage, tt.wantResp.StatusMessage)
+			if gotResp.Status == true {
+				assert.Empty(t, gotResp.StatusMessage)
+			} else {
+				assert.Contains(t, gotResp.StatusMessage, tt.wantResp.StatusMessage)
+			}
 			assert.Equal(t, tt.wantResp.Status, gotResp.Status)
 		})
 	}

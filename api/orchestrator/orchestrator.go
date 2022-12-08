@@ -30,7 +30,6 @@ import (
 	"errors"
 
 	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/internal/util"
 )
 
 type CloudServiceHookFunc func(ctx context.Context, cld *CloudService, err error)
@@ -86,7 +85,7 @@ func (t *TargetOfEvaluation) Validate() (err error) {
 		return ErrToEIsMissing
 	}
 
-	if util.Deref(t.AssuranceLevel) == "" {
+	if t.AssuranceLevel == nil {
 		return ErrAssuranceLevelIsMissing
 	}
 
