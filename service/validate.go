@@ -26,7 +26,6 @@
 package service
 
 import (
-	"errors"
 	"reflect"
 	"strings"
 
@@ -38,21 +37,13 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-var (
-	ErrRequestEmpty = errors.New("request is missing")
-)
-
 // ValidateRequest validates an incoming request according to different criteria:
 //   - If the request is nil, [api.ErrEmptyRequest] is returned
 //   - The request is validated according to the generated validation method
 //   - Lastly, if the request is a [api.PaginatedRequest], an additional check is performed to ensure only valid columns are listed
 func ValidateRequest(req IncomingRequest) (err error) {
-	if req == nil {
-		return ErrRequestEmpty
-	}
-
-	// Check, if request is zero
-	if reflect.ValueOf(req).IsZero() {
+	// Check, if request is nil
+	if req == nil || reflect.ValueOf(req).IsNil() {
 		return status.Errorf(codes.InvalidArgument, "%s", api.ErrEmptyRequest)
 	}
 
