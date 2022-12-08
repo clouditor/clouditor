@@ -28,11 +28,14 @@ package service
 import (
 	"testing"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestValidateRequest(t *testing.T) {
+	var nilReq *orchestrator.CreateTargetOfEvaluationRequest = nil
+
 	type args struct {
 		req IncomingRequest
 	}
@@ -47,11 +50,20 @@ func TestValidateRequest(t *testing.T) {
 				req: nil,
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, ErrRequestEmpty.Error())
+				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
 			},
 		},
 		{
 			name: "Missing request",
+			args: args{
+				req: nilReq,
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
+			},
+		},
+		{
+			name: "Invalid request",
 			args: args{
 				req: &orchestrator.CreateTargetOfEvaluationRequest{},
 			},
