@@ -290,23 +290,16 @@ func TestService_UpdateTargetOfEvaluation(t *testing.T) {
 
 	// 1st case: ToE is nil
 	_, err = orchestratorService.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{
-		CloudServiceId:     "0000",
-		CatalogId:          "0000",
 		TargetOfEvaluation: nil,
 	})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
 
 	// 2nd case: Ids are empty
-	_, err = orchestratorService.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{
-		CloudServiceId: "",
-		CatalogId:      "",
-	})
+	_, err = orchestratorService.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
 
 	// 3rd case: ToE not found since there are no ToEs
 	_, err = orchestratorService.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{
-		CloudServiceId:     "MyService",
-		CatalogId:          "Cat1234",
 		TargetOfEvaluation: orchestratortest.NewTargetOfEvaluation(),
 	})
 	assert.Equal(t, codes.NotFound, status.Code(err))
@@ -317,8 +310,6 @@ func TestService_UpdateTargetOfEvaluation(t *testing.T) {
 
 	// update the toe's assurance level and send the update request
 	toe, err = orchestratorService.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{
-		CloudServiceId: "MyService",
-		CatalogId:      "Cat1234",
 		TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 			CloudServiceId: "MyService",
 			CatalogId:      "Cat1234",
@@ -393,7 +384,7 @@ func TestToeHook(t *testing.T) {
 
 		// Checking the status
 		// UpdateTargetOfEvaluation is called, so the status must be TOE_UPDATE
-		if *event.GetType().Enum() != orchestrator.TargetOfEvaluationChangeEvent_TargetOfEvaluation_UPDATED {
+		if *event.GetType().Enum() != orchestrator.TargetOfEvaluationChangeEvent_TYPE_TARGET_OF_EVALUATION_UPDATED {
 			return
 		}
 
@@ -436,8 +427,6 @@ func TestToeHook(t *testing.T) {
 			args: args{
 				ctx: context.TODO(),
 				req: &orchestrator.UpdateTargetOfEvaluationRequest{
-					CloudServiceId: orchestratortest.MockServiceID,
-					CatalogId:      orchestratortest.MockCatalogID,
 					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 						CloudServiceId: orchestratortest.MockServiceID,
 						CatalogId:      orchestratortest.MockCatalogID,

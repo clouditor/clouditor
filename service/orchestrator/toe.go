@@ -72,7 +72,7 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TargetOfEvaluation_CREATED, TargetOfEvaluation: req.TargetOfEvaluation}, nil)
+	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_TARGET_OF_EVALUATION_CREATED, TargetOfEvaluation: req.TargetOfEvaluation}, nil)
 
 	res = req.TargetOfEvaluation
 
@@ -138,7 +138,7 @@ func (svc *Service) UpdateTargetOfEvaluation(ctx context.Context, req *orchestra
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TargetOfEvaluation_UPDATED, TargetOfEvaluation: req.TargetOfEvaluation}, nil)
+	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_TARGET_OF_EVALUATION_UPDATED, TargetOfEvaluation: req.TargetOfEvaluation}, nil)
 
 	return
 }
@@ -161,7 +161,7 @@ func (svc *Service) RemoveTargetOfEvaluation(ctx context.Context, req *orchestra
 		CloudServiceId: req.GetCloudServiceId(),
 		CatalogId:      req.GetCatalogId(),
 	}
-	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TargetOfEvaluation_REMOVED, TargetOfEvaluation: toe}, nil)
+	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_TARGET_OF_EVALUATION_REMOVED, TargetOfEvaluation: toe}, nil)
 	return &emptypb.Empty{}, nil
 }
 
