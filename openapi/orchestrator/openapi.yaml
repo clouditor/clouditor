@@ -642,6 +642,31 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/orchestrator/cloud_services/toes:
+        put:
+            tags:
+                - Orchestrator
+            description: Updates an existing Target of Evaluation
+            operationId: Orchestrator_UpdateTargetOfEvaluation
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/TargetOfEvaluation'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/TargetOfEvaluation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/cloud_services/{cloudServiceId}:
         get:
             tags:
@@ -831,41 +856,6 @@ paths:
                   required: true
                   schema:
                     type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/TargetOfEvaluation'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-        put:
-            tags:
-                - Orchestrator
-            description: Updates an existing Target of Evaluation
-            operationId: Orchestrator_UpdateTargetOfEvaluation
-            parameters:
-                - name: cloudServiceId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: catalogId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/TargetOfEvaluation'
-                required: true
             responses:
                 "200":
                     description: OK

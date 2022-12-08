@@ -394,8 +394,7 @@ service Orchestrator {
   rpc UpdateTargetOfEvaluation(UpdateTargetOfEvaluationRequest)
       returns (TargetOfEvaluation) {
     option (google.api.http) = {
-      put : "/v1/orchestrator/cloud_services/{cloud_service_id}/toes/"
-            "{catalog_id}"
+      put : "/v1/orchestrator/cloud_services/toes"
       body : "target_of_evaluation"
     };
   }
@@ -721,8 +720,6 @@ message ListTargetsOfEvaluationResponse {
 }
 
 message UpdateTargetOfEvaluationRequest {
-  string cloud_service_id = 1;
-  string catalog_id = 2;
   TargetOfEvaluation target_of_evaluation = 3;
 }
 
@@ -829,13 +826,13 @@ message State {
 message TargetOfEvaluationChangeEvent {
   // Type represents the type of the change event. Type can be a change event regarding the Target of Evaluation or the Control Monitoring Status.
   enum Type {
-    Type_UNSPECIFIED = 0;
+    TYPE_UNSPECIFIED = 0;
 
-    TargetOfEvaluation_CREATED = 1;
-    TargetOfEvaluation_UPDATED = 2;
-    TargetOfEvaluation_REMOVED = 3;
+    TYPE_TARGET_OF_EVALUATION_CREATED = 1;
+    TYPE_TARGET_OF_EVALUATION_UPDATED = 2;
+    TYPE_TARGET_OF_EVALUATION_REMOVED = 3;
     
-    ControlMonitoringStatus_UPDATED = 4;
+    TYPE_CONTROL_MONITORING_STATUS_UPDATED = 4;
   }
 
   Type type = 1;
