@@ -235,7 +235,6 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
-		err = fmt.Errorf("invalid request: %w", err)
 		log.Error(err)
 		svc.informHooks(nil, err)
 

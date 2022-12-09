@@ -9,6 +9,7 @@ import (
 )
 
 var (
+	MockCertificateID  = "1234"
 	MockCatalogID      = "Cat1234"
 	MockCategoryName   = "My name"
 	MockControlID      = "Cont1234"
@@ -20,8 +21,9 @@ var (
 // NewCertificate creates a mock certificate
 func NewCertificate() *orchestrator.Certificate {
 	var mockCertificate = &orchestrator.Certificate{
+		Id:             MockCertificateID,
 		Name:           "EUCS",
-		CloudServiceId: "test service",
+		CloudServiceId: MockServiceID,
 		IssueDate:      "2021-11-06",
 		ExpirationDate: "2024-11-06",
 		Standard:       "EUCS",
@@ -32,10 +34,9 @@ func NewCertificate() *orchestrator.Certificate {
 			State:         "new",
 			TreeId:        "12345",
 			Timestamp:     time.Now().String(),
-			CertificateId: "1234",
+			CertificateId: MockCertificateID,
 			Id:            "12345",
 		}},
-		Id: "1234",
 	}
 
 	return mockCertificate
@@ -95,10 +96,12 @@ func NewTargetOfEvaluation() *orchestrator.TargetOfEvaluation {
 		Id:                "Cont1234",
 		CategoryName:      "My name",
 		CategoryCatalogId: "Cat1234",
+		Name:              "My name",
 	}, {
 		Id:                "Cont1234.1",
 		CategoryName:      "My name",
 		CategoryCatalogId: "Cat1234",
+		Name:              "My name",
 	}}
 
 	return toe

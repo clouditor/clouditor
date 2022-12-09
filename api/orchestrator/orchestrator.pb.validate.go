@@ -4345,7 +4345,16 @@ func (m *Control) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for Name
+	if utf8.RuneCountInString(m.GetName()) < 1 {
+		err := ControlValidationError{
+			field:  "Name",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for Description
 
@@ -4785,21 +4794,47 @@ func (m *ListControlMonitoringStatusRequest) validate(all bool) error {
 
 	// no validation rules for Asc
 
-	if utf8.RuneCountInString(m.GetCloudServiceId()) < 1 {
-		err := ListControlMonitoringStatusRequestValidationError{
-			field:  "CloudServiceId",
-			reason: "value length must be at least 1 runes",
+	if m.GetCloudServiceId() != "" {
+
+		if err := m._validateUuid(m.GetCloudServiceId()); err != nil {
+			err = ListControlMonitoringStatusRequestValidationError{
+				field:  "CloudServiceId",
+				reason: "value must be a valid UUID",
+				cause:  err,
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
+
 	}
 
-	// no validation rules for CatalogId
+	if m.GetCatalogId() != "" {
+
+		if utf8.RuneCountInString(m.GetCatalogId()) < 1 {
+			err := ListControlMonitoringStatusRequestValidationError{
+				field:  "CatalogId",
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
 
 	if len(errors) > 0 {
 		return ListControlMonitoringStatusRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+func (m *ListControlMonitoringStatusRequest) _validateUuid(uuid string) error {
+	if matched := _orchestrator_uuidPattern.MatchString(uuid); !matched {
+		return errors.New("invalid uuid format")
 	}
 
 	return nil
@@ -8193,9 +8228,28 @@ func (m *Certificate) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for Name
+	if utf8.RuneCountInString(m.GetName()) < 1 {
+		err := CertificateValidationError{
+			field:  "Name",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for CloudServiceId
+	if err := m._validateUuid(m.GetCloudServiceId()); err != nil {
+		err = CertificateValidationError{
+			field:  "CloudServiceId",
+			reason: "value must be a valid UUID",
+			cause:  err,
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for IssueDate
 
@@ -8245,6 +8299,14 @@ func (m *Certificate) validate(all bool) error {
 
 	if len(errors) > 0 {
 		return CertificateMultiError(errors)
+	}
+
+	return nil
+}
+
+func (m *Certificate) _validateUuid(uuid string) error {
+	if matched := _orchestrator_uuidPattern.MatchString(uuid); !matched {
+		return errors.New("invalid uuid format")
 	}
 
 	return nil

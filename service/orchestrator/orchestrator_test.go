@@ -729,7 +729,9 @@ func Test_UpdateCertificate(t *testing.T) {
 	// 3rd case: Certificate not found since there are no certificates yet
 	_, err = orchestratorService.UpdateCertificate(context.Background(), &orchestrator.UpdateCertificateRequest{
 		Certificate: &orchestrator.Certificate{
-			Id: "1234",
+			Id:             orchestratortest.MockCertificateID,
+			Name:           "EUCS",
+			CloudServiceId: orchestratortest.MockServiceID,
 		},
 	})
 	assert.Equal(t, codes.NotFound, status.Code(err))
@@ -812,7 +814,7 @@ func Test_GetCertificate(t *testing.T) {
 		},
 		{
 			"valid",
-			&orchestrator.GetCertificateRequest{CertificateId: "1234"},
+			&orchestrator.GetCertificateRequest{CertificateId: orchestratortest.MockCertificateID},
 			orchestratortest.NewCertificate(),
 			nil,
 		},

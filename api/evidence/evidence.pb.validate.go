@@ -106,8 +106,6 @@ func (m *Evidence) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for Raw
-
 	if m.GetResource() == nil {
 		err := EvidenceValidationError{
 			field:  "Resource",
@@ -146,6 +144,21 @@ func (m *Evidence) validate(all bool) error {
 				cause:  err,
 			}
 		}
+	}
+
+	if m.Raw != nil {
+
+		if utf8.RuneCountInString(m.GetRaw()) < 1 {
+			err := EvidenceValidationError{
+				field:  "Raw",
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
 	}
 
 	if len(errors) > 0 {

@@ -49,9 +49,10 @@ message Evidence {
   // Reference to the tool which provided the evidence
   string tool_id = 4 [ (validate.rules).string.min_len = 1 ];
 
-  // Contains the evidence in its original form without following a defined
+  // Optional. Contains the evidence in its original form without following a defined
   // schema, e.g. the raw JSON
-  string raw = 5;
+  optional string raw = 5
+    [ (validate.rules).string.min_len = 1 ];
 
   // Semantic representation of the Cloud resource according to our defined
   // ontology

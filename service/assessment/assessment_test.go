@@ -251,7 +251,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			hasRPCConnection: false,
 			wantResp: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid request: rpc error: code = InvalidArgument desc = invalid request: invalid AssessEvidenceRequest.Evidence: value is required",
+				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: value is required",
 			},
 			wantErr: true,
 		},
@@ -264,7 +264,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			hasRPCConnection: false,
 			wantResp: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid request: rpc error: code = InvalidArgument desc = invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format",
+				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format",
 			},
 			wantErr: true,
 		},
@@ -281,7 +281,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			hasRPCConnection: true,
 			wantResp: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid request: rpc error: code = InvalidArgument desc = invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format",
+				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format",
 			},
 			wantErr: true,
 		},
@@ -299,7 +299,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			hasRPCConnection: true,
 			wantResp: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid request: rpc error: code = InvalidArgument desc = invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.ToolId: value length must be at least 1 runes",
+				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.ToolId: value length must be at least 1 runes",
 			},
 			wantErr: true,
 		},
@@ -317,7 +317,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			hasRPCConnection: true,
 			wantResp: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid request: rpc error: code = InvalidArgument desc = invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Timestamp: value is required",
+				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Timestamp: value is required",
 			},
 			wantErr: true,
 		},
@@ -440,7 +440,7 @@ func TestService_AssessEvidences(t *testing.T) {
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid request: rpc error: code = InvalidArgument desc = invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.ToolId: value length must be at least 1 runes",
+				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.ToolId: value length must be at least 1 runes",
 			},
 		},
 		{
@@ -458,7 +458,7 @@ func TestService_AssessEvidences(t *testing.T) {
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid request: rpc error: code = InvalidArgument desc = invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format",
+				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format",
 			},
 		},
 		{
