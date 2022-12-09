@@ -236,25 +236,7 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 	err = service.ValidateRequest(req)
 	if err != nil {
 		err = fmt.Errorf("invalid request: %w", err)
-		log.Error(err){
-			name: "No RPC connections",
-			args: args{
-				in0: context.TODO(),
-				evidence: &evidence.Evidence{
-					Id:             "11111111-1111-1111-1111-111111111111",
-					ToolId:         "mock",
-					Timestamp:      timestamppb.Now(),
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
-					Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
-				},
-			},
-			hasRPCConnection: false,
-			wantResp: &assessment.AssessEvidenceResponse{
-				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "could not evaluate evidence: could not retrieve metric definitions: could not retrieve metric list from orchestrator",
-			},
-			wantErr: true,
-		},
+		log.Error(err)
 		svc.informHooks(nil, err)
 
 		res = &assessment.AssessEvidenceResponse{
