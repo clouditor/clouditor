@@ -65,7 +65,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			args:    args{},
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "invalid request")
+				return assert.ErrorContains(t, err, "empty request")
 			},
 		},
 		{
@@ -379,7 +379,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, assessment.ErrCloudServiceIDIsInvalid.Error())
+				return assert.ErrorContains(t, err, "FilteredCloudServiceId: value must be a valid UUID")
 			},
 		},
 	}

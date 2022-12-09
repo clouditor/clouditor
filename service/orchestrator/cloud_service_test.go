@@ -52,23 +52,23 @@ func TestService_RegisterCloudService(t *testing.T) {
 			"missing request",
 			nil,
 			nil,
-			status.Error(codes.InvalidArgument, api.ErrRequestIsNil.Error()),
+			status.Error(codes.InvalidArgument, "empty request"),
 		},
 		{
 			"missing service",
 			&orchestrator.RegisterCloudServiceRequest{},
 			nil,
-			status.Error(codes.InvalidArgument, orchestrator.ErrServiceIsNil.Error()),
+			status.Error(codes.InvalidArgument, "invalid request: invalid RegisterCloudServiceRequest.CloudService: value is required"),
 		},
 		{
 			"missing service name",
-			&orchestrator.RegisterCloudServiceRequest{Service: &orchestrator.CloudService{}},
+			&orchestrator.RegisterCloudServiceRequest{CloudService: &orchestrator.CloudService{}},
 			nil,
-			status.Error(codes.InvalidArgument, orchestrator.ErrNameIsMissing.Error()),
+			status.Error(codes.InvalidArgument, "invalid request: invalid RegisterCloudServiceRequest.CloudService: embedded message failed validation | caused by: invalid CloudService.Name: value length must be at least 1 runes"),
 		},
 		{
 			"valid",
-			&orchestrator.RegisterCloudServiceRequest{Service: &orchestrator.CloudService{Name: "test", Description: "some"}},
+			&orchestrator.RegisterCloudServiceRequest{CloudService: &orchestrator.CloudService{Name: "test", Description: "some"}},
 			&orchestrator.CloudService{Name: "test", Description: "some"},
 			nil,
 		},
@@ -121,13 +121,13 @@ func TestService_GetCloudService(t *testing.T) {
 			context.Background(),
 			nil,
 			nil,
-			status.Error(codes.InvalidArgument, api.ErrRequestIsNil.Error()),
+			status.Error(codes.InvalidArgument, "empty request"),
 		},
 		{
 			"cloud service not found",
 			NewService(),
 			context.Background(),
-			&orchestrator.GetCloudServiceRequest{CloudServiceId: "does-not-exist"},
+			&orchestrator.GetCloudServiceRequest{CloudServiceId: "11111111-1111-1111-1111-111111111111"},
 			nil,
 			status.Error(codes.NotFound, "service not found"),
 		},
@@ -196,40 +196,44 @@ func TestService_UpdateCloudService(t *testing.T) {
 		cloudService *orchestrator.CloudService
 		err          error
 	)
-	orchestratorService := NewService()
+	orchestratorService := NewService(WithAuthorizationStrategyJWT(testutil.TestCustomClaims))
 
 	// 1st case: Service is nil
-	_, err = orchestratorService.UpdateCloudService(context.Background(), &orchestrator.UpdateCloudServiceRequest{})
+	_, err = orchestratorService.UpdateCloudService(testutil.TestContextOnlyService1, &orchestrator.UpdateCloudServiceRequest{})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
 
 	// 2nd case: Service ID is nil
-	_, err = orchestratorService.UpdateCloudService(context.Background(), &orchestrator.UpdateCloudServiceRequest{
-		Service: &orchestrator.CloudService{},
+	_, err = orchestratorService.UpdateCloudService(testutil.TestContextOnlyService1, &orchestrator.UpdateCloudServiceRequest{
+		CloudService: &orchestrator.CloudService{},
 	})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
 
 	// 3rd case: Service not found since there are no services yet
-	_, err = orchestratorService.UpdateCloudService(context.Background(), &orchestrator.UpdateCloudServiceRequest{
-		Service: &orchestrator.CloudService{
+	_, err = orchestratorService.UpdateCloudService(testutil.TestContextOnlyService1, &orchestrator.UpdateCloudServiceRequest{
+		CloudService: &orchestrator.CloudService{
+			Id:          testutil.TestCloudService1,
 			Name:        DefaultTargetCloudServiceName,
 			Description: DefaultTargetCloudServiceDescription,
 		},
-		CloudServiceId: DefaultTargetCloudServiceId,
 	})
 	assert.Equal(t, codes.NotFound, status.Code(err))
 
 	// 4th case: Service updated successfully
-	_, err = orchestratorService.CreateDefaultTargetCloudService()
+	err = orchestratorService.storage.Create(&orchestrator.CloudService{
+		Id:          testutil.TestCloudService1,
+		Name:        DefaultTargetCloudServiceName,
+		Description: DefaultTargetCloudServiceDescription,
+	})
 	assert.NoError(t, err)
 	if err != nil {
 		return
 	}
-	cloudService, err = orchestratorService.UpdateCloudService(context.Background(), &orchestrator.UpdateCloudServiceRequest{
-		Service: &orchestrator.CloudService{
+	cloudService, err = orchestratorService.UpdateCloudService(testutil.TestContextOnlyService1, &orchestrator.UpdateCloudServiceRequest{
+		CloudService: &orchestrator.CloudService{
+			Id:          testutil.TestCloudService1,
 			Name:        "NewName",
 			Description: "",
 		},
-		CloudServiceId: DefaultTargetCloudServiceId,
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, cloudService)

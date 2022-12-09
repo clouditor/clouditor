@@ -28,9 +28,7 @@ package orchestrator
 import (
 	"context"
 	"errors"
-	"fmt"
 
-	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
@@ -45,6 +43,12 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 		c     *orchestrator.Catalog
 		lcres *orchestrator.ListControlsResponse
 	)
+
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
 
 	// We need to retrieve some additional meta-data about the security catalog, so we need to query it as well
 	c, err = svc.GetCatalog(ctx, &orchestrator.GetCatalogRequest{CatalogId: req.TargetOfEvaluation.CatalogId})
@@ -81,11 +85,10 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 
 // GetTargetOfEvaluation implements method for getting a TargetOfEvaluation, e.g. to show its state in the UI
 func (svc *Service) GetTargetOfEvaluation(_ context.Context, req *orchestrator.GetTargetOfEvaluationRequest) (response *orchestrator.TargetOfEvaluation, err error) {
-	if req == nil {
-		return nil, status.Errorf(codes.InvalidArgument, api.ErrRequestIsNil.Error())
-	}
-	if req.CloudServiceId == "" || req.CatalogId == "" {
-		return nil, status.Errorf(codes.NotFound, orchestrator.ErrToEIDIsMissing.Error())
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	response = new(orchestrator.TargetOfEvaluation)
@@ -100,12 +103,10 @@ func (svc *Service) GetTargetOfEvaluation(_ context.Context, req *orchestrator.G
 
 // ListTargetsOfEvaluation implements method for getting a TargetOfEvaluation
 func (svc *Service) ListTargetsOfEvaluation(_ context.Context, req *orchestrator.ListTargetsOfEvaluationRequest) (res *orchestrator.ListTargetsOfEvaluationResponse, err error) {
-	// Validate the request
-	if err = api.ValidateListRequest[*orchestrator.TargetOfEvaluation](req); err != nil {
-		err = fmt.Errorf("invalid request: %w", err)
-		log.Error(err)
-		err = status.Errorf(codes.InvalidArgument, "%v", err)
-		return
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	res = new(orchestrator.ListTargetsOfEvaluationResponse)
@@ -118,12 +119,10 @@ func (svc *Service) ListTargetsOfEvaluation(_ context.Context, req *orchestrator
 
 // UpdateTargetOfEvaluation implements method for updating an existing TargetOfEvaluation
 func (svc *Service) UpdateTargetOfEvaluation(ctx context.Context, req *orchestrator.UpdateTargetOfEvaluationRequest) (res *orchestrator.TargetOfEvaluation, err error) {
-	if req.TargetOfEvaluation == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "ToE is empty")
-	}
-
-	if req.TargetOfEvaluation.GetCloudServiceId() == "" || req.TargetOfEvaluation.GetCatalogId() == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "id is empty")
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	res = req.TargetOfEvaluation
@@ -145,8 +144,10 @@ func (svc *Service) UpdateTargetOfEvaluation(ctx context.Context, req *orchestra
 
 // RemoveTargetOfEvaluation implements method for removing a TargetOfEvaluation
 func (svc *Service) RemoveTargetOfEvaluation(ctx context.Context, req *orchestrator.RemoveTargetOfEvaluationRequest) (response *emptypb.Empty, err error) {
-	if req.CloudServiceId == "" || req.CatalogId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "ToE id is empty")
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	err = svc.storage.Delete(&orchestrator.TargetOfEvaluation{}, "cloud_service_id = ? AND catalog_id = ?", req.CloudServiceId, req.CatalogId)
@@ -188,6 +189,12 @@ func (s *Service) RegisterToeHook(hook orchestrator.TargetOfEvaluationHookFunc) 
 }
 
 func (svc *Service) ListControlMonitoringStatus(ctx context.Context, req *orchestrator.ListControlMonitoringStatusRequest) (res *orchestrator.ListControlMonitoringStatusResponse, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
 	// Check, if this request has access to the cloud service according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied
@@ -203,6 +210,12 @@ func (svc *Service) ListControlMonitoringStatus(ctx context.Context, req *orches
 }
 
 func (svc *Service) UpdateControlMonitoringStatus(ctx context.Context, req *orchestrator.UpdateControlMonitoringStatusRequest) (res *orchestrator.ControlMonitoringStatus, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
 	// Check, if this request has access to the cloud service according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied

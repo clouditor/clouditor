@@ -166,12 +166,11 @@ func TestService_CreateMetric(t *testing.T) {
 		req *orchestrator.CreateMetricRequest
 	}
 	tests := []struct {
-		name           string
-		fields         fields
-		args           args
-		wantMetric     *assessment.Metric
-		wantErr        bool
-		wantErrMessage string
+		name       string
+		fields     fields
+		args       args
+		wantMetric *assessment.Metric
+		wantErr    assert.ErrorAssertionFunc
 	}{
 		{
 			name: "Create valid metric",
@@ -182,16 +181,20 @@ func TestService_CreateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.CreateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:   "MyTransportEncryptionEnabled",
-						Name: "A very good metric",
+						Id:    "MyTransportEncryptionEnabled",
+						Name:  "A very good metric",
+						Scale: assessment.Metric_ORDINAL,
+						Range: &assessment.Range{Range: &assessment.Range_MinMax{}},
 					},
 				},
 			},
 			wantMetric: &assessment.Metric{
-				Id:   "MyTransportEncryptionEnabled",
-				Name: "A very good metric",
+				Id:    "MyTransportEncryptionEnabled",
+				Name:  "A very good metric",
+				Scale: assessment.Metric_ORDINAL,
+				Range: &assessment.Range{Range: &assessment.Range_MinMax{}},
 			},
-			wantErr: false,
+			wantErr: assert.NoError,
 		},
 		{
 			name: "Create invalid metric",
@@ -204,9 +207,10 @@ func TestService_CreateMetric(t *testing.T) {
 					Metric: &assessment.Metric{},
 				},
 			},
-			wantMetric:     nil,
-			wantErr:        true,
-			wantErrMessage: "rpc error: code = InvalidArgument desc = validation of metric failed",
+			wantMetric: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "invalid Metric.Id: value length must be at least 1 runes")
+			},
 		},
 		{
 			name: "Create metric which already exists",
@@ -223,12 +227,14 @@ func TestService_CreateMetric(t *testing.T) {
 						Name:     "TLSMetricMockName",
 						Category: "",
 						Scale:    assessment.Metric_NOMINAL,
+						Range:    &assessment.Range{},
 					},
 				},
 			},
-			wantMetric:     nil,
-			wantErr:        true,
-			wantErrMessage: "rpc error: code = AlreadyExists desc = metric already exists",
+			wantMetric: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "rpc error: code = AlreadyExists desc = metric already exists")
+			},
 		},
 		{
 			name: "Error while counting",
@@ -238,12 +244,18 @@ func TestService_CreateMetric(t *testing.T) {
 			args: args{
 				context.TODO(),
 				&orchestrator.CreateMetricRequest{
-					Metric: &assessment.Metric{Id: "SomeMetric", Name: "A very good metric"},
+					Metric: &assessment.Metric{
+						Id:    "SomeMetric",
+						Name:  "A very good metric",
+						Scale: assessment.Metric_NOMINAL,
+						Range: &assessment.Range{},
+					},
 				},
 			},
-			wantMetric:     nil,
-			wantErr:        true,
-			wantErrMessage: "rpc error: code = Internal desc = database error: some error",
+			wantMetric: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "rpc error: code = Internal desc = database error: some error")
+			},
 		},
 		{
 			name: "Error while creating",
@@ -253,12 +265,18 @@ func TestService_CreateMetric(t *testing.T) {
 			args: args{
 				context.TODO(),
 				&orchestrator.CreateMetricRequest{
-					Metric: &assessment.Metric{Id: "SomeMetric", Name: "A very good metric"},
+					Metric: &assessment.Metric{
+						Id:    "SomeMetric",
+						Name:  "A very good metric",
+						Scale: assessment.Metric_NOMINAL,
+						Range: &assessment.Range{},
+					},
 				},
 			},
-			wantMetric:     nil,
-			wantErr:        true,
-			wantErrMessage: "rpc error: code = Internal desc = database error: some error",
+			wantMetric: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "rpc error: code = Internal desc = database error: some error")
+			},
 		},
 	}
 
@@ -268,15 +286,7 @@ func TestService_CreateMetric(t *testing.T) {
 				storage: tt.fields.storage,
 			}
 			gotMetric, err := svc.CreateMetric(tt.args.in0, tt.args.req)
-
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.CreateMetric() error = %v, wantErrMessage %v", err, tt.wantErr)
-				return
-			}
-
-			if tt.wantErr {
-				assert.Equal(t, tt.wantErrMessage, err.Error())
-			}
+			tt.wantErr(t, err)
 
 			if !proto.Equal(gotMetric, tt.wantMetric) {
 				t.Errorf("Service.CreateMetric() = %v, want %v", gotMetric, tt.wantMetric)
@@ -294,12 +304,11 @@ func TestService_UpdateMetric(t *testing.T) {
 		req *orchestrator.UpdateMetricRequest
 	}
 	tests := []struct {
-		name           string
-		fields         fields
-		args           args
-		wantMetric     *assessment.Metric
-		wantErr        bool
-		wantErrMessage string
+		name       string
+		fields     fields
+		args       args
+		wantMetric *assessment.Metric
+		wantErr    assert.ErrorAssertionFunc
 	}{
 		{
 			name: "Update existing metric",
@@ -311,17 +320,21 @@ func TestService_UpdateMetric(t *testing.T) {
 			args: args{
 				context.TODO(),
 				&orchestrator.UpdateMetricRequest{
-					MetricId: "TransportEncryptionEnabled",
 					Metric: &assessment.Metric{
-						Name: "A slightly updated metric",
+						Id:    "TransportEncryptionEnabled",
+						Name:  "A slightly updated metric",
+						Scale: assessment.Metric_NOMINAL,
+						Range: &assessment.Range{Range: &assessment.Range_AllowedValues{}},
 					},
 				},
 			},
 			wantMetric: &assessment.Metric{
-				Id:   "TransportEncryptionEnabled",
-				Name: "A slightly updated metric",
+				Id:    "TransportEncryptionEnabled",
+				Name:  "A slightly updated metric",
+				Scale: assessment.Metric_NOMINAL,
+				Range: &assessment.Range{Range: &assessment.Range_AllowedValues{}},
 			},
-			wantErr: false,
+			wantErr: assert.NoError,
 		},
 		{
 			name: "Update non-existing metric",
@@ -331,29 +344,33 @@ func TestService_UpdateMetric(t *testing.T) {
 			args: args{
 				context.TODO(),
 				&orchestrator.UpdateMetricRequest{
-					MetricId: "DoesProbablyNotExist",
 					Metric: &assessment.Metric{
-						Id:   "UpdateMetricID",
-						Name: "UpdateMetricName",
+						Id:    "DoesProbablyNotExist",
+						Name:  "UpdateMetricName",
+						Scale: assessment.Metric_NOMINAL,
+						Range: &assessment.Range{Range: &assessment.Range_AllowedValues{}},
 					},
 				},
 			},
-			wantMetric:     nil,
-			wantErr:        true,
-			wantErrMessage: "rpc error: code = NotFound desc = metric not found",
+			wantMetric: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "rpc error: code = NotFound desc = metric not found")
+			},
 		},
 		{
 			name: "Updating invalid metric",
 			args: args{
 				context.TODO(),
 				&orchestrator.UpdateMetricRequest{
-					MetricId: "DoesProbablyNotExist",
-					Metric:   &assessment.Metric{},
+					Metric: &assessment.Metric{
+						Id: "DoesProbablyNotExist",
+					},
 				},
 			},
-			wantMetric:     nil,
-			wantErr:        true,
-			wantErrMessage: "rpc error: code = InvalidArgument desc = validation of metric failed",
+			wantMetric: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "Name: value length must be at least 1 runes")
+			},
 		},
 	}
 
@@ -363,15 +380,7 @@ func TestService_UpdateMetric(t *testing.T) {
 				storage: tt.fields.storage,
 			}
 			gotMetric, err := svc.UpdateMetric(tt.args.in0, tt.args.req)
-
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.UpdateMetric() error = %v, wantErrMessage %v", err, tt.wantErr)
-				return
-			}
-
-			if tt.wantErr {
-				assert.Contains(t, err.Error(), tt.wantErrMessage)
-			}
+			tt.wantErr(t, err)
 
 			if !proto.Equal(gotMetric, tt.wantMetric) {
 				t.Errorf("Service.UpdateMetric() = %v, want %v", gotMetric, tt.wantMetric)
@@ -536,7 +545,7 @@ func TestService_GetMetricImplementation(t *testing.T) {
 					assert.NoError(t, err)
 					err = s.Save(&assessment.MetricImplementation{
 						MetricId: MockMetricID,
-						Lang:     assessment.MetricImplementation_REGO,
+						Lang:     assessment.MetricImplementation_LANGUAGE_REGO,
 						Code:     "package test",
 					}, "metric_id = ?", MockMetricID)
 					assert.NoError(t, err)
@@ -549,7 +558,7 @@ func TestService_GetMetricImplementation(t *testing.T) {
 			},
 			wantRes: &assessment.MetricImplementation{
 				MetricId: MockMetricID,
-				Lang:     assessment.MetricImplementation_REGO,
+				Lang:     assessment.MetricImplementation_LANGUAGE_REGO,
 				Code:     "package test",
 			},
 		},
@@ -606,7 +615,7 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricImplementationRequest{
-					MetricId: "notfound",
+					Implementation: &assessment.MetricImplementation{MetricId: "notfound"},
 				},
 			},
 			wantErr: true,
@@ -618,10 +627,10 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricImplementationRequest{
-					MetricId: "TransportEncryptionEnabled",
 					Implementation: &assessment.MetricImplementation{
-						Lang: assessment.MetricImplementation_REGO,
-						Code: "package example",
+						MetricId: "TransportEncryptionEnabled",
+						Lang:     assessment.MetricImplementation_LANGUAGE_REGO,
+						Code:     "package example",
 					},
 				},
 			},
@@ -637,10 +646,10 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricImplementationRequest{
-					MetricId: "TransportEncryptionEnabled",
 					Implementation: &assessment.MetricImplementation{
-						Lang: assessment.MetricImplementation_REGO,
-						Code: "package example",
+						MetricId: "TransportEncryptionEnabled",
+						Lang:     assessment.MetricImplementation_LANGUAGE_REGO,
+						Code:     "package example",
 					},
 				},
 			},
@@ -648,7 +657,7 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 				var impl = i1.(*assessment.MetricImplementation)
 
 				return assert.Equal(t, "TransportEncryptionEnabled", impl.MetricId) &&
-					assert.Equal(t, assessment.MetricImplementation_REGO, impl.Lang) &&
+					assert.Equal(t, assessment.MetricImplementation_LANGUAGE_REGO, impl.Lang) &&
 					assert.Equal(t, "package example", impl.Code) &&
 					assert.True(t, impl.UpdatedAt.AsTime().Before(time.Now()))
 			},
@@ -901,7 +910,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, assessment.ErrMetricIdMissing.Error())
+				return assert.ErrorContains(t, err, "at least")
 			},
 		},
 		{
@@ -922,7 +931,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, assessment.ErrCloudServiceIDIsMissing.Error())
+				return assert.ErrorContains(t, err, "CloudServiceId: value must be a valid UUID")
 			},
 		},
 		{
@@ -944,7 +953,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, assessment.ErrCloudServiceIDIsInvalid.Error())
+				return assert.ErrorContains(t, err, "CloudServiceId: value must be a valid UUID")
 			},
 		},
 		{
@@ -960,7 +969,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, assessment.ErrMetricConfigurationMissing.Error())
+				return assert.ErrorContains(t, err, "Configuration: value is required")
 			},
 		},
 		{
@@ -981,7 +990,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, assessment.ErrMetricIdMissing.Error())
+				return assert.ErrorContains(t, err, "at least")
 			},
 		},
 		{
@@ -1002,7 +1011,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, assessment.ErrCloudServiceIDIsMissing.Error())
+				return assert.ErrorContains(t, err, "MetricConfiguration.CloudServiceId: value must be a valid UUID")
 			},
 		},
 		{
@@ -1024,7 +1033,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, assessment.ErrCloudServiceIDIsInvalid.Error())
+				return assert.ErrorContains(t, err, "MetricConfiguration.CloudServiceId: value must be a valid UUID")
 			},
 		},
 		{

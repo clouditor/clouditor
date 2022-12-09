@@ -232,20 +232,32 @@ func (svc *Service) Authorizer() api.Authorizer {
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
 func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
-
-	// Validate evidence
-	resourceId, err := req.Evidence.Validate()
+	// Validate request
+	err = service.ValidateRequest(req)
 	if err != nil {
-		newError := fmt.Errorf("invalid evidence: %w", err)
-		log.Error(newError)
-		svc.informHooks(nil, newError)
+		log.Error(err)
+		svc.informHooks(nil, err)
 
 		res = &assessment.AssessEvidenceResponse{
 			Status:        assessment.AssessEvidenceResponse_FAILED,
-			StatusMessage: newError.Error(),
+			StatusMessage: err.Error(),
+		}
+		return res, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	// Validate evidence
+	resourceId, err := req.Evidence.ValidateWithResource()
+	if err != nil {
+		err = fmt.Errorf("invalid evidence: %w", err)
+		log.Error(err)
+		svc.informHooks(nil, err)
+
+		res = &assessment.AssessEvidenceResponse{
+			Status:        assessment.AssessEvidenceResponse_FAILED,
+			StatusMessage: err.Error(),
 		}
 
-		return res, status.Errorf(codes.InvalidArgument, "%v", newError)
+		return res, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	// Assess evidence
@@ -438,6 +450,12 @@ func (svc *Service) informHooks(result *assessment.AssessmentResult, err error) 
 
 // ListAssessmentResults is a method implementation of the assessment interface
 func (svc *Service) ListAssessmentResults(_ context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
 	res = new(assessment.ListAssessmentResultsResponse)
 
 	// Paginate the results according to the request
@@ -529,7 +547,7 @@ func (svc *Service) Metrics() (metrics []*assessment.Metric, err error) {
 // from the orchestrator.
 func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (impl *assessment.MetricImplementation, err error) {
 	// For now, the orchestrator only supports the Rego language.
-	if lang != assessment.MetricImplementation_REGO {
+	if lang != assessment.MetricImplementation_LANGUAGE_REGO {
 		return nil, errors.New("unsupported language")
 	}
 
@@ -625,7 +643,7 @@ func (svc *Service) handleMetricEvent(event *orchestrator.MetricChangeEvent) {
 	// In case the configuration has changed, we need to clear our configuration cache. Otherwise the policy evaluation
 	// will clear the Rego cache, but still refer to the old metric configuration (until it expires). Handle metric event in our policy
 	// evaluation
-	if event.GetType() == orchestrator.MetricChangeEvent_CONFIG_CHANGED {
+	if event.GetType() == orchestrator.MetricChangeEvent_TYPE_CONFIG_CHANGED {
 		// Evict the metric configuration from cache
 		svc.confMutex.Lock()
 

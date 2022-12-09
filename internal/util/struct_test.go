@@ -44,17 +44,17 @@ func TestGetFieldNames(t *testing.T) {
 	)
 
 	// Successful
-	fieldnames = GetFieldNames[*auth.User]()
+	fieldnames = GetFieldNames(&auth.User{})
 	assert.Equal(t, []string{"username", "password", "email", "full_name", "shadow"}, fieldnames)
 	assert.Equal(t, reflect.ValueOf(auth.User{}).NumField()-3, len(fieldnames))
 
 	// Successful
-	fieldnames = GetFieldNames[*prototest.TestStruct]()
+	fieldnames = GetFieldNames(&prototest.TestStruct{})
 	assert.Equal(t, reflect.ValueOf(prototest.TestStruct{}).NumField()-3, len(fieldnames))
 	assert.Equal(t, []string{"test_name", "test_id", "test_description", "test_status"}, fieldnames)
 
 	// Successful
-	fieldnames = GetFieldNames[*evidence.Evidence]()
+	fieldnames = GetFieldNames(&evidence.Evidence{})
 	assert.Equal(t, reflect.ValueOf(evidence.Evidence{}).NumField()-3, len(fieldnames))
 	assert.Equal(t, []string{"id", "timestamp", "cloud_service_id", "tool_id", "raw", "resource"}, fieldnames)
 }

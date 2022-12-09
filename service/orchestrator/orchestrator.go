@@ -33,7 +33,6 @@ import (
 	"io"
 	"sync"
 
-	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
@@ -208,20 +207,17 @@ func (s *Service) RegisterCloudServiceHook(hook orchestrator.CloudServiceHookFun
 
 // StoreAssessmentResult is a method implementation of the orchestrator interface: It receives an assessment result and stores it
 func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.StoreAssessmentResultRequest) (resp *orchestrator.StoreAssessmentResultResponse, err error) {
-	_, err = req.Result.Validate()
-
+	// Validate request
+	err = service.ValidateRequest(req)
 	if err != nil {
-		newError := fmt.Errorf("invalid assessment result: %w", err)
-		log.Error(newError)
-
-		go s.informHook(nil, newError)
+		go s.informHook(nil, err)
 
 		resp = &orchestrator.StoreAssessmentResultResponse{
 			Status:        false,
-			StatusMessage: newError.Error(),
+			StatusMessage: err.Error(),
 		}
 
-		return resp, status.Errorf(codes.InvalidArgument, "%v", newError)
+		return resp, err
 	}
 
 	s.results[req.Result.Id] = req.Result
@@ -301,21 +297,13 @@ func (s *Service) informHook(result *assessment.AssessmentResult, err error) {
 func (svc *Service) CreateCertificate(_ context.Context, req *orchestrator.CreateCertificateRequest) (
 	*orchestrator.Certificate, error) {
 	// Validate request
-	if req == nil {
-		return nil,
-			status.Errorf(codes.InvalidArgument, api.ErrRequestIsNil.Error())
-	}
-	if req.Certificate == nil {
-		return nil,
-			status.Errorf(codes.InvalidArgument, orchestrator.ErrCertificateIsNil.Error())
-	}
-	if req.Certificate.Id == "" {
-		return nil,
-			status.Errorf(codes.InvalidArgument, orchestrator.ErrCertIDIsMissing.Error())
+	err := service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	// Persist the new certificate in our database
-	err := svc.storage.Create(req.Certificate)
+	err = svc.storage.Create(req.Certificate)
 	if err != nil {
 		return nil,
 			status.Errorf(codes.Internal, "could not add certificate to the database: %v", err)
@@ -327,11 +315,10 @@ func (svc *Service) CreateCertificate(_ context.Context, req *orchestrator.Creat
 
 // GetCertificate implements method for getting a certificate, e.g. to show its state in the UI
 func (svc *Service) GetCertificate(_ context.Context, req *orchestrator.GetCertificateRequest) (response *orchestrator.Certificate, err error) {
-	if req == nil {
-		return nil, status.Errorf(codes.InvalidArgument, api.ErrRequestIsNil.Error())
-	}
-	if req.CertificateId == "" {
-		return nil, status.Errorf(codes.NotFound, orchestrator.ErrCertIDIsMissing.Error())
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	response = new(orchestrator.Certificate)
@@ -346,12 +333,10 @@ func (svc *Service) GetCertificate(_ context.Context, req *orchestrator.GetCerti
 
 // ListCertificates implements method for getting a certificate, e.g. to show its state in the UI
 func (svc *Service) ListCertificates(_ context.Context, req *orchestrator.ListCertificatesRequest) (res *orchestrator.ListCertificatesResponse, err error) {
-	// Validate the request
-	if err = api.ValidateListRequest[*orchestrator.Certificate](req); err != nil {
-		err = fmt.Errorf("invalid request: %w", err)
-		log.Error(err)
-		err = status.Errorf(codes.InvalidArgument, "%v", err)
-		return
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	res = new(orchestrator.ListCertificatesResponse)
@@ -366,15 +351,13 @@ func (svc *Service) ListCertificates(_ context.Context, req *orchestrator.ListCe
 
 // UpdateCertificate implements method for updating an existing certificate
 func (svc *Service) UpdateCertificate(_ context.Context, req *orchestrator.UpdateCertificateRequest) (response *orchestrator.Certificate, err error) {
-	if req.CertificateId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "certificate id is empty")
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
-	if req.Certificate == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "certificate is empty")
-	}
-
-	count, err := svc.storage.Count(req.Certificate, req.CertificateId)
+	count, err := svc.storage.Count(req.Certificate, req.Certificate.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
@@ -384,7 +367,6 @@ func (svc *Service) UpdateCertificate(_ context.Context, req *orchestrator.Updat
 	}
 
 	response = req.Certificate
-	response.Id = req.CertificateId
 
 	err = svc.storage.Save(response, "Id = ?", response.Id)
 	if err != nil {
@@ -395,8 +377,10 @@ func (svc *Service) UpdateCertificate(_ context.Context, req *orchestrator.Updat
 
 // RemoveCertificate implements method for removing a certificate
 func (svc *Service) RemoveCertificate(_ context.Context, req *orchestrator.RemoveCertificateRequest) (response *emptypb.Empty, err error) {
-	if req.CertificateId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "certificate id is empty")
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	err = svc.storage.Delete(&orchestrator.Certificate{}, "Id = ?", req.CertificateId)

@@ -89,7 +89,7 @@ func NewQueryDiscoveryCommand() *cobra.Command {
 			client = discovery.NewDiscoveryClient(session)
 
 			if len(args) > 0 {
-				req.FilteredType = args[0]
+				req.FilteredType = &args[0]
 			}
 
 			results, err = api.ListAllPaginated(&discovery.QueryRequest{}, client.Query, func(res *discovery.QueryResponse) []*structpb.Value {

@@ -37,7 +37,17 @@ import (
 	"sync"
 	"testing"
 
+	"clouditor.io/clouditor/api"
+	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/policies"
+	"clouditor.io/clouditor/service"
+	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -45,16 +55,6 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-
-	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/evidence"
-	api_orchestrator "clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/internal/testutil"
-	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/policies"
-	"clouditor.io/clouditor/service"
-	"clouditor.io/clouditor/voc"
 )
 
 var (
@@ -83,6 +83,71 @@ func TestNewService(t *testing.T) {
 		args args
 		want *Service
 	}{
+		{
+			name: "AssessmentServer created with option rego package name",
+			args: args{
+				opts: []service.Option[Service]{
+					WithRegoPackageName("testPkg"),
+				},
+			},
+			want: &Service{
+				results: make(map[string]*assessment.AssessmentResult),
+				evidenceStoreAddress: grpcTarget{
+					target: "localhost:9090",
+				},
+				orchestratorAddress: grpcTarget{
+					target: "localhost:9090",
+				},
+				evidenceStoreStreams: nil,
+				orchestratorStreams:  nil,
+				cachedConfigurations: make(map[string]cachedConfiguration),
+				evalPkg:              "testPkg",
+			},
+		},
+		{
+			name: "AssessmentServer created with option authorizer",
+			args: args{
+				opts: []service.Option[Service]{
+					WithAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{})),
+				},
+			},
+			want: &Service{
+				results: make(map[string]*assessment.AssessmentResult),
+				evidenceStoreAddress: grpcTarget{
+					target: "localhost:9090",
+				},
+				orchestratorAddress: grpcTarget{
+					target: "localhost:9090",
+				},
+				evidenceStoreStreams: nil,
+				orchestratorStreams:  nil,
+				cachedConfigurations: make(map[string]cachedConfiguration),
+				evalPkg:              policies.DefaultRegoPackage,
+				authorizer:           api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}),
+			},
+		},
+		{
+			name: "AssessmentServer created with option authorizer",
+			args: args{
+				opts: []service.Option[Service]{
+					WithOAuth2Authorizer(&clientcredentials.Config{}),
+				},
+			},
+			want: &Service{
+				results: make(map[string]*assessment.AssessmentResult),
+				evidenceStoreAddress: grpcTarget{
+					target: "localhost:9090",
+				},
+				orchestratorAddress: grpcTarget{
+					target: "localhost:9090",
+				},
+				evidenceStoreStreams: nil,
+				orchestratorStreams:  nil,
+				cachedConfigurations: make(map[string]cachedConfiguration),
+				evalPkg:              policies.DefaultRegoPackage,
+				authorizer:           api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}),
+			},
+		},
 		{
 			name: "AssessmentServer created with empty results map",
 			want: &Service{
@@ -179,6 +244,31 @@ func TestService_AssessEvidence(t *testing.T) {
 		wantErr          bool
 	}{
 		{
+			name: "Missing evidence",
+			args: args{
+				in0: context.TODO(),
+			},
+			hasRPCConnection: false,
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: value is required",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Empty evidence",
+			args: args{
+				in0:      context.TODO(),
+				evidence: &evidence.Evidence{},
+			},
+			hasRPCConnection: false,
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format",
+			},
+			wantErr: true,
+		},
+		{
 			name: "Assess resource without id",
 			args: args{
 				in0: context.TODO(),
@@ -191,7 +281,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			hasRPCConnection: true,
 			wantResp: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid evidence: " + evidence.ErrResourceIdFieldMissing.Error(),
+				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format",
 			},
 			wantErr: true,
 		},
@@ -200,6 +290,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
+					Id:             "11111111-1111-1111-1111-111111111111",
 					Timestamp:      timestamppb.Now(),
 					CloudServiceId: "00000000-0000-0000-0000-000000000000",
 					Resource:       toStruct(voc.VirtualMachine{}, t),
@@ -208,7 +299,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			hasRPCConnection: true,
 			wantResp: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid evidence: " + evidence.ErrResourceIdFieldMissing.Error(),
+				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.ToolId: value length must be at least 1 runes",
 			},
 			wantErr: true,
 		},
@@ -226,7 +317,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			hasRPCConnection: true,
 			wantResp: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid evidence: " + evidence.ErrTimestampMissing.Error(),
+				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Timestamp: value is required",
 			},
 			wantErr: true,
 		},
@@ -247,6 +338,25 @@ func TestService_AssessEvidence(t *testing.T) {
 				Status: assessment.AssessEvidenceResponse_ASSESSED,
 			},
 			wantErr: false,
+		},
+		{
+			name: "Assess resource without resource id",
+			args: args{
+				in0: context.TODO(),
+				evidence: &evidence.Evidence{
+					Id:             "11111111-1111-1111-1111-111111111111",
+					ToolId:         "mock",
+					Timestamp:      timestamppb.Now(),
+					Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{Type: []string{"VirtualMachine"}}}}, t),
+					CloudServiceId: "00000000-0000-0000-0000-000000000000",
+				},
+			},
+			hasRPCConnection: true,
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: "invalid evidence: resource in evidence is missing the id field",
+			},
+			wantErr: true,
 		},
 		{
 			name: "No RPC connections",
@@ -322,6 +432,7 @@ func TestService_AssessEvidences(t *testing.T) {
 			args: args{
 				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
+						Id:             "11111111-1111-1111-1111-111111111111",
 						Timestamp:      timestamppb.Now(),
 						CloudServiceId: "00000000-0000-0000-0000-000000000000",
 						Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
@@ -329,7 +440,7 @@ func TestService_AssessEvidences(t *testing.T) {
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid evidence: " + evidence.ErrToolIdMissing.Error(),
+				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.ToolId: value length must be at least 1 runes",
 			},
 		},
 		{
@@ -347,7 +458,7 @@ func TestService_AssessEvidences(t *testing.T) {
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid evidence: " + evidence.ErrEvidenceIdInvalidFormat.Error(),
+				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format",
 			},
 		},
 		{
@@ -562,10 +673,10 @@ func TestService_ListAssessmentResults(t *testing.T) {
 	type fields struct {
 		evidenceStoreStreams  *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
 		evidenceStoreAddress  string
-		orchestratorStreams   *api.StreamsOf[api_orchestrator.Orchestrator_StoreAssessmentResultsClient, *api_orchestrator.StoreAssessmentResultRequest]
-		orchestratorClient    api_orchestrator.OrchestratorClient
+		orchestratorStreams   *api.StreamsOf[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest]
+		orchestratorClient    orchestrator.OrchestratorClient
 		orchestratorAddress   string
-		metricEventStream     api_orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
+		metricEventStream     orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
 		resultHooks           []assessment.ResultHookFunc
 		results               map[string]*assessment.AssessmentResult
 		cachedConfigurations  map[string]cachedConfiguration
@@ -585,6 +696,36 @@ func TestService_ListAssessmentResults(t *testing.T) {
 		wantRes *assessment.ListAssessmentResultsResponse
 		wantErr bool
 	}{
+		{
+			name: "Missing request",
+			args: args{
+				req: nil,
+			},
+			wantRes: nil,
+			wantErr: true,
+		},
+		{
+			name: "Empty request",
+			fields: fields{
+				results: map[string]*assessment.AssessmentResult{
+					"1": {
+						Id: "1",
+					},
+				},
+			},
+			args: args{
+				req: &assessment.ListAssessmentResultsRequest{},
+			},
+			wantRes: &assessment.ListAssessmentResultsResponse{
+				NextPageToken: "",
+				Results: []*assessment.AssessmentResult{
+					{
+						Id: "1",
+					},
+				},
+			},
+			wantErr: false,
+		},
 		{
 			name: "single page result",
 			fields: fields{
@@ -1164,10 +1305,10 @@ func TestService_recvEventsLoop(t *testing.T) {
 	type fields struct {
 		evidenceStoreStreams  *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
 		evidenceStoreAddress  string
-		orchestratorStreams   *api.StreamsOf[api_orchestrator.Orchestrator_StoreAssessmentResultsClient, *api_orchestrator.StoreAssessmentResultRequest]
-		orchestratorClient    api_orchestrator.OrchestratorClient
+		orchestratorStreams   *api.StreamsOf[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest]
+		orchestratorClient    orchestrator.OrchestratorClient
 		orchestratorAddress   string
-		metricEventStream     api_orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
+		metricEventStream     orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
 		resultHooks           []assessment.ResultHookFunc
 		results               map[string]*assessment.AssessmentResult
 		cachedConfigurations  map[string]cachedConfiguration
@@ -1178,19 +1319,19 @@ func TestService_recvEventsLoop(t *testing.T) {
 	tests := []struct {
 		name      string
 		fields    fields
-		wantEvent *api_orchestrator.MetricChangeEvent
+		wantEvent *orchestrator.MetricChangeEvent
 	}{
 		{
 			name: "Receive event",
 			fields: fields{
-				metricEventStream: &testutil.ListRecvStreamerOf[*api_orchestrator.MetricChangeEvent]{Messages: []*api_orchestrator.MetricChangeEvent{
+				metricEventStream: &testutil.ListRecvStreamerOf[*orchestrator.MetricChangeEvent]{Messages: []*orchestrator.MetricChangeEvent{
 					{
-						Type: api_orchestrator.MetricChangeEvent_CONFIG_CHANGED,
+						Type: orchestrator.MetricChangeEvent_TYPE_CONFIG_CHANGED,
 					},
 				}},
 			},
-			wantEvent: &api_orchestrator.MetricChangeEvent{
-				Type: api_orchestrator.MetricChangeEvent_CONFIG_CHANGED,
+			wantEvent: &orchestrator.MetricChangeEvent{
+				Type: orchestrator.MetricChangeEvent_TYPE_CONFIG_CHANGED,
 			},
 		},
 	}
@@ -1227,7 +1368,7 @@ func TestService_recvEventsLoop(t *testing.T) {
 }
 
 type eventRecorder struct {
-	event *api_orchestrator.MetricChangeEvent
+	event *orchestrator.MetricChangeEvent
 	done  bool
 }
 
@@ -1235,7 +1376,7 @@ func (*eventRecorder) Eval(_ *evidence.Evidence, _ policies.MetricsSource) (data
 	return nil, nil
 }
 
-func (e *eventRecorder) HandleMetricEvent(event *api_orchestrator.MetricChangeEvent) (err error) {
+func (e *eventRecorder) HandleMetricEvent(event *orchestrator.MetricChangeEvent) (err error) {
 	if e.done {
 		return nil
 	}
@@ -1244,4 +1385,69 @@ func (e *eventRecorder) HandleMetricEvent(event *api_orchestrator.MetricChangeEv
 	e.done = true
 
 	return nil
+}
+
+func TestService_MetricImplementation(t *testing.T) {
+	type fields struct {
+		UnimplementedAssessmentServer assessment.UnimplementedAssessmentServer
+		isEvidenceStoreDisabled       bool
+		evidenceStoreStreams          *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
+		evidenceStoreAddress          grpcTarget
+		orchestratorStreams           *api.StreamsOf[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest]
+		orchestratorClient            orchestrator.OrchestratorClient
+		orchestratorAddress           grpcTarget
+		metricEventStream             orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
+		resultHooks                   []assessment.ResultHookFunc
+		results                       map[string]*assessment.AssessmentResult
+		cachedConfigurations          map[string]cachedConfiguration
+		authorizer                    api.Authorizer
+		pe                            policies.PolicyEval
+		evalPkg                       string
+	}
+	type args struct {
+		lang   assessment.MetricImplementation_Language
+		metric string
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		args     args
+		wantImpl *assessment.MetricImplementation
+		wantErr  assert.ErrorAssertionFunc
+	}{
+
+		{
+			name: "Unspecified language",
+			args: args{
+				lang: assessment.MetricImplementation_LANGUAGE_UNSPECIFIED,
+			},
+			wantImpl: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "unsupported language")
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
+				isEvidenceStoreDisabled:       tt.fields.isEvidenceStoreDisabled,
+				evidenceStoreStreams:          tt.fields.evidenceStoreStreams,
+				evidenceStoreAddress:          tt.fields.evidenceStoreAddress,
+				orchestratorStreams:           tt.fields.orchestratorStreams,
+				orchestratorClient:            tt.fields.orchestratorClient,
+				orchestratorAddress:           tt.fields.orchestratorAddress,
+				metricEventStream:             tt.fields.metricEventStream,
+				resultHooks:                   tt.fields.resultHooks,
+				results:                       tt.fields.results,
+				cachedConfigurations:          tt.fields.cachedConfigurations,
+				authorizer:                    tt.fields.authorizer,
+				pe:                            tt.fields.pe,
+				evalPkg:                       tt.fields.evalPkg,
+			}
+			gotImpl, err := svc.MetricImplementation(tt.args.lang, tt.args.metric)
+			tt.wantErr(t, err)
+			assert.Equal(t, tt.wantImpl, gotImpl)
+		})
+	}
 }

@@ -27,18 +27,17 @@ package util
 
 import (
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
-// GetFieldNames extracts all field names of a proto.Message T. The extracted names are in lowercase with underscores
-func GetFieldNames[T proto.Message]() (fieldNames []string) {
-	var message T
-
-	fields := message.ProtoReflect().Type().Descriptor().Fields()
+// GetFieldNames extracts all field names of a proto.Message. The extracted names are in lowercase with underscores
+func GetFieldNames(msg proto.Message) (fieldNames []string) {
+	fields := msg.ProtoReflect().Type().Descriptor().Fields()
 	// Start with 1 since fields[0] is always nil - for whatever reason.
 	// ProtoReflect().Range is would be more elegant, but it only iterates over populated fields which we don't have
-	for i := 1; i < fields.Len()+1; i++ {
-		fieldNames = append(fieldNames, string(fields.ByNumber(protoreflect.FieldNumber(i)).Name()))
+
+	for i := 0; i < fields.Len(); i++ {
+		desc := fields.Get(i)
+		fieldNames = append(fieldNames, desc.TextName())
 	}
 	return
 }

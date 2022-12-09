@@ -44,7 +44,7 @@ func TestService_CreateCatalog(t *testing.T) {
 			},
 			nil,
 			func(tt assert.TestingT, err error, i ...interface{}) bool {
-				assert.ErrorContains(t, err, api.ErrRequestIsNil.Error())
+				assert.ErrorContains(t, err, "empty request")
 				return assert.Equal(t, status.Code(err), codes.InvalidArgument)
 			},
 		},
@@ -56,7 +56,7 @@ func TestService_CreateCatalog(t *testing.T) {
 			},
 			nil,
 			func(tt assert.TestingT, err error, i ...interface{}) bool {
-				assert.ErrorContains(t, err, orchestrator.ErrCatalogIsNil.Error())
+				assert.ErrorContains(t, err, "Catalog: value is required")
 				return assert.Equal(t, status.Code(err), codes.InvalidArgument)
 			},
 		},
@@ -70,7 +70,7 @@ func TestService_CreateCatalog(t *testing.T) {
 			},
 			nil,
 			func(tt assert.TestingT, err error, i ...interface{}) bool {
-				assert.ErrorContains(t, err, orchestrator.ErrCatalogIDIsMissing.Error())
+				assert.ErrorContains(t, err, "Catalog.Id: value length must be at least 1 runes")
 				return assert.Equal(t, status.Code(err), codes.InvalidArgument)
 			},
 		},
@@ -129,7 +129,17 @@ func TestService_GetCatalog(t *testing.T) {
 			wantResponse: assert.Nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
-				return assert.ErrorContains(t, err, api.ErrRequestIsNil.Error())
+				return assert.ErrorContains(t, err, "empty request")
+			},
+		},
+		{
+			name:         "catalog ID empty",
+			fields:       fields{storage: testutil.NewInMemoryStorage(t)},
+			args:         args{req: &orchestrator.GetCatalogRequest{CatalogId: ""}},
+			wantResponse: assert.Nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, "CatalogId: value length must be at least 1 runes")
 			},
 		},
 		{
@@ -138,11 +148,11 @@ func TestService_GetCatalog(t *testing.T) {
 				// Create Catalog
 				assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 			})},
-			args:         args{req: &orchestrator.GetCatalogRequest{CatalogId: ""}},
+			args:         args{req: &orchestrator.GetCatalogRequest{CatalogId: "a"}},
 			wantResponse: assert.Nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.NotFound, status.Code(err))
-				return assert.ErrorContains(t, err, "catalog ID is empty")
+				return assert.ErrorContains(t, err, "catalog not found")
 			},
 		},
 		{
@@ -219,11 +229,12 @@ func TestService_UpdateCatalog(t *testing.T) {
 	// 3rd case: Certificate not found since there are no certificates yet
 	_, err = orchestratorService.UpdateCatalog(context.Background(), &orchestrator.UpdateCatalogRequest{
 		Catalog: &orchestrator.Catalog{
-			Id: "Cat1234",
+			Id:   "Cat1234",
+			Name: "My cat",
 		},
-		CatalogId: "Cat1234",
 	})
 	assert.Equal(t, codes.NotFound, status.Code(err))
+	assert.ErrorContains(t, err, "catalog not found")
 
 	// 4th case: Certificate updated successfully
 	mockCatalog := orchestratortest.NewCatalog()
@@ -236,8 +247,7 @@ func TestService_UpdateCatalog(t *testing.T) {
 	// update the certificate's description and send the update request
 	mockCatalog.Description = "new description"
 	catalog, err = orchestratorService.UpdateCatalog(context.Background(), &orchestrator.UpdateCatalogRequest{
-		CatalogId: "Cat1234",
-		Catalog:   mockCatalog,
+		Catalog: mockCatalog,
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, catalog)
