@@ -48,7 +48,7 @@ import (
 )
 
 var AssuranceLevelHigh = "high"
-var AssuranceLevelMedium = "medium"
+var AssuranceLevelSubstantial = "substantial"
 
 func TestService_CreateTargetOfEvaluation(t *testing.T) {
 	type fields struct {
@@ -330,12 +330,12 @@ func TestService_UpdateTargetOfEvaluation(t *testing.T) {
 		TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 			CloudServiceId: orchestratortest.MockServiceID,
 			CatalogId:      orchestratortest.MockCatalogID,
-			AssuranceLevel: &AssuranceLevelMedium,
+			AssuranceLevel: &AssuranceLevelSubstantial,
 		},
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, toe)
-	assert.Equal(t, &AssuranceLevelMedium, toe.AssuranceLevel)
+	assert.Equal(t, &AssuranceLevelSubstantial, toe.AssuranceLevel)
 }
 
 func TestService_RemoveTargetOfEvaluation(t *testing.T) {
@@ -447,7 +447,7 @@ func TestToeHook(t *testing.T) {
 					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 						CloudServiceId: orchestratortest.MockServiceID,
 						CatalogId:      orchestratortest.MockCatalogID,
-						AssuranceLevel: &AssuranceLevelMedium,
+						AssuranceLevel: &AssuranceLevelSubstantial,
 					},
 				},
 			},
@@ -455,7 +455,7 @@ func TestToeHook(t *testing.T) {
 			wantResp: &orchestrator.TargetOfEvaluation{
 				CloudServiceId: orchestratortest.MockServiceID,
 				CatalogId:      orchestratortest.MockCatalogID,
-				AssuranceLevel: &AssuranceLevelMedium,
+				AssuranceLevel: &AssuranceLevelSubstantial,
 			},
 		},
 	}

@@ -4662,10 +4662,10 @@ func (m *TargetOfEvaluation) validate(all bool) error {
 
 	if m.AssuranceLevel != nil {
 
-		if utf8.RuneCountInString(m.GetAssuranceLevel()) < 1 {
+		if !_TargetOfEvaluation_AssuranceLevel_Pattern.MatchString(m.GetAssuranceLevel()) {
 			err := TargetOfEvaluationValidationError{
 				field:  "AssuranceLevel",
-				reason: "value length must be at least 1 runes",
+				reason: "value does not match regex pattern \"^(|basic|substantial|high)$\"",
 			}
 			if !all {
 				return err
@@ -4762,6 +4762,8 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = TargetOfEvaluationValidationError{}
+
+var _TargetOfEvaluation_AssuranceLevel_Pattern = regexp.MustCompile("^(|basic|substantial|high)$")
 
 // Validate checks the field values on ListControlMonitoringStatusRequest with
 // the rules defined in the proto definition for this message. If any rules

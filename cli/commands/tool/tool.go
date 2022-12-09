@@ -184,7 +184,7 @@ func NewUpdateToolCommand() *cobra.Command {
 
 			res, err = client.UpdateAssessmentTool(context.Background(), &orchestrator.UpdateAssessmentToolRequest{				
 				Tool: &orchestrator.AssessmentTool{
-					Id: args[0],
+					Id: 			  args[0],
 					Name:             viper.GetString("name"),
 					Description:      viper.GetString("description"),
 					AvailableMetrics: viper.GetStringSlice("metric-ids"),
