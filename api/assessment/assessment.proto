@@ -77,7 +77,8 @@ message ListAssessmentResultsRequest {
   // Optional. List only compliant assessment results.
   optional bool filtered_compliant = 2;
   // Optional. List only assessment results of a specific metric id.
-  repeated string filtered_metric_id = 3;
+  repeated string filtered_metric_id = 3
+    [ (validate.rules).repeated.items.string.min_len = 1 ];
 
   int32 page_size = 10;
   string page_token = 11;
@@ -140,7 +141,7 @@ message AssessmentResult {
 
   // Resource types
   repeated string resource_types = 8
-      [ (validate.rules).repeated .min_items = 1 ];
+      [ (validate.rules).repeated.min_items = 1 ];
 
   // Some comments on the reason for non-compliance
   string non_compliance_comments = 9;

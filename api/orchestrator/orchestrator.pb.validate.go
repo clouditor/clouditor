@@ -203,8 +203,6 @@ func (m *ListAssessmentToolsRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for MetricId
-
 	// no validation rules for PageSize
 
 	// no validation rules for PageToken
@@ -212,6 +210,21 @@ func (m *ListAssessmentToolsRequest) validate(all bool) error {
 	// no validation rules for OrderBy
 
 	// no validation rules for Asc
+
+	if m.FilterMetricId != nil {
+
+		if utf8.RuneCountInString(m.GetFilterMetricId()) < 1 {
+			err := ListAssessmentToolsRequestValidationError{
+				field:  "FilterMetricId",
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
 
 	if len(errors) > 0 {
 		return ListAssessmentToolsRequestMultiError(errors)
@@ -3440,14 +3453,50 @@ func (m *MetricChangeEvent) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Type
+	if _, ok := MetricChangeEvent_Type_name[int32(m.GetType())]; !ok {
+		err := MetricChangeEventValidationError{
+			field:  "Type",
+			reason: "value must be one of the defined enum values",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for MetricId
+	if utf8.RuneCountInString(m.GetMetricId()) < 1 {
+		err := MetricChangeEventValidationError{
+			field:  "MetricId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for CloudServiceId
+	if err := m._validateUuid(m.GetCloudServiceId()); err != nil {
+		err = MetricChangeEventValidationError{
+			field:  "CloudServiceId",
+			reason: "value must be a valid UUID",
+			cause:  err,
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return MetricChangeEventMultiError(errors)
+	}
+
+	return nil
+}
+
+func (m *MetricChangeEvent) _validateUuid(uuid string) error {
+	if matched := _orchestrator_uuidPattern.MatchString(uuid); !matched {
+		return errors.New("invalid uuid format")
 	}
 
 	return nil
@@ -3548,14 +3597,61 @@ func (m *AssessmentTool) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Id
+	if m.GetId() != "" {
 
-	// no validation rules for Name
+		if err := m._validateUuid(m.GetId()); err != nil {
+			err = AssessmentToolValidationError{
+				field:  "Id",
+				reason: "value must be a valid UUID",
+				cause:  err,
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if utf8.RuneCountInString(m.GetName()) < 1 {
+		err := AssessmentToolValidationError{
+			field:  "Name",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for Description
 
+	for idx, item := range m.GetAvailableMetrics() {
+		_, _ = idx, item
+
+		if utf8.RuneCountInString(item) < 1 {
+			err := AssessmentToolValidationError{
+				field:  fmt.Sprintf("AvailableMetrics[%v]", idx),
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
 	if len(errors) > 0 {
 		return AssessmentToolMultiError(errors)
+	}
+
+	return nil
+}
+
+func (m *AssessmentTool) _validateUuid(uuid string) error {
+	if matched := _orchestrator_uuidPattern.MatchString(uuid); !matched {
+		return errors.New("invalid uuid format")
 	}
 
 	return nil
@@ -3686,6 +3782,17 @@ func (m *CloudService) validate(all bool) error {
 	for idx, item := range m.GetCatalogsInScope() {
 		_, _ = idx, item
 
+		if item == nil {
+			err := CloudServiceValidationError{
+				field:  fmt.Sprintf("CatalogsInScope[%v]", idx),
+				reason: "value is required",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
 		if all {
 			switch v := interface{}(item).(type) {
 			case interface{ ValidateAll() error }:
@@ -3719,6 +3826,17 @@ func (m *CloudService) validate(all bool) error {
 
 	for idx, item := range m.GetConfiguredMetrics() {
 		_, _ = idx, item
+
+		if item == nil {
+			err := CloudServiceValidationError{
+				field:  fmt.Sprintf("ConfiguredMetrics[%v]", idx),
+				reason: "value is required",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
 
 		if all {
 			switch v := interface{}(item).(type) {
@@ -3884,6 +4002,17 @@ func (m *Catalog) validate(all bool) error {
 	for idx, item := range m.GetCategories() {
 		_, _ = idx, item
 
+		if item == nil {
+			err := CatalogValidationError{
+				field:  fmt.Sprintf("Categories[%v]", idx),
+				reason: "value is required",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
 		if all {
 			switch v := interface{}(item).(type) {
 			case interface{ ValidateAll() error }:
@@ -4016,14 +4145,43 @@ func (m *Category) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Name
+	if utf8.RuneCountInString(m.GetName()) < 1 {
+		err := CategoryValidationError{
+			field:  "Name",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for CatalogId
+	if utf8.RuneCountInString(m.GetCatalogId()) < 1 {
+		err := CategoryValidationError{
+			field:  "CatalogId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for Description
 
 	for idx, item := range m.GetControls() {
 		_, _ = idx, item
+
+		if item == nil {
+			err := CategoryValidationError{
+				field:  fmt.Sprintf("Controls[%v]", idx),
+				reason: "value is required",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
 
 		if all {
 			switch v := interface{}(item).(type) {
@@ -4154,11 +4312,38 @@ func (m *Control) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Id
+	if utf8.RuneCountInString(m.GetId()) < 1 {
+		err := ControlValidationError{
+			field:  "Id",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for CategoryName
+	if utf8.RuneCountInString(m.GetCategoryName()) < 1 {
+		err := ControlValidationError{
+			field:  "CategoryName",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for CategoryCatalogId
+	if utf8.RuneCountInString(m.GetCategoryCatalogId()) < 1 {
+		err := ControlValidationError{
+			field:  "CategoryCatalogId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for Name
 
@@ -4166,6 +4351,17 @@ func (m *Control) validate(all bool) error {
 
 	for idx, item := range m.GetControls() {
 		_, _ = idx, item
+
+		if item == nil {
+			err := ControlValidationError{
+				field:  fmt.Sprintf("Controls[%v]", idx),
+				reason: "value is required",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
 
 		if all {
 			switch v := interface{}(item).(type) {
@@ -4201,6 +4397,17 @@ func (m *Control) validate(all bool) error {
 	for idx, item := range m.GetMetrics() {
 		_, _ = idx, item
 
+		if item == nil {
+			err := ControlValidationError{
+				field:  fmt.Sprintf("Metrics[%v]", idx),
+				reason: "value is required",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
 		if all {
 			switch v := interface{}(item).(type) {
 			case interface{ ValidateAll() error }:
@@ -4233,15 +4440,48 @@ func (m *Control) validate(all bool) error {
 	}
 
 	if m.ParentControlId != nil {
-		// no validation rules for ParentControlId
+
+		if utf8.RuneCountInString(m.GetParentControlId()) < 1 {
+			err := ControlValidationError{
+				field:  "ParentControlId",
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
 	}
 
 	if m.ParentControlCategoryName != nil {
-		// no validation rules for ParentControlCategoryName
+
+		if utf8.RuneCountInString(m.GetParentControlCategoryName()) < 1 {
+			err := ControlValidationError{
+				field:  "ParentControlCategoryName",
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
 	}
 
 	if m.ParentControlCategoryCatalogId != nil {
-		// no validation rules for ParentControlCategoryCatalogId
+
+		if utf8.RuneCountInString(m.GetParentControlCategoryCatalogId()) < 1 {
+			err := ControlValidationError{
+				field:  "ParentControlCategoryCatalogId",
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
 	}
 
 	if len(errors) > 0 {
@@ -4369,6 +4609,17 @@ func (m *TargetOfEvaluation) validate(all bool) error {
 	for idx, item := range m.GetControlsInScope() {
 		_, _ = idx, item
 
+		if item == nil {
+			err := TargetOfEvaluationValidationError{
+				field:  fmt.Sprintf("ControlsInScope[%v]", idx),
+				reason: "value is required",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
 		if all {
 			switch v := interface{}(item).(type) {
 			case interface{ ValidateAll() error }:
@@ -4401,7 +4652,18 @@ func (m *TargetOfEvaluation) validate(all bool) error {
 	}
 
 	if m.AssuranceLevel != nil {
-		// no validation rules for AssuranceLevel
+
+		if utf8.RuneCountInString(m.GetAssuranceLevel()) < 1 {
+			err := TargetOfEvaluationValidationError{
+				field:  "AssuranceLevel",
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
 	}
 
 	if len(errors) > 0 {
@@ -4523,7 +4785,16 @@ func (m *ListControlMonitoringStatusRequest) validate(all bool) error {
 
 	// no validation rules for Asc
 
-	// no validation rules for CloudServiceId
+	if utf8.RuneCountInString(m.GetCloudServiceId()) < 1 {
+		err := ListControlMonitoringStatusRequestValidationError{
+			field:  "CloudServiceId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for CatalogId
 
@@ -4773,6 +5044,17 @@ func (m *UpdateControlMonitoringStatusRequest) validate(all bool) error {
 
 	var errors []error
 
+	if m.GetStatus() == nil {
+		err := UpdateControlMonitoringStatusRequestValidationError{
+			field:  "Status",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if all {
 		switch v := interface{}(m.GetStatus()).(type) {
 		case interface{ ValidateAll() error }:
@@ -4906,15 +5188,60 @@ func (m *ControlMonitoringStatus) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for TargetOfEvaluationCloudServiceId
+	if utf8.RuneCountInString(m.GetTargetOfEvaluationCloudServiceId()) < 1 {
+		err := ControlMonitoringStatusValidationError{
+			field:  "TargetOfEvaluationCloudServiceId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for TargetOfEvaluationCatalogId
+	if utf8.RuneCountInString(m.GetTargetOfEvaluationCatalogId()) < 1 {
+		err := ControlMonitoringStatusValidationError{
+			field:  "TargetOfEvaluationCatalogId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for ControlId
+	if utf8.RuneCountInString(m.GetControlId()) < 1 {
+		err := ControlMonitoringStatusValidationError{
+			field:  "ControlId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for ControlCategoryName
+	if utf8.RuneCountInString(m.GetControlCategoryName()) < 1 {
+		err := ControlMonitoringStatusValidationError{
+			field:  "ControlCategoryName",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for ControlCategoryCatalogId
+	if utf8.RuneCountInString(m.GetControlCategoryCatalogId()) < 1 {
+		err := ControlMonitoringStatusValidationError{
+			field:  "ControlCategoryCatalogId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for Status
 
@@ -7089,9 +7416,27 @@ func (m *GetCategoryRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for CatalogId
+	if utf8.RuneCountInString(m.GetCatalogId()) < 1 {
+		err := GetCategoryRequestValidationError{
+			field:  "CatalogId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for CategoryName
+	if utf8.RuneCountInString(m.GetCategoryName()) < 1 {
+		err := GetCategoryRequestValidationError{
+			field:  "CategoryName",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return GetCategoryRequestMultiError(errors)
@@ -7195,11 +7540,38 @@ func (m *GetControlRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for CatalogId
+	if utf8.RuneCountInString(m.GetCatalogId()) < 1 {
+		err := GetControlRequestValidationError{
+			field:  "CatalogId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for CategoryName
+	if utf8.RuneCountInString(m.GetCategoryName()) < 1 {
+		err := GetControlRequestValidationError{
+			field:  "CategoryName",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for ControlId
+	if utf8.RuneCountInString(m.GetControlId()) < 1 {
+		err := GetControlRequestValidationError{
+			field:  "ControlId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return GetControlRequestMultiError(errors)
@@ -8078,64 +8450,103 @@ func (m *TargetOfEvaluationChangeEvent) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Type
-
-	if all {
-		switch v := interface{}(m.GetTargetOfEvaluation()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, TargetOfEvaluationChangeEventValidationError{
-					field:  "TargetOfEvaluation",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, TargetOfEvaluationChangeEventValidationError{
-					field:  "TargetOfEvaluation",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
+	if _, ok := TargetOfEvaluationChangeEvent_Type_name[int32(m.GetType())]; !ok {
+		err := TargetOfEvaluationChangeEventValidationError{
+			field:  "Type",
+			reason: "value must be one of the defined enum values",
 		}
-	} else if v, ok := interface{}(m.GetTargetOfEvaluation()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return TargetOfEvaluationChangeEventValidationError{
-				field:  "TargetOfEvaluation",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
+		if !all {
+			return err
 		}
+		errors = append(errors, err)
 	}
 
-	if all {
-		switch v := interface{}(m.GetControlMonitoringStatus()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, TargetOfEvaluationChangeEventValidationError{
-					field:  "ControlMonitoringStatus",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
+	if m.TargetOfEvaluation != nil {
+
+		if m.GetTargetOfEvaluation() == nil {
+			err := TargetOfEvaluationChangeEventValidationError{
+				field:  "TargetOfEvaluation",
+				reason: "value is required",
 			}
-		case interface{ Validate() error }:
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetTargetOfEvaluation()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, TargetOfEvaluationChangeEventValidationError{
+						field:  "TargetOfEvaluation",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, TargetOfEvaluationChangeEventValidationError{
+						field:  "TargetOfEvaluation",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetTargetOfEvaluation()).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				errors = append(errors, TargetOfEvaluationChangeEventValidationError{
+				return TargetOfEvaluationChangeEventValidationError{
+					field:  "TargetOfEvaluation",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.ControlMonitoringStatus != nil {
+
+		if m.GetControlMonitoringStatus() == nil {
+			err := TargetOfEvaluationChangeEventValidationError{
+				field:  "ControlMonitoringStatus",
+				reason: "value is required",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetControlMonitoringStatus()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, TargetOfEvaluationChangeEventValidationError{
+						field:  "ControlMonitoringStatus",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, TargetOfEvaluationChangeEventValidationError{
+						field:  "ControlMonitoringStatus",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetControlMonitoringStatus()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return TargetOfEvaluationChangeEventValidationError{
 					field:  "ControlMonitoringStatus",
 					reason: "embedded message failed validation",
 					cause:  err,
-				})
+				}
 			}
 		}
-	} else if v, ok := interface{}(m.GetControlMonitoringStatus()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return TargetOfEvaluationChangeEventValidationError{
-				field:  "ControlMonitoringStatus",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
+
 	}
 
 	if len(errors) > 0 {

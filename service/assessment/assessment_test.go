@@ -244,6 +244,31 @@ func TestService_AssessEvidence(t *testing.T) {
 		wantErr          bool
 	}{
 		{
+			name: "Missing evidence",
+			args: args{
+				in0: context.TODO(),
+			},
+			hasRPCConnection: false,
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: "invalid request: rpc error: code = InvalidArgument desc = invalid request: invalid AssessEvidenceRequest.Evidence: value is required",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Empty evidence",
+			args: args{
+				in0:      context.TODO(),
+				evidence: &evidence.Evidence{},
+			},
+			hasRPCConnection: false,
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: "invalid request: rpc error: code = InvalidArgument desc = invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format",
+			},
+			wantErr: true,
+		},
+		{
 			name: "Assess resource without id",
 			args: args{
 				in0: context.TODO(),
@@ -256,7 +281,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			hasRPCConnection: true,
 			wantResp: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid evidence: invalid Evidence.Id: value must be a valid UUID",
+				StatusMessage: "invalid request: rpc error: code = InvalidArgument desc = invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format",
 			},
 			wantErr: true,
 		},
@@ -274,7 +299,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			hasRPCConnection: true,
 			wantResp: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid evidence: invalid Evidence.ToolId: value length must be at least 1 runes",
+				StatusMessage: "invalid request: rpc error: code = InvalidArgument desc = invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.ToolId: value length must be at least 1 runes",
 			},
 			wantErr: true,
 		},
@@ -292,7 +317,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			hasRPCConnection: true,
 			wantResp: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid evidence: invalid Evidence.Timestamp: value is required",
+				StatusMessage: "invalid request: rpc error: code = InvalidArgument desc = invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Timestamp: value is required",
 			},
 			wantErr: true,
 		},
@@ -313,6 +338,25 @@ func TestService_AssessEvidence(t *testing.T) {
 				Status: assessment.AssessEvidenceResponse_ASSESSED,
 			},
 			wantErr: false,
+		},
+		{
+			name: "Assess resource without resource id",
+			args: args{
+				in0: context.TODO(),
+				evidence: &evidence.Evidence{
+					Id:             "11111111-1111-1111-1111-111111111111",
+					ToolId:         "mock",
+					Timestamp:      timestamppb.Now(),
+					Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{Type: []string{"VirtualMachine"}}}}, t),
+					CloudServiceId: "00000000-0000-0000-0000-000000000000",
+				},
+			},
+			hasRPCConnection: true,
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: "invalid evidence: resource in evidence is missing the id field",
+			},
+			wantErr: true,
 		},
 		{
 			name: "No RPC connections",
@@ -396,7 +440,7 @@ func TestService_AssessEvidences(t *testing.T) {
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid evidence: invalid Evidence.ToolId: value length must be at least 1 runes",
+				StatusMessage: "invalid request: rpc error: code = InvalidArgument desc = invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.ToolId: value length must be at least 1 runes",
 			},
 		},
 		{
@@ -414,7 +458,7 @@ func TestService_AssessEvidences(t *testing.T) {
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid evidence: invalid Evidence.Id: value must be a valid UUID",
+				StatusMessage: "invalid request: rpc error: code = InvalidArgument desc = invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format",
 			},
 		},
 		{
@@ -652,6 +696,36 @@ func TestService_ListAssessmentResults(t *testing.T) {
 		wantRes *assessment.ListAssessmentResultsResponse
 		wantErr bool
 	}{
+		{
+			name: "Missing request",
+			args: args{
+				req: nil,
+			},
+			wantRes: nil,
+			wantErr: true,
+		},
+		{
+			name: "Empty request",
+			fields: fields{
+				results: map[string]*assessment.AssessmentResult{
+					"1": {
+						Id: "1",
+					},
+				},
+			},
+			args: args{
+				req: &assessment.ListAssessmentResultsRequest{},
+			},
+			wantRes: &assessment.ListAssessmentResultsResponse{
+				NextPageToken: "",
+				Results: []*assessment.AssessmentResult{
+					{
+						Id: "1",
+					},
+				},
+			},
+			wantErr: false,
+		},
 		{
 			name: "single page result",
 			fields: fields{

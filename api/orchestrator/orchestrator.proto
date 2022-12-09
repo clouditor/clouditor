@@ -418,8 +418,9 @@ message RegisterAssessmentToolRequest {
 }
 
 message ListAssessmentToolsRequest {
-  // filter tools by metric id
-  string metric_id = 1;
+  // Optional. Filter tools by metric id.
+  optional string filter_metric_id = 1
+    [ (validate.rules).string.min_len = 1 ];
 
   int32 page_size = 2;
   string page_token = 3;
@@ -550,27 +551,31 @@ message MetricChangeEvent {
     TYPE_METADATA_CHANGED = 3;
   }
 
-  Type type = 1;
+  Type type = 1
+    [(validate.rules).enum.defined_only = true];
 
   // The metric that is changing.
-  string metric_id = 2;
+  string metric_id = 2 [ (validate.rules).string.min_len = 1 ];
 
-  // Optional. The cloud service id that is affected by this change. Primarily
+  // The cloud service id that is affected by this change. Primarily
   // concerns metric configuration changes.
-  string cloud_service_id = 3;
+  string cloud_service_id = 3 [ (validate.rules).string.uuid = true ];
 }
 
 // Represents an external tool or service that offers assessments according to
 // certain metrics.
 message AssessmentTool {
-  string id = 1;
+  string id = 1
+  [ (validate.rules).string = {ignore_empty : true, uuid : true} ];
 
-  string name = 2;
+  string name = 2
+    [ (validate.rules).string.min_len = 1 ];
 
   string description = 3;
 
   // a list of metrics that this tool can assess, referred by their ids
-  repeated string available_metrics = 4;
+  repeated string available_metrics = 4
+  [ (validate.rules).repeated.items.string.min_len = 1 ];
 }
 
 message CloudService {
@@ -582,10 +587,12 @@ message CloudService {
   string description = 3;
 
   repeated Catalog catalogs_in_scope = 4
-      [ (tagger.tags) = "gorm:\"many2many:target_of_evaluations\"" ];
+      [ (tagger.tags) = "gorm:\"many2many:target_of_evaluations\"",
+      (validate.rules).repeated.items.message.required = true ];
 
   repeated clouditor.assessment.v1.Metric configured_metrics = 5
-      [ (tagger.tags) = "gorm:\"many2many:metric_configurations\"" ];
+      [ (tagger.tags) = "gorm:\"many2many:metric_configurations\"",
+      (validate.rules).repeated.items.message.required = true ];
 }
 
 message Catalog {
@@ -596,7 +603,8 @@ message Catalog {
   string description = 3;
 
   repeated Category categories = 4
-      [ (tagger.tags) = "gorm:\"constraint:OnDelete:CASCADE\"" ];
+      [ (tagger.tags) = "gorm:\"constraint:OnDelete:CASCADE\"",
+      (validate.rules).repeated.items.message.required = true ];
 
   // Certain security catalogs do not allow to select the scope of the controls,
   // but all controls are automatically "in scope", however they can be set to a
@@ -605,18 +613,20 @@ message Catalog {
 }
 
 message Category {
-  string name = 1 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
+  string name = 1 [ (tagger.tags) = "gorm:\"primaryKey\"",
+    (validate.rules).string.min_len = 1 ];
 
   // Reference to the catalog this category belongs to.
-  string catalog_id = 2 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
+  string catalog_id = 2 [ (tagger.tags) = "gorm:\"primaryKey\"",
+    (validate.rules).string.min_len = 1 ];
 
   string description = 3;
 
   repeated Control controls = 4 [
     (tagger.tags) =
         "gorm:\"foreignKey:category_name,category_"
-        "catalog_id;references:name,catalog_id;constraint:OnDelete:CASCADE\""
-  ];
+        "catalog_id;references:name,catalog_id;constraint:OnDelete:CASCADE\"",
+    (validate.rules).repeated.items.message.required = true ];
 }
 
 // Control represents a certain Control that needs to be fulfilled. It could be
@@ -626,9 +636,12 @@ message Category {
 message Control {
   // A short name of the control, e.g. OPS-01, as used in OSCAL; it is not a
   // unique ID!
-  string id = 1 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
-  string category_name = 2 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
-  string category_catalog_id = 3 [ (tagger.tags) = "gorm:\"primaryKey\"" ];
+  string id = 1 [ (tagger.tags) = "gorm:\"primaryKey\"",
+    (validate.rules).string.min_len = 1 ];
+  string category_name = 2 [ (tagger.tags) = "gorm:\"primaryKey\"",
+    (validate.rules).string.min_len = 1 ];
+  string category_catalog_id = 3 [ (tagger.tags) = "gorm:\"primaryKey\"",
+    (validate.rules).string.min_len = 1 ];
 
   // Human-readable name of the control
   string name = 4;
@@ -641,19 +654,25 @@ message Control {
   repeated Control controls = 6
       [ (tagger.tags) = "gorm:\"foreignKey:parent_control_id,parent_control_"
                         "category_name,parent_control_category_catalog_id;"
-                        "references=id,category_name;category_catalog_id\"" ];
+                        "references=id,category_name;category_catalog_id\"",
+      (validate.rules).repeated.items.message.required = true ];
+
   // metrics contains either a list of reference to metrics - in this case only
   // the id field of the metric is populated - or a list of populated metric
   // meta-data, most likely returned by the database.
   repeated clouditor.assessment.v1.Metric metrics = 7
       [ (tagger.tags) =
-            "gorm:\"many2many:control_metrics;constraint:OnDelete:CASCADE\"" ];
+            "gorm:\"many2many:control_metrics;constraint:OnDelete:CASCADE\"",
+      (validate.rules).repeated.items.message.required = true ];
 
   // Reference to the parent category this control belongs to.
 
-  optional string parent_control_id = 8;
-  optional string parent_control_category_name = 9;
-  optional string parent_control_category_catalog_id = 10;
+  optional string parent_control_id = 8
+    [ (validate.rules).string.min_len = 1 ];
+  optional string parent_control_category_name = 9
+    [ (validate.rules).string.min_len = 1 ];
+  optional string parent_control_category_catalog_id = 10
+  [ (validate.rules).string.min_len = 1 ];
 }
 
 // A Target of Evaluation binds a cloud service to a catalog, so the service is
@@ -670,7 +689,8 @@ message TargetOfEvaluation {
 
   // an assurance level is not offered by every catalog, therefore it is
   // optional
-  optional string assurance_level = 3;
+  optional string assurance_level = 3
+    [ (validate.rules).string.min_len = 1 ];
 
   // the controls that are in scope of this ToE. Note: For some security
   // catalogs, e.g., the EUCS, a specific set of controls (in the "worst case":
@@ -678,7 +698,8 @@ message TargetOfEvaluation {
   // at an appropriate time, e.g,. in CreateTargetOfEvaluation.
   repeated Control controls_in_scope = 4
       [ (tagger.tags) = "gorm:\"many2many:control_monitoring_statuses;"
-                        "constraint:OnDelete:CASCADE\"" ];
+                        "constraint:OnDelete:CASCADE\"",
+      (validate.rules).repeated.items.message.required = true ];
 }
 
 message ListControlMonitoringStatusRequest {
@@ -687,7 +708,8 @@ message ListControlMonitoringStatusRequest {
   string order_by = 3;
   bool asc = 4;
 
-  string cloud_service_id = 10;
+  string cloud_service_id = 10
+    [ (validate.rules).string.min_len = 1 ];
   string catalog_id = 11;
 }
 
@@ -697,16 +719,22 @@ message ListControlMonitoringStatusResponse {
 }
 
 message UpdateControlMonitoringStatusRequest {
-  ControlMonitoringStatus status = 1;
+  ControlMonitoringStatus status = 1
+    [ (validate.rules).message.required = true ];
 }
 
 message ControlMonitoringStatus {
-  string target_of_evaluation_cloud_service_id = 1;
-  string target_of_evaluation_catalog_id = 2;
+  string target_of_evaluation_cloud_service_id = 1
+    [ (validate.rules).string.min_len = 1 ];
+  string target_of_evaluation_catalog_id = 2
+    [ (validate.rules).string.min_len = 1 ];
 
-  string control_id = 3;
-  string control_category_name = 4;
-  string control_category_catalog_id = 5;
+  string control_id = 3
+    [ (validate.rules).string.min_len = 1 ];
+  string control_category_name = 4
+    [ (validate.rules).string.min_len = 1 ];
+  string control_category_catalog_id = 5
+    [ (validate.rules).string.min_len = 1 ];
 
   enum Status {
     STATUS_UNSPECIFIED = 0;
@@ -806,14 +834,19 @@ message UpdateCatalogRequest {
 }
 
 message GetCategoryRequest {
-  string catalog_id = 1;
-  string category_name = 2;
+  string catalog_id = 1
+    [ (validate.rules).string.min_len = 1 ];
+  string category_name = 2
+    [ (validate.rules).string.min_len = 1 ];
 }
 
 message GetControlRequest {
-  string catalog_id = 1;
-  string category_name = 2;
-  string control_id = 3;
+  string catalog_id = 1
+    [ (validate.rules).string.min_len = 1 ];
+  string category_name = 2
+    [ (validate.rules).string.min_len = 1 ];
+  string control_id = 3
+    [ (validate.rules).string.min_len = 1 ];
 }
 
 message ListControlsRequest {
@@ -883,12 +916,15 @@ message TargetOfEvaluationChangeEvent {
     TYPE_CONTROL_MONITORING_STATUS_UPDATED = 4;
   }
 
-  Type type = 1;
+  Type type = 1
+    [(validate.rules).enum.defined_only = true];
 
   // If the type is a TargetOfEvaluation_* the target_of_evaluation must be set
-  TargetOfEvaluation target_of_evaluation = 2;
+  optional TargetOfEvaluation target_of_evaluation = 2
+    [ (validate.rules).message.required = true ];
 
   // If the type is a ControlMonitoringStatus_* the control_monitoring_status
   // must be set
-  ControlMonitoringStatus control_monitoring_status = 3;
+  optional ControlMonitoringStatus control_monitoring_status = 3
+    [ (validate.rules).message.required = true ];
 }

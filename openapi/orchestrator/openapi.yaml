@@ -94,9 +94,9 @@ paths:
                  passed metric id
             operationId: Orchestrator_ListAssessmentTools
             parameters:
-                - name: metricId
+                - name: filterMetricId
                   in: query
-                  description: filter tools by metric id
+                  description: Optional. Filter tools by metric id.
                   schema:
                     type: string
                 - name: pageSize

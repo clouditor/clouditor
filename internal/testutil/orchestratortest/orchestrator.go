@@ -53,9 +53,11 @@ func NewCatalog() *orchestrator.Catalog {
 			Description: "test",
 			CatalogId:   "Cat1234",
 			Controls: []*orchestrator.Control{{
-				Id:          "Cont1234",
-				Name:        "Mock Control",
-				Description: "This is a mock control",
+				Id:                "Cont1234",
+				Name:              "Mock Control",
+				CategoryName:      "Mock Category name",
+				CategoryCatalogId: "Cat1234",
+				Description:       "This is a mock control",
 				Metrics: []*assessment.Metric{{
 					Id:          "MockMetric",
 					Name:        "A Mock Metric",

@@ -60,6 +60,22 @@ func (m *ListAssessmentResultsRequest) validate(all bool) error {
 
 	var errors []error
 
+	for idx, item := range m.GetFilteredMetricId() {
+		_, _ = idx, item
+
+		if utf8.RuneCountInString(item) < 1 {
+			err := ListAssessmentResultsRequestValidationError{
+				field:  fmt.Sprintf("FilteredMetricId[%v]", idx),
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
 	// no validation rules for PageSize
 
 	// no validation rules for PageToken

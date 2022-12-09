@@ -232,19 +232,51 @@ func (svc *Service) Authorizer() api.Authorizer {
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
 func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
-	// Validate evidence
-	resourceId, err := req.Evidence.ValidateWithResource()
+	// Validate request
+	err = service.ValidateRequest(req)
 	if err != nil {
-		newError := fmt.Errorf("invalid evidence: %w", err)
-		log.Error(newError)
-		svc.informHooks(nil, newError)
+		err = fmt.Errorf("invalid request: %w", err)
+		log.Error(err){
+			name: "No RPC connections",
+			args: args{
+				in0: context.TODO(),
+				evidence: &evidence.Evidence{
+					Id:             "11111111-1111-1111-1111-111111111111",
+					ToolId:         "mock",
+					Timestamp:      timestamppb.Now(),
+					CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+				},
+			},
+			hasRPCConnection: false,
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: "could not evaluate evidence: could not retrieve metric definitions: could not retrieve metric list from orchestrator",
+			},
+			wantErr: true,
+		},
+		svc.informHooks(nil, err)
 
 		res = &assessment.AssessEvidenceResponse{
 			Status:        assessment.AssessEvidenceResponse_FAILED,
-			StatusMessage: newError.Error(),
+			StatusMessage: err.Error(),
+		}
+		return res, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	// Validate evidence
+	resourceId, err := req.Evidence.ValidateWithResource()
+	if err != nil {
+		err = fmt.Errorf("invalid evidence: %w", err)
+		log.Error(err)
+		svc.informHooks(nil, err)
+
+		res = &assessment.AssessEvidenceResponse{
+			Status:        assessment.AssessEvidenceResponse_FAILED,
+			StatusMessage: err.Error(),
 		}
 
-		return res, status.Errorf(codes.InvalidArgument, "%v", newError)
+		return res, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	// Assess evidence

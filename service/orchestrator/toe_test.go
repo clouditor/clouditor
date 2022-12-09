@@ -737,6 +737,11 @@ func TestService_UpdateControlMonitoringStatus(t *testing.T) {
 				req: &orchestrator.UpdateControlMonitoringStatusRequest{
 					Status: &orchestrator.ControlMonitoringStatus{
 						TargetOfEvaluationCloudServiceId: testutil.TestCloudService2,
+						ControlId:                        orchestratortest.MockControlID,
+						ControlCategoryName:              orchestratortest.MockCategoryName,
+						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
+						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
+						Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
 					},
 				},
 			},
