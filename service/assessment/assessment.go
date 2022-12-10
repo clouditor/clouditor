@@ -238,11 +238,11 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 		log.Error(err)
 		svc.informHooks(nil, err)
 
-		res = &assessment.AssessEvidenceResponse{
-			Status:        assessment.AssessEvidenceResponse_FAILED,
-			StatusMessage: err.Error(),
-		}
-		return res, status.Errorf(codes.InvalidArgument, "%v", err)
+		// res = &assessment.AssessEvidenceResponse{
+		// 	Status:        assessment.AssessEvidenceResponse_FAILED,
+		// 	StatusMessage: err.Error(),
+		// }
+		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	// Validate evidence
@@ -252,32 +252,34 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 		log.Error(err)
 		svc.informHooks(nil, err)
 
-		res = &assessment.AssessEvidenceResponse{
-			Status:        assessment.AssessEvidenceResponse_FAILED,
-			StatusMessage: err.Error(),
-		}
+		// res = &assessment.AssessEvidenceResponse{
+		// 	Status:        assessment.AssessEvidenceResponse_FAILED,
+		// 	StatusMessage: err.Error(),
+		// }
 
-		return res, status.Errorf(codes.InvalidArgument, "%v", err)
+		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	// Assess evidence
 	err = svc.handleEvidence(req.Evidence, resourceId)
 	if err != nil {
-		res = &assessment.AssessEvidenceResponse{
-			Status:        assessment.AssessEvidenceResponse_FAILED,
-			StatusMessage: err.Error(),
-		}
+		// res = &assessment.AssessEvidenceResponse{
+		// 	Status:        assessment.AssessEvidenceResponse_FAILED,
+		// 	StatusMessage: err.Error(),
+		// }
 
-		newError := errors.New("error while handling evidence")
-		log.Errorf("%v: %v", newError, err)
+		err = fmt.Errorf("error while handling evidence: %v", err)
+		log.Error(err)
+		// log.Errorf("%v: %v", newError, err)
 
-		return res, status.Errorf(codes.Internal, "%v", newError)
+		return res, status.Errorf(codes.Internal, "%v", err)
 	}
 
 	// Create response
-	res = &assessment.AssessEvidenceResponse{
-		Status: assessment.AssessEvidenceResponse_ASSESSED,
-	}
+	// res = &assessment.AssessEvidenceResponse{
+	// 	Status: assessment.AssessEvidenceResponse_ASSESSED,
+	// }
+	res = &assessment.AssessEvidenceResponse{}
 
 	return res, nil
 }
@@ -310,6 +312,12 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 		res, err = svc.AssessEvidence(context.Background(), assessEvidencesReq)
 		if err != nil {
 			log.Errorf("Error assessing evidence: %v", err)
+
+			// Create response message. The AssessEvidence method does not need that message, so we have to create it here for the stream response.
+			res = &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: err.Error(),
+			}
 		}
 
 		// Send response back to the client
@@ -320,9 +328,9 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 			return nil
 		}
 		if err != nil {
-			newError := fmt.Errorf("cannot send response to the client: %w", err)
-			log.Error(newError)
-			return status.Errorf(codes.Unknown, "%v", newError)
+			err = fmt.Errorf("cannot send response to the client: %w", err)
+			log.Error(err)
+			return status.Errorf(codes.Unknown, "%v", err)
 		}
 	}
 }
