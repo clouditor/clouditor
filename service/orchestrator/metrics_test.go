@@ -314,7 +314,7 @@ func TestService_UpdateMetric(t *testing.T) {
 			name: "Update existing metric",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Create(assessment.Metric{Id: "TransportEncryptionEnabled"})
+					_ = s.Create(&assessment.Metric{Id: "TransportEncryptionEnabled"})
 				}),
 			},
 			args: args{
@@ -408,7 +408,7 @@ func TestService_GetMetric(t *testing.T) {
 			name: "Get existing metric",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Create(assessment.Metric{
+					_ = s.Create(&assessment.Metric{
 						Id:          "TransportEncryptionEnabled",
 						Name:        "Transport Encryption: Enabled",
 						Description: "This metric describes, whether transport encryption is turned on or not",
@@ -640,7 +640,7 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 			name: "update",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Create(assessment.Metric{Id: "TransportEncryptionEnabled"})
+					_ = s.Create(&assessment.Metric{Id: "TransportEncryptionEnabled"})
 				}),
 				metricsFile: "metrics.json",
 			},
@@ -712,11 +712,11 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 			name: "metric found",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Create(assessment.Metric{Id: MockMetricID})
-					_ = s.Create(orchestrator.CloudService{
+					_ = s.Create(&assessment.Metric{Id: MockMetricID})
+					_ = s.Create(&orchestrator.CloudService{
 						Id: DefaultTargetCloudServiceId,
 					})
-					_ = s.Create(assessment.MetricConfiguration{
+					_ = s.Create(&assessment.MetricConfiguration{
 						MetricId:       MockMetricID,
 						CloudServiceId: DefaultTargetCloudServiceId,
 						Operator:       "==",
@@ -817,7 +817,7 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 			name: "no error",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Create(assessment.Metric{Id: MockMetricID})
+					_ = s.Create(&assessment.Metric{Id: MockMetricID})
 					_ = s.Create(&orchestrator.CloudService{
 						Id: DefaultTargetCloudServiceId,
 					})
@@ -1062,7 +1062,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			name: "cloudService does not exist in storage",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Create(assessment.Metric{Id: "MyMetric"})
+					_ = s.Create(&assessment.Metric{Id: "MyMetric"})
 				}),
 				authz: &service.AuthorizationStrategyAllowAll{},
 			},
@@ -1086,7 +1086,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			name: "append metric configuration",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Create(assessment.Metric{Id: MockMetricID})
+					_ = s.Create(&assessment.Metric{Id: MockMetricID})
 					_ = s.Create(&orchestrator.CloudService{Id: DefaultTargetCloudServiceId})
 				}),
 				authz: &service.AuthorizationStrategyAllowAll{},
@@ -1120,7 +1120,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			name: "replace metric configuration",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Create(assessment.Metric{Id: MockMetricID})
+					_ = s.Create(&assessment.Metric{Id: MockMetricID})
 					_ = s.Create(&orchestrator.CloudService{
 						Id: DefaultTargetCloudServiceId,
 					})
