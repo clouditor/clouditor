@@ -216,7 +216,7 @@ func TestService_CreateMetric(t *testing.T) {
 			name: "Create metric which already exists",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Create(assessment.Metric{Id: "TLSVersion"})
+					assert.NoError(t, s.Create(&assessment.Metric{Id: "TLSVersion"}))
 				}),
 			},
 			args: args{
