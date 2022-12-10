@@ -121,6 +121,8 @@ func prepareMetric(m *assessment.Metric) (err error) {
 	}
 
 	config.IsDefault = true
+	config.UpdatedAt = timestamppb.Now()
+	config.MetricId = m.GetId()
 
 	defaultMetricConfigurations[m.Id] = config
 
@@ -342,7 +344,7 @@ func (svc *Service) GetMetricConfiguration(ctx context.Context, req *orchestrato
 			return config, nil
 		}
 
-		return nil, status.Errorf(codes.NotFound, "metric configuration not found")
+		return nil, status.Errorf(codes.NotFound, "metric configuration not found for metric with id '%s'", req.GetMetricId())
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -369,9 +371,10 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 		return nil, service.ErrPermissionDenied
 	}
 
-	// Make sure that the configuration also has metric/service ID set
+	// Make sure that the configuration also has metric/service ID and timestamp set
 	req.Configuration.CloudServiceId = req.CloudServiceId
 	req.Configuration.MetricId = req.MetricId
+	req.Configuration.UpdatedAt = timestamppb.Now()
 
 	err = svc.storage.Save(&req.Configuration)
 	if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
