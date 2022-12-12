@@ -198,21 +198,8 @@ func TestService_StartDiscovery(t *testing.T) {
 
 				// Retrieve the last one
 				e := got[len(got)-1]
-
-				// Check, if evidence was sent
-				assert.NotNil(t, e)
-				// Check if UUID has been created
-				assert.NotEmpty(t, e.Id)
-				// Check if cloud resources / properties are there
-				assert.NotEmpty(t, e.Resource)
-				// Check if ID of mockDiscovery's resource is mapped to resource id of the evidence
-
-				// Only the last element sent can be checked
-				assert.Equal(t, string(want[len(want)-1].GetID()), e.Resource.GetStructValue().AsMap()["id"].(string))
-
-				// Assert cloud service ID
-				assert.Equal(t, tt.fields.csID, e.CloudServiceId)
-				assert.Equal(t, tt.fields.csID, e.Resource.GetStructValue().AsMap()["serviceId"].(string))
+				err := e.Validate()
+				assert.NoError(t, err)
 			}
 		})
 	}

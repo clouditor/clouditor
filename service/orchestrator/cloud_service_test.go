@@ -88,6 +88,10 @@ func TestService_RegisterCloudService(t *testing.T) {
 				assert.EqualError(t, err, tt.err.Error())
 			}
 
+			// Check cloud service by validate method
+			err = res.Validate()
+			assert.NoError(t, err)
+
 			if tt.res != nil {
 				assert.NotEmpty(t, res.Id)
 			}

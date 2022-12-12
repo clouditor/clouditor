@@ -142,6 +142,14 @@ func Test_loadMetricImplementation(t *testing.T) {
 				return assert.ErrorIs(t, err, os.ErrNotExist)
 			},
 		},
+		{
+			name: "Happy path",
+			args: args{
+				metricID: MockMetricID,
+				file:     "internal/testutil/metrictest/metric.rego",
+			},
+			wantErr: assert.NoError,
+		},
 	}
 
 	for _, tt := range tests {
@@ -149,9 +157,9 @@ func Test_loadMetricImplementation(t *testing.T) {
 			gotImpl, err := loadMetricImplementation(tt.args.metricID, tt.args.file)
 			if tt.wantErr != nil {
 				tt.wantErr(t, err, tt.args)
-			}
-			if !reflect.DeepEqual(gotImpl, tt.wantImpl) {
-				t.Errorf("loadMetricImplementation() = %v, want %v", gotImpl, tt.wantImpl)
+			} else {
+				err = gotImpl.Validate()
+				assert.NoError(t, err)
 			}
 		})
 	}
@@ -287,6 +295,10 @@ func TestService_CreateMetric(t *testing.T) {
 			}
 			gotMetric, err := svc.CreateMetric(tt.args.in0, tt.args.req)
 			tt.wantErr(t, err)
+
+			// Check metric by validate method
+			err = gotMetric.Validate()
+			assert.NoError(t, err)
 
 			if !proto.Equal(gotMetric, tt.wantMetric) {
 				t.Errorf("Service.CreateMetric() = %v, want %v", gotMetric, tt.wantMetric)
