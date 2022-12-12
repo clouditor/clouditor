@@ -370,7 +370,7 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 		return nil, service.ErrPermissionDenied
 	}
 
-	// Make sure that the configuration also has metric/service ID and timestamp set
+	// Make sure that the configuration also has metric/service ID and updated at set
 	req.Configuration.CloudServiceId = req.CloudServiceId
 	req.Configuration.MetricId = req.MetricId
 	req.Configuration.UpdatedAt = timestamppb.Now()
