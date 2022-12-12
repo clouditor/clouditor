@@ -5,10 +5,6 @@ operator = data.operator
 
 target_value = data.target_value
 
-is_default = data.is_default
-
-updated_at = data.updated_at
-
 config = data.config
 
 compare(operator, target_value, actual_value) {
