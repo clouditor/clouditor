@@ -4,28 +4,28 @@ go 1.19
 
 // runtime dependencies (core)
 require (
-	github.com/MicahParks/keyfunc v1.5.1
-	github.com/glebarez/sqlite v1.4.6
+	github.com/MicahParks/keyfunc v1.7.0
+	github.com/glebarez/sqlite v1.6.0
 	github.com/go-co-op/gocron v1.18.0
 	github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.14.0
 	github.com/logrusorgru/aurora/v3 v3.0.0
-	github.com/open-policy-agent/opa v0.45.0
+	github.com/open-policy-agent/opa v0.47.2
 	github.com/oxisto/oauth2go v0.5.13
 	github.com/sirupsen/logrus v1.9.0
-	github.com/spf13/cobra v1.6.0
+	github.com/spf13/cobra v1.6.1
 	github.com/spf13/viper v1.14.0
 	github.com/stretchr/testify v1.8.1
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e
-	golang.org/x/oauth2 v0.2.0
+	golang.org/x/oauth2 v0.3.0
 	google.golang.org/genproto v0.0.0-20221114212237-e4508ebdbee1
 	google.golang.org/grpc v1.51.0
 	google.golang.org/protobuf v1.28.1
 	gorm.io/driver/postgres v1.4.4
-	gorm.io/gorm v1.23.8
+	gorm.io/gorm v1.24.2
 )
 
 // runtime dependencies (Azure)
@@ -43,7 +43,7 @@ require (
 require (
 	github.com/aws/aws-sdk-go-v2 v1.17.2
 	github.com/aws/aws-sdk-go-v2/config v1.18.2
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.74.1
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.75.0
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.26.1
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.29.0
 	github.com/aws/aws-sdk-go-v2/service/sts v1.17.4
@@ -53,7 +53,7 @@ require (
 // runtime dependencies (k8s)
 require (
 	k8s.io/api v0.25.0
-	k8s.io/apimachinery v0.25.0
+	k8s.io/apimachinery v0.26.0
 	k8s.io/client-go v0.25.0
 )
 
@@ -97,7 +97,7 @@ require (
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
-	github.com/glebarez/go-sqlite v1.17.3 // indirect
+	github.com/glebarez/go-sqlite v1.20.0 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.19.5 // indirect
@@ -119,7 +119,7 @@ require (
 	github.com/jackc/pgtype v1.12.0 // indirect
 	github.com/jackc/pgx/v4 v4.17.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
-	github.com/jinzhu/now v1.1.4 // indirect
+	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
@@ -127,7 +127,7 @@ require (
 	github.com/lyft/protoc-gen-star v0.5.3 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
-	github.com/mattn/go-isatty v0.0.14 // indirect
+	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
@@ -149,33 +149,34 @@ require (
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/yashtewari/glob-intersection v0.1.0 // indirect
-	golang.org/x/net v0.2.0 // indirect
+	golang.org/x/net v0.4.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.2.0 // indirect
-	golang.org/x/term v0.2.0 // indirect
-	golang.org/x/text v0.4.0 // indirect
+	golang.org/x/sys v0.3.0 // indirect
+	golang.org/x/term v0.3.0 // indirect
+	golang.org/x/text v0.5.0 // indirect
 	golang.org/x/time v0.0.0-20220609170525-579cf78fd858 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/klog/v2 v2.70.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1 // indirect
-	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed // indirect
-	modernc.org/libc v1.16.8 // indirect
-	modernc.org/mathutil v1.4.1 // indirect
-	modernc.org/memory v1.1.1 // indirect
-	modernc.org/sqlite v1.17.3 // indirect
+	k8s.io/klog/v2 v2.80.1 // indirect
+	k8s.io/kube-openapi v0.0.0-20221012153701-172d655c2280 // indirect
+	k8s.io/utils v0.0.0-20221107191617-1a15be271d1d // indirect
+	modernc.org/libc v1.21.5 // indirect
+	modernc.org/mathutil v1.5.0 // indirect
+	modernc.org/memory v1.4.0 // indirect
+	modernc.org/sqlite v1.20.0 // indirect
 	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
-	sigs.k8s.io/yaml v1.2.0 // indirect
+	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
 require github.com/envoyproxy/protoc-gen-validate v0.1.0
 
 require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.13.8 // indirect
+	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/iancoleman/strcase v0.2.0 // indirect
 )
 
