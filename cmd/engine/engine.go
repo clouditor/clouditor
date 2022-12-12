@@ -136,8 +136,7 @@ var engineCmd = &cobra.Command{
 func init() {
 	log = logrus.WithField("component", "grpc")
 	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true}}
-	log.Logger.SetLevel(logrus.DebugLevel)
-
+	
 	cobra.OnInitialize(initConfig)
 
 	engineCmd.Flags().String(APIDefaultUserFlag, DefaultAPIDefaultUser, "Specifies the default API username")
