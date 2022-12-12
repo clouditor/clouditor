@@ -208,6 +208,8 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 	// if the metric configuration (i.e. its hash) for a particular service has changed.
 	key = fmt.Sprintf("%s-%s-%s", metricID, serviceID, config.Hash())
 
+	// Try to fetch a cached prepared query for the specified key. If the key is not found, we create a new query with
+	// the function specified as the second parameter
 	query, err = re.qc.Get(key, func(key string) (*rego.PreparedEvalQuery, error) {
 		var (
 			tx   storage.Transaction
@@ -218,16 +220,18 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 		bundle := fmt.Sprintf("%s/policies/bundles/%s/", baseDir, metricID)
 		operators := fmt.Sprintf("%s/policies/operators.rego", baseDir)
 
-		// TODO(oxisto): Add description
+		// The contents of the data map is available as the data variable within the Rego evaluation
 		data := map[string]interface{}{
 			"target_value": config.TargetValue.AsInterface(),
 			"operator":     config.Operator,
 			"config":       config,
 		}
 
+		// Create a new in-memory Rego store based on our data map
 		store := inmem.NewFromObject(data)
 		ctx := context.Background()
 
+		// Create a new transaction in the store
 		tx, err = store.NewTransaction(ctx, storage.WriteParams)
 		if err != nil {
 			return nil, fmt.Errorf("could not create transaction: %w", err)
@@ -238,16 +242,19 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 		// Convert camelCase metric in under_score_style for package name
 		pkg = util.CamelCaseToSnakeCase(metricID)
 
+		// Fetch the metric implementation, i.e., the Rego code from the metric source
 		impl, err = src.MetricImplementation(assessment.MetricImplementation_LANGUAGE_REGO, metricID)
 		if err != nil {
 			return nil, fmt.Errorf("could not fetch policy for metric %s: %w", metricID, err)
 		}
 
+		// Insert/Update the policy. The bundle path depends on the metric ID
 		err = store.UpsertPolicy(context.Background(), tx, bundle+"metric.rego", []byte(impl.Code))
 		if err != nil {
 			return nil, fmt.Errorf("could not upsert policy: %w", err)
 		}
 
+		// Create a new Rego prepared query evaluation, which can later be used to query the metric on any object (input)
 		query, err := rego.New(
 			rego.Query(fmt.Sprintf(`
 			applicable = data.%s.%s.applicable;
@@ -268,6 +275,7 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 			return nil, fmt.Errorf("could not prepare rego evaluation for metric %s: %w", metricID, err)
 		}
 
+		// Commit the transaction into the store
 		err = store.Commit(ctx, tx)
 		if err != nil {
 			return nil, fmt.Errorf("could not commit transaction: %w", err)
