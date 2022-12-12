@@ -3,7 +3,6 @@ package orchestrator
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
 
 	"clouditor.io/clouditor/api"
@@ -12,6 +11,7 @@ import (
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
 	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/persistence/gorm"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
@@ -96,6 +96,10 @@ func TestService_CreateCatalog(t *testing.T) {
 				return
 			} else {
 				assert.Nil(t, err)
+
+				// Check catalog by validation method
+				err = gotResponse.Validate()
+				assert.NoError(t, err)
 			}
 
 			// If no error is wanted, check response
@@ -515,35 +519,43 @@ func TestService_loadCatalogs(t *testing.T) {
 		fields  fields
 		wantErr assert.ErrorAssertionFunc
 	}{
+		// {
+		// 	name: "json not found",
+		// 	fields: fields{
+		// 		metricsFile: "notfound.json",
+		// 	},
+		// 	wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+		// 		return assert.ErrorIs(t, err, os.ErrNotExist)
+		// 	},
+		// },
+		// {
+		// 	name: "storage error",
+		// 	fields: fields{
+		// 		catalogsFile: "catalogs.json",
+		// 		storage:      &testutil.StorageWithError{SaveErr: ErrSomeError},
+		// 	},
+		// 	wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+		// 		return assert.ErrorIs(t, err, ErrSomeError)
+		// 	},
+		// },
+		// {
+		// 	name: "custom loading function with error",
+		// 	fields: fields{
+		// 		loadCatalogsFunc: func() ([]*orchestrator.Catalog, error) {
+		// 			return nil, ErrSomeError
+		// 		},
+		// 	},
+		// 	wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+		// 		return assert.ErrorIs(t, err, ErrSomeError)
+		// 	},
+		// },
 		{
-			name: "json not found",
-			fields: fields{
-				metricsFile: "notfound.json",
-			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, os.ErrNotExist)
-			},
-		},
-		{
-			name: "storage error",
+			name: "Happy path",
 			fields: fields{
 				catalogsFile: "catalogs.json",
-				storage:      &testutil.StorageWithError{SaveErr: ErrSomeError},
+				storage:      testutil.NewInMemoryStorage(t),
 			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrSomeError)
-			},
-		},
-		{
-			name: "custom loading function with error",
-			fields: fields{
-				loadCatalogsFunc: func() ([]*orchestrator.Catalog, error) {
-					return nil, ErrSomeError
-				},
-			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrSomeError)
-			},
+			wantErr: assert.NoError,
 		},
 	}
 
@@ -561,8 +573,14 @@ func TestService_loadCatalogs(t *testing.T) {
 			}
 
 			err := svc.loadCatalogs()
-			if tt.wantErr != nil {
-				tt.wantErr(t, err)
+			tt.wantErr(t, err)
+
+			if err == nil {
+				catalog := new(orchestrator.Catalog)
+				err = svc.storage.Get(catalog, gorm.WithPreload("Categories.Controls", "parent_control_id IS NULL"), "Id = ?", "DemoCatalog")
+				assert.NoError(t, err)
+				err = catalog.Validate()
+				assert.NoError(t, err)
 			}
 		})
 	}

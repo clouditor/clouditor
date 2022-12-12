@@ -155,9 +155,9 @@ func Test_loadMetricImplementation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotImpl, err := loadMetricImplementation(tt.args.metricID, tt.args.file)
-			if tt.wantErr != nil {
-				tt.wantErr(t, err, tt.args)
-			} else {
+			tt.wantErr(t, err, tt.args)
+
+			if err == nil {
 				err = gotImpl.Validate()
 				assert.NoError(t, err)
 			}
