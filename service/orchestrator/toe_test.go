@@ -524,7 +524,7 @@ func TestService_ListControlMonitoringStatus(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(orchestrator.CloudService{Id: orchestratortest.MockServiceID}))
+					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: orchestratortest.MockServiceID}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation()))
 				}),
 				authz: &service.AuthorizationStrategyAllowAll{},
@@ -562,9 +562,9 @@ func TestService_ListControlMonitoringStatus(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(orchestrator.CloudService{Id: orchestratortest.MockServiceID}))
+					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: orchestratortest.MockServiceID}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation()))
-					assert.NoError(t, s.Update(orchestrator.ControlMonitoringStatus{
+					assert.NoError(t, s.Update(&orchestrator.ControlMonitoringStatus{
 						ControlId:                        orchestratortest.MockControlID,
 						ControlCategoryName:              orchestratortest.MockCategoryName,
 						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
@@ -677,7 +677,7 @@ func TestService_UpdateControlMonitoringStatus(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(orchestrator.CloudService{Id: orchestratortest.MockServiceID}))
+					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: orchestratortest.MockServiceID}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation()))
 				}),
 				authz: &service.AuthorizationStrategyAllowAll{},
