@@ -398,7 +398,7 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 				MetricId:       metricID,
 				CloudServiceId: ev.CloudServiceId,
 				IsDefault:      data.IsDefault,
-				UpdatedAt:      data.UpdatedAt,
+				UpdatedAt:      timestamppb.New(*data.UpdatedAt),
 			},
 			Compliant:             data.Compliant,
 			EvidenceId:            ev.GetId(),

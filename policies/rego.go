@@ -30,6 +30,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
@@ -219,14 +220,17 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 		bundle := fmt.Sprintf("%s/policies/bundles/%s/", baseDir, metricID)
 		operators := fmt.Sprintf("%s/policies/operators.rego", baseDir)
 
-		c := map[string]interface{}{
+		// TODO(oxisto): Add description
+		// TODO(anatheka): Check if AsTime == 0
+
+		data := map[string]interface{}{
 			"target_value": config.TargetValue.AsInterface(),
 			"operator":     config.Operator,
-			"updated_at":   config.UpdatedAt,
+			"updated_at":   config.UpdatedAt.AsTime(),
 			"is_default":   config.IsDefault,
 		}
 
-		store := inmem.NewFromObject(c)
+		store := inmem.NewFromObject(data)
 		ctx := context.Background()
 
 		tx, err = store.NewTransaction(ctx, storage.WriteParams)
@@ -255,8 +259,8 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 			compliant = data.%s.%s.compliant;
 			operator = data.clouditor.operator;
 			target_value = data.clouditor.target_value;
-			updated_at = {};
-			is_default = true`, prefix, pkg, prefix, pkg)),
+			updated_at = data.clouditor.updated_at;
+			is_default = data.clouditor.is_default`, prefix, pkg, prefix, pkg)),
 			rego.Package(prefix),
 			rego.Store(store),
 			rego.Transaction(tx),
@@ -295,6 +299,8 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 		Compliant:   results[0].Bindings["compliant"].(bool),
 		Operator:    results[0].Bindings["operator"].(string),
 		TargetValue: results[0].Bindings["target_value"],
+		IsDefault:   results[0].Bindings["is_default"].(bool),
+		UpdatedAt:   results[0].Bindings["updated_at"].(*time.Time),
 	}
 
 	if !result.Applicable {
