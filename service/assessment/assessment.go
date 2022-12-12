@@ -375,26 +375,12 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 
 		log.Debugf("Evaluated evidence %v with metric '%v' as %v", ev.Id, metricID, data.Compliant)
 
-		// Get metric
-		metricConfiguration, err := svc.orchestratorClient.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{
-			CloudServiceId: ev.GetCloudServiceId(),
-			MetricId:       metricID,
-		})
+		targetValue := data.TargetValue
+
+		convertedTargetValue, err := convertTargetValue(targetValue)
 		if err != nil {
-			return fmt.Errorf("could not get metric configuration for metric with id '%s': %w", metricID, err)
+			return fmt.Errorf("could not convert target value: %w", err)
 		}
-
-		// TODO(all): Do we need that. How and where should it be assigned to the cloud service id?
-		// Set cloud service id to metric configuration
-		metricConfiguration.CloudServiceId = ev.GetCloudServiceId()
-
-		// TODO(anatheka): Do we need the following anymore?
-		// targetValue := data.TargetValue
-
-		// convertedTargetValue, err := convertTargetValue(targetValue)
-		// if err != nil {
-		// 	return fmt.Errorf("could not convert target value: %w", err)
-		// }
 
 		types, err = ev.ResourceTypes()
 		if err != nil {
@@ -402,11 +388,16 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 		}
 
 		result := &assessment.AssessmentResult{
-			Id:                    uuid.NewString(),
-			Timestamp:             timestamppb.Now(),
-			CloudServiceId:        ev.GetCloudServiceId(),
-			MetricId:              metricID,
-			MetricConfiguration:   metricConfiguration,
+			Id:             uuid.NewString(),
+			Timestamp:      timestamppb.Now(),
+			CloudServiceId: ev.GetCloudServiceId(),
+			MetricId:       metricID,
+			MetricConfiguration: &assessment.MetricConfiguration{
+				TargetValue:    convertedTargetValue,
+				Operator:       data.Operator,
+				MetricId:       metricID,
+				CloudServiceId: ev.CloudServiceId,
+			},
 			Compliant:             data.Compliant,
 			EvidenceId:            ev.GetId(),
 			ResourceId:            resourceId,
@@ -610,9 +601,6 @@ func (svc *Service) MetricConfiguration(cloudServiceID, metricID string) (config
 		if err != nil {
 			return nil, fmt.Errorf("could not retrieve metric configuration for %s: %w", metricID, err)
 		}
-
-		// Set timestamp
-		config.UpdatedAt = timestamppb.Now()
 
 		cache = cachedConfiguration{
 			cachedAt:            time.Now(),

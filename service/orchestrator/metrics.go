@@ -121,7 +121,6 @@ func prepareMetric(m *assessment.Metric) (err error) {
 	}
 
 	config.IsDefault = true
-	config.UpdatedAt = timestamppb.Now()
 	config.MetricId = m.GetId()
 
 	defaultMetricConfigurations[m.Id] = config
