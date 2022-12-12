@@ -33,6 +33,7 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var (
@@ -58,6 +59,8 @@ type Result struct {
 	TargetValue interface{} `mapstructure:"target_value"`
 	Operator    string
 	MetricId    string
+	UpdatedAt   *timestamppb.Timestamp
+	IsDefault   bool
 }
 
 // MetricsSource is used to retrieve a list of metrics and to retrieve a metric

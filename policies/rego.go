@@ -254,7 +254,9 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 			applicable = data.%s.%s.applicable;
 			compliant = data.%s.%s.compliant;
 			operator = data.clouditor.operator;
-			target_value = data.clouditor.target_value`, prefix, pkg, prefix, pkg)),
+			target_value = data.clouditor.target_value;
+			updated_at = {};
+			is_default = true`, prefix, pkg, prefix, pkg)),
 			rego.Package(prefix),
 			rego.Store(store),
 			rego.Transaction(tx),
