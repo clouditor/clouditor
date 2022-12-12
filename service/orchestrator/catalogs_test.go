@@ -185,7 +185,9 @@ func TestService_GetCatalog(t *testing.T) {
 			res, err := orchestratorService.GetCatalog(context.Background(), tt.args.req)
 
 			// Validate the error via the ErrorAssertionFunc function
-			tt.wantErr(t, err)
+			if tt.wantErr != nil {
+				tt.wantErr(t, err)
+			}
 
 			// Validate the response via the ValueAssertionFunc function
 			tt.wantResponse(t, res)
@@ -573,7 +575,9 @@ func TestService_loadCatalogs(t *testing.T) {
 			}
 
 			err := svc.loadCatalogs()
-			tt.wantErr(t, err)
+			if tt.wantErr != nil {
+				tt.wantErr(t, err)
+			}
 
 			if err == nil {
 				catalog := new(orchestrator.Catalog)

@@ -143,6 +143,11 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 			if tt.want != nil {
 				tt.want(t, gotRes, svc)
 			}
+
+			if err == nil {
+				err = gotRes.Validate()
+				assert.NoError(t, err)
+			}
 		})
 	}
 }
