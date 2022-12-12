@@ -59,7 +59,7 @@ func Test_regoEval_Eval(t *testing.T) {
 		compliant  map[string]bool
 		wantErr    bool
 	}{
-		{
+		/*{
 			name: "ObjectStorage: Compliant Case",
 			fields: fields{
 				resource: voc.ObjectStorage{
@@ -276,6 +276,52 @@ func Test_regoEval_Eval(t *testing.T) {
 				"ResourceInventory":            true,
 			},
 			wantErr: false,
+		},*/
+		{
+			name: "Updated metric configuration",
+			fields: fields{
+				resource: voc.VirtualMachine{
+					Compute: &voc.Compute{
+						Resource: &voc.Resource{
+							ID:   mockVM2ResourceID,
+							Type: []string{"Compute", "Virtual Machine", "Resource"},
+						}},
+					BlockStorage: nil,
+					BootLogging: &voc.BootLogging{
+						Logging: &voc.Logging{
+							LoggingService:  []voc.ResourceID{},
+							Enabled:         false,
+							RetentionPeriod: 1 * time.Hour * 24,
+						},
+					},
+					OsLogging: &voc.OSLogging{
+						Logging: &voc.Logging{
+							LoggingService:  []voc.ResourceID{"SomeResourceId3"},
+							Enabled:         false,
+							RetentionPeriod: 1 * time.Hour * 24,
+						},
+					},
+				},
+				evidenceID: mockVM2EvidenceID,
+				qc:         newQueryCache(),
+				mrtc:       &metricsCache{m: make(map[string][]string)},
+				storage:    testutil.NewInMemoryStorage(t),
+				pkg:        DefaultRegoPackage,
+			},
+			args:       args{src: &updatedMockMetricsSource{mockMetricsSource{t: t}}},
+			applicable: true,
+			compliant: map[string]bool{
+				"AutomaticUpdatesEnabled":      false,
+				"AutomaticUpdatesInterval":     false,
+				"AutomaticUpdatesSecurityOnly": false,
+				"BootLoggingEnabled":           false,
+				"BootLoggingRetention":         false,
+				"MalwareProtectionEnabled":     false,
+				"OSLoggingEnabled":             false,
+				"OSLoggingRetention":           false,
+				"ResourceInventory":            true,
+			},
+			wantErr: false,
 		},
 	}
 
@@ -304,7 +350,7 @@ func Test_regoEval_Eval(t *testing.T) {
 
 			for _, result := range results {
 				if result.Applicable {
-					compliants[result.MetricId] = result.Compliant
+					compliants[result.MetricID] = result.Compliant
 				}
 			}
 

@@ -28,7 +28,6 @@ package policies
 import (
 	"strings"
 	"sync"
-	"time"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
@@ -56,11 +55,10 @@ type PolicyEval interface {
 type Result struct {
 	Applicable  bool
 	Compliant   bool
-	TargetValue interface{} `mapstructure:"target_value"`
+	TargetValue interface{}
 	Operator    string
-	MetricId    string
-	UpdatedAt   *time.Time
-	IsDefault   bool
+	MetricID    string
+	Config      *assessment.MetricConfiguration
 }
 
 // MetricsSource is used to retrieve a list of metrics and to retrieve a metric

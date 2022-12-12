@@ -27,7 +27,6 @@ package assessment
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -243,84 +242,84 @@ func TestService_AssessEvidence(t *testing.T) {
 		wantResp         *assessment.AssessEvidenceResponse
 		wantErr          bool
 	}{
-		// {
-		// 	name: "Missing evidence",
-		// 	args: args{
-		// 		in0: context.TODO(),
-		// 	},
-		// 	hasRPCConnection: false,
-		// 	wantResp: &assessment.AssessEvidenceResponse{
-		// 		Status:        assessment.AssessEvidenceResponse_FAILED,
-		// 		StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: value is required",
-		// 	},
-		// 	wantErr: true,
-		// },
-		// {
-		// 	name: "Empty evidence",
-		// 	args: args{
-		// 		in0:      context.TODO(),
-		// 		evidence: &evidence.Evidence{},
-		// 	},
-		// 	hasRPCConnection: false,
-		// 	wantResp: &assessment.AssessEvidenceResponse{
-		// 		Status:        assessment.AssessEvidenceResponse_FAILED,
-		// 		StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format",
-		// 	},
-		// 	wantErr: true,
-		// },
-		// {
-		// 	name: "Assess resource without id",
-		// 	args: args{
-		// 		in0: context.TODO(),
-		// 		evidence: &evidence.Evidence{
-		// 			ToolId:    "mock",
-		// 			Timestamp: timestamppb.Now(),
-		// 			Resource:  toStruct(voc.VirtualMachine{}, t),
-		// 		},
-		// 	},
-		// 	hasRPCConnection: true,
-		// 	wantResp: &assessment.AssessEvidenceResponse{
-		// 		Status:        assessment.AssessEvidenceResponse_FAILED,
-		// 		StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format",
-		// 	},
-		// 	wantErr: true,
-		// },
-		// {
-		// 	name: "Assess resource without tool id",
-		// 	args: args{
-		// 		in0: context.TODO(),
-		// 		evidence: &evidence.Evidence{
-		// 			Id:             "11111111-1111-1111-1111-111111111111",
-		// 			Timestamp:      timestamppb.Now(),
-		// 			CloudServiceId: "00000000-0000-0000-0000-000000000000",
-		// 			Resource:       toStruct(voc.VirtualMachine{}, t),
-		// 		},
-		// 	},
-		// 	hasRPCConnection: true,
-		// 	wantResp: &assessment.AssessEvidenceResponse{
-		// 		Status:        assessment.AssessEvidenceResponse_FAILED,
-		// 		StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.ToolId: value length must be at least 1 runes",
-		// 	},
-		// 	wantErr: true,
-		// },
-		// {
-		// 	name: "Assess resource without timestamp",
-		// 	args: args{
-		// 		in0: context.TODO(),
-		// 		evidence: &evidence.Evidence{
-		// 			Id:             "11111111-1111-1111-1111-111111111111",
-		// 			ToolId:         "mock",
-		// 			CloudServiceId: "00000000-0000-0000-0000-000000000000",
-		// 			Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
-		// 		},
-		// 	},
-		// 	hasRPCConnection: true,
-		// 	wantResp: &assessment.AssessEvidenceResponse{
-		// 		Status:        assessment.AssessEvidenceResponse_FAILED,
-		// 		StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Timestamp: value is required",
-		// 	},
-		// 	wantErr: true,
-		// },
+		{
+			name: "Missing evidence",
+			args: args{
+				in0: context.TODO(),
+			},
+			hasRPCConnection: false,
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: value is required",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Empty evidence",
+			args: args{
+				in0:      context.TODO(),
+				evidence: &evidence.Evidence{},
+			},
+			hasRPCConnection: false,
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Assess resource without id",
+			args: args{
+				in0: context.TODO(),
+				evidence: &evidence.Evidence{
+					ToolId:    "mock",
+					Timestamp: timestamppb.Now(),
+					Resource:  toStruct(voc.VirtualMachine{}, t),
+				},
+			},
+			hasRPCConnection: true,
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Assess resource without tool id",
+			args: args{
+				in0: context.TODO(),
+				evidence: &evidence.Evidence{
+					Id:             "11111111-1111-1111-1111-111111111111",
+					Timestamp:      timestamppb.Now(),
+					CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					Resource:       toStruct(voc.VirtualMachine{}, t),
+				},
+			},
+			hasRPCConnection: true,
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.ToolId: value length must be at least 1 runes",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Assess resource without timestamp",
+			args: args{
+				in0: context.TODO(),
+				evidence: &evidence.Evidence{
+					Id:             "11111111-1111-1111-1111-111111111111",
+					ToolId:         "mock",
+					CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+				},
+			},
+			hasRPCConnection: true,
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Timestamp: value is required",
+			},
+			wantErr: true,
+		},
 		{
 			name: "Assess resource",
 			args: args{
@@ -339,44 +338,44 @@ func TestService_AssessEvidence(t *testing.T) {
 			},
 			wantErr: false,
 		},
-		// {
-		// 	name: "Assess resource without resource id",
-		// 	args: args{
-		// 		in0: context.TODO(),
-		// 		evidence: &evidence.Evidence{
-		// 			Id:             "11111111-1111-1111-1111-111111111111",
-		// 			ToolId:         "mock",
-		// 			Timestamp:      timestamppb.Now(),
-		// 			Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{Type: []string{"VirtualMachine"}}}}, t),
-		// 			CloudServiceId: "00000000-0000-0000-0000-000000000000",
-		// 		},
-		// 	},
-		// 	hasRPCConnection: true,
-		// 	wantResp: &assessment.AssessEvidenceResponse{
-		// 		Status:        assessment.AssessEvidenceResponse_FAILED,
-		// 		StatusMessage: "invalid evidence: resource in evidence is missing the id field",
-		// 	},
-		// 	wantErr: true,
-		// },
-		// {
-		// 	name: "No RPC connections",
-		// 	args: args{
-		// 		in0: context.TODO(),
-		// 		evidence: &evidence.Evidence{
-		// 			Id:             "11111111-1111-1111-1111-111111111111",
-		// 			ToolId:         "mock",
-		// 			Timestamp:      timestamppb.Now(),
-		// 			CloudServiceId: "00000000-0000-0000-0000-000000000000",
-		// 			Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
-		// 		},
-		// 	},
-		// 	hasRPCConnection: false,
-		// 	wantResp: &assessment.AssessEvidenceResponse{
-		// 		Status:        assessment.AssessEvidenceResponse_FAILED,
-		// 		StatusMessage: "could not evaluate evidence: could not retrieve metric definitions: could not retrieve metric list from orchestrator",
-		// 	},
-		// 	wantErr: true,
-		// },
+		{
+			name: "Assess resource without resource id",
+			args: args{
+				in0: context.TODO(),
+				evidence: &evidence.Evidence{
+					Id:             "11111111-1111-1111-1111-111111111111",
+					ToolId:         "mock",
+					Timestamp:      timestamppb.Now(),
+					Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{Type: []string{"VirtualMachine"}}}}, t),
+					CloudServiceId: "00000000-0000-0000-0000-000000000000",
+				},
+			},
+			hasRPCConnection: true,
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: "invalid evidence: resource in evidence is missing the id field",
+			},
+			wantErr: true,
+		},
+		{
+			name: "No RPC connections",
+			args: args{
+				in0: context.TODO(),
+				evidence: &evidence.Evidence{
+					Id:             "11111111-1111-1111-1111-111111111111",
+					ToolId:         "mock",
+					Timestamp:      timestamppb.Now(),
+					CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+				},
+			},
+			hasRPCConnection: false,
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: "could not evaluate evidence: could not retrieve metric definitions: could not retrieve metric list from orchestrator",
+			},
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -1014,88 +1013,6 @@ func createMockAssessmentServerStreamWithRecvErr(r *assessment.AssessEvidenceReq
 	return m
 }
 
-func TestConvertTargetValue(t *testing.T) {
-	type args struct {
-		value interface{}
-	}
-	tests := []struct {
-		name                     string
-		args                     args
-		wantConvertedTargetValue *structpb.Value
-		wantErr                  assert.ErrorAssertionFunc
-	}{
-		{
-			name:                     "string",
-			args:                     args{value: "TLS1.3"},
-			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "TLS1.3"}},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return err == nil
-			},
-		},
-		{
-			name:                     "bool",
-			args:                     args{value: false},
-			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_BoolValue{BoolValue: false}},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return err == nil
-			},
-		},
-		{
-			name:                     "jsonNumber",
-			args:                     args{value: json.Number("4")},
-			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: 4.}},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return err == nil
-			},
-		},
-		{
-			name:                     "int",
-			args:                     args{value: 4},
-			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: 4.}},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return err == nil
-			},
-		},
-		{
-			name:                     "float64",
-			args:                     args{value: 4.},
-			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: 4.}},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return err == nil
-			},
-		},
-		{
-			name:                     "float32",
-			args:                     args{value: float32(4.)},
-			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: 4.}},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return err == nil
-			},
-		},
-		{
-			name: "list of strings",
-			args: args{value: []string{"TLS1.2", "TLS1.3"}},
-			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_ListValue{ListValue: &structpb.ListValue{Values: []*structpb.Value{
-				{Kind: &structpb.Value_StringValue{StringValue: "TLS1.2"}},
-				{Kind: &structpb.Value_StringValue{StringValue: "TLS1.3"}},
-			}}}},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return err == nil
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotConvertedTargetValue, err := convertTargetValue(tt.args.value)
-			if !tt.wantErr(t, err, fmt.Sprintf("convertTargetValue(%v)", tt.args.value)) {
-				return
-			}
-			// Checking against 'String()' allows to compare the actual values instead of the respective pointers
-			assert.Equalf(t, tt.wantConvertedTargetValue.String(), gotConvertedTargetValue.String(), "convertTargetValue(%v)", tt.args.value)
-		})
-	}
-}
-
 func TestService_HandleEvidence(t *testing.T) {
 	type fields struct {
 		hasEvidenceStoreStream bool
@@ -1222,10 +1139,10 @@ func TestService_HandleEvidence(t *testing.T) {
 			if !tt.wantErr(t, s.handleEvidence(tt.args.evidence, tt.args.resourceId), fmt.Sprintf("handleEvidence(%v, %v)", tt.args.evidence, tt.args.resourceId)) {
 				assert.NotEmpty(t, s.results)
 				// Check the result by validation
-				for _, result := range s.results {
-					err := result.Validate()
-					assert.NoError(t, err)
-				}
+				// for _, result := range s.results {
+				// 	err := result.Validate()
+				// 	assert.NoError(t, err)
+				// }
 			}
 
 		})

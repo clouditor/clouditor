@@ -34,6 +34,7 @@ import (
 
 	"clouditor.io/clouditor/persistence"
 	"github.com/google/uuid"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 var (
@@ -140,6 +141,10 @@ func (*Range) GormDataType() string {
 // to provide a key for a map or a cache.
 func (x *MetricConfiguration) Hash() string {
 	return base64.RawURLEncoding.EncodeToString([]byte(fmt.Sprintf("%v-%v", x.Operator, x.TargetValue)))
+}
+
+func (x *MetricConfiguration) MarshalJSON() (b []byte, err error) {
+	return protojson.Marshal(x)
 }
 
 // CheckCloudServiceID checks if serviceID is available and in the valid UUID format.

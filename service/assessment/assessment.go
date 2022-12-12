@@ -27,7 +27,6 @@ package assessment
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -47,7 +46,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -371,36 +369,13 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 	}
 
 	for i, data := range evaluations {
-		metricID := data.MetricId
+		metricID := data.MetricID
 
 		log.Debugf("Evaluated evidence %v with metric '%v' as %v", ev.Id, metricID, data.Compliant)
-
-		targetValue := data.TargetValue
-
-		convertedTargetValue, err := convertTargetValue(targetValue)
-		if err != nil {
-			return fmt.Errorf("could not convert target value: %w", err)
-		}
 
 		types, err = ev.ResourceTypes()
 		if err != nil {
 			return fmt.Errorf("could not extract resource types from evidence: %w", err)
-		}
-
-		var t *timestamppb.Timestamp
-		if data.UpdatedAt != nil {
-			t = timestamppb.New(*data.UpdatedAt)
-		}
-
-		// Build a metric configuration that represents the configuration that as actually used at the time of policy
-		// execution. We can build it out of the executed data in the policy.
-		config := &assessment.MetricConfiguration{
-			TargetValue:    convertedTargetValue,
-			Operator:       data.Operator,
-			MetricId:       metricID,
-			CloudServiceId: ev.CloudServiceId,
-			IsDefault:      data.IsDefault,
-			UpdatedAt:      t,
 		}
 
 		result := &assessment.AssessmentResult{
@@ -408,7 +383,7 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 			Timestamp:             timestamppb.Now(),
 			CloudServiceId:        ev.GetCloudServiceId(),
 			MetricId:              metricID,
-			MetricConfiguration:   config,
+			MetricConfiguration:   data.Config,
 			Compliant:             data.Compliant,
 			EvidenceId:            ev.GetId(),
 			ResourceId:            resourceId,
@@ -429,21 +404,6 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 	}
 
 	return nil
-}
-
-// convertTargetValue converts v in a format accepted by protobuf (structpb.Value)
-func convertTargetValue(v interface{}) (s *structpb.Value, err error) {
-	var b []byte
-
-	// json.Marshal and json.Unmarshal is used instead of structpb.NewValue() which cannot handle json numbers
-	if b, err = json.Marshal(v); err != nil {
-		return nil, fmt.Errorf("JSON marshal failed: %w", err)
-	}
-	if err = json.Unmarshal(b, &s); err != nil {
-		return nil, fmt.Errorf("JSON unmarshal failed: %w", err)
-	}
-	return
-
 }
 
 // informHooks informs the registered hook functions

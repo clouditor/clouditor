@@ -27,6 +27,7 @@ package policies
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"sync"
@@ -151,7 +152,7 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 
 			if runMap != nil {
 				cached = append(cached, metric.Id)
-				runMap.MetricId = metric.Id
+				runMap.MetricID = metric.Id
 
 				data = append(data, runMap)
 			}
@@ -169,7 +170,7 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 				return nil, err
 			}
 
-			runMap.MetricId = metric
+			runMap.MetricID = metric
 			data = append(data, runMap)
 		}
 	}
@@ -233,6 +234,7 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 			"operator":     config.Operator,
 			"updated_at":   t,
 			"is_default":   config.IsDefault,
+			"config":       config,
 		}
 
 		store := inmem.NewFromObject(data)
@@ -265,7 +267,8 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 			operator = data.clouditor.operator;
 			is_default = data.clouditor.is_default;
 			updated_at = data.clouditor.updated_at;
-			target_value = data.clouditor.target_value`, prefix, pkg, prefix, pkg)),
+			target_value = data.clouditor.target_value;
+			config = data.clouditor.config`, prefix, pkg, prefix, pkg)),
 			rego.Package(prefix),
 			rego.Store(store),
 			rego.Transaction(tx),
@@ -299,20 +302,22 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 		return nil, fmt.Errorf("no results. probably the package name of metric %s is wrong", metricID)
 	}
 
-	var t *time.Time
-	var ok bool
-	if t, ok = results[0].Bindings["updated_at"].(*time.Time); !ok {
-		t = nil
-	}
-
 	result = &Result{
 		Applicable:  results[0].Bindings["applicable"].(bool),
 		Compliant:   results[0].Bindings["compliant"].(bool),
 		Operator:    results[0].Bindings["operator"].(string),
 		TargetValue: results[0].Bindings["target_value"],
-		IsDefault:   results[0].Bindings["is_default"].(bool),
-		MetricId:    metricID,
-		UpdatedAt:   t,
+	}
+
+	// A little trick to convert the map-based metric configuration back to a real object
+	var b []byte
+	if b, err = json.Marshal(results[0].Bindings["config"]); err != nil {
+		return nil, fmt.Errorf("JSON marshal failed: %w", err)
+	}
+
+	result.Config = new(assessment.MetricConfiguration)
+	if err = json.Unmarshal(b, result.Config); err != nil {
+		return nil, fmt.Errorf("JSON unmarshal failed: %w", err)
 	}
 
 	if !result.Applicable {
