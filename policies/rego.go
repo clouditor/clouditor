@@ -222,11 +222,16 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 
 		// TODO(oxisto): Add description
 		// TODO(anatheka): Check if AsTime == 0
+		var t *time.Time
+		if config.UpdatedAt != nil {
+			var t2 = config.UpdatedAt.AsTime()
+			t = &t2
+		}
 
 		data := map[string]interface{}{
 			"target_value": config.TargetValue.AsInterface(),
 			"operator":     config.Operator,
-			"updated_at":   config.UpdatedAt.AsTime(),
+			"updated_at":   t,
 			"is_default":   config.IsDefault,
 		}
 
@@ -258,9 +263,9 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 			applicable = data.%s.%s.applicable;
 			compliant = data.%s.%s.compliant;
 			operator = data.clouditor.operator;
-			target_value = data.clouditor.target_value;
+			is_default = data.clouditor.is_default;
 			updated_at = data.clouditor.updated_at;
-			is_default = data.clouditor.is_default`, prefix, pkg, prefix, pkg)),
+			target_value = data.clouditor.target_value`, prefix, pkg, prefix, pkg)),
 			rego.Package(prefix),
 			rego.Store(store),
 			rego.Transaction(tx),
@@ -294,13 +299,20 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 		return nil, fmt.Errorf("no results. probably the package name of metric %s is wrong", metricID)
 	}
 
+	var t *time.Time
+	var ok bool
+	if t, ok = results[0].Bindings["updated_at"].(*time.Time); !ok {
+		t = nil
+	}
+
 	result = &Result{
 		Applicable:  results[0].Bindings["applicable"].(bool),
 		Compliant:   results[0].Bindings["compliant"].(bool),
 		Operator:    results[0].Bindings["operator"].(string),
 		TargetValue: results[0].Bindings["target_value"],
 		IsDefault:   results[0].Bindings["is_default"].(bool),
-		UpdatedAt:   results[0].Bindings["updated_at"].(*time.Time),
+		MetricId:    metricID,
+		UpdatedAt:   t,
 	}
 
 	if !result.Applicable {

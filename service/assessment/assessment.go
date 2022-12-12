@@ -387,19 +387,28 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 			return fmt.Errorf("could not extract resource types from evidence: %w", err)
 		}
 
-		result := &assessment.AssessmentResult{
-			Id:             uuid.NewString(),
-			Timestamp:      timestamppb.Now(),
-			CloudServiceId: ev.GetCloudServiceId(),
+		var t *timestamppb.Timestamp
+		if data.UpdatedAt != nil {
+			t = timestamppb.New(*data.UpdatedAt)
+		}
+
+		// Build a metric configuration that represents the configuration that as actually used at the time of policy
+		// execution. We can build it out of the executed data in the policy.
+		config := &assessment.MetricConfiguration{
+			TargetValue:    convertedTargetValue,
+			Operator:       data.Operator,
 			MetricId:       metricID,
-			MetricConfiguration: &assessment.MetricConfiguration{
-				TargetValue:    convertedTargetValue,
-				Operator:       data.Operator,
-				MetricId:       metricID,
-				CloudServiceId: ev.CloudServiceId,
-				IsDefault:      data.IsDefault,
-				UpdatedAt:      timestamppb.New(*data.UpdatedAt),
-			},
+			CloudServiceId: ev.CloudServiceId,
+			IsDefault:      data.IsDefault,
+			UpdatedAt:      t,
+		}
+
+		result := &assessment.AssessmentResult{
+			Id:                    uuid.NewString(),
+			Timestamp:             timestamppb.Now(),
+			CloudServiceId:        ev.GetCloudServiceId(),
+			MetricId:              metricID,
+			MetricConfiguration:   config,
 			Compliant:             data.Compliant,
 			EvidenceId:            ev.GetId(),
 			ResourceId:            resourceId,
