@@ -220,12 +220,10 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 		operators := fmt.Sprintf("%s/policies/operators.rego", baseDir)
 
 		c := map[string]interface{}{
-			"target_value":     config.TargetValue.AsInterface(),
-			"operator":         config.Operator,
-			"metric_id":        metricID,
-			"updated_at":       config.UpdatedAt,
-			"is_default":       config.IsDefault,
-			"cloud_service_id": serviceID,
+			"target_value": config.TargetValue.AsInterface(),
+			"operator":     config.Operator,
+			"updated_at":   config.UpdatedAt,
+			"is_default":   config.IsDefault,
 		}
 
 		store := inmem.NewFromObject(c)
