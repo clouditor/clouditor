@@ -31,7 +31,6 @@ import (
 	"fmt"
 	"strings"
 	"sync"
-	"time"
 
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
@@ -152,7 +151,6 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 
 			if runMap != nil {
 				cached = append(cached, metric.Id)
-				runMap.MetricID = metric.Id
 
 				data = append(data, runMap)
 			}
@@ -170,7 +168,6 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 				return nil, err
 			}
 
-			runMap.MetricID = metric
 			data = append(data, runMap)
 		}
 	}
@@ -222,18 +219,9 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 		operators := fmt.Sprintf("%s/policies/operators.rego", baseDir)
 
 		// TODO(oxisto): Add description
-		// TODO(anatheka): Check if AsTime == 0
-		var t *time.Time
-		if config.UpdatedAt != nil {
-			var t2 = config.UpdatedAt.AsTime()
-			t = &t2
-		}
-
 		data := map[string]interface{}{
 			"target_value": config.TargetValue.AsInterface(),
 			"operator":     config.Operator,
-			"updated_at":   t,
-			"is_default":   config.IsDefault,
 			"config":       config,
 		}
 
@@ -265,8 +253,6 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 			applicable = data.%s.%s.applicable;
 			compliant = data.%s.%s.compliant;
 			operator = data.clouditor.operator;
-			is_default = data.clouditor.is_default;
-			updated_at = data.clouditor.updated_at;
 			target_value = data.clouditor.target_value;
 			config = data.clouditor.config`, prefix, pkg, prefix, pkg)),
 			rego.Package(prefix),
@@ -307,6 +293,7 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 		Compliant:   results[0].Bindings["compliant"].(bool),
 		Operator:    results[0].Bindings["operator"].(string),
 		TargetValue: results[0].Bindings["target_value"],
+		MetricID:    metricID,
 	}
 
 	// A little trick to convert the map-based metric configuration back to a real object

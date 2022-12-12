@@ -29,11 +29,15 @@ import (
 	"testing"
 	"time"
 
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func Test_regoEval_Eval(t *testing.T) {
@@ -59,7 +63,7 @@ func Test_regoEval_Eval(t *testing.T) {
 		compliant  map[string]bool
 		wantErr    bool
 	}{
-		/*{
+		{
 			name: "ObjectStorage: Compliant Case",
 			fields: fields{
 				resource: voc.ObjectStorage{
@@ -276,52 +280,6 @@ func Test_regoEval_Eval(t *testing.T) {
 				"ResourceInventory":            true,
 			},
 			wantErr: false,
-		},*/
-		{
-			name: "Updated metric configuration",
-			fields: fields{
-				resource: voc.VirtualMachine{
-					Compute: &voc.Compute{
-						Resource: &voc.Resource{
-							ID:   mockVM2ResourceID,
-							Type: []string{"Compute", "Virtual Machine", "Resource"},
-						}},
-					BlockStorage: nil,
-					BootLogging: &voc.BootLogging{
-						Logging: &voc.Logging{
-							LoggingService:  []voc.ResourceID{},
-							Enabled:         false,
-							RetentionPeriod: 1 * time.Hour * 24,
-						},
-					},
-					OsLogging: &voc.OSLogging{
-						Logging: &voc.Logging{
-							LoggingService:  []voc.ResourceID{"SomeResourceId3"},
-							Enabled:         false,
-							RetentionPeriod: 1 * time.Hour * 24,
-						},
-					},
-				},
-				evidenceID: mockVM2EvidenceID,
-				qc:         newQueryCache(),
-				mrtc:       &metricsCache{m: make(map[string][]string)},
-				storage:    testutil.NewInMemoryStorage(t),
-				pkg:        DefaultRegoPackage,
-			},
-			args:       args{src: &updatedMockMetricsSource{mockMetricsSource{t: t}}},
-			applicable: true,
-			compliant: map[string]bool{
-				"AutomaticUpdatesEnabled":      false,
-				"AutomaticUpdatesInterval":     false,
-				"AutomaticUpdatesSecurityOnly": false,
-				"BootLoggingEnabled":           false,
-				"BootLoggingRetention":         false,
-				"MalwareProtectionEnabled":     false,
-				"OSLoggingEnabled":             false,
-				"OSLoggingRetention":           false,
-				"ResourceInventory":            true,
-			},
-			wantErr: false,
 		},
 	}
 
@@ -355,6 +313,121 @@ func Test_regoEval_Eval(t *testing.T) {
 			}
 
 			assert.Equal(t, compliants, tt.compliant)
+		})
+	}
+}
+
+func Test_regoEval_evalMap(t *testing.T) {
+	type fields struct {
+		qc   *queryCache
+		mrtc *metricsCache
+		pkg  string
+	}
+	type args struct {
+		baseDir   string
+		serviceID string
+		metricID  string
+		m         map[string]interface{}
+		src       MetricsSource
+	}
+	tests := []struct {
+		name       string
+		fields     fields
+		args       args
+		wantResult *Result
+		wantErr    bool
+	}{
+		{
+			name: "default metric configuration",
+			fields: fields{
+				qc:   newQueryCache(),
+				mrtc: &metricsCache{m: make(map[string][]string)},
+				pkg:  DefaultRegoPackage,
+			},
+			args: args{
+				serviceID: testutil.TestCloudService1,
+				metricID:  "AutomaticUpdatesEnabled",
+				baseDir:   ".",
+				m: map[string]interface{}{
+					"automaticUpdates": map[string]interface{}{
+						"enabled": true,
+					},
+				},
+				src: &mockMetricsSource{t: t},
+			},
+			wantResult: &Result{
+				Applicable:  true,
+				Compliant:   true,
+				TargetValue: true,
+				Operator:    "==",
+				MetricID:    "AutomaticUpdatesEnabled",
+				Config: &assessment.MetricConfiguration{
+					Operator:       "==",
+					TargetValue:    structpb.NewBoolValue(true),
+					IsDefault:      true,
+					UpdatedAt:      nil,
+					MetricId:       "AutomaticUpdatesEnabled",
+					CloudServiceId: testutil.TestCloudService1,
+				},
+			},
+		},
+		{
+			name: "updated metric configuration",
+			fields: fields{
+				qc:   newQueryCache(),
+				mrtc: &metricsCache{m: make(map[string][]string)},
+				pkg:  DefaultRegoPackage,
+			},
+			args: args{
+				serviceID: testutil.TestCloudService1,
+				metricID:  "AutomaticUpdatesEnabled",
+				baseDir:   ".",
+				m: map[string]interface{}{
+					"automaticUpdates": map[string]interface{}{
+						"enabled": true,
+					},
+				},
+				src: &updatedMockMetricsSource{mockMetricsSource{t: t}},
+			},
+			wantResult: &Result{
+				Applicable:  true,
+				Compliant:   false,
+				TargetValue: false,
+				Operator:    "==",
+				MetricID:    "AutomaticUpdatesEnabled",
+				Config: &assessment.MetricConfiguration{
+					Operator:       "==",
+					TargetValue:    structpb.NewBoolValue(false),
+					IsDefault:      false,
+					UpdatedAt:      timestamppb.New(time.Date(2022, 12, 1, 0, 0, 0, 0, time.Local)),
+					MetricId:       "AutomaticUpdatesEnabled",
+					CloudServiceId: testutil.TestCloudService1,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			re := &regoEval{
+				qc:   tt.fields.qc,
+				mrtc: tt.fields.mrtc,
+				pkg:  tt.fields.pkg,
+			}
+			gotResult, err := re.evalMap(tt.args.baseDir, tt.args.serviceID, tt.args.metricID, tt.args.m, tt.args.src)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("regoEval.evalMap() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			// Assert the configuration using protoequal
+			if !proto.Equal(gotResult.Config, tt.wantResult.Config) {
+				t.Errorf("regoEval.evalMap() = %v, want %v", gotResult.Config, tt.wantResult.Config)
+			}
+
+			// Assert the remaining message regularly
+			tt.wantResult.Config = nil
+			gotResult.Config = nil
+			assert.Equal(t, tt.wantResult, gotResult)
 		})
 	}
 }

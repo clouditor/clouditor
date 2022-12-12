@@ -5,6 +5,8 @@ operator = data.operator
 
 target_value = data.target_value
 
+# we also expose the whole metric configuration as well. In the future we then could get rid of operator and target
+# value as individual variables
 config = data.config
 
 compare(operator, target_value, actual_value) {

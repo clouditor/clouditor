@@ -119,10 +119,10 @@ type updatedMockMetricsSource struct {
 	mockMetricsSource
 }
 
-func (m *updatedMockMetricsSource) MetricConfiguration(serviceID, metricID string) (*assessment.MetricConfiguration, error) {
+func (*updatedMockMetricsSource) MetricConfiguration(serviceID, metricID string) (*assessment.MetricConfiguration, error) {
 	return &assessment.MetricConfiguration{
 		Operator:       "==",
-		TargetValue:    structpb.NewBoolValue(true),
+		TargetValue:    structpb.NewBoolValue(false),
 		IsDefault:      false,
 		UpdatedAt:      timestamppb.New(time.Date(2022, 12, 1, 0, 0, 0, 0, time.Local)),
 		MetricId:       metricID,

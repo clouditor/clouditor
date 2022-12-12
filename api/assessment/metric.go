@@ -147,6 +147,10 @@ func (x *MetricConfiguration) MarshalJSON() (b []byte, err error) {
 	return protojson.Marshal(x)
 }
 
+func (x *MetricConfiguration) UnmarshalJSON(b []byte) (err error) {
+	return protojson.Unmarshal(b, x)
+}
+
 // CheckCloudServiceID checks if serviceID is available and in the valid UUID format.
 func CheckCloudServiceID(serviceID string) error {
 	// Check if ServiceId is missing
