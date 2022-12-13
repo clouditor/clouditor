@@ -573,9 +573,6 @@ func (svc *Service) MetricConfiguration(cloudServiceID, metricID string) (config
 			return nil, fmt.Errorf("could not retrieve metric configuration for %s: %w", metricID, err)
 		}
 
-		// Set cloud service id to metric configuration
-		config.CloudServiceId = cloudServiceID
-
 		cache = cachedConfiguration{
 			cachedAt:            time.Now(),
 			MetricConfiguration: config,

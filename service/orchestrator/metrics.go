@@ -340,6 +340,9 @@ func (svc *Service) GetMetricConfiguration(ctx context.Context, req *orchestrato
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		// Otherwise, fall back to our default configuration
 		if config, ok := defaultMetricConfigurations[req.MetricId]; ok {
+			// Set cloud service id to metric configuration
+			config.CloudServiceId = req.GetCloudServiceId()
+
 			return config, nil
 		}
 
