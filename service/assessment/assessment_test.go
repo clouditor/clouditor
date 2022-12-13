@@ -1139,10 +1139,10 @@ func TestService_HandleEvidence(t *testing.T) {
 			if !tt.wantErr(t, s.handleEvidence(tt.args.evidence, tt.args.resourceId), fmt.Sprintf("handleEvidence(%v, %v)", tt.args.evidence, tt.args.resourceId)) {
 				assert.NotEmpty(t, s.results)
 				// Check the result by validation
-				// for _, result := range s.results {
-				// 	err := result.Validate()
-				// 	assert.NoError(t, err)
-				// }
+				for _, result := range s.results {
+					err := result.Validate()
+					assert.NoError(t, err)
+				}
 			}
 
 		})
