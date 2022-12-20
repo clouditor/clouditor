@@ -283,12 +283,16 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 		assessEvidencesReq := &assessment.AssessEvidenceRequest{
 			Evidence: req.Evidence,
 		}
-		res, err = svc.AssessEvidence(context.Background(), assessEvidencesReq)
+		_, err = svc.AssessEvidence(context.Background(), assessEvidencesReq)
 		if err != nil {
 			// Create response message. The AssessEvidence method does not need that message, so we have to create it here for the stream response.
 			res = &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
 				StatusMessage: err.Error(),
+			}
+		} else {
+			res = &assessment.AssessEvidenceResponse{
+				Status: assessment.AssessEvidenceResponse_ASSESSED,
 			}
 		}
 
