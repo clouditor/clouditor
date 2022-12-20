@@ -211,8 +211,6 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 	err = service.ValidateRequest(req)
 	if err != nil {
 		log.Error(err)
-		go s.informHook(nil, err)
-
 		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
