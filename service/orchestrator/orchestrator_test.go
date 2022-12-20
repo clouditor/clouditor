@@ -136,10 +136,8 @@ func TestAssessmentResultHook(t *testing.T) {
 					},
 				},
 			},
-			wantErr: false,
-			wantResp: &orchestrator.StoreAssessmentResultResponse{
-				Status: true,
-			},
+			wantErr:  false,
+			wantResp: &orchestrator.StoreAssessmentResultResponse{},
 		},
 	}
 
@@ -174,7 +172,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 		name     string
 		args     args
 		wantResp *orchestrator.StoreAssessmentResultResponse
-		wantErr  bool
+		wantErr  assert.ErrorAssertionFunc
 	}{
 		{
 			name: "Store assessment to the map",
@@ -201,10 +199,8 @@ func TestStoreAssessmentResult(t *testing.T) {
 					},
 				},
 			},
-			wantErr: false,
-			wantResp: &orchestrator.StoreAssessmentResultResponse{
-				Status: true,
-			},
+			wantErr:  assert.NoError,
+			wantResp: &orchestrator.StoreAssessmentResultResponse{},
 		},
 		{
 			name: "Store assessment without metricId to the map",
@@ -230,11 +226,10 @@ func TestStoreAssessmentResult(t *testing.T) {
 					},
 				},
 			},
-			wantErr: true,
-			wantResp: &orchestrator.StoreAssessmentResultResponse{
-				Status:        false,
-				StatusMessage: "rpc error: code = InvalidArgument desc = invalid request: invalid StoreAssessmentResultRequest.Result: embedded message failed validation | caused by: invalid AssessmentResult.MetricId: value length must be at least 1 runes",
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "caused by: invalid AssessmentResult.MetricId: value length must be at least 1 runes")
 			},
+			wantResp: nil,
 		},
 	}
 
@@ -242,13 +237,8 @@ func TestStoreAssessmentResult(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
 			gotResp, err := s.StoreAssessmentResult(tt.args.in0, tt.args.assessment)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("StoreAssessmentResult() error = %v, wantErrMessage %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(gotResp, tt.wantResp) {
-				t.Errorf("StoreAssessmentResult() gotResp = %v, want %v", gotResp, tt.wantResp)
-			}
+			tt.wantErr(t, err)
+			assert.Equal(t, tt.wantResp, gotResp)
 
 			if err == nil {
 				assert.NotNil(t, s.results[assessmentResultID1])
@@ -368,7 +358,7 @@ func TestStoreAssessmentResults(t *testing.T) {
 				i := 0
 				for elem := range tt.args.streamToServer.SentFromServer {
 					assert.Contains(t, elem.StatusMessage, tt.wantRespMessage[i].StatusMessage)
-					assert.Equal(t, elem.Status, tt.wantRespMessage[i].Status)
+					assert.Equal(t, tt.wantRespMessage[i].Status, elem.Status)
 					i++
 				}
 			}
