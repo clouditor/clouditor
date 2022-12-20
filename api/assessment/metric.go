@@ -34,6 +34,7 @@ import (
 
 	"clouditor.io/clouditor/persistence"
 	"github.com/google/uuid"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 var (
@@ -136,74 +137,18 @@ func (*Range) GormDataType() string {
 	return "jsonb"
 }
 
-// MetricValidationOption is a function-style option to fine-tune metric validation.
-type MetricValidationOption func(*Metric) error
-
-// WithMetricRequiresId is a validation option that specifies that Id must not be empty.
-func WithMetricRequiresId() MetricValidationOption {
-	return func(m *Metric) error {
-		if m.Id == "" {
-			return ErrMetricIdMissing
-		}
-		return nil
-	}
-}
-
-// Validate validates the metric according to several required fields.
-func (m *Metric) Validate(opts ...MetricValidationOption) (err error) {
-	if m == nil {
-		return ErrMetricEmpty
-	}
-
-	// Check for extra validation options
-	for _, o := range opts {
-		err = o(m)
-		if err != nil {
-			return err
-		}
-	}
-
-	if m.Name == "" {
-		return ErrMetricNameMissing
-	}
-
-	return nil
-}
-
-// Validate validates the metric configuration
-func (c *MetricConfiguration) Validate() (err error) {
-
-	// isDefault does not need to be checked.
-	// UpdatedAt does not need to be checked.
-
-	if c == nil {
-		return ErrMetricConfigurationMissing
-	}
-
-	if c.Operator == "" {
-		return ErrMetricConfigurationOperatorMissing
-	}
-
-	if c.TargetValue == nil {
-		return ErrMetricConfigurationTargetValueMissing
-	}
-
-	if c.MetricId == "" {
-		return ErrMetricIdMissing
-	}
-
-	err = CheckCloudServiceID(c.CloudServiceId)
-	if err != nil {
-		return err
-	}
-
-	return
-}
-
 // Hash provides a simple string based hash for this metric configuration. It can be used
 // to provide a key for a map or a cache.
 func (x *MetricConfiguration) Hash() string {
 	return base64.RawURLEncoding.EncodeToString([]byte(fmt.Sprintf("%v-%v", x.Operator, x.TargetValue)))
+}
+
+func (x *MetricConfiguration) MarshalJSON() (b []byte, err error) {
+	return protojson.Marshal(x)
+}
+
+func (x *MetricConfiguration) UnmarshalJSON(b []byte) (err error) {
+	return protojson.Unmarshal(b, x)
 }
 
 // CheckCloudServiceID checks if serviceID is available and in the valid UUID format.

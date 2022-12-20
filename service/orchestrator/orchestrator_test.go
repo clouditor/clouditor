@@ -117,13 +117,14 @@ func TestAssessmentResultHook(t *testing.T) {
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
 					Result: &assessment.AssessmentResult{
-						Id:         assessmentResultID1,
-						MetricId:   "assessmentResultMetricID",
-						EvidenceId: "11111111-1111-1111-1111-111111111111",
-						Timestamp:  timestamppb.Now(),
+						Id:             assessmentResultID1,
+						MetricId:       "assessmentResultMetricID",
+						EvidenceId:     "11111111-1111-1111-1111-111111111111",
+						CloudServiceId: "00000000-0000-0000-0000-000000000000",
+						Timestamp:      timestamppb.Now(),
 						MetricConfiguration: &assessment.MetricConfiguration{
 							TargetValue:    toStruct(1.0),
-							Operator:       "operator",
+							Operator:       ">=",
 							IsDefault:      true,
 							CloudServiceId: "00000000-0000-0000-0000-000000000000",
 							MetricId:       "TestMetric",
@@ -181,13 +182,14 @@ func TestStoreAssessmentResult(t *testing.T) {
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
 					Result: &assessment.AssessmentResult{
-						Id:         assessmentResultID1,
-						MetricId:   "assessmentResultMetricID",
-						EvidenceId: "11111111-1111-1111-1111-111111111111",
-						Timestamp:  timestamppb.Now(),
+						Id:             assessmentResultID1,
+						MetricId:       "assessmentResultMetricID",
+						EvidenceId:     "11111111-1111-1111-1111-111111111111",
+						CloudServiceId: "00000000-0000-0000-0000-000000000000",
+						Timestamp:      timestamppb.Now(),
 						MetricConfiguration: &assessment.MetricConfiguration{
 							TargetValue:    toStruct(1.0),
-							Operator:       "operator",
+							Operator:       "<=",
 							IsDefault:      true,
 							CloudServiceId: "00000000-0000-0000-0000-000000000000",
 							MetricId:       "TestMetric",
@@ -210,12 +212,13 @@ func TestStoreAssessmentResult(t *testing.T) {
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
 					Result: &assessment.AssessmentResult{
-						Id:         assessmentResultID1,
-						EvidenceId: "11111111-1111-1111-1111-111111111111",
-						Timestamp:  timestamppb.Now(),
+						Id:             assessmentResultID1,
+						EvidenceId:     "11111111-1111-1111-1111-111111111111",
+						CloudServiceId: "00000000-0000-0000-0000-000000000000",
+						Timestamp:      timestamppb.Now(),
 						MetricConfiguration: &assessment.MetricConfiguration{
 							TargetValue:    toStruct(1.0),
-							Operator:       "operator",
+							Operator:       "<=",
 							IsDefault:      true,
 							CloudServiceId: "00000000-0000-0000-0000-000000000000",
 							MetricId:       "TestMetric",
@@ -230,7 +233,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 			wantErr: true,
 			wantResp: &orchestrator.StoreAssessmentResultResponse{
 				Status:        false,
-				StatusMessage: "invalid assessment result: metric id is missing",
+				StatusMessage: "rpc error: code = InvalidArgument desc = invalid request: invalid StoreAssessmentResultRequest.Result: embedded message failed validation | caused by: invalid AssessmentResult.MetricId: value length must be at least 1 runes",
 			},
 		},
 	}
@@ -257,7 +260,6 @@ func TestStoreAssessmentResult(t *testing.T) {
 }
 
 func TestStoreAssessmentResults(t *testing.T) {
-
 	const (
 		count1 = 1
 		count2 = 2
@@ -310,7 +312,7 @@ func TestStoreAssessmentResults(t *testing.T) {
 			wantRespMessage: []orchestrator.StoreAssessmentResultResponse{
 				{
 					Status:        false,
-					StatusMessage: "invalid assessment result: " + assessment.ErrMetricIdMissing.Error(),
+					StatusMessage: "MetricId: value length must be at least 1 runes",
 				},
 			},
 		},
@@ -391,13 +393,14 @@ func createStoreAssessmentResultRequestsMock(count int) []*orchestrator.StoreAss
 	for i := 0; i < count; i++ {
 		storeAssessmentResultRequest := &orchestrator.StoreAssessmentResultRequest{
 			Result: &assessment.AssessmentResult{
-				Id:         uuid.NewString(),
-				MetricId:   fmt.Sprintf("assessmentResultMetricID-%d", i),
-				EvidenceId: "11111111-1111-1111-1111-111111111111",
-				Timestamp:  timestamppb.Now(),
+				Id:             uuid.NewString(),
+				MetricId:       fmt.Sprintf("assessmentResultMetricID-%d", i),
+				EvidenceId:     "11111111-1111-1111-1111-111111111111",
+				CloudServiceId: "00000000-0000-0000-0000-000000000000",
+				Timestamp:      timestamppb.Now(),
 				MetricConfiguration: &assessment.MetricConfiguration{
 					TargetValue:    toStruct(1.0),
-					Operator:       fmt.Sprintf("operator%d", i),
+					Operator:       "<=",
 					IsDefault:      true,
 					CloudServiceId: "00000000-0000-0000-0000-000000000000",
 					MetricId:       "TestMetric",
@@ -637,11 +640,10 @@ func Test_CreateCertificate(t *testing.T) {
 		req *orchestrator.CreateCertificateRequest
 	}
 	var tests = []struct {
-		name           string
-		args           args
-		wantResponse   *orchestrator.Certificate
-		wantErrMessage error
-		wantErrCode    codes.Code
+		name         string
+		args         args
+		wantResponse *orchestrator.Certificate
+		wantErr      assert.ErrorAssertionFunc
 	}{
 		{
 			"missing request",
@@ -650,8 +652,10 @@ func Test_CreateCertificate(t *testing.T) {
 				nil,
 			},
 			nil,
-			api.ErrRequestIsNil,
-			codes.InvalidArgument,
+			func(tt assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
+			},
 		},
 		{
 			"missing certificate",
@@ -660,8 +664,10 @@ func Test_CreateCertificate(t *testing.T) {
 				&orchestrator.CreateCertificateRequest{},
 			},
 			nil,
-			orchestrator.ErrCertificateIsNil,
-			codes.InvalidArgument,
+			func(tt assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, "Certificate: value is required")
+			},
 		},
 		{
 			"missing certificate id",
@@ -672,8 +678,10 @@ func Test_CreateCertificate(t *testing.T) {
 				},
 			},
 			nil,
-			orchestrator.ErrCertIDIsMissing,
-			codes.InvalidArgument,
+			func(tt assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, "Id: value length must be at least 1 runes")
+			},
 		},
 		{
 			"valid certificate",
@@ -684,22 +692,15 @@ func Test_CreateCertificate(t *testing.T) {
 				},
 			},
 			mockCertificate,
-			nil,
-			// wantErrCode doesn't matter since error (message) is nil
-			0,
+			assert.NoError,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
 			gotResponse, err := s.CreateCertificate(tt.args.in0, tt.args.req)
-			// If error shouldn't be nil, check error message and code
-			// TODO(lebogg): This pattern we probably have quite often. Maybe extract it (to test utils)?
-			if tt.wantErrMessage != nil {
-				assert.Equal(t, status.Code(err), tt.wantErrCode)
-				assert.Contains(t, err.Error(), tt.wantErrMessage.Error())
-				return
-			}
+			tt.wantErr(t, err)
+
 			// If no error is wanted, check response
 			if !reflect.DeepEqual(gotResponse, tt.wantResponse) {
 				t.Errorf("Service.CreateCertificate() = %v, want %v", gotResponse, tt.wantResponse)
@@ -728,9 +729,10 @@ func Test_UpdateCertificate(t *testing.T) {
 	// 3rd case: Certificate not found since there are no certificates yet
 	_, err = orchestratorService.UpdateCertificate(context.Background(), &orchestrator.UpdateCertificateRequest{
 		Certificate: &orchestrator.Certificate{
-			Id: "1234",
+			Id:             orchestratortest.MockCertificateID,
+			Name:           "EUCS",
+			CloudServiceId: orchestratortest.MockServiceID,
 		},
-		CertificateId: "1234",
 	})
 	assert.Equal(t, codes.NotFound, status.Code(err))
 
@@ -745,8 +747,7 @@ func Test_UpdateCertificate(t *testing.T) {
 	// update the certificate's description and send the update request
 	mockCertificate.Description = "new description"
 	certificate, err = orchestratorService.UpdateCertificate(context.Background(), &orchestrator.UpdateCertificateRequest{
-		CertificateId: "1234",
-		Certificate:   mockCertificate,
+		Certificate: mockCertificate,
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, certificate)
@@ -803,17 +804,17 @@ func Test_GetCertificate(t *testing.T) {
 			"invalid request",
 			nil,
 			nil,
-			status.Error(codes.InvalidArgument, api.ErrRequestIsNil.Error()),
+			status.Error(codes.InvalidArgument, "empty request"),
 		},
 		{
 			"certificate not found",
 			&orchestrator.GetCertificateRequest{CertificateId: ""},
 			nil,
-			status.Error(codes.NotFound, "certificate ID is empty"),
+			status.Error(codes.InvalidArgument, "invalid request: invalid GetCertificateRequest.CertificateId: value length must be at least 1 runes"),
 		},
 		{
 			"valid",
-			&orchestrator.GetCertificateRequest{CertificateId: "1234"},
+			&orchestrator.GetCertificateRequest{CertificateId: orchestratortest.MockCertificateID},
 			orchestratortest.NewCertificate(),
 			nil,
 		},
@@ -915,8 +916,7 @@ func TestCloudServiceHooks(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				serviceUpdate: &orchestrator.UpdateCloudServiceRequest{
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
-					Service: &orchestrator.CloudService{
+					CloudService: &orchestrator.CloudService{
 						Id:          "00000000-0000-0000-0000-000000000000",
 						Name:        "test service",
 						Description: "test service",
