@@ -246,12 +246,16 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 		storeAssessmentResultReq := &orchestrator.StoreAssessmentResultRequest{
 			Result: result.Result,
 		}
-		res, err = s.StoreAssessmentResult(context.Background(), storeAssessmentResultReq)
+		_, err = s.StoreAssessmentResult(context.Background(), storeAssessmentResultReq)
 		if err != nil {
 			// Create response message. The StoreAssessmentResult method does not need that message, so we have to create it here for the stream response.
 			res = &orchestrator.StoreAssessmentResultResponse{
 				Status:        false,
 				StatusMessage: err.Error(),
+			}
+		} else {
+			res = &orchestrator.StoreAssessmentResultResponse{
+				Status: true,
 			}
 		}
 
