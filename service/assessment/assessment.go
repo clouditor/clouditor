@@ -234,13 +234,7 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 	err = service.ValidateRequest(req)
 	if err != nil {
 		log.Error(err)
-		svc.informHooks(nil, err)
-
-		res = &assessment.AssessEvidenceResponse{
-			Status:        assessment.AssessEvidenceResponse_FAILED,
-			StatusMessage: err.Error(),
-		}
-		return res, status.Errorf(codes.InvalidArgument, "%v", err)
+		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	// Validate evidence
@@ -248,34 +242,18 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 	if err != nil {
 		err = fmt.Errorf("invalid evidence: %w", err)
 		log.Error(err)
-		svc.informHooks(nil, err)
-
-		res = &assessment.AssessEvidenceResponse{
-			Status:        assessment.AssessEvidenceResponse_FAILED,
-			StatusMessage: err.Error(),
-		}
-
-		return res, status.Errorf(codes.InvalidArgument, "%v", err)
+		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	// Assess evidence
 	err = svc.handleEvidence(req.Evidence, resourceId)
 	if err != nil {
-		res = &assessment.AssessEvidenceResponse{
-			Status:        assessment.AssessEvidenceResponse_FAILED,
-			StatusMessage: err.Error(),
-		}
-
-		newError := errors.New("error while handling evidence")
-		log.Errorf("%v: %v", newError, err)
-
-		return res, status.Errorf(codes.Internal, "%v", newError)
+		err = fmt.Errorf("error while handling evidence: %v", err)
+		log.Error(err)
+		return res, status.Errorf(codes.Internal, "%v", err)
 	}
 
-	// Create response
-	res = &assessment.AssessEvidenceResponse{
-		Status: assessment.AssessEvidenceResponse_ASSESSED,
-	}
+	res = &assessment.AssessEvidenceResponse{}
 
 	return res, nil
 }
@@ -305,9 +283,17 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 		assessEvidencesReq := &assessment.AssessEvidenceRequest{
 			Evidence: req.Evidence,
 		}
-		res, err = svc.AssessEvidence(context.Background(), assessEvidencesReq)
+		_, err = svc.AssessEvidence(context.Background(), assessEvidencesReq)
 		if err != nil {
-			log.Errorf("Error assessing evidence: %v", err)
+			// Create response message. The AssessEvidence method does not need that message, so we have to create it here for the stream response.
+			res = &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: err.Error(),
+			}
+		} else {
+			res = &assessment.AssessEvidenceResponse{
+				Status: assessment.AssessEvidenceResponse_ASSESSED,
+			}
 		}
 
 		// Send response back to the client
@@ -318,9 +304,9 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 			return nil
 		}
 		if err != nil {
-			newError := fmt.Errorf("cannot send response to the client: %w", err)
-			log.Error(newError)
-			return status.Errorf(codes.Unknown, "%v", newError)
+			err = fmt.Errorf("cannot send response to the client: %w", err)
+			log.Error(err)
+			return status.Errorf(codes.Unknown, "%v", err)
 		}
 	}
 }
@@ -335,7 +321,6 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 	evaluations, err := svc.pe.Eval(ev, svc)
 	if err != nil {
 		newError := fmt.Errorf("could not evaluate evidence: %w", err)
-		log.Error(newError)
 
 		go svc.informHooks(nil, newError)
 
@@ -348,7 +333,6 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 		channelEvidenceStore, err := svc.evidenceStoreStreams.GetStream(svc.evidenceStoreAddress.target, "Evidence Store", svc.initEvidenceStoreStream, svc.evidenceStoreAddress.opts...)
 		if err != nil {
 			err = fmt.Errorf("could not get stream to evidence store (%s): %w", svc.evidenceStoreAddress.target, err)
-			log.Error(err)
 
 			go svc.informHooks(nil, err)
 
@@ -361,7 +345,6 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 	channelOrchestrator, err := svc.orchestratorStreams.GetStream(svc.orchestratorAddress.target, "Orchestrator", svc.initOrchestratorStream, svc.orchestratorAddress.opts...)
 	if err != nil {
 		err = fmt.Errorf("could not get stream to orchestrator (%s): %w", svc.orchestratorAddress.target, err)
-		log.Error(err)
 
 		go svc.informHooks(nil, err)
 
