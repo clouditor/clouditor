@@ -210,23 +210,17 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
+		log.Error(err)
 		go s.informHook(nil, err)
 
-		resp = &orchestrator.StoreAssessmentResultResponse{
-			Status:        false,
-			StatusMessage: err.Error(),
-		}
-
-		return resp, err
+		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	s.results[req.Result.Id] = req.Result
 
 	go s.informHook(req.Result, nil)
 
-	resp = &orchestrator.StoreAssessmentResultResponse{
-		Status: true,
-	}
+	resp = &orchestrator.StoreAssessmentResultResponse{}
 
 	return resp, nil
 }
@@ -256,7 +250,11 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 		}
 		res, err = s.StoreAssessmentResult(context.Background(), storeAssessmentResultReq)
 		if err != nil {
-			log.Errorf("Error storing assessment result: %v", err)
+			// Create response message. The StoreAssessmentResult method does not need that message, so we have to create it here for the stream response.
+			res = &orchestrator.StoreAssessmentResultResponse{
+				Status:        false,
+				StatusMessage: err.Error(),
+			}
 		}
 
 		log.Debugf("Assessment result received (%v)", result.Result.Id)
