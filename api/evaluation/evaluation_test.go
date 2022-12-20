@@ -55,7 +55,7 @@ func TestStartEvaluationRequest_Validate(t *testing.T) {
 				Request: &StartEvaluationRequest{},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, orchestrator.ErrToEIsMissing.Error())
+				return assert.ErrorContains(t, err, "TODO")
 			},
 		},
 		{
@@ -137,7 +137,7 @@ func TestStopEvaluationRequest_Validate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, orchestrator.ErrToEIsMissing.Error())
+				return assert.ErrorContains(t, err, "TODO")
 			},
 		},
 		{

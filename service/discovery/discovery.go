@@ -227,7 +227,13 @@ func (svc *Service) initAssessmentStream(target string, additionalOpts ...grpc.D
 }
 
 // Start starts discovery
-func (svc *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
+func (svc *Service) Start(_ context.Context, req *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
 	resp = &discovery.StartDiscoveryResponse{Successful: true}
 
 	log.Infof("Starting discovery...")
@@ -356,7 +362,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 			CloudServiceId: resource.GetServiceID(),
 			Timestamp:      timestamppb.Now(),
 			ToolId:         "Clouditor Evidences Collection",
-			Raw:            "",
+			Raw:            nil,
 			Resource:       v,
 		}
 
@@ -376,14 +382,10 @@ func (svc *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *
 	var r []*structpb.Value
 	var resources []voc.IsCloudResource
 
-	var filteredType = ""
-	if req != nil {
-		filteredType = req.FilteredType
-	}
-
-	var filteredServiceId = ""
-	if req != nil {
-		filteredServiceId = req.FilteredCloudServiceId
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	resources = maps.Values(svc.resources)
@@ -394,11 +396,11 @@ func (svc *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *
 	for _, v := range resources {
 		var resource *structpb.Value
 
-		if filteredType != "" && !v.HasType(filteredType) {
+		if req.FilteredType != nil && !v.HasType(req.GetFilteredType()) {
 			continue
 		}
 
-		if filteredServiceId != "" && v.GetServiceID() != filteredServiceId {
+		if req.FilteredCloudServiceId != nil && v.GetServiceID() != req.GetFilteredCloudServiceId() {
 			continue
 		}
 

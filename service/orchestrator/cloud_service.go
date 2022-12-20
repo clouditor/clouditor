@@ -30,7 +30,6 @@ import (
 	"errors"
 	"fmt"
 
-	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
@@ -47,31 +46,27 @@ const (
 	DefaultTargetCloudServiceDescription = "The default target cloud service"
 )
 
-func (s *Service) RegisterCloudService(ctx context.Context, req *orchestrator.RegisterCloudServiceRequest) (service *orchestrator.CloudService, err error) {
-	if req == nil {
-		return nil, status.Errorf(codes.InvalidArgument, api.ErrRequestIsNil.Error())
-	}
-	if req.Service == nil {
-		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrServiceIsNil.Error())
-	}
-	if req.Service.Name == "" {
-		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrNameIsMissing.Error())
+func (s *Service) RegisterCloudService(ctx context.Context, req *orchestrator.RegisterCloudServiceRequest) (res *orchestrator.CloudService, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
-	service = new(orchestrator.CloudService)
+	res = new(orchestrator.CloudService)
 
 	// Generate a new ID
-	service.Id = uuid.NewString()
-	service.Name = req.Service.Name
-	service.Description = req.Service.Description
+	res.Id = uuid.NewString()
+	res.Name = req.CloudService.Name
+	res.Description = req.CloudService.Description
 
 	// Persist the service in our database
-	err = s.storage.Create(service)
+	err = s.storage.Create(res)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not add cloud service to the database: %v", err)
 	}
 
-	go s.informHooks(ctx, service, nil)
+	go s.informHooks(ctx, res, nil)
 	return
 }
 
@@ -82,12 +77,10 @@ func (svc *Service) ListCloudServices(ctx context.Context, req *orchestrator.Lis
 	var allowed []string
 	var all bool
 
-	// Validate tne request
-	if err = api.ValidateListRequest[*orchestrator.CloudService](req); err != nil {
-		err = fmt.Errorf("invalid request: %w", err)
-		log.Error(err)
-		err = status.Errorf(codes.InvalidArgument, "%v", err)
-		return
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	res = new(orchestrator.ListCloudServicesResponse)
@@ -111,11 +104,10 @@ func (svc *Service) ListCloudServices(ctx context.Context, req *orchestrator.Lis
 
 // GetCloudService implements method for OrchestratorServer interface for getting a cloud service with provided id
 func (s *Service) GetCloudService(ctx context.Context, req *orchestrator.GetCloudServiceRequest) (response *orchestrator.CloudService, err error) {
-	if req == nil {
-		return nil, status.Errorf(codes.InvalidArgument, api.ErrRequestIsNil.Error())
-	}
-	if req.CloudServiceId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrIDIsMissing.Error())
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	// Check, if this request has access to the cloud service according to our authorization strategy.
@@ -136,12 +128,10 @@ func (s *Service) GetCloudService(ctx context.Context, req *orchestrator.GetClou
 
 // UpdateCloudService implements method for OrchestratorServer interface for updating a cloud service
 func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.UpdateCloudServiceRequest) (response *orchestrator.CloudService, err error) {
-	if req.Service == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "service is empty")
-	}
-
-	if req.CloudServiceId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	// Check, if this request has access to the cloud service according to our authorization strategy.
@@ -149,7 +139,7 @@ func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.Upda
 		return nil, service.ErrPermissionDenied
 	}
 
-	count, err := s.storage.Count(req.Service, "id = ?", req.CloudServiceId)
+	count, err := s.storage.Count(req.CloudService, "id = ?", req.CloudService.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -159,11 +149,10 @@ func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.Upda
 	}
 
 	// Add id to response because otherwise it will overwrite ID with empty string
-	response = req.Service
-	response.Id = req.CloudServiceId
+	response = req.CloudService
 
 	// Since UpdateCloudService is a PUT method, we use storage.Save
-	err = s.storage.Save(response, "Id = ?", req.CloudServiceId)
+	err = s.storage.Save(response, "Id = ?", req.CloudService.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
@@ -174,8 +163,10 @@ func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.Upda
 
 // RemoveCloudService implements method for OrchestratorServer interface for removing a cloud service
 func (s *Service) RemoveCloudService(ctx context.Context, req *orchestrator.RemoveCloudServiceRequest) (response *emptypb.Empty, err error) {
-	if req.CloudServiceId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	// Check, if this request has access to the cloud service according to our authorization strategy.

@@ -306,7 +306,7 @@ components:
                 lang:
                     enum:
                         - LANGUAGE_UNSPECIFIED
-                        - REGO
+                        - LANGUAGE_REGO
                     type: string
                     description: The language this metric is implemented in
                     format: enum

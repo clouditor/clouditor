@@ -62,7 +62,7 @@ func NewRegisterCloudServiceCommand() *cobra.Command {
 			name := args[0]
 
 			res, err = client.RegisterCloudService(context.Background(), &orchestrator.RegisterCloudServiceRequest{
-				Service: &orchestrator.CloudService{
+				CloudService: &orchestrator.CloudService{
 					Name: name,
 				},
 			})
@@ -204,8 +204,8 @@ func NewUpdateCloudServiceCommand() *cobra.Command {
 			client = orchestrator.NewOrchestratorClient(session)
 
 			res, err = client.UpdateCloudService(context.Background(), &orchestrator.UpdateCloudServiceRequest{
-				CloudServiceId: viper.GetString("id"),
-				Service: &orchestrator.CloudService{
+				CloudService: &orchestrator.CloudService{
+					Id:          viper.GetString("id"),
 					Name:        viper.GetString("name"),
 					Description: viper.GetString("description"),
 				},

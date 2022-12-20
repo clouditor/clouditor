@@ -51,7 +51,8 @@ func (TimestampSerializer) Value(_ context.Context, _ *schema.Field, _ reflect.V
 		ok bool
 	)
 
-	if fieldValue == nil {
+	if fieldValue == nil || (reflect.ValueOf(fieldValue).Kind() == reflect.Pointer &&
+		reflect.ValueOf(fieldValue).IsNil()) {
 		return nil, nil
 	}
 

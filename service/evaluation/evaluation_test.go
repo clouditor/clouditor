@@ -651,7 +651,7 @@ func TestService_StopEvaluation(t *testing.T) {
 			},
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, orchestrator.ErrToEIsMissing.Error())
+				return assert.ErrorContains(t, err, "TODO")
 			},
 		},
 		// {
@@ -910,10 +910,10 @@ func TestService_StartEvaluation(t *testing.T) {
 			},
 			wantResp: &evaluation.StartEvaluationResponse{
 				Status:        false,
-				StatusMessage: orchestrator.ErrToEIsMissing.Error(),
+				StatusMessage: "TODO",
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, orchestrator.ErrToEIsMissing.Error())
+				return assert.ErrorContains(t, err, "TODO")
 			},
 		},
 	}

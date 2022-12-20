@@ -27,7 +27,6 @@ package orchestrator
 
 import (
 	"context"
-	"fmt"
 
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
@@ -48,11 +47,9 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.L
 	var all bool
 
 	// Validate request
-	err = req.Validate()
+	err = service.ValidateRequest(req)
 	if err != nil {
-		err = fmt.Errorf("invalid request: %v", err)
-		log.Error(err)
-		return nil, status.Errorf(codes.InvalidArgument, "%s", err)
+		return nil, err
 	}
 
 	// Check, if the cloud service ID filter is valid according to the authorization strategy. Omitting the cloud service ID is

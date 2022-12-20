@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 
-	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
@@ -19,23 +18,14 @@ import (
 // CreateCatalog implements a method for creating a new catalog.
 func (svc *Service) CreateCatalog(_ context.Context, req *orchestrator.CreateCatalogRequest) (
 	*orchestrator.Catalog, error) {
-	// TODO(oxisto): extract to validate method
 	// Validate request
-	if req == nil {
-		return nil,
-			status.Errorf(codes.InvalidArgument, api.ErrRequestIsNil.Error())
-	}
-	if req.Catalog == nil {
-		return nil,
-			status.Errorf(codes.InvalidArgument, orchestrator.ErrCatalogIsNil.Error())
-	}
-	if req.Catalog.Id == "" {
-		return nil,
-			status.Errorf(codes.InvalidArgument, orchestrator.ErrCatalogIDIsMissing.Error())
+	err := service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	// Persist the new catalog in our database
-	err := svc.storage.Create(req.Catalog)
+	err = svc.storage.Create(req.Catalog)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
@@ -48,11 +38,10 @@ func (svc *Service) CreateCatalog(_ context.Context, req *orchestrator.CreateCat
 // name and the control ID. If present, it also includes a list of sub-controls and any metrics associated to any
 // controls.
 func (svc *Service) GetCatalog(_ context.Context, req *orchestrator.GetCatalogRequest) (response *orchestrator.Catalog, err error) {
-	if req == nil {
-		return nil, status.Errorf(codes.InvalidArgument, api.ErrRequestIsNil.Error())
-	}
-	if req.CatalogId == "" {
-		return nil, status.Errorf(codes.NotFound, orchestrator.ErrCatalogIDIsMissing.Error())
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	response = new(orchestrator.Catalog)
@@ -73,12 +62,10 @@ func (svc *Service) GetCatalog(_ context.Context, req *orchestrator.GetCatalogRe
 // ListCatalogs Lists all security controls catalogs. Each catalog includes a list of its
 // categories but no additional sub-resources.
 func (svc *Service) ListCatalogs(_ context.Context, req *orchestrator.ListCatalogsRequest) (res *orchestrator.ListCatalogsResponse, err error) {
-	// Validate the request
-	if err = api.ValidateListRequest[*orchestrator.Catalog](req); err != nil {
-		err = fmt.Errorf("invalid request: %w", err)
-		log.Error(err)
-		err = status.Errorf(codes.InvalidArgument, "%v", err)
-		return
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	res = new(orchestrator.ListCatalogsResponse)
@@ -92,16 +79,13 @@ func (svc *Service) ListCatalogs(_ context.Context, req *orchestrator.ListCatalo
 
 // UpdateCatalog implements a method for updating an existing catalog
 func (svc *Service) UpdateCatalog(_ context.Context, req *orchestrator.UpdateCatalogRequest) (res *orchestrator.Catalog, err error) {
-	if req.CatalogId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "catalog id is empty")
-	}
-
-	if req.Catalog == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "catalog is empty")
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	res = req.Catalog
-	res.Id = req.CatalogId
 
 	err = svc.storage.Update(res, "id = ?", res.Id)
 
@@ -115,8 +99,10 @@ func (svc *Service) UpdateCatalog(_ context.Context, req *orchestrator.UpdateCat
 
 // RemoveCatalog implements a method for removing a catalog
 func (svc *Service) RemoveCatalog(_ context.Context, req *orchestrator.RemoveCatalogRequest) (response *emptypb.Empty, err error) {
-	if req.CatalogId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "catalog id is empty")
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	err = svc.storage.Delete(&orchestrator.Catalog{}, "Id = ?", req.CatalogId)
@@ -132,6 +118,12 @@ func (svc *Service) RemoveCatalog(_ context.Context, req *orchestrator.RemoveCat
 // GetCategory retrieves a category of a catalog specified by the catalog ID and the category name. It includes the
 // first level of controls within each category.
 func (srv *Service) GetCategory(_ context.Context, req *orchestrator.GetCategoryRequest) (res *orchestrator.Category, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
 	res = new(orchestrator.Category)
 	err = srv.storage.Get(&res,
 		// Preload fills in associated entities, in this case controls. We want to only select those controls which do
@@ -151,7 +143,11 @@ func (srv *Service) GetCategory(_ context.Context, req *orchestrator.GetCategory
 // GetControl retrieves a control specified by the catalog ID, the control's category name and the control ID. If
 // present, it also includes a list of sub-controls and any metrics associated to the control.
 func (srv *Service) GetControl(_ context.Context, req *orchestrator.GetControlRequest) (res *orchestrator.Control, err error) {
-	// TODO(oxisto): Validate request parameters
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
 
 	res = new(orchestrator.Control)
 	err = srv.storage.Get(&res,
@@ -169,12 +165,10 @@ func (srv *Service) GetControl(_ context.Context, req *orchestrator.GetControlRe
 // ListControls lists controls. If no additional parameters are specified, this lists all controls. If a
 // catalog ID and a category name is specified, then only controls containing in this category are returned.
 func (srv *Service) ListControls(_ context.Context, req *orchestrator.ListControlsRequest) (res *orchestrator.ListControlsResponse, err error) {
-	// Validate the request
-	if err = api.ValidateListRequest[*orchestrator.Control](req); err != nil {
-		err = fmt.Errorf("invalid request: %w", err)
-		log.Error(err)
-		err = status.Errorf(codes.InvalidArgument, "%v", err)
-		return
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	res = new(orchestrator.ListControlsResponse)
