@@ -399,6 +399,8 @@ func TestService_AssessEvidences(t *testing.T) {
 	type fields struct {
 		ResultHooks                   []assessment.ResultHookFunc
 		results                       map[string]*assessment.AssessmentResult
+		evidenceStoreStreams          *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
+		orchestratorStreams           *api.StreamsOf[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest]
 		UnimplementedAssessmentServer assessment.UnimplementedAssessmentServer
 	}
 	type args struct {
@@ -429,7 +431,7 @@ func TestService_AssessEvidences(t *testing.T) {
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.ToolId: value length must be at least 1 runes",
+				StatusMessage: "rpc error: code = InvalidArgument desc = rpc error: code = InvalidArgument desc = invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.ToolId: value length must be at least 1 runes",
 			},
 		},
 		{
@@ -447,16 +449,20 @@ func TestService_AssessEvidences(t *testing.T) {
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format",
+				StatusMessage: "rpc error: code = InvalidArgument desc = rpc error: code = InvalidArgument desc = invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format",
 			},
 		},
 		{
 			name: "Assess evidences",
 			fields: fields{
-				results: make(map[string]*assessment.AssessmentResult)},
+				results:              make(map[string]*assessment.AssessmentResult),
+				evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
+				orchestratorStreams:  api.NewStreamsOf(api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest](log)),
+			},
 			args: args{
 				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
+						Id:             "11111111-1111-1111-1111-111111111111",
 						Timestamp:      timestamppb.Now(),
 						ToolId:         "2134",
 						CloudServiceId: "00000000-0000-0000-0000-000000000000",
@@ -507,9 +513,11 @@ func TestService_AssessEvidences(t *testing.T) {
 				results:                       tt.fields.results,
 				cachedConfigurations:          make(map[string]cachedConfiguration),
 				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
+				evidenceStoreStreams:          tt.fields.evidenceStoreStreams,
 				evidenceStoreAddress: grpcTarget{
 					opts: []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 				},
+				orchestratorStreams: tt.fields.orchestratorStreams,
 				orchestratorAddress: grpcTarget{
 					opts: []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 				},
@@ -532,7 +540,9 @@ func TestService_AssessEvidences(t *testing.T) {
 
 			if !tt.wantErr {
 				assert.Nil(t, err)
-				assert.Contains(t, responseFromServer.StatusMessage, tt.wantRespMessage.StatusMessage)
+				if !reflect.DeepEqual(responseFromServer, tt.wantRespMessage) {
+					t.Errorf("AssessEvidences() gotResp = %v, want %v", responseFromServer, tt.wantRespMessage)
+				}
 			} else {
 				assert.Contains(t, err.Error(), tt.wantErrMessage)
 			}
