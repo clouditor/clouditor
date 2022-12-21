@@ -27,6 +27,7 @@ package evaluation
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -251,7 +252,6 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 
 			// parentSchedulerTag is the tag for the parent control, that is only needed if a first level control is schedules
 			parentSchedulerTag = createSchedulerTag(req.TargetOfEvaluation.GetCloudServiceId(), control.GetId())
-			log.Infof("parentSchedulerTag: ", parentSchedulerTag)
 		}
 
 		// Add control including sub-controls to the scheduler
@@ -283,10 +283,18 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 		control      *orchestrator.Control
 	)
 
-	err = req.Validate()
+	// Validate request
+	err = service.ValidateRequest(req)
 	if err != nil {
 		err = status.Errorf(codes.InvalidArgument, "%v", err)
 		return
+	}
+
+	// TODO(anatheka): Do we really need that?
+	// Validate toe
+	err = req.GetTargetOfEvaluation().Validate()
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	// Get control
@@ -436,10 +444,10 @@ func (s *Service) stopSchedulerJob(schedulerTag string) (err error) {
 	return
 }
 
-// stopSchedulerJobs stops all scheduler jobs for the given control ids
-func (s *Service) stopSchedulerJobs(controlIds []string) (err error) {
+// stopSchedulerJobs stops all scheduler jobs for the given scheduler tags
+func (s *Service) stopSchedulerJobs(schedulerTags []string) (err error) {
 	// Delete the job from the scheduler
-	for _, schedulerTag := range controlIds {
+	for _, schedulerTag := range schedulerTags {
 		err = s.stopSchedulerJob(schedulerTag)
 		if err != nil {
 			return
@@ -675,6 +683,10 @@ func (s *Service) getMetrics(catalogId, categoryName, controlId string) (metrics
 func (s *Service) getMetricsFromSubControls(control *orchestrator.Control) (metrics []*assessment.Metric, err error) {
 	var subcontrol *orchestrator.Control
 
+	if control == nil {
+		return nil, errors.New("control is missing")
+	}
+
 	for _, control := range control.Controls {
 		subcontrol, err = s.getControl(control.CategoryCatalogId, control.CategoryName, control.Id)
 		if err != nil {
@@ -704,6 +716,14 @@ func getAllControlIdsFromControl(control *orchestrator.Control) []string {
 
 // getControl returns the control for the given control_id.
 func (s *Service) getControl(catalogId, categoryName, controlId string) (control *orchestrator.Control, err error) {
+
+	if s.orchestratorClient == nil {
+		err := s.initOrchestratorClient()
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	control, err = s.orchestratorClient.GetControl(context.Background(), &orchestrator.GetControlRequest{
 		CatalogId:    catalogId,
 		CategoryName: categoryName,
@@ -743,6 +763,12 @@ func createSchedulerTag(cloudServiceId, controlId string) string {
 
 // getSchedulerTagsForControlIds return for a given list of control_ids the corresponding scheduler_tags.
 func getSchedulerTagsForControlIds(controlIds []string, cloudServiceId string) (schedulerTags []string) {
+	schedulerTags = []string{}
+
+	if len(controlIds) == 0 || cloudServiceId == "" {
+		return
+	}
+
 	for _, controlId := range controlIds {
 		schedulerTags = append(schedulerTags, createSchedulerTag(cloudServiceId, controlId))
 	}
