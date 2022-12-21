@@ -372,11 +372,12 @@ service Orchestrator {
   rpc UpdateControlMonitoringStatus(UpdateControlMonitoringStatusRequest)
       returns (ControlMonitoringStatus) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/cloud_services/"
+      put : "/v1/orchestrator/cloud_services/"
             "{status.target_of_evaluation_cloud_service_id}/toes/"
             "{status.target_of_evaluation_catalog_id}/monitoring_status/"
             "categories/{status.control_category_name}/"
             "controls/{status.control_id}"
+      body : "status"
     };
   }
 
