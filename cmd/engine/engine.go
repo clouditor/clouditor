@@ -271,14 +271,14 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	evidenceStoreService = service_evidenceStore.NewService()
 
 	evaluationService = service_evaluation.NewService(
-		service_evaluation.ServiceOption(service_evaluation.WithOAuth2Authorizer(
+		service_evaluation.WithOAuth2Authorizer(
 			// Configure the OAuth 2.0 client credentials for this service
 			&clientcredentials.Config{
 				ClientID:     viper.GetString(ServiceOAuth2ClientIDFlag),
 				ClientSecret: viper.GetString(ServiceOAuth2ClientSecretFlag),
 				TokenURL:     viper.GetString(ServiceOAuth2EndpointFlag),
 			},
-		)),
+		),
 	)
 
 	// It is possible to register hook functions for the orchestrator, evidenceStore and assessment service.
