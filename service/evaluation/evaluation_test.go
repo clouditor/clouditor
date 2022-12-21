@@ -44,7 +44,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func TestNewService(t *testing.T) {
@@ -236,147 +235,6 @@ func Test_createSchedulerTag(t *testing.T) {
 			if got := createSchedulerTag(tt.args.cloudServiceId, tt.args.controlId); got != tt.want {
 				t.Errorf("createSchedulerTag() = %v, want %v", got, tt.want)
 			}
-		})
-	}
-}
-
-func Test_getMapping(t *testing.T) {
-	type args struct {
-		results []*assessment.AssessmentResult
-		metrics []*assessment.Metric
-	}
-	tests := []struct {
-		name            string
-		args            args
-		wantMappingList []*mappingResultMetric
-	}{
-		{
-			name: "Empty metrics",
-			args: args{
-				results: []*assessment.AssessmentResult{
-					{
-						Id:             "11111111-1111-1111-1111-111111111111",
-						MetricId:       "TransportEncryptionEnabled",
-						CloudServiceId: defaults.DefaultTargetCloudServiceID,
-						Compliant:      true,
-					},
-				},
-				metrics: []*assessment.Metric{},
-			},
-			wantMappingList: nil,
-		},
-		{
-			name: "Missing metrics",
-			args: args{
-				results: []*assessment.AssessmentResult{
-					{
-						Id:             "11111111-1111-1111-1111-111111111111",
-						MetricId:       "TransportEncryptionEnabled",
-						CloudServiceId: defaults.DefaultTargetCloudServiceID,
-						Compliant:      true,
-					},
-				},
-				metrics: nil,
-			},
-			wantMappingList: nil,
-		},
-		{
-			name: "Empty assessment results",
-			args: args{
-				results: []*assessment.AssessmentResult{},
-				metrics: []*assessment.Metric{
-					{
-						Id:          "TransportEncryptionEnabled",
-						Name:        "Transport Encryption: Enabled",
-						Description: "This metric describes, whether transport encryption is turned on or not",
-						Scale:       assessment.Metric_ORDINAL,
-						Range: &assessment.Range{
-							Range: &assessment.Range_AllowedValues{AllowedValues: &assessment.AllowedValues{
-								Values: []*structpb.Value{
-									structpb.NewBoolValue(false),
-									structpb.NewBoolValue(true),
-								}}}},
-					},
-				},
-			},
-			wantMappingList: []*mappingResultMetric{
-				{
-					metricName: "TransportEncryptionEnabled",
-					results:    []*assessment.AssessmentResult{},
-				},
-			},
-		},
-		{
-			name: "Missing assessment results",
-			args: args{
-				results: nil,
-				metrics: []*assessment.Metric{
-					{
-						Id:          "TransportEncryptionEnabled",
-						Name:        "Transport Encryption: Enabled",
-						Description: "This metric describes, whether transport encryption is turned on or not",
-						Scale:       assessment.Metric_ORDINAL,
-						Range: &assessment.Range{
-							Range: &assessment.Range_AllowedValues{AllowedValues: &assessment.AllowedValues{
-								Values: []*structpb.Value{
-									structpb.NewBoolValue(false),
-									structpb.NewBoolValue(true),
-								}}}},
-					},
-				},
-			},
-			wantMappingList: []*mappingResultMetric{
-				{
-					metricName: "TransportEncryptionEnabled",
-					results:    []*assessment.AssessmentResult{},
-				},
-			},
-		},
-		{
-			name: "Happy path",
-			args: args{
-				results: []*assessment.AssessmentResult{
-					{
-						Id:             "11111111-1111-1111-1111-111111111111",
-						MetricId:       "TransportEncryptionEnabled",
-						CloudServiceId: defaults.DefaultTargetCloudServiceID,
-						Compliant:      true,
-					},
-				},
-				metrics: []*assessment.Metric{
-					{
-						Id:          "TransportEncryptionEnabled",
-						Name:        "Transport Encryption: Enabled",
-						Description: "This metric describes, whether transport encryption is turned on or not",
-						Scale:       assessment.Metric_ORDINAL,
-						Range: &assessment.Range{
-							Range: &assessment.Range_AllowedValues{AllowedValues: &assessment.AllowedValues{
-								Values: []*structpb.Value{
-									structpb.NewBoolValue(false),
-									structpb.NewBoolValue(true),
-								}}}},
-					},
-				},
-			},
-			wantMappingList: []*mappingResultMetric{
-				{
-					metricName: "TransportEncryptionEnabled",
-					results: []*assessment.AssessmentResult{
-						{
-							Id:             "11111111-1111-1111-1111-111111111111",
-							MetricId:       "TransportEncryptionEnabled",
-							CloudServiceId: defaults.DefaultTargetCloudServiceID,
-							Compliant:      true,
-						},
-					},
-				},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotMappingList := getMapping(tt.args.results, tt.args.metrics)
-			assert.Equal(t, tt.wantMappingList, gotMappingList)
 		})
 	}
 }
@@ -869,7 +727,6 @@ func TestService_StartEvaluation(t *testing.T) {
 					fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSUpperLevelControlID13): {
 						wg:      &sync.WaitGroup{},
 						wgMutex: sync.Mutex{},
-						count:   0,
 					},
 				},
 				results: make(map[string]*evaluation.EvaluationResult),
