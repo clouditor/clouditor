@@ -40,6 +40,7 @@ import (
 	"clouditor.io/clouditor/internal/defaults"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/service"
 	"github.com/go-co-op/gocron"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -58,10 +59,11 @@ func TestMain(m *testing.M) {
 
 	os.Exit(code)
 }
+
 func TestNewService(t *testing.T) {
 
 	type args struct {
-		opts []ServiceOption
+		opts []service.Option[Service]
 	}
 	tests := []struct {
 		name string
@@ -71,7 +73,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "WithOrchestratorAddress",
 			args: args{
-				opts: []ServiceOption{ServiceOption(WithOrchestratorAddress(defaults.DefaultOrchestratorAddress))},
+				opts: []service.Option[Service]{service.Option[Service](WithOrchestratorAddress(defaults.DefaultOrchestratorAddress))},
 			},
 			want: &Service{
 				orchestratorAddress: grpcTarget{
@@ -85,7 +87,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "WithOAuth2Authorizer",
 			args: args{
-				opts: []ServiceOption{ServiceOption(WithOAuth2Authorizer(&clientcredentials.Config{}))},
+				opts: []service.Option[Service]{service.Option[Service](WithOAuth2Authorizer(&clientcredentials.Config{}))},
 			},
 			want: &Service{
 				orchestratorAddress: grpcTarget{
@@ -100,7 +102,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "WithAuthorizer",
 			args: args{
-				opts: []ServiceOption{ServiceOption(WithAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{})))},
+				opts: []service.Option[Service]{service.Option[Service](WithAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{})))},
 			},
 			want: &Service{
 				orchestratorAddress: grpcTarget{
@@ -115,7 +117,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "Happy path",
 			args: args{
-				opts: []ServiceOption{},
+				opts: []service.Option[Service]{},
 			},
 			want: &Service{
 				orchestratorAddress: grpcTarget{

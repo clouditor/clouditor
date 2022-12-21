@@ -108,7 +108,7 @@ const (
 type ServiceOption func(*Service)
 
 // WithStorage is an option to set the storage. If not set, NewService will use inmemory storage.
-func WithStorage(storage persistence.Storage) ServiceOption {
+func WithStorage(storage persistence.Storage) service.Option[Service] {
 	return func(s *Service) {
 		s.storage = storage
 	}
@@ -129,7 +129,7 @@ func WithAuthorizer(auth api.Authorizer) service.Option[Service] {
 }
 
 // WithOrchestratorAddress is an option to configure the orchestrator service gRPC address.
-func WithOrchestratorAddress(address string, opts ...grpc.DialOption) ServiceOption {
+func WithOrchestratorAddress(address string, opts ...grpc.DialOption) service.Option[Service] {
 	return func(s *Service) {
 		s.orchestratorAddress = grpcTarget{
 			target: address,
@@ -139,7 +139,7 @@ func WithOrchestratorAddress(address string, opts ...grpc.DialOption) ServiceOpt
 }
 
 // NewService creates a new Evaluation service
-func NewService(opts ...ServiceOption) *Service {
+func NewService(opts ...service.Option[Service]) *Service {
 	s := Service{
 		orchestratorAddress: grpcTarget{
 			target: DefaultOrchestratorAddress,
