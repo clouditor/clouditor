@@ -327,6 +327,116 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
+			name: "Filter control id",
+			fields: fields{results: map[string]*evaluation.EvaluationResult{
+				"11111111-1111-1111-1111-111111111111": {
+					Id:        "11111111-1111-1111-1111-111111111111",
+					ControlId: "control 1",
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+						CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					},
+				},
+				"22222222-2222-2222-2222-222222222222": {
+					Id:        "22222222-2222-2222-2222-222222222222",
+					ControlId: "control 1",
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+						CloudServiceId: "99999999-9999-9999-9999-999999999999",
+					},
+				},
+				"33333333-3333-3333-3333-333333333333": {
+					Id:        "33333333-3333-3333-3333-333333333333",
+					ControlId: "control 2",
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+						CloudServiceId: "99999999-9999-9999-9999-999999999999",
+					},
+				},
+				"44444444-4444-4444-4444-444444444444": {
+					Id:        "44444444-4444-4444-4444-444444444444",
+					ControlId: "control 2",
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+						CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					},
+				},
+			}},
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.ListEvaluationResultsRequest{
+					FilteredControlId: util.Ref("control 1"),
+				},
+			},
+			wantRes: &evaluation.ListEvaluationResultsResponse{
+				Results: []*evaluation.EvaluationResult{
+					{
+						Id:        "11111111-1111-1111-1111-111111111111",
+						ControlId: "control 1",
+						TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+							CloudServiceId: "00000000-0000-0000-0000-000000000000",
+						},
+					},
+					{
+						Id:        "22222222-2222-2222-2222-222222222222",
+						ControlId: "control 1",
+						TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+							CloudServiceId: "99999999-9999-9999-9999-999999999999",
+						},
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Filter cloud service id and control id",
+			fields: fields{results: map[string]*evaluation.EvaluationResult{
+				"11111111-1111-1111-1111-111111111111": {
+					Id:        "11111111-1111-1111-1111-111111111111",
+					ControlId: "control 1",
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+						CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					},
+				},
+				"22222222-2222-2222-2222-222222222222": {
+					Id:        "22222222-2222-2222-2222-222222222222",
+					ControlId: "control 1",
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+						CloudServiceId: "99999999-9999-9999-9999-999999999999",
+					},
+				},
+				"33333333-3333-3333-3333-333333333333": {
+					Id:        "33333333-3333-3333-3333-333333333333",
+					ControlId: "control 2",
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+						CloudServiceId: "99999999-9999-9999-9999-999999999999",
+					},
+				},
+				"44444444-4444-4444-4444-444444444444": {
+					Id:        "44444444-4444-4444-4444-444444444444",
+					ControlId: "control 2",
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+						CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					},
+				},
+			}},
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.ListEvaluationResultsRequest{
+					FilteredCloudServiceId: util.Ref("00000000-0000-0000-0000-000000000000"),
+					FilteredControlId:      util.Ref("control 1"),
+				},
+			},
+			wantRes: &evaluation.ListEvaluationResultsResponse{
+				Results: []*evaluation.EvaluationResult{
+					{
+						Id:        "11111111-1111-1111-1111-111111111111",
+						ControlId: "control 1",
+						TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+							CloudServiceId: "00000000-0000-0000-0000-000000000000",
+						},
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+		{
 			name: "multiple page result - first page",
 			fields: fields{results: map[string]*evaluation.EvaluationResult{
 				"11111111-1111-1111-1111-111111111111": {Id: "11111111-1111-1111-1111-111111111111"},

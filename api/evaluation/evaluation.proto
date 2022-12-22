@@ -68,6 +68,9 @@ message ListEvaluationResultsRequest {
     optional string filtered_cloud_service_id = 1
         [(validate.rules).string.min_len = 1];
   
+    optional string filtered_control_id = 2
+        [(validate.rules).string.min_len = 1];
+  
     int32 page_size = 10;
     string page_token = 11;
     string order_by = 12;

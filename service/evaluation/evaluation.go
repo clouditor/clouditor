@@ -334,8 +334,13 @@ func (s *Service) ListEvaluationResults(_ context.Context, req *evaluation.ListE
 
 	// Filtering evaluation results by
 	// * cloud service ID
+	// * control ID
 	for _, v := range s.results {
 		if req.FilteredCloudServiceId != nil && v.TargetOfEvaluation.GetCloudServiceId() != req.GetFilteredCloudServiceId() {
+			continue
+		}
+
+		if req.FilteredControlId != nil && v.ControlId != req.GetFilteredControlId() {
 			continue
 		}
 

@@ -81,6 +81,10 @@ paths:
                   in: query
                   schema:
                     type: string
+                - name: filteredControlId
+                  in: query
+                  schema:
+                    type: string
                 - name: pageSize
                   in: query
                   schema:
