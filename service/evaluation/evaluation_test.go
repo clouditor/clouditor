@@ -31,6 +31,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"sync"
 	"testing"
 	"time"
 
@@ -226,7 +227,7 @@ func Test_createSchedulerTag(t *testing.T) {
 		{
 			name: "Input controlId empty",
 			args: args{
-				controlId: defaults.DefaultEUCSLowerLevelControlID137,
+				controlId: defaults.DefaultEUCSSecondLevelControlID137,
 			},
 			want: "",
 		},
@@ -241,9 +242,9 @@ func Test_createSchedulerTag(t *testing.T) {
 			name: "Happy path",
 			args: args{
 				cloudServiceId: defaults.DefaultTargetCloudServiceID,
-				controlId:      defaults.DefaultEUCSLowerLevelControlID137,
+				controlId:      defaults.DefaultEUCSSecondLevelControlID137,
 			},
-			want: fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSLowerLevelControlID137),
+			want: fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSSecondLevelControlID137),
 		},
 	}
 	for _, tt := range tests {
@@ -637,7 +638,7 @@ func TestService_getMetricsFromSubControls(t *testing.T) {
 				control: &orchestrator.Control{
 					Id:                "testId",
 					CategoryName:      defaults.DefaultEUCSCategoryName,
-					CategoryCatalogId: defaults.DefaultEUCSLowerLevelControlID137,
+					CategoryCatalogId: defaults.DefaultEUCSSecondLevelControlID137,
 					Name:              "testId",
 					Controls:          nil,
 					Metrics:           nil,
@@ -655,13 +656,13 @@ func TestService_getMetricsFromSubControls(t *testing.T) {
 				control: &orchestrator.Control{
 					Id:                "testId",
 					CategoryName:      defaults.DefaultEUCSCategoryName,
-					CategoryCatalogId: defaults.DefaultEUCSLowerLevelControlID137,
+					CategoryCatalogId: defaults.DefaultEUCSSecondLevelControlID137,
 					Name:              "testId",
 					Controls: []*orchestrator.Control{
 						{
 							Id:                "testId-subcontrol",
 							CategoryName:      defaults.DefaultEUCSCategoryName,
-							CategoryCatalogId: defaults.DefaultEUCSLowerLevelControlID137,
+							CategoryCatalogId: defaults.DefaultEUCSSecondLevelControlID137,
 							Name:              "testId-subcontrol",
 						},
 					},
@@ -1143,14 +1144,14 @@ func Test_getMetricIds(t *testing.T) {
 			args: args{
 				metrics: []*assessment.Metric{
 					{
-						Id: defaults.DefaultEUCSLowerLevelControlID136,
+						Id: defaults.DefaultEUCSSecondLevelControlID136,
 					},
 					{
-						Id: defaults.DefaultEUCSLowerLevelControlID137,
+						Id: defaults.DefaultEUCSSecondLevelControlID137,
 					},
 				},
 			},
-			want: []string{defaults.DefaultEUCSLowerLevelControlID136, defaults.DefaultEUCSLowerLevelControlID137},
+			want: []string{defaults.DefaultEUCSSecondLevelControlID136, defaults.DefaultEUCSSecondLevelControlID137},
 		},
 	}
 	for _, tt := range tests {
@@ -1182,10 +1183,10 @@ func Test_controlContains(t *testing.T) {
 			args: args{
 				controls: []*orchestrator.Control{
 					{
-						Id: defaults.DefaultEUCSLowerLevelControlID137,
+						Id: defaults.DefaultEUCSSecondLevelControlID137,
 					},
 				},
-				controlId: defaults.DefaultEUCSLowerLevelControlID136,
+				controlId: defaults.DefaultEUCSSecondLevelControlID136,
 			},
 			want: false,
 		},
@@ -1194,10 +1195,10 @@ func Test_controlContains(t *testing.T) {
 			args: args{
 				controls: []*orchestrator.Control{
 					{
-						Id: defaults.DefaultEUCSLowerLevelControlID136,
+						Id: defaults.DefaultEUCSSecondLevelControlID136,
 					},
 				},
-				controlId: defaults.DefaultEUCSLowerLevelControlID136,
+				controlId: defaults.DefaultEUCSSecondLevelControlID136,
 			},
 			want: true,
 		},
@@ -1241,12 +1242,12 @@ func TestService_stopSchedulerJobs(t *testing.T) {
 		{
 			name: "Stop not existing scheduler job",
 			args: args{
-				schedulerTags: []string{fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSLowerLevelControlID137)},
+				schedulerTags: []string{fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSSecondLevelControlID137)},
 			},
 			fields: fields{
 				scheduler: gocron.NewScheduler(time.UTC),
 				schedulerTags: []string{
-					fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSLowerLevelControlID136)},
+					fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSSecondLevelControlID136)},
 				schedulerRunning: true,
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -1256,14 +1257,14 @@ func TestService_stopSchedulerJobs(t *testing.T) {
 		{
 			name: "Stopping two scheduler jobs",
 			args: args{
-				schedulerTags: []string{fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSLowerLevelControlID137)},
+				schedulerTags: []string{fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSSecondLevelControlID137)},
 			},
 			fields: fields{
 				scheduler:        gocron.NewScheduler(time.UTC),
 				schedulerRunning: true,
 				schedulerTags: []string{
-					fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSLowerLevelControlID136),
-					fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSLowerLevelControlID137)},
+					fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSSecondLevelControlID136),
+					fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSSecondLevelControlID137)},
 			},
 			wantErr: assert.NoError,
 		},
@@ -1336,7 +1337,7 @@ func TestService_stopSchedulerJob(t *testing.T) {
 			name: "Happy path",
 			args: args{
 				schedulerRunning: true,
-				schedulerTag:     fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSLowerLevelControlID137),
+				schedulerTag:     fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSSecondLevelControlID137),
 			},
 			fields: fields{
 				scheduler: gocron.NewScheduler(time.UTC),
@@ -1655,7 +1656,6 @@ func TestService_addJobToScheduler(t *testing.T) {
 			if tt.fields.schedulerRunning == true {
 				_, err := s.scheduler.Every(1).Day().Tag(tt.fields.schedulerTag).Do(func() { fmt.Println("Scheduler") })
 				require.NoError(t, err)
-
 			}
 
 			err := s.addJobToScheduler(tt.args.c, tt.args.toe, tt.args.parentSchedulerTag)
@@ -1666,6 +1666,124 @@ func TestService_addJobToScheduler(t *testing.T) {
 				assert.NoError(t, err)
 				assert.NotEmpty(t, tags)
 			}
+		})
+	}
+}
+
+func TestService_evaluateFirstLevelControl(t *testing.T) {
+	type fields struct {
+		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
+		orchestratorClient            orchestrator.OrchestratorClient
+		orchestratorAddress           grpcTarget
+		authorizer                    api.Authorizer
+		scheduler                     *gocron.Scheduler
+		wg                            map[string]*WaitGroup
+		results                       map[string]*evaluation.EvaluationResult
+		storage                       persistence.Storage
+	}
+	type args struct {
+		toe          *orchestrator.TargetOfEvaluation
+		categoryName string
+		controlId    string
+		schedulerTag string
+		subControls  []*orchestrator.Control
+	}
+	tests := []struct {
+		name                string
+		fields              fields
+		args                args
+		newEvaluationResult *evaluation.EvaluationResult
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				wg: map[string]*WaitGroup{
+					defaults.DefaultTargetCloudServiceID + "-" + defaults.DefaultEUCSFirstLevelControlID13: {
+						wg:      &sync.WaitGroup{},
+						wgMutex: sync.Mutex{},
+					},
+				},
+				results: map[string]*evaluation.EvaluationResult{
+					"eval_1": {
+						Id:           "11111111-1111-1111-1111-111111111111",
+						Status:       evaluation.EvaluationResult_COMPLIANT,
+						CategoryName: defaults.DefaultEUCSCategoryName,
+						ControlId:    defaults.DefaultEUCSFirstLevelControlID13,
+						TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+							CloudServiceId: defaults.DefaultTargetCloudServiceID,
+							CatalogId:      defaults.DefaultCatalogID,
+							AssuranceLevel: &defaults.AssuranceLevelHigh,
+						},
+					},
+					"eval_2": {
+						Id:           "22222222-2222-2222-2222-222222222222",
+						Status:       evaluation.EvaluationResult_NOT_COMPLIANT,
+						CategoryName: defaults.DefaultEUCSCategoryName,
+						ControlId:    defaults.DefaultEUCSFirstLevelControlID13,
+						TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+							CloudServiceId: defaults.DefaultTargetCloudServiceID,
+							CatalogId:      defaults.DefaultCatalogID,
+							AssuranceLevel: &defaults.AssuranceLevelHigh,
+						},
+					},
+
+					"eval_3": {
+						Id:           "33333333-3333-3333-3333-333333333333",
+						Status:       evaluation.EvaluationResult_NOT_COMPLIANT,
+						CategoryName: defaults.DefaultEUCSCategoryName,
+						ControlId:    defaults.DefaultEUCSFirstLevelControlID13,
+						TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+							CloudServiceId: "33333333-3333-3333-3333-333333333333",
+							CatalogId:      defaults.DefaultCatalogID,
+							AssuranceLevel: &defaults.AssuranceLevelHigh,
+						},
+					},
+				},
+			},
+			args: args{
+				toe: &orchestrator.TargetOfEvaluation{
+					CloudServiceId: defaults.DefaultTargetCloudServiceID,
+					CatalogId:      defaults.DefaultCatalogID,
+					AssuranceLevel: &defaults.AssuranceLevelHigh,
+				},
+				categoryName: defaults.DefaultEUCSCategoryName,
+				controlId:    defaults.DefaultEUCSFirstLevelControlID13,
+				schedulerTag: defaults.DefaultTargetCloudServiceID + "-" + defaults.DefaultEUCSFirstLevelControlID13,
+				subControls:  make([]*orchestrator.Control, 2),
+			},
+			newEvaluationResult: &evaluation.EvaluationResult{
+				Status:       evaluation.EvaluationResult_NOT_COMPLIANT,
+				CategoryName: defaults.DefaultEUCSCategoryName,
+				ControlId:    defaults.DefaultEUCSFirstLevelControlID13,
+				TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+					CloudServiceId: defaults.DefaultTargetCloudServiceID,
+					CatalogId:      defaults.DefaultCatalogID,
+					AssuranceLevel: &defaults.AssuranceLevelHigh,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{
+				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
+				orchestratorClient:            tt.fields.orchestratorClient,
+				orchestratorAddress:           tt.fields.orchestratorAddress,
+				authorizer:                    tt.fields.authorizer,
+				scheduler:                     tt.fields.scheduler,
+				wg:                            tt.fields.wg,
+				results:                       tt.fields.results,
+				storage:                       tt.fields.storage,
+			}
+
+			s.evaluateFirstLevelControl(tt.args.toe, tt.args.categoryName, tt.args.controlId, tt.args.schedulerTag, tt.args.subControls)
+
+			assert.Equal(t, 4, len(s.results))
+			// Check if the evaluatation results (and the new one) have no validation error
+			for _, eval := range s.results {
+				assert.NoError(t, eval.Validate())
+			}
+			assert.NotEmpty(t, s.wg[tt.args.schedulerTag])
 		})
 	}
 }
