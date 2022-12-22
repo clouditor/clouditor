@@ -344,10 +344,22 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 
 // ListEvaluationResults is a method implementation of the assessment interface
 func (s *Service) ListEvaluationResults(_ context.Context, req *evaluation.ListEvaluationResultsRequest) (res *evaluation.ListEvaluationResultsResponse, err error) {
+	var filtered_values []*evaluation.EvaluationResult
+
+	// Filtering evaluation results by
+	// * cloud service ID
+	for _, v := range s.results {
+		if req.FilteredCloudServiceId != nil && v.TargetOfEvaluation.GetCloudServiceId() != req.GetFilteredCloudServiceId() {
+			continue
+		}
+
+		filtered_values = append(filtered_values, v)
+	}
+
 	res = new(evaluation.ListEvaluationResultsResponse)
 
 	// Paginate the results according to the request
-	res.Results, res.NextPageToken, err = service.PaginateMapValues(req, s.results, func(a *evaluation.EvaluationResult, b *evaluation.EvaluationResult) bool {
+	res.Results, res.NextPageToken, err = service.PaginateSlice(req, filtered_values, func(a *evaluation.EvaluationResult, b *evaluation.EvaluationResult) bool {
 		return a.Id < b.Id
 	}, service.DefaultPaginationOpts)
 	if err != nil {
@@ -472,7 +484,7 @@ func (s *Service) evaluateFirstLevelControl(toe *orchestrator.TargetOfEvaluation
 	s.wg[schedulerTag].wg.Wait()
 
 	evaluations, err := s.ListEvaluationResults(context.Background(), &evaluation.ListEvaluationResultsRequest{
-		FilteredCloudServiceId: toe.CloudServiceId,
+		FilteredCloudServiceId: &toe.CloudServiceId,
 	})
 	if err != nil {
 		err = fmt.Errorf("error list evaluation results: %v", err)

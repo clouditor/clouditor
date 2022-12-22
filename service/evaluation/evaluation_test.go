@@ -39,6 +39,7 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/defaults"
 	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
 	"github.com/go-co-op/gocron"
@@ -274,6 +275,58 @@ func TestService_ListEvaluationResults(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
+			name: "Filter cloud service id",
+			fields: fields{results: map[string]*evaluation.EvaluationResult{
+				"11111111-1111-1111-1111-111111111111": {
+					Id: "11111111-1111-1111-1111-111111111111",
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+						CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					},
+				},
+				"22222222-2222-2222-2222-222222222222": {
+					Id: "22222222-2222-2222-2222-222222222222",
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+						CloudServiceId: "99999999-9999-9999-9999-999999999999",
+					},
+				},
+				"33333333-3333-3333-3333-333333333333": {
+					Id: "33333333-3333-3333-3333-333333333333",
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+						CloudServiceId: "99999999-9999-9999-9999-999999999999",
+					},
+				},
+				"44444444-4444-4444-4444-444444444444": {
+					Id: "44444444-4444-4444-4444-444444444444",
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+						CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					},
+				},
+			}},
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.ListEvaluationResultsRequest{
+					FilteredCloudServiceId: util.Ref("00000000-0000-0000-0000-000000000000"),
+				},
+			},
+			wantRes: &evaluation.ListEvaluationResultsResponse{
+				Results: []*evaluation.EvaluationResult{
+					{
+						Id: "11111111-1111-1111-1111-111111111111",
+						TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+							CloudServiceId: "00000000-0000-0000-0000-000000000000",
+						},
+					},
+					{
+						Id: "44444444-4444-4444-4444-444444444444",
+						TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+							CloudServiceId: "00000000-0000-0000-0000-000000000000",
+						},
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+		{
 			name: "multiple page result - first page",
 			fields: fields{results: map[string]*evaluation.EvaluationResult{
 				"11111111-1111-1111-1111-111111111111": {Id: "11111111-1111-1111-1111-111111111111"},
@@ -379,7 +432,9 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			gotRes, err := s.ListEvaluationResults(tt.args.in0, tt.args.req)
 
 			tt.wantErr(t, err)
-			assert.Equal(t, gotRes, tt.wantRes)
+			if !reflect.DeepEqual(gotRes, tt.wantRes) {
+				t.Errorf("ListEvaluationResults() gotResp = %v, want %v", gotRes, tt.wantRes)
+			}
 
 		})
 	}

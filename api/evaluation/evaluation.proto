@@ -33,7 +33,7 @@
  import "api/assessment/assessment.proto";
  import "api/orchestrator/orchestrator.proto";
  import "tagger/tagger.proto";
-
+ import "validate/validate.proto";
 
  option go_package = "clouditor.io/clouditor/api/evaluation";
 
@@ -65,7 +65,8 @@
 }
 
 message ListEvaluationResultsRequest {
-    string filtered_cloud_service_id = 1;
+    optional string filtered_cloud_service_id = 1
+        [(validate.rules).string.min_len = 1];
   
     int32 page_size = 10;
     string page_token = 11;
@@ -78,7 +79,8 @@ message ListEvaluationResultsRequest {
   }
 
 message StartEvaluationRequest {
-    clouditor.orchestrator.v1.TargetOfEvaluation target_of_evaluation = 1;
+    clouditor.orchestrator.v1.TargetOfEvaluation target_of_evaluation = 1
+        [(validate.rules).message.required = true];
 }
 
 message StartEvaluationResponse {
@@ -87,11 +89,14 @@ message StartEvaluationResponse {
 }
 
 message StopEvaluationRequest {
-    clouditor.orchestrator.v1.TargetOfEvaluation target_of_evaluation = 1; 
+    clouditor.orchestrator.v1.TargetOfEvaluation target_of_evaluation = 1
+        [(validate.rules).message.required = true]; 
     // The category the control ID belongs to 
-    string category_name = 2; 
+    string category_name = 2
+        [(validate.rules).string.min_len = 1]; 
     // The control ID
-    string control_id = 3;
+    string control_id = 3
+        [(validate.rules).string.min_len = 1];
 }
 
 message StopEvaluationResponse {}
@@ -99,7 +104,8 @@ message StopEvaluationResponse {}
 // A evaluation result resource, representing the result after evaluating the cloud service with a specific control
 message EvaluationResult {
     // Evaluation result id
-    string id = 1; 
+    string id = 1
+        [(validate.rules).string = {ignore_empty : true, uuid : true}]; 
 
     enum EvaluationStatus {
         STATUS_UNSPECIFIED = 0;
@@ -109,21 +115,26 @@ message EvaluationResult {
     }
     
     // Evaluation status
-    EvaluationStatus status = 2;
+    EvaluationStatus status = 2
+        [(validate.rules).enum.defined_only = true];
     
     // The category the control belongs to 
-    string category_name = 3; 
+    string category_name = 3
+        [(validate.rules).string.min_len = 1]; 
 
     // Reference to the control id the evaluation was based on
-    string control_id = 4;
+    string control_id = 4
+        [(validate.rules).string.min_len = 1];
 
     // Time of evaluation
     google.protobuf.Timestamp timestamp = 5
-      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
+      [(tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
 
     // Reference to the target of evaluation the evaluation was based on
-    clouditor.orchestrator.v1.TargetOfEvaluation target_of_evaluation = 6;
+    clouditor.orchestrator.v1.TargetOfEvaluation target_of_evaluation = 6
+    [(validate.rules).message.required = true];
 
     // List of assessment results because of which the evaluation status is not 'compliant'
-    repeated clouditor.assessment.v1.AssessmentResult failing_assessment_results = 7;
+    repeated clouditor.assessment.v1.AssessmentResult failing_assessment_results = 7
+        [(validate.rules).repeated.items.message.required = true];
 }
