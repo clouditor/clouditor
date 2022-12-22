@@ -188,13 +188,6 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	// TODO(anatheka): Do we really need that?
-	// Validate toe
-	err = req.GetTargetOfEvaluation().Validate()
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
 	// Get orchestrator client
 	err = s.initOrchestratorClient()
 	if err != nil {
@@ -288,13 +281,6 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 	if err != nil {
 		err = status.Errorf(codes.InvalidArgument, "%v", err)
 		return
-	}
-
-	// TODO(anatheka): Do we really need that?
-	// Validate toe
-	err = req.GetTargetOfEvaluation().Validate()
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	// Get control

@@ -609,11 +609,11 @@ func TestService_StopEvaluation(t *testing.T) {
 			name: "ToE in request is missing",
 			args: args{
 				in0: context.Background(),
-				req: nil,
+				req: &evaluation.StopEvaluationRequest{},
 			},
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "empty request")
+				return assert.ErrorContains(t, err, "invalid StopEvaluationRequest.TargetOfEvaluation: value is required")
 			},
 		},
 		// {
@@ -870,10 +870,11 @@ func TestService_StartEvaluation(t *testing.T) {
 			args: args{
 				in0:              context.Background(),
 				schedulerRunning: false,
+				req:              &evaluation.StartEvaluationRequest{},
 			},
 			wantResp: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "empty request")
+				return assert.ErrorContains(t, err, "invalid StartEvaluationRequest.TargetOfEvaluation: value is required")
 			},
 		},
 	}
