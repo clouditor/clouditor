@@ -364,6 +364,10 @@ func (s *Service) ListEvaluationResults(_ context.Context, req *evaluation.ListE
 
 // addJobToScheduler adds a job for the given control to the scheduler
 func (s *Service) addJobToScheduler(c *orchestrator.Control, toe *orchestrator.TargetOfEvaluation, parentSchedulerTag string) (err error) {
+	if c == nil || toe == nil || parentSchedulerTag == "" {
+		return status.Errorf(codes.Internal, "%s", "evaluation cannot be scheduled")
+	}
+
 	// schedulerTag is the tag for the given control
 	schedulerTag := createSchedulerTag(toe.GetCloudServiceId(), c.GetId())
 

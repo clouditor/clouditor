@@ -1561,3 +1561,111 @@ func TestService_handleFindParentControlJobError(t *testing.T) {
 		})
 	}
 }
+
+func TestService_addJobToScheduler(t *testing.T) {
+	type fields struct {
+		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
+		orchestratorClient            orchestrator.OrchestratorClient
+		orchestratorAddress           grpcTarget
+		authorizer                    api.Authorizer
+		scheduler                     *gocron.Scheduler
+		wg                            map[string]*WaitGroup
+		results                       map[string]*evaluation.EvaluationResult
+		storage                       persistence.Storage
+		schedulerRunning              bool
+		schedulerTag                  string
+	}
+	type args struct {
+		c                  *orchestrator.Control
+		toe                *orchestrator.TargetOfEvaluation
+		parentSchedulerTag string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		// Not necessary to check if control is empty, because method is only called if a control exists
+		{
+			name: "Add scheduler job for first level Control",
+			fields: fields{
+				scheduler: gocron.NewScheduler(time.UTC),
+			},
+			args: args{
+				c: &orchestrator.Control{
+					Id:                "control_id",
+					CategoryName:      defaults.DefaultEUCSCategoryName,
+					CategoryCatalogId: defaults.DefaultCatalogID,
+					Name:              "control_id",
+				},
+				toe: &orchestrator.TargetOfEvaluation{
+					CloudServiceId: defaults.DefaultTargetCloudServiceID,
+					CatalogId:      defaults.DefaultCatalogID,
+					AssuranceLevel: &defaults.AssuranceLevelHigh,
+				},
+				parentSchedulerTag: defaults.DefaultTargetCloudServiceID + "control_id",
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Add scheduler job for second level Control",
+			fields: fields{
+				scheduler: gocron.NewScheduler(time.UTC),
+			},
+			args: args{
+				c: &orchestrator.Control{
+					Id:                "sub_control_id",
+					CategoryName:      defaults.DefaultEUCSCategoryName,
+					CategoryCatalogId: defaults.DefaultCatalogID,
+					Name:              "sub_control_id",
+					ParentControlId:   util.Ref("control_id"),
+				},
+				toe: &orchestrator.TargetOfEvaluation{
+					CloudServiceId: defaults.DefaultTargetCloudServiceID,
+					CatalogId:      defaults.DefaultCatalogID,
+					AssuranceLevel: &defaults.AssuranceLevelHigh,
+				},
+				parentSchedulerTag: defaults.DefaultTargetCloudServiceID + "control_id",
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Empty input",
+			args: args{},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "evaluation cannot be scheduled")
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{
+				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
+				orchestratorClient:            tt.fields.orchestratorClient,
+				orchestratorAddress:           tt.fields.orchestratorAddress,
+				authorizer:                    tt.fields.authorizer,
+				scheduler:                     tt.fields.scheduler,
+				wg:                            tt.fields.wg,
+				results:                       tt.fields.results,
+				storage:                       tt.fields.storage,
+			}
+
+			// Start the scheduler
+			if tt.fields.schedulerRunning == true {
+				_, err := s.scheduler.Every(1).Day().Tag(tt.fields.schedulerTag).Do(func() { fmt.Println("Scheduler") })
+				require.NoError(t, err)
+
+			}
+
+			err := s.addJobToScheduler(tt.args.c, tt.args.toe, tt.args.parentSchedulerTag)
+			tt.wantErr(t, err)
+
+			if err == nil {
+				tags, err := s.scheduler.FindJobsByTag()
+				assert.NoError(t, err)
+				assert.NotEmpty(t, tags)
+			}
+		})
+	}
+}
