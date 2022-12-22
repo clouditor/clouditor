@@ -394,7 +394,6 @@ func (s *Service) addJobToScheduler(c *orchestrator.Control, toe *orchestrator.T
 }
 
 // handleFindParentControlJobError handles the scheduler.FindJobsByTag() error for the parent control id
-// TODO(anatheka): Refactor error handling
 func (s *Service) handleFindParentControlJobError(err error, cloudServiceId, controlId string) error {
 	var schedulerTag string
 
@@ -412,26 +411,22 @@ func (s *Service) handleFindParentControlJobError(err error, cloudServiceId, con
 		if err == nil {
 			// Scheduler job is running and could be stopped
 			err = s.stopSchedulerJob(schedulerTag)
-			if err != nil {
-				err = fmt.Errorf("error when stopping scheduler job for cloud service id '%s' with control id '%s'", cloudServiceId, controlId)
-				log.Error(err)
-				return status.Errorf(codes.Internal, err.Error())
+			if err == nil {
+				log.Debugf("Scheduler job for cloud service id '%s' with control id '%s' stopped.", cloudServiceId, controlId)
+				return nil
 			}
-			log.Debugf("Scheduler job for cloud service id '%s' with control id '%s' stopped.", cloudServiceId, controlId)
 		} else if strings.Contains(err.Error(), "no jobs found with given tag") {
 			// Scheduler job does not exist
 			err = fmt.Errorf("evaluation for cloud service id '%s' with '%s' not running", cloudServiceId, controlId)
 			log.Error(err)
 			return status.Errorf(codes.NotFound, err.Error())
-		} else if err != nil {
-			// Error while finding scheduler job for control (sub-level control)
-			shortErr := fmt.Errorf("error when stopping scheduler job for cloud service id '%s' with '%s'", cloudServiceId, controlId)
-			log.Errorf("%s: %v", shortErr, err)
-			return status.Errorf(codes.Internal, "%v", &shortErr)
 		}
 	}
 
-	return status.Errorf(codes.Unknown, "%v", "something unexpected went wrong")
+	// This is the error message in case a job can be stopped but an error has occurred.
+	err = fmt.Errorf("error when stopping scheduler job for cloud service id '%s' with control id '%s'", cloudServiceId, controlId)
+	log.Error(err)
+	return status.Errorf(codes.Internal, err.Error())
 }
 
 // stopSchedulerJob stops a scheduler job for the given scheduler tag
