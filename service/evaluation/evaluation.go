@@ -60,24 +60,10 @@ type grpcTarget struct {
 	opts   []grpc.DialOption
 }
 
-// type mappingResultMetric struct {
-// 	metricName string
-// 	results    []*assessment.AssessmentResult
-// }
-
 type WaitGroup struct {
 	wg      *sync.WaitGroup
 	wgMutex sync.Mutex
 }
-
-// type Evaluator struct {
-// 	categoryName string
-// 	controlId    string
-// 	// firstLevel describes if the controlId is a first level controlId (e.g., OPS13) or a second level controlId (e.g., OPS-13.1)
-// 	firstLevel bool
-// 	// subControlList is a list of all sub-controls included in the first level control
-// 	subControlList []string
-// }
 
 // Service is an implementation of the Clouditor Evaluation service
 type Service struct {
