@@ -52,6 +52,9 @@ import (
 
 var log *logrus.Entry
 
+// interval is the default interval time for the scheduler. If no interval is set in the StartEvaluationRequest, the default value is taken
+const defaultInterval int = 5
+
 type grpcTarget struct {
 	target string
 	opts   []grpc.DialOption
@@ -180,12 +183,20 @@ func (s *Service) Authorizer() api.Authorizer {
 func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvaluationRequest) (resp *evaluation.StartEvaluationResponse, err error) {
 	var (
 		schedulerTag string
+		interval     int
 	)
 
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	// Set the interval to the default value if not set. If the interval is set to 0, the default interval is used.
+	if req.GetInterval() == 0 {
+		interval = defaultInterval
+	} else {
+		interval = int(req.GetInterval())
 	}
 
 	// Get orchestrator client
@@ -249,7 +260,7 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 
 		// Add control including sub-controls to the scheduler
 		for _, control := range controls {
-			err = s.addJobToScheduler(control, req.GetTargetOfEvaluation(), parentSchedulerTag)
+			err = s.addJobToScheduler(control, req.GetTargetOfEvaluation(), parentSchedulerTag, interval)
 			// We can return the error as it is
 			if err != nil {
 				return nil, err
@@ -362,9 +373,23 @@ func (s *Service) ListEvaluationResults(_ context.Context, req *evaluation.ListE
 	return
 }
 
-// addJobToScheduler adds a job for the given control to the scheduler
-func (s *Service) addJobToScheduler(c *orchestrator.Control, toe *orchestrator.TargetOfEvaluation, parentSchedulerTag string) (err error) {
-	if c == nil || toe == nil || parentSchedulerTag == "" {
+// addJobToScheduler adds a job for the given control to the scheduler and sets the scheduler interval to the given interval
+func (s *Service) addJobToScheduler(c *orchestrator.Control, toe *orchestrator.TargetOfEvaluation, parentSchedulerTag string, interval int) (err error) {
+	// Check inputs and log error
+	if c == nil {
+		err = errors.New("control is invalid")
+	}
+	if toe == nil {
+		err = errors.New("target of evaluation is invalid")
+	}
+	if parentSchedulerTag == "" {
+		err = errors.New("parent scheduler tag is invalid")
+	}
+	if interval == 0 {
+		err = errors.New("interval is invalid")
+	}
+	if err != nil {
+		log.Error(err)
 		return status.Errorf(codes.Internal, "%s", "evaluation cannot be scheduled")
 	}
 
@@ -374,22 +399,21 @@ func (s *Service) addJobToScheduler(c *orchestrator.Control, toe *orchestrator.T
 	// Regarding the control level the specific method is called. We have to decide if the control is sub-control that can be evaluated direclty or a first level control that has to wait for the results of the sub-level controls.
 	if c.ParentControlId == nil { // first level control
 		_, err = s.scheduler.
-			Every(1).
+			Every(interval).
 			Minute().
 			Tag(schedulerTag).
 			Do(s.evaluateFirstLevelControl, toe, c.GetCategoryName(), c.GetId(), schedulerTag, c.GetControls())
 	} else { // second level control
 		_, err = s.scheduler.
-			Every(1).
+			Every(interval).
 			Minute().
 			Tag(schedulerTag).
 			Do(s.evaluateSecondLevelControl, toe, c.GetCategoryName(), c.GetId(), parentSchedulerTag)
 	}
 	if err != nil {
-		shortErr := fmt.Sprintf("evaluation for Cloud Service '%s' and Control ID '%s' cannot be scheduled", toe.GetCloudServiceId(), c.GetId())
-		err = fmt.Errorf("%v: %v", shortErr, err)
+		err = fmt.Errorf("evaluation for Cloud Service '%s' and Control ID '%s' cannot be scheduled: %v", toe.GetCloudServiceId(), c.GetId(), err)
 		log.Error(err)
-		return status.Errorf(codes.Internal, "%s", shortErr)
+		return status.Errorf(codes.Internal, "%s", err)
 	}
 
 	log.Debugf("Cloud Service '%s' with Control ID '%s' added to scheduler", toe.GetCloudServiceId(), c.GetId())

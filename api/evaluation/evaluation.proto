@@ -84,6 +84,8 @@ message ListEvaluationResultsRequest {
 message StartEvaluationRequest {
     clouditor.orchestrator.v1.TargetOfEvaluation target_of_evaluation = 1
         [(validate.rules).message.required = true];
+    // The interval time in minutes
+    optional int32 interval = 2;
 }
 
 message StartEvaluationResponse {

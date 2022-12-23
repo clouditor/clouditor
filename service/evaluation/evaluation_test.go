@@ -1537,6 +1537,7 @@ func TestService_addJobToScheduler(t *testing.T) {
 		c                  *orchestrator.Control
 		toe                *orchestrator.TargetOfEvaluation
 		parentSchedulerTag string
+		interval           int
 	}
 	tests := []struct {
 		name    string
@@ -1563,6 +1564,7 @@ func TestService_addJobToScheduler(t *testing.T) {
 					AssuranceLevel: &defaults.AssuranceLevelHigh,
 				},
 				parentSchedulerTag: defaults.DefaultTargetCloudServiceID + "control_id",
+				interval:           2,
 			},
 			wantErr: assert.NoError,
 		},
@@ -1585,8 +1587,34 @@ func TestService_addJobToScheduler(t *testing.T) {
 					AssuranceLevel: &defaults.AssuranceLevelHigh,
 				},
 				parentSchedulerTag: defaults.DefaultTargetCloudServiceID + "control_id",
+				interval:           2,
 			},
 			wantErr: assert.NoError,
+		},
+		{
+			name: "Interval invalid",
+			fields: fields{
+				scheduler: gocron.NewScheduler(time.UTC),
+			},
+			args: args{
+				c: &orchestrator.Control{
+					Id:                "sub_control_id",
+					CategoryName:      defaults.DefaultEUCSCategoryName,
+					CategoryCatalogId: defaults.DefaultCatalogID,
+					Name:              "sub_control_id",
+					ParentControlId:   util.Ref("control_id"),
+				},
+				toe: &orchestrator.TargetOfEvaluation{
+					CloudServiceId: defaults.DefaultTargetCloudServiceID,
+					CatalogId:      defaults.DefaultCatalogID,
+					AssuranceLevel: &defaults.AssuranceLevelHigh,
+				},
+				parentSchedulerTag: defaults.DefaultTargetCloudServiceID + "control_id",
+				interval:           0,
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "evaluation cannot be scheduled")
+			},
 		},
 		{
 			name: "Empty input",
@@ -1615,7 +1643,7 @@ func TestService_addJobToScheduler(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			err := s.addJobToScheduler(tt.args.c, tt.args.toe, tt.args.parentSchedulerTag)
+			err := s.addJobToScheduler(tt.args.c, tt.args.toe, tt.args.parentSchedulerTag, tt.args.interval)
 			tt.wantErr(t, err)
 
 			if err == nil {

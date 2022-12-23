@@ -380,6 +380,10 @@ func (m *StartEvaluationRequest) validate(all bool) error {
 		}
 	}
 
+	if m.Interval != nil {
+		// no validation rules for Interval
+	}
+
 	if len(errors) > 0 {
 		return StartEvaluationRequestMultiError(errors)
 	}

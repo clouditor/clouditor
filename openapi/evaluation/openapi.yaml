@@ -357,6 +357,10 @@ components:
             properties:
                 targetOfEvaluation:
                     $ref: '#/components/schemas/TargetOfEvaluation'
+                interval:
+                    type: integer
+                    description: The interval time in minutes
+                    format: int32
         StartEvaluationResponse:
             type: object
             properties:
