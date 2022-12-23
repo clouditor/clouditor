@@ -203,6 +203,8 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 
 	// Add the controlsInScope of the TargetOfEvaluation including their sub-controls to the scheduler
 	for _, c := range req.TargetOfEvaluation.GetControlsInScope() {
+		var controls []*orchestrator.Control
+
 		// We must get the control from the orchestrator, as we do not know if the request is correct and the parent_ids are probably missing
 		control, err := s.getControl(c.GetCategoryCatalogId(), c.GetCategoryName(), c.GetId())
 		if err != nil {
@@ -210,8 +212,6 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 			log.Error(err)
 			return nil, status.Errorf(codes.Internal, "%s", err)
 		}
-
-		controls := []*orchestrator.Control{}
 
 		// The parent control scheduler tag
 		parentSchedulerTag := ""
@@ -295,7 +295,7 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 	// Check if the control is a first level control
 	if control.ParentControlId == nil {
 		// Control is a first level control, stop the scheduler job for the control and all sub-controls
-		err = s.stopSchedulerJobs(getSchedulerTagsForControlIds(getAllControlIdsFromControl(control), req.GetTargetOfEvaluation().GetCloudServiceId())) //createSchedulerTag(req.GetTargetOfEvaluation().GetCloudServiceId(), control.GetId()))
+		err = s.stopSchedulerJobs(getSchedulerTagsForControlIds(getAllControlIdsFromControl(control), req.GetTargetOfEvaluation().GetCloudServiceId()))
 		if err != nil && strings.Contains(err.Error(), gocron.ErrJobNotFoundWithTag.Error()) {
 			err = fmt.Errorf("evaluation for cloud service id '%s' with '%s' not running", req.GetTargetOfEvaluation().GetCloudServiceId(), req.GetControlId())
 			log.Error(err)
@@ -522,14 +522,11 @@ func (s *Service) evaluateSecondLevelControl(toe *orchestrator.TargetOfEvaluatio
 	log.Infof("Debug 10: %s", controlId)
 
 	var (
-		schedulerTag string
-		result       *evaluation.EvaluationResult
-		err          error
+		result *evaluation.EvaluationResult
+		err    error
 	)
 
-	schedulerTag = createSchedulerTag(toe.GetCloudServiceId(), controlId)
-
-	result, err = s.evaluationResultForSecondControlLevel(toe.GetCloudServiceId(), toe.GetCatalogId(), categoryName, controlId, schedulerTag, toe)
+	result, err = s.evaluationResultForSecondControlLevel(toe.GetCloudServiceId(), toe.GetCatalogId(), categoryName, controlId, toe)
 	if err != nil {
 		err = fmt.Errorf("error creating evaluation result: %v", err)
 		log.Error(err)
@@ -558,7 +555,7 @@ func (s *Service) evaluateSecondLevelControl(toe *orchestrator.TargetOfEvaluatio
 
 // evaluationResultForSecondControlLevel return the evaluation result for the lower control level, e.g. OPS-13.7
 // TODO(anatheka): Refactor cloudServiceId, etc. with toe.*
-func (s *Service) evaluationResultForSecondControlLevel(cloudServiceId, catalogId, categoryName, controlId, schedulerTag string, toe *orchestrator.TargetOfEvaluation) (result *evaluation.EvaluationResult, err error) {
+func (s *Service) evaluationResultForSecondControlLevel(cloudServiceId, catalogId, categoryName, controlId string, toe *orchestrator.TargetOfEvaluation) (result *evaluation.EvaluationResult, err error) {
 	var (
 		assessmentResults []*assessment.AssessmentResult
 	)
@@ -703,7 +700,8 @@ func (s *Service) getMetricsFromSubControls(control *orchestrator.Control) (metr
 
 // getAllControlIdsFromControl returns a list with the control id and the sub-control ids.
 func getAllControlIdsFromControl(control *orchestrator.Control) []string {
-	controlIds := []string{}
+	// controlIds := make([]string, 0)
+	var controlIds []string
 
 	if control == nil {
 		return []string{}
