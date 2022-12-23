@@ -519,7 +519,6 @@ func (s *Service) evaluateFirstLevelControl(toe *orchestrator.TargetOfEvaluation
 // evaluateSecondLevelControl evaluates the second level controls, e.g., OPS-13.2
 func (s *Service) evaluateSecondLevelControl(toe *orchestrator.TargetOfEvaluation, categoryName, controlId, parentSchedulerTag string) {
 	log.Infof("Start second level control evaluation for Cloud Service '%s', Catalog ID '%s' and Control '%s'", toe.CloudServiceId, toe.CatalogId, controlId)
-	log.Infof("Debug 10: %s", controlId)
 
 	var (
 		result *evaluation.EvaluationResult
@@ -530,12 +529,9 @@ func (s *Service) evaluateSecondLevelControl(toe *orchestrator.TargetOfEvaluatio
 	if err != nil {
 		err = fmt.Errorf("error creating evaluation result: %v", err)
 		log.Error(err)
-		log.Infof("Debug Done 11: %s", controlId)
 	} else if result == nil {
 		log.Debug("No evaluation result created")
-		log.Infof("Debug Done 13: %s", controlId)
 	} else {
-		log.Infof("Debug Done 15: %s", controlId)
 
 		s.resultMutex.Lock()
 		s.results[result.Id] = result
@@ -550,7 +546,6 @@ func (s *Service) evaluateSecondLevelControl(toe *orchestrator.TargetOfEvaluatio
 		s.wg[parentSchedulerTag].wg.Done()
 		s.wg[parentSchedulerTag].wgMutex.Unlock()
 	}
-	log.Infof("Debug Done 16: %s", controlId)
 }
 
 // evaluationResultForSecondControlLevel return the evaluation result for the lower control level, e.g. OPS-13.7

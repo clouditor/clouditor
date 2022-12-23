@@ -778,49 +778,6 @@ func TestService_StopEvaluation(t *testing.T) {
 	}
 }
 
-// func TestService_evaluateFirstLevelControl(t *testing.T) {
-// 	type fields struct {
-// 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
-// 		orchestratorClient            orchestrator.OrchestratorClient
-// 		orchestratorAddress           grpcTarget
-// 		authorizer                    api.Authorizer
-// 		scheduler                     *gocron.Scheduler
-// 		results                       map[string]*evaluation.EvaluationResult
-// 		resultMutex                   sync.Mutex
-// 		storage                       persistence.Storage
-// 	}
-// 	type args struct {
-// 		toe          *orchestrator.TargetOfEvaluation
-// 		categoryName string
-// 		controlId    string
-// 	}
-// 	tests := []struct {
-// 		name        string
-// 		fields      fields
-// 		args        args
-// 		wantResults []*evaluation.EvaluationResult
-// 	}{
-// 		// TODO: TBD
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			s := &Service{
-// 				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
-// 				orchestratorClient:            tt.fields.orchestratorClient,
-// 				orchestratorAddress:           tt.fields.orchestratorAddress,
-// 				authorizer:                    tt.fields.authorizer,
-// 				scheduler:                     tt.fields.scheduler,
-// 				results:                       tt.fields.results,
-// 				resultMutex:                   tt.fields.resultMutex,
-// 				storage:                       tt.fields.storage,
-// 			}
-// 			s.evaluateFirstLevelControl(tt.args.toe, tt.args.categoryName, tt.args.controlId)
-
-// 			assert.Equal(t, tt.wantResults, s.results)
-// 		})
-// 	}
-// }
-
 func Test_getAllControlIdsFromControl(t *testing.T) {
 	type args struct {
 		control *orchestrator.Control
@@ -923,16 +880,16 @@ func TestService_StartEvaluation(t *testing.T) {
 		// 				AssuranceLevel: &defaults.AssuranceLevelHigh,
 		// 				ControlsInScope: []*orchestrator.Control{
 		// 					{
-		// 						Id:                defaults.DefaultEUCSUpperLevelControlID13,
+		// 						Id:                defaults.DefaultEUCSFirstLevelControlID13,
 		// 						CategoryName:      defaults.DefaultEUCSCategoryName,
 		// 						CategoryCatalogId: defaults.DefaultCatalogID,
-		// 						Name:              defaults.DefaultEUCSUpperLevelControlID13,
+		// 						Name:              defaults.DefaultEUCSFirstLevelControlID13,
 		// 					},
 		// 				},
 		// 			},
 		// 		},
 		// 		schedulerRunning: false,
-		// 		schedulerTag:     createSchedulerTag(defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSUpperLevelControlID13),
+		// 		schedulerTag:     createSchedulerTag(defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSFirstLevelControlID13),
 		// 	},
 		// 	wantResp: &evaluation.StartEvaluationResponse{Status: true},
 		// 	wantErr:  assert.NoError,
@@ -1784,6 +1741,120 @@ func TestService_evaluateFirstLevelControl(t *testing.T) {
 				assert.NoError(t, eval.Validate())
 			}
 			assert.NotEmpty(t, s.wg[tt.args.schedulerTag])
+		})
+	}
+}
+
+func TestService_evaluateSecondLevelControl(t *testing.T) {
+	type fields struct {
+		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
+		orchestratorClient            orchestrator.OrchestratorClient
+		orchestratorAddress           grpcTarget
+		authorizer                    api.Authorizer
+		scheduler                     *gocron.Scheduler
+		wg                            map[string]*WaitGroup
+		results                       map[string]*evaluation.EvaluationResult
+		storage                       persistence.Storage
+		numberEvaluationResults       int
+	}
+	type args struct {
+		toe                *orchestrator.TargetOfEvaluation
+		categoryName       string
+		controlId          string
+		parentSchedulerTag string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+	}{
+		{
+			name: "Error getting metrics",
+			fields: fields{
+				numberEvaluationResults: 0,
+			},
+			args: args{
+				toe: &orchestrator.TargetOfEvaluation{
+					CloudServiceId: defaults.DefaultTargetCloudServiceID,
+					CatalogId:      defaults.DefaultCatalogID,
+					AssuranceLevel: &defaults.AssuranceLevelHigh,
+				},
+				categoryName: defaults.DefaultEUCSCategoryName,
+				controlId:    defaults.DefaultEUCSSecondLevelControlID136,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{
+				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
+				orchestratorClient:            tt.fields.orchestratorClient,
+				orchestratorAddress:           tt.fields.orchestratorAddress,
+				authorizer:                    tt.fields.authorizer,
+				scheduler:                     tt.fields.scheduler,
+				wg:                            tt.fields.wg,
+				results:                       tt.fields.results,
+				storage:                       tt.fields.storage,
+			}
+			s.evaluateSecondLevelControl(tt.args.toe, tt.args.categoryName, tt.args.controlId, tt.args.parentSchedulerTag)
+
+			assert.Equal(t, tt.fields.numberEvaluationResults, len(s.results))
+		})
+	}
+}
+
+func TestService_evaluationResultForSecondControlLevel(t *testing.T) {
+	type fields struct {
+		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
+		orchestratorClient            orchestrator.OrchestratorClient
+		orchestratorAddress           grpcTarget
+		authorizer                    api.Authorizer
+		scheduler                     *gocron.Scheduler
+		wg                            map[string]*WaitGroup
+		results                       map[string]*evaluation.EvaluationResult
+		storage                       persistence.Storage
+	}
+	type args struct {
+		cloudServiceId string
+		catalogId      string
+		categoryName   string
+		controlId      string
+		toe            *orchestrator.TargetOfEvaluation
+	}
+	tests := []struct {
+		name       string
+		fields     fields
+		args       args
+		wantResult *evaluation.EvaluationResult
+		wantErr    assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Empty input",
+			args: args{},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not get metrics from control and sub-controls for Cloud Serivce")
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{
+				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
+				orchestratorClient:            tt.fields.orchestratorClient,
+				orchestratorAddress:           tt.fields.orchestratorAddress,
+				authorizer:                    tt.fields.authorizer,
+				scheduler:                     tt.fields.scheduler,
+				wg:                            tt.fields.wg,
+				results:                       tt.fields.results,
+				storage:                       tt.fields.storage,
+			}
+			gotResult, err := s.evaluationResultForSecondControlLevel(tt.args.cloudServiceId, tt.args.catalogId, tt.args.categoryName, tt.args.controlId, tt.args.toe)
+
+			tt.wantErr(t, err)
+
+			if !reflect.DeepEqual(gotResult, tt.wantResult) {
+				t.Errorf("Service.evaluationResultForSecondControlLevel() = %v, want %v", gotResult, tt.wantResult)
+			}
 		})
 	}
 }
