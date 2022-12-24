@@ -52,7 +52,7 @@ require (
 
 // runtime dependencies (k8s)
 require (
-	k8s.io/api v0.25.0
+	k8s.io/api v0.26.0
 	k8s.io/apimachinery v0.26.0
 	k8s.io/client-go v0.25.0
 )
