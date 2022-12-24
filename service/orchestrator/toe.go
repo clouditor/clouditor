@@ -221,7 +221,7 @@ func (svc *Service) UpdateControlMonitoringStatus(ctx context.Context, req *orch
 		return nil, service.ErrPermissionDenied
 	}
 
-	err = svc.storage.Update(req.Status,
+	err = svc.storage.Save(req.Status,
 		"target_of_evaluation_cloud_service_id = ? AND "+
 			"target_of_evaluation_catalog_id = ? AND "+
 			"control_category_catalog_id = ? AND "+
@@ -232,9 +232,7 @@ func (svc *Service) UpdateControlMonitoringStatus(ctx context.Context, req *orch
 		req.Status.ControlCategoryCatalogId,
 		req.Status.ControlCategoryName,
 		req.Status.ControlId)
-	if err != nil && errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Error(codes.NotFound, "ToE not found")
-	} else if err != nil {
+	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
