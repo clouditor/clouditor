@@ -110,7 +110,7 @@ func (svc *Service) ListTargetsOfEvaluation(_ context.Context, req *orchestrator
 	}
 
 	res = new(orchestrator.ListTargetsOfEvaluationResponse)
-	res.TargetOfEvaluation, res.NextPageToken, err = service.PaginateStorage[*orchestrator.TargetOfEvaluation](req, svc.storage, service.DefaultPaginationOpts, gorm.WithoutPreload())
+	res.TargetOfEvaluation, res.NextPageToken, err = service.PaginateStorage[*orchestrator.TargetOfEvaluation](req, svc.storage, service.DefaultPaginationOpts, gorm.WithPreload("ControlsInScope"))
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
