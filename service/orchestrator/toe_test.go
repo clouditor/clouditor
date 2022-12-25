@@ -646,6 +646,157 @@ func TestService_ListControlMonitoringStatus(t *testing.T) {
 	}
 }
 
+func TestService_CreateControlMonitoringStatus(t *testing.T) {
+	type fields struct {
+		storage persistence.Storage
+		authz   service.AuthorizationStrategy
+	}
+	type args struct {
+		in0 context.Context
+		req *orchestrator.CreateControlMonitoringStatusRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes *orchestrator.ControlMonitoringStatus
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Invalid request",
+			args: args{
+				req: nil,
+			},
+			wantRes: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Equal(t, codes.InvalidArgument, status.Code(err))
+			},
+		},
+		{
+			name: "already exists",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: orchestratortest.MockServiceID}))
+					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation()))
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				in0: context.TODO(),
+				req: &orchestrator.CreateControlMonitoringStatusRequest{
+					Status: &orchestrator.ControlMonitoringStatus{
+						ControlId:                        orchestratortest.MockControlID,
+						ControlCategoryName:              orchestratortest.MockCategoryName,
+						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
+						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
+						Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
+					},
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Equal(t, codes.AlreadyExists, status.Code(err))
+			},
+		},
+		{
+			name: "ToE not found",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				in0: context.TODO(),
+				req: &orchestrator.CreateControlMonitoringStatusRequest{
+					Status: &orchestrator.ControlMonitoringStatus{
+						ControlId:                        orchestratortest.MockControlID,
+						ControlCategoryName:              orchestratortest.MockCategoryName,
+						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
+						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
+						Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
+					},
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Equal(t, codes.NotFound, status.Code(err))
+			},
+		},
+		{
+			name: "valid update",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: orchestratortest.MockServiceID}))
+					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation()))
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				in0: context.TODO(),
+				req: &orchestrator.CreateControlMonitoringStatusRequest{
+					Status: &orchestrator.ControlMonitoringStatus{
+						ControlId:                        orchestratortest.MockAnotherControlID,
+						ControlCategoryName:              orchestratortest.MockCategoryName,
+						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
+						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
+						Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
+					},
+				},
+			},
+			wantRes: &orchestrator.ControlMonitoringStatus{
+				ControlId:                        orchestratortest.MockAnotherControlID,
+				ControlCategoryName:              orchestratortest.MockCategoryName,
+				ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
+				TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
+				TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
+				Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
+			},
+		},
+		{
+			name: "permission denied",
+			fields: fields{
+				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+			},
+			args: args{
+				in0: testutil.TestContextOnlyService1,
+				req: &orchestrator.CreateControlMonitoringStatusRequest{
+					Status: &orchestrator.ControlMonitoringStatus{
+						TargetOfEvaluationCloudServiceId: testutil.TestCloudService2,
+						ControlId:                        orchestratortest.MockControlID,
+						ControlCategoryName:              orchestratortest.MockCategoryName,
+						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
+						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
+						Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
+					},
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, service.ErrPermissionDenied)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				storage: tt.fields.storage,
+				authz:   tt.fields.authz,
+			}
+			gotRes, err := svc.CreateControlMonitoringStatus(tt.args.in0, tt.args.req)
+			if tt.wantErr != nil {
+				tt.wantErr(t, err, tt.args)
+			} else {
+				assert.Nil(t, err)
+			}
+
+			if !reflect.DeepEqual(gotRes, tt.wantRes) {
+				t.Errorf("Service.UpdateControlMonitoringStatus() = %v, want %v", gotRes, tt.wantRes)
+			}
+		})
+	}
+}
+
 func TestService_UpdateControlMonitoringStatus(t *testing.T) {
 	type fields struct {
 		storage persistence.Storage

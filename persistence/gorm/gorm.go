@@ -178,8 +178,18 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	return
 }
 
-func (s *storage) Create(r any) error {
-	return s.db.Create(r).Error
+func (s *storage) Create(r any) (err error) {
+	err = s.db.Create(r).Error
+
+	if err != nil && strings.Contains(err.Error(), "constraint failed: UNIQUE constraint failed") {
+		return persistence.ErrUniqueConstraintFailed
+	}
+
+	if err != nil && strings.Contains(err.Error(), "constraint failed") {
+		return persistence.ErrConstraintFailed
+	}
+
+	return
 }
 
 type preload struct {

@@ -5203,6 +5203,151 @@ var _ interface {
 	ErrorName() string
 } = UpdateControlMonitoringStatusRequestValidationError{}
 
+// Validate checks the field values on CreateControlMonitoringStatusRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *CreateControlMonitoringStatusRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CreateControlMonitoringStatusRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// CreateControlMonitoringStatusRequestMultiError, or nil if none found.
+func (m *CreateControlMonitoringStatusRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CreateControlMonitoringStatusRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetStatus() == nil {
+		err := CreateControlMonitoringStatusRequestValidationError{
+			field:  "Status",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetStatus()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CreateControlMonitoringStatusRequestValidationError{
+					field:  "Status",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CreateControlMonitoringStatusRequestValidationError{
+					field:  "Status",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetStatus()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CreateControlMonitoringStatusRequestValidationError{
+				field:  "Status",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return CreateControlMonitoringStatusRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// CreateControlMonitoringStatusRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// CreateControlMonitoringStatusRequest.ValidateAll() if the designated
+// constraints aren't met.
+type CreateControlMonitoringStatusRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CreateControlMonitoringStatusRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CreateControlMonitoringStatusRequestMultiError) AllErrors() []error { return m }
+
+// CreateControlMonitoringStatusRequestValidationError is the validation error
+// returned by CreateControlMonitoringStatusRequest.Validate if the designated
+// constraints aren't met.
+type CreateControlMonitoringStatusRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CreateControlMonitoringStatusRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CreateControlMonitoringStatusRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CreateControlMonitoringStatusRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CreateControlMonitoringStatusRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CreateControlMonitoringStatusRequestValidationError) ErrorName() string {
+	return "CreateControlMonitoringStatusRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CreateControlMonitoringStatusRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCreateControlMonitoringStatusRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CreateControlMonitoringStatusRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CreateControlMonitoringStatusRequestValidationError{}
+
 // Validate checks the field values on ControlMonitoringStatus with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.

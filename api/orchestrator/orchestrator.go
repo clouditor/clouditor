@@ -40,6 +40,12 @@ func (req *UpdateControlMonitoringStatusRequest) GetCloudServiceId() string {
 
 // GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
 // the cloud service ID of the inner object.
+func (req *CreateControlMonitoringStatusRequest) GetCloudServiceId() string {
+	return req.Status.GetTargetOfEvaluationCloudServiceId()
+}
+
+// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// the cloud service ID of the inner object.
 func (req *UpdateCloudServiceRequest) GetCloudServiceId() string {
 	return req.CloudService.GetId()
 }

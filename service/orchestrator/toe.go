@@ -209,6 +209,34 @@ func (svc *Service) ListControlMonitoringStatus(ctx context.Context, req *orches
 	return
 }
 
+func (svc *Service) CreateControlMonitoringStatus(ctx context.Context, req *orchestrator.CreateControlMonitoringStatusRequest) (res *orchestrator.ControlMonitoringStatus, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+		return nil, service.ErrPermissionDenied
+	}
+
+	err = svc.storage.Create(req.Status)
+	if err != nil && errors.Is(err, persistence.ErrUniqueConstraintFailed) {
+		return nil, status.Error(codes.AlreadyExists, "entry already exists")
+	} else if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
+		return nil, status.Error(codes.NotFound, "ToE not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+	}
+
+	res = req.Status
+
+	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_CONTROL_MONITORING_STATUS_UPDATED, ControlMonitoringStatus: req.GetStatus()}, nil)
+
+	return
+}
+
 func (svc *Service) UpdateControlMonitoringStatus(ctx context.Context, req *orchestrator.UpdateControlMonitoringStatusRequest) (res *orchestrator.ControlMonitoringStatus, err error) {
 	// Validate request
 	err = service.ValidateRequest(req)
@@ -221,7 +249,7 @@ func (svc *Service) UpdateControlMonitoringStatus(ctx context.Context, req *orch
 		return nil, service.ErrPermissionDenied
 	}
 
-	err = svc.storage.Save(req.Status,
+	err = svc.storage.Update(req.Status,
 		"target_of_evaluation_cloud_service_id = ? AND "+
 			"target_of_evaluation_catalog_id = ? AND "+
 			"control_category_catalog_id = ? AND "+
@@ -232,7 +260,7 @@ func (svc *Service) UpdateControlMonitoringStatus(ctx context.Context, req *orch
 		req.Status.ControlCategoryCatalogId,
 		req.Status.ControlCategoryName,
 		req.Status.ControlId)
-	if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
+	if err != nil && errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Error(codes.NotFound, "ToE not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)

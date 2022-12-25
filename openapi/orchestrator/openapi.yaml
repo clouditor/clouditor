@@ -921,6 +921,44 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    ? /v1/orchestrator/cloud_services/{status.target_of_evaluation_cloud_service_id}/toes/{status.target_of_evaluation_catalog_id}/monitoring_status
+    :   post:
+            tags:
+                - Orchestrator
+            description: |-
+                Creates a particular control monitoring status. This also selects the
+                 control as "in scope" for the target of evaluation.
+            operationId: Orchestrator_CreateControlMonitoringStatus
+            parameters:
+                - name: status.target_of_evaluation_cloud_service_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: status.target_of_evaluation_catalog_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ControlMonitoringStatus'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ControlMonitoringStatus'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     ? /v1/orchestrator/cloud_services/{status.target_of_evaluation_cloud_service_id}/toes/{status.target_of_evaluation_catalog_id}/monitoring_status/categories/{status.control_category_name}/controls/{status.control_id}
     :   put:
             tags:
