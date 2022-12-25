@@ -492,20 +492,20 @@ func TestToeHook(t *testing.T) {
 		})
 	}
 }
-func TestService_ListControlMonitoringStatus(t *testing.T) {
+func TestService_ListControlsInScope(t *testing.T) {
 	type fields struct {
 		storage persistence.Storage
 		authz   service.AuthorizationStrategy
 	}
 	type args struct {
 		ctx context.Context
-		req *orchestrator.ListControlMonitoringStatusRequest
+		req *orchestrator.ListControlsInScopeRequest
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		wantRes *orchestrator.ListControlMonitoringStatusResponse
+		wantRes *orchestrator.ListControlsInScopeResponse
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -531,20 +531,20 @@ func TestService_ListControlMonitoringStatus(t *testing.T) {
 			},
 			args: args{
 				ctx: context.TODO(),
-				req: &orchestrator.ListControlMonitoringStatusRequest{
+				req: &orchestrator.ListControlsInScopeRequest{
 					CloudServiceId: orchestratortest.MockServiceID,
 					CatalogId:      orchestratortest.MockCatalogID,
 				},
 			},
-			wantRes: &orchestrator.ListControlMonitoringStatusResponse{
-				Status: []*orchestrator.ControlMonitoringStatus{
+			wantRes: &orchestrator.ListControlsInScopeResponse{
+				ControlsInScope: []*orchestrator.ControlInScope{
 					{
 						ControlId:                        orchestratortest.MockControlID,
 						ControlCategoryName:              orchestratortest.MockCategoryName,
 						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
 						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-						Status:                           orchestrator.ControlMonitoringStatus_STATUS_UNSPECIFIED,
+						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_UNSPECIFIED,
 					},
 					{
 						ControlId:                        orchestratortest.MockSubControlID,
@@ -552,7 +552,7 @@ func TestService_ListControlMonitoringStatus(t *testing.T) {
 						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
 						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-						Status:                           orchestrator.ControlMonitoringStatus_STATUS_UNSPECIFIED,
+						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_UNSPECIFIED,
 					},
 				},
 			},
@@ -564,14 +564,14 @@ func TestService_ListControlMonitoringStatus(t *testing.T) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: orchestratortest.MockServiceID}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation()))
-					assert.NoError(t, s.Update(&orchestrator.ControlMonitoringStatus{
+					assert.NoError(t, s.Update(&orchestrator.ControlInScope{
 						ControlId:                        orchestratortest.MockControlID,
 						ControlCategoryName:              orchestratortest.MockCategoryName,
 						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
 						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-						Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
-					}, orchestrator.ControlMonitoringStatus{
+						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_CONTINUOUSLY_MONITORED,
+					}, orchestrator.ControlInScope{
 						ControlId:                        orchestratortest.MockControlID,
 						ControlCategoryName:              orchestratortest.MockCategoryName,
 						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
@@ -583,20 +583,20 @@ func TestService_ListControlMonitoringStatus(t *testing.T) {
 			},
 			args: args{
 				ctx: context.TODO(),
-				req: &orchestrator.ListControlMonitoringStatusRequest{
+				req: &orchestrator.ListControlsInScopeRequest{
 					CloudServiceId: orchestratortest.MockServiceID,
 					CatalogId:      orchestratortest.MockCatalogID,
 				},
 			},
-			wantRes: &orchestrator.ListControlMonitoringStatusResponse{
-				Status: []*orchestrator.ControlMonitoringStatus{
+			wantRes: &orchestrator.ListControlsInScopeResponse{
+				ControlsInScope: []*orchestrator.ControlInScope{
 					{
 						ControlId:                        orchestratortest.MockControlID,
 						ControlCategoryName:              orchestratortest.MockCategoryName,
 						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
 						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-						Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
+						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_CONTINUOUSLY_MONITORED,
 					},
 					{
 						ControlId:                        orchestratortest.MockSubControlID,
@@ -604,7 +604,7 @@ func TestService_ListControlMonitoringStatus(t *testing.T) {
 						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
 						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-						Status:                           orchestrator.ControlMonitoringStatus_STATUS_UNSPECIFIED,
+						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_UNSPECIFIED,
 					},
 				},
 			},
@@ -616,7 +616,7 @@ func TestService_ListControlMonitoringStatus(t *testing.T) {
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
-				req: &orchestrator.ListControlMonitoringStatusRequest{
+				req: &orchestrator.ListControlsInScopeRequest{
 					CloudServiceId: testutil.TestCloudService2,
 				},
 			},
@@ -632,7 +632,7 @@ func TestService_ListControlMonitoringStatus(t *testing.T) {
 				authz:   tt.fields.authz,
 			}
 
-			gotRes, err := svc.ListControlMonitoringStatus(tt.args.ctx, tt.args.req)
+			gotRes, err := svc.ListControlsInScope(tt.args.ctx, tt.args.req)
 			if tt.wantErr != nil {
 				tt.wantErr(t, err, tt.args)
 			} else {
@@ -640,26 +640,26 @@ func TestService_ListControlMonitoringStatus(t *testing.T) {
 			}
 
 			if !proto.Equal(gotRes, tt.wantRes) {
-				t.Errorf("Service.ListControlMonitoringStatus() = %v, want %v", gotRes, tt.wantRes)
+				t.Errorf("Service.ListControlInScope() = %v, want %v", gotRes, tt.wantRes)
 			}
 		})
 	}
 }
 
-func TestService_CreateControlMonitoringStatus(t *testing.T) {
+func TestService_AddControlToScope(t *testing.T) {
 	type fields struct {
 		storage persistence.Storage
 		authz   service.AuthorizationStrategy
 	}
 	type args struct {
 		in0 context.Context
-		req *orchestrator.CreateControlMonitoringStatusRequest
+		req *orchestrator.AddControlToScopeRequest
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		wantRes *orchestrator.ControlMonitoringStatus
+		wantRes *orchestrator.ControlInScope
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -684,14 +684,14 @@ func TestService_CreateControlMonitoringStatus(t *testing.T) {
 			},
 			args: args{
 				in0: context.TODO(),
-				req: &orchestrator.CreateControlMonitoringStatusRequest{
-					Status: &orchestrator.ControlMonitoringStatus{
+				req: &orchestrator.AddControlToScopeRequest{
+					Scope: &orchestrator.ControlInScope{
 						ControlId:                        orchestratortest.MockControlID,
 						ControlCategoryName:              orchestratortest.MockCategoryName,
 						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
 						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-						Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
+						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_CONTINUOUSLY_MONITORED,
 					},
 				},
 			},
@@ -707,14 +707,14 @@ func TestService_CreateControlMonitoringStatus(t *testing.T) {
 			},
 			args: args{
 				in0: context.TODO(),
-				req: &orchestrator.CreateControlMonitoringStatusRequest{
-					Status: &orchestrator.ControlMonitoringStatus{
+				req: &orchestrator.AddControlToScopeRequest{
+					Scope: &orchestrator.ControlInScope{
 						ControlId:                        orchestratortest.MockControlID,
 						ControlCategoryName:              orchestratortest.MockCategoryName,
 						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
 						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-						Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
+						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_CONTINUOUSLY_MONITORED,
 					},
 				},
 			},
@@ -734,25 +734,26 @@ func TestService_CreateControlMonitoringStatus(t *testing.T) {
 			},
 			args: args{
 				in0: context.TODO(),
-				req: &orchestrator.CreateControlMonitoringStatusRequest{
-					Status: &orchestrator.ControlMonitoringStatus{
+				req: &orchestrator.AddControlToScopeRequest{
+					Scope: &orchestrator.ControlInScope{
 						ControlId:                        orchestratortest.MockAnotherControlID,
 						ControlCategoryName:              orchestratortest.MockCategoryName,
 						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
 						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-						Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
+						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_CONTINUOUSLY_MONITORED,
 					},
 				},
 			},
-			wantRes: &orchestrator.ControlMonitoringStatus{
+			wantRes: &orchestrator.ControlInScope{
 				ControlId:                        orchestratortest.MockAnotherControlID,
 				ControlCategoryName:              orchestratortest.MockCategoryName,
 				ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
 				TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
 				TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-				Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
+				MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_CONTINUOUSLY_MONITORED,
 			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "permission denied",
@@ -761,14 +762,14 @@ func TestService_CreateControlMonitoringStatus(t *testing.T) {
 			},
 			args: args{
 				in0: testutil.TestContextOnlyService1,
-				req: &orchestrator.CreateControlMonitoringStatusRequest{
-					Status: &orchestrator.ControlMonitoringStatus{
+				req: &orchestrator.AddControlToScopeRequest{
+					Scope: &orchestrator.ControlInScope{
 						TargetOfEvaluationCloudServiceId: testutil.TestCloudService2,
 						ControlId:                        orchestratortest.MockControlID,
 						ControlCategoryName:              orchestratortest.MockCategoryName,
 						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
 						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-						Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
+						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_CONTINUOUSLY_MONITORED,
 					},
 				},
 			},
@@ -783,34 +784,30 @@ func TestService_CreateControlMonitoringStatus(t *testing.T) {
 				storage: tt.fields.storage,
 				authz:   tt.fields.authz,
 			}
-			gotRes, err := svc.CreateControlMonitoringStatus(tt.args.in0, tt.args.req)
-			if tt.wantErr != nil {
-				tt.wantErr(t, err, tt.args)
-			} else {
-				assert.Nil(t, err)
-			}
+			gotRes, err := svc.AddControlToScope(tt.args.in0, tt.args.req)
+			tt.wantErr(t, err, tt.args)
 
 			if !reflect.DeepEqual(gotRes, tt.wantRes) {
-				t.Errorf("Service.UpdateControlMonitoringStatus() = %v, want %v", gotRes, tt.wantRes)
+				t.Errorf("Service.UpdateControlInScope() = %v, want %v", gotRes, tt.wantRes)
 			}
 		})
 	}
 }
 
-func TestService_UpdateControlMonitoringStatus(t *testing.T) {
+func TestService_UpdateControlInScope(t *testing.T) {
 	type fields struct {
 		storage persistence.Storage
 		authz   service.AuthorizationStrategy
 	}
 	type args struct {
 		in0 context.Context
-		req *orchestrator.UpdateControlMonitoringStatusRequest
+		req *orchestrator.UpdateControlInScopeRequest
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		wantRes *orchestrator.ControlMonitoringStatus
+		wantRes *orchestrator.ControlInScope
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -835,25 +832,26 @@ func TestService_UpdateControlMonitoringStatus(t *testing.T) {
 			},
 			args: args{
 				in0: context.TODO(),
-				req: &orchestrator.UpdateControlMonitoringStatusRequest{
-					Status: &orchestrator.ControlMonitoringStatus{
+				req: &orchestrator.UpdateControlInScopeRequest{
+					Scope: &orchestrator.ControlInScope{
 						ControlId:                        orchestratortest.MockControlID,
 						ControlCategoryName:              orchestratortest.MockCategoryName,
 						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
 						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-						Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
+						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_CONTINUOUSLY_MONITORED,
 					},
 				},
 			},
-			wantRes: &orchestrator.ControlMonitoringStatus{
+			wantRes: &orchestrator.ControlInScope{
 				ControlId:                        orchestratortest.MockControlID,
 				ControlCategoryName:              orchestratortest.MockCategoryName,
 				ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
 				TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
 				TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-				Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
+				MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_CONTINUOUSLY_MONITORED,
 			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "ToE not found",
@@ -863,14 +861,14 @@ func TestService_UpdateControlMonitoringStatus(t *testing.T) {
 			},
 			args: args{
 				in0: context.TODO(),
-				req: &orchestrator.UpdateControlMonitoringStatusRequest{
-					Status: &orchestrator.ControlMonitoringStatus{
+				req: &orchestrator.UpdateControlInScopeRequest{
+					Scope: &orchestrator.ControlInScope{
 						ControlId:                        orchestratortest.MockControlID,
 						ControlCategoryName:              orchestratortest.MockCategoryName,
 						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
 						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-						Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
+						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_CONTINUOUSLY_MONITORED,
 					},
 				},
 			},
@@ -885,14 +883,14 @@ func TestService_UpdateControlMonitoringStatus(t *testing.T) {
 			},
 			args: args{
 				in0: testutil.TestContextOnlyService1,
-				req: &orchestrator.UpdateControlMonitoringStatusRequest{
-					Status: &orchestrator.ControlMonitoringStatus{
+				req: &orchestrator.UpdateControlInScopeRequest{
+					Scope: &orchestrator.ControlInScope{
 						TargetOfEvaluationCloudServiceId: testutil.TestCloudService2,
 						ControlId:                        orchestratortest.MockControlID,
 						ControlCategoryName:              orchestratortest.MockCategoryName,
 						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
 						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-						Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
+						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_CONTINUOUSLY_MONITORED,
 					},
 				},
 			},
@@ -907,15 +905,11 @@ func TestService_UpdateControlMonitoringStatus(t *testing.T) {
 				storage: tt.fields.storage,
 				authz:   tt.fields.authz,
 			}
-			gotRes, err := svc.UpdateControlMonitoringStatus(tt.args.in0, tt.args.req)
-			if tt.wantErr != nil {
-				tt.wantErr(t, err, tt.args)
-			} else {
-				assert.Nil(t, err)
-			}
+			gotRes, err := svc.UpdateControlInScope(tt.args.in0, tt.args.req)
+			tt.wantErr(t, err, tt.args)
 
 			if !reflect.DeepEqual(gotRes, tt.wantRes) {
-				t.Errorf("Service.UpdateControlMonitoringStatus() = %v, want %v", gotRes, tt.wantRes)
+				t.Errorf("Service.UpdateControlInScope() = %v, want %v", gotRes, tt.wantRes)
 			}
 		})
 	}

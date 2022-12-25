@@ -843,12 +843,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/cloud_services/{cloudServiceId}/toes/{catalogId}/monitoring_status:
+    /v1/orchestrator/cloud_services/{cloudServiceId}/toes/{catalogId}/controls_in_scope:
         get:
             tags:
                 - Orchestrator
-            description: Lists all control monitoring statuses
-            operationId: Orchestrator_ListControlMonitoringStatus
+            description: Lists all controls in scope of a target of evaluation.
+            operationId: Orchestrator_ListControlsInScope
             parameters:
                 - name: cloudServiceId
                   in: path
@@ -883,7 +883,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/ListControlMonitoringStatusResponse'
+                                $ref: '#/components/schemas/ListControlsInScopeResponse'
                 default:
                     description: Default error response
                     content:
@@ -921,21 +921,19 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    ? /v1/orchestrator/cloud_services/{status.target_of_evaluation_cloud_service_id}/toes/{status.target_of_evaluation_catalog_id}/monitoring_status
+    ? /v1/orchestrator/cloud_services/{scope.target_of_evaluation_cloud_service_id}/toes/{scope.target_of_evaluation_catalog_id}/controls_in_scope
     :   post:
             tags:
                 - Orchestrator
-            description: |-
-                Creates a particular control monitoring status. This also selects the
-                 control as "in scope" for the target of evaluation.
-            operationId: Orchestrator_CreateControlMonitoringStatus
+            description: Adds the selected control as "in scope" for the target of evaluation.
+            operationId: Orchestrator_AddControlToScope
             parameters:
-                - name: status.target_of_evaluation_cloud_service_id
+                - name: scope.target_of_evaluation_cloud_service_id
                   in: path
                   required: true
                   schema:
                     type: string
-                - name: status.target_of_evaluation_catalog_id
+                - name: scope.target_of_evaluation_catalog_id
                   in: path
                   required: true
                   schema:
@@ -944,7 +942,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/ControlMonitoringStatus'
+                            $ref: '#/components/schemas/ControlInScope'
                 required: true
             responses:
                 "200":
@@ -952,36 +950,36 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/ControlMonitoringStatus'
+                                $ref: '#/components/schemas/ControlInScope'
                 default:
                     description: Default error response
                     content:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    ? /v1/orchestrator/cloud_services/{status.target_of_evaluation_cloud_service_id}/toes/{status.target_of_evaluation_catalog_id}/monitoring_status/categories/{status.control_category_name}/controls/{status.control_id}
+    ? /v1/orchestrator/cloud_services/{scope.target_of_evaluation_cloud_service_id}/toes/{scope.target_of_evaluation_catalog_id}/controls_in_scope/categories/{scope.control_category_name}/controls/{scope.control_id}
     :   put:
             tags:
                 - Orchestrator
-            description: Updates a particular control monitoring status
-            operationId: Orchestrator_UpdateControlMonitoringStatus
+            description: Updates a particular control in scope, e.g., its monitoring status.
+            operationId: Orchestrator_UpdateControlInScope
             parameters:
-                - name: status.target_of_evaluation_cloud_service_id
+                - name: scope.target_of_evaluation_cloud_service_id
                   in: path
                   required: true
                   schema:
                     type: string
-                - name: status.target_of_evaluation_catalog_id
+                - name: scope.target_of_evaluation_catalog_id
                   in: path
                   required: true
                   schema:
                     type: string
-                - name: status.control_category_name
+                - name: scope.control_category_name
                   in: path
                   required: true
                   schema:
                     type: string
-                - name: status.control_id
+                - name: scope.control_id
                   in: path
                   required: true
                   schema:
@@ -990,7 +988,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/ControlMonitoringStatus'
+                            $ref: '#/components/schemas/ControlInScope'
                 required: true
             responses:
                 "200":
@@ -998,7 +996,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/ControlMonitoringStatus'
+                                $ref: '#/components/schemas/ControlInScope'
                 default:
                     description: Default error response
                     content:
@@ -1502,7 +1500,7 @@ components:
                 parentControlCategoryCatalogId:
                     type: string
             description: Control represents a certain Control that needs to be fulfilled. It could be a Control in a certification catalog. It follows the OSCAL model. A requirement in the EUCS terminology, e.g., is represented as the lowest sub-control.
-        ControlMonitoringStatus:
+        ControlInScope:
             type: object
             properties:
                 targetOfEvaluationCloudServiceId:
@@ -1515,14 +1513,15 @@ components:
                     type: string
                 controlCategoryCatalogId:
                     type: string
-                status:
+                monitoringStatus:
                     enum:
-                        - STATUS_UNSPECIFIED
-                        - STATUS_CONTINUOUSLY_MONITORED
-                        - STATUS_MANUALLY_MONITORED
-                        - STATUS_DELEGATED
+                        - MONITORING_STATUS_UNSPECIFIED
+                        - MONITORING_STATUS_CONTINUOUSLY_MONITORED
+                        - MONITORING_STATUS_MANUALLY_MONITORED
+                        - MONITORING_STATUS_DELEGATED
                     type: string
                     format: enum
+            description: ControlInScope defines a control which is "in scope" of a target of evaluation. Additional meta-data can be defined when a control is in scope, e.g., its monitoring status (continuously monitored, delegated, etc.)
         GoogleProtobufAny:
             type: object
             properties:
@@ -1578,13 +1577,13 @@ components:
                         $ref: '#/components/schemas/CloudService'
                 nextPageToken:
                     type: string
-        ListControlMonitoringStatusResponse:
+        ListControlsInScopeResponse:
             type: object
             properties:
-                status:
+                controlsInScope:
                     type: array
                     items:
-                        $ref: '#/components/schemas/ControlMonitoringStatus'
+                        $ref: '#/components/schemas/ControlInScope'
                 nextPageToken:
                     type: string
         ListControlsResponse:

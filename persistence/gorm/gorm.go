@@ -163,7 +163,7 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 		return
 	}
 
-	if err = g.db.SetupJoinTable(orchestrator.TargetOfEvaluation{}, "ControlsInScope", orchestrator.ControlMonitoringStatus{}); err != nil {
+	if err = g.db.SetupJoinTable(orchestrator.TargetOfEvaluation{}, "ControlsInScope", orchestrator.ControlInScope{}); err != nil {
 		err = fmt.Errorf("error during join-table: %w", err)
 		return
 	}

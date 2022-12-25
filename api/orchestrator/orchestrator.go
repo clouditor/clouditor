@@ -34,14 +34,14 @@ type TargetOfEvaluationHookFunc func(ctx context.Context, event *TargetOfEvaluat
 
 // GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
 // the cloud service ID of the inner object.
-func (req *UpdateControlMonitoringStatusRequest) GetCloudServiceId() string {
-	return req.Status.GetTargetOfEvaluationCloudServiceId()
+func (req *AddControlToScopeRequest) GetCloudServiceId() string {
+	return req.Scope.GetTargetOfEvaluationCloudServiceId()
 }
 
 // GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
 // the cloud service ID of the inner object.
-func (req *CreateControlMonitoringStatusRequest) GetCloudServiceId() string {
-	return req.Status.GetTargetOfEvaluationCloudServiceId()
+func (req *UpdateControlInScopeRequest) GetCloudServiceId() string {
+	return req.Scope.GetTargetOfEvaluationCloudServiceId()
 }
 
 // GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
