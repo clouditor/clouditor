@@ -232,7 +232,9 @@ func (svc *Service) UpdateControlMonitoringStatus(ctx context.Context, req *orch
 		req.Status.ControlCategoryCatalogId,
 		req.Status.ControlCategoryName,
 		req.Status.ControlId)
-	if err != nil {
+	if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
+		return nil, status.Error(codes.NotFound, "ToE not found")
+	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
