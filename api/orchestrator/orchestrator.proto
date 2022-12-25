@@ -391,6 +391,18 @@ service Orchestrator {
     };
   }
 
+  // Adds the selected control as "in scope" for the target of evaluation.
+  rpc RemoveControlFromScope(RemoveControlFromScopeRequest)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put : "/v1/orchestrator/cloud_services/"
+            "{cloud_service_id}/toes/"
+            "{catalog_id}/controls_in_scope/"
+            "categories/{control_category_name}/"
+            "controls/{control_id}"
+    };
+  }
+
   // Lists all Targets of Evaluation
   rpc ListTargetsOfEvaluation(ListTargetsOfEvaluationRequest)
       returns (ListTargetsOfEvaluationResponse) {
@@ -749,6 +761,13 @@ message UpdateControlInScopeRequest {
 
 message AddControlToScopeRequest {
   ControlInScope scope = 1 [ (validate.rules).message.required = true ];
+}
+
+message RemoveControlFromScopeRequest {
+  string cloud_service_id = 1 [ (validate.rules).string.min_len = 1 ];
+  string catalog_id = 2 [ (validate.rules).string.min_len = 1 ];
+  string control_id = 3 [ (validate.rules).string.min_len = 1 ];
+  string control_category_name = 4 [ (validate.rules).string.min_len = 1 ];
 }
 
 enum MonitoringStatus {

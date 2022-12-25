@@ -890,6 +890,43 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    ? /v1/orchestrator/cloud_services/{cloudServiceId}/toes/{catalogId}/controls_in_scope/categories/{controlCategoryName}/controls/{controlId}
+    :   put:
+            tags:
+                - Orchestrator
+            description: Adds the selected control as "in scope" for the target of evaluation.
+            operationId: Orchestrator_RemoveControlFromScope
+            parameters:
+                - name: cloudServiceId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: catalogId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: controlCategoryName
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: controlId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/cloud_services/{cloud_service.id}:
         put:
             tags:

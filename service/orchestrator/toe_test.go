@@ -45,6 +45,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 var AssuranceLevelHigh = "high"
@@ -906,6 +907,108 @@ func TestService_UpdateControlInScope(t *testing.T) {
 				authz:   tt.fields.authz,
 			}
 			gotRes, err := svc.UpdateControlInScope(tt.args.in0, tt.args.req)
+			tt.wantErr(t, err, tt.args)
+
+			if !reflect.DeepEqual(gotRes, tt.wantRes) {
+				t.Errorf("Service.UpdateControlInScope() = %v, want %v", gotRes, tt.wantRes)
+			}
+		})
+	}
+}
+
+func TestService_RemoveControlFromScope(t *testing.T) {
+	type fields struct {
+		storage persistence.Storage
+		authz   service.AuthorizationStrategy
+	}
+	type args struct {
+		in0 context.Context
+		req *orchestrator.RemoveControlFromScopeRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes *emptypb.Empty
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Invalid request",
+			args: args{
+				req: nil,
+			},
+			wantRes: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Equal(t, codes.InvalidArgument, status.Code(err))
+			},
+		},
+		{
+			name: "valid remove",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: orchestratortest.MockServiceID}))
+					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation()))
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				in0: context.TODO(),
+				req: &orchestrator.RemoveControlFromScopeRequest{
+					ControlId:           orchestratortest.MockControlID,
+					ControlCategoryName: orchestratortest.MockCategoryName,
+					CloudServiceId:      orchestratortest.MockServiceID,
+					CatalogId:           orchestratortest.MockCatalogID,
+				},
+			},
+			wantRes: &emptypb.Empty{},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "ToE not found",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				in0: context.TODO(),
+				req: &orchestrator.RemoveControlFromScopeRequest{
+					ControlId:           orchestratortest.MockControlID,
+					ControlCategoryName: orchestratortest.MockCategoryName,
+					CloudServiceId:      orchestratortest.MockServiceID,
+					CatalogId:           orchestratortest.MockCatalogID,
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Equal(t, codes.NotFound, status.Code(err))
+			},
+		},
+		{
+			name: "permission denied",
+			fields: fields{
+				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+			},
+			args: args{
+				in0: testutil.TestContextOnlyService1,
+				req: &orchestrator.RemoveControlFromScopeRequest{
+					CloudServiceId:      testutil.TestCloudService2,
+					ControlId:           orchestratortest.MockControlID,
+					ControlCategoryName: orchestratortest.MockCategoryName,
+					CatalogId:           orchestratortest.MockCatalogID,
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, service.ErrPermissionDenied)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				storage: tt.fields.storage,
+				authz:   tt.fields.authz,
+			}
+			gotRes, err := svc.RemoveControlFromScope(tt.args.in0, tt.args.req)
 			tt.wantErr(t, err, tt.args)
 
 			if !reflect.DeepEqual(gotRes, tt.wantRes) {

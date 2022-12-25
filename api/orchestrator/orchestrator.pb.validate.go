@@ -5338,6 +5338,153 @@ var _ interface {
 	ErrorName() string
 } = AddControlToScopeRequestValidationError{}
 
+// Validate checks the field values on RemoveControlFromScopeRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *RemoveControlFromScopeRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on RemoveControlFromScopeRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// RemoveControlFromScopeRequestMultiError, or nil if none found.
+func (m *RemoveControlFromScopeRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *RemoveControlFromScopeRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetCloudServiceId()) < 1 {
+		err := RemoveControlFromScopeRequestValidationError{
+			field:  "CloudServiceId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetCatalogId()) < 1 {
+		err := RemoveControlFromScopeRequestValidationError{
+			field:  "CatalogId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetControlId()) < 1 {
+		err := RemoveControlFromScopeRequestValidationError{
+			field:  "ControlId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetControlCategoryName()) < 1 {
+		err := RemoveControlFromScopeRequestValidationError{
+			field:  "ControlCategoryName",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return RemoveControlFromScopeRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// RemoveControlFromScopeRequestMultiError is an error wrapping multiple
+// validation errors returned by RemoveControlFromScopeRequest.ValidateAll()
+// if the designated constraints aren't met.
+type RemoveControlFromScopeRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m RemoveControlFromScopeRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m RemoveControlFromScopeRequestMultiError) AllErrors() []error { return m }
+
+// RemoveControlFromScopeRequestValidationError is the validation error
+// returned by RemoveControlFromScopeRequest.Validate if the designated
+// constraints aren't met.
+type RemoveControlFromScopeRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e RemoveControlFromScopeRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e RemoveControlFromScopeRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e RemoveControlFromScopeRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e RemoveControlFromScopeRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e RemoveControlFromScopeRequestValidationError) ErrorName() string {
+	return "RemoveControlFromScopeRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e RemoveControlFromScopeRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sRemoveControlFromScopeRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = RemoveControlFromScopeRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = RemoveControlFromScopeRequestValidationError{}
+
 // Validate checks the field values on ControlInScope with the rules defined in
 // the proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.

@@ -272,3 +272,39 @@ func (svc *Service) UpdateControlInScope(ctx context.Context, req *orchestrator.
 
 	return
 }
+
+func (svc *Service) RemoveControlFromScope(ctx context.Context, req *orchestrator.RemoveControlFromScopeRequest) (res *emptypb.Empty, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+		return nil, service.ErrPermissionDenied
+	}
+
+	err = svc.storage.Delete(orchestrator.ControlInScope{},
+		"target_of_evaluation_cloud_service_id = ? AND "+
+			"target_of_evaluation_catalog_id = ? AND "+
+			"control_category_catalog_id = ? AND "+
+			"control_category_name = ? AND "+
+			"control_id = ?",
+		req.CloudServiceId,
+		req.CatalogId,
+		req.CatalogId,
+		req.ControlCategoryName,
+		req.ControlId)
+	if err != nil && errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Error(codes.NotFound, "ToE not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+	}
+
+	res = &emptypb.Empty{}
+
+	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_CONTROL_IN_SCOPE_REMOVED, ControlInScope: nil}, nil)
+
+	return
+}
