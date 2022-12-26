@@ -181,7 +181,8 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 func (s *storage) Create(r any) (err error) {
 	err = s.db.Create(r).Error
 
-	if err != nil && strings.Contains(err.Error(), "constraint failed: UNIQUE constraint failed") {
+	if err != nil && (strings.Contains(err.Error(), "constraint failed: UNIQUE constraint failed") ||
+		strings.Contains(err.Error(), "duplicate key value violates unique constraint")) {
 		return persistence.ErrUniqueConstraintFailed
 	}
 

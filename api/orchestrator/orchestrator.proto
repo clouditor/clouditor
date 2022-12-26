@@ -702,7 +702,6 @@ message Control {
   ];
 
   // Reference to the parent category this control belongs to.
-
   optional string parent_control_id = 8 [ (validate.rules).string.min_len = 1 ];
   optional string parent_control_category_name = 9
       [ (validate.rules).string.min_len = 1 ];
@@ -731,8 +730,14 @@ message TargetOfEvaluation {
   // catalogs, e.g., the EUCS, a specific set of controls (in the "worst case":
   // all) are automatically in scope. In this case, this list needs auto-filled
   // at an appropriate time, e.g,. in CreateTargetOfEvaluation.
+  //
+  // Note: Because of limitations of our ORM framework, this field only contains
+  // a list of controls that are in scope of the target, but not the actual
+  // meta-data associated it with it (which is of message type ControlInScope).
+  // In order to retrieve the meta-data of the controls, the RPC
+  // ListControlsInScope (or the associated REST path) must be called.
   repeated Control controls_in_scope = 4 [
-    (tagger.tags) = "gorm:\"many2many:control_monitoring_statuses;"
+    (tagger.tags) = "gorm:\"many2many:controls_in_scope;"
                     "constraint:OnDelete:CASCADE\"",
     (validate.rules).repeated .items.message.required = true
   ];
