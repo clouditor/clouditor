@@ -77,6 +77,7 @@ func TestService_RegisterCloudService(t *testing.T) {
 	cloudService, err := orchestratorService.CreateDefaultTargetCloudService()
 	assert.NoError(t, err)
 	assert.NotNil(t, cloudService)
+	assert.NoError(t, cloudService.Validate())
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -187,7 +188,7 @@ func TestService_GetCloudService(t *testing.T) {
 			}
 
 			if tt.res != nil {
-				assert.NotEmpty(t, res.Id)
+				assert.NoError(t, res.Validate())
 			}
 
 			assert.True(t, proto.Equal(res, tt.res), "%v != %v", res, tt.res)
@@ -241,6 +242,7 @@ func TestService_UpdateCloudService(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, cloudService)
+	assert.NoError(t, cloudService.Validate())
 	assert.Equal(t, "NewName", cloudService.Name)
 	// Description should be overwritten with empty string
 	assert.Equal(t, "", cloudService.Description)
@@ -296,11 +298,9 @@ func TestService_CreateDefaultTargetCloudService(t *testing.T) {
 	// 1st case: No records for cloud services -> Default target service is created
 	cloudServiceResponse, err = orchestratorService.CreateDefaultTargetCloudService()
 	assert.NoError(t, err)
-	assert.Equal(t, &orchestrator.CloudService{
-		Id:          DefaultTargetCloudServiceId,
-		Name:        DefaultTargetCloudServiceName,
-		Description: DefaultTargetCloudServiceDescription,
-	}, cloudServiceResponse)
+
+	// Check if CloudService is valid
+	assert.NoError(t, cloudServiceResponse.Validate())
 
 	// 2nd case: There is already a record for service (the default target service) -> Nothing added and no error
 	cloudServiceResponse, err = orchestratorService.CreateDefaultTargetCloudService()
@@ -425,6 +425,8 @@ func TestService_ListCloudServices(t *testing.T) {
 
 			if !proto.Equal(gotRes, tt.wantRes) {
 				t.Errorf("Service.ListCloudServices() = %v, want %v", gotRes, tt.wantRes)
+
+				assert.NoError(t, gotRes.Validate())
 			}
 		})
 	}

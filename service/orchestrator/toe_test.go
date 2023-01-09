@@ -27,7 +27,6 @@ package orchestrator
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"runtime"
 	"sync"
@@ -80,6 +79,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 				req: &orchestrator.CreateTargetOfEvaluationRequest{},
 			},
 			wantErr: true,
+			want:    assert.Empty,
 		},
 		{
 			name: "valid",
@@ -97,6 +97,10 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 			}},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				svc := i2[0].(*Service)
+				res := i1.(*orchestrator.TargetOfEvaluation)
+
+				// Check if the Target of Evaluation is valid
+				assert.NoError(t, res.Validate())
 
 				// We want to assert that certain things happened in our database
 				var toes []*orchestrator.TargetOfEvaluation
@@ -117,6 +121,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 
 				return assert.Equal(t, 1, len(service.CatalogsInScope))
 			},
+			wantErr: false,
 		},
 	}
 
@@ -140,14 +145,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 				return
 			}
 
-			if tt.want != nil {
-				tt.want(t, gotRes, svc)
-			}
-
-			if err == nil {
-				err = gotRes.Validate()
-				assert.NoError(t, err)
-			}
+			tt.want(t, gotRes, svc)
 		})
 	}
 }
@@ -236,9 +234,10 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 			}},
 			wantResponse: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
 				res, ok := i.(*orchestrator.TargetOfEvaluation)
-				want := orchestratortest.NewTargetOfEvaluation()
 				assert.True(t, ok)
-				fmt.Println(res)
+				assert.NoError(t, res.Validate())
+
+				want := orchestratortest.NewTargetOfEvaluation()
 				assert.Equal(t, want.CloudServiceId, res.CloudServiceId)
 				return assert.Equal(t, want.CatalogId, res.CatalogId)
 			},
@@ -287,6 +286,7 @@ func TestService_ListTargetsOfEvaluation(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, listTargetsOfEvaluationResponse.TargetOfEvaluation)
 	assert.NotEmpty(t, listTargetsOfEvaluationResponse.TargetOfEvaluation)
+	assert.NoError(t, listTargetsOfEvaluationResponse.TargetOfEvaluation[0].Validate())
 	assert.Equal(t, 1, len(listTargetsOfEvaluationResponse.TargetOfEvaluation))
 
 	// 3rd case: Invalid request
@@ -340,6 +340,7 @@ func TestService_UpdateTargetOfEvaluation(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, toe)
+	assert.NoError(t, toe.Validate())
 	assert.Equal(t, &AssuranceLevelSubstantial, toe.AssuranceLevel)
 }
 
@@ -378,6 +379,7 @@ func TestService_RemoveTargetOfEvaluation(t *testing.T) {
 	listTargetsOfEvaluationResponse, err = orchestratorService.ListTargetsOfEvaluation(context.Background(), &orchestrator.ListTargetsOfEvaluationRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listTargetsOfEvaluationResponse.TargetOfEvaluation)
+	assert.NoError(t, listTargetsOfEvaluationResponse.TargetOfEvaluation[0].Validate())
 	assert.Equal(t, 1, len(listTargetsOfEvaluationResponse.TargetOfEvaluation))
 
 	// Remove record
@@ -492,6 +494,8 @@ func TestToeHook(t *testing.T) {
 			}
 			if !reflect.DeepEqual(gotResp, tt.wantResp) {
 				t.Errorf("UpdateTargetOfEvaluation() gotResp = %v, want %v", gotResp, tt.wantResp)
+				assert.NoError(t, gotResp.Validate())
+
 			}
 			assert.Equal(t, 2, hookCallCounter)
 		})
@@ -561,6 +565,7 @@ func TestService_ListControlMonitoringStatus(t *testing.T) {
 					},
 				},
 			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "one control explicitly set to continuously monitored",
@@ -613,6 +618,7 @@ func TestService_ListControlMonitoringStatus(t *testing.T) {
 					},
 				},
 			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "permission denied",
@@ -638,11 +644,7 @@ func TestService_ListControlMonitoringStatus(t *testing.T) {
 			}
 
 			gotRes, err := svc.ListControlMonitoringStatus(tt.args.ctx, tt.args.req)
-			if tt.wantErr != nil {
-				tt.wantErr(t, err, tt.args)
-			} else {
-				assert.Nil(t, err)
-			}
+			tt.wantErr(t, err, tt.args)
 
 			if !proto.Equal(gotRes, tt.wantRes) {
 				t.Errorf("Service.ListControlMonitoringStatus() = %v, want %v", gotRes, tt.wantRes)
@@ -708,6 +710,7 @@ func TestService_UpdateControlMonitoringStatus(t *testing.T) {
 				TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
 				Status:                           orchestrator.ControlMonitoringStatus_STATUS_CONTINUOUSLY_MONITORED,
 			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "ToE not found",
@@ -762,14 +765,11 @@ func TestService_UpdateControlMonitoringStatus(t *testing.T) {
 				authz:   tt.fields.authz,
 			}
 			gotRes, err := svc.UpdateControlMonitoringStatus(tt.args.in0, tt.args.req)
-			if tt.wantErr != nil {
-				tt.wantErr(t, err, tt.args)
-			} else {
-				assert.Nil(t, err)
-			}
+			tt.wantErr(t, err, tt.args)
 
 			if !reflect.DeepEqual(gotRes, tt.wantRes) {
 				t.Errorf("Service.UpdateControlMonitoringStatus() = %v, want %v", gotRes, tt.wantRes)
+				assert.NoError(t, gotRes.Validate())
 			}
 		})
 	}
