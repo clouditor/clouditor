@@ -843,12 +843,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/cloud_services/{cloudServiceId}/toes/{catalogId}/monitoring_status:
+    /v1/orchestrator/cloud_services/{cloudServiceId}/toes/{catalogId}/controls_in_scope:
         get:
             tags:
                 - Orchestrator
-            description: Lists all control monitoring statuses
-            operationId: Orchestrator_ListControlMonitoringStatus
+            description: Lists all controls in scope of a target of evaluation.
+            operationId: Orchestrator_ListControlsInScope
             parameters:
                 - name: cloudServiceId
                   in: path
@@ -883,7 +883,44 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/ListControlMonitoringStatusResponse'
+                                $ref: '#/components/schemas/ListControlsInScopeResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    ? /v1/orchestrator/cloud_services/{cloudServiceId}/toes/{catalogId}/controls_in_scope/categories/{controlCategoryName}/controls/{controlId}
+    :   put:
+            tags:
+                - Orchestrator
+            description: Adds the selected control as "in scope" for the target of evaluation.
+            operationId: Orchestrator_RemoveControlFromScope
+            parameters:
+                - name: cloudServiceId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: catalogId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: controlCategoryName
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: controlId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
                 default:
                     description: Default error response
                     content:
@@ -921,70 +958,82 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    ? /v1/orchestrator/cloud_services/{status.target_of_evaluation_cloud_service_id}/toes/{status.target_of_evaluation_catalog_id}/monitoring_status/categories/{status.control_category_name}/controls/{status.control_id}
-    :   get:
+    ? /v1/orchestrator/cloud_services/{scope.target_of_evaluation_cloud_service_id}/toes/{scope.target_of_evaluation_catalog_id}/controls_in_scope
+    :   post:
             tags:
                 - Orchestrator
-            description: Updates a particular control monitoring status
-            operationId: Orchestrator_UpdateControlMonitoringStatus
+            description: Adds the selected control as "in scope" for the target of evaluation.
+            operationId: Orchestrator_AddControlToScope
             parameters:
-                - name: status.target_of_evaluation_cloud_service_id
+                - name: scope.target_of_evaluation_cloud_service_id
                   in: path
                   required: true
                   schema:
                     type: string
-                - name: status.target_of_evaluation_catalog_id
+                - name: scope.target_of_evaluation_catalog_id
                   in: path
                   required: true
                   schema:
                     type: string
-                - name: status.control_category_name
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: status.control_id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: status.targetOfEvaluationCloudServiceId
-                  in: query
-                  schema:
-                    type: string
-                - name: status.targetOfEvaluationCatalogId
-                  in: query
-                  schema:
-                    type: string
-                - name: status.controlId
-                  in: query
-                  schema:
-                    type: string
-                - name: status.controlCategoryName
-                  in: query
-                  schema:
-                    type: string
-                - name: status.controlCategoryCatalogId
-                  in: query
-                  schema:
-                    type: string
-                - name: status.status
-                  in: query
-                  schema:
-                    enum:
-                        - STATUS_UNSPECIFIED
-                        - STATUS_CONTINUOUSLY_MONITORED
-                        - STATUS_MANUALLY_MONITORED
-                        - STATUS_DELEGATED
-                    type: string
-                    format: enum
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ControlInScope'
+                required: true
             responses:
                 "200":
                     description: OK
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/ControlMonitoringStatus'
+                                $ref: '#/components/schemas/ControlInScope'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    ? /v1/orchestrator/cloud_services/{scope.target_of_evaluation_cloud_service_id}/toes/{scope.target_of_evaluation_catalog_id}/controls_in_scope/categories/{scope.control_category_name}/controls/{scope.control_id}
+    :   put:
+            tags:
+                - Orchestrator
+            description: Updates a particular control in scope, e.g., its monitoring status.
+            operationId: Orchestrator_UpdateControlInScope
+            parameters:
+                - name: scope.target_of_evaluation_cloud_service_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: scope.target_of_evaluation_catalog_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: scope.control_category_name
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: scope.control_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ControlInScope'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ControlInScope'
                 default:
                     description: Default error response
                     content:
@@ -1483,12 +1532,13 @@ components:
                     description: metrics contains either a list of reference to metrics - in this case only the id field of the metric is populated - or a list of populated metric meta-data, most likely returned by the database.
                 parentControlId:
                     type: string
+                    description: Reference to the parent category this control belongs to.
                 parentControlCategoryName:
                     type: string
                 parentControlCategoryCatalogId:
                     type: string
             description: Control represents a certain Control that needs to be fulfilled. It could be a Control in a certification catalog. It follows the OSCAL model. A requirement in the EUCS terminology, e.g., is represented as the lowest sub-control.
-        ControlMonitoringStatus:
+        ControlInScope:
             type: object
             properties:
                 targetOfEvaluationCloudServiceId:
@@ -1501,14 +1551,15 @@ components:
                     type: string
                 controlCategoryCatalogId:
                     type: string
-                status:
+                monitoringStatus:
                     enum:
-                        - STATUS_UNSPECIFIED
-                        - STATUS_CONTINUOUSLY_MONITORED
-                        - STATUS_MANUALLY_MONITORED
-                        - STATUS_DELEGATED
+                        - MONITORING_STATUS_UNSPECIFIED
+                        - MONITORING_STATUS_CONTINUOUSLY_MONITORED
+                        - MONITORING_STATUS_MANUALLY_MONITORED
+                        - MONITORING_STATUS_DELEGATED
                     type: string
                     format: enum
+            description: ControlInScope defines a control which is "in scope" of a target of evaluation. Additional meta-data can be defined when a control is in scope, e.g., its monitoring status (continuously monitored, delegated, etc.)
         GoogleProtobufAny:
             type: object
             properties:
@@ -1564,13 +1615,13 @@ components:
                         $ref: '#/components/schemas/CloudService'
                 nextPageToken:
                     type: string
-        ListControlMonitoringStatusResponse:
+        ListControlsInScopeResponse:
             type: object
             properties:
-                status:
+                controlsInScope:
                     type: array
                     items:
-                        $ref: '#/components/schemas/ControlMonitoringStatus'
+                        $ref: '#/components/schemas/ControlInScope'
                 nextPageToken:
                     type: string
         ListControlsResponse:
@@ -1767,7 +1818,7 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Control'
-                    description: 'the controls that are in scope of this ToE. Note: For some security catalogs, e.g., the EUCS, a specific set of controls (in the "worst case": all) are automatically in scope. In this case, this list needs auto-filled at an appropriate time, e.g,. in CreateTargetOfEvaluation.'
+                    description: 'the controls that are in scope of this ToE. Note: For some security catalogs, e.g., the EUCS, a specific set of controls (in the "worst case": all) are automatically in scope. In this case, this list needs auto-filled at an appropriate time, e.g,. in CreateTargetOfEvaluation. Note: Because of limitations of our ORM framework, this field only contains a list of controls that are in scope of the target, but not the actual meta-data associated it with it (which is of message type ControlInScope). In order to retrieve the meta-data of the controls, the RPC ListControlsInScope (or the associated REST path) must be called.'
             description: A Target of Evaluation binds a cloud service to a catalog, so the service is evaluated regarding this catalog's controls
 tags:
     - name: Orchestrator

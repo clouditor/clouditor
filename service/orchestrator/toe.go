@@ -110,7 +110,7 @@ func (svc *Service) ListTargetsOfEvaluation(_ context.Context, req *orchestrator
 	}
 
 	res = new(orchestrator.ListTargetsOfEvaluationResponse)
-	res.TargetOfEvaluation, res.NextPageToken, err = service.PaginateStorage[*orchestrator.TargetOfEvaluation](req, svc.storage, service.DefaultPaginationOpts, gorm.WithoutPreload())
+	res.TargetOfEvaluation, res.NextPageToken, err = service.PaginateStorage[*orchestrator.TargetOfEvaluation](req, svc.storage, service.DefaultPaginationOpts, gorm.WithPreload("ControlsInScope"))
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
@@ -188,7 +188,7 @@ func (s *Service) RegisterToeHook(hook orchestrator.TargetOfEvaluationHookFunc) 
 	s.toeHooks = append(s.toeHooks, hook)
 }
 
-func (svc *Service) ListControlMonitoringStatus(ctx context.Context, req *orchestrator.ListControlMonitoringStatusRequest) (res *orchestrator.ListControlMonitoringStatusResponse, err error) {
+func (svc *Service) ListControlsInScope(ctx context.Context, req *orchestrator.ListControlsInScopeRequest) (res *orchestrator.ListControlsInScopeResponse, err error) {
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
@@ -200,8 +200,8 @@ func (svc *Service) ListControlMonitoringStatus(ctx context.Context, req *orches
 		return nil, service.ErrPermissionDenied
 	}
 
-	res = new(orchestrator.ListControlMonitoringStatusResponse)
-	res.Status, res.NextPageToken, err = service.PaginateStorage[*orchestrator.ControlMonitoringStatus](req, svc.storage, service.DefaultPaginationOpts, gorm.WithoutPreload())
+	res = new(orchestrator.ListControlsInScopeResponse)
+	res.ControlsInScope, res.NextPageToken, err = service.PaginateStorage[*orchestrator.ControlInScope](req, svc.storage, service.DefaultPaginationOpts, gorm.WithoutPreload())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
@@ -209,7 +209,7 @@ func (svc *Service) ListControlMonitoringStatus(ctx context.Context, req *orches
 	return
 }
 
-func (svc *Service) UpdateControlMonitoringStatus(ctx context.Context, req *orchestrator.UpdateControlMonitoringStatusRequest) (res *orchestrator.ControlMonitoringStatus, err error) {
+func (svc *Service) AddControlToScope(ctx context.Context, req *orchestrator.AddControlToScopeRequest) (res *orchestrator.ControlInScope, err error) {
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
@@ -221,26 +221,90 @@ func (svc *Service) UpdateControlMonitoringStatus(ctx context.Context, req *orch
 		return nil, service.ErrPermissionDenied
 	}
 
-	err = svc.storage.Update(req.Status,
+	err = svc.storage.Create(req.Scope)
+	if err != nil && errors.Is(err, persistence.ErrUniqueConstraintFailed) {
+		return nil, status.Error(codes.AlreadyExists, "entry already exists")
+	} else if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
+		return nil, status.Error(codes.NotFound, "ToE not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+	}
+
+	res = req.Scope
+
+	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_CONTROL_IN_SCOPE_ADDED, ControlInScope: req.GetScope()}, nil)
+
+	return
+}
+
+func (svc *Service) UpdateControlInScope(ctx context.Context, req *orchestrator.UpdateControlInScopeRequest) (res *orchestrator.ControlInScope, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+		return nil, service.ErrPermissionDenied
+	}
+
+	err = svc.storage.Update(req.Scope,
 		"target_of_evaluation_cloud_service_id = ? AND "+
 			"target_of_evaluation_catalog_id = ? AND "+
 			"control_category_catalog_id = ? AND "+
 			"control_category_name = ? AND "+
 			"control_id = ?",
-		req.Status.TargetOfEvaluationCloudServiceId,
-		req.Status.TargetOfEvaluationCatalogId,
-		req.Status.ControlCategoryCatalogId,
-		req.Status.ControlCategoryName,
-		req.Status.ControlId)
+		req.Scope.TargetOfEvaluationCloudServiceId,
+		req.Scope.TargetOfEvaluationCatalogId,
+		req.Scope.ControlCategoryCatalogId,
+		req.Scope.ControlCategoryName,
+		req.Scope.ControlId)
 	if err != nil && errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Error(codes.NotFound, "ToE not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	res = req.Status
+	res = req.Scope
 
-	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_CONTROL_MONITORING_STATUS_UPDATED, ControlMonitoringStatus: req.GetStatus()}, nil)
+	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_CONTROL_IN_SCOPE_UPDATED, ControlInScope: req.GetScope()}, nil)
+
+	return
+}
+
+func (svc *Service) RemoveControlFromScope(ctx context.Context, req *orchestrator.RemoveControlFromScopeRequest) (res *emptypb.Empty, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+		return nil, service.ErrPermissionDenied
+	}
+
+	err = svc.storage.Delete(orchestrator.ControlInScope{},
+		"target_of_evaluation_cloud_service_id = ? AND "+
+			"target_of_evaluation_catalog_id = ? AND "+
+			"control_category_catalog_id = ? AND "+
+			"control_category_name = ? AND "+
+			"control_id = ?",
+		req.CloudServiceId,
+		req.CatalogId,
+		req.CatalogId,
+		req.ControlCategoryName,
+		req.ControlId)
+	if err != nil && errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Error(codes.NotFound, "ToE not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+	}
+
+	res = &emptypb.Empty{}
+
+	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_CONTROL_IN_SCOPE_REMOVED, ControlInScope: nil}, nil)
 
 	return
 }
