@@ -725,7 +725,7 @@ func TestService_StopEvaluation(t *testing.T) {
 			},
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "invalid StopEvaluationRequest.TargetOfEvaluation: value is required")
+				return assert.ErrorContains(t, err, "invalid StopEvaluationRequest.CloudServiceId: value must be a valid UUID")
 			},
 		},
 		// {

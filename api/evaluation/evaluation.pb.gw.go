@@ -121,17 +121,13 @@ func local_request_Evaluation_StartEvaluation_0(ctx context.Context, marshaler r
 
 }
 
+var (
+	filter_Evaluation_StopEvaluation_0 = &utilities.DoubleArray{Encoding: map[string]int{"cloud_service_id": 0, "catalog_id": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
+)
+
 func request_Evaluation_StopEvaluation_0(ctx context.Context, marshaler runtime.Marshaler, client EvaluationClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq StopEvaluationRequest
 	var metadata runtime.ServerMetadata
-
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.TargetOfEvaluation); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
 
 	var (
 		val string
@@ -140,24 +136,31 @@ func request_Evaluation_StopEvaluation_0(ctx context.Context, marshaler runtime.
 		_   = err
 	)
 
-	val, ok = pathParams["category_name"]
+	val, ok = pathParams["cloud_service_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "category_name")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "cloud_service_id")
 	}
 
-	protoReq.CategoryName, err = runtime.String(val)
+	protoReq.CloudServiceId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "category_name", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "cloud_service_id", err)
 	}
 
-	val, ok = pathParams["control_id"]
+	val, ok = pathParams["catalog_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "control_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "catalog_id")
 	}
 
-	protoReq.ControlId, err = runtime.String(val)
+	protoReq.CatalogId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "control_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "catalog_id", err)
+	}
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_Evaluation_StopEvaluation_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	msg, err := client.StopEvaluation(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -169,14 +172,6 @@ func local_request_Evaluation_StopEvaluation_0(ctx context.Context, marshaler ru
 	var protoReq StopEvaluationRequest
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.TargetOfEvaluation); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
 	var (
 		val string
 		ok  bool
@@ -184,24 +179,31 @@ func local_request_Evaluation_StopEvaluation_0(ctx context.Context, marshaler ru
 		_   = err
 	)
 
-	val, ok = pathParams["category_name"]
+	val, ok = pathParams["cloud_service_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "category_name")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "cloud_service_id")
 	}
 
-	protoReq.CategoryName, err = runtime.String(val)
+	protoReq.CloudServiceId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "category_name", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "cloud_service_id", err)
 	}
 
-	val, ok = pathParams["control_id"]
+	val, ok = pathParams["catalog_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "control_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "catalog_id")
 	}
 
-	protoReq.ControlId, err = runtime.String(val)
+	protoReq.CatalogId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "control_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "catalog_id", err)
+	}
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_Evaluation_StopEvaluation_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	msg, err := server.StopEvaluation(ctx, &protoReq)
@@ -282,7 +284,7 @@ func RegisterEvaluationHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.evaluation.v1.Evaluation/StopEvaluation", runtime.WithHTTPPathPattern("/v1/evaluation/evaluate/{category_name}/{control_id}/stop"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.evaluation.v1.Evaluation/StopEvaluation", runtime.WithHTTPPathPattern("/v1/evaluation/evaluate/{cloud_service_id}/{catalog_id}/stop"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -390,7 +392,7 @@ func RegisterEvaluationHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.evaluation.v1.Evaluation/StopEvaluation", runtime.WithHTTPPathPattern("/v1/evaluation/evaluate/{category_name}/{control_id}/stop"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.evaluation.v1.Evaluation/StopEvaluation", runtime.WithHTTPPathPattern("/v1/evaluation/evaluate/{cloud_service_id}/{catalog_id}/stop"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -433,7 +435,7 @@ func RegisterEvaluationHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 var (
 	pattern_Evaluation_StartEvaluation_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"v1", "evaluation", "evaluate", "cloud_service_id", "catalog_id", "start"}, ""))
 
-	pattern_Evaluation_StopEvaluation_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"v1", "evaluation", "evaluate", "category_name", "control_id", "stop"}, ""))
+	pattern_Evaluation_StopEvaluation_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"v1", "evaluation", "evaluate", "cloud_service_id", "catalog_id", "stop"}, ""))
 
 	pattern_Evaluation_ListEvaluationResults_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "evaluation", "results"}, ""))
 )

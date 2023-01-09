@@ -49,8 +49,7 @@
     // StopEvaluation stops the evaluation for the given target of evaluation
     rpc StopEvaluation(StopEvaluationRequest) returns (StopEvaluationResponse) {
     option (google.api.http) = {
-        post : "/v1/evaluation/evaluate/{category_name}/{control_id}/stop"
-        body : "target_of_evaluation"
+        post : "/v1/evaluation/evaluate/{cloud_service_id}/{catalog_id}/stop"
         };
     } 
 
@@ -97,15 +96,20 @@ message StartEvaluationResponse {
 }
 
 message StopEvaluationRequest {
-    clouditor.orchestrator.v1.TargetOfEvaluation target_of_evaluation = 1
-        [(validate.rules).message.required = true]; 
-    // The category the control ID belongs to 
-    string category_name = 2
-        [(validate.rules).string.min_len = 1]; 
-    // The control ID
+    string cloud_service_id = 1
+      [ (validate.rules).string.uuid = true ];
+
+    string catalog_id = 2
+      [ (validate.rules).string.min_len = 1 ]; 
+    
+    // The control ID 
     string control_id = 3
-        [(validate.rules).string.min_len = 1];
-}
+      [(validate.rules).string.min_len = 1];
+
+    // The category the control ID belongs to 
+    string category_name = 4
+      [(validate.rules).string.min_len = 1]; 
+    }
 
 message StopEvaluationResponse {}
  

@@ -293,7 +293,7 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 	}
 
 	// Get control
-	control, err = s.getControl(req.TargetOfEvaluation.CatalogId, req.CategoryName, req.ControlId)
+	control, err = s.getControl(req.GetCatalogId(), req.CategoryName, req.ControlId)
 	if err != nil {
 		err = fmt.Errorf("could not get control for control id {%s}: %v", req.ControlId, err)
 		log.Error(err)
@@ -304,9 +304,9 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 	// Check if the control is a first level control
 	if control.ParentControlId == nil {
 		// Control is a first level control, stop the scheduler job for the control and all sub-controls
-		err = s.stopSchedulerJobs(getSchedulerTagsForControlIds(getAllControlIdsFromControl(control), req.GetTargetOfEvaluation().GetCloudServiceId()))
+		err = s.stopSchedulerJobs(getSchedulerTagsForControlIds(getAllControlIdsFromControl(control), req.GetCloudServiceId()))
 		if err != nil && strings.Contains(err.Error(), gocron.ErrJobNotFoundWithTag.Error()) {
-			err = fmt.Errorf("evaluation for cloud service id '%s' with '%s' not running", req.GetTargetOfEvaluation().GetCloudServiceId(), req.GetControlId())
+			err = fmt.Errorf("evaluation for cloud service id '%s' with '%s' not running", req.GetCloudServiceId(), req.GetControlId())
 			log.Error(err)
 			err = status.Errorf(codes.FailedPrecondition, "%v", err)
 			return
@@ -319,13 +319,13 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 
 		// TODO(anatheka): WEITERMACHEN!!! How do we have to delete the WaitGroup? We have to wait until the sub-controls evaluation is finished
 
-		log.Infof("Evaluation stopped for Cloud Service ID '%s' with Control ID '%s'", req.TargetOfEvaluation.GetCloudServiceId(), control.GetId())
+		log.Infof("Evaluation stopped for Cloud Service ID '%s' with Control ID '%s'", req.GetCloudServiceId(), control.GetId())
 	} else {
 		// Control is a second level control, check if the parent control is scheduled
-		schedulerTag = createSchedulerTag(req.TargetOfEvaluation.CloudServiceId, *control.ParentControlId)
+		schedulerTag = createSchedulerTag(req.CloudServiceId, *control.ParentControlId)
 		_, err = s.scheduler.FindJobsByTag(schedulerTag)
 
-		err = s.handleFindParentControlJobError(err, req.TargetOfEvaluation.GetCloudServiceId(), req.GetControlId())
+		err = s.handleFindParentControlJobError(err, req.GetCloudServiceId(), req.GetControlId())
 		// No need of further error handling
 		if err != nil {
 			return

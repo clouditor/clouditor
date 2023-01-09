@@ -594,10 +594,11 @@ func (m *StopEvaluationRequest) validate(all bool) error {
 
 	var errors []error
 
-	if m.GetTargetOfEvaluation() == nil {
-		err := StopEvaluationRequestValidationError{
-			field:  "TargetOfEvaluation",
-			reason: "value is required",
+	if err := m._validateUuid(m.GetCloudServiceId()); err != nil {
+		err = StopEvaluationRequestValidationError{
+			field:  "CloudServiceId",
+			reason: "value must be a valid UUID",
+			cause:  err,
 		}
 		if !all {
 			return err
@@ -605,38 +606,9 @@ func (m *StopEvaluationRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if all {
-		switch v := interface{}(m.GetTargetOfEvaluation()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, StopEvaluationRequestValidationError{
-					field:  "TargetOfEvaluation",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, StopEvaluationRequestValidationError{
-					field:  "TargetOfEvaluation",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetTargetOfEvaluation()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return StopEvaluationRequestValidationError{
-				field:  "TargetOfEvaluation",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if utf8.RuneCountInString(m.GetCategoryName()) < 1 {
+	if utf8.RuneCountInString(m.GetCatalogId()) < 1 {
 		err := StopEvaluationRequestValidationError{
-			field:  "CategoryName",
+			field:  "CatalogId",
 			reason: "value length must be at least 1 runes",
 		}
 		if !all {
@@ -656,8 +628,27 @@ func (m *StopEvaluationRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if utf8.RuneCountInString(m.GetCategoryName()) < 1 {
+		err := StopEvaluationRequestValidationError{
+			field:  "CategoryName",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if len(errors) > 0 {
 		return StopEvaluationRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+func (m *StopEvaluationRequest) _validateUuid(uuid string) error {
+	if matched := _evaluation_uuidPattern.MatchString(uuid); !matched {
+		return errors.New("invalid uuid format")
 	}
 
 	return nil
