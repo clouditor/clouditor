@@ -47,7 +47,7 @@
       };
      } 
 
-    // StopEvaluation stop the evaluation for the given Cloud Service
+    // StopEvaluation stops the evaluation for the given target of evaluation
     rpc StopEvaluation(StopEvaluationRequest) returns (StopEvaluationResponse) {
     option (google.api.http) = {
         post : "/v1/evaluation/evaluate/{category_name}/{control_id}/stop"
